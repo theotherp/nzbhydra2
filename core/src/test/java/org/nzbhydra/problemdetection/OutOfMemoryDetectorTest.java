@@ -33,9 +33,6 @@ import java.nio.file.Path;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
-/**
- * @author PPI AG
- */
 public class OutOfMemoryDetectorTest {
 
     @Mock

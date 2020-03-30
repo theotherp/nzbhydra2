@@ -1,16 +1,47 @@
-package org.nzbhydra.indexers;
+/*
+ *  (C) Copyright 2017 TheOtherP (theotherp@gmx.de)
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+package org.nzbhydra.indexers.torznab;
 
 import com.google.common.collect.Lists;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.*;
+import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.SearchingConfig;
 import org.nzbhydra.config.category.Category;
 import org.nzbhydra.config.indexer.IndexerConfig;
-import org.nzbhydra.mapping.newznab.xml.*;
+import org.nzbhydra.indexers.IndexerAccessResult;
+import org.nzbhydra.indexers.IndexerApiAccessRepository;
+import org.nzbhydra.indexers.IndexerEntity;
+import org.nzbhydra.indexers.IndexerRepository;
+import org.nzbhydra.indexers.IndexerSearchRepository;
+import org.nzbhydra.indexers.IndexerWebAccess;
+import org.nzbhydra.mapping.newznab.xml.JaxbPubdateAdapter;
+import org.nzbhydra.mapping.newznab.xml.NewznabAttribute;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlEnclosure;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlGuid;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
 import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.searching.CategoryProvider;
@@ -22,7 +53,11 @@ import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
@@ -70,10 +105,10 @@ public class TorznabTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         testee = spy(testee);
-
-        testee.config = new IndexerConfig();
-        testee.config.setSupportedSearchIds(Lists.newArrayList(IdType.TMDB, IdType.TVRAGE));
-        testee.config.setHost("http://127.0.0.1:1234");
+        final IndexerConfig config = new IndexerConfig();
+        testee.initialize(config, indexerEntityMock);
+        config.setSupportedSearchIds(Lists.newArrayList(IdType.TMDB, IdType.TVRAGE));
+        config.setHost("http://127.0.0.1:1234");
 
         baseConfig = new BaseConfig();
         when(configProviderMock.getBaseConfig()).thenReturn(baseConfig);

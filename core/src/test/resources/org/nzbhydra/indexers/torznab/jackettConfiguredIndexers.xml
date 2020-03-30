@@ -1,0 +1,2473 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~  (C) Copyright 2020 TheOtherP (theotherp@gmx.de)
+  ~
+  ~  Licensed under the Apache License, Version 2.0 (the "License");
+  ~  you may not use this file except in compliance with the License.
+  ~  You may obtain a copy of the License at
+  ~
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~  Unless required by applicable law or agreed to in writing, software
+  ~  distributed under the License is distributed on an "AS IS" BASIS,
+  ~  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~  See the License for the specific language governing permissions and
+  ~  limitations under the License.
+  -->
+
+<indexers>
+  <indexer id="broadcastthenet" configured="true">
+    <title>BroadcastTheNet</title>
+    <description>Broadcasthe.net (BTN) is an invite-only torrent tracker focused on TV shows</description>
+    <link>https://broadcasthe.net/</link>
+    <language>en-us</language>
+    <type>private</type>
+    <caps>
+      <server title="Jackett" />
+      <limits max="1000" default="100" />
+      <searching>
+        <search available="yes" supportedParams="q" />
+        <tv-search available="yes" supportedParams="q,season,ep" />
+        <movie-search available="no" supportedParams="q" />
+        <music-search available="no" supportedParams="" />
+        <audio-search available="no" supportedParams="" />
+      </searching>
+      <categories>
+        <category id="5030" name="TV/SD" />
+        <category id="5040" name="TV/HD" />
+      </categories>
+    </caps>
+  </indexer>
+  <indexer id="horriblesubs" configured="true">
+    <title>Horrible Subs</title>
+    <description>HorribleSubs - So bad yet so good</description>
+    <link>https://horriblesubs.info/</link>
+    <language>en-us</language>
+    <type>public</type>
+    <caps>
+      <server title="Jackett" />
+      <searching>
+        <search available="yes" supportedParams="q" />
+        <tv-search available="yes" supportedParams="q,season,ep" />
+        <movie-search available="no" supportedParams="q" />
+        <music-search available="no" supportedParams="" />
+        <audio-search available="no" supportedParams="" />
+      </searching>
+      <categories>
+        <category id="5070" name="TV/Anime" />
+      </categories>
+    </caps>
+  </indexer>
+  <indexer id="iptorrents" configured="true">
+    <title>IPTorrents</title>
+    <description>Always a step ahead.</description>
+    <link>https://iptorrents.com/</link>
+    <language>en-us</language>
+    <type>private</type>
+    <caps>
+      <server title="Jackett" />
+      <searching>
+        <search available="yes" supportedParams="q" />
+        <tv-search available="yes" supportedParams="q,season,ep" />
+        <movie-search available="yes" supportedParams="q,imdbid" />
+        <music-search available="no" supportedParams="" />
+        <audio-search available="no" supportedParams="" />
+      </searching>
+      <categories>
+        <category id="100060" name="Anime" />
+        <category id="100001" name="Appz" />
+        <category id="100086" name="Appz/Non-English" />
+        <category id="100064" name="AudioBook" />
+        <category id="100035" name="Books" />
+        <category id="100094" name="Comics" />
+        <category id="100026" name="Documentaries" />
+        <category id="100095" name="Educational" />
+        <category id="100098" name="Fonts" />
+        <category id="100074" name="Games" />
+        <category id="100002" name="Games/Mixed" />
+        <category id="100047" name="Games/Nintendo DS" />
+        <category id="100043" name="Games/PC-ISO" />
+        <category id="100045" name="Games/PC-Rip" />
+        <category id="100039" name="Games/PS2" />
+        <category id="100071" name="Games/PS3" />
+        <category id="100040" name="Games/PSP" />
+        <category id="100050" name="Games/Wii" />
+        <category id="100044" name="Games/Xbox-360" />
+        <category id="100069" name="Mac" />
+        <category id="100092" name="Magazines / Newspapers" />
+        <category id="100076" name="Miscellaneous" />
+        <category id="100058" name="Mobile" />
+        <category id="100087" name="Movie/3D" />
+        <category id="100077" name="Movie/480p" />
+        <category id="100101" name="Movie/4K" />
+        <category id="100089" name="Movie/BD-R" />
+        <category id="100090" name="Movie/BD-Rip" />
+        <category id="100096" name="Movie/Cam" />
+        <category id="100006" name="Movie/DVD-R" />
+        <category id="100048" name="Movie/HD/Bluray" />
+        <category id="100054" name="Movie/Kids" />
+        <category id="100062" name="Movie/MP4" />
+        <category id="100038" name="Movie/Non-English" />
+        <category id="100068" name="Movie/Packs" />
+        <category id="100020" name="Movie/Web-DL" />
+        <category id="100100" name="Movie/x265" />
+        <category id="100007" name="Movie/Xvid" />
+        <category id="100072" name="Movies" />
+        <category id="100075" name="Music" />
+        <category id="100003" name="Music/Audio" />
+        <category id="100080" name="Music/Flac" />
+        <category id="100093" name="Music/Packs" />
+        <category id="100037" name="Music/Video" />
+        <category id="100036" name="Pics/Wallpapers" />
+        <category id="100021" name="Podcast" />
+        <category id="100055" name="Sports" />
+        <category id="100073" name="TV" />
+        <category id="100078" name="TV/480p" />
+        <category id="100023" name="TV/BD" />
+        <category id="100024" name="TV/DVD-R" />
+        <category id="100025" name="TV/DVD-Rip" />
+        <category id="100066" name="TV/Mobile" />
+        <category id="100082" name="TV/Non-English" />
+        <category id="100065" name="TV/Packs" />
+        <category id="100083" name="TV/Packs/Non-English" />
+        <category id="100079" name="TV/SD/x264" />
+        <category id="100022" name="TV/Web-DL" />
+        <category id="100005" name="TV/x264" />
+        <category id="100099" name="TV/x265" />
+        <category id="100004" name="TV/Xvid" />
+        <category id="100088" name="XXX" />
+        <category id="100085" name="XXX/Magazines" />
+        <category id="100008" name="XXX/Movie" />
+        <category id="100081" name="XXX/Movie/0Day" />
+        <category id="100091" name="XXX/Packs" />
+        <category id="100084" name="XXX/Pics/Wallpapers" />
+        <category id="1000" name="Console">
+          <subcat id="1010" name="Console/NDS" />
+          <subcat id="1020" name="Console/PSP" />
+          <subcat id="1030" name="Console/Wii" />
+          <subcat id="1040" name="Console/Xbox" />
+          <subcat id="1050" name="Console/Xbox 360" />
+          <subcat id="1060" name="Console/Wiiware/VC" />
+          <subcat id="1070" name="Console/XBOX 360 DLC" />
+          <subcat id="1080" name="Console/PS3" />
+          <subcat id="1090" name="Console/Other" />
+          <subcat id="1110" name="Console/3DS" />
+          <subcat id="1120" name="Console/PS Vita" />
+          <subcat id="1130" name="Console/WiiU" />
+          <subcat id="1140" name="Console/Xbox One" />
+          <subcat id="1180" name="Console/PS4" />
+        </category>
+        <category id="1010" name="Console/NDS" />
+        <category id="1020" name="Console/PSP" />
+        <category id="1030" name="Console/Wii" />
+        <category id="1050" name="Console/Xbox 360" />
+        <category id="1080" name="Console/PS3" />
+        <category id="1090" name="Console/Other" />
+        <category id="2000" name="Movies">
+          <subcat id="2010" name="Movies/Foreign" />
+          <subcat id="2020" name="Movies/Other" />
+          <subcat id="2030" name="Movies/SD" />
+          <subcat id="2040" name="Movies/HD" />
+          <subcat id="2045" name="Movies/UHD" />
+          <subcat id="2050" name="Movies/3D" />
+          <subcat id="2060" name="Movies/BluRay" />
+          <subcat id="2070" name="Movies/DVD" />
+          <subcat id="2080" name="Movies/WEBDL" />
+        </category>
+        <category id="2010" name="Movies/Foreign" />
+        <category id="2030" name="Movies/SD" />
+        <category id="2040" name="Movies/HD" />
+        <category id="2050" name="Movies/3D" />
+        <category id="2060" name="Movies/BluRay" />
+        <category id="2070" name="Movies/DVD" />
+        <category id="3000" name="Audio">
+          <subcat id="3010" name="Audio/MP3" />
+          <subcat id="3020" name="Audio/Video" />
+          <subcat id="3030" name="Audio/Audiobook" />
+          <subcat id="3040" name="Audio/Lossless" />
+          <subcat id="3050" name="Audio/Other" />
+          <subcat id="3060" name="Audio/Foreign" />
+        </category>
+        <category id="3010" name="Audio/MP3" />
+        <category id="3020" name="Audio/Video" />
+        <category id="3030" name="Audio/Audiobook" />
+        <category id="3040" name="Audio/Lossless" />
+        <category id="4010" name="PC/0day" />
+        <category id="4020" name="PC/ISO" />
+        <category id="4030" name="PC/Mac" />
+        <category id="4040" name="PC/Phone-Other" />
+        <category id="4050" name="PC/Games" />
+        <category id="5000" name="TV">
+          <subcat id="5010" name="TV/WEB-DL" />
+          <subcat id="5020" name="TV/FOREIGN" />
+          <subcat id="5030" name="TV/SD" />
+          <subcat id="5040" name="TV/HD" />
+          <subcat id="5045" name="TV/UHD" />
+          <subcat id="5050" name="TV/OTHER" />
+          <subcat id="5060" name="TV/Sport" />
+          <subcat id="5070" name="TV/Anime" />
+          <subcat id="5080" name="TV/Documentary" />
+        </category>
+        <category id="5010" name="TV/WEB-DL" />
+        <category id="5020" name="TV/FOREIGN" />
+        <category id="5030" name="TV/SD" />
+        <category id="5040" name="TV/HD" />
+        <category id="5060" name="TV/Sport" />
+        <category id="5070" name="TV/Anime" />
+        <category id="5080" name="TV/Documentary" />
+        <category id="6000" name="XXX">
+          <subcat id="6010" name="XXX/DVD" />
+          <subcat id="6020" name="XXX/WMV" />
+          <subcat id="6030" name="XXX/XviD" />
+          <subcat id="6040" name="XXX/x264" />
+          <subcat id="6050" name="XXX/Other" />
+          <subcat id="6060" name="XXX/Imageset" />
+          <subcat id="6070" name="XXX/Packs" />
+        </category>
+        <category id="6050" name="XXX/Other" />
+        <category id="6060" name="XXX/Imageset" />
+        <category id="6070" name="XXX/Packs" />
+        <category id="7000" name="Other">
+          <subcat id="7010" name="Other/Misc" />
+          <subcat id="7020" name="Other/Hashed" />
+        </category>
+        <category id="8000" name="Books">
+          <subcat id="8010" name="Books/Ebook" />
+          <subcat id="8020" name="Books/Comics" />
+          <subcat id="8030" name="Books/Magazines" />
+          <subcat id="8040" name="Books/Technical" />
+          <subcat id="8050" name="Books/Other" />
+          <subcat id="8060" name="Books/Foreign" />
+        </category>
+        <category id="8020" name="Books/Comics" />
+        <category id="8030" name="Books/Magazines" />
+        <category id="8050" name="Books/Other" />
+      </categories>
+    </caps>
+  </indexer>
+  <indexer id="passthepopcorn" configured="true">
+    <title>PassThePopcorn</title>
+    <description>PassThePopcorn is a Private site for MOVIES / TV</description>
+    <link>https://passthepopcorn.me/</link>
+    <language>en-us</language>
+    <type>private</type>
+    <caps>
+      <server title="Jackett" />
+      <searching>
+        <search available="yes" supportedParams="q" />
+        <tv-search available="yes" supportedParams="q,season,ep" />
+        <movie-search available="yes" supportedParams="q,imdbid" />
+        <music-search available="no" supportedParams="" />
+        <audio-search available="no" supportedParams="" />
+      </searching>
+      <categories>
+        <category id="100001" name="Feature Film" />
+        <category id="100005" name="Live Performance" />
+        <category id="100003" name="Miniseries" />
+        <category id="100002" name="Short Film" />
+        <category id="100004" name="Stand-up Comedy" />
+        <category id="2000" name="Movies">
+          <subcat id="2010" name="Movies/Foreign" />
+          <subcat id="2020" name="Movies/Other" />
+          <subcat id="2030" name="Movies/SD" />
+          <subcat id="2040" name="Movies/HD" />
+          <subcat id="2045" name="Movies/UHD" />
+          <subcat id="2050" name="Movies/3D" />
+          <subcat id="2060" name="Movies/BluRay" />
+          <subcat id="2070" name="Movies/DVD" />
+          <subcat id="2080" name="Movies/WEBDL" />
+        </category>
+        <category id="2010" name="Movies/Foreign" />
+        <category id="2020" name="Movies/Other" />
+        <category id="2030" name="Movies/SD" />
+        <category id="2040" name="Movies/HD" />
+        <category id="2050" name="Movies/3D" />
+        <category id="2060" name="Movies/BluRay" />
+        <category id="2070" name="Movies/DVD" />
+        <category id="2080" name="Movies/WEBDL" />
+        <category id="5000" name="TV">
+          <subcat id="5010" name="TV/WEB-DL" />
+          <subcat id="5020" name="TV/FOREIGN" />
+          <subcat id="5030" name="TV/SD" />
+          <subcat id="5040" name="TV/HD" />
+          <subcat id="5045" name="TV/UHD" />
+          <subcat id="5050" name="TV/OTHER" />
+          <subcat id="5060" name="TV/Sport" />
+          <subcat id="5070" name="TV/Anime" />
+          <subcat id="5080" name="TV/Documentary" />
+        </category>
+      </categories>
+    </caps>
+  </indexer>
+  <indexer id="rarbg" configured="true">
+    <title>RARBG</title>
+    <description>RARBG is a Public torrent site for MOVIES / TV / GENERAL</description>
+    <link>https://rarbg.to/</link>
+    <language>en-us</language>
+    <type>public</type>
+    <caps>
+      <server title="Jackett" />
+      <searching>
+        <search available="yes" supportedParams="q" />
+        <tv-search available="yes" supportedParams="q,season,ep" />
+        <movie-search available="yes" supportedParams="q,imdbid" />
+        <music-search available="no" supportedParams="" />
+        <audio-search available="no" supportedParams="" />
+      </searching>
+      <categories>
+        <category id="100035" name="e-Books" />
+        <category id="100027" name="Games/PC ISO" />
+        <category id="100028" name="Games/PC RIP" />
+        <category id="100040" name="Games/PS3" />
+        <category id="100032" name="Games/XBOX-360" />
+        <category id="100046" name="Movies/BD Remux" />
+        <category id="100042" name="Movies/Full BD" />
+        <category id="100017" name="Movies/x264" />
+        <category id="100044" name="Movies/x264/1080" />
+        <category id="100047" name="Movies/x264/3D" />
+        <category id="100050" name="Movies/x264/4k" />
+        <category id="100045" name="Movies/x264/720" />
+        <category id="100051" name="Movies/x265/4k" />
+        <category id="100014" name="Movies/XVID" />
+        <category id="100048" name="Movies/XVID/720" />
+        <category id="100052" name="Movs/x265/4k/HDR" />
+        <category id="100025" name="Music/FLAC" />
+        <category id="100023" name="Music/MP3" />
+        <category id="100033" name="Software/PC ISO" />
+        <category id="100018" name="TV Episodes" />
+        <category id="100041" name="TV HD Episodes" />
+        <category id="100049" name="TV UHD Episodes" />
+        <category id="100004" name="XXX (18+)" />
+        <category id="1050" name="Console/Xbox 360" />
+        <category id="1080" name="Console/PS3" />
+        <category id="2030" name="Movies/SD" />
+        <category id="2040" name="Movies/HD" />
+        <category id="2050" name="Movies/3D" />
+        <category id="2060" name="Movies/BluRay" />
+        <category id="3010" name="Audio/MP3" />
+        <category id="3040" name="Audio/Lossless" />
+        <category id="4020" name="PC/ISO" />
+        <category id="4050" name="PC/Games" />
+        <category id="5030" name="TV/SD" />
+        <category id="5040" name="TV/HD" />
+        <category id="6000" name="XXX">
+          <subcat id="6010" name="XXX/DVD" />
+          <subcat id="6020" name="XXX/WMV" />
+          <subcat id="6030" name="XXX/XviD" />
+          <subcat id="6040" name="XXX/x264" />
+          <subcat id="6050" name="XXX/Other" />
+          <subcat id="6060" name="XXX/Imageset" />
+          <subcat id="6070" name="XXX/Packs" />
+        </category>
+        <category id="8010" name="Books/Ebook" />
+      </categories>
+    </caps>
+  </indexer>
+  <indexer id="rutracker" configured="true">
+    <title>RuTracker</title>
+    <description>RuTracker is a Semi-Private Russian torrent site with a thriving file-sharing community</description>
+    <link>https://rutracker.org/</link>
+    <language>ru-ru</language>
+    <type>semi-private</type>
+    <caps>
+      <server title="Jackett" />
+      <searching>
+        <search available="yes" supportedParams="q" />
+        <tv-search available="yes" supportedParams="q,season,ep" />
+        <movie-search available="yes" supportedParams="q" />
+        <music-search available="no" supportedParams="" />
+        <audio-search available="no" supportedParams="" />
+      </searching>
+      <categories>
+        <category id="101513" name=" | -" />
+        <category id="100403" name=" | - [Audio] academic and popular literature" />
+        <category id="100574" name=" | - [Audio] Auditions and readings" />
+        <category id="100716" name=" | - [Audio] Business" />
+        <category id="100490" name=" | - [Audio] Children's Books" />
+        <category id="100499" name=" | - [Audio] Detectives, Adventure, Thriller, Action" />
+        <category id="102388" name=" | - [Audio] Foreign fiction, fantasy, mystery, horror, .." />
+        <category id="100399" name=" | - [Audio] Foreign literature" />
+        <category id="100400" name=" | - [Audio] Historical Book" />
+        <category id="102342" name=" | - [Audio] Islam" />
+        <category id="101279" name=" | - [Audio] lossless-audio books" />
+        <category id="101036" name=" | - [Audio] Lots of great people" />
+        <category id="102165" name=" | - [Audio] Miscellaneous" />
+        <category id="102152" name=" | - [Audio] Non-traditional religious and philosophical teachings" />
+        <category id="102325" name=" | - [Audio] Orthodoxy" />
+        <category id="100530" name=" | - [Audio] Other traditional religion" />
+        <category id="100695" name=" | - [Audio] Poetry" />
+        <category id="102348" name=" | - [Audio] Puzzle / Miscellaneous Science Fiction, Fantasy, Mystery, too .." />
+        <category id="102387" name=" | - [Audio] Russian fiction, fantasy, mystery, horror, .." />
+        <category id="100402" name=" | - [Audio] Russian literature" />
+        <category id="100401" name=" | - [Audio], sub-standard distribution" />
+        <category id="100271" name=" | - 24 hours / 24" />
+        <category id="101562" name=" | - 2D-графика" />
+        <category id="101213" name=" | - 3D Animation" />
+        <category id="102097" name=" | - 3D Clips, Music Videos, Movie Trailers" />
+        <category id="102109" name=" | - 3D Documentary" />
+        <category id="101083" name=" | - 3D modeling, rendering and plugins for them" />
+        <category id="100633" name=" | - 3D models, scenes and materials" />
+        <category id="100549" name=" | - 3D Movies" />
+        <category id="100514" name=" | - 3D Спорт" />
+        <category id="101563" name=" | - 3D-графика" />
+        <category id="101767" name=" | - 3rd Wave Ska (lossy)" />
+        <category id="101459" name=" | - A Cinderella Story (Beautiful Loser) / Bella Calamidade .." />
+        <category id="101351" name=" | - A collection of songs for children (lossy and lossless)" />
+        <category id="100172" name=" | - A cop-in-law" />
+        <category id="100781" name=" | - A girl named Fate / Milagros" />
+        <category id="100944" name=" | - Academic Music (Notes and Media CD)" />
+        <category id="102178" name=" | - Accidents / Accidents / Disasters" />
+        <category id="101978" name=" | - Accounting, utilities, etc." />
+        <category id="100646" name=" | - Action (Old Games)" />
+        <category id="101493" name=" | - Actors and actresses of Latin American soap operas" />
+        <category id="101654" name=" | - Adobe Photoshop" />
+        <category id="102047" name=" | - Adventure" />
+        <category id="100053" name=" | - Adventure and quests" />
+        <category id="100643" name=" | - Adventure and quests (Old Games)" />
+        <category id="100175" name=" | - After" />
+        <category id="102476" name=" | - Agriculture and food industry" />
+        <category id="101590" name=" | - Aikido and Aiki-jutsu" />
+        <category id="102145" name=" | - Aircraft [FS2004]" />
+        <category id="100672" name=" | - All about home, life and design" />
+        <category id="101681" name=" | - Alternative historical theories" />
+        <category id="102168" name=" | - Alternative history and science" />
+        <category id="100808" name=" | - Amateur Photos" />
+        <category id="101167" name=" | - Amateur videos" />
+        <category id="100265" name=" | - Ambulance / ER" />
+        <category id="101084" name=" | - Animation" />
+        <category id="102343" name=" | - Animation (Announcements HD Video)" />
+        <category id="101577" name=" | - Animation (Art-house cinema and author)" />
+        <category id="100930" name=" | - Animation (HD Video)" />
+        <category id="100599" name=" | - Anime (DVD)" />
+        <category id="101389" name=" | - Anime (main subsection)" />
+        <category id="101391" name=" | - Anime (pleerny subsection)" />
+        <category id="102491" name=" | - Anime (QC subsection)" />
+        <category id="102535" name=" | - Anime for iPod, iPhone, iPad" />
+        <category id="102186" name=" | - Anime for PSP" />
+        <category id="100900" name=" | - Anime games" />
+        <category id="101038" name=" | - Anti-spyware and anti-trojan" />
+        <category id="102154" name=" | - Applications for Android OS" />
+        <category id="101005" name=" | - Applications for Java" />
+        <category id="100289" name=" | - Applications for Symbian" />
+        <category id="100290" name=" | - Applications for Windows Mobile, Palm OS, BlackBerry and so on." />
+        <category id="102419" name=" | - Applications for Windows Phone 7,8" />
+        <category id="101673" name=" | - Arabic" />
+        <category id="100127" name=" | - Arcade" />
+        <category id="100642" name=" | - Arcade (Old Games)" />
+        <category id="102319" name=" | - Archaeology" />
+        <category id="102031" name=" | - Architecture / Construction / Engineering networks" />
+        <category id="101469" name=" | - Architecture and Construction" />
+        <category id="101030" name=" | - Archivers and File Managers" />
+        <category id="102538" name=" | - Art, Art History" />
+        <category id="100572" name=" | - Art-house and auteur cinema (DVD)" />
+        <category id="102339" name=" | - Art-house and auteur cinema (HD Video)" />
+        <category id="100934" name=" | - Asian movies" />
+        <category id="101576" name=" | - Asian movies (DVD Video)" />
+        <category id="102201" name=" | - Asian movies (HD Video)" />
+        <category id="102422" name=" | - Astrology" />
+        <category id="102192" name=" | - Astronomy" />
+        <category id="100528" name=" | - Athletics / Water Sports" />
+        <category id="101509" name=" | - Atlases and antique maps (up to 1950)" />
+        <category id="101508" name=" | - Atlases and maps modern (after 1950)" />
+        <category id="100148" name=" | - Audio" />
+        <category id="101495" name=" | - Audio and video clips (Jokes and humor)" />
+        <category id="101065" name=" | - Audio and video, CD- players and catalogers" />
+        <category id="101350" name=" | - Audio Books on medicine" />
+        <category id="101372" name=" | - Audio editor and converter" />
+        <category id="101909" name=" | - Audiobooks (AAC, ALAC)" />
+        <category id="101501" name=" | - Audiobooks in English" />
+        <category id="101580" name=" | - Audiobooks in German" />
+        <category id="100525" name=" | - Audiobooks in other languages" />
+        <category id="100376" name=" | - Author Debuts" />
+        <category id="101357" name=" | - Authoring" />
+        <category id="101656" name=" | - Autodesk 3ds Max" />
+        <category id="102527" name=" | - Automation / Robotics" />
+        <category id="100962" name=" | - Autos and Racing" />
+        <category id="102227" name=" | - Autos and Racing (Old Games)" />
+        <category id="100922" name=" | - Avatar" />
+        <category id="101100" name=" | - Avatars, Icons, Smileys" />
+        <category id="100821" name=" | - Aviation" />
+        <category id="102024" name=" | - Aviation / Cosmonautics" />
+        <category id="101029" name=" | - Backup" />
+        <category id="102124" name=" | - Badminton / Table Tennis" />
+        <category id="101990" name=" | - Ballet and contemporary dance (Video, DVD and HD Video)" />
+        <category id="101257" name=" | - Ballroom dancing" />
+        <category id="102073" name=" | - Baseball" />
+        <category id="100166" name=" | - Battlestar Galactica / Battlestar Galactica + Copper .." />
+        <category id="101258" name=" | - Belly Dance" />
+        <category id="102079" name=" | - Biathlon" />
+        <category id="100978" name=" | - Billiards" />
+        <category id="102027" name=" | - Biology / Ecology" />
+        <category id="100194" name=" | - Bludlivaya California / Californication" />
+        <category id="102424" name=" | - Board Games" />
+        <category id="101546" name=" | - Bodybuilding" />
+        <category id="101188" name=" | - Bodybuilding / Power Sports" />
+        <category id="100920" name=" | - Bones / Bones" />
+        <category id="101977" name=" | - Books for the repair / maintenance / operation of the vehicle" />
+        <category id="100860" name=" | - Books, Journals, Notes" />
+        <category id="101667" name=" | - Boxing" />
+        <category id="101417" name=" | - Breaking Bad / Breaking Bad" />
+        <category id="100184" name=" | - Buffy - the Vampire Slayer / Buffy + Angel / Angel" />
+        <category id="101511" name=" | - Built-in car navigation" />
+        <category id="101062" name=" | - Business Systems" />
+        <category id="101259" name=" | - Business, Economics and Finance" />
+        <category id="100764" name=" | - Business, Management" />
+        <category id="101192" name=" | - CAD (electronics, automation, GAP)" />
+        <category id="101087" name=" | - CAD (general and engineering)" />
+        <category id="100856" name=" | - Capercaillie / Pyatnitskii / Karpov" />
+        <category id="100119" name=" | - Careful, Modern!" />
+        <category id="100822" name=" | - Cartoon Collection" />
+        <category id="100863" name=" | - Cartoons for iPod, iPhone, iPad" />
+        <category id="102180" name=" | - Cartoons for PSP" />
+        <category id="101064" name=" | - Cataloging and graphics viewers" />
+        <category id="102447" name=" | - Celebrity idols" />
+        <category id="101664" name=" | - Celebrity Photos" />
+        <category id="102311" name=" | - Chamber and solo instrumental music (lossy)" />
+        <category id="100558" name=" | - Chamber instrumental music (lossless)" />
+        <category id="101041" name=" | - Change the Windows interface" />
+        <category id="101224" name=" | - Chanson (lossless)" />
+        <category id="101225" name=" | - Chanson (lossy)" />
+        <category id="102483" name=" | - Cheat program and trainers" />
+        <category id="100295" name=" | - Chemistry / Biochemistry" />
+        <category id="100278" name=" | - Chess" />
+        <category id="101666" name=" | - Children's domestic films" />
+        <category id="101481" name=" | - Children's TV Show" />
+        <category id="101269" name=" | - Chinese" />
+        <category id="100717" name=" | - Chinese serials with subtitles" />
+        <category id="101475" name=" | - Christianity" />
+        <category id="102215" name=" | - Christianity" />
+        <category id="102177" name=" | - Cinema and animation" />
+        <category id="100941" name=" | - Cinema of the USSR" />
+        <category id="100187" name=" | - Classic of world cinema" />
+        <category id="100905" name=" | - Classic of world cinema (DVD Video)" />
+        <category id="102199" name=" | - Classic of world cinema (HD Video)" />
+        <category id="101675" name=" | - Classical arts" />
+        <category id="100984" name=" | - Classical music (DVD and HD Video)" />
+        <category id="100445" name=" | - Classical music (Video)" />
+        <category id="100969" name=" | - Classics in modern processing, Classical Crossover (l .." />
+        <category id="102130" name=" | - Clinical Medicine from 1980 to 2000" />
+        <category id="102313" name=" | - Clinical Medicine since 2000" />
+        <category id="102133" name=" | - Clinical Medicine until 1980" />
+        <category id="100935" name=" | - Code of Honor" />
+        <category id="100875" name=" | - College Football" />
+        <category id="102464" name=" | - Comics from other publishers" />
+        <category id="102473" name=" | - Comics in other languages" />
+        <category id="102461" name=" | - Comics in Russian" />
+        <category id="102230" name=" | - Compilations (lossless)" />
+        <category id="102231" name=" | - Compilations (lossy)" />
+        <category id="101334" name=" | - Compilations domestic chanson (lossy)" />
+        <category id="102286" name=" | - Compilations foreign jazz (lossless)" />
+        <category id="100731" name=" | - Compilations foreign rock (lossless)" />
+        <category id="101799" name=" | - Compilations foreign rock (lossy)" />
+        <category id="100560" name=" | - Complete collection of works and multi-disc edition (lossl .." />
+        <category id="100436" name=" | - Complete collection of works and multi-disc edition (lossy .." />
+        <category id="101056" name=" | - Components for programming environments" />
+        <category id="101432" name=" | - Computer magazines and annexes" />
+        <category id="102308" name=" | - Concerto for Orchestra Instrument (lossless)" />
+        <category id="102533" name=" | - Conservation games" />
+        <category id="101547" name=" | - Construction, repair and design" />
+        <category id="101759" name=" | - Conversions from the Blu-Ray (multichannel music)" />
+        <category id="100453" name=" | - Conversions Quadraphonic (multichannel music)" />
+        <category id="101170" name=" | - Conversions SACD (multi-channel music)" />
+        <category id="101568" name=" | - Cooking" />
+        <category id="101961" name=" | - Cooking (Book)" />
+        <category id="102432" name=" | - Cooking (newspapers and magazines)" />
+        <category id="100805" name=" | - Cop War" />
+        <category id="101085" name=" | - Creating a BD / HD / DVD-Video" />
+        <category id="100606" name=" | - Crime / CSI Location: Crime Scene Investigation" />
+        <category id="102400" name=" | - Crime / CSI Location: Crime Scene Investigation (HD .." />
+        <category id="101458" name=" | - Cruel Angel / Anjo Mau" />
+        <category id="101453" name=" | - Cults and new religious movements" />
+        <category id="100262" name=" | - Cycling" />
+        <category id="100827" name=" | - Dance shows, concerts, performances" />
+        <category id="100677" name=" | - Dancing, miscellaneous" />
+        <category id="100188" name=" | - Darya Dontsova" />
+        <category id="102077" name=" | - Database Management Systems" />
+        <category id="102463" name=" | - DC Comics publishing" />
+        <category id="100765" name=" | - Design, Graphic Design" />
+        <category id="101019" name=" | - Desktop operating system from Microsoft (released prior to Windows XP)" />
+        <category id="102153" name=" | - Desktop operating system from Microsoft (since Windows XP)" />
+        <category id="100266" name=" | - Desperate Housewives / Desperate Housewives" />
+        <category id="102044" name=" | - Detective, Action" />
+        <category id="101288" name=" | - Dexter / Dexter" />
+        <category id="101975" name=" | - Diagnostic and repair programs" />
+        <category id="102386" name=" | - Diagrams and service manuals (original documents)" />
+        <category id="101068" name=" | - Dictionaries, translators" />
+        <category id="101569" name=" | - Dinner Party" />
+        <category id="102202" name=" | - Disc applications to gaming magazines" />
+        <category id="102505" name=" | - Disco, Italo-Disco, Euro-Disco, Hi-NRG (сборники) (lossy .." />
+        <category id="100882" name=" | - Distorting Mirror / town / in the town" />
+        <category id="100709" name=" | - Documentaries (Art-house cinema and author)" />
+        <category id="100126" name=" | - Documentaries and Analysis" />
+        <category id="100103" name=" | - Documentary (DVD)" />
+        <category id="101985" name=" | - Documentary / educational films" />
+        <category id="102082" name=" | - Documentary HD video for Apple TV" />
+        <category id="102139" name=" | - Documentary movies and TV shows on medicine" />
+        <category id="102078" name=" | - Dogfight" />
+        <category id="102296" name=" | - Domestic Blues (lossless)" />
+        <category id="102298" name=" | - Domestic Blues (lossy)" />
+        <category id="100208" name=" | - Domestic cartoons" />
+        <category id="101900" name=" | - Domestic cartoons (DVD)" />
+        <category id="100539" name=" | - Domestic full-length cartoons" />
+        <category id="102297" name=" | - Domestic Jazz (lossless)" />
+        <category id="102295" name=" | - Domestic jazz (lossy)" />
+        <category id="101794" name=" | - Domestic Metal (DVD Video)" />
+        <category id="101793" name=" | - Domestic Metal (Video)" />
+        <category id="100441" name=" | - Domestic Rap, Hip-Hop (lossy)" />
+        <category id="101189" name=" | - Domestic Rap, Hip-Hop (Video)" />
+        <category id="101486" name=" | - Domestic Rap, Hip-Hop, R'n'B (lossless)" />
+        <category id="101772" name=" | - Domestic reggae, dub (lossy and lossless)" />
+        <category id="101455" name=" | - Domestic R'n'B (Video)" />
+        <category id="101758" name=" | - Domestic Rock (own digitization)" />
+        <category id="101792" name=" | - Domestic Rock, Punk, Alternative (DVD Video)" />
+        <category id="101791" name=" | - Domestic Rock, Punk, Alternative (Video)" />
+        <category id="102264" name=" | - Domestic Rock, Punk, Alternative, Metal (Neofitsial .." />
+        <category id="102045" name=" | - Domestic science fiction / fantasy / mystic" />
+        <category id="102179" name=" | - Drama for PSP" />
+        <category id="101553" name=" | - Drawing" />
+        <category id="101536" name=" | - Drivers and Firmware" />
+        <category id="100084" name=" | - Druzyya / Friends + Joey / Joey" />
+        <category id="101245" name=" | - DuckTales / DuckTales" />
+        <category id="100825" name=" | - Durnuška Betti / Yo Soy Betty la Fea" />
+        <category id="101228" name=" | - DVD Video (Chanson, and Bards)" />
+        <category id="100988" name=" | - DVD Video (Music from other genres)" />
+        <category id="101330" name=" | - East Asian Pop (lossless)" />
+        <category id="102379" name=" | - East Asian pop music (DVD Video)" />
+        <category id="101331" name=" | - East Asian pop music (lossy)" />
+        <category id="102378" name=" | - East Asian pop music (Video)" />
+        <category id="101714" name=" | - East Asian Rock (lossless)" />
+        <category id="101715" name=" | - East Asian rock (lossy)" />
+        <category id="101131" name=" | - Eastern European Folk (lossless)" />
+        <category id="102360" name=" | - Eastern languages &amp;#8203;&amp;#8203;(for children)" />
+        <category id="101785" name=" | - Eastern pop music (own digitization)" />
+        <category id="101868" name=" | - EBM, Dark Electro, Aggrotech (lossless)" />
+        <category id="101875" name=" | - EBM, Dark Electro, Aggrotech (lossy)" />
+        <category id="101688" name=" | - Economy" />
+        <category id="100761" name=" | - Editors, emulators and other gaming utility" />
+        <category id="100614" name=" | - Education" />
+        <category id="101400" name=" | - Education and development" />
+        <category id="102469" name=" | - Educational literature" />
+        <category id="102440" name=" | - Educational publications for children" />
+        <category id="101913" name=" | - Electronic music (HD Video)" />
+        <category id="101887" name=" | - Electronic music (Informal amateur DVD Vide .." />
+        <category id="101886" name=" | - Electronic music (Official DVD Video)" />
+        <category id="101754" name=" | - Electronic music (own digitization)" />
+        <category id="101912" name=" | - Electronic music (Video)" />
+        <category id="101325" name=" | - Electronics / Radio" />
+        <category id="101446" name=" | - Embroidery" />
+        <category id="102030" name=" | - Engineering" />
+        <category id="101433" name=" | - Engineering and scientific programs" />
+        <category id="101626" name=" | - Engineering and scientific programs" />
+        <category id="101614" name=" | - England" />
+        <category id="101265" name=" | - English (for adults)" />
+        <category id="102358" name=" | - English (for children)" />
+        <category id="101982" name=" | - Entertainment shows" />
+        <category id="102338" name=" | - Entertainment shows and Documentaries" />
+        <category id="100246" name=" | - Erotic Games" />
+        <category id="100649" name=" | - Erotic Games (Old Games)" />
+        <category id="101427" name=" | - Esoteric Tarot, Feng Shui" />
+        <category id="102209" name=" | - Esoteric, self-development" />
+        <category id="101282" name=" | - Ethnic Music of the Caucasus and Transcaucasia (lossy and lossless .." />
+        <category id="102320" name=" | - Ethnography, anthropology" />
+        <category id="101620" name=" | - European Championships" />
+        <category id="102003" name=" | - European club basketball" />
+        <category id="101617" name=" | - European Cups" />
+        <category id="101987" name=" | - European Cups 2011-2015" />
+        <category id="101491" name=" | - European Cups 2015-2016" />
+        <category id="102171" name=" | - European Cups 2016-2017" />
+        <category id="101610" name=" | - European Football Championship 2016" />
+        <category id="102427" name=" | - European History" />
+        <category id="101102" name=" | - European series" />
+        <category id="101186" name=" | - Evening Quarter" />
+        <category id="101060" name=" | - Everything for the home: dressmaking, sewing, cooking" />
+        <category id="100260" name=" | - Extreme" />
+        <category id="101436" name=" | - Extreme" />
+        <category id="101545" name=" | - Extreme" />
+        <category id="101692" name=" | - Family Ties / Lacos de Familia" />
+        <category id="101523" name=" | - Farmland / Floriculture" />
+        <category id="102039" name=" | - Female Novel" />
+        <category id="102474" name=" | - Fiction French" />
+        <category id="102355" name=" | - Fiction in English" />
+        <category id="102357" name=" | - Fiction in oriental languages" />
+        <category id="102356" name=" | - Fiction in other European languages" />
+        <category id="102203" name=" | - Fighting" />
+        <category id="100854" name=" | - Figure skating" />
+        <category id="102157" name=" | - Film, TV, animation" />
+        <category id="102472" name=" | - Finance" />
+        <category id="100292" name=" | - Firmware for phones" />
+        <category id="101479" name=" | - Fishing and spearfishing" />
+        <category id="102335" name=" | - Fitness - Cardio, Strength Training" />
+        <category id="101544" name=" | - Fitness - Mind and Body" />
+        <category id="102191" name=" | - Fitness, fitness, bodybuilding" />
+        <category id="101135" name=" | - Flamenco and acoustic guitar (lossless)" />
+        <category id="101134" name=" | - Flamenco and acoustic guitar (lossy)" />
+        <category id="102123" name=" | - Flora and fauna" />
+        <category id="101142" name=" | - Folklore, Folk and World Music (DVD Video)" />
+        <category id="102530" name=" | - Folklore, Folk and World Music (HD Video)" />
+        <category id="100506" name=" | - Folklore, Folk and World Music (own otsif .." />
+        <category id="101141" name=" | - Folklore, Folk and World Music (Video)" />
+        <category id="101011" name=" | - Fonts" />
+        <category id="101009" name=" | - Footage" />
+        <category id="102189" name=" | - Football" />
+        <category id="102181" name=" | - For PSP TV Shows" />
+        <category id="101248" name=" | - For sub-standard hands" />
+        <category id="101478" name=" | - For sub-standard hands" />
+        <category id="100195" name=" | - For sub-standard hands" />
+        <category id="101537" name=" | - For sub-standard hands" />
+        <category id="100128" name=" | - For the little ones" />
+        <category id="100650" name=" | - For the little ones (Old Games)" />
+        <category id="102289" name=" | - Foreign blues (collections; Tribute VA) (lossless)" />
+        <category id="102288" name=" | - Foreign blues (lossy)" />
+        <category id="100209" name=" | - Foreign cartoons" />
+        <category id="100521" name=" | - Foreign cartoons (DVD)" />
+        <category id="102384" name=" | - Foreign chanson (DVD Video)" />
+        <category id="101452" name=" | - Foreign chanson (lossless)" />
+        <category id="101219" name=" | - Foreign chanson (lossy)" />
+        <category id="102383" name=" | - Foreign chanson (Video)" />
+        <category id="102287" name=" | - Foreign jazz (lossy)" />
+        <category id="102042" name=" | - Foreign literature (up to 1900)" />
+        <category id="102041" name=" | - Foreign literature (XX and XXI century)" />
+        <category id="100101" name=" | - Foreign movies (DVD)" />
+        <category id="100313" name=" | - Foreign movies (HD Video)" />
+        <category id="101362" name=" | - Foreign pop music (collections) (lossy)" />
+        <category id="100986" name=" | - Foreign pop music (DVD Video)" />
+        <category id="100428" name=" | - Foreign pop music (lossy)" />
+        <category id="102089" name=" | - Foreign pop music (National concerts, video dock.) (Bu .." />
+        <category id="101444" name=" | - Foreign pop music (own digitization)" />
+        <category id="100431" name=" | - Foreign pop music (Video)" />
+        <category id="100909" name=" | - Foreign Rap, Hip-Hop (lossless)" />
+        <category id="100446" name=" | - Foreign Rap, Hip-Hop (lossy)" />
+        <category id="100442" name=" | - Foreign Rap, Hip-Hop (Video)" />
+        <category id="101174" name=" | - Foreign R'n'B (Video)" />
+        <category id="101756" name=" | - Foreign rock (own digitization)" />
+        <category id="100484" name=" | - Foreign short cartoons" />
+        <category id="102258" name=" | - Foreign Short Film (DVD)" />
+        <category id="100626" name=" | - Formula 1" />
+        <category id="101551" name=" | - Formula-1 2012-2015" />
+        <category id="100660" name=" | - Formula-1 2016" />
+        <category id="100831" name=" | - Frames and Vignettes for processing photos" />
+        <category id="102425" name=" | - France" />
+        <category id="101267" name=" | - French" />
+        <category id="101998" name=" | - Friendly tournaments and matches" />
+        <category id="102392" name=" | - Friends / Friends (HD Video)" />
+        <category id="100623" name=" | - Fringe / Fringe" />
+        <category id="102370" name=" | - Fringe / Fringe (HD Video)" />
+        <category id="102481" name=" | - Fun" />
+        <category id="100928" name=" | - Futurama / Futurama" />
+        <category id="101098" name=" | - Game Collection (Old Games)" />
+        <category id="100537" name=" | - Game Mac OS" />
+        <category id="102059" name=" | - Game Ported to Linux" />
+        <category id="101239" name=" | - Games" />
+        <category id="102149" name=" | - Games for Android OS" />
+        <category id="101003" name=" | - Games for iOS" />
+        <category id="101001" name=" | - Games for Java" />
+        <category id="101004" name=" | - Games for Symbian" />
+        <category id="100546" name=" | - Games for the DVD player" />
+        <category id="101002" name=" | - Games for Windows Mobile, Palm OS, BlackBerry and so on." />
+        <category id="102420" name=" | - Games for Windows Phone 7,8" />
+        <category id="100091" name=" | - Gangster Petersburg" />
+        <category id="102515" name=" | - General and Applied Psychology" />
+        <category id="102029" name=" | - Geography / Geology / Geodesy" />
+        <category id="101266" name=" | - German" />
+        <category id="101630" name=" | - Germany" />
+        <category id="101507" name=" | - GIS (Geoinformatsionnыe sistemы)" />
+        <category id="100373" name=" | - Good Jokes" />
+        <category id="101081" name=" | - Graphic Editors" />
+        <category id="101428" name=" | - Graphics, Video Processing" />
+        <category id="100743" name=" | - Grey's Anatomy / Grey's Anatomy + Private Practice / Priv .." />
+        <category id="101247" name=" | - Griffiny / Family guy" />
+        <category id="101235" name=" | - Grindhouse" />
+        <category id="102484" name=" | - Guides and passing" />
+        <category id="101470" name=" | - Gymnastics / Dance Competitions" />
+        <category id="101430" name=" | - Hacking and Security" />
+        <category id="101363" name=" | - HD Animation for Apple TV" />
+        <category id="101936" name=" | - HD Movies to Apple TV" />
+        <category id="100315" name=" | - HD TV Shows on Apple TV" />
+        <category id="102138" name=" | - Health" />
+        <category id="101549" name=" | - Health Practice" />
+        <category id="100134" name=" | - Hercule Poirot / Hercule Poirot" />
+        <category id="101884" name=" | - Hi-Res stereo (classic and modern classic in obrabot .." />
+        <category id="101893" name=" | - Hi-Res stereo (electronic music)" />
+        <category id="102302" name=" | - Hi-Res stereo (Jazz and Blues)" />
+        <category id="101397" name=" | - Hi-Res stereo and multi-channel music (Soundtracks)" />
+        <category id="102049" name=" | - Historic Person" />
+        <category id="101967" name=" | - Historical sources" />
+        <category id="102166" name=" | - History (HD Video)" />
+        <category id="102445" name=" | - History of America, Australia, Oceania" />
+        <category id="102452" name=" | - History of Asia and Africa" />
+        <category id="102444" name=" | - History of modern and contemporary" />
+        <category id="102435" name=" | - History of Russia" />
+        <category id="102453" name=" | - History of the countries of the former USSR" />
+        <category id="102437" name=" | - History of the Second World War" />
+        <category id="102112" name=" | - History: Ancient World / Antiquity / Middle Ages" />
+        <category id="101327" name=" | - History: modern and contemporary times" />
+        <category id="102190" name=" | - Hockey" />
+        <category id="102010" name=" | - Hockey / Bandy" />
+        <category id="102307" name=" | - Horovaya Music (lossless)" />
+        <category id="100635" name=" | - Hot New Releases" />
+        <category id="100990" name=" | - Hounds" />
+        <category id="100840" name=" | - House (Promorelyzы, collections of)" />
+        <category id="100507" name=" | - How I Met Your Mother The Big Bang Theory +" />
+        <category id="101332" name=" | - Humorous Audio Transmissions" />
+        <category id="101255" name=" | - Hunting" />
+        <category id="102433" name=" | - Hunting and fishing" />
+        <category id="102228" name=" | - IBM PC incompatible (Old Games)" />
+        <category id="101482" name=" | - Ice show" />
+        <category id="100972" name=" | - In the name of love / Por Amor" />
+        <category id="100505" name=" | - Indian Cinema" />
+        <category id="102220" name=" | - Indian Cinema DVD and HD Video" />
+        <category id="101301" name=" | - Indian series" />
+        <category id="100965" name=" | - Informal and vnezhanrovye collections (lossy)" />
+        <category id="102480" name=" | - Informal fashion, plugins, add-ons" />
+        <category id="100796" name=" | - Informal soundtracks for films and TV series (lossy)" />
+        <category id="102331" name=" | - Informal soundtracks for games (lossy)" />
+        <category id="101034" name=" | - Information and Diagnostics" />
+        <category id="101467" name=" | - Information-analytical and socio-political etc. .." />
+        <category id="102323" name=" | - Information-analytical and socio-political etc. .." />
+        <category id="101217" name=" | - In-house digitizing (Chanson, and Bards) lossles .." />
+        <category id="101660" name=" | - In-house digitizing (Classical Music)" />
+        <category id="102301" name=" | - In-house digitizing (Jazz and Blues)" />
+        <category id="100974" name=" | - In-house digitizing (Music from other genres)" />
+        <category id="100918" name=" | - Inspector Rex / Komissar Rex" />
+        <category id="100450" name=" | - Instrumental Pop (own digitization)" />
+        <category id="102439" name=" | - Interactive tutorials and educational materials" />
+        <category id="102001" name=" | - International Competitions" />
+        <category id="102014" name=" | - International Events" />
+        <category id="102006" name=" | - International Events" />
+        <category id="100465" name=" | - International music of other genres (lossless)" />
+        <category id="100466" name=" | - International music of other genres (lossy)" />
+        <category id="100429" name=" | - International Pop (lossless)" />
+        <category id="102508" name=" | - International Pop Music, Chanson, Eurodance, Disco (HD Vide .." />
+        <category id="102080" name=" | - International science fiction / fantasy / mystic" />
+        <category id="101431" name=" | - Iron (book on a PC)" />
+        <category id="102107" name=" | - Islam" />
+        <category id="102216" name=" | - Islam" />
+        <category id="102363" name=" | - Italian" />
+        <category id="100721" name=" | - Italian series" />
+        <category id="101615" name=" | - Italy" />
+        <category id="100252" name=" | - Jailbreak / Prison Break" />
+        <category id="102403" name=" | - Jailbreak / Prison Break (HD Video)" />
+        <category id="101270" name=" | - Japanese" />
+        <category id="100893" name=" | - Japanese cartoons" />
+        <category id="102104" name=" | - Japanese serials with subtitles" />
+        <category id="101939" name=" | - Japanese TV series with the voice acting" />
+        <category id="102304" name=" | - Jazz and Blues (DVD Video)" />
+        <category id="102306" name=" | - Jazz and Blues (HD Video)" />
+        <category id="102305" name=" | - Jazz and Blues (Video)" />
+        <category id="101594" name=" | - Jiu-Jitsu" />
+        <category id="102375" name=" | - Journalism, Journalism" />
+        <category id="101970" name=" | - Journals by car / moto" />
+        <category id="102032" name=" | - Journals: scientific, popular, radio and others." />
+        <category id="101591" name=" | - Judo and Sambo" />
+        <category id="100815" name=" | - Just Maria / Simplemente Maria" />
+        <category id="101461" name=" | - Kacorri / Kachorra" />
+        <category id="100310" name=" | - Kadetstvo / Kremlëvskie kursanty" />
+        <category id="100202" name=" | - Kamenskaya" />
+        <category id="100782" name=" | - Karaoke (Audio)" />
+        <category id="102377" name=" | - Karaoke (Video)" />
+        <category id="101588" name=" | - Karate" />
+        <category id="102007" name=" | - KHL" />
+        <category id="102084" name=" | - Klezmer and Jewish folklore (lossy and lossless)" />
+        <category id="101596" name=" | - Knife Fight" />
+        <category id="100753" name=" | - Knitting" />
+        <category id="101242" name=" | - Korean serials with subtitles" />
+        <category id="100915" name=" | - Korean TV shows with voice acting" />
+        <category id="100251" name=" | - Kriminalynaya documentary" />
+        <category id="102163" name=" | - Kriminalynaya documentary (HD Video)" />
+        <category id="100113" name=" | - KVN" />
+        <category id="102224" name=" | - Lace" />
+        <category id="100907" name=" | - Lalo / Lalola" />
+        <category id="101539" name=" | - Latin American serials with subtitles" />
+        <category id="101574" name=" | - Latin American soap operas with the voice acting (folders distribution)" />
+        <category id="101535" name=" | - Lawyer" />
+        <category id="101353" name=" | - Leisure and creativity" />
+        <category id="101238" name=" | - Library (mirror network libraries / collections)" />
+        <category id="101193" name=" | - Library and projects for architects and designers inter .." />
+        <category id="102421" name=" | - Library and saundbanki for samplers, presets for sy .." />
+        <category id="102129" name=" | - Life Sciences" />
+        <category id="102094" name=" | - LIM-courses" />
+        <category id="102525" name=" | - Linguistics" />
+        <category id="102193" name=" | - Literary Magazines" />
+        <category id="102524" name=" | - Literature" />
+        <category id="100816" name=" | - Live your life / Viver a vida" />
+        <category id="101383" name=" | - Mac OS (for RS-Hakintoš)" />
+        <category id="100031" name=" | - Magazines and newspapers (general section)" />
+        <category id="100281" name=" | - Manga" />
+        <category id="102465" name=" | - Manga (in foreign languages)" />
+        <category id="101526" name=" | - Maps provided with the program shell" />
+        <category id="101685" name=" | - Marketing" />
+        <category id="102056" name=" | - Martial Arts, Martial Arts" />
+        <category id="102462" name=" | - Marvel Comics publishing" />
+        <category id="102136" name=" | - Massage" />
+        <category id="100140" name=" | - Masters of Horror / Masters of Horror" />
+        <category id="100839" name=" | - Materials for creating menus and DVD covers" />
+        <category id="102028" name=" | - Mathematics" />
+        <category id="102376" name=" | - Mechanics, strength of materials" />
+        <category id="102134" name=" | - Medical software" />
+        <category id="102135" name=" | - Medicine and Dentistry" />
+        <category id="100636" name=" | - Mentalist / The Mentalist + Castle / Castle" />
+        <category id="102262" name=" | - Metal (Unofficial DVD Video)" />
+        <category id="102254" name=" | - Metallurgy / Materials" />
+        <category id="100607" name=" | - Mi Segunda Madre / Mi segunda Madre" />
+        <category id="101653" name=" | - Microsoft Office program" />
+        <category id="102099" name=" | - Militaria" />
+        <category id="100097" name=" | - Military" />
+        <category id="101447" name=" | - Military equipment" />
+        <category id="102021" name=" | - Military History" />
+        <category id="101281" name=" | - Military Science (HD Video)" />
+        <category id="101959" name=" | - Mind games and quizzes" />
+        <category id="101697" name=" | - Mini football / Football" />
+        <category id="100039" name=" | - Miscellaneous" />
+        <category id="100615" name=" | - Miscellaneous" />
+        <category id="101595" name=" | - Miscellaneous" />
+        <category id="101517" name=" | - Miscellaneous - navigation and maps" />
+        <category id="101073" name=" | - Miscellaneous (business systems, office, research and design .." />
+        <category id="100835" name=" | - Miscellaneous (Materials for Multimedia and Design)" />
+        <category id="101299" name=" | - Miscellaneous (postcards, wallpapers, video, etc.)." />
+        <category id="101092" name=" | - Miscellaneous (Programme for multimedia and 3D)" />
+        <category id="101091" name=" | - Miscellaneous (Programs for working with audio)" />
+        <category id="101058" name=" | - Miscellaneous (Web Development and Programming)" />
+        <category id="101937" name=" | - Miscellaneous for iOS" />
+        <category id="102146" name=" | - Mission, traffic sounds, packs and tools" />
+        <category id="101929" name=" | - Mixed styles" />
+        <category id="100257" name=" | - MMA and K-1" />
+        <category id="102119" name=" | - MMO (Neoficialʹnye)" />
+        <category id="102118" name=" | - MMO (Official)" />
+        <category id="100286" name=" | - Mobile Video (3GP)" />
+        <category id="100565" name=" | - Modelling" />
+        <category id="100992" name=" | - Morena Clara / Clara Morena" />
+        <category id="100256" name=" | - Motorsports" />
+        <category id="101986" name=" | - Motorsports" />
+        <category id="100212" name=" | - Movie Collections" />
+        <category id="102221" name=" | - Movies 1991-2000" />
+        <category id="102091" name=" | - Movies 2001-2005" />
+        <category id="102092" name=" | - Movies 2006-2010" />
+        <category id="102093" name=" | - Movies 2011-2015" />
+        <category id="102200" name=" | - Movies 2016-2018" />
+        <category id="101950" name=" | - Movies 2019" />
+        <category id="101464" name=" | - Movies and Cartoons" />
+        <category id="102090" name=" | - Movies before 1990" />
+        <category id="101908" name=" | - Movies for iPod, iPhone, iPad" />
+        <category id="102182" name=" | - Movies for PSP" />
+        <category id="100137" name=" | - Movies with a funny transfer (parody)" />
+        <category id="101164" name=" | - Multi-channel music (classical and modern classics in .." />
+        <category id="101890" name=" | - Multi-channel music (electronic music)" />
+        <category id="102303" name=" | - Multi-channel music (Jazz and Blues)" />
+        <category id="101163" name=" | - Multi-channel music (pop music)" />
+        <category id="101757" name=" | - Multi-channel music (rock)" />
+        <category id="100754" name=" | - Multidisciplinary collections (collections)" />
+        <category id="101276" name=" | - Multilanguage collections" />
+        <category id="102438" name=" | - Multimedia Encyclopedia" />
+        <category id="101203" name=" | - Multimediyki repair / maintenance / operation of the vehicle" />
+        <category id="102489" name=" | - Multiplayer games" />
+        <category id="101499" name=" | - Murder, She Wrote / Murder, She Wrote + Perry Mason .." />
+        <category id="101340" name=" | - Music" />
+        <category id="102159" name=" | - Music" />
+        <category id="102018" name=" | - Music for ballroom dancing (lossy and lossless)" />
+        <category id="101954" name=" | - Music Library" />
+        <category id="102074" name=" | - Music Literature and Theory" />
+        <category id="101927" name=" | - Music Lossless (ALAC)" />
+        <category id="102349" name=" | - Music Magazines" />
+        <category id="101346" name=" | - Music video" />
+        <category id="102241" name=" | - Musical HD video for Apple TV" />
+        <category id="100393" name=" | - Musical Show" />
+        <category id="100080" name=" | - My Fair Nanny" />
+        <category id="101390" name=" | - Naruto" />
+        <category id="101408" name=" | - National Security Agent" />
+        <category id="101992" name=" | - Native games for Linux" />
+        <category id="102110" name=" | - Natural History, Science and Technology (HD Video)" />
+        <category id="100283" name=" | - NBA / NCAA (2000-2010 biennium)." />
+        <category id="101997" name=" | - NBA / NCAA (2010-2017 biennium)." />
+        <category id="101429" name=" | - Network / VoIP" />
+        <category id="101560" name=" | - Networks and Security" />
+        <category id="101241" name=" | - New competitions" />
+        <category id="100842" name=" | - News and TV shows in the display stage" />
+        <category id="100259" name=" | - NHL (2013)" />
+        <category id="102005" name=" | - NHL (until 2011/12)" />
+        <category id="100534" name=" | - Nobody but you / Tu o Nadie" />
+        <category id="101974" name=" | - Non-original spare parts catalogs for selection" />
+        <category id="102218" name=" | - Non-traditional religious, spiritual and mystical teachings .." />
+        <category id="102132" name=" | - Non-traditional, traditional medicine and popular books on the s .." />
+        <category id="101528" name=" | - Normative documentation" />
+        <category id="101117" name=" | - Octopus / La Piovra" />
+        <category id="101375" name=" | - Office software" />
+        <category id="101061" name=" | - Office Systems" />
+        <category id="101940" name=" | - Official brief version of Latin American soap operas" />
+        <category id="100890" name=" | - Official compilations vector clipart" />
+        <category id="102479" name=" | - Official Fashion, plug-ins, add-ons" />
+        <category id="102478" name=" | - Official patches" />
+        <category id="100770" name=" | - Oil, Gas and Chemicals" />
+        <category id="100702" name=" | - Opera (Video)" />
+        <category id="101379" name=" | - Operating Systems (Linux, Unix)" />
+        <category id="100557" name=" | - Orchestral music (lossless)" />
+        <category id="102310" name=" | - Orchestral music (lossy)" />
+        <category id="101973" name=" | - Original catalogs on selection of spare parts" />
+        <category id="100887" name=" | - Original Xbox" />
+        <category id="101395" name=" | - Orthodox chants (lossless)" />
+        <category id="101396" name=" | - Orthodox chants (lossy)" />
+        <category id="101561" name=" | - OS and Microsoft Server Software" />
+        <category id="101570" name=" | - OS and UNIX family program" />
+        <category id="100282" name=" | - OST (mp3 and others lossy-format)" />
+        <category id="101567" name=" | - Other (Computer video tutorials)" />
+        <category id="101274" name=" | - Other (foreign languages)" />
+        <category id="101025" name=" | - Other (Operating Systems from Microsoft)" />
+        <category id="101042" name=" | - Other (System programs on Windows)" />
+        <category id="102176" name=" | - Other / nekonditsiya" />
+        <category id="101410" name=" | - Other arts and crafts" />
+        <category id="101275" name=" | - Other Asian languages" />
+        <category id="102412" name=" | - Other Asian series with the voice acting" />
+        <category id="101963" name=" | - Other collections footage" />
+        <category id="100980" name=" | - Other destinations (notes, tablature)" />
+        <category id="101268" name=" | - Other European languages" />
+        <category id="102359" name=" | - Other European languages &amp;#8203;&amp;#8203;(for children)" />
+        <category id="100769" name=" | - Other Hobbies" />
+        <category id="101510" name=" | - Other Maps (astronomical, historical, topically .." />
+        <category id="101555" name=" | - Other musical instruments" />
+        <category id="101616" name=" | - Other national championships and cups" />
+        <category id="101473" name=" | - Other operating systems and software for them" />
+        <category id="100829" name=" | - Other raster clipart" />
+        <category id="101071" name=" | - Other reference systems" />
+        <category id="100054" name=" | - Other simulators" />
+        <category id="100645" name=" | - Other simulators (Old Games)" />
+        <category id="101423" name=" | - Other software" />
+        <category id="101374" name=" | - Other software" />
+        <category id="100830" name=" | - Other vector cliparts" />
+        <category id="100100" name=" | - Our cinema (DVD)" />
+        <category id="100312" name=" | - Our cinema (HD Video)" />
+        <category id="101643" name=" | - Painting, Graphics, Sculpture, Digital Art" />
+        <category id="102418" name=" | - Paper Art" />
+        <category id="101114" name=" | - Paranormal" />
+        <category id="100464" name=" | - Patriotic music of other genres (lossless)" />
+        <category id="100463" name=" | - Patriotic music of other genres (lossy)" />
+        <category id="101122" name=" | - Patriotic Pop (DVD Video)" />
+        <category id="100425" name=" | - Patriotic Pop (lossless)" />
+        <category id="100424" name=" | - Patriotic Pop (lossy)" />
+        <category id="102088" name=" | - Patriotic Pop (National concerts, video dock.) .." />
+        <category id="100239" name=" | - Patriotic Pop (own digitization)" />
+        <category id="101121" name=" | - Patriotic Pop (Video)" />
+        <category id="101361" name=" | - Patriotic Pop music (collections) (lossy)" />
+        <category id="102426" name=" | - Patriotic Pop Music, Chanson, Eurodance, Disco (HD V .." />
+        <category id="101773" name=" | - Patriotic ska music (lossy and lossless)" />
+        <category id="100617" name=" | - Percussion" />
+        <category id="101593" name=" | - Percussion styles" />
+        <category id="101540" name=" | - Perfect Beauty / Beleza pura" />
+        <category id="101550" name=" | - Personal care" />
+        <category id="102520" name=" | - Personal development and self-improvement" />
+        <category id="102034" name=" | - Pets and aquariums" />
+        <category id="102141" name=" | - Pharmacy and Pharmacology" />
+        <category id="100995" name=" | - Philosophy" />
+        <category id="101349" name=" | - Philosophy and Methodology of Historical Science" />
+        <category id="102019" name=" | - Photography and video" />
+        <category id="101962" name=" | - Photoshop Costumes" />
+        <category id="102026" name=" | - Physics" />
+        <category id="100848" name=" | - Pictures" />
+        <category id="102012" name=" | - Planes, helicopters (FSX-P3D)" />
+        <category id="102211" name=" | - Plants and Animals" />
+        <category id="102017" name=" | - Play the bass guitar" />
+        <category id="101554" name=" | - Playing the guitar" />
+        <category id="101080" name=" | - Plug-ins for Adobe's programs" />
+        <category id="102237" name=" | - Plug-ins for Adobe's programs" />
+        <category id="101199" name=" | - Plug-ins for sound processing" />
+        <category id="100404" name=" | - Pokemony" />
+        <category id="101287" name=" | - Poker" />
+        <category id="102022" name=" | - Political Science" />
+        <category id="102314" name=" | - Popular medical periodicals (newspapers and magazines)" />
+        <category id="101696" name=" | - Popular Psychology" />
+        <category id="100129" name=" | - Portable and Console (Games)" />
+        <category id="100115" name=" | - Post KVN" />
+        <category id="102054" name=" | - Power engineering / electrical" />
+        <category id="102065" name=" | - Pregnancy, childbirth, motherhood" />
+        <category id="101426" name=" | - Programming" />
+        <category id="101565" name=" | - Programming" />
+        <category id="101055" name=" | - Programming environments, compilers and support, etc. .." />
+        <category id="101116" name=" | - PS1 games for PSP" />
+        <category id="100865" name=" | - Psihoaktivnye audioprogrammy" />
+        <category id="102517" name=" | - Psychodiagnostics and psyhokorrektsyya" />
+        <category id="101260" name=" | - Psychology" />
+        <category id="102140" name=" | - Psychotherapy and clinical psychology" />
+        <category id="102516" name=" | - Psychotherapy and Counseling" />
+        <category id="100147" name=" | - Publications and educational materials (texts)" />
+        <category id="102204" name=" | - Puzzle Games" />
+        <category id="102385" name=" | - Puzzle games (old games)" />
+        <category id="101008" name=" | - Quest-style &quot;search objects&quot;" />
+        <category id="100325" name=" | - Rabыnya Isaura / Escrava Isaura" />
+        <category id="102187" name=" | - Racing Simulators" />
+        <category id="102225" name=" | - Racing Simulators (Old Games)" />
+        <category id="102494" name=" | - Railway case" />
+        <category id="101835" name=" | - Rap, Hip-Hop, R'n'B (own digitization)" />
+        <category id="101445" name=" | - RDBMS" />
+        <category id="100939" name=" | - Reality and talk show host / category / impressions" />
+        <category id="101067" name=" | - Recognition of text, sound and speech synthesis" />
+        <category id="101777" name=" | - Reggae, Ska, Dub (DVD и HD Video)" />
+        <category id="102232" name=" | - Reggae, Ska, Dub (own digitization)" />
+        <category id="101775" name=" | - Reggae, Ska, Dub (Видео)" />
+        <category id="102233" name=" | - Reggae, Ska, Dub (компиляции) (lossy и lossless)" />
+        <category id="100294" name=" | - Religions of India, Tibet and East Asia" />
+        <category id="102217" name=" | - Religions of India, Tibet and East Asia / Judaism" />
+        <category id="101575" name=" | - Repair, private construction, design of interiors" />
+        <category id="101356" name=" | - Return of Mukhtar" />
+        <category id="101795" name=" | - Rock (HD Video)" />
+        <category id="102261" name=" | - Rock (Unofficial DVD Video)" />
+        <category id="100951" name=" | - Rock in the languages &amp;#8203;&amp;#8203;of xUSSR (lossless)" />
+        <category id="100952" name=" | - Rock in the languages &amp;#8203;&amp;#8203;of xUSSR (lossy)" />
+        <category id="100737" name=" | - Rock, Punk, Alternative (lossless)" />
+        <category id="100738" name=" | - Rock, Punk, Alternative (lossy)" />
+        <category id="101764" name=" | - Rocksteady, Early Reggae, Ska-Jazz, Trad.Ska (lossy и lo .." />
+        <category id="100647" name=" | - RPG (Old Games)" />
+        <category id="100263" name=" | - Rugby" />
+        <category id="101613" name=" | - Russia / USSR" />
+        <category id="102075" name=" | - Russia 2015-2016" />
+        <category id="101952" name=" | - Russia 2016-2017" />
+        <category id="102364" name=" | - Russian as a foreign language" />
+        <category id="102043" name=" | - Russian literature" />
+        <category id="100752" name=" | - Russian sensation / Program Maximum / Profession report .." />
+        <category id="101586" name=" | - Russian style" />
+        <category id="102214" name=" | - Rutracker Awards (distribution)" />
+        <category id="101674" name=" | - Sample Libraries" />
+        <category id="100114" name=" | - Satirist, and humorists" />
+        <category id="100819" name=" | - Scandinavian series" />
+        <category id="101411" name=" | - Scanning, processing skanov" />
+        <category id="102361" name=" | - School textbooks, exam (for children)" />
+        <category id="102528" name=" | - Scientific medical periodicals (newspapers and magazines)" />
+        <category id="102337" name=" | - Scientific-popular and informative literature (for children .." />
+        <category id="100056" name=" | - Scientific-popular movies" />
+        <category id="101636" name=" | - Screensavers" />
+        <category id="101057" name=" | - Scripts and engines sites, CMS and extensions to it" />
+        <category id="102143" name=" | - Scripts, meshes and airports [FS2004]" />
+        <category id="100694" name=" | - Secrets of Love / Los Misterios del Amor" />
+        <category id="100098" name=" | - Secrets of the Ages / Special Services / Conspiracy Theory" />
+        <category id="100104" name=" | - Secrets of the investigation" />
+        <category id="100387" name=" | - Serials joint production of several countries" />
+        <category id="101021" name=" | - Server operating system from Microsoft" />
+        <category id="101040" name=" | - Server software for Windows" />
+        <category id="101032" name=" | - Service computer service" />
+        <category id="102037" name=" | - Sewing, Patchwork" />
+        <category id="100193" name=" | - Sex and the City / Sex And The City" />
+        <category id="102365" name=" | - Short Film (HD Video)" />
+        <category id="102459" name=" | - Shorts" />
+        <category id="101543" name=" | - Shorts (Art-house cinema and author)" />
+        <category id="101774" name=" | - Ska Ska-Punk, Ska-Jazz (lossless)" />
+        <category id="101769" name=" | - Ska-Punk, Ska-Core (lossy)" />
+        <category id="101991" name=" | - Skubi-du / Scooby-Doo" />
+        <category id="100237" name=" | - Sliding / Sliders" />
+        <category id="102468" name=" | - Small arms" />
+        <category id="100497" name=" | - Smallville / Smallville" />
+        <category id="102518" name=" | - Social psychology and psychology of relationships" />
+        <category id="102380" name=" | - Social talk show" />
+        <category id="102471" name=" | - Sociology" />
+        <category id="101381" name=" | - Software (Linux, Unix)" />
+        <category id="101088" name=" | - Software for architects and builders" />
+        <category id="101066" name=" | - Software for Internet and networks" />
+        <category id="101935" name=" | - Software for iOS" />
+        <category id="101559" name=" | - Software for Mac OS" />
+        <category id="101371" name=" | - Software for the Internet and network" />
+        <category id="101082" name=" | - Software for typesetting, printing, and working with fonts" />
+        <category id="101394" name=" | - Software for viewing and video processing" />
+        <category id="100288" name=" | - Software for your phone" />
+        <category id="101422" name=" | - Software from Microsoft" />
+        <category id="101079" name=" | - Software Kits" />
+        <category id="101370" name=" | - Software to build and graphics processing" />
+        <category id="101031" name=" | - Software to configure and optimize the operating system" />
+        <category id="101039" name=" | - Software to protect information" />
+        <category id="101035" name=" | - Software to protect your computer (antivirus software, firewalls)" />
+        <category id="100079" name=" | - Soldiers and others." />
+        <category id="100793" name=" | - Solo instrumental music (lossless)" />
+        <category id="100977" name=" | - Songbooks (Songbooks)" />
+        <category id="101010" name=" | - Sound Effects" />
+        <category id="100855" name=" | - Sounds of Nature" />
+        <category id="101625" name=" | - Soundtracks (own digitization)" />
+        <category id="100185" name=" | - Soundtracks and Translations" />
+        <category id="100691" name=" | - Soundtracks for domestic films (lossless)" />
+        <category id="100469" name=" | - Soundtracks for domestic films (lossy)" />
+        <category id="100786" name=" | - Soundtracks for foreign films (lossless)" />
+        <category id="100785" name=" | - Soundtracks for foreign films (lossy)" />
+        <category id="100784" name=" | - Soundtracks for games (lossless)" />
+        <category id="100783" name=" | - Soundtracks for games (lossy)" />
+        <category id="100927" name=" | - South Park / South Park" />
+        <category id="102509" name=" | - Soviet pop music, retro (DVD Video)" />
+        <category id="101634" name=" | - Soviet pop music, retro (lossless)" />
+        <category id="101635" name=" | - Soviet pop music, retro (lossy)" />
+        <category id="102510" name=" | - Soviet pop music, retro (video)" />
+        <category id="102076" name=" | - Space" />
+        <category id="100961" name=" | - Space and flight simulators" />
+        <category id="102226" name=" | - Space and flight simulators (Old Games)" />
+        <category id="101623" name=" | - Spain" />
+        <category id="101358" name=" | - Spanish" />
+        <category id="101531" name=" | - Spanish series" />
+        <category id="102470" name=" | - Special forces of the world" />
+        <category id="100926" name=" | - Spider-Man / The Spectacular Spider-Man" />
+        <category id="100923" name=" | - SpongeBob SquarePants" />
+        <category id="101542" name=" | - Sport" />
+        <category id="101319" name=" | - Sports (video)" />
+        <category id="102477" name=" | - Sports press" />
+        <category id="100236" name=" | - Star Trek / Star Trek" />
+        <category id="102395" name=" | - Star Trek / Star Trek (HD Video)" />
+        <category id="100106" name=" | - Stargate: SG-1 / Stargate: SG1" />
+        <category id="100123" name=" | - Stopping Power / Cops / Opera" />
+        <category id="100644" name=" | - Strategies (Old Games)" />
+        <category id="100051" name=" | - Strategy" />
+        <category id="101679" name=" | - Styles, brushes, shapes and patterns for Adobe Photoshop" />
+        <category id="100372" name=" | - Supernatural / Supernatural" />
+        <category id="100081" name=" | - Survivors / LOST" />
+        <category id="102402" name=" | - Survivors / LOST (HD Video)" />
+        <category id="101063" name=" | - System for scientific work" />
+        <category id="101373" name=" | - System software" />
+        <category id="101938" name=" | - Taiwanese serials with subtitles" />
+        <category id="102336" name=" | - Teachers and educators" />
+        <category id="102443" name=" | - Team sports" />
+        <category id="101018" name=" | - Templates for websites and CMS" />
+        <category id="100550" name=" | - Tennis" />
+        <category id="101983" name=" | - Test Drive / Reviews / Motor" />
+        <category id="101054" name=" | - Text editors Illuminated" />
+        <category id="101689" name=" | - Textbooks for high school (grades 5-11)" />
+        <category id="100745" name=" | - Textbooks for kindergarten and primary school (.." />
+        <category id="101468" name=" | - The Age of the USSR" />
+        <category id="102436" name=" | - The Age of the USSR" />
+        <category id="102431" name=" | - The arrangements of music from the game (lossy and lossless)" />
+        <category id="101280" name=" | - The Battle of psychics / Theory improbability / Seekers / G .." />
+        <category id="102485" name=" | - The bonus discs for games" />
+        <category id="101484" name=" | - The Circus" />
+        <category id="101220" name=" | - The domestic chanson (lossless)" />
+        <category id="101221" name=" | - The domestic chanson (lossy)" />
+        <category id="101683" name=" | - The Middle Ages" />
+        <category id="102534" name=" | - The music video to iPod, iPhone, iPad" />
+        <category id="100880" name=" | - The Musical (lossy and lossless)" />
+        <category id="100655" name=" | - The Musical (Video and DVD Video)" />
+        <category id="101051" name=" | - The original disks to computers and accessories" />
+        <category id="100594" name=" | - The rebellious spirit / Rebelde Way" />
+        <category id="101144" name=" | - The Return of Sherlock Holmes / Return of Sherlock Holmes" />
+        <category id="101485" name=" | - The School for Scandal" />
+        <category id="100924" name=" | - The Simpsons" />
+        <category id="102208" name=" | - The street and club dancing" />
+        <category id="100751" name=" | - The survey and analytical programs" />
+        <category id="101343" name=" | - The survey and analytical programs 2014-2017" />
+        <category id="101690" name=" | - The Vampire Diaries / The Vampire Diaries + True Blood .." />
+        <category id="101606" name=" | - The wife of Judas (wine of love) / La Mujer de Judas" />
+        <category id="100110" name=" | - The X-Files / The X-Files" />
+        <category id="102405" name=" | - The X-Files / The X-Files (HD Video)" />
+        <category id="102315" name=" | - Thematic collection of books" />
+        <category id="102055" name=" | - Thematic collections (collections)" />
+        <category id="101592" name=" | - This is a" />
+        <category id="100925" name=" | - Tom and Jerry" />
+        <category id="101642" name=" | - Trade" />
+        <category id="100847" name=" | - Trailers and additional materials for films" />
+        <category id="102519" name=" | - Training and Coaching" />
+        <category id="101254" name=" | - Training videos for children" />
+        <category id="101165" name=" | - Transformers" />
+        <category id="100876" name=" | - Travel and Tourism" />
+        <category id="102223" name=" | - Travel and Tourism" />
+        <category id="100979" name=" | - Travel and Tourism (HD Video)" />
+        <category id="101261" name=" | - Tricks and stunts" />
+        <category id="101984" name=" | - Tuning / Fast and the Furious" />
+        <category id="101976" name=" | - Tuning, chip tuning, tuning" />
+        <category id="100704" name=" | - Turkish serials" />
+        <category id="101246" name=" | - Turtles Mutant Ninja / Teenage Mutant Ninja Turtles" />
+        <category id="100946" name=" | - Tutorials and Schools" />
+        <category id="101981" name=" | - Tutorials repair vehicles" />
+        <category id="101214" name=" | - TV Shows Australia and New Zealand" />
+        <category id="100864" name=" | - TV Shows for iPod, iPhone, iPad" />
+        <category id="101120" name=" | - TV Shows in Africa, Middle East" />
+        <category id="100242" name=" | - TV Shows UK and Ireland" />
+        <category id="100235" name=" | - TV Shows US and Canada" />
+        <category id="100121" name=" | - Twin Peaks / Twin Peaks" />
+        <category id="101605" name=" | - Two and a Half Men / Two and a Half Men" />
+        <category id="102390" name=" | - Two and a Half Men / Two and a Half Men (HD Video)" />
+        <category id="102514" name=" | - Ukraine" />
+        <category id="100532" name=" | - Ukrainian Shows" />
+        <category id="102008" name=" | - USSR - Canada" />
+        <category id="102210" name=" | - Van, dating" />
+        <category id="102131" name=" | - Veterinary Medicine, Miscellaneous" />
+        <category id="100807" name=" | - Video" />
+        <category id="101227" name=" | - Video (Chanson, and Bards)" />
+        <category id="100475" name=" | - Video (Music from other genres)" />
+        <category id="101552" name=" | - Video and Snapshots" />
+        <category id="101090" name=" | - Video converters Audio" />
+        <category id="101089" name=" | - Video Editors" />
+        <category id="102487" name=" | - Video for PSVita" />
+        <category id="100287" name=" | - Video for Smartphones and PDAs" />
+        <category id="101980" name=" | - Video lessons on driving vehicles" />
+        <category id="100700" name=" | - Video to PSP" />
+        <category id="101926" name=" | - Videos for the PS3 and other consoles" />
+        <category id="101587" name=" | - Vin Chun" />
+        <category id="101979" name=" | - Virtual Driving School" />
+        <category id="101027" name=" | - Virtual Instruments &amp; Synthesizers" />
+        <category id="101204" name=" | - Virtual Studios, sequencers and audio editor" />
+        <category id="102160" name=" | - Vnezhanrovaya documentary" />
+        <category id="102309" name=" | - Vocal and choral music (lossy)" />
+        <category id="100556" name=" | - Vocal music (lossless)" />
+        <category id="101326" name=" | - Volleyball / Handball" />
+        <category id="102415" name=" | - Walkthroughs" />
+        <category id="100630" name=" | - Wallpapers" />
+        <category id="100291" name=" | - Wallpapers and Themes" />
+        <category id="101386" name=" | - Wallpapers, artbook, and others." />
+        <category id="101216" name=" | - War Song (lossless)" />
+        <category id="101223" name=" | - War Song (lossy)" />
+        <category id="100334" name=" | - Water transport" />
+        <category id="100812" name=" | - Web" />
+        <category id="101425" name=" | - Web Design and Programming" />
+        <category id="101359" name=" | - Web series, webisodes and TV series for the pilot episode .." />
+        <category id="101564" name=" | - Web-design" />
+        <category id="100203" name=" | - Weeds / Weeds" />
+        <category id="102398" name=" | - Weeds / Weeds (HD Video)" />
+        <category id="102526" name=" | - Welding / Soldering / Non-Destructive Testing" />
+        <category id="100486" name=" | - Winter Sports" />
+        <category id="101548" name=" | - Wood and metal" />
+        <category id="101520" name=" | - Woodworking" />
+        <category id="101033" name=" | - Work with data carriers" />
+        <category id="101028" name=" | - Work with hard drive" />
+        <category id="101086" name=" | - Work with PDF and DjVu" />
+        <category id="101585" name=" | - Work with weapon" />
+        <category id="101573" name=" | - Working with sound" />
+        <category id="101566" name=" | - Working with video" />
+        <category id="101621" name=" | - World Championships" />
+        <category id="101668" name=" | - World Cup 2018" />
+        <category id="102085" name=" | - World Music Africa and the Middle East (lossless)" />
+        <category id="101283" name=" | - World Music Africa and the Middle East (lossy)" />
+        <category id="101285" name=" | - World Music Americas (lossless)" />
+        <category id="101284" name=" | - World Music Americas (lossy)" />
+        <category id="101138" name=" | - World Music Australia, the Pacific and Indian oceans .." />
+        <category id="102430" name=" | - World Music India (lossless)" />
+        <category id="101856" name=" | - World Music India (lossy)" />
+        <category id="101128" name=" | - World Music Siberia, Central Asia and East Asia (loss .." />
+        <category id="101129" name=" | - World Music Siberia, Central Asia and East Asia (loss .." />
+        <category id="100851" name=" | - World War II" />
+        <category id="101053" name=" | - WYSIWYG editors for web diz" />
+        <category id="101597" name=" | - Yoga" />
+        <category id="100823" name=" | - Богатые тоже плачут / The Rich Also Cry" />
+        <category id="101006" name=" | - Вдова бланко / La Viuda de Blanco" />
+        <category id="100877" name=" | - Великолепный век / Magnificent Century" />
+        <category id="101803" name=" | - Донья Барбара / Female Barbara" />
+        <category id="101298" name=" | - Дороги Индии / Passage to India" />
+        <category id="101463" name=" | - Замарашка / Cara Sucia" />
+        <category id="101498" name=" | - Клятва / The Oath" />
+        <category id="100173" name=" | - Коломбо / Columbo" />
+        <category id="100775" name=" | - Наследница / The Heiress" />
+        <category id="101462" name=" | - Падре Корахе / Father Courage" />
+        <category id="101678" name=" | - Падший ангел / Mas Sabe el Diablo" />
+        <category id="100904" name=" | - Предательство / The Betrayal" />
+        <category id="101460" name=" | - Призрак Элены / The Phantom of Elena" />
+        <category id="101457" name=" | - Реванш 2000 / Retaliation 2000" />
+        <category id="101949" name=" | - Фаворитка / A Favorita" />
+        <category id="101541" name=" | - Цыганская кровь / Soy gitano" />
+        <category id="101941" name=" | - Шторм / Storm" />
+        <category id="101387" name=" | -. AMV and other rollers" />
+        <category id="102102" name=" | -. VMV and other videos" />
+        <category id="101907" name=" |- 8-bit, Chiptune (lossy &amp; lossless)" />
+        <category id="100055" name=" |- Action" />
+        <category id="101736" name=" |- Alternative &amp; Nu-metal (lossless)" />
+        <category id="101737" name=" |- Alternative &amp; Nu-metal (lossy)" />
+        <category id="101790" name=" |- Alternative, Punk, Independent (DVD Video)" />
+        <category id="101789" name=" |- Alternative, Punk, Independent (Видео)" />
+        <category id="102263" name=" |- Alternative, Punk, Independent (Неофициальные DVD Video)" />
+        <category id="102329" name=" |- AOR (Melodic Hard Rock, Arena rock) (lossless)" />
+        <category id="102330" name=" |- AOR (Melodic Hard Rock, Arena rock) (lossy)" />
+        <category id="101655" name=" |- Autodesk Maya" />
+        <category id="101930" name=" |- Autodesk Softimage (XSI)" />
+        <category id="102282" name=" |- Avant-Garde Jazz, Free Improvisation (lossless)" />
+        <category id="101796" name=" |- Avant-garde, Experimental Metal (lossless)" />
+        <category id="101797" name=" |- Avant-garde, Experimental Metal (lossy)" />
+        <category id="102175" name=" |- Avant-garde, Experimental Rock (lossless)" />
+        <category id="102174" name=" |- Avant-garde, Experimental Rock (lossy)" />
+        <category id="100249" name=" |- BBC" />
+        <category id="102164" name=" |- BBC, Discovery, National Geographic (HD Video)" />
+        <category id="101719" name=" |- Black (lossless)" />
+        <category id="101778" name=" |- Black (lossy)" />
+        <category id="102293" name=" |- Blues (Texas, Chicago, Modern and Others) (lossless)" />
+        <category id="102292" name=" |- Blues-rock (lossless)" />
+        <category id="102278" name=" |- Bop (lossless)" />
+        <category id="101836" name=" |- Breakbeat (lossless)" />
+        <category id="101837" name=" |- Breakbeat (lossy)" />
+        <category id="101838" name=" |- Breakbeat, Dubstep (Radioshows, Podcasts, Livesets, Mixe.." />
+        <category id="101861" name=" |- Chillout, Lounge, Downtempo (lossless)" />
+        <category id="101862" name=" |- Chillout, Lounge, Downtempo (lossy)" />
+        <category id="101702" name=" |- Classic Rock &amp; Hard Rock (lossless)" />
+        <category id="101703" name=" |- Classic Rock &amp; Hard Rock (lossy)" />
+        <category id="100960" name=" |- Counter Strike Movies" />
+        <category id="101137" name=" |- Country, Bluegrass (lossless)" />
+        <category id="101136" name=" |- Country, Bluegrass (lossy)" />
+        <category id="101770" name=" |- Dancehall, Raggamuffin (lossy)" />
+        <category id="101866" name=" |- Darkwave, Neoclassical, Ethereal, Dungeon Synth (lossles.." />
+        <category id="100406" name=" |- Darkwave, Neoclassical, Ethereal, Dungeon Synth (lossy)" />
+        <category id="101779" name=" |- Death, Doom (lossless)" />
+        <category id="101780" name=" |- Death, Doom (lossy)" />
+        <category id="102500" name=" |- Disco, Italo-Disco, Euro-Disco, Hi-NRG (lossless)" />
+        <category id="102501" name=" |- Disco, Italo-Disco, Euro-Disco, Hi-NRG (lossy)" />
+        <category id="100552" name=" |- Discovery" />
+        <category id="101323" name=" |- Documentary Wrestling" />
+        <category id="100968" name=" |- Dreamcast" />
+        <category id="101832" name=" |- Drum &amp; Bass, Jungle (lossless)" />
+        <category id="101833" name=" |- Drum &amp; Bass, Jungle (lossy)" />
+        <category id="101834" name=" |- Drum &amp; Bass, Jungle (Radioshows, Podcasts, Livesets, Mix.." />
+        <category id="101771" name=" |- Dub (lossy)" />
+        <category id="101839" name=" |- Dubstep (lossless)" />
+        <category id="100454" name=" |- Dubstep (lossy)" />
+        <category id="102277" name=" |- Early Jazz, Swing, Gypsy (lossless)" />
+        <category id="100797" name=" |- Electro, Electro-Freestyle, Nu Electro (lossless)" />
+        <category id="101805" name=" |- Electro, Electro-Freestyle, Nu Electro (lossy)" />
+        <category id="101746" name=" |- Emocore, Post-hardcore, Metalcore (lossless)" />
+        <category id="101747" name=" |- Emocore, Post-hardcore, Metalcore (lossy)" />
+        <category id="102531" name=" |- Eurodance, Disco (DVD Video)" />
+        <category id="102532" name=" |- Eurodance, Disco (видео)" />
+        <category id="102502" name=" |- Eurodance, Euro-House, Technopop (lossless)" />
+        <category id="102503" name=" |- Eurodance, Euro-House, Technopop (lossy)" />
+        <category id="102504" name=" |- Eurodance, Euro-House, Technopop (сборники) (lossy)" />
+        <category id="101869" name=" |- Experimental (lossless)" />
+        <category id="101873" name=" |- Experimental (lossy)" />
+        <category id="101932" name=" |- Flash, Flex и ActionScript" />
+        <category id="101720" name=" |- Folk, Pagan, Viking (lossless)" />
+        <category id="100798" name=" |- Folk, Pagan, Viking (lossy)" />
+        <category id="101706" name=" |- Folk-Rock (lossless)" />
+        <category id="101707" name=" |- Folk-Rock (lossy)" />
+        <category id="102283" name=" |- Funk, Soul, R&amp;B (lossless)" />
+        <category id="101512" name=" |- Garmin" />
+        <category id="101844" name=" |- Goa Trance, Psy-Trance (lossless)" />
+        <category id="101822" name=" |- Goa Trance, Psy-Trance (lossy)" />
+        <category id="100460" name=" |- Goa Trance, Psy-Trance, PsyChill, Ambient, Dub (Live Set.." />
+        <category id="101724" name=" |- Gothic Metal (lossless)" />
+        <category id="101725" name=" |- Gothic Metal (lossy)" />
+        <category id="101748" name=" |- Gothic Rock &amp; Dark Folk (lossless)" />
+        <category id="101749" name=" |- Gothic Rock &amp; Dark Folk (lossy)" />
+        <category id="101730" name=" |- Grind, Brutal Death (lossless)" />
+        <category id="101731" name=" |- Grind, Brutal Death (lossy)" />
+        <category id="101740" name=" |- Hardcore (lossless)" />
+        <category id="101741" name=" |- Hardcore (lossy)" />
+        <category id="101829" name=" |- Hardcore, Hardstyle, Jumpstyle (lossless)" />
+        <category id="101830" name=" |- Hardcore, Hardstyle, Jumpstyle (lossy)" />
+        <category id="101831" name=" |- Hardcore, Hardstyle, Jumpstyle (vinyl, web)" />
+        <category id="101726" name=" |- Heavy, Power, Progressive (lossless)" />
+        <category id="101727" name=" |- Heavy, Power, Progressive (lossy)" />
+        <category id="101885" name=" |- Hi-Res stereo (Поп-музыка)" />
+        <category id="101755" name=" |- Hi-Res stereo (рок)" />
+        <category id="101857" name=" |- House (lossless)" />
+        <category id="101858" name=" |- House (lossy)" />
+        <category id="101859" name=" |- House (Radioshow, Podcast, Liveset, Mixes)" />
+        <category id="101860" name=" |- House (Singles, EPs) (lossy)" />
+        <category id="101840" name=" |- IDM (lossless)" />
+        <category id="101841" name=" |- IDM (lossy)" />
+        <category id="102229" name=" |- IDM Discography &amp; Collections (lossy)" />
+        <category id="101516" name=" |- Igo" />
+        <category id="102111" name=" |- Independent Wrestling" />
+        <category id="101742" name=" |- Indie, Post-Rock &amp; Post-Punk (lossless)" />
+        <category id="101743" name=" |- Indie, Post-Rock &amp; Post-Punk (lossy)" />
+        <category id="101744" name=" |- Industrial &amp; Post-industrial (lossless)" />
+        <category id="101745" name=" |- Industrial &amp; Post-industrial (lossy)" />
+        <category id="101877" name=" |- Industrial, Noise (lossless)" />
+        <category id="101878" name=" |- Industrial, Noise (lossy)" />
+        <category id="101710" name=" |- Instrumental Guitar Rock (lossless)" />
+        <category id="101711" name=" |- Instrumental Guitar Rock (lossy)" />
+        <category id="101527" name=" |- International Wrestling" />
+        <category id="102280" name=" |- Jazz Fusion (lossless)" />
+        <category id="102155" name=" |- Lineage II" />
+        <category id="102067" name=" |- Lineage II Movies" />
+        <category id="101368" name=" |- Mac OS (для Macintosh)" />
+        <category id="101424" name=" |- Mac OS; Linux, FreeBSD и прочие *NIX" />
+        <category id="102279" name=" |- Mainstream Jazz, Cool (lossless)" />
+        <category id="101788" name=" |- Metal (DVD Video)" />
+        <category id="101787" name=" |- Metal (Видео)" />
+        <category id="101871" name=" |- Modern Classical, Electroacoustic (lossless)" />
+        <category id="101867" name=" |- Modern Classical, Electroacoustic (lossy)" />
+        <category id="102353" name=" |- Modern Creative, Third Stream (lossless)" />
+        <category id="102492" name=" |- Multitracks" />
+        <category id="100500" name=" |- National Geographic" />
+        <category id="101515" name=" |- Navigon / Navitel" />
+        <category id="102002" name=" |- NBA / NCAA (до 2000 г.)" />
+        <category id="100774" name=" |- NDS" />
+        <category id="102351" name=" |- New Age, Relax, Meditative &amp; Flamenco (DVD и HD Видео)" />
+        <category id="102352" name=" |- New Age, Relax, Meditative &amp; Flamenco (Видео)" />
+        <category id="101127" name=" |- NewAge &amp; Meditative (lossless)" />
+        <category id="101126" name=" |- NewAge &amp; Meditative (lossy)" />
+        <category id="102482" name=" |- NoCD / NoDVD" />
+        <category id="101947" name=" |- Nu Jazz, Acid Jazz, Future Jazz (lossless)" />
+        <category id="101946" name=" |- Nu Jazz, Acid Jazz, Future Jazz (lossy)" />
+        <category id="102069" name=" |- Oldschool Wrestling" />
+        <category id="101500" name=" |- OST" />
+        <category id="102103" name=" |- OST" />
+        <category id="101388" name=" |- OST (lossless)" />
+        <category id="101290" name=" |- Photostoсks" />
+        <category id="101708" name=" |- Pop-Rock &amp; Soft Rock (lossless)" />
+        <category id="101709" name=" |- Pop-Rock &amp; Soft Rock (lossy)" />
+        <category id="100343" name=" |- Professional Wrestling" />
+        <category id="101704" name=" |- Progressive &amp; Art-Rock (lossless)" />
+        <category id="101705" name=" |- Progressive &amp; Art-Rock (lossy)" />
+        <category id="100908" name=" |- PS" />
+        <category id="100357" name=" |- PS2" />
+        <category id="100886" name=" |- PS3" />
+        <category id="101352" name=" |- PSP" />
+        <category id="100973" name=" |- PSVITA" />
+        <category id="101894" name=" |- PsyChill, Ambient, Dub (lossless)" />
+        <category id="101895" name=" |- PsyChill, Ambient, Dub (lossy)" />
+        <category id="101738" name=" |- Punk (lossless)" />
+        <category id="101739" name=" |- Punk (lossy)" />
+        <category id="101766" name=" |- Punky-Reggae, Rocksteady-Punk, Ska Revival (lossy)" />
+        <category id="101765" name=" |- Reggae (lossy)" />
+        <category id="101768" name=" |- Reggae, Dancehall, Dub (lossless)" />
+        <category id="101783" name=" |- Rock (DVD Video)" />
+        <category id="101782" name=" |- Rock (Видео)" />
+        <category id="101712" name=" |- Rockabilly, Psychobilly, Rock'n'Roll (lossless)" />
+        <category id="101713" name=" |- Rockabilly, Psychobilly, Rock'n'Roll (lossy)" />
+        <category id="102290" name=" |- Roots, Pre-War Blues, Early R&amp;B, Gospel (lossless)" />
+        <category id="100052" name=" |- RPG" />
+        <category id="101815" name=" |- Sludge, Stoner, Post-Metal (lossless)" />
+        <category id="101816" name=" |- Sludge, Stoner, Post-Metal (lossy)" />
+        <category id="102284" name=" |- Smooth, Jazz-Pop (lossless)" />
+        <category id="102537" name=" |- Stand-up comedy" />
+        <category id="101880" name=" |- Synthpop, New Wave (lossless)" />
+        <category id="101881" name=" |- Synthpop, New Wave (lossy)" />
+        <category id="101825" name=" |- Techno (lossless)" />
+        <category id="101826" name=" |- Techno (lossy)" />
+        <category id="101827" name=" |- Techno (Radioshows, Podcasts, Livesets, Mixes)" />
+        <category id="101828" name=" |- Techno (Singles, EPs) (lossy)" />
+        <category id="101728" name=" |- Thrash, Speed (lossless)" />
+        <category id="101729" name=" |- Thrash, Speed (lossy)" />
+        <category id="101514" name=" |- TomTom" />
+        <category id="102151" name=" |- Top Gear/Топ Гир" />
+        <category id="101864" name=" |- Traditional Electronic, Ambient (lossless)" />
+        <category id="101865" name=" |- Traditional Electronic, Ambient (lossy)" />
+        <category id="101818" name=" |- Trance (lossless)" />
+        <category id="101819" name=" |- Trance (lossy)" />
+        <category id="101824" name=" |- Trance (Radioshows, Podcasts, Live Sets, Mixes) (lossy)" />
+        <category id="101847" name=" |- Trance (Singles, EPs) (lossy)" />
+        <category id="101945" name=" |- Trip Hop, Abstract Hip-Hop (lossless)" />
+        <category id="101944" name=" |- Trip Hop, Abstract Hip-Hop (lossy)" />
+        <category id="102285" name=" |- Vocal Jazz (lossless)" />
+        <category id="100773" name=" |- Wii" />
+        <category id="102281" name=" |- World Fusion, Ethnic Jazz (lossless)" />
+        <category id="102117" name=" |- World of Warcraft" />
+        <category id="102147" name=" |- World of Warcraft Movies" />
+        <category id="100510" name=" |- Xbox 360" />
+        <category id="101931" name=" |- ZBrush" />
+        <category id="100273" name=" |- Альф / ALF" />
+        <category id="101105" name=" |- Аниме (HD Video)" />
+        <category id="101852" name=" |- Апмиксы-Upmixes/Даунмиксы-Downmix (многоканальная и Hi-R.." />
+        <category id="102401" name=" |- Блудливая Калифорния / Californication (HD Video)" />
+        <category id="100085" name=" |- Вавилон 5 / Babylon 5" />
+        <category id="101171" name=" |- Викинги / Vikings" />
+        <category id="101669" name=" |- Викинги / Vikings (HD Video)" />
+        <category id="101130" name=" |- Восточноевропейский фолк (lossy)" />
+        <category id="100595" name=" |- Герои / Heroes" />
+        <category id="101670" name=" |- Грайндхаус DVD и HD Video" />
+        <category id="102391" name=" |- Декстер / Dexter (HD Video)" />
+        <category id="101300" name=" |- Дикий ангел / Muneca Brava" />
+        <category id="101694" name=" |- Династия / Dynasty" />
+        <category id="100820" name=" |- Доктор Кто / Doctor Who + Торчвуд / Torchwood" />
+        <category id="102407" name=" |- Доктор Кто / Doctor Who; Торчвуд / Torchwood (HD Video)" />
+        <category id="100625" name=" |- Доктор Хаус / House M.D." />
+        <category id="102393" name=" |- Доктор Хаус / House M.D. (HD Video)" />
+        <category id="101133" name=" |- Западноевропейский фолк (lossless)" />
+        <category id="101132" name=" |- Западноевропейский фолк (lossy)" />
+        <category id="101665" name=" |- Зарубежный R'n'B (lossless)" />
+        <category id="101172" name=" |- Зарубежный R'n'B (lossy)" />
+        <category id="101449" name=" |- Игра престолов / Game of Thrones" />
+        <category id="100504" name=" |- Клан Сопрано / The Sopranos" />
+        <category id="100536" name=" |- Клиника / Scrubs" />
+        <category id="100718" name=" |- Клон / O Clone" />
+        <category id="102397" name=" |- Кости / Bones (HD Video)" />
+        <category id="101226" name=" |- Менестрели и ролевики (lossy и lossless)" />
+        <category id="100739" name=" |- Металл (lossless)" />
+        <category id="100740" name=" |- Металл (lossy)" />
+        <category id="100468" name=" |- Минусовки (lossy и lossless)" />
+        <category id="100776" name=" |- Мисс Марпл / Miss Marple" />
+        <category id="102248" name=" |- Музыка Lossy (AAC)" />
+        <category id="102244" name=" |- Музыка Lossy (AAC) (Singles, EPs)" />
+        <category id="102240" name=" |- Музыка Lossy (AAC-iTunes)" />
+        <category id="100983" name=" |- Опера (DVD и HD Видео)" />
+        <category id="100794" name=" |- Опера (lossless)" />
+        <category id="101173" name=" |- Отечественный R'n'B (lossy)" />
+        <category id="101107" name=" |- Рэп, Хип-Хоп, R'n'B (DVD Video)" />
+        <category id="102529" name=" |- Рэп, Хип-Хоп, R'n'B (HD Видео)" />
+        <category id="100196" name=" |- Санта Барбара / Santa Barbara" />
+        <category id="102404" name=" |- Сверхъестественное / Supernatural (HD Video)" />
+        <category id="102060" name=" |- Сценарии (FSX-P3D)" />
+        <category id="102406" name=" |- Тайны Смолвиля / Smallville (HD Video)" />
+        <category id="102169" name=" |- Флора и фауна (HD Video)" />
+        <category id="101250" name=" |- Чип и Дейл / Chip And Dale" />
+        <category id="102434" name="| - Ancient World. Antiquity" />
+        <category id="101684" name="| - Arts. Cultural" />
+        <category id="101477" name="| - Athletics. Swimming. Gymnastics. Weightlifting..." />
+        <category id="102408" name="| - Battlestar Galactica / Battlestar Galactica; Capri .." />
+        <category id="102194" name="| - Beading. Yuvelirika. Jewellery wire." />
+        <category id="102195" name="| - Beauty. Care. housekeeping" />
+        <category id="100656" name="| - Benefit. Master of Arts domestic theater and cinema" />
+        <category id="100671" name="| - Biographies. Personality and idols" />
+        <category id="101278" name="| - Biographies. Personality and idols (HD Video)" />
+        <category id="102196" name="| - Chess. Checkers" />
+        <category id="101412" name="| - Collecting and auxiliary ist. discipline" />
+        <category id="102441" name="| - Cooking. Floriculture. housekeeping" />
+        <category id="101243" name="| - Cool Walker. Justice in Texas / Walker, Texas Ran .." />
+        <category id="102442" name="| - Culture. Art. History" />
+        <category id="102521" name="| - Fashion. Style. Etiquette" />
+        <category id="102446" name="| - Folklore. Epic. Mythology" />
+        <category id="101415" name="| - Hood. lit-ra for preschool and elementary grades" />
+        <category id="102046" name="| - Hood. lit-ra for the middle and upper classes" />
+        <category id="102396" name="| - How I Met Your Mother; The Big Bang Theory (HD Vi .." />
+        <category id="101801" name="| - International relations. Diplomacy" />
+        <category id="101687" name="| - Jurisprudence. Right. criminalistics" />
+        <category id="102399" name="| - Mentalist / The Mentalist; Castle / Castle (HD Video)" />
+        <category id="100669" name="| - Motorsport. Motorcycling. cycle racing" />
+        <category id="100181" name="| - NCIS; Los Angeles; New Orleans" />
+        <category id="101579" name="| - Photo club. The whole world is in the palm of your hand." />
+        <category id="102252" name="| - Religion. History of Religions. Atheism" />
+        <category id="102253" name="| - Sexology. Relations between the sexes" />
+        <category id="102394" name="| - Stargate: a C1; Atlantis; The Universe (HD Video)" />
+        <category id="101798" name="| - Stargate: Atlantis; Universe / Stargate: Atlanti .." />
+        <category id="100352" name="3D / Stereo Film, Video, TV &amp; Sports" />
+        <category id="102023" name="Accurate, natural and engineering sciences" />
+        <category id="100033" name="Anime" />
+        <category id="101366" name="Apple Macintosh" />
+        <category id="100124" name="Art-house cinema and author" />
+        <category id="102100" name="Asian series" />
+        <category id="102236" name="audio" />
+        <category id="102413" name="Audio Books in foreign languages" />
+        <category id="102326" name="Auditions, history, memoirs" />
+        <category id="102004" name="basketball" />
+        <category id="100021" name="books" />
+        <category id="102125" name="Books, magazines and programs" />
+        <category id="100004" name="Cartoons" />
+        <category id="101215" name="Chanson, Author and military songs" />
+        <category id="101809" name="Chillout, Lounge, Downtempo, Trip-Hop" />
+        <category id="100409" name="Classical and contemporary academic music" />
+        <category id="102033" name="Collecting, hobby and hobbies" />
+        <category id="102048" name="Collections of books and libraries" />
+        <category id="100862" name="Comics" />
+        <category id="101418" name="Computer books" />
+        <category id="101556" name="Computer video tutorials and interactive training DVD" />
+        <category id="100314" name="Documentary (HD Video)" />
+        <category id="100046" name="Documentary movies and TV shows" />
+        <category id="102269" name="Domestic jazz and blues" />
+        <category id="102495" name="Domestic Pop" />
+        <category id="100722" name="Domestic Rock" />
+        <category id="101808" name="Drum &amp; Bass, Jungle, Breakbeat, Dubstep, IDM, Electro" />
+        <category id="100093" name="DVD Video" />
+        <category id="100024" name="Entertaining TV programs and shows, fun and humor" />
+        <category id="102499" name="Eurodance, Disco, Hi-NRG" />
+        <category id="102243" name="F.A.Q." />
+        <category id="100670" name="Faith and Religion" />
+        <category id="101686" name="Faith and Religion" />
+        <category id="102038" name="Fiction" />
+        <category id="102057" name="Fiction" />
+        <category id="102327" name="Fiction" />
+        <category id="101125" name="Folklore, Folk and World Music" />
+        <category id="101608" name="football" />
+        <category id="101101" name="For children, parents and teachers" />
+        <category id="101732" name="Foreign Alternative, Punk, Independent" />
+        <category id="102268" name="foreign blues" />
+        <category id="102267" name="foreign jazz" />
+        <category id="102362" name="Foreign Language for Adults" />
+        <category id="101264" name="Foreign languages &amp;#8203;&amp;#8203;for children" />
+        <category id="101716" name="foreign Metal" />
+        <category id="100007" name="Foreign movies" />
+        <category id="102497" name="Foreign pop music" />
+        <category id="101698" name="foreign Rock" />
+        <category id="100189" name="Foreign TV series" />
+        <category id="102366" name="Foreign TV shows (HD Video)" />
+        <category id="100548" name="Games for consoles" />
+        <category id="100899" name="Games for Linux" />
+        <category id="100005" name="Games for Windows (download)" />
+        <category id="100285" name="Games, applications and so on. Mobile" />
+        <category id="101503" name="GIS, navigation systems and maps" />
+        <category id="102198" name="HD Video" />
+        <category id="102020" name="Historical sciences" />
+        <category id="102009" name="Hockey" />
+        <category id="101807" name="House, Techno, Hardcore, Hardstyle, Jumpstyle" />
+        <category id="101680" name="Humanitarian sciences" />
+        <category id="101811" name="Industrial, Noise, EBM, Dark Electro, Aggrotech, Synthpop, N.." />
+        <category id="101933" name="iOS" />
+        <category id="101842" name="Label Packs (lossless)" />
+        <category id="101648" name="Label packs, Scene packs (lossy)" />
+        <category id="101376" name="Linux, Unix and other operating systems" />
+        <category id="101581" name="Martial Arts (Video Tutorials)" />
+        <category id="100828" name="Materials for Multimedia and Design" />
+        <category id="102142" name="Microsoft Flight Simulator add-ons, and for him" />
+        <category id="100010" name="Miscellaneous" />
+        <category id="101202" name="Movies and transfer by car / moto" />
+        <category id="102114" name="Multimedia and online publications" />
+        <category id="100413" name="Music of other genres" />
+        <category id="101849" name="New Age, Relax, Meditative &amp; Flamenco" />
+        <category id="102317" name="NEW YEAR'S SECTION" />
+        <category id="100637" name="Old Games" />
+        <category id="102115" name="Online Games" />
+        <category id="101012" name="Operating systems from Microsoft" />
+        <category id="102328" name="other literature" />
+        <category id="100139" name="Others for Windows-based games" />
+        <category id="100022" name="our film" />
+        <category id="101016" name="Programs to work with multimedia and 3D" />
+        <category id="100767" name="psychology" />
+        <category id="101760" name="Reggae, Ska, Dub" />
+        <category id="102324" name="religion" />
+        <category id="101964" name="Repair and maintenance of vehicles" />
+        <category id="100009" name="Russion serials" />
+        <category id="101289" name="Rutracker Awards (events and competitions)" />
+        <category id="102389" name="Science fiction, fantasy, mystery, horror, fanfiction" />
+        <category id="100921" name="Serial cartoons" />
+        <category id="100919" name="Sheet Music literature" />
+        <category id="100911" name="Soaps Latin America, Turkey and India" />
+        <category id="100416" name="Soundtracks and Karaoke" />
+        <category id="100255" name="Sports tournaments, films and programs" />
+        <category id="101802" name="Sports, physical training, martial arts" />
+        <category id="101013" name="System programs" />
+        <category id="101014" name="Systems for business, office, research and project work" />
+        <category id="101195" name="Test drives to adjust the audio / video equipment" />
+        <category id="102270" name="The multi-channel music and own digitization (Jazz and Blues)" />
+        <category id="102512" name="The multi-channel music and own digitization (pop music)" />
+        <category id="101752" name="The multi-channel music and own digitization (Rock)" />
+        <category id="100511" name="Theater" />
+        <category id="101810" name="Traditional Electronic, Ambient, Modern Classical, Electroac.." />
+        <category id="101821" name="Trance, Goa Trance, Psy-Trance, PsyChill, Ambient, Dub" />
+        <category id="102126" name="Tutorials, Doc. movies and TV shows on medicine" />
+        <category id="102235" name="Video" />
+        <category id="102185" name="Video consoles" />
+        <category id="100957" name="Video for mobile devices" />
+        <category id="100240" name="video Game" />
+        <category id="100610" name="Video tutorials and interactive training DVD" />
+        <category id="102271" name="Video, DVD Video, HD Video (Jazz and Blues)" />
+        <category id="100768" name="Warfare" />
+        <category id="101052" name="Web Development and Programming" />
+        <category id="100845" name="Wrestling" />
+        <category id="1000" name="Console">
+          <subcat id="1010" name="Console/NDS" />
+          <subcat id="1020" name="Console/PSP" />
+          <subcat id="1030" name="Console/Wii" />
+          <subcat id="1040" name="Console/Xbox" />
+          <subcat id="1050" name="Console/Xbox 360" />
+          <subcat id="1060" name="Console/Wiiware/VC" />
+          <subcat id="1070" name="Console/XBOX 360 DLC" />
+          <subcat id="1080" name="Console/PS3" />
+          <subcat id="1090" name="Console/Other" />
+          <subcat id="1110" name="Console/3DS" />
+          <subcat id="1120" name="Console/PS Vita" />
+          <subcat id="1130" name="Console/WiiU" />
+          <subcat id="1140" name="Console/Xbox One" />
+          <subcat id="1180" name="Console/PS4" />
+        </category>
+        <category id="1010" name="Console/NDS" />
+        <category id="1020" name="Console/PSP" />
+        <category id="1030" name="Console/Wii" />
+        <category id="1040" name="Console/Xbox" />
+        <category id="1050" name="Console/Xbox 360" />
+        <category id="1080" name="Console/PS3" />
+        <category id="1090" name="Console/Other" />
+        <category id="1120" name="Console/PS Vita" />
+        <category id="2000" name="Movies">
+          <subcat id="2010" name="Movies/Foreign" />
+          <subcat id="2020" name="Movies/Other" />
+          <subcat id="2030" name="Movies/SD" />
+          <subcat id="2040" name="Movies/HD" />
+          <subcat id="2045" name="Movies/UHD" />
+          <subcat id="2050" name="Movies/3D" />
+          <subcat id="2060" name="Movies/BluRay" />
+          <subcat id="2070" name="Movies/DVD" />
+          <subcat id="2080" name="Movies/WEBDL" />
+        </category>
+        <category id="2010" name="Movies/Foreign" />
+        <category id="2040" name="Movies/HD" />
+        <category id="2050" name="Movies/3D" />
+        <category id="3000" name="Audio">
+          <subcat id="3010" name="Audio/MP3" />
+          <subcat id="3020" name="Audio/Video" />
+          <subcat id="3030" name="Audio/Audiobook" />
+          <subcat id="3040" name="Audio/Lossless" />
+          <subcat id="3050" name="Audio/Other" />
+          <subcat id="3060" name="Audio/Foreign" />
+        </category>
+        <category id="3020" name="Audio/Video" />
+        <category id="4010" name="PC/0day" />
+        <category id="4030" name="PC/Mac" />
+        <category id="4040" name="PC/Phone-Other" />
+        <category id="4050" name="PC/Games" />
+        <category id="4070" name="PC/Phone-Android" />
+        <category id="5000" name="TV">
+          <subcat id="5010" name="TV/WEB-DL" />
+          <subcat id="5020" name="TV/FOREIGN" />
+          <subcat id="5030" name="TV/SD" />
+          <subcat id="5040" name="TV/HD" />
+          <subcat id="5045" name="TV/UHD" />
+          <subcat id="5050" name="TV/OTHER" />
+          <subcat id="5060" name="TV/Sport" />
+          <subcat id="5070" name="TV/Anime" />
+          <subcat id="5080" name="TV/Documentary" />
+        </category>
+        <category id="5030" name="TV/SD" />
+        <category id="5040" name="TV/HD" />
+        <category id="5060" name="TV/Sport" />
+        <category id="5070" name="TV/Anime" />
+        <category id="5080" name="TV/Documentary" />
+        <category id="7000" name="Other">
+          <subcat id="7010" name="Other/Misc" />
+          <subcat id="7020" name="Other/Hashed" />
+        </category>
+        <category id="8000" name="Books">
+          <subcat id="8010" name="Books/Ebook" />
+          <subcat id="8020" name="Books/Comics" />
+          <subcat id="8030" name="Books/Magazines" />
+          <subcat id="8040" name="Books/Technical" />
+          <subcat id="8050" name="Books/Other" />
+          <subcat id="8060" name="Books/Foreign" />
+        </category>
+        <category id="102238" name="Видео HD" />
+        <category id="102507" name="Видео, DVD Video, HD Video (поп-музыка)" />
+        <category id="101781" name="Видео, DVD Video, HD Video (Рок-музыка)" />
+        <category id="100408" name="Рэп, Хип-Хоп, R'n'B" />
+        <category id="101812" name="Электронная музыка (Видео, DVD Video/Audio, HD Video, DTS, S.." />
+      </categories>
+    </caps>
+  </indexer>
+  <indexer id="animetosho" configured="true">
+    <title>Anime Tosho</title>
+    <description>AnimeTosho (AT) is an automated service that provides torrent files, magnet links and DDL for all anime releases</description>
+    <link>https://animetosho.org/</link>
+    <language>en-en</language>
+    <type>public</type>
+    <caps>
+      <server title="Jackett" />
+      <searching>
+        <search available="yes" supportedParams="q" />
+        <tv-search available="no" supportedParams="q,season,ep" />
+        <movie-search available="no" supportedParams="q" />
+        <music-search available="no" supportedParams="" />
+        <audio-search available="no" supportedParams="" />
+      </searching>
+      <categories>
+        <category id="5070" name="Anime" />
+      </categories>
+    </caps>
+  </indexer>
+  <indexer id="ettv" configured="true">
+    <title>ETTV</title>
+    <description>ETTV is a Public torrent site for TV / MOVIES, home of the  ETTV, ETHD and DTOne groups.</description>
+    <link>https://www.ettv.to/</link>
+    <language>en-us</language>
+    <type>public</type>
+    <caps>
+      <server title="Jackett" />
+      <searching>
+        <search available="yes" supportedParams="q" />
+        <tv-search available="yes" supportedParams="q,season,ep" />
+        <movie-search available="yes" supportedParams="q" />
+        <music-search available="no" supportedParams="" />
+        <audio-search available="no" supportedParams="" />
+      </searching>
+      <categories>
+        <category id="100088" name="Adult - Books" />
+        <category id="100084" name="Adult - Games" />
+        <category id="100082" name="Adult - HD-Movies" />
+        <category id="100083" name="Adult - Hentai" />
+        <category id="100086" name="Adult - Magazines" />
+        <category id="100081" name="Adult - Movies" />
+        <category id="100087" name="Adult - Other" />
+        <category id="100085" name="Adult - Pictures" />
+        <category id="100074" name="Anime - Dubbed/Subbed" />
+        <category id="100073" name="Anime - Movies" />
+        <category id="100075" name="Anime - Others" />
+        <category id="100056" name="Books - Audio" />
+        <category id="100055" name="Books - Comics" />
+        <category id="100053" name="Books - Ebooks" />
+        <category id="100054" name="Books - Magazines" />
+        <category id="100068" name="Books - Others" />
+        <category id="100080" name="Documentary" />
+        <category id="100079" name="Documentary" />
+        <category id="100058" name="Games - Android" />
+        <category id="100071" name="Games - Others" />
+        <category id="100057" name="Games - Windows" />
+        <category id="100049" name="Movies - 3D" />
+        <category id="100066" name="Movies - BluRay Disc/Remux" />
+        <category id="100091" name="Movies - Bollywood" />
+        <category id="100065" name="Movies - CAM/TS" />
+        <category id="100051" name="Movies - Dubs/Dual Audio" />
+        <category id="100067" name="Movies - DVDR" />
+        <category id="100001" name="Movies - HD 1080p" />
+        <category id="100002" name="Movies - HD 720p" />
+        <category id="100076" name="Movies - HEVC/x265" />
+        <category id="100003" name="Movies - UltraHD/4K" />
+        <category id="100047" name="Movies - X264/H264" />
+        <category id="100042" name="Movies - XviD" />
+        <category id="100060" name="Music - FLAC" />
+        <category id="100059" name="Music - MP3" />
+        <category id="100061" name="Music - Music Videos" />
+        <category id="100069" name="Music - Others" />
+        <category id="100095" name="Others - Misc" />
+        <category id="100078" name="Others - Unsorted" />
+        <category id="100063" name="Software - Android" />
+        <category id="100064" name="Software - Mac" />
+        <category id="100070" name="Software - Others" />
+        <category id="100062" name="Software - Windows" />
+        <category id="100094" name="Tutorials - Tutorials" />
+        <category id="100041" name="TV - HD/X264/H264" />
+        <category id="100077" name="TV - HEVC/x265" />
+        <category id="100005" name="TV - SD/X264/H264" />
+        <category id="100050" name="TV - SD/XVID" />
+        <category id="100072" name="TV - Sport" />
+        <category id="100007" name="TV - TV Packs" />
+        <category id="100089" name="TV - UltraHD/4K" />
+        <category id="2000" name="Movies">
+          <subcat id="2010" name="Movies/Foreign" />
+          <subcat id="2020" name="Movies/Other" />
+          <subcat id="2030" name="Movies/SD" />
+          <subcat id="2040" name="Movies/HD" />
+          <subcat id="2045" name="Movies/UHD" />
+          <subcat id="2050" name="Movies/3D" />
+          <subcat id="2060" name="Movies/BluRay" />
+          <subcat id="2070" name="Movies/DVD" />
+          <subcat id="2080" name="Movies/WEBDL" />
+        </category>
+        <category id="2030" name="Movies/SD" />
+        <category id="2040" name="Movies/HD" />
+        <category id="2045" name="Movies/UHD" />
+        <category id="2050" name="Movies/3D" />
+        <category id="2060" name="Movies/BluRay" />
+        <category id="2070" name="Movies/DVD" />
+        <category id="3010" name="Audio/MP3" />
+        <category id="3020" name="Audio/Video" />
+        <category id="3030" name="Audio/Audiobook" />
+        <category id="3040" name="Audio/Lossless" />
+        <category id="3050" name="Audio/Other" />
+        <category id="4000" name="PC">
+          <subcat id="4010" name="PC/0day" />
+          <subcat id="4020" name="PC/ISO" />
+          <subcat id="4030" name="PC/Mac" />
+          <subcat id="4040" name="PC/Phone-Other" />
+          <subcat id="4050" name="PC/Games" />
+          <subcat id="4060" name="PC/Phone-IOS" />
+          <subcat id="4070" name="PC/Phone-Android" />
+        </category>
+        <category id="4010" name="PC/0day" />
+        <category id="4030" name="PC/Mac" />
+        <category id="4050" name="PC/Games" />
+        <category id="4070" name="PC/Phone-Android" />
+        <category id="5000" name="TV">
+          <subcat id="5010" name="TV/WEB-DL" />
+          <subcat id="5020" name="TV/FOREIGN" />
+          <subcat id="5030" name="TV/SD" />
+          <subcat id="5040" name="TV/HD" />
+          <subcat id="5045" name="TV/UHD" />
+          <subcat id="5050" name="TV/OTHER" />
+          <subcat id="5060" name="TV/Sport" />
+          <subcat id="5070" name="TV/Anime" />
+          <subcat id="5080" name="TV/Documentary" />
+        </category>
+        <category id="5030" name="TV/SD" />
+        <category id="5040" name="TV/HD" />
+        <category id="5045" name="TV/UHD" />
+        <category id="5060" name="TV/Sport" />
+        <category id="5070" name="TV/Anime" />
+        <category id="5080" name="TV/Documentary" />
+        <category id="6000" name="XXX">
+          <subcat id="6010" name="XXX/DVD" />
+          <subcat id="6020" name="XXX/WMV" />
+          <subcat id="6030" name="XXX/XviD" />
+          <subcat id="6040" name="XXX/x264" />
+          <subcat id="6050" name="XXX/Other" />
+          <subcat id="6060" name="XXX/Imageset" />
+          <subcat id="6070" name="XXX/Packs" />
+        </category>
+        <category id="7000" name="Other">
+          <subcat id="7010" name="Other/Misc" />
+          <subcat id="7020" name="Other/Hashed" />
+        </category>
+        <category id="7010" name="Other/Misc" />
+        <category id="8000" name="Books">
+          <subcat id="8010" name="Books/Ebook" />
+          <subcat id="8020" name="Books/Comics" />
+          <subcat id="8030" name="Books/Magazines" />
+          <subcat id="8040" name="Books/Technical" />
+          <subcat id="8050" name="Books/Other" />
+          <subcat id="8060" name="Books/Foreign" />
+        </category>
+        <category id="8010" name="Books/Ebook" />
+        <category id="8020" name="Books/Comics" />
+        <category id="8030" name="Books/Magazines" />
+        <category id="8050" name="Books/Other" />
+      </categories>
+    </caps>
+  </indexer>
+  <indexer id="eztv" configured="true">
+    <title>EZTV</title>
+    <description>EZTV is a Public torrent site for TV shows</description>
+    <link>https://eztv.io/</link>
+    <language>en-us</language>
+    <type>public</type>
+    <caps>
+      <server title="Jackett" />
+      <searching>
+        <search available="yes" supportedParams="q" />
+        <tv-search available="yes" supportedParams="q,season,ep" />
+        <movie-search available="no" supportedParams="q" />
+        <music-search available="no" supportedParams="" />
+        <audio-search available="no" supportedParams="" />
+      </searching>
+      <categories>
+        <category id="5000" name="TV">
+          <subcat id="5010" name="TV/WEB-DL" />
+          <subcat id="5020" name="TV/FOREIGN" />
+          <subcat id="5030" name="TV/SD" />
+          <subcat id="5040" name="TV/HD" />
+          <subcat id="5045" name="TV/UHD" />
+          <subcat id="5050" name="TV/OTHER" />
+          <subcat id="5060" name="TV/Sport" />
+          <subcat id="5070" name="TV/Anime" />
+          <subcat id="5080" name="TV/Documentary" />
+        </category>
+      </categories>
+    </caps>
+  </indexer>
+  <indexer id="kickasstorrent" configured="true">
+    <title>KickAssTorrent</title>
+    <description>Kickass Torrents (KATcr) is a well-know Public torrent site indexing thousands of torrents verified and commented by a large file-sharing community</description>
+    <link>https://kickasstorrents.to/</link>
+    <language>en-us</language>
+    <type>public</type>
+    <caps>
+      <server title="Jackett" />
+      <searching>
+        <search available="yes" supportedParams="q" />
+        <tv-search available="yes" supportedParams="q,season,ep" />
+        <movie-search available="yes" supportedParams="q" />
+        <music-search available="no" supportedParams="" />
+        <audio-search available="no" supportedParams="" />
+      </searching>
+      <categories>
+        <category id="100118" name="Anime - English Translated" />
+        <category id="100133" name="Anime - Other" />
+        <category id="100144" name="Applications - Handheld" />
+        <category id="100142" name="Applications - Linux" />
+        <category id="100140" name="Applications - Mac" />
+        <category id="100131" name="Applications - Other" />
+        <category id="100139" name="Applications - Windows" />
+        <category id="100109" name="Books - Audio books" />
+        <category id="100110" name="Books - Biography" />
+        <category id="100102" name="Books - Children" />
+        <category id="100103" name="Books - Comics" />
+        <category id="100113" name="Books - Computers &amp; Technology" />
+        <category id="100115" name="Books - Cooking" />
+        <category id="100114" name="Books - Educational" />
+        <category id="100107" name="Books - Fiction" />
+        <category id="100112" name="Books - History" />
+        <category id="100105" name="Books - Magazines" />
+        <category id="100104" name="Books - Manga" />
+        <category id="100108" name="Books - Non-fiction" />
+        <category id="100132" name="Books - Other" />
+        <category id="100111" name="Books - Religion" />
+        <category id="100116" name="Books - Sport" />
+        <category id="100106" name="Books - Textbooks" />
+        <category id="100092" name="Games - Handheld" />
+        <category id="100087" name="Games - Linux" />
+        <category id="100130" name="Games - Other" />
+        <category id="100097" name="Games - Playstation" />
+        <category id="100091" name="Games - Wii" />
+        <category id="100085" name="Games - Windows" />
+        <category id="100090" name="Games - Xbox" />
+        <category id="100069" name="Movies - 3D Movies" />
+        <category id="100080" name="Movies - Animation" />
+        <category id="100079" name="Movies - Asian/Bollywood" />
+        <category id="100148" name="Movies - Blu-Ray Disc" />
+        <category id="100149" name="Movies - Cam" />
+        <category id="100081" name="Movies - Documentary" />
+        <category id="100078" name="Movies - Dubbed Movies" />
+        <category id="100150" name="Movies - DVD ISO" />
+        <category id="100071" name="Movies - HD" />
+        <category id="100128" name="Movies - Other" />
+        <category id="100074" name="Movies - Screener" />
+        <category id="100075" name="Movies - UltraHD" />
+        <category id="100064" name="Music - AAC" />
+        <category id="100067" name="Music - Karaoke" />
+        <category id="100023" name="Music - Lossless" />
+        <category id="100022" name="Music - MP3" />
+        <category id="100129" name="Music - Other" />
+        <category id="100026" name="Music - Radio Shows" />
+        <category id="100066" name="Music - Soundtrack" />
+        <category id="100065" name="Music - Transcode" />
+        <category id="100068" name="Music - Videos/Concerts" />
+        <category id="100154" name="Other - DazPoser" />
+        <category id="100138" name="Other - Other" />
+        <category id="100136" name="Other - Pictures" />
+        <category id="100134" name="Other - Subtitles" />
+        <category id="100145" name="Other - Tutorials" />
+        <category id="100153" name="Other - Wordpress" />
+        <category id="100006" name="TV - Blu-Ray Disc" />
+        <category id="100007" name="TV - Documentary" />
+        <category id="100005" name="TV - DVD ISO" />
+        <category id="100041" name="TV - HD" />
+        <category id="100151" name="TV - Other" />
+        <category id="100146" name="TV - Sport" />
+        <category id="100152" name="TV - Ultra HD" />
+        <category id="100124" name="XXX - Books" />
+        <category id="100125" name="XXX - Hentai" />
+        <category id="100123" name="XXX - Magazines" />
+        <category id="100122" name="XXX - Pictures" />
+        <category id="100121" name="XXX - UltraHD" />
+        <category id="100119" name="XXX - Videos" />
+        <category id="100126" name="XXX - XXX Games" />
+        <category id="1030" name="Console/Wii" />
+        <category id="1040" name="Console/Xbox" />
+        <category id="1090" name="Console/Other" />
+        <category id="1180" name="Console/PS4" />
+        <category id="2000" name="Movies">
+          <subcat id="2010" name="Movies/Foreign" />
+          <subcat id="2020" name="Movies/Other" />
+          <subcat id="2030" name="Movies/SD" />
+          <subcat id="2040" name="Movies/HD" />
+          <subcat id="2045" name="Movies/UHD" />
+          <subcat id="2050" name="Movies/3D" />
+          <subcat id="2060" name="Movies/BluRay" />
+          <subcat id="2070" name="Movies/DVD" />
+          <subcat id="2080" name="Movies/WEBDL" />
+        </category>
+        <category id="2020" name="Movies/Other" />
+        <category id="2030" name="Movies/SD" />
+        <category id="2040" name="Movies/HD" />
+        <category id="2050" name="Movies/3D" />
+        <category id="2060" name="Movies/BluRay" />
+        <category id="2070" name="Movies/DVD" />
+        <category id="3010" name="Audio/MP3" />
+        <category id="3020" name="Audio/Video" />
+        <category id="3030" name="Audio/Audiobook" />
+        <category id="3040" name="Audio/Lossless" />
+        <category id="3050" name="Audio/Other" />
+        <category id="4010" name="PC/0day" />
+        <category id="4030" name="PC/Mac" />
+        <category id="4040" name="PC/Phone-Other" />
+        <category id="4050" name="PC/Games" />
+        <category id="5030" name="TV/SD" />
+        <category id="5040" name="TV/HD" />
+        <category id="5050" name="TV/OTHER" />
+        <category id="5060" name="TV/Sport" />
+        <category id="5070" name="TV/Anime" />
+        <category id="5080" name="TV/Documentary" />
+        <category id="6000" name="XXX">
+          <subcat id="6010" name="XXX/DVD" />
+          <subcat id="6020" name="XXX/WMV" />
+          <subcat id="6030" name="XXX/XviD" />
+          <subcat id="6040" name="XXX/x264" />
+          <subcat id="6050" name="XXX/Other" />
+          <subcat id="6060" name="XXX/Imageset" />
+          <subcat id="6070" name="XXX/Packs" />
+        </category>
+        <category id="6060" name="XXX/Imageset" />
+        <category id="7000" name="Other">
+          <subcat id="7010" name="Other/Misc" />
+          <subcat id="7020" name="Other/Hashed" />
+        </category>
+        <category id="8000" name="Books">
+          <subcat id="8010" name="Books/Ebook" />
+          <subcat id="8020" name="Books/Comics" />
+          <subcat id="8030" name="Books/Magazines" />
+          <subcat id="8040" name="Books/Technical" />
+          <subcat id="8050" name="Books/Other" />
+          <subcat id="8060" name="Books/Foreign" />
+        </category>
+        <category id="8020" name="Books/Comics" />
+      </categories>
+    </caps>
+  </indexer>
+  <indexer id="limetorrents" configured="true">
+    <title>LimeTorrents</title>
+    <description>LimeTorrents is a Public general torrent index with mostly verified torrents</description>
+    <link>https://www.limetorrents.info/</link>
+    <language>en-us</language>
+    <type>public</type>
+    <caps>
+      <server title="Jackett" />
+      <searching>
+        <search available="yes" supportedParams="q" />
+        <tv-search available="yes" supportedParams="q,season,ep" />
+        <movie-search available="yes" supportedParams="q" />
+        <music-search available="no" supportedParams="" />
+        <audio-search available="no" supportedParams="" />
+      </searching>
+      <categories>
+        <category id="1000" name="Console">
+          <subcat id="1010" name="Console/NDS" />
+          <subcat id="1020" name="Console/PSP" />
+          <subcat id="1030" name="Console/Wii" />
+          <subcat id="1040" name="Console/Xbox" />
+          <subcat id="1050" name="Console/Xbox 360" />
+          <subcat id="1060" name="Console/Wiiware/VC" />
+          <subcat id="1070" name="Console/XBOX 360 DLC" />
+          <subcat id="1080" name="Console/PS3" />
+          <subcat id="1090" name="Console/Other" />
+          <subcat id="1110" name="Console/3DS" />
+          <subcat id="1120" name="Console/PS Vita" />
+          <subcat id="1130" name="Console/WiiU" />
+          <subcat id="1140" name="Console/Xbox One" />
+          <subcat id="1180" name="Console/PS4" />
+        </category>
+        <category id="2000" name="Movies">
+          <subcat id="2010" name="Movies/Foreign" />
+          <subcat id="2020" name="Movies/Other" />
+          <subcat id="2030" name="Movies/SD" />
+          <subcat id="2040" name="Movies/HD" />
+          <subcat id="2045" name="Movies/UHD" />
+          <subcat id="2050" name="Movies/3D" />
+          <subcat id="2060" name="Movies/BluRay" />
+          <subcat id="2070" name="Movies/DVD" />
+          <subcat id="2080" name="Movies/WEBDL" />
+        </category>
+        <category id="3000" name="Audio">
+          <subcat id="3010" name="Audio/MP3" />
+          <subcat id="3020" name="Audio/Video" />
+          <subcat id="3030" name="Audio/Audiobook" />
+          <subcat id="3040" name="Audio/Lossless" />
+          <subcat id="3050" name="Audio/Other" />
+          <subcat id="3060" name="Audio/Foreign" />
+        </category>
+        <category id="4010" name="PC/0day" />
+        <category id="5000" name="TV">
+          <subcat id="5010" name="TV/WEB-DL" />
+          <subcat id="5020" name="TV/FOREIGN" />
+          <subcat id="5030" name="TV/SD" />
+          <subcat id="5040" name="TV/HD" />
+          <subcat id="5045" name="TV/UHD" />
+          <subcat id="5050" name="TV/OTHER" />
+          <subcat id="5060" name="TV/Sport" />
+          <subcat id="5070" name="TV/Anime" />
+          <subcat id="5080" name="TV/Documentary" />
+        </category>
+        <category id="5070" name="TV/Anime" />
+        <category id="7010" name="Other/Misc" />
+      </categories>
+    </caps>
+  </indexer>
+  <indexer id="thepiratebay" configured="true">
+    <title>The Pirate Bay</title>
+    <description>Pirate Bay (TPB) is the galaxy’s most resilient Public BitTorrent site</description>
+    <link>https://thepiratebay.bet/</link>
+    <language>en-us</language>
+    <type>public</type>
+    <caps>
+      <server title="Jackett" />
+      <searching>
+        <search available="yes" supportedParams="q" />
+        <tv-search available="yes" supportedParams="q,season,ep" />
+        <movie-search available="yes" supportedParams="q" />
+        <music-search available="no" supportedParams="" />
+        <audio-search available="no" supportedParams="" />
+      </searching>
+      <categories>
+        <category id="100209" name="3D" />
+        <category id="100306" name="Android" />
+        <category id="100408" name="Android" />
+        <category id="100300" name="Applications" />
+        <category id="100100" name="Audio" />
+        <category id="100102" name="Audio books" />
+        <category id="100199" name="Audio Other" />
+        <category id="100602" name="Comics" />
+        <category id="100604" name="Covers" />
+        <category id="100601" name="E-books" />
+        <category id="100104" name="FLAC" />
+        <category id="100400" name="Games" />
+        <category id="100504" name="Games" />
+        <category id="100499" name="Games Other" />
+        <category id="100206" name="Handheld" />
+        <category id="100304" name="Handheld" />
+        <category id="100406" name="Handheld" />
+        <category id="100207" name="HD - Movies" />
+        <category id="100505" name="HD - Movies" />
+        <category id="100208" name="HD - TV shows" />
+        <category id="100305" name="IOS (iPad/iPhone)" />
+        <category id="100407" name="IOS (iPad/iPhone)" />
+        <category id="100302" name="Mac" />
+        <category id="100402" name="Mac" />
+        <category id="100204" name="Movie clips" />
+        <category id="100506" name="Movie clips" />
+        <category id="100201" name="Movies" />
+        <category id="100501" name="Movies" />
+        <category id="100202" name="Movies DVDR" />
+        <category id="100502" name="Movies DVDR" />
+        <category id="100101" name="Music" />
+        <category id="100203" name="Music videos" />
+        <category id="100600" name="Other" />
+        <category id="100399" name="Other OS" />
+        <category id="100699" name="Other Other" />
+        <category id="100401" name="PC" />
+        <category id="100605" name="Physibles" />
+        <category id="100503" name="Pictures" />
+        <category id="100603" name="Pictures" />
+        <category id="100500" name="Porn" />
+        <category id="100599" name="Porn Other" />
+        <category id="100403" name="PSx" />
+        <category id="100103" name="Sound clips" />
+        <category id="100205" name="TV shows" />
+        <category id="100303" name="UNIX" />
+        <category id="100200" name="Video" />
+        <category id="100299" name="Video Other" />
+        <category id="100405" name="Wii" />
+        <category id="100301" name="Windows" />
+        <category id="100404" name="XBOX360" />
+        <category id="1000" name="Console">
+          <subcat id="1010" name="Console/NDS" />
+          <subcat id="1020" name="Console/PSP" />
+          <subcat id="1030" name="Console/Wii" />
+          <subcat id="1040" name="Console/Xbox" />
+          <subcat id="1050" name="Console/Xbox 360" />
+          <subcat id="1060" name="Console/Wiiware/VC" />
+          <subcat id="1070" name="Console/XBOX 360 DLC" />
+          <subcat id="1080" name="Console/PS3" />
+          <subcat id="1090" name="Console/Other" />
+          <subcat id="1110" name="Console/3DS" />
+          <subcat id="1120" name="Console/PS Vita" />
+          <subcat id="1130" name="Console/WiiU" />
+          <subcat id="1140" name="Console/Xbox One" />
+          <subcat id="1180" name="Console/PS4" />
+        </category>
+        <category id="1030" name="Console/Wii" />
+        <category id="1040" name="Console/Xbox" />
+        <category id="1090" name="Console/Other" />
+        <category id="1180" name="Console/PS4" />
+        <category id="2000" name="Movies">
+          <subcat id="2010" name="Movies/Foreign" />
+          <subcat id="2020" name="Movies/Other" />
+          <subcat id="2030" name="Movies/SD" />
+          <subcat id="2040" name="Movies/HD" />
+          <subcat id="2045" name="Movies/UHD" />
+          <subcat id="2050" name="Movies/3D" />
+          <subcat id="2060" name="Movies/BluRay" />
+          <subcat id="2070" name="Movies/DVD" />
+          <subcat id="2080" name="Movies/WEBDL" />
+        </category>
+        <category id="2020" name="Movies/Other" />
+        <category id="2040" name="Movies/HD" />
+        <category id="2050" name="Movies/3D" />
+        <category id="2070" name="Movies/DVD" />
+        <category id="3000" name="Audio">
+          <subcat id="3010" name="Audio/MP3" />
+          <subcat id="3020" name="Audio/Video" />
+          <subcat id="3030" name="Audio/Audiobook" />
+          <subcat id="3040" name="Audio/Lossless" />
+          <subcat id="3050" name="Audio/Other" />
+          <subcat id="3060" name="Audio/Foreign" />
+        </category>
+        <category id="3020" name="Audio/Video" />
+        <category id="3030" name="Audio/Audiobook" />
+        <category id="3040" name="Audio/Lossless" />
+        <category id="3050" name="Audio/Other" />
+        <category id="4000" name="PC">
+          <subcat id="4010" name="PC/0day" />
+          <subcat id="4020" name="PC/ISO" />
+          <subcat id="4030" name="PC/Mac" />
+          <subcat id="4040" name="PC/Phone-Other" />
+          <subcat id="4050" name="PC/Games" />
+          <subcat id="4060" name="PC/Phone-IOS" />
+          <subcat id="4070" name="PC/Phone-Android" />
+        </category>
+        <category id="4030" name="PC/Mac" />
+        <category id="4040" name="PC/Phone-Other" />
+        <category id="4050" name="PC/Games" />
+        <category id="4060" name="PC/Phone-IOS" />
+        <category id="4070" name="PC/Phone-Android" />
+        <category id="5000" name="TV">
+          <subcat id="5010" name="TV/WEB-DL" />
+          <subcat id="5020" name="TV/FOREIGN" />
+          <subcat id="5030" name="TV/SD" />
+          <subcat id="5040" name="TV/HD" />
+          <subcat id="5045" name="TV/UHD" />
+          <subcat id="5050" name="TV/OTHER" />
+          <subcat id="5060" name="TV/Sport" />
+          <subcat id="5070" name="TV/Anime" />
+          <subcat id="5080" name="TV/Documentary" />
+        </category>
+        <category id="5040" name="TV/HD" />
+        <category id="5050" name="TV/OTHER" />
+        <category id="6000" name="XXX">
+          <subcat id="6010" name="XXX/DVD" />
+          <subcat id="6020" name="XXX/WMV" />
+          <subcat id="6030" name="XXX/XviD" />
+          <subcat id="6040" name="XXX/x264" />
+          <subcat id="6050" name="XXX/Other" />
+          <subcat id="6060" name="XXX/Imageset" />
+          <subcat id="6070" name="XXX/Packs" />
+        </category>
+        <category id="6010" name="XXX/DVD" />
+        <category id="6050" name="XXX/Other" />
+        <category id="6060" name="XXX/Imageset" />
+        <category id="7000" name="Other">
+          <subcat id="7010" name="Other/Misc" />
+          <subcat id="7020" name="Other/Hashed" />
+        </category>
+        <category id="8000" name="Books">
+          <subcat id="8010" name="Books/Ebook" />
+          <subcat id="8020" name="Books/Comics" />
+          <subcat id="8030" name="Books/Magazines" />
+          <subcat id="8040" name="Books/Technical" />
+          <subcat id="8050" name="Books/Other" />
+          <subcat id="8060" name="Books/Foreign" />
+        </category>
+        <category id="8020" name="Books/Comics" />
+        <category id="8050" name="Books/Other" />
+      </categories>
+    </caps>
+  </indexer>
+  <indexer id="torrentz2" configured="true">
+    <title>Torrentz2</title>
+    <description>Torrentz2 is a Public torrent meta-search engine combining results from dozens of torrent sites</description>
+    <link>https://torrentz2.eu/</link>
+    <language>en-us</language>
+    <type>public</type>
+    <caps>
+      <server title="Jackett" />
+      <searching>
+        <search available="yes" supportedParams="q" />
+        <tv-search available="yes" supportedParams="q,season,ep" />
+        <movie-search available="yes" supportedParams="q" />
+        <music-search available="no" supportedParams="" />
+        <audio-search available="no" supportedParams="" />
+      </searching>
+      <categories>
+        <category id="1010" name="Console/NDS" />
+        <category id="1040" name="Console/Xbox" />
+        <category id="2000" name="Movies">
+          <subcat id="2010" name="Movies/Foreign" />
+          <subcat id="2020" name="Movies/Other" />
+          <subcat id="2030" name="Movies/SD" />
+          <subcat id="2040" name="Movies/HD" />
+          <subcat id="2045" name="Movies/UHD" />
+          <subcat id="2050" name="Movies/3D" />
+          <subcat id="2060" name="Movies/BluRay" />
+          <subcat id="2070" name="Movies/DVD" />
+          <subcat id="2080" name="Movies/WEBDL" />
+        </category>
+        <category id="2040" name="Movies/HD" />
+        <category id="3000" name="Audio">
+          <subcat id="3010" name="Audio/MP3" />
+          <subcat id="3020" name="Audio/Video" />
+          <subcat id="3030" name="Audio/Audiobook" />
+          <subcat id="3040" name="Audio/Lossless" />
+          <subcat id="3050" name="Audio/Other" />
+          <subcat id="3060" name="Audio/Foreign" />
+        </category>
+        <category id="3010" name="Audio/MP3" />
+        <category id="3030" name="Audio/Audiobook" />
+        <category id="3040" name="Audio/Lossless" />
+        <category id="4010" name="PC/0day" />
+        <category id="4050" name="PC/Games" />
+        <category id="5000" name="TV">
+          <subcat id="5010" name="TV/WEB-DL" />
+          <subcat id="5020" name="TV/FOREIGN" />
+          <subcat id="5030" name="TV/SD" />
+          <subcat id="5040" name="TV/HD" />
+          <subcat id="5045" name="TV/UHD" />
+          <subcat id="5050" name="TV/OTHER" />
+          <subcat id="5060" name="TV/Sport" />
+          <subcat id="5070" name="TV/Anime" />
+          <subcat id="5080" name="TV/Documentary" />
+        </category>
+        <category id="5070" name="TV/Anime" />
+        <category id="6000" name="XXX">
+          <subcat id="6010" name="XXX/DVD" />
+          <subcat id="6020" name="XXX/WMV" />
+          <subcat id="6030" name="XXX/XviD" />
+          <subcat id="6040" name="XXX/x264" />
+          <subcat id="6050" name="XXX/Other" />
+          <subcat id="6060" name="XXX/Imageset" />
+          <subcat id="6070" name="XXX/Packs" />
+        </category>
+        <category id="7000" name="Other">
+          <subcat id="7010" name="Other/Misc" />
+          <subcat id="7020" name="Other/Hashed" />
+        </category>
+        <category id="8010" name="Books/Ebook" />
+        <category id="8020" name="Books/Comics" />
+        <category id="8030" name="Books/Magazines" />
+        <category id="8040" name="Books/Technical" />
+      </categories>
+    </caps>
+  </indexer>
+</indexers>

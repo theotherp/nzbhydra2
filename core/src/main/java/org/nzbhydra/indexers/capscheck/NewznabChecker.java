@@ -50,8 +50,20 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -81,12 +93,12 @@ public class NewznabChecker {
     private SearchModuleProvider searchModuleProvider;
 
 
-    protected UriComponentsBuilder getBaseUri(IndexerConfig indexerConfig) {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(indexerConfig.getHost()).path("/api");
-        if (!Strings.isNullOrEmpty(indexerConfig.getApiKey())) {
-            builder.queryParam("apikey", indexerConfig.getApiKey());
+    public List<CheckCapsResponse> checkCaps(CapsCheckRequest request) {
+        if (request.getCheckType() == CheckType.SINGLE) {
+            return Collections.singletonList(checkCaps(request.getIndexerConfig()));
+        } else {
+            return checkCaps(request.getCheckType());
         }
-        return builder;
     }
 
     public GenericResponse checkConnection(IndexerConfig indexerConfig) {
@@ -124,6 +136,14 @@ public class NewznabChecker {
         }
     }
 
+    protected UriComponentsBuilder getBaseUri(IndexerConfig indexerConfig) {
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(indexerConfig.getHost()).path("/api");
+        if (!Strings.isNullOrEmpty(indexerConfig.getApiKey())) {
+            builder.queryParam("apikey", indexerConfig.getApiKey());
+        }
+        return builder;
+    }
+
     protected boolean isTorznabResult(NewznabXmlRoot rssRoot) {
         return rssRoot.getRssChannel().getItems().stream().anyMatch(x -> x.getEnclosures().stream().anyMatch(enclosure -> "application/x-bittorrent".equals(enclosure.getType())) || !x.getTorznabAttributes().isEmpty());
     }
@@ -132,14 +152,6 @@ public class NewznabChecker {
         return rssRoot.getRssChannel().getItems().stream().anyMatch(x -> x.getEnclosures().stream().anyMatch(enclosure -> "application/x-nzb".equals(enclosure.getType())));
     }
 
-
-    public List<CheckCapsResponse> checkCaps(CapsCheckRequest request) {
-        if (request.getCheckType() == CheckType.SINGLE) {
-            return Collections.singletonList(checkCaps(request.getIndexerConfig()));
-        } else {
-            return checkCaps(request.getCheckType());
-        }
-    }
 
 
     /**
@@ -163,8 +175,7 @@ public class NewznabChecker {
         int timeout = indexerConfig.getTimeout().orElse(configProvider.getBaseConfig().getSearching().getTimeout()) + 1;
         CapsCheckLimit capsCheckLimit = CAPS_CHECK_LIMITS.stream().filter(x -> indexerConfig.getHost().toLowerCase().contains(x.urlContains)).findFirst().orElse(new CapsCheckLimit(MAX_CONNECTIONS, PAUSE_BETWEEN_CALLS, null));
         List<Callable<SingleCheckCapsResponse>> callables = new ArrayList<>();
-        for (int i = 0; i < requests.size(); i++) {
-            CheckCapsRequest request = requests.get(i);
+        for (CheckCapsRequest request : requests) {
             callables.add(() -> {
                 Thread.sleep(capsCheckLimit.delayInMiliseconds); //Give indexer some time to breathe
                 return singleCheckCaps(request, indexerConfig);
