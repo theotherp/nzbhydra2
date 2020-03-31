@@ -84,20 +84,33 @@ public class IndexerWeb {
 
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/indexer/readJackettConfig", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public List<IndexerConfig> readJackettConfig(@RequestBody JacketConfigReadRequest configReadRequest) throws Exception {
+    public JacketConfigReadResponse readJackettConfig(@RequestBody JacketConfigReadRequest configReadRequest) throws Exception {
+        JacketConfigReadResponse response = new JacketConfigReadResponse();
         List<IndexerConfig> newConfigs = new ArrayList<>(configReadRequest.existingIndexers);
         List<IndexerConfig> foundJackettConfigs = jacketConfigRetriever.retrieveIndexers(configReadRequest.jackettConfig);
+        int countUpdatedTrackers = 0;
+        int countAddedTrackers = 0;
 
         //Update existing configs, add new onex
         for (IndexerConfig foundJackettConfig : foundJackettConfigs) {
             final Optional<IndexerConfig> updatedIndexer = configReadRequest.existingIndexers.stream().filter(x -> x.getHost().equals(foundJackettConfig.getHost())).findFirst();
             if (updatedIndexer.isPresent()) {
-                newConfigs.remove(updatedIndexer.get());
+                updatedIndexer.get().setHost(foundJackettConfig.getHost());
+                updatedIndexer.get().setApiKey(foundJackettConfig.getApiKey());
+                updatedIndexer.get().setSupportedSearchIds(foundJackettConfig.getSupportedSearchIds());
+                updatedIndexer.get().setSupportedSearchTypes(foundJackettConfig.getSupportedSearchTypes());
+                countUpdatedTrackers++;
+            } else {
+                newConfigs.add(foundJackettConfig);
+                countAddedTrackers++;
             }
-            newConfigs.add(foundJackettConfig);
         }
 
-        return newConfigs;
+        response.setNewIndexersConfig(newConfigs);
+        response.setUpdatedTrackers(countUpdatedTrackers);
+        response.setAddedTrackers(countAddedTrackers);
+
+        return response;
     }
 
     @EventListener
@@ -111,6 +124,13 @@ public class IndexerWeb {
     private static class JacketConfigReadRequest {
         private List<IndexerConfig> existingIndexers;
         private IndexerConfig jackettConfig;
+    }
+
+    @Data
+    private static class JacketConfigReadResponse {
+        private List<IndexerConfig> newIndexersConfig;
+        private int addedTrackers;
+        private int updatedTrackers;
     }
 
 }

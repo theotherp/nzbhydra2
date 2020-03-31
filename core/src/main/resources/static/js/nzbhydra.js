@@ -3792,13 +3792,12 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
                     }
                 }).then(function (response) {
                     //Replace model with new result
-                    var lengthBefore = model.length;
                     model.splice(0, model.length);
-                    _.each(response.data, function (x) {
+                    _.each(response.data.newIndexersConfig, function (x) {
                         model.push(x);
                     });
-                    var addedIndexers = model.length - lengthBefore;
-                    growl.info("Added " + addedIndexers + " new trackers from Jackett");
+                    growl.info("Added " + response.data.addedTrackers + " new trackers from Jackett");
+                    growl.info("Updated " + response.data.updatedTrackers + " trackers from Jackett");
 
                 }, function (response) {
                     ModalService.open("Error reading jackett config", response.data, {}, "md", "left");
@@ -3865,7 +3864,6 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
             growl.error("That predefined indexer is already configured."); //For now this is the only case where adding is forbidden so we use this hardcoded message "for now"... (;-))
         }
     }
-
 
     function checkAddingAllowed(existingIndexers, preset) {
         if (!preset || !(preset.searchModuleType === "ANIZB" || preset.searchModuleType === "BINSEARCH" || preset.searchModuleType === "NZBINDEX" || preset.searchModuleType === "NZBCLUB")) {

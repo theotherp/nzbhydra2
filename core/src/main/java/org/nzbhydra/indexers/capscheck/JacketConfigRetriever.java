@@ -50,14 +50,12 @@ public class JacketConfigRetriever {
 
     public List<IndexerConfig> retrieveIndexers(IndexerConfig jackettConfig) throws Exception {
 
-//        final String xml = webAccess.callUrl("");
-
-
         final URI uri = IndexerChecker.getBaseUri(jackettConfig)
                 .pathSegment("v2.0", "indexers", "all", "results", "torznab")
                 .queryParam("t", "indexers")
                 .queryParam("configured", "true")
                 .build().toUri();
+        logger.info("Getting configured jackett trackers from {}", uri);
         final Object response = indexerWebAccess.get(uri, jackettConfig);
         if (!(response instanceof JacketCapsXmlRoot)) {
             throw new IOException("Unable to parse response from {}");
