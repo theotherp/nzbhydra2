@@ -1,3 +1,11 @@
+### v2.17.1 (2020-03-31)
+
+**Fix** When reading the jackett configuration update existing tracker configs instead of replacing them.
+
+**Note** Enable query generation for internal searches by default.
+
+
+
 ### v2.17.0 (2020-03-30)
 
 **Feature** Add option to read Jackett config and automatically add all configured trackers. Already configured trackers will be updated. Thanks for Davide Campagna for the tip.
