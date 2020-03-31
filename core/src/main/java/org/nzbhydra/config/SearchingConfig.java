@@ -29,7 +29,7 @@ public class SearchingConfig extends ValidatingConfig<SearchingConfig> {
     private List<String> forbiddenPosters = new ArrayList<>();
     private String forbiddenRegex;
     private List<String> forbiddenWords = new ArrayList<>();
-    private SearchSourceRestriction generateQueries = SearchSourceRestriction.NONE;
+    private SearchSourceRestriction generateQueries = SearchSourceRestriction.INTERNAL;
     @JsonFormat(shape = Shape.STRING)
     private SearchSourceRestriction idFallbackToQueryGeneration = SearchSourceRestriction.NONE;
     private boolean ignorePassworded = false;
