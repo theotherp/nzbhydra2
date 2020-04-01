@@ -259,11 +259,11 @@ public class Searcher {
                     entity.setResultsCount(indexerSearchResult.getTotalResults());
                     entity.setSuccessful(indexerSearchResult.isWasSuccessful());
                 }
-                for (SearchResultEntity x : indexerSearchResult.getSearchResultEntities()) {
-                    x.setIndexerSearchEntity(entity);
-                }
                 if (configProvider.getBaseConfig().getMain().isKeepHistory()) {
                     entity = indexerSearchRepository.save(entity);
+                    for (SearchResultEntity x : indexerSearchResult.getSearchResultEntities()) {
+                        x.setIndexerSearchEntity(entity);
+                    }
                 }
                 searchResultRepository.saveAll(indexerSearchResult.getSearchResultEntities());
                 searchCacheEntry.getIndexerCacheEntries().get(indexerSearchResult.getIndexer()).setIndexerSearchEntity(entity);

@@ -5719,6 +5719,7 @@ function ConfigFields($injector) {
                         {
                             key: 'keepStatsForWeeks',
                             type: 'horizontalInput',
+                            hideExpression: '!model.keepHistory',
                             templateOptions: {
                                 type: 'number',
                                 label: 'Keep stats for...',
