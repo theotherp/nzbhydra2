@@ -1,3 +1,11 @@
+### v2.17.2 (2020-04-01)
+
+**Fix** Fix database error when searching with disabled history.
+
+**Fix** Don't show option how long to keep stats with disabled history.
+
+
+
 ### v2.17.1 (2020-03-31)
 
 **Fix** When reading the jackett configuration update existing tracker configs instead of replacing them.
