@@ -281,9 +281,8 @@ public class Newznab extends Indexer<Xml> {
     protected UriComponentsBuilder extendQueryUrlWithSearchIds(SearchRequest searchRequest, UriComponentsBuilder componentsBuilder) {
         if (!searchRequest.getIdentifiers().isEmpty()) {
             Map<MediaIdType, String> params = new HashMap<>();
-            boolean indexerSupportsAnyOfTheProvidedIds = searchRequest.getIdentifiers().keySet().stream().anyMatch(x -> searchRequest.getIdentifiers().get(x) != null && config.getSupportedSearchIds().contains(x));
-            if (!indexerSupportsAnyOfTheProvidedIds) {
-                debug("Indexer doesn't support any of the provided search IDs: {}", Joiner.on(", ").join(searchRequest.getIdentifiers().keySet()));
+            boolean idConversionNeeded = isIdConversionNeeded(searchRequest);
+            if (idConversionNeeded) {
                 boolean canConvertAnyId = infoProvider.canConvertAny(searchRequest.getIdentifiers().keySet(), new HashSet<>(config.getSupportedSearchIds()));
                 if (canConvertAnyId) {
                     try {
@@ -337,6 +336,19 @@ public class Newznab extends Indexer<Xml> {
 
         }
         return componentsBuilder;
+    }
+
+    private boolean isIdConversionNeeded(SearchRequest searchRequest) {
+        final boolean indexerNeedsConversion = searchRequest.getIdentifiers().keySet().stream().noneMatch(x -> searchRequest.getIdentifiers().get(x) != null && config.getSupportedSearchIds().contains(x));
+        if (indexerNeedsConversion) {
+            debug("Indexer doesn't support any of the provided search IDs: {}", Joiner.on(", ").join(searchRequest.getIdentifiers().keySet()));
+            return true;
+        }
+        if (configProvider.getBaseConfig().getSearching().getAlwaysConvertIds().meets(searchRequest.getSource())) {
+            debug("Will convert IDs as ID conversion is to be always done for {}", configProvider.getBaseConfig().getSearching().getAlwaysConvertIds());
+            return true;
+        }
+        return false;
     }
 
     protected Xml getAndStoreResultToDatabase(URI uri, IndexerApiAccessType apiAccessType) throws IndexerAccessException {

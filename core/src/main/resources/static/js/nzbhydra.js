@@ -5809,7 +5809,7 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'switch',
                                 label: 'Ignore temporary errors',
-                                help: "If enabled indexers will not be temporarily disabled after an error. Unrecoverable errors (e.g. wrong API key) will still disable the indexer"
+                                help: "If enabled indexers will not be temporarily disabled after an error. Unrecoverable errors (e.g. wrong API key) will still disable the indexer."
                             }
                         },
                         {
@@ -5823,7 +5823,7 @@ function ConfigFields($injector) {
                                     {name: 'All searches', value: 'BOTH'},
                                     {name: 'Never', value: 'NONE'}
                                 ],
-                                help: "Generate queries for indexers which do not support ID based searches"
+                                help: "Generate queries for indexers which do not support ID based searches."
                             }
                         },
                         {
@@ -5837,7 +5837,21 @@ function ConfigFields($injector) {
                                     {name: 'All searches', value: 'BOTH'},
                                     {name: 'Never', value: 'NONE'}
                                 ],
-                                help: "When no results were found for a query ID search again using a generated query (on indexer level)"
+                                help: "When no results were found for a query ID search again using a generated query (on indexer level)."
+                            }
+                        },
+                        {
+                            key: 'alwaysConvertIds',
+                            type: 'horizontalSelect',
+                            templateOptions: {
+                                label: 'Always convert media IDs for...',
+                                options: [
+                                    {name: 'Internal searches', value: 'INTERNAL'},
+                                    {name: 'API searches', value: 'API'},
+                                    {name: 'All searches', value: 'BOTH'},
+                                    {name: 'Never', value: 'NONE'}
+                                ],
+                                help: "When enabled media ID conversions will always be done even when an indexer supports the already known ID(s)."
                             }
                         },
                         {
