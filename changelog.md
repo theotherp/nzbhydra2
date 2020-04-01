@@ -1,3 +1,9 @@
+### v2.17.3 (2020-04-01)
+
+**Feature** Add option to always convert media IDs. This might make sense for indexers that only sometimes support a certain ID, i.e. don't have all results tagged with a certain ID but may have tagged them with others.
+
+
+
 ### v2.17.2 (2020-04-01)
 
 **Fix** Fix database error when searching with disabled history.
