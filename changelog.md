@@ -1,3 +1,9 @@
+### v2.17.5 (2020-04-05)
+
+**Fix** Fix copy & paste error introduced with last version.
+
+
+
 ### v2.17.4 (2020-04-05)
 
 **Fix** Min and max size were not filled on page load with a custom default category was configured.
