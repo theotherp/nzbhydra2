@@ -1,3 +1,9 @@
+### v2.17.4 (2020-04-05)
+
+**Fix** Min and max size were not filled on page load with a custom default category was configured.
+
+
+
 ### v2.17.3 (2020-04-01)
 
 **Feature** Add option to always convert media IDs. This might make sense for indexers that only sometimes support a certain ID, i.e. don't have all results tagged with a certain ID but may have tagged them with others.
