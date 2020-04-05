@@ -30,6 +30,8 @@
     <properties>
         <okhttp.version>3.14.6</okhttp.version>
         <jackson.version>2.10.2</jackson.version>
+        <spring.boot.version>2.2.0.RELEASE</spring.boot.version>
+        <maven.compiler.plugin.version>3.6.2</maven.compiler.plugin.version>
     </properties>
 
     <dependencies>
@@ -63,11 +65,56 @@
             <name>jcenter-bintray</name>
             <url>https://jcenter.bintray.com</url>
         </repository>
-        <!--        <repository>-->
-        <!--            <id>mvncentral</id>-->
-        <!--            <name>mvncentral</name>-->
-        <!--            <url>https://repo1.maven.org/maven2/</url>-->
-        <!--        </repository>-->
+
     </repositories>
+
+
+    <build>
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.0.0</version>
+                <configuration>
+                    <archive>
+                        <index>true</index>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                        </manifest>
+                        <manifestEntries>
+                            <Built-By>TheOtherP</Built-By>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven.compiler.plugin.version}</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring.boot.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                        <configuration>
+                            <!--Add classifier to fat jar because otherwise depending modules won't find classes in the JAR-->
+                            <classifier>exec</classifier>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+        </plugins>
+    </build>
 
 </project>

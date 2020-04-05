@@ -27,17 +27,20 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
     $scope.categories = _.filter(CategoriesService.getAllCategories(), function (c) {
         return c.mayBeSelected && !(c.ignoreResultsFrom === "INTERNAL" || c.ignoreResultsFrom === "BOTH");
     });
+    $scope.minsize = getNumberOrUndefined($stateParams.minsize);
+    $scope.maxsize = getNumberOrUndefined($stateParams.maxsize);
     if (angular.isDefined($stateParams.category) && $stateParams.category) {
         $scope.category = CategoriesService.getByName($stateParams.category);
     } else {
         $scope.category = CategoriesService.getDefault();
+        $scope.minsize = $scope.category.minSizePreset;
+        $scope.maxsize = $scope.category.minSizePreset;
     }
     $scope.category = (_.isUndefined($stateParams.category) || $stateParams.category === "") ? CategoriesService.getDefault() : CategoriesService.getByName($stateParams.category);
     $scope.season = $stateParams.season;
     $scope.episode = $stateParams.episode;
     $scope.query = $stateParams.query;
-    $scope.minsize = getNumberOrUndefined($stateParams.minsize);
-    $scope.maxsize = getNumberOrUndefined($stateParams.maxsize);
+
     $scope.minage = getNumberOrUndefined($stateParams.minage);
     $scope.maxage = getNumberOrUndefined($stateParams.maxage);
     if (angular.isDefined($stateParams.indexers)) {
