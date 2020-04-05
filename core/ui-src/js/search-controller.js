@@ -34,7 +34,7 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
     } else {
         $scope.category = CategoriesService.getDefault();
         $scope.minsize = $scope.category.minSizePreset;
-        $scope.maxsize = $scope.category.minSizePreset;
+        $scope.maxsize = $scope.category.maxSizePreset;
     }
     $scope.category = (_.isUndefined($stateParams.category) || $stateParams.category === "") ? CategoriesService.getDefault() : CategoriesService.getByName($stateParams.category);
     $scope.season = $stateParams.season;
