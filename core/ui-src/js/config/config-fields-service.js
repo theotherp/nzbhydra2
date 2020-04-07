@@ -600,6 +600,7 @@ function ConfigFields($injector) {
                                 type: 'number',
                                 label: 'Timeout when accessing indexers',
                                 help: 'Any web call to an indexer taking longer than this is aborted.',
+                                min: 1,
                                 addonRight: {
                                     text: 'seconds'
                                 }

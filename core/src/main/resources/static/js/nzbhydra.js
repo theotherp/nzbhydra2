@@ -3424,6 +3424,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
             templateOptions: {
                 type: 'number',
                 label: 'Timeout',
+                min: 1,
                 help: 'Supercedes the general timeout in "Searching".'
             }
         },
@@ -5798,6 +5799,7 @@ function ConfigFields($injector) {
                                 type: 'number',
                                 label: 'Timeout when accessing indexers',
                                 help: 'Any web call to an indexer taking longer than this is aborted.',
+                                min: 1,
                                 addonRight: {
                                     text: 'seconds'
                                 }

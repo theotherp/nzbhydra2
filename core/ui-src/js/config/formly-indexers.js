@@ -170,6 +170,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
             templateOptions: {
                 type: 'number',
                 label: 'Timeout',
+                min: 1,
                 help: 'Supercedes the general timeout in "Searching".'
             }
         },
