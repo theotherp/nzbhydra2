@@ -56,10 +56,8 @@ import java.util.Map;
 @SuppressWarnings("ResultOfMethodCallIgnored")
 @Configuration
 @EnableAutoConfiguration(exclude = {
-        //WebSocketServletAutoConfiguration.class,
         AopAutoConfiguration.class, org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration.class})
 @ComponentScan
-//(excludeFilters = {@ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {GlobalMethodSecurityConfiguration.class})})
 @RestController
 @EnableCaching
 @EnableScheduling

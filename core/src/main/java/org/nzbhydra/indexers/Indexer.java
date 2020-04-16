@@ -121,8 +121,7 @@ public abstract class Indexer<T> {
         try {
             indexerSearchResult = searchInternal(searchRequest, offset, limit);
 
-            boolean fallbackNeeded = indexerSearchResult.getTotalResults() == 0 && !searchRequest.getIdentifiers().isEmpty() && searchRequest.getInternalData().getFallbackState() != FallbackState.USED && configProvider.getBaseConfig().getSearching().getIdFallbackToQueryGeneration().meets(searchRequest);
-            if (fallbackNeeded) {
+            if (isFallbackRequired(searchRequest, indexerSearchResult)) {
                 info("No results found for ID based search. Will do a fallback search using a generated query");
 
                 //Search should be shown as successful (albeit empty) and should result in the number of expected finished searches to be increased
@@ -135,10 +134,11 @@ public abstract class Indexer<T> {
                 eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, "Indexer " + getName() + " completed fallback search successfully with " + indexerSearchResult.getTotalResults() + " total results"));
             } else {
                 eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, "Indexer " + getName() + " completed search successfully with " + indexerSearchResult.getTotalResults() + " total results"));
+
             }
 
         } catch (IndexerSearchAbortedException e) {
-            logger.warn("Unexpected error while preparing search: " + e.getMessage());
+            warn("Unexpected error while preparing search: " + e.getMessage());
             indexerSearchResult = new IndexerSearchResult(this, e.getMessage());
             eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, "Unexpected error while preparing search for indexer " + getName()));
         } catch (IndexerAccessException e) {
@@ -147,15 +147,15 @@ public abstract class Indexer<T> {
             eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, "Error while accessing indexer " + getName()));
         } catch (Exception e) {
             if (e.getCause() instanceof InterruptedException) {
-                logger.debug("Hydra was shut down, ignoring InterruptedException");
+                debug("Hydra was shut down, ignoring InterruptedException");
                 indexerSearchResult = new IndexerSearchResult(this, e.getMessage());
             } else {
-                logger.error("Unexpected error while searching", e);
+                error("Unexpected error while searching", e);
                 eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, "Unexpected error while searching indexer " + getName()));
                 try {
                     handleFailure(e.getMessage(), false, IndexerApiAccessType.SEARCH, null, IndexerAccessResult.CONNECTION_ERROR); //LATER depending on type of error, perhaps not at all because it might be a bug
                 } catch (Exception e1) {
-                    logger.error("Error while handling indexer failure. API access was not saved to database", e1);
+                    error("Error while handling indexer failure. API access was not saved to database", e1);
                 }
                 indexerSearchResult = new IndexerSearchResult(this, e.getMessage());
             }
@@ -163,6 +163,16 @@ public abstract class Indexer<T> {
         eventPublisher.publishEvent(new IndexerSearchFinishedEvent(searchRequest));
 
         return indexerSearchResult;
+    }
+
+    private boolean isFallbackRequired(SearchRequest searchRequest, IndexerSearchResult indexerSearchResult) {
+        debug("Fallback required: totalResults: {}. identifiersSize: {}. fallbackState: {}. fallbackConfig: {}. searchRequestSource: {}",
+                indexerSearchResult.getTotalResults(),
+                searchRequest.getIdentifiers().size(),
+                searchRequest.getInternalData().getFallbackState(),
+                configProvider.getBaseConfig().getSearching().getIdFallbackToQueryGeneration(),
+                searchRequest.getSource());
+        return indexerSearchResult.getTotalResults() == 0 && !searchRequest.getIdentifiers().isEmpty() && searchRequest.getInternalData().getFallbackState() != FallbackState.USED && configProvider.getBaseConfig().getSearching().getIdFallbackToQueryGeneration().meets(searchRequest);
     }
 
     protected IndexerSearchResult searchInternal(SearchRequest searchRequest, int offset, Integer limit) throws IndexerSearchAbortedException, IndexerAccessException {
@@ -256,12 +266,12 @@ public abstract class Indexer<T> {
                 item.setGuid(guid);
                 item.setSearchResultId(guid);
             }
-            logger.debug("Found {} results which were already in the database and {} new ones", alreadySavedIds.size(), searchResultEntities.size());
+            debug("Found {} results which were already in the database and {} new ones", alreadySavedIds.size(), searchResultEntities.size());
             try {
                 searchResultRepository.saveAll(searchResultEntities);
                 indexerSearchResult.setSearchResultEntities(new HashSet<>(searchResultEntities));
             } catch (EntityExistsException e) {
-                logger.error("Unable to save the search results to the database", e);
+                error("Unable to save the search results to the database", e);
             }
         }
 
@@ -367,7 +377,7 @@ public abstract class Indexer<T> {
             throw e;
         }
         long responseTime = stopwatch.elapsed(TimeUnit.MILLISECONDS);
-        logger.debug(LoggingMarkers.PERFORMANCE, "Call to {} took {}ms", uri, responseTime);
+        debug(LoggingMarkers.PERFORMANCE, "Call to {} took {}ms", uri, responseTime);
         handleSuccess(apiAccessType, responseTime);
         return result;
     }
@@ -493,7 +503,7 @@ public abstract class Indexer<T> {
         }
         String sanitizedQuery = query.replaceAll("[\\(\\)=@#\\$%\\^,\\?<>{}\\|!':]", "");
         if (!sanitizedQuery.equals(query)) {
-            logger.debug("Removed illegal characters from title '{}'. Title that will be used for query is '{}'", query, sanitizedQuery);
+            debug("Removed illegal characters from title '{}'. Title that will be used for query is '{}'", query, sanitizedQuery);
         }
         return sanitizedQuery;
     }
@@ -504,7 +514,7 @@ public abstract class Indexer<T> {
                 Instant instant = Instant.from(formatter.parse(dateString));
                 return Optional.of(instant);
             } catch (DateTimeParseException e) {
-                logger.debug("Unable to parse date string " + dateString);
+                debug("Unable to parse date string " + dateString);
             }
         }
         return Optional.empty();
