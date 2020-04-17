@@ -1,3 +1,13 @@
+### v2.17.6 (2020-04-17)
+
+**Fix** Fix passworded releases not being included for a certain indexer.
+
+**Note** Added logging to debug query generation fallback.
+
+**Note** Added thank-you to newsgroup.ninja for sponsoring me.
+
+
+
 ### v2.17.5 (2020-04-05)
 
 **Fix** Fix copy & paste error introduced with last version.
