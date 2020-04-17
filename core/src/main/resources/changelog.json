@@ -3,6 +3,10 @@
     "version": "v2.17.6",
     "changes": [
       {
+        "type": "fix",
+        "text": "Fix passworded releases not being included for a certain indexer."
+      },
+      {
         "type": "note",
         "text": "Added logging to debug query generation fallback."
       },

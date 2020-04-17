@@ -185,12 +185,15 @@ public class Newznab extends Indexer<Xml> {
             componentsBuilder.queryParam("minsize", searchRequest.getMinsize().get());
         }
 
-        if (!(configProvider.getBaseConfig().getSearching().isIgnorePassworded() || searchRequest.getInternalData().isIncludePasswords())) {
-            componentsBuilder.queryParam("password", "0");
-        } else if (config.getHost().toLowerCase().contains("omgwtf")) {
-            componentsBuilder.queryParam("pw", "1");
+        String passwordParameter = "password";
+        if (config.getHost().toLowerCase().contains("omgwtf")) {
+            passwordParameter = "pw";
+        }
+
+        if (!configProvider.getBaseConfig().getSearching().isIgnorePassworded() || searchRequest.getInternalData().isIncludePasswords()) {
+            componentsBuilder.queryParam(passwordParameter, "1");
         } else {
-            componentsBuilder.queryParam("password", "1");
+            componentsBuilder.queryParam(passwordParameter, "0");
         }
 
 
