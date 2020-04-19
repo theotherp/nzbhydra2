@@ -3,10 +3,10 @@ docker system prune -a
 
 
 Create image:
-sudo docker create --name=hydra2io7 -v /tmp:/config -v /tmp:/downloads -e PGID=1000 -e PUID=1000 -e TZ=Europe/London -p 5076:5076 linuxserver/hydra2:latest
+sudo docker create --name=hydra2io7 -v /tmp:/config -v /tmp:/downloads -e PGID=1000 -e PUID=1000 -e TZ=Europe/London -p 5076:5076 linuxserver/nzbhydra2:latest
 
 Run image:
 sudo docker start -a hydra2io7
 
 Update image:
-sudo docker pull linuxserver/hydra2:latest
+sudo docker pull linuxserver/nzbhydra2:latest
