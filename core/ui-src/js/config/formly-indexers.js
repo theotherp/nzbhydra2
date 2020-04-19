@@ -14,6 +14,28 @@
  *  limitations under the License.
  */
 
+function regexValidator(regex, message, prefixViewValue, preventEmpty) {
+    return {
+        expression: function ($viewValue, $modelValue) {
+            var value = $modelValue || $viewValue;
+            if (value) {
+                if (Array.isArray(value)) {
+                    for (var i = 0; i < value.length; i++) {
+                        if (!regex.test(value[i])) {
+                            return false;
+                        }
+                    }
+                    return true;
+                } else {
+                    return regex.test(value);
+                }
+            }
+            return !preventEmpty;
+        },
+        message: (prefixViewValue ? '$viewValue + " ' : '" ') + message + '"'
+    };
+}
+
 function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesService) {
     var fieldset = [];
     if (indexerModel.searchModuleType === "TORZNAB") {
@@ -352,6 +374,21 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
             templateOptions: {
                 label: 'Color',
                 help: 'If set it will be used in the search results to mark the indexer\'s results.'
+            }
+        }
+    );
+
+    fieldset.push(
+        {
+            key: 'vipExpirationDate',
+            type: 'horizontalInput',
+            templateOptions: {
+                required: false,
+                label: 'VIP expiry',
+                help: 'Enter when your VIP access expires and NZBHydra will track it and warn you when close to expiry. Enter as YYYY-MM-DD.'
+            },
+            validators: {
+                port: regexValidator(/^\d{4}\-\d{2}\-\d{2}$/, "is no valid date (must be YYYY-MM-DD)", true, false)
             }
         }
     );

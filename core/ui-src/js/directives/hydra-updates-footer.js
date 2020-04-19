@@ -24,7 +24,7 @@ function hydraUpdatesFooter() {
         controller: controller
     };
 
-    function controller($scope, UpdateService, RequestsErrorHandler, HydraAuthService, $http, $uibModal, ConfigService, GenericStorageService, ModalService) {
+    function controller($scope, UpdateService, RequestsErrorHandler, HydraAuthService, $http, $uibModal, ConfigService, GenericStorageService, ModalService, growl) {
 
         $scope.updateAvailable = false;
         $scope.checked = false;
@@ -145,6 +145,25 @@ function hydraUpdatesFooter() {
             });
         }
 
+        function checkExpiredIndexers() {
+            _.each(ConfigService.getSafe().indexers, function (indexer) {
+                if (indexer.vipExpirationDate != null) {
+                    var expiryWarning;
+                    var expiryDate = moment(indexer.vipExpirationDate, "YYYY-MM-DD");
+                    var messagePrefix = "VIP access for indexer " + indexer.name;
+                    if (expiryDate < moment()) {
+                        expiryWarning = messagePrefix + " expired on " + indexer.vipExpirationDate;
+                    } else if (expiryDate.subtract(7, 'days') < moment()) {
+                        expiryWarning = messagePrefix + " will expire on " + indexer.vipExpirationDate;
+                    }
+                    if (expiryWarning) {
+                        console.log(expiryWarning);
+                        growl.warning(expiryWarning);
+                    }
+                }
+            });
+        }
+
         function checkAndShowWelcome() {
             RequestsErrorHandler.specificallyHandled(function () {
                 $http.get("internalapi/welcomeshown").then(function (response) {
@@ -163,6 +182,7 @@ function hydraUpdatesFooter() {
                         });
                     } else {
                         _.defer(checkAndShowNews);
+                        _.defer(checkExpiredIndexers);
                     }
                 }, function () {
                     console.log("Error while checking for welcome")

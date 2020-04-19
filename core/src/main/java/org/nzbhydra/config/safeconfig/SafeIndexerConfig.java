@@ -4,6 +4,7 @@ import lombok.Data;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.indexer.IndexerConfig;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Data
@@ -16,6 +17,7 @@ public class SafeIndexerConfig {
     private String enabledForSearchSource;
     private String searchModuleType;
     private String color;
+    private LocalDate vipExpirationDate;
 
     public SafeIndexerConfig(IndexerConfig indexerConfig, BaseConfig baseConfig) {
         this.name = indexerConfig.getName();
@@ -25,6 +27,7 @@ public class SafeIndexerConfig {
         this.enabledForSearchSource = indexerConfig.getEnabledForSearchSource().name();
         this.searchModuleType = indexerConfig.getSearchModuleType().name();
         this.color = indexerConfig.getColor();
+        this.vipExpirationDate = indexerConfig.getVipExpirationDate();
     }
 
 }

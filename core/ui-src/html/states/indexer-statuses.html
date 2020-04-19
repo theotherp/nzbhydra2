@@ -3,16 +3,19 @@
   </caption>
   <thead>
   <tr>
-    <th class="col-md-2">Indexer</th>
-    <th class="col-md-2">State</th>
-    <th class="col-md-2">Disabled until</th>
-    <th class="col-md-8">Reason</th>
-    <th class="col-md-2">API hits <span class="glyphicon glyphicon-question-sign" tooltip-placement="auto top"
-                                        uib-tooltip="Shows the number of API hits either since the last limit reset time or for the last 24 hours, and the limit if configured"></span></th>
-    <th class="col-md-2">Downloads <span class="glyphicon glyphicon-question-sign" tooltip-placement="auto top"
-                                         uib-tooltip="Shows the number of downloads either since the last limit reset time or for the last 24 hours, and the limit if configured"></span></th>
-    <th class="col-md-2">Next hit allowed <span class="glyphicon glyphicon-question-sign" tooltip-placement="auto top"
-                                                uib-tooltip="Either the next time the API limit is reset (if a certain hour of day is configured) or when the next hit will be allowed by the rolling limit window"></span></th>
+    <th class="col-md-2" style="width:10%">Indexer</th>
+    <th class="col-md-1" style="width:3%">State</th>
+    <th class="col-md-2" style="width:10%">Disabled until</th>
+    <th class="col-md-7" style="width:45%">Last error <span class="glyphicon glyphicon-question-sign" tooltip-placement="auto top"
+                                                            uib-tooltip="Only shown when the indexer is currently disabled."></span></th>
+    <th class="col-md-2" style="width:6%">API hits <span class="glyphicon glyphicon-question-sign" tooltip-placement="auto top"
+                                                         uib-tooltip="Shows the number of API hits either since the last limit reset time or for the last 24 hours, and the limit if configured."></span></th>
+    <th class="col-md-2" style="width:8%">Downloads <span class="glyphicon glyphicon-question-sign" tooltip-placement="auto top"
+                                                          uib-tooltip="Shows the number of downloads either since the last limit reset time or for the last 24 hours, and the limit if configured."></span></th>
+    <th class="col-md-2" style="width:10%">Next hit allowed <span class="glyphicon glyphicon-question-sign" tooltip-placement="auto top"
+                                                                  uib-tooltip="Either the next time the API limit is reset (if a certain hour of day is configured) or when the next hit will be allowed by the rolling limit window."></span>
+    </th>
+    <th class="col-md-2" style="width:8%">VIP expiry</th>
   </tr>
   </thead>
   
@@ -34,6 +37,8 @@
     <td>{{::indexerStatus.apiHits}}<span ng-if="indexerStatus.apiHitLimit">/{{::indexerStatus.apiHitLimit}}</span></td>
     <td>{{::indexerStatus.downloadHits}}<span ng-if="indexerStatus.downloadHitLimit">/{{::indexerStatus.downloadHitLimit}}</span></td>
     <td>{{::indexerStatus.apiResetTime | formatTimestamp}}<span ng-if="indexerStatus.downloadResetTime">/{{::indexerStatus.downloadResetTime | formatTimestamp}}</span></td>
+    <td>{{::indexerStatus.vipExpirationDate}} <span class="glyphicon glyphicon-exclamation-sign" tooltip-placement="auto top"
+                                                    uib-tooltip="{{indexerStatus.expiryWarning}}" ng-if="indexerStatus.expiryWarning"></span></td>
   </tr>
   </tbody>
 </table>

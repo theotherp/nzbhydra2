@@ -24,6 +24,20 @@ function indexerInput() {
         $scope.onBlur = function () {
             $scope.isFocused = false;
         };
+
+        var expiryWarning;
+        if ($scope.indexer.vipExpirationDate != null) {
+            var expiryDate = moment($scope.indexer.vipExpirationDate, "YYYY-MM-DD");
+            if (expiryDate < moment()) {
+                console.log("Expiry date reached for indexer " + $scope.indexer.name);
+                expiryWarning = "VIP access expired on " + $scope.indexer.vipExpirationDate;
+            } else if (expiryDate.subtract(7, 'days') < moment()) {
+                console.log("Expiry date near for indexer " + $scope.indexer.name);
+                expiryWarning = "VIP access will expire on " + $scope.indexer.vipExpirationDate;
+            }
+        }
+
+        $scope.expiryWarning = expiryWarning;
     }
 }
 

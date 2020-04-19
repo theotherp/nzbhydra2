@@ -213,7 +213,6 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
                     controller: function ($scope, $state) {
                         $scope.$state = $state;
                         $scope.bootstrapped = bootstrapped;
-                        console.log(bootstrapped);
                     },
                     resolve: {
                         loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {

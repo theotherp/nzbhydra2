@@ -213,7 +213,6 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
                     controller: ["$scope", "$state", function ($scope, $state) {
                         $scope.$state = $state;
                         $scope.bootstrapped = bootstrapped;
-                        console.log(bootstrapped);
                     }],
                     resolve: {
                         loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {
@@ -1591,6 +1590,20 @@ function indexerInput() {
         $scope.onBlur = function () {
             $scope.isFocused = false;
         };
+
+        var expiryWarning;
+        if ($scope.indexer.vipExpirationDate != null) {
+            var expiryDate = moment($scope.indexer.vipExpirationDate, "YYYY-MM-DD");
+            if (expiryDate < moment()) {
+                console.log("Expiry date reached for indexer " + $scope.indexer.name);
+                expiryWarning = "VIP access expired on " + $scope.indexer.vipExpirationDate;
+            } else if (expiryDate.subtract(7, 'days') < moment()) {
+                console.log("Expiry date near for indexer " + $scope.indexer.name);
+                expiryWarning = "VIP access will expire on " + $scope.indexer.vipExpirationDate;
+            }
+        }
+
+        $scope.expiryWarning = expiryWarning;
     }
 }
 
@@ -1664,13 +1677,13 @@ angular
     .directive('hydraUpdatesFooter', hydraUpdatesFooter);
 
 function hydraUpdatesFooter() {
-    controller.$inject = ["$scope", "UpdateService", "RequestsErrorHandler", "HydraAuthService", "$http", "$uibModal", "ConfigService", "GenericStorageService", "ModalService"];
+    controller.$inject = ["$scope", "UpdateService", "RequestsErrorHandler", "HydraAuthService", "$http", "$uibModal", "ConfigService", "GenericStorageService", "ModalService", "growl"];
     return {
         templateUrl: 'static/html/directives/updates-footer.html',
         controller: controller
     };
 
-    function controller($scope, UpdateService, RequestsErrorHandler, HydraAuthService, $http, $uibModal, ConfigService, GenericStorageService, ModalService) {
+    function controller($scope, UpdateService, RequestsErrorHandler, HydraAuthService, $http, $uibModal, ConfigService, GenericStorageService, ModalService, growl) {
 
         $scope.updateAvailable = false;
         $scope.checked = false;
@@ -1791,6 +1804,25 @@ function hydraUpdatesFooter() {
             });
         }
 
+        function checkExpiredIndexers() {
+            _.each(ConfigService.getSafe().indexers, function (indexer) {
+                if (indexer.vipExpirationDate != null) {
+                    var expiryWarning;
+                    var expiryDate = moment(indexer.vipExpirationDate, "YYYY-MM-DD");
+                    var messagePrefix = "VIP access for indexer " + indexer.name;
+                    if (expiryDate < moment()) {
+                        expiryWarning = messagePrefix + " expired on " + indexer.vipExpirationDate;
+                    } else if (expiryDate.subtract(7, 'days') < moment()) {
+                        expiryWarning = messagePrefix + " will expire on " + indexer.vipExpirationDate;
+                    }
+                    if (expiryWarning) {
+                        console.log(expiryWarning);
+                        growl.warning(expiryWarning);
+                    }
+                }
+            });
+        }
+
         function checkAndShowWelcome() {
             RequestsErrorHandler.specificallyHandled(function () {
                 $http.get("internalapi/welcomeshown").then(function (response) {
@@ -1809,6 +1841,7 @@ function hydraUpdatesFooter() {
                         });
                     } else {
                         _.defer(checkAndShowNews);
+                        _.defer(checkExpiredIndexers);
                     }
                 }, function () {
                     console.log("Error while checking for welcome")
@@ -3268,6 +3301,28 @@ function addableNzb(DebugService) {
 CheckCapsModalInstanceCtrl.$inject = ["$scope", "$interval", "$http", "$timeout", "growl", "capsCheckRequest"];
 IndexerConfigBoxService.$inject = ["$http", "$q", "$uibModal"];
 IndexerCheckBeforeCloseService.$inject = ["$q", "ModalService", "IndexerConfigBoxService", "growl", "blockUI"];
+function regexValidator(regex, message, prefixViewValue, preventEmpty) {
+    return {
+        expression: function ($viewValue, $modelValue) {
+            var value = $modelValue || $viewValue;
+            if (value) {
+                if (Array.isArray(value)) {
+                    for (var i = 0; i < value.length; i++) {
+                        if (!regex.test(value[i])) {
+                            return false;
+                        }
+                    }
+                    return true;
+                } else {
+                    return regex.test(value);
+                }
+            }
+            return !preventEmpty;
+        },
+        message: (prefixViewValue ? '$viewValue + " ' : '" ') + message + '"'
+    };
+}
+
 function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesService) {
     var fieldset = [];
     if (indexerModel.searchModuleType === "TORZNAB") {
@@ -3599,13 +3654,28 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
         }
     );
 
-     fieldset.push(
+    fieldset.push(
         {
             key: 'color',
             type: 'colorInput',
             templateOptions: {
                 label: 'Color',
                 help: 'If set it will be used in the search results to mark the indexer\'s results.'
+            }
+        }
+    );
+
+    fieldset.push(
+        {
+            key: 'vipExpirationDate',
+            type: 'horizontalInput',
+            templateOptions: {
+                required: false,
+                label: 'VIP expiry',
+                help: 'Enter when your VIP access expires and NZBHydra will track it and warn you when close to expiry. Enter as YYYY-MM-DD.'
+            },
+            validators: {
+                port: regexValidator(/^\d{4}\-\d{2}\-\d{2}$/, "is no valid date (must be YYYY-MM-DD)", true, false)
             }
         }
     );
@@ -8150,7 +8220,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
 
     var indexerColors = {};
 
-    _.each(ConfigService.getSafe().indexers, function(indexer) {
+    _.each(ConfigService.getSafe().indexers, function (indexer) {
         indexerColors[indexer.name] = indexer.color;
     });
 
@@ -8665,7 +8735,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
                 return "";
             }
             console.log(indexerColor);
-            result.style = "background-color: "  + indexerColor.replace("rgb", "rgba").replace( ")", ",0.5)")
+            result.style = "background-color: " + indexerColor.replace("rgb", "rgba").replace(")", ",0.5)")
         });
 
         var filtered = _.filter(results, filter);
@@ -10276,6 +10346,7 @@ formatDate.$inject = ["dateFilter"];angular
 
 function IndexerStatusesController($scope, $http, statuses) {
     $scope.statuses = statuses.data;
+    $scope.expiryWarnings = {};
 
     $scope.formatState = function (state) {
         if (state === "ENABLED") {
@@ -10304,6 +10375,19 @@ function IndexerStatusesController($scope, $http, statuses) {
     $scope.isInPast = function (epochSeconds) {
         return epochSeconds < moment().unix();
     };
+
+
+    _.each($scope.statuses, function (status) {
+        var expiryDate = moment(status.vipExpirationDate, "YYYY-MM-DD");
+        var messagePrefix = "VIP access";
+        if (expiryDate < moment()) {
+            status.expiryWarning = messagePrefix + " expired";
+        } else if (expiryDate.subtract(7, 'days') < moment()) {
+            status.expiryWarning = messagePrefix + " will expire in the next 7 days";
+        }
+        console.log(status.expiryWarning);
+
+    });
 }
 
 angular

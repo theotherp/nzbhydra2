@@ -4,6 +4,7 @@ angular
 
 function IndexerStatusesController($scope, $http, statuses) {
     $scope.statuses = statuses.data;
+    $scope.expiryWarnings = {};
 
     $scope.formatState = function (state) {
         if (state === "ENABLED") {
@@ -32,6 +33,19 @@ function IndexerStatusesController($scope, $http, statuses) {
     $scope.isInPast = function (epochSeconds) {
         return epochSeconds < moment().unix();
     };
+
+
+    _.each($scope.statuses, function (status) {
+        var expiryDate = moment(status.vipExpirationDate, "YYYY-MM-DD");
+        var messagePrefix = "VIP access";
+        if (expiryDate < moment()) {
+            status.expiryWarning = messagePrefix + " expired";
+        } else if (expiryDate.subtract(7, 'days') < moment()) {
+            status.expiryWarning = messagePrefix + " will expire in the next 7 days";
+        }
+        console.log(status.expiryWarning);
+
+    });
 }
 
 angular
