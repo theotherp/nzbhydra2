@@ -1,3 +1,15 @@
+### v2.18.0 BETA (2020-04-19)
+
+**Feature** Added option to define a color for an indexer. Results from that indexer will be marked using that color.
+
+**Fix** Some indexers apparently return all results for ID based searches when actually no results were found. In this case it will be handled as if no results were found.
+
+**Fix** Adjust width of title box in search form when displaying results.
+
+**Fix** Fallback to query generation was often not executed when it should've.
+
+
+
 ### v2.17.6 (2020-04-17)
 
 **Fix** Fix passworded releases not being included for a certain indexer.
