@@ -410,10 +410,18 @@ public class Newznab extends Indexer<Xml> {
     }
 
     @Override
-    protected List<SearchResultItem> getSearchResultItems(Xml rssRoot) {
+    protected List<SearchResultItem> getSearchResultItems(Xml rssRoot, SearchRequest searchRequest) {
         List<SearchResultItem> searchResultItems = new ArrayList<>();
 
-        for (NewznabXmlItem item : ((NewznabXmlRoot) rssRoot).getRssChannel().getItems()) {
+        final NewznabXmlRoot newznabXmlRoot = (NewznabXmlRoot) rssRoot;
+        final Integer total = newznabXmlRoot.getRssChannel().getNewznabResponse().getTotal();
+        if (searchRequest.isIdBasedQuery() && total >= 10_000) {
+            warn("Indexer returned " + total + " results for an ID based searched. Will interpret this as no results found");
+            newznabXmlRoot.getRssChannel().getNewznabResponse().setTotal(0);
+            newznabXmlRoot.getRssChannel().getItems().clear();
+        }
+
+        for (NewznabXmlItem item : newznabXmlRoot.getRssChannel().getItems()) {
             try {
                 SearchResultItem searchResultItem = createSearchResultItem(item);
                 searchResultItems.add(searchResultItem);
@@ -448,8 +456,6 @@ public class Newznab extends Indexer<Xml> {
         if (indexerSearchResult.getTotalResults() == 0) {
             //Fallback to make sure the total is not 0 when actually some results were reported
             indexerSearchResult.setTotalResults(indexerSearchResult.getSearchResultItems().size());
-        } else if (!searchRequest.isUpdateQuery() && indexerSearchResult.getTotalResults() > 10_000) {
-            //todo #530: Set to 0 (perhaps also check for other criteria)
         }
 
         if (rssChannel.getApiLimits() != null) {

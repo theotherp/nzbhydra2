@@ -30,6 +30,7 @@ public class SearchCacheEntry {
     private int numberOfRemovedDuplicates;
     private Integer numberOfAvailableResults = null;
 
+
     public SearchCacheEntry(SearchRequest searchRequest, IndexerForSearchSelection indexerSelectionResult, SearchEntity searchEntity) {
         this.searchRequest = searchRequest;
         this.searchEntity = searchEntity;

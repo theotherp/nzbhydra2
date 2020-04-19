@@ -4,6 +4,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.nzbhydra.config.category.Category;
 import org.nzbhydra.mediainfo.MediaIdType;
 import org.nzbhydra.searching.dtoseventsenums.DownloadType;
@@ -21,6 +22,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Data
+@NoArgsConstructor
 public class SearchRequest {
 
     public enum SearchSource {
@@ -54,6 +56,7 @@ public class SearchRequest {
     private DownloadType downloadType = DownloadType.NZB;
 
     private InternalData internalData = new InternalData();
+
 
     public SearchRequest(SearchSource source, SearchType searchType, Integer offset, Integer limit) {
         this.source = source;
@@ -112,6 +115,10 @@ public class SearchRequest {
 
     public boolean isUpdateQuery() {
         return identifiers.isEmpty() && query == null;
+    }
+
+    public boolean isIdBasedQuery() {
+        return !identifiers.isEmpty();
     }
 
     public SearchRequest extractForbiddenWords() {

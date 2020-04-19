@@ -118,7 +118,7 @@ public class IndexerTest {
             }
 
             @Override
-            protected List<SearchResultItem> getSearchResultItems(String searchRequestResponse) {
+            protected List<SearchResultItem> getSearchResultItems(String searchRequestResponse, SearchRequest searchRequest) {
                 return searchResultItemsToReturn;
             }
 

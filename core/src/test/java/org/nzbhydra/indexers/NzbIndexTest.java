@@ -15,6 +15,7 @@ import org.nzbhydra.searching.CategoryProvider;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem.DownloadType;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem.HasNfo;
+import org.nzbhydra.searching.searchrequests.SearchRequest;
 
 import java.time.Instant;
 import java.util.Arrays;
@@ -56,7 +57,7 @@ public class NzbIndexTest {
                                 .rssGuid(new NewznabXmlGuid(link, true))
                                 .enclosure(new NewznabXmlEnclosure(enclosureUrl, 1089197181L, "application/x-nzb"))
                                 .build())).build();
-        List<SearchResultItem> items = testee.getSearchResultItems(root);
+        List<SearchResultItem> items = testee.getSearchResultItems(root, new SearchRequest());
         assertThat(items.size(), is(1));
         SearchResultItem item = items.get(0);
 

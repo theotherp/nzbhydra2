@@ -8,6 +8,10 @@
       },
       {
         "type": "fix",
+        "text": "Some indexers apparently return all results for ID based searches when actually no results were found. In this case it will be handled as if no results were found."
+      },
+      {
+        "type": "fix",
         "text": "Adjust width of title box in search form when displaying results."
       },
       {
@@ -15,7 +19,7 @@
         "text": "Fallback to query generation was often not executed when it should've."
       }
     ],
-    "final": true
+    "final": false
   },
   {
     "version": "v2.17.6",

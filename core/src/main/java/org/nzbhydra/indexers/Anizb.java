@@ -41,7 +41,7 @@ public class Anizb extends Indexer<NewznabXmlRoot> {
     }
 
     @Override
-    protected List<SearchResultItem> getSearchResultItems(NewznabXmlRoot rssRoot) throws IndexerParsingException {
+    protected List<SearchResultItem> getSearchResultItems(NewznabXmlRoot rssRoot, SearchRequest searchRequest) throws IndexerParsingException {
         List<SearchResultItem> items = new ArrayList<>();
         for (NewznabXmlItem rssItem : rssRoot.getRssChannel().getItems()) {
             SearchResultItem item = new SearchResultItem();

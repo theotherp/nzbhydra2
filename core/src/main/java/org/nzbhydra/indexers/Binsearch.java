@@ -89,7 +89,7 @@ public class Binsearch extends Indexer<String> {
 
     @SuppressWarnings("ConstantConditions")
     @Override
-    protected List<SearchResultItem> getSearchResultItems(String searchRequestResponse) throws IndexerParsingException {
+    protected List<SearchResultItem> getSearchResultItems(String searchRequestResponse, SearchRequest searchRequest) throws IndexerParsingException {
         List<SearchResultItem> items = new ArrayList<>();
 
         Document doc = Jsoup.parse(searchRequestResponse);

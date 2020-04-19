@@ -46,7 +46,7 @@ public class NzbIndex extends Indexer<NewznabXmlRoot> {
     }
 
     @Override
-    protected List<SearchResultItem> getSearchResultItems(NewznabXmlRoot rssRoot) {
+    protected List<SearchResultItem> getSearchResultItems(NewznabXmlRoot rssRoot, SearchRequest searchRequest) {
         if (rssRoot.getRssChannel().getItems() == null || rssRoot.getRssChannel().getItems().isEmpty()) {
             debug("No results found");
             return Collections.emptyList();

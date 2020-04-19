@@ -195,9 +195,8 @@ public abstract class Indexer<T> {
         stopwatch.reset();
         stopwatch.start();
         IndexerSearchResult indexerSearchResult = new IndexerSearchResult(this, true);
-        List<SearchResultItem> searchResultItems = getSearchResultItems(response);
+        List<SearchResultItem> searchResultItems = getSearchResultItems(response, searchRequest);
         debug(LoggingMarkers.PERFORMANCE, "Parsing of results took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
-        info("Successfully executed search call in {}ms with {} results", responseTime, searchResultItems.size());
         AcceptorResult acceptorResult = resultAcceptor.acceptResults(searchResultItems, searchRequest, config);
         searchResultItems = acceptorResult.getAcceptedResults();
         indexerSearchResult.setReasonsForRejection(acceptorResult.getReasonsForRejection());
@@ -207,6 +206,7 @@ public abstract class Indexer<T> {
         indexerSearchResult.setResponseTime(responseTime);
 
         completeIndexerSearchResult(response, indexerSearchResult, acceptorResult, searchRequest, offset, limit);
+        info("Successfully executed search call in {}ms with {} total results", responseTime, indexerSearchResult.getTotalResults());
 
         int endIndex = Math.min(indexerSearchResult.getOffset() + indexerSearchResult.getLimit(), indexerSearchResult.getOffset() + searchResultItems.size());
         endIndex = Math.min(indexerSearchResult.getTotalResults(), endIndex);
@@ -229,10 +229,11 @@ public abstract class Indexer<T> {
      * Parse the given indexer web response and return the search result items
      *
      * @param searchRequestResponse The web response, e.g. an RssRoot or an HTML string
+     * @param searchRequest         The request used for the search
      * @return A list of SearchResultItems or empty
      * @throws IndexerParsingException Thrown when the web response could not be parsed
      */
-    protected abstract List<SearchResultItem> getSearchResultItems(T searchRequestResponse) throws IndexerParsingException;
+    protected abstract List<SearchResultItem> getSearchResultItems(T searchRequestResponse, SearchRequest searchRequest) throws IndexerParsingException;
 
     protected abstract UriComponentsBuilder buildSearchUrl(SearchRequest searchRequest, Integer offset, Integer limit) throws IndexerSearchAbortedException;
 
