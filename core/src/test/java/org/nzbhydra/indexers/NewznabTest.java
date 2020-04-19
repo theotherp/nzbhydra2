@@ -25,6 +25,7 @@ import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.exceptions.IndexerAuthException;
 import org.nzbhydra.indexers.exceptions.IndexerErrorCodeException;
 import org.nzbhydra.indexers.exceptions.IndexerProgramErrorException;
+import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mapping.newznab.builder.RssBuilder;
 import org.nzbhydra.mapping.newznab.builder.RssItemBuilder;
@@ -145,6 +146,7 @@ public class NewznabTest {
         when(configProviderMock.getBaseConfig()).thenReturn(baseConfig);
         baseConfig.getSearching().setRemoveTrailing(Collections.emptyList());
         baseConfig.getSearching().setGenerateQueries(SearchSourceRestriction.NONE);
+        baseConfig.getSearching().setIgnorePassworded(true);
 
         when(resultAcceptorMock.acceptResults(any(), any(), any())).thenAnswer(new Answer<AcceptorResult>() {
             @Override
@@ -265,12 +267,12 @@ public class NewznabTest {
         mediaInfo.setTitle("someMovie");
         when(infoProviderMock.convert("imdbId", MediaIdType.IMDB)).thenReturn(mediaInfo);
 
-        assertEquals(UriComponentsBuilder.fromHttpUrl("http://www.indexer.com/api?t=search&extended=1&imdbid=imdbId&q=someMovie").build(), testee.buildSearchUrl(searchRequest, null, null).build());
+        assertEquals(UriComponentsBuilder.fromHttpUrl("http://www.indexer.com/api?t=search&extended=1&imdbid=imdbId&q=someMovie").build(), buildCleanedSearchUrl(searchRequest, null, null).build());
 
         //Should use title if provided
         searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         searchRequest.setTitle("anotherTitle");
-        UriComponents actual = testee.buildSearchUrl(searchRequest, null, null).build();
+        UriComponents actual = buildCleanedSearchUrl(searchRequest, null, null).build();
         assertEquals(UriComponentsBuilder.fromHttpUrl("http://www.indexer.com/api?t=search&extended=1&q=anotherTitle").build(), actual);
     }
 
@@ -279,10 +281,11 @@ public class NewznabTest {
         testee.config = new IndexerConfig();
         baseConfig.getSearching().setGenerateQueries(SearchSourceRestriction.BOTH);
         testee.config.setHost("http://www.indexer.com");
+        testee.config.setName("indexer");
         testee.config.setSupportedSearchIds(Arrays.asList(MediaIdType.TVDB));
         testee.config.setSupportedSearchTypes(Arrays.asList(ActionAttribute.TVSEARCH, ActionAttribute.SEARCH));
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.TVSEARCH, 0, 100);
-        searchRequest.getInternalData().setFallbackState(FallbackState.REQUESTED);
+        searchRequest.getInternalData().setFallbackStateByIndexer("indexer", FallbackState.REQUESTED);
         searchRequest.getIdentifiers().put(MediaIdType.TVDB, "tvdbId");
         when(infoProviderMock.canConvert(any(), any())).thenReturn(false);
         MediaInfo mediaInfo = new MediaInfo();
@@ -292,7 +295,7 @@ public class NewznabTest {
         assertEquals("someShow", testee.generateQueryIfApplicable(searchRequest, ""));
 
         //Don't add season/episode for fallback queries
-        searchRequest.getInternalData().setFallbackState(FallbackState.REQUESTED);
+        searchRequest.getInternalData().setFallbackStateByIndexer("indexer", FallbackState.REQUESTED);
         searchRequest.setSeason(1);
         searchRequest.setEpisode("1");
         assertEquals("someShow", testee.generateQueryIfApplicable(searchRequest, ""));
@@ -309,7 +312,7 @@ public class NewznabTest {
         searchRequest.setAuthor("author");
         searchRequest.setTitle("title");
 
-        assertEquals(UriComponentsBuilder.fromHttpUrl("http://www.indexer.com/api?t=search&extended=1&q=title author").build(), testee.buildSearchUrl(searchRequest, null, null).build());
+        assertEquals(UriComponentsBuilder.fromHttpUrl("http://www.indexer.com/api?t=search&extended=1&q=title author").build(), buildCleanedSearchUrl(searchRequest, null, null).build());
     }
 
     @Test
@@ -322,7 +325,11 @@ public class NewznabTest {
         searchRequest.setAuthor("author");
         searchRequest.setTitle("title");
 
-        assertEquals(UriComponentsBuilder.fromHttpUrl("http://www.indexer.com/api?t=book&extended=1&q=title&title=title&author=author").build(), testee.buildSearchUrl(searchRequest, null, null).build());
+        assertEquals(UriComponentsBuilder.fromHttpUrl("http://www.indexer.com/api?t=book&extended=1&q=title&title=title&author=author").build(), buildCleanedSearchUrl(searchRequest, null, null).build());
+    }
+
+    private UriComponentsBuilder buildCleanedSearchUrl(SearchRequest searchRequest, Integer offset, Integer limit) throws IndexerSearchAbortedException {
+        return testee.buildSearchUrl(searchRequest, offset, limit).replaceQueryParam("password").replaceQueryParam("pw");
     }
 
     @Test(expected = IndexerAuthException.class)
@@ -385,24 +392,24 @@ public class NewznabTest {
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         searchRequest.setQuery("q");
         searchRequest.getInternalData().setForbiddenWords(Lists.newArrayList("a", "b", "c"));
-        assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?t=search&extended=1&q=q --a --b --c").build(), testee.buildSearchUrl(searchRequest, null, null).build());
+        assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?t=search&extended=1&q=q --a --b --c").build(), buildCleanedSearchUrl(searchRequest, null, null).build());
 
         searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         searchRequest.setQuery("aquery");
         searchRequest.getInternalData().setForbiddenWords(Lists.newArrayList("a", "b", "c"));
-        assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?t=search&extended=1&q=aquery --a --b --c").build(), testee.buildSearchUrl(searchRequest, null, null).build());
+        assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?t=search&extended=1&q=aquery --a --b --c").build(), buildCleanedSearchUrl(searchRequest, null, null).build());
 
         searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         searchRequest.setQuery("q");
         searchRequest.getInternalData().setForbiddenWords(Lists.newArrayList("a", "b", "c"));
         searchRequest.getInternalData().setRequiredWords(Lists.newArrayList("x", "y", "z"));
-        assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?t=search&extended=1&q=q x y z --a --b --c").build(), testee.buildSearchUrl(searchRequest, null, null).build());
+        assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?t=search&extended=1&q=q x y z --a --b --c").build(), buildCleanedSearchUrl(searchRequest, null, null).build());
 
         searchRequest.getCategory().getForbiddenWords().add("catforbidden");
         searchRequest.getCategory().getRequiredWords().add("catrequired");
         baseConfig.getSearching().setForbiddenWords(Lists.newArrayList("globalforbidden"));
         baseConfig.getSearching().setRequiredWords(Lists.newArrayList("globalrequired"));
-        assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?t=search&extended=1&q=q x y z globalrequired catrequired --a --b --c --globalforbidden --catforbidden").build(), testee.buildSearchUrl(searchRequest, null, null).build());
+        assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?t=search&extended=1&q=q x y z globalrequired catrequired --a --b --c --globalforbidden --catforbidden").build(), buildCleanedSearchUrl(searchRequest, null, null).build());
     }
 
     @Test
@@ -410,7 +417,7 @@ public class NewznabTest {
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         searchRequest.setQuery("q");
         searchRequest.getInternalData().setForbiddenWords(Lists.newArrayList("a", "b b", "-c", "d.d"));
-        assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?t=search&extended=1&q=q --a").build(), testee.buildSearchUrl(searchRequest, null, null).build());
+        assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?t=search&extended=1&q=q --a").build(), buildCleanedSearchUrl(searchRequest, null, null).build());
     }
 
     @Test
@@ -419,31 +426,31 @@ public class NewznabTest {
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         searchRequest.setQuery("q");
         searchRequest.getInternalData().setForbiddenWords(Lists.newArrayList("a", "b", "c"));
-        assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?t=search&extended=1&q=q !a,!b,!c").build(), testee.buildSearchUrl(searchRequest, null, null).build());
+        assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?t=search&extended=1&q=q !a,!b,!c").build(), buildCleanedSearchUrl(searchRequest, null, null).build());
 
         searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         searchRequest.setQuery("aquery");
         searchRequest.getInternalData().setForbiddenWords(Lists.newArrayList("a", "b", "c"));
-        assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?t=search&extended=1&q=aquery !a,!b,!c").build(), testee.buildSearchUrl(searchRequest, null, null).build());
+        assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?t=search&extended=1&q=aquery !a,!b,!c").build(), buildCleanedSearchUrl(searchRequest, null, null).build());
 
         testee.config.setBackend(BackendType.NEWZNAB);
         testee.config.setHost("http://www.OMGwtfnzbs.com");
         searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         searchRequest.setQuery("q");
         searchRequest.getInternalData().setForbiddenWords(Lists.newArrayList("a", "b", "c"));
-        assertEquals(UriComponentsBuilder.fromHttpUrl("http://www.OMGwtfnzbs.com/api?t=search&extended=1&q=q !a,!b,!c").build(), testee.buildSearchUrl(searchRequest, null, null).build());
+        assertEquals(UriComponentsBuilder.fromHttpUrl("http://www.OMGwtfnzbs.com/api?t=search&extended=1&q=q !a,!b,!c").build(), buildCleanedSearchUrl(searchRequest, null, null).build());
 
         searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         searchRequest.setQuery("aquery");
         searchRequest.getInternalData().setForbiddenWords(Lists.newArrayList("a", "b", "c"));
-        assertEquals(UriComponentsBuilder.fromHttpUrl("http://www.OMGwtfnzbs.com/api?t=search&extended=1&q=aquery !a,!b,!c").build(), testee.buildSearchUrl(searchRequest, null, null).build());
+        assertEquals(UriComponentsBuilder.fromHttpUrl("http://www.OMGwtfnzbs.com/api?t=search&extended=1&q=aquery !a,!b,!c").build(), buildCleanedSearchUrl(searchRequest, null, null).build());
     }
 
     @Test
     public void shouldNotAddForbiddenWordsToEmptyQuery() throws Exception {
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         searchRequest.getInternalData().setForbiddenWords(Lists.newArrayList("a", "b", "c"));
-        assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?t=search&extended=1").build(), testee.buildSearchUrl(searchRequest, null, null).build());
+        assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?t=search&extended=1").build(), buildCleanedSearchUrl(searchRequest, null, null).build());
     }
 
     @Test
@@ -647,42 +654,42 @@ public class NewznabTest {
     @Test
     public void shouldBuildCorrectSearchUrl() throws Exception {
         SearchRequest request = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
-        String uri = testee.buildSearchUrl(request, 0, 100).toUriString();
+        String uri = buildCleanedSearchUrl(request, 0, 100).toUriString();
         assertThat(uri, is("http://127.0.0.1:1234/api?t=search&extended=1&limit=100&offset=0"));
 
         otherCategory.setNewznabCategories(Collections.singletonList(Arrays.asList(2000)));
         request.setCategory(otherCategory);
-        uri = testee.buildSearchUrl(request, 0, 100).toUriString();
+        uri = buildCleanedSearchUrl(request, 0, 100).toUriString();
         assertThat(uri, is("http://127.0.0.1:1234/api?t=search&extended=1&cat=2000&limit=100&offset=0"));
 
         otherCategory.setNewznabCategories(Arrays.asList(Collections.singletonList(2030), Collections.singletonList(2040)));
         request.setCategory(otherCategory);
-        uri = testee.buildSearchUrl(request, 0, 100).toUriString();
+        uri = buildCleanedSearchUrl(request, 0, 100).toUriString();
         assertThat(uri, is("http://127.0.0.1:1234/api?t=search&extended=1&cat=2030,2040&limit=100&offset=0"));
 
         otherCategory.setNewznabCategories(Arrays.asList(Arrays.asList(2030, 10_000), Collections.singletonList(2040)));
         request.setCategory(otherCategory);
-        uri = testee.buildSearchUrl(request, 0, 100).toUriString();
+        uri = buildCleanedSearchUrl(request, 0, 100).toUriString();
         assertThat(uri, is("http://127.0.0.1:1234/api?t=search&extended=1&cat=2030,2040,10000&limit=100&offset=0"));
 
         animeCategory.setSubtype(Subtype.ANIME);
         request.setCategory(animeCategory);
         testee.getConfig().getCategoryMapping().setAnime(9090);
-        uri = testee.buildSearchUrl(request, 0, 100).toUriString();
+        uri = buildCleanedSearchUrl(request, 0, 100).toUriString();
         assertThat(uri, is("http://127.0.0.1:1234/api?t=search&extended=1&cat=9090&limit=100&offset=0"));
     }
 
     @Test
     public void shouldNotUseMovieWithoutIdentifiers() throws Exception {
         SearchRequest request = new SearchRequest(SearchSource.INTERNAL, SearchType.MOVIE, 0, 100);
-        String uri = testee.buildSearchUrl(request, 0, 100).toUriString();
+        String uri = buildCleanedSearchUrl(request, null, null).toUriString();
         assertThat(uri, containsString("t=search"));
 
         request = new SearchRequest(SearchSource.INTERNAL, SearchType.MOVIE, 0, 100);
         request.getIdentifiers().put(MediaIdType.IMDB, "123");
         testee.config.getSupportedSearchIds().add(MediaIdType.IMDB);
         testee.config.getSupportedSearchTypes().add(ActionAttribute.MOVIE);
-        uri = testee.buildSearchUrl(request, 0, 100).toUriString();
+        uri = buildCleanedSearchUrl(request, null, null).toUriString();
         assertThat(uri, containsString("t=movie"));
         assertThat(uri, containsString("imdbid=123"));
     }

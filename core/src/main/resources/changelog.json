@@ -5,6 +5,10 @@
       {
         "type": "fix",
         "text": "Adjust width of title box in search form when displaying results."
+      },
+      {
+        "type": "fix",
+        "text": "Fallback to query generation was often not executed when it should've."
       }
     ],
     "final": true

@@ -127,7 +127,7 @@ public class Newznab extends Indexer<Xml> {
 
         String query = "";
 
-        if (searchRequest.getInternalData().getFallbackState() != InternalData.FallbackState.REQUESTED) {
+        if (searchRequest.getInternalData().getFallbackStateByIndexer(getName()) != InternalData.FallbackState.REQUESTED) {
             //Don't provide search IDs when a fallback to query generation was requested
             componentsBuilder = extendQueryUrlWithSearchIds(searchRequest, componentsBuilder);
         }

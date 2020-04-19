@@ -3,6 +3,8 @@ package org.nzbhydra.indexers;
 import com.google.common.base.Objects;
 import com.google.common.base.Stopwatch;
 import joptsimple.internal.Strings;
+import net.jodah.expiringmap.ExpirationPolicy;
+import net.jodah.expiringmap.ExpiringMap;
 import org.nzbhydra.config.ConfigChangedEvent;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.indexer.IndexerConfig;
@@ -14,11 +16,7 @@ import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
 import org.nzbhydra.indexers.exceptions.IndexerUnreachableException;
 import org.nzbhydra.indexers.status.IndexerLimitRepository;
 import org.nzbhydra.logging.LoggingMarkers;
-import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mediainfo.InfoProvider;
-import org.nzbhydra.mediainfo.InfoProviderException;
-import org.nzbhydra.mediainfo.MediaIdType;
-import org.nzbhydra.mediainfo.MediaInfo;
 import org.nzbhydra.searching.CategoryProvider;
 import org.nzbhydra.searching.SearchResultAcceptor;
 import org.nzbhydra.searching.SearchResultAcceptor.AcceptorResult;
@@ -30,7 +28,6 @@ import org.nzbhydra.searching.dtoseventsenums.IndexerSearchFinishedEvent;
 import org.nzbhydra.searching.dtoseventsenums.IndexerSearchResult;
 import org.nzbhydra.searching.dtoseventsenums.SearchMessageEvent;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
-import org.nzbhydra.searching.dtoseventsenums.SearchType;
 import org.nzbhydra.searching.searchrequests.InternalData.FallbackState;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
@@ -51,10 +48,12 @@ import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map.Entry;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -62,6 +61,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("TypeParameterHidesVisibleType")
 @Component
 public abstract class Indexer<T> {
 
@@ -74,9 +74,16 @@ public abstract class Indexer<T> {
     protected static final List<Integer> DISABLE_PERIODS = Arrays.asList(0, 15, 30, 60, 3 * 60, 6 * 60, 12 * 60, 24 * 60);
     private static final Logger logger = LoggerFactory.getLogger(Indexer.class);
 
-    List<DateTimeFormatter> DATE_FORMATs = Arrays.asList(DateTimeFormatter.RFC_1123_DATE_TIME, DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.ENGLISH));
+    private static final List<DateTimeFormatter> DATE_FORMATs = Arrays.asList(DateTimeFormatter.RFC_1123_DATE_TIME, DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.ENGLISH));
 
-    private final Object lock = "";
+    private static final Object DB_LOCK = "";
+    private static final Object QUERY_GENERATION_LOCK = "";
+
+    protected final Map<SearchRequest, String> generatedQueries = ExpiringMap.builder()
+            .expiration(10, TimeUnit.SECONDS)
+            .expirationPolicy(ExpirationPolicy.ACCESSED)
+            .build();
+    protected final Map<SearchRequest, String> generatedQueries2 = Collections.synchronizedMap(new HashMap<>());
 
     protected IndexerEntity indexer;
     protected IndexerConfig config;
@@ -104,6 +111,8 @@ public abstract class Indexer<T> {
     protected InfoProvider infoProvider;
     @Autowired
     private ApplicationEventPublisher eventPublisher;
+    @Autowired
+    private QueryGenerator queryGenerator;
 
 
     public void initialize(IndexerConfig config, IndexerEntity indexer) {
@@ -112,7 +121,7 @@ public abstract class Indexer<T> {
     }
 
     @EventListener
-    public void handleNewConfig(ConfigChangedEvent configChangedEvent) throws Exception {
+    public void handleNewConfig(ConfigChangedEvent configChangedEvent) {
         cleanupPattern = null;
     }
 
@@ -129,7 +138,7 @@ public abstract class Indexer<T> {
                 eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, "Indexer " + getName() + " did not return any results. Will do a fallback search"));
                 eventPublisher.publishEvent(new FallbackSearchInitiatedEvent(searchRequest));
 
-                searchRequest.getInternalData().setFallbackState(FallbackState.REQUESTED);
+                searchRequest.getInternalData().setFallbackStateByIndexer(getName(), FallbackState.REQUESTED);
                 indexerSearchResult = searchInternal(searchRequest, offset, limit);
                 eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, "Indexer " + getName() + " completed fallback search successfully with " + indexerSearchResult.getTotalResults() + " total results"));
             } else {
@@ -159,6 +168,8 @@ public abstract class Indexer<T> {
                 }
                 indexerSearchResult = new IndexerSearchResult(this, e.getMessage());
             }
+        } finally {
+            generatedQueries2.clear();
         }
         eventPublisher.publishEvent(new IndexerSearchFinishedEvent(searchRequest));
 
@@ -166,13 +177,8 @@ public abstract class Indexer<T> {
     }
 
     private boolean isFallbackRequired(SearchRequest searchRequest, IndexerSearchResult indexerSearchResult) {
-        debug("Fallback required: totalResults: {}. identifiersSize: {}. fallbackState: {}. fallbackConfig: {}. searchRequestSource: {}",
-                indexerSearchResult.getTotalResults(),
-                searchRequest.getIdentifiers().size(),
-                searchRequest.getInternalData().getFallbackState(),
-                configProvider.getBaseConfig().getSearching().getIdFallbackToQueryGeneration(),
-                searchRequest.getSource());
-        return indexerSearchResult.getTotalResults() == 0 && !searchRequest.getIdentifiers().isEmpty() && searchRequest.getInternalData().getFallbackState() != FallbackState.USED && configProvider.getBaseConfig().getSearching().getIdFallbackToQueryGeneration().meets(searchRequest);
+        final FallbackState fallbackStateByIndexer = searchRequest.getInternalData().getFallbackStateByIndexer(getName());
+        return indexerSearchResult.getTotalResults() == 0 && !searchRequest.getIdentifiers().isEmpty() && fallbackStateByIndexer != FallbackState.USED && configProvider.getBaseConfig().getSearching().getIdFallbackToQueryGeneration().meets(searchRequest);
     }
 
     protected IndexerSearchResult searchInternal(SearchRequest searchRequest, int offset, Integer limit) throws IndexerSearchAbortedException, IndexerAccessException {
@@ -216,8 +222,6 @@ public abstract class Indexer<T> {
      * @param indexerSearchResult The result to fill
      * @param acceptorResult      The result acceptor result
      * @param searchRequest       The original search request
-     * @param offset
-     * @param limit
      */
     protected abstract void completeIndexerSearchResult(T response, IndexerSearchResult indexerSearchResult, AcceptorResult acceptorResult, SearchRequest searchRequest, int offset, Integer limit);
 
@@ -243,7 +247,7 @@ public abstract class Indexer<T> {
     @Transactional
     protected List<SearchResultItem> persistSearchResults(List<SearchResultItem> searchResultItems, IndexerSearchResult indexerSearchResult) {
         Stopwatch stopwatch = Stopwatch.createStarted();
-        synchronized (lock) { //Locking per indexer prevents multiple threads trying to save the same "new" results to the database
+        synchronized (DB_LOCK) { //Locking per indexer prevents multiple threads trying to save the same "new" results to the database
             ArrayList<SearchResultEntity> searchResultEntities = new ArrayList<>();
             Set<Long> alreadySavedIds = searchResultRepository.findAllIdsByIdIn(searchResultItems.stream().map(SearchResultIdCalculator::calculateSearchResultId).collect(Collectors.toList()));
             for (SearchResultItem item : searchResultItems) {
@@ -354,7 +358,6 @@ public abstract class Indexer<T> {
      * @param uri           Called URI
      * @param apiAccessType Access type
      * @return The response from the indexer
-     * @throws IndexerAccessException
      */
     protected abstract T getAndStoreResultToDatabase(URI uri, IndexerApiAccessType apiAccessType) throws IndexerAccessException;
 
@@ -366,16 +369,11 @@ public abstract class Indexer<T> {
      * @param apiAccessType The API access type, needed for the database entry
      * @param <T>           Type to expect from the call
      * @return The web response
-     * @throws IndexerAccessException
      */
     protected <T> T getAndStoreResultToDatabase(URI uri, Class<T> responseType, IndexerApiAccessType apiAccessType) throws IndexerAccessException {
         Stopwatch stopwatch = Stopwatch.createStarted();
-        T result;
-        try {
-            result = callInderWebAccess(uri, responseType);
-        } catch (IndexerAccessException e) {
-            throw e;
-        }
+        T result = callInderWebAccess(uri, responseType);
+
         long responseTime = stopwatch.elapsed(TimeUnit.MILLISECONDS);
         debug(LoggingMarkers.PERFORMANCE, "Call to {} took {}ms", uri, responseTime);
         handleSuccess(apiAccessType, responseTime);
@@ -387,76 +385,8 @@ public abstract class Indexer<T> {
     }
 
     protected String generateQueryIfApplicable(SearchRequest searchRequest, String query) throws IndexerSearchAbortedException {
-        if (searchRequest.getQuery().isPresent()) {
-            return searchRequest.getQuery().get();
-        }
-
-        boolean indexerDoesntSupportRequiredSearchType = config.getSupportedSearchTypes().stream().noneMatch(x -> searchRequest.getSearchType().matches(x));
-        boolean indexerDoesntSupportAnyOfTheProvidedIds = searchRequest.getIdentifiers().keySet().stream().noneMatch(x -> config.getSupportedSearchIds().contains(x));
-        boolean queryGenerationPossible = !searchRequest.getIdentifiers().isEmpty() || searchRequest.getTitle().isPresent();
-        boolean queryGenerationEnabled = configProvider.getBaseConfig().getSearching().getGenerateQueries().meets(searchRequest);
-        boolean fallbackRequested = searchRequest.getInternalData().getFallbackState() == FallbackState.REQUESTED;
-
-        if (!(fallbackRequested || (queryGenerationPossible && queryGenerationEnabled && (indexerDoesntSupportAnyOfTheProvidedIds || indexerDoesntSupportRequiredSearchType)))) {
-            debug("No query generation needed. indexerDoesntSupportRequiredSearchType: {}. indexerDoesntSupportAnyOfTheProvidedIds: {}. queryGenerationPossible: {}. queryGenerationEnabled: {}. fallbackRequested: {}", indexerDoesntSupportRequiredSearchType, indexerDoesntSupportAnyOfTheProvidedIds, queryGenerationPossible, queryGenerationEnabled, fallbackRequested);
-            return query;
-        }
-        if (searchRequest.getInternalData().getFallbackState() == FallbackState.REQUESTED) {
-            searchRequest.getInternalData().setFallbackState(FallbackState.USED); //
-        }
-
-        if (searchRequest.getTitle().isPresent()) {
-            query = sanitizeTitleForQuery(searchRequest.getTitle().get());
-            debug("Search request provided title {}. Using that as query base.", query);
-        } else if (searchRequest.getInternalData().getTitle().isPresent()) {
-            query = searchRequest.getInternalData().getTitle().get();
-            debug("Using internally provided title {}", query);
-        } else {
-            Optional<Entry<MediaIdType, String>> firstIdentifierEntry = searchRequest.getIdentifiers().entrySet().stream().filter(java.util.Objects::nonNull).findFirst();
-            if (!firstIdentifierEntry.isPresent()) {
-                throw new IndexerSearchAbortedException("Unable to generate query because no identifier is known");
-            }
-            try {
-                MediaInfo mediaInfo = infoProvider.convert(firstIdentifierEntry.get().getValue(), firstIdentifierEntry.get().getKey());
-                if (!mediaInfo.getTitle().isPresent()) {
-                    throw new IndexerSearchAbortedException("Unable to generate query because no title is known");
-                }
-                query = sanitizeTitleForQuery(mediaInfo.getTitle().get());
-                debug("Determined title to be {}. Using that as query base.", query);
-            } catch (InfoProviderException e) {
-                throw new IndexerSearchAbortedException("Error while getting infos to generate queries");
-            }
-        }
-
-        if (searchRequest.getSeason().isPresent() && !fallbackRequested) { //Don't add season/episode string for fallback queries. Indexers usually still return correct results
-            if (searchRequest.getEpisode().isPresent()) {
-                debug("Using season {} and episode {} for query generation", searchRequest.getSeason().get(), searchRequest.getEpisode().get());
-                try {
-                    int episodeInt = Integer.parseInt(searchRequest.getEpisode().get());
-                    query += String.format(" s%02de%02d", searchRequest.getSeason().get(), episodeInt);
-                } catch (NumberFormatException e) {
-                    String extendWith = String.format(" s%02d", searchRequest.getSeason().get()) + searchRequest.getEpisode().get();
-                    query += extendWith;
-                    debug("{} doesn't seem to be an integer, extending query with '{}'", searchRequest.getEpisode().get(), extendWith);
-                }
-            } else {
-                debug("Using season {} for query generation", searchRequest.getSeason().get());
-                query += String.format(" s%02d", searchRequest.getSeason().get());
-            }
-        }
-
-        if (searchRequest.getSearchType() == SearchType.BOOK && !config.getSupportedSearchTypes().contains(ActionAttribute.BOOK)) {
-            if (searchRequest.getAuthor().isPresent()) {
-                query += " " + searchRequest.getAuthor().get();
-                debug("Using author {} in query", searchRequest.getAuthor().get());
-            }
-        }
-
-        debug("Indexer does not support any of the supplied IDs or the requested search type. The following query was generated: " + query);
-
-        return query;
+        return queryGenerator.generateQueryIfApplicable(searchRequest, query, this);
     }
-
 
     public String getName() {
         return config.getName();
@@ -497,16 +427,6 @@ public abstract class Indexer<T> {
         return title;
     }
 
-    protected String sanitizeTitleForQuery(String query) {
-        if (query == null) {
-            return null;
-        }
-        String sanitizedQuery = query.replaceAll("[\\(\\)=@#\\$%\\^,\\?<>{}\\|!':]", "");
-        if (!sanitizedQuery.equals(query)) {
-            debug("Removed illegal characters from title '{}'. Title that will be used for query is '{}'", query, sanitizedQuery);
-        }
-        return sanitizedQuery;
-    }
 
     public Optional<Instant> tryParseDate(String dateString) {
         for (DateTimeFormatter formatter : DATE_FORMATs) {

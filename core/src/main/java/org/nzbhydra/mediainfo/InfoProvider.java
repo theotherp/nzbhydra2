@@ -2,6 +2,8 @@ package org.nzbhydra.mediainfo;
 
 import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
+import net.jodah.expiringmap.ExpirationPolicy;
+import net.jodah.expiringmap.ExpiringMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +14,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static org.nzbhydra.mediainfo.MediaIdType.*;
@@ -24,7 +28,7 @@ public class InfoProvider {
     public static Set<MediaIdType> MOVIE_ID_TYPES = Sets.newHashSet(TMDB, IMDB);
     public static Set<MediaIdType> REAL_ID_TYPES = Sets.union(TV_ID_TYPES, MOVIE_ID_TYPES);
 
-    private static Map<MediaIdType, Set<MediaIdType>> canConvertMap = new HashMap<>();
+    private static final Map<MediaIdType, Set<MediaIdType>> canConvertMap = new HashMap<>();
 
     static {
         canConvertMap.put(TVDB, Sets.newHashSet(TVDB, TVMAZE, TVRAGE, TVIMDB, TVTITLE));
@@ -41,6 +45,11 @@ public class InfoProvider {
     }
 
     private static final Logger logger = LoggerFactory.getLogger(InfoProvider.class);
+
+    private final Map<Integer, MediaInfo> mediaInfoMap = ExpiringMap.builder()
+            .expiration(5, TimeUnit.MINUTES)
+            .expirationPolicy(ExpirationPolicy.ACCESSED)
+            .build();
 
     @Autowired
     protected TmdbHandler tmdbHandler;
@@ -79,6 +88,10 @@ public class InfoProvider {
     public synchronized MediaInfo convert(String value, MediaIdType fromType) throws InfoProviderException {
         if (value == null) {
             throw new InfoProviderException("Unable to convert IDType " + fromType + " with null value");
+        }
+        final int hash = Objects.hash(value, fromType);
+        if (mediaInfoMap.containsKey(hash)) {
+            return mediaInfoMap.get(hash);
         }
         logger.debug("Conversion of {} ID {} requested", fromType, value);
         try {
@@ -143,6 +156,7 @@ public class InfoProvider {
                     throw new IllegalArgumentException("Wrong IdType");
             }
             logger.debug("Conversion successful: " + info);
+            mediaInfoMap.put(hash, info);
             return info;
         } catch (Exception e) {
             logger.error("Error while converting " + fromType + " " + value, e);
