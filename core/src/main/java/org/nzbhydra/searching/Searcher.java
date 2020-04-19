@@ -51,6 +51,7 @@ import java.util.stream.Collectors;
 @Component
 public class Searcher {
 
+    private static final int MAX_QUERIES_UNTIL_BREAK = 15;
     public static int LOAD_LIMIT_API = 100;
 
     private static final Logger logger = LoggerFactory.getLogger(Searcher.class);
@@ -314,6 +315,12 @@ public class Searcher {
         }
 
         for (IndexerSearchCacheEntry indexerSearchCacheEntry : searchCacheEntry.getIndexerCacheEntries().values()) {
+            final int executedSearches = indexerSearchCacheEntry.getIndexerSearchResults().size();
+            if (!searchCacheEntry.getSearchRequest().isLoadAll() && executedSearches >= MAX_QUERIES_UNTIL_BREAK) {
+                //Circuit breaker
+                logger.warn("Indexer {} executed {} queries without a load-all search. Will stop now", indexerSearchCacheEntry.getIndexer().getName(), executedSearches);
+                continue;
+            }
             if (indexerSearchCacheEntry.getIndexerSearchResults().isEmpty()) {
                 indexerSearchCacheEntries.add(indexerSearchCacheEntry);
                 continue;
