@@ -1,3 +1,9 @@
+### v2.19.0 BETA (2020-04-19)
+
+**Feature** Add option to set VIP expiry date for an indexer. You will be warned when the expiry date is near or has been reached.
+
+
+
 ### v2.18.0 BETA (2020-04-19)
 
 **Feature** Added option to define a color for an indexer. Results from that indexer will be marked using that color.
