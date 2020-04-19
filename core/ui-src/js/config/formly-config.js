@@ -162,6 +162,27 @@ angular
         });
 
         formlyConfigProvider.setType({
+            name: 'colorInput',
+            extends: 'horizontalInput',
+            template: [
+                '<div class="input-group">',
+                '<input type="text" class="form-control" value="{{convertColor()}}" style="background-color: {{convertColor()}}"/>',
+                '<span class="input-group-btn input-group-btn2">',
+                '<button colorpicker="rgb" ng-model="model[options.key]" class="btn btn-default" type="button"><i class="fa fa-eyedropper" aria-hidden="true"></i></input>',
+                '</div>'
+            ].join(' '),
+            controller: function ($scope) {
+                $scope.convertColor = function () {
+                    if ($scope.model.color === undefined || $scope.model.color === null) {
+                        return "";
+                    }
+
+                    return $scope.model.color.replace("rgb", "rgba").replace(")", ",0.5)");
+                }
+            }
+        });
+
+        formlyConfigProvider.setType({
             name: 'testConnection',
             templateUrl: 'button-test-connection.html'
         });

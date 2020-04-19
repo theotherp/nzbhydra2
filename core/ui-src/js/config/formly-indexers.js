@@ -345,6 +345,17 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
         }
     );
 
+    fieldset.push(
+        {
+            key: 'color',
+            type: 'colorInput',
+            templateOptions: {
+                label: 'Color',
+                help: 'If set it will be used in the search results to mark the indexer\'s results.'
+            }
+        }
+    );
+
     if (indexerModel.searchModuleType !== "ANIZB" && indexerModel.searchModuleType !== 'JACKETT_CONFIG') {
         var cats = CategoriesService.getWithoutAll();
         var options = _.map(cats, function (x) {
@@ -567,6 +578,7 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
             allCapsChecked: false,
             apiKey: null,
             backend: 'NEWZNAB',
+            color: null,
             configComplete: false,
             categoryMapping: null,
             downloadLimit: null,

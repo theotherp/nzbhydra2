@@ -15,6 +15,7 @@ public class SafeIndexerConfig {
     private boolean showOnSearch;
     private String enabledForSearchSource;
     private String searchModuleType;
+    private String color;
 
     public SafeIndexerConfig(IndexerConfig indexerConfig, BaseConfig baseConfig) {
         this.name = indexerConfig.getName();
@@ -23,6 +24,7 @@ public class SafeIndexerConfig {
         this.showOnSearch = indexerConfig.isEligibleForInternalSearch();
         this.enabledForSearchSource = indexerConfig.getEnabledForSearchSource().name();
         this.searchModuleType = indexerConfig.getSearchModuleType().name();
+        this.color = indexerConfig.getColor();
     }
 
 }

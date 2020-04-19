@@ -5,7 +5,7 @@ var nzbhydraapp = angular.module('nzbhydraApp', ['angular-loading-bar', 'cgBusy'
     'angular.filter', 'filters', 'ui.router', 'blockUI', 'mgcrea.ngStrap', 'angularUtils.directives.dirPagination',
     'nvd3', 'formly', 'formlyBootstrap', 'frapontillo.bootstrap-switch', 'ui.select', 'ngSanitize', 'checklist-model',
     'ngAria', 'ngMessages', 'ui.router.title', 'LocalStorageModule', 'angular.filter', 'ngFileUpload', 'ngCookies', 'angular.chips',
-    'templates', 'base64', 'duScroll']);
+    'templates', 'base64', 'duScroll', 'colorpicker.module']);
 
 nzbhydraapp.config(['$compileProvider', function ($compileProvider) {
     $compileProvider.debugInfoEnabled(true);

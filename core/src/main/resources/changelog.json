@@ -1,7 +1,11 @@
 [
   {
-    "version": "v2.17.7",
+    "version": "v2.18.0",
     "changes": [
+      {
+        "type": "feature",
+        "text": "Added option to define a color for an indexer. Results from that indexer will be marked using that color."
+      },
       {
         "type": "fix",
         "text": "Adjust width of title box in search form when displaying results."

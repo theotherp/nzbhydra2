@@ -55,6 +55,7 @@ public class IndexerConfig extends ValidatingConfig<IndexerConfig> {
     @JsonFormat(shape = Shape.STRING)
     private BackendType backend = BackendType.NEWZNAB;
     private IndexerCategoryConfig categoryMapping = new IndexerCategoryConfig();
+    private String color;
     private boolean configComplete = true;
     private List<String> enabledCategories = new ArrayList<>();
     private Integer downloadLimit = null;

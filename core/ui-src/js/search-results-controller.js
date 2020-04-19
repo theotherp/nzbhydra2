@@ -8,6 +8,13 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
     DebugService.log("foobar");
     $scope.limitTo = ConfigService.getSafe().searching.loadLimitInternal;
     $scope.offset = 0;
+
+    var indexerColors = {};
+
+    _.each(ConfigService.getSafe().indexers, function (indexer) {
+        indexerColors[indexer.name] = indexer.color;
+    });
+
     //Handle incoming data
 
     $scope.indexersearches = SearchService.getLastResults().indexerSearchMetaDatas;
@@ -513,6 +520,14 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
             return sortPredicateValue
         }
 
+        _.each(results, function (result) {
+            var indexerColor = indexerColors[result.indexer];
+            if (indexerColor === undefined || indexerColor === null) {
+                return "";
+            }
+            console.log(indexerColor);
+            result.style = "background-color: " + indexerColor.replace("rgb", "rgba").replace(")", ",0.5)")
+        });
 
         var filtered = _.filter(results, filter);
         var newSelected = $scope.selected;
@@ -749,6 +764,11 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
             SearchService.getModalInstance().close();
         }, 1);
     });
+
+    $scope.getBgColorForResult = function (result) {
+        console.log(result.indexer);
+        return "background-color: red";
+    }
 
     $timeout(function () {
         DebugService.print();

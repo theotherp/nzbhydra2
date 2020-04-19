@@ -5,7 +5,7 @@ var nzbhydraapp = angular.module('nzbhydraApp', ['angular-loading-bar', 'cgBusy'
     'angular.filter', 'filters', 'ui.router', 'blockUI', 'mgcrea.ngStrap', 'angularUtils.directives.dirPagination',
     'nvd3', 'formly', 'formlyBootstrap', 'frapontillo.bootstrap-switch', 'ui.select', 'ngSanitize', 'checklist-model',
     'ngAria', 'ngMessages', 'ui.router.title', 'LocalStorageModule', 'angular.filter', 'ngFileUpload', 'ngCookies', 'angular.chips',
-    'templates', 'base64', 'duScroll']);
+    'templates', 'base64', 'duScroll', 'colorpicker.module']);
 
 nzbhydraapp.config(['$compileProvider', function ($compileProvider) {
     $compileProvider.debugInfoEnabled(true);
@@ -3599,6 +3599,17 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
         }
     );
 
+     fieldset.push(
+        {
+            key: 'color',
+            type: 'colorInput',
+            templateOptions: {
+                label: 'Color',
+                help: 'If set it will be used in the search results to mark the indexer\'s results.'
+            }
+        }
+    );
+
     if (indexerModel.searchModuleType !== "ANIZB" && indexerModel.searchModuleType !== 'JACKETT_CONFIG') {
         var cats = CategoriesService.getWithoutAll();
         var options = _.map(cats, function (x) {
@@ -3821,6 +3832,7 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
             allCapsChecked: false,
             apiKey: null,
             backend: 'NEWZNAB',
+            color: null,
             configComplete: false,
             categoryMapping: null,
             downloadLimit: null,
@@ -4846,6 +4858,27 @@ angular
         });
 
         formlyConfigProvider.setType({
+            name: 'colorInput',
+            extends: 'horizontalInput',
+            template: [
+                '<div class="input-group">',
+                '<input type="text" class="form-control" value="{{convertColor()}}" style="background-color: {{convertColor()}}"/>',
+                '<span class="input-group-btn input-group-btn2">',
+                '<button colorpicker="rgb" ng-model="model[options.key]" class="btn btn-default" type="button"><i class="fa fa-eyedropper" aria-hidden="true"></i></input>',
+                '</div>'
+            ].join(' '),
+            controller: function ($scope) {
+                $scope.convertColor = function () {
+                    if ($scope.model.color === undefined || $scope.model.color === null) {
+                        return "";
+                    }
+
+                    return $scope.model.color.replace("rgb", "rgba").replace(")", ",0.5)");
+                }
+            }
+        });
+
+        formlyConfigProvider.setType({
             name: 'testConnection',
             templateUrl: 'button-test-connection.html'
         });
@@ -5433,7 +5466,6 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'select',
                                 label: 'Theme',
-                                help: 'Reload page after restart.',
                                 options: [
                                     {name: 'Grey', value: 'grey'},
                                     {name: 'Bright', value: 'bright'},
@@ -8115,6 +8147,13 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
     DebugService.log("foobar");
     $scope.limitTo = ConfigService.getSafe().searching.loadLimitInternal;
     $scope.offset = 0;
+
+    var indexerColors = {};
+
+    _.each(ConfigService.getSafe().indexers, function(indexer) {
+        indexerColors[indexer.name] = indexer.color;
+    });
+
     //Handle incoming data
 
     $scope.indexersearches = SearchService.getLastResults().indexerSearchMetaDatas;
@@ -8620,6 +8659,14 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
             return sortPredicateValue
         }
 
+        _.each(results, function (result) {
+            var indexerColor = indexerColors[result.indexer];
+            if (indexerColor === undefined || indexerColor === null) {
+                return "";
+            }
+            console.log(indexerColor);
+            result.style = "background-color: "  + indexerColor.replace("rgb", "rgba").replace( ")", ",0.5)")
+        });
 
         var filtered = _.filter(results, filter);
         var newSelected = $scope.selected;
@@ -8856,6 +8903,11 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
             SearchService.getModalInstance().close();
         }, 1);
     });
+
+    $scope.getBgColorForResult = function (result) {
+        console.log(result.indexer);
+        return "background-color: red";
+    }
 
     $timeout(function () {
         DebugService.print();

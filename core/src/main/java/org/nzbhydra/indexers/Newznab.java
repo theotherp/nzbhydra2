@@ -448,6 +448,8 @@ public class Newznab extends Indexer<Xml> {
         if (indexerSearchResult.getTotalResults() == 0) {
             //Fallback to make sure the total is not 0 when actually some results were reported
             indexerSearchResult.setTotalResults(indexerSearchResult.getSearchResultItems().size());
+        } else if (!searchRequest.isUpdateQuery() && indexerSearchResult.getTotalResults() > 10_000) {
+            //todo #530: Set to 0 (perhaps also check for other criteria)
         }
 
         if (rssChannel.getApiLimits() != null) {

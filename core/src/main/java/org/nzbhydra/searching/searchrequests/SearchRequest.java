@@ -110,6 +110,9 @@ public class SearchRequest {
         return Optional.ofNullable(author);
     }
 
+    public boolean isUpdateQuery() {
+        return identifiers.isEmpty() && query == null;
+    }
 
     public SearchRequest extractForbiddenWords() {
         if (Strings.isNullOrEmpty(query)) {
