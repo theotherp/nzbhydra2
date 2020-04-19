@@ -3,8 +3,6 @@ package org.nzbhydra.indexers;
 import com.google.common.base.Objects;
 import com.google.common.base.Stopwatch;
 import joptsimple.internal.Strings;
-import net.jodah.expiringmap.ExpirationPolicy;
-import net.jodah.expiringmap.ExpiringMap;
 import org.nzbhydra.config.ConfigChangedEvent;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.indexer.IndexerConfig;
@@ -48,12 +46,9 @@ import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -76,14 +71,7 @@ public abstract class Indexer<T> {
 
     private static final List<DateTimeFormatter> DATE_FORMATs = Arrays.asList(DateTimeFormatter.RFC_1123_DATE_TIME, DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.ENGLISH));
 
-    private static final Object DB_LOCK = "";
-    private static final Object QUERY_GENERATION_LOCK = "";
-
-    protected final Map<SearchRequest, String> generatedQueries = ExpiringMap.builder()
-            .expiration(10, TimeUnit.SECONDS)
-            .expirationPolicy(ExpirationPolicy.ACCESSED)
-            .build();
-    protected final Map<SearchRequest, String> generatedQueries2 = Collections.synchronizedMap(new HashMap<>());
+    private final Object dbLock = "";
 
     protected IndexerEntity indexer;
     protected IndexerConfig config;
@@ -168,8 +156,6 @@ public abstract class Indexer<T> {
                 }
                 indexerSearchResult = new IndexerSearchResult(this, e.getMessage());
             }
-        } finally {
-            generatedQueries2.clear();
         }
         eventPublisher.publishEvent(new IndexerSearchFinishedEvent(searchRequest));
 
@@ -241,14 +227,13 @@ public abstract class Indexer<T> {
 
     //May be overwritten by specific indexer implementations
     protected String cleanupQuery(String query) {
-
         return query;
     }
 
     @Transactional
     protected List<SearchResultItem> persistSearchResults(List<SearchResultItem> searchResultItems, IndexerSearchResult indexerSearchResult) {
         Stopwatch stopwatch = Stopwatch.createStarted();
-        synchronized (DB_LOCK) { //Locking per indexer prevents multiple threads trying to save the same "new" results to the database
+        synchronized (dbLock) { //Locking per indexer prevents multiple threads trying to save the same "new" results to the database
             ArrayList<SearchResultEntity> searchResultEntities = new ArrayList<>();
             Set<Long> alreadySavedIds = searchResultRepository.findAllIdsByIdIn(searchResultItems.stream().map(SearchResultIdCalculator::calculateSearchResultId).collect(Collectors.toList()));
             for (SearchResultItem item : searchResultItems) {
