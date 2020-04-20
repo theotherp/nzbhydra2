@@ -405,6 +405,7 @@ public class MockNewznab {
             titleBase += params.getCat().get(0);
         }
         NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, 100, titleBase, false, Collections.emptyList(), true, 0);
+        rssRoot.getRssChannel().setNewznabResponse(null);
         Random random = new Random();
         for (NewznabXmlItem item : rssRoot.getRssChannel().getItems()) {
             item.setNewznabAttributes(new ArrayList<>());
@@ -417,6 +418,7 @@ public class MockNewznab {
 
             item.setGrabs(null);
 //            item.getNewznabAttributes().clear();
+
         }
 
         return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
