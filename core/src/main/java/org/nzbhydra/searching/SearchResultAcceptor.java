@@ -26,7 +26,14 @@ import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -195,7 +202,7 @@ public class SearchResultAcceptor {
                                 ? item.getCategory().getMinSizePreset().orElse(null)
                                 : null
                 );
-        if (minSize != null && item.getSize() / (1024 * 1024) < minSize) {
+        if (minSize != null && item.getSize() != null && item.getSize() / (1024 * 1024) < minSize) {
             logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "{} is smaller than {}", item.getTitle(), minSize);
             reasonsForRejection.add("Wrong size");
             return false;
@@ -207,7 +214,7 @@ public class SearchResultAcceptor {
                                 ? item.getCategory().getMaxSizePreset().orElse(null)
                                 : null
                 );
-        if (maxSize != null && item.getSize() / (1024 * 1024) > maxSize) {
+        if (maxSize != null && item.getSize() != null && item.getSize() / (1024 * 1024) > maxSize) {
             logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "{} is bigger than {}", item.getTitle(), maxSize);
             reasonsForRejection.add("Wrong size");
             return false;

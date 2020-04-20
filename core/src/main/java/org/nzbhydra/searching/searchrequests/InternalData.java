@@ -18,7 +18,7 @@ public class InternalData {
     }
 
     private String title;
-    private Map<String, FallbackState> fallbackState = new HashMap<>();
+    private final Map<String, FallbackState> fallbackState = new HashMap<>();
     private List<String> forbiddenWords = new ArrayList<>();
     private List<String> requiredWords = new ArrayList<>();
     private List<Integer> newznabCategories = new ArrayList<>();
@@ -29,11 +29,15 @@ public class InternalData {
     }
 
     public FallbackState getFallbackStateByIndexer(String indexerName) {
-        return fallbackState.computeIfAbsent(indexerName, s -> FallbackState.NOT_USED);
+        synchronized (fallbackState) {
+            return fallbackState.computeIfAbsent(indexerName, s -> FallbackState.NOT_USED);
+        }
     }
 
     public void setFallbackStateByIndexer(String indexerName, FallbackState fallbackState) {
-        this.fallbackState.put(indexerName, fallbackState);
+        synchronized (this.fallbackState) {
+            this.fallbackState.put(indexerName, fallbackState);
+        }
     }
 
 }
