@@ -1,3 +1,9 @@
+### v2.19.2 (2020-04-20)
+
+**Fix** Fix error related to fallback.
+
+
+
 ### v2.19.1 (2020-04-20)
 
 **Feature** Add debug output for determination of API/download limits.
