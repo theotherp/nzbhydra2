@@ -1,3 +1,9 @@
+### v2.19.4 (2020-04-20)
+
+**Fix** Fix error while reading API limits response from indexers which don't report oldest access time.
+
+
+
 ### v2.19.3 (2020-04-20)
 
 **Fix** Fix error when searching torznab.
