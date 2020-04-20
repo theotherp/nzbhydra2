@@ -95,7 +95,7 @@ public class IndexerWeb {
         int countUpdatedTrackers = 0;
         int countAddedTrackers = 0;
 
-        //Update existing configs, add new onex
+        //Update existing configs, add new ones
         for (IndexerConfig foundJackettConfig : foundJackettConfigs) {
             final Optional<IndexerConfig> updatedIndexer = configReadRequest.existingIndexers.stream().filter(x -> x.getHost().equals(foundJackettConfig.getHost())).findFirst();
             if (updatedIndexer.isPresent()) {
