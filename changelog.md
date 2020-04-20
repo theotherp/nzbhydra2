@@ -1,3 +1,9 @@
+### v2.19.3 (2020-04-20)
+
+**Fix** Fix error when searching torznab.
+
+
+
 ### v2.19.2 (2020-04-20)
 
 **Fix** Fix error related to fallback.
