@@ -18,6 +18,8 @@ package org.nzbhydra.downloading;
 
 import lombok.Data;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +31,9 @@ import java.util.regex.Pattern;
 
 @Data
 public class DownloadResult {
+
+    private static final Logger logger = LoggerFactory.getLogger(DownloadResult.class);
+
     private byte[] content;
     private String url;
     private String title;
@@ -75,8 +80,12 @@ public class DownloadResult {
                 //In case of an internal server error we just hope that it works later again...
                 HttpHeaders headers = new HttpHeaders();
                 //Retry after 4 hours by default. Ideally we would know this (see IndexerForSearchSelector), but that would require a DB access and so on. This hardcoded value should be good enough for most cases.
-                headers.add(HttpHeaders.RETRY_AFTER, String.valueOf(60 * 60 * 4));
+                final String headerValue = String.valueOf(60 * 60 * 4);
+                headers.add(HttpHeaders.RETRY_AFTER, headerValue);
                 response = new ResponseEntity<>(error, headers, HttpStatus.TOO_MANY_REQUESTS);
+
+                logger.warn("Download not OK. Status: {}. Adding RetryAfter header with value {}", statusCode, headerValue);
+
             } else {
                 response = new ResponseEntity<>(error, statusCode);
             }

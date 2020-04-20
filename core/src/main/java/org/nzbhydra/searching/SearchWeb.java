@@ -75,7 +75,7 @@ public class SearchWeb {
         searchState.setSearchFinished(true);
         lock.unlock();
 
-        logger.info("Search took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        logger.info("Web search took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return searchResponse;
     }
 

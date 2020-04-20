@@ -92,7 +92,7 @@ public class ExternalApi {
 
     @RequestMapping(value = {"/api", "/rss", "/torznab/api"}, consumes = MediaType.ALL_VALUE)
     public ResponseEntity<? extends Object> api(NewznabParameters params) throws Exception {
-        int searchRequestId = random.nextInt(1000000);
+        int searchRequestId = random.nextInt(100000);
         if (params.getT() != null && params.getT().isSearch()) {
             MDC.put("SEARCH", String.valueOf(searchRequestId));
         }

@@ -12,7 +12,7 @@ public class MdcLogConverter extends ClassicConverter {
     public String convert(ILoggingEvent event) {
         List<String> elements = new ArrayList<>();
         if (event.getMDCPropertyMap().containsKey("SEARCH")) {
-            elements.add("Search: " + event.getMDCPropertyMap().get("SEARCH"));
+            elements.add("ID: " + String.format("%05d", Integer.valueOf(event.getMDCPropertyMap().get("SEARCH"))));
         }
         if (event.getMDCPropertyMap().containsKey("IPADDRESS")) {
             elements.add("Host: " + event.getMDCPropertyMap().get("IPADDRESS"));

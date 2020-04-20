@@ -175,7 +175,7 @@ public class Sabnzbd extends Downloader {
             lastErrorLogged = null;
         } catch (DownloaderException e) {
             if (lastErrorLogged == null || lastErrorLogged.isBefore(Instant.now().minus(10, ChronoUnit.MINUTES))) {
-                logger.error("Error contacting NZBGet", e);
+                logger.error("Error contacting sabnzbd", e);
                 lastErrorLogged = Instant.now();
             }
             DownloaderStatus status = new DownloaderStatus();

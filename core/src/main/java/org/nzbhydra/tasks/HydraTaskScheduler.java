@@ -82,7 +82,7 @@ public class HydraTaskScheduler implements BeanPostProcessor, SmartInitializingS
             logger.info("Scheduling task \"{}\" to be run every {}", task.name(), DurationFormatUtils.formatDurationWords(getIntervalForTask(task), true, true));
         }
         Runnable runnable = () -> {
-            Thread.currentThread().setName("HydraTask - " + task.name());
+            Thread.currentThread().setName("HT-" + task.name());
             new ScheduledMethodRunnable(runtimeInformation.getBean(), runtimeInformation.getMethod()).run();
         };
         if (runNow) {
