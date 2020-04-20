@@ -70,7 +70,7 @@ public class NewznabXmlApilimits {
     public Instant getApiOldestTime() {
         //The format of the dates is currently "Mon, 20 Apr 20 03:20:41 +0200" (with only two digits for the year)
         // which is a different format than the pubdate so it's parsed as year 20 instead of 2020
-        if (apiOldestTime.getEpochSecond() < 0) {
+        if (apiOldestTime != null && apiOldestTime.getEpochSecond() < 0) {
             apiOldestTime = apiOldestTime.atZone(ZoneId.of("UTC")).plus(2000, ChronoUnit.YEARS).toInstant();
         }
         return apiOldestTime;
@@ -78,7 +78,7 @@ public class NewznabXmlApilimits {
 
     public Instant getGrabOldestTime() {
         //see above
-        if (grabOldestTime.getEpochSecond() < 0) {
+        if (grabOldestTime != null && grabOldestTime.getEpochSecond() < 0) {
             grabOldestTime = grabOldestTime.atZone(ZoneId.of("UTC")).plus(2000, ChronoUnit.YEARS).toInstant();
         }
         return grabOldestTime;
