@@ -1010,7 +1010,7 @@ function IndexerCheckBeforeCloseService($q, ModalService, IndexerConfigBoxServic
 
     function checkBeforeClose(scope, model) {
         var deferred = $q.defer();
-        if (model.searchModuleType !== 'JACKETT_CONFIG') {
+        if (model.searchModuleType === 'JACKETT_CONFIG') {
             deferred.resolve(model);
         } else if (!scope.isInitial && (!scope.needsConnectionTest || scope.form.capsChecked)) {
             checkCapsWhenClosing(scope, model).then(function () {
