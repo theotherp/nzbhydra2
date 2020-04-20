@@ -1,3 +1,11 @@
+### v2.19.1 (2020-04-20)
+
+**Feature** Add debug output for determination of API/download limits.
+
+**Fix** Corectly parse API/download limit information from NNTmux.
+
+
+
 ### v2.19.0 BETA (2020-04-19)
 
 **Feature** Add option to set VIP expiry date for an indexer. You will be warned when the expiry date is near or has been reached.
