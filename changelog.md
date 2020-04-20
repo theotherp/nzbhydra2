@@ -1,3 +1,11 @@
+### v2.19.5 (2020-04-20)
+
+**Fix** Indexer caps check was not executed when adding a new indexer.
+
+**Note** Happy 420. Stay inside. Stay healthy. Sorry for all the bugfix releases...
+
+
+
 ### v2.19.4 (2020-04-20)
 
 **Fix** Fix error while reading API limits response from indexers which don't report oldest access time.
