@@ -158,15 +158,6 @@ if not "%ERRORLEVEL%" == "0" (
     goto error
 )
 
-:pushsnapshot
-echo Pushing snapshot repo ***********************************************************************
-call git push origin master
-if not "%ERRORLEVEL%" == "0" (
-    echo Error pushing to repo
-    goto error
-)
-
-
 goto eof
 :error
 echo Error, aborted

@@ -416,11 +416,13 @@ public class Newznab extends Indexer<Xml> {
         List<SearchResultItem> searchResultItems = new ArrayList<>();
 
         final NewznabXmlRoot newznabXmlRoot = (NewznabXmlRoot) rssRoot;
-        final Integer total = newznabXmlRoot.getRssChannel().getNewznabResponse().getTotal();
-        if (searchRequest.isIdBasedQuery() && total >= 10_000) {
-            warn("Indexer returned " + total + " results for an ID based searched. Will interpret this as no results found");
-            newznabXmlRoot.getRssChannel().getNewznabResponse().setTotal(0);
-            newznabXmlRoot.getRssChannel().getItems().clear();
+        if (newznabXmlRoot.getRssChannel().getNewznabResponse() != null) { //is null for torznab
+            final Integer total = newznabXmlRoot.getRssChannel().getNewznabResponse().getTotal();
+            if (searchRequest.isIdBasedQuery() && total >= 10_000) {
+                warn("Indexer returned " + total + " results for an ID based searched. Will interpret this as no results found");
+                newznabXmlRoot.getRssChannel().getNewznabResponse().setTotal(0);
+                newznabXmlRoot.getRssChannel().getItems().clear();
+            }
         }
 
         for (NewznabXmlItem item : newznabXmlRoot.getRssChannel().getItems()) {
