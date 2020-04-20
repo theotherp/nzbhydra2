@@ -24,6 +24,8 @@ import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.indexers.capscheck.IndexerChecker.CheckerEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.MediaType;
@@ -42,6 +44,8 @@ import java.util.Optional;
 
 @RestController
 public class IndexerWeb {
+
+    private static final Logger logger = LoggerFactory.getLogger(IndexerWeb.class);
 
     @Autowired
     private IndexerChecker newznabChecker;
@@ -105,6 +109,8 @@ public class IndexerWeb {
                 countAddedTrackers++;
             }
         }
+
+        logger.info("Found {} new and {} updated trackers", countAddedTrackers, countUpdatedTrackers);
 
         response.setNewIndexersConfig(newConfigs);
         response.setUpdatedTrackers(countUpdatedTrackers);

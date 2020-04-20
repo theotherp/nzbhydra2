@@ -20,7 +20,9 @@ import org.nzbhydra.Jackson;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.indexers.IndexerWebAccess;
+import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlError;
 import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlSearching;
 import org.nzbhydra.mapping.newznab.xml.caps.jackett.JacketCapsXmlIndexer;
 import org.nzbhydra.mapping.newznab.xml.caps.jackett.JacketCapsXmlRoot;
@@ -57,8 +59,12 @@ public class JacketConfigRetriever {
                 .build().toUri();
         logger.info("Getting configured jackett trackers from {}", uri);
         final Object response = indexerWebAccess.get(uri, jackettConfig);
+        if (response instanceof NewznabXmlError) {
+            NewznabXmlError error = (NewznabXmlError) response;
+            throw new IndexerAccessException("Jackett report error " + error.getCode() + ": " + error.getDescription());
+        }
         if (!(response instanceof JacketCapsXmlRoot)) {
-            throw new IOException("Unable to parse response from {}");
+            throw new IOException("Unable to parse response from jackett");
         }
         JacketCapsXmlRoot root = (JacketCapsXmlRoot) response;
 
