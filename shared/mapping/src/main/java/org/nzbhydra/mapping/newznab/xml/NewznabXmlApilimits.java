@@ -24,24 +24,26 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 
 @XmlRootElement(name = "apilimits", namespace = "http://www.newznab.com/DTD/2010/feeds/attributes/")
 @XmlAccessorType(XmlAccessType.FIELD)
 @Data
 public class NewznabXmlApilimits {
 
-    @XmlAttribute
+    @XmlAttribute(name = "apicurrent")
     private Integer apiCurrent;
-    @XmlAttribute
+    @XmlAttribute(name = "apimax")
     private Integer apiMax;
-    @XmlAttribute
+    @XmlAttribute(name = "grabcurrent")
     private Integer grabCurrent;
-    @XmlAttribute
+    @XmlAttribute(name = "grabmax")
     private Integer grabMax;
-    @XmlAttribute
+    @XmlAttribute(name = "apioldesttime")
     @XmlJavaTypeAdapter(JaxbPubdateAdapter.class)
     private Instant apiOldestTime;
-    @XmlAttribute
+    @XmlAttribute(name = "graboldesttime")
     @XmlJavaTypeAdapter(JaxbPubdateAdapter.class)
     private Instant grabOldestTime;
 
@@ -63,5 +65,22 @@ public class NewznabXmlApilimits {
         this.grabMax = grabMax;
         this.apiOldestTime = apiOldestTime;
         this.grabOldestTime = grabOldestTime;
+    }
+
+    public Instant getApiOldestTime() {
+        //The format of the dates is currently "Mon, 20 Apr 20 03:20:41 +0200" (with only two digits for the year)
+        // which is a different format than the pubdate so it's parsed as year 20 instead of 2020
+        if (apiOldestTime.getEpochSecond() < 0) {
+            apiOldestTime = apiOldestTime.atZone(ZoneId.of("UTC")).plus(2000, ChronoUnit.YEARS).toInstant();
+        }
+        return apiOldestTime;
+    }
+
+    public Instant getGrabOldestTime() {
+        //see above
+        if (grabOldestTime.getEpochSecond() < 0) {
+            grabOldestTime = grabOldestTime.atZone(ZoneId.of("UTC")).plus(2000, ChronoUnit.YEARS).toInstant();
+        }
+        return grabOldestTime;
     }
 }

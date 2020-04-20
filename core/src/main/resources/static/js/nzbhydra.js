@@ -5684,6 +5684,7 @@ function ConfigFields($injector) {
                                 help: 'Select certain sections for more output on debug level.',
                                 hideExpression: 'model.consolelevel !== "DEBUG" && model.logfilelevel !== "DEBUG"', //Doesn't work...
                                 options: [
+                                    {label: 'API limits', id: 'LIMITS'},
                                     {label: 'Config file handling', id: 'CONFIG_READ_WRITE'},
                                     {label: 'Download status updating', id: 'DOWNLOAD_STATUS_UPDATE'},
                                     {label: 'Duplicate detection', id: 'DUPLICATES'},

@@ -18,6 +18,7 @@ public class LoggingMarkers {
     public static final Marker HISTORY_CLEANUP = MarkerFactory.getMarker("HISTORY_CLEANUP");
     public static final Marker CONFIG_READ_WRITE = MarkerFactory.getMarker("CONFIG_READ_WRITE");
     public static final Marker SERVER = MarkerFactory.getMarker("SERVER");
+    public static final Marker LIMITS = MarkerFactory.getMarker("LIMITS");
 
 
 }

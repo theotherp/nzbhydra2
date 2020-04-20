@@ -17,8 +17,10 @@ import org.nzbhydra.indexers.exceptions.IndexerProgramErrorException;
 import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
 import org.nzbhydra.indexers.status.IndexerLimit;
 import org.nzbhydra.indexers.status.IndexerLimitRepository;
+import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mapping.newznab.xml.NewznabAttribute;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlApilimits;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlChannel;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlEnclosure;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlError;
@@ -458,14 +460,17 @@ public class Newznab extends Indexer<Xml> {
             indexerSearchResult.setTotalResults(indexerSearchResult.getSearchResultItems().size());
         }
 
-        if (rssChannel.getApiLimits() != null) {
+        final NewznabXmlApilimits apiLimits = rssChannel.getApiLimits();
+        if (apiLimits != null) {
+            logger.debug(LoggingMarkers.LIMITS, "Indexer {}. ApiLimits data: {}", indexer.getName(), apiLimits);
+
             IndexerLimit indexerStatus = indexerStatusRepository.findByIndexer(indexer);
-            indexerStatus.setApiHits(rssChannel.getApiLimits().getApiCurrent());
-            indexerStatus.setApiHitLimit(rssChannel.getApiLimits().getApiMax());
-            indexerStatus.setDownloads(rssChannel.getApiLimits().getGrabCurrent());
-            indexerStatus.setDownloadLimit(rssChannel.getApiLimits().getGrabMax());
-            indexerStatus.setOldestApiHit(rssChannel.getApiLimits().getApiOldestTime());
-            indexerStatus.setOldestDownload(rssChannel.getApiLimits().getGrabOldestTime());
+            indexerStatus.setApiHits(apiLimits.getApiCurrent());
+            indexerStatus.setApiHitLimit(apiLimits.getApiMax());
+            indexerStatus.setDownloads(apiLimits.getGrabCurrent());
+            indexerStatus.setDownloadLimit(apiLimits.getGrabMax());
+            indexerStatus.setOldestApiHit(apiLimits.getApiOldestTime());
+            indexerStatus.setOldestDownload(apiLimits.getGrabOldestTime());
 
             indexerStatusRepository.save(indexerStatus);
         }
