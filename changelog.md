@@ -1,3 +1,9 @@
+### v2.19.6 (2020-04-23)
+
+**Fix** With v 2.15.0 I added the option to configure the backup folder and changed the path from being relative to the data folder to being relative to the main folder. That's not compatible with docker containers and broke the backup but I always insisted it wasn't my fault - it was, sorry.
+
+
+
 ### v2.19.5 (2020-04-20)
 
 **Fix** Indexer caps check was not executed when adding a new indexer.
