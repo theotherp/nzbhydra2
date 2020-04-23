@@ -427,7 +427,7 @@ function ConfigFields($injector) {
                             type: 'horizontalInput',
                             templateOptions: {
                                 label: 'Backup folder',
-                                help: 'Either relative to the NZBHydra main folder or an absolute folder'
+                                help: 'Either relative to the NZBHydra data folder or an absolute folder'
                             }
                         },
                         {

@@ -118,7 +118,11 @@ public class BackupAndRestore {
     }
 
     protected File getBackupFolder() {
-        return new File(configProvider.getBaseConfig().getMain().getBackupFolder());
+        final String backupFolder = configProvider.getBaseConfig().getMain().getBackupFolder();
+        if (backupFolder.contains(File.separator)) {
+            return new File(backupFolder);
+        }
+        return new File(NzbHydra.getDataFolder(), backupFolder);
     }
 
     public List<BackupEntry> getExistingBackups() {

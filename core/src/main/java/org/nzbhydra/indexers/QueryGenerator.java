@@ -41,6 +41,12 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class QueryGenerator {
 
+    public enum QueryFormat {
+        TITLE,
+        TITLE_YEAR,
+        TITLE_YEAR_LANGUAGE
+    }
+
     private static final Logger logger = LoggerFactory.getLogger(QueryGenerator.class);
 
     private final Map<SearchRequest, String> generatedQueries =
@@ -95,7 +101,18 @@ public class QueryGenerator {
                     throw new IndexerSearchAbortedException("Unable to generate query because no title is known");
                 }
                 query = sanitizeTitleForQuery(mediaInfo.getTitle().get());
+
+                //Only add year for movies
+//                if (searchRequest.getSearchType() == SearchType.MOVIE &&
+//                        configProvider.getBaseConfig().getSearching().getGenerateQueriesFormat() != QueryFormat.TITLE) {
+//                    if (mediaInfo.getYear().isPresent()) {
+//                        query += " " + mediaInfo.getYear().get()
+//                    }
+//                }
+
+                //Add language for shows and movies
                 logger.debug("Determined title to be {}. Using that as query base.", query);
+
             } catch (InfoProviderException e) {
                 throw new IndexerSearchAbortedException("Error while getting infos to generate queries");
             }

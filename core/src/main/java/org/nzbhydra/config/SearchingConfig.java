@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import com.google.common.base.Strings;
 import lombok.Data;
 import org.nzbhydra.config.downloading.FileDownloadAccessType;
+import org.nzbhydra.indexers.QueryGenerator;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.ArrayList;
@@ -31,6 +32,7 @@ public class SearchingConfig extends ValidatingConfig<SearchingConfig> {
     private List<String> forbiddenWords = new ArrayList<>();
     private SearchSourceRestriction alwaysConvertIds = SearchSourceRestriction.NONE;
     private SearchSourceRestriction generateQueries = SearchSourceRestriction.INTERNAL;
+    private QueryGenerator.QueryFormat generateQueriesFormat = QueryGenerator.QueryFormat.TITLE;
     @JsonFormat(shape = Shape.STRING)
     private SearchSourceRestriction idFallbackToQueryGeneration = SearchSourceRestriction.NONE;
     private boolean ignorePassworded = false;
