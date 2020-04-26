@@ -117,7 +117,7 @@ public class SearchModuleProvider {
         List<String> indexerNames = indexers.stream().map(IndexerConfig::getName).collect(Collectors.toList());
         Collection<IndexerEntity> byNameNotIn = indexerRepository.findByNameNotIn(indexerNames);
         if (!byNameNotIn.isEmpty()) {
-            logger.info("Found {} indexers in database which are not configured. Will delete them and any related database entries. This may take some time", byNameNotIn.size());
+            logger.info("Found {} indexers ({}) in database which are not configured. Will delete them and any related database entries. This may take some time", byNameNotIn.size(), byNameNotIn.stream().map(IndexerEntity::getName).collect(Collectors.joining(", ")));
             //indexerRepository.deleteAll(byNameNotIn);
         }
         if (searchModuleInstances.isEmpty()) {

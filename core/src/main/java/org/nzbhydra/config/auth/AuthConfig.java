@@ -98,8 +98,8 @@ public class AuthConfig extends ValidatingConfig<AuthConfig> {
     }
 
     @Override
-    public AuthConfig prepareForSaving() {
-        getUsers().forEach(ValidatingConfig::prepareForSaving);
+    public AuthConfig prepareForSaving(BaseConfig oldBaseConfig) {
+        getUsers().forEach(userAuthConfig -> userAuthConfig.prepareForSaving(oldBaseConfig));
         return this;
     }
 

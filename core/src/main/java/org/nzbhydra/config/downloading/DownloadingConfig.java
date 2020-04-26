@@ -71,7 +71,7 @@ public class DownloadingConfig extends ValidatingConfig<DownloadingConfig> {
     }
 
     @Override
-    public DownloadingConfig prepareForSaving() {
+    public DownloadingConfig prepareForSaving(BaseConfig oldBaseConfig) {
         return this;
     }
 

@@ -137,33 +137,6 @@ public class IndexerConfig extends ValidatingConfig<IndexerConfig> {
         return Optional.ofNullable(Strings.emptyToNull(userAgent));
     }
 
-    public void setState(State state) {
-        this.state = state;
-    }
-
-    public void setDisabledUntil(Long disabledUntil) {
-        this.disabledUntil = disabledUntil;
-        //When the config is written from YAML or from the web the setters are called in any order
-        if (state == State.ENABLED || state == State.DISABLED_USER) {
-            this.disabledUntil = null;
-        }
-    }
-
-    public void setDisabledLevel(int disabledLevel) {
-        this.disabledLevel = disabledLevel;
-        //When the config is written from YAML or from the web the setters are called in any order
-        if (state == State.ENABLED || state == State.DISABLED_USER) {
-            this.disabledLevel = 0;
-        }
-    }
-
-    public void setLastError(String lastError) {
-        this.lastError = lastError;
-        //When the config is written from YAML or from the web the setters are called in any order
-        if (state == State.ENABLED || state == State.DISABLED_USER) {
-            this.lastError = null;
-        }
-    }
 
     @JsonIgnore
     public boolean isEligibleForInternalSearch() {
@@ -215,7 +188,12 @@ public class IndexerConfig extends ValidatingConfig<IndexerConfig> {
     }
 
     @Override
-    public IndexerConfig prepareForSaving() {
+    public IndexerConfig prepareForSaving(BaseConfig oldBaseConfig) {
+        if (state == State.ENABLED || state == State.DISABLED_USER) {
+            this.disabledUntil = null;
+            this.disabledLevel = 0;
+            this.lastError = null;
+        }
         return this;
     }
 

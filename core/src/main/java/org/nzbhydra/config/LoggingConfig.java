@@ -30,7 +30,7 @@ public class LoggingConfig extends ValidatingConfig<LoggingConfig> {
     }
 
     @Override
-    public LoggingConfig prepareForSaving() {
+    public LoggingConfig prepareForSaving(BaseConfig oldBaseConfig) {
         return this;
     }
 

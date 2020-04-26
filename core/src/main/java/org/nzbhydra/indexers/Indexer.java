@@ -66,7 +66,7 @@ public abstract class Indexer<T> {
         NEWZNAB
     }
 
-    protected static final List<Integer> DISABLE_PERIODS = Arrays.asList(0, 15, 30, 60, 3 * 60, 6 * 60, 12 * 60, 24 * 60);
+    protected static final List<Integer> DISABLE_PERIODS = Arrays.asList(0, 5, 15, 30, 60, 3 * 60);
     private static final Logger logger = LoggerFactory.getLogger(Indexer.class);
 
     private static final List<DateTimeFormatter> DATE_FORMATs = Arrays.asList(DateTimeFormatter.RFC_1123_DATE_TIME, DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.ENGLISH));
@@ -270,7 +270,7 @@ public abstract class Indexer<T> {
     }
 
     protected void handleSuccess(IndexerApiAccessType accessType, Long responseTime) {
-        //New state can only be enabled; if the user has disabled the indexer it wouldn't've been called
+        //New state can only be enabled; if the user had disabled the indexer it wouldn't've been called
         if (getConfig().getDisabledLevel() > 0) {
             debug("Indexer was successfully called after {} failed attempts in a row", getConfig().getDisabledLevel());
         }

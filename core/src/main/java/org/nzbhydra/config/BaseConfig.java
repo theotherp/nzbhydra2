@@ -245,13 +245,15 @@ public class BaseConfig extends ValidatingConfig<BaseConfig> {
     }
 
     @Override
-    public BaseConfig prepareForSaving() {
-        getCategoriesConfig().prepareForSaving();
-        getDownloading().prepareForSaving();
-        getSearching().prepareForSaving();
-        getMain().prepareForSaving();
-        getMain().getLogging().prepareForSaving();
-        getAuth().prepareForSaving();
+    public BaseConfig prepareForSaving(BaseConfig oldBaseConfig) {
+        getCategoriesConfig().prepareForSaving(oldBaseConfig);
+        getDownloading().prepareForSaving(oldBaseConfig);
+        getSearching().prepareForSaving(oldBaseConfig);
+        getMain().prepareForSaving(oldBaseConfig);
+        getMain().getLogging().prepareForSaving(oldBaseConfig);
+        getAuth().prepareForSaving(oldBaseConfig);
+        getIndexers().forEach(indexerConfig -> indexerConfig.prepareForSaving(oldBaseConfig));
+
         return this;
     }
 

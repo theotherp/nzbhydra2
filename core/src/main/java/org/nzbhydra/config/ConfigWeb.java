@@ -68,7 +68,7 @@ public class ConfigWeb {
         }
 
         logger.info("Received new config");
-        newConfig = newConfig.prepareForSaving();
+        newConfig = newConfig.prepareForSaving(configProvider.getBaseConfig());
         ConfigValidationResult result = newConfig.validateConfig(configProvider.getBaseConfig(), newConfig, newConfig);
         if (result.isOk()) {
             configProvider.getBaseConfig().replace(newConfig);

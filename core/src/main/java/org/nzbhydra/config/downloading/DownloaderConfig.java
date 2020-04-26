@@ -71,7 +71,7 @@ public class DownloaderConfig extends ValidatingConfig<DownloaderConfig> {
     }
 
     @Override
-    public DownloaderConfig prepareForSaving() {
+    public DownloaderConfig prepareForSaving(BaseConfig oldBaseConfig) {
         return this;
     }
 

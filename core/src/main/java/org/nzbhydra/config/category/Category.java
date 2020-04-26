@@ -84,7 +84,7 @@ public class Category extends ValidatingConfig<Category> {
     }
 
     @Override
-    public Category prepareForSaving() {
+    public Category prepareForSaving(BaseConfig oldBaseConfig) {
         return this;
     }
 

@@ -109,7 +109,7 @@ public class CategoriesConfig extends ValidatingConfig<CategoriesConfig> {
     }
 
     @Override
-    public CategoriesConfig prepareForSaving() {
+    public CategoriesConfig prepareForSaving(BaseConfig oldBaseConfig) {
         return this;
     }
 

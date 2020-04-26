@@ -12,6 +12,10 @@
         "text": "NZBGet connection didn't honor SSL verification settings."
       },
       {
+        "type": "fix",
+        "text": "Properly display last errror on indexer statuses page."
+      },
+      {
         "type": "note",
         "text": "I've added two settings for the database. Just ignore them unless told otherwise ;-)"
       }

@@ -42,7 +42,7 @@ public class UserAuthConfig extends ValidatingConfig<UserAuthConfig> {
     }
 
     @Override
-    public UserAuthConfig prepareForSaving() {
+    public UserAuthConfig prepareForSaving(BaseConfig oldBaseConfig) {
         if (password != null && !password.startsWith(PASSWORD_ID)) {
             password = PASSWORD_ID + password;
         }

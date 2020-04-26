@@ -173,19 +173,19 @@ public class MainConfig extends ValidatingConfig<MainConfig> {
         }
 
 
-        ConfigValidationResult loggingResult = getLogging().validateConfig(oldConfig, getLogging(), newBaseConfig);
-        result.getWarningMessages().addAll(loggingResult.getWarningMessages());
-        result.getErrorMessages().addAll(loggingResult.getErrorMessages());
+        ConfigValidationResult validationResult = getLogging().validateConfig(oldConfig, getLogging(), newBaseConfig);
+        result.getWarningMessages().addAll(validationResult.getWarningMessages());
+        result.getErrorMessages().addAll(validationResult.getErrorMessages());
 
-        oldMain = oldMain.prepareForSaving();
-        result.setRestartNeeded(loggingResult.isRestartNeeded() || isRestartNeeded(oldMain));
-        result.setOk(loggingResult.isOk() && result.isOk());
+        oldMain = oldMain.prepareForSaving(oldConfig);
+        result.setRestartNeeded(validationResult.isRestartNeeded() || isRestartNeeded(oldMain));
+        result.setOk(validationResult.isOk() && result.isOk());
 
         return result;
     }
 
     @Override
-    public MainConfig prepareForSaving() {
+    public MainConfig prepareForSaving(BaseConfig oldBaseConfig) {
         if (!Strings.isNullOrEmpty(urlBase) && (!urlBase.startsWith("/") || urlBase.endsWith("/") || "/".equals(urlBase))) {
             if (!urlBase.startsWith("/")) {
                 urlBase = "/" + urlBase;

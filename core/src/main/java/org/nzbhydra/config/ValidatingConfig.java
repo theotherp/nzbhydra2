@@ -87,8 +87,10 @@ public abstract class ValidatingConfig<T> {
 
     /**
      * Called before the config is saved after the user made some changes. Use this to convert data, e.g. passwords.
+     *
+     * @param oldBaseConfig
      */
-    public abstract T prepareForSaving();
+    public abstract T prepareForSaving(BaseConfig oldBaseConfig);
 
     /**
      * Called before the config is transferred to the GUI. Use this to prepare data, e.g. passwords.

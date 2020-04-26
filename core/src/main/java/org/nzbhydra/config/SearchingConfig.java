@@ -110,7 +110,7 @@ public class SearchingConfig extends ValidatingConfig<SearchingConfig> {
     }
 
     @Override
-    public SearchingConfig prepareForSaving() {
+    public SearchingConfig prepareForSaving(BaseConfig oldBaseConfig) {
         return this;
     }
 
