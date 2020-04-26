@@ -84,7 +84,7 @@ public class History {
         boolean useLower = true;
         if (sortModel != null) {
             String column = sortModel.getColumn();
-            if ("time".equalsIgnoreCase(column)) {
+            if ("time".equalsIgnoreCase(column) || "age".equalsIgnoreCase(column)) {
                 useNullsLast = false;
                 useLower = false;
             }
