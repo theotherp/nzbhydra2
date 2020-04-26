@@ -273,6 +273,8 @@ main:
   backupBeforeUpdate: true
   configVersion: 13
   databaseCompactTime: 15000
+  databaseRetentionTime: 1000
+  databaseWriteDelay: 5000
   deleteBackupsAfterWeeks: 4
   dereferer: "http://www.dereferer.org/?$s"
   host: "0.0.0.0"

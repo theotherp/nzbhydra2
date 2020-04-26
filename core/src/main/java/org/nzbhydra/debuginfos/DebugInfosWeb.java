@@ -134,7 +134,7 @@ public class DebugInfosWeb {
     public GenericResponse executeSqlUpdate(@RequestBody String sql) throws IOException {
         try {
             return GenericResponse.ok(debugInfos.executeSqlUpdate(sql));
-        } catch (IOException e) {
+        } catch (Exception e) {
             logger.error("Error while executing SQL", e);
             return GenericResponse.notOk("Error while executing SQL " + e.getMessage());
         }

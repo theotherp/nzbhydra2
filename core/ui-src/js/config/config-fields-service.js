@@ -536,6 +536,50 @@ function ConfigFields($injector) {
                 },
                 {
                     wrapper: 'fieldset',
+                    templateOptions: {label: 'Database'},
+                    fieldGroup: [
+                        {
+                            key: 'databaseCompactTime',
+                            type: 'horizontalInput',
+                            templateOptions: {
+                                type: 'number',
+                                label: 'Database compact time',
+                                addonRight: {
+                                    text: 'ms'
+                                },
+                                min: 200,
+                                help: 'The time the database is given to compact (reduce size) when shutting down. Reduce this if shutting down NZBHydra takes too long (database size may increase). Takes effect on next restart.'
+                            }
+                        },
+                        {
+                            key: 'databaseRetentionTime',
+                            type: 'horizontalInput',
+                            templateOptions: {
+                                type: 'number',
+                                label: 'Database retention time',
+                                addonRight: {
+                                    text: 'ms'
+                                },
+                                help: 'How long the db should retain old, persisted data. See <a href="https://www.h2database.com/html/commands.html#set_retention_time">here</a>. Do NOT change this willy-nilly.'
+                            }
+                        },
+                        {
+                            key: 'databaseWriteDelay',
+                            type: 'horizontalInput',
+                            templateOptions: {
+                                type: 'number',
+                                label: 'Database write delay',
+                                addonRight: {
+                                    text: 'ms'
+                                },
+                                help: 'Maximum delay between a commit and flushing the log, in milliseconds. See <a href="https://www.h2database.com/html/commands.html#set_write_delay">here</a>. Do NOT change this willy-nilly.'
+                            }
+                        }
+
+                    ]
+                },
+                {
+                    wrapper: 'fieldset',
                     templateOptions: {label: 'Other'},
                     fieldGroup: [
                         {
@@ -566,19 +610,6 @@ function ConfigFields($injector) {
                                 },
                                 min: 128,
                                 help: '256 should suffice except when working with big databases / many indexers. See <a href="https://github.com/theotherp/nzbhydra2/wiki/Memory-requirements" target="_blank">wiki</a>'
-                            }
-                        },
-                        {
-                            key: 'databaseCompactTime',
-                            type: 'horizontalInput',
-                            templateOptions: {
-                                type: 'number',
-                                label: 'Database compact time',
-                                addonRight: {
-                                    text: 'ms'
-                                },
-                                min: 200,
-                                help: 'The time the database is given to compact (reduce size) when shutting down. Reduce this if shutting down NZBHydra takes too long (database size may increase). Takes effect on next restart.'
                             }
                         }
                     ]

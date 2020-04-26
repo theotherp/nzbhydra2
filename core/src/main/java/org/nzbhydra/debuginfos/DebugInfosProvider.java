@@ -17,6 +17,7 @@ import org.nzbhydra.webaccess.Ssl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.management.ThreadDumpEndpoint;
 import org.springframework.boot.actuate.metrics.MetricsEndpoint;
 import org.springframework.stereotype.Component;
@@ -75,6 +76,9 @@ public class DebugInfosProvider {
     private EntityManager entityManager;
     @Autowired
     private Ssl ssl;
+
+    @Value("spring.datasource.url")
+    private String datasourceUrl;
 
     private final List<TimeAndThreadCpuUsages> timeAndThreadCpuUsagesList = new ArrayList<>();
     private final Map<String, Long> lastThreadCpuTimes = new HashMap<>();
@@ -172,6 +176,7 @@ public class DebugInfosProvider {
         logger.info("OS architecture: {}", System.getProperty("os.arch"));
         logger.info("User country: {}", System.getProperty("user.country"));
         logger.info("File encoding: {}", System.getProperty("file.encoding"));
+        logger.info("Datasource URL: {}", datasourceUrl);
         logger.info("Ciphers:");
         logger.info(ssl.getSupportedCiphers());
         if (outdatedWrapperDetector.isOutdatedWrapperDetected()) {
