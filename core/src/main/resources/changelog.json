@@ -24,6 +24,10 @@
         "text": "Fix parsing of binsearch date on non-english locales."
       },
       {
+        "type": "fix",
+        "text": "Properly recognize duplicate NZBs not added to sabNZBd."
+      },
+      {
         "type": "note",
         "text": "I've added two settings for the database. Just ignore them unless told otherwise ;-)"
       }

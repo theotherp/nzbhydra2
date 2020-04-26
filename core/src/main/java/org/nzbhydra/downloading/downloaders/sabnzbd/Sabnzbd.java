@@ -28,6 +28,7 @@ import org.nzbhydra.downloading.downloaders.sabnzbd.mapping.QueueEntry;
 import org.nzbhydra.downloading.downloaders.sabnzbd.mapping.QueueResponse;
 import org.nzbhydra.downloading.exceptions.DownloaderException;
 import org.nzbhydra.downloading.exceptions.DownloaderUnreachableException;
+import org.nzbhydra.downloading.exceptions.DuplicateNzbException;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.webaccess.HydraOkHttp3ClientHttpRequestFactory;
 import org.slf4j.Logger;
@@ -153,9 +154,12 @@ public class Sabnzbd extends Downloader {
             if (!response.isSuccessful()) {
                 throw new DownloaderException("Downloader returned status code " + response.code() + " and message " + response.message());
             }
-            AddNzbResponse addNzbResponse = Jackson.JSON_MAPPER.readValue(body.string(), AddNzbResponse.class);
+            final String bodyContent = body.string();
+            AddNzbResponse addNzbResponse = Jackson.JSON_MAPPER.readValue(bodyContent, AddNzbResponse.class);
             if (addNzbResponse.getNzoIds().isEmpty()) {
-                throw new DownloaderException("Sabnzbd says NZB was added successfully but didn't return an NZO ID");
+                //We'll assume this is a duplicate, the documentation doesn't say anything about it
+                logger.warn("Tried to add NZB \"{}\" but sabNZBd reports it as a duplicate", title);
+                throw new DuplicateNzbException("Duplicate: " + title);
             }
             String nzoId = addNzbResponse.getNzoIds().get(0);
             logger.info("Successfully added NZB \"{}\" to sabnzbd queue with ID {}", title, nzoId);

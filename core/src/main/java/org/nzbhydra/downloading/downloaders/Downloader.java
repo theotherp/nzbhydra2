@@ -33,6 +33,7 @@ import org.nzbhydra.downloading.FileDownloadStatus;
 import org.nzbhydra.downloading.FileHandler;
 import org.nzbhydra.downloading.InvalidSearchResultIdException;
 import org.nzbhydra.downloading.exceptions.DownloaderException;
+import org.nzbhydra.downloading.exceptions.DuplicateNzbException;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.searching.db.SearchResultEntity;
 import org.nzbhydra.searching.db.SearchResultRepository;
@@ -112,21 +113,29 @@ public abstract class Downloader {
                     categoryToSend = category;
                 }
 
-                if (addingType == NzbAddingType.UPLOAD) {
-                    DownloadResult result = nzbHandler.getFileByGuid(guid, FileDownloadAccessType.PROXY, SearchSource.INTERNAL); //Uploading NZBs can only be done via proxying
-                    if (result.isSuccessful()) {
-                        String externalId = addNzb(result.getContent(), result.getTitle(), categoryToSend);
-                        result.getDownloadEntity().setExternalId(externalId);
-                        nzbHandler.updateStatusByEntity(result.getDownloadEntity(), FileDownloadStatus.NZB_ADDED);
+                SearchResultEntity searchResult = null;
+                try {
+                    if (addingType == NzbAddingType.UPLOAD) {
+                        DownloadResult result = nzbHandler.getFileByGuid(guid, FileDownloadAccessType.PROXY, SearchSource.INTERNAL); //Uploading NZBs can only be done via proxying
+                        searchResult = result.getDownloadEntity().getSearchResult();
+                        if (result.isSuccessful()) {
+                            String externalId = addNzb(result.getContent(), result.getTitle(), categoryToSend);
+                            result.getDownloadEntity().setExternalId(externalId);
+                            nzbHandler.updateStatusByEntity(result.getDownloadEntity(), FileDownloadStatus.NZB_ADDED);
+                            addedNzbs.add(guid);
+                        } else {
+                            missedNzbs.add(searchResult);
+                        }
+                    } else if (addingType == NzbAddingType.SEND_LINK) {
+                        searchResult = searchResultRepository.getOne(guid);
+                        String externalId = addLink(nzbHandler.getDownloadLink(guid, false, DownloadType.NZB), searchResult.getTitle(), categoryToSend);
+                        guidExternalIds.put(guid, externalId);
                         addedNzbs.add(guid);
-                    } else {
-                        missedNzbs.add(result.getDownloadEntity().getSearchResult());
                     }
-                } else if (addingType == NzbAddingType.SEND_LINK) {
-                    SearchResultEntity searchResultEntity = searchResultRepository.getOne(guid);
-                    String externalId = addLink(nzbHandler.getDownloadLink(guid, false, DownloadType.NZB), searchResultEntity.getTitle(), categoryToSend);
-                    guidExternalIds.put(guid, externalId);
-                    addedNzbs.add(guid);
+                } catch (DuplicateNzbException e) {
+                    if (searchResult != null) {
+                        missedNzbs.add(searchResult);
+                    }
                 }
             }
         } catch (InvalidSearchResultIdException | DownloaderException | EntityNotFoundException e) {
@@ -147,9 +156,9 @@ public abstract class Downloader {
         if (missedNzbs.isEmpty()) {
             return new AddNzbsResponse(true, null, addedNzbs, Collections.emptyList());
         } else {
-            logger.debug("At least one NZB was not downloaded successfully and could not be added to the downloader");
+            logger.debug("At least one NZB was not downloaded successfully or could not be added to the downloader");
             List<Long> missedNzbIds = missedNzbs.stream().map(SearchResultEntity::getId).collect(Collectors.toList());
-            String message = "NZBs for the following titles could not be downloaded:\r\n" + missedNzbs.stream().map(SearchResultEntity::getTitle).collect(Collectors.joining(", "));
+            String message = "NZBs for the following titles could not be downloaded or added:\r\n" + missedNzbs.stream().map(SearchResultEntity::getTitle).collect(Collectors.joining(", "));
             return new AddNzbsResponse(true, message, addedNzbs, missedNzbIds);
         }
     }
