@@ -12,7 +12,7 @@
       },
       {
         "type": "feature",
-        "text": "Option to disable SSL verification for local hosts."
+        "text": "Option to disable SSL verification for local hosts. (This was on by default so far)."
       },
       {
         "type": "feature",
@@ -44,11 +44,11 @@
       },
       {
         "type": "fix",
-        "text": "When using NZBGet the wrong NZB would be shown as downloading in the status footer when an NZB with a lower priority was higher in the queue."
+        "text": "When using NZBGet the wrong NZB would be shown as downloading if the first entry in the queue wasn't the one downloading."
       },
       {
         "type": "fix",
-        "text": "Better handle errors while adding torrents to black hole or sending magnet links."
+        "text": "Handle errors better while adding torrents to black hole or sending magnet links."
       },
       {
         "type": "fix",

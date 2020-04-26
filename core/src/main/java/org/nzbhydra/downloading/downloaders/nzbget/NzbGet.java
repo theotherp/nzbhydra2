@@ -104,7 +104,9 @@ public class NzbGet extends Downloader {
             }
             client = new JsonRpcHttpClient(builder.build().toUri().toURL(), headers);
             final Ssl.SslVerificationState verificationState = ssl.getVerificationStateForHost(builder.build().getHost());
-            if (verificationState != Ssl.SslVerificationState.ENABLED) {
+            if (verificationState == Ssl.SslVerificationState.ENABLED) {
+                client.setSslContext(ssl.getCaCertsContext());
+            } else {
                 client.setSslContext(ssl.getAllTrustingSslContext());
             }
         } catch (MalformedURLException e) {
