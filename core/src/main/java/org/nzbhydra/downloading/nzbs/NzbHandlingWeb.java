@@ -16,6 +16,7 @@
 
 package org.nzbhydra.downloading.nzbs;
 
+import org.nzbhydra.GenericResponse;
 import org.nzbhydra.api.WrongApiKeyException;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
@@ -33,7 +34,12 @@ import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Collections;
 import java.util.List;
@@ -61,6 +67,13 @@ public class NzbHandlingWeb {
     @Secured({"ROLE_USER"})
     public ResponseEntity<Object> downloadNzbInternal(@PathVariable("guid") long guid) throws InvalidSearchResultIdException {
         return fileHandler.getFileByGuid(guid, configProvider.getBaseConfig().getSearching().getNzbAccessType(), SearchSource.INTERNAL).getAsResponseEntity();
+    }
+
+
+    @RequestMapping(value = "/internalapi/saveNzbToBlackhole", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Secured({"ROLE_USER"})
+    public GenericResponse saveNzbToBlackhole(@RequestBody Long searchResultId) {
+        return fileHandler.saveNzbToBlackhole(searchResultId);
     }
 
     /**
@@ -123,7 +136,6 @@ public class NzbHandlingWeb {
             return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML).body("<error code=\"300\" description=\"Invalid or outdated search result ID\"/>");
         }
     }
-
 
 
 }

@@ -7,7 +7,9 @@ import okhttp3.Request.Builder;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.nzbhydra.Jackson;
+import org.nzbhydra.downloading.FileDownloadEntity;
 import org.nzbhydra.downloading.FileDownloadEvent;
+import org.nzbhydra.downloading.FileDownloadRepository;
 import org.nzbhydra.searching.Searcher.SearchEvent;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.nzbhydra.webaccess.HydraOkHttp3ClientHttpRequestFactory;
@@ -17,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.net.URI;
@@ -28,6 +31,8 @@ public class WebHooks {
 
     @Autowired
     private HydraOkHttp3ClientHttpRequestFactory requestFactory;
+    @Autowired
+    private FileDownloadRepository fileDownloadRepository;
 
     @Async
     @EventListener
@@ -51,13 +56,15 @@ public class WebHooks {
 
     @Async
     @EventListener
+    @Transactional
     public void onNzbDownloadEvent(FileDownloadEvent downloadEvent) throws IOException {
         String downloadHook = System.getProperty("nzbhydra.hooks.download");
         if (!Strings.isNullOrEmpty(downloadHook)) {
-            if (downloadEvent.getDownloadEntity().getAccessSource() == SearchSource.INTERNAL) {
+            FileDownloadEntity downloadEntity = downloadEvent.getFileDownloadEntity();
+            if (downloadEntity.getAccessSource() == SearchSource.INTERNAL) {
                 try {
                     OkHttpClient client = requestFactory.getOkHttpClientBuilder(URI.create(downloadHook)).build();
-                    String content = Jackson.JSON_MAPPER.writeValueAsString(downloadEvent.getDownloadEntity());
+                    String content = Jackson.JSON_MAPPER.writeValueAsString(downloadEntity);
                     Response response = client.newCall(new Builder().url(downloadHook).method("PUT", RequestBody.create(MediaType.parse(org.springframework.http.MediaType.APPLICATION_JSON_VALUE), content)).build()).execute();
                     response.close();
 

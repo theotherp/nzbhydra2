@@ -44,7 +44,7 @@ public class DownloadStatusUpdaterTest {
     private Downloader downloaderMock;
 
     @InjectMocks
-    private DownloadStatusUpdater testee = new DownloadStatusUpdater();
+    private DownloadStatusUpdater testee;
 
     @Before
     public void setUp() {
@@ -101,7 +101,7 @@ public class DownloadStatusUpdaterTest {
         testee.queueCheckEnabled = false;
         testee.lastDownload = null;
 
-        testee.onNzbDownloadEvent(new FileDownloadEvent(null));
+        testee.onNzbDownloadEvent(new FileDownloadEvent(null, null));
 
         assertThat(testee.queueCheckEnabled).isTrue();
         assertThat(testee.lastDownload).isNotNull();

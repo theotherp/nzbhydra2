@@ -10,13 +10,15 @@ import java.util.stream.Collectors;
 @Getter
 public class SafeDownloadingConfig {
 
-    private String saveTorrentsTo;
-    private boolean sendMagnetLinks;
-    private List<SafeDownloaderConfig> downloaders;
-    private boolean showDownloaderStatus;
+    private final String saveTorrentsTo;
+    private final String saveNzbsTo;
+    private final boolean sendMagnetLinks;
+    private final List<SafeDownloaderConfig> downloaders;
+    private final boolean showDownloaderStatus;
 
     public SafeDownloadingConfig(DownloadingConfig downloadingConfig) {
         saveTorrentsTo = downloadingConfig.getSaveTorrentsTo().orElse(null);
+        saveNzbsTo = downloadingConfig.getSaveNzbsTo().orElse(null);
         sendMagnetLinks = downloadingConfig.isSendMagnetLinks();
         showDownloaderStatus = downloadingConfig.isShowDownloaderStatus();
         downloaders = downloadingConfig.getDownloaders().stream().map(SafeDownloaderConfig::new).collect(Collectors.toList());

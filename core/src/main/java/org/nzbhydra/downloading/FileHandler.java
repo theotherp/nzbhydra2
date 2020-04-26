@@ -1,9 +1,11 @@
 package org.nzbhydra.downloading;
 
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.Sets;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.MainConfig;
 import org.nzbhydra.config.downloading.FileDownloadAccessType;
@@ -34,7 +36,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -42,6 +46,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+@SuppressWarnings("ResultOfMethodCallIgnored")
 @Component
 public class FileHandler {
 
@@ -108,7 +113,7 @@ public class FileHandler {
             }
             shortRepository.save(new IndexerApiAccessEntityShort(result.getIndexer(), false, IndexerApiAccessType.NZB));
 
-            eventPublisher.publishEvent(new FileDownloadEvent(downloadEntity));
+            eventPublisher.publishEvent(new FileDownloadEvent(downloadEntity, result));
             return DownloadResult.createErrorResult("An error occurred while downloading " + result.getTitle() + " from indexer " + result.getIndexer().getName(), HttpStatus.valueOf(e.getStatus()), downloadEntity);
         }
 
@@ -121,7 +126,7 @@ public class FileHandler {
             downloadRepository.save(downloadEntity);
         }
         shortRepository.save(new IndexerApiAccessEntityShort(result.getIndexer(), true, IndexerApiAccessType.NZB));
-        eventPublisher.publishEvent(new FileDownloadEvent(downloadEntity));
+        eventPublisher.publishEvent(new FileDownloadEvent(downloadEntity, result));
 
         return DownloadResult.createSuccessfulDownloadResult(result.getTitle(), fileContent, downloadEntity);
     }
@@ -134,26 +139,55 @@ public class FileHandler {
             downloadRepository.save(downloadEntity);
         }
         shortRepository.save(new IndexerApiAccessEntityShort(result.getIndexer(), true, IndexerApiAccessType.NZB));
-        eventPublisher.publishEvent(new FileDownloadEvent(downloadEntity));
+        eventPublisher.publishEvent(new FileDownloadEvent(downloadEntity, result));
 
         return DownloadResult.createSuccessfulRedirectResult(result.getTitle(), result.getLink(), downloadEntity);
     }
 
 
     public FileZipResponse getFilesAsZip(List<Long> guids) throws Exception {
-        List<File> files = new ArrayList<>();
-        Path tempDirectory = null;
-        List<Long> successfulIds = new ArrayList<>();
-        List<Long> failedIds = new ArrayList<>();
+        Path tempDirectory;
+        try {
+            tempDirectory = Files.createTempDirectory("nzbhydra");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        final NzbsDownload nzbsDownload = getNzbsAsFiles(guids, tempDirectory);
+        if (nzbsDownload.files.isEmpty()) {
+            return new FileZipResponse(false, null, "No files could be retrieved", Collections.emptyList(), guids);
+        }
+        File zip = createZip(nzbsDownload.files);
+        logger.info("Successfully added {}/{} files to ZIP", nzbsDownload.files.size(), guids.size());
+        if (nzbsDownload.tempDirectory != null) {
+            nzbsDownload.tempDirectory.toFile().delete();
+        }
+
+        String message = nzbsDownload.failedIds.isEmpty() ? "All files successfully retrieved" : nzbsDownload.failedIds.size() + " files could not be loaded";
+        return new FileZipResponse(true, zip.getAbsolutePath(), message, nzbsDownload.successfulIds, nzbsDownload.failedIds);
+    }
+
+    private NzbsDownload getNzbsAsFiles(Collection<Long> guids, Path targetDirectory) {
+        final NzbsDownload nzbsDownload;
+
+        final List<File> files = new ArrayList<>();
+        final List<Long> successfulIds = new ArrayList<>();
+        final List<Long> failedIds = new ArrayList<>();
+
         for (Long guid : guids) {
-            DownloadResult result = getFileByGuid(guid, FileDownloadAccessType.PROXY, SearchSource.INTERNAL);
+            DownloadResult result = null;
+            try {
+                result = getFileByGuid(guid, FileDownloadAccessType.PROXY, SearchSource.INTERNAL);
+            } catch (InvalidSearchResultIdException e) {
+                failedIds.add(guid);
+                continue;
+            }
             if (!result.isSuccessful()) {
+                failedIds.add(guid);
                 continue;
             }
             try {
-                tempDirectory = Files.createTempDirectory("nzbhydra");
                 String title = result.getFileName().replaceAll("[\\\\/:*?\"<>|]", "_");
-                File tempFile = new File(tempDirectory.toFile(), title); //TODO make usable with torrents
+                File tempFile = new File(targetDirectory.toFile(), title);
                 logger.debug("Writing content to temp file {}", tempFile.getAbsolutePath());
                 Files.write(tempFile.toPath(), result.getContent());
                 files.add(tempFile);
@@ -163,17 +197,8 @@ public class FileHandler {
                 failedIds.add(guid);
             }
         }
-        if (files.isEmpty()) {
-            return new FileZipResponse(false, null, "No files could be retrieved", Collections.emptyList(), guids);
-        }
-        File zip = createZip(files);
-        logger.info("Successfully added {}/{} files to ZIP", files.size(), guids.size());
-        if (tempDirectory != null) {
-            tempDirectory.toFile().delete();
-        }
 
-        String message = failedIds.isEmpty() ? "All files successfully retrieved" : failedIds.size() + " files could not be loaded";
-        return new FileZipResponse(true, zip.getAbsolutePath(), message, successfulIds, failedIds);
+        return new NzbsDownload(files, successfulIds, failedIds, targetDirectory);
     }
 
     public File createZip(List<File> nzbFiles) throws Exception {
@@ -284,5 +309,33 @@ public class FileHandler {
         throw new DownloadException(result.getLink(), 500, "Unable to handle redirect from URL " + result.getLink() + " because no redirection location is set");
     }
 
+    public GenericResponse saveNzbToBlackhole(Long searchResultId) {
+        if (!configProvider.getBaseConfig().getDownloading().getSaveNzbsTo().isPresent()) {
+            //Shouldn't happen
+            return GenericResponse.notOk("NZBs black hole not set");
+        }
+        //Is always just one file
+        final NzbsDownload nzbsAsFiles = getNzbsAsFiles(Sets.newHashSet(searchResultId), Paths.get(configProvider.getBaseConfig().getDownloading().getSaveNzbsTo().get()));
+        if (nzbsAsFiles.successfulIds.isEmpty()) {
+            return GenericResponse.notOk("Unable to save file for download NZB for some reason");
+        }
+        return GenericResponse.ok();
+    }
+
+
+    private static class NzbsDownload {
+        private final List<File> files;
+        private final List<Long> successfulIds;
+        private final List<Long> failedIds;
+        private final Path tempDirectory;
+
+
+        private NzbsDownload(List<File> files, List<Long> successfulIds, List<Long> failedIds, Path tempDirectory) {
+            this.files = files;
+            this.successfulIds = successfulIds;
+            this.failedIds = failedIds;
+            this.tempDirectory = tempDirectory;
+        }
+    }
 
 }

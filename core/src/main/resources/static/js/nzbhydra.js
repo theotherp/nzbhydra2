@@ -1208,25 +1208,36 @@ angular
     });
 angular
     .module('nzbhydraApp')
-    .directive('saveOrSendTorrent', saveOrSendTorrent);
+    .directive('saveOrSendFile', saveOrSendFile);
 
-function saveOrSendTorrent() {
+function saveOrSendFile() {
     controller.$inject = ["$scope", "$http", "growl", "ConfigService"];
     return {
-        templateUrl: 'static/html/directives/save-or-send-torrent.html',
+        templateUrl: 'static/html/directives/save-or-send-file.html',
         scope: {
             searchResultId: "<",
-            isFile: "<"
+            isFile: "<",
+            type: "<"
         },
         controller: controller
     };
 
     function controller($scope, $http, growl, ConfigService) {
-        $scope.enableButton = (ConfigService.getSafe().downloading.saveTorrentsTo !== null && ConfigService.getSafe().downloading.saveTorrentsTo !== "") || ConfigService.getSafe().downloading.sendMagnetLinks;
         $scope.cssClass = "glyphicon-save-file";
+        var endpoint;
+        console.log(ConfigService.getSafe().downloading.saveNzbsTo);
+        if ($scope.type === "TORRENT") {
+            $scope.enableButton = (ConfigService.getSafe().downloading.saveTorrentsTo !== null && ConfigService.getSafe().downloading.saveTorrentsTo !== "") || ConfigService.getSafe().downloading.sendMagnetLinks;
+            $scope.tooltip = "Save torrent to black hole or send magnet link";
+            endpoint = "internalapi/saveOrSendTorrent";
+        } else {
+            $scope.tooltip = "Save NZB to black hole";
+            $scope.enableButton = ConfigService.getSafe().downloading.saveNzbsTo !== null && ConfigService.getSafe().downloading.saveNzbsTo !== "";
+            endpoint = "internalapi/saveNzbToBlackhole";
+        }
         $scope.add = function () {
             $scope.cssClass = "nzb-spinning";
-            $http.put("internalapi/saveOrSendTorrent", [$scope.searchResultId]).then(function (response) {
+            $http.put(endpoint, $scope.searchResultId).then(function (response) {
                 if (response.data.successful) {
                     $scope.cssClass = "glyphicon-ok";
                 } else {
@@ -6781,7 +6792,16 @@ function ConfigFields($injector) {
                             type: 'fileInput',
                             templateOptions: {
                                 label: 'Torrent black hole',
-                                help: 'When the "Torrent" button is clicked torrents will be saved to this folder on the server. Ignored if not set.',
+                                help: 'Allow torrents to be saved in this folder from the search results. Ignored if not set.',
+                                type: "folder"
+                            }
+                        },
+                        {
+                            key: 'saveNzbsTo',
+                            type: 'fileInput',
+                            templateOptions: {
+                                label: 'NZB black hole',
+                                help: 'Allow NZBs to be saved in this folder from the search results. Ignored if not set.',
                                 type: "folder"
                             }
                         },

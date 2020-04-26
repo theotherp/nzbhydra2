@@ -262,6 +262,7 @@ categoriesConfig:
 downloading:
   downloaders: []
   saveTorrentsTo: null
+  saveNzbsTo: null
   sendMagnetLinks: true
   updateStatuses: true
   showDownloaderStatus: true

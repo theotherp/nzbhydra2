@@ -35,6 +35,7 @@ public class DownloadingConfig extends ValidatingConfig<DownloadingConfig> {
 
     private List<DownloaderConfig> downloaders = new ArrayList<>();
     private String saveTorrentsTo;
+    private String saveNzbsTo;
     private boolean sendMagnetLinks;
     private boolean updateStatuses;
     private boolean showDownloaderStatus = true;
@@ -68,6 +69,10 @@ public class DownloadingConfig extends ValidatingConfig<DownloadingConfig> {
 
     public Optional<String> getSaveTorrentsTo() {
         return Optional.ofNullable(Strings.emptyToNull(saveTorrentsTo));
+    }
+
+    public Optional<String> getSaveNzbsTo() {
+        return Optional.ofNullable(saveNzbsTo);
     }
 
     @Override

@@ -16,6 +16,7 @@
 
 package org.nzbhydra.downloading.torrents;
 
+import com.google.common.collect.Sets;
 import org.nzbhydra.api.WrongApiKeyException;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
@@ -28,9 +29,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.Set;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class TorrentHandlingWeb {
@@ -74,10 +78,9 @@ public class TorrentHandlingWeb {
      */
     @RequestMapping(value = "/internalapi/saveOrSendTorrent", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
     @Secured({"ROLE_USER"})
-    public SaveOrSendTorrentsResponse saveOrSendTorrents(@RequestBody Set<Long> searchResultIds) throws InvalidSearchResultIdException {
-       return torrentHandler.saveOrSendTorrents(searchResultIds);
+    public SaveOrSendTorrentsResponse saveOrSendTorrents(@RequestBody Long searchResultId) {
+        return torrentHandler.saveOrSendTorrents(Sets.newHashSet(searchResultId));
     }
-
 
 
     /**

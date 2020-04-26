@@ -1479,7 +1479,16 @@ function ConfigFields($injector) {
                             type: 'fileInput',
                             templateOptions: {
                                 label: 'Torrent black hole',
-                                help: 'When the "Torrent" button is clicked torrents will be saved to this folder on the server. Ignored if not set.',
+                                help: 'Allow torrents to be saved in this folder from the search results. Ignored if not set.',
+                                type: "folder"
+                            }
+                        },
+                        {
+                            key: 'saveNzbsTo',
+                            type: 'fileInput',
+                            templateOptions: {
+                                label: 'NZB black hole',
+                                help: 'Allow NZBs to be saved in this folder from the search results. Ignored if not set.',
                                 type: "folder"
                             }
                         },

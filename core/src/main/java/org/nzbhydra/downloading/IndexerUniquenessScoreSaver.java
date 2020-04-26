@@ -63,8 +63,7 @@ public class IndexerUniquenessScoreSaver {
     @Transactional
     public void handleDownloadEvent(FileDownloadEvent downloadEvent) {
         try {
-            //Reload in case of missing session
-            SearchResultEntity searchResultEntity = searchResultRepository.getOne(downloadEvent.getDownloadEntity().getSearchResult().getId());
+            SearchResultEntity searchResultEntity = downloadEvent.getSearchResultEntity();
 
             if (searchResultEntity.getIndexerSearchEntity() == null) {
                 logger.debug("Unable to determine indexer uniqueness score for result {} because no indexer search is saved", searchResultEntity.getTitle());

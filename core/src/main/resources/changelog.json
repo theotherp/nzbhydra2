@@ -1,11 +1,10 @@
 [
   {
     "version": "v2.20.0",
-    "date": "2020-04-23",
     "changes": [
       {
         "type": "feature",
-        "text": "Option to filter out results by language. Very few indexers return the language in the results, though."
+        "text": "Option to filter out results by language. Very few indexers provide the language in the results, though."
       },
       {
         "type": "feature",
@@ -14,6 +13,10 @@
       {
         "type": "feature",
         "text": "Option to disable SSL verification for local hosts."
+      },
+      {
+        "type": "feature",
+        "text": "Support for saving NZBs to a black hole."
       },
       {
         "type": "fix",

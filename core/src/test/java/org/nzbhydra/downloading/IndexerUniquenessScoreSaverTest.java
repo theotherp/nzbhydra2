@@ -19,7 +19,11 @@ package org.nzbhydra.downloading;
 import com.google.common.collect.Sets;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.*;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.nzbhydra.config.downloading.FileDownloadAccessType;
 import org.nzbhydra.indexers.IndexerEntity;
 import org.nzbhydra.indexers.IndexerSearchEntity;
@@ -93,7 +97,7 @@ public class IndexerUniquenessScoreSaverTest {
         searchResultEntityhasNot.setIndexerSearchEntity(indexerSearchEntityHasNot);
 
         FileDownloadEntity fileDownloadEntity = new FileDownloadEntity(searchResultEntityHasDownloaded, FileDownloadAccessType.REDIRECT, SearchRequest.SearchSource.API, FileDownloadStatus.NONE, null);
-        FileDownloadEvent downloadEvent = new FileDownloadEvent(fileDownloadEntity);
+        FileDownloadEvent downloadEvent = new FileDownloadEvent(fileDownloadEntity, searchResultEntityHasDownloaded);
 
         when(searchResultRepository.findAllByTitleLikeIgnoreCase(anyString())).thenReturn(Sets.newHashSet(searchResultEntityHasDownloaded, searchResultEntityhasToo));
         when(indexerSearchRepository.findBySearchEntity(searchEntity)).thenReturn(Sets.newHashSet(indexerSearchEntityHasDownloaded, indexerSearchEntityhasToo, indexerSearchEntityHasNot));
@@ -153,7 +157,7 @@ public class IndexerUniquenessScoreSaverTest {
         searchResultEntityhasNot.setIndexerSearchEntity(indexerSearchEntityHasNot);
 
         FileDownloadEntity fileDownloadEntity = new FileDownloadEntity(searchResultEntityHasDownloaded, FileDownloadAccessType.REDIRECT, SearchRequest.SearchSource.API, FileDownloadStatus.NONE, null);
-        FileDownloadEvent downloadEvent = new FileDownloadEvent(fileDownloadEntity);
+        FileDownloadEvent downloadEvent = new FileDownloadEvent(fileDownloadEntity, searchResultEntityHasDownloaded);
 
         when(searchResultRepository.findAllByTitleLikeIgnoreCase(anyString())).thenReturn(Sets.newHashSet(searchResultEntityHasDownloaded));
         HashSet<IndexerSearchEntity> involvedIndexers = Sets.newHashSet(indexerSearchEntityHasDownloaded, indexerSearchEntityHasNot, indexerSearchEntityhasNot2);
