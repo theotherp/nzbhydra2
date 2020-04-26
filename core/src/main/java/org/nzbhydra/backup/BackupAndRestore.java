@@ -22,6 +22,7 @@ import javax.persistence.PersistenceContext;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Writer;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -29,6 +30,7 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
@@ -43,6 +45,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@SuppressWarnings("ResultOfMethodCallIgnored")
 @Component
 public class BackupAndRestore {
 
@@ -56,7 +59,7 @@ public class BackupAndRestore {
     private ConfigProvider configProvider;
     @Autowired
     private UpdateManager updateManager;
-    private ConfigReaderWriter configReaderWriter = new ConfigReaderWriter();
+    private final ConfigReaderWriter configReaderWriter = new ConfigReaderWriter();
 
     @Transactional
     public File backup() throws Exception {
@@ -77,12 +80,14 @@ public class BackupAndRestore {
         backupDatabase(backupZip);
         Map<String, String> env = new HashMap<>();
         env.put("create", "true");
+        //We use the jar filesystem so we can add files to the existing ZIP
         URI uri = URI.create("jar:" + backupZip.toPath().toUri());
         try (FileSystem fs = FileSystems.newFileSystem(uri, env)) {
             Path nf = fs.getPath("nzbhydra.yml");
             try (Writer writer = java.nio.file.Files.newBufferedWriter(nf, StandardCharsets.UTF_8, StandardOpenOption.CREATE)) {
                 writer.write(configReaderWriter.getAsYamlString(configProvider.getBaseConfig()));
                 logger.debug("Successfully wrote config to backup ZIP");
+                backupCertificates(fs);
             }
         }
 
@@ -150,6 +155,21 @@ public class BackupAndRestore {
         logger.debug("Wrote database backup files to {}", targetFile.getAbsolutePath());
     }
 
+    private void backupCertificates(FileSystem fileSystem) throws IOException {
+        final File certificatesFolder = new File(NzbHydra.getDataFolder(), "certificates");
+        if (!certificatesFolder.exists()) {
+            return;
+        }
+        logger.info("Backing up certificates folder");
+        Files.createDirectory(fileSystem.getPath("certificates"));
+        for (File file : certificatesFolder.listFiles()) {
+            try (final OutputStream outputStream = Files.newOutputStream(fileSystem.getPath("certificates", file.getName()), StandardOpenOption.CREATE)) {
+                Files.copy(file.toPath(), outputStream);
+                logger.debug("Successfully wrote file {} to backup ZIP", file.getName());
+            }
+        }
+    }
+
     public GenericResponse restore(String filename) {
         try {
             File backupFile = new File(getBackupFolder(), filename);
@@ -163,6 +183,19 @@ public class BackupAndRestore {
         }
 
         return GenericResponse.ok();
+    }
+
+    public GenericResponse restoreFromFile(InputStream inputStream) {
+        try {
+            File tempFile = File.createTempFile("nzbhydra-restore", ".zip");
+            FileUtils.copyInputStreamToFile(inputStream, tempFile);
+            restoreFromFile(tempFile);
+            tempFile.deleteOnExit();
+            return GenericResponse.ok();
+        } catch (Exception e) {
+            logger.error("Error while restoring", e);
+            return GenericResponse.notOk("Error while restoring: " + e.getMessage());
+        }
     }
 
     protected void restoreFromFile(File backupFile) throws IOException {
@@ -181,27 +214,38 @@ public class BackupAndRestore {
         updateManager.exitWithReturnCode(UpdateManager.RESTORE_RETURN_CODE);
     }
 
-    public GenericResponse restoreFromFile(InputStream inputStream) {
-        try {
-            File tempFile = File.createTempFile("nzbhydra-restore", ".zip");
-            FileUtils.copyInputStreamToFile(inputStream, tempFile);
-            restoreFromFile(tempFile);
-            tempFile.deleteOnExit();
-            return GenericResponse.ok();
-        } catch (Exception e) {
-            logger.error("Error while restoring", e);
-            return GenericResponse.notOk("Error while restoring: " + e.getMessage());
-        }
-    }
-
     private static void extractZip(File zipFile, File targetFolder) throws IOException {
         logger.info("Extracting from file {} to folder {}", zipFile.getCanonicalPath(), targetFolder.getCanonicalPath());
         Path dest = targetFolder.toPath().toAbsolutePath().normalize();
+        targetFolder.mkdir();
 
         Map<String, String> env = new HashMap<>();
         try (FileSystem zipFileSystem = FileSystems.newFileSystem(URI.create("jar:" + zipFile.toPath().toUri()), env)) {
             Path root = zipFileSystem.getPath("/");
             Files.walkFileTree(root, new ExtractZipFileVisitor(dest));
+        }
+        try {
+            restoreCertificates(targetFolder);
+        } catch (IOException e) {
+            logger.error("Unable to restore certificates", e);
+        }
+    }
+
+    private static void restoreCertificates(File targetFolder) throws IOException {
+        //Certificates aren't (yet) restored by the wrapper, so we copy them here. They're not locked by the main process anyway
+        final File certificatesBackupFolder = new File(targetFolder, "certificates");
+        if (certificatesBackupFolder.exists()) {
+            final File certificatesFolder = new File(NzbHydra.getDataFolder(), "certificates");
+            if (!certificatesFolder.exists()) {
+                final boolean created = certificatesFolder.mkdir();
+                if (!created) {
+                    logger.error("Unable to create folder {}", certificatesFolder);
+                    return;
+                }
+            }
+            for (File file : certificatesBackupFolder.listFiles()) {
+                Files.move(file.toPath(), new File(certificatesFolder, file.getName()).toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            }
         }
     }
 
