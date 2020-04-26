@@ -19,7 +19,7 @@ public class NzbGeek extends Newznab {
         if (query.split(" ").length > 6) {
             query = Joiner.on(" ").join(Arrays.copyOfRange(split, 0, 6));
         }
-        return query;
+        return query.replace("\"", "");
     }
 
     @Component

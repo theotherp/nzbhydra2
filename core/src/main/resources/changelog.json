@@ -51,6 +51,10 @@
         "text": "Better handle errors while adding torrents to black hole or sending magnet links."
       },
       {
+        "type": "fix",
+        "text": "Filter out quotation marks (\") when searching NZBGeek."
+      },
+      {
         "type": "note",
         "text": "I've added two settings for the database. Just ignore them unless told otherwise ;-)"
       }
