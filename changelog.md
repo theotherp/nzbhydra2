@@ -1,6 +1,38 @@
+### v2.20.0 BETA (2020-04-26)
+
+**Feature** Option to filter out results by language. Very few indexers provide the language in the results, though.
+
+**Feature** You can now add self-signed certificates for any hosts you want to connect to. Just create a folder named 'certificates' inside the data folder, put your .crt files there and reload NZBHydra.
+
+**Feature** Option to disable SSL verification for local hosts. (This was on by default so far).
+
+**Feature** Support for saving NZBs to a black hole.
+
+**Fix** Fix sorting by age in download history.
+
+**Fix** NZBGet connection didn't honor SSL verification settings.
+
+**Fix** Properly display last errror on indexer statuses page.
+
+**Fix** Fix parsing of binsearch date on non-english locales.
+
+**Fix** Properly recognize duplicate NZBs not added to sabNZBd.
+
+**Fix** Improve matching of downloads to downloader entries where no external ID exists, i.e. those downloads resulting from API accesses.
+
+**Fix** When using NZBGet the wrong NZB would be shown as downloading if the first entry in the queue wasn't the one downloading.
+
+**Fix** Handle errors better while adding torrents to black hole or sending magnet links.
+
+**Fix** Filter out quotation marks (") when searching NZBGeek.
+
+**Note** I've added two settings for the database. Just ignore them unless told otherwise ;-)
+
+
+
 ### v2.19.6 (2020-04-23)
 
-**Fix** With v 2.15.0 I added the option to configure the backup folder and changed the path from being relative to the data folder to being relative to the main folder. That's not compatible with docker containers and broke the backup but I always insisted it wasn't my fault - it was, sorry.
+**Fix** With v2.15.0 I added the option to configure the backup folder and changed the path from being relative to the data folder to being relative to the main folder. That's not compatible with docker containers and broke the backup but I always insisted it wasn't my fault - it was, sorry.
 
 
 
