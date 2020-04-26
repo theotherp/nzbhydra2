@@ -279,7 +279,14 @@ public abstract class Downloader {
             return idFromMapMatches;
         }
 
-        boolean nameMatches = download.getSearchResult().getTitle() != null && download.getSearchResult().getTitle().equals(entry.getNzbName());
+        if (download.getSearchResult().getTitle() == null) {
+            logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Unable to match downloader entry {} with download {} without title ", entry, download);
+            return false;
+        }
+        //Remove any special characters that might've been removed by the downloader
+        String downloadTitleCleaned = download.getSearchResult().getTitle().replaceAll("[^a-zA-Z0-9 _\\-]", "");
+        String entryTitleCleaned = entry.getNzbName().replaceAll("[^a-zA-Z0-9 _\\-]", "");
+        boolean nameMatches = downloadTitleCleaned.equalsIgnoreCase(entryTitleCleaned);
         logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Trying to match downloader entry {} with download {}. Name match: {}. ", entry, download, nameMatches);
         return nameMatches;
     }

@@ -28,6 +28,10 @@
         "text": "Properly recognize duplicate NZBs not added to sabNZBd."
       },
       {
+        "type": "fix",
+        "text": "Improve matching of downloads to downloader entries where no external ID exists, i.e. those downloads resulting from API accesses."
+      },
+      {
         "type": "note",
         "text": "I've added two settings for the database. Just ignore them unless told otherwise ;-)"
       }
