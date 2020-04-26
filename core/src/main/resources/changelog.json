@@ -44,6 +44,10 @@
         "text": "When using NZBGet the wrong NZB would be shown as downloading in the status footer when an NZB with a lower priority was higher in the queue."
       },
       {
+        "type": "fix",
+        "text": "Better handle errors while adding torrents to black hole or sending magnet links."
+      },
+      {
         "type": "note",
         "text": "I've added two settings for the database. Just ignore them unless told otherwise ;-)"
       }

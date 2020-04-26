@@ -52,14 +52,19 @@ public class IndexerUniquenessScoreSaver {
     private IndexerUniquenessScoreEntityRepository indexerUniquenessScoreEntityRepository;
 
     @EventListener
-    @Transactional
     public void onNzbDownloadEvent(FileDownloadEvent downloadEvent) {
         if (!configProvider.getBaseConfig().getMain().isKeepHistory()) {
             logger.debug("Not saving uniqueness score because no history is kept");
             return;
         }
+        handleDownloadEvent(downloadEvent);
+    }
+
+    @Transactional
+    public void handleDownloadEvent(FileDownloadEvent downloadEvent) {
         try {
-            SearchResultEntity searchResultEntity = downloadEvent.getDownloadEntity().getSearchResult();
+            //Reload in case of missing session
+            SearchResultEntity searchResultEntity = searchResultRepository.getOne(downloadEvent.getDownloadEntity().getSearchResult().getId());
 
             if (searchResultEntity.getIndexerSearchEntity() == null) {
                 logger.debug("Unable to determine indexer uniqueness score for result {} because no indexer search is saved", searchResultEntity.getTitle());
@@ -71,7 +76,7 @@ public class IndexerUniquenessScoreSaver {
             Set<IndexerEntity> indexersContainingSameResult = getIndexersFoundSameResult(searchResultEntity);
 
             Set<IndexerSearchEntity> involvedIndexersWithoutResult = allIndexerSearchesInvolved.stream().filter(x -> !indexersContainingSameResult.contains(x.getIndexerEntity()) && !x.getIndexerEntity().equals(searchResultEntity.getIndexer()))
-                .collect(Collectors.toSet());
+                    .collect(Collectors.toSet());
 
             saveScoresToDatabase(searchResultEntity.getIndexer(), indexersContainingSameResult, allIndexerSearchesInvolved, involvedIndexersWithoutResult);
 

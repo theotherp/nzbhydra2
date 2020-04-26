@@ -84,6 +84,12 @@ public class TorrentFileHandler {
             boolean successful = false;
             try {
                 result = getTorrentByGuid(guid, FileDownloadAccessType.PROXY, SearchRequest.SearchSource.INTERNAL);
+            } catch (InvalidSearchResultIdException e) {
+                logger.error("Unable to find result with ID {}", guid);
+                failedIds.add(guid);
+                continue;
+            }
+            try {
                 if (result.isSuccessful()) {
                     if (result.getContent() != null) {
                         successful = saveToBlackHole(result, null);
@@ -91,8 +97,9 @@ public class TorrentFileHandler {
                         successful = handleMagnetLink(result);
                     }
                 }
-            } catch (InvalidSearchResultIdException e) {
-                logger.error("Unable to find result with ID {}", guid);
+            } catch (Exception e) {
+                logger.error("Error while handling " + result, e);
+                failedIds.add(guid);
             }
             if (successful) {
                 successfulIds.add(guid);
@@ -142,11 +149,11 @@ public class TorrentFileHandler {
         }
         byte[] content;
         File torrent;
-        if(magnetLinkUri != null){
+        if (magnetLinkUri != null) {
             torrent = new File(configProvider.getBaseConfig().getDownloading().getSaveTorrentsTo().get(), sanitizedTitle + ".magnet");
             String UriContent = magnetLinkUri.toString();
             content = UriContent.getBytes();
-        }else{
+        } else {
             torrent = new File(configProvider.getBaseConfig().getDownloading().getSaveTorrentsTo().get(), sanitizedTitle + ".torrent");
             content = result.getContent();
         }
