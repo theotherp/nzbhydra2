@@ -10,8 +10,8 @@ import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.exceptions.IndexerProgramErrorException;
 import org.nzbhydra.indexers.exceptions.IndexerUnreachableException;
 import org.nzbhydra.logging.MdcThreadPoolExecutor;
-import org.nzbhydra.okhttp.WebAccess;
 import org.nzbhydra.web.WebConfiguration;
+import org.nzbhydra.webaccess.WebAccess;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +28,12 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 @Component
 public class IndexerWebAccess {

@@ -18,8 +18,8 @@ package org.nzbhydra.auth;
 
 import com.google.common.net.InetAddresses;
 import org.nzbhydra.config.auth.AuthConfig;
-import org.nzbhydra.okhttp.HydraOkHttp3ClientHttpRequestFactory;
 import org.nzbhydra.web.SessionStorage;
+import org.nzbhydra.webaccess.HydraOkHttp3ClientHttpRequestFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;

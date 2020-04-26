@@ -23,7 +23,7 @@ import org.nzbhydra.mapping.SemanticVersion;
 import org.nzbhydra.mapping.changelog.ChangelogVersionEntry;
 import org.nzbhydra.mapping.github.Asset;
 import org.nzbhydra.mapping.github.Release;
-import org.nzbhydra.okhttp.WebAccess;
+import org.nzbhydra.webaccess.WebAccess;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;

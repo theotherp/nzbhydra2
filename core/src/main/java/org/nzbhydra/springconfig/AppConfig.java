@@ -1,6 +1,6 @@
 package org.nzbhydra.springconfig;
 
-import org.nzbhydra.okhttp.HydraOkHttp3ClientHttpRequestFactory;
+import org.nzbhydra.webaccess.HydraOkHttp3ClientHttpRequestFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

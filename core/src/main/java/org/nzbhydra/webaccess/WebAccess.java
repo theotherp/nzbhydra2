@@ -1,4 +1,4 @@
-package org.nzbhydra.okhttp;
+package org.nzbhydra.webaccess;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Stopwatch;

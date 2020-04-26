@@ -2,13 +2,17 @@ package org.nzbhydra.indexers;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.*;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.SearchingConfig;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
-import org.nzbhydra.okhttp.WebAccess;
+import org.nzbhydra.webaccess.WebAccess;
 import org.springframework.oxm.Unmarshaller;
 
 import java.net.URI;

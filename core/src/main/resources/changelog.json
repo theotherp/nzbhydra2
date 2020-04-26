@@ -6,27 +6,24 @@
       {
         "type": "fix",
         "text": "Fix sorting by age in download history."
+      },
+      {
+        "type": "fix",
+        "text": "NZBGet connection didn't honor SSL verification settings."
+      }
+    ],
+    "final": false
+  },
+  {
+    "version": "v2.19.6",
+    "date": "2020-04-23",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "With v 2.15.0 I added the option to configure the backup folder and changed the path from being relative to the data folder to being relative to the main folder. That's not compatible with docker containers and broke the backup but I always insisted it wasn't my fault - it was, sorry."
       }
     ],
     "final": true
-  },
-  "version"
-  :
-  "v2.19.6",
-  "date"
-  :
-  "2020-04-23",
-  "changes"
-  :
-  [
-    {
-      "type": "fix",
-      "text": "With v 2.15.0 I added the option to configure the backup folder and changed the path from being relative to the data folder to being relative to the main folder. That's not compatible with docker containers and broke the backup but I always insisted it wasn't my fault - it was, sorry."
-    }
-  ],
-  "final"
-  :
-  true
   },
   {
     "version": "v2.19.5",

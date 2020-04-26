@@ -16,8 +16,8 @@ import org.nzbhydra.mapping.SemanticVersion;
 import org.nzbhydra.mapping.changelog.ChangelogChangeEntry;
 import org.nzbhydra.mapping.changelog.ChangelogVersionEntry;
 import org.nzbhydra.mapping.github.Release;
-import org.nzbhydra.okhttp.WebAccess;
 import org.nzbhydra.update.UpdateManager.BlockedVersion;
+import org.nzbhydra.webaccess.WebAccess;
 
 import java.util.Arrays;
 import java.util.List;

@@ -9,8 +9,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.nzbhydra.mapping.SemanticVersion;
 import org.nzbhydra.news.NewsProvider.NewsEntry;
-import org.nzbhydra.okhttp.WebAccess;
 import org.nzbhydra.update.UpdateManager;
+import org.nzbhydra.webaccess.WebAccess;
 
 import java.text.ParseException;
 import java.time.Instant;

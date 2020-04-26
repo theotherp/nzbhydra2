@@ -10,9 +10,10 @@ import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.logging.LogAnonymizer;
 import org.nzbhydra.logging.LogContentProvider;
 import org.nzbhydra.logging.LoggingMarkers;
-import org.nzbhydra.okhttp.HydraOkHttp3ClientHttpRequestFactory;
 import org.nzbhydra.problemdetection.OutdatedWrapperDetector;
 import org.nzbhydra.update.UpdateManager;
+import org.nzbhydra.webaccess.HydraOkHttp3ClientHttpRequestFactory;
+import org.nzbhydra.webaccess.Ssl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,9 +73,11 @@ public class DebugInfosProvider {
     private ThreadDumpEndpoint threadDumpEndpoint;
     @PersistenceContext
     private EntityManager entityManager;
+    @Autowired
+    private Ssl ssl;
 
-    private List<TimeAndThreadCpuUsages> timeAndThreadCpuUsagesList = new ArrayList<>();
-    private Map<String, Long> lastThreadCpuTimes = new HashMap<>();
+    private final List<TimeAndThreadCpuUsages> timeAndThreadCpuUsagesList = new ArrayList<>();
+    private final Map<String, Long> lastThreadCpuTimes = new HashMap<>();
 
     @PostConstruct
     public void logMetrics() {
@@ -83,27 +86,24 @@ public class DebugInfosProvider {
         }
         logger.debug(LoggingMarkers.PERFORMANCE, "Will log performance metrics every {} seconds", LOG_METRICS_EVERY_SECONDS);
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-        executor.scheduleAtFixedRate(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    final String cpuMetric = "process.cpu.usage";
-                    String message = "Process CPU usage: " + formatSample(cpuMetric, metricsEndpoint.metric(cpuMetric, null).getMeasurements().get(0).getValue());
-                    logger.debug(LoggingMarkers.PERFORMANCE, message);
-                } catch (Exception e) {
-                    logger.debug(LoggingMarkers.PERFORMANCE, "Error while logging CPU usage", e);
-                }
-                try {
-                    final String memoryMetric = "jvm.memory.used";
-                    String message = "Process memory usage: " + formatSample(memoryMetric, metricsEndpoint.metric(memoryMetric, null).getMeasurements().get(0).getValue());
-                    logger.debug(LoggingMarkers.PERFORMANCE, message);
-                } catch (Exception e) {
-                    logger.debug(LoggingMarkers.PERFORMANCE, "Error while logging memory usage", e);
-                }
-                ThreadMXBean threadMxBean = ManagementFactory.getThreadMXBean();
-                final ThreadInfo[] threadInfos = threadMxBean.dumpAllThreads(true, true);
-
+        executor.scheduleAtFixedRate(() -> {
+            try {
+                final String cpuMetric = "process.cpu.usage";
+                String message = "Process CPU usage: " + formatSample(cpuMetric, metricsEndpoint.metric(cpuMetric, null).getMeasurements().get(0).getValue());
+                logger.debug(LoggingMarkers.PERFORMANCE, message);
+            } catch (Exception e) {
+                logger.debug(LoggingMarkers.PERFORMANCE, "Error while logging CPU usage", e);
             }
+            try {
+                final String memoryMetric = "jvm.memory.used";
+                String message = "Process memory usage: " + formatSample(memoryMetric, metricsEndpoint.metric(memoryMetric, null).getMeasurements().get(0).getValue());
+                logger.debug(LoggingMarkers.PERFORMANCE, message);
+            } catch (Exception e) {
+                logger.debug(LoggingMarkers.PERFORMANCE, "Error while logging memory usage", e);
+            }
+            ThreadMXBean threadMxBean = ManagementFactory.getThreadMXBean();
+            final ThreadInfo[] threadInfos = threadMxBean.dumpAllThreads(true, true);
+
         }, 0, LOG_METRICS_EVERY_SECONDS, TimeUnit.SECONDS);
 
         int cpuCount = metricsEndpoint.metric("system.cpu.count", null).getMeasurements().get(0).getValue().intValue();
@@ -173,7 +173,7 @@ public class DebugInfosProvider {
         logger.info("User country: {}", System.getProperty("user.country"));
         logger.info("File encoding: {}", System.getProperty("file.encoding"));
         logger.info("Ciphers:");
-        logger.info(requestFactory.getSupportedCiphers());
+        logger.info(ssl.getSupportedCiphers());
         if (outdatedWrapperDetector.isOutdatedWrapperDetected()) {
             logger.warn("Outdated wrapper detected");
         }
@@ -299,7 +299,7 @@ public class DebugInfosProvider {
     }
 
     @Transactional
-    public String executeSqlUpdate(String sql) throws IOException {
+    public String executeSqlUpdate(String sql) {
         logger.info("Executing SQL query \"{}\"", sql);
 
         int affectedRows = entityManager.createNativeQuery(sql).executeUpdate();

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.nzbhydra.okhttp;
+package org.nzbhydra.webaccess;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;

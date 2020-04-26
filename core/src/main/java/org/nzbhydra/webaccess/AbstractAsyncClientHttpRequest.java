@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.nzbhydra.okhttp;
+package org.nzbhydra.webaccess;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.client.AsyncClientHttpRequest;

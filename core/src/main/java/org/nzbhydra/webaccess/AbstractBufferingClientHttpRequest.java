@@ -14,25 +14,25 @@
  * limitations under the License.
  */
 
-package org.nzbhydra.okhttp;
+package org.nzbhydra.webaccess;
 
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.client.AsyncClientHttpRequest;
+import org.springframework.http.client.AbstractClientHttpRequest;
+import org.springframework.http.client.ClientHttpRequest;
 import org.springframework.http.client.ClientHttpResponse;
-import org.springframework.util.concurrent.ListenableFuture;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
 /**
- * Base implementation of {@link AsyncClientHttpRequest} that buffers output
+ * Base implementation of {@link ClientHttpRequest} that buffers output
  * in a byte array before sending it over the wire.
  *
  * @author Arjen Poutsma
- * @since 4.0
+ * @since 3.0.6
  */
-abstract class AbstractBufferingAsyncClientHttpRequest extends AbstractAsyncClientHttpRequest {
+abstract class AbstractBufferingClientHttpRequest extends AbstractClientHttpRequest {
 
     private ByteArrayOutputStream bufferedOutput = new ByteArrayOutputStream(1024);
 
@@ -43,12 +43,12 @@ abstract class AbstractBufferingAsyncClientHttpRequest extends AbstractAsyncClie
     }
 
     @Override
-    protected ListenableFuture<ClientHttpResponse> executeInternal(HttpHeaders headers) throws IOException {
+    protected ClientHttpResponse executeInternal(HttpHeaders headers) throws IOException {
         byte[] bytes = this.bufferedOutput.toByteArray();
         if (headers.getContentLength() < 0) {
             headers.setContentLength(bytes.length);
         }
-        ListenableFuture<ClientHttpResponse> result = executeInternal(headers, bytes);
+        ClientHttpResponse result = executeInternal(headers, bytes);
         this.bufferedOutput = null;
         return result;
     }
@@ -60,7 +60,8 @@ abstract class AbstractBufferingAsyncClientHttpRequest extends AbstractAsyncClie
      * @param bufferedOutput the body content
      * @return the response object for the executed request
      */
-    protected abstract ListenableFuture<ClientHttpResponse> executeInternal(
-            HttpHeaders headers, byte[] bufferedOutput) throws IOException;
+    protected abstract ClientHttpResponse executeInternal(HttpHeaders headers, byte[] bufferedOutput)
+            throws IOException;
+
 
 }
