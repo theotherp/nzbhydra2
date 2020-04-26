@@ -37,6 +37,7 @@ import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -52,7 +53,7 @@ public class Binsearch extends Indexer<String> {
     private static final Pattern NFO_INFO_PATTERN = Pattern.compile("\\d nfo file", Pattern.CASE_INSENSITIVE);
     private static final Pattern SIZE_PATTERN = Pattern.compile("size: (?<size>[0-9]+(\\.[0-9]+)?).(?<unit>(GB|MB|KB|B))", Pattern.CASE_INSENSITIVE);
     private static final Pattern PUBDATE_PATTERN = Pattern.compile("(\\d{1,2}\\-\\w{3}\\-\\d{4})", Pattern.CASE_INSENSITIVE);
-    private static final DateTimeFormatter DATE_TIME_FORMATTER = new DateTimeFormatterBuilder().appendPattern("dd-MMM-yyyy").parseDefaulting(ChronoField.NANO_OF_DAY, 0).toFormatter().withZone(ZoneId.of("UTC"));
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = new DateTimeFormatterBuilder().appendPattern("dd-MMM-yyyy").parseDefaulting(ChronoField.NANO_OF_DAY, 0).toFormatter().withZone(ZoneId.of("UTC")).withLocale(Locale.ENGLISH);
     private static final Pattern NFO_PATTERN = Pattern.compile("<pre>(?<nfo>.*)<\\/pre>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
     private final RetryPolicy retry503policy = new RetryPolicy().retryOn(x -> x instanceof IndexerAccessException && Throwables.getStackTraceAsString(x).contains("503")).withDelay(500, TimeUnit.MILLISECONDS).withMaxRetries(2);

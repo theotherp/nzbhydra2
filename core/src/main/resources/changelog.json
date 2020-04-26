@@ -16,6 +16,10 @@
         "text": "Properly display last errror on indexer statuses page."
       },
       {
+        "type": "fix",
+        "text": "Fix parsing of binsearch date on non-english locales."
+      },
+      {
         "type": "note",
         "text": "I've added two settings for the database. Just ignore them unless told otherwise ;-)"
       }
