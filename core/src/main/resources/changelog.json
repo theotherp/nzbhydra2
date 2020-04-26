@@ -32,6 +32,10 @@
         "text": "Improve matching of downloads to downloader entries where no external ID exists, i.e. those downloads resulting from API accesses."
       },
       {
+        "type": "fix",
+        "text": "When using NZBGet the wrong NZB would be shown as downloading in the status footer when an NZB with a lower priority was higher in the queue."
+      },
+      {
         "type": "note",
         "text": "I've added two settings for the database. Just ignore them unless told otherwise ;-)"
       }

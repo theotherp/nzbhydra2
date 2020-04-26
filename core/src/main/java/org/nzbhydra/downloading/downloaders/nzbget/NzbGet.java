@@ -44,6 +44,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @SuppressWarnings({"unchecked", "RedundantCast"})
@@ -201,17 +202,20 @@ public class NzbGet extends Downloader {
 
             status.setElementsInQueue(queue.size());
             if (queue.size() > 0) {
-                LinkedHashMap<String, Object> map = queue.get(0);
-                status.setDownloadingTitle((String) map.get("NZBName"));
-                int totalMb = (Integer) map.get("FileSizeMB") - (Integer) map.get("PausedSizeMB");
-                int remainingMb = (int) (Integer) map.get("RemainingSizeMB") - (Integer) map.get("PausedSizeMB"); //PausedSizeMB is size of pars
-                if (totalMb == 0) {
-                    status.setDownloadingTitlePercentFinished(0);
-                } else {
-                    status.setDownloadingTitlePercentFinished(Math.round(((totalMb - remainingMb) / (float) (totalMb)) * 100));
-                }
-                if (status.getState() == DownloaderStatus.State.DOWNLOADING && status.getDownloadRateInKilobytes() > 0) {
-                    status.setDownloadingTitleRemainingTimeFormatted(calculateTimeLeft(remainingMb, status.getDownloadRateInKilobytes() * 1024));
+                final Optional<LinkedHashMap<String, Object>> downloadingEntry = queue.stream().filter(x -> ((String) x.get("Status")).equals("DOWNLOADING")).findFirst();
+                if (downloadingEntry.isPresent()) {
+                    LinkedHashMap<String, Object> map = downloadingEntry.get();
+                    status.setDownloadingTitle((String) map.get("NZBName"));
+                    int totalMb = (Integer) map.get("FileSizeMB") - (Integer) map.get("PausedSizeMB");
+                    int remainingMb = (int) (Integer) map.get("RemainingSizeMB") - (Integer) map.get("PausedSizeMB"); //PausedSizeMB is size of pars
+                    if (totalMb == 0) {
+                        status.setDownloadingTitlePercentFinished(0);
+                    } else {
+                        status.setDownloadingTitlePercentFinished(Math.round(((totalMb - remainingMb) / (float) (totalMb)) * 100));
+                    }
+                    if (status.getState() == DownloaderStatus.State.DOWNLOADING && status.getDownloadRateInKilobytes() > 0) {
+                        status.setDownloadingTitleRemainingTimeFormatted(calculateTimeLeft(remainingMb, status.getDownloadRateInKilobytes() * 1024));
+                    }
                 }
             }
         }
