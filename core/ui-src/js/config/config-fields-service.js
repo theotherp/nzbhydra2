@@ -940,6 +940,15 @@ function ConfigFields($injector) {
                             }
                         },
                         {
+                            key: 'languagesToKeep',
+                            type: 'horizontalChips',
+                            templateOptions: {
+                                type: 'text',
+                                label: 'Languages to keep',
+                                help: 'If an indexer returns the language in the results only those results with configured languages will be used. Apply words with return key.'
+                            }
+                        },
+                        {
                             key: 'userAgent',
                             type: 'horizontalInput',
                             templateOptions: {

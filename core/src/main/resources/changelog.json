@@ -4,6 +4,10 @@
     "date": "2020-04-23",
     "changes": [
       {
+        "type": "feature",
+        "text": "Option to filter out results by language. Very few indexers return the language in the results, though."
+      },
+      {
         "type": "fix",
         "text": "Fix sorting by age in download history."
       },

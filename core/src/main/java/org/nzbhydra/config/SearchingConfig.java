@@ -40,6 +40,7 @@ public class SearchingConfig extends ValidatingConfig<SearchingConfig> {
     private boolean ignoreLoadLimitingForInternalSearches = false;
     private int keepSearchResultsForDays = 3;
     private String language = "en";
+    private List<String> languagesToKeep = new ArrayList<>();
     private boolean loadAllCachedOnInternal;
     private int loadLimitInternal = 100;
     private Integer maxAge;

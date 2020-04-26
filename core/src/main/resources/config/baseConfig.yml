@@ -335,6 +335,7 @@ searching:
   ignoreLoadLimitingForInternalSearches: false
   keepSearchResultsForDays: 14
   language: "en"
+  languagesToKeep: []
   loadAllCachedOnInternal: true
   loadLimitInternal: 100
   maxAge: null

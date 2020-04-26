@@ -49,8 +49,8 @@ public class SearchResultAcceptor {
 
     private Map<String, List<String>> titleWordCache = new ConcurrentHashMap<>();
 
-    private ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-    private Validator validator = factory.getValidator();
+    private final ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+    private final Validator validator = factory.getValidator();
 
 
     @Autowired
@@ -94,6 +94,10 @@ public class SearchResultAcceptor {
                 continue;
             }
 
+            if (!checkForLanguage(reasonsForRejection, item)) {
+                continue;
+            }
+
             //Forbidden words from query
             if (!checkForForbiddenWords(indexerConfig, reasonsForRejection, searchRequest.getInternalData().getForbiddenWords(), item)) {
                 continue;
@@ -102,6 +106,7 @@ public class SearchResultAcceptor {
             if (!checkRequiredWords(reasonsForRejection, searchRequest.getInternalData().getRequiredWords(), item)) {
                 continue;
             }
+
 
             //Globally configured
             boolean applyWordAndRegexRestrictions = baseConfig.getSearching().getApplyRestrictions() == SearchSourceRestriction.BOTH || Objects.equals(searchRequest.getSource().name(), baseConfig.getSearching().getApplyRestrictions().name());
@@ -341,7 +346,25 @@ public class SearchResultAcceptor {
 
     protected boolean checkForPassword(Multiset<String> reasonsForRejection, SearchResultItem item) {
         if (configProvider.getBaseConfig().getSearching().isIgnorePassworded() && item.isPassworded()) {
+            logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "Ignore passworded result");
             reasonsForRejection.add("Ignore passworded");
+            return false;
+        }
+        return true;
+    }
+
+    protected boolean checkForLanguage(Multiset<String> reasonsForRejection, SearchResultItem item) {
+        final List<String> languagesToKeep = configProvider.getBaseConfig().getSearching().getLanguagesToKeep();
+        if (languagesToKeep.isEmpty()) {
+            return true;
+        }
+        if (!item.getAttributes().containsKey("language")) {
+            return true;
+        }
+        final String language = item.getAttributes().get("language");
+        if (!languagesToKeep.contains(language)) {
+            logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "Found language {} which is to be filtered", language);
+            reasonsForRejection.add("Wrong language");
             return false;
         }
         return true;
