@@ -30,7 +30,6 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.net.ssl.KeyManager;
-import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocket;
@@ -38,6 +37,8 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
@@ -49,6 +50,8 @@ import java.security.GeneralSecurityException;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateFactory;
 import java.util.Collections;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -72,6 +75,8 @@ public class Ssl {
 
     private SSLSocketFactory defaultSslSocketFactory;
     private X509TrustManager defaultTrustManager;
+    private X509TrustManager customTrustManager;
+
     private SSLSocketFactory allTrustingSslSocketFactory;
     private X509TrustManager allTrustingDefaultTrustManager = new AllTrustingManager();
 
@@ -113,7 +118,7 @@ public class Ssl {
         } else if (host != null && configProvider.getBaseConfig().getMain().getVerifySslDisabledFor().stream().anyMatch(x -> isSameHost(host, x))) {
             logger.debug(LoggingMarkers.HTTPS, "Ignoring SSL certificates because option not to verify SSL is set for host {}", host);
             return SslVerificationState.DISABLED_HOST;
-        } else if (host != null && isLocal(host)) {
+        } else if (configProvider.getBaseConfig().getMain().isDisableSslLocally() && host != null && isLocal(host)) {
             logger.debug(LoggingMarkers.HTTPS, "Ignoring SSL certificates because host {} is local", host);
             return SslVerificationState.DISABLED_LOCAL;
         } else {
@@ -123,7 +128,7 @@ public class Ssl {
     }
 
     private void initSocketFactory(MainConfig mainConfig) {
-        loadCacerts();
+        loadCacertsAndCustomCerts();
         loadAllTrustingTrustManager();
     }
 
@@ -139,27 +144,37 @@ public class Ssl {
         }
     }
 
-    private void loadCacerts() {
+    private void loadCacertsAndCustomCerts() {
         try {
             KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
             InputStream keystoreStream = NzbHydra.class.getResource("/cacerts").openStream();
             keystore.load(keystoreStream, null);
 
+            final File certificatesFolder = new File(NzbHydra.getDataFolder(), "certificates");
+            if (certificatesFolder.exists()) {
+                final File[] files = certificatesFolder.listFiles();
+                logger.info("Loading {} custom certificates", files.length);
+                for (File file : files) {
+                    try (FileInputStream fileInputStream = new FileInputStream(file)) {
+                        final Certificate certificate = CertificateFactory.getInstance("X.509").generateCertificate(fileInputStream);
+                        logger.debug("Loading certificate in file {}", file);
+                        keystore.setCertificateEntry(file.getName(), certificate);
+                    }
+                }
+            }
+
             TrustManagerFactory customTrustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
             customTrustManagerFactory.init(keystore);
             TrustManager[] trustManagers = customTrustManagerFactory.getTrustManagers();
 
-            KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-            keyManagerFactory.init(keystore, null);
-            KeyManager[] keyManagers = keyManagerFactory.getKeyManagers();
-
             caCertsContext = SSLContext.getInstance("SSL");
-            caCertsContext.init(keyManagers, trustManagers, null);
+            caCertsContext.init(null, trustManagers, null);
             SSLContext.setDefault(caCertsContext);
             SSLSocketFactory sslSocketFactory = caCertsContext.getSocketFactory();
 
             defaultTrustManager = (X509TrustManager) trustManagers[0];
             defaultSslSocketFactory = new SniWhitelistingSocketFactory(sslSocketFactory);
+
         } catch (IOException | GeneralSecurityException e) {
             logger.error("Unable to load packaged cacerts file", e);
         }
@@ -226,7 +241,19 @@ public class Ssl {
         }
     }
 
-    public static class AllTrustingManager implements X509TrustManager {
+
+    private KeyStore newEmptyKeyStore(char[] password) throws GeneralSecurityException {
+        try {
+            KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+            InputStream in = null; // By convention, 'null' creates an empty key store.
+            keyStore.load(in, password);
+            return keyStore;
+        } catch (IOException e) {
+            throw new AssertionError(e);
+        }
+    }
+
+    private static class AllTrustingManager implements X509TrustManager {
 
         @Override
         public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) {
@@ -258,6 +285,16 @@ public class Ssl {
                 newSocket.setSSLParameters(sslParameters);
             }
             return newSocket;
+        }
+    }
+
+    private static class KeyAndTrustManagers {
+        final KeyManager[] keyManagers;
+        final TrustManager[] trustManagers;
+
+        KeyAndTrustManagers(KeyManager[] keyManagers, TrustManager[] trustManagers) {
+            this.keyManagers = keyManagers;
+            this.trustManagers = trustManagers;
         }
     }
 

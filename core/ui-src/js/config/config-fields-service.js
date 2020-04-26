@@ -286,6 +286,15 @@ function ConfigFields($injector) {
                             }
                         },
                         {
+                            key: 'disableSslLocally',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'text',
+                                label: 'Disable SSL locally',
+                                help: 'Disable SSL for local hosts.'
+                            }
+                        },
+                        {
                             key: 'sniDisabledFor',
                             type: 'horizontalChips',
                             templateOptions: {
@@ -1735,6 +1744,7 @@ function ConfigFields($injector) {
         }
     }
 }
+
 
 function handleConnectionCheckFail(ModalService, data, model, whatFailed, deferred) {
     var message;

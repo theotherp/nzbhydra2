@@ -276,6 +276,7 @@ main:
   databaseRetentionTime: 1000
   databaseWriteDelay: 5000
   deleteBackupsAfterWeeks: 4
+  disableSslLocally: false
   dereferer: "http://www.dereferer.org/?$s"
   host: "0.0.0.0"
   instanceCounterDownloaded: false

@@ -8,6 +8,14 @@
         "text": "Option to filter out results by language. Very few indexers return the language in the results, though."
       },
       {
+        "type": "feature",
+        "text": "You can now add self-signed certificates for any hosts you want to connect to. Just create a folder named 'certificates' inside the data folder, put your .crt files there and reload NZBHydra."
+      },
+      {
+        "type": "feature",
+        "text": "Option to disable SSL verification for local hosts."
+      },
+      {
         "type": "fix",
         "text": "Fix sorting by age in download history."
       },

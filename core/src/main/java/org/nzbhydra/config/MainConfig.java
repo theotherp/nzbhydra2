@@ -65,7 +65,6 @@ public class MainConfig extends ValidatingConfig<MainConfig> {
 
 
     //SSL settings
-    private List<String> sniDisabledFor = new ArrayList<>();
     @RestartRequired
     private boolean ssl = false;
     @RestartRequired
@@ -73,8 +72,13 @@ public class MainConfig extends ValidatingConfig<MainConfig> {
     @SensitiveData
     @RestartRequired
     private String sslKeyStorePassword = null;
+
+
+    //Security settings
     @RestartRequired
     private boolean verifySsl = true;
+    private boolean disableSslLocally = false;
+    private List<String> sniDisabledFor = new ArrayList<>();
     private List<String> verifySslDisabledFor = new ArrayList<>();
 
 
