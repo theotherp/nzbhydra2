@@ -44,7 +44,7 @@
     "type" : "note",
     "text" : "I've added two settings for the database. Just ignore them unless told otherwise ;-)"
   } ],
-  "final" : false
+  "final" : true
 }, {
   "version" : "v2.19.6",
   "date" : "2020-04-23",
