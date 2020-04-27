@@ -415,6 +415,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
         );
     }
 
+
     if ((indexerModel.searchModuleType === 'NEWZNAB' || indexerModel.searchModuleType === 'TORZNAB') && !isInitial && indexerModel.searchModuleType !== 'JACKETT_CONFIG') {
         fieldset.push(
             {
@@ -445,6 +446,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
                         {label: 'Audio', id: 'AUDIO'},
                         {label: 'Ebooks', id: 'BOOK'},
                         {label: 'Movies', id: 'MOVIE'},
+                        {label: 'Search', id: 'SEARCH'},
                         {label: 'TV', id: 'TVSEARCH'}
                     ],
                     buttonText: "None"
