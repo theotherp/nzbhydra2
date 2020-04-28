@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.io.File;
@@ -33,6 +34,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.spi.FileSystemProvider;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -60,6 +62,16 @@ public class BackupAndRestore {
     @Autowired
     private UpdateManager updateManager;
     private final ConfigReaderWriter configReaderWriter = new ConfigReaderWriter();
+
+    @PostConstruct
+    public void init() {
+        //Try to load FileSystem providers. This *may* help prevent the error "Circular loading of installed providers detected" when running FileSystems.newFileSystem(uri, env) below
+        try {
+            FileSystemProvider.installedProviders();
+        } catch (Exception e) {
+            logger.error("Unable to load installed FileSystemProviders");
+        }
+    }
 
     @Transactional
     public File backup() throws Exception {

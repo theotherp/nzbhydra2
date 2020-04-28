@@ -17,6 +17,10 @@
       {
         "type": "fix",
         "text": "Restore display of button to send torrents to black hole."
+      },
+      {
+        "type": "fix",
+        "text": "Try to fix circular loading error when creating backup."
       }
     ],
     "final": true
