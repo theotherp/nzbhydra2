@@ -3,6 +3,10 @@
     "version": "v2.20.1",
     "changes": [
       {
+        "type": "feature",
+        "text": "Add button to debug infos tab to list all HTTP endpoints (useful for reverse proxy config)."
+      },
+      {
         "type": "fix",
         "text": "Search type SEARCH wasn't displayed in indexer config."
       },

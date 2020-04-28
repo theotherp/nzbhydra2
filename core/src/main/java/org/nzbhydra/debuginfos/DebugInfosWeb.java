@@ -1,5 +1,8 @@
 package org.nzbhydra.debuginfos;
 
+import com.google.common.base.Joiner;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.nzbhydra.GenericResponse;
@@ -9,6 +12,9 @@ import org.nzbhydra.logging.LogContentProvider.JsonLogResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.web.mappings.MappingsEndpoint;
+import org.springframework.boot.actuate.web.mappings.servlet.DispatcherServletMappingDescription;
+import org.springframework.boot.actuate.web.mappings.servlet.RequestMappingConditionsDescription;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -40,6 +46,8 @@ public class DebugInfosWeb {
     private LogContentProvider logContentProvider;
     @Autowired
     private org.nzbhydra.debuginfos.DebugInfosProvider debugInfos;
+    @Autowired
+    private MappingsEndpoint mappingsEndpoint;
 
     private static final Logger logger = LoggerFactory.getLogger(DebugInfosWeb.class);
 
@@ -140,6 +148,36 @@ public class DebugInfosWeb {
         }
     }
 
+    @SuppressWarnings({"unchecked", "Convert2MethodRef"})
+    @Secured({"ROLE_ADMIN"})
+    @RequestMapping(value = "/internalapi/debuginfos/endpoints", method = RequestMethod.GET)
+    public ResponseEntity<List<PrefixAndEndpoint>> getEndpoints() {
+
+        final List<RequestMappingConditionsDescription> conditionsDescriptions = ((Map<String, List<DispatcherServletMappingDescription>>) mappingsEndpoint.mappings().getContexts().get("NZBHydra2").getMappings().get("dispatcherServlets")).get("dispatcherServlet")
+                .stream().filter(x1 -> x1.getHandler().contains("nzbhydra"))
+                .map(x -> x.getDetails().getRequestMappingConditions()).collect(Collectors.toList());
+
+        final List<PrefixAndEndpoint> prefixAndEndpoints = new ArrayList<>();
+        final Multimap<String, Endpoint> endpoints = HashMultimap.create();
+        for (RequestMappingConditionsDescription description : conditionsDescriptions) {
+            for (String pattern : description.getPatterns()) {
+                final String methods = Joiner.on(", ").skipNulls().join(description.getMethods());
+                final String params = Joiner.on(", ").skipNulls().join(description.getParams());
+                final String consumes = description.getConsumes().stream().map(x -> x.getMediaType()).collect(Collectors.joining(", "));
+                final String produces = description.getProduces().stream().map(x -> x.getMediaType()).collect(Collectors.joining(", "));
+                String prefix = pattern.split("/")[1];
+                endpoints.put(prefix, new Endpoint(pattern, methods, params, consumes, produces));
+            }
+        }
+
+        for (String prefix : endpoints.keySet()) {
+            prefixAndEndpoints.add(new PrefixAndEndpoint(prefix, new ArrayList<>(endpoints.get(prefix))));
+        }
+        prefixAndEndpoints.sort(Comparator.comparing(x -> x.prefix));
+
+        return ResponseEntity.ok(prefixAndEndpoints);
+    }
+
     @Data
     public static class ThreadCpuUsageChartData {
         private final String key;
@@ -161,6 +199,24 @@ public class DebugInfosWeb {
     public static class TimeAndValue {
         private final Instant time;
         private final float value;
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class PrefixAndEndpoint {
+        private final String prefix;
+        private final List<Endpoint> endpoints;
+
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class Endpoint {
+        private final String endpoint;
+        private final String methods;
+        private final String params;
+        private final String consumes;
+        private final String produces;
     }
 
 
