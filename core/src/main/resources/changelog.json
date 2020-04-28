@@ -13,6 +13,10 @@
       {
         "type": "fix",
         "text": "Improve matching of indexer configs when reading jackett config."
+      },
+      {
+        "type": "fix",
+        "text": "Restore display of button to send torrents to black hole."
       }
     ],
     "final": true
