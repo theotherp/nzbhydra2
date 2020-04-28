@@ -1,4 +1,18 @@
-### v2.20.0 BETA (2020-04-26)
+### v2.20.1 (2020-04-28)
+
+**Feature** Add button to debug infos tab to list all HTTP endpoints (useful for reverse proxy config).
+
+**Fix** Search type SEARCH wasn't displayed in indexer config.
+
+**Fix** Improve matching of indexer configs when reading jackett config.
+
+**Fix** Restore display of button to send torrents to black hole.
+
+**Fix** Try to fix circular loading error when creating backup.
+
+
+
+### v2.20.0 (2020-04-26)
 
 **Feature** Option to filter out results by language. Very few indexers provide the language in the results, though.
 
