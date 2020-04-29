@@ -10,6 +10,7 @@ function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandl
     var latestVersionIgnored;
     var versionHistory;
     var runInDocker;
+    var automaticUpdateToNotice;
 
 
     return {

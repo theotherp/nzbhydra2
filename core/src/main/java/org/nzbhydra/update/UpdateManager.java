@@ -17,6 +17,7 @@ import org.nzbhydra.NzbHydra;
 import org.nzbhydra.ShutdownEvent;
 import org.nzbhydra.WindowsTrayIcon;
 import org.nzbhydra.backup.BackupAndRestore;
+import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.genericstorage.GenericStorage;
 import org.nzbhydra.mapping.SemanticVersion;
@@ -262,7 +263,7 @@ public class UpdateManager implements InitializingBean {
     }
 
 
-    public void installUpdate() throws UpdateException {
+    public void installUpdate(boolean isAutomaticUpdate) throws UpdateException {
         Release latestRelease = latestReleaseCache.get();
         logger.info("Starting process to update to {}", latestRelease.getTagName());
         Asset asset = getAsset(latestRelease);
@@ -290,7 +291,8 @@ public class UpdateManager implements InitializingBean {
             throw new UpdateException("Error while downloading, saving or extracting update ZIP", e);
         }
 
-        if (configProvider.getBaseConfig().getMain().isBackupBeforeUpdate()) {
+        final BaseConfig baseConfig = configProvider.getBaseConfig();
+        if (baseConfig.getMain().isBackupBeforeUpdate()) {
             try {
                 logger.info("Creating backup before shutting down");
                 applicationEventPublisher.publishEvent(new UpdateEvent(UpdateEvent.State.CREATING_BACKUP, "Creating backup before update."));
@@ -302,6 +304,10 @@ public class UpdateManager implements InitializingBean {
 
         if (latestRelease.getTagName().equals("v2.7.6")) {
             applicationEventPublisher.publishEvent(new UpdateEvent(UpdateEvent.State.MIGRATION_NEEDED, "NZBHydra's restart after the update will take longer than usual because the database needs to be migrated."));
+        }
+
+        if (isAutomaticUpdate) {
+            genericStorage.save("automaticUpdateToNotice", getCurrentVersionString());
         }
 
         logger.info("Shutting down to let wrapper execute the update");

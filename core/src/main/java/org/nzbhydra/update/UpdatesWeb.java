@@ -123,7 +123,7 @@ public class UpdatesWeb {
     @RequestMapping(value = "/internalapi/updates/installUpdate", method = RequestMethod.PUT)
     public GenericResponse installUpdate() throws Exception {
         updateMessages.clear();
-        updateManager.installUpdate();
+        updateManager.installUpdate(false);
         return new GenericResponse(true, null);
     }
 
