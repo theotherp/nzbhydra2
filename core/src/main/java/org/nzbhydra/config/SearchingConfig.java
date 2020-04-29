@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.google.common.base.Strings;
 import lombok.Data;
-import org.nzbhydra.config.downloading.FileDownloadAccessType;
 import org.nzbhydra.indexers.QueryGenerator;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -44,8 +43,6 @@ public class SearchingConfig extends ValidatingConfig<SearchingConfig> {
     private boolean loadAllCachedOnInternal;
     private int loadLimitInternal = 100;
     private Integer maxAge;
-    @JsonFormat(shape = Shape.STRING)
-    private FileDownloadAccessType nzbAccessType = FileDownloadAccessType.REDIRECT;
     @JsonSetter()
     private List<String> removeTrailing = new ArrayList<>();
     private String requiredRegex;
@@ -101,10 +98,6 @@ public class SearchingConfig extends ValidatingConfig<SearchingConfig> {
             if (getRequiredRegex().isPresent() || getForbiddenRegex().isPresent()) {
                 warnings.add("You selected not to apply any word restrictions in \"Searching\" but supplied a forbidden or required regex there");
             }
-        }
-
-        if (newBaseConfig.getIndexers().stream().anyMatch(x -> x.getHost().toLowerCase().contains("nzbs.in")) && newConfig.getNzbAccessType() != FileDownloadAccessType.REDIRECT) {
-            warnings.add("nzbs.in requires special configurations to be made or your API account will be disabled. You should set the NZB access type in the searching config to \"Redirect to indexer\".");
         }
 
         return new ConfigValidationResult(errors.isEmpty(), false, errors, warnings);

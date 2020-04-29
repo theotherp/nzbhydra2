@@ -180,7 +180,9 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
                     type: 'number',
                     label: 'Priority',
                     required: true,
-                    help: 'When duplicate search results are found the result from the indexer with the highest number will be selected.'
+                    help: 'When duplicate search results are found the result from the indexer with the highest number will be selected.',
+                    tooltip: 'The priority determines which indexer is used if duplicate results are found (i.e. results that link to the same upload, not just results with the same name).<br>The result from the indexer with the highest number is shown first in the GUI and returned for API searches.'
+
                 }
             });
     }
@@ -215,7 +217,8 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
                 templateOptions: {
                     type: 'number',
                     label: 'API hit limit',
-                    help: 'Maximum number of API hits since "API hit reset time".'
+                    help: 'Maximum number of API hits since "API hit reset time".',
+                    tooltip: 'When the maximum number of API hits is reached the indexer isn\'t used anymore. Only API hits done by NZBHydra are taken into account.'
                 },
                 validators: {
                     greaterThanZero: {
@@ -254,7 +257,8 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
                 templateOptions: {
                     type: 'number',
                     label: 'Hit reset time',
-                    help: 'UTC hour of day at which the API hit counter is reset (0-23). Leave empty for a rolling reset counter.'
+                    help: 'UTC hour of day at which the API hit counter is reset (0-23). Leave empty for a rolling reset counter.',
+                    tooltip: 'Either define the time of day when the counter is reset by the indexer or leave it empty to use a rolling reset counter, meaning the number of hits for the last 24 at the time of the search is limited.'
                 },
                 validators: {
                     timeOfDay: {
@@ -272,7 +276,8 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
                 templateOptions: {
                     type: 'number',
                     label: 'Load limiting',
-                    help: 'If set indexer will only be picked for one out of x API searches (on average).'
+                    help: 'If set indexer will only be picked for one out of x API searches (on average).',
+                    tooltip: 'For indexers with a low API hit limit you can enable load limiting. Define any number n so that the indexer will only be used for searches in 1/n cases (on average). For example if you define a load limit of 5 the indexer will only be picked every fifth search.'
                 },
                 validators: {
                     greaterThanZero: {
@@ -459,7 +464,8 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
                 hideExpression: '!model.host || !model.name',
                 templateOptions: {
                     label: 'Check capabilities',
-                    help: 'Find out what search types and IDs the indexer supports. Done automatically for new indexers.'
+                    help: 'Find out what search types and IDs the indexer supports.',
+                    tooltip: 'The first time an indexer is added the connection is tested. When successful the supported search IDs and types are checked. These determine if indexers allow searching for movies, shows or ebooks using meta data like the IMDB id or the author and title. Newznab indexers cannot be used until this check was completed. Click this button to execute the caps check again.'
                 }
             }
         )

@@ -54,7 +54,7 @@ public class TorrentHandlingWeb {
     @RequestMapping(value = "/internalapi/torrent/{guid}", produces = "application/x-bittorrent")
     @Secured({"ROLE_USER"})
     public ResponseEntity<Object> downloadTorrentInternal(@PathVariable("guid") long guid) throws InvalidSearchResultIdException {
-        return torrentHandler.getTorrentByGuid(guid, configProvider.getBaseConfig().getSearching().getNzbAccessType(), SearchSource.INTERNAL).getAsResponseEntity();
+        return torrentHandler.getTorrentByGuid(guid, configProvider.getBaseConfig().getDownloading().getNzbAccessType(), SearchSource.INTERNAL).getAsResponseEntity();
     }
 
 
@@ -66,7 +66,7 @@ public class TorrentHandlingWeb {
     @RequestMapping(value = "/gettorrent/user/{guid}", produces = "application/x-bittorrent")
     @Secured({"ROLE_USER"})
     public ResponseEntity<Object> downloadTorrentForUsers(@PathVariable("guid") long guid) throws InvalidSearchResultIdException {
-        DownloadResult downloadResult = torrentHandler.getTorrentByGuid(guid, configProvider.getBaseConfig().getSearching().getNzbAccessType(), SearchSource.INTERNAL);
+        DownloadResult downloadResult = torrentHandler.getTorrentByGuid(guid, configProvider.getBaseConfig().getDownloading().getNzbAccessType(), SearchSource.INTERNAL);
         return downloadResult.getAsResponseEntity();
     }
 
@@ -96,7 +96,7 @@ public class TorrentHandlingWeb {
             throw new WrongApiKeyException("Wrong api key");
         }
 
-        return torrentHandler.getTorrentByGuid(guid, baseConfig.getSearching().getNzbAccessType(), SearchSource.API).getAsResponseEntity();
+        return torrentHandler.getTorrentByGuid(guid, baseConfig.getDownloading().getNzbAccessType(), SearchSource.API).getAsResponseEntity();
     }
 
 }

@@ -255,17 +255,6 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
         });
     };
 
-    $scope.help = function () {
-        var tabName = $scope.allTabs[$scope.activeTab].name;
-        $http.get("internalapi/help/" + tabName).then(function (result) {
-                var html = '<span style="text-align: left;">' + result.data + "</span>";
-                ModalService.open(tabName + " - Help", html, {}, "lg");
-            },
-            function () {
-                growl.error("Error while loading help")
-            })
-    };
-
     $scope.$on('$stateChangeStart',
         function (event, toState, toParams, fromState, fromParams) {
             if ($scope.isSavingNeeded()) {

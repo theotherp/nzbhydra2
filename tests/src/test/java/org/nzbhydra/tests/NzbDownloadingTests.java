@@ -135,21 +135,21 @@ public class NzbDownloadingTests {
         downloaderConfig.setApiKey("apikey");
         baseConfig.getDownloading().getDownloaders().clear();
         baseConfig.getDownloading().getDownloaders().add(downloaderConfig);
-        baseConfig.getSearching().setNzbAccessType(FileDownloadAccessType.REDIRECT);
+        baseConfig.getDownloading().setNzbAccessType(FileDownloadAccessType.REDIRECT);
         downloaderProvider.handleNewConfig(new ConfigChangedEvent(this, baseConfig, baseConfig));
         searchModuleProvider.loadIndexers(baseConfig.getIndexers());
     }
 
     @Test
     public void shouldRedirectToIndexer() throws Exception {
-        baseConfig.getSearching().setNzbAccessType(FileDownloadAccessType.REDIRECT);
+        baseConfig.getDownloading().setNzbAccessType(FileDownloadAccessType.REDIRECT);
         mvc.perform(MockMvcRequestBuilders.get("/getnzb/api/" + searchResultId).with(csrf())).andExpect(status().is(HttpStatus.FOUND.value())).andExpect(header().string("Location", "http://127.0.0.1:7070/getnzb?id=123"));
     }
 
     @Test
     public void shouldDownloadNzbFromIndexer() throws Exception {
         mockServer.when(HttpRequest.request()).respond(HttpResponse.response().withBody("NZBContent"));
-        baseConfig.getSearching().setNzbAccessType(FileDownloadAccessType.PROXY);
+        baseConfig.getDownloading().setNzbAccessType(FileDownloadAccessType.PROXY);
         mvc.perform(MockMvcRequestBuilders.get("/getnzb/api/" + searchResultId).with(csrf())).andExpect(result -> {
             result.getResponse().getStatus();
         }).andExpect(content().string("NZBContent"));
@@ -157,7 +157,7 @@ public class NzbDownloadingTests {
 
     @Test
     public void shouldReturnErrorCodeWhenNzbNotFound() throws Exception {
-        baseConfig.getSearching().setNzbAccessType(FileDownloadAccessType.PROXY);
+        baseConfig.getDownloading().setNzbAccessType(FileDownloadAccessType.PROXY);
         mvc.perform(MockMvcRequestBuilders.get("/getnzb/api/123").with(csrf())).andExpect(result -> {
             result.getResponse().getStatus();
         }).andExpect(content().string("<error code=\"300\" description=\"Invalid or outdated search result ID\"/>"));

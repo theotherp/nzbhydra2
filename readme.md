@@ -88,9 +88,12 @@ Send me an email at TheOtherP@gmx.de or a PM at https://www.reddit.com/user/TheO
 
 ## Donate
 
-If you like to help me with any running or upcoming costs you're welcome to send Bitcoin via 1LPCUF9eKEXi58nHbxTbJyfxCJkcCXKzvm or Ether via 0xa6C33b4756D24027227C14285AfAeEE9a9738D42
-
-If you'd like to send other coins like Monero, Litecoin, etc. please contact me.  
+You're welcome to donate:
+  <ul>
+    <li>Bitcoin via 1LPCUF9eKEXi58nHbxTbJyfxCJkcCXKzvm</li>
+    <li>Regular money via PayPal to theotherp@gmx.de</li>
+    <li>Via <a href="https://github.com/sponsors/theotherp">GitHub sponsors</a> which involves a recurring donation similar to Patreon.</li>
+  </ul>
 
 ## Thanks
 

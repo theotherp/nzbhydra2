@@ -44,12 +44,10 @@ angular
 
         formlyConfigProvider.setWrapper({
             name: 'fieldset',
-            template: [
-                '<fieldset>',
-                '<legend><span class="config-fieldset-legend">{{options.templateOptions.label}}</span></legend>',
-                '<formly-transclude></formly-transclude>',
-                '</fieldset>'
-            ].join(' ')
+            templateUrl: 'fieldset-wrapper.html',
+            controller: ['$scope', function ($scope) {
+                $scope.tooltipIsOpen = false;
+            }]
         });
 
         formlyConfigProvider.setType({

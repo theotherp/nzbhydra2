@@ -66,7 +66,7 @@ public class NzbHandlingWeb {
     @RequestMapping(value = "/internalapi/nzb/{guid}", produces = "application/x-nzb")
     @Secured({"ROLE_USER"})
     public ResponseEntity<Object> downloadNzbInternal(@PathVariable("guid") long guid) throws InvalidSearchResultIdException {
-        return fileHandler.getFileByGuid(guid, configProvider.getBaseConfig().getSearching().getNzbAccessType(), SearchSource.INTERNAL).getAsResponseEntity();
+        return fileHandler.getFileByGuid(guid, configProvider.getBaseConfig().getDownloading().getNzbAccessType(), SearchSource.INTERNAL).getAsResponseEntity();
     }
 
 
@@ -113,7 +113,7 @@ public class NzbHandlingWeb {
     @RequestMapping(value = "/getnzb/user/{guid}", produces = "application/x-nzb")
     @Secured({"ROLE_USER"})
     public ResponseEntity<Object> downloadNzbForUsers(@PathVariable("guid") long guid) throws InvalidSearchResultIdException {
-        return fileHandler.getFileByGuid(guid, configProvider.getBaseConfig().getSearching().getNzbAccessType(), SearchSource.INTERNAL).getAsResponseEntity();
+        return fileHandler.getFileByGuid(guid, configProvider.getBaseConfig().getDownloading().getNzbAccessType(), SearchSource.INTERNAL).getAsResponseEntity();
     }
 
     /**
@@ -130,7 +130,7 @@ public class NzbHandlingWeb {
         }
 
         try {
-            return fileHandler.getFileByGuid(guid, baseConfig.getSearching().getNzbAccessType(), SearchSource.API).getAsResponseEntity();
+            return fileHandler.getFileByGuid(guid, baseConfig.getDownloading().getNzbAccessType(), SearchSource.API).getAsResponseEntity();
         } catch (InvalidSearchResultIdException e) {
             //Should be RssError but causes an exception in ServletInvocableHandlerMethod.invokeAndHandle()
             return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML).body("<error code=\"300\" description=\"Invalid or outdated search result ID\"/>");

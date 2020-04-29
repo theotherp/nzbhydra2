@@ -4,6 +4,14 @@
     "changes": [
       {
         "type": "feature",
+        "text": "Added more substructures to the config GUI to make it a bit more clear."
+      },
+      {
+        "type": "feature",
+        "text": "Replaced the config help pop-up pages with contextual help. Click the question marks neach to each field to get a bit more in-depth info."
+      },
+      {
+        "type": "feature",
         "text": "Add button to clear search input."
       },
       {

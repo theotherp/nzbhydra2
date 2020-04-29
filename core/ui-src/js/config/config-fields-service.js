@@ -101,7 +101,8 @@ function ConfigFields($injector) {
                                 type: 'text',
                                 label: 'URL base',
                                 placeholder: '/nzbhydra',
-                                help: 'Adapt when using a reverse proxy. See <a href="https://github.com/theotherp/nzbhydra2/wiki/Exposing-Hydra-to-the-internet-and-using-reverse-proxies" target="_blank">wiki</a>. Always use when calling Hydra, even locally.'
+                                help: 'Adapt when using a reverse proxy. See <a href="https://github.com/theotherp/nzbhydra2/wiki/Exposing-Hydra-to-the-internet-and-using-reverse-proxies" target="_blank">wiki</a>. Always use when calling Hydra, even locally.',
+                                tooltip: 'If you use Hydra behind a reverse proxy you might want to set the URL base to a value like "/nzbhydra". If you accesses Hydra with tools running outside your network (for example from your phone) set the external URL so that it matches the full Hydra URL. That way the NZB links returned in the search results refer to your global URL and not your local address.'
                             },
                             validators: {
                                 urlBase: regexValidator(/^((\/.*[^\/])|\/)$/, 'URL base has to start and may not end with /', false, true)
@@ -114,7 +115,8 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'switch',
                                 label: 'Use SSL',
-                                help: 'Requires restart.'
+                                help: 'Requires restart.',
+                                tooltip: 'You can use SSL but I recommend using a reverse proxy with SSL. See the wiki for notes regarding reverse proxies and SSL. It\'s more secure and can be configured better.'
                             }
                         },
                         {
@@ -125,7 +127,7 @@ function ConfigFields($injector) {
                                 label: 'SSL keystore file',
                                 required: true,
                                 type: "file",
-                                help: 'Requires restart. See <a href="https://github.com/theotherp/nzbhydra2/wiki/SSL" target="_blank">wiki</a>'
+                                help: 'Requires restart. See <a href="https://github.com/theotherp/nzbhydra2/wiki/SSL" target="_blank">wiki</a>.'
                             }
                         },
                         {
@@ -138,7 +140,7 @@ function ConfigFields($injector) {
                                 required: true,
                                 help: 'Requires restart.'
                             }
-                        },
+                        }
 
 
                     ]
@@ -146,7 +148,8 @@ function ConfigFields($injector) {
                 {
                     wrapper: 'fieldset',
                     templateOptions: {
-                        label: 'Proxy'
+                        label: 'Proxy',
+                        tooltip: 'You can select to use either a SOCKS or an HTTPS proxy. All outside connections will be done via the configured proxy.'
                     }
                     ,
                     fieldGroup: [
@@ -317,7 +320,10 @@ function ConfigFields($injector) {
                 {
                     wrapper: 'fieldset',
                     key: 'logging',
-                    templateOptions: {label: 'Logging'},
+                    templateOptions: {
+                        label: 'Logging',
+                        tooltip: 'The base settings should suffice for most users. If you want you can enable logging of IP adresses for failed logins and NZB downloads.',
+                    },
                     fieldGroup: [
                         {
                             key: 'logfilelevel',
@@ -372,7 +378,8 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'switch',
                                 label: 'Map hosts',
-                                help: 'Try to map logged IP addresses to host names.'
+                                help: 'Try to map logged IP addresses to host names.',
+                                tooltip: 'Enabling this may cause NZBHydra to load very, very slowly when accessed remotely.'
                             }
                         },
                         {
@@ -436,7 +443,7 @@ function ConfigFields($injector) {
                             type: 'horizontalInput',
                             templateOptions: {
                                 label: 'Backup folder',
-                                help: 'Either relative to the NZBHydra data folder or an absolute folder'
+                                help: 'Either relative to the NZBHydra data folder or an absolute folder.'
                             }
                         },
                         {
@@ -510,7 +517,8 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'switch',
                                 label: 'Keep history',
-                                help: 'If disabled no search or download history will be kept. These sections will be hidden in the GUI. You won\'t be able to see stats. The database will still contain a short-lived history of transactions that are kept for 24 hours.'
+                                help: 'Controls search and download history.',
+                                tooltip: 'If disabled no search or download history will be kept. These sections will be hidden in the GUI. You won\'t be able to see stats. The database will still contain a short-lived history of transactions that are kept for 24 hours.'
                             }
                         },
                         {
@@ -545,7 +553,10 @@ function ConfigFields($injector) {
                 },
                 {
                     wrapper: 'fieldset',
-                    templateOptions: {label: 'Database'},
+                    templateOptions: {
+                        label: 'Database',
+                        tooltip: 'You should not change these values unless you\'re either told to or really know what you\'re doing.'
+                    },
                     fieldGroup: [
                         {
                             key: 'databaseCompactTime',
@@ -569,7 +580,7 @@ function ConfigFields($injector) {
                                 addonRight: {
                                     text: 'ms'
                                 },
-                                help: 'How long the db should retain old, persisted data. See <a href="https://www.h2database.com/html/commands.html#set_retention_time">here</a>. Do NOT change this willy-nilly.'
+                                help: 'How long the db should retain old, persisted data. See <a href="https://www.h2database.com/html/commands.html#set_retention_time">here</a>.'
                             }
                         },
                         {
@@ -581,7 +592,7 @@ function ConfigFields($injector) {
                                 addonRight: {
                                     text: 'ms'
                                 },
-                                help: 'Maximum delay between a commit and flushing the log, in milliseconds. See <a href="https://www.h2database.com/html/commands.html#set_write_delay">here</a>. Do NOT change this willy-nilly.'
+                                help: 'Maximum delay between a commit and flushing the log, in milliseconds. See <a href="https://www.h2database.com/html/commands.html#set_write_delay">here</a>.'
                             }
                         }
 
@@ -618,7 +629,7 @@ function ConfigFields($injector) {
                                     text: 'MB'
                                 },
                                 min: 128,
-                                help: '256 should suffice except when working with big databases / many indexers. See <a href="https://github.com/theotherp/nzbhydra2/wiki/Memory-requirements" target="_blank">wiki</a>'
+                                help: '256 should suffice except when working with big databases / many indexers. See <a href="https://github.com/theotherp/nzbhydra2/wiki/Memory-requirements" target="_blank">wiki</a>.'
                             }
                         }
                     ]
@@ -630,7 +641,8 @@ function ConfigFields($injector) {
                 {
                     wrapper: 'fieldset',
                     templateOptions: {
-                        label: 'Indexer access'
+                        label: 'Indexer access',
+                        tooltip: 'Settings that control how communication with indexers is done and how to handle errors while doing that.'
                     },
                     fieldGroup: [
                         {
@@ -647,12 +659,91 @@ function ConfigFields($injector) {
                             }
                         },
                         {
+                            key: 'userAgent',
+                            type: 'horizontalInput',
+                            templateOptions: {
+                                type: 'text',
+                                label: 'User agent',
+                                help: 'Used when accessing indexers.',
+                                required: true,
+                                tooltip: 'Some indexers don\'t seem to like Hydra and disable access based on the user agent. You can change it here if you want. Please leave it as it is if you have no problems. This allows indexers to gather better statistics on how their API services are used.'
+                            }
+                        },
+                        {
+                            key: 'userAgents',
+                            type: 'horizontalChips',
+                            templateOptions: {
+                                type: 'text',
+                                label: 'Map user agents',
+                                help: 'Used to map the user agent from accessing services to the service names. Apply words with return key.'
+                            }
+                        },
+                        {
+                            key: 'ignoreLoadLimitingForInternalSearches',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Ignore load limiting internally',
+                                help: 'When enabled load limiting defined for indexers will be ignored for internal searches.'
+                            }
+                        },
+                        {
                             key: 'ignoreTemporarilyDisabled',
                             type: 'horizontalSwitch',
                             templateOptions: {
                                 type: 'switch',
                                 label: 'Ignore temporary errors',
-                                help: "If enabled indexers will not be temporarily disabled after an error. Unrecoverable errors (e.g. wrong API key) will still disable the indexer."
+                                tooltip: "By default if access to an indexer fails the indexer is disabled for a certain amount of time (for a short while first, then increasingly longer if the problems persist). Disable this and always try these indexers."
+                            }
+                        }
+                    ]
+                }, {
+                    wrapper: 'fieldset',
+                    templateOptions: {
+                        label: 'Category handling',
+                        tooltip: 'Settings that control the handling of newznab categories (e.g. 2000 for Movies).'
+                    },
+                    fieldGroup: [
+
+                        {
+                            key: 'transformNewznabCategories',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Transform newznab categories',
+                                help: 'Map newznab categories from API searches to configured categories and use all configured newznab categories in searches.'
+                            }
+                        },
+                        {
+                            key: 'sendTorznabCategories',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Send categories to trackers',
+                                help: 'If disabled no categories will be included in queries to torznab indexers (trackers).'
+                            }
+                        }
+                    ]
+                },
+                {
+                    wrapper: 'fieldset',
+                    templateOptions: {
+                        label: 'Media IDs / Query generation',
+                        tooltip: 'Raw search engines like Binsearch don\'t support searches based on IDs (e.g. for a movie using an IMDB id). You can enable query generation for these. Hydra will then try to retrieve the movie\'s or show\'s title and generate a query, for example "showname s01e01". In some cases an ID based search will not provide any results. You can enable a fallback so that in such a case the search will be repeated with a query using the title of the show or movie.'
+                    },
+                    fieldGroup: [
+                        {
+                            key: 'alwaysConvertIds',
+                            type: 'horizontalSelect',
+                            templateOptions: {
+                                label: 'Always convert media IDs for...',
+                                options: [
+                                    {name: 'Internal searches', value: 'INTERNAL'},
+                                    {name: 'API searches', value: 'API'},
+                                    {name: 'All searches', value: 'BOTH'},
+                                    {name: 'Never', value: 'NONE'}
+                                ],
+                                help: "When enabled media ID conversions will always be done even when an indexer supports the already known ID(s)."
                             }
                         },
                         {
@@ -681,38 +772,6 @@ function ConfigFields($injector) {
                                     {name: 'Never', value: 'NONE'}
                                 ],
                                 help: "When no results were found for a query ID search again using a generated query (on indexer level)."
-                            }
-                        },
-                        {
-                            key: 'alwaysConvertIds',
-                            type: 'horizontalSelect',
-                            templateOptions: {
-                                label: 'Always convert media IDs for...',
-                                options: [
-                                    {name: 'Internal searches', value: 'INTERNAL'},
-                                    {name: 'API searches', value: 'API'},
-                                    {name: 'All searches', value: 'BOTH'},
-                                    {name: 'Never', value: 'NONE'}
-                                ],
-                                help: "When enabled media ID conversions will always be done even when an indexer supports the already known ID(s)."
-                            }
-                        },
-                        {
-                            key: 'transformNewznabCategories',
-                            type: 'horizontalSwitch',
-                            templateOptions: {
-                                type: 'switch',
-                                label: 'Transform newznab categories',
-                                help: 'Map newznab categories from API searches to configured categories and use all configured newznab categories in searches.'
-                            }
-                        },
-                        {
-                            key: 'sendTorznabCategories',
-                            type: 'horizontalSwitch',
-                            templateOptions: {
-                                type: 'switch',
-                                label: 'Send categories to trackers',
-                                help: 'If disabled no categories will be included in queries to torznab indexers (trackers).'
                             }
                         },
                         {
@@ -947,50 +1006,14 @@ function ConfigFields($injector) {
                                     value: "yo"
                                 }, {"name": "Zhuang", value: "za"}, {"name": "Zulu", value: "zu"}]
                             }
-                        },
-                        {
-                            key: 'languagesToKeep',
-                            type: 'horizontalChips',
-                            templateOptions: {
-                                type: 'text',
-                                label: 'Languages to keep',
-                                help: 'If an indexer returns the language in the results only those results with configured languages will be used. Apply words with return key.'
-                            }
-                        },
-                        {
-                            key: 'userAgent',
-                            type: 'horizontalInput',
-                            templateOptions: {
-                                type: 'text',
-                                label: 'User agent',
-                                help: 'Used when accessing indexers.',
-                                required: true
-                            }
-                        },
-                        {
-                            key: 'userAgents',
-                            type: 'horizontalChips',
-                            templateOptions: {
-                                type: 'text',
-                                label: 'Map user agents',
-                                help: 'Used to map the user agent from accessing services to the service names. Apply words with return key.'
-                            }
-                        },
-                        {
-                            key: 'ignoreLoadLimitingForInternalSearches',
-                            type: 'horizontalSwitch',
-                            templateOptions: {
-                                type: 'switch',
-                                label: 'Ignore load limiting internally',
-                                help: 'When enabled load limiting defined for indexers will be ignored for internal searches.'
-                            }
                         }
                     ]
                 },
                 {
                     wrapper: 'fieldset',
                     templateOptions: {
-                        label: 'Result filters'
+                        label: 'Result filters',
+                        tooltip: 'This section allows you to define global filters which will be applied to all search results. You can define words and regexes which must or must not be matched for a search result to be matched. You can also exclude certain usenet posters and groups which are known for spamming. You can define forbidden and required words for categories in the next tab (Categories). Usually required or forbidden words are applied on a word base, so they must form a complete word in a title. Only if they contain a dash or a dot they may appear anywhere in the title. Example: "ea" matches "something.from.ea" but not "release.from.other". "web-dl" matches "title.web-dl" and "someweb-dl".'
                     },
                     fieldGroup: [
                         {
@@ -1013,7 +1036,8 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'text',
                                 label: 'Forbidden words',
-                                help: "Results with any of these words in the title will be ignored. Title is converted to lowercase before. Apply words with return key."
+                                help: "Results with any of these words in the title will be ignored. Title is converted to lowercase before. Apply words with return key.",
+                                tooltip: 'One forbidden word in a result title dismisses the result.'
                             },
                             hideExpression: function () {
                                 return rootModel.searching.applyRestrictions === "NONE";
@@ -1025,7 +1049,7 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'text',
                                 label: 'Forbidden regex',
-                                help: 'Must not be present in a title (case is ignored)'
+                                help: 'Must not be present in a title (case is ignored).'
                             },
                             hideExpression: function () {
                                 return rootModel.searching.applyRestrictions === "NONE";
@@ -1037,7 +1061,8 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'text',
                                 label: 'Required words',
-                                help: "Only results with titles that contain *all* words will be used. Title is converted to lowercase before. Apply words with return key."
+                                help: "Only results with titles that contain *all* words will be used. Title is converted to lowercase before. Apply words with return key.",
+                                tooltip: 'If any of the required words is not found anywhere in a result title it\'s also dismissed.'
                             },
                             hideExpression: function () {
                                 return rootModel.searching.applyRestrictions === "NONE";
@@ -1049,7 +1074,7 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'text',
                                 label: 'Required regex',
-                                help: 'Must be present in a title (case is ignored)'
+                                help: 'Must be present in a title (case is ignored).'
                             },
                             hideExpression: function () {
                                 return rootModel.searching.applyRestrictions === "NONE";
@@ -1078,6 +1103,15 @@ function ConfigFields($injector) {
                             }
                         },
                         {
+                            key: 'languagesToKeep',
+                            type: 'horizontalChips',
+                            templateOptions: {
+                                type: 'text',
+                                label: 'Languages to keep',
+                                help: 'If an indexer returns the language in the results only those results with configured languages will be used. Apply words with return key.'
+                            }
+                        },
+                        {
                             key: 'maxAge',
                             type: 'horizontalInput',
                             templateOptions: {
@@ -1095,7 +1129,8 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'switch',
                                 label: 'Ignore passworded releases',
-                                help: "Not all indexers provide this information"
+                                help: "Not all indexers provide this information",
+                                tooltip: 'Some indexers provide information if a release is passworded. If you select to ignore these releases only those will be ignored of which I know for sure that they\'re actually passworded.'
                             }
                         }
                     ]
@@ -1112,9 +1147,90 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'text',
                                 label: 'Wrap API errors in empty results page',
-                                help: 'When enabled accessing tools will think the search was completed successfully but without results.'
+                                help: 'When enabled accessing tools will think the search was completed successfully but without results.',
+                                tooltip: 'In (hopefully) rare cases Hydra may crash when processing an API search request. You can enable to return an empty search page in these cases (if Hydra hasn\'t crashed altogether ). This means that the calling tool (e.g. Sonarr) will think that the indexer (Hydra) is fine but just didn\'t return a result. That way Hydra won\'t be disabled as indexer but on the downside you may not be directly notified that an error occurred.'
                             }
                         },
+                        {
+                            key: 'removeTrailing',
+                            type: 'horizontalChips',
+                            templateOptions: {
+                                type: 'text',
+                                label: 'Remove trailing...',
+                                help: 'Removed from title if it ends with either of these. Case insensitive and disregards leading/trailing spaces. Allows wildcards ("*"). Apply words with return key.',
+                                tooltip: 'Hydra contains a predefined list of words which will be removed if a search result title ends with them. This allows better duplicate detection and cleans up the titles. Trailing words will be removed until none of the defined strings are found at the end of the result title.'
+                            }
+                        },
+                        {
+                            key: 'useOriginalCategories',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Use original categories',
+                                help: 'Enable to use the category descriptions provided by the indexer.',
+                                tooltip: 'Hydra attempts to parse the provided newznab category IDs for results and map them to the configured categories. In some cases this may lead to category names which are not quite correct. You can select to use the original category name used by the indexer. This will only affect which category name is shown in the results.'
+                            }
+                        }
+                    ]
+                }, {
+                    wrapper: 'fieldset',
+                    templateOptions: {
+                        label: 'Result display'
+                    },
+                    fieldGroup: [
+                        {
+                            key: 'loadAllCachedOnInternal',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Display all retrieved results',
+                                help: 'Load all results already retrieved from indexers. Might make sorting / filtering a bit slower. Will still be paged according to the limit set above.'
+                            }
+                        },
+                        {
+                            key: 'showQuickFilterButtons',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Show quick filter',
+                                help: 'Show quick filter buttons for movie and TV results.'
+                            }
+                        },
+                        {
+                            key: 'loadLimitInternal',
+                            type: 'horizontalInput',
+                            templateOptions: {
+                                type: 'number',
+                                label: 'Display...',
+                                addonRight: {
+                                    text: 'results per page'
+                                },
+                                max: 500,
+                                required: true,
+                                help: 'Determines the number of results shown on one page. This might also cause more API hits because indexers are queried until the number of results is matched or all indexers are exhausted. Limit is 500.'
+                            }
+                        },
+                        {
+                            key: 'coverSize',
+                            type: 'horizontalInput',
+                            templateOptions: {
+                                type: 'number',
+                                label: 'Cover width',
+                                addonRight: {
+                                    text: 'px'
+                                },
+                                required: true,
+                                help: 'Determines width of covers in search results (when enabled in display options).'
+                            }
+                        }
+                    ]
+                }, {
+                    wrapper: 'fieldset',
+                    templateOptions: {
+                        label: 'Duplicate detection',
+                        tooltip: 'Hydra tries to find duplicate results from different indexers using heuristics. You can control the parameters for that but usually the default values work quite well.'
+                    },
+                    fieldGroup: [
                         {
                             key: 'duplicateSizeThresholdInPercent',
                             type: 'horizontalPercentInput',
@@ -1139,72 +1255,6 @@ function ConfigFields($injector) {
                                     text: 'hours'
                                 }
                             }
-                        },
-                        {
-                            key: 'removeTrailing',
-                            type: 'horizontalChips',
-                            templateOptions: {
-                                type: 'text',
-                                label: 'Remove trailing...',
-                                help: 'Removed from title if it ends with either of these. Case insensitive and disregards leading/trailing spaces. Allows wildcards ("*"). Apply words with return key.'
-                            }
-                        },
-                        {
-                            key: 'useOriginalCategories',
-                            type: 'horizontalSwitch',
-                            templateOptions: {
-                                type: 'switch',
-                                label: 'Use original categories',
-                                help: 'Enable to use the category descriptions provided by the indexer.'
-                            }
-                        },
-                        {
-                            key: 'nzbAccessType',
-                            type: 'horizontalSelect',
-                            templateOptions: {
-                                type: 'select',
-                                label: 'NZB access type',
-                                options: [
-                                    {name: 'Proxy NZBs from indexer', value: 'PROXY'},
-                                    {name: 'Redirect to the indexer', value: 'REDIRECT'}
-                                ],
-                                help: "How access to NZBs is provided when NZBs are downloaded (by the user or external tools). Redirecting is recommended."
-                            }
-                        },
-                        {
-                            key: 'loadLimitInternal',
-                            type: 'horizontalInput',
-                            templateOptions: {
-                                type: 'number',
-                                label: 'Display...',
-                                addonRight: {
-                                    text: 'results per page'
-                                },
-                                max: 500,
-                                required: true,
-                                help: 'Determines the number of results shown on one page. This might also cause more API hits because indexers are queried until the number of results is matched or all indexers are exhausted. Limit is 500.'
-                            }
-                        },
-                        {
-                            key: 'loadAllCachedOnInternal',
-                            type: 'horizontalSwitch',
-                            templateOptions: {
-                                type: 'switch',
-                                label: 'Display all retrieved results',
-                                help: 'Load all results already retrieved from indexers. Might make sorting / filtering a bit slower. Will still be paged according to the limit set above.'
-                            }
-                        },
-                        {
-                            key: 'globalCacheTimeMinutes',
-                            type: 'horizontalInput',
-                            templateOptions: {
-                                type: 'number',
-                                label: 'Results cache time',
-                                help: 'When set search results will be cached for this time. Any search with the same parameters will return the cached results. API cache time parameters will be preferred. See <a href="https://github.com/theotherp/nzbhydra2/wiki/External-API,-RSS-and-cached-queries" target="_blank">wiki</a>.',
-                                addonRight: {
-                                    text: 'minutes'
-                                }
-                            }
                         }
 
                     ]
@@ -1225,29 +1275,19 @@ function ConfigFields($injector) {
                                     text: 'days'
                                 },
                                 required: true,
-                                help: 'Meta data from searches is stored in the database. When they\'re deleted existing links to Hydra become invalid.'
+                                tooltip: 'Found results are stored in the database for this long until they\'re deleted. After that any links to Hydra results still stored elsewhere become invalid. You can increase the limit if you want, the disc space needed is negligible (about 75 MB for 7 days on my server).'
                             }
                         },
                         {
-                            key: 'showQuickFilterButtons',
-                            type: 'horizontalSwitch',
-                            templateOptions: {
-                                type: 'switch',
-                                label: 'Show quick filter',
-                                help: 'Show quick filter buttons for movie and TV results.'
-                            }
-                        },
-                        {
-                            key: 'coverSize',
+                            key: 'globalCacheTimeMinutes',
                             type: 'horizontalInput',
                             templateOptions: {
                                 type: 'number',
-                                label: 'Cover width',
+                                label: 'Results cache time',
+                                help: 'When set search results will be cached for this time. Any search with the same parameters will return the cached results. API cache time parameters will be preferred. See <a href="https://github.com/theotherp/nzbhydra2/wiki/External-API,-RSS-and-cached-queries" target="_blank">wiki</a>.',
                                 addonRight: {
-                                    text: 'px'
-                                },
-                                required: true,
-                                help: 'Determines width of covers in search results (when enabled in display options)'
+                                    text: 'minutes'
+                                }
                             }
                         }
                     ]
@@ -1261,7 +1301,8 @@ function ConfigFields($injector) {
                     templateOptions: {
                         type: 'switch',
                         label: 'Category sizes',
-                        help: "Preset min and max sizes depending on the selected category"
+                        help: "Preset min and max sizes depending on the selected category",
+                        tooltip: 'Preset range of minimum and maximum sizes for its categories. When you select a category in the search area the appropriate fields are filled with these values.'
                     }
                 },
                 {
@@ -1298,6 +1339,7 @@ function ConfigFields($injector) {
                     model: rootModel.categoriesConfig,
                     templateOptions: {
                         btnText: 'Add new category',
+                        headline: 'Categories',
                         fields: [
                             {
                                 key: 'name',
@@ -1368,7 +1410,7 @@ function ConfigFields($injector) {
                                 templateOptions: {
                                     type: 'text',
                                     label: 'Required regex',
-                                    help: 'Must be present in a title (case is ignored)'
+                                    help: 'Must be present in a title (case is ignored).'
                                 }
                             },
                             {
@@ -1386,7 +1428,7 @@ function ConfigFields($injector) {
                                 templateOptions: {
                                     type: 'text',
                                     label: 'Forbidden regex',
-                                    help: 'Must not be present in a title (case is ignored)'
+                                    help: 'Must not be present in a title (case is ignored).'
                                 }
                             },
                             {
@@ -1430,7 +1472,10 @@ function ConfigFields($injector) {
                                 templateOptions: {
                                     type: 'text',
                                     label: 'Newznab categories',
-                                    help: 'Map newznab categories to Hydra categories. Used for parsing and when searching internally. Apply categories with return key. You can combine categories which must be all present by using "&".'
+                                    help: 'Map newznab categories to Hydra categories. Used for parsing and when searching internally. Apply categories with return key.',
+                                    tooltip: 'Hydra tries to map API search (newnzab) categories to its internal list of categories, going from specific to general. Example: If an API search is done with a catagory that matches those of "Movies HD" the settings for that category are used. Otherwise it checks if it matches the "Movies" category and, if yes, uses that one. If that one doesn\'t match no category settings are used.<br><br>' +
+                                        'Related to that you must also define the newznab categories for every Hydra category, e.g. decide if the category for foreign movies (2010) is used for movie searches. This also controls the category mapping described above. You may combine newznab categories using "&" to require multiple numbers to be present in a result. For example "2010&11000" would require a search result to contain both 2010 and 11000 for that category to match.<br><br>' +
+                                        'Note: When an API search defines categories the internal mapping is only used for the forbidden and required words. The search requests to your newznab indexers will still use the categories from the original request, not the ones configured here.'
                                 }
                             },
                             {
@@ -1444,7 +1489,8 @@ function ConfigFields($injector) {
                                         {name: 'For API searches', value: 'API'},
                                         {name: 'Never', value: 'NONE'}
                                     ],
-                                    help: "Ignore results from this category"
+                                    help: "Ignore results from this category",
+                                    tooltip: 'If you want you can entirely ignore results from categories. Results from these categories will not show in the searches. If you select "Internal" or "Always" this category will also not be selectable on the search page.'
                                 }
                             }
 
@@ -1472,7 +1518,10 @@ function ConfigFields($injector) {
             downloading: [
                 {
                     wrapper: 'fieldset',
-                    templateOptions: {label: 'General'},
+                    templateOptions: {
+                        label: 'General',
+                        tooltip: 'Hydra allows sending NZB search results directly to downloaders (NZBGet, sabnzbd). Torrent downloaders are not supported.'
+                    },
                     fieldGroup: [
                         {
                             key: 'saveTorrentsTo',
@@ -1490,6 +1539,20 @@ function ConfigFields($injector) {
                                 label: 'NZB black hole',
                                 help: 'Allow NZBs to be saved in this folder from the search results. Ignored if not set.',
                                 type: "folder"
+                            }
+                        },
+                        {
+                            key: 'nzbAccessType',
+                            type: 'horizontalSelect',
+                            templateOptions: {
+                                type: 'select',
+                                label: 'NZB access type',
+                                options: [
+                                    {name: 'Proxy NZBs from indexer', value: 'PROXY'},
+                                    {name: 'Redirect to the indexer', value: 'REDIRECT'}
+                                ],
+                                help: "How access to NZBs is provided when NZBs are downloaded (by the user or external tools). Redirecting is recommended.",
+                                tooltip: 'NZB downloads from Hydra can either be achieved by redirecting the requester to the original indexer or by downloading the NZB from the indexer and serving this. Redirecting has the advantage that it causes the least load on Hydra but also the disadvantage that the requester might be forwarded to an indexer link that contains the indexer\'s API key. To prevent that select to proxy NZBs.'
                             }
                         },
                         {
@@ -1545,134 +1608,155 @@ function ConfigFields($injector) {
             ],
             auth: [
                 {
-                    key: 'authType',
-                    type: 'horizontalSelect',
+                    wrapper: 'fieldset',
                     templateOptions: {
-                        label: 'Auth type',
-                        options: [
-                            {name: 'None', value: 'NONE'},
-                            {name: 'HTTP Basic auth', value: 'BASIC'},
-                            {name: 'Login form', value: 'FORM'}
-                        ]
-                    }
-                },
-                {
-                    key: 'authHeader',
-                    type: 'horizontalInput',
-                    templateOptions: {
-                        type: 'string',
-                        label: 'Auth header',
-                        help: 'Name of header that provides the username in requests from secure sources.'
+                        label: 'Main',
+
                     },
-                    hideExpression: function () {
-                        return rootModel.auth.authType === "NONE";
-                    }
-                },
-                {
-                    key: 'authHeaderIpRanges',
-                    type: 'horizontalChips',
-                    templateOptions: {
-                        type: 'text',
-                        label: 'Secure IP ranges',
-                        help: 'IP ranges from which the auth header will be accepted. Apply with return key. Use values like "192.168.0.1-192.168.0.100" or single IP addresses like "127.0.0.1"'
-                    },
-                    hideExpression: function () {
-                        return rootModel.auth.authType === "NONE" || rootModel.auth.authHeader === null || rootModel.auth.authHeader === undefined || rootModel.auth.authHeader === "";
-                    }
-                },
-                {
-                    key: 'restrictSearch',
-                    type: 'horizontalSwitch',
-                    templateOptions: {
-                        type: 'switch',
-                        label: 'Restrict searching',
-                        help: 'Restrict access to searching.'
-                    },
-                    hideExpression: function () {
-                        return rootModel.auth.authType === "NONE";
-                    }
-                },
-                {
-                    key: 'restrictStats',
-                    type: 'horizontalSwitch',
-                    templateOptions: {
-                        type: 'switch',
-                        label: 'Restrict stats',
-                        help: 'Restrict access to stats.'
-                    },
-                    hideExpression: function () {
-                        return rootModel.auth.authType === "NONE";
-                    }
-                },
-                {
-                    key: 'restrictAdmin',
-                    type: 'horizontalSwitch',
-                    templateOptions: {
-                        type: 'switch',
-                        label: 'Restrict admin',
-                        help: 'Restrict access to admin functions.'
-                    },
-                    hideExpression: function () {
-                        return rootModel.auth.authType === "NONE";
-                    }
-                },
-                {
-                    key: 'restrictDetailsDl',
-                    type: 'horizontalSwitch',
-                    templateOptions: {
-                        type: 'switch',
-                        label: 'Restrict NZB details & DL',
-                        help: 'Restrict NZB details, comments and download links.'
-                    },
-                    hideExpression: function () {
-                        return rootModel.auth.authType === "NONE";
-                    }
-                },
-                {
-                    key: 'restrictIndexerSelection',
-                    type: 'horizontalSwitch',
-                    templateOptions: {
-                        type: 'switch',
-                        label: 'Restrict indexer selection box',
-                        help: 'Restrict visibility of indexer selection box in search. Affects only GUI.'
-                    },
-                    hideExpression: function () {
-                        return rootModel.auth.authType === "NONE";
-                    }
-                },
-                {
-                    key: 'rememberUsers',
-                    type: 'horizontalSwitch',
-                    templateOptions: {
-                        type: 'switch',
-                        label: 'Remember users',
-                        help: 'Remember users with cookie for 14 days.'
-                    },
-                    hideExpression: function () {
-                        return rootModel.auth.authType === "NONE";
-                    }
-                },
-                {
-                    key: 'rememberMeValidityDays',
-                    type: 'horizontalInput',
-                    templateOptions: {
-                        type: 'number',
-                        label: 'Cookie expiry',
-                        help: 'How long users are remembered.',
-                        addonRight: {
-                            text: 'days'
+                    fieldGroup: [
+                        {
+                            key: 'authType',
+                            type: 'horizontalSelect',
+                            templateOptions: {
+                                label: 'Auth type',
+                                options: [
+                                    {name: 'None', value: 'NONE'},
+                                    {name: 'HTTP Basic auth', value: 'BASIC'},
+                                    {name: 'Login form', value: 'FORM'}
+                                ],
+                                tooltip: '<ul>' +
+                                    '<li>With auth type "None" all areas are unrestricted.</li>' +
+                                    '<li>With auth type "Form" the basic page is loaded and login is done via a form.</li>' +
+                                    '<li>With auth type "Basic" you login via basic HTTP authentication. With all areas restricted this is the most secure as nearly no data is loaded from the server before you auth.</li>' +
+                                    '</ul>'
+                            }
+                        },
+                        {
+                            key: 'authHeader',
+                            type: 'horizontalInput',
+                            templateOptions: {
+                                type: 'string',
+                                label: 'Auth header',
+                                help: 'Name of header that provides the username in requests from secure sources.'
+                            },
+                            hideExpression: function () {
+                                return rootModel.auth.authType === "NONE";
+                            }
+                        },
+                        {
+                            key: 'authHeaderIpRanges',
+                            type: 'horizontalChips',
+                            templateOptions: {
+                                type: 'text',
+                                label: 'Secure IP ranges',
+                                help: 'IP ranges from which the auth header will be accepted. Apply with return key. Use values like "192.168.0.1-192.168.0.100" or single IP addresses like "127.0.0.1".'
+                            },
+                            hideExpression: function () {
+                                return rootModel.auth.authType === "NONE" || rootModel.auth.authHeader === null || rootModel.auth.authHeader === undefined || rootModel.auth.authHeader === "";
+                            }
+                        },
+                        {
+                            key: 'rememberUsers',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Remember users',
+                                help: 'Remember users with cookie for 14 days.'
+                            },
+                            hideExpression: function () {
+                                return rootModel.auth.authType === "NONE";
+                            }
+                        },
+                        {
+                            key: 'rememberMeValidityDays',
+                            type: 'horizontalInput',
+                            templateOptions: {
+                                type: 'number',
+                                label: 'Cookie expiry',
+                                help: 'How long users are remembered.',
+                                addonRight: {
+                                    text: 'days'
+                                }
+                            }
                         }
-                    }
+
+                    ]
                 },
+
                 {
-                    key: 'allowApiStats',
-                    type: 'horizontalSwitch',
+                    wrapper: 'fieldset',
                     templateOptions: {
-                        type: 'switch',
-                        label: 'Allow stats access',
-                        help: 'Allow access to stats via external API.'
-                    }
+                        label: 'Restrictions',
+                        tooltip: 'You can decide for every user if he is allowed to:\n' +
+                            '<ul>\n' +
+                            '<li>view the search page at all</li>\n' +
+                            '<li>view the stats</li>\n' +
+                            '<li>access the admin area (config and control)</li>\n' +
+                            '<li>view links for downloading NZBs and see their details</li>\n' +
+                            '<li>may select which indexers are used for search.</li>\n' +
+                            '</ul>'
+                    },
+                    hideExpression: function () {
+                        return rootModel.auth.authType === "NONE";
+                    },
+                    fieldGroup: [
+                        {
+                            key: 'restrictSearch',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Restrict searching',
+                                help: 'Restrict access to searching.'
+                            }
+                        },
+                        {
+                            key: 'restrictStats',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Restrict stats',
+                                help: 'Restrict access to stats.'
+                            }
+                        },
+                        {
+                            key: 'restrictAdmin',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Restrict admin',
+                                help: 'Restrict access to admin functions.'
+                            }
+                        },
+                        {
+                            key: 'restrictDetailsDl',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Restrict NZB details & DL',
+                                help: 'Restrict NZB details, comments and download links.'
+                            }
+                        },
+                        {
+                            key: 'restrictIndexerSelection',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Restrict indexer selection box',
+                                help: 'Restrict visibility of indexer selection box in search. Affects only GUI.'
+                            }
+                        },
+                        {
+                            key: 'allowApiStats',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Allow stats access',
+                                help: 'Allow access to stats via external API.'
+                            }
+                        }
+                    ]
                 },
+
                 {
                     type: 'repeatSection',
                     key: 'users',
@@ -1683,6 +1767,7 @@ function ConfigFields($injector) {
                     templateOptions: {
                         btnText: 'Add new user',
                         altLegendText: 'Authless',
+                        headline: 'Users',
                         fields: [
                             {
                                 key: 'username',
@@ -1753,7 +1838,6 @@ function ConfigFields($injector) {
         }
     }
 }
-
 
 function handleConnectionCheckFail(ModalService, data, model, whatFailed, deferred) {
     var message;
