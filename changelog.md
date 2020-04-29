@@ -1,3 +1,15 @@
+### v2.20.2 (2020-04-29)
+
+**Feature** Added more substructures to the config GUI to make it a bit more clear.
+
+**Feature** Replaced the config help pop-up pages with contextual help. Click the question marks neach to each field to get a bit more in-depth info.
+
+**Feature** Add button to clear search input.
+
+**Fix** Automatic update notification was also shown for manual updates.
+
+
+
 ### v2.20.1 (2020-04-28)
 
 **Feature** Add button to debug infos tab to list all HTTP endpoints (useful for reverse proxy config).
