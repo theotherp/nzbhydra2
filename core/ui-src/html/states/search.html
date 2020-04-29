@@ -63,6 +63,7 @@
                                 <span id="selected-item-title">
                               {{selectedItem.title}}
                                     </span>
+
                             </div>
                             <input id="searchfield" type="search" ngtype="search" ng-model="query"
                                    ng-enter="onTypeAheadEnter()" placeholder="Search" typeahead-min-length="2"
@@ -77,6 +78,10 @@
                                    tooltip-placement="top"
                                    tooltip-trigger="mouseenter"
                             >
+                            <button style="position: absolute; top: 2px; right:105px; font-size: xx-small; float: right; z-index: 1000; margin: 0; padding: 0; border: none; background-color: unset"
+                                    ng-click="clearQuery()" id="clear-query-button">
+                                <span class="glyphicon glyphicon-remove" style="font-size: xx-small;"></span>
+                            </button>
                             <span class="input-group-btn" style="width:40px;" ng-show="seriesSelected()">
                               <input type="text" class="form-control season-input" placeholder="S" name="season"
                                      id="seriesSearchS" style="width:40px; " ng-model="season"

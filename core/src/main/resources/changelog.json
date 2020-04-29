@@ -3,6 +3,10 @@
     "version": "v2.20.2",
     "changes": [
       {
+        "type": "feature",
+        "text": "Add button to clear search input."
+      },
+      {
         "type": "fix",
         "text": "Automatic update notification was also shown for manual updates."
       }

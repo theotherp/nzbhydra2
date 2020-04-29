@@ -263,6 +263,12 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         focus('searchfield');
     };
 
+    $scope.clearQuery = function () {
+        $scope.selectedItem = null;
+        $scope.query = "";
+        focus('searchfield');
+    };
+
     function calculateWidth(text) {
         var canvas = calculateWidth.canvas || (calculateWidth.canvas = document.createElement("canvas"));
         var context = canvas.getContext("2d");
