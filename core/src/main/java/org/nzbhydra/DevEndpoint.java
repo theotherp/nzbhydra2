@@ -16,35 +16,41 @@
 
 package org.nzbhydra;
 
-import org.nzbhydra.config.indexer.IndexerConfig;
-import org.nzbhydra.indexers.capscheck.JacketConfigRetriever;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import java.math.BigInteger;
+import java.util.List;
+
+@SuppressWarnings("unchecked")
 @RestController
 public class DevEndpoint {
 
-    @Autowired
-    private JacketConfigRetriever jacketConfigRetriever;
+    @PersistenceContext
+    private EntityManager entityManager;
 
     private static final Logger logger = LoggerFactory.getLogger(DevEndpoint.class);
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/dev", method = RequestMethod.GET)
-    public String convertMovie() throws Exception {
-        IndexerConfig config = new IndexerConfig();
-        config.setHost("http://127.0.0.1:9117");
-        config.setApiKey("mu7z3w65puy4b6i9rac1lt796xw4o21b");
+    @RequestMapping(value = "/dev/countDanglingIndexersearches", method = RequestMethod.GET)
+    public BigInteger countDanglingIndexersearches() throws Exception {
+        final List<BigInteger> resultList = entityManager.createNativeQuery("select count(*) from SEARCHRESULT x where x.INDEXERSEARCHENTITY not in (select y.id from INDEXERSEARCH y)").getResultList();
+        return resultList.get(0);
 
-        jacketConfigRetriever.retrieveIndexers(config);
-
-        return "";
     }
 
+    @Secured({"ROLE_ADMIN"})
+    @Transactional
+    @RequestMapping(value = "/dev/deleteDanglingIndexersearches", method = RequestMethod.GET)
+    public String deleteDanglingIndexersearches() throws Exception {
+        return "Deleted " + entityManager.createNativeQuery("delete from SEARCHRESULT where INDEXERSEARCHENTITY not in (select y.id from INDEXERSEARCH y)").executeUpdate() + " entries";
+    }
 
 }
