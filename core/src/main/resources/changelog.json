@@ -4,7 +4,7 @@
     "changes": [
       {
         "type": "feature",
-        "text": "NZBHydra will recognize renamed indexers when saving the config. Renaming will no longer cause loss of stats and history for that indexer. You should have two indexers configured with the same host, API key and search type as this messes with the rename detection."
+        "text": "NZBHydra will recognize renamed indexers when saving the config. Renaming will no longer cause loss of stats and history for those indexers. You should have two indexers configured with the same host, API key and search type as this messes with the rename detection."
       },
       {
         "type": "feature",
