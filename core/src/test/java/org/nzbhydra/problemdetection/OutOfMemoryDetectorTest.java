@@ -16,7 +16,6 @@
 
 package org.nzbhydra.problemdetection;
 
-import com.google.common.io.Resources;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -53,7 +52,8 @@ public class OutOfMemoryDetectorTest {
         MockitoAnnotations.initMocks(this);
 
         final Path tempFile = Files.createTempFile("nzbhydra", ".log");
-        Files.write(tempFile, Resources.toByteArray(Resources.getResource(OutOfMemoryDetectorTest.class, "logWithOom.log")));
+        tempFile.toFile().delete();
+        Files.copy(getClass().getResourceAsStream("logWithOom.log"), tempFile);
 
         when(logContentProviderMock.getCurrentLogfile(false)).thenReturn(tempFile.toFile());
 
