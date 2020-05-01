@@ -50,7 +50,7 @@ public class LogAnonymizerTest {
             Assertions.assertThat(anonymized).doesNotContain(x);
         });
         Assertions.assertThat(anonymized).contains("192.168.0.1");
-        Assertions.assertThat(anonymized).contains("127.0.0.1");
+        Assertions.assertThat(anonymized).contains("<localhost>");
     }
 
     @Test

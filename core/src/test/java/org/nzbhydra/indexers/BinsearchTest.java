@@ -10,6 +10,7 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.stubbing.Answer;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.indexer.IndexerConfig;
@@ -45,17 +46,27 @@ public class BinsearchTest {
     BaseConfig baseConfig = new BaseConfig();
     @Captor
     private ArgumentCaptor<URI> uriCaptor;
+    @Mock
+    private QueryGenerator queryGeneratorMock;
 
     @InjectMocks
     private Binsearch testee = new Binsearch();
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         when(configProviderMock.getBaseConfig()).thenReturn(baseConfig);
         testee.config = new IndexerConfig();
         testee.config.setName("binsearch");
         testee.config.setHost("https://www.binsearch.info");
+
+        when(queryGeneratorMock.generateQueryIfApplicable(any(), any(), any())).thenAnswer((Answer<String>) invocation -> {
+            final SearchRequest searchRequest = invocation.getArgument(0);
+            if (searchRequest.getQuery().isPresent()) {
+                return searchRequest.getQuery().get();
+            }
+            return invocation.getArgument(1);
+        });
     }
 
     @Test

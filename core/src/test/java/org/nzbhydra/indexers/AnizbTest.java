@@ -5,6 +5,8 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.indexer.IndexerConfig;
@@ -18,6 +20,7 @@ import java.util.Arrays;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 public class AnizbTest {
@@ -25,17 +28,30 @@ public class AnizbTest {
     @Mock
     private ConfigProvider configProviderMock;
     BaseConfig baseConfig = new BaseConfig();
+    @Mock
+    private QueryGenerator queryGeneratorMock;
 
     @InjectMocks
     private Anizb testee = new Anizb();
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         when(configProviderMock.getBaseConfig()).thenReturn(baseConfig);
         testee.config = new IndexerConfig();
         testee.config.setName("anizb");
         testee.config.setHost("https://anizb.org");
+        when(queryGeneratorMock.generateQueryIfApplicable(any(), any(), any())).thenAnswer(new Answer<String>() {
+            @Override
+            public String answer(InvocationOnMock invocation) throws Throwable {
+
+                final SearchRequest searchRequest = (SearchRequest) invocation.getArgument(0);
+                if (searchRequest.getQuery().isPresent()) {
+                    return searchRequest.getQuery().get();
+                }
+                return invocation.getArgument(1);
+            }
+        });
     }
 
     @Test

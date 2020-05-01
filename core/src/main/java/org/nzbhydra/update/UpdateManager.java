@@ -72,8 +72,6 @@ public class UpdateManager implements InitializingBean {
     @Autowired
     private BackupAndRestore backupAndRestore;
     @Autowired
-    private GenericStorage updateDataGenericStorage;
-    @Autowired
     protected WebAccess webAccess;
     @Autowired
     private ConfigProvider configProvider;
@@ -87,7 +85,7 @@ public class UpdateManager implements InitializingBean {
     protected SemanticVersion currentVersion;
     protected SemanticVersion latestVersion;
 
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
     protected Supplier<Release> latestReleaseCache = Suppliers.memoizeWithExpiration(getLatestReleaseSupplier(), 15, TimeUnit.MINUTES);
     protected TypeReference<List<ChangelogVersionEntry>> changelogEntryListTypeReference = new TypeReference<List<ChangelogVersionEntry>>() {
     };
@@ -122,7 +120,7 @@ public class UpdateManager implements InitializingBean {
 
     public boolean latestVersionIgnored() throws UpdateException {
         SemanticVersion latestVersion = getLatestVersion();
-        Optional<UpdateData> updateData = updateDataGenericStorage.get(KEY, UpdateData.class);
+        Optional<UpdateData> updateData = genericStorage.get(KEY, UpdateData.class);
         if (updateData.isPresent() && updateData.get().getIgnoreVersions().contains(latestVersion)) {
             logger.debug("Version {} is in the list of ignored updates", latestVersion);
             return true;
@@ -160,11 +158,11 @@ public class UpdateManager implements InitializingBean {
 
     public void ignore(String version) {
         SemanticVersion semanticVersion = new SemanticVersion(version);
-        UpdateData updateData = updateDataGenericStorage.get(KEY, UpdateData.class).orElse(new UpdateData());
+        UpdateData updateData = genericStorage.get(KEY, UpdateData.class).orElse(new UpdateData());
         if (!updateData.getIgnoreVersions().contains(semanticVersion)) {
             updateData.getIgnoreVersions().add(semanticVersion);
         }
-        updateDataGenericStorage.save(KEY, updateData);
+        genericStorage.save(KEY, updateData);
         logger.info("Version {} ignored. Will not show update notices for this version.", semanticVersion);
     }
 
@@ -193,7 +191,7 @@ public class UpdateManager implements InitializingBean {
         //Current release 2.0.0, install prerelases: Show changes 2.0.1 and newer
         //Current release 2.0.0, dont install prereleases: Show changes 2.0.1 and 3.0.0
 
-        final Optional<ChangelogVersionEntry> newestFinalUpdate = allChanges.stream().filter(x -> x.isFinal() && new SemanticVersion(x.getVersion()).isUpdateFor(currentVersion)).sorted(Comparator.reverseOrder()).findFirst();
+        final Optional<ChangelogVersionEntry> newestFinalUpdate = allChanges.stream().filter(x -> x.isFinal() && new SemanticVersion(x.getVersion()).isUpdateFor(currentVersion)).max(Comparator.naturalOrder());
 
         List<ChangelogVersionEntry> collectedVersionChanges = allChanges.stream().filter(x -> {
                     if (!new SemanticVersion(x.getVersion()).isUpdateFor(currentVersion)) {

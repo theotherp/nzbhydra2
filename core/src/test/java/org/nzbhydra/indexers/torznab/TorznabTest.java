@@ -25,6 +25,8 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.SearchSourceRestriction;
@@ -37,6 +39,7 @@ import org.nzbhydra.indexers.IndexerEntity;
 import org.nzbhydra.indexers.IndexerRepository;
 import org.nzbhydra.indexers.IndexerSearchRepository;
 import org.nzbhydra.indexers.IndexerWebAccess;
+import org.nzbhydra.indexers.QueryGenerator;
 import org.nzbhydra.mapping.newznab.xml.JaxbPubdateAdapter;
 import org.nzbhydra.mapping.newznab.xml.NewznabAttribute;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlEnclosure;
@@ -61,6 +64,7 @@ import java.util.List;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -96,6 +100,8 @@ public class TorznabTest {
     private SearchingConfig searchingConfigMock;
     @Mock
     private Category categoryMock;
+    @Mock
+    private QueryGenerator queryGeneratorMock;
 
     @InjectMocks
     private Torznab testee = new Torznab();
@@ -115,6 +121,18 @@ public class TorznabTest {
         baseConfig.getSearching().setGenerateQueries(SearchSourceRestriction.NONE);
         baseConfig.getSearching().setRemoveTrailing(Collections.emptyList());
         when(categoryProviderMock.getNotAvailable()).thenReturn(CategoryProvider.naCategory);
+
+        when(queryGeneratorMock.generateQueryIfApplicable(any(), any(), any())).thenAnswer(new Answer<String>() {
+            @Override
+            public String answer(InvocationOnMock invocation) throws Throwable {
+
+                final SearchRequest searchRequest = (SearchRequest) invocation.getArgument(0);
+                if (searchRequest.getQuery().isPresent()) {
+                    return searchRequest.getQuery().get();
+                }
+                return invocation.getArgument(1);
+            }
+        });
     }
 
 

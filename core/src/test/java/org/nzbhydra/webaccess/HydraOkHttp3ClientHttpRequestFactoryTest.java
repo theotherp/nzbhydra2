@@ -21,7 +21,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class HydraOkHttp3ClientHttpRequestFactoryTest {
 
@@ -30,6 +30,7 @@ public class HydraOkHttp3ClientHttpRequestFactoryTest {
 
     @Mock
     private ConfigProvider configProviderMock;
+
 
     BaseConfig baseConfig = new BaseConfig();
 
@@ -40,6 +41,9 @@ public class HydraOkHttp3ClientHttpRequestFactoryTest {
         baseConfig.getMain().setProxyIgnoreLocal(true);
         baseConfig.getMain().setProxyIgnoreDomains(Arrays.asList("mydomain.com", "github.com", "*.otherdomain.net"));
         testee.handleConfigChangedEvent(new ConfigChangedEvent(this, baseConfig, baseConfig));
+
+        testee = spy(testee);
+        doNothing().when(testee).configureBuilderForSsl(any(), any());
     }
 
     @Test

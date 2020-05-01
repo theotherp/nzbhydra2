@@ -31,6 +31,7 @@ public class MainConfig extends ValidatingConfig<MainConfig> {
     //Hosting settings
     @RestartRequired
     private String host = "0.0.0.0";
+    @RestartRequired
     private int port = 5076;
     @RestartRequired
     protected String urlBase = null;

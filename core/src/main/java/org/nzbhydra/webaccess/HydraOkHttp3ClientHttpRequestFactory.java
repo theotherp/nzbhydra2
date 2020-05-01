@@ -136,21 +136,7 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
     public Builder getOkHttpClientBuilder(URI requestUri) {
         Builder builder = getBaseBuilder();
 
-        String host = requestUri.getHost();
-        final Ssl.SslVerificationState verificationState = ssl.getVerificationStateForHost(host);
-        SSLSocketFactory allTrustingSslSocketFactory = ssl.getAllTrustingSslSocketFactory();
-        X509TrustManager allTrustingDefaultTrustManager = ssl.getAllTrustingDefaultTrustManager();
-        if (verificationState == Ssl.SslVerificationState.ENABLED) {
-            builder.sslSocketFactory(ssl.getDefaultSslSocketFactory(), ssl.getDefaultTrustManager());
-        } else if (verificationState == Ssl.SslVerificationState.DISABLED_HOST) {
-            builder.sslSocketFactory(allTrustingSslSocketFactory, allTrustingDefaultTrustManager)
-                    .hostnameVerifier((hostname, session) -> {
-                        logger.debug(LoggingMarkers.HTTPS, "Not verifying host name {}", hostname);
-                        return true;
-                    });
-        } else {
-            builder.sslSocketFactory(allTrustingSslSocketFactory, allTrustingDefaultTrustManager);
-        }
+        configureBuilderForSsl(requestUri, builder);
 
         MainConfig main = configProvider.getBaseConfig().getMain();
         if (main.getProxyType() == ProxyType.NONE) {
@@ -177,6 +163,24 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
             });
         }
         return builder;
+    }
+
+    void configureBuilderForSsl(URI requestUri, Builder builder) {
+        String host = requestUri.getHost();
+        final Ssl.SslVerificationState verificationState = ssl.getVerificationStateForHost(host);
+        SSLSocketFactory allTrustingSslSocketFactory = ssl.getAllTrustingSslSocketFactory();
+        X509TrustManager allTrustingDefaultTrustManager = ssl.getAllTrustingDefaultTrustManager();
+        if (verificationState == Ssl.SslVerificationState.ENABLED) {
+            builder.sslSocketFactory(ssl.getDefaultSslSocketFactory(), ssl.getDefaultTrustManager());
+        } else if (verificationState == Ssl.SslVerificationState.DISABLED_HOST) {
+            builder.sslSocketFactory(allTrustingSslSocketFactory, allTrustingDefaultTrustManager)
+                    .hostnameVerifier((hostname, session) -> {
+                        logger.debug(LoggingMarkers.HTTPS, "Not verifying host name {}", hostname);
+                        return true;
+                    });
+        } else {
+            builder.sslSocketFactory(allTrustingSslSocketFactory, allTrustingDefaultTrustManager);
+        }
     }
 
     protected Builder getBaseBuilder() {

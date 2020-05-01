@@ -21,6 +21,7 @@ import org.nzbhydra.webaccess.WebAccess;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
@@ -33,7 +34,7 @@ import static org.mockito.Mockito.when;
 public class UpdateManagerTest {
 
     @Mock
-    private GenericStorage updateDataGenericStorageMock;
+    private GenericStorage genericStorage;
     @Mock
     private WebAccess webAccessMock;
     @Mock
@@ -95,6 +96,8 @@ public class UpdateManagerTest {
         when(webAccessMock.callUrl(eq("http:/127.0.0.1:7070/blockedVersions.json"))).thenReturn(
                 objectMapper.writeValueAsString(Arrays.asList(new BlockedVersion("3.0.0", "comment")))
         );
+
+        when(genericStorage.get("UpdateData", UpdateData.class)).thenReturn(Optional.empty());
     }
 
 

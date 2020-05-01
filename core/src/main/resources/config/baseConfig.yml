@@ -1,6 +1,6 @@
 ---
 auth:
-  authToken: null
+  authHeader: null
   authHeaderIpRanges: []
   authType: "NONE"
   rememberUsers: true
@@ -261,11 +261,13 @@ categoriesConfig:
       subtype: NONE
 downloading:
   downloaders: []
+  nzbAccessType: "REDIRECT"
   saveTorrentsTo: null
   saveNzbsTo: null
   sendMagnetLinks: true
   updateStatuses: true
   showDownloaderStatus: true
+genericStorage: {}
 indexers: []
 main:
   apiKey: null
@@ -321,6 +323,7 @@ main:
   welcomeShown: false
   xmx: 256
 searching:
+  alwaysConvertIds: "NONE"
   applyRestrictions: "NONE"
   coverSize: 128
   duplicateAgeThreshold: 2.0
@@ -330,6 +333,7 @@ searching:
   forbiddenRegex: null
   forbiddenWords: []
   generateQueries: "INTERNAL"
+  generateQueriesFormat: "TITLE"
   globalCacheTimeMinutes: null
   idFallbackToQueryGeneration: "NONE"
   ignorePassworded: false
@@ -341,7 +345,6 @@ searching:
   loadAllCachedOnInternal: true
   loadLimitInternal: 100
   maxAge: null
-  nzbAccessType: "REDIRECT"
   removeTrailing: [".mp4", ".mkv", ".subs", ".REPOST", "repost", "~DG~", ".DG", "-DG", "-1", ".1", "(1)", "ReUp", "ReUp2", "-RP", "-AsRequested", "-Obfuscated", "-Scrambled", "-Chamele0n", "-BUYMORE", "-[TRP]", "-DG", ".par2", ".part01", "part01.rar", ".part02.rar", ".jpg", "[rartv]", "[rarbg]", "[eztv]", "English", "Korean", "Spanish", "French", "German", "Italian", "Danish", "Dutch", "Japanese", "Cantonese", "Mandarin", "Russian", "Polish", "Vietnamese", "Swedish", "Norwegian", "Finnish", "Turkish", "Portuguese", "Flemish", "Greek", "Hungarian"]
   requiredRegex: null
   requiredWords: []

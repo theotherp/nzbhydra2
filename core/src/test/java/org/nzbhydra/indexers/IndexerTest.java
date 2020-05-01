@@ -23,7 +23,6 @@ import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
 import org.nzbhydra.indexers.exceptions.IndexerUnreachableException;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlError;
 import org.nzbhydra.mediainfo.InfoProvider;
-import org.nzbhydra.mediainfo.InfoProviderException;
 import org.nzbhydra.mediainfo.MediaIdType;
 import org.nzbhydra.mediainfo.MediaInfo;
 import org.nzbhydra.mediainfo.TvInfo;
@@ -97,6 +96,8 @@ public class IndexerTest {
     private ApplicationEventPublisher eventPublisherMock;
     @Mock
     private InfoProvider infoProviderMock;
+    @Mock
+    private QueryGenerator queryGeneratorMock;
 
     private List<SearchResultItem> searchResultItemsToReturn = Collections.emptyList();
 
@@ -165,6 +166,14 @@ public class IndexerTest {
         when(infoProviderMock.convert(anyString(), any())).thenReturn(new MediaInfo(new TvInfo("tvdbid", "tvrageid", "tvmazeid", null, "title", 2017, "")));
 
         testee = spy(testee);
+
+        when(queryGeneratorMock.generateQueryIfApplicable(any(), any(), any())).thenAnswer((Answer<String>) invocation -> {
+            final SearchRequest searchRequest = invocation.getArgument(0);
+            if (searchRequest.getQuery().isPresent()) {
+                return searchRequest.getQuery().get();
+            }
+            return invocation.getArgument(1);
+        });
     }
 
     @Test
@@ -290,30 +299,6 @@ public class IndexerTest {
         verify(testee, times(2)).searchInternal(searchRequestCaptor.capture(), anyInt(), anyInt());
     }
 
-    @Test
-    public void shouldGenerateQuery() throws IndexerSearchAbortedException {
-        baseConfig.getSearching().setGenerateQueries(SearchSourceRestriction.BOTH);
-
-        SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
-        Map<MediaIdType, String> identifiers = new HashMap<>();
-        identifiers.put(MediaIdType.IMDB, "123");
-        searchRequest.setIdentifiers(identifiers);
-        String query = testee.generateQueryIfApplicable(searchRequest, "query");
-        assertThat(query, is("title"));
-    }
-
-    @Test
-    public void shouldSanitizeQuery() throws IndexerSearchAbortedException, InfoProviderException {
-        when(infoProviderMock.convert(anyString(), any())).thenReturn(new MediaInfo(new TvInfo("tvdbid", "tvrageid", "tvmazeid", null, "title()':", 2017, "")));
-        baseConfig.getSearching().setGenerateQueries(SearchSourceRestriction.BOTH);
-
-        SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
-        Map<MediaIdType, String> identifiers = new HashMap<>();
-        identifiers.put(MediaIdType.IMDB, "123");
-        searchRequest.setIdentifiers(identifiers);
-        String query = testee.generateQueryIfApplicable(searchRequest, "query");
-        assertThat(query, is("title"));
-    }
 
     @Test
     public void shouldRemoveTrailing() throws Exception {

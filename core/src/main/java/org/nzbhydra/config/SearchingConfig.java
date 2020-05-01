@@ -31,6 +31,7 @@ public class SearchingConfig extends ValidatingConfig<SearchingConfig> {
     private List<String> forbiddenWords = new ArrayList<>();
     private SearchSourceRestriction alwaysConvertIds = SearchSourceRestriction.NONE;
     private SearchSourceRestriction generateQueries = SearchSourceRestriction.INTERNAL;
+
     private QueryGenerator.QueryFormat generateQueriesFormat = QueryGenerator.QueryFormat.TITLE;
     @JsonFormat(shape = Shape.STRING)
     private SearchSourceRestriction idFallbackToQueryGeneration = SearchSourceRestriction.NONE;
