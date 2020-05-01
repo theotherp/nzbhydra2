@@ -3,7 +3,7 @@ angular
     .controller('SearchResultsController', SearchResultsController);
 
 //SearchResultsController.$inject = ['blockUi'];
-function SearchResultsController($stateParams, $scope, $q, $timeout, $document, blockUI, growl, localStorageService, SearchService, ConfigService, CategoriesService, DebugService, GenericStorageService, ModalService) {
+function SearchResultsController($stateParams, $scope, $q, $timeout, $document, blockUI, growl, localStorageService, SearchService, ConfigService, CategoriesService, DebugService, GenericStorageService, ModalService, $uibModal) {
     // console.time("Presenting");
     DebugService.log("foobar");
     $scope.limitTo = ConfigService.getSafe().searching.loadLimitInternal;
@@ -699,6 +699,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         }
     };
 
+
     $scope.$on("checkboxClicked", function (event, originalEvent, rowIndex, newCheckedValue, clickTargetElement) {
         if (originalEvent.shiftKey && $scope.lastClickedRowIndex !== null) {
             $scope.$broadcast("shiftClick", Number($scope.lastClickedRowIndex), Number(rowIndex), Number($scope.lastClickedValue), $scope.lastClickedElement, clickTargetElement);
@@ -818,4 +819,3 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
     }, $scope.limitTo);
 
 }
-

@@ -211,7 +211,28 @@ function searchResult() {
                 return number;
             };
         };
-        DebugService.log("search-result");
+
+
+        $scope.showCover = function (url) {
+            console.log("Show " + url);
+            $uibModal.open({
+                template: '<div class="modal-body" style="text-align: center">\n' +
+                    '    <img ng-src="{{url}}" ng-click="$close()"/>\n' +
+                    '</div>',
+                controller: function ($scope, url) {
+                    $scope.url = url;
+                },
+                resolve: {
+                    url: function () {
+                        return url;
+                    }
+                },
+                size: "md",
+                keyboard: true,
+                windowTopClass: 'cover-modal-dialog'
+            });
+        };
+
     }
 }
 

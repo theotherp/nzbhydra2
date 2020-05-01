@@ -1175,7 +1175,28 @@ function searchResult() {
                 return number;
             };
         };
-        DebugService.log("search-result");
+
+
+        $scope.showCover = function (url) {
+            console.log("Show " + url);
+            $uibModal.open({
+                template: '<div class="modal-body" style="text-align: center">\n' +
+                    '    <img ng-src="{{url}}" ng-click="$close()"/>\n' +
+                    '</div>',
+                controller: ["$scope", "url", function ($scope, url) {
+                    $scope.url = url;
+                }],
+                resolve: {
+                    url: function () {
+                        return url;
+                    }
+                },
+                size: "md",
+                keyboard: true,
+                windowTopClass: 'cover-modal-dialog'
+            });
+        };
+
     }
 }
 
@@ -1225,7 +1246,6 @@ function saveOrSendFile() {
     function controller($scope, $http, growl, ConfigService) {
         $scope.cssClass = "glyphicon-save-file";
         var endpoint;
-        console.log($scope.type);
         if ($scope.type === "TORRENT") {
             $scope.enableButton = (ConfigService.getSafe().downloading.saveTorrentsTo !== null && ConfigService.getSafe().downloading.saveTorrentsTo !== "") || ConfigService.getSafe().downloading.sendMagnetLinks;
             $scope.tooltip = "Save torrent to black hole or send magnet link";
@@ -4832,7 +4852,7 @@ angular
         formlyConfigProvider.setWrapper({
             name: 'fieldset',
             templateUrl: 'fieldset-wrapper.html',
-            controller:['$scope', function ($scope) {
+            controller: ['$scope', function ($scope) {
                 $scope.tooltipIsOpen = false;
             }]
         });
@@ -8360,12 +8380,12 @@ function SearchService($http) {
     }
 }
 
-SearchResultsController.$inject = ["$stateParams", "$scope", "$q", "$timeout", "$document", "blockUI", "growl", "localStorageService", "SearchService", "ConfigService", "CategoriesService", "DebugService", "GenericStorageService", "ModalService"];angular
+SearchResultsController.$inject = ["$stateParams", "$scope", "$q", "$timeout", "$document", "blockUI", "growl", "localStorageService", "SearchService", "ConfigService", "CategoriesService", "DebugService", "GenericStorageService", "ModalService", "$uibModal"];angular
     .module('nzbhydraApp')
     .controller('SearchResultsController', SearchResultsController);
 
 //SearchResultsController.$inject = ['blockUi'];
-function SearchResultsController($stateParams, $scope, $q, $timeout, $document, blockUI, growl, localStorageService, SearchService, ConfigService, CategoriesService, DebugService, GenericStorageService, ModalService) {
+function SearchResultsController($stateParams, $scope, $q, $timeout, $document, blockUI, growl, localStorageService, SearchService, ConfigService, CategoriesService, DebugService, GenericStorageService, ModalService, $uibModal) {
     // console.time("Presenting");
     DebugService.log("foobar");
     $scope.limitTo = ConfigService.getSafe().searching.loadLimitInternal;
@@ -9061,6 +9081,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         }
     };
 
+
     $scope.$on("checkboxClicked", function (event, originalEvent, rowIndex, newCheckedValue, clickTargetElement) {
         if (originalEvent.shiftKey && $scope.lastClickedRowIndex !== null) {
             $scope.$broadcast("shiftClick", Number($scope.lastClickedRowIndex), Number(rowIndex), Number($scope.lastClickedValue), $scope.lastClickedElement, clickTargetElement);
@@ -9180,7 +9201,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
     }, $scope.limitTo);
 
 }
-
 
 
 SearchHistoryService.$inject = ["$filter", "$http"];angular

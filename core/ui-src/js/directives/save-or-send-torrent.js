@@ -16,7 +16,6 @@ function saveOrSendFile() {
     function controller($scope, $http, growl, ConfigService) {
         $scope.cssClass = "glyphicon-save-file";
         var endpoint;
-        console.log($scope.type);
         if ($scope.type === "TORRENT") {
             $scope.enableButton = (ConfigService.getSafe().downloading.saveTorrentsTo !== null && ConfigService.getSafe().downloading.saveTorrentsTo !== "") || ConfigService.getSafe().downloading.sendMagnetLinks;
             $scope.tooltip = "Save torrent to black hole or send magnet link";

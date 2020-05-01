@@ -3,6 +3,10 @@
     "version": "v2.20.3",
     "changes": [
       {
+        "type": "feature",
+        "text": "Click covers in search results to show them in a pop-up."
+      },
+      {
         "type": "fix",
         "text": "In some cases the download history could not be opened."
       }
