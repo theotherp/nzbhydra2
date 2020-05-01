@@ -1,22 +1,26 @@
 [
-    {
-        "showForVersion": "2.10.7",
-        "newsAsMarkdown": "If you're running v2.10.7 or older the display of changes of the latest update will not work. Please just update to fix this. The actual update mechanism should not be affected."
-    },
-    {
-        "showForVersion": "2.8.4",
-        "newsAsMarkdown": "If you're running v2.8.4 or older and not using docker and have automatic updates disabled: The updates page won't load because I've made changes to the changelog file that's loaded on that page and I forgot to consider that that will affect older instances. If you can't update you'll have to do so manually. Shut down Hydra, download the latest release and extract it into your main Hydra folder. Sorry about that! :-/"
-    },
-    {
-        "showForVersion": "2.7.5",
-        "newsAsMarkdown": "If you're upgrading from v2.7.5 to v2.7.6 expect the restart after the update to take a couple of minutes."
-    },
-    {
-        "showForVersion": "2.5.1",
-        "newsAsMarkdown": "<p>I was told I could or should not expect everyone to read the changelog and that I should inform of more... drastic changes another way. So I will inform you about new features or important bugfixes this way. If you don't want to see these news you can disable them in the main config but be warned that you may also miss some important... well, news.</p><p>I have added a footer that displays the status of your configured downloader (i.e. SABnzbd or NZBGet). The footer can be disabled in the config. For now it's non-interactive, so you cannot control the downloader. The button does not link to the downloader's URL because it wouldn't work with a lot of configurations and I didn't consider this usecase important enough to warrant a new config property with the actual URL of the downloader.</p>\n"
-    },
-    {
-        "showForVersion": "2.3.11",
-        "newsAsMarkdown": "<p>Version 2.3.11 contains a bug which causes problems when connecting to some servers. Unfortunately this also affects GitHub and therefore the built in update mechanism. If you have updated to 2.3.11 and have Hydra not running inside a docker container you'll have to update manually from https://github.com/theotherp/nzbhydra2/releases/tag/v2.3.12. Sorry for the inconvenience</p>\n"
-    }
+  {
+    "showForVersion": "2.19.6",
+    "newsAsMarkdown": "If you're using the linuxserver.io container linuxserver/hydra2 please move to linuxserver/nzbhydra2. If not please ignore this."
+  },
+  {
+    "showForVersion": "2.10.7",
+    "newsAsMarkdown": "If you're running v2.10.7 or older the display of changes of the latest update will not work. Please just update to fix this. The actual update mechanism should not be affected."
+  },
+  {
+    "showForVersion": "2.8.4",
+    "newsAsMarkdown": "If you're running v2.8.4 or older and not using docker and have automatic updates disabled: The updates page won't load because I've made changes to the changelog file that's loaded on that page and I forgot to consider that that will affect older instances. If you can't update you'll have to do so manually. Shut down Hydra, download the latest release and extract it into your main Hydra folder. Sorry about that! :-/"
+  },
+  {
+    "showForVersion": "2.7.5",
+    "newsAsMarkdown": "If you're upgrading from v2.7.5 to v2.7.6 expect the restart after the update to take a couple of minutes."
+  },
+  {
+    "showForVersion": "2.5.1",
+    "newsAsMarkdown": "<p>I was told I could or should not expect everyone to read the changelog and that I should inform of more... drastic changes another way. So I will inform you about new features or important bugfixes this way. If you don't want to see these news you can disable them in the main config but be warned that you may also miss some important... well, news.</p><p>I have added a footer that displays the status of your configured downloader (i.e. SABnzbd or NZBGet). The footer can be disabled in the config. For now it's non-interactive, so you cannot control the downloader. The button does not link to the downloader's URL because it wouldn't work with a lot of configurations and I didn't consider this usecase important enough to warrant a new config property with the actual URL of the downloader.</p>\n"
+  },
+  {
+    "showForVersion": "2.3.11",
+    "newsAsMarkdown": "<p>Version 2.3.11 contains a bug which causes problems when connecting to some servers. Unfortunately this also affects GitHub and therefore the built in update mechanism. If you have updated to 2.3.11 and have Hydra not running inside a docker container you'll have to update manually from https://github.com/theotherp/nzbhydra2/releases/tag/v2.3.12. Sorry for the inconvenience</p>\n"
+  }
 ]
