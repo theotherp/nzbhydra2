@@ -89,9 +89,13 @@ public class ConfigWeb {
     private void handleRenamedIndexers(@RequestBody BaseConfig newConfig) {
         final Set<String> loggedSameNameAndApiKey = new HashSet<>();
         for (IndexerConfig newIndexer : newConfig.getIndexers()) {
-            final boolean otherIndexerSameConfigExists = newConfig.getIndexers().stream()
+            final boolean alreadyExistedBefore = configProvider.getBaseConfig().getIndexers().stream()
                     .filter(x -> x != newIndexer)
-                    .anyMatch(x -> IndexerConfig.isIndexerEquals(x, newIndexer));
+                    .anyMatch(x -> x.getName().equals(newIndexer.getName()));
+            if (alreadyExistedBefore) {
+                //If an indexer with the same name already existed before it can't have been renamed. Better be safe than sorry...
+                continue;
+            }
 
             final Optional<IndexerConfig> sameOldIndexer = configProvider.getBaseConfig().getIndexers().stream()
                     .filter(x -> !x.getName().equals(newIndexer.getName()))

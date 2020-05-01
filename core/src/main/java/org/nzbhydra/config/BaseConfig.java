@@ -258,7 +258,7 @@ public class BaseConfig extends ValidatingConfig<BaseConfig> {
                         indexersSameHostAndApikey.add(otherIndexersSameHostAndApiKey);
                         final String message = "Found multiple indexers with same host and API key: " + Joiner.on(", ").join(otherIndexersSameHostAndApiKey);
                         logger.warn(message);
-                        configValidationResult.getErrorMessages().add(message);
+                        configValidationResult.getWarningMessages().add(message);
                     }
                 }
             }
