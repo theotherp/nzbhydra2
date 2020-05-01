@@ -33,13 +33,26 @@ import java.time.temporal.ChronoUnit;
 public class NewznabXmlApilimits {
 
     @XmlAttribute(name = "apicurrent")
+    private Integer apicurrent;
+    @XmlAttribute(name = "apiCurrent")
     private Integer apiCurrent;
+
     @XmlAttribute(name = "apimax")
+    private Integer apimax;
+    @XmlAttribute(name = "apiMax")
     private Integer apiMax;
+
     @XmlAttribute(name = "grabcurrent")
+    private Integer grabcurrent;
+    @XmlAttribute(name = "grabCurrent")
     private Integer grabCurrent;
+
     @XmlAttribute(name = "grabmax")
+    private Integer grabmax;
+    @XmlAttribute(name = "grabMax")
     private Integer grabMax;
+
+
     @XmlAttribute(name = "apioldesttime")
     @XmlJavaTypeAdapter(JaxbPubdateAdapter.class)
     private Instant apiOldestTime;
@@ -65,6 +78,22 @@ public class NewznabXmlApilimits {
         this.grabMax = grabMax;
         this.apiOldestTime = apiOldestTime;
         this.grabOldestTime = grabOldestTime;
+    }
+
+    public Integer getApiCurrent() {
+        return apiCurrent != null ? apiCurrent : apicurrent;
+    }
+
+    public Integer getApiMax() {
+        return apiMax != null ? apiMax : apimax;
+    }
+
+    public Integer getGrabCurrent() {
+        return grabCurrent != null ? grabCurrent : grabcurrent;
+    }
+
+    public Integer getGrabMax() {
+        return grabMax != null ? grabMax : grabmax;
     }
 
     public Instant getApiOldestTime() {

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~  (C) Copyright 2020 TheOtherP (theotherp@gmx.de)
+  ~
+  ~  Licensed under the Apache License, Version 2.0 (the "License");
+  ~  you may not use this file except in compliance with the License.
+  ~  You may obtain a copy of the License at
+  ~
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~  Unless required by applicable law or agreed to in writing, software
+  ~  distributed under the License is distributed on an "AS IS" BASIS,
+  ~  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~  See the License for the specific language governing permissions and
+  ~  limitations under the License.
+  -->
+
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:newznab="http://www.newznab.com/DTD/2010/feeds/attributes/" encoding="utf-8">
+ <channel>
+  <atom:link href="https://www.tabula-rasa.pw/api/v1/api" rel="self" type="application/rss+xml"/>
+  <title>Tabula Rasa</title>
+  <description>Tabula Rasa API Details</description>
+  <link>https://www.tabula-rasa.pw</link>
+  <language>en-gb</language>
+  <webMaster>hello@tabula-rasa.pw Tabula Rasa</webMaster>
+  <category>&lt;p&gt;usenet,nzbs,nntmux,cms,community, tabula rasa&lt;/p&gt;</category>
+  <generator>nntmux</generator>
+  <ttl>10</ttl>
+  <docs>https://www.tabula-rasa.pw/apihelp/</docs>
+  <image url="https://www.tabula-rasa.pw/assets/images/tmux_logo.png" title="Tabula Rasa" link="https://www.tabula-rasa.pw" description="Visit Tabula Rasa - A great usenet indexer"/>
+  <newznab:response offset="0" total="74765"/>
+  <newznab:apilimits apicurrent="763" apimax="8000" grabcurrent="4" grabmax="8001" apioldesttime="Thu, 30 Apr 2020 12:39:38 +0200" graboldesttime="Thu, 30 Apr 2020 19:54:30 +0200"/>
+
+ </channel>
+</rss>

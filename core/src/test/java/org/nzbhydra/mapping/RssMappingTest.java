@@ -6,7 +6,13 @@ import com.google.common.io.Resources;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.nzbhydra.mapping.newznab.xml.*;
+import org.nzbhydra.mapping.newznab.xml.NewznabAttribute;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlChannel;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlEnclosure;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlGuid;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlResponse;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.client.MockRestServiceServer;
@@ -137,8 +143,21 @@ public class RssMappingTest {
         assertEquals(Integer.valueOf(44), rssRoot.getRssChannel().getApiLimits().getApiCurrent());
         assertEquals(Integer.valueOf(50), rssRoot.getRssChannel().getApiLimits().getApiMax());
         assertEquals(Integer.valueOf(1), rssRoot.getRssChannel().getApiLimits().getGrabCurrent());
-        assertEquals("2019-11-19T09:26:45Z", rssRoot.getRssChannel().getApiLimits().getApiOldestTime().toString());
-        assertEquals("2019-11-19T10:10:10Z", rssRoot.getRssChannel().getApiLimits().getGrabOldestTime().toString());
+        assertEquals(Integer.valueOf(5), rssRoot.getRssChannel().getApiLimits().getGrabMax());
+        assertNull(rssRoot.getRssChannel().getApiLimits().getApiOldestTime());
+        assertNull(rssRoot.getRssChannel().getApiLimits().getGrabOldestTime());
+    }
+
+    @Test
+    public void shouldParseResponseFromTabulaRasaWithApilimits() throws Exception {
+        NewznabXmlRoot rssRoot = getRssRootFromXml("tabluaRasa_withSomeLimits.xml");
+
+        assertEquals(Integer.valueOf(763), rssRoot.getRssChannel().getApiLimits().getApiCurrent());
+        assertEquals(Integer.valueOf(8000), rssRoot.getRssChannel().getApiLimits().getApiMax());
+        assertEquals(Integer.valueOf(4), rssRoot.getRssChannel().getApiLimits().getGrabCurrent());
+        assertEquals(Integer.valueOf(8001), rssRoot.getRssChannel().getApiLimits().getGrabMax());
+        assertEquals("2020-04-30T10:39:38Z", rssRoot.getRssChannel().getApiLimits().getApiOldestTime().toString());
+        assertEquals("2020-04-30T17:54:30Z", rssRoot.getRssChannel().getApiLimits().getGrabOldestTime().toString());
     }
 
     @Test
