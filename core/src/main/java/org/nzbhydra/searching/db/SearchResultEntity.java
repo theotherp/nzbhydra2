@@ -34,6 +34,7 @@ import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -93,7 +94,7 @@ public class SearchResultEntity {
     protected Instant pubDate;
 
     @JsonIgnore
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY) //Only needed for the uniqueness saver, may be deleted later and then not needed anymore
     @JoinColumn(name = "indexersearchentity")
     private IndexerSearchEntity indexerSearchEntity;
 
