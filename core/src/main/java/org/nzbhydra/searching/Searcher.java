@@ -259,6 +259,7 @@ public class Searcher {
                     entity.setSearchEntity(searchCacheEntry.getSearchEntity());
                     entity.setResultsCount(indexerSearchResult.getTotalResults());
                     entity.setSuccessful(indexerSearchResult.isWasSuccessful());
+                    indexerSearchCacheEntry.setIndexerSearchEntity(entity);
                 }
                 if (configProvider.getBaseConfig().getMain().isKeepHistory()) {
                     entity = indexerSearchRepository.save(entity);

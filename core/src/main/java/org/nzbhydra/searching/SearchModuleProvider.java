@@ -18,7 +18,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,8 +40,8 @@ public class SearchModuleProvider {
     @Autowired
     private IndexerLimitRepository indexerStatusRepository;
 
-    private Map<String, Indexer> searchModuleInstances = new HashMap<>();
-    private Map<String, Integer> apiHitsToStoreInitially = new HashMap<>();
+    private final Map<String, Indexer> searchModuleInstances = new HashMap<>();
+    private final Map<String, Integer> apiHitsToStoreInitially = new HashMap<>();
 
     @Autowired
     private List<IndexerHandlingStrategy> indexerHandlingStrategies;
@@ -115,11 +114,7 @@ public class SearchModuleProvider {
         }
         logger.info("Finished initializing active indexers");
         List<String> indexerNames = indexers.stream().map(IndexerConfig::getName).collect(Collectors.toList());
-        Collection<IndexerEntity> byNameNotIn = indexerRepository.findByNameNotIn(indexerNames);
-        if (!byNameNotIn.isEmpty()) {
-            logger.info("Found {} indexers ({}) in database which are not configured. Will delete them and any related database entries. This may take some time", byNameNotIn.size(), byNameNotIn.stream().map(IndexerEntity::getName).collect(Collectors.joining(", ")));
-            //indexerRepository.deleteAll(byNameNotIn);
-        }
+
         if (searchModuleInstances.isEmpty()) {
             logger.warn("No indexers configured");
         }

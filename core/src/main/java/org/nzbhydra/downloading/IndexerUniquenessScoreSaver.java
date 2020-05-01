@@ -16,6 +16,8 @@
 
 package org.nzbhydra.downloading;
 
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.indexers.IndexerEntity;
 import org.nzbhydra.indexers.IndexerSearchEntity;
@@ -31,6 +33,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManagerFactory;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -50,6 +53,8 @@ public class IndexerUniquenessScoreSaver {
     private IndexerSearchRepository indexerSearchRepository;
     @Autowired
     private IndexerUniquenessScoreEntityRepository indexerUniquenessScoreEntityRepository;
+    @Autowired
+    private EntityManagerFactory entityManagerFactory;
 
     @EventListener
     public void onNzbDownloadEvent(FileDownloadEvent downloadEvent) {
@@ -57,13 +62,15 @@ public class IndexerUniquenessScoreSaver {
             logger.debug("Not saving uniqueness score because no history is kept");
             return;
         }
+
         handleDownloadEvent(downloadEvent);
     }
 
     @Transactional
     public void handleDownloadEvent(FileDownloadEvent downloadEvent) {
-        try {
-            SearchResultEntity searchResultEntity = downloadEvent.getSearchResultEntity();
+        try (Session session = entityManagerFactory.unwrap(SessionFactory.class).openSession()) {
+            //For some reason the IndexerSearchEntity is not readable (LazyInitializationException) if the result is not loaded again
+            SearchResultEntity searchResultEntity = session.load(SearchResultEntity.class, downloadEvent.getSearchResultEntity().getId());
 
             if (searchResultEntity.getIndexerSearchEntity() == null) {
                 logger.debug("Unable to determine indexer uniqueness score for result {} because no indexer search is saved", searchResultEntity.getTitle());
