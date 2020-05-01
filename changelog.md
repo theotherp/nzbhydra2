@@ -1,3 +1,13 @@
+### v2.20.3 (2020-05-01)
+
+**Feature** NZBHydra will recognize renamed indexers when saving the config. Renaming will no longer cause loss of stats and history for those indexers. You should have two indexers configured with the same host, API key and search type as this messes with the rename detection.
+
+**Feature** Click covers in search results to show them in a pop-up.
+
+**Fix** In some cases the download history could not be opened.
+
+
+
 ### v2.20.2 (2020-04-29)
 
 **Feature** Added more substructures to the config GUI to make it a bit more clear.
