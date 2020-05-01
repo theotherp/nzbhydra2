@@ -3403,8 +3403,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
                 templateOptions: {
                     type: 'text',
                     label: 'Name',
-                    required: true,
-                    help: 'Used for identification.' + (isInitial ? '' : ' Changing the name will lose all history and stats!')
+                    required: true
                 },
                 validators: {
                     uniqueName: {

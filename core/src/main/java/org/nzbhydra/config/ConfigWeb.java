@@ -7,7 +7,10 @@ import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.FileSystemBrowser.DirectoryListingRequest;
 import org.nzbhydra.config.FileSystemBrowser.FileSystemEntry;
 import org.nzbhydra.config.ValidatingConfig.ConfigValidationResult;
+import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.safeconfig.SafeConfig;
+import org.nzbhydra.indexers.IndexerEntity;
+import org.nzbhydra.indexers.IndexerRepository;
 import org.nzbhydra.web.UrlCalculator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +29,7 @@ import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -42,7 +46,9 @@ public class ConfigWeb {
     private FileSystemBrowser fileSystemBrowser;
     @Autowired
     private UrlCalculator urlCalculator;
-    private ConfigReaderWriter configReaderWriter = new ConfigReaderWriter();
+    @Autowired
+    private IndexerRepository indexerRepository;
+    private final ConfigReaderWriter configReaderWriter = new ConfigReaderWriter();
 
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/config", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -71,12 +77,39 @@ public class ConfigWeb {
         newConfig = newConfig.prepareForSaving(configProvider.getBaseConfig());
         ConfigValidationResult result = newConfig.validateConfig(configProvider.getBaseConfig(), newConfig, newConfig);
         if (result.isOk()) {
+            handleRenamedIndexers(newConfig);
+
             configProvider.getBaseConfig().replace(newConfig);
             configProvider.getBaseConfig().save(true);
             result.setNewConfig(configProvider.getBaseConfig());
         }
         return result;
     }
+
+    private void handleRenamedIndexers(@RequestBody BaseConfig newConfig) {
+        final Set<String> loggedSameNameAndApiKey = new HashSet<>();
+        for (IndexerConfig newIndexer : newConfig.getIndexers()) {
+            final boolean otherIndexerSameConfigExists = newConfig.getIndexers().stream()
+                    .filter(x -> x != newIndexer)
+                    .anyMatch(x -> IndexerConfig.isIndexerEquals(x, newIndexer));
+
+            final Optional<IndexerConfig> sameOldIndexer = configProvider.getBaseConfig().getIndexers().stream()
+                    .filter(x -> !x.getName().equals(newIndexer.getName()))
+                    .filter(x -> IndexerConfig.isIndexerEquals(newIndexer, x))
+                    .findFirst();
+            if (sameOldIndexer.isPresent()) {
+                logger.info("Indexer was renamed from {} to {}", sameOldIndexer.get().getName(), newIndexer.getName());
+                try {
+                    final IndexerEntity indexerEntity = indexerRepository.findByName(sameOldIndexer.get().getName());
+                    indexerEntity.setName(newIndexer.getName());
+                    indexerRepository.save(indexerEntity);
+                } catch (Exception e) {
+                    logger.error("Error while renaming indexer", e);
+                }
+            }
+        }
+    }
+
 
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/config/reload", method = RequestMethod.GET)
@@ -99,7 +132,7 @@ public class ConfigWeb {
     @Secured({"ROLE_USER"})
     @RequestMapping(value = "/internalapi/config/folderlisting", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public FileSystemEntry getDirectoryListing(@RequestBody DirectoryListingRequest request) {
-       return fileSystemBrowser.getDirectoryListing(request);
+        return fileSystemBrowser.getDirectoryListing(request);
     }
 
     @Secured({"ROLE_ADMIN"})
@@ -120,7 +153,6 @@ public class ConfigWeb {
         private String torznabApi;
         private String apiKey;
     }
-
 
 
 }
