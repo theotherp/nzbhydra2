@@ -9,6 +9,10 @@
       {
         "type": "fix",
         "text": "Fix parsing of API limits from indexers' API responses using different formats."
+      },
+      {
+        "type": "fix",
+        "text": "Don't show news for fresh installs."
       }
     ],
     "final": true

@@ -62,11 +62,19 @@ public class NewsProviderTest {
     @Test
     public void shouldOnlyGetNewstNotNewerThanCurrentVersion() throws Exception {
         when(updateManagerMock.getCurrentVersionString()).thenReturn("2.0.0");
-        when(shownNewsRepositoryMock.findAll()).thenReturn(Collections.emptyList());
+        when(shownNewsRepositoryMock.findAll()).thenReturn(Collections.singletonList(new ShownNews("0.0.1")));
         List<NewsEntry> entries = testee.getNewsForCurrentVersionAndAfter();
         assertThat(entries.size(), is(2));
         assertThat(entries.get(0).getNewsAsMarkdown(), is("news2.0.0"));
         assertThat(entries.get(1).getNewsAsMarkdown(), is("news1.0.0"));
+    }
+
+    @Test
+    public void shouldNoNewsWhenNewInstall() throws Exception {
+        when(updateManagerMock.getCurrentVersionString()).thenReturn("2.0.0");
+        when(shownNewsRepositoryMock.findAll()).thenReturn(Collections.emptyList());
+        List<NewsEntry> entries = testee.getNewsForCurrentVersionAndAfter();
+        assertThat(entries.size(), is(0));
     }
 
     @Test
