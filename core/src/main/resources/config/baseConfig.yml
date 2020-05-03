@@ -290,6 +290,7 @@ main:
     consolelevel: "INFO"
     historyUserInfoType: "NONE"
     logfilelevel: "INFO"
+    logGc: false
     logMaxHistory: 30
     logIpAddresses: true
     mapIpToHost: true

@@ -14,6 +14,8 @@ public class LoggingConfig extends ValidatingConfig<LoggingConfig> {
     private HistoryUserInfoType historyUserInfoType = HistoryUserInfoType.NONE;
     private boolean logIpAddresses;
     private boolean mapIpToHost;
+    @RestartRequired
+    private boolean logGc;
     private int logMaxHistory;
     @RestartRequired
     private String logfilelevel;

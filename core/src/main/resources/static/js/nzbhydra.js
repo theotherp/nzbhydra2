@@ -5705,13 +5705,23 @@ function ConfigFields($injector) {
                             }
                         },
                         {
+                            key: 'logGc',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Log GC',
+                                help: 'Enable garbage collection logging. Only for debugging of memory issues.'
+                            }
+                        },
+                        {
                             key: 'logIpAddresses',
                             type: 'horizontalSwitch',
                             templateOptions: {
                                 type: 'switch',
                                 label: 'Log IP addresses'
                             }
-                        }, {
+                        },
+                        {
                             key: 'mapIpToHost',
                             type: 'horizontalSwitch',
                             hideExpression: '!model.logIpAddresses',

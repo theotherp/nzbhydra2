@@ -343,22 +343,24 @@ def startup():
             arguments.append("--baseurl")
             arguments.append(args.baseurl)
     yamlPath = os.path.join(args.datafolder, "nzbhydra.yml")
+
+    xmx = None
+    logGc = False
     if args.xmx:
         xmx = args.xmx
-    elif os.path.exists(yamlPath):
+    if os.path.exists(yamlPath):
         with open(yamlPath, "r") as f:
             for line in f.readlines():
                 index = line.find("xmx:")
                 if index > -1:
                     xmx = line[index + 5:].rstrip("\n\r ")
-                    break
-            else:
-                logger.warning("Didn't find XMX in YAML file, using default of 256")
-                xmx = 256
-    else:
-        logger.info("No file nzbhydra.yml found. Using 256M XMX")
+                index = line.find("logGc: ")
+                if index > -1:
+                    logGc = line[index + 7:].rstrip("\n\r ") == "true"
+    if xmx is None:
         xmx = 256
     xmx = str(xmx)
+
     if xmx.lower().endswith("m"):
         logger.info("Removing superfluous M from XMX value " + xmx)
         xmx = xmx[:-1]
@@ -390,7 +392,8 @@ def startup():
                       "-XX:+HeapDumpOnOutOfMemoryError",
                       "-XX:HeapDumpPath=" + os.path.join(args.datafolder, "logs")
                       ]
-    java_arguments.extend(gcArguments)
+    if logGc:
+        java_arguments.extend(gcArguments)
     if args.debugport:
         java_arguments.append("-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:" + args.debugport)
     if not args.nocolors and not isWindows:
