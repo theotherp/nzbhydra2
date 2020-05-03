@@ -191,6 +191,7 @@ public class DebugInfosProvider {
         logDatabaseFolderSize();
         if (isRunInDocker()) {
             logger.info("Apparently run in docker");
+            logger.info("Container info: {}", updateManager.getPackageInfo());
         }
 
         logger.info("Metrics:");

@@ -101,9 +101,17 @@ public class UpdateManager implements InitializingBean {
     }
 
     private void loadPackageInfo() {
-        File lsioPackageFile = new File("/app/nzbhydra2/package_info");
-        if (lsioPackageFile.exists()) {
-            loadPackageInfoFile(lsioPackageFile);
+        File packageFile = new File("/app/nzbhydra2/package_info");
+        if (packageFile.exists()) {
+            loadPackageInfoFile(packageFile);
+        }
+        packageFile = new File("package_info");
+        if (packageFile.exists()) {
+            loadPackageInfoFile(packageFile);
+        }
+        packageFile = new File("../package_info");
+        if (packageFile.exists()) {
+            loadPackageInfoFile(packageFile);
         }
     }
 
