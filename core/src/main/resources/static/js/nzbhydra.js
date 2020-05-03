@@ -329,6 +329,7 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
                         activeTab: [function () {
                             return 0;
                         }],
+                        simpleInfos: function(){return null;},
                         $title: ["$stateParams", function ($stateParams) {
                             return "System"
                         }]
@@ -352,6 +353,7 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
                         activeTab: [function () {
                             return 1;
                         }],
+                        simpleInfos: function(){return null;},
                         $title: ["$stateParams", function ($stateParams) {
                             return "System (Updates)"
                         }]
@@ -375,6 +377,7 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
                         activeTab: [function () {
                             return 2;
                         }],
+                        simpleInfos: function(){return null;},
                         $title: ["$stateParams", function ($stateParams) {
                             return "System (Log)"
                         }]
@@ -398,6 +401,7 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
                         activeTab: [function () {
                             return 3;
                         }],
+                        simpleInfos: function(){return null;},
                         $title: ["$stateParams", function ($stateParams) {
                             return "System (Tasks)"
                         }]
@@ -421,6 +425,7 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
                         activeTab: [function () {
                             return 4;
                         }],
+                        simpleInfos: function(){return null;},
                         $title: ["$stateParams", function ($stateParams) {
                             return "System (Backup)"
                         }]
@@ -444,6 +449,7 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
                         activeTab: [function () {
                             return 5;
                         }],
+                        simpleInfos: function(){return null;},
                         $title: ["$stateParams", function ($stateParams) {
                             return "System (Bug report)"
                         }]
@@ -467,6 +473,7 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
                         activeTab: [function () {
                             return 6;
                         }],
+                        simpleInfos: function(){return null;},
                         $title: ["$stateParams", function ($stateParams) {
                             return "System (News)"
                         }]
@@ -486,6 +493,15 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
                         }],
                         safeConfig: ['loginRequired', 'ConfigService', function (loginRequired, ConfigService) {
                             return ConfigService.getSafe();
+                        }],
+                        simpleInfos: ['$http', 'RequestsErrorHandler', function ($http, RequestsErrorHandler) {
+                            return RequestsErrorHandler.specificallyHandled(function () {
+                                return $http.get("internalapi/updates/simpleInfos").then(
+                                    function (response) {
+                                        return response.data;
+                                    }
+                                );
+                            });
                         }],
                         activeTab: [function () {
                             return 7;
@@ -3476,14 +3492,15 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
                 templateOptions: {
                     type: 'text',
                     label: 'API Key'
-                },
-                watcher: {
-                    listener: function (field, newValue, oldValue, scope) {
-                        if (newValue !== oldValue) {
-                            scope.$parent.needsConnectionTest = true;
-                        }
-                    }
                 }
+                // ,
+                // watcher: {
+                //     listener: function (field, newValue, oldValue, scope) {
+                //         if (newValue !== oldValue) {
+                //             scope.$parent.needsConnectionTest = true;
+                //         }
+                //     }
+                // }
             }
         )
     }
@@ -7683,17 +7700,19 @@ function UpdateModalInstanceCtrl($scope, $http, $interval, RequestsErrorHandler)
 
 }
 
-SystemController.$inject = ["$scope", "$state", "activeTab", "$http", "growl", "RestartService", "MigrationService", "ConfigService", "NzbHydraControlService", "RequestsErrorHandler"];angular
+SystemController.$inject = ["$scope", "$state", "activeTab", "simpleInfos", "$http", "growl", "RestartService", "MigrationService", "ConfigService", "NzbHydraControlService", "RequestsErrorHandler"];angular
     .module('nzbhydraApp')
     .controller('SystemController', SystemController);
 
-function SystemController($scope, $state, activeTab, $http, growl, RestartService, MigrationService, ConfigService, NzbHydraControlService, RequestsErrorHandler) {
+function SystemController($scope, $state, activeTab, simpleInfos, $http, growl, RestartService, MigrationService, ConfigService, NzbHydraControlService, RequestsErrorHandler) {
 
     $scope.activeTab = activeTab;
     $scope.foo = {
         csv: "",
         sql: ""
     };
+
+    $scope.simpleInfos = simpleInfos;
 
     $scope.shutdown = function () {
         NzbHydraControlService.shutdown().then(function () {

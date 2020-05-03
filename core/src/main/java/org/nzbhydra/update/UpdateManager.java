@@ -37,6 +37,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -45,6 +46,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -85,6 +87,8 @@ public class UpdateManager implements InitializingBean {
     protected SemanticVersion currentVersion;
     protected SemanticVersion latestVersion;
 
+    private PackageInfo packageInfo;
+
     private final ObjectMapper objectMapper;
     protected Supplier<Release> latestReleaseCache = Suppliers.memoizeWithExpiration(getLatestReleaseSupplier(), 15, TimeUnit.MINUTES);
     protected TypeReference<List<ChangelogVersionEntry>> changelogEntryListTypeReference = new TypeReference<List<ChangelogVersionEntry>>() {
@@ -94,6 +98,23 @@ public class UpdateManager implements InitializingBean {
         objectMapper = new ObjectMapper();
         objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    }
+
+    private void loadPackageInfo() {
+        File lsioPackageFile = new File("/app/nzbhydra2/package_info");
+        if (lsioPackageFile.exists()) {
+            loadPackageInfoFile(lsioPackageFile);
+        }
+    }
+
+    private void loadPackageInfoFile(File lsioPackageFile) {
+        Properties properties = new Properties();
+        try {
+            properties.load(new FileReader(lsioPackageFile));
+            packageInfo = new PackageInfo(properties.getProperty("ReleaseType"), properties.getProperty("PackageVersion"), properties.getProperty("PackageAuthor"));
+        } catch (IOException e) {
+            logger.error("Unable to read package info", e);
+        }
     }
 
     private SemanticVersion getLatestVersion() throws UpdateException {
@@ -398,6 +419,12 @@ public class UpdateManager implements InitializingBean {
             logger.warn("Version string not found. Using 1.0.0");
         }
         currentVersion = new SemanticVersion(currentVersionString);
+
+        loadPackageInfo();
+    }
+
+    public PackageInfo getPackageInfo() {
+        return packageInfo;
     }
 
     @Data
@@ -423,4 +450,15 @@ public class UpdateManager implements InitializingBean {
         private String version;
         private String comment;
     }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class PackageInfo {
+        private String releaseType;
+        private String version;
+        private String author;
+    }
+
+
 }

@@ -2,13 +2,15 @@ angular
     .module('nzbhydraApp')
     .controller('SystemController', SystemController);
 
-function SystemController($scope, $state, activeTab, $http, growl, RestartService, MigrationService, ConfigService, NzbHydraControlService, RequestsErrorHandler) {
+function SystemController($scope, $state, activeTab, simpleInfos, $http, growl, RestartService, MigrationService, ConfigService, NzbHydraControlService, RequestsErrorHandler) {
 
     $scope.activeTab = activeTab;
     $scope.foo = {
         csv: "",
         sql: ""
     };
+
+    $scope.simpleInfos = simpleInfos;
 
     $scope.shutdown = function () {
         NzbHydraControlService.shutdown().then(function () {

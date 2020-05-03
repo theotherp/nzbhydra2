@@ -38,7 +38,7 @@ public class UpdatesWeb {
 
     private static final Logger logger = LoggerFactory.getLogger(UpdatesWeb.class);
 
-    private List<String> updateMessages = new ArrayList<>();
+    private final List<String> updateMessages = new ArrayList<>();
 
     @Autowired
     private UpdateManager updateManager;
@@ -67,7 +67,7 @@ public class UpdatesWeb {
             try {
                 if (!configProvider.getBaseConfig().getMain().isUpdateCheckEnabled()) {
                     //Just for development
-                    return new VersionsInfo("", "", false, false, false, false, false, "false");
+                    return new VersionsInfo("", "", false, false, false, false, false, "false", new UpdateManager.PackageInfo());
                 }
                 String currentVersion = updateManager.getCurrentVersionString();
                 String latestVersion = updateManager.getLatestVersionString();
@@ -77,12 +77,21 @@ public class UpdatesWeb {
                 boolean isShowUpdateBannerOnDocker = configProvider.getBaseConfig().getMain().isShowUpdateBannerOnDocker();
                 boolean outdatedWrapperDetected = outdatedWrapperDetector.isOutdatedWrapperDetected();
                 String automaticUpdateToNotice = genericStorage.get(AutomaticUpdater.TO_NOTICE_KEY, String.class).orElse(null);
-                return new VersionsInfo(currentVersion, latestVersion, isUpdateAvailable, latestVersionIgnored, isRunInDocker, isShowUpdateBannerOnDocker, outdatedWrapperDetected, automaticUpdateToNotice);
+                return new VersionsInfo(currentVersion, latestVersion, isUpdateAvailable, latestVersionIgnored, isRunInDocker, isShowUpdateBannerOnDocker, outdatedWrapperDetected, automaticUpdateToNotice, updateManager.getPackageInfo());
             } catch (UpdateException e) {
                 logger.error("An error occured while getting version information", e);
                 throw new RuntimeException("Unable to get update information");
             }
         };
+    }
+
+    @Secured({"ROLE_ADMIN"})
+    @RequestMapping(value = "/internalapi/updates/simpleInfos", method = RequestMethod.GET)
+    public VersionsInfo getSimpleInfos() {
+        VersionsInfo versionsInfo = new VersionsInfo();
+        versionsInfo.setCurrentVersion(updateManager.getCurrentVersionString());
+        versionsInfo.setPackageInfo(updateManager.getPackageInfo());
+        return versionsInfo;
     }
 
 
@@ -169,6 +178,8 @@ public class UpdatesWeb {
         private boolean showUpdateBannerOnDocker;
         private boolean wrapperOutdated;
         private String automaticUpdateToNotice;
+
+        private UpdateManager.PackageInfo packageInfo;
     }
 
 

@@ -329,6 +329,9 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
                         activeTab: [function () {
                             return 0;
                         }],
+                        simpleInfos: function () {
+                            return null;
+                        },
                         $title: function ($stateParams) {
                             return "System"
                         }
@@ -352,6 +355,9 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
                         activeTab: [function () {
                             return 1;
                         }],
+                        simpleInfos: function () {
+                            return null;
+                        },
                         $title: function ($stateParams) {
                             return "System (Updates)"
                         }
@@ -375,6 +381,9 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
                         activeTab: [function () {
                             return 2;
                         }],
+                        simpleInfos: function () {
+                            return null;
+                        },
                         $title: function ($stateParams) {
                             return "System (Log)"
                         }
@@ -398,6 +407,9 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
                         activeTab: [function () {
                             return 3;
                         }],
+                        simpleInfos: function () {
+                            return null;
+                        },
                         $title: function ($stateParams) {
                             return "System (Tasks)"
                         }
@@ -421,6 +433,9 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
                         activeTab: [function () {
                             return 4;
                         }],
+                        simpleInfos: function () {
+                            return null;
+                        },
                         $title: function ($stateParams) {
                             return "System (Backup)"
                         }
@@ -444,6 +459,9 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
                         activeTab: [function () {
                             return 5;
                         }],
+                        simpleInfos: function () {
+                            return null;
+                        },
                         $title: function ($stateParams) {
                             return "System (Bug report)"
                         }
@@ -467,6 +485,9 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
                         activeTab: [function () {
                             return 6;
                         }],
+                        simpleInfos: function () {
+                            return null;
+                        },
                         $title: function ($stateParams) {
                             return "System (News)"
                         }
@@ -486,6 +507,15 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
                         }],
                         safeConfig: ['loginRequired', 'ConfigService', function (loginRequired, ConfigService) {
                             return ConfigService.getSafe();
+                        }],
+                        simpleInfos: ['$http', 'RequestsErrorHandler', function ($http, RequestsErrorHandler) {
+                            return RequestsErrorHandler.specificallyHandled(function () {
+                                return $http.get("internalapi/updates/simpleInfos").then(
+                                    function (response) {
+                                        return response.data;
+                                    }
+                                );
+                            });
                         }],
                         activeTab: [function () {
                             return 7;

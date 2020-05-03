@@ -7,6 +7,10 @@
         "text": "GC logging (for debugging of memory issues) is now configurable and disabled by default. This has required a change in the wrapper which means you'll have to manually update them if you're running NZBHydra on windows or are using the linux executable."
       },
       {
+        "type": "feature",
+        "text": "Show current version and (if applicable) docker container infos on about page."
+      },
+      {
         "type": "fix",
         "text": "Fix parsing of API limits from indexers' API responses using different formats."
       },
