@@ -13,6 +13,10 @@
       {
         "type": "fix",
         "text": "Don't show news for fresh installs."
+      },
+      {
+        "type": "fix",
+        "text": "Fix some (minor) layout issues on the search page."
       }
     ],
     "final": true
