@@ -7,6 +7,8 @@ import org.nzbhydra.config.indexer.IndexerConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.EntityTransaction;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
@@ -15,6 +17,8 @@ public class AbstractConfigReplacingTest {
 
     @Autowired
     protected BaseConfig baseConfig;
+    @Autowired
+    private EntityManagerFactory entityManagerFactory;
 
 
     @PostConstruct
@@ -27,7 +31,10 @@ public class AbstractConfigReplacingTest {
         objectMapper.writeValueAsString(baseConfig);
         ObjectReader updater = objectMapper.readerForUpdating(baseConfig);
         BaseConfig updatedConfig = updater.readValue(resource);
+        final EntityTransaction transaction = entityManagerFactory.createEntityManager().getTransaction();
+        transaction.begin();
         baseConfig.replace(updatedConfig);
+        transaction.commit();
     }
 
     public void replaceConfig(BaseConfig replacingConfig) throws IOException {

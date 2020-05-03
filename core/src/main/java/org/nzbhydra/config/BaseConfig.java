@@ -83,6 +83,7 @@ public class BaseConfig extends ValidatingConfig<BaseConfig> {
         replace(newConfig, true);
     }
 
+
     private void replace(BaseConfig newConfig, boolean fireConfigChangedEvent) {
         BaseConfig oldBaseConfig = configReaderWriter.getCopy(this);
 

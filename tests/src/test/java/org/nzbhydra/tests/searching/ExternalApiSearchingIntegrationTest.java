@@ -32,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -45,6 +46,7 @@ import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = NzbHydra.class)
+@Transactional
 public class ExternalApiSearchingIntegrationTest extends AbstractConfigReplacingTest {
 
     @Autowired
@@ -58,12 +60,12 @@ public class ExternalApiSearchingIntegrationTest extends AbstractConfigReplacing
     @MockBean
     private InfoProvider infoProvider;
 
-    private MockWebServer webServer;
+    private final MockWebServer webServer = new MockWebServer();
+
 
     @Before
     public void setUp() throws IOException {
         MockitoAnnotations.initMocks(this);
-        webServer = new MockWebServer();
         webServer.start(7070);
         replaceConfig(getClass().getResource("twoIndexers.json"));
         configProvider.getBaseConfig().getSearching().setGenerateQueries(SearchSourceRestriction.NONE);
