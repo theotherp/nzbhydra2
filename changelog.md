@@ -1,3 +1,17 @@
+### v2.20.4 (2020-05-06)
+
+**Feature** GC logging (for debugging of memory issues) is now configurable and disabled by default. This has required a change in the wrapper which means you'll have to manually update them if you're running NZBHydra on windows or are using the linux executable.
+
+**Feature** Show current version and (if applicable) docker container infos on about page.
+
+**Fix** Fix parsing of API limits from indexers' API responses using different formats.
+
+**Fix** Don't show news for fresh installs.
+
+**Fix** Fix some (minor) layout issues on the search page.
+
+
+
 ### v2.20.3 (2020-05-01)
 
 **Feature** NZBHydra will recognize renamed indexers when saving the config. Renaming will no longer cause loss of stats and history for those indexers. You should have two indexers configured with the same host, API key and search type as this messes with the rename detection.
