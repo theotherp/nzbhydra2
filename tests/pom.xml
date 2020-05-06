@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.nzbhydra</groupId>
         <artifactId>nzbhydra2</artifactId>
-        <version>2.20.4</version>
+        <version>2.20.5-SNAPSHOT</version>
     </parent>
 
     <artifactId>tests</artifactId>
@@ -31,7 +31,7 @@
         <dependency>
             <groupId>org.nzbhydra</groupId>
             <artifactId>core</artifactId>
-            <version>2.20.4</version>
+            <version>2.20.5-SNAPSHOT</version>
             <exclusions>
                 <exclusion>
                     <artifactId>okhttp</artifactId>
