@@ -9,6 +9,10 @@
       {
         "type": "fix",
         "text": "Fix issue with notification about outdated wrapper files not being shown. NZBHydra will now nag you until you refresh the files."
+      },
+      {
+        "type": "fix",
+        "text": "Revert layout fixes made in v2.20.4 because fuck CSS."
       }
     ],
     "final": true

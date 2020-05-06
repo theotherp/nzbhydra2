@@ -28,10 +28,9 @@
 
                     <div class="col-sm-10">
                         <div class="input-group">
-                        <span class="input-group-btn input-group-btn2" style="border-right: none">
+                        <span class="input-group-btn input-group-btn2">
                               <button type="button" class="btn btn-default dropdown-toggle search-category-button"
                                       data-toggle="dropdown" aria-expanded="false" id="searchCategoryDropdownButton"
-                                      style="margin-right: 1px;"
                                       ng-cloak>
                                   {{ category.name }} <span class="caret"></span>
                               </button>
@@ -78,51 +77,47 @@
                                    uib-tooltip="{{searchBoxTooltip}}"
                                    tooltip-placement="top"
                                    tooltip-trigger="mouseenter"
-                                   style="height: 39px"
                             >
-                            <button style="position: absolute; top: 2px; right:101px; font-size: xx-small; float: right; z-index: 1000; margin: 0; padding: 0; border: none; background-color: unset"
-                                    ng-click="clearQuery()" id="clear-query-button">
-                                <span class="glyphicon glyphicon-remove" style="font-size: xx-small;"></span>
-                            </button>
+                          <button style="position: absolute; top: 2px; right:105px; font-size: xx-small; float: right; z-index: 1000; margin: 0; padding: 0; border: none; background-color: unset"
+                                  ng-click="clearQuery()" id="clear-query-button">
+                            <span class="glyphicon glyphicon-remove" style="font-size: xx-small;"></span>
+                          </button>
                             <span class="input-group-btn" style="width:40px;" ng-show="seriesSelected()">
                               <input type="text" class="form-control season-input" placeholder="S" name="season"
-                                     id="seriesSearchS" style="width:40px; height: 39px" ng-model="season"
+                                     id="seriesSearchS" style="width:40px; " ng-model="season"
                                      ng-enter="initiateSearch()"
                                      uib-tooltip="Enter a season to search for."
                                      tooltip-placement="top"
-                                     tooltip-trigger="mouseenter"
-                              >
+                                     tooltip-trigger="mouseenter">
                             </span>
                             <span class="input-group-btn" style="width:40px;" ng-show="seriesSelected()">
                               <input type="text" class="form-control episode-input" placeholder="E" name="episode"
-                                     id="seriesSearchE" style="width:40px; height: 39px" ng-model="episode"
+                                     id="seriesSearchE" style="width:40px;" ng-model="episode"
                                      ng-enter="initiateSearch()"
                                      uib-tooltip="Enter an episode to search for."
                                      tooltip-placement="top"
-                                     tooltip-trigger="mouseenter"
-                              >
+                                     tooltip-trigger="mouseenter">
                             </span>
                             <span class="input-group-btn input-group-btn1">
                             <div class="btn-group" uib-dropdown is-open="status.isopen">
-                              <button id="history-dropdown-button" type="button" class="btn btn-default" ng-disabled="!searchHistory"
+                              <button id="history-dropdown-button" type="button" class="btn btn-default"
                                       uib-dropdown-toggle
                                       ng-enter="initiateSearch()"
                                       uib-tooltip="Search history"
                                       tooltip-placement="top"
                                       tooltip-trigger="mouseenter"
-                                      style="border-radius: 0"
                               >
                                 <span class="glyphicon glyphicon-time" style="margin-right: 3px"></span><span
                                 class="caret"></span>
                                 </button>
                                     <ul class="dropdown-menu" uib-dropdown-menu
                                         template-url="static/html/search-searchhistory-dropdown.html"
-                                        aria-labelledby="button-template-url" ng-if="searchHistory">
+                                        aria-labelledby="button-template-url">
                                     </ul>
                                 </div>
                             </span>
-    
-                            <span class="input-group-btn input-group-btn2" style="width:47px;">
+  
+                          <span class="input-group-btn input-group-btn2" style="width:51px;">
                                 <button class="btn btn-default" type="button" id="startsearch"
                                         ng-click="initiateSearch()">Go!</button>
                             </span>

@@ -133,13 +133,12 @@ a.expand-collapse:focus {
 
 .episode-input {
   border-left-width: 0px !important;
-  //border-right-width: 0px !important;
+  border-right-width: 0px !important;
   border-radius: 0;
 }
 
 .season-input {
   border-radius: 0;
-  border-left: none;
 }
 
 .search-border {
@@ -473,39 +472,11 @@ a.disabled:hover {
   border: 1px solid @input-border;
   border-left-width: 0;
   border-radius: @border-radius-base;
-
-  button {
-    //border-radius: 0;
-    border: none;
-    padding-top: 8px;
-    padding-bottom: 8px;
-
-  }
-
 }
-
 
 .input-group-btn2 {
   border: 1px solid @input-border;
   border-radius: @border-radius-base;
-
-  button {
-    padding-top: 8px !important; //Just fill out
-    padding-bottom: 8px !important; //Just fill out
-    //border-radius: 0;
-  }
-
-  background-color: @btn-default-bg;
-
-  &:hover,
-  &:focus,
-  &.focus,
-  &:active,
-  &.active {
-    color: @btn-default-color;
-    background-color: darken(@btn-default-bg, 10%);
-    //border-color: darken(@border, 12%);
-  }
 }
 
 .input-group-btn:first-child {

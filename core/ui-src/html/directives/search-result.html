@@ -1,30 +1,30 @@
 <tr ng-class="{'duplicate' : result.duplicateGroupIndex > 0, 'title-group-expanded': result.titleGroupIndex > 0} "
     style="margin:0; border-width: 0; padding: 0" ng-if="resultDisplayed" class="search-result-row">
-    <td class="col-md-12 search-results-cell result-title" style="margin:0;">
-        <input type="checkbox"
-               ng-model="foo.selected"
-               ng-click="clickCheckbox($event, result)" data-checkbox-index="0" class="result-checkbox"/>
-        <a href="" ng-click="toggleTitleExpansion()"
-           ng-class="{'visibility-hidden': (result.titlesLength === 1 || result.titleGroupIndex > 0 || result.duplicateGroupIndex > 0)}"
-           class="title-expand-toggle"
-           uib-tooltip="Click to see or hide all results with the same title"
-           tooltip-placement="top"
-           tooltip-trigger="mouseenter"
-           style="text-decoration: none"
-        >
+  <td class="col-md-12 search-results-cell result-title" style="margin:0;">
+    <input type="checkbox"
+           ng-model="foo.selected"
+           ng-click="clickCheckbox($event, result)" data-checkbox-index="0" class="result-checkbox"/>
+    <a href="" ng-click="toggleTitleExpansion()"
+       ng-class="{'visibility-hidden': (result.titlesLength === 1 || result.titleGroupIndex > 0 || result.duplicateGroupIndex > 0)}"
+       class="title-expand-toggle"
+       uib-tooltip="Click to see or hide all results with the same title"
+       tooltip-placement="top"
+       tooltip-trigger="mouseenter"
+       style="text-decoration: none"
+    >
                 <span class="glyphicon"
                       ng-class="{'glyphicon-minus': titlesExpanded, 'glyphicon-plus': !titlesExpanded}"></span></a>
-
-        <a ng-if="foo.duplicatesDisplayed" href="" ng-click="toggleDuplicateExpansion()"
-           ng-class="{'visibility-hidden': (result.duplicatesLength == 1 || result.duplicateGroupIndex > 0)}"
-           class="duplicate-expand-toggle"
-           uib-tooltip="Click to see or hide all duplicates of this result"
-           tooltip-placement="right"
-           tooltip-trigger="mouseenter" style="text-decoration: none"
-        ><span class="glyphicon"
-               ng-class="{'glyphicon-minus': duplicatesExpanded, 'glyphicon-plus': !duplicatesExpanded}"></span>
-        </a>
-        <span class="title">
+    
+    <a ng-if="foo.duplicatesDisplayed" href="" ng-click="toggleDuplicateExpansion()"
+       ng-class="{'visibility-hidden': (result.duplicatesLength == 1 || result.duplicateGroupIndex > 0)}"
+       class="duplicate-expand-toggle"
+       uib-tooltip="Click to see or hide all duplicates of this result"
+       tooltip-placement="right"
+       tooltip-trigger="mouseenter" style="text-decoration: none"
+    ><span class="glyphicon"
+           ng-class="{'glyphicon-minus': duplicatesExpanded, 'glyphicon-plus': !duplicatesExpanded}"></span>
+    </a>
+    <span class="title">
                 <span ng-if="(result.titleGroupIndex === 0 && result.duplicateGroupIndex === 0) || searchResultsControllerShared.isGroupEpisodes">
                     <img ng-if="::result.cover && ::foo.showCovers" src="{{::result.cover}}" width="{{::coverSize}}px" style="margin-right: 5px" ng-click="showCover(result.cover)"/>
                     <span ng-if="::result.downloadedAt" class="fa fa-check" uib-tooltip="Already downloaded at {{::result.downloadedAt}}"
@@ -33,42 +33,42 @@
                     {{ ::result.title }}
                 </span>
             </span>
-    </td>
-    <td class="col-md-1 search-results-cell result-indexer" style="text-align: right">
-        {{ ::result.indexer }}
-    </td>
-    <td class="col-md-1 search-results-cell result-category" style="text-align: right">
-        {{ ::result.category }}
-    </td>
-    <td class="col-md-1 search-results-cell result-size" style="text-align: right">
-        {{ ::result.size | byteFmt: 2 }}
-    </td>
-    <td class="col-md-1 search-results-cell result-details" style="text-align: right">
+  </td>
+  <td class="col-md-1 search-results-cell result-indexer" style="text-align: right">
+    {{ ::result.indexer }}
+  </td>
+  <td class="col-md-1 search-results-cell result-category" style="text-align: right">
+    {{ ::result.category }}
+  </td>
+  <td class="col-md-1 search-results-cell result-size" style="text-align: right">
+    {{ ::result.size | byteFmt: 2 }}
+  </td>
+  <td class="col-md-1 search-results-cell result-details" style="text-align: right">
     <span ng-if="::(result.grabs !== null)">
         {{ ::result.grabs | kify }}
     </span>
-        <span ng-if="::result.grabs !== null && result.seeders !== null">
+    <span ng-if="::result.grabs !== null && result.seeders !== null">
          /
     </span>
-        <span ng-if="::result.seeders !== null">
+    <span ng-if="::result.seeders !== null">
         {{ ::result.seeders | kify }} / {{ ::result.peers | kify }}
     </span>
-    </td>
-    <td class="col-md-1 search-results-cell result-age" style="text-align: right">
+  </td>
+  <td class="col-md-1 search-results-cell result-age" style="text-align: right">
     <span uib-tooltip="{{ ::result.date }}"
           tooltip-placement="top"
           tooltip-trigger="mouseenter">{{ ::result.age }}</span>
-    </td>
-    <td class="col-md-3 search-results-cell result-links">
-        <a href ng-click="showNfo(result)" ng-class="::{'no-nfo': result.hasNfo === 'NO'}"
-           class="no-underline result-show-nfo-link"
-           uib-tooltip="{{ ::getNfoTooltip() }}"
-           tooltip-placement="top"
-           tooltip-trigger="mouseenter">
-            <i class="fa fa-file-text" aria-hidden="true" ng-class="::{'fuzzy-nfo': result.hasNfo == 'MAYBE'}"
-               style="margin-left:3px; margin-right:3px; vertical-align: middle"></i>
-        </a>
-        <span ng-if="::showDetailsDl">
+  </td>
+  <td class="col-md-3 search-results-cell result-links">
+    <a href ng-click="showNfo(result)" ng-class="::{'no-nfo': result.hasNfo === 'NO'}"
+       class="no-underline result-show-nfo-link"
+       uib-tooltip="{{ ::getNfoTooltip() }}"
+       tooltip-placement="top"
+       tooltip-trigger="mouseenter">
+      <i class="fa fa-file-text" aria-hidden="true" ng-class="::{'fuzzy-nfo': result.hasNfo == 'MAYBE'}"
+         style="margin-left:3px; margin-right:3px; vertical-align: middle"></i>
+    </a>
+    <span ng-if="::showDetailsDl">
         <a ng-if="result.source" target="_blank" href="{{ ::result.source | binsearch | dereferer}}"
            style="vertical-align: middle" class="no-underline result-details-link"
            uib-tooltip="Search via Binsearch"
@@ -78,10 +78,10 @@
         </a>
         
             <a ng-class="::{'no-nfo': !result.comments}" href="{{::result.details_link | dereferer}}" target="_blank"
-           class="no-underline result-comments-link"
-           uib-tooltip="Comments"
-           tooltip-placement="top"
-           tooltip-trigger="mouseenter">
+               class="no-underline result-comments-link"
+               uib-tooltip="Comments"
+               tooltip-placement="top"
+               tooltip-trigger="mouseenter">
             <i class="fa fa-comment" aria-hidden="true" style="margin-left:0; margin-right:3px;"></i>
         </a>
         
@@ -93,10 +93,10 @@
             <i class="fa fa-info" aria-hidden="true"
                style="margin-left:3px; margin-right:3px; vertical-align: middle"></i>
         </a>
-    
-            </a>
+      
+      </a>
     </span>
-        <span ng-switch on="::result.downloadType">
+    <span ng-switch on="::result.downloadType">
             <span ng-switch-when="TORRENT">
                 <a target="_blank" href="gettorrent/user/{{ ::result.searchResultId }}"
                    style="vertical-align: middle; margin-left: 3px; margin-right: 3px"
@@ -118,5 +118,5 @@
                 <addable-nzbs searchresult="::result"></addable-nzbs>
             </span>
         </span>
-    </td>
+  </td>
 </tr>
