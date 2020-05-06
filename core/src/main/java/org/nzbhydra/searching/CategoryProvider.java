@@ -16,7 +16,12 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -190,7 +195,7 @@ public class CategoryProvider implements InitializingBean {
                 if (foundMainCategories.size() > 1) {
                     logger.warn("Search supplied multiple main categories: {}. Will use {}", catsString, category.getName());
                 } else if (cats.size() > 1) {
-                    logger.warn("Search supplied a general category and a subcategory: {}. Will use the subcategory {}", catsString, category.getName());
+                    logger.warn("Search supplied a general category and a subcategory: {}. Will use the category {}", catsString, category.getName());
                 }
                 return category;
             }
