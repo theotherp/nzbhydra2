@@ -3,6 +3,8 @@ package org.nzbhydra.searching;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Multiset;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.downloading.FileDownloadEntity;
+import org.nzbhydra.downloading.FileDownloadRepository;
 import org.nzbhydra.downloading.FileHandler;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.searching.dtoseventsenums.IndexerSearchMetaData;
@@ -21,9 +23,11 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -36,6 +40,9 @@ public class InternalSearchResultProcessor {
     private FileHandler nzbHandler;
     @Autowired
     private ConfigProvider configProvider;
+
+    @Autowired
+    private FileDownloadRepository fileDownloadRepository;
 
     public SearchResponse createSearchResponse(org.nzbhydra.searching.SearchResult searchResult) {
         Stopwatch stopwatch = Stopwatch.createStarted();
@@ -82,15 +89,18 @@ public class InternalSearchResultProcessor {
     private List<SearchResultWebTO> transformSearchResults(List<SearchResultItem> searchResultItems) {
         List<SearchResultWebTO> transformedSearchResults = new ArrayList<>();
 
+        final List<Long> guids = searchResultItems.stream().map(SearchResultItem::getGuid).collect(Collectors.toList());
+        final Collection<FileDownloadEntity> alreadyDownloaded = fileDownloadRepository.findBySearchResultIdIn(guids);
+
         for (SearchResultItem item : searchResultItems) {
             SearchResultWebTOBuilder builder = SearchResultWebTO.builder()
-                .category(configProvider.getBaseConfig().getSearching().isUseOriginalCategories() ? item.getOriginalCategory() : item.getCategory().getName())
-                .comments(item.getCommentsCount())
-                .cover(item.getCover())
-                .details_link(item.getDetails())
-                .downloadType(item.getDownloadType().name())
-                .files(item.getFiles())
-                .grabs(item.getGrabs())
+                    .category(configProvider.getBaseConfig().getSearching().isUseOriginalCategories() ? item.getOriginalCategory() : item.getCategory().getName())
+                    .comments(item.getCommentsCount())
+                    .cover(item.getCover())
+                    .details_link(item.getDetails())
+                    .downloadType(item.getDownloadType().name())
+                    .files(item.getFiles())
+                    .grabs(item.getGrabs())
                 .seeders(item.getSeeders())
                 .peers(item.getPeers())
                 .hasNfo(item.getHasNfo().name())
@@ -116,8 +126,15 @@ public class InternalSearchResultProcessor {
                 builder.showtitle(item.getAttributes().get("showtitle"));
             }
 
+            final Optional<FileDownloadEntity> matchingDownload = alreadyDownloaded.stream().filter(x -> x.getSearchResult().getId() == item.getSearchResultId()).findFirst();
+            if (matchingDownload.isPresent()) {
+                builder.downloadedAt(DATE_TIME_FORMATTER.format(LocalDateTime.ofInstant(matchingDownload.get().getTime(), ZoneId.of("UTC"))));
+            }
+
             transformedSearchResults.add(builder.build());
         }
+
+
         transformedSearchResults.sort(Comparator.comparingLong(SearchResultWebTO::getEpoch).reversed());
         return transformedSearchResults;
     }

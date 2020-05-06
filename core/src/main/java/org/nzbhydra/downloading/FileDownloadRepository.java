@@ -14,9 +14,13 @@ public interface FileDownloadRepository extends JpaRepository<FileDownloadEntity
 
     Collection<FileDownloadEntity> findByExternalId(String externalId);
 
+    Collection<FileDownloadEntity> findByExternalIdIn(Collection<String> externalId);
+
     List<FileDownloadEntity> findBySearchResultTitleOrderByTimeDesc(String title);
 
     List<FileDownloadEntity> findByStatusInAndTimeAfterOrderByTimeDesc(Collection<FileDownloadStatus> status, Instant minTime);
 
     Page<FileDownloadEntity> findBySearchResultIndexerOrderByTimeDesc(IndexerEntity indexerEntity, Pageable pageable);
+
+    Collection<FileDownloadEntity> findBySearchResultIdIn(Collection<Long> id);
 }
