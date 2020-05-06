@@ -62,9 +62,6 @@ function hydraUpdatesFooter() {
                             onYes: function () {
                                 $http.put("internalapi/updates/setOutdatedWrapperDetectedWarningShown")
                             }
-                        },
-                        cancel: {
-                            text: "Remind me again"
                         }
                     }, undefined, "left");
 

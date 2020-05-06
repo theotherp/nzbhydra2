@@ -329,7 +329,9 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
                         activeTab: [function () {
                             return 0;
                         }],
-                        simpleInfos: function(){return null;},
+                        simpleInfos: function () {
+                            return null;
+                        },
                         $title: ["$stateParams", function ($stateParams) {
                             return "System"
                         }]
@@ -353,7 +355,9 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
                         activeTab: [function () {
                             return 1;
                         }],
-                        simpleInfos: function(){return null;},
+                        simpleInfos: function () {
+                            return null;
+                        },
                         $title: ["$stateParams", function ($stateParams) {
                             return "System (Updates)"
                         }]
@@ -377,7 +381,9 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
                         activeTab: [function () {
                             return 2;
                         }],
-                        simpleInfos: function(){return null;},
+                        simpleInfos: function () {
+                            return null;
+                        },
                         $title: ["$stateParams", function ($stateParams) {
                             return "System (Log)"
                         }]
@@ -401,7 +407,9 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
                         activeTab: [function () {
                             return 3;
                         }],
-                        simpleInfos: function(){return null;},
+                        simpleInfos: function () {
+                            return null;
+                        },
                         $title: ["$stateParams", function ($stateParams) {
                             return "System (Tasks)"
                         }]
@@ -425,7 +433,9 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
                         activeTab: [function () {
                             return 4;
                         }],
-                        simpleInfos: function(){return null;},
+                        simpleInfos: function () {
+                            return null;
+                        },
                         $title: ["$stateParams", function ($stateParams) {
                             return "System (Backup)"
                         }]
@@ -449,7 +459,9 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
                         activeTab: [function () {
                             return 5;
                         }],
-                        simpleInfos: function(){return null;},
+                        simpleInfos: function () {
+                            return null;
+                        },
                         $title: ["$stateParams", function ($stateParams) {
                             return "System (Bug report)"
                         }]
@@ -473,7 +485,9 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
                         activeTab: [function () {
                             return 6;
                         }],
-                        simpleInfos: function(){return null;},
+                        simpleInfos: function () {
+                            return null;
+                        },
                         $title: ["$stateParams", function ($stateParams) {
                             return "System (News)"
                         }]
@@ -1768,9 +1782,6 @@ function hydraUpdatesFooter() {
                             onYes: function () {
                                 $http.put("internalapi/updates/setOutdatedWrapperDetectedWarningShown")
                             }
-                        },
-                        cancel: {
-                            text: "Remind me again"
                         }
                     }, undefined, "left");
 
