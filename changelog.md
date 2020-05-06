@@ -1,3 +1,13 @@
+### v2.20.5 (2020-05-06)
+
+**Feature** Mark results in GUI that already have been downloaded.
+
+**Fix** Fix issue with notification about outdated wrapper files not being shown. NZBHydra will now nag you until you refresh the files.
+
+**Fix** Revert layout fixes made in v2.20.4 because fuck CSS.
+
+
+
 ### v2.20.4 (2020-05-06)
 
 **Feature** GC logging (for debugging of memory issues) is now configurable and disabled by default. This has required a change in the wrapper which means you'll have to manually update them if you're running NZBHydra on windows or are using the linux executable.
