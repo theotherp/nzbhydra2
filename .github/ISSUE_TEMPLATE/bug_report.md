@@ -16,6 +16,7 @@ You don't have to follow the next steps by the letter, just think about what you
 * Can the problem be reproduced? How?
 * Use a proper title. Describe the problem succinctly, don't just copy and paste the error message.
 * If you use a docker container please tell me which one.
+* If there's a bug with the GUI post at least your current version, OS, resolution and browser and post a screenshot if necessary.
 
 **I will close your issues if I you didn't provide proper information as described as above**
 
