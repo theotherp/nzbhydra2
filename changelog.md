@@ -1,3 +1,11 @@
+### v2.20.6 (2020-05-07)
+
+**Fix** Revert tool to compile python wrapper to exe to older version as new exe files were (falsely!) recognized as a virus by *some* tools. To be clear, the files were never problematic.
+
+**Fix** Fix decoding issue of settings file by python3 wrapper.
+
+
+
 ### v2.20.5 (2020-05-06)
 
 **Feature** Mark results in GUI that already have been downloaded.
