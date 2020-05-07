@@ -1,6 +1,14 @@
+### v2.20.7 (2020-05-07)
+
+**Fix** Execute check of outdated wrapper on startup to properly detect updated wrapper.
+
+**Fix** Fix some more layout issues.
+
+
+
 ### v2.20.6 (2020-05-07)
 
-**Fix** Revert tool to compile python wrapper to exe to older version as new exe files were (falsely!) recognized as a virus by *some* tools. To be clear, the files were never problematic.
+**Fix** Revert tool to compile python wrapper to exe to older version as new exe files were (falsely!) recognized as a virus by *some* tools. To be clear, the files were never problematic. That means you'll have update the exe files or python scripts again.
 
 **Fix** Fix decoding issue of settings file by python3 wrapper.
 
