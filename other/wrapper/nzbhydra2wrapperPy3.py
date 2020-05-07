@@ -349,8 +349,9 @@ def startup():
     if args.xmx:
         xmx = args.xmx
     if os.path.exists(yamlPath):
-        with open(yamlPath, "r") as f:
+        with open(yamlPath, "rb") as f:
             for line in f.readlines():
+                line = line.decode("UTF-8")
                 index = line.find("xmx:")
                 if index > -1:
                     xmx = line[index + 5:].rstrip("\n\r ")
