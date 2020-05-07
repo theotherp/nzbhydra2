@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -36,6 +37,12 @@ public class ProblemDetectorTask {
 
     @Autowired
     List<ProblemDetector> problemDetectors;
+
+    @PostConstruct
+    public void init() {
+        //Check on startup if the wrapper has been updated
+        detectProblems();
+    }
 
 
     @HydraTask(configId = "ProblemDetector", name = "Problem detector", interval = HOUR)
