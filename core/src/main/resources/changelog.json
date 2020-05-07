@@ -6,6 +6,10 @@
       {
         "type": "fix",
         "text": "Execute check of outdated wrapper on startup to properly detect updated wrapper."
+      },
+      {
+        "type": "fix",
+        "text": "Fix some more layout issues."
       }
     ],
     "final": true
