@@ -75,6 +75,8 @@ public class DebugInfosProvider {
     @PersistenceContext
     private EntityManager entityManager;
     @Autowired
+    private OutdatedWrapperDetector wrapperDetector;
+    @Autowired
     private Ssl ssl;
 
     @Value("spring.datasource.url")
@@ -179,9 +181,7 @@ public class DebugInfosProvider {
         logger.info("Datasource URL: {}", datasourceUrl);
         logger.info("Ciphers:");
         logger.info(ssl.getSupportedCiphers());
-        if (outdatedWrapperDetector.isOutdatedWrapperDetected()) {
-            logger.warn("Outdated wrapper detected");
-        }
+        outdatedWrapperDetector.executeCheck();
         logNumberOfTableRows("SEARCH");
         logNumberOfTableRows("SEARCHRESULT");
         logNumberOfTableRows("INDEXERSEARCH");
@@ -192,6 +192,8 @@ public class DebugInfosProvider {
         if (isRunInDocker()) {
             logger.info("Apparently run in docker");
             logger.info("Container info: {}", updateManager.getPackageInfo());
+        } else {
+            logger.info("Apparently not run in dicker");
         }
 
         logger.info("Metrics:");
