@@ -20,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.google.common.base.Strings;
 import lombok.Data;
 import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.ValidatingConfig;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -42,6 +43,7 @@ public class DownloadingConfig extends ValidatingConfig<DownloadingConfig> {
     private boolean showDownloaderStatus = true;
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private FileDownloadAccessType nzbAccessType = FileDownloadAccessType.REDIRECT;
+    private SearchSourceRestriction fallbackForFailed = SearchSourceRestriction.BOTH;
 
     @Override
     public ConfigValidationResult validateConfig(BaseConfig oldConfig, DownloadingConfig newConfig, BaseConfig newBaseConfig) {

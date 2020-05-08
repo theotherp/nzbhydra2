@@ -1,7 +1,11 @@
 [
   {
-    "version": "v2.20.8",
+    "version": "v2.21.0",
     "changes": [
+      {
+        "type": "feature",
+        "text": "NZBHydra will now try to fall back to similar results when an NZB download fails. This is only possible if it proxies the results instead of redirecting to the indexer so I've made that the default *for new installs*. It works by looking for results with the same title from other indexers which were found in the same search as the result of which the download failed."
+      },
       {
         "type": "fix",
         "text": "Covers were not shown for search results."

@@ -40,8 +40,10 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -69,7 +71,6 @@ public class FileHandler {
     @Autowired
     protected UrlCalculator urlCalculator;
 
-
     @Transactional
     public DownloadResult getFileByGuid(long guid, FileDownloadAccessType fileDownloadAccessType, SearchSource accessSource) throws InvalidSearchResultIdException {
         Optional<SearchResultEntity> optionalResult = searchResultRepository.findById(guid);
@@ -80,12 +81,36 @@ public class FileHandler {
         SearchResultEntity result = optionalResult.get();
         String downloadType = result.getDownloadType() == DownloadType.NZB ? "NZB" : "Torrent";
         logger.info("{} download request for \"{}\" from indexer {}", downloadType, result.getTitle(), result.getIndexer().getName());
+        return getFileByResult(fileDownloadAccessType, accessSource, result, new HashSet<>());
+    }
+
+    private DownloadResult getFileByResult(FileDownloadAccessType fileDownloadAccessType, SearchSource accessSource, SearchResultEntity result, Set<SearchResultEntity> alreadyTriedDownloading) {
 
         if (fileDownloadAccessType == FileDownloadAccessType.REDIRECT) {
             return handleRedirect(accessSource, result);
         } else {
             try {
-                return handleContentDownload(accessSource, result, downloadType);
+                final DownloadResult downloadResult = handleContentDownload(accessSource, result);
+                if (downloadResult.isSuccessful()) {
+                    return downloadResult;
+                }
+                if (!configProvider.getBaseConfig().getDownloading().getFallbackForFailed().meets(accessSource)) {
+                    return downloadResult;
+                }
+
+                alreadyTriedDownloading.add(result);
+                final Set<SearchResultEntity> similarResults = searchResultRepository.findAllByTitleLikeIgnoreCase(result.getTitle().replaceAll("[ .\\-_]", "_"));
+                final Optional<SearchResultEntity> similarResult = similarResults.stream()
+                        .filter(x -> x != result && !alreadyTriedDownloading.contains(x))
+                        .findFirst();
+                if (similarResult.isPresent()) {
+                    logger.info("Falling back from failed download to similar result {}", similarResult.get());
+                    return getFileByResult(fileDownloadAccessType, accessSource, similarResult.get(), alreadyTriedDownloading);
+                }
+                logger.info("Unable to find similar result to fall back to. Returning download failure.");
+
+                return downloadResult;
+
             } catch (MagnetLinkRedirectException e) {
                 logger.warn("Unable to download magnet link as file");
                 return DownloadResult.createErrorResult("Unable to download magnet link as file");
@@ -94,7 +119,7 @@ public class FileHandler {
     }
 
     @Transactional
-    public DownloadResult handleContentDownload(SearchSource accessSource, SearchResultEntity result, String downloadType) throws MagnetLinkRedirectException {
+    public DownloadResult handleContentDownload(SearchSource accessSource, SearchResultEntity result) throws MagnetLinkRedirectException {
         if (result.getLink().contains("magnet:")) {
             logger.warn("Unable to download magnet link as file");
             return DownloadResult.createErrorResult("Unable to download magnet link as file");
@@ -119,7 +144,7 @@ public class FileHandler {
 
         long responseTime = stopwatch.elapsed(TimeUnit.MILLISECONDS);
         //LATER CHeck content of file for errors, perhaps an indexer returns successful code but error in message for some reason
-        logger.info("{} download from indexer successfully completed in {}ms", downloadType, responseTime);
+        logger.info("{} download from indexer successfully completed in {}ms", result.getDownloadType() == DownloadType.NZB ? "NZB" : "Torrent", responseTime);
 
         FileDownloadEntity downloadEntity = new FileDownloadEntity(result, FileDownloadAccessType.PROXY, accessSource, FileDownloadStatus.NZB_DOWNLOAD_SUCCESSFUL, null);
         if (configProvider.getBaseConfig().getMain().isKeepHistory()) {
@@ -174,7 +199,7 @@ public class FileHandler {
         final List<Long> failedIds = new ArrayList<>();
 
         for (Long guid : guids) {
-            DownloadResult result = null;
+            DownloadResult result;
             try {
                 result = getFileByGuid(guid, FileDownloadAccessType.PROXY, SearchSource.INTERNAL);
             } catch (InvalidSearchResultIdException e) {

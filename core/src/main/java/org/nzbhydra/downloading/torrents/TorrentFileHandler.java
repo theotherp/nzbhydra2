@@ -69,7 +69,7 @@ public class TorrentFileHandler {
             return fileHandler.handleRedirect(accessSource, result);
         } else {
             try {
-                return fileHandler.handleContentDownload(accessSource, result, "torrent");
+                return fileHandler.handleContentDownload(accessSource, result);
             } catch (MagnetLinkRedirectException e) {
                 return fileHandler.handleRedirect(accessSource, result);
             }

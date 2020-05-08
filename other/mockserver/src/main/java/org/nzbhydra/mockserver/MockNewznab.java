@@ -63,10 +63,11 @@ public class MockNewznab {
         if (nzbId.endsWith("12")) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-        if (nzbId.endsWith("12")) {
-            return ResponseEntity.ok("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+        if (nzbId.endsWith("13")) {
+            return ResponseEntity.status(429).body("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                     "<error code=\"429\" description=\"Request limit reached\"/>");
         }
+
         return ResponseEntity.ok("Would download NZB with ID" + nzbId);
     }
 
@@ -120,6 +121,12 @@ public class MockNewznab {
         if ("24".equals(params.getTmdbid())) {
             NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, 100, itemTitleBase, false, Collections.emptyList(), false, 0);
             rssRoot.getRssChannel().getNewznabResponse().setTotal(10_000);
+            return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
+        }
+
+        if ("samenames".equals(params.getQ())) {
+            NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, 100, "", false, Collections.emptyList(), false, 0);
+            rssRoot.getRssChannel().getNewznabResponse().setTotal(1000);
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }
 

@@ -261,12 +261,13 @@ categoriesConfig:
       subtype: NONE
 downloading:
   downloaders: []
-  nzbAccessType: "REDIRECT"
+  nzbAccessType: "PROXY"
   saveTorrentsTo: null
   saveNzbsTo: null
   sendMagnetLinks: true
   updateStatuses: true
   showDownloaderStatus: true
+  fallbackForFailed: BOTH
 genericStorage: {}
 indexers: []
 main:

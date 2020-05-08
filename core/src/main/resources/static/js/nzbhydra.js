@@ -5771,10 +5771,10 @@ function ConfigFields($injector) {
                         {
                             key: 'markersToLog',
                             type: 'horizontalMultiselect',
+                            hideExpression: 'model.consolelevel !== "DEBUG" && model.logfilelevel !== "DEBUG"',
                             templateOptions: {
                                 label: 'Log markers',
                                 help: 'Select certain sections for more output on debug level.',
-                                hideExpression: 'model.consolelevel !== "DEBUG" && model.logfilelevel !== "DEBUG"', //Doesn't work...
                                 options: [
                                     {label: 'API limits', id: 'LIMITS'},
                                     {label: 'Config file handling', id: 'CONFIG_READ_WRITE'},
@@ -6934,6 +6934,22 @@ function ConfigFields($injector) {
                             }
                         },
                         {
+                            key: 'fallbackForFailed',
+                            type: 'horizontalSelect',
+                            hideExpression: 'model.nzbAccessType === "REDIRECT"',
+                            templateOptions: {
+                                label: 'Fallback for failed downloads',
+                                options: [
+                                    {name: 'GUI downloads', value: 'INTERNAL'},
+                                    {name: 'API downloads', value: 'API'},
+                                    {name: 'All downloads', value: 'BOTH'},
+                                    {name: 'Never', value: 'NONE'}
+                                ],
+                                help: "Fallback to similar results when a download fails. Only available when proxying NZBs (see above).",
+                                tooltip: "When you or an external program tries to download an NZB from NZBHydra the download may fail because the indexer is offline or its download limit has been reached. You can use this setting for NZBHydra to try and fall back on results from other indexers. It will search for results with the same name that were the result from the same search as where the download originated from. It will *not* execute another search."
+                            }
+                        },
+                        {
                             key: 'sendMagnetLinks',
                             type: 'horizontalSwitch',
                             templateOptions: {
@@ -7216,6 +7232,7 @@ function ConfigFields($injector) {
         }
     }
 }
+
 
 function handleConnectionCheckFail(ModalService, data, model, whatFailed, deferred) {
     var message;
