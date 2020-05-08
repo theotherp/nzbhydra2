@@ -1,3 +1,13 @@
+### v2.21.0 (2020-05-08)
+
+**Feature** NZBHydra will now try to fall back to similar results when an NZB download fails. This is only possible if it proxies the results instead of redirecting to the indexer so I've made that the default *for new installs*. It works by looking for results with the same title from other indexers which were found in the same search as the result of which the download failed.
+
+**Fix** Covers were not shown for search results.
+
+**Fix** Fix layout of tooltip icons ("?") in config in safari browser.
+
+
+
 ### v2.20.7 (2020-05-07)
 
 **Fix** Execute check of outdated wrapper on startup to properly detect updated wrapper.
