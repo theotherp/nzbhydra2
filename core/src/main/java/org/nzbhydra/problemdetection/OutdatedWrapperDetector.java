@@ -85,7 +85,8 @@ public class OutdatedWrapperDetector implements ProblemDetector {
                     final String expectedHash = filenamesToExpectedHashes.get(filename);
                     final String actualHash = hash.toString();
                     if (!expectedHash.equals(actualHash)) {
-                        logger.warn("Detected outdated wrapper. Please make sure you update your wrapper (i.e. the executables or python file you use to start NZBHydra): Shut down NZBHydra, download the latest version from GitHub and extract it into your main NZBHydra folder. Start NZBHydra again.");
+                        logger.warn("The NZBHydra wrappers (i.e. the executables or python scripts you use to run NZBHydra) seem to be outdated. Please update them:\n" +
+                                "Shut down NZBHydra, download the latest version and extract all files into your main NZBHydra folder (overwriting all). Start NZBHydra again.");
                         logger.warn("Outdated file: {}. Expected hash: {}. Actual hash: {}", wrapperFile, expectedHash, actualHash);
 
                         genericStorage.save(KEY_OUTDATED_WRAPPER_DETECTED_WARNING_DISPLAYED, false);
