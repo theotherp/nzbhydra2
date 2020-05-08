@@ -5,6 +5,10 @@
       {
         "type": "fix",
         "text": "Covers were not shown for search results."
+      },
+      {
+        "type": "fix",
+        "text": "Fix layout of tooltip icons (\"?\") in config in safari browser."
       }
     ],
     "final": true
