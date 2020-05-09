@@ -21,8 +21,22 @@
   <div class="row">
     <div class="col-md-4"></div>
     <div ng-if="wrapperOutdated" class="col-md-12 alert alert-warning" role="alert" style="margin-top: 20px">
-      The NZBHydra wrappers (i.e. the executables or python scripts you use to run NZBHydra) seem to be outdated.<br>Please update them:<br>
-      Shut down NZBHydra, <a href="https://github.com/theotherp/nzbhydra2/releases/latest">download the latest version</a> and extract *all files* into your main NZBHydra folder (overwriting all). Start NZBHydra again.
+      The NZBHydra wrappers (i.e. the executables or python scripts you use to run NZBHydra) seem to be outdated.Please update them.<br><br>
+      Shut down NZBHydra, <a href="https://github.com/theotherp/nzbhydra2/releases/latest">download the latest version</a> and extract all the relevant wrapper files into your main NZBHydra folder.<br>
+      For Windows these files are:
+      <ul>
+        <li>NZBHydra2.exe</li>
+        <li>NZBHydra2 Console.exe</li>
+      </ul>
+      For linux these files are:
+      <ul>
+        <li>nzbhydra2</li>
+        <li>nzbhydra2wrapper.py</li>
+        <li>nzbhydra2wrapperPy3.py</li>
+      </ul>
+      Make sure to overwrite all of these files that already exist - you don't need to update any files that aren't already present.
+      <br><br>
+      Afterwards start NZBHydra again.
     </div>
   </div>
   
