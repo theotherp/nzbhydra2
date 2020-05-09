@@ -229,7 +229,7 @@ angular
                                     {name: 'Send link', value: 'SEND_LINK'},
                                     {name: 'Upload NZB', value: 'UPLOAD'}
                                 ],
-                                help: "How NZBs are added to the downloader, either by sending a link to the NZB or by uploading the NZB data. Uploading is recommended",
+                                help: "How NZBs are added to the downloader, either by sending a link to the NZB or by uploading the NZB data.",
                                 tooltip: 'You can select if you want to upload the NZB to the downloader or send a Hydra link. The downloader will do the download itself. This is a matter of taste, but adding a link and redirecting the downloader is the fastest way.'
                             }
                         },

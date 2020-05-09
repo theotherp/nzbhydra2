@@ -4667,7 +4667,7 @@ angular
                                     {name: 'Send link', value: 'SEND_LINK'},
                                     {name: 'Upload NZB', value: 'UPLOAD'}
                                 ],
-                                help: "How NZBs are added to the downloader, either by sending a link to the NZB or by uploading the NZB data. Uploading is recommended",
+                                help: "How NZBs are added to the downloader, either by sending a link to the NZB or by uploading the NZB data.",
                                 tooltip: 'You can select if you want to upload the NZB to the downloader or send a Hydra link. The downloader will do the download itself. This is a matter of taste, but adding a link and redirecting the downloader is the fastest way.'
                             }
                         },
@@ -6929,8 +6929,8 @@ function ConfigFields($injector) {
                                     {name: 'Proxy NZBs from indexer', value: 'PROXY'},
                                     {name: 'Redirect to the indexer', value: 'REDIRECT'}
                                 ],
-                                help: "How access to NZBs is provided when NZBs are downloaded (by the user or external tools). Redirecting is recommended.",
-                                tooltip: 'NZB downloads from Hydra can either be achieved by redirecting the requester to the original indexer or by downloading the NZB from the indexer and serving this. Redirecting has the advantage that it causes the least load on Hydra but also the disadvantage that the requester might be forwarded to an indexer link that contains the indexer\'s API key. To prevent that select to proxy NZBs.'
+                                help: "How access to NZBs is provided when NZBs are downloaded (by the user or external tools). Proxying is recommended as it allows fallback for failed downloads (see below)..",
+                                tooltip: 'NZB downloads from Hydra can either be achieved by redirecting the requester to the original indexer or by downloading the NZB from the indexer and serving this. Redirecting has the advantage that it causes the least load on Hydra but also the disadvantage that the requester might be forwarded to an indexer link that contains the indexer\'s API key. To prevent that select to proxy NZBs. It also allows fallback for failed downloads (next option).'
                             }
                         },
                         {

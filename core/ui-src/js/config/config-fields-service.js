@@ -1561,8 +1561,8 @@ function ConfigFields($injector) {
                                     {name: 'Proxy NZBs from indexer', value: 'PROXY'},
                                     {name: 'Redirect to the indexer', value: 'REDIRECT'}
                                 ],
-                                help: "How access to NZBs is provided when NZBs are downloaded (by the user or external tools). Redirecting is recommended.",
-                                tooltip: 'NZB downloads from Hydra can either be achieved by redirecting the requester to the original indexer or by downloading the NZB from the indexer and serving this. Redirecting has the advantage that it causes the least load on Hydra but also the disadvantage that the requester might be forwarded to an indexer link that contains the indexer\'s API key. To prevent that select to proxy NZBs.'
+                                help: "How access to NZBs is provided when NZBs are downloaded (by the user or external tools). Proxying is recommended as it allows fallback for failed downloads (see below)..",
+                                tooltip: 'NZB downloads from Hydra can either be achieved by redirecting the requester to the original indexer or by downloading the NZB from the indexer and serving this. Redirecting has the advantage that it causes the least load on Hydra but also the disadvantage that the requester might be forwarded to an indexer link that contains the indexer\'s API key. To prevent that select to proxy NZBs. It also allows fallback for failed downloads (next option).'
                             }
                         },
                         {

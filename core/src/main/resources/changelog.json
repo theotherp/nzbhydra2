@@ -4,7 +4,7 @@
     "changes": [
       {
         "type": "feature",
-        "text": "Make instructions what to update when your wrapper is outdated extra clear."
+        "text": "Make instructions what to update when your wrapper is outdated extra clear: Any wrapper file found in the folder must be updated, not just the one you're using to run hydra. If the message says to exract the ZIP into your nzbhydra folder I mean ALL THE FUCKING FILES."
       },
       {
         "type": "note",
