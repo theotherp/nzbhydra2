@@ -79,26 +79,28 @@ public class OutdatedWrapperDetector implements ProblemDetector {
         }
         for (String filename : wrapperFilenames) {
             File wrapperFile = new File(filename);
+            boolean outdatedWrapperFound = false;
             if (wrapperFile.exists()) {
                 try {
-                    HashCode hash = Files.hash(wrapperFile, Hashing.crc32());
+                    HashCode hash = Files.hash(wrapperFile, Hashing.sha1());
                     final String expectedHash = filenamesToExpectedHashes.get(filename);
                     final String actualHash = hash.toString();
                     if (!expectedHash.equals(actualHash)) {
-                        logger.warn("The NZBHydra wrappers (i.e. the executables or python scripts you use to run NZBHydra) seem to be outdated. Please update them:\n" +
-                                "Shut down NZBHydra, download the latest version and extract all files into your main NZBHydra folder (overwriting all). Start NZBHydra again.");
                         logger.warn("Outdated file: {}. Expected hash: {}. Actual hash: {}", wrapperFile, expectedHash, actualHash);
+                        outdatedWrapperFound = true;
 
-                        genericStorage.save(KEY_OUTDATED_WRAPPER_DETECTED_WARNING_DISPLAYED, false);
-                        genericStorage.save(KEY_OUTDATED_WRAPPER_DETECTED, true);
-                        //Finding any outdated wrapper is enough.
-                        return;
                     }
                 } catch (IOException e) {
                     logger.error("Unable to hash file " + wrapperFile, e);
-                    return;
                 }
-                genericStorage.save(KEY_OUTDATED_WRAPPER_DETECTED, false);
+                if (outdatedWrapperFound) {
+                    genericStorage.save(KEY_OUTDATED_WRAPPER_DETECTED_WARNING_DISPLAYED, false);
+                    genericStorage.save(KEY_OUTDATED_WRAPPER_DETECTED, true);
+                    logger.warn("The NZBHydra wrappers (i.e. the executables or python scripts you use to run NZBHydra) seem to be outdated. Please update them:\n" +
+                            "Shut down NZBHydra, download the latest version and extract *all files* into your main NZBHydra folder (overwriting all). Start NZBHydra again.");
+                } else {
+                    genericStorage.save(KEY_OUTDATED_WRAPPER_DETECTED, false);
+                }
             }
         }
     }
