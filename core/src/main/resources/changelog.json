@@ -5,6 +5,10 @@
       {
         "type": "feature",
         "text": "Make instructions what to update when your wrapper is outdated extra clear."
+      },
+      {
+        "type": "note",
+        "text": "I moved my mail address from theotherp@gmx.de to theotherp@posteo.net."
       }
     ],
     "final": true

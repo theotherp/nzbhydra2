@@ -84,14 +84,14 @@ Please send merge requests to the develop branch!
 
 ## Contact
 
-Send me an email at TheOtherP@gmx.de or a PM at https://www.reddit.com/user/TheOtherP
+Send me an email at theotherp@posteo.net or a PM at https://www.reddit.com/user/TheOtherP
 
 ## Donate
 
 You're welcome to donate:
   <ul>
     <li>Bitcoin via 1LPCUF9eKEXi58nHbxTbJyfxCJkcCXKzvm</li>
-    <li>Regular money via PayPal to theotherp@gmx.de</li>
+    <li>Regular money via PayPal to theotherp@posteo.net</li>
     <li>Via <a href="https://github.com/sponsors/theotherp">GitHub sponsors</a> which involves a recurring donation similar to Patreon.</li>
   </ul>
 

@@ -1,5 +1,5 @@
 /*
- *  (C) Copyright 2017 TheOtherP (theotherp@gmx.de)
+ *  (C) Copyright 2017 TheOtherP (theotherp@posteo.net)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -133,7 +133,7 @@ public class CapsGenerator {
         capsRoot.setLimits(new CapsXmlLimits(100, 100)); //later link to global setting when implemented
 
         CapsXmlServer capsServer = new CapsXmlServer();
-        capsServer.setEmail("theotherp@gmx.de");
+        capsServer.setEmail("theotherp@posteo.net");
         capsServer.setTitle("NZBHydra 2");
         capsServer.setUrl("https://github.com/theotherp/nzbhydra2");
         capsServer.setImage("https://raw.githubusercontent.com/theotherp/nzbhydra2/master/core/ui-src/img/banner-bright.png");

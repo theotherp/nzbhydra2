@@ -1,5 +1,5 @@
 /*
- *  (C) Copyright 2017 TheOtherP (theotherp@gmx.de)
+ *  (C) Copyright 2017 TheOtherP (theotherp@posteo.net)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -18,7 +18,15 @@ package org.nzbhydra.api;
 
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.downloading.FileHandler;
-import org.nzbhydra.mapping.newznab.json.*;
+import org.nzbhydra.mapping.newznab.json.NewznabJsonChannel;
+import org.nzbhydra.mapping.newznab.json.NewznabJsonChannelResponse;
+import org.nzbhydra.mapping.newznab.json.NewznabJsonEnclosure;
+import org.nzbhydra.mapping.newznab.json.NewznabJsonEnclosureAttributes;
+import org.nzbhydra.mapping.newznab.json.NewznabJsonItem;
+import org.nzbhydra.mapping.newznab.json.NewznabJsonItemAttr;
+import org.nzbhydra.mapping.newznab.json.NewznabJsonItemAttributes;
+import org.nzbhydra.mapping.newznab.json.NewznabJsonResponseAttributes;
+import org.nzbhydra.mapping.newznab.json.NewznabJsonRoot;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem.DownloadType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
@@ -48,7 +56,7 @@ public class NewznabJsonTransformer {
 
         channel.setTitle("NZBHydra 2");
         channel.setLink("https://www.github.com/theotherp/nzbhydra2");
-        channel.setWebMaster("theotherp@gmx.de");
+        channel.setWebMaster("theotherp@posteo.net");
         channel.setResponse(new NewznabJsonChannelResponse(new NewznabJsonResponseAttributes(offset, total)));
         channel.setGenerator("NZBHydra2");
 

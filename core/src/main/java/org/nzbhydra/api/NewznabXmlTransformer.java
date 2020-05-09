@@ -1,5 +1,5 @@
 /*
- *  (C) Copyright 2017 TheOtherP (theotherp@gmx.de)
+ *  (C) Copyright 2017 TheOtherP (theotherp@posteo.net)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -18,7 +18,13 @@ package org.nzbhydra.api;
 
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.downloading.FileHandler;
-import org.nzbhydra.mapping.newznab.xml.*;
+import org.nzbhydra.mapping.newznab.xml.NewznabAttribute;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlChannel;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlEnclosure;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlGuid;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlResponse;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem.DownloadType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
@@ -49,7 +55,7 @@ public class NewznabXmlTransformer {
         NewznabXmlChannel rssChannel = new NewznabXmlChannel();
         rssChannel.setTitle("NZBHydra 2");
         rssChannel.setLink("https://www.github.com/theotherp/nzbhydra2");
-        rssChannel.setWebMaster("theotherp@gmx.de");
+        rssChannel.setWebMaster("theotherp@posteo.net");
         if (searchRequest.getDownloadType() == org.nzbhydra.searching.dtoseventsenums.DownloadType.NZB) {
             rssChannel.setNewznabResponse(new NewznabXmlResponse(offset == null ? 0 : offset, total));
         }

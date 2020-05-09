@@ -23,4 +23,4 @@ For more, check out the [Contributing Guide](CONTRIBUTING.md).
 
 ## License
 
-[ISC](LICENSE) © 2019 TheOtherP <theotherp@gmx.de>
+[ISC](LICENSE) © 2019 TheOtherP <theotherp@posteo.net>
