@@ -1,3 +1,11 @@
+### v2.21.1 (2020-05-09)
+
+**Feature** Make instructions what to update when your wrapper is outdated extra clear: Any wrapper file found in the folder must be updated, not just the one you're using to run hydra. If the message says to exract the ZIP into your nzbhydra folder I mean ALL THE FUCKING FILES.
+
+**Note** I moved my mail address from theotherp@gmx.de to theotherp@posteo.net.
+
+
+
 ### v2.21.0 (2020-05-08)
 
 **Feature** NZBHydra will now try to fall back to similar results when an NZB download fails. This is only possible if it proxies the results instead of redirecting to the indexer so I've made that the default *for new installs*. It works by looking for results with the same title from other indexers which were found in the same search as the result of which the download failed.
