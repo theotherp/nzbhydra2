@@ -411,6 +411,11 @@ public class MockNewznab {
         if (!params.getCat().isEmpty()) {
             titleBase += params.getCat().get(0);
         }
+
+        if ("samenames".equals(params.getQ())) {
+            titleBase = "";
+        }
+
         NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, 100, titleBase, false, Collections.emptyList(), true, 0);
         rssRoot.getRssChannel().setNewznabResponse(null);
         Random random = new Random();

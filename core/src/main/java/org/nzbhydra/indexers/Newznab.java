@@ -475,6 +475,8 @@ public class Newznab extends Indexer<Xml> {
             indexerStatus.setOldestDownload(apiLimits.getGrabOldestTime());
 
             indexerStatusRepository.save(indexerStatus);
+        } else {
+            logger.debug(LoggingMarkers.LIMITS, "Indexer {}. No limits provided in response.", indexer.getName());
         }
 
     }

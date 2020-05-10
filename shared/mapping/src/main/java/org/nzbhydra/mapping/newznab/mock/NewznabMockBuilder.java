@@ -66,6 +66,9 @@ public class NewznabMockBuilder {
             } else {
                 poster = poster + String.valueOf(random.nextInt());
             }
+            if ("".equals(request.getTitleBase())) {
+                size = String.valueOf(Math.abs(title.hashCode()));
+            }
 
             item.setDescription("indexer " + request.getTitleBase() + "-" + i + " offset " + request.getOffset());
             item.setTitle(title);
@@ -97,6 +100,7 @@ public class NewznabMockBuilder {
                 torznabAttributes.add(new NewznabAttribute("peers", String.valueOf(i * 2)));
                 torznabAttributes.add(new NewznabAttribute("size", size));
                 item.setTorznabAttributes(torznabAttributes);
+                item.setSize(Long.valueOf(size));
             }
 
             items.add(item);

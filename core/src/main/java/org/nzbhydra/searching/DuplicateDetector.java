@@ -15,7 +15,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -96,6 +102,11 @@ public class DuplicateDetector {
         logger.debug(LoggingMarkers.DUPLICATES, "Comparing {} and {}", result1, result2);
         if (result1.getIndexer().equals(result2.getIndexer())) {
             logger.debug(LoggingMarkers.DUPLICATES, "Same indexer");
+            return false;
+        }
+
+        if (result1.getDownloadType() == SearchResultItem.DownloadType.TORRENT || result2.getDownloadType() == SearchResultItem.DownloadType.TORRENT) {
+            logger.debug(LoggingMarkers.DUPLICATES, "Torrent download type(s). Type 1: {}. Type 2: {}", result1.getDownloadType(), result2.getDownloadType());
             return false;
         }
 

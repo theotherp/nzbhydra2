@@ -426,6 +426,8 @@ public class IndexerChecker {
             maxDownloads = apiLimits.getGrabMax();
             eventPublisher.publishEvent(new CheckerEvent(indexerConfig.getName(), "Determined API limit " + maxApi + " and download limit " + maxDownloads));
             logger.debug(LoggingMarkers.LIMITS, "Indexer {}. Max API hits: {}. Max downloads: {}", indexerConfig.getName(), maxApi, maxDownloads);
+        } else {
+            logger.debug(LoggingMarkers.LIMITS, "Indexer {}. No limits provided in response.", indexerConfig.getName());
         }
         if (supported) {
             logger.info("Indexer {} probably supports the ID type {}. {}% of results were correct.", request.indexerConfig.getName(), request.getIdType(), percentCorrect);

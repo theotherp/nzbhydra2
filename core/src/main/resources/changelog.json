@@ -5,6 +5,10 @@
       {
         "type": "fix",
         "text": "It appears that the hashing algorithm used to check for the outdated wrapper files behaves differently on some machines / OSes. I switched to SHA1 which should reduce false positives. If you still get the wrapper warning and really updated all files let me know."
+      },
+      {
+        "type": "fix",
+        "text": "Made sure that torznab results are never considere duplicates to anything. It could be argued that in some cases two torrents from public trackers may actually be the same but I consider that an edge case."
       }
     ],
     "final": true

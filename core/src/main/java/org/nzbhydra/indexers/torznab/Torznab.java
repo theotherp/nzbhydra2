@@ -78,8 +78,9 @@ public class Torznab extends Newznab {
                     break;
             }
         }
-        searchResultItem.setSize(item.getSize());
-        if (item.getSize() != null && item.getTorznabAttributes().stream().noneMatch(x -> x.getName().equals("size"))) {
+        if (item.getSize() != null) {
+            searchResultItem.setSize(item.getSize());
+        } else if (item.getTorznabAttributes().stream().noneMatch(x -> x.getName().equals("size"))) {
             searchResultItem.getAttributes().put("size", String.valueOf(item.getSize()));
         }
         List<Integer> foundCategories = tryAndGetCategoryAsNumber(item);
