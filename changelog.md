@@ -1,6 +1,16 @@
+### v2.22.0 (2020-05-13)
+
+**Feature** Add filter for minimum # of seeders (in general and per tracker).
+
+**Fix** It appears that the hashing algorithm used to check for the outdated wrapper files behaves differently on some machines / OSes. I switched to SHA1 which should reduce false positives. If you still get the wrapper warning and really updated all files let me know.
+
+**Fix** Made sure that torznab results are never considered duplicates to anything. It could be argued that in some cases two torrents from public trackers may actually be the same but I consider that an edge case.
+
+
+
 ### v2.21.1 (2020-05-09)
 
-**Feature** Make instructions what to update when your wrapper is outdated extra clear: Any wrapper file found in the folder must be updated, not just the one you're using to run hydra. If the message says to exract the ZIP into your nzbhydra folder I mean ALL THE FUCKING FILES.
+**Feature** Make instructions what to update when your wrapper is outdated extra clear: Any wrapper file found in the folder must be updated, not just the one you're using to run hydra. If the message says to extract the ZIP into your nzbhydra folder I mean ALL THE FILES.
 
 **Note** I moved my mail address from theotherp@gmx.de to theotherp@posteo.net.
 
