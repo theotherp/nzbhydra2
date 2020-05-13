@@ -44,6 +44,7 @@ public class SearchingConfig extends ValidatingConfig<SearchingConfig> {
     private boolean loadAllCachedOnInternal;
     private int loadLimitInternal = 100;
     private Integer maxAge;
+    private Integer minSeeders;
     @JsonSetter()
     private List<String> removeTrailing = new ArrayList<>();
     private String requiredRegex;

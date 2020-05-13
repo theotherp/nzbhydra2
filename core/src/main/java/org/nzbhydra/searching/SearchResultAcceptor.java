@@ -13,6 +13,7 @@ import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.indexer.IndexerConfig;
+import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
@@ -93,8 +94,10 @@ public class SearchResultAcceptor {
             if (!checkForCategoryDisabledForIndexer(searchRequest, reasonsForRejection, item)) {
                 continue;
             }
-
             if (!checkForLanguage(reasonsForRejection, item)) {
+                continue;
+            }
+            if (!checkMinSeeders(indexerConfig, reasonsForRejection, item)) {
                 continue;
             }
 
@@ -365,6 +368,31 @@ public class SearchResultAcceptor {
         if (!languagesToKeep.contains(language)) {
             logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "Found language {} which is to be filtered", language);
             reasonsForRejection.add("Wrong language");
+            return false;
+        }
+        return true;
+    }
+
+    protected boolean checkMinSeeders(IndexerConfig indexerConfig, Multiset<String> reasonsForRejection, SearchResultItem item) {
+        if (indexerConfig.getSearchModuleType() != SearchModuleType.TORZNAB) {
+            return true;
+        }
+        final Integer resultSeeders = item.getSeeders();
+        if (resultSeeders == null) {
+            return true;
+        }
+
+        final Integer indexerMinSeeders = indexerConfig.getMinSeeders();
+        if (indexerMinSeeders != null && resultSeeders < indexerMinSeeders) {
+            logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "At least {} seeders expected for results from indexer {} but has {}", indexerConfig.getName(), indexerMinSeeders, resultSeeders);
+            reasonsForRejection.add("Not enough seeders");
+            return false;
+        }
+
+        final Integer mainMinSeeders = configProvider.getBaseConfig().getSearching().getMinSeeders();
+        if (mainMinSeeders != null && resultSeeders < mainMinSeeders) {
+            logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "At least {} seeders expected but has {}", mainMinSeeders, resultSeeders);
+            reasonsForRejection.add("Not enough seeders");
             return false;
         }
         return true;

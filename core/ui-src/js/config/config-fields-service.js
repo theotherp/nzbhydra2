@@ -1134,6 +1134,15 @@ function ConfigFields($injector) {
                             }
                         },
                         {
+                            key: 'minSeeders',
+                            type: 'horizontalInput',
+                            templateOptions: {
+                                type: 'number',
+                                label: 'Minimum # seeders',
+                                help: 'Torznab results with fewer seeders will be ignored.'
+                            }
+                        },
+                        {
                             key: 'ignorePassworded',
                             type: 'horizontalSwitch',
                             templateOptions: {

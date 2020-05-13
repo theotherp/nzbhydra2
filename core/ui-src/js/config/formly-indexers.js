@@ -159,14 +159,41 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
                     type: 'text',
                     label: 'API Key'
                 }
-                // ,
-                // watcher: {
-                //     listener: function (field, newValue, oldValue, scope) {
-                //         if (newValue !== oldValue) {
-                //             scope.$parent.needsConnectionTest = true;
-                //         }
-                //     }
-                // }
+            }
+        )
+    }
+
+    if (indexerModel.searchModuleType === 'NEWZNAB' || indexerModel.searchModuleType === 'TORZNAB' || indexerModel.searchModuleType === 'JACKETT_CONFIG') {
+        fieldset.push(
+            {
+                key: 'username',
+                type: 'horizontalInput',
+                templateOptions: {
+                    type: 'text',
+                    required: false,
+                    label: 'Username',
+                    help: 'Only needed if indexer requires HTTP auth for API access (rare).'
+                },
+                watcher: {
+                    listener: function (field, newValue, oldValue, scope) {
+                        if (newValue !== oldValue) {
+                            scope.$parent.needsConnectionTest = true;
+                        }
+                    }
+                }
+            }
+        );
+        fieldset.push(
+            {
+                key: 'password',
+                type: 'passwordSwitch',
+                hideExpression: '!model.username',
+                templateOptions: {
+                    type: 'text',
+                    required: false,
+                    label: 'Password',
+                    help: 'Only needed if indexer requires HTTP auth for API access (rare).'
+                }
             }
         )
     }
@@ -291,39 +318,16 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
             }
         );
     }
-    if (indexerModel.searchModuleType === 'NEWZNAB' || indexerModel.searchModuleType === 'TORZNAB' || indexerModel.searchModuleType === 'JACKETT_CONFIG') {
-        fieldset.push(
-            {
-                key: 'username',
-                type: 'horizontalInput',
-                templateOptions: {
-                    type: 'text',
-                    required: false,
-                    label: 'Username',
-                    help: 'Only needed if indexer requires HTTP auth for API access (rare).'
-                },
-                watcher: {
-                    listener: function (field, newValue, oldValue, scope) {
-                        if (newValue !== oldValue) {
-                            scope.$parent.needsConnectionTest = true;
-                        }
-                    }
-                }
+    if (indexerModel.searchModuleType === 'TORZNAB') {
+        fieldset.push({
+            key: 'minSeeders',
+            type: 'horizontalInput',
+            templateOptions: {
+                type: 'number',
+                label: 'Minimum # seeders',
+                help: 'Torznab results with fewer seeders will be ignored. Supercedes any setting made in the searching config.'
             }
-        );
-        fieldset.push(
-            {
-                key: 'password',
-                type: 'passwordSwitch',
-                hideExpression: '!model.username',
-                templateOptions: {
-                    type: 'text',
-                    required: false,
-                    label: 'Password',
-                    help: 'Only needed if indexer requires HTTP auth for API access (rare).'
-                }
-            }
-        )
+        })
     }
 
     if (indexerModel.searchModuleType === 'NEWZNAB') {

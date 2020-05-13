@@ -77,6 +77,7 @@ public class IndexerConfig extends ValidatingConfig<IndexerConfig> {
     private Long disabledUntil = null;
     private int disabledLevel;
     private Integer loadLimitOnRandom = null;
+    private Integer minSeeders;
     private String name;
     @SensitiveData
     private String password = null;

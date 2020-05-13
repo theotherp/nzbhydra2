@@ -3,6 +3,10 @@
     "version": "v2.21.2",
     "changes": [
       {
+        "type": "feature",
+        "text": "Add filter for minimum # of seeders (in general and per tracker)."
+      },
+      {
         "type": "fix",
         "text": "It appears that the hashing algorithm used to check for the outdated wrapper files behaves differently on some machines / OSes. I switched to SHA1 which should reduce false positives. If you still get the wrapper warning and really updated all files let me know."
       },
