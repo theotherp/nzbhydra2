@@ -1,3 +1,9 @@
+### v2.22.1 (2020-05-13)
+
+**Fix** Last release was broken a bit...
+
+
+
 ### v2.22.0 (2020-05-13)
 
 **Feature** Add filter for minimum # of seeders (in general and per tracker).
