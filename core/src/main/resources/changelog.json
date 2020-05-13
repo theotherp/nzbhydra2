@@ -1,6 +1,6 @@
 [
   {
-    "version": "v2.21.2",
+    "version": "v2.22.0",
     "changes": [
       {
         "type": "feature",
@@ -12,7 +12,7 @@
       },
       {
         "type": "fix",
-        "text": "Made sure that torznab results are never considere duplicates to anything. It could be argued that in some cases two torrents from public trackers may actually be the same but I consider that an edge case."
+        "text": "Made sure that torznab results are never considered duplicates to anything. It could be argued that in some cases two torrents from public trackers may actually be the same but I consider that an edge case."
       }
     ],
     "final": true
@@ -23,7 +23,7 @@
     "changes": [
       {
         "type": "feature",
-        "text": "Make instructions what to update when your wrapper is outdated extra clear: Any wrapper file found in the folder must be updated, not just the one you're using to run hydra. If the message says to exract the ZIP into your nzbhydra folder I mean ALL THE FILES."
+        "text": "Make instructions what to update when your wrapper is outdated extra clear: Any wrapper file found in the folder must be updated, not just the one you're using to run hydra. If the message says to extract the ZIP into your nzbhydra folder I mean ALL THE FILES."
       },
       {
         "type": "note",
