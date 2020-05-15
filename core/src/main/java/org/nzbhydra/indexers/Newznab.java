@@ -440,13 +440,14 @@ public class Newznab extends Indexer<Xml> {
     protected void completeIndexerSearchResult(Xml response, IndexerSearchResult indexerSearchResult, AcceptorResult acceptorResult, SearchRequest searchRequest, int offset, Integer limit) {
         NewznabXmlChannel rssChannel = ((NewznabXmlRoot) response).getRssChannel();
         NewznabXmlResponse newznabResponse = rssChannel.getNewznabResponse();
+        final int actualNumberResults = indexerSearchResult.getSearchResultItems().size();
         if (newznabResponse != null) {
             indexerSearchResult.setTotalResultsKnown(true);
             if (newznabResponse.getTotal() != null) { //Animetosho doesn't provide a total number of results
                 indexerSearchResult.setTotalResults(newznabResponse.getTotal());
-                indexerSearchResult.setHasMoreResults(newznabResponse.getTotal() > newznabResponse.getOffset() + indexerSearchResult.getSearchResultItems().size() + acceptorResult.getNumberOfRejectedResults());
+                indexerSearchResult.setHasMoreResults(newznabResponse.getTotal() > newznabResponse.getOffset() + actualNumberResults + acceptorResult.getNumberOfRejectedResults());
             } else {
-                indexerSearchResult.setTotalResults(indexerSearchResult.getSearchResultItems().size());
+                indexerSearchResult.setTotalResults(actualNumberResults);
                 indexerSearchResult.setHasMoreResults(false);
             }
             indexerSearchResult.setOffset(newznabResponse.getOffset());
@@ -459,7 +460,12 @@ public class Newznab extends Indexer<Xml> {
         }
         if (indexerSearchResult.getTotalResults() == 0) {
             //Fallback to make sure the total is not 0 when actually some results were reported
-            indexerSearchResult.setTotalResults(indexerSearchResult.getSearchResultItems().size());
+            indexerSearchResult.setTotalResults(actualNumberResults);
+        }
+        if (indexerSearchResult.getTotalResults() > actualNumberResults && offset == 0) {
+            warn("Indexer's response indicates a total of " + indexerSearchResult.getTotalResults() + " results but actually only " + actualNumberResults + "  were returned");
+            indexerSearchResult.setTotalResults(actualNumberResults);
+            indexerSearchResult.setHasMoreResults(false);
         }
 
         final NewznabXmlApilimits apiLimits = rssChannel.getApiLimits();
