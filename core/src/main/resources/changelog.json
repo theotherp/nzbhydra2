@@ -3,6 +3,10 @@
     "version": "v2.22.2",
     "changes": [
       {
+        "type": "feature",
+        "text": "Add refresh buttons to search and download history."
+      },
+      {
         "type": "fix",
         "text": "Properly handle indexers which report more results in an API response than they actually return (looking at you, wtfnzbs)."
       }
