@@ -1,3 +1,11 @@
+### v2.22.2 (2020-05-20)
+
+**Feature** Add refresh buttons to search and download history.
+
+**Fix** Properly handle indexers which report more results in an API response than they actually return (looking at you, wtfnzbs).
+
+
+
 ### v2.22.1 (2020-05-13)
 
 **Fix** Last release was broken a bit...
