@@ -1,3 +1,9 @@
+### v2.22.3 (2020-05-24)
+
+**Feature** Fix problem with paging introduced in last version (looking at me, in this case).
+
+
+
 ### v2.22.2 (2020-05-20)
 
 **Feature** Add refresh buttons to search and download history.
