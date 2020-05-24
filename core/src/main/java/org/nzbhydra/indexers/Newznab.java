@@ -441,30 +441,32 @@ public class Newznab extends Indexer<Xml> {
         NewznabXmlChannel rssChannel = ((NewznabXmlRoot) response).getRssChannel();
         NewznabXmlResponse newznabResponse = rssChannel.getNewznabResponse();
         final int actualNumberResults = indexerSearchResult.getSearchResultItems().size();
-        if (newznabResponse != null) {
-            indexerSearchResult.setTotalResultsKnown(true);
-            if (newznabResponse.getTotal() != null) { //Animetosho doesn't provide a total number of results
-                indexerSearchResult.setTotalResults(newznabResponse.getTotal());
-                indexerSearchResult.setHasMoreResults(newznabResponse.getTotal() > newznabResponse.getOffset() + actualNumberResults + acceptorResult.getNumberOfRejectedResults());
-            } else {
-                indexerSearchResult.setTotalResults(actualNumberResults);
-                indexerSearchResult.setHasMoreResults(false);
-            }
-            indexerSearchResult.setOffset(newznabResponse.getOffset());
-            indexerSearchResult.setLimit(100);
-        } else {
-            indexerSearchResult.setTotalResultsKnown(false);
-            indexerSearchResult.setHasMoreResults(false);
-            indexerSearchResult.setOffset(0);
-            indexerSearchResult.setLimit(0);
-        }
+         if (newznabResponse != null) {
+             indexerSearchResult.setTotalResultsKnown(true);
+             if (newznabResponse.getTotal() != null) { //Animetosho doesn't provide a total number of results
+                 indexerSearchResult.setTotalResults(newznabResponse.getTotal());
+                 indexerSearchResult.setHasMoreResults(newznabResponse.getTotal() > newznabResponse.getOffset() + actualNumberResults + acceptorResult.getNumberOfRejectedResults());
+             } else {
+                 indexerSearchResult.setTotalResults(actualNumberResults);
+                 indexerSearchResult.setHasMoreResults(false);
+             }
+             indexerSearchResult.setOffset(newznabResponse.getOffset());
+             indexerSearchResult.setLimit(100);
+         } else {
+             indexerSearchResult.setTotalResultsKnown(false);
+             indexerSearchResult.setHasMoreResults(false);
+             indexerSearchResult.setOffset(0);
+             indexerSearchResult.setLimit(0);
+         }
         if (indexerSearchResult.getTotalResults() == 0) {
             //Fallback to make sure the total is not 0 when actually some results were reported
             indexerSearchResult.setTotalResults(actualNumberResults);
         }
-        if (indexerSearchResult.getTotalResults() > actualNumberResults && offset == 0) {
-            warn("Indexer's response indicates a total of " + indexerSearchResult.getTotalResults() + " results but actually only " + actualNumberResults + "  were returned");
-            indexerSearchResult.setTotalResults(actualNumberResults);
+        final int newznabItemsCount = rssChannel.getItems().size();
+        final int newznabTotal = rssChannel.getNewznabResponse().getTotal();
+        if (offset == 0 && newznabItemsCount < newznabTotal && newznabItemsCount < limit) {
+            warn("Indexer's response indicates a total of " + newznabTotal + " results but actually only " + newznabItemsCount + " were returned");
+            indexerSearchResult.setTotalResults(newznabItemsCount);
             indexerSearchResult.setHasMoreResults(false);
         }
 
