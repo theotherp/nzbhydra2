@@ -272,23 +272,30 @@ public class IndexerForSearchSelector {
         try {
             //First check if there's usable info in the indexer_status table
             IndexerLimit indexerStatus = indexerStatusRepository.findByIndexer(indexer.getIndexerEntity());
-            Instant nextAccess = null;
+            Instant oldestAccess = null;
             if (indexerStatus.getApiHits() != null && accessType != IndexerApiAccessType.NZB && indexerStatus.getApiHitLimit() != null && indexerStatus.getOldestApiHit() != null) {
                 logger.debug(LoggingMarkers.LIMITS, "Indexer {}. Current API hits: {}. Max API hits: {}. Oldest API hit: {}", indexer.getName(), indexerStatus.getApiHits(), indexerStatus.getApiHitLimit(), indexerStatus.getOldestApiHit());
                 if (indexerStatus.getApiHits() >= indexerStatus.getApiHitLimit()) {
-                    nextAccess = indexerStatus.getOldestApiHit().plus(24, ChronoUnit.HOURS);
+                    oldestAccess = indexerStatus.getOldestApiHit();
                 } else {
                     return false;
                 }
             } else if (indexerStatus.getDownloads() != null && accessType == IndexerApiAccessType.NZB && indexerStatus.getDownloadLimit() != null && indexerStatus.getOldestDownload() != null) {
-                logger.debug(LoggingMarkers.LIMITS, "Indexer {}. Current downloads: {}. Max downloads: {}. Oldest downloads: {}", indexer.getName(), indexerStatus.getDownloads(), indexerStatus.getDownloadLimit(), indexerStatus.getOldestDownload());
+                logger.debug(LoggingMarkers.LIMITS, "Indexer {}. Current downloads: {}. Max downloads: {}. Oldest download: {}", indexer.getName(), indexerStatus.getDownloads(), indexerStatus.getDownloadLimit(), indexerStatus.getOldestDownload());
                 if (indexerStatus.getDownloads() >= indexerStatus.getDownloadLimit()) {
-                    nextAccess = indexerStatus.getOldestDownload().plus(24, ChronoUnit.HOURS);
+                    oldestAccess = indexerStatus.getOldestDownload();
                 } else {
                     return false;
                 }
             }
-            if (nextAccess != null) {
+
+            if (oldestAccess != null) {
+                if (oldestAccess.isBefore(Instant.now().minus(24, ChronoUnit.HOURS))) {
+                    logger.debug(LoggingMarkers.LIMITS, "Indexer {}. Oldest access {} is more than 24 hours old, allowing access", indexer.getName(), oldestAccess);
+                    return false;
+                }
+
+                Instant nextAccess = oldestAccess.plus(24, ChronoUnit.HOURS);
                 String message = String.format("Not using %s because all %d allowed " + type + "s were already made. The next " + type + " should be possible at %s", indexerConfig.getName(), limit, nextAccess);
                 logger.debug(LoggingMarkers.PERFORMANCE, "Detection that " + type + " limit has been reached for indexer {} took {}ms", indexerConfig.getName(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
                 return !handleIndexerNotSelected(indexer, message, type + " limit reached");
