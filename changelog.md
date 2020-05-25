@@ -1,3 +1,9 @@
+### v2.22.4 (2020-05-24)
+
+**Feature** Fix problem with torznab introduced in last version (looking at me again, in this case).
+
+
+
 ### v2.22.3 (2020-05-24)
 
 **Feature** Fix problem with paging introduced in last version (looking at me, in this case).
