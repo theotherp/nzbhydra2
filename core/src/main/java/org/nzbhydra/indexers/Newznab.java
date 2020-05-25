@@ -462,13 +462,7 @@ public class Newznab extends Indexer<Xml> {
             //Fallback to make sure the total is not 0 when actually some results were reported
             indexerSearchResult.setTotalResults(actualNumberResults);
         }
-        final int newznabItemsCount = rssChannel.getItems().size();
-        final int newznabTotal = rssChannel.getNewznabResponse().getTotal();
-        if (offset == 0 && newznabItemsCount < newznabTotal && newznabItemsCount < limit) {
-            warn("Indexer's response indicates a total of " + newznabTotal + " results but actually only " + newznabItemsCount + " were returned");
-            indexerSearchResult.setTotalResults(newznabItemsCount);
-            indexerSearchResult.setHasMoreResults(false);
-        }
+        checkForInvalidTotal(indexerSearchResult, limit, rssChannel);
 
         final NewznabXmlApilimits apiLimits = rssChannel.getApiLimits();
         if (apiLimits != null) {
@@ -487,6 +481,17 @@ public class Newznab extends Indexer<Xml> {
             logger.debug(LoggingMarkers.LIMITS, "Indexer {}. No limits provided in response.", indexer.getName());
         }
 
+    }
+
+    protected void checkForInvalidTotal(IndexerSearchResult indexerSearchResult, Integer limit, NewznabXmlChannel rssChannel) {
+        final int newznabItemsCount = rssChannel.getItems().size();
+        final int newznabTotal = rssChannel.getNewznabResponse().getTotal();
+        int offset = rssChannel.getNewznabResponse().getOffset();
+        if (offset == 0 && newznabItemsCount < newznabTotal && newznabItemsCount < limit) {
+            warn("Indexer's response indicates a total of " + newznabTotal + " results but actually only " + newznabItemsCount + " were returned");
+            indexerSearchResult.setTotalResults(newznabItemsCount);
+            indexerSearchResult.setHasMoreResults(false);
+        }
     }
 
     protected SearchResultItem createSearchResultItem(NewznabXmlItem item) throws NzbHydraException {
