@@ -1,12 +1,22 @@
+### v2.22.5 (2020-05-27)
+
+**Fix** Indexers which report the API and download limits were not properly selected when the hit limit was reached but the latest hit was more than 24 hours ago.
+
+**Fix** Error while searching Animetosho.
+
+**Fix** Properly recognize ID based searches returning too many results.
+
+
+
 ### v2.22.4 (2020-05-24)
 
-**Feature** Fix problem with torznab introduced in last version (looking at me again, in this case).
+**Fix** Fix problem with torznab introduced in last version (looking at me again, in this case).
 
 
 
 ### v2.22.3 (2020-05-24)
 
-**Feature** Fix problem with paging introduced in last version (looking at me, in this case).
+**Fix** Fix problem with paging introduced in last version (looking at me, in this case).
 
 
 
