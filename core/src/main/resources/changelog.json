@@ -5,6 +5,14 @@
       {
         "type": "fix",
         "text": "Indexers which report the API and download limits were not properly selected when the hit limit was reached but the latest hit was more than 24 hours ago."
+      },
+      {
+        "type": "fix",
+        "text": "Error while searching Animetosho."
+      },
+      {
+        "type": "fix",
+        "text": "Properly recognize ID based searches returning too many results."
       }
     ],
     "final": true

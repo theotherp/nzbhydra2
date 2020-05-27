@@ -416,14 +416,7 @@ public class Newznab extends Indexer<Xml> {
         List<SearchResultItem> searchResultItems = new ArrayList<>();
 
         final NewznabXmlRoot newznabXmlRoot = (NewznabXmlRoot) rssRoot;
-        if (newznabXmlRoot.getRssChannel().getNewznabResponse() != null) { //is null for torznab
-            final Integer total = newznabXmlRoot.getRssChannel().getNewznabResponse().getTotal();
-            if (searchRequest.isIdBasedQuery() && total >= 10_000) {
-                warn("Indexer returned " + total + " results for an ID based searched. Will interpret this as no results found");
-                newznabXmlRoot.getRssChannel().getNewznabResponse().setTotal(0);
-                newznabXmlRoot.getRssChannel().getItems().clear();
-            }
-        }
+        checkForTooManyResults(searchRequest, newznabXmlRoot);
 
         for (NewznabXmlItem item : newznabXmlRoot.getRssChannel().getItems()) {
             try {
@@ -437,15 +430,26 @@ public class Newznab extends Indexer<Xml> {
         return searchResultItems;
     }
 
+    private void checkForTooManyResults(SearchRequest searchRequest, NewznabXmlRoot newznabXmlRoot) {
+        if (newznabXmlRoot.getRssChannel().getNewznabResponse() != null) { //is null for torznab
+            final Integer total = newznabXmlRoot.getRssChannel().getNewznabResponse().getTotal();
+            if (searchRequest.isIdBasedQuery() && !searchRequest.getInternalData().isQueryGenerated() && total >= 10_000) {
+                warn("Indexer returned " + total + " results for an ID based searched. Will interpret this as no results found");
+                newznabXmlRoot.getRssChannel().getNewznabResponse().setTotal(0);
+                newznabXmlRoot.getRssChannel().getItems().clear();
+            }
+        }
+    }
+
     protected void completeIndexerSearchResult(Xml response, IndexerSearchResult indexerSearchResult, AcceptorResult acceptorResult, SearchRequest searchRequest, int offset, Integer limit) {
         NewznabXmlChannel rssChannel = ((NewznabXmlRoot) response).getRssChannel();
         NewznabXmlResponse newznabResponse = rssChannel.getNewznabResponse();
         final int actualNumberResults = indexerSearchResult.getSearchResultItems().size();
-         if (newznabResponse != null) {
-             indexerSearchResult.setTotalResultsKnown(true);
-             if (newznabResponse.getTotal() != null) { //Animetosho doesn't provide a total number of results
-                 indexerSearchResult.setTotalResults(newznabResponse.getTotal());
-                 indexerSearchResult.setHasMoreResults(newznabResponse.getTotal() > newznabResponse.getOffset() + actualNumberResults + acceptorResult.getNumberOfRejectedResults());
+        if (newznabResponse != null) {
+            indexerSearchResult.setTotalResultsKnown(true);
+            if (newznabResponse.getTotal() != null) { //Animetosho doesn't provide a total number of results
+                indexerSearchResult.setTotalResults(newznabResponse.getTotal());
+                indexerSearchResult.setHasMoreResults(newznabResponse.getTotal() > newznabResponse.getOffset() + actualNumberResults + acceptorResult.getNumberOfRejectedResults());
              } else {
                  indexerSearchResult.setTotalResults(actualNumberResults);
                  indexerSearchResult.setHasMoreResults(false);
@@ -483,10 +487,14 @@ public class Newznab extends Indexer<Xml> {
 
     }
 
-    protected void checkForInvalidTotal(IndexerSearchResult indexerSearchResult, Integer limit, NewznabXmlChannel rssChannel) {
+    private void checkForInvalidTotal(IndexerSearchResult indexerSearchResult, Integer limit, NewznabXmlChannel rssChannel) {
         final int newznabItemsCount = rssChannel.getItems().size();
-        final int newznabTotal = rssChannel.getNewznabResponse().getTotal();
-        int offset = rssChannel.getNewznabResponse().getOffset();
+        final NewznabXmlResponse newznabResponse = rssChannel.getNewznabResponse();
+        if (newznabResponse == null || newznabResponse.getTotal() == null) {
+            return;
+        }
+        final int newznabTotal = newznabResponse.getTotal();
+        int offset = newznabResponse.getOffset();
         if (offset == 0 && newznabItemsCount < newznabTotal && newznabItemsCount < limit) {
             warn("Indexer's response indicates a total of " + newznabTotal + " results but actually only " + newznabItemsCount + " were returned");
             indexerSearchResult.setTotalResults(newznabItemsCount);

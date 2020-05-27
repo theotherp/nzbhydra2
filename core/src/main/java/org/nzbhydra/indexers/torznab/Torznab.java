@@ -151,11 +151,6 @@ public class Torznab extends Newznab {
         return logger;
     }
 
-    @Override
-    protected void checkForInvalidTotal(IndexerSearchResult indexerSearchResult, Integer limit, NewznabXmlChannel rssChannel) {
-        //Do nothing as torznab response doesn't have a "total"
-    }
-
     @Component
     @Order(2000)
     public static class NewznabHandlingStrategy implements IndexerHandlingStrategy {

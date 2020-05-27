@@ -23,6 +23,7 @@ public class InternalData {
     private List<String> requiredWords = new ArrayList<>();
     private List<Integer> newznabCategories = new ArrayList<>();
     private boolean includePasswords = false;
+    private boolean queryGenerated = false;
 
     public Optional<String> getTitle() {
         return Optional.ofNullable(title);

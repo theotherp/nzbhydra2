@@ -145,6 +145,7 @@ public class QueryGenerator {
         logger.debug("Indexer does not support any of the supplied IDs or the requested search type. The following query was generated: " + query);
 
         generatedQueries.put(searchRequest, query);
+        searchRequest.getInternalData().setQueryGenerated(true);
         return query;
     }
 
