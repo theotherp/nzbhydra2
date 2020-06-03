@@ -2355,6 +2355,7 @@ function downloaderStatusFooter() {
             }
         };
 
+
         function update() {
             var userInfos = HydraAuthService.getUserInfos();
             if (!userInfos.maySeeStats) {
@@ -2370,6 +2371,7 @@ function downloaderStatusFooter() {
                             }
                             $scope.foo = response.data;
                             $scope.foo.downloaderImage = response.data.downloaderType === 'NZBGET' ? 'nzbgetlogo' : 'sabnzbdlogo';
+                            $scope.foo.url = response.data.url;
                             //We need to splice the variable with the rates because it's watched by angular and when overwriting it we would lose the watch and it wouldn't be updated
                             var maxEntriesHistory = 200;
                             if ($scope.downloaderChart.data[0].values.length < maxEntriesHistory) {

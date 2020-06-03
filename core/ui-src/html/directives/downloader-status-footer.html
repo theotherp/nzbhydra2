@@ -4,7 +4,9 @@
   <nav class="row navbar-default" style="margin-left: 0; margin-right: 0">
     <span ng-show="foo">
       <div class="col-md-2">
-        <img ng-src="static/img/{{::foo.downloaderImage}}.png" style=""/>
+        <a href="{{::foo.url}}" target="_blank">
+          <img ng-src="static/img/{{::foo.downloaderImage}}.png"/>
+        </a>
       </div>
       <div class="col-md-3" style="padding-top: 10px; line-height: 15px; margin-left: 15px; text-align: left">
         <span class="glyphicon glyphicon-{{foo.buttonClass}}" tooltip-placement="auto top" uib-tooltip="{{foo.state}}" style="margin-right: 10px"></span>

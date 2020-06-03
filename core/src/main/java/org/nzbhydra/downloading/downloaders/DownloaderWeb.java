@@ -19,7 +19,6 @@ package org.nzbhydra.downloading.downloaders;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.downloading.DownloaderConfig;
 import org.nzbhydra.downloading.AddFilesRequest;
-import org.nzbhydra.downloading.exceptions.DownloaderException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +50,7 @@ public class DownloaderWeb {
 
     @Secured({"ROLE_STATS"})
     @RequestMapping(value = "/internalapi/downloader/getStatus", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public DownloaderStatus getStatus() throws DownloaderException {
+    public DownloaderStatus getStatus() {
         Collection<Downloader> allDownloaders = downloaderProvider.getAllDownloaders();
         List<Downloader> enabledDownloaders = allDownloaders.stream().filter(Downloader::isEnabled).collect(Collectors.toList());
         if (enabledDownloaders.isEmpty()) {
@@ -60,6 +59,7 @@ public class DownloaderWeb {
         DownloaderStatus status = null;
         try {
             status = enabledDownloaders.get(0).getStatus();
+            status.setUrl(enabledDownloaders.get(0).getUrl());
         } catch (Exception e) {
             logger.error("Error while retrieving downloader status", e);
         }

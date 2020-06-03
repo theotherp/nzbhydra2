@@ -56,6 +56,8 @@ public class DownloaderStatus {
 
     private State state;
 
+    private String url;
+
     public Long getLastDownloadRate() {
         return downloadingRatesInKilobytes.isEmpty() ? 1L : Iterables.getLast(downloadingRatesInKilobytes);
     }

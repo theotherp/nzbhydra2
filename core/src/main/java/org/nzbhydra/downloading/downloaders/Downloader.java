@@ -291,5 +291,7 @@ public abstract class Downloader {
         return nameMatches;
     }
 
-
+    public String getUrl() {
+        return downloaderConfig.getUrl();
+    }
 }

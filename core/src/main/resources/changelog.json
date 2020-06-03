@@ -5,6 +5,10 @@
       {
         "type": "feature",
         "text": "Double-click system tray icon to open GUI in browser."
+      },
+      {
+        "type": "feature",
+        "text": "Click downloader image in footer to open it in a new tab."
       }
     ],
     "final": true
