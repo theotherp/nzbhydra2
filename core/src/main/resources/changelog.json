@@ -17,6 +17,10 @@
       {
         "type": "feature",
         "text": "Add toggle to display options for the indicator of already downloaded results."
+      },
+      {
+        "type": "feature",
+        "text": "Add toggle to display options to control display of already downloaded results. It's basically a filter."
       }
     ],
     "final": true
