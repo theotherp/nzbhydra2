@@ -1,3 +1,17 @@
+### v2.23.0 (2020-06-03)
+
+**Feature** Double-click system tray icon to open GUI in browser.
+
+**Feature** Click downloader image in footer to open it in a new tab.
+
+**Feature** Add toggle to display options for search result groups being expanded by default.
+
+**Feature** Add toggle to display options for the indicator of already downloaded results.
+
+**Feature** Add toggle to display options to control display of already downloaded results. It's basically a filter.
+
+
+
 ### v2.22.5 (2020-05-27)
 
 **Fix** Indexers which report the API and download limits were not properly selected when the hit limit was reached but the latest hit was more than 24 hours ago.
