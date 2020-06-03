@@ -155,6 +155,11 @@ public class MockNewznab {
             NewznabMockRequest mockRequest = NewznabMockRequest.builder().numberOfResults(15).titleBase("tv").newznabCategory("5040").offset(0).total(15).titleBase("game of thrones").build();
             NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(mockRequest);
             List<NewznabXmlItem> items = rssRoot.getRssChannel().getItems();
+            for (int i = 0; i < 15; i++) {
+
+                items.get(i).getNewznabAttributes().add(new NewznabAttribute("season", "1"));
+                items.get(i).getNewznabAttributes().add(new NewznabAttribute("episode", String.valueOf(i % 3)));
+            }
 
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }

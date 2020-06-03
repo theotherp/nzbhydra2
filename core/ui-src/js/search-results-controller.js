@@ -128,7 +128,8 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         sumGrabs: localStorageService.get("sumGrabs") !== null ? localStorageService.get("sumGrabs") : true,
         scrollToResults: localStorageService.get("scrollToResults") !== null ? localStorageService.get("scrollToResults") : true,
         showCovers: localStorageService.get("showCovers") !== null ? localStorageService.get("showCovers") : true,
-        groupEpisodes: localStorageService.get("groupEpisodes") !== null ? localStorageService.get("groupEpisodes") : true
+        groupEpisodes: localStorageService.get("groupEpisodes") !== null ? localStorageService.get("groupEpisodes") : true,
+        expandGroupsByDefault: localStorageService.get("expandGroupsByDefault") !== null ? localStorageService.get("expandGroupsByDefault") : true
     };
 
 
@@ -137,7 +138,8 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
     $scope.isShowFilterButtonsTv = $scope.isShowFilterButtons && $stateParams.category.toLowerCase().indexOf("tv") > -1;
 
     $scope.shared = {
-        isGroupEpisodes: $scope.foo.groupEpisodes && $stateParams.category.toLowerCase().indexOf("tv") > -1 && $stateParams.episode === undefined
+        isGroupEpisodes: $scope.foo.groupEpisodes && $stateParams.category.toLowerCase().indexOf("tv") > -1 && $stateParams.episode === undefined,
+        expandGroupsByDefault: $scope.foo.expandGroupsByDefault
     };
 
     if ($scope.shared.isGroupEpisodes) {
@@ -163,7 +165,8 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         {id: "sumGrabs", label: "Use sum of grabs / seeders for filtering / sorting of groups"},
         {id: "scrollToResults", label: "Scroll to results when finished"},
         {id: "showCovers", label: "Show movie covers in results"},
-        {id: "groupEpisodes", label: "Group TV results by season/episode"}
+        {id: "groupEpisodes", label: "Group TV results by season/episode"},
+        {id: "expandGroupsByDefault", label: "Expand groups by default"}
     ];
     $scope.optionsSelectedModel = [];
     for (var key in $scope.optionsOptions) {
@@ -189,9 +192,11 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
             } else if (item.id === "scrollToResults") {
                 toggleScrollToResults(newValue);
             } else if (item.id === "showCovers") {
-                toggleshowCovers(newValue);
+                toggleShowCovers(newValue);
             } else if (item.id === "groupEpisodes") {
-                togglesGroupEpisodes(newValue);
+                toggleGroupEpisodes(newValue);
+            } else if (item.id === "expandGroupsByDefault") {
+                toggleExpandGroups(newValue);
             }
         }
     };
@@ -219,15 +224,21 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         $scope.foo.scrollToResults = value;
     }
 
-    function toggleshowCovers(value) {
+    function toggleShowCovers(value) {
         localStorageService.set("showCovers", value);
         $scope.foo.showCovers = value;
         $scope.$broadcast("toggleShowCovers", value);
     }
 
-    function togglesGroupEpisodes(value) {
+    function toggleGroupEpisodes(value) {
         localStorageService.set("groupEpisodes", value);
         $scope.shared.isGroupEpisodes = value;
+        blockAndUpdate();
+    }
+
+    function toggleExpandGroups(value) {
+        localStorageService.set("expandGroupsByDefault", value);
+        $scope.shared.isExpandGroupsByDefault = value;
         blockAndUpdate();
     }
 

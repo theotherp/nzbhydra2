@@ -9,6 +9,10 @@
       {
         "type": "feature",
         "text": "Click downloader image in footer to open it in a new tab."
+      },
+      {
+        "type": "feature",
+        "text": "Add toggle to display options to enable search result groups being expanded by default."
       }
     ],
     "final": true
