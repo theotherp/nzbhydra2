@@ -12,7 +12,11 @@
       },
       {
         "type": "feature",
-        "text": "Add toggle to display options to enable search result groups being expanded by default."
+        "text": "Add toggle to display options for search result groups being expanded by default."
+      },
+      {
+        "type": "feature",
+        "text": "Add toggle to display options for the indicator of already downloaded results."
       }
     ],
     "final": true

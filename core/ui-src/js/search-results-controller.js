@@ -129,7 +129,8 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         scrollToResults: localStorageService.get("scrollToResults") !== null ? localStorageService.get("scrollToResults") : true,
         showCovers: localStorageService.get("showCovers") !== null ? localStorageService.get("showCovers") : true,
         groupEpisodes: localStorageService.get("groupEpisodes") !== null ? localStorageService.get("groupEpisodes") : true,
-        expandGroupsByDefault: localStorageService.get("expandGroupsByDefault") !== null ? localStorageService.get("expandGroupsByDefault") : true
+        expandGroupsByDefault: localStorageService.get("expandGroupsByDefault") !== null ? localStorageService.get("expandGroupsByDefault") : false,
+        showDownloadedIndicator: localStorageService.get("showDownloadedIndicator") !== null ? localStorageService.get("showDownloadedIndicator") : true
     };
 
 
@@ -139,7 +140,8 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
 
     $scope.shared = {
         isGroupEpisodes: $scope.foo.groupEpisodes && $stateParams.category.toLowerCase().indexOf("tv") > -1 && $stateParams.episode === undefined,
-        expandGroupsByDefault: $scope.foo.expandGroupsByDefault
+        expandGroupsByDefault: $scope.foo.expandGroupsByDefault,
+        showDownloadedIndicator: $scope.foo.showDownloadedIndicator
     };
 
     if ($scope.shared.isGroupEpisodes) {
@@ -166,7 +168,8 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         {id: "scrollToResults", label: "Scroll to results when finished"},
         {id: "showCovers", label: "Show movie covers in results"},
         {id: "groupEpisodes", label: "Group TV results by season/episode"},
-        {id: "expandGroupsByDefault", label: "Expand groups by default"}
+        {id: "expandGroupsByDefault", label: "Expand groups by default"},
+        {id: "showDownloadedIndicator", label: "Show already downloaded indicator"}
     ];
     $scope.optionsSelectedModel = [];
     for (var key in $scope.optionsOptions) {
@@ -197,6 +200,8 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
                 toggleGroupEpisodes(newValue);
             } else if (item.id === "expandGroupsByDefault") {
                 toggleExpandGroups(newValue);
+            } else if (item.id === "showDownloadedIndicator") {
+                toggleDownloadedIndicator(newValue);
             }
         }
     };
@@ -239,6 +244,12 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
     function toggleExpandGroups(value) {
         localStorageService.set("expandGroupsByDefault", value);
         $scope.shared.isExpandGroupsByDefault = value;
+        blockAndUpdate();
+    }
+
+    function toggleDownloadedIndicator(value) {
+        localStorageService.set("showDownloadedIndicator", value);
+        $scope.shared.showDownloadedIndicator = value;
         blockAndUpdate();
     }
 
