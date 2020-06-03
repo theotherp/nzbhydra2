@@ -1,0 +1,23 @@
+
+VSVersionInfo(
+  ffi=FixedFileInfo(
+    filevers=(1, 0, 0, 0)
+    ),
+  kids=[
+    StringFileInfo(
+      [
+      StringTable(
+        u'040904B0',
+        [StringStruct(u'CompanyName', u'TheOtherP'),
+        StringStruct(u'FileDescription', u'Usenet Meta Search'),
+        StringStruct(u'FileVersion', u'1.0.0.0'),
+        StringStruct(u'InternalName', u'NZBHydra2'),
+        StringStruct(u'LegalCopyright', u'theotherp@posteo.net All rights reserved.'),
+        StringStruct(u'OriginalFilename', u'NZBHydra2.exe'),
+        StringStruct(u'ProductName', u'NZBHydra2'),
+        StringStruct(u'ProductVersion', u'1.0.0')
+        ])
+      ]),
+    VarFileInfo([VarStruct(u'Translation', [1033, 1200])])
+  ]
+)
