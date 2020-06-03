@@ -8,7 +8,13 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import javax.swing.*;
-import java.awt.*;
+import java.awt.AWTException;
+import java.awt.MenuItem;
+import java.awt.PopupMenu;
+import java.awt.SystemTray;
+import java.awt.TrayIcon;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
 //Mostly taken from https://stackoverflow.com/a/44452260
 public class WindowsTrayIcon extends TrayIcon {
@@ -37,11 +43,7 @@ public class WindowsTrayIcon extends TrayIcon {
         MenuItem openBrowserItem = new MenuItem("Open web UI");
         popup.add(openBrowserItem);
         openBrowserItem.addActionListener(e -> {
-            try {
-                NzbHydra.getApplicationContext().getAutowireCapableBeanFactory().createBean(BrowserOpener.class).openBrowser();
-            } catch (NullPointerException | IllegalStateException | BeansException e1) {
-                logger.error("Unable to open browser. Process may not have started completely");
-            }
+            openBrowser();
         });
 
         MenuItem restartItem = new MenuItem("Restart");
@@ -68,6 +70,42 @@ public class WindowsTrayIcon extends TrayIcon {
 
         setPopupMenu(popup);
         tray.add(this);
+        instance.addMouseListener(new MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    openBrowser();
+                }
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+
+            }
+        });
+    }
+
+    private void openBrowser() {
+        try {
+            NzbHydra.getApplicationContext().getAutowireCapableBeanFactory().createBean(BrowserOpener.class).openBrowser();
+        } catch (NullPointerException | IllegalStateException | BeansException e1) {
+            logger.error("Unable to open browser. Process may not have started completely");
+        }
     }
 
     public static void remove() {
