@@ -264,7 +264,7 @@ public class NzbHydra {
         }
     }
 
-    private static boolean isOsWindows() {
+    public static boolean isOsWindows() {
         String osName = System.getProperty("os.name");
         return osName.toLowerCase().contains("windows");
     }

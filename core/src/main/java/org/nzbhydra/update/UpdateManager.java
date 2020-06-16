@@ -411,7 +411,9 @@ public class UpdateManager implements InitializingBean {
                 Thread.sleep(300);
                 applicationEventPublisher.publishEvent(new ShutdownEvent());
                 ((ConfigurableApplicationContext) NzbHydra.getApplicationContext()).close();
-                WindowsTrayIcon.remove();
+                if (NzbHydra.isOsWindows()) {
+                    WindowsTrayIcon.remove();
+                }
                 System.exit(returnCode);
             } catch (InterruptedException e) {
                 logger.error("Error while waiting to exit", e); //Doesn't ever happen anyway
