@@ -1,3 +1,11 @@
+### v2.24.0 BETA (2020-06-22)
+
+**Note** I've upgraded some of the libraries I used. This should ideally not change anything but to be sure I'll release this as prerelase first.
+
+**Fix** Remove API keys in URL encoded log entries.
+
+
+
 ### v2.23.0 (2020-06-03)
 
 **Feature** Double-click system tray icon to open GUI in browser.
