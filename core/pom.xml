@@ -316,6 +316,19 @@
             <artifactId>failsafe</artifactId>
             <version>1.1.1</version>
         </dependency>
+        <dependency>
+            <groupId>joda-time</groupId>
+            <artifactId>joda-time</artifactId>
+            <version>2.10.1</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hibernate.validator</groupId>
+            <artifactId>hibernate-validator</artifactId>
+            <version>6.1.5.Final</version>
+        </dependency>
+
 
         <dependency>
             <!--https://stackoverflow.com/a/47412779-->
@@ -373,7 +386,6 @@
             <version>1.0.0</version>
         </dependency>
 
-
         <!-- tests -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -417,13 +429,8 @@
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>joda-time</groupId>
-            <artifactId>joda-time</artifactId>
-            <version>2.10.1</version>
-            <scope>compile</scope>
-        </dependency>
-
 
     </dependencies>
+
+
 </project>

@@ -1,13 +1,17 @@
 [
   {
-    "version": "v2.23.1",
+    "version": "v2.24.0",
     "changes": [
+      {
+        "type": "note",
+        "text": "I've upgraded some of the libraries I used. This should ideally not change anything but to be sure I'll release this as prerelase first."
+      },
       {
         "type": "fix",
         "text": "Remove API keys in URL encoded log entries."
       }
     ],
-    "final": true
+    "final": false
   },
   {
     "version": "v2.23.0",

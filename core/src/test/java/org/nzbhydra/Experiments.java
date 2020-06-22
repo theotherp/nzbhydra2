@@ -20,6 +20,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.google.common.base.Stopwatch;
 import lombok.Data;
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
@@ -45,6 +46,7 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -132,36 +134,39 @@ public class Experiments {
     @Test
     @Ignore
     public void stressTest() throws Exception {
+
         OkHttpClient client = new OkHttpClient.Builder()
                 .build();
 
+        final int limit = 3000;
+        final Stopwatch started = Stopwatch.createStarted();
         ExecutorService executorService = Executors.newFixedThreadPool(8);
-        executeCalls(client, executorService, "api", 1000);
-        executeCalls(client, executorService, "torznab/api", 1000);
+        executeCalls(client, executorService, "api", limit);
+        executeCalls(client, executorService, "torznab/api", limit);
 
-//        for (int i = 0; i < 1000; i++) {
+//        for (int i = 0; i < limit; i++) {
 //            Request request = new Request.Builder()
 //                    .url("http://127.0.0.1:5076/api?apikey=apikey&t=search&q=bla" + i)
 //                    .build();
 //
-//            System.out.println("b: " + i + "/1000");
+//            System.out.println("b: " + i + "/" + limit);
 //            Response response = client.newCall(request).execute();
 //        }
 
+        System.out.println(started.elapsed(TimeUnit.MILLISECONDS));
 
     }
 
     private void executeCalls(OkHttpClient client, ExecutorService executorService, String endpoint, int numberOfRuns) throws InterruptedException {
         executorService.invokeAll(IntStream.range(0, numberOfRuns).mapToObj(i -> (Callable<Object>) () -> {
-            Thread.sleep(1_000);
+            Thread.sleep(500);
             Request request = new Request.Builder()
 //                    .url("http://127.0.0.1:5076/" + endpoint + "?apikey=apikey&t=search&q=blub" + i + "&cat=2000&cachetime=20")
-                    .url("http://127.0.0.1:5076/?category=All&mode=search&indexers=mock1%252Cmock100%252Cmock2%252Cmocktorz1%252Cmocktorz2%252Cmocktorz3%252Cmockx&query=" + i)
+                    .url("http://127.0.0.1:5076/" + endpoint + "?category=All&t=search&query=" + i + "&apikey=apikey")
                     .build();
             System.out.println("a: " + i + "/" + numberOfRuns);
             try {
                 try (Response response = client.newCall(request).execute()) {
-                    System.out.println(response.body().string());
                     return response.isSuccessful();
                 }
             } catch (IOException e) {
