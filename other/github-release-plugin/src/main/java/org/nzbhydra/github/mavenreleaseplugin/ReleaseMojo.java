@@ -147,6 +147,7 @@ public class ReleaseMojo extends AbstractMojo {
     private org.nzbhydra.github.mavenreleaseplugin.Release createRelease(org.nzbhydra.github.mavenreleaseplugin.ReleaseRequest releaseRequest) throws IOException, MojoExecutionException {
         getLog().info("Creating release in draft mode using base URL " + githubReleasesUrl);
         String requestBody = objectMapper.writeValueAsString(releaseRequest);
+        getLog().info("Sending body to create release: " + requestBody);
         Builder callBuilder = new Builder().url(githubReleasesUrl).post(RequestBody.create(MediaType.parse("application/json"), requestBody));
         callBuilder.header("Authorization", "token " + githubToken);
         Call call = client.newCall(callBuilder.build());
