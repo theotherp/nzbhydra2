@@ -5,6 +5,10 @@
       {
         "type": "fix",
         "text": "Generate query for book searches if enabled and book search not supported by indexer."
+      },
+      {
+        "type": "fix",
+        "text": "Autofocus search input field (pretty sure that worked at some point)."
       }
     ],
     "final": true
