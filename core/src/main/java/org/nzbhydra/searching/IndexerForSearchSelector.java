@@ -20,6 +20,7 @@ import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.searching.dtoseventsenums.DownloadType;
 import org.nzbhydra.searching.dtoseventsenums.IndexerSelectionEvent;
 import org.nzbhydra.searching.dtoseventsenums.SearchMessageEvent;
+import org.nzbhydra.searching.dtoseventsenums.SearchType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.slf4j.Logger;
@@ -124,6 +125,9 @@ public class IndexerForSearchSelector {
             if (!checkSearchId(indexer)) {
                 continue;
             }
+            if (!checkSearchType(indexer)) {
+                continue;
+            }
             if (!checkIndexerHitLimit(indexer)) {
                 continue;
             }
@@ -159,6 +163,19 @@ public class IndexerForSearchSelector {
             if (cannotSearchProvidedOrConvertableId && !queryGenerationEnabled) {
                 String message = String.format("Not using %s because the search did not provide any ID that the indexer can handle and query generation is disabled", indexer.getName());
                 return handleIndexerNotSelected(indexer, message, "No usable ID");
+            }
+        }
+        return true;
+    }
+
+    protected boolean checkSearchType(Indexer indexer) {
+        boolean audioOrBookSearch = searchRequest.getSearchType() == SearchType.BOOK || searchRequest.getSearchType() == SearchType.MUSIC;
+        if (audioOrBookSearch) {
+            boolean queryGenerationEnabled = configProvider.getBaseConfig().getSearching().getGenerateQueries().meets(searchRequest);
+            boolean indexerSupportsType = indexer.getConfig().getSupportedSearchTypes().stream().anyMatch(x -> searchRequest.getSearchType().matches(x));
+            if (!indexerSupportsType && !queryGenerationEnabled) {
+                String message = String.format("Not using %s because the search uses type %s which the indexer can't handle and query generation is disabled", searchRequest.getSearchType(), indexer.getName());
+                return handleIndexerNotSelected(indexer, message, "Search type not supported");
             }
         }
         return true;

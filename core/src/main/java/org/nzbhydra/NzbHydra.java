@@ -54,7 +54,7 @@ import java.util.Arrays;
 import java.util.Map;
 
 @SuppressWarnings("ResultOfMethodCallIgnored")
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @EnableAutoConfiguration(exclude = {
         AopAutoConfiguration.class, org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration.class})
 @ComponentScan
