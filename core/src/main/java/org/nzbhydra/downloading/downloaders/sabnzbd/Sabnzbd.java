@@ -295,7 +295,7 @@ public class Sabnzbd extends Downloader {
         logger.debug("Checking connection");
         UriComponentsBuilder baseUrl = getBaseUrl();
         try {
-            restTemplate.exchange(baseUrl.queryParam("mode", "get_cats").toUriString(), HttpMethod.GET, null, CategoriesResponse.class);
+            restTemplate.exchange(baseUrl.queryParam("mode", "get_cats").build().toUri().toString(), HttpMethod.GET, null, CategoriesResponse.class);
             logger.info("Connection check with sabnzbd using URL {} successful", baseUrl.toUriString());
             return new GenericResponse(true, null);
         } catch (RestClientException e) {

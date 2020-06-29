@@ -9,6 +9,10 @@
       {
         "type": "fix",
         "text": "Autofocus search input field (pretty sure that worked at some point)."
+      },
+      {
+        "type": "fix",
+        "text": "Catch illegal characters in hostname when configuring sabnzbd."
       }
     ],
     "final": true
