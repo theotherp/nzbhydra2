@@ -1,3 +1,13 @@
+### v2.24.1 (2020-06-29)
+
+**Fix** Generate query for book searches if enabled and book search not supported by indexer.
+
+**Fix** Autofocus search input field (pretty sure that worked at some point).
+
+**Fix** Catch illegal characters in hostname when configuring sabnzbd.
+
+
+
 ### v2.24.0 BETA (2020-06-22)
 
 **Note** I've upgraded some of the libraries I used. This should ideally not change anything but to be sure I'll release this as prerelase first.
