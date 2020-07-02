@@ -424,10 +424,17 @@ public class MockNewznab {
         NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, 100, titleBase, false, Collections.emptyList(), true, 0);
         rssRoot.getRssChannel().setNewznabResponse(null);
         Random random = new Random();
+
         for (NewznabXmlItem item : rssRoot.getRssChannel().getItems()) {
             item.setNewznabAttributes(new ArrayList<>());
             item.getTorznabAttributes().add(new NewznabAttribute("seeders", String.valueOf(random.nextInt(30000))));
             item.getTorznabAttributes().add(new NewznabAttribute("peers", String.valueOf(random.nextInt(30000))));
+            item.getTorznabAttributes().add(new NewznabAttribute("uploadvolumefactor", "1.0"));
+            if (random.nextInt(5) == 3) {
+                item.getTorznabAttributes().add(new NewznabAttribute("downloadvolumefactor", "0"));
+            } else {
+                item.getTorznabAttributes().add(new NewznabAttribute("downloadvolumefactor", String.valueOf(random.nextFloat())));
+            }
             if (random.nextInt(5) > 3) {
                 item.getTorznabAttributes().add(new NewznabAttribute("grabs", String.valueOf(random.nextInt(30000))));
             }

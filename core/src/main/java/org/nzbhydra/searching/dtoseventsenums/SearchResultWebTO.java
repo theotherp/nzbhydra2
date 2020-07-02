@@ -54,5 +54,6 @@ public class SearchResultWebTO {
     private String episode;
     private String showtitle;
     private String downloadedAt;
+    private String torrentDownloadFactor;
 
 }

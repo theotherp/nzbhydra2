@@ -5,6 +5,10 @@
       {
         "type": "feature",
         "text": "When creating debug infos log all changes made to the config."
+      },
+      {
+        "type": "feature",
+        "text": "Show dl/ul ratio indicator for torznab results (if not 100%). E.g. when '50%' is shown only half the download's size will be counted towards your ratio. Freelech torrents will be shown as such."
       }
     ],
     "final": true

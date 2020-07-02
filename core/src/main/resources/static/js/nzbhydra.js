@@ -8952,8 +8952,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
                 return !anyRequired || containsAtLeastOne;
             }
 
-            console.log($scope.foo.hideAlreadyDownloadedResults);
-            console.log(item.downloadedAt);
             if ($scope.foo.hideAlreadyDownloadedResults && item.downloadedAt !== null) {
                 return false;
             }
