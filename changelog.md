@@ -1,3 +1,11 @@
+### v2.25.0 (2020-07-02)
+
+**Feature** When creating debug infos log all changes made to the config.
+
+**Feature** Show dl/ul ratio indicator for torznab results (if not 100%). E.g. when '50%' is shown only half the download's size will be counted towards your ratio. Freelech torrents will be shown as such.
+
+
+
 ### v2.24.1 (2020-06-29)
 
 **Fix** Generate query for book searches if enabled and book search not supported by indexer.
