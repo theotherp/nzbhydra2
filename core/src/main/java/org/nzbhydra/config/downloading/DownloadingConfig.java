@@ -19,6 +19,7 @@ package org.nzbhydra.config.downloading;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.google.common.base.Strings;
 import lombok.Data;
+import org.javers.core.metamodel.annotation.DiffIgnore;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.ValidatingConfig;
@@ -35,6 +36,7 @@ import java.util.stream.Collectors;
 @ConfigurationProperties(prefix = "downloading")
 public class DownloadingConfig extends ValidatingConfig<DownloadingConfig> {
 
+    @DiffIgnore
     private List<DownloaderConfig> downloaders = new ArrayList<>();
     private String saveTorrentsTo;
     private String saveNzbsTo;

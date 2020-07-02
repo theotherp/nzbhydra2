@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import com.google.common.base.Strings;
 import lombok.Data;
+import org.javers.core.metamodel.annotation.DiffIgnore;
 import org.nzbhydra.config.downloading.ProxyType;
 import org.nzbhydra.config.sensitive.SensitiveData;
 import org.nzbhydra.debuginfos.DebugInfosProvider;
@@ -108,6 +109,7 @@ public class MainConfig extends ValidatingConfig<MainConfig> {
 
     //Other settings
     @SensitiveData
+    @DiffIgnore
     private String apiKey = null;
     private String dereferer = null;
     private boolean instanceCounterDownloaded = false;

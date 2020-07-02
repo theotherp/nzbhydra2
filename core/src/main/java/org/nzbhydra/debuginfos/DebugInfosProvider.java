@@ -4,9 +4,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.apache.commons.io.IOUtils;
+import org.javers.core.JaversBuilder;
+import org.javers.core.diff.Diff;
 import org.nzbhydra.Jackson;
 import org.nzbhydra.NzbHydra;
+import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.ConfigReaderWriter;
+import org.nzbhydra.config.category.CategoriesConfig;
+import org.nzbhydra.config.category.Category;
 import org.nzbhydra.logging.LogAnonymizer;
 import org.nzbhydra.logging.LogContentProvider;
 import org.nzbhydra.logging.LoggingMarkers;
@@ -193,8 +199,11 @@ public class DebugInfosProvider {
             logger.info("Apparently run in docker");
             logger.info("Container info: {}", updateManager.getPackageInfo());
         } else {
-            logger.info("Apparently not run in dicker");
+            logger.info("Apparently not run in docker");
         }
+
+        String anonymizedConfig = getAnonymizedConfig();
+        logConfigChanges(anonymizedConfig);
 
         logger.info("Metrics:");
         final Set<String> metricsNames = metricsEndpoint.listNames().getNames();
@@ -205,7 +214,7 @@ public class DebugInfosProvider {
                     .collect(Collectors.joining(", ")));
         }
 
-        String anonymizedConfig = getAnonymizedConfig();
+
         String anonymizedLog = logAnonymizer.getAnonymizedLog(logContentProvider.getLog());
         File tempFile = File.createTempFile("nzbhydradebuginfos", "zip");
         try (FileOutputStream fos = new FileOutputStream(tempFile)) {
@@ -233,6 +242,21 @@ public class DebugInfosProvider {
         }
         logger.debug("Finished creating debug infos ZIP");
         return Files.readAllBytes(tempFile.toPath());
+    }
+
+    private void logConfigChanges(String anonymizedConfig) throws IOException {
+        final ConfigReaderWriter configReaderWriter = new ConfigReaderWriter();
+
+        final BaseConfig originalConfig = configReaderWriter.originalConfig();
+        originalConfig.setCategoriesConfig(new DiffableCategoriesConfig(originalConfig.getCategoriesConfig()));
+
+        final BaseConfig userConfig = Jackson.YAML_MAPPER.readValue(anonymizedConfig, BaseConfig.class);
+        userConfig.setCategoriesConfig(new DiffableCategoriesConfig(userConfig.getCategoriesConfig()));
+
+        final Diff configDiff = JaversBuilder.javers()
+                .build()
+                .compare(originalConfig, userConfig);
+        logger.info("Difference in config:\n{}", configDiff.prettyPrint());
     }
 
     public void logThreadDump() {
@@ -347,6 +371,19 @@ public class DebugInfosProvider {
     public static class ThreadCpuUsage {
         private final String threadName;
         private final long cpuUsage;
+    }
+
+    @Data
+    public static class DiffableCategoriesConfig extends CategoriesConfig {
+        private Map<String, Category> categoriesMap = new HashMap<>();
+
+        public DiffableCategoriesConfig(CategoriesConfig categoriesConfig) {
+            categoriesConfig.getCategories().forEach(x -> {
+                categoriesMap.put(x.getName(), x);
+            });
+        }
+
+
     }
 
 

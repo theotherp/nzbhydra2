@@ -18,7 +18,12 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -44,6 +49,10 @@ public class LogContentProvider {
         }
         if (!logfile.exists()) {
             throw new IOException("Determined log file does not exist");
+        }
+        final long logFileSizeMb = logfile.length() / (1024 * 1024);
+        if (logFileSizeMb > 256) {
+            throw new IOException("Log file " + logfile + " is " + logFileSizeMb + "MB and therefore too large to handle");
         }
         return new String(Files.readAllBytes(logfile.toPath()));
     }

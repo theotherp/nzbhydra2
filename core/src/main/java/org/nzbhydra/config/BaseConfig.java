@@ -8,6 +8,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.javers.core.metamodel.annotation.DiffIgnore;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.ShutdownEvent;
 import org.nzbhydra.config.auth.AuthConfig;
@@ -58,10 +59,12 @@ public class BaseConfig extends ValidatingConfig<BaseConfig> {
     private AuthConfig auth = new AuthConfig();
     private CategoriesConfig categoriesConfig = new CategoriesConfig();
     private DownloadingConfig downloading = new DownloadingConfig();
+    @DiffIgnore
     private List<IndexerConfig> indexers = new ArrayList<>();
     private MainConfig main = new MainConfig();
     private SearchingConfig searching = new SearchingConfig();
 
+    @DiffIgnore
     private Map<String, String> genericStorage = new HashMap<>();
 
     @JsonIgnore

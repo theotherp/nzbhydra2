@@ -22,6 +22,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Joiner;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.javers.core.metamodel.annotation.DiffIgnore;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.RestartRequired;
 import org.nzbhydra.config.ValidatingConfig;
@@ -55,6 +56,7 @@ public class AuthConfig extends ValidatingConfig<AuthConfig> {
     private boolean restrictStats = false;
     private boolean allowApiStats = true;
 
+    @DiffIgnore
     private List<UserAuthConfig> users = new ArrayList<>();
 
     @JsonIgnore
