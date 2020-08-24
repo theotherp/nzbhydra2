@@ -9879,6 +9879,42 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         }
     };
 
+    $scope.onDropOnQueryInput = function (event) {
+        if ($scope.searchHistoryDragged === null || $scope.searchHistoryDragged === undefined) {
+            return;
+        }
+
+        $scope.category = CategoriesService.getByName($scope.searchHistoryDragged.categoryName);
+        $scope.season = $scope.searchHistoryDragged.season;
+        $scope.episode = $scope.searchHistoryDragged.episode;
+        $scope.query = $scope.searchHistoryDragged.query;
+
+        if ($scope.searchHistoryDragged.title != null) {
+            var width = calculateWidth($scope.searchHistoryDragged.title) + 30;
+            $scope.selectedItemWidth = width + "px";
+        }
+
+        var tvmaze = _.findWhere($scope.searchHistoryDragged.identifiers, {identifierKey: "TVMAZE"});
+        var tmdb = _.findWhere($scope.searchHistoryDragged.identifiers, {identifierKey: "TMDB"});
+        var imdb = _.findWhere($scope.searchHistoryDragged.identifiers, {identifierKey: "IMDB"});
+        var tvdb = _.findWhere($scope.searchHistoryDragged.identifiers, {identifierKey: "TVDB"});
+        $scope.selectedItem = {
+            tmdbId: tmdb === undefined ? null : tmdb.identifierValue,
+            imdbId: imdb === undefined ? null : imdb.identifierValue,
+            tvmazeId: tvmaze === undefined ? null : tvmaze.identifierValue,
+            tvdbId: tvdb === undefined ? null : tvdb.identifierValue,
+            title: $scope.searchHistoryDragged.title
+        }
+
+        event.preventDefault();
+
+        $scope.searchHistoryDragged = null;
+    }
+
+    $scope.$on("searchHistoryDrag", function (event, data) {
+        $scope.searchHistoryDragged = JSON.parse(data);
+    })
+
     //Is called when the search page is opened with params, either because the user initiated the search (which triggered a goTo to this page) or because a search URL was entered
     $scope.startSearch = function () {
         isSearchCancelled = false;
@@ -10135,7 +10171,24 @@ function SearchUpdateModalInstanceCtrl($scope, $interval, SearchService, $uibMod
             $interval.cancel(updateSearchMessagesInterval);
         }
     });
+
+
 }
+
+angular
+    .module('nzbhydraApp').directive('draggable', ['$rootScope', function ($rootScope) {
+    return {
+        restrict: 'A',
+        link: function (scope, el, attrs, controller) {
+
+            el.bind("dragstart", function (e) {
+                $rootScope.$emit("searchHistoryDrag", el.attr("data-request"));
+                $rootScope.$broadcast("searchHistoryDrag", el.attr("data-request"));
+            });
+        }
+    }
+}]);
+
 
 
 RestartService.$inject = ["growl", "NzbHydraControlService", "$uibModal"];

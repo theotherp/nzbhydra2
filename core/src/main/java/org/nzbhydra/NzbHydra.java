@@ -53,7 +53,6 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Map;
 
-@SuppressWarnings("ResultOfMethodCallIgnored")
 @Configuration(proxyBeanMethods = false)
 @EnableAutoConfiguration(exclude = {
         AopAutoConfiguration.class, org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration.class})
