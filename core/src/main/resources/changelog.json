@@ -13,6 +13,10 @@
       {
         "type": "fix",
         "text": "Fix layout of search input for movies and shows."
+      },
+      {
+        "type": "fix",
+        "text": "Fix download of magnet links to black hole for some trackers."
       }
     ],
     "final": true

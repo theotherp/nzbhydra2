@@ -87,7 +87,7 @@ public class FileHandler {
     private DownloadResult getFileByResult(FileDownloadAccessType fileDownloadAccessType, SearchSource accessSource, SearchResultEntity result, Set<SearchResultEntity> alreadyTriedDownloading) {
 
         if (fileDownloadAccessType == FileDownloadAccessType.REDIRECT) {
-            return handleRedirect(accessSource, result);
+            return handleRedirect(accessSource, result, null);
         } else {
             try {
                 final DownloadResult downloadResult = handleContentDownload(accessSource, result);
@@ -157,7 +157,7 @@ public class FileHandler {
     }
 
     @Transactional
-    public DownloadResult handleRedirect(SearchSource accessSource, SearchResultEntity result) {
+    public DownloadResult handleRedirect(SearchSource accessSource, SearchResultEntity result, String actualUrl) {
         logger.debug("Redirecting to " + result.getLink());
         FileDownloadEntity downloadEntity = new FileDownloadEntity(result, FileDownloadAccessType.REDIRECT, accessSource, FileDownloadStatus.REQUESTED, null);
         if (configProvider.getBaseConfig().getMain().isKeepHistory()) {
@@ -166,7 +166,7 @@ public class FileHandler {
         shortRepository.save(new IndexerApiAccessEntityShort(result.getIndexer(), true, IndexerApiAccessType.NZB));
         eventPublisher.publishEvent(new FileDownloadEvent(downloadEntity, result));
 
-        return DownloadResult.createSuccessfulRedirectResult(result.getTitle(), result.getLink(), downloadEntity);
+        return DownloadResult.createSuccessfulRedirectResult(result.getTitle(), actualUrl != null ? actualUrl : result.getLink(), downloadEntity);
     }
 
 

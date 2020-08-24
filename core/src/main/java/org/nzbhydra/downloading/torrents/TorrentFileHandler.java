@@ -66,12 +66,12 @@ public class TorrentFileHandler {
         SearchResultEntity result = optionalResult.get();
         logger.info("Download request for \"{}\" from indexer {}", result.getTitle(), result.getIndexer().getName());
         if (result.getLink().contains("magnet:") || accessType == FileDownloadAccessType.REDIRECT) {
-            return fileHandler.handleRedirect(accessSource, result);
+            return fileHandler.handleRedirect(accessSource, result, null);
         } else {
             try {
                 return fileHandler.handleContentDownload(accessSource, result);
             } catch (MagnetLinkRedirectException e) {
-                return fileHandler.handleRedirect(accessSource, result);
+                return fileHandler.handleRedirect(accessSource, result, e.getMagnetLink());
             }
         }
     }
