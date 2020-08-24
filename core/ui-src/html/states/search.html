@@ -77,12 +77,13 @@
                                    uib-tooltip="{{searchBoxTooltip}}"
                                    tooltip-placement="top"
                                    tooltip-trigger="mouseenter"
+                                   style="border-right: none"
                             >
-                          <button style="position: absolute; top: 2px; right:105px; font-size: xx-small; float: right; z-index: 1000; margin: 0; padding: 0; border: none; background-color: unset"
+                          <button style="position: absolute; top: 2px; right:{{seriesSelected() ? 185 : 105}}px; font-size: xx-small; float: right; z-index: 1000; margin: 0; padding: 0; border: none; background-color: unset"
                                   ng-click="clearQuery()" id="clear-query-button">
                             <span class="glyphicon glyphicon-remove" style="font-size: xx-small;"></span>
                           </button>
-                            <span class="input-group-btn" style="width:40px;" ng-show="seriesSelected()">
+                          <span class="input-group-btn" style="width:40px; border-left: none" ng-show="seriesSelected()">
                               <input type="text" class="form-control season-input" placeholder="S" name="season"
                                      id="seriesSearchS" style="width:40px; " ng-model="season"
                                      ng-enter="initiateSearch()"
@@ -98,7 +99,7 @@
                                      tooltip-placement="top"
                                      tooltip-trigger="mouseenter">
                             </span>
-                            <span class="input-group-btn input-group-btn1">
+                          <span class="input-group-btn input-group-btn1" style="border-left-width: 1px">
                             <div class="btn-group" uib-dropdown is-open="status.isopen">
                               <button id="history-dropdown-button" type="button" class="btn btn-default"
                                       uib-dropdown-toggle

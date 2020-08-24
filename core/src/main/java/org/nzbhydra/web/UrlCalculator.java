@@ -183,7 +183,6 @@ public class UrlCalculator {
                 for (Enumeration inetAddrs = iface.getInetAddresses(); inetAddrs.hasMoreElements(); ) {
                     InetAddress inetAddr = (InetAddress) inetAddrs.nextElement();
                     if (!inetAddr.isLoopbackAddress()) {
-
                         if (inetAddr.isSiteLocalAddress()) {
                             // Found non-loopback site-local address. Return it immediately...
                             return inetAddr;
