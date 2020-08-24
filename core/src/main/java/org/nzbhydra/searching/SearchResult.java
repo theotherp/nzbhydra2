@@ -26,6 +26,7 @@ public class SearchResult {
     private Multiset<Indexer> uniqueResultsPerIndexer;
     private int numberOfTotalAvailableResults;
     private int numberOfRemovedDuplicates;
+    private int numberOfFoundDuplicates;
 
 
     public int getNumberOfProcessedResults() {

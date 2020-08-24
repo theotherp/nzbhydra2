@@ -131,7 +131,7 @@ public class SearcherUnitTest {
                     return Sets.newLinkedHashSet(Arrays.asList(x));
                 }).collect(Collectors.toList());
 
-                return new DuplicateDetectionResult(sets, HashMultiset.create());
+                return new DuplicateDetectionResult(sets, HashMultiset.create(), 0);
             }
         });
 

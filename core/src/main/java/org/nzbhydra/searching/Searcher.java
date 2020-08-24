@@ -148,6 +148,7 @@ public class Searcher {
                 searchResultItems = getNewestSearchResultItemFromEachDuplicateGroup(duplicateDetectionResult.getDuplicateGroups());
                 searchResult.setNumberOfRemovedDuplicates(searchResult.getNumberOfRemovedDuplicates() + (beforeDuplicateRemoval - searchResultItems.size()));
             }
+            searchResult.setNumberOfFoundDuplicates(duplicateDetectionResult.getNumberOfDuplicates());
 
             //Set the rejection counts from all searches, this and previous
             searchCacheEntry.getReasonsForRejection().clear();

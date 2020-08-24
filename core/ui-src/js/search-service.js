@@ -80,6 +80,7 @@ function SearchService($http) {
         var indexerSearchMetaDatas = response.data.indexerSearchMetaDatas;
         var numberOfAvailableResults = response.data.numberOfAvailableResults;
         var numberOfRejectedResults = response.data.numberOfRejectedResults;
+        var numberOfDuplicateResults = response.data.numberOfDuplicateResults;
         var numberOfAcceptedResults = response.data.numberOfAcceptedResults;
         var numberOfProcessedResults = response.data.numberOfProcessedResults;
         var rejectedReasonsMap = response.data.rejectedReasonsMap;
@@ -92,6 +93,7 @@ function SearchService($http) {
             "numberOfAcceptedResults": numberOfAcceptedResults,
             "numberOfRejectedResults": numberOfRejectedResults,
             "numberOfProcessedResults": numberOfProcessedResults,
+            "numberOfDuplicateResults": numberOfDuplicateResults,
             "rejectedReasonsMap": rejectedReasonsMap,
             "notPickedIndexersWithReason": notPickedIndexersWithReason
 

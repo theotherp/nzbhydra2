@@ -45,13 +45,13 @@ public class MockNewznab {
 
     static {
         apikeyToResultCount.put(0, 10);
-        apikeyToResultCount.put(1, 500);
+        apikeyToResultCount.put(1, 20);
         apikeyToResultCount.put(2, 400);
         apikeyToResultCount.put(3, 300);
         apikeyToResultCount.put(4, 200);
         apikeyToResultCount.put(5, 100);
         apikeyToResultCount.put(10, 10);
-        apikeyToResultCount.put(100, 100);
+        apikeyToResultCount.put(100, 30);
     }
 
 

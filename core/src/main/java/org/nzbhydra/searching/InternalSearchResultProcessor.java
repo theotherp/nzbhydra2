@@ -56,6 +56,7 @@ public class InternalSearchResultProcessor {
         searchResponse.setNotPickedIndexersWithReason(searchResult.getIndexerSelectionResult().getNotPickedIndexersWithReason().entrySet().stream().collect(Collectors.toMap(x -> x.getKey().getName(), Entry::getValue)));
         searchResponse.setNumberOfProcessedResults(searchResult.getNumberOfProcessedResults());
         searchResponse.setNumberOfAcceptedResults(searchResult.getNumberOfAcceptedResults());
+        searchResponse.setNumberOfDuplicateResults(searchResult.getNumberOfFoundDuplicates());
 
         List<SearchResultWebTO> transformedSearchResults = transformSearchResults(searchResult.getSearchResultItems());
         searchResponse.setSearchResults(transformedSearchResults);

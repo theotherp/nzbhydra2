@@ -39,4 +39,6 @@ public class DuplicateDetectionResult {
      */
     private Multiset<Indexer> uniqueResultsPerIndexer;
 
+    private int numberOfDuplicates;
+
 }

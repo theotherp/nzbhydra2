@@ -164,7 +164,7 @@
                   tooltip-trigger="click"
             >
                 <span ng-if="numberOfLoadedResults <= numberOfAvailableResults">
-                    Loaded {{ numberOfLoadedResults }} of <span ng-if="totalAvailableUnknown">&gt;</span>{{ numberOfAvailableResults }} results (rejected {{ numberOfRejectedResults }})
+                    Loaded {{ numberOfLoadedResults }} ({{ numberOfFilteredResults }} filtered, {{numberOfDuplicateResults}} duplicates) of <span ng-if="totalAvailableUnknown">&gt;</span>{{ numberOfAvailableResults }} results (rejected {{ numberOfRejectedResults }})
                 </span>
                 <span ng-if="numberOfLoadedResults > numberOfAvailableResults">
                 Loaded all {{ numberOfLoadedResults }} results (rejected {{ numberOfRejectedResults }})

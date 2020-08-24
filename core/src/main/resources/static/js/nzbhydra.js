@@ -8461,6 +8461,7 @@ function SearchService($http) {
         var indexerSearchMetaDatas = response.data.indexerSearchMetaDatas;
         var numberOfAvailableResults = response.data.numberOfAvailableResults;
         var numberOfRejectedResults = response.data.numberOfRejectedResults;
+        var numberOfDuplicateResults = response.data.numberOfDuplicateResults;
         var numberOfAcceptedResults = response.data.numberOfAcceptedResults;
         var numberOfProcessedResults = response.data.numberOfProcessedResults;
         var rejectedReasonsMap = response.data.rejectedReasonsMap;
@@ -8473,6 +8474,7 @@ function SearchService($http) {
             "numberOfAcceptedResults": numberOfAcceptedResults,
             "numberOfRejectedResults": numberOfRejectedResults,
             "numberOfProcessedResults": numberOfProcessedResults,
+            "numberOfDuplicateResults": numberOfDuplicateResults,
             "rejectedReasonsMap": rejectedReasonsMap,
             "notPickedIndexersWithReason": notPickedIndexersWithReason
 
@@ -8555,6 +8557,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         $scope.filterButtonsModelMap[displayName] = split1[1].split(",");
         $scope.customFilterButtons.push(displayName);
     })
+    $scope.numberOfFilteredResults = 0;
 
 
     if ($stateParams.sortby !== undefined) {
@@ -9108,6 +9111,8 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         });
 
         var filtered = _.filter(results, filter);
+        $scope.numberOfFilteredResults = results.length - filtered.length;
+        console.log("Filtered " + $scope.numberOfFilteredResults + " out of " + results.length);
         var newSelected = $scope.selected;
         _.forEach($scope.selected, function (x) {
             if (x === undefined) {
@@ -9150,9 +9155,10 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
                     if (countTitleGroups <= $scope.limitTo) {
                         countResultsUntilTitleGroupLimitReached++;
                     }
+                    if (duplicateGroup.length > 1)
+                        $scope.countDuplicates += (duplicateGroup.length - 1)
                 });
                 titleGroupIndex += 1;
-
             });
         });
         $scope.limitTo = Math.max($scope.limitTo, countResultsUntilTitleGroupLimitReached);
@@ -9187,6 +9193,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         $scope.numberOfAcceptedResults = data.numberOfAcceptedResults;
         $scope.numberOfRejectedResults = data.numberOfRejectedResults;
         $scope.numberOfProcessedResults = data.numberOfProcessedResults;
+        $scope.numberOfDuplicateResults = data.numberOfDuplicateResults;
         $scope.numberOfLoadedResults = allSearchResults.length;
         $scope.indexersearches = data.indexerSearchMetaDatas;
 

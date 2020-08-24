@@ -11,6 +11,10 @@
         "text": "Added quick filters for HEVC and x265. Added an option to always show quick filter buttons (i.e. for any type of search). You can also define custom quick filters."
       },
       {
+        "type": "feature",
+        "text": "Show number of filtered and number of duplicate results on search results page."
+      },
+      {
         "type": "fix",
         "text": "Fix layout of search input for movies and shows."
       },

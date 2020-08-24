@@ -20,6 +20,7 @@ public class SearchResponse {
     private int numberOfAcceptedResults;
     private int numberOfRejectedResults;
     private int numberOfProcessedResults;
+    private int numberOfDuplicateResults;
     private int offset;
     private int limit;
 

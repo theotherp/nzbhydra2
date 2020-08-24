@@ -1,6 +1,5 @@
 package org.nzbhydra.searching;
 
-import com.google.common.base.Stopwatch;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multiset;
@@ -22,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.google.common.collect.Lists.newArrayList;
@@ -36,7 +34,6 @@ public class DuplicateDetector {
     protected ConfigProvider configProvider;
 
     public DuplicateDetectionResult detectDuplicates(Set<SearchResultItem> results) {
-        Stopwatch stopwatch = Stopwatch.createStarted();
         Map<String, List<SearchResultItem>> groupedByTitle = results.stream().collect(Collectors.groupingBy(x -> x.getTitle().toLowerCase().replaceAll("[ .\\-_]", "")));
         Multiset<Indexer> countUniqueResultsPerIndexer = HashMultiset.create();
         List<LinkedHashSet<SearchResultItem>> duplicateGroups = new ArrayList<>();
@@ -93,9 +90,9 @@ public class DuplicateDetector {
             duplicateIdentifier++;
         }
 
-        logger.debug(LoggingMarkers.PERFORMANCE, "Duplicate detection for {} search results took {}ms. Found {} duplicates", results.size(), stopwatch.elapsed(TimeUnit.MILLISECONDS), countDetectedDuplicates);
+        logger.debug("Duplicate detection for {} search results found {} duplicates", results.size(), countDetectedDuplicates);
 
-        return new DuplicateDetectionResult(duplicateGroups, countUniqueResultsPerIndexer);
+        return new DuplicateDetectionResult(duplicateGroups, countUniqueResultsPerIndexer, countDetectedDuplicates);
     }
 
     private boolean testForSameness(SearchResultItem result1, SearchResultItem result2) {
