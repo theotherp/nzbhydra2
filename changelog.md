@@ -1,3 +1,17 @@
+### v2.26.0 (2020-08-24)
+
+**Feature** Drag an entry from the search history to the search input to prefill it with the history entry's values. Then you can adapt them and search.
+
+**Feature** Added quick filters for HEVC and x265. Added an option to always show quick filter buttons (i.e. for any type of search). You can also define custom quick filters.
+
+**Feature** Show number of filtered and number of duplicate results on search results page.
+
+**Fix** Fix layout of search input for movies and shows.
+
+**Fix** Fix download of magnet links to black hole for some trackers.
+
+
+
 ### v2.25.0 (2020-07-02)
 
 **Feature** When creating debug infos log all changes made to the config.
