@@ -48,8 +48,12 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
 
     $scope.filterButtonsModel = {
         source: {},
-        quality: {}
+        quality: {},
+        other: {},
+        custom: {}
     };
+    $scope.customFilterButtons = [];
+
     $scope.filterButtonsModelMap = {
         tv: ['hdtv'],
         camts: ['cam', 'ts'],
@@ -57,6 +61,14 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         dvd: ['dvd'],
         bluray: ['bluray', 'blu-ray']
     };
+    _.each(ConfigService.getSafe().searching.customQuickFilterButtons, function (entry) {
+        var split1 = entry.split("=");
+        var displayName = split1[0];
+        $scope.filterButtonsModelMap[displayName] = split1[1].split(",");
+        $scope.customFilterButtons.push(displayName);
+    })
+
+
     if ($stateParams.sortby !== undefined) {
         $stateParams.sortby = $stateParams.sortby.toLowerCase();
         sortModel = {};
@@ -136,8 +148,8 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
 
 
     $scope.isShowFilterButtons = ConfigService.getSafe().searching.showQuickFilterButtons;
-    $scope.isShowFilterButtonsMovie = $scope.isShowFilterButtons && $stateParams.category.toLowerCase().indexOf("movie") > -1;
-    $scope.isShowFilterButtonsTv = $scope.isShowFilterButtons && $stateParams.category.toLowerCase().indexOf("tv") > -1;
+    $scope.isShowFilterButtonsSource = $scope.isShowFilterButtons && ($stateParams.category.toLowerCase().indexOf("tv") > -1 || $stateParams.category.toLowerCase().indexOf("movie") > -1 || ConfigService.getSafe().searching.alwaysShowQuickFilterButtons);
+    $scope.isShowCustomFilterButtons = ConfigService.getSafe().searching.customQuickFilterButtons.length > 0;
 
     $scope.shared = {
         isGroupEpisodes: $scope.foo.groupEpisodes && $stateParams.category.toLowerCase().indexOf("tv") > -1 && $stateParams.episode === undefined,
@@ -311,6 +323,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
     }
 
     $scope.onFilterButtonsModelChange = function () {
+        console.log($scope.filterButtonsModel);
         blockAndUpdate();
     };
 
@@ -476,13 +489,45 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
             if ($scope.filterButtonsModel.quality !== null && !_.isEmpty($scope.filterButtonsModel.quality)) {
                 containsAtLeastOne = false;
                 var anyRequired = false;
-                _.each($scope.filterButtonsModel.quality, function (value, key) { //key is something like 'q720p', value is true or false
+                _.each($scope.filterButtonsModel.quality, function (value, key) { //key is something like 'q720p', value is true or false. We need to remove the "q" which is there because keys may not start with a digit
                     anyRequired = anyRequired || value;
                     if (value && item.title.toLowerCase().indexOf(key.substring(1)) > -1) {
                         containsAtLeastOne = true;
                     }
                 });
-                return !anyRequired || containsAtLeastOne;
+
+                if (!(!anyRequired || containsAtLeastOne)) {
+                    return false;
+                }
+            }
+            if ($scope.filterButtonsModel.other !== null && !_.isEmpty($scope.filterButtonsModel.other)) {
+                containsAtLeastOne = false;
+                var anyRequired = false;
+                _.each($scope.filterButtonsModel.other, function (value, key) { //key is something like 'hevc', value is true or false
+                    anyRequired = anyRequired || value;
+                    if (value && item.title.toLowerCase().indexOf(key) > -1) {
+                        containsAtLeastOne = true;
+                    }
+                });
+                if (!(!anyRequired || containsAtLeastOne)) {
+                    return false;
+                }
+            }
+            if ($scope.filterButtonsModel.custom !== null && !_.isEmpty($scope.filterButtonsModel.custom)) {
+                mustContain = [];
+                _.each($scope.filterButtonsModel.custom, function (value, key) { //key is something like 'camts', value is true or false
+                    if (value) {
+                        Array.prototype.push.apply(mustContain, $scope.filterButtonsModelMap[key]);
+                    }
+                });
+                if (mustContain.length > 0) {
+                    containsAtLeastOne = _.any(mustContain, function (word) {
+                        return item.title.toLowerCase().indexOf(word) > -1
+                    });
+                    if (!containsAtLeastOne) {
+                        return false;
+                    }
+                }
             }
 
             if ($scope.foo.hideAlreadyDownloadedResults && item.downloadedAt !== null) {

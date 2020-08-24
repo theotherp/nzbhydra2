@@ -1211,8 +1211,29 @@ function ConfigFields($injector) {
                             type: 'horizontalSwitch',
                             templateOptions: {
                                 type: 'switch',
-                                label: 'Show quick filter',
+                                label: 'Show quick filters',
                                 help: 'Show quick filter buttons for movie and TV results.'
+                            }
+                        },
+                        {
+                            key: 'alwaysShowQuickFilterButtons',
+                            type: 'horizontalSwitch',
+                            hideExpression: '!model.showQuickFilterButtons',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Always show quick filters',
+                                help: 'Show all quick filter buttons for all types of searches.'
+                            }
+                        },
+                        {
+                            key: 'customQuickFilterButtons',
+                            type: 'horizontalChips',
+                            hideExpression: '!model.showQuickFilterButtons',
+                            templateOptions: {
+                                type: 'text',
+                                label: 'Custom quick filters',
+                                help: 'Enter in the format "DisplayName=Required1,Required2". Apply values with enter key.',
+                                tooltip: 'E.g. use "WEB=webdl,web-dl." for a quick filter with the name "WEB" to be displayed that searches for "webdl" and "web-dl" in lowercase search results.'
                             }
                         },
                         {

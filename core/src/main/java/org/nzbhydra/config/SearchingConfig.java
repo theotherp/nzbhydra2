@@ -51,6 +51,8 @@ public class SearchingConfig extends ValidatingConfig<SearchingConfig> {
     private List<String> requiredWords = new ArrayList<>();
     private boolean sendTorznabCategories = true;
     private boolean showQuickFilterButtons = true;
+    private boolean alwaysShowQuickFilterButtons = false;
+    private List<String> customQuickFilterButtons = new ArrayList<>();
     private Integer timeout = 30;
     private boolean transformNewznabCategories = true;
     private String userAgent = "NZBHydra2";

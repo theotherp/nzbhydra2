@@ -197,28 +197,15 @@
         </div>
     </div>
 
-    <div class="row" ng-if="::(isShowFilterButtons && (isShowFilterButtonsMovie || isShowFilterButtonsTv))">
+    <div class="row" ng-if="::(isShowFilterButtons)">
         <div class="col-md-5">
         </div>
         <div class="col-md-10">
             <div class="btn-toolbar" role="toolbar" style="margin: auto; display:inline-block">
-                <div class="btn-group btn-group-xs" role="group" ng-if="isShowFilterButtonsMovie">
+                <div class="btn-group btn-group-xs" role="group" ng-if="isShowFilterButtonsSource">
                     <button type="button" class="btn btn-default filter-button" ng-change="onFilterButtonsModelChange()"
-                            uncheckable ng-model="filterButtonsModel.source.camts" uib-btn-checkbox>CAM /
-                        TS
+                            uncheckable ng-model="filterButtonsModel.source.camts" uib-btn-checkbox>CAM / TS
                     </button>
-                    <button type="button" class="btn btn-default filter-button" ng-change="onFilterButtonsModelChange()"
-                            uncheckable ng-model="filterButtonsModel.source.web" uib-btn-checkbox>WEB
-                    </button>
-                    <button type="button" class="btn btn-default filter-button" ng-change="onFilterButtonsModelChange()"
-                            uncheckable ng-model="filterButtonsModel.source.dvd" uib-btn-checkbox>DVD
-                    </button>
-                    <button type="button" class="btn btn-default filter-button" ng-change="onFilterButtonsModelChange()"
-                            uncheckable ng-model="filterButtonsModel.source.bluray" uib-btn-checkbox>
-                        Blu-Ray
-                    </button>
-                </div>
-                <div class="btn-group btn-group-xs" role="group" ng-if="isShowFilterButtonsTv">
                     <button type="button" class="btn btn-default filter-button" ng-change="onFilterButtonsModelChange()"
                             uncheckable ng-model="filterButtonsModel.source.tv" uib-btn-checkbox>TV
                     </button>
@@ -248,9 +235,24 @@
                             uncheckable ng-model="filterButtonsModel.quality.q2160p" uib-btn-checkbox>
                         2160p
                     </button>
+                </div>
+                <div class="btn-group btn-group-xs" role="group">
                     <button type="button" class="btn btn-default filter-button" ng-change="onFilterButtonsModelChange()"
-                            uncheckable ng-model="filterButtonsModel.quality.q3d" uib-btn-checkbox>3D
+                            uncheckable ng-model="filterButtonsModel.other.q3d" uib-btn-checkbox>3D
                     </button>
+                    <button type="button" class="btn btn-default filter-button" ng-change="onFilterButtonsModelChange()"
+                            uncheckable ng-model="filterButtonsModel.other.x265" uib-btn-checkbox>x265
+                    </button>
+                    <button type="button" class="btn btn-default filter-button" ng-change="onFilterButtonsModelChange()"
+                            uncheckable ng-model="filterButtonsModel.other.hevc" uib-btn-checkbox>HEVC
+                    </button>
+                </div>
+                <div class="btn-group btn-group-xs" role="group">
+                    <button ng-repeat="entry in customFilterButtons" class="btn btn-default filter-button" ng-change="onFilterButtonsModelChange()"
+                            uncheckable ng-model="filterButtonsModel.custom[entry]" uib-btn-checkbox>{{entry}}
+                    
+                    </button>
+                    
                 </div>
             </div>
         </div>

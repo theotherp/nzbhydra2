@@ -326,8 +326,10 @@ main:
   xmx: 256
 searching:
   alwaysConvertIds: "NONE"
+  alwaysShowQuickFilterButtons: false
   applyRestrictions: "NONE"
   coverSize: 128
+  customQuickFilterButtons: []
   duplicateAgeThreshold: 2.0
   duplicateSizeThresholdInPercent: 1.0
   forbiddenGroups: []

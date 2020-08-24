@@ -7,6 +7,10 @@
         "text": "Drag an entry from the search history to the search input to prefill it with the history entry's values. Then you can adapt them and search."
       },
       {
+        "type": "feature",
+        "text": "Added quick filters for HEVC and x265. Added an option to always show quick filter buttons (i.e. for any type of search). You can also define custom quick filters."
+      },
+      {
         "type": "fix",
         "text": "Fix layout of search input for movies and shows."
       }
