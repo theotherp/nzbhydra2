@@ -2387,7 +2387,10 @@ function downloaderStatusFooter() {
                                 $scope.downloaderChart.data[0].values.splice(0, 1);
                                 $scope.downloaderChart.data[0].values.push({x: downloadRateCounter++, y: response.data.lastDownloadRate});
                             }
-                            $scope.api.update();
+                            try {
+                                $scope.api.update();
+                            } catch (ignored) {
+                            }
                             if ($scope.foo.state === "DOWNLOADING") {
                                 $scope.foo.buttonClass = "play";
                             } else if ($scope.foo.state === "PAUSED") {
@@ -5292,12 +5295,13 @@ angular
 
 
 
-ConfigService.$inject = ["$http", "$q", "$cacheFactory", "bootstrapped"];angular
+ConfigService.$inject = ["$http", "$q", "$cacheFactory", "$uibModal", "bootstrapped"];angular
     .module('nzbhydraApp')
     .factory('ConfigService', ConfigService);
 
-function ConfigService($http, $q, $cacheFactory, bootstrapped) {
+function ConfigService($http, $q, $cacheFactory, $uibModal, bootstrapped) {
 
+    ConfigureInModalInstanceCtrl.$inject = ["$scope", "$uibModalInstance", "$http", "growl", "$interval", "RequestsErrorHandler", "externalTool", "dialogInfo"];
     var cache = $cacheFactory("nzbhydra");
     var safeConfig = bootstrapped.safeConfig;
 
@@ -5308,7 +5312,8 @@ function ConfigService($http, $q, $cacheFactory, bootstrapped) {
         invalidateSafe: invalidateSafe,
         maySeeAdminArea: maySeeAdminArea,
         reloadConfig: reloadConfig,
-        apiHelp: apiHelp
+        apiHelp: apiHelp,
+        configureIn: configureIn
     };
 
     function set(newConfig, ignoreWarnings) {
@@ -5383,6 +5388,146 @@ function ConfigService($http, $q, $cacheFactory, bootstrapped) {
         return loadAll().then(function (maySeeAdminArea) {
             return maySeeAdminArea;
         });
+    }
+
+    function configureIn(externalTool) {
+        $uibModal.open({
+            templateUrl: 'static/html/configure-in-modal.html',
+            controller: ConfigureInModalInstanceCtrl,
+            size: "md",
+            resolve: {
+                externalTool: function () {
+                    return externalTool;
+                },
+                dialogInfo: function () {
+                    return $http.get("internalapi/externalTools/getDialogInfo").then(function (response) {
+                        return response.data;
+                    })
+                }
+            }
+        })
+    }
+
+    function ConfigureInModalInstanceCtrl($scope, $uibModalInstance, $http, growl, $interval, RequestsErrorHandler, externalTool, dialogInfo) {
+        $scope.externalTool = externalTool;
+        $scope.externalToolDisplayName = externalTool;
+        $scope.externalToolsMessages = [];
+        $scope.closeButtonType = "warning";
+        $scope.completed = false;
+        $scope.working = false;
+        $scope.showMessages = false;
+
+        $scope.nzbhydraHost = dialogInfo.nzbhydraHost;
+        $scope.usenetIndexersConfigured = dialogInfo.usenetIndexersConfigured;
+        $scope.configureForUsenet = dialogInfo.usenetIndexersConfigured;
+        $scope.torrentIndexersConfigured = dialogInfo.torrentIndexersConfigured;
+        $scope.configureForTorrents = dialogInfo.torrentIndexersConfigured;
+
+        if (!$scope.configureForUsenet && !$scope.configureForTorrents) {
+            growl.error("No usenet or torrent indexers configured");
+        }
+
+        $scope.nzbhydraName = "NZBHydra2";
+        $scope.xdarrHost = "http://localhost:"
+        $scope.addType = "SINGLE";
+        $scope.enableRss = true;
+        $scope.enableAutomaticSearch = true;
+        $scope.enableInteractiveSearch = true;
+        $scope.categories = null;
+        $scope.animeCategories = null;
+
+        if (externalTool === "Sonarr" || externalTool === "Sonarrv3") {
+            $scope.xdarrHost += "9191";
+            $scope.categories = "5030,5040";
+            if (externalTool === "Sonarrv3") {
+                $scope.externalToolDisplayName = "Sonarr v3";
+            }
+        } else if (externalTool === "Radarr" || externalTool === "Radarrv3") {
+            $scope.xdarrHost += "7878";
+            $scope.categories = "2000";
+            if (externalTool === "Radarrv3") {
+                $scope.externalToolDisplayName = "Radarr v3";
+            }
+        } else if (externalTool === "Lidarr") {
+            $scope.xdarrHost += "8686";
+            $scope.categories = "3000";
+        }
+        $scope.removeYearFromSearchString = false;
+
+        $scope.close = function () {
+            $uibModalInstance.dismiss();
+        };
+
+        $scope.submit = function (deleteOnly) {
+            if ($scope.completed && !deleteOnly) {
+                $uibModalInstance.dismiss();
+            }
+            if (!$scope.usenetIndexersConfigured && !$scope.torrentIndexersConfigured && !deleteOnly) {
+                growl.error("No usenet or torrent indexers configured");
+                return;
+            }
+            $scope.externalToolsMessages = [];
+            $scope.spinnerActive = true;
+            $scope.working = true;
+            $scope.showMessages = true;
+            var data = {
+
+                nzbhydraName: $scope.nzbhydraName,
+                externalTool: $scope.externalTool,
+                nzbhydraHost: $scope.nzbhydraHost,
+                addType: deleteOnly ? "DELETE_ONLY" : $scope.addType,
+                xdarrHost: $scope.xdarrHost,
+                xdarrApiKey: $scope.xdarrApiKey,
+                enableRss: $scope.enableRss,
+                enableAutomaticSearch: $scope.enableAutomaticSearch,
+                enableInteractiveSearch: $scope.enableInteractiveSearch,
+                categories: $scope.categories,
+                animeCategories: $scope.animeCategories,
+                removeYearFromSearchString: $scope.removeYearFromSearchString,
+                earlyDownloadLimit: $scope.earlyDownloadLimit,
+                multiLanguages: $scope.multiLanguages,
+                configureForUsenet: $scope.configureForUsenet,
+                configureForTorrents: $scope.configureForTorrents,
+                additionalParameters: $scope.additionalParameters,
+                minimumSeeders: $scope.minimumSeeders,
+                seedRatio: $scope.seedRatio,
+                seedTime: $scope.seedTime,
+                seasonPackSeedTime: $scope.seasonPackSeedTime,
+                discographySeedTime: $scope.discographySeedTime
+            }
+            console.log(data);
+
+            function updateMessages() {
+                $http.get("internalapi/externalTools/messages").then(function (response) {
+                    $scope.externalToolsMessages = response.data;
+                });
+            }
+
+            var updateInterval = $interval(function () {
+                updateMessages();
+            }, 500);
+
+            RequestsErrorHandler.specificallyHandled(function () {
+                $scope.completed = false;
+                $http.post("internalapi/externalTools/configure", data).then(function () {
+                    updateMessages();
+                    $interval.cancel(updateInterval);
+                    $scope.spinnerActive = false;
+                    $scope.completed = true;
+                    $scope.closeButtonType = "success";
+                }, function (error) {
+                    updateMessages();
+                    console.error(error.data);
+                    $interval.cancel(updateInterval);
+                    $scope.completed = false;
+                    $scope.spinnerActive = false;
+                    $scope.working = false;
+                });
+            });
+
+        };
+
+
     }
 }
 /*
@@ -7574,6 +7719,15 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
         });
     };
 
+    $scope.configureIn = function (externalTool) {
+
+        if ($scope.isSavingNeeded()) {
+            growl.info("Please save first");
+            return;
+        }
+        ConfigService.configureIn(externalTool);
+    };
+
     $scope.$on('$stateChangeStart',
         function (event, toState, toParams, fromState, fromParams) {
             if ($scope.isSavingNeeded()) {
@@ -8970,7 +9124,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
                 });
                 if (mustContain.length > 0) {
                     var containsAtLeastOne = _.any(mustContain, function (word) {
-                        return item.title.toLowerCase().indexOf(word) > -1
+                        return item.title.toLowerCase().indexOf(word.toLowerCase()) > -1
                     });
                     if (!containsAtLeastOne) {
                         return false;
@@ -8982,7 +9136,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
                 var anyRequired = false;
                 _.each($scope.filterButtonsModel.quality, function (value, key) { //key is something like 'q720p', value is true or false. We need to remove the "q" which is there because keys may not start with a digit
                     anyRequired = anyRequired || value;
-                    if (value && item.title.toLowerCase().indexOf(key.substring(1)) > -1) {
+                    if (value && item.title.toLowerCase().indexOf(key.substring(1).toLowerCase()) > -1) {
                         containsAtLeastOne = true;
                     }
                 });
@@ -8996,7 +9150,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
                 var anyRequired = false;
                 _.each($scope.filterButtonsModel.other, function (value, key) { //key is something like 'hevc', value is true or false
                     anyRequired = anyRequired || value;
-                    if (value && item.title.toLowerCase().indexOf(key) > -1) {
+                    if (value && item.title.toLowerCase().indexOf(key.toLowerCase()) > -1) {
                         containsAtLeastOne = true;
                     }
                 });
@@ -9013,7 +9167,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
                 });
                 if (mustContain.length > 0) {
                     containsAtLeastOne = _.any(mustContain, function (word) {
-                        return item.title.toLowerCase().indexOf(word) > -1
+                        return item.title.toLowerCase().indexOf(word.toLowerCase()) > -1
                     });
                     if (!containsAtLeastOne) {
                         return false;

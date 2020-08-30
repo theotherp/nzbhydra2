@@ -1,0 +1,227 @@
+<div class="modal-header">
+  <h3 class="modal-title">Configure NZBHydra in {{::externalToolDisplayName}}</h3>
+</div>
+<div class="modal-body" style="text-align: left">
+  <div ng-show="!working">
+    This allows you to configure NZBHydra in Sonarr / Radarr / Lidarr.<br>
+    <br>
+    You can decide if you want to:<br>
+    <ul>
+      
+      <li>a) add NZBHydra as one indexer. This is the default. *darr will make one query to NZBHydra which will then query all indexers and return one unified list of results.</li>
+      <li>b) add one entry per indexer configured in NZBHydra. *darr will make multiple queries to NZBHydra (one per indexer). This will result in a lot of entries in your NZBHydra history but has the one benefit that should *darr be unable
+        to
+        download an NZB from an indexer then NZBHydra then only that indexer entry will be disabled in *darr.
+      </li>
+    </ul>
+    In most cases you should stick with a).<br>
+    Any indexer entries containing {{nzbhydraName}} in the name will be deleted. I recommend you make a backup of {{::externalToolDisplayName}} before.
+    <br>
+    <br>
+    
+    <div class="form-group row">
+      <div class="col-md-8" style="text-align: right">
+        <label>NZBHydra name</label>
+      </div>
+      <div class="col-md-12">
+        <input type="text" class="form-control" ng-model="nzbhydraName">
+      </div>
+    </div>
+    
+    <div class="form-group row">
+      <div class="col-md-8" style="text-align: right">
+        <label>NZBHydra host</label>
+      </div>
+      <div class="col-md-12">
+        <input type="text" class="form-control" ng-model="nzbhydraHost">
+      </div>
+    </div>
+    
+    <div class="form-group row" ng-show="usenetIndexersConfigured">
+      <div class="col-md-8" style="text-align: right">
+        <label>Configure for usenet</label>
+      </div>
+      <div class="col-md-12">
+        <input bs-switch type="checkbox" ng-model="configureForUsenet">
+      </div>
+    </div>
+    
+    <div class="form-group row" ng-show="torrentIndexersConfigured">
+      <div class="col-md-8" style="text-align: right">
+        <label>Configure for torrents</label>
+      </div>
+      <div class="col-md-12">
+        <input bs-switch type="checkbox" ng-model="configureForTorrents">
+      </div>
+    </div>
+    
+    <div class="form-group row">
+      <div class="col-md-8" style="text-align: right">
+        <label>Add type</label>
+      </div>
+      <div class="col-md-12">
+        <input bs-switch type="checkbox" ng-model="addType" switch-on-text="Single" switch-off-text="Multiple" switch-off-color="success" ng-true-value="'SINGLE'" ng-false-value="'PER_INDEXER'">
+      </div>
+    </div>
+    
+    <div class="form-group row">
+      <div class="col-md-8" style="text-align: right">
+        <label>{{externalToolDisplayName}} host</label>
+      </div>
+      <div class="col-md-12">
+        <input type="text" class="form-control" ng-model="xdarrHost">
+      </div>
+    </div>
+    
+    <div class="form-group row">
+      <div class="col-md-8" style="text-align: right">
+        <label>{{externalToolDisplayName}} API key</label>
+      </div>
+      <div class="col-md-12">
+        <input type="text" class="form-control" ng-model="xdarrApiKey">
+      </div>
+    </div>
+    
+    <div class="form-group row">
+      <div class="col-md-8" style="text-align: right">
+        <label>Enable RSS</label>
+      </div>
+      <div class="col-md-12">
+        <input bs-switch type="checkbox" ng-model="enableRss">
+      </div>
+    </div>
+    
+    <div class="form-group row">
+      <div class="col-md-8" style="text-align: right">
+        <label>Enable automatic search</label>
+      </div>
+      <div class="col-md-12">
+        <input bs-switch type="checkbox" ng-model="enableAutomaticSearch">
+      </div>
+    </div>
+    
+    <div class="form-group row" ng-show="externalTool !== 'Radarr'">
+      <div class="col-md-8" style="text-align: right">
+        <label>Enable interactive search</label>
+      </div>
+      <div class="col-md-12">
+        <input bs-switch type="checkbox" ng-model="enableInteractiveSearch">
+      </div>
+    </div>
+    
+    <div class="form-group row">
+      <div class="col-md-8" style="text-align: right">
+        <label>Categories</label>
+      </div>
+      <div class="col-md-12">
+        <input type="text" class="form-control" ng-model="categories">
+      </div>
+    </div>
+    
+    <div class="form-group row">
+      <div class="col-md-8" style="text-align: right">
+        <label>Additional parameters</label>
+      </div>
+      <div class="col-md-12">
+        <input type="text" class="form-control" ng-model="additionalParameters">
+      </div>
+    </div>
+    
+    <div class="form-group row" ng-show="externalTool !== 'Lidarr'">
+      <div class="col-md-8" style="text-align: right">
+        <label>Anime categories</label>
+      </div>
+      <div class="col-md-12">
+        <input type="text" class="form-control" ng-model="animeCategories">
+      </div>
+    </div>
+    
+    <div class="form-group row" ng-show="externalTool === 'Radarr'">
+      <div class="col-md-8" style="text-align: right">
+        <label>Remove year from search string</label>
+      </div>
+      <div class="col-md-12">
+        <input bs-switch type="checkbox" ng-model="removeYearFromSearchString">
+      </div>
+    </div>
+    
+    <div class="form-group row" ng-show="externalTool === 'Lidarr'">
+      <div class="col-md-8" style="text-align: right">
+        <label>Early download limit</label>
+      </div>
+      <div class="col-md-12">
+        <input type="text" class="form-control" ng-model="earlyDownloadLimit">
+      </div>
+    </div>
+    
+    <div class="form-group row" ng-show="configureForTorrents">
+      <div class="col-md-8" style="text-align: right">
+        <label>Minimum seeders</label>
+      </div>
+      <div class="col-md-12">
+        <input type="text" class="form-control" ng-model="minimumSeeders">
+      </div>
+    </div>
+    
+    <div class="form-group row" ng-show="configureForTorrents && (externalTool === 'Sonarr' || externalTool === 'Sonarrv3' || externalTool === 'Lidarr')">
+      <div class="col-md-8" style="text-align: right">
+        <label>Seed ratio</label>
+      </div>
+      <div class="col-md-12">
+        <input type="text" class="form-control" ng-model="seedRatio">
+      </div>
+    </div>
+    
+    <div class="form-group row" ng-show="configureForTorrents && (externalTool === 'Sonarr' || externalTool === 'Sonarrv3' || externalTool === 'Lidarr')">
+      <div class="col-md-8" style="text-align: right">
+        <label>Seed time</label>
+      </div>
+      <div class="col-md-12">
+        <input type="text" class="form-control" ng-model="seedTime">
+      </div>
+    </div>
+    
+    <div class="form-group row" ng-show="configureForTorrents && (externalTool === 'Sonarr' || externalTool === 'Sonarrv3')">
+      <div class="col-md-8" style="text-align: right">
+        <label>Season pack seed time</label>
+      </div>
+      <div class="col-md-12">
+        <input type="text" class="form-control" ng-model="seasonPackSeedTime">
+      </div>
+    </div>
+    
+    <div class="form-group row" ng-show="configureForTorrents && externalTool === 'Lidarr'">
+      <div class="col-md-8" style="text-align: right">
+        <label>Discography seed time</label>
+      </div>
+      <div class="col-md-12">
+        <input type="text" class="form-control" ng-model="discographySeedTime">
+      </div>
+    </div>
+  
+  </div>
+  
+  <div class="panel panel-default" ng-show="showMessages">
+    <div class="panel-heading">Log</div>
+    <div class="panel-body">
+      <ul>
+        <li ng-repeat="message in externalToolsMessages">
+          {{ message }}
+        </li>
+      </ul>
+    </div>
+  </div>
+  <!--  <div ng-show="showMessages">-->
+  <!--    <ul>-->
+  <!--      <li ng-repeat="message in externalToolsMessages">-->
+  <!--        {{ message }}-->
+  <!--      </li>-->
+  <!--    </ul>-->
+  <!--  </div>-->
+
+</div>
+<div class="modal-footer">
+  <button class="btn danger" type="button" ng-click="submit(true)" ng-show="!completed && !working">Delete existing entries</button>
+  <button class="btn btn-{{closeButtonType}}" type="button" ng-click="close()">Close</button>
+  <button class="btn btn-success has-spinner" ng-class="{'active': spinnerActive}" ng-show="!completed" type="button" ng-click="submit()"><span class="spinner"><i class="fa fa-refresh fa-spin"></i></span> Submit</button>
+</div>

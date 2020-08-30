@@ -108,10 +108,10 @@ public class ExternalApiTest {
         parameters.setT(ActionAttribute.SEARCH);
         parameters.setCachetime(5);
 
-        testee.api(parameters);
+        testee.api(parameters, null, null);
         verify(searcher).search(any());
 
-        testee.api(parameters);
+        testee.api(parameters, null, null);
         verify(searcher, times(1)).search(any());
     }
 
@@ -123,14 +123,14 @@ public class ExternalApiTest {
         parameters.setT(ActionAttribute.SEARCH);
         parameters.setCachetime(5);
 
-        testee.api(parameters);
+        testee.api(parameters, null, null);
         verify(searcher).search(any());
 
-        testee.api(parameters);
+        testee.api(parameters, null, null);
         verify(searcher, times(1)).search(any());
 
         testee.clock = Clock.fixed(testee.clock.instant().plus(6, ChronoUnit.MINUTES), ZoneId.of("UTC"));
-        testee.api(parameters);
+        testee.api(parameters, null, null);
         verify(searcher, times(2)).search(any());
     }
 
@@ -138,34 +138,34 @@ public class ExternalApiTest {
     public void shouldCacheRemoveEntriesWhenLimitReached() throws Exception {
         NewznabParameters parameters = getNewznabParameters("q1");
 
-        testee.api(parameters);
+        testee.api(parameters, null, null);
         verify(searcher).search(any());
 
-        testee.api(parameters);
+        testee.api(parameters, null, null);
         verify(searcher, times(1)).search(any());
 
         parameters.setQ("q2");
-        testee.api(getNewznabParameters("q2"));
+        testee.api(getNewznabParameters("q2"), null, null);
         verify(searcher, times(2)).search(any());
         parameters.setQ("q3");
-        testee.api(getNewznabParameters("q3"));
+        testee.api(getNewznabParameters("q3"), null, null);
         verify(searcher, times(3)).search(any());
         parameters.setQ("q4");
-        testee.api(getNewznabParameters("q4"));
+        testee.api(getNewznabParameters("q4"), null, null);
         verify(searcher, times(4)).search(any());
         parameters.setQ("q5");
-        testee.api(getNewznabParameters("q5"));
+        testee.api(getNewznabParameters("q5"), null, null);
         verify(searcher, times(5)).search(any());
 
         //q1 is still cached
-        testee.api(getNewznabParameters("q1"));
+        testee.api(getNewznabParameters("q1"), null, null);
         verify(searcher, times(5)).search(any());
 
         //now q1 is removed as oldest entry
-        testee.api(getNewznabParameters("q6"));
+        testee.api(getNewznabParameters("q6"), null, null);
         verify(searcher, times(6)).search(any());
         //Not cached anymore, will do another search
-        testee.api(getNewznabParameters("q1"));
+        testee.api(getNewznabParameters("q1"), null, null);
         verify(searcher, times(7)).search(any());
     }
 
@@ -179,14 +179,14 @@ public class ExternalApiTest {
         parameters.setT(ActionAttribute.SEARCH);
         parameters.setO(OutputType.JSON);
 
-        ResponseEntity<?> responseEntity = testee.api(parameters);
+        ResponseEntity<?> responseEntity = testee.api(parameters, null, null);
         assertThat(responseEntity.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON_UTF8);
 
         NewznabXmlRoot xmlRoot = new NewznabXmlRoot();
         when(newznabXmlTransformerMock.getRssRoot(any(), any(), anyInt(), any())).thenReturn(xmlRoot);
 
         parameters.setO(OutputType.XML);
-        responseEntity = testee.api(parameters);
+        responseEntity = testee.api(parameters, null, null);
         assertThat(responseEntity.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_XML);
     }
 

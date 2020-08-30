@@ -65,7 +65,6 @@ public class NewznabParameters {
     //Hydra-specific
     private Set<String> indexers = new HashSet<>();
 
-
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)
@@ -93,6 +92,7 @@ public class NewznabParameters {
                 .add("extended", extended)
                 .add("cachetime", cachetime)
                 .add("password", password)
+                .add("indexers", indexers)
                 .omitNullValues()
                 .toString();
     }

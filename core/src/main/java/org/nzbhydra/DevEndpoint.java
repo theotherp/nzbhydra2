@@ -16,8 +16,11 @@
 
 package org.nzbhydra;
 
+import org.nzbhydra.externaltools.AddRequest;
+import org.nzbhydra.externaltools.ExternalTools;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,6 +38,8 @@ public class DevEndpoint {
 
     @PersistenceContext
     private EntityManager entityManager;
+    @Autowired
+    private ExternalTools xdarr;
 
     private static final Logger logger = LoggerFactory.getLogger(DevEndpoint.class);
 
@@ -52,5 +57,20 @@ public class DevEndpoint {
     public String deleteDanglingIndexersearches() throws Exception {
         return "Deleted " + entityManager.createNativeQuery("delete from SEARCHRESULT where INDEXERSEARCHENTITY not in (select y.id from INDEXERSEARCH y)").executeUpdate() + " entries";
     }
+
+    @RequestMapping(value = "/dev/testAddToSonarr", method = RequestMethod.GET)
+    public String testAddToSonarr() throws Exception {
+        final AddRequest addRequest = new AddRequest();
+        addRequest.setAddTorrent(false);
+        addRequest.setAddUsenet(false);
+        addRequest.setXdarrHost("http://localhost:9191");
+        addRequest.setXdarrApiKey("51b42e76e902445d8ed3f068d698914a");
+        addRequest.setNzbhydraHost("http://127.0.0.1:5076");
+
+        xdarr.addNzbhydraAsIndexer(addRequest);
+
+        return "OK";
+    }
+
 
 }

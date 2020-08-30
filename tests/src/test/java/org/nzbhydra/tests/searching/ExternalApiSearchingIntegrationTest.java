@@ -92,7 +92,7 @@ public class ExternalApiSearchingIntegrationTest extends AbstractConfigReplacing
         apiCallParameters.setOffset(0);
         apiCallParameters.setLimit(2);
         apiCallParameters.setT(ActionAttribute.SEARCH);
-        NewznabXmlRoot apiSearchResult = (NewznabXmlRoot) externalApi.api(apiCallParameters).getBody();
+        NewznabXmlRoot apiSearchResult = (NewznabXmlRoot) externalApi.api(apiCallParameters, null, null).getBody();
         Assert.assertThat(apiSearchResult.getRssChannel().getItems().size(), is(2));
         Assert.assertThat(apiSearchResult.getRssChannel().getItems().get(0).getTitle(), is("itemTitle1a"));
         Assert.assertThat(apiSearchResult.getRssChannel().getItems().get(1).getTitle(), is("itemTitle2"));
@@ -100,7 +100,7 @@ public class ExternalApiSearchingIntegrationTest extends AbstractConfigReplacing
         apiCallParameters.setLimit(100);
         apiCallParameters.setOffset(2);
 
-        apiSearchResult = (NewznabXmlRoot) externalApi.api(apiCallParameters).getBody();
+        apiSearchResult = (NewznabXmlRoot) externalApi.api(apiCallParameters, null, null).getBody();
 
         Assert.assertThat(apiSearchResult.getRssChannel().getItems().size(), is(1));
         Assert.assertThat(apiSearchResult.getRssChannel().getItems().get(0).getTitle(), is("itemTitle1b"));
@@ -122,14 +122,14 @@ public class ExternalApiSearchingIntegrationTest extends AbstractConfigReplacing
         apiCallParameters.setOffset(0);
         apiCallParameters.setLimit(2);
         apiCallParameters.setT(ActionAttribute.SEARCH);
-        NewznabXmlRoot apiSearchResult = (NewznabXmlRoot) externalApi.api(apiCallParameters).getBody();
+        NewznabXmlRoot apiSearchResult = (NewznabXmlRoot) externalApi.api(apiCallParameters, null, null).getBody();
 
         org.assertj.core.api.Assertions.assertThat(apiSearchResult.getRssChannel().getItems().size()).isEqualTo(2);
 
         apiCallParameters.setLimit(100);
         apiCallParameters.setOffset(2);
 
-        apiSearchResult = (NewznabXmlRoot) externalApi.api(apiCallParameters).getBody();
+        apiSearchResult = (NewznabXmlRoot) externalApi.api(apiCallParameters, null, null).getBody();
 
         org.assertj.core.api.Assertions.assertThat(apiSearchResult.getRssChannel().getItems().size()).isEqualTo(1);
         org.assertj.core.api.Assertions.assertThat(apiSearchResult.getRssChannel().getItems().get(0).getTitle()).isEqualTo("indexer13");
@@ -152,14 +152,14 @@ public class ExternalApiSearchingIntegrationTest extends AbstractConfigReplacing
         apiCallParameters.setOffset(0);
         apiCallParameters.setLimit(100);
         apiCallParameters.setT(ActionAttribute.SEARCH);
-        NewznabXmlRoot apiSearchResult = (NewznabXmlRoot) externalApi.api(apiCallParameters).getBody();
+        NewznabXmlRoot apiSearchResult = (NewznabXmlRoot) externalApi.api(apiCallParameters, null, null).getBody();
 
         assertThat(apiSearchResult.getRssChannel().getItems().size()).isEqualTo(100);
 
         apiCallParameters.setLimit(100);
         apiCallParameters.setOffset(100);
 
-        apiSearchResult = (NewznabXmlRoot) externalApi.api(apiCallParameters).getBody();
+        apiSearchResult = (NewznabXmlRoot) externalApi.api(apiCallParameters, null, null).getBody();
 
         assertThat(apiSearchResult.getRssChannel().getItems().size()).isEqualTo(50);
     }
@@ -170,7 +170,7 @@ public class ExternalApiSearchingIntegrationTest extends AbstractConfigReplacing
         prepareIndexerWithOneResponse();
         searchModuleProvider.getIndexers().get(0).getConfig().setSupportedSearchIds(Arrays.asList(MediaIdType.IMDB, MediaIdType.TMDB));
 
-        NewznabXmlRoot root = (NewznabXmlRoot) externalApi.api(NewznabParameters.builder().tmdbid("abcd").imdbid("1234").t(ActionAttribute.MOVIE).apikey("apikey").build()).getBody();
+        NewznabXmlRoot root = (NewznabXmlRoot) externalApi.api(NewznabParameters.builder().tmdbid("abcd").imdbid("1234").t(ActionAttribute.MOVIE).apikey("apikey").build(), null, null).getBody();
         RecordedRequest request = webServer.takeRequest(2, TimeUnit.SECONDS);
 
         assertThat(request.getPath()).contains("imdbid=1234").contains("tmdbid=abcd");
@@ -186,7 +186,7 @@ public class ExternalApiSearchingIntegrationTest extends AbstractConfigReplacing
         when(infoProvider.convert(anyMap())).thenReturn(new MediaInfo(new MovieInfo("tt1234", null, null, 0, null)));
         when(infoProvider.canConvertAny(anySet(), anySet())).thenReturn(true);
 
-        NewznabXmlRoot root = (NewznabXmlRoot) externalApi.api(NewznabParameters.builder().tmdbid("abcd").t(ActionAttribute.MOVIE).apikey("apikey").build()).getBody();
+        NewznabXmlRoot root = (NewznabXmlRoot) externalApi.api(NewznabParameters.builder().tmdbid("abcd").t(ActionAttribute.MOVIE).apikey("apikey").build(), null, null).getBody();
 
         RecordedRequest request = webServer.takeRequest(2, TimeUnit.SECONDS);
         assertThat(request.getRequestUrl().queryParameter("imdbid")).isEqualTo("1234");
@@ -203,7 +203,7 @@ public class ExternalApiSearchingIntegrationTest extends AbstractConfigReplacing
         when(infoProvider.convert(any(), any())).thenReturn(new MediaInfo(new MovieInfo(null, null,"title", 0, null)));
         when(infoProvider.canConvertAny(anySet(), anySet())).thenReturn(false);
 
-        NewznabXmlRoot root = (NewznabXmlRoot) externalApi.api(NewznabParameters.builder().tmdbid("abcd").t(ActionAttribute.MOVIE).apikey("apikey").build()).getBody();
+        NewznabXmlRoot root = (NewznabXmlRoot) externalApi.api(NewznabParameters.builder().tmdbid("abcd").t(ActionAttribute.MOVIE).apikey("apikey").build(), null, null).getBody();
 
         RecordedRequest request = webServer.takeRequest(2, TimeUnit.SECONDS);
         assertThat(request.getRequestUrl().queryParameter("q")).isEqualTo("title");

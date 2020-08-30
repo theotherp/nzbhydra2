@@ -107,7 +107,10 @@ function downloaderStatusFooter() {
                                 $scope.downloaderChart.data[0].values.splice(0, 1);
                                 $scope.downloaderChart.data[0].values.push({x: downloadRateCounter++, y: response.data.lastDownloadRate});
                             }
-                            $scope.api.update();
+                            try {
+                                $scope.api.update();
+                            } catch (ignored) {
+                            }
                             if ($scope.foo.state === "DOWNLOADING") {
                                 $scope.foo.buttonClass = "play";
                             } else if ($scope.foo.state === "PAUSED") {

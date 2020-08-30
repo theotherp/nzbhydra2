@@ -480,7 +480,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
                 });
                 if (mustContain.length > 0) {
                     var containsAtLeastOne = _.any(mustContain, function (word) {
-                        return item.title.toLowerCase().indexOf(word) > -1
+                        return item.title.toLowerCase().indexOf(word.toLowerCase()) > -1
                     });
                     if (!containsAtLeastOne) {
                         return false;
@@ -492,7 +492,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
                 var anyRequired = false;
                 _.each($scope.filterButtonsModel.quality, function (value, key) { //key is something like 'q720p', value is true or false. We need to remove the "q" which is there because keys may not start with a digit
                     anyRequired = anyRequired || value;
-                    if (value && item.title.toLowerCase().indexOf(key.substring(1)) > -1) {
+                    if (value && item.title.toLowerCase().indexOf(key.substring(1).toLowerCase()) > -1) {
                         containsAtLeastOne = true;
                     }
                 });
@@ -506,7 +506,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
                 var anyRequired = false;
                 _.each($scope.filterButtonsModel.other, function (value, key) { //key is something like 'hevc', value is true or false
                     anyRequired = anyRequired || value;
-                    if (value && item.title.toLowerCase().indexOf(key) > -1) {
+                    if (value && item.title.toLowerCase().indexOf(key.toLowerCase()) > -1) {
                         containsAtLeastOne = true;
                     }
                 });
@@ -523,7 +523,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
                 });
                 if (mustContain.length > 0) {
                     containsAtLeastOne = _.any(mustContain, function (word) {
-                        return item.title.toLowerCase().indexOf(word) > -1
+                        return item.title.toLowerCase().indexOf(word.toLowerCase()) > -1
                     });
                     if (!containsAtLeastOne) {
                         return false;

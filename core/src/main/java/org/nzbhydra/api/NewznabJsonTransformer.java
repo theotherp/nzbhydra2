@@ -18,6 +18,7 @@ package org.nzbhydra.api;
 
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.downloading.FileHandler;
+import org.nzbhydra.mapping.newznab.NewznabResponse;
 import org.nzbhydra.mapping.newznab.json.NewznabJsonChannel;
 import org.nzbhydra.mapping.newznab.json.NewznabJsonChannelResponse;
 import org.nzbhydra.mapping.newznab.json.NewznabJsonEnclosure;
@@ -29,7 +30,6 @@ import org.nzbhydra.mapping.newznab.json.NewznabJsonResponseAttributes;
 import org.nzbhydra.mapping.newznab.json.NewznabJsonRoot;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem.DownloadType;
-import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -49,7 +49,7 @@ public class NewznabJsonTransformer {
     @Autowired
     protected ConfigProvider configProvider;
 
-    NewznabJsonRoot transformToRoot(List<SearchResultItem> searchResultItems, Integer offset, int total, SearchRequest searchRequest) {
+    NewznabJsonRoot transformToRoot(List<SearchResultItem> searchResultItems, Integer offset, int total, boolean isNzb) {
         NewznabJsonRoot rssRoot = new NewznabJsonRoot();
 
         NewznabJsonChannel channel = new NewznabJsonChannel();
@@ -63,15 +63,16 @@ public class NewznabJsonTransformer {
         rssRoot.setChannel(channel);
         List<NewznabJsonItem> items = new ArrayList<>();
         for (SearchResultItem searchResultItem : searchResultItems) {
-            NewznabJsonItem rssItem = buildRssItem(searchResultItem, searchRequest);
+            NewznabJsonItem rssItem = buildRssItem(searchResultItem, isNzb);
             items.add(rssItem);
         }
 
         channel.setItem(items);
+        rssRoot.setSearchType(isNzb ? NewznabResponse.SearchType.NEWZNAB : NewznabResponse.SearchType.TORZNAB);
         return rssRoot;
     }
 
-    NewznabJsonItem buildRssItem(SearchResultItem searchResultItem, SearchRequest searchRequest) {
+    private NewznabJsonItem buildRssItem(SearchResultItem searchResultItem, boolean isNzb) {
         NewznabJsonItem rssItem = new NewznabJsonItem();
         String link = nzbHandler.getDownloadLink(searchResultItem.getSearchResultId(), false, DownloadType.NZB);
         rssItem.setLink(link);
@@ -88,7 +89,6 @@ public class NewznabJsonTransformer {
         attributes.add(new NewznabJsonItemAttributes("hydraIndexerScore", String.valueOf(searchResultItem.getIndexer().getConfig().getScore().orElse(null))));
         attributes.add(new NewznabJsonItemAttributes("hydraIndexerHost", String.valueOf(searchResultItem.getIndexer().getConfig().getHost())));
         attributes.add(new NewznabJsonItemAttributes("hydraIndexerName", String.valueOf(searchResultItem.getIndexer().getName())));
-        boolean isNzb = searchRequest.getDownloadType() == org.nzbhydra.searching.dtoseventsenums.DownloadType.NZB;
         String resultType;
         if (isNzb) {
             rssItem.setAttr(attributes.stream().map(NewznabJsonItemAttr::new).collect(Collectors.toList()));

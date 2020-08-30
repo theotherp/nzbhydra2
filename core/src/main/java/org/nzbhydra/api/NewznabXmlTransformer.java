@@ -18,6 +18,7 @@ package org.nzbhydra.api;
 
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.downloading.FileHandler;
+import org.nzbhydra.mapping.newznab.NewznabResponse;
 import org.nzbhydra.mapping.newznab.xml.NewznabAttribute;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlChannel;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlEnclosure;
@@ -27,7 +28,6 @@ import org.nzbhydra.mapping.newznab.xml.NewznabXmlResponse;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem.DownloadType;
-import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -49,22 +49,25 @@ public class NewznabXmlTransformer {
     @Autowired
     protected ConfigProvider configProvider;
 
-    NewznabXmlRoot getRssRoot(List<SearchResultItem> searchResultItems, Integer offset, int total, SearchRequest searchRequest) {
+    NewznabXmlRoot getRssRoot(List<SearchResultItem> searchResultItems, Integer offset, int total, boolean isNzb) {
         NewznabXmlRoot rssRoot = new NewznabXmlRoot();
 
         NewznabXmlChannel rssChannel = new NewznabXmlChannel();
         rssChannel.setTitle("NZBHydra 2");
         rssChannel.setLink("https://www.github.com/theotherp/nzbhydra2");
         rssChannel.setWebMaster("theotherp@posteo.net");
-        if (searchRequest.getDownloadType() == org.nzbhydra.searching.dtoseventsenums.DownloadType.NZB) {
+        if (isNzb) {
             rssChannel.setNewznabResponse(new NewznabXmlResponse(offset == null ? 0 : offset, total));
+            rssRoot.setSearchType(NewznabResponse.SearchType.NEWZNAB);
+        } else {
+            rssRoot.setSearchType(NewznabResponse.SearchType.TORZNAB);
         }
         rssChannel.setGenerator("NZBHydra2");
 
         rssRoot.setRssChannel(rssChannel);
         List<NewznabXmlItem> items = new ArrayList<>();
         for (SearchResultItem searchResultItem : searchResultItems) {
-            NewznabXmlItem rssItem = buildRssItem(searchResultItem, searchRequest);
+            NewznabXmlItem rssItem = buildRssItem(searchResultItem, isNzb);
             items.add(rssItem);
         }
 
@@ -72,9 +75,8 @@ public class NewznabXmlTransformer {
         return rssRoot;
     }
 
-    NewznabXmlItem buildRssItem(SearchResultItem searchResultItem, SearchRequest searchRequest) {
+    NewznabXmlItem buildRssItem(SearchResultItem searchResultItem, boolean isNzb) {
         NewznabXmlItem rssItem = new NewznabXmlItem();
-        boolean isNzb = searchRequest.getDownloadType() == org.nzbhydra.searching.dtoseventsenums.DownloadType.NZB;
         String link = nzbHandler.getDownloadLink(searchResultItem.getSearchResultId(), false, isNzb ? DownloadType.NZB : DownloadType.TORRENT);
         rssItem.setLink(link);
         rssItem.setTitle(searchResultItem.getTitle());
@@ -87,9 +89,11 @@ public class NewznabXmlTransformer {
         }
         searchResultItem.getAttributes().put("guid", String.valueOf(searchResultItem.getSearchResultId()));
         List<NewznabAttribute> newznabAttributes = searchResultItem.getAttributes().entrySet().stream().map(attribute -> new NewznabAttribute(attribute.getKey(), attribute.getValue())).sorted(Comparator.comparing(NewznabAttribute::getName)).collect(Collectors.toList());
-        newznabAttributes.add(new NewznabAttribute("hydraIndexerScore", String.valueOf(searchResultItem.getIndexer().getConfig().getScore().orElse(null))));
-        newznabAttributes.add(new NewznabAttribute("hydraIndexerHost", getIndexerHost(searchResultItem)));
-        newznabAttributes.add(new NewznabAttribute("hydraIndexerName", String.valueOf(searchResultItem.getIndexer().getName())));
+        if (searchResultItem.getIndexer() != null) {
+            newznabAttributes.add(new NewznabAttribute("hydraIndexerScore", String.valueOf(searchResultItem.getIndexer().getConfig().getScore().orElse(null))));
+            newznabAttributes.add(new NewznabAttribute("hydraIndexerHost", getIndexerHost(searchResultItem)));
+            newznabAttributes.add(new NewznabAttribute("hydraIndexerName", String.valueOf(searchResultItem.getIndexer().getName())));
+        }
         String resultType;
         if (isNzb) {
             rssItem.setNewznabAttributes(newznabAttributes);

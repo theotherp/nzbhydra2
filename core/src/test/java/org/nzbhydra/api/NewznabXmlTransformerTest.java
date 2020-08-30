@@ -83,11 +83,11 @@ public class NewznabXmlTransformerTest {
         searchResultItem.setCategory(new Category());
 
         searchRequest.setDownloadType(DownloadType.NZB);
-        NewznabXmlItem item = testee.buildRssItem(searchResultItem, searchRequest);
+        NewznabXmlItem item = testee.buildRssItem(searchResultItem, searchRequest.getDownloadType() == DownloadType.NZB);
         assertThat(item.getEnclosure().getType()).isEqualTo("application/x-nzb");
 
         searchRequest.setDownloadType(DownloadType.TORRENT);
-        item = testee.buildRssItem(searchResultItem, searchRequest);
+        item = testee.buildRssItem(searchResultItem, searchRequest.getDownloadType() == DownloadType.NZB);
         assertThat(item.getEnclosure().getType()).isEqualTo("application/x-bittorrent");
 
     }

@@ -255,6 +255,15 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
         });
     };
 
+    $scope.configureIn = function (externalTool) {
+
+        if ($scope.isSavingNeeded()) {
+            growl.info("Please save first");
+            return;
+        }
+        ConfigService.configureIn(externalTool);
+    };
+
     $scope.$on('$stateChangeStart',
         function (event, toState, toParams, fromState, fromParams) {
             if ($scope.isSavingNeeded()) {

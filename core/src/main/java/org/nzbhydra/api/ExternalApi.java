@@ -3,6 +3,7 @@ package org.nzbhydra.api;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
+import com.google.common.collect.Sets;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.apache.catalina.connector.ClientAbortException;
@@ -38,6 +39,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -66,7 +68,7 @@ public class ExternalApi {
     private static final Logger logger = LoggerFactory.getLogger(ExternalApi.class);
 
     @Value("${nzbhydra.dev.noApiKey:false}")
-    private boolean noApiKeyNeeded = false;
+    private final boolean noApiKeyNeeded = false;
 
     @Autowired
     protected Searcher searcher;
@@ -84,14 +86,26 @@ public class ExternalApi {
     private CategoryProvider categoryProvider;
     @Autowired
     private CapsGenerator capsGenerator;
+    @Autowired
+    private MockSearch mockSearch;
     protected Clock clock = Clock.systemUTC();
-    private Random random = new Random();
+    private final Random random = new Random();
 
-    private ConcurrentMap<Integer, CacheEntryValue> cache = new ConcurrentHashMap<>();
+    private final ConcurrentMap<Integer, CacheEntryValue> cache = new ConcurrentHashMap<>();
 
+    //When enabled search results will be mocked instead of indexers actually being searched. Only for configuration of external tools
+    private static boolean inMockingMode;
 
-    @RequestMapping(value = {"/api", "/rss", "/torznab/api"}, consumes = MediaType.ALL_VALUE)
-    public ResponseEntity<? extends Object> api(NewznabParameters params) throws Exception {
+    /**
+     * External API call.
+     *
+     * @param params      Parameters as defined in {@link NewznabParameters}.
+     * @param indexerName If defined the name of a configured indexer that should be used for the search.
+     * @param mock        If set to any value then the search should be mocked (will return a number of mocked results).
+     * @return Newznab results.
+     */
+    @RequestMapping(value = {"/api", "/rss", "/torznab/api", "/torznab/api/{indexerName}", "/api/{indexerName}"}, consumes = MediaType.ALL_VALUE)
+    public ResponseEntity<? extends Object> api(NewznabParameters params, @PathVariable(value = "indexerName", required = false) String indexerName, @PathVariable(value = "mock", required = false) String mock) throws Exception {
         int searchRequestId = random.nextInt(100000);
         if (params.getT() != null && params.getT().isSearch()) {
             MDC.put("SEARCH", String.valueOf(searchRequestId));
@@ -104,27 +118,45 @@ public class ExternalApi {
             throw new WrongApiKeyException("Wrong api key");
         }
 
-        if (Stream.of(ActionAttribute.SEARCH, ActionAttribute.BOOK, ActionAttribute.TVSEARCH, ActionAttribute.MOVIE).anyMatch(x -> x == params.getT())) {
-            if (params.getCachetime() != null || configProvider.getBaseConfig().getSearching().getGlobalCacheTimeMinutes().isPresent()) {
-                return handleCachingSearch(params, searchType, searchRequestId);
-            }
-            NewznabResponse searchResult = search(params, searchRequestId);
-            HttpHeaders httpHeaders = setSearchTypeAndGetHeaders(params, searchResult);
-            return new ResponseEntity<>(searchResult, httpHeaders, HttpStatus.OK);
-
-        }
-
-        if (params.getT() == ActionAttribute.GET) {
-            return getNzb(params);
+        if (!params.getIndexers().isEmpty() && indexerName != null) {
+            logger.error("Received call with parameters set in path and request variables");
+            NewznabXmlError error = new NewznabXmlError("200", "Received call with parameters set in path and request variables");
+            return new ResponseEntity<Object>(error, HttpStatus.OK);
+        } else if (indexerName != null) {
+            params.setIndexers(Sets.newHashSet(indexerName));
         }
 
         if (params.getT() == ActionAttribute.CAPS) {
             return capsGenerator.getCaps(params.getO(), searchType);
         }
 
+        if (Stream.of(ActionAttribute.SEARCH, ActionAttribute.BOOK, ActionAttribute.TVSEARCH, ActionAttribute.MOVIE).anyMatch(x -> x == params.getT())) {
+            if (inMockingMode) {
+                logger.debug("Will mock results for this request");
+                return new ResponseEntity<>(mockSearch.mockSearch(params, getSearchType() == NewznabResponse.SearchType.NEWZNAB), HttpStatus.OK);
+            }
+
+            if (params.getCachetime() != null || configProvider.getBaseConfig().getSearching().getGlobalCacheTimeMinutes().isPresent()) {
+                return handleCachingSearch(params, searchType, searchRequestId);
+            }
+
+            NewznabResponse searchResult = search(params, searchRequestId);
+            HttpHeaders httpHeaders = setSearchTypeAndGetHeaders(params, searchResult);
+            return new ResponseEntity<>(searchResult, httpHeaders, HttpStatus.OK);
+        }
+
+        if (params.getT() == ActionAttribute.GET) {
+            return getNzb(params);
+        }
+
+
         logger.error("Incorrect API request: {}", params);
         NewznabXmlError error = new NewznabXmlError("200", "Unknown or incorrect parameter");
         return new ResponseEntity<Object>(error, HttpStatus.OK);
+    }
+
+    public static void setInMockingMode(boolean newValue) {
+        inMockingMode = newValue;
     }
 
     private HttpHeaders setSearchTypeAndGetHeaders(NewznabParameters params, NewznabResponse newznabResponse) {
@@ -226,7 +258,7 @@ public class ExternalApi {
             logger.error("Unexpected error while handling API request", e);
             if (configProvider.getBaseConfig().getSearching().isWrapApiErrors()) {
                 logger.debug("Wrapping error in empty search result");
-                return ResponseEntity.status(200).body(newznabXmlTransformer.getRssRoot(Collections.emptyList(), 0, 0, null));
+                return ResponseEntity.status(200).body(newznabXmlTransformer.getRssRoot(Collections.emptyList(), 0, 0, false));
             } else {
                 NewznabXmlError error = new NewznabXmlError("900", e.getMessage());
                 return ResponseEntity.status(200).body(error);
@@ -242,9 +274,9 @@ public class ExternalApi {
         NewznabResponse response;
         int total = searchResult.getNumberOfTotalAvailableResults() - searchResult.getNumberOfRejectedResults() - searchResult.getNumberOfRemovedDuplicates();
         if (params.getO() == OutputType.JSON) {
-            response = newznabJsonTransformer.transformToRoot(searchResult.getSearchResultItems(), params.getOffset(), total, searchRequest);
+            response = newznabJsonTransformer.transformToRoot(searchResult.getSearchResultItems(), params.getOffset(), total, searchRequest.getDownloadType() == DownloadType.NZB);
         } else {
-            response = newznabXmlTransformer.getRssRoot(searchResult.getSearchResultItems(), params.getOffset(), total, searchRequest);
+            response = newznabXmlTransformer.getRssRoot(searchResult.getSearchResultItems(), params.getOffset(), total, searchRequest.getDownloadType() == DownloadType.NZB);
         }
         logger.debug(LoggingMarkers.PERFORMANCE, "Transforming results took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return response;
@@ -317,8 +349,8 @@ public class ExternalApi {
             }
             CacheEntryValue that = (CacheEntryValue) o;
             return com.google.common.base.Objects.equal(params, that.params) &&
-                com.google.common.base.Objects.equal(lastUpdate, that.lastUpdate) &&
-                com.google.common.base.Objects.equal(searchResult, that.searchResult);
+                    com.google.common.base.Objects.equal(lastUpdate, that.lastUpdate) &&
+                    com.google.common.base.Objects.equal(searchResult, that.searchResult);
         }
 
         @Override
