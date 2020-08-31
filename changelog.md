@@ -1,3 +1,13 @@
+### v2.27.0 BETA (2020-08-31)
+
+**Feature** You can now automatically add NZBHydra as an indexer to Sonarr / Radarr / Lidarr. You can choose to add it as a single entry or one for every configured indexer and if it should be added as newznab and/or torznab indexer.
+
+**Fix** Close search history dropdown in search dialog when it was dragged.
+
+**Fix** Make quick filters case insensitive.
+
+
+
 ### v2.26.0 (2020-08-24)
 
 **Feature** Drag an entry from the search history to the search input to prefill it with the history entry's values. Then you can adapt them and search.
