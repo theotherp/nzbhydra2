@@ -200,6 +200,8 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         event.preventDefault();
 
         $scope.searchHistoryDragged = null;
+        focus('searchfield');
+        $scope.status.isopen = false;
     }
 
     $scope.$on("searchHistoryDrag", function (event, data) {

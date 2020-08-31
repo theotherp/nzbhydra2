@@ -5,6 +5,10 @@
       {
         "type": "feature",
         "text": "You can now automatically add NZBHydra as an indexer to Sonarr / Radarr / Lidarr. You can choose to add it as a single entry or one for every configured indexer and if it should be added as newznab and/or torznab indexer."
+      },
+      {
+        "type": "fix",
+        "text": "Close search history dropdown in search dialog when it was dragged."
       }
     ],
     "final": false
