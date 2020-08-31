@@ -86,13 +86,13 @@ public class WebAccess {
         String bodyAsString;
         try (Response response = client.newCall(request).execute(); ResponseBody body = response.body()) {
             try {
-                bodyAsString = body == null ? null : ("\n" + body.string());
+                bodyAsString = body == null ? null : body.string();
             } catch (IOException e) {
                 bodyAsString = null;
             }
             if (!response.isSuccessful()) {
                 String error = String.format("URL call to %s returned %d: %s", url, response.code(), response.message());
-                logger.error(error + bodyAsString);
+                logger.error(error + "\n" + bodyAsString);
                 throw new WebAccessException(response.message(), bodyAsString, response.code());
             }
             return bodyAsString;
