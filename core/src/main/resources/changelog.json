@@ -9,6 +9,10 @@
       {
         "type": "fix",
         "text": "Close search history dropdown in search dialog when it was dragged."
+      },
+      {
+        "type": "fix",
+        "text": "Make quick filters case insensitive."
       }
     ],
     "final": false
