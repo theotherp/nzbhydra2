@@ -33,12 +33,17 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.servlet.http.HttpServletRequest;
+import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.UnknownHostException;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component
 public class UrlCalculator {
@@ -173,13 +178,13 @@ public class UrlCalculator {
     protected static InetAddress getLocalHostLANAddress() throws UnknownHostException {
         try {
             InetAddress candidateAddress = null;
-            // Iterate all NICs (network interface cards)...
-            for (Enumeration ifaces = NetworkInterface.getNetworkInterfaces(); ifaces.hasMoreElements(); ) {
-                NetworkInterface iface = (NetworkInterface) ifaces.nextElement();
-                // Iterate all IP addresses assigned to each card...
-                if (iface.getDisplayName() != null && iface.getDisplayName().contains("VirtualBox")) {
-                    continue;
-                }
+            final List<NetworkInterface> networkInterfaces = Collections.list(NetworkInterface.getNetworkInterfaces()).stream()
+                    .filter(i -> Stream.of("VirtualBox", "Hyper-V", "Bluetooth", "Miniport").noneMatch(name -> i.getDisplayName() != null && i.getDisplayName().contains(name)))
+                    .filter(i -> i.getInetAddresses().hasMoreElements())
+                    .filter(i -> !(i.getInetAddresses().nextElement() instanceof Inet6Address))
+                    .collect(Collectors.toList());
+            for (NetworkInterface iface : networkInterfaces) {
+
                 for (Enumeration inetAddrs = iface.getInetAddresses(); inetAddrs.hasMoreElements(); ) {
                     InetAddress inetAddr = (InetAddress) inetAddrs.nextElement();
                     if (!inetAddr.isLoopbackAddress()) {
