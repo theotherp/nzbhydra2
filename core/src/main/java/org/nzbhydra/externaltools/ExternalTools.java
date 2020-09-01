@@ -178,7 +178,8 @@ public class ExternalTools {
                 throw new IOException("Error: configuration for v3 but returned version is " + version);
             }
         } else if (addRequest.getExternalTool() == AddRequest.ExternalTool.Radarrv3) {
-            if (version == null || !version.startsWith("10")) {
+            //For some reason some radarr builds return 10.xxx instead of 3.xxx
+            if (version == null || (!version.startsWith("3") && !version.startsWith("10"))) {
                 messages.add("Error: configuration for v3 but returned version is " + version);
                 throw new IOException("Error: configuration for v3 but returned version is " + version);
             }
