@@ -6,6 +6,10 @@
       {
         "type": "fix",
         "text": "Some Radarr v3 builds return 10.x as version, some 3.x."
+      },
+      {
+        "type": "fix",
+        "text": "Reduce log output of exceptions."
       }
     ],
     "final": true
