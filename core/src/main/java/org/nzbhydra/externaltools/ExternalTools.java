@@ -31,6 +31,8 @@ import org.nzbhydra.api.ExternalApi;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
+import org.nzbhydra.logging.LoggingMarkers;
+import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.web.UrlCalculator;
 import org.nzbhydra.webaccess.WebAccess;
 import org.nzbhydra.webaccess.WebAccessException;
@@ -73,6 +75,7 @@ public class ExternalTools {
 
     public void addNzbhydraAsIndexer(AddRequest addRequest) throws IOException {
         try {
+            logger.debug(LoggingMarkers.EXTERNAL_TOOLS, "Received request: {}", addRequest);
             messages.clear();
 
             if (failOnUnknownVersion(addRequest)) {
@@ -89,6 +92,7 @@ public class ExternalTools {
             logger.info("Received request to configure {} at URL {} with add type {} for usenet: {} and torrents: {}", addRequest.getExternalTool(), addRequest.getXdarrHost(), addRequest.getAddType(), addRequest.isConfigureForUsenet(), addRequest.isConfigureForTorrents());
             final List<IndexerConfig> availableIndexers = configProvider.getBaseConfig().getIndexers().stream()
                     .filter(x -> (x.getState() == IndexerConfig.State.ENABLED || addRequest.isAddDisabledIndexers()) && x.isConfigComplete() && x.isAllCapsChecked())
+                    .filter(x -> x.getEnabledForSearchSource().meets(SearchRequest.SearchSource.API))
                     .collect(Collectors.toList());
             if (addRequest.isConfigureForUsenet()) {
                 if (addRequest.getAddType() == AddRequest.AddType.SINGLE) {
@@ -158,6 +162,7 @@ public class ExternalTools {
         try {
             final String url = addRequest.getXdarrHost() + path;
             body = webAccess.callUrl(url, getAuthHeaders(addRequest));
+            logger.debug(LoggingMarkers.EXTERNAL_TOOLS, "Received response body: {}", body);
         } catch (WebAccessException e) {
             if (e.getCode() == 404) {
                 messages.add("Error: API endpoint not found. Make sure URL is correct and you used the correct version");
@@ -290,7 +295,8 @@ public class ExternalTools {
 
         final String body;
         try {
-            body = Jackson.JSON_MAPPER.writeValueAsString(xdarrAddRequest);
+            body = Jackson.JSON_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(xdarrAddRequest);
+            logger.debug(LoggingMarkers.EXTERNAL_TOOLS, "Built request body: {}", body);
         } catch (JsonProcessingException e) {
             logger.error("Unable to write request", e);
             throw new IOException("Unable to write request", e);
@@ -299,7 +305,10 @@ public class ExternalTools {
         try {
             final String url = getExternalToolUrl(addRequest);
             logger.debug("Calling URL {} with data {}", url, xdarrAddRequest);
+
             response = webAccess.postToUrl(url, MediaType.get("application/json"), body, getAuthHeaders(addRequest), 10);
+            logger.debug(LoggingMarkers.EXTERNAL_TOOLS, "Received response body: {}", response);
+
             final Map requestResponse = Jackson.JSON_MAPPER.readValue(response, Map.class);
             messages.add("Configured \"" + nameInXdarr + "\"");
         } catch (WebAccessException e) {
@@ -307,12 +316,14 @@ public class ExternalTools {
         }
     }
 
-
     private List<XdarrIndexer> getConfiguredNzbhydraIndexers(AddRequest addRequest) throws IOException {
         final String response;
         final String url = getExternalToolUrl(addRequest);
         logger.debug("Getting configured indexers using URL {}", url);
+
         response = webAccess.callUrl(url, getAuthHeaders(addRequest));
+        logger.debug(LoggingMarkers.EXTERNAL_TOOLS, "Received response body: {}", response);
+
         final List<XdarrIndexer> requestResponse = Jackson.JSON_MAPPER.readValue(response, new TypeReference<List<XdarrIndexer>>() {
         });
 
@@ -321,6 +332,8 @@ public class ExternalTools {
     }
 
     private void handleXdarrError(AddRequest addRequest, WebAccessException e) throws IOException {
+        logger.debug(LoggingMarkers.EXTERNAL_TOOLS, "Received error response: {}", e.getBody());
+
         if (e.getBody().trim().startsWith("[")) {
             final List<Map> requestResponse = Jackson.JSON_MAPPER.readValue(e.getBody(), LIST_TYPE_REFERENCE);
             if (requestResponse.size() > 0 && requestResponse.get(0).containsKey("errorMessage")) {

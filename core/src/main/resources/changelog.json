@@ -5,7 +5,7 @@
     "changes": [
       {
         "type": "fix",
-        "text": "Some Radarr v3 builds return 10.x as version, some 3.x."
+        "text": "Use proper version for Radarr v3 (I used a develop version which returns 10.x)."
       },
       {
         "type": "fix",
@@ -13,7 +13,7 @@
       },
       {
         "type": "fix",
-        "text": "(Hopefully) improve detection of local IP address."
+        "text": "(Hopefully) improve detection of local IP address when binding to 0.0.0.0."
       }
     ],
     "final": true

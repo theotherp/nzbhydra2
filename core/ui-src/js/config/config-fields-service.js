@@ -412,6 +412,7 @@ function ConfigFields($injector) {
                                     {label: 'Config file handling', id: 'CONFIG_READ_WRITE'},
                                     {label: 'Download status updating', id: 'DOWNLOAD_STATUS_UPDATE'},
                                     {label: 'Duplicate detection', id: 'DUPLICATES'},
+                                    {label: 'External tool configuration', id: 'EXTERNAL_TOOLS'},
                                     {label: 'History cleanup', id: 'HISTORY_CLEANUP'},
                                     {label: 'HTTP', id: 'HTTP'},
                                     {label: 'HTTPS', id: 'HTTPS'},

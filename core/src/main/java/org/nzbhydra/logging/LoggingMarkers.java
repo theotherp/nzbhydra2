@@ -19,6 +19,7 @@ public class LoggingMarkers {
     public static final Marker CONFIG_READ_WRITE = MarkerFactory.getMarker("CONFIG_READ_WRITE");
     public static final Marker SERVER = MarkerFactory.getMarker("SERVER");
     public static final Marker LIMITS = MarkerFactory.getMarker("LIMITS");
+    public static final Marker EXTERNAL_TOOLS = MarkerFactory.getMarker("EXTERNAL_TOOLS");
 
 
 }
