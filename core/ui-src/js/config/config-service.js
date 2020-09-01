@@ -124,6 +124,7 @@ function ConfigService($http, $q, $cacheFactory, $uibModal, bootstrapped) {
         $scope.configureForUsenet = dialogInfo.usenetIndexersConfigured;
         $scope.torrentIndexersConfigured = dialogInfo.torrentIndexersConfigured;
         $scope.configureForTorrents = dialogInfo.torrentIndexersConfigured;
+        $scope.addDisabledIndexers = false;
 
         if (!$scope.configureForUsenet && !$scope.configureForTorrents) {
             growl.error("No usenet or torrent indexers configured");
@@ -139,7 +140,7 @@ function ConfigService($http, $q, $cacheFactory, $uibModal, bootstrapped) {
         $scope.animeCategories = null;
 
         if (externalTool === "Sonarr" || externalTool === "Sonarrv3") {
-            $scope.xdarrHost += "9191";
+            $scope.xdarrHost += "8989";
             $scope.categories = "5030,5040";
             if (externalTool === "Sonarrv3") {
                 $scope.externalToolDisplayName = "Sonarr v3";
@@ -195,7 +196,8 @@ function ConfigService($http, $q, $cacheFactory, $uibModal, bootstrapped) {
                 seedRatio: $scope.seedRatio,
                 seedTime: $scope.seedTime,
                 seasonPackSeedTime: $scope.seasonPackSeedTime,
-                discographySeedTime: $scope.discographySeedTime
+                discographySeedTime: $scope.discographySeedTime,
+                addDisabledIndexers: $scope.addDisabledIndexers
             }
             console.log(data);
 

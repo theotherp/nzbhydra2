@@ -88,7 +88,7 @@ public class ExternalTools {
 
             logger.info("Received request to configure {} at URL {} with add type {} for usenet: {} and torrents: {}", addRequest.getExternalTool(), addRequest.getXdarrHost(), addRequest.getAddType(), addRequest.isConfigureForUsenet(), addRequest.isConfigureForTorrents());
             final List<IndexerConfig> availableIndexers = configProvider.getBaseConfig().getIndexers().stream()
-                    .filter(x -> x.getState() == IndexerConfig.State.ENABLED && x.isConfigComplete() && x.isAllCapsChecked())
+                    .filter(x -> (x.getState() == IndexerConfig.State.ENABLED || addRequest.isAddDisabledIndexers()) && x.isConfigComplete() && x.isAllCapsChecked())
                     .collect(Collectors.toList());
             if (addRequest.isConfigureForUsenet()) {
                 if (addRequest.getAddType() == AddRequest.AddType.SINGLE) {
@@ -172,8 +172,13 @@ public class ExternalTools {
             throw new IOException("Error: no version found in external tool response");
         }
         String version = (String) statusMap.get("version");
-        if (addRequest.getExternalTool() == AddRequest.ExternalTool.Sonarrv3 || addRequest.getExternalTool() == AddRequest.ExternalTool.Radarrv3) {
+        if (addRequest.getExternalTool() == AddRequest.ExternalTool.Sonarrv3) {
             if (version == null || !version.startsWith("3")) {
+                messages.add("Error: configuration for v3 but returned version is " + version);
+                throw new IOException("Error: configuration for v3 but returned version is " + version);
+            }
+        } else if (addRequest.getExternalTool() == AddRequest.ExternalTool.Radarrv3) {
+            if (version == null || !version.startsWith("10")) {
                 messages.add("Error: configuration for v3 but returned version is " + version);
                 throw new IOException("Error: configuration for v3 but returned version is " + version);
             }
@@ -222,34 +227,32 @@ public class ExternalTools {
         }
         xdarrAddRequest.getFields().add(new XdarrAddRequestField("additionalParameters", getAdditionalParameters(addRequest, indexerName)));
 
-        if (addRequest.getExternalTool() != AddRequest.ExternalTool.Lidarr) {
+        final AddRequest.ExternalTool externalTool = addRequest.getExternalTool();
+        if (externalTool != AddRequest.ExternalTool.Lidarr && externalTool != AddRequest.ExternalTool.Radarrv3) {
             if (Strings.isNullOrEmpty(addRequest.getAnimeCategories())) {
                 xdarrAddRequest.getFields().add(new XdarrAddRequestField("animeCategories", ""));
             } else {
                 xdarrAddRequest.getFields().add(new XdarrAddRequestField("animeCategories", addRequest.getAnimeCategories()));
             }
         }
-        if (addRequest.getExternalTool() == AddRequest.ExternalTool.Lidarr) {
+        if (externalTool == AddRequest.ExternalTool.Lidarr) {
             xdarrAddRequest.getFields().add(new XdarrAddRequestField("earlyReleaseLimit", addRequest.getEarlyDownloadLimit()));
         }
 
         if (backendType == BackendType.Torznab) {
-            if (addRequest.getExternalTool() == AddRequest.ExternalTool.Sonarrv3 || addRequest.getExternalTool() == AddRequest.ExternalTool.Lidarr) {
+            if (externalTool == AddRequest.ExternalTool.Sonarrv3 || externalTool == AddRequest.ExternalTool.Lidarr || externalTool == AddRequest.ExternalTool.Radarrv3) {
                 xdarrAddRequest.getFields().add(new XdarrAddRequestField("seedCriteria.seedRatio", addRequest.getSeedRatio()));
                 xdarrAddRequest.getFields().add(new XdarrAddRequestField("seedCriteria.seedTime", addRequest.getSeedTime()));
             }
-            if (addRequest.getExternalTool() == AddRequest.ExternalTool.Sonarr) {
+            if (externalTool == AddRequest.ExternalTool.Sonarr) {
                 xdarrAddRequest.getFields().add(new XdarrAddRequestField("SeedCriteria.SeedRatio", addRequest.getSeedRatio()));
                 xdarrAddRequest.getFields().add(new XdarrAddRequestField("SeedCriteria.SeedTime", addRequest.getSeedTime()));
-            }
-
-            if (addRequest.getExternalTool() == AddRequest.ExternalTool.Sonarr) {
                 xdarrAddRequest.getFields().add(new XdarrAddRequestField("SeedCriteria.SeasonPackSeedTime", addRequest.getSeasonPackSeedTime()));
             }
-            if (addRequest.getExternalTool() == AddRequest.ExternalTool.Sonarrv3) {
+            if (externalTool == AddRequest.ExternalTool.Sonarrv3) {
                 xdarrAddRequest.getFields().add(new XdarrAddRequestField("seedCriteria.seasonPackSeedTime", addRequest.getSeasonPackSeedTime()));
             }
-            if (addRequest.getExternalTool() == AddRequest.ExternalTool.Lidarr) {
+            if (externalTool == AddRequest.ExternalTool.Lidarr) {
                 xdarrAddRequest.getFields().add(new XdarrAddRequestField("seedCriteria.discographySeedTime", addRequest.getDiscographySeedTime()));
             }
 
@@ -259,23 +262,25 @@ public class ExternalTools {
             xdarrAddRequest.getFields().add(new XdarrAddRequestField("baseUrl", addRequest.getNzbhydraHost()));
         }
 
-        if (addRequest.getExternalTool() == AddRequest.ExternalTool.Radarr) {
-            xdarrAddRequest.getFields().add(new XdarrAddRequestField("RemoveYear", addRequest.isRemoveYearFromSearchString()));
-            xdarrAddRequest.getFields().add(new XdarrAddRequestField("SearchByTitle", false));
+        if (externalTool.isRadarr()) {
+            xdarrAddRequest.getFields().add(new XdarrAddRequestField("removeYear", addRequest.isRemoveYearFromSearchString()));
             //Not easily mapped as it's a list of numbers mapped to language names
-            xdarrAddRequest.getFields().add(new XdarrAddRequestField("MultiLanguages", ""));
+            xdarrAddRequest.getFields().add(new XdarrAddRequestField("multiLanguages", ""));
+            if (externalTool == AddRequest.ExternalTool.Radarr) {
+                xdarrAddRequest.getFields().add(new XdarrAddRequestField("SearchByTitle", false));
+            }
 
             if (backendType == BackendType.Torznab) {
                 //todo make configurable via dialog
-                xdarrAddRequest.getFields().add(new XdarrAddRequestField("RequiredFlags", ""));
+                xdarrAddRequest.getFields().add(new XdarrAddRequestField("requiredFlags", ""));
             }
-
         }
-        if (addRequest.getExternalTool() != AddRequest.ExternalTool.Radarr) {
+
+        if (externalTool != AddRequest.ExternalTool.Radarr) {
             xdarrAddRequest.getFields().add(new XdarrAddRequestField("apiPath", "/api"));
         }
 
-        if (addRequest.getExternalTool() == AddRequest.ExternalTool.Radarr || addRequest.getExternalTool() == AddRequest.ExternalTool.Sonarr) {
+        if (externalTool.isV2()) {
             //non-v3 versions require that all field keys / names start with an uppercase letter
             xdarrAddRequest.getFields().forEach(x -> {
                 x.setName(StringUtils.capitalize(x.getName()));

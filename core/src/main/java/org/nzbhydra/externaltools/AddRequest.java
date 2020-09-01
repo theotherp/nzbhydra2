@@ -32,7 +32,19 @@ public class AddRequest {
         Radarrv3,
         Sonarr,
         Sonarrv3,
-        Lidarr
+        Lidarr;
+
+        public boolean isRadarr() {
+            return this == Radarr || this == Radarrv3;
+        }
+
+        public boolean isSonarr() {
+            return this == Sonarr || this == Sonarrv3;
+        }
+
+        public boolean isV2() {
+            return this == Sonarr || this == Radarr;
+        }
     }
 
     private boolean configureForUsenet;
@@ -50,6 +62,7 @@ public class AddRequest {
     private String earlyDownloadLimit;
     private boolean addUsenet;
     private boolean addTorrent;
+    private boolean addDisabledIndexers;
     private String additionalParameters;
     private String minimumSeeders;
     private String seedRatio;
