@@ -1,3 +1,13 @@
+### v2.27.2 (2020-09-01)
+
+**Fix** Use proper version for Radarr v3 (I used a develop version which returns 10.x).
+
+**Fix** Reduce log output of exceptions.
+
+**Fix** (Hopefully) improve detection of local IP address when binding to 0.0.0.0.
+
+
+
 ### v2.27.1 (2020-09-01)
 
 **Feature** Support for Radarr v3 (see v2.27.0).
