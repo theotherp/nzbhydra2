@@ -1,3 +1,9 @@
+### v2.27.1 (2020-09-01)
+
+**Feature** Support for Radarr v3 (see v2.27.0).
+
+
+
 ### v2.27.0 BETA (2020-08-31)
 
 **Feature** You can now automatically add NZBHydra as an indexer to Sonarr / Radarr / Lidarr. You can choose to add it as a single entry or one for every configured indexer and if it should be added as newznab and/or torznab indexer.
