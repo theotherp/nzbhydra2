@@ -128,7 +128,7 @@ public abstract class Downloader {
                         }
                     } else if (addingType == NzbAddingType.SEND_LINK) {
                         searchResult = searchResultRepository.getOne(guid);
-                        String externalId = addLink(nzbHandler.getDownloadLink(guid, false, DownloadType.NZB), searchResult.getTitle(), categoryToSend);
+                        String externalId = addLink(nzbHandler.getDownloadLinkForSendingToDownloader(guid, false, DownloadType.NZB), searchResult.getTitle(), categoryToSend);
                         guidExternalIds.put(guid, externalId);
                         addedNzbs.add(guid);
                     }

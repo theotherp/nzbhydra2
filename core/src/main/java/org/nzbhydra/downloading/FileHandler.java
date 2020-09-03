@@ -263,7 +263,7 @@ public class FileHandler {
     }
 
 
-    public String getDownloadLink(Long searchResultId, boolean internal, DownloadType downloadType) {
+    public String getDownloadLinkForSendingToDownloader(Long searchResultId, boolean internal, DownloadType downloadType) {
         UriComponentsBuilder builder;
         final Optional<String> externalUrl = configProvider.getBaseConfig().getDownloading().getExternalUrl();
         if (externalUrl.isPresent()) {
@@ -273,6 +273,16 @@ public class FileHandler {
             builder = urlCalculator.getRequestBasedUriBuilder();
             logger.debug("Using URL calculated from request: {}", builder.toUriString());
         }
+        return getDownloadLink(searchResultId, internal, downloadType, builder);
+    }
+
+    public String getDownloadLinkForResults(Long searchResultId, boolean internal, DownloadType downloadType) {
+        UriComponentsBuilder builder = urlCalculator.getRequestBasedUriBuilder();
+        logger.debug("Using URL calculated from request: {}", builder.toUriString());
+        return getDownloadLink(searchResultId, internal, downloadType, builder);
+    }
+
+    private String getDownloadLink(Long searchResultId, boolean internal, DownloadType downloadType, UriComponentsBuilder builder) {
         String getName = downloadType == DownloadType.NZB ? "getnzb" : "gettorrent";
         if (internal) {
             builder.path("/" + getName + "/user");

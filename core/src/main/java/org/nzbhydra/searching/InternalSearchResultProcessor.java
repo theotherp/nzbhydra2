@@ -112,7 +112,7 @@ public class InternalSearchResultProcessor {
                     .indexer(item.getIndexer().getName())
                     .indexerguid(item.getIndexerGuid())
                     .indexerscore(item.getIndexer().getConfig().getScore().orElse(null))
-                    .link(nzbHandler.getDownloadLink(item.getSearchResultId(), true, item.getDownloadType()))
+                    .link(nzbHandler.getDownloadLinkForResults(item.getSearchResultId(), true, item.getDownloadType()))
                     .originalCategory(item.getOriginalCategory())
                     .poster(item.getPoster().orElse(null))
                     .searchResultId(item.getSearchResultId().toString())

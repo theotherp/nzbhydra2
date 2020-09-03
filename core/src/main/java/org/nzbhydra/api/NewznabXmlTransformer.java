@@ -77,7 +77,7 @@ public class NewznabXmlTransformer {
 
     NewznabXmlItem buildRssItem(SearchResultItem searchResultItem, boolean isNzb) {
         NewznabXmlItem rssItem = new NewznabXmlItem();
-        String link = nzbHandler.getDownloadLink(searchResultItem.getSearchResultId(), false, isNzb ? DownloadType.NZB : DownloadType.TORRENT);
+        String link = nzbHandler.getDownloadLinkForResults(searchResultItem.getSearchResultId(), false, isNzb ? DownloadType.NZB : DownloadType.TORRENT);
         rssItem.setLink(link);
         rssItem.setTitle(searchResultItem.getTitle());
         rssItem.setRssGuid(new NewznabXmlGuid(String.valueOf(searchResultItem.getGuid()), false));

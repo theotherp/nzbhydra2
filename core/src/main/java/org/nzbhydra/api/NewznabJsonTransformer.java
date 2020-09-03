@@ -74,7 +74,7 @@ public class NewznabJsonTransformer {
 
     private NewznabJsonItem buildRssItem(SearchResultItem searchResultItem, boolean isNzb) {
         NewznabJsonItem rssItem = new NewznabJsonItem();
-        String link = nzbHandler.getDownloadLink(searchResultItem.getSearchResultId(), false, DownloadType.NZB);
+        String link = nzbHandler.getDownloadLinkForResults(searchResultItem.getSearchResultId(), false, DownloadType.NZB);
         rssItem.setLink(link);
         rssItem.setTitle(searchResultItem.getTitle());
         rssItem.setGuid(String.valueOf(searchResultItem.getGuid()));
