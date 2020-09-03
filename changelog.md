@@ -1,3 +1,11 @@
+### v2.28.0 (2020-09-03)
+
+**Feature** When using "Add links" to add NZBs to your downloader the links are usually calculated using the URL with which you accessed NZBHydra. This might be a URL that's not accessible by the downloader (e.g. when it's inside a docker container). You can now configure a URL in the downloading config that will be used for these links instead.
+
+**Fix** Don't let the invisible update footer catch clicks meant for the elements behind it.
+
+
+
 ### v2.27.2 (2020-09-01)
 
 **Fix** Use proper version for Radarr v3 (I used a develop version which returns 10.x).
