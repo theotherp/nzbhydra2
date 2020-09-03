@@ -46,6 +46,7 @@ public class DownloadingConfig extends ValidatingConfig<DownloadingConfig> {
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private FileDownloadAccessType nzbAccessType = FileDownloadAccessType.REDIRECT;
     private SearchSourceRestriction fallbackForFailed = SearchSourceRestriction.BOTH;
+    private String externalUrl;
 
     @Override
     public ConfigValidationResult validateConfig(BaseConfig oldConfig, DownloadingConfig newConfig, BaseConfig newBaseConfig) {
@@ -86,6 +87,10 @@ public class DownloadingConfig extends ValidatingConfig<DownloadingConfig> {
 
     public Optional<String> getSaveNzbsTo() {
         return Optional.ofNullable(saveNzbsTo);
+    }
+
+    public Optional<String> getExternalUrl() {
+        return Optional.ofNullable(externalUrl);
     }
 
     @Override

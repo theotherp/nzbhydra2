@@ -264,7 +264,15 @@ public class FileHandler {
 
 
     public String getDownloadLink(Long searchResultId, boolean internal, DownloadType downloadType) {
-        UriComponentsBuilder builder = urlCalculator.getRequestBasedUriBuilder();
+        UriComponentsBuilder builder;
+        final Optional<String> externalUrl = configProvider.getBaseConfig().getDownloading().getExternalUrl();
+        if (externalUrl.isPresent()) {
+            logger.debug("Using configured external URL: {}", externalUrl.get());
+            builder = UriComponentsBuilder.fromHttpUrl(externalUrl.get());
+        } else {
+            builder = urlCalculator.getRequestBasedUriBuilder();
+            logger.debug("Using URL calculated from request: {}", builder.toUriString());
+        }
         String getName = downloadType == DownloadType.NZB ? "getnzb" : "gettorrent";
         if (internal) {
             builder.path("/" + getName + "/user");

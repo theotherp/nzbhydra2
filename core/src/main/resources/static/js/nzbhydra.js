@@ -4691,7 +4691,8 @@ angular
                                     {name: 'Upload NZB', value: 'UPLOAD'}
                                 ],
                                 help: "How NZBs are added to the downloader, either by sending a link to the NZB or by uploading the NZB data.",
-                                tooltip: 'You can select if you want to upload the NZB to the downloader or send a Hydra link. The downloader will do the download itself. This is a matter of taste, but adding a link and redirecting the downloader is the fastest way.'
+                                tooltip: 'You can select if you want to upload the NZB to the downloader or send a Hydra link. The downloader will do the download itself. This is a matter of taste, but adding a link and redirecting the downloader is the fastest way.' +
+                                    '<br>Usually the links are determined using the URL via which you call it in your browser. If your downloader cannot access NZBHydra using that URL you can set a specific URL to be used in the main downloading config.'
                             }
                         },
                         {
@@ -7129,6 +7130,24 @@ function ConfigFields($injector) {
                                 ],
                                 help: "How access to NZBs is provided when NZBs are downloaded (by the user or external tools). Proxying is recommended as it allows fallback for failed downloads (see below)..",
                                 tooltip: 'NZB downloads from Hydra can either be achieved by redirecting the requester to the original indexer or by downloading the NZB from the indexer and serving this. Redirecting has the advantage that it causes the least load on Hydra but also the disadvantage that the requester might be forwarded to an indexer link that contains the indexer\'s API key. To prevent that select to proxy NZBs. It also allows fallback for failed downloads (next option).'
+                            }
+                        },
+                        {
+                            key: 'externalUrl',
+                            type: 'horizontalInput',
+                            hideExpression: function ($viewValue, $modelValue, scope) {
+                                console.log(scope.model);
+                                var noneSendLink = !_.any(scope.model.downloaders, function (downloader) {
+                                    console.log(downloader.nzbAddingType);
+                                    return downloader.nzbAddingType === "SEND_LINK";
+                                });
+                                console.log(noneSendLink);
+                                return noneSendLink;
+                            },
+                            templateOptions: {
+                                label: 'External URL',
+                                help: 'Used for links when sending links to the downloader.',
+                                tooltip: 'When using "Add links" to add NZBs to your downloader the links are usually calculated using the URL with which you accessed NZBHydra. This might be a URL that\'s not accessible by the downloader (e.g. when it\'s inside a docker container). Set the URL for NZBHydra that\'s accessible by the downloader here and it will be used instead. '
                             }
                         },
                         {

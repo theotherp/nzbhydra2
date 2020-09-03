@@ -230,7 +230,8 @@ angular
                                     {name: 'Upload NZB', value: 'UPLOAD'}
                                 ],
                                 help: "How NZBs are added to the downloader, either by sending a link to the NZB or by uploading the NZB data.",
-                                tooltip: 'You can select if you want to upload the NZB to the downloader or send a Hydra link. The downloader will do the download itself. This is a matter of taste, but adding a link and redirecting the downloader is the fastest way.'
+                                tooltip: 'You can select if you want to upload the NZB to the downloader or send a Hydra link. The downloader will do the download itself. This is a matter of taste, but adding a link and redirecting the downloader is the fastest way.' +
+                                    '<br>Usually the links are determined using the URL via which you call it in your browser. If your downloader cannot access NZBHydra using that URL you can set a specific URL to be used in the main downloading config.'
                             }
                         },
                         {
