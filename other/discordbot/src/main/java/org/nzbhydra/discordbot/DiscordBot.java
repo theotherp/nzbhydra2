@@ -52,6 +52,7 @@ public class DiscordBot extends ListenerAdapter {
     Add to discord server:
     Go to https://discord.com/developers/applications/751083515042463764/oauth2 (or whatever, see oauth2 link from above), enable scope Bot,
     Open URL (should contain "2048" just for sending messages), add to server
+    If right is missing anyway check the channel's permissions.
 
 
     */

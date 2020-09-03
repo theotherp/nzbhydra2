@@ -275,7 +275,7 @@ main:
   backupFolder: "backup"
   backupEveryXDays: 7
   backupBeforeUpdate: true
-  configVersion: 14
+  configVersion: 15
   databaseCompactTime: 15000
   databaseRetentionTime: 1000
   databaseWriteDelay: 5000
@@ -358,6 +358,6 @@ searching:
   timeout: 20
   transformNewznabCategories: true
   userAgent: "NZBHydra2"
-  userAgents: ["Mozilla", "Sonarr", "Radarr", "CouchPotato", "LazyLibrarian", "NZBGet", "sabNZBd"]
+  userAgents: [ "Mozilla", "Sonarr", "Radarr", "CouchPotato", "LazyLibrarian", "Lidarr", "NZBGet", "sabNZBd" ]
   useOriginalCategories: false
   wrapApiErrors: false

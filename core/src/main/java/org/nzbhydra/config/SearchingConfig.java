@@ -56,7 +56,7 @@ public class SearchingConfig extends ValidatingConfig<SearchingConfig> {
     private Integer timeout = 30;
     private boolean transformNewznabCategories = true;
     private String userAgent = "NZBHydra2";
-    private List<String> userAgents = new ArrayList<>(Arrays.asList("Mozilla", "Sonarr", "Radarr", "CouchPotato", "LazyLibrarian", "NZBGet", "sabNZBd"));
+    private List<String> userAgents = new ArrayList<>(Arrays.asList("Mozilla", "Sonarr", "Radarr", "CouchPotato", "LazyLibrarian", "Lidarr", "NZBGet", "sabNZBd"));
     private boolean useOriginalCategories = false;
     private boolean wrapApiErrors = false;
 
