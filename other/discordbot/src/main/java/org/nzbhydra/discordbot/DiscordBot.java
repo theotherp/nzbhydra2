@@ -42,6 +42,21 @@ import java.util.concurrent.Executors;
 
 public class DiscordBot extends ListenerAdapter {
 
+    /*
+
+    Get github token: https://github.com/settings/tokens (no rights necessary)
+
+    Edit or creat discord app:
+    https://discord.com/developers/applications
+
+    Add to discord server:
+    Go to https://discord.com/developers/applications/751083515042463764/oauth2 (or whatever, see oauth2 link from above), enable scope Bot,
+    Open URL (should contain "2048" just for sending messages), add to server
+
+
+    */
+
+
     private final ExecutorService executorService = Executors.newFixedThreadPool(1);
 
     private final Set<String> alreadyPublishedVersions = new HashSet<>();
@@ -150,12 +165,15 @@ public class DiscordBot extends ListenerAdapter {
     }
 
     private TextChannel getReleasesChannel(ReadyEvent event) {
-        return event.getJDA().getTextChannels().stream().filter(x -> x.getName().equals("releases") && x.getGuild().getName().equalsIgnoreCase("NZBHydra")).findFirst().get();
+        return event.getJDA().getTextChannels().stream().filter(x ->
+                x.getName().equals("releases")
+                        && x.getGuild().getName().toLowerCase().startsWith("nzbhydra"))
+                .findFirst().get();
     }
 
     private List<Release> getReleases() throws IOException {
         Request.Builder requestBuilder = new Request.Builder().url("https://api.github.com/repos/theotherp/nzbhydra2/releases");
-        requestBuilder.header("Authorization", "token " + githubToken);
+        requestBuilder.header("Authorization", "theotherp:" + githubToken);
         Response response = new OkHttpClient.Builder().build().newCall(requestBuilder.build()).execute();
         if (!response.isSuccessful()) {
             throw new RuntimeException(response.message());
