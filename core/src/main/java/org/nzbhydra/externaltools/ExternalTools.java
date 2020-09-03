@@ -43,6 +43,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -229,7 +230,7 @@ public class ExternalTools {
         if (Strings.isNullOrEmpty(addRequest.getCategories())) {
             xdarrAddRequest.getFields().add(new XdarrAddRequestField("categories", ""));
         } else {
-            xdarrAddRequest.getFields().add(new XdarrAddRequestField("categories", addRequest.getCategories()));
+            xdarrAddRequest.getFields().add(new XdarrAddRequestField("categories", Arrays.asList(addRequest.getCategories().split(","))));
         }
         xdarrAddRequest.getFields().add(new XdarrAddRequestField("additionalParameters", getAdditionalParameters(addRequest, indexerName)));
 
@@ -381,7 +382,7 @@ public class ExternalTools {
         if (indexerName != null) {
             parameterMap.put("indexers", indexerName);
         }
-        return parameterMap.isEmpty() ? "" : ("&" + parameterMap.entrySet().stream().map(x -> x.getKey() + "=" + x.getValue()).collect(Collectors.joining("&")));
+        return parameterMap.isEmpty() ? null : ("&" + parameterMap.entrySet().stream().map(x -> x.getKey() + "=" + x.getValue()).collect(Collectors.joining("&")));
     }
 
     private Map<String, String> parseParameters(String parametersString) {
