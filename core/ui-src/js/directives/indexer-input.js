@@ -26,7 +26,7 @@ function indexerInput() {
         };
 
         var expiryWarning;
-        if ($scope.indexer.vipExpirationDate != null) {
+        if ($scope.indexer.vipExpirationDate != null && $scope.indexer.vipExpirationDate !== "Lifetime") {
             var expiryDate = moment($scope.indexer.vipExpirationDate, "YYYY-MM-DD");
             if (expiryDate < moment()) {
                 console.log("Expiry date reached for indexer " + $scope.indexer.name);

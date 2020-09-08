@@ -74,7 +74,7 @@ public class IndexerStatusesAndLimits {
         indexerStatus.setState(x.getState().name());
         indexerStatus.setLevel(x.getDisabledLevel());
         indexerStatus.setDisabledUntil(x.getDisabledUntil() == null ? null : Instant.ofEpochMilli(x.getDisabledUntil()));
-        indexerStatus.setVipExpirationDate(x.getVipExpirationDate() == null ? null : DATE_TIME_FORMATTER.format(x.getVipExpirationDate()));
+        indexerStatus.setVipExpirationDate(x.getVipExpirationDate());
         indexerStatus.setLastError(x.getLastError());
 
         setLimitRelatedValues(x, indexerStatus);

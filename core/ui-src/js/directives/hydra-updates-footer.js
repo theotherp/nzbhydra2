@@ -159,7 +159,7 @@ function hydraUpdatesFooter() {
 
         function checkExpiredIndexers() {
             _.each(ConfigService.getSafe().indexers, function (indexer) {
-                if (indexer.vipExpirationDate != null) {
+                if (indexer.vipExpirationDate != null && indexer.vipExpirationDate !== "Lifetime") {
                     var expiryWarning;
                     var expiryDate = moment(indexer.vipExpirationDate, "YYYY-MM-DD");
                     var messagePrefix = "VIP access for indexer " + indexer.name;

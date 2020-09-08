@@ -394,10 +394,10 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
             templateOptions: {
                 required: false,
                 label: 'VIP expiry',
-                help: 'Enter when your VIP access expires and NZBHydra will track it and warn you when close to expiry. Enter as YYYY-MM-DD.'
+                help: 'Enter when your VIP access expires and NZBHydra will track it and warn you when close to expiry. Enter as YYYY-MM-DD or "Lifetime".'
             },
             validators: {
-                port: regexValidator(/^\d{4}\-\d{2}\-\d{2}$/, "is no valid date (must be YYYY-MM-DD)", true, false)
+                port: regexValidator(/^(\d{4}-\d{2}-\d{2})|Lifetime$/, "is no valid date (must be 'YYYY-MM-DD' or 'Lifetime')", true, false)
             }
         }
     );

@@ -36,16 +36,19 @@ function IndexerStatusesController($scope, $http, statuses) {
 
 
     _.each($scope.statuses, function (status) {
-        var expiryDate = moment(status.vipExpirationDate, "YYYY-MM-DD");
-        var messagePrefix = "VIP access";
-        if (expiryDate < moment()) {
-            status.expiryWarning = messagePrefix + " expired";
-        } else if (expiryDate.subtract(7, 'days') < moment()) {
-            status.expiryWarning = messagePrefix + " will expire in the next 7 days";
+            if (status.vipExpirationDate != null && status.vipExpirationDate !== "Lifetime") {
+                var expiryDate = moment(status.vipExpirationDate, "YYYY-MM-DD");
+                var messagePrefix = "VIP access";
+                if (expiryDate < moment()) {
+                    status.expiryWarning = messagePrefix + " expired";
+                } else if (expiryDate.subtract(7, 'days') < moment()) {
+                    status.expiryWarning = messagePrefix + " will expire in the next 7 days";
+                }
+                console.log(status.expiryWarning);
+            }
         }
-        console.log(status.expiryWarning);
-
-    });
+    )
+    ;
 }
 
 angular

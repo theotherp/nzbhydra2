@@ -19,10 +19,6 @@ package org.nzbhydra.config.indexer;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import lombok.Data;
@@ -37,7 +33,6 @@ import org.nzbhydra.searching.IndexerForSearchSelector;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.time.Instant;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -93,10 +88,7 @@ public class IndexerConfig extends ValidatingConfig<IndexerConfig> {
     @SensitiveData
     private String username = null;
     private String userAgent = null;
-    @JsonDeserialize(using = LocalDateDeserializer.class)
-    @JsonSerialize(using = LocalDateSerializer.class)
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    private LocalDate vipExpirationDate;
+    private String vipExpirationDate;
 
     public Optional<Integer> getHitLimit() {
         return Optional.ofNullable(hitLimit);
