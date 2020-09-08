@@ -4,7 +4,11 @@
     "changes": [
       {
         "type": "feature",
-        "text": "Added Lidarr to list of known user agents."
+        "text": "Added Lidarr and Readarr to list of known user agents."
+      },
+      {
+        "type": "feature",
+        "text": "The dialog for the configuration of external tools will now save the input for each tool and restore it the next time you open the dialog for that tool again."
       }
     ],
     "final": true

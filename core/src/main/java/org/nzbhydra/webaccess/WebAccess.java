@@ -21,6 +21,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.ConnectException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -96,6 +97,8 @@ public class WebAccess {
                 throw new WebAccessException(response.message(), bodyAsString, response.code());
             }
             return bodyAsString;
+        } catch (ConnectException e) {
+            throw new WebAccessException(e);
         }
     }
 

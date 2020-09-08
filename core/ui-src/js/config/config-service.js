@@ -110,7 +110,9 @@ function ConfigService($http, $q, $cacheFactory, $uibModal, bootstrapped) {
         })
     }
 
-    function ConfigureInModalInstanceCtrl($scope, $uibModalInstance, $http, growl, $interval, RequestsErrorHandler, externalTool, dialogInfo) {
+    function ConfigureInModalInstanceCtrl($scope, $uibModalInstance, $http, growl, $interval, RequestsErrorHandler, localStorageService, externalTool, dialogInfo) {
+        var lastConfig = localStorageService.get(externalTool);
+
         $scope.externalTool = externalTool;
         $scope.externalToolDisplayName = externalTool;
         $scope.externalToolsMessages = [];
@@ -157,6 +159,10 @@ function ConfigService($http, $q, $cacheFactory, $uibModal, bootstrapped) {
         }
         $scope.removeYearFromSearchString = false;
 
+        if (lastConfig !== null && lastConfig !== undefined) {
+            Object.assign($scope, lastConfig);
+        }
+
         $scope.close = function () {
             $uibModalInstance.dismiss();
         };
@@ -199,7 +205,8 @@ function ConfigService($http, $q, $cacheFactory, $uibModal, bootstrapped) {
                 discographySeedTime: $scope.discographySeedTime,
                 addDisabledIndexers: $scope.addDisabledIndexers
             }
-            console.log(data);
+
+            localStorageService.set(externalTool, data);
 
             function updateMessages() {
                 $http.get("internalapi/externalTools/messages").then(function (response) {
@@ -230,7 +237,6 @@ function ConfigService($http, $q, $cacheFactory, $uibModal, bootstrapped) {
             });
 
         };
-
 
     }
 }

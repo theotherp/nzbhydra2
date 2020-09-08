@@ -335,14 +335,14 @@ public class ExternalTools {
     private void handleXdarrError(AddRequest addRequest, WebAccessException e) throws IOException {
         logger.debug(LoggingMarkers.EXTERNAL_TOOLS, "Received error response: {}", e.getBody());
 
-        if (e.getBody().trim().startsWith("[")) {
+        if (e.getBody() != null && e.getBody().trim().startsWith("[")) {
             final List<Map> requestResponse = Jackson.JSON_MAPPER.readValue(e.getBody(), LIST_TYPE_REFERENCE);
             if (requestResponse.size() > 0 && requestResponse.get(0).containsKey("errorMessage")) {
                 final String errorMessage = (String) requestResponse.get(0).get("errorMessage");
                 messages.add("Error: " + errorMessage);
                 throw new IOException(addRequest.getExternalTool().name() + " returned error message: " + errorMessage);
             }
-        } else if (e.getBody().trim().startsWith("{")) {
+        } else if (e.getBody() != null && e.getBody().trim().startsWith("{")) {
             String errorMessage = (String) Jackson.JSON_MAPPER.readValue(e.getBody(), Map.class).get("error");
             if (Strings.isNullOrEmpty(errorMessage)) {
                 errorMessage = (String) Jackson.JSON_MAPPER.readValue(e.getBody(), Map.class).get("message");
@@ -350,6 +350,7 @@ public class ExternalTools {
             messages.add("Error: " + errorMessage);
             throw new IOException(addRequest.getExternalTool().name() + " returned error message: " + errorMessage);
         } else {
+            messages.add(e.getMessage());
             throw e;
         }
     }

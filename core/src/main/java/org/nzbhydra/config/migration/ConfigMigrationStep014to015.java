@@ -39,11 +39,15 @@ public class ConfigMigrationStep014to015 implements ConfigMigrationStep {
             List<String> userAgents = (List<String>) searching.get("userAgents");
             if (userAgents.stream().noneMatch(x -> x.toLowerCase().contains("lidarr"))) {
                 userAgents.add("Lidarr");
+                logger.info("Added Lidarr to known user agents");
+            }
+            if (userAgents.stream().noneMatch(x -> x.toLowerCase().contains("readarr"))) {
+                userAgents.add("Readarr");
+                logger.info("Added Readarr to known user agents");
             }
             searching.put("userAgents", userAgents);
-            logger.info("Added Lidarr to known user agents");
         } catch (Exception e) {
-            logger.error("Error while adding Lidarr to known user agents", e);
+            logger.error("Error while adding new entries to known user agents", e);
         }
 
         return toMigrate;
