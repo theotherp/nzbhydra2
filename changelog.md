@@ -1,3 +1,15 @@
+### v2.28.1 (2020-09-08)
+
+**Feature** Added Lidarr and Readarr to list of known user agents.
+
+**Feature** The dialog for the configuration of external tools will now save the input for each tool and restore it the next time you open the dialog for that tool again.
+
+**Feature** Support for indexer VIP expiry date 'Lifetime'. No logic behind it, just so you can enter and see that information.
+
+**Fix** Improve layout of quick filter buttons in search results.
+
+
+
 ### v2.28.0 (2020-09-03)
 
 **Feature** When using "Add links" to add NZBs to your downloader the links are usually calculated using the URL with which you accessed NZBHydra. This might be a URL that's not accessible by the downloader (e.g. when it's inside a docker container). You can now configure a URL in the downloading config that will be used for these links instead.
