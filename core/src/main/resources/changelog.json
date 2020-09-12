@@ -5,6 +5,10 @@
       {
         "type": "fix",
         "text": "Use better name for indexer entries added to *arr."
+      },
+      {
+        "type": "fix",
+        "text": "Fix issue with indexer names containing special characters when configuring *arr."
       }
     ],
     "final": true

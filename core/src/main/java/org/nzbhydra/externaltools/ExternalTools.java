@@ -42,6 +42,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -418,7 +419,7 @@ public class ExternalTools {
         //Remove if originally defined
         parameterMap.remove("indexers");
         if (indexerName != null) {
-            parameterMap.put("indexers", indexerName);
+            parameterMap.put("indexers", org.apache.catalina.util.URLEncoder.QUERY.encode(indexerName, StandardCharsets.UTF_8));
         }
         return parameterMap.isEmpty() ? null : ("&" + parameterMap.entrySet().stream().map(x -> x.getKey() + "=" + x.getValue()).collect(Collectors.joining("&")));
     }

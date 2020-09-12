@@ -14,6 +14,7 @@ import org.nzbhydra.indexers.IndexerApiAccessEntityShort;
 import org.nzbhydra.indexers.IndexerApiAccessEntityShortRepository;
 import org.nzbhydra.indexers.IndexerApiAccessType;
 import org.nzbhydra.indexers.NfoResult;
+import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.searching.SearchModuleProvider;
 import org.nzbhydra.searching.db.SearchResultEntity;
 import org.nzbhydra.searching.db.SearchResultRepository;
@@ -267,11 +268,11 @@ public class FileHandler {
         UriComponentsBuilder builder;
         final Optional<String> externalUrl = configProvider.getBaseConfig().getDownloading().getExternalUrl();
         if (externalUrl.isPresent()) {
-            logger.debug("Using configured external URL: {}", externalUrl.get());
+            logger.debug(LoggingMarkers.URL_CALCULATION, "Using configured external URL: {}", externalUrl.get());
             builder = UriComponentsBuilder.fromHttpUrl(externalUrl.get());
         } else {
             builder = urlCalculator.getRequestBasedUriBuilder();
-            logger.debug("Using URL calculated from request: {}", builder.toUriString());
+            logger.debug(LoggingMarkers.URL_CALCULATION, "Using URL calculated from request: {}", builder.toUriString());
         }
         return getDownloadLink(searchResultId, internal, downloadType, builder);
     }
