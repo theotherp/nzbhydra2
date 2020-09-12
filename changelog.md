@@ -1,3 +1,11 @@
+### v2.29.1 (2020-09-12)
+
+**Fix** Use better name for indexer entries added to *arr.
+
+**Fix** Fix issue with indexer names containing special characters when configuring *arr.
+
+
+
 ### v2.29.0 (2020-09-08)
 
 **Feature** Added support for indexer priority when configuring Sonarr v3 and Radarr v3.
