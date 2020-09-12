@@ -238,11 +238,10 @@ public class ExternalTools {
         xdarrAddRequest.setImplementationName(backendType == BackendType.Newznab ? "Newznab" : "Torznab");
         xdarrAddRequest.setInfoLink("https://github.com/Sonarr/Sonarr/wiki/Supported-Indexers#newznab");
         String nameInXdarr = addRequest.getNzbhydraName();
-        if (indexer != null) {
-            nameInXdarr += indexer.getName();
-        }
         if (addRequest.getAddType() == AddRequest.AddType.SINGLE && addRequest.isConfigureForTorrents() && addRequest.isConfigureForUsenet()) {
             nameInXdarr += " (" + backendType.name() + ")";
+        } else if (indexer != null) {
+            nameInXdarr += " (" + indexer.getName() + ")";
         }
         xdarrAddRequest.setName(nameInXdarr);
         xdarrAddRequest.setProtocol(backendType == BackendType.Newznab ? "usenet" : "torrent");
