@@ -177,7 +177,7 @@ public class ExternalTools {
 
     private boolean failOnUnknownVersion(AddRequest addRequest) throws IOException {
         String path;
-        if (addRequest.getExternalTool() == AddRequest.ExternalTool.Lidarr) {
+        if (addRequest.getExternalTool() == AddRequest.ExternalTool.Lidarr || addRequest.getExternalTool() == AddRequest.ExternalTool.Readarr) {
             path = "/api/v1/system/status";
         } else {
             path = "/api/system/status";
@@ -255,7 +255,7 @@ public class ExternalTools {
         } else {
             xdarrAddRequest.getFields().add(new XdarrAddRequestField("categories", Arrays.asList(addRequest.getCategories().split(","))));
         }
-        xdarrAddRequest.getFields().add(new XdarrAddRequestField("additionalParameters", getAdditionalParameters(addRequest, indexer.getName())));
+        xdarrAddRequest.getFields().add(new XdarrAddRequestField("additionalParameters", getAdditionalParameters(addRequest, indexer == null ? null : indexer.getName())));
 
         final AddRequest.ExternalTool externalTool = addRequest.getExternalTool();
         if (externalTool != AddRequest.ExternalTool.Lidarr && externalTool != AddRequest.ExternalTool.Radarrv3) {
@@ -265,12 +265,12 @@ public class ExternalTools {
                 xdarrAddRequest.getFields().add(new XdarrAddRequestField("animeCategories", addRequest.getAnimeCategories()));
             }
         }
-        if (externalTool == AddRequest.ExternalTool.Lidarr) {
+        if (externalTool == AddRequest.ExternalTool.Lidarr || externalTool == AddRequest.ExternalTool.Readarr) {
             xdarrAddRequest.getFields().add(new XdarrAddRequestField("earlyReleaseLimit", addRequest.getEarlyDownloadLimit()));
         }
 
         if (backendType == BackendType.Torznab) {
-            if (externalTool == AddRequest.ExternalTool.Sonarrv3 || externalTool == AddRequest.ExternalTool.Lidarr || externalTool == AddRequest.ExternalTool.Radarrv3) {
+            if (externalTool == AddRequest.ExternalTool.Sonarrv3 || externalTool == AddRequest.ExternalTool.Lidarr || externalTool == AddRequest.ExternalTool.Radarrv3 || externalTool == AddRequest.ExternalTool.Readarr) {
                 xdarrAddRequest.getFields().add(new XdarrAddRequestField("seedCriteria.seedRatio", addRequest.getSeedRatio()));
                 xdarrAddRequest.getFields().add(new XdarrAddRequestField("seedCriteria.seedTime", addRequest.getSeedTime()));
             }
@@ -282,7 +282,7 @@ public class ExternalTools {
             if (externalTool == AddRequest.ExternalTool.Sonarrv3) {
                 xdarrAddRequest.getFields().add(new XdarrAddRequestField("seedCriteria.seasonPackSeedTime", addRequest.getSeasonPackSeedTime()));
             }
-            if (externalTool == AddRequest.ExternalTool.Lidarr) {
+            if (externalTool == AddRequest.ExternalTool.Lidarr || externalTool == AddRequest.ExternalTool.Readarr) {
                 xdarrAddRequest.getFields().add(new XdarrAddRequestField("seedCriteria.discographySeedTime", addRequest.getDiscographySeedTime()));
             }
 
@@ -405,7 +405,7 @@ public class ExternalTools {
         final String url;
         if (addRequest.getExternalTool() == AddRequest.ExternalTool.Sonarrv3 || addRequest.getExternalTool() == AddRequest.ExternalTool.Radarrv3) {
             url = addRequest.getXdarrHost() + "/api/v3/indexer";
-        } else if (addRequest.getExternalTool() == AddRequest.ExternalTool.Lidarr) {
+        } else if (addRequest.getExternalTool() == AddRequest.ExternalTool.Lidarr || addRequest.getExternalTool() == AddRequest.ExternalTool.Readarr) {
             url = addRequest.getXdarrHost() + "/api/v1/indexer";
         } else {
             url = addRequest.getXdarrHost() + "/api/indexer";

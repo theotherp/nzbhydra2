@@ -153,7 +153,7 @@
       </div>
     </div>
   
-    <div class="form-group row" ng-show="externalTool !== 'Lidarr' && externalTool !== 'Radarrv3'">
+    <div class="form-group row" ng-show="externalTool !== 'Lidarr' && externalTool !== 'Radarrv3' && externalTool !== 'Readarr'">
       <div class="col-md-8" style="text-align: right">
         <label>Anime categories</label>
       </div>
@@ -170,8 +170,8 @@
         <input bs-switch type="checkbox" ng-model="removeYearFromSearchString">
       </div>
     </div>
-    
-    <div class="form-group row" ng-show="externalTool === 'Lidarr'">
+  
+    <div class="form-group row" ng-show="(externalTool === 'Lidarr' || externalTool === 'Readarr')">
       <div class="col-md-8" style="text-align: right">
         <label>Early download limit</label>
       </div>
@@ -189,7 +189,7 @@
       </div>
     </div>
   
-    <div class="form-group row" ng-show="configureForTorrents && (externalTool === 'Sonarr' || externalTool === 'Sonarrv3' || externalTool === 'Lidarr' || externalTool === 'Radarrv3')">
+    <div class="form-group row" ng-show="configureForTorrents && (externalTool === 'Sonarr' || externalTool === 'Sonarrv3' || externalTool === 'Lidarr' || externalTool === 'Radarrv3' || externalTool === 'Readarr')">
       <div class="col-md-8" style="text-align: right">
         <label>Seed ratio</label>
       </div>
@@ -198,7 +198,7 @@
       </div>
     </div>
   
-    <div class="form-group row" ng-show="configureForTorrents && (externalTool === 'Sonarr' || externalTool === 'Sonarrv3' || externalTool === 'Lidarr' || externalTool === 'Radarrv3')">
+    <div class="form-group row" ng-show="configureForTorrents && (externalTool === 'Sonarr' || externalTool === 'Sonarrv3' || externalTool === 'Lidarr' || externalTool === 'Radarrv3' || externalTool === 'Readarr')">
       <div class="col-md-8" style="text-align: right">
         <label>Seed time</label>
       </div>
@@ -215,8 +215,8 @@
         <input type="text" class="form-control" ng-model="seasonPackSeedTime">
       </div>
     </div>
-    
-    <div class="form-group row" ng-show="configureForTorrents && externalTool === 'Lidarr'">
+  
+    <div class="form-group row" ng-show="configureForTorrents && (externalTool === 'Lidarr' || externalTool === 'Readarr')">
       <div class="col-md-8" style="text-align: right">
         <label>Discography seed time</label>
       </div>

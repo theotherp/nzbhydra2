@@ -28,6 +28,7 @@ public class AddRequest {
     }
 
     public enum ExternalTool {
+        Readarr,
         Radarr,
         Radarrv3,
         Sonarr,

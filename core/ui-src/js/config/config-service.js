@@ -159,6 +159,9 @@ function ConfigService($http, $q, $cacheFactory, $uibModal, bootstrapped) {
         } else if (externalTool === "Lidarr") {
             $scope.xdarrHost += "8686";
             $scope.categories = "3000";
+        } else if (externalTool === "Readarr") {
+            $scope.xdarrHost += "8787";
+            $scope.categories = "7020,8010";
         }
         $scope.removeYearFromSearchString = false;
 

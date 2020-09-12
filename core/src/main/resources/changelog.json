@@ -6,6 +6,10 @@
       {
         "type": "feature",
         "text": "Added support for indexer priority when configuring Sonarr v3 and Radarr v3."
+      },
+      {
+        "type": "feature",
+        "text": "Added support for automatic configuration of Readarr."
       }
     ],
     "final": true
