@@ -48,6 +48,28 @@ public class SensitiveDataRemovingPatternLayoutEncoderTest {
 
         result = encoder.removeSensitiveData("https://www.indexer.com/api?t=search&username=12345678&q=abc");
         assertThat(result).isEqualTo("https://www.indexer.com/api?t=search&username=<username>&q=abc");
+
+        final String darrApiKeyField = " \"name\": \"apiKey\",\n" +
+                "      \"label\": \"API Key\",\n" +
+                "      \"value\": \"12345678\",";
+        result = encoder.removeSensitiveData(darrApiKeyField);
+        assertThat(result).isEqualTo(darrApiKeyField.replace("12345678", "<apikey>"));
+
+        final String darrUrlField = " \"name\": \"baseUrl\",\n" +
+                "      \"label\": \"URL\",\n" +
+                "      \"value\": \"http://127.0.0.1:5076\",";
+        result = encoder.removeSensitiveData(darrUrlField);
+        assertThat(result).isEqualTo(darrUrlField.replace("http://127.0.0.1:5076", "<url>"));
+
+        final String darrUrlField2 = "\"name\" : \"baseUrl\",\n" +
+                "    \"value\" : \"http://127.0.0.1:5076\"";
+        result = encoder.removeSensitiveData(darrUrlField2);
+        assertThat(result).isEqualTo(darrUrlField2.replace("http://127.0.0.1:5076", "<url>"));
+
+        final String darrUrlField3 = "\"name\" : \"baseUrl\",\n" +
+                "    \"value\" : \"http://host.docker.internal:5076/torznab\"";
+        result = encoder.removeSensitiveData(darrUrlField3);
+        assertThat(result).isEqualTo(darrUrlField3.replace("http://host.docker.internal:5076/torznab", "<url>"));
     }
 
 }

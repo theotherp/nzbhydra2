@@ -10,6 +10,10 @@
       {
         "type": "feature",
         "text": "Added support for automatic configuration of Readarr."
+      },
+      {
+        "type": "fix",
+        "text": "Anonymize API key and URLs when logging *arr requests and responses."
       }
     ],
     "final": true
