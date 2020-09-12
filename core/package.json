@@ -66,11 +66,14 @@
     "wiredep-cli": "^0.1.0"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "preinstall": "npx npm-force-resolutions"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/theotherp/nzbhydra2.git"
+  },
+  "resolutions": {
+    "graceful-fs": "^4.2.4"
   },
   "keywords": [
     "usenet",

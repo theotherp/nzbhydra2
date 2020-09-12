@@ -200,7 +200,7 @@ public class Binsearch extends Indexer<String> {
         item.setCategory(categoryProvider.getNotAvailable());
         item.setIndexer(this);
         item.setDownloadType(DownloadType.NZB);
-        item.setIndexerScore(config.getScore().orElse(0));
+        item.setIndexerScore(config.getScore());
         return item;
     }
 

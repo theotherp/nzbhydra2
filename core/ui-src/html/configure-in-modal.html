@@ -3,22 +3,30 @@
 </div>
 <div class="modal-body" style="text-align: left">
   <div ng-show="!working">
-    This allows you to configure NZBHydra in Sonarr / Radarr / Lidarr.<br>
-    <br>
-    You can decide if you want to:<br>
-    <ul>
+    <div class="well">
+      This allows you to configure NZBHydra in Sonarr / Radarr / Lidarr.<br>
+      <br>
+      You can decide if you want to:<br>
+      <ul>
       
-      <li>a) add NZBHydra as one indexer. This is the default. *darr will make one query to NZBHydra which will then query all indexers and return one unified list of results.</li>
-      <li>b) add one entry per indexer configured in NZBHydra. *darr will make multiple queries to NZBHydra (one per indexer). This will result in a lot of entries in your NZBHydra history but has the one benefit that should *darr be unable
-        to
-        download an NZB from an indexer then NZBHydra then only that indexer entry will be disabled in *darr.
-      </li>
-    </ul>
-    In most cases you should stick with a).<br>
-    Any indexer entries containing {{nzbhydraName}} in the name will be deleted. I recommend you make a backup of {{::externalToolDisplayName}} before.
+        <li>a) add NZBHydra as one indexer. This is the default. *darr will make one query to NZBHydra which will then query all indexers and return one unified list of results.</li>
+        <li>b) add one entry per indexer configured in NZBHydra. *darr will make multiple queries to NZBHydra (one per indexer). This will result in a lot of entries in your NZBHydra history but has the one benefit that should *darr be
+          unable
+          to
+          download an NZB from an indexer then NZBHydra then only that indexer entry will be disabled in *darr.
+        </li>
+      </ul>
+      In most cases you should stick with a).<br>
+      <br>
+      Any indexer entries containing {{nzbhydraName}} in the name will be deleted. I recommend you make a backup of {{::externalToolDisplayName}} before.
+      <br>
+      <span ng-if="prioritiesConfigured && (externalTool === 'Sonarrv3' || externalTool === 'Radarrv3') && addType === 'PER_INDEXER'">
+      <br>
+      This tool supports indexer priorities. Unfortunately where NZBHydra uses higher values for higher priorities this tool uses lower values (0 for highest, 50 for lowest priority). NZBHydra will try to map the priorities accordingly.
+      <br>
+    </span>
+    </div>
     <br>
-    <br>
-    
     <div class="form-group row">
       <div class="col-md-8" style="text-align: right">
         <label>NZBHydra name</label>
@@ -108,7 +116,7 @@
         <input bs-switch type="checkbox" ng-model="enableAutomaticSearch">
       </div>
     </div>
-    
+  
     <div class="form-group row" ng-show="externalTool !== 'Radarr'">
       <div class="col-md-8" style="text-align: right">
         <label>Enable interactive search</label>
@@ -117,7 +125,16 @@
         <input bs-switch type="checkbox" ng-model="enableInteractiveSearch">
       </div>
     </div>
-    
+  
+    <div class="form-group row" ng-show="prioritiesConfigured && (externalTool === 'Sonarrv3' || externalTool === 'Radarrv3') && addType === 'PER_INDEXER'">
+      <div class="col-md-8" style="text-align: right">
+        <label>Set indexer priorities</label>
+      </div>
+      <div class="col-md-12">
+        <input bs-switch type="checkbox" ng-model="useHydraPriorities">
+      </div>
+    </div>
+  
     <div class="form-group row">
       <div class="col-md-8" style="text-align: right">
         <label>Categories</label>
@@ -126,7 +143,7 @@
         <input type="text" class="form-control" ng-model="categories">
       </div>
     </div>
-    
+  
     <div class="form-group row">
       <div class="col-md-8" style="text-align: right">
         <label>Additional parameters</label>

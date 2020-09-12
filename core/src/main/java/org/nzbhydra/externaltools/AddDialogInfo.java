@@ -26,6 +26,7 @@ public class AddDialogInfo {
     private boolean usenetIndexersConfigured;
     private boolean torrentIndexersConfigured;
     private String nzbhydraHost;
+    private boolean prioritiesConfigured;
 
 
 }

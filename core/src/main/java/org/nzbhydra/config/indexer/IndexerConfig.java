@@ -78,7 +78,7 @@ public class IndexerConfig extends ValidatingConfig<IndexerConfig> {
     private String password = null;
     private boolean preselect = true;
     private List<String> schedule = new ArrayList<>();
-    private Integer score = null;
+    private int score;
     private SearchModuleType searchModuleType = SearchModuleType.NEWZNAB;
     private boolean showOnSearch = true;
     @JsonFormat(shape = Shape.STRING)
@@ -112,10 +112,6 @@ public class IndexerConfig extends ValidatingConfig<IndexerConfig> {
 
     public Optional<String> getPassword() {
         return Optional.ofNullable(Strings.emptyToNull(password));
-    }
-
-    public Optional<Integer> getScore() {
-        return Optional.ofNullable(score);
     }
 
     public Optional<Integer> getTimeout() {

@@ -123,6 +123,7 @@ function ConfigService($http, $q, $cacheFactory, $uibModal, bootstrapped) {
 
         $scope.nzbhydraHost = dialogInfo.nzbhydraHost;
         $scope.usenetIndexersConfigured = dialogInfo.usenetIndexersConfigured;
+        $scope.prioritiesConfigured = dialogInfo.prioritiesConfigured;
         $scope.configureForUsenet = dialogInfo.usenetIndexersConfigured;
         $scope.torrentIndexersConfigured = dialogInfo.torrentIndexersConfigured;
         $scope.configureForTorrents = dialogInfo.torrentIndexersConfigured;
@@ -140,6 +141,8 @@ function ConfigService($http, $q, $cacheFactory, $uibModal, bootstrapped) {
         $scope.enableInteractiveSearch = true;
         $scope.categories = null;
         $scope.animeCategories = null;
+        $scope.priority = 0;
+        $scope.useHydraPriorities = true;
 
         if (externalTool === "Sonarr" || externalTool === "Sonarrv3") {
             $scope.xdarrHost += "8989";
@@ -203,7 +206,9 @@ function ConfigService($http, $q, $cacheFactory, $uibModal, bootstrapped) {
                 seedTime: $scope.seedTime,
                 seasonPackSeedTime: $scope.seasonPackSeedTime,
                 discographySeedTime: $scope.discographySeedTime,
-                addDisabledIndexers: $scope.addDisabledIndexers
+                addDisabledIndexers: $scope.addDisabledIndexers,
+                priority: $scope.priority,
+                useHydraPriorities: $scope.useHydraPriorities
             }
 
             localStorageService.set(externalTool, data);
@@ -220,12 +225,18 @@ function ConfigService($http, $q, $cacheFactory, $uibModal, bootstrapped) {
 
             RequestsErrorHandler.specificallyHandled(function () {
                 $scope.completed = false;
-                $http.post("internalapi/externalTools/configure", data).then(function () {
+                $http.post("internalapi/externalTools/configure", data).then(function (response) {
                     updateMessages();
                     $interval.cancel(updateInterval);
                     $scope.spinnerActive = false;
-                    $scope.completed = true;
-                    $scope.closeButtonType = "success";
+                    console.log(response);
+                    if (response.data) {
+                        $scope.completed = true;
+                        $scope.closeButtonType = "success";
+                    } else {
+                        $scope.working = false;
+                        $scope.completed = false;
+                    }
                 }, function (error) {
                     updateMessages();
                     console.error(error.data);
@@ -235,7 +246,6 @@ function ConfigService($http, $q, $cacheFactory, $uibModal, bootstrapped) {
                     $scope.working = false;
                 });
             });
-
         };
 
     }

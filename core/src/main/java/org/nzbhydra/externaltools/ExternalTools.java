@@ -44,9 +44,11 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -72,19 +74,21 @@ public class ExternalTools {
     private UrlCalculator urlCalculator;
 
     private final List<String> messages = new ArrayList<>();
+    private final Map<IndexerConfig, Integer> indexerPrioritiesMapped = new HashMap<>();
 
 
-    public void addNzbhydraAsIndexer(AddRequest addRequest) throws IOException {
+    public boolean addNzbhydraAsIndexer(AddRequest addRequest) throws IOException {
         try {
             logger.debug(LoggingMarkers.EXTERNAL_TOOLS, "Received request: {}", addRequest);
             messages.clear();
+            indexerPrioritiesMapped.clear();
 
             if (failOnUnknownVersion(addRequest)) {
-                return;
+                return false;
             }
 
             if (deleteIndexers(addRequest)) {
-                return;
+                return false;
             }
 
             logger.info("Enabling mocking mode for external tool configuration. Any search requests made now will return mocked resuls; no indexers will be searched");
@@ -95,13 +99,27 @@ public class ExternalTools {
                     .filter(x -> (x.getState() == IndexerConfig.State.ENABLED || addRequest.isAddDisabledIndexers()) && x.isConfigComplete() && x.isAllCapsChecked())
                     .filter(x -> x.getEnabledForSearchSource().meets(SearchRequest.SearchSource.API))
                     .collect(Collectors.toList());
+
+            final Optional<Integer> maxPriority = availableIndexers.stream().map(IndexerConfig::getScore).max(Comparator.naturalOrder());
+            if (addRequest.getAddType() == AddRequest.AddType.PER_INDEXER && addRequest.isUseHydraPriorities() && maxPriority.isPresent() && maxPriority.get() > 51) {
+                logger.info("Detected indexer with a priority higher than 51 which cannot not supported by {}. Will try to adapt priorities", addRequest.getExternalTool());
+                float ratio = 50F / (float) maxPriority.get(); //Example: maxPriority is 100 -> ratio is 0.5, every indexer priority is muliplied with 0.5.
+                availableIndexers.forEach(indexerConfig -> {
+                    //Invert values (1 is highest priority in *arr, 50 the lowest) also needs to be done
+                    int arrPriority = (int) (50 - indexerConfig.getScore() * ratio);
+                    arrPriority = Math.max(arrPriority, 1); //0 is not allwed
+                    logger.debug("Calculated *arr priority for {} to be {}. NZBHydra priority: {}", indexerConfig.getName(), arrPriority, indexerConfig.getScore());
+                    indexerPrioritiesMapped.put(indexerConfig, arrPriority);
+                });
+            }
+
             if (addRequest.isConfigureForUsenet()) {
                 if (addRequest.getAddType() == AddRequest.AddType.SINGLE) {
                     executeConfigurationRequest(addRequest, BackendType.Newznab, null);
                 } else {
                     final List<IndexerConfig> availableTorznabIndexers = availableIndexers.stream().filter(x -> x.getSearchModuleType() != SearchModuleType.TORZNAB).collect(Collectors.toList());
                     for (IndexerConfig indexer : availableTorznabIndexers) {
-                        executeConfigurationRequest(addRequest, BackendType.Newznab, indexer.getName());
+                        executeConfigurationRequest(addRequest, BackendType.Newznab, indexer);
                     }
                 }
             }
@@ -111,12 +129,17 @@ public class ExternalTools {
                 } else {
                     final List<IndexerConfig> availableUsenetIndexers = availableIndexers.stream().filter(x -> x.getSearchModuleType() == SearchModuleType.TORZNAB).collect(Collectors.toList());
                     for (IndexerConfig indexer : availableUsenetIndexers) {
-                        executeConfigurationRequest(addRequest, BackendType.Torznab, indexer.getName());
+                        executeConfigurationRequest(addRequest, BackendType.Torznab, indexer);
                     }
                 }
             }
 
             messages.add("Configuration of " + addRequest.getExternalTool() + " finished successfully");
+            return true;
+        } catch (Exception e) {
+            messages.add("Unexpected error: " + e.getMessage());
+            logger.error("Unexpected error during configuration of " + addRequest.getExternalTool().name(), e);
+            return false;
         } finally {
             logger.info("Disabling mocking mode");
             ExternalApi.setInMockingMode(false);
@@ -202,7 +225,7 @@ public class ExternalTools {
         return messages;
     }
 
-    private void executeConfigurationRequest(AddRequest addRequest, BackendType backendType, String indexerName) throws IOException {
+    private void executeConfigurationRequest(AddRequest addRequest, BackendType backendType, IndexerConfig indexer) throws IOException {
         XdarrIndexer xdarrAddRequest = new XdarrIndexer();
         xdarrAddRequest.setConfigContract(backendType == BackendType.Newznab ? "NewznabSettings" : "TorznabSettings");
         //Only for sonarr and lidarr
@@ -215,8 +238,8 @@ public class ExternalTools {
         xdarrAddRequest.setImplementationName(backendType == BackendType.Newznab ? "Newznab" : "Torznab");
         xdarrAddRequest.setInfoLink("https://github.com/Sonarr/Sonarr/wiki/Supported-Indexers#newznab");
         String nameInXdarr = addRequest.getNzbhydraName();
-        if (indexerName != null) {
-            nameInXdarr += indexerName;
+        if (indexer != null) {
+            nameInXdarr += indexer.getName();
         }
         if (addRequest.getAddType() == AddRequest.AddType.SINGLE && addRequest.isConfigureForTorrents() && addRequest.isConfigureForUsenet()) {
             nameInXdarr += " (" + backendType.name() + ")";
@@ -232,7 +255,7 @@ public class ExternalTools {
         } else {
             xdarrAddRequest.getFields().add(new XdarrAddRequestField("categories", Arrays.asList(addRequest.getCategories().split(","))));
         }
-        xdarrAddRequest.getFields().add(new XdarrAddRequestField("additionalParameters", getAdditionalParameters(addRequest, indexerName)));
+        xdarrAddRequest.getFields().add(new XdarrAddRequestField("additionalParameters", getAdditionalParameters(addRequest, indexer.getName())));
 
         final AddRequest.ExternalTool externalTool = addRequest.getExternalTool();
         if (externalTool != AddRequest.ExternalTool.Lidarr && externalTool != AddRequest.ExternalTool.Radarrv3) {
@@ -267,6 +290,21 @@ public class ExternalTools {
             xdarrAddRequest.getFields().add(new XdarrAddRequestField("minimumSeeders", addRequest.getMinimumSeeders() != null ? addRequest.getMinimumSeeders() : "1"));
         } else {
             xdarrAddRequest.getFields().add(new XdarrAddRequestField("baseUrl", addRequest.getNzbhydraHost()));
+        }
+
+        if (externalTool.isV3()) {
+            if (addRequest.getAddType() == AddRequest.AddType.SINGLE && addRequest.getPriority() != null) {
+                xdarrAddRequest.setPriority(addRequest.getPriority());
+            } else if (addRequest.isUseHydraPriorities()) {
+                if (!indexerPrioritiesMapped.isEmpty()) {
+                    xdarrAddRequest.setPriority(indexerPrioritiesMapped.get(indexer));
+                } else {
+                    int arrPriority = 50 - indexer.getScore();
+                    arrPriority = Math.max(arrPriority, 1); //0 is "disabled"
+                    logger.debug("Calculated *arr priority for {} to be {}. NZBHydra priority: {}", indexer.getName(), arrPriority, indexer.getScore());
+                    xdarrAddRequest.setPriority(arrPriority);
+                }
+            } //else: Set value 0 (no priority)
         }
 
         if (externalTool.isRadarr()) {
@@ -401,6 +439,7 @@ public class ExternalTools {
     }
 
     @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class XdarrIndexer {
 
         public Boolean enableRss;
@@ -418,6 +457,7 @@ public class ExternalTools {
         public String infoLink;
         public List<Object> tags = new ArrayList<>();
         public int id;
+        public int priority;
     }
 
     @Data

@@ -86,7 +86,7 @@ public class NewznabJsonTransformer {
         }
         searchResultItem.getAttributes().put("guid", String.valueOf(searchResultItem.getSearchResultId()));
         List<NewznabJsonItemAttributes> attributes = searchResultItem.getAttributes().entrySet().stream().map(attribute -> new NewznabJsonItemAttributes(attribute.getKey(), attribute.getValue())).sorted(Comparator.comparing(NewznabJsonItemAttributes::getName)).collect(Collectors.toList());
-        attributes.add(new NewznabJsonItemAttributes("hydraIndexerScore", String.valueOf(searchResultItem.getIndexer().getConfig().getScore().orElse(null))));
+        attributes.add(new NewznabJsonItemAttributes("hydraIndexerScore", String.valueOf(searchResultItem.getIndexer().getConfig().getScore())));
         attributes.add(new NewznabJsonItemAttributes("hydraIndexerHost", String.valueOf(searchResultItem.getIndexer().getConfig().getHost())));
         attributes.add(new NewznabJsonItemAttributes("hydraIndexerName", String.valueOf(searchResultItem.getIndexer().getName())));
         String resultType;

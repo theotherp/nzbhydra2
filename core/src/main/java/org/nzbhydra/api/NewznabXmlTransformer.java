@@ -90,7 +90,7 @@ public class NewznabXmlTransformer {
         searchResultItem.getAttributes().put("guid", String.valueOf(searchResultItem.getSearchResultId()));
         List<NewznabAttribute> newznabAttributes = searchResultItem.getAttributes().entrySet().stream().map(attribute -> new NewznabAttribute(attribute.getKey(), attribute.getValue())).sorted(Comparator.comparing(NewznabAttribute::getName)).collect(Collectors.toList());
         if (searchResultItem.getIndexer() != null) {
-            newznabAttributes.add(new NewznabAttribute("hydraIndexerScore", String.valueOf(searchResultItem.getIndexer().getConfig().getScore().orElse(null))));
+            newznabAttributes.add(new NewznabAttribute("hydraIndexerScore", String.valueOf(searchResultItem.getIndexer().getConfig().getScore())));
             newznabAttributes.add(new NewznabAttribute("hydraIndexerHost", getIndexerHost(searchResultItem)));
             newznabAttributes.add(new NewznabAttribute("hydraIndexerName", String.valueOf(searchResultItem.getIndexer().getName())));
         }

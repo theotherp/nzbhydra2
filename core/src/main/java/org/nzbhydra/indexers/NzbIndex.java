@@ -72,7 +72,7 @@ public class NzbIndex extends Indexer<NewznabXmlRoot> {
             item.setIndexerGuid(matcher.group(1));
             item.setCategory(categoryProvider.getNotAvailable());
             item.setOriginalCategory("N/A");
-            item.setIndexerScore(config.getScore().orElse(0));
+            item.setIndexerScore(config.getScore());
             if (item.getDescription() != null) {
                 item.setHasNfo(rssItem.getDescription().contains("1 NFO") ? HasNfo.YES : HasNfo.NO);
             } else {

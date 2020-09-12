@@ -90,7 +90,7 @@ public class Torznab extends Newznab {
             searchResultItem.setCategory(categoryProvider.getNotAvailable());
         }
         searchResultItem.setHasNfo(HasNfo.NO);
-        searchResultItem.setIndexerScore(config.getScore().orElse(0));
+        searchResultItem.setIndexerScore(config.getScore());
         searchResultItem.setDownloadType(DownloadType.TORRENT);
         searchResultItem.setGuid(SearchResultIdCalculator.calculateSearchResultId(searchResultItem));
         return searchResultItem;

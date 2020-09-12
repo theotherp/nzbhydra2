@@ -22,3 +22,4 @@ sql notes.sql
 /logback-access.xml
 *.dmp
 *.trc
+package-lock.json

@@ -51,7 +51,7 @@ public class Anizb extends Indexer<NewznabXmlRoot> {
             item.setIndexerGuid(rssItem.getRssGuid().getGuid());
             item.setSize(rssItem.getEnclosure().getLength());
             item.setPubDate(rssItem.getPubDate());
-            item.setIndexerScore(config.getScore().orElse(0));
+            item.setIndexerScore(config.getScore());
             item.setHasNfo(HasNfo.NO);
             item.setAgePrecise(true);
             item.setCategory(categoryProvider.getByInternalName("Anime"));

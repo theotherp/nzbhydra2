@@ -45,6 +45,10 @@ public class AddRequest {
         public boolean isV2() {
             return this == Sonarr || this == Radarr;
         }
+
+        public boolean isV3() {
+            return this == Sonarrv3 || this == Radarrv3;
+        }
     }
 
     private boolean configureForUsenet;
@@ -69,8 +73,9 @@ public class AddRequest {
     private String seedTime;
     private String seasonPackSeedTime;
     private String discographySeedTime;
-
     private String categories;
     private String animeCategories;
+    private Integer priority;
+    private boolean useHydraPriorities;
 
 }
