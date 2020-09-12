@@ -1,3 +1,13 @@
+### v2.29.0 (2020-09-08)
+
+**Feature** Added support for indexer priority when configuring Sonarr v3 and Radarr v3.
+
+**Feature** Added support for automatic configuration of Readarr.
+
+**Fix** Anonymize API key and URLs when logging *arr requests and responses.
+
+
+
 ### v2.28.1 (2020-09-08)
 
 **Feature** Added Lidarr and Readarr to list of known user agents.
