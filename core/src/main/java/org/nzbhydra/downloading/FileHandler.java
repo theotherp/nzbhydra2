@@ -279,7 +279,7 @@ public class FileHandler {
 
     public String getDownloadLinkForResults(Long searchResultId, boolean internal, DownloadType downloadType) {
         UriComponentsBuilder builder = urlCalculator.getRequestBasedUriBuilder();
-        logger.debug("Using URL calculated from request: {}", builder.toUriString());
+        logger.debug(LoggingMarkers.URL_CALCULATION, "Using URL calculated from request: {}", builder.toUriString());
         return getDownloadLink(searchResultId, internal, downloadType, builder);
     }
 

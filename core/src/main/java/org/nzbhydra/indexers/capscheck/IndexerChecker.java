@@ -77,7 +77,7 @@ public class IndexerChecker {
     /**
      * Percentage of results that must be correct so that the search with an ID is interpreted as correct
      */
-    public static final int ID_THRESHOLD_PERCENT = 85;
+    public static final int ID_THRESHOLD_PERCENT = 60;
 
     /**
      * Host/Indexer specific limits
