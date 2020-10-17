@@ -5,6 +5,10 @@
       {
         "type": "fix",
         "text": "Reduced the percentage of correct results an indexer must return for an ID based search for that ID to be determined to be usable for searches. This will hopefully make the caps check recognize more supported IDs without any false positives."
+      },
+      {
+        "type": "fix",
+        "text": "Shorten torrent file names exceeding the maximum path length."
       }
     ],
     "final": true

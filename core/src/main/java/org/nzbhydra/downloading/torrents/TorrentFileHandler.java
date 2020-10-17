@@ -17,6 +17,8 @@
 package org.nzbhydra.downloading.torrents;
 
 import com.google.common.io.Files;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.downloading.FileDownloadAccessType;
 import org.nzbhydra.downloading.DownloadResult;
@@ -142,34 +144,51 @@ public class TorrentFileHandler {
             logger.error("Torrent black hole folder not set");
             return false;
         }
-
-        String sanitizedTitle = result.getTitle().replaceAll("[\\\\/:*?\"<>|]", "_");
-        if (!Objects.equals(sanitizedTitle, result.getTitle())) {
-            logger.info("Sanitized torrent title from '{}' to '{}'", result.getTitle(), sanitizedTitle);
-        }
         byte[] content;
-        File torrent;
         if (magnetLinkUri != null) {
-            torrent = new File(configProvider.getBaseConfig().getDownloading().getSaveTorrentsTo().get(), sanitizedTitle + ".magnet");
             String UriContent = magnetLinkUri.toString();
             content = UriContent.getBytes();
         } else {
-            torrent = new File(configProvider.getBaseConfig().getDownloading().getSaveTorrentsTo().get(), sanitizedTitle + ".torrent");
             content = result.getContent();
         }
-        if (torrent.exists()) {
-            logger.info("File {} already exists and will be skipped", torrent.getAbsolutePath());
+
+        File torrentFileName = getTargetFile(result, magnetLinkUri);
+        if (torrentFileName == null) {
             return false;
         }
         try {
-            Files.write(content, torrent);
-            logger.info("Saved torrent file to {}", torrent.getAbsolutePath());
+            Files.write(content, torrentFileName);
+            logger.info("Saved torrent file to {}", torrentFileName.getAbsolutePath());
             return true;
         } catch (Exception e) {
             logger.error("Error saving torrent file", e);
             return false;
         }
 
+    }
+
+    protected File getTargetFile(DownloadResult result, URI magnetLinkUri) {
+        String sanitizedTitle = result.getTitle().replaceAll("[\\\\/:*?\"<>|]", "_");
+        if (!Objects.equals(sanitizedTitle, result.getTitle())) {
+            logger.info("Sanitized torrent title from '{}' to '{}'", result.getTitle(), sanitizedTitle);
+        }
+        File torrentFileName;
+        if (magnetLinkUri != null) {
+            torrentFileName = new File(configProvider.getBaseConfig().getDownloading().getSaveTorrentsTo().get(), sanitizedTitle + ".magnet");
+        } else {
+            torrentFileName = new File(configProvider.getBaseConfig().getDownloading().getSaveTorrentsTo().get(), sanitizedTitle + ".torrent");
+        }
+        final String torrentFileNameAbsolutePath = torrentFileName.getAbsolutePath();
+        if (torrentFileName.exists()) {
+            logger.info("File {} already exists and will be skipped", torrentFileNameAbsolutePath);
+            return null;
+        }
+        if (torrentFileNameAbsolutePath.length() > 220) {
+            int maxFilenameLength = 220 - torrentFileName.getParentFile().getAbsolutePath().length() - FilenameUtils.getExtension(torrentFileNameAbsolutePath).length() - "/".length() - ".".length();
+            torrentFileName = new File(torrentFileName.getParent(), StringUtils.truncate(FilenameUtils.removeExtension(torrentFileName.getName()), maxFilenameLength) + "." + FilenameUtils.getExtension(torrentFileNameAbsolutePath));
+            logger.info("Shortened file name to '{}'", torrentFileName);
+        }
+        return torrentFileName;
     }
 
 }
