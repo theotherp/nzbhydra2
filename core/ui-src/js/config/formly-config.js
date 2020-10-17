@@ -55,7 +55,7 @@ angular
             template: [
                 '<div class="panel panel-default" style="margin-top: {{options.templateOptions.marginTop}}; margin-bottom: {{options.templateOptions.marginBottom}} ;">',
                 '<div class="panel-body {{options.templateOptions.class}}">',
-                '<div ng-repeat="line in options.templateOptions.lines"><h5>{{ line }}</h5></div>',
+                '<div ng-repeat="line in options.templateOptions.lines"><h5>{{ line | derefererExtracting | unsafe }} </h5></div>',
                 '</div>',
                 '</div>'
             ].join(' ')
@@ -72,6 +72,12 @@ angular
         formlyConfigProvider.setType({
             name: 'horizontalInput',
             extends: 'input',
+            wrapper: ['settingWrapper', 'bootstrapHasError']
+        });
+
+        formlyConfigProvider.setType({
+            name: 'horizontalTextArea',
+            extends: 'textarea',
             wrapper: ['settingWrapper', 'bootstrapHasError']
         });
 
@@ -400,11 +406,13 @@ angular
                     });
                 };
 
-                function addNew() {
+                function addNew(preset) {
+                    console.log(preset);
                     $scope.form.$setDirty(true);
                     $scope.model[$scope.options.key] = $scope.model[$scope.options.key] || [];
                     var repeatsection = $scope.model[$scope.options.key];
                     var newsection = angular.copy($scope.options.templateOptions.defaultModel);
+                    Object.assign(newsection, preset);
                     repeatsection.push(newsection);
                 }
 
@@ -431,6 +439,58 @@ angular
                             }
                         }
                     });
+                }
+            }
+        });
+
+
+        formlyConfigProvider.setType({
+            name: 'notificationSection',
+            templateUrl: 'notificationRepeatSection.html',
+            controller: function ($scope, NotificationService) {
+                $scope.formOptions = {formState: $scope.formState};
+                $scope.addNew = addNew;
+                $scope.remove = remove;
+                $scope.copyFields = copyFields;
+                $scope.eventTypes = [];
+
+                var allData = NotificationService.getAllData();
+                _.each(_.keys(allData), function (key) {
+                    console.log(key);
+                    $scope.eventTypes.push({"key": key, "label": allData[key].readable})
+                })
+
+                function copyFields(fields) {
+                    fields = angular.copy(fields);
+                    $scope.repeatfields = fields;
+                    return fields;
+                }
+
+                $scope.clear = function (field) {
+                    return _.mapObject(field, function (key, val) {
+                        if (typeof val === 'object') {
+                            return $scope.clear(val);
+                        }
+                        return undefined;
+
+                    });
+                };
+
+                function addNew(eventType) {
+                    $scope.form.$setDirty(true);
+                    $scope.model[$scope.options.key] = $scope.model[$scope.options.key] || [];
+                    var repeatsection = $scope.model[$scope.options.key];
+                    var newsection = angular.copy($scope.options.templateOptions.defaultModel);
+                    newsection.eventType = eventType;
+                    newsection.titleTemplate = NotificationService.getTitleTemplate(eventType);
+                    newsection.bodyTemplate = NotificationService.getBodyTemplate(eventType);
+
+                    repeatsection.push(newsection);
+                }
+
+                function remove($index) {
+                    $scope.model[$scope.options.key].splice($index, 1);
+                    $scope.form.$setDirty(true);
                 }
             }
         });

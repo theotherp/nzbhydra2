@@ -16,6 +16,7 @@ public class SafeConfig {
     private SafeSearchingConfig searching;
     private SafeDownloadingConfig downloading;
     private SafeLoggingConfig logging;
+    private SafeNotificationConfig notificationConfig;
     private boolean showNews;
     private boolean keepHistory;
 
@@ -29,6 +30,7 @@ public class SafeConfig {
         this.logging = new SafeLoggingConfig(baseConfig.getMain().getLogging());
         this.indexers = baseConfig.getIndexers().stream().map(indexerConfig -> new SafeIndexerConfig(indexerConfig, baseConfig)).collect(Collectors.toList());
         this.categoriesConfig = new SafeCategoriesConfig(baseConfig.getCategoriesConfig());
+        this.notificationConfig = new SafeNotificationConfig(baseConfig.getNotificationConfig());
         this.showNews = baseConfig.getMain().isShowNews();
         this.keepHistory = baseConfig.getMain().isKeepHistory();
     }

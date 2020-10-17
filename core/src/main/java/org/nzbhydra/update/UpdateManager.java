@@ -24,6 +24,7 @@ import org.nzbhydra.mapping.SemanticVersion;
 import org.nzbhydra.mapping.changelog.ChangelogVersionEntry;
 import org.nzbhydra.mapping.github.Asset;
 import org.nzbhydra.mapping.github.Release;
+import org.nzbhydra.notifications.UpdateNotificationEvent;
 import org.nzbhydra.webaccess.WebAccess;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -339,6 +340,9 @@ public class UpdateManager implements InitializingBean {
 
         logger.info("Shutting down to let wrapper execute the update");
         applicationEventPublisher.publishEvent(new UpdateEvent(UpdateEvent.State.SHUTDOWN, "Shutting down to let wrapper execute update."));
+        if (isAutomaticUpdate) {
+            applicationEventPublisher.publishEvent(new UpdateNotificationEvent(latestRelease.getName()));
+        }
         exitWithReturnCode(UPDATE_RETURN_CODE);
     }
 

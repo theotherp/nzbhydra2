@@ -418,11 +418,13 @@ function ConfigFields($injector) {
                                     {label: 'HTTPS', id: 'HTTPS'},
                                     {label: 'HTTP Server', id: 'SERVER'},
                                     {label: 'Indexer scheduler', id: 'SCHEDULER'},
+                                    {label: 'Notifications', id: 'NOTIFICATIONS'},
                                     {label: 'Performance', id: 'PERFORMANCE'},
                                     {label: 'Rejected results', id: 'RESULT_ACCEPTOR'},
                                     {label: 'Removed trailing words', id: 'TRAILING'},
                                     {label: 'URL calculation', id: 'URL_CALCULATION'},
-                                    {label: 'User agent mapping', id: 'USER_AGENT'}
+                                    {label: 'User agent mapping', id: 'USER_AGENT'},
+                                    {label: 'VIP expiry', id: 'VIP_EXPIRY'}
                                 ],
                                 buttonText: "None"
                             }
@@ -1600,13 +1602,9 @@ function ConfigFields($injector) {
                             key: 'externalUrl',
                             type: 'horizontalInput',
                             hideExpression: function ($viewValue, $modelValue, scope) {
-                                console.log(scope.model);
-                                var noneSendLink = !_.any(scope.model.downloaders, function (downloader) {
-                                    console.log(downloader.nzbAddingType);
+                                return !_.any(scope.model.downloaders, function (downloader) {
                                     return downloader.nzbAddingType === "SEND_LINK";
                                 });
-                                console.log(noneSendLink);
-                                return noneSendLink;
                             },
                             templateOptions: {
                                 label: 'External URL',
@@ -1909,7 +1907,125 @@ function ConfigFields($injector) {
                         }
                     }
                 }
+            ],
+            notificationConfig: [
+                {
+                    wrapper: 'fieldset',
+                    templateOptions: {
+                        label: 'Main'
+                    },
+                    fieldGroup: [
+                        {
+                            type: 'help',
+                            templateOptions: {
+                                type: 'help',
+                                lines: [
+                                    "NZBHydra supports sending and displaying notifications for certain events. You can enable notifications for each event by adding entries below.",
+                                    'If you want to send notifications you need an instance of Apprise API running which is what NZBHydra uses to communicate with the actual notification providers.',
+                                    "NZBHydra will also show notifications on the GUI if enabled."
+                                ]
+                            }
+                        },
+                        {
+                            key: 'appriseApiUrl',
+                            type: 'horizontalInput',
+                            templateOptions: {
+                                type: 'string',
+                                label: 'Apprise API URL',
+                                help: 'URL of <a href="https://github.com/caronc/apprise-api">Apprise API</a> to send notifications to.'
+                            }
+                        },
+                        {
+                            key: 'displayNotifications',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Display notifications',
+                                help: 'If enabled notifications will be shown on the GUI.'
+                            }
+                        },
+                        {
+                            key: 'displayNotificationsMax',
+                            type: 'horizontalInput',
+                            templateOptions: {
+                                type: 'number',
+                                label: 'Show max notifications',
+                                help: 'Max number of notifications to show on the GUI. If more have piled up a notification will indicate this and link to the notification history.'
+                            },
+                            hideExpression: '!model.displayNotifications'
+                        }
+                    ]
+                },
+
+                {
+                    type: 'notificationSection',
+                    key: 'entries',
+                    model: rootModel.notificationConfig,
+                    templateOptions: {
+                        btnText: 'Add new notification',
+                        altLegendText: 'Notification',
+                        headline: 'Notifications',
+                        fields: [
+                            {
+                                key: 'appriseUrls',
+                                type: 'horizontalInput',
+                                templateOptions: {
+                                    type: 'text',
+                                    label: 'URLs',
+                                    help: 'One or more URLs identifying where the notification should be sent to, comma-separated.'
+                                }
+                            },
+                            {
+                                key: 'titleTemplate',
+                                type: 'horizontalInput',
+                                templateOptions: {
+                                    type: 'text',
+                                    label: 'Title template'
+                                },
+                                controller: notificationTemplateHelpController
+                            },
+                            {
+                                key: 'bodyTemplate',
+                                type: 'horizontalTextArea',
+                                templateOptions: {
+                                    type: 'text',
+                                    label: 'Body template',
+                                    required: true
+                                },
+                                controller: notificationTemplateHelpController
+                            },
+                            {
+                                key: 'messageType',
+                                type: 'horizontalSelect',
+                                templateOptions: {
+                                    label: 'Message type',
+                                    options: [
+                                        {name: 'Info', value: 'INFO'},
+                                        {name: 'Success', value: 'SUCCESS'},
+                                        {name: 'Warning', value: 'WARNING'},
+                                        {name: 'Failure', value: 'FAILURE'}
+                                    ],
+                                    help: "Select the message type to use."
+                                }
+                            }
+
+                        ],
+                        defaultModel: {
+                            eventType: null,
+                            appriseUrls: null,
+                            titleTemplate: null,
+                            bodyTemplate: null,
+                            messageType: 'WARNING'
+                        }
+                    }
+                }
             ]
+
+        }
+
+        function notificationTemplateHelpController($scope, NotificationService) {
+            $scope.model.eventTypeReadable = NotificationService.humanize($scope.model.eventType);
+            $scope.to.help = NotificationService.getTemplateHelp($scope.model.eventType);
         }
     }
 }

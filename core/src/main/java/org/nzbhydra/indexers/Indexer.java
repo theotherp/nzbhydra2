@@ -15,6 +15,8 @@ import org.nzbhydra.indexers.exceptions.IndexerUnreachableException;
 import org.nzbhydra.indexers.status.IndexerLimitRepository;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.mediainfo.InfoProvider;
+import org.nzbhydra.notifications.IndexerDisabledNotificationEvent;
+import org.nzbhydra.notifications.IndexerReenabledNotificationEvent;
 import org.nzbhydra.searching.CategoryProvider;
 import org.nzbhydra.searching.SearchResultAcceptor;
 import org.nzbhydra.searching.SearchResultAcceptor.AcceptorResult;
@@ -273,11 +275,13 @@ public abstract class Indexer<T> {
         //New state can only be enabled; if the user had disabled the indexer it wouldn't've been called
         if (getConfig().getDisabledLevel() > 0) {
             debug("Indexer was successfully called after {} failed attempts in a row", getConfig().getDisabledLevel());
+            eventPublisher.publishEvent(new IndexerReenabledNotificationEvent(getConfig().getName(), getConfig().getDisabledAt()));
         }
         getConfig().setState(IndexerConfig.State.ENABLED);
         getConfig().setLastError(null);
         getConfig().setDisabledUntil(null);
         getConfig().setDisabledLevel(0);
+        getConfig().setDisabledAt(null);
         configProvider.getBaseConfig().save(false);
         saveApiAccess(accessType, responseTime, IndexerAccessResult.SUCCESSFUL, true);
     }
@@ -287,7 +291,6 @@ public abstract class Indexer<T> {
             getLogger().warn("Because an unrecoverable error occurred {} will be permanently disabled until reenabled by the user", indexer.getName());
             getConfig().setState(IndexerConfig.State.DISABLED_SYSTEM);
         } else if (!configProvider.getBaseConfig().getSearching().isIgnoreTemporarilyDisabled()) {
-
             getConfig().setState(IndexerConfig.State.DISABLED_SYSTEM_TEMPORARY);
             getConfig().setDisabledLevel(getConfig().getDisabledLevel() + 1);
             long minutesToAdd = DISABLE_PERIODS.get(Math.min(DISABLE_PERIODS.size() - 1, getConfig().getDisabledLevel()));
@@ -296,7 +299,9 @@ public abstract class Indexer<T> {
             getLogger().warn("Because an error occurred {} will be temporarily disabled until {}. This is error number {} in a row", indexer.getName(), disabledUntil, getConfig().getDisabledLevel());
         }
         getConfig().setLastError(reason);
+        getConfig().setDisabledAt(Instant.now());
         configProvider.getBaseConfig().save(false);
+        eventPublisher.publishEvent(new IndexerDisabledNotificationEvent(indexer.getName(), getConfig().getState(), reason));
 
         saveApiAccess(accessType, responseTime, accessResult, false);
     }

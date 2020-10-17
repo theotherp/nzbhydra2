@@ -63,6 +63,7 @@ public class BaseConfig extends ValidatingConfig<BaseConfig> {
     private List<IndexerConfig> indexers = new ArrayList<>();
     private MainConfig main = new MainConfig();
     private SearchingConfig searching = new SearchingConfig();
+    private NotificationConfig notificationConfig = new NotificationConfig();
 
     @DiffIgnore
     private Map<String, String> genericStorage = new HashMap<>();
@@ -86,7 +87,6 @@ public class BaseConfig extends ValidatingConfig<BaseConfig> {
         replace(newConfig, true);
     }
 
-
     private void replace(BaseConfig newConfig, boolean fireConfigChangedEvent) {
         BaseConfig oldBaseConfig = configReaderWriter.getCopy(this);
 
@@ -97,6 +97,7 @@ public class BaseConfig extends ValidatingConfig<BaseConfig> {
         searching = newConfig.getSearching();
         auth = newConfig.getAuth();
         genericStorage = newConfig.genericStorage;
+        notificationConfig = newConfig.notificationConfig;
         if (fireConfigChangedEvent) {
             ConfigChangedEvent configChangedEvent = new ConfigChangedEvent(this, oldBaseConfig, this);
             applicationEventPublisher.publishEvent(configChangedEvent);

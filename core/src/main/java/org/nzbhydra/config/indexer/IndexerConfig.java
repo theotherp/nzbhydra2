@@ -19,6 +19,8 @@ package org.nzbhydra.config.indexer;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import lombok.Data;
@@ -28,6 +30,8 @@ import org.nzbhydra.config.ValidatingConfig;
 import org.nzbhydra.config.sensitive.SensitiveData;
 import org.nzbhydra.indexers.Indexer.BackendType;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
+import org.nzbhydra.mapping.newznab.json.JsonPubdateDeserializer;
+import org.nzbhydra.mapping.newznab.json.JsonPubdateSerializer;
 import org.nzbhydra.mediainfo.MediaIdType;
 import org.nzbhydra.searching.IndexerForSearchSelector;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -46,7 +50,21 @@ public class IndexerConfig extends ValidatingConfig<IndexerConfig> {
         ENABLED,
         DISABLED_SYSTEM_TEMPORARY,
         DISABLED_SYSTEM,
-        DISABLED_USER
+        DISABLED_USER;
+
+        public String humanize() {
+            switch (this) {
+                case ENABLED:
+                    return "Enabled";
+                case DISABLED_SYSTEM_TEMPORARY:
+                    return "Disabled temporarily";
+                case DISABLED_SYSTEM:
+                    return "Disabled permanently";
+                case DISABLED_USER:
+                    return "Disabled by user";
+            }
+            return "Unknown";
+        }
     }
 
     private boolean allCapsChecked;
@@ -71,6 +89,9 @@ public class IndexerConfig extends ValidatingConfig<IndexerConfig> {
     private String lastError;
     private Long disabledUntil = null;
     private int disabledLevel;
+    @JsonDeserialize(using = JsonPubdateDeserializer.class)
+    @JsonSerialize(using = JsonPubdateSerializer.class)
+    private Instant disabledAt;
     private Integer loadLimitOnRandom = null;
     private Integer minSeeders;
     private String name;
@@ -125,7 +146,6 @@ public class IndexerConfig extends ValidatingConfig<IndexerConfig> {
     public Optional<String> getUserAgent() {
         return Optional.ofNullable(Strings.emptyToNull(userAgent));
     }
-
 
     @JsonIgnore
     public boolean isEligibleForInternalSearch() {

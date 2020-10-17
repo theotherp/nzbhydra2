@@ -21,7 +21,6 @@ import java.util.Optional;
 import java.util.Random;
 
 @ConfigurationProperties("main")
-//@Component
 @Data
 public class MainConfig extends ValidatingConfig<MainConfig> {
 

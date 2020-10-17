@@ -5,8 +5,9 @@
   <tr>
     <th class="col-md-2" style="width:10%">Indexer</th>
     <th class="col-md-1" style="width:3%">State</th>
+    <th class="col-md-2" style="width:10%">Disabled at</th>
     <th class="col-md-2" style="width:10%">Disabled until</th>
-    <th class="col-md-7" style="width:45%">Last error <span class="glyphicon glyphicon-question-sign" tooltip-placement="auto top"
+    <th class="col-md-7" style="width:35%">Last error <span class="glyphicon glyphicon-question-sign" tooltip-placement="auto top"
                                                             uib-tooltip="Only shown when the indexer is currently disabled."></span></th>
     <th class="col-md-2" style="width:6%">API hits <span class="glyphicon glyphicon-question-sign" tooltip-placement="auto top"
                                                          uib-tooltip="Shows the number of API hits either since the last limit reset time or for the last 24 hours, and the limit if configured."></span></th>
@@ -29,6 +30,9 @@
             <i ng-if="indexerStatus.state === 'DISABLED_SYSTEM_TEMPORARY'" class="fa fa-times" uib-tooltip="Temporarily disabled by system" tooltip-placement="top" tooltip-trigger="mouseenter"></i>
             <i ng-if="indexerStatus.state === 'DISABLED_USER'" class="fa fa-times" uib-tooltip="Disabled by user" tooltip-placement="top" tooltip-trigger="mouseenter"></i>
             </span>
+    </td>
+    <td>
+      <span>{{ indexerStatus.disabledAt | reformatDate}}</span>
     </td>
     <td>
       <span ng-if="indexerStatus.state === 'DISABLED_SYSTEM_TEMPORARY'">{{ indexerStatus.disabledUntil | reformatDate}}</span>

@@ -1,7 +1,11 @@
 [
   {
-    "version": "v2.29.2",
+    "version": "v3.0.0",
     "changes": [
+      {
+        "type": "feature",
+        "text": "NZBHydra now allows to send and show notifications for certain events. You can request events on the <a href=\"https://github.com/theotherp/nzbhydra2/issues/631\" target=\"blank\">Github Issue</a>."
+      },
       {
         "type": "fix",
         "text": "Reduced the percentage of correct results an indexer must return for an ID based search for that ID to be determined to be usable for searches. This will hopefully make the caps check recognize more supported IDs without any false positives."
@@ -15,7 +19,7 @@
         "text": "Query generation was not properly used for indexers which support a certain search type but no IDs."
       }
     ],
-    "final": true
+    "final": false
   },
   {
     "version": "v2.29.1",

@@ -324,6 +324,11 @@ main:
   verifySslDisabledFor: []
   welcomeShown: false
   xmx: 256
+notificationConfig:
+  appriseApiUrl: null
+  entries: [ ]
+  displayNotifications: true
+  displayNotificationsMax: 5
 searching:
   alwaysConvertIds: "NONE"
   alwaysShowQuickFilterButtons: false

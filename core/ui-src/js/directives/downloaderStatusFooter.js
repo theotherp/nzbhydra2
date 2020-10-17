@@ -24,7 +24,7 @@ function downloaderStatusFooter() {
         controller: controller
     };
 
-    function controller($scope, $interval, $http, RequestsErrorHandler, HydraAuthService) {
+    function controller($scope, $http, RequestsErrorHandler, HydraAuthService) {
 
         $scope.$emit("showDownloaderStatus", true);
         var downloadRateCounter = 0;

@@ -24,7 +24,7 @@ function footer() {
         controller: controller
     };
 
-    function controller($scope, $interval, $http, ConfigService, bootstrapped) {
+    function controller($scope, $http, ConfigService, bootstrapped) {
 
         $scope.updateFooterBottom = 0;
 

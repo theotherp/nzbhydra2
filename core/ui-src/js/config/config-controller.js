@@ -223,6 +223,14 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
             model: ConfigModel.indexers,
             fields: $scope.fields.indexers,
             options: {}
+        },
+        {
+            active: false,
+            state: 'root.config.notifications',
+            name: 'Notifications',
+            model: ConfigModel.notificationConfig,
+            fields: $scope.fields.notificationConfig,
+            options: {}
         }
     ];
 
@@ -295,7 +303,6 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
         });
 
     $scope.$watch("$scope.form.$valid", function () {
-        console.log($scope.form.$valid);
     });
 
     $scope.$on('$formValidity', function (event, isValid) {

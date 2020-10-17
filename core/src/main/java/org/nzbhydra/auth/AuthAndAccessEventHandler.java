@@ -1,9 +1,11 @@
 package org.nzbhydra.auth;
 
+import org.nzbhydra.notifications.AuthFailureNotificationEvent;
 import org.nzbhydra.web.SessionStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
@@ -27,6 +29,8 @@ public class AuthAndAccessEventHandler extends AccessDeniedHandlerImpl {
 
     @Autowired
     private LoginAndAccessAttemptService attemptService;
+    @Autowired
+    private ApplicationEventPublisher applicationEventPublisher;
 
     @EventListener
     public void onApplicationEvent(AuthenticationFailureBadCredentialsEvent event) {
@@ -38,6 +42,7 @@ public class AuthAndAccessEventHandler extends AccessDeniedHandlerImpl {
         }
         logger.warn("Failed login with username {} from IP {}", userName, SessionStorage.IP.get());
         attemptService.accessFailed(SessionStorage.IP.get());
+        applicationEventPublisher.publishEvent(new AuthFailureNotificationEvent(ip, userName.toString()));
     }
 
     @EventListener

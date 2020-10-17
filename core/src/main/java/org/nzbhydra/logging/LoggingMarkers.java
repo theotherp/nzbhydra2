@@ -20,6 +20,7 @@ public class LoggingMarkers {
     public static final Marker SERVER = MarkerFactory.getMarker("SERVER");
     public static final Marker LIMITS = MarkerFactory.getMarker("LIMITS");
     public static final Marker EXTERNAL_TOOLS = MarkerFactory.getMarker("EXTERNAL_TOOLS");
-
+    public static final Marker NOTIFICATIONS = MarkerFactory.getMarker("NOTIFICATIONS");
+    public static final Marker VIP_EXPIRY = MarkerFactory.getMarker("VIP_EXPIRY");
 
 }

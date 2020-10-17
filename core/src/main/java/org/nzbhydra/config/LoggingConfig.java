@@ -28,6 +28,10 @@ public class LoggingConfig extends ValidatingConfig<LoggingConfig> {
 
         result.setRestartNeeded(isRestartNeeded(newBaseConfig.getMain().getLogging()));
 
+        if (newBaseConfig.getMain().getLogging().getMarkersToLog().size() > 3) {
+            result.getWarningMessages().add("You have more than 3 logging markers enabled. This is very rarely useful. Please make sure that this is actually needed. When creating debug infos please only enable those markers requested by the developer.");
+        }
+
         return result;
     }
 

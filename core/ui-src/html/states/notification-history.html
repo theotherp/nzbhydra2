@@ -1,0 +1,54 @@
+<div id="content">
+  <div class="row" style="margin-top: 30px; margin-bottom: 20px">
+    <div class="col-md-5"></div>
+    <div class="col-md-10" style="text-align: center">
+      <dir-pagination-controls on-page-change="update()" pagination-id="searches"></dir-pagination-controls>
+    </div>
+    <div class="col-md-5" style="text-align: right">
+      <button class="btn btn-default" ng-click="update()"><span class="glyphicon glyphicon-refresh"></span></button>
+    </div>
+  </div>
+  <table class="table">
+    <thead>
+    <tr>
+      <th class="col-md-2" style="width: {{columnSizes.time}}%;">
+        <column-sortable column="time" style="width: 10%" reversed="false" start-mode="2">Time
+        </column-sortable>
+        <column-filter-wrapper>
+          <time-filter column="time" selected="preselectedTimeInterval"/>
+        </column-filter-wrapper>
+      </th>
+      <th class="col-md-8" style="width: {{columnSizes.type}}%">
+        <column-sortable column="NOTIFICATION_EVENT_TYPE" reversed="false" start-mode="1">Type
+        </column-sortable>
+        <column-filter-wrapper>
+          <checkboxes-filter column="NOTIFICATION_EVENT_TYPE" entries="eventTypesForFiltering" preselect="true" show-invert="true"/>
+        </column-filter-wrapper>
+      </th>
+      
+      <th style="width: {{columnSizes.title}}%">
+        Title
+      </th>
+      <th style="width: {{columnSizes.body}}%">
+        Body
+      </th>
+      <th style="width: {{columnSizes.urls}}%">
+        URLs
+      </th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr dir-paginate="notification in notifications | itemsPerPage: limit" total-items="totalNotifications"
+        current-page="pagination.current" pagination-id="notifications">
+      <td class="narrow-row">{{ notification.time | reformatDate }}</td>
+      <td class="narrow-row" ng-bind-html="formatEventType(notification)"></td>
+      <td class="narrow-row">{{ ::notification.title }}</td>
+      <td class="narrow-row" ng-bind-html="formatEventBody(notification)"></td>
+      <td class="narrow-row">{{ ::notification.urls }}</td>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+  <dir-pagination-controls on-page-change="pageChanged(newPageNumber)" pagination-id="searches"></dir-pagination-controls>
+
+</div>

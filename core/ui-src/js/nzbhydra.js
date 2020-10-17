@@ -204,6 +204,32 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
                 }
             }
         })
+        .state("root.config.notifications", {
+            url: "/notifications",
+            views: {
+                'container@': {
+                    templateUrl: "static/html/states/config.html",
+                    controller: "ConfigController",
+                    resolve: {
+                        loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {
+                            return loginRequired($q, $timeout, $state, HydraAuthService, "admin")
+                        }],
+                        config: ['loginRequired', 'ConfigService', function (loginRequired, ConfigService) {
+                            return ConfigService.get();
+                        }],
+                        safeConfig: ['loginRequired', 'ConfigService', function (loginRequired, ConfigService) {
+                            return ConfigService.getSafe();
+                        }],
+                        activeTab: [function () {
+                            return 6;
+                        }],
+                        $title: function ($stateParams) {
+                            return "Config (Notifications)"
+                        }
+                    }
+                }
+            }
+        })
         .state("root.stats", {
             url: "/stats",
             abstract: true,
@@ -300,6 +326,26 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
                         },
                         $title: function ($stateParams) {
                             return "Stats (Downloads)"
+                        }
+                    }
+                }
+            }
+        })
+        .state("root.stats.notifications", {
+            url: "/notifications",
+            views: {
+                'stats@root.stats': {
+                    templateUrl: 'static/html/states/notification-history.html',
+                    controller: NotificationHistoryController,
+                    resolve: {
+                        loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {
+                            return loginRequired($q, $timeout, $state, HydraAuthService, "stats")
+                        }],
+                        preloadData: function (StatsService) {
+                            return StatsService.getNotificationHistory();
+                        },
+                        $title: function ($stateParams) {
+                            return "Stats (Notifications)"
                         }
                     }
                 }

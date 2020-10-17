@@ -6,7 +6,8 @@ function StatsService($http) {
 
     return {
         get: getStats,
-        getDownloadHistory: getDownloadHistory
+        getDownloadHistory: getDownloadHistory,
+        getNotificationHistory: getNotificationHistory
     };
 
     function getStats(after, before, includeDisabled, switchState) {
@@ -17,7 +18,7 @@ function StatsService($http) {
         });
     }
 
-    function getDownloadHistory(pageNumber, limit, filterModel, sortModel) {
+    function buildParams(pageNumber, limit, filterModel, sortModel) {
         var params = {page: pageNumber, limit: limit, filterModel: filterModel};
         if (angular.isUndefined(pageNumber)) {
             params.page = 1;
@@ -36,10 +37,26 @@ function StatsService($http) {
                 sortMode: 2
             };
         }
+        return params;
+    }
+
+    function getDownloadHistory(pageNumber, limit, filterModel, sortModel) {
+        var params = buildParams(pageNumber, limit, filterModel, sortModel);
         return $http.post("internalapi/history/downloads", params).then(function (response) {
             return {
                 nzbDownloads: response.data.content,
                 totalDownloads: response.data.totalElements
+            };
+
+        });
+    }
+
+    function getNotificationHistory(pageNumber, limit, filterModel, sortModel) {
+        var params = buildParams(pageNumber, limit, filterModel, sortModel);
+        return $http.post("internalapi/history/notifications", params).then(function (response) {
+            return {
+                notifications: response.data.content,
+                totalNotifications: response.data.totalElements
             };
 
         });

@@ -3,12 +3,17 @@ package org.nzbhydra.historystats;
 import org.nzbhydra.downloading.FileDownloadEntity;
 import org.nzbhydra.historystats.History.SearchDetails;
 import org.nzbhydra.historystats.stats.HistoryRequest;
+import org.nzbhydra.notifications.NotificationEntity;
 import org.nzbhydra.searching.db.SearchEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -42,6 +47,12 @@ public class HistoryWeb {
     @RequestMapping(value = "/internalapi/history/downloads", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public Page<FileDownloadEntity> downloadHistory(@RequestBody HistoryRequest requestData) {
         return history.getHistory(requestData, History.DOWNLOAD_TABLE, FileDownloadEntity.class);
+    }
+
+    @Secured({"ROLE_STATS"})
+    @RequestMapping(value = "/internalapi/history/notifications", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public Page<NotificationEntity> notificationHistory(@RequestBody HistoryRequest requestData) {
+        return history.getHistory(requestData, History.NOTIFICATION_TABLE, NotificationEntity.class);
     }
 
 }

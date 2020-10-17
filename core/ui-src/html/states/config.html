@@ -152,7 +152,7 @@
     </span>
     <span class="col-md-6 config-help help-block">
             <span ng-bind-html="to.help | derefererExtracting | unsafe" class="align-middle">
-                {{ to.help | derefererExtracting  }}
+                Help
             </span>
         </span>
   </div>
@@ -171,4 +171,41 @@
     </legend>
     <formly-transclude></formly-transclude>
   </fieldset>
+</script>
+
+<script type="text/ng-template" id="notificationRepeatSection.html">
+  <!--loop through each element in model array-->
+  <div class="{{ hideRepeat }} repeatWrapperClass">
+    <legend><span class="config-fieldset-legend">{{to.headline}}</span></legend>
+    <div class="repeatsection modal-content" ng-repeat="element in model[options.key]"
+         ng-init="fields = copyFields(to.fields)">
+      <fieldset>
+        <legend>
+          <span class="config-fieldset-legend">
+            {{ element.eventTypeReadable}}
+          </span>
+        </legend>
+        <formly-form fields="fields"
+                     model="element"
+                     form="form">
+        </formly-form>
+        <div style="margin-bottom:20px;">
+          <button type="button" class="btn btn-danger remove-button" ng-click="remove($index)">
+            Remove {{ element.name }}
+          </button>
+        </div>
+      
+      </fieldset>
+    </div>
+    <hr>
+    
+    <div class="btn-group" uib-dropdown is-open="status.isopen">
+      <button id="single-button" type="button" class="btn btn-primary" uib-dropdown-toggle ng-disabled="disabled">
+        Add new notification <span class="caret"></span>
+      </button>
+      <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button">
+        <li role="menuitem" ng-repeat="event in eventTypes"><a ng-click="addNew(event.key)">{{::event.label}}</a></li>
+      </ul>
+    </div>
+  </div>
 </script>

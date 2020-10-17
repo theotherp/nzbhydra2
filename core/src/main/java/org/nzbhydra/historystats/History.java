@@ -37,6 +37,7 @@ public class History {
 
     public static final String DOWNLOAD_TABLE = "INDEXERNZBDOWNLOAD left join SEARCHRESULT on INDEXERNZBDOWNLOAD.SEARCH_RESULT_ID = SEARCHRESULT.ID LEFT JOIN INDEXER ON SEARCHRESULT.INDEXER_ID = INDEXER.ID";
     public static final String SEARCH_TABLE = "SEARCH";
+    public static final String NOTIFICATION_TABLE = "NOTIFICATION";
 
     @PersistenceContext
     private EntityManager entityManager;

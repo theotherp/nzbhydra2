@@ -1,5 +1,9 @@
 [
   {
+    "showForVersion": "3.0.0",
+    "newsAsMarkdown": "NZBHydra now allows sending and displaying notifications. Go to the config to explore this.."
+  },
+  {
     "showForVersion": "2.21.0",
     "newsAsMarkdown": "I've added a feature that allows NZBHydra to fall back to similar results when an NZB download fails. It only works if you've set the 'NZB access type' in the downloading config to proxy results. That way NZBHydra can recognize the failed download and automatically try a different one. This should prevent Sonarr & co from disabling NZBHydra due to failed downloads."
   },

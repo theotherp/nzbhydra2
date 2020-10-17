@@ -16,16 +16,15 @@
 
 angular
     .module('nzbhydraApp')
-    .directive('hydraUpdatesFooter', hydraUpdatesFooter);
+    .directive('hydraChecksFooter', hydraChecksFooter);
 
-function hydraUpdatesFooter() {
+function hydraChecksFooter() {
     return {
-        templateUrl: 'static/html/directives/updates-footer.html',
+        templateUrl: 'static/html/directives/checks-footer.html',
         controller: controller
     };
 
-    function controller($scope, UpdateService, RequestsErrorHandler, HydraAuthService, $http, $uibModal, ConfigService, GenericStorageService, ModalService, growl) {
-
+    function controller($scope, UpdateService, RequestsErrorHandler, HydraAuthService, $http, $uibModal, ConfigService, GenericStorageService, ModalService, growl, NotificationService) {
         $scope.updateAvailable = false;
         $scope.checked = false;
         var welcomeIsBeingShown = false;
@@ -203,6 +202,53 @@ function hydraUpdatesFooter() {
         }
 
         checkAndShowWelcome();
+
+        function showNotifications() {
+            RequestsErrorHandler.specificallyHandled(function () {
+                try {
+                    $http.get('internalapi/notifications').then(function (response) {
+                        var unreadNotifications = response.data;
+                        if (unreadNotifications.length > ConfigService.getSafe().notificationConfig.displayNotificationsMax) {
+                            growl.info(unreadNotifications.length + ' have piled up. <a href=stats/notifications>Go to the notification history to view them.</a>', {disableCountDown: true});
+                            for (var i = 0; i < unreadNotifications.length; i++) {
+                                $http.put('internalapi/notifications/' + unreadNotifications[i].id);
+                            }
+                            return;
+                        }
+                        for (var j = 0; j < unreadNotifications.length; j++) {
+                            var notification = unreadNotifications[j];
+                            var body = notification.body.replace("\n", "<br>");
+                            switch (notification.messageType) {
+                                case "INFO":
+                                    growl.info(body);
+                                    break;
+                                case "SUCCESS":
+                                    growl.success(body);
+                                    break;
+                                case "WARNING":
+                                    growl.warning(body);
+                                    break;
+                                case "FAILURE":
+                                    growl.danger(body);
+                                    break;
+                            }
+                            $http.put('internalapi/notifications/' + notification.id);
+                        }
+                    });
+
+                } catch (e) {
+                    clearInterval(notificationsTimer);
+                }
+            });
+        }
+
+        if (ConfigService.getSafe().notificationConfig.displayNotifications) {
+            var notificationsTimer = setInterval(function () {
+                showNotifications();
+            }, 5000);
+            showNotifications();
+        }
+
     }
 }
 
