@@ -67,14 +67,15 @@ public class QueryGenerator {
 
         final IndexerConfig config = indexer.getConfig();
         boolean indexerDoesntSupportRequiredSearchType = config.getSupportedSearchTypes().stream().noneMatch(x -> searchRequest.getSearchType().matches(x));
-        boolean indexerDoesntSupportAnyOfTheProvidedIds = searchRequest.getIdentifiers().isEmpty() && searchRequest.getIdentifiers().keySet().stream().noneMatch(x -> config.getSupportedSearchIds().contains(x));
+        boolean anyIdsAvailable = !searchRequest.getIdentifiers().isEmpty();
+        boolean indexerDoesntSupportAnyOfTheProvidedIds = anyIdsAvailable && searchRequest.getIdentifiers().keySet().stream().noneMatch(x -> config.getSupportedSearchIds().contains(x));
         boolean queryGenerationPossible = !searchRequest.getIdentifiers().isEmpty() || searchRequest.getTitle().isPresent();
         boolean queryGenerationEnabled = configProvider.getBaseConfig().getSearching().getGenerateQueries().meets(searchRequest);
         final InternalData.FallbackState fallbackState = searchRequest.getInternalData().getFallbackStateByIndexer(config.getName());
         boolean fallbackRequested = fallbackState == InternalData.FallbackState.REQUESTED;
 
         if (!(fallbackRequested || (queryGenerationPossible && queryGenerationEnabled && (indexerDoesntSupportAnyOfTheProvidedIds || indexerDoesntSupportRequiredSearchType)))) {
-            logger.debug("No query generation needed. indexerDoesntSupportRequiredSearchType: {}. indexerDoesntSupportAnyOfTheProvidedIds: {}. queryGenerationPossible: {}. queryGenerationEnabled: {}. fallbackRequested: {}", indexerDoesntSupportRequiredSearchType, indexerDoesntSupportAnyOfTheProvidedIds, queryGenerationPossible, queryGenerationEnabled, fallbackRequested);
+            logger.debug("No query generation needed for {}. indexerDoesntSupportRequiredSearchType: {}. indexerDoesntSupportAnyOfTheProvidedIds: {}. queryGenerationPossible: {}. queryGenerationEnabled: {}. fallbackRequested: {}", indexer.getName(), indexerDoesntSupportRequiredSearchType, indexerDoesntSupportAnyOfTheProvidedIds, queryGenerationPossible, queryGenerationEnabled, fallbackRequested);
             return query;
         }
         if (generatedQueries.containsKey(searchRequest)) {

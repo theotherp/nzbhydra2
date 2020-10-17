@@ -406,7 +406,7 @@ function ConfigFields($injector) {
                             hideExpression: 'model.consolelevel !== "DEBUG" && model.logfilelevel !== "DEBUG"',
                             templateOptions: {
                                 label: 'Log markers',
-                                help: 'Select certain sections for more output on debug level.',
+                                help: 'Select certain sections for more output on debug level. Please enable only when asked for.',
                                 options: [
                                     {label: 'API limits', id: 'LIMITS'},
                                     {label: 'Config file handling', id: 'CONFIG_READ_WRITE'},
@@ -747,7 +747,7 @@ function ConfigFields($injector) {
                             key: 'alwaysConvertIds',
                             type: 'horizontalSelect',
                             templateOptions: {
-                                label: 'Always convert media IDs for...',
+                                label: 'Convert media IDs for...',
                                 options: [
                                     {name: 'Internal searches', value: 'INTERNAL'},
                                     {name: 'API searches', value: 'API'},
@@ -1913,7 +1913,6 @@ function ConfigFields($injector) {
         }
     }
 }
-
 
 function handleConnectionCheckFail(ModalService, data, model, whatFailed, deferred) {
     var message;

@@ -9,6 +9,10 @@
       {
         "type": "fix",
         "text": "Shorten torrent file names exceeding the maximum path length."
+      },
+      {
+        "type": "fix",
+        "text": "Query generation was not properly used for indexers which support a certain search type but no IDs."
       }
     ],
     "final": true

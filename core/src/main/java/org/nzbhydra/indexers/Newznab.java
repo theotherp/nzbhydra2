@@ -318,7 +318,8 @@ public class Newznab extends Indexer<Xml> {
                         error("Error while converting search ID", e);
                     }
                 } else {
-                    debug("Unable to convert any of the provided IDs to any of these supported IDs: {}", Joiner.on(", ").join(config.getSupportedSearchIds()));
+                    final String supportedSearchIds = config.getSupportedSearchIds().isEmpty() ? "[]" : Joiner.on(", ").join(config.getSupportedSearchIds());
+                    debug("Unable to convert any of the provided IDs to any of these supported IDs: {}", supportedSearchIds);
                 }
                 if (params.isEmpty()) {
                     warn("Didn't find any usable IDs to add to search request");
