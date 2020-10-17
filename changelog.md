@@ -1,3 +1,17 @@
+### v3.0.0 BETA (2020-10-17)
+
+**Feature** NZBHydra now allows to send and show notifications for certain events. You can request events on the <a href="https://github.com/theotherp/nzbhydra2/issues/631" target="blank">Github Issue</a>.
+
+**Fix** Reduced the percentage of correct results an indexer must return for an ID based search for that ID to be determined to be usable for searches. This will hopefully make the caps check recognize more supported IDs without any false positives.
+
+**Fix** Shorten torrent file names exceeding the maximum path length.
+
+**Fix** Query generation was not properly used for indexers which support a certain search type but no IDs.
+
+**Fix** Show a warning when more than 3 logging markers are enabled. Please only enabled them when requested by me. They reduce the performance and produce lots of irritating log output which hurts more than it helps unless I actually need it.
+
+
+
 ### v2.29.1 (2020-09-12)
 
 **Fix** Use better name for indexer entries added to *arr.
