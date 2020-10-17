@@ -17,6 +17,10 @@
       {
         "type": "fix",
         "text": "Query generation was not properly used for indexers which support a certain search type but no IDs."
+      },
+      {
+        "type": "fix",
+        "text": "Show a warning when more than 3 logging markers are enabled. Please only enabled them when requested by me. They reduce the performance and produce lots of irritating log output which hurts more than it helps unless I actually need it."
       }
     ],
     "final": false
