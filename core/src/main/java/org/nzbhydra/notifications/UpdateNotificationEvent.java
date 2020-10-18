@@ -18,12 +18,14 @@ package org.nzbhydra.notifications;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class UpdateNotificationEvent implements NotificationEvent {
 
     private static final String VERSION = "version";
@@ -39,6 +41,11 @@ public class UpdateNotificationEvent implements NotificationEvent {
         Map<String, String> variablesWithContent = new HashMap<>();
         variablesWithContent.put(VERSION, version);
         return variablesWithContent;
+    }
+
+    @Override
+    public NotificationEvent getTestInstance() {
+        return new UpdateNotificationEvent("v1.2.3");
     }
 
 

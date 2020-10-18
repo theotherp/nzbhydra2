@@ -54,6 +54,15 @@ public class LogAnonymizerTest {
     }
 
     @Test
+    public void shouldAnonymizeHost() {
+        String toAnonymize = "2020-10-18 13:48:44.989 DEBUG --- [http-nio-<IP4:da6fb0d8>-5] o.n.notifications.NotificationHandler    : [ID: 08975, Host: 101-202-303-404.a.b.c.net] Some text";
+
+        String anonymized = testee.getAnonymizedLog(toAnonymize);
+
+        Assertions.assertThat(anonymized).isEqualTo("2020-10-18 13:48:44.989 DEBUG --- [http-nio-<IP4:da6fb0d8>-5] o.n.notifications.NotificationHandler    : [ID: 08975, Host: <hidden>] Some text");
+    }
+
+    @Test
     public void shouldAnonymizeUsernameFromUrl() throws Exception {
 
         String anonymized = testee.getAnonymizedLog("http://arthur:miller@www.domain.com");

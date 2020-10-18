@@ -20,6 +20,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.genericstorage.GenericStorage;
@@ -36,6 +37,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
@@ -73,10 +75,12 @@ public class VipExpiryDetector implements ProblemDetector {
         final VipExpiryData vipExpiryData = genericStorage.get(KEY, VipExpiryData.class).orElse(new VipExpiryData());
 
         for (IndexerConfig indexerConfig : indexersSoonExpiring) {
-            final boolean alreadyFound = vipExpiryData.entries.stream()
-                    .filter(x -> x.getIndexerName().equals(indexerConfig.getName()))
-                    .anyMatch(x -> x.getExpiryDate().equals(indexerConfig.getVipExpirationDate()));
-            if (alreadyFound) {
+            VipExpiryDataEntry toCheck = new VipExpiryDataEntry(indexerConfig.getName(), indexerConfig.getVipExpirationDate());
+            final Optional<VipExpiryDataEntry> alreadyReported = vipExpiryData.entries.stream()
+                    .filter(x -> x.equals(toCheck))
+                    .findFirst();
+            if (alreadyReported.isPresent()) {
+                logger.debug(LoggingMarkers.VIP_EXPIRY, "Already notified of {}", alreadyReported.get());
                 continue;
             }
             logger.warn("VIP access for {} will expire at {}", indexerConfig.getName(), indexerConfig.getVipExpirationDate());
@@ -98,6 +102,7 @@ public class VipExpiryDetector implements ProblemDetector {
     @AllArgsConstructor
     @NoArgsConstructor
     @EqualsAndHashCode
+    @ToString
     private static class VipExpiryDataEntry implements Serializable {
 
         private String indexerName;

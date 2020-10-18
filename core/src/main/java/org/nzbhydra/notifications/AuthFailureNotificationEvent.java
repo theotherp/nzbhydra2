@@ -18,12 +18,14 @@ package org.nzbhydra.notifications;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class AuthFailureNotificationEvent implements NotificationEvent {
 
     private static final String IP = "ip";
@@ -42,6 +44,11 @@ public class AuthFailureNotificationEvent implements NotificationEvent {
         variablesWithContent.put(IP, ip);
         variablesWithContent.put(USERNAME, username);
         return variablesWithContent;
+    }
+
+    @Override
+    public NotificationEvent getTestInstance() {
+        return new AuthFailureNotificationEvent("Some IP", "Some username");
     }
 
 

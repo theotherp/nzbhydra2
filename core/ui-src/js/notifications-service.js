@@ -2,26 +2,29 @@ angular
     .module('nzbhydraApp')
     .service('NotificationService', NotificationService);
 
-function NotificationService() {
+function NotificationService($http) {
 
     var eventTypesData = {
         AUTH_FAILURE: {
             readable: "Auth failure",
             titleTemplate: "Auth failure",
             bodyTemplate: "NZBHydra: A login for username $username$ failed. IP: $ip$.",
-            templateHelp: "Available variables: $username$, $ip$."
+            templateHelp: "Available variables: $username$, $ip$.",
+            messageType: "FAILURE"
         },
         INDEXER_DISABLED: {
             readable: "Indexer disabled",
             titleTemplate: "Indexer disabled",
             bodyTemplate: "NZBHydra: Indexer $indexerName$ was disabled (state: $state$). Message:\n$message$.",
-            templateHelp: "Available variables: $indexerName$, $state$, $message$."
+            templateHelp: "Available variables: $indexerName$, $state$, $message$.",
+            messageType: "WARNING"
         },
         INDEXER_REENABLED: {
             readable: "Indexer reenabled after error",
             titleTemplate: "Indexer reenabled after error",
             bodyTemplate: "NZBHydra: Indexer $indexerName$ was reenabled after a previous error. It had been disabled since $disabledAt$.",
-            templateHelp: "Available variables: $indexerName$, $disabledAt$."
+            templateHelp: "Available variables: $indexerName$, $disabledAt$.",
+            messageType: "SUCCESS"
         },
         // ALL_API_EXHAUSTED: {
         //     readable: "All API hits exhausted",
@@ -39,13 +42,15 @@ function NotificationService() {
             readable: "Automatic update installed",
             titleTemplate: "Update installed",
             bodyTemplate: "NZBHydra: A new version of was installed: $version$",
-            templateHelp: "Available variables: $version$."
+            templateHelp: "Available variables: $version$.",
+            messageType: "SUCCESS"
         },
         VIP_RENEWAL_REQUIRED: {
             readable: "VIP renewal required (14 day warning)",
             titleTemplate: "VIP renewal required",
             bodyTemplate: "NZBHydra: VIP access for indexer $indexerName$ will run out soon: $expirationDate$.",
-            templateHelp: "Available variables: $indexerName$, $expirationDate$."
+            templateHelp: "Available variables: $indexerName$, $expirationDate$.",
+            messageType: "WARNING"
         }
     }
 
@@ -72,6 +77,10 @@ function NotificationService() {
     this.getBodyTemplate = function (eventType) {
         return eventTypesData[eventType].bodyTemplate;
     };
+
+    this.testNotification = function (eventType) {
+        return $http.get('internalapi/notifications/test/' + eventType);
+    }
 
 
 }

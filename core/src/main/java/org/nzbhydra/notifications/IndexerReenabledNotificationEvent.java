@@ -18,6 +18,7 @@ package org.nzbhydra.notifications;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 import java.util.HashMap;
@@ -25,6 +26,7 @@ import java.util.Map;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class IndexerReenabledNotificationEvent implements NotificationEvent {
 
     private static final String INDEXER_NAME = "indexerName";
@@ -43,6 +45,11 @@ public class IndexerReenabledNotificationEvent implements NotificationEvent {
         variablesWithContent.put(INDEXER_NAME, indexerName);
         variablesWithContent.put(DISABLED_AT, disabledAt == null ? "Unknown" : disabledAt.toString());
         return variablesWithContent;
+    }
+
+    @Override
+    public NotificationEvent getTestInstance() {
+        return new IndexerReenabledNotificationEvent("Some indexer", Instant.now());
     }
 
 

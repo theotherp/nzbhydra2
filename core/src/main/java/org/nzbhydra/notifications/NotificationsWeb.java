@@ -16,9 +16,11 @@
 
 package org.nzbhydra.notifications;
 
+import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @SuppressWarnings("unchecked")
 @RestController
@@ -36,6 +39,8 @@ public class NotificationsWeb {
 
     @Autowired
     private NotificationRepository notificationRepository;
+    @Autowired
+    private ApplicationEventPublisher applicationEventPublisher;
 
     private static final Logger logger = LoggerFactory.getLogger(NotificationsWeb.class);
 
@@ -48,7 +53,7 @@ public class NotificationsWeb {
     }
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/notifications/{id}", method = RequestMethod.PUT)
+    @RequestMapping(value = "/internalapi/notifications/markRead/{id}", method = RequestMethod.PUT)
     @Transactional
     public void sendIndexerDisabledNotification(@PathVariable("id") int id) {
         final Optional<NotificationEntity> byId = notificationRepository.findById(id);
@@ -58,6 +63,31 @@ public class NotificationsWeb {
         }
         byId.get().setDisplayed(true);
         notificationRepository.save(byId.get());
+    }
+
+    @Secured({"ROLE_ADMIN"})
+    @RequestMapping(value = "/internalapi/notifications/test/{eventType}", method = RequestMethod.GET)
+    public void testNotification(@PathVariable("eventType") String eventType) {
+        final NotificationEventType notificationEventType = NotificationEventType.valueOf(eventType);
+
+        Reflections reflections = new Reflections("org.nzbhydra.notifications");
+        Set<Class<? extends NotificationEvent>> notificationEventClasses = reflections.getSubTypesOf(NotificationEvent.class);
+        final Optional<? extends NotificationEvent> notificationEvent = notificationEventClasses.stream()
+                .map(x -> {
+                    try {
+                        return x.newInstance();
+                    } catch (InstantiationException | IllegalAccessException e) {
+                        logger.error("Unable to instantiate event for {}", eventType, e);
+                        return null;
+                    }
+                })
+                .filter(x -> x != null && x.getEventType() == notificationEventType)
+                .findFirst();
+        if (!notificationEvent.isPresent()) {
+            throw new RuntimeException("Unable to create test notification for event type " + eventType);
+        }
+        applicationEventPublisher.publishEvent(notificationEvent.get().getTestInstance());
+
     }
 
 

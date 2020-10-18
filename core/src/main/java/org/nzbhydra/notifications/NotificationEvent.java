@@ -24,4 +24,6 @@ public interface NotificationEvent {
 
     Map<String, String> getVariablesWithContent();
 
+    NotificationEvent getTestInstance();
+
 }

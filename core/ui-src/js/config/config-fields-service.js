@@ -2007,6 +2007,10 @@ function ConfigFields($injector) {
                                     ],
                                     help: "Select the message type to use."
                                 }
+                            },
+                            {
+                                key: 'bodyTemplate',
+                                type: 'horizontalTestNotification'
                             }
 
                         ],

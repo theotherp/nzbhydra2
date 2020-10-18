@@ -18,12 +18,14 @@ package org.nzbhydra.notifications;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class IndexerVipExpiryNotificationEvent implements NotificationEvent {
 
     private static final String INDEXER_NAME = "indexerName";
@@ -42,6 +44,11 @@ public class IndexerVipExpiryNotificationEvent implements NotificationEvent {
         variablesWithContent.put(INDEXER_NAME, indexerName);
         variablesWithContent.put(EXPIRATION_DATE, expirationDate);
         return variablesWithContent;
+    }
+
+    @Override
+    public NotificationEvent getTestInstance() {
+        return new IndexerVipExpiryNotificationEvent("someIndexer", "2030-03-03");
     }
 
 

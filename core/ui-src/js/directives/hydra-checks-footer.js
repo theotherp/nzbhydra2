@@ -211,7 +211,7 @@ function hydraChecksFooter() {
                         if (unreadNotifications.length > ConfigService.getSafe().notificationConfig.displayNotificationsMax) {
                             growl.info(unreadNotifications.length + ' have piled up. <a href=stats/notifications>Go to the notification history to view them.</a>', {disableCountDown: true});
                             for (var i = 0; i < unreadNotifications.length; i++) {
-                                $http.put('internalapi/notifications/' + unreadNotifications[i].id);
+                                $http.put('internalapi/notifications/markRead/' + unreadNotifications[i].id);
                             }
                             return;
                         }
@@ -232,7 +232,7 @@ function hydraChecksFooter() {
                                     growl.danger(body);
                                     break;
                             }
-                            $http.put('internalapi/notifications/' + notification.id);
+                            $http.put('internalapi/notifications/markRead/' + notification.id);
                         }
                     });
 

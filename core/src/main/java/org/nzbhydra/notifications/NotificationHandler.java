@@ -59,7 +59,6 @@ public class NotificationHandler {
         logger.debug(LoggingMarkers.NOTIFICATIONS, "Retrieved notification event of type {}", event.getEventType());
         final NotificationConfig notificationConfig = configProvider.getBaseConfig().getNotificationConfig();
 
-
         final List<NotificationConfigEntry> configEntries = notificationConfig.getEntries().stream()
                 .filter(x -> x.getEventType() == event.getEventType())
                 .collect(Collectors.toList());
@@ -93,6 +92,7 @@ public class NotificationHandler {
                 return;
             }
             try {
+                logger.debug(LoggingMarkers.NOTIFICATIONS, "Posting body to {}:\n{}", messageBody, notificationConfig.getAppriseApiUrl());
                 webAccess.postToUrl(notificationConfig.getAppriseApiUrl(), MediaType.get("application/json"), messageBody, Collections.emptyMap(), 10);
             } catch (IOException e) {
                 logger.error("Error while sending notification", e);

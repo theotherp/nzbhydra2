@@ -3,6 +3,7 @@ package org.nzbhydra.config;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.nzbhydra.config.sensitive.SensitiveData;
 import org.nzbhydra.notifications.NotificationEventType;
 
 
@@ -20,6 +21,7 @@ public class NotificationConfigEntry {
 
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private NotificationEventType eventType;
+    @SensitiveData
     private String appriseUrls;
     private String titleTemplate;
     private String bodyTemplate;

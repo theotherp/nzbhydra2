@@ -402,7 +402,6 @@
             <groupId>org.reflections</groupId>
             <artifactId>reflections</artifactId>
             <version>0.9.11</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>xmlunit</groupId>

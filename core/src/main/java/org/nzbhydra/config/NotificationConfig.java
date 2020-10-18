@@ -2,6 +2,7 @@ package org.nzbhydra.config;
 
 import joptsimple.internal.Strings;
 import lombok.Data;
+import org.nzbhydra.config.sensitive.SensitiveData;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ import java.util.List;
 @Data
 public class NotificationConfig extends ValidatingConfig<NotificationConfig> {
 
+    @SensitiveData
     private String appriseApiUrl;
     private boolean displayNotifications;
     private int displayNotificationsMax;

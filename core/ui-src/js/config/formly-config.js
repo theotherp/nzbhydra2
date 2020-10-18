@@ -456,7 +456,6 @@ angular
 
                 var allData = NotificationService.getAllData();
                 _.each(_.keys(allData), function (key) {
-                    console.log(key);
                     $scope.eventTypes.push({"key": key, "label": allData[key].readable})
                 })
 
@@ -481,9 +480,13 @@ angular
                     $scope.model[$scope.options.key] = $scope.model[$scope.options.key] || [];
                     var repeatsection = $scope.model[$scope.options.key];
                     var newsection = angular.copy($scope.options.templateOptions.defaultModel);
+
+                    var eventTypeData = NotificationService.getAllData()[eventType];
+                    console.log(eventTypeData);
                     newsection.eventType = eventType;
-                    newsection.titleTemplate = NotificationService.getTitleTemplate(eventType);
-                    newsection.bodyTemplate = NotificationService.getBodyTemplate(eventType);
+                    newsection.titleTemplate = eventTypeData.titleTemplate;
+                    newsection.bodyTemplate = eventTypeData.bodyTemplate;
+                    newsection.messageType = eventTypeData.messageType;
 
                     repeatsection.push(newsection);
                 }
@@ -494,5 +497,27 @@ angular
                 }
             }
         });
+
+        formlyConfigProvider.setType({
+            //Button
+            name: 'testNotification',
+            templateUrl: 'button-test-notification.html',
+            controller: function ($scope, NotificationService) {
+
+
+                //When button is clicked
+                $scope.testNotification = function () {
+                    NotificationService.testNotification($scope.model.eventType)
+                }
+            }
+        });
+
+        formlyConfigProvider.setType({
+            name: 'horizontalTestNotification',
+            extends: 'testNotification',
+            wrapper: ['settingWrapper', 'bootstrapHasError']
+        });
+
+
     });
 
