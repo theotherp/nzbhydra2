@@ -1,3 +1,9 @@
+### v3.1.0 BETA (2020-10-18)
+
+**Feature** Add button to test notifications.
+
+
+
 ### v3.0.0 BETA (2020-10-17)
 
 **Feature** NZBHydra now allows to send and show notifications for certain events. You can request events on the <a href="https://github.com/theotherp/nzbhydra2/issues/631" target="blank">Github Issue</a>.

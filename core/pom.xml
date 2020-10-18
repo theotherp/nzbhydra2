@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.nzbhydra</groupId>
         <artifactId>nzbhydra2</artifactId>
-        <version>3.0.1-SNAPSHOT</version>
+        <version>3.1.0</version>
     </parent>
 
     <artifactId>core</artifactId>
@@ -88,7 +88,7 @@
         <dependency>
             <groupId>org.nzbhydra</groupId>
             <artifactId>mapping</artifactId>
-            <version>3.0.1-SNAPSHOT</version>
+            <version>3.1.0</version>
         </dependency>
 
         <!-- spring (boot) -->
