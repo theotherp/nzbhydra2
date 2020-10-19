@@ -5,7 +5,7 @@
     "type" : "feature",
     "text" : "Add button to test notifications."
   } ],
-  "final" : false
+  "final" : true
 }, {
   "version" : "v3.0.0",
   "date" : "2020-10-17",
