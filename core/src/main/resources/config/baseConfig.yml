@@ -275,7 +275,7 @@ main:
   backupFolder: "backup"
   backupEveryXDays: 7
   backupBeforeUpdate: true
-  configVersion: 16
+  configVersion: 17
   databaseCompactTime: 15000
   databaseRetentionTime: 1000
   databaseWriteDelay: 5000

@@ -16,6 +16,7 @@
 
 package org.nzbhydra.problemdetection;
 
+import joptsimple.internal.Strings;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -63,10 +64,15 @@ public class VipExpiryDetector implements ProblemDetector {
     @Override
     public void executeCheck() {
         final List<IndexerConfig> indexersSoonExpiring = configProvider.getBaseConfig().getIndexers().stream()
-                .filter(x -> x.getVipExpirationDate() != null && !x.getVipExpirationDate().equals("Lifetime"))
+                .filter(x -> !Strings.isNullOrEmpty(x.getVipExpirationDate()) && !x.getVipExpirationDate().equals("Lifetime"))
                 .filter(x -> {
-                    final LocalDate expiryDate = LocalDate.parse(x.getVipExpirationDate(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-                    return expiryDate.isBefore(LocalDate.now().plusDays(14)) && expiryDate.isAfter(LocalDate.now());
+                    try {
+                        final LocalDate expiryDate = LocalDate.parse(x.getVipExpirationDate(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                        return expiryDate.isBefore(LocalDate.now().plusDays(14)) && expiryDate.isAfter(LocalDate.now());
+                    } catch (Exception e) {
+                        logger.error("Unable to parse expiry date {}", x.getVipExpirationDate(), e);
+                        return false;
+                    }
                 })
                 .collect(Collectors.toList());
 

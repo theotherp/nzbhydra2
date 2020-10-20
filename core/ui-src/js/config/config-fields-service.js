@@ -1921,8 +1921,21 @@ function ConfigFields($injector) {
                                 type: 'help',
                                 lines: [
                                     "NZBHydra supports sending and displaying notifications for certain events. You can enable notifications for each event by adding entries below.",
-                                    'If you want to send notifications you need an instance of Apprise API running which is what NZBHydra uses to communicate with the actual notification providers.',
+                                    'NZBHydra uses Apprise to communicate with the actual notification providers. You need either a) an instance of Apprise API running or b) an Apprise runnable accessible by NZBHydra.',
                                     "NZBHydra will also show notifications on the GUI if enabled."
+                                ]
+                            }
+                        },
+                        {
+                            key: 'appriseType',
+                            type: 'horizontalSelect',
+                            templateOptions: {
+                                type: 'select',
+                                label: 'Apprise type',
+                                options: [
+                                    {name: 'None', value: 'NONE'},
+                                    {name: 'API', value: 'API'},
+                                    {name: 'CLI', value: 'CLI'}
                                 ]
                             }
                         },
@@ -1933,7 +1946,18 @@ function ConfigFields($injector) {
                                 type: 'string',
                                 label: 'Apprise API URL',
                                 help: 'URL of <a href="https://github.com/caronc/apprise-api">Apprise API</a> to send notifications to.'
-                            }
+                            },
+                            hideExpression: 'model.appriseType !== "API"'
+                        },
+                        {
+                            key: 'appriseCliPath',
+                            type: 'fileInput',
+                            templateOptions: {
+                                type: 'file',
+                                label: 'Apprise runnable',
+                                help: 'Full path of of <a href="https://github.com/caronc/apprise">Apprise runnable</a> to execute.'
+                            },
+                            hideExpression: 'model.appriseType !== "CLI"'
                         },
                         {
                             key: 'displayNotifications',

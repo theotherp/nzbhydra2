@@ -18,6 +18,7 @@ package org.nzbhydra.notifications;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.base.Joiner;
 import joptsimple.internal.Strings;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -37,6 +38,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -84,23 +87,58 @@ public class NotificationHandler {
 
             notificationRepository.save(new NotificationEntity(event.getEventType(), NotificationEntity.MessageType.valueOf(configEntry.getMessageType().name()), notificationTitle, notificationBody, configEntry.getAppriseUrls(), Instant.now()));
 
-            if (notificationConfig.getAppriseApiUrl() == null) {
-                logger.debug(LoggingMarkers.NOTIFICATIONS, "No Apprise API URL set");
+            if (notificationConfig.getAppriseType() == NotificationConfig.AppriseType.NONE) {
+                logger.debug(LoggingMarkers.NOTIFICATIONS, "Apprise type set to None");
                 return;
             }
             if (configEntry.getAppriseUrls() == null) {
                 logger.debug(LoggingMarkers.NOTIFICATIONS, "No Apprise URLs set");
                 return;
             }
-            try {
-                final String notifyUrl = UriComponentsBuilder.fromHttpUrl(notificationConfig.getAppriseApiUrl()).path("/notify").toUriString().replace("/notify/notify", "/notifiy");
-                logger.debug(LoggingMarkers.NOTIFICATIONS, "Posting body to {}:\n{}", notifyUrl, messageBody);
-                webAccess.postToUrl(notificationConfig.getAppriseApiUrl(), MediaType.get("application/json"), messageBody, Collections.emptyMap(), 10);
-            } catch (IOException e) {
-                logger.error("Error while sending notification", e);
+            if (notificationConfig.getAppriseType() == NotificationConfig.AppriseType.API) {
+                callAppriseApi(notificationConfig, messageBody);
+            } else if (notificationConfig.getAppriseType() == NotificationConfig.AppriseType.CLI) {
+                callAppriseCli(notificationConfig, configEntry, notificationTitle, notificationBody);
+            } else {
+                throw new IllegalArgumentException("Unexpected apprise type " + notificationConfig.getAppriseType());
             }
 
 
+        }
+    }
+
+    private void callAppriseCli(NotificationConfig notificationConfig, NotificationConfigEntry configEntry, String notificationTitle, String notificationBody) {
+        List<String> commands = new ArrayList<>();
+        commands.add(notificationConfig.getAppriseCliPath());
+        if (notificationTitle != null) {
+            commands.add("-t");
+            commands.add(notificationTitle);
+        }
+        commands.add("-b");
+        commands.add(notificationBody);
+        commands.addAll(Arrays.asList(configEntry.getAppriseUrls().split(",")));
+        final String commandLine = Joiner.on(" ").join(commands);
+        logger.debug(LoggingMarkers.NOTIFICATIONS, "Calling apprise command {}", commandLine);
+        ProcessBuilder processBuilder = new ProcessBuilder(commands);
+        final int exitCode;
+        try {
+            final Process process = processBuilder.start();
+            exitCode = process.waitFor();
+            if (exitCode != 0) {
+                logger.error("Unexpected exit code {} while executing apprise command {}", exitCode, commandLine);
+            }
+        } catch (IOException | InterruptedException e) {
+            logger.error("Unexpected error executing apprise command {}", commandLine);
+        }
+    }
+
+    private void callAppriseApi(NotificationConfig notificationConfig, String messageBody) {
+        try {
+            final String notifyUrl = UriComponentsBuilder.fromHttpUrl(notificationConfig.getAppriseApiUrl()).path("/notify").toUriString().replace("/notify/notify", "/notifiy");
+            logger.debug(LoggingMarkers.NOTIFICATIONS, "Posting body to {}:\n{}", notifyUrl, messageBody);
+            webAccess.postToUrl(notificationConfig.getAppriseApiUrl(), MediaType.get("application/json"), messageBody, Collections.emptyMap(), 10);
+        } catch (IOException e) {
+            logger.error("Error while sending notification", e);
         }
     }
 

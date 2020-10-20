@@ -1,7 +1,11 @@
 [
   {
-    "version": "v3.1.1",
+    "version": "v3.2.0",
     "changes": [
+      {
+        "type": "feature",
+        "text": "Allow using Apprise CLI to send notifications instead of Apprise API."
+      },
       {
         "type": "fix",
         "text": "Don't require Apprise API URL to end with /notify (will still work if you've already configured it that way)."
