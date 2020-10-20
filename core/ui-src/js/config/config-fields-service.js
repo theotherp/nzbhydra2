@@ -1910,22 +1910,23 @@ function ConfigFields($injector) {
             ],
             notificationConfig: [
                 {
+                    type: 'help',
+                    templateOptions: {
+                        type: 'help',
+                        lines: [
+                            "NZBHydra supports sending and displaying notifications for certain events. You can enable notifications for each event by adding entries below.",
+                            'NZBHydra uses Apprise to communicate with the actual notification providers. You need either a) an instance of Apprise API running or b) an Apprise runnable accessible by NZBHydra. Either are not part of NZBHydra.',
+                            "NZBHydra will also show notifications on the GUI if enabled."
+                        ]
+                    }
+                },
+                {
                     wrapper: 'fieldset',
                     templateOptions: {
                         label: 'Main'
                     },
                     fieldGroup: [
-                        {
-                            type: 'help',
-                            templateOptions: {
-                                type: 'help',
-                                lines: [
-                                    "NZBHydra supports sending and displaying notifications for certain events. You can enable notifications for each event by adding entries below.",
-                                    'NZBHydra uses Apprise to communicate with the actual notification providers. You need either a) an instance of Apprise API running or b) an Apprise runnable accessible by NZBHydra.',
-                                    "NZBHydra will also show notifications on the GUI if enabled."
-                                ]
-                            }
-                        },
+
                         {
                             key: 'appriseType',
                             type: 'horizontalSelect',
