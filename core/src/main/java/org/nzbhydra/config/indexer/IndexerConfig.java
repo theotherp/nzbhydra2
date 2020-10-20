@@ -148,10 +148,6 @@ public class IndexerConfig extends ValidatingConfig<IndexerConfig> {
         return Optional.ofNullable(Strings.emptyToNull(userAgent));
     }
 
-    public void setVipExpirationDate(String vipExpirationDate) {
-        this.vipExpirationDate = Strings.emptyToNull(vipExpirationDate);
-    }
-
     @JsonIgnore
     public boolean isEligibleForInternalSearch() {
         return showOnSearch

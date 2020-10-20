@@ -1,8 +1,11 @@
 package org.nzbhydra.web;
 
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.api.stats.HistoryRequestConverter;
 import org.nzbhydra.api.stats.StatsRequestConverter;
+import org.nzbhydra.config.EmptyStringToNullDeserializer;
+import org.nzbhydra.config.EmptyStringToNullSerializer;
 import org.nzbhydra.mapping.newznab.NewznabResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -130,6 +133,10 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
             if (converter instanceof MappingJackson2HttpMessageConverter) {
                 MappingJackson2HttpMessageConverter jacksonConverter = (MappingJackson2HttpMessageConverter) converter;
                 jacksonConverter.setPrettyPrint(true);
+                SimpleModule simpleModule = new SimpleModule();
+                simpleModule.addDeserializer(String.class, new EmptyStringToNullDeserializer());
+                simpleModule.addSerializer(String.class, new EmptyStringToNullSerializer());
+                jacksonConverter.getObjectMapper().registerModule(simpleModule);
             }
         }
         converters.add(0, new NewznabAndTorznabResponseNamespaceFixer(marshaller()));
@@ -139,7 +146,7 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
     private static class NewznabAndTorznabResponseNamespaceFixer implements HttpMessageConverter<Object> {
 
         private final Jaxb2Marshaller marshaller;
-        private MappingJackson2HttpMessageConverter jacksonConverter = new MappingJackson2HttpMessageConverter();
+        private final MappingJackson2HttpMessageConverter jacksonConverter = new MappingJackson2HttpMessageConverter();
 
 
         public NewznabAndTorznabResponseNamespaceFixer(Jaxb2Marshaller marshaller) {

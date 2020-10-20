@@ -22,9 +22,12 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.nzbhydra.config.EmptyStringToNullDeserializer;
+import org.nzbhydra.config.EmptyStringToNullSerializer;
 import org.nzbhydra.config.sensitive.SensitiveDataModule;
 
 public class Jackson {
@@ -52,6 +55,11 @@ public class Jackson {
         JSON_MAPPER.registerModule(new Jdk8Module());
         JSON_MAPPER.registerModule(new JavaTimeModule());
         JSON_MAPPER.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+
+        SimpleModule simpleModule = new SimpleModule();
+        simpleModule.addDeserializer(String.class, new EmptyStringToNullDeserializer());
+        simpleModule.addSerializer(String.class, new EmptyStringToNullSerializer());
+        JSON_MAPPER.registerModule(simpleModule);
     }
 
 
