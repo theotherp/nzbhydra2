@@ -4,6 +4,7 @@ import com.google.common.base.Strings;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.NotificationConfigEntry;
 import org.nzbhydra.config.auth.UserAuthConfig;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.slf4j.Logger;
@@ -48,6 +49,17 @@ public class LogAnonymizer {
             }
             logger.debug("Removing API key for indexer {} from log", indexerConfig.getName());
             log = log.replace(indexerConfig.getApiKey(), "<APIKEY>");
+        }
+
+        for (NotificationConfigEntry entry : configProvider.getBaseConfig().getNotificationConfig().getEntries()) {
+            if (entry.getAppriseUrls() != null) {
+                for (String url : entry.getAppriseUrls().split(",")) {
+                    log = log.replace(url, "<hidden>");
+                }
+            }
+        }
+        if (configProvider.getBaseConfig().getNotificationConfig().getAppriseApiUrl() != null) {
+            log = log.replace(configProvider.getBaseConfig().getNotificationConfig().getAppriseApiUrl(), "<hidden>");
         }
 
         logger.debug("Removing URL username/password from log");

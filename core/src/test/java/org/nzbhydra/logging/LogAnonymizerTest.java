@@ -8,8 +8,10 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.NotificationConfigEntry;
 import org.nzbhydra.config.auth.UserAuthConfig;
 import org.nzbhydra.config.indexer.IndexerConfig;
+import org.nzbhydra.notifications.NotificationEventType;
 
 import java.util.Arrays;
 
@@ -38,6 +40,10 @@ public class LogAnonymizerTest {
         IndexerConfig indexerConfig = new IndexerConfig();
         indexerConfig.setApiKey("apikey");
         baseConfig.getIndexers().add(indexerConfig);
+
+        baseConfig.getNotificationConfig().getEntries().add(new NotificationConfigEntry(NotificationEventType.INDEXER_DISABLED, "http://127.0.0.1,http://www.discord.app", null, null, null));
+        baseConfig.getNotificationConfig().getEntries().add(new NotificationConfigEntry(NotificationEventType.INDEXER_DISABLED, null, null, null, null));
+        baseConfig.getNotificationConfig().setAppriseApiUrl("http://apprise.url");
     }
 
     @Test
@@ -60,6 +66,15 @@ public class LogAnonymizerTest {
         String anonymized = testee.getAnonymizedLog(toAnonymize);
 
         Assertions.assertThat(anonymized).isEqualTo("2020-10-18 13:48:44.989 DEBUG --- [http-nio-<IP4:da6fb0d8>-5] o.n.notifications.NotificationHandler    : [ID: 08975, Host: <hidden>] Some text");
+    }
+
+    @Test
+    public void shouldAnonymizeAppriseUrls() {
+        String toAnonymize = "Sending message to http://127.0.0.1 and http://www.discord.app using http://apprise.url";
+
+        String anonymized = testee.getAnonymizedLog(toAnonymize);
+
+        Assertions.assertThat(anonymized).isEqualTo("Sending message to <hidden> and <hidden> using <hidden>");
     }
 
     @Test

@@ -5,6 +5,10 @@
       {
         "type": "fix",
         "text": "Don't require Apprise API URL to end with /notify (will still work if you've already configured it that way)."
+      },
+      {
+        "type": "fix",
+        "text": "Anonymize notification URLs when writing debug infos."
       }
     ],
     "final": true
