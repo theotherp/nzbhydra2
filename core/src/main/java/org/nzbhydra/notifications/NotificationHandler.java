@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -92,7 +93,8 @@ public class NotificationHandler {
                 return;
             }
             try {
-                logger.debug(LoggingMarkers.NOTIFICATIONS, "Posting body to {}:\n{}", messageBody, notificationConfig.getAppriseApiUrl());
+                final String notifyUrl = UriComponentsBuilder.fromHttpUrl(notificationConfig.getAppriseApiUrl()).path("/notify").toUriString().replace("/notify/notify", "/notifiy");
+                logger.debug(LoggingMarkers.NOTIFICATIONS, "Posting body to {}:\n{}", notifyUrl, messageBody);
                 webAccess.postToUrl(notificationConfig.getAppriseApiUrl(), MediaType.get("application/json"), messageBody, Collections.emptyMap(), 10);
             } catch (IOException e) {
                 logger.error("Error while sending notification", e);
