@@ -1,4 +1,16 @@
-### v3.1.0 BETA (2020-10-18)
+### v3.2.0 (2020-10-20)
+
+**Feature** Allow using Apprise CLI to send notifications instead of Apprise API.
+
+**Fix** Don't require Apprise API URL to end with /notify (will still work if you've already configured it that way).
+
+**Fix** Anonymize notification URLs when writing debug infos.
+
+**Fix** Prevent invalid expiry date setting and fix startup failing due to invalid setting.
+
+
+
+### v3.1.0 (2020-10-18)
 
 **Feature** Add button to test notifications.
 
