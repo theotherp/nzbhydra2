@@ -148,6 +148,10 @@ public class IndexerConfig extends ValidatingConfig<IndexerConfig> {
         return Optional.ofNullable(Strings.emptyToNull(userAgent));
     }
 
+    public void setVipExpirationDate(String vipExpirationDate) {
+        this.vipExpirationDate = Strings.emptyToNull(vipExpirationDate);
+    }
+
     @JsonIgnore
     public boolean isEligibleForInternalSearch() {
         return showOnSearch
@@ -180,7 +184,7 @@ public class IndexerConfig extends ValidatingConfig<IndexerConfig> {
             try {
                 DateTimeFormatter.ofPattern("yyyy-MM-dd").parse(newExpirationDate);
             } catch (Exception e) {
-                validationResult.getErrorMessages().add("Invalid expiry date. Either use 'Lifetime' or use the format `YYYY-MM-DD");
+                validationResult.getErrorMessages().add("Invalid expiry date for indexer " + newIndexerConfig.getName() + ". Either use 'Lifetime' or use the format `YYYY-MM-DD");
             }
         }
 
