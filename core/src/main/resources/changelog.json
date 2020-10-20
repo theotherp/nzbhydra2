@@ -9,6 +9,10 @@
       {
         "type": "fix",
         "text": "Anonymize notification URLs when writing debug infos."
+      },
+      {
+        "type": "fix",
+        "text": "Prevent invalid expiry date setting and fix startup failing due to invalid setting."
       }
     ],
     "final": true

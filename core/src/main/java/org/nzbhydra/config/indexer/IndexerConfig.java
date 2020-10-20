@@ -37,6 +37,7 @@ import org.nzbhydra.searching.IndexerForSearchSelector;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -168,11 +169,19 @@ public class IndexerConfig extends ValidatingConfig<IndexerConfig> {
                 validationResult.getErrorMessages().add("Indexer " + getName() + " contains an invalid schedule: " + schedule);
             }
         }
-        if (getHitLimit().isPresent() && getHitLimit().get() <= 0) {
+        if (newIndexerConfig.getHitLimit().isPresent() && newIndexerConfig.getHitLimit().get() <= 0) {
             validationResult.getErrorMessages().add("Indexer " + getName() + " has a hit limit of 0 or lower which doesn't make sense: ");
         }
-        if (getDownloadLimit().isPresent() && getDownloadLimit().get() <= 0) {
+        if (newIndexerConfig.getDownloadLimit().isPresent() && newIndexerConfig.getDownloadLimit().get() <= 0) {
             validationResult.getErrorMessages().add("Indexer " + getName() + " has a download limit of 0 or lower which doesn't make sense: ");
+        }
+        final String newExpirationDate = newIndexerConfig.getVipExpirationDate();
+        if (newExpirationDate != null && !newExpirationDate.equals("Lifetime")) {
+            try {
+                DateTimeFormatter.ofPattern("yyyy-MM-dd").parse(newExpirationDate);
+            } catch (Exception e) {
+                validationResult.getErrorMessages().add("Invalid expiry date. Either use 'Lifetime' or use the format `YYYY-MM-DD");
+            }
         }
 
         return validationResult;
