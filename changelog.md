@@ -1,3 +1,9 @@
+### v3.2.1 (2020-10-21)
+
+**Fix** Prevent startup errors when migrating from certain older versions.
+
+
+
 ### v3.2.0 (2020-10-20)
 
 **Feature** Allow using Apprise CLI to send notifications instead of Apprise API.
