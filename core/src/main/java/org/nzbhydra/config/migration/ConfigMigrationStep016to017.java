@@ -35,6 +35,10 @@ public class ConfigMigrationStep016to017 implements ConfigMigrationStep {
     public Map<String, Object> migrate(Map<String, Object> toMigrate) {
         try {
             Map<String, Object> notificationConfig = (Map<String, Object>) toMigrate.get("notificationConfig");
+            if (notificationConfig == null) {
+                logger.debug("No notification config to migrate");
+                return toMigrate;
+            }
             if (notificationConfig.get("appriseApiUrl") != null) {
                 notificationConfig.put("appriseType", "API");
             } else {

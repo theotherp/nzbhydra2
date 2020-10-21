@@ -56,7 +56,7 @@ public class DatabaseRecreation {
 
     public static void runDatabaseScript() throws ClassNotFoundException, SQLException {
         if (!Thread.currentThread().getName().equals("main")) {
-            //During development this class is called twice (cause of the Spring developer tools)
+            //During development this class is called twice (because of the Spring developer tools)
             logger.debug("Skipping database script check for thread {}", Thread.currentThread().getName());
             return;
         }
@@ -70,11 +70,25 @@ public class DatabaseRecreation {
         }
 
         Class.forName("org.h2.Driver");
-        String url = "jdbc:h2:file:" + databaseFile.getAbsolutePath().replace(".mv.db", "");
+        String dbConnectionUrl = "jdbc:h2:file:" + databaseFile.getAbsolutePath().replace(".mv.db", "");
 
+        if (isDatabaseRecreationNotNeeded(dbConnectionUrl)) {
+            return;
+        }
+
+        createDatabaseScript(databaseScriptFile, dbConnectionUrl);
+
+        deleteExistingDatabase(databaseFile);
+
+        replaceSchemaVersionChanges(databaseScriptFile, databaseScriptFileNew);
+
+        runDatabaseScript(databaseScriptFile, dbConnectionUrl);
+    }
+
+    private static boolean isDatabaseRecreationNotNeeded(String dbConnectionUrl) throws SQLException {
         logger.debug("Determining if database recreation is needed");
         Set<ExecutedScript> executedScripts = new HashSet<>();
-        try (Connection conn = DriverManager.getConnection(url, "SA", "")) {
+        try (Connection conn = DriverManager.getConnection(dbConnectionUrl, "SA", "")) {
             ResultSet resultSet = conn.createStatement().executeQuery("select \"script\", \"checksum\" from \"schema_version\";");
             while (resultSet.next()) {
                 executedScripts.add(new ExecutedScript(resultSet.getString(1), resultSet.getInt((2))));
@@ -97,12 +111,66 @@ public class DatabaseRecreation {
                 }
             })) {
                 logger.debug("No migration scripts found to run. Skipping database recreation");
-                return;
+                return true;
             }
         } catch (IOException e) {
             throw new RuntimeException("Unable to find migration scripts", e);
         }
+        return false;
+    }
 
+    private static void runDatabaseScript(File databaseScriptFile, String dbConnectionUrl) throws SQLException {
+        try (Connection conn = DriverManager.getConnection(dbConnectionUrl, "SA", "")) {
+            logger.info("Running database script {} for reimport of old database", databaseScriptFile.getAbsolutePath());
+            try {
+                conn.createStatement().execute("runscript from '" + databaseScriptFile.getAbsolutePath() + "'");
+            } catch (SQLException e) {
+                throw new RuntimeException("Unable to import database script", e);
+            }
+            logger.info("Successfully recreated database");
+        }
+        boolean deleted = databaseScriptFile.delete();
+        if (!deleted) {
+            throw new RuntimeException("Unable to delete database script file at " + databaseScriptFile.getAbsolutePath() + ". Please delete it manually.");
+        }
+    }
+
+    private static void replaceSchemaVersionChanges(File databaseScriptFile, File databaseScriptFileNew) {
+        try {
+            try (FileWriter fileWriter = new FileWriter(databaseScriptFileNew)) {
+                Files.lines(databaseScriptFile.toPath()).forEach(line -> {
+                    String sql = line;
+                    for (Map.Entry<String, String> entry : SCHEMA_VERSION_CHANGES.entrySet()) {
+                        sql = sql.replaceAll(entry.getKey(), entry.getValue());
+                    }
+                    try {
+                        fileWriter.write(sql);
+                        fileWriter.write(System.getProperty("line.separator"));
+                    } catch (IOException e) {
+                        throw new RuntimeException("Unable to write to temp file " + databaseScriptFileNew, e);
+                    }
+                });
+            }
+            if (!databaseScriptFile.delete()) {
+                throw new RuntimeException("Unable to delete existing database script file " + databaseScriptFile);
+            }
+            Files.move(databaseScriptFileNew.toPath(), databaseScriptFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to update database migration versions", e);
+        }
+    }
+
+    private static void deleteExistingDatabase(File databaseFile) {
+        if (!databaseFile.exists()) {
+            throw new RuntimeException("Unable to find database file at " + databaseFile.getAbsolutePath());
+        }
+        boolean deleted = databaseFile.delete();
+        if (!deleted) {
+            throw new RuntimeException("Unable to delete database file at " + databaseFile.getAbsolutePath() + ". Please move it somewhere else (just to be sure) and restart NZBHYdra.");
+        }
+    }
+
+    private static void createDatabaseScript(File databaseScriptFile, String url) throws SQLException {
         if (databaseScriptFile.exists()) {
             boolean deleted = databaseScriptFile.delete();
             if (!deleted) {
@@ -117,49 +185,6 @@ public class DatabaseRecreation {
             if (!databaseScriptFile.exists()) {
                 throw new RuntimeException("Database script file was not created at " + databaseScriptFile.getAbsolutePath());
             }
-        }
-
-        if (!databaseFile.exists()) {
-            throw new RuntimeException("Unable to find database file at " + databaseFile.getAbsolutePath());
-        }
-        boolean deleted = databaseFile.delete();
-        if (!deleted) {
-            throw new RuntimeException("Unable to delete database file at " + databaseFile.getAbsolutePath() + ". Please move it somewhere else (just to be sure) and restart NZBHYdra.");
-        }
-
-        try {
-            try (FileWriter fileWriter = new FileWriter(databaseScriptFileNew)) {
-                Files.lines(databaseScriptFile.toPath()).forEach(x -> {
-                    String sql = x;
-                    for (Map.Entry<String, String> entry : SCHEMA_VERSION_CHANGES.entrySet()) {
-                        sql = sql.replaceAll(entry.getKey(), entry.getValue());
-                    }
-                    try {
-                        fileWriter.write(sql);
-                        fileWriter.write(System.getProperty("line.separator"));
-                    } catch (IOException e) {
-                        throw new RuntimeException("Unable to write to temp file " + databaseScriptFileNew, e);
-                    }
-
-                });
-            }
-            Files.move(databaseScriptFileNew.toPath(), databaseScriptFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException e) {
-            throw new RuntimeException("Unable to update database migration versions", e);
-        }
-
-        try (Connection conn = DriverManager.getConnection(url, "SA", "")) {
-            logger.info("Running database script {} for reimport of old database", databaseScriptFile.getAbsolutePath());
-            try {
-                conn.createStatement().execute("runscript from '" + databaseScriptFile.getAbsolutePath() + "'");
-            } catch (SQLException e) {
-                throw new RuntimeException("Unable to import database script", e);
-            }
-            logger.info("Successfully recreated database");
-        }
-        deleted = databaseScriptFile.delete();
-        if (!deleted) {
-            throw new RuntimeException("Unable to delete database script file at " + databaseScriptFile.getAbsolutePath() + ". Please delete it manually.");
         }
     }
 
