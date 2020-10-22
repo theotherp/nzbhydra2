@@ -10973,7 +10973,7 @@ function NotificationService($http) {
             readable: "Download",
             titleTemplate: "Download",
             bodyTemplate: "NZBHydra: The title \"$title$\" was downloaded from indexer $indexerName$.",
-            templateHelp: "Available variables: $title, $indexerName$.",
+            templateHelp: "Available variables: $title, $indexerName$, $source$ (NZB or torrent), $age$ ([] for torrents).",
             messageType: "INFO"
         },
         INDEXER_DISABLED: {

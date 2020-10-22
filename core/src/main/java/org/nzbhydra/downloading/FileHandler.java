@@ -39,6 +39,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -173,7 +176,9 @@ public class FileHandler {
 
     private void publishEvents(SearchResultEntity result, FileDownloadEntity downloadEntity) {
         eventPublisher.publishEvent(new FileDownloadEvent(downloadEntity, result));
-        eventPublisher.publishEvent(new DownloadNotificationEvent(result.getIndexer().getName(), result.getTitle()));
+        String age = result.getDownloadType() == DownloadType.NZB ? String.valueOf(((int) (Duration.between(result.getPubDate(), Instant.now()).get(ChronoUnit.SECONDS) / (24 * 60 * 60)))) : "[]";
+        String source = result.getDownloadType() == DownloadType.NZB ? "NZB" : "torrent";
+        eventPublisher.publishEvent(new DownloadNotificationEvent(result.getIndexer().getName(), result.getTitle(), age, source));
     }
 
 

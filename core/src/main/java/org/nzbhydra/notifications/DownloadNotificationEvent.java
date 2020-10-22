@@ -30,8 +30,12 @@ public class DownloadNotificationEvent implements NotificationEvent {
 
     private static final String INDEXER_NAME = "indexerName";
     private static final String TITLE = "title";
+    private static final String AGE = "age";
+    private static final String SOURCE = "source";
     private String indexerName;
     private String title;
+    private String age;
+    private String source;
 
     @Override
     public NotificationEventType getEventType() {
@@ -43,12 +47,14 @@ public class DownloadNotificationEvent implements NotificationEvent {
         Map<String, String> variablesWithContent = new HashMap<>();
         variablesWithContent.put(INDEXER_NAME, indexerName);
         variablesWithContent.put(TITLE, title);
+        variablesWithContent.put(AGE, age);
+        variablesWithContent.put(SOURCE, source);
         return variablesWithContent;
     }
 
     @Override
     public NotificationEvent getTestInstance() {
-        return new DownloadNotificationEvent("Some Indexer", "Some result");
+        return new DownloadNotificationEvent("Some Indexer", "Some result", "100d", "NZB");
     }
 
 
