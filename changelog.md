@@ -1,3 +1,13 @@
+### v3.3.0 (2020-10-22)
+
+**Feature** Added notifications for downloads.
+
+**Fix** The button to send results to the downloader was not displayed in some cases.
+
+**Fix** Apprise notifications sent via CLI containing quotation marks were truncated.
+
+
+
 ### v3.2.1 (2020-10-21)
 
 **Fix** Prevent startup errors when migrating from certain older versions.
