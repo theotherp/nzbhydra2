@@ -36,7 +36,7 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         $scope.minsize = $scope.category.minSizePreset;
         $scope.maxsize = $scope.category.maxSizePreset;
     }
-    $scope.category = (_.isUndefined($stateParams.category) || $stateParams.category === "") ? CategoriesService.getDefault() : CategoriesService.getByName($stateParams.category);
+    $scope.category = _.isNullOrEmpty($stateParams.category) ? CategoriesService.getDefault() : CategoriesService.getByName($stateParams.category);
     $scope.season = $stateParams.season;
     $scope.episode = $stateParams.episode;
     $scope.query = $stateParams.query;

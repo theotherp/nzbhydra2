@@ -1323,12 +1323,12 @@ function saveOrSendFile() {
         $scope.cssClass = "glyphicon-save-file";
         var endpoint;
         if ($scope.type === "TORRENT") {
-            $scope.enableButton = (ConfigService.getSafe().downloading.saveTorrentsTo !== null && ConfigService.getSafe().downloading.saveTorrentsTo !== "") || ConfigService.getSafe().downloading.sendMagnetLinks;
+            $scope.enableButton = !_.isNullOrEmpty(ConfigService.getSafe().downloading.saveTorrentsTo) || ConfigService.getSafe().downloading.sendMagnetLinks;
             $scope.tooltip = "Save torrent to black hole or send magnet link";
             endpoint = "internalapi/saveOrSendTorrent";
         } else {
             $scope.tooltip = "Save NZB to black hole";
-            $scope.enableButton = ConfigService.getSafe().downloading.saveNzbsTo !== null && ConfigService.getSafe().downloading.saveNzbsTo !== "";
+            $scope.enableButton = !_.isNullOrEmpty( ConfigService.getSafe().downloading.saveNzbsTo);
             endpoint = "internalapi/saveNzbToBlackhole";
         }
         $scope.add = function () {
@@ -3422,7 +3422,7 @@ function addableNzb(DebugService) {
     };
 
     function controller($scope, NzbDownloadService, growl) {
-        if ($scope.downloader.iconCssClass !== undefined && $scope.downloader.iconCssClass !== '') {
+        if (!_.isNullOrEmpty($scope.downloader.iconCssClass)) {
             $scope.cssClass = "fa fa-" + $scope.downloader.iconCssClass.replace("fa-", "").replace("fa ", "");
         } else {
             $scope.cssClass = $scope.downloader.downloaderType === "SABNZBD" ? "sabnzbd" : "nzbget";
@@ -3710,7 +3710,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
                     greaterThanZero: {
                         expression: function ($viewValue, $modelValue) {
                             var value = $modelValue || $viewValue;
-                            return angular.isUndefined(value) || value === null || value === "" || value > 0;
+                            return _.isNullOrEmpty(value) || value > 0;
                         },
                         message: '"Value must be greater than 0"'
                     }
@@ -3728,7 +3728,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
                     greaterThanZero: {
                         expression: function ($viewValue, $modelValue) {
                             var value = $modelValue || $viewValue;
-                            return angular.isUndefined(value) || value === null || value === "" || value > 0;
+                            return _.isNullOrEmpty(value) || value > 0;
                         },
                         message: '"Value must be greater than 0"'
                     }
@@ -3769,7 +3769,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
                     greaterThanZero: {
                         expression: function ($viewValue, $modelValue) {
                             var value = $modelValue || $viewValue;
-                            return angular.isUndefined(value) || value === null || value === "" || value > 1;
+                            return _.isNullOrEmpty(value) || value > 1;
                         },
                         message: '"Value must be greater than 1"'
                     }
@@ -5130,7 +5130,7 @@ angular
             ].join(' '),
             controller: function ($scope) {
                 $scope.convertColor = function () {
-                    if ($scope.model.color === undefined || $scope.model.color === null) {
+                    if (_.isNullOrEmpty($scope.model.color)) {
                         return "";
                     }
 
@@ -7460,7 +7460,7 @@ function ConfigFields($injector) {
                                 help: 'IP ranges from which the auth header will be accepted. Apply with return key. Use values like "192.168.0.1-192.168.0.100" or single IP addresses like "127.0.0.1".'
                             },
                             hideExpression: function () {
-                                return rootModel.auth.authType === "NONE" || rootModel.auth.authHeader === null || rootModel.auth.authHeader === undefined || rootModel.auth.authHeader === "";
+                                return rootModel.auth.authType === "NONE" || _.isNullOrEmpty(rootModel.auth.authHeader);
                             }
                         },
                         {
@@ -10361,7 +10361,7 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         $scope.minsize = $scope.category.minSizePreset;
         $scope.maxsize = $scope.category.maxSizePreset;
     }
-    $scope.category = (_.isUndefined($stateParams.category) || $stateParams.category === "") ? CategoriesService.getDefault() : CategoriesService.getByName($stateParams.category);
+    $scope.category = _.isNullOrEmpty($stateParams.category) ? CategoriesService.getDefault() : CategoriesService.getByName($stateParams.category);
     $scope.season = $stateParams.season;
     $scope.episode = $stateParams.episode;
     $scope.query = $stateParams.query;
@@ -10937,7 +10937,7 @@ function NzbDownloadService($http, ConfigService, DownloaderCategoriesService) {
 
     function download(downloader, searchResults, alwaysAsk) {
         var category = downloader.defaultCategory;
-        if (alwaysAsk || ((_.isUndefined(category) || category === "" || category === null) && category !== "Use original category") && category !== "Use mapped category" && category !== "Use no category") {
+        if (alwaysAsk || (_.isNullOrEmpty(category) && category !== "Use original category") && category !== "Use mapped category" && category !== "Use no category") {
             return DownloaderCategoriesService.openCategorySelection(downloader).then(function (category) {
                 return sendNzbAddCommand(downloader, searchResults, category);
             }, function (result) {

@@ -1725,7 +1725,7 @@ function ConfigFields($injector) {
                                 help: 'IP ranges from which the auth header will be accepted. Apply with return key. Use values like "192.168.0.1-192.168.0.100" or single IP addresses like "127.0.0.1".'
                             },
                             hideExpression: function () {
-                                return rootModel.auth.authType === "NONE" || rootModel.auth.authHeader === null || rootModel.auth.authHeader === undefined || rootModel.auth.authHeader === "";
+                                return rootModel.auth.authType === "NONE" || _.isNullOrEmpty(rootModel.auth.authHeader);
                             }
                         },
                         {

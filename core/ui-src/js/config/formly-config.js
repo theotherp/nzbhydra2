@@ -177,7 +177,7 @@ angular
             ].join(' '),
             controller: function ($scope) {
                 $scope.convertColor = function () {
-                    if ($scope.model.color === undefined || $scope.model.color === null) {
+                    if (_.isNullOrEmpty($scope.model.color)) {
                         return "";
                     }
 
