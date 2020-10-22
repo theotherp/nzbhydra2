@@ -86,8 +86,8 @@ public class NotificationsWeb {
         if (!notificationEvent.isPresent()) {
             throw new RuntimeException("Unable to create test notification for event type " + eventType);
         }
+        logger.info("Sending test notification for type {}", eventType);
         applicationEventPublisher.publishEvent(notificationEvent.get().getTestInstance());
-
     }
 
 

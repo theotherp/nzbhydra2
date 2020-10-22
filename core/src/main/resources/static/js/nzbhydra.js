@@ -1328,7 +1328,7 @@ function saveOrSendFile() {
             endpoint = "internalapi/saveOrSendTorrent";
         } else {
             $scope.tooltip = "Save NZB to black hole";
-            $scope.enableButton = !_.isNullOrEmpty( ConfigService.getSafe().downloading.saveNzbsTo);
+            $scope.enableButton = !_.isNullOrEmpty(ConfigService.getSafe().downloading.saveNzbsTo);
             endpoint = "internalapi/saveNzbToBlackhole";
         }
         $scope.add = function () {
@@ -10968,6 +10968,13 @@ function NotificationService($http) {
             bodyTemplate: "NZBHydra: A login for username $username$ failed. IP: $ip$.",
             templateHelp: "Available variables: $username$, $ip$.",
             messageType: "FAILURE"
+        },
+        RESULT_DOWNLOAD: {
+            readable: "Download",
+            titleTemplate: "Download",
+            bodyTemplate: "NZBHydra: The title \"$title$\" was downloaded from indexer $indexerName$.",
+            templateHelp: "Available variables: $title, $indexerName$.",
+            messageType: "INFO"
         },
         INDEXER_DISABLED: {
             readable: "Indexer disabled",

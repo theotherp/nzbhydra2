@@ -15,6 +15,7 @@ import org.nzbhydra.indexers.IndexerApiAccessEntityShortRepository;
 import org.nzbhydra.indexers.IndexerApiAccessType;
 import org.nzbhydra.indexers.NfoResult;
 import org.nzbhydra.logging.LoggingMarkers;
+import org.nzbhydra.notifications.DownloadNotificationEvent;
 import org.nzbhydra.searching.SearchModuleProvider;
 import org.nzbhydra.searching.db.SearchResultEntity;
 import org.nzbhydra.searching.db.SearchResultRepository;
@@ -139,7 +140,7 @@ public class FileHandler {
             }
             shortRepository.save(new IndexerApiAccessEntityShort(result.getIndexer(), false, IndexerApiAccessType.NZB));
 
-            eventPublisher.publishEvent(new FileDownloadEvent(downloadEntity, result));
+            publishEvents(result, downloadEntity);
             return DownloadResult.createErrorResult("An error occurred while downloading " + result.getTitle() + " from indexer " + result.getIndexer().getName(), HttpStatus.valueOf(e.getStatus()), downloadEntity);
         }
 
@@ -152,7 +153,7 @@ public class FileHandler {
             downloadRepository.save(downloadEntity);
         }
         shortRepository.save(new IndexerApiAccessEntityShort(result.getIndexer(), true, IndexerApiAccessType.NZB));
-        eventPublisher.publishEvent(new FileDownloadEvent(downloadEntity, result));
+        publishEvents(result, downloadEntity);
 
         return DownloadResult.createSuccessfulDownloadResult(result.getTitle(), fileContent, downloadEntity);
     }
@@ -165,9 +166,14 @@ public class FileHandler {
             downloadRepository.save(downloadEntity);
         }
         shortRepository.save(new IndexerApiAccessEntityShort(result.getIndexer(), true, IndexerApiAccessType.NZB));
-        eventPublisher.publishEvent(new FileDownloadEvent(downloadEntity, result));
+        publishEvents(result, downloadEntity);
 
         return DownloadResult.createSuccessfulRedirectResult(result.getTitle(), actualUrl != null ? actualUrl : result.getLink(), downloadEntity);
+    }
+
+    private void publishEvents(SearchResultEntity result, FileDownloadEntity downloadEntity) {
+        eventPublisher.publishEvent(new FileDownloadEvent(downloadEntity, result));
+        eventPublisher.publishEvent(new DownloadNotificationEvent(result.getIndexer().getName(), result.getTitle()));
     }
 
 

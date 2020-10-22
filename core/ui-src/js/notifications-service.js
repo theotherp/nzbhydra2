@@ -12,6 +12,13 @@ function NotificationService($http) {
             templateHelp: "Available variables: $username$, $ip$.",
             messageType: "FAILURE"
         },
+        RESULT_DOWNLOAD: {
+            readable: "Download",
+            titleTemplate: "Download",
+            bodyTemplate: "NZBHydra: The title \"$title$\" was downloaded from indexer $indexerName$.",
+            templateHelp: "Available variables: $title, $indexerName$.",
+            messageType: "INFO"
+        },
         INDEXER_DISABLED: {
             readable: "Indexer disabled",
             titleTemplate: "Indexer disabled",

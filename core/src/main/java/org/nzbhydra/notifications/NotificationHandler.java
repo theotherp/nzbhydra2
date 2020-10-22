@@ -112,10 +112,10 @@ public class NotificationHandler {
         commands.add(notificationConfig.getAppriseCliPath());
         if (notificationTitle != null) {
             commands.add("-t");
-            commands.add(notificationTitle);
+            commands.add(notificationTitle.replace("\"", "\\\""));
         }
         commands.add("-b");
-        commands.add(notificationBody);
+        commands.add(notificationBody.replace("\"", "\\\""));
         commands.addAll(Arrays.asList(configEntry.getAppriseUrls().split(",")));
         final String commandLine = Joiner.on(" ").join(commands);
         logger.debug(LoggingMarkers.NOTIFICATIONS, "Calling apprise command {}", commandLine);
@@ -143,7 +143,6 @@ public class NotificationHandler {
     }
 
     private String fillTemplate(String template, Map<String, String> variablesWithContent) {
-        String filledTemplate = template;
         for (Map.Entry<String, String> x : variablesWithContent.entrySet()) {
             template = template.replace("$" + x.getKey() + "$", x.getValue());
         }

@@ -3,8 +3,16 @@
     "version": "v3.3.0",
     "changes": [
       {
+        "type": "feature",
+        "text": "Added notifications for downloads."
+      },
+      {
         "type": "fix",
         "text": "The button to send results to the downloader was not displayed in some cases."
+      },
+      {
+        "type": "fix",
+        "text": "Apprise notifications sent via CLI containing quotation marks were truncated."
       }
     ],
     "final": true

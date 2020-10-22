@@ -26,29 +26,29 @@ import java.util.Map;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class IndexerVipExpiryNotificationEvent implements NotificationEvent {
+public class DownloadNotificationEvent implements NotificationEvent {
 
     private static final String INDEXER_NAME = "indexerName";
-    private static final String EXPIRATION_DATE = "expirationDate";
+    private static final String TITLE = "title";
     private String indexerName;
-    private String expirationDate;
+    private String title;
 
     @Override
     public NotificationEventType getEventType() {
-        return NotificationEventType.VIP_RENEWAL_REQUIRED;
+        return NotificationEventType.RESULT_DOWNLOAD;
     }
 
     @Override
     public Map<String, String> getVariablesWithContent() {
         Map<String, String> variablesWithContent = new HashMap<>();
         variablesWithContent.put(INDEXER_NAME, indexerName);
-        variablesWithContent.put(EXPIRATION_DATE, expirationDate);
+        variablesWithContent.put(TITLE, title);
         return variablesWithContent;
     }
 
     @Override
     public NotificationEvent getTestInstance() {
-        return new IndexerVipExpiryNotificationEvent("Some Indexer", "2030-03-03");
+        return new DownloadNotificationEvent("Some Indexer", "Some result");
     }
 
 

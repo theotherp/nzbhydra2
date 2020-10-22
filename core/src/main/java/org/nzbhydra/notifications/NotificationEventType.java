@@ -24,6 +24,7 @@ public enum NotificationEventType {
     INDEXER_DISABLED,
     INDEXER_REENABLED,
     UPDATE_INSTALLED,
-    AUTH_FAILURE
+    AUTH_FAILURE,
+    RESULT_DOWNLOAD
 
 }
