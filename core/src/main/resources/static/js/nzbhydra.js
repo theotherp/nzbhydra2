@@ -10970,10 +10970,17 @@ function NotificationService($http) {
             messageType: "FAILURE"
         },
         RESULT_DOWNLOAD: {
-            readable: "Download",
-            titleTemplate: "Download",
-            bodyTemplate: "NZBHydra: The title \"$title$\" was downloaded from indexer $indexerName$.",
+            readable: "NZB download",
+            titleTemplate: "NZB download",
+            bodyTemplate: "NZBHydra: The result \"$title$\" was grabbed from indexer $indexerName$.",
             templateHelp: "Available variables: $title, $indexerName$, $source$ (NZB or torrent), $age$ ([] for torrents).",
+            messageType: "INFO"
+        },
+        RESULT_DOWNLOAD_COMPLETION: {
+            readable: "Download completion",
+            titleTemplate: "Download completion",
+            bodyTemplate: "NZBHydra: Download of \"$title$\" has finished. Download result: $downloadResult$.",
+            templateHelp: "Requires the downloading tool to be configured. Available variables: $title, $downloadResult$.",
             messageType: "INFO"
         },
         INDEXER_DISABLED: {

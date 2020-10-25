@@ -35,6 +35,7 @@ import org.nzbhydra.downloading.InvalidSearchResultIdException;
 import org.nzbhydra.downloading.exceptions.DownloaderException;
 import org.nzbhydra.downloading.exceptions.DuplicateNzbException;
 import org.nzbhydra.logging.LoggingMarkers;
+import org.nzbhydra.notifications.DownloadCompletionNotificationEvent;
 import org.nzbhydra.searching.db.SearchResultEntity;
 import org.nzbhydra.searching.db.SearchResultRepository;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem.DownloadType;
@@ -42,6 +43,7 @@ import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -76,6 +78,8 @@ public abstract class Downloader {
     protected FileHandler nzbHandler;
     @Autowired
     protected SearchResultRepository searchResultRepository;
+    @Autowired
+    private ApplicationEventPublisher applicationEventPublisher;
 
     protected DownloaderConfig downloaderConfig;
     protected List<Long> downloadRates = new ArrayList<>();
@@ -231,6 +235,10 @@ public abstract class Downloader {
                             download.setStatus(newStatus);
                             updatedDownloads.add(download);
                             logger.info("Updating download status for {} to {}", entry.getNzbName(), newStatus);
+                        }
+                        if (newStatus.isFinal()) {
+                            logger.debug(LoggingMarkers.NOTIFICATIONS, "Throwing notification for final download status {} of {}", newStatus, entry.getNzbName());
+                            applicationEventPublisher.publishEvent(new DownloadCompletionNotificationEvent(entry.getNzbName(), newStatus.humanize()));
                         }
                     }
                 }

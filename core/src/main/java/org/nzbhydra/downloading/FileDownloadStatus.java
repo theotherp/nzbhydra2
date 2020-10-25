@@ -68,4 +68,22 @@ public enum FileDownloadStatus {
     public boolean canUpdate(FileDownloadStatus status) {
         return Arrays.asList(this.canUpdate).contains(status);
     }
+
+    public boolean isFinal() {
+        return this == CONTENT_DOWNLOAD_SUCCESSFUL || this == CONTENT_DOWNLOAD_ERROR || this == CONTENT_DOWNLOAD_WARNING;
+    }
+
+    public String humanize() {
+        switch (this) {
+            case CONTENT_DOWNLOAD_SUCCESSFUL:
+                return "Download successful";
+            case CONTENT_DOWNLOAD_WARNING:
+                return "Download warning";
+            case CONTENT_DOWNLOAD_ERROR:
+                return "Download error";
+        }
+        return this.name();
+    }
+
+
 }

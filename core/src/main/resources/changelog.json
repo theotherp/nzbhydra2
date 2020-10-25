@@ -7,6 +7,10 @@
         "text": "Added age and source variables to download notification."
       },
       {
+        "type": "feature",
+        "text": "The previously added \"Download\" notification was only for when a result was grabbed from Hydra. I've aded a notification for download completion, i.e. when the download finishes the download."
+      },
+      {
         "type": "fix",
         "text": "Fixed external configuration of Radarr and Sonarr V3."
       }
