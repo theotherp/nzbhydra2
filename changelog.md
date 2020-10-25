@@ -1,3 +1,13 @@
+### v3.4.0 (2020-10-25)
+
+**Feature** Added age and source variables to download notification.
+
+**Feature** The previously added "Download" notification was only for when a result was grabbed from Hydra. I've aded a notification for download completion, i.e. when the download finishes the download.
+
+**Fix** Fixed external configuration of Radarr and Sonarr V3.
+
+
+
 ### v3.3.0 (2020-10-22)
 
 **Feature** Added notifications for downloads.
