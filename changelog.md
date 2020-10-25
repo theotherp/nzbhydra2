@@ -1,3 +1,9 @@
+### v3.4.1 (2020-10-25)
+
+**Fix** Fixed external configuration of Radarr and Sonarr V3 (wrt torrents).
+
+
+
 ### v3.4.0 (2020-10-25)
 
 **Feature** Added age and source variables to download notification.
