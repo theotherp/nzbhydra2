@@ -293,7 +293,11 @@ public class ExternalTools {
             }
 
             xdarrAddRequest.getFields().add(new XdarrAddRequestField("baseUrl", addRequest.getNzbhydraHost() + "/torznab"));
-            xdarrAddRequest.getFields().add(new XdarrAddRequestField("minimumSeeders", addRequest.getMinimumSeeders() != null ? addRequest.getMinimumSeeders() : "1"));
+            if (externalTool.isV3()) {
+                xdarrAddRequest.getFields().add(new XdarrAddRequestField("minimumSeeders", addRequest.getMinimumSeeders() != null ? Integer.parseInt(addRequest.getMinimumSeeders()) : 1));
+            } else {
+                xdarrAddRequest.getFields().add(new XdarrAddRequestField("minimumSeeders", addRequest.getMinimumSeeders() != null ? addRequest.getMinimumSeeders() : "1"));
+            }
         } else {
             xdarrAddRequest.getFields().add(new XdarrAddRequestField("baseUrl", addRequest.getNzbhydraHost()));
         }
@@ -325,10 +329,15 @@ public class ExternalTools {
                 xdarrAddRequest.getFields().add(new XdarrAddRequestField("SearchByTitle", false));
             }
 
+            //todo make configurable via dialog
             if (backendType == BackendType.Torznab) {
-                //todo make configurable via dialog
-                xdarrAddRequest.getFields().add(new XdarrAddRequestField("requiredFlags", ""));
+                if (externalTool.isV3()) {
+                    xdarrAddRequest.getFields().add(new XdarrAddRequestField("requiredFlags", Collections.emptyList()));
+                } else {
+                    xdarrAddRequest.getFields().add(new XdarrAddRequestField("requiredFlags", ""));
+                }
             }
+
         }
 
         if (externalTool != AddRequest.ExternalTool.Radarr) {
