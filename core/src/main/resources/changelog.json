@@ -5,6 +5,10 @@
       {
         "type": "feature",
         "text": "Added age and source variables to download notification."
+      },
+      {
+        "type": "fix",
+        "text": "Fixed external configuration of Radarr and Sonarr V3."
       }
     ],
     "final": true

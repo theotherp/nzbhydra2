@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -228,11 +229,14 @@ public class ExternalTools {
 
     private void executeConfigurationRequest(AddRequest addRequest, BackendType backendType, IndexerConfig indexer) throws IOException {
         XdarrIndexer xdarrAddRequest = new XdarrIndexer();
+        final AddRequest.ExternalTool externalTool = addRequest.getExternalTool();
         xdarrAddRequest.setConfigContract(backendType == BackendType.Newznab ? "NewznabSettings" : "TorznabSettings");
         //Only for sonarr and lidarr
         xdarrAddRequest.setEnableAutomaticSearch(addRequest.isEnableAutomaticSearch());
         //For Radarr
-        xdarrAddRequest.setEnableSearch(addRequest.isEnableAutomaticSearch());
+        if (externalTool == AddRequest.ExternalTool.Radarr) {
+            xdarrAddRequest.setEnableSearch(addRequest.isEnableAutomaticSearch());
+        }
         xdarrAddRequest.setEnableInteractiveSearch(addRequest.isEnableInteractiveSearch());
         xdarrAddRequest.setEnableRss(addRequest.isEnableRss());
         xdarrAddRequest.setImplementation(backendType == BackendType.Newznab ? "Newznab" : "Torznab");
@@ -257,8 +261,10 @@ public class ExternalTools {
         }
         xdarrAddRequest.getFields().add(new XdarrAddRequestField("additionalParameters", getAdditionalParameters(addRequest, indexer == null ? null : indexer.getName())));
 
-        final AddRequest.ExternalTool externalTool = addRequest.getExternalTool();
-        if (externalTool != AddRequest.ExternalTool.Lidarr && externalTool != AddRequest.ExternalTool.Radarrv3) {
+        if (externalTool == AddRequest.ExternalTool.Sonarrv3) {
+            //V3 requires an empty list if no categories are supplied
+            xdarrAddRequest.getFields().add(new XdarrAddRequestField("animeCategories", addRequest.getAnimeCategories() == null ? Collections.emptyList() : addRequest.getAnimeCategories()));
+        } else if (externalTool != AddRequest.ExternalTool.Lidarr && externalTool != AddRequest.ExternalTool.Radarrv3) {
             if (Strings.isNullOrEmpty(addRequest.getAnimeCategories())) {
                 xdarrAddRequest.getFields().add(new XdarrAddRequestField("animeCategories", ""));
             } else {
@@ -310,7 +316,11 @@ public class ExternalTools {
         if (externalTool.isRadarr()) {
             xdarrAddRequest.getFields().add(new XdarrAddRequestField("removeYear", addRequest.isRemoveYearFromSearchString()));
             //Not easily mapped as it's a list of numbers mapped to language names
-            xdarrAddRequest.getFields().add(new XdarrAddRequestField("multiLanguages", ""));
+            if (externalTool == AddRequest.ExternalTool.Radarrv3) {
+                xdarrAddRequest.getFields().add(new XdarrAddRequestField("multiLanguages", Collections.emptyList()));
+            } else {
+                xdarrAddRequest.getFields().add(new XdarrAddRequestField("multiLanguages", ""));
+            }
             if (externalTool == AddRequest.ExternalTool.Radarr) {
                 xdarrAddRequest.getFields().add(new XdarrAddRequestField("SearchByTitle", false));
             }
@@ -343,7 +353,7 @@ public class ExternalTools {
         final String response;
         try {
             final String url = getExternalToolUrl(addRequest);
-            logger.debug("Calling URL {} with data {}", url, xdarrAddRequest);
+            logger.debug(LoggingMarkers.EXTERNAL_TOOLS, "Calling URL {} with data\n{} and body\n{}", url, xdarrAddRequest, body);
 
             response = webAccess.postToUrl(url, MediaType.get("application/json"), body, getAuthHeaders(addRequest), 10);
             logger.debug(LoggingMarkers.EXTERNAL_TOOLS, "Received response body: {}", response);
@@ -445,6 +455,7 @@ public class ExternalTools {
         public Boolean enableRss;
         public Boolean enableAutomaticSearch;
         public Boolean enableInteractiveSearch;
+        @JsonInclude(JsonInclude.Include.NON_NULL)
         public Boolean enableSearch;
         public Boolean supportsRss;
         public Boolean supportsSearch;
