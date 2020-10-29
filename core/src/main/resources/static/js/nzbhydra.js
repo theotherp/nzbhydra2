@@ -2189,7 +2189,7 @@ function hydraChecksFooter() {
                     $http.get('internalapi/notifications').then(function (response) {
                         var unreadNotifications = response.data;
                         if (unreadNotifications.length > ConfigService.getSafe().notificationConfig.displayNotificationsMax) {
-                            growl.info(unreadNotifications.length + ' have piled up. <a href=stats/notifications>Go to the notification history to view them.</a>', {disableCountDown: true});
+                            growl.info(unreadNotifications.length + ' notifications have piled up. <a href=stats/notifications>Go to the notification history to view them.</a>', {disableCountDown: true});
                             for (var i = 0; i < unreadNotifications.length; i++) {
                                 $http.put('internalapi/notifications/markRead/' + unreadNotifications[i].id);
                             }
