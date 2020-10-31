@@ -1,3 +1,9 @@
+### v3.4.3 (2020-10-31)
+
+**Fix** Fix error that ocurred when notifications without Apprise URLs were sent.
+
+
+
 ### v3.4.2 (2020-10-29)
 
 **Fix** Fix error that ocurred when notifications without Apprise URLs were sent.
