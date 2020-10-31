@@ -2191,7 +2191,15 @@ function hydraChecksFooter() {
                         if (unreadNotifications.length > ConfigService.getSafe().notificationConfig.displayNotificationsMax) {
                             growl.info(unreadNotifications.length + ' notifications have piled up. <a href=stats/notifications>Go to the notification history to view them.</a>', {disableCountDown: true});
                             for (var i = 0; i < unreadNotifications.length; i++) {
-                                $http.put('internalapi/notifications/markRead/' + unreadNotifications[i].id);
+                                if (unreadNotifications[i].id !== undefined) {
+                                    console.log("Undefined ID found for notification " + unreadNotifications[i]);
+                                    continue;
+                                }
+                                $http.put('internalapi/notifications/markRead/' + unreadNotifications[i].id)
+                                    .then(function () {
+                                    }, function (reason) {
+                                        console.log(reason);
+                                    })
                             }
                             return;
                         }
@@ -2212,11 +2220,19 @@ function hydraChecksFooter() {
                                     growl.danger(body);
                                     break;
                             }
-                            $http.put('internalapi/notifications/markRead/' + notification.id);
+                            if (notification.id !== undefined) {
+                                console.log("Undefined ID found for notification " + unreadNotifications[i]);
+                                continue;
+                            }
+                            $http.put('internalapi/notifications/markRead/' + notification.id).then(function () {
+                            }, function (reason) {
+                                console.log(reason);
+                            });
                         }
                     });
 
                 } catch (e) {
+                    console.log(e);
                     clearInterval(notificationsTimer);
                 }
             });
