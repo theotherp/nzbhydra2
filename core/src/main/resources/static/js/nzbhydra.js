@@ -2191,7 +2191,7 @@ function hydraChecksFooter() {
                         if (unreadNotifications.length > ConfigService.getSafe().notificationConfig.displayNotificationsMax) {
                             growl.info(unreadNotifications.length + ' notifications have piled up. <a href=stats/notifications>Go to the notification history to view them.</a>', {disableCountDown: true});
                             for (var i = 0; i < unreadNotifications.length; i++) {
-                                if (unreadNotifications[i].id !== undefined) {
+                                if (unreadNotifications[i].id === undefined) {
                                     console.log("Undefined ID found for notification " + unreadNotifications[i]);
                                     continue;
                                 }
@@ -2220,7 +2220,7 @@ function hydraChecksFooter() {
                                     growl.danger(body);
                                     break;
                             }
-                            if (notification.id !== undefined) {
+                            if (notification.id === undefined) {
                                 console.log("Undefined ID found for notification " + unreadNotifications[i]);
                                 continue;
                             }
@@ -12204,6 +12204,8 @@ angular
     .module('nzbhydraApp').controller('DownloaderCategorySelectionController', ["$scope", "$uibModalInstance", "DownloaderCategoriesService", "categories", function ($scope, $uibModalInstance, DownloaderCategoriesService, categories) {
 
     $scope.categories = categories;
+    categories.sort();
+    console.log(categories);
     $scope.select = function (category) {
         DownloaderCategoriesService.select(category);
         $uibModalInstance.close($scope);

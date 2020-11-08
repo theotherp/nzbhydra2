@@ -81,6 +81,8 @@ angular
     .module('nzbhydraApp').controller('DownloaderCategorySelectionController', function ($scope, $uibModalInstance, DownloaderCategoriesService, categories) {
 
     $scope.categories = categories;
+    categories.sort();
+    console.log(categories);
     $scope.select = function (category) {
         DownloaderCategoriesService.select(category);
         $uibModalInstance.close($scope);
