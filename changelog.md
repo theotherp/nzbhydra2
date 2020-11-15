@@ -1,3 +1,11 @@
+### v3.5.0 (2020-11-15)
+
+**Feature** Use (bigger) buttons for downloader category selection.
+
+**Fix** Fix recognition of java version with recet OpenJDK update.
+
+
+
 ### v3.4.3 (2020-10-31)
 
 **Fix** Fix error that ocurred when notifications without Apprise URLs were sent.
