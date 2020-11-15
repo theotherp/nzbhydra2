@@ -1,3 +1,9 @@
+### v3.5.1 (2020-11-15)
+
+**Fix** Fix linux wrapper executable.
+
+
+
 ### v3.5.0 (2020-11-15)
 
 **Feature** Use (bigger) buttons for downloader category selection.
