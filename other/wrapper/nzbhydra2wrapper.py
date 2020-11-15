@@ -366,7 +366,9 @@ def startup():
         logger.info("Removing superfluous M from XMX value " + xmx)
         xmx = xmx[:-1]
 
-    javaVersion = getJavaVersion(args.java)
+    javaVersion = args.javaversion
+    if javaVersion is None:
+        javaVersion = getJavaVersion(args.java)
 
     gcLogFilename = (os.path.join(args.datafolder, "logs") + "/gclog-" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".log").replace("\\", "/")
     gcLogFilename = os.path.relpath(gcLogFilename, basePath)
@@ -493,7 +495,7 @@ def getJavaVersion(javaExecutable):
         if len(lines) == 0:
             raise Exception("Unable to get output from call to java -version")
         versionLine = lines[0].replace("\n", "").replace("\r", "")
-        match = re.match('(java|openjdk) version "(?P<major>\d+)((\.(?P<minor>\d+)\.(?P<patch>\d)+)?[\-_\w]*)?".*', versionLine)
+        match = re.match('(java|openjdk) (version )?"?(?P<major>\d+)((\.(?P<minor>\d+)\.(?P<patch>\d)+)?[\-_\w]*)?"?.*', versionLine)
         if match is None:
             raise Exception("Unable to determine java version from string " + lines[0])
         javaMajor = int(match.group("major"))
@@ -517,6 +519,7 @@ if __name__ == '__main__':
     GracefulKiller()
     parser = argparse.ArgumentParser(description='NZBHydra 2')
     parser.add_argument('--java', action='store', help='Full path to java executable', default="java")
+    parser.add_argument('--javaversion', action='store',help='Force version of java  for which parameters java will be created', default=None)
     parser.add_argument('--debugport', action='store', help='Set debug port to enable remote debugging', default=None)
     parser.add_argument('--daemon', '-D', action='store_true', help='Run as daemon. *nix only', default=False)
     parser.add_argument('--pidfile', action='store', help='Path to PID file. Only relevant with daemon argument', default="nzbhydra2.pid")
