@@ -9,6 +9,7 @@ import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.exceptions.IndexerAuthException;
 import org.nzbhydra.indexers.exceptions.IndexerErrorCodeException;
+import org.nzbhydra.indexers.exceptions.IndexerNoIdConversionPossibleException;
 import org.nzbhydra.indexers.exceptions.IndexerParsingException;
 import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
 import org.nzbhydra.indexers.exceptions.IndexerUnreachableException;
@@ -136,6 +137,10 @@ public abstract class Indexer<T> {
 
             }
 
+        } catch (IndexerNoIdConversionPossibleException e) {
+            info(e.getMessage());
+            indexerSearchResult = new IndexerSearchResult(this, e.getMessage());
+            eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, e.getMessage()));
         } catch (IndexerSearchAbortedException e) {
             warn("Unexpected error while preparing search: " + e.getMessage());
             indexerSearchResult = new IndexerSearchResult(this, e.getMessage());

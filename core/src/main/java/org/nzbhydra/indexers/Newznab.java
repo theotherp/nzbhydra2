@@ -13,6 +13,7 @@ import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.exceptions.IndexerAuthException;
 import org.nzbhydra.indexers.exceptions.IndexerErrorCodeException;
+import org.nzbhydra.indexers.exceptions.IndexerNoIdConversionPossibleException;
 import org.nzbhydra.indexers.exceptions.IndexerProgramErrorException;
 import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
 import org.nzbhydra.indexers.status.IndexerLimit;
@@ -148,11 +149,11 @@ public class Newznab extends Indexer<Xml> {
         return componentsBuilder;
     }
 
-    private void verifyIdentifiersNotUnhandled(SearchRequest searchRequest, UriComponentsBuilder componentsBuilder, String query) throws IndexerSearchAbortedException {
+    private void verifyIdentifiersNotUnhandled(SearchRequest searchRequest, UriComponentsBuilder componentsBuilder, String query) throws IndexerNoIdConversionPossibleException {
         //Make sure we didn't for some reason neither find any usable search IDs nor generate a query
         String currentUriString = componentsBuilder.toUriString();
         if (Strings.isNullOrEmpty(query) && !searchRequest.getIdentifiers().isEmpty() && idTypeToParamValueMap.values().stream().noneMatch(currentUriString::contains)) {
-            throw new IndexerSearchAbortedException("Aborting searching for indexer because no usable search IDs could be found and no query was generated");
+            throw new IndexerNoIdConversionPossibleException("Aborting searching for indexer because no usable search IDs could be found and no query was generated");
         }
     }
 
@@ -299,7 +300,7 @@ public class Newznab extends Indexer<Xml> {
                             }
                             //Most indexers don't actually support IMDB IDs for tv searches and would return unrelevant results
                             if (searchRequest.getSearchType() == SearchType.TVSEARCH && config.getSupportedSearchIds().contains(MediaIdType.TVIMDB)) {
-                                params.put(MediaIdType.IMDB, info.getImdbId().get().replace("tt", ""));
+                                params.put(MediaIdType.TVIMDB, info.getImdbId().get().replace("tt", ""));
                             }
                         }
                         if (info.getTmdbId().isPresent()) {

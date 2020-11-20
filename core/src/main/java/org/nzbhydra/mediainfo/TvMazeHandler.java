@@ -50,7 +50,7 @@ public class TvMazeHandler {
                 throw new InfoProviderException("Unable to handle " + idType);
         }
 
-        ResponseEntity<TvmazeShow> showLookupResponse = null;
+        ResponseEntity<TvmazeShow> showLookupResponse;
         try {
             showLookupResponse = restTemplate.getForEntity(builder.build().encode().toUri(), TvmazeShow.class);
         } catch (HttpClientErrorException.NotFound e) {
