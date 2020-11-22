@@ -5,6 +5,10 @@
       {
         "type": "feature",
         "text": "When aborting an indexer search because no ID conversion was possible Hydra will now show a less... serious message. This is an expected problem, not an error."
+      },
+      {
+        "type": "fix",
+        "text": "Remove ampersand (&) from titles when searching indexers as they're interpreted specially."
       }
     ],
     "final": true

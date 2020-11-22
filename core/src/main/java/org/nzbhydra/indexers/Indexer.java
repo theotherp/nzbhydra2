@@ -401,7 +401,7 @@ public abstract class Indexer<T> {
         if (Strings.isNullOrEmpty(title)) {
             return title;
         }
-        title = title.trim();
+        title = title.trim().replace("&", "");
 
         List<String> removeTrailing = configProvider.getBaseConfig().getSearching().getRemoveTrailing().stream().map(x -> x.toLowerCase().trim()).collect(Collectors.toList());
         if (removeTrailing.isEmpty()) {
