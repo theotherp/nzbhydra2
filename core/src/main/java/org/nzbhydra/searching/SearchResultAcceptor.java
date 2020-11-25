@@ -102,11 +102,11 @@ public class SearchResultAcceptor {
             }
 
             //Forbidden words from query
-            if (!checkForForbiddenWords(indexerConfig, reasonsForRejection, searchRequest.getInternalData().getForbiddenWords(), item)) {
+            if (!checkForForbiddenWords(indexerConfig, reasonsForRejection, searchRequest.getInternalData().getForbiddenWords(), item, "internal data")) {
                 continue;
             }
 
-            if (!checkRequiredWords(reasonsForRejection, searchRequest.getInternalData().getRequiredWords(), item)) {
+            if (!checkRequiredWords(reasonsForRejection, searchRequest.getInternalData().getRequiredWords(), item, "internal data")) {
                 continue;
             }
 
@@ -117,10 +117,10 @@ public class SearchResultAcceptor {
                 if (!checkRegexes(item, reasonsForRejection, baseConfig.getSearching().getRequiredRegex().orElse(null), baseConfig.getSearching().getForbiddenRegex().orElse(null))) {
                     continue;
                 }
-                if (!checkRequiredWords(reasonsForRejection, baseConfig.getSearching().getRequiredWords(), item)) {
+                if (!checkRequiredWords(reasonsForRejection, baseConfig.getSearching().getRequiredWords(), item, "searching config")) {
                     continue;
                 }
-                if (!checkForForbiddenWords(indexerConfig, reasonsForRejection, baseConfig.getSearching().getForbiddenWords(), item)) {
+                if (!checkForForbiddenWords(indexerConfig, reasonsForRejection, baseConfig.getSearching().getForbiddenWords(), item, "searching config")) {
                     continue;
                 }
             }
@@ -131,10 +131,10 @@ public class SearchResultAcceptor {
                 if (!checkRegexes(item, reasonsForRejection, item.getCategory().getRequiredRegex().orElse(null), item.getCategory().getForbiddenRegex().orElse(null))) {
                     continue;
                 }
-                if (!checkRequiredWords(reasonsForRejection, item.getCategory().getRequiredWords(), item)) {
+                if (!checkRequiredWords(reasonsForRejection, item.getCategory().getRequiredWords(), item, "category")) {
                     continue;
                 }
-                if (!checkForForbiddenWords(indexerConfig, reasonsForRejection, item.getCategory().getForbiddenWords(), item)) {
+                if (!checkForForbiddenWords(indexerConfig, reasonsForRejection, item.getCategory().getForbiddenWords(), item, "category")) {
                     continue;
                 }
             }
@@ -287,20 +287,20 @@ public class SearchResultAcceptor {
         return true;
     }
 
-    protected boolean checkRequiredWords(Multiset<String> reasonsForRejection, List<String> requiredWords, SearchResultItem item) {
+    protected boolean checkRequiredWords(Multiset<String> reasonsForRejection, List<String> requiredWords, SearchResultItem item, String source) {
         if (!requiredWords.isEmpty()) {
             List<String> titleWords = getTitleWords(item);
             boolean allPresent = true;
             for (String requiredWord : requiredWords) {
                 if (requiredWord.contains(".") || requiredWord.contains("-")) {
                     if (!item.getTitle().toLowerCase().contains(requiredWord.toLowerCase())) {
-                        logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "Did not found required word {} in the title {}", requiredWord, item.getTitle());
+                        logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "Did not find required word {} (from {}) in the title {}", requiredWord, source, item.getTitle());
                         allPresent = false;
                         break;
                     }
                 } else {
                     if (!titleWords.contains(requiredWord.toLowerCase())) { //Words must match
-                        logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "Did not found required word {} in the title {}", requiredWord, item.getTitle());
+                        logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "Did not find required word {} (from {}) in the title {}", requiredWord, source, item.getTitle());
                         allPresent = false;
                         break;
                     }
@@ -326,19 +326,19 @@ public class SearchResultAcceptor {
 
     }
 
-    protected boolean checkForForbiddenWords(IndexerConfig indexerConfig, Multiset<String> reasonsForRejection, List<String> forbiddenWords, SearchResultItem item) {
+    protected boolean checkForForbiddenWords(IndexerConfig indexerConfig, Multiset<String> reasonsForRejection, List<String> forbiddenWords, SearchResultItem item, String source) {
         for (String forbiddenWord : forbiddenWords) {
             if (forbiddenWord.contains("-") || forbiddenWord.contains(".") || indexerConfig.getHost().toLowerCase().contains("nzbgeek")) {
                 if (item.getTitle().toLowerCase().contains(forbiddenWord.toLowerCase())) {
                     reasonsForRejection.add("Forbidden word");
-                    logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "Found forbidden word {} in title {}", forbiddenWord, item.getTitle());
+                    logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "Found forbidden word {} (from {}) in title {}", forbiddenWord, source, item.getTitle());
                     return false;
                 }
             } else {
                 List<String> titleWords = getTitleWords(item);
-                Optional<String> found = titleWords.stream().filter(x -> x.toLowerCase().equals(forbiddenWord.toLowerCase())).findFirst(); //Title word must match excluded word to reject result, not just be contained
+                Optional<String> found = titleWords.stream().filter(x -> x.equalsIgnoreCase(forbiddenWord)).findFirst(); //Title word must match excluded word to reject result, not just be contained
                 if (found.isPresent()) {
-                    logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "Found forbidden word in title word {}", found.get());
+                    logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "Found forbidden word (from {}) in title word {}", source, found.get());
                     reasonsForRejection.add("Forbidden word");
                     return false;
                 }

@@ -133,7 +133,7 @@ public class SearchWeb {
 
         if (!searchRequest.getIdentifiers().isEmpty() && searchRequest.getQuery().isPresent()) {
             //Add additional restrictions to required words
-            logger.debug("Adding additional search terms '{}' to required words", searchRequest.getQuery().get());
+            logger.info("Moving additional search terms '{}' from query to required words", searchRequest.getQuery().get());
             searchRequest.getInternalData().getRequiredWords().addAll(Splitter.on(" ").splitToList(searchRequest.getQuery().get()));
             //Remove query, would be ignored by most indexers anyway
             searchRequest.setQuery(null);
