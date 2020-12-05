@@ -1,3 +1,11 @@
+### v3.6.0 (2020-12-05)
+
+**Feature** When aborting an indexer search because no ID conversion was possible Hydra will now show a less... serious message. This is an expected problem, not an error.
+
+**Fix** Remove ampersand (&) from titles when searching indexers as they're interpreted specially.
+
+
+
 ### v3.5.1 (2020-11-15)
 
 **Fix** Fix linux wrapper executable.
