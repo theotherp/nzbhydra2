@@ -1417,7 +1417,7 @@ function dropdownMultiselectDirective() {
                             $scope.buttonText = "All selected";
                         } else {
                             var selected = [];
-                            _.each($scope.options, function(x) {
+                            _.each($scope.options, function (x) {
                                 if ($scope.selectedModel.indexOf(x.id) > -1) {
                                     selected.push(x.label);
                                 }

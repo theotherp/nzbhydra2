@@ -2,12 +2,19 @@ package org.nzbhydra.config;
 
 
 import lombok.Data;
+import org.nzbhydra.logging.LoggingMarkers;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 @Data
 public class LoggingConfig extends ValidatingConfig<LoggingConfig> {
+
+    private static final Logger logger = LoggerFactory.getLogger(LoggingConfig.class);
 
     @RestartRequired
     private String consolelevel;
@@ -37,6 +44,13 @@ public class LoggingConfig extends ValidatingConfig<LoggingConfig> {
 
     @Override
     public LoggingConfig prepareForSaving(BaseConfig oldBaseConfig) {
+        for (Iterator<String> iterator = markersToLog.iterator(); iterator.hasNext(); ) {
+            String marker = iterator.next();
+            if (Arrays.stream(LoggingMarkers.class.getDeclaredFields()).noneMatch(x -> x.getName().equals(marker))) {
+                logger.info("Removing logging marker that doesn't exist anymore.");
+                iterator.remove();
+            }
+        }
         return this;
     }
 
