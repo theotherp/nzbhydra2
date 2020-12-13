@@ -1194,7 +1194,8 @@ function ConfigFields($injector) {
                             }
                         }
                     ]
-                }, {
+                },
+                {
                     wrapper: 'fieldset',
                     templateOptions: {
                         label: 'Result display'
@@ -1207,36 +1208,6 @@ function ConfigFields($injector) {
                                 type: 'switch',
                                 label: 'Display all retrieved results',
                                 help: 'Load all results already retrieved from indexers. Might make sorting / filtering a bit slower. Will still be paged according to the limit set above.'
-                            }
-                        },
-                        {
-                            key: 'showQuickFilterButtons',
-                            type: 'horizontalSwitch',
-                            templateOptions: {
-                                type: 'switch',
-                                label: 'Show quick filters',
-                                help: 'Show quick filter buttons for movie and TV results.'
-                            }
-                        },
-                        {
-                            key: 'alwaysShowQuickFilterButtons',
-                            type: 'horizontalSwitch',
-                            hideExpression: '!model.showQuickFilterButtons',
-                            templateOptions: {
-                                type: 'switch',
-                                label: 'Always show quick filters',
-                                help: 'Show all quick filter buttons for all types of searches.'
-                            }
-                        },
-                        {
-                            key: 'customQuickFilterButtons',
-                            type: 'horizontalChips',
-                            hideExpression: '!model.showQuickFilterButtons',
-                            templateOptions: {
-                                type: 'text',
-                                label: 'Custom quick filters',
-                                help: 'Enter in the format "DisplayName=Required1,Required2". Apply values with enter key.',
-                                tooltip: 'E.g. use "WEB=webdl,web-dl." for a quick filter with the name "WEB" to be displayed that searches for "webdl" and "web-dl" in lowercase search results.'
                             }
                         },
                         {
@@ -1268,6 +1239,78 @@ function ConfigFields($injector) {
                         }
                     ]
                 }, {
+                    wrapper: 'fieldset',
+                    templateOptions: {
+                        label: 'Quick filters'
+                    },
+                    fieldGroup: [
+                        {
+                            key: 'showQuickFilterButtons',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Show quick filters',
+                                help: 'Show quick filter buttons for movie and TV results.'
+                            }
+                        },
+                        {
+                            key: 'alwaysShowQuickFilterButtons',
+                            type: 'horizontalSwitch',
+                            hideExpression: '!model.showQuickFilterButtons',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Always show quick filters',
+                                help: 'Show all quick filter buttons for all types of searches.'
+                            }
+                        },
+                        {
+                            key: 'customQuickFilterButtons',
+                            type: 'horizontalChips',
+                            hideExpression: '!model.showQuickFilterButtons',
+                            templateOptions: {
+                                type: 'text',
+                                label: 'Custom quick filters',
+                                help: 'Enter in the format "DisplayName=Required1,Required2". Apply values with enter key.',
+                                tooltip: 'E.g. use "WEB=webdl,web-dl." for a quick filter with the name "WEB" to be displayed that searches for "webdl" and "web-dl" in lowercase search results.'
+                            }
+                        },
+                        {
+                            key: 'preselectQuickFilterButtons',
+                            type: 'horizontalMultiselect',
+                            hideExpression: '!model.showQuickFilterButtons',
+                            templateOptions: {
+                                label: 'Preselect quickfilters',
+                                help: 'Choose which quickfilters will be selected by default.',
+                                options: [
+                                    {id: 'source|camts', label: 'CAM / TS'},
+                                    {id: 'source|tv', label: 'TV'},
+                                    {id: 'source|web', label: 'WEB'},
+                                    {id: 'source|dvd', label: 'DVD'},
+                                    {id: 'source|bluray', label: 'Blu-Ray'},
+                                    {id: 'quality|q480p', label: '480p'},
+                                    {id: 'quality|q720p', label: '720p'},
+                                    {id: 'quality|q1080p', label: '1080p'},
+                                    {id: 'quality|q2160p', label: '2160p'},
+                                    {id: 'other|q3d', label: '3D'},
+                                    {id: 'other|qx265', label: 'x265'},
+                                    {id: 'other|qhevc', label: 'HEVC'},
+                                ],
+                                optionsFunction: function (model) {
+                                    var customQuickFilters = [];
+                                    _.each(model.customQuickFilterButtons, function (entry) {
+                                        var split1 = entry.split("=");
+                                        var displayName = split1[0];
+                                        customQuickFilters.push({id: "custom|" + displayName, label: displayName})
+                                    })
+                                    return customQuickFilters;
+                                },
+                                tooltip: 'To select custom quickfilters you just entered please save the config first.',
+                                buttonText: "None"
+                            }
+                        }
+                    ]
+                },
+                {
                     wrapper: 'fieldset',
                     templateOptions: {
                         label: 'Duplicate detection',

@@ -53,6 +53,7 @@ public class SearchingConfig extends ValidatingConfig<SearchingConfig> {
     private boolean showQuickFilterButtons = true;
     private boolean alwaysShowQuickFilterButtons = false;
     private List<String> customQuickFilterButtons = new ArrayList<>();
+    private List<String> preselectQuickFilterButtons = new ArrayList<>();
     private Integer timeout = 30;
     private boolean transformNewznabCategories = true;
     private String userAgent = "NZBHydra2";

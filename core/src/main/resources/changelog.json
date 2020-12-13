@@ -4,7 +4,11 @@
     "changes": [
       {
         "type": "feature",
-        "text": "Add display option to hide 'Results as ZIP' button."
+        "text": "New display option to hide 'Results as ZIP' button."
+      },
+      {
+        "type": "feature",
+        "text": "New option to choose quickfilters that should be preselected."
       },
       {
         "type": "fix",

@@ -347,7 +347,8 @@ angular
             defaultOptions: {
                 templateOptions: {
                     optionsAttr: 'bs-options',
-                    ngOptions: 'option[to.valueProp] as option in to.options | filter: $select.search'
+                    ngOptions: 'option[to.valueProp] as option in to.options | filter: $select.search',
+                    // optionsFunction: function(){return []}
                 }
             },
             template: '<span multiselect-dropdown options="to.options" selected-model="model[options.key]" settings="settings" events="events"></span>',
@@ -356,6 +357,9 @@ angular
                 settings.classes = settings.classes || [];
                 angular.extend(settings.classes, ["form-control"]);
                 $scope.settings = settings;
+                if ($scope.options.templateOptions.optionsFunction !== null && $scope.options.templateOptions.optionsFunction !== undefined) {
+                    $scope.to.options.push.apply($scope.to.options, $scope.options.templateOptions.optionsFunction($scope.model));
+                }
                 $scope.events = {
                     onToggleItem: function (item, newValue) {
                         $scope.form.$setDirty(true);

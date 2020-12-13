@@ -66,7 +66,14 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         var displayName = split1[0];
         $scope.filterButtonsModelMap[displayName] = split1[1].split(",");
         $scope.customFilterButtons.push(displayName);
+    });
+    _.each(ConfigService.getSafe().searching.preselectQuickFilterButtons, function (entry) {
+        var split1 = entry.split("|");
+        var category = split1[0];
+        var id = split1[1];
+        $scope.filterButtonsModel[category][id] = true;
     })
+
     $scope.numberOfFilteredResults = 0;
 
 
