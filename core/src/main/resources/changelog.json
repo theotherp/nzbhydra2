@@ -31,7 +31,7 @@
         "text": "Report API errors as JSON instead of XML when appropriate."
       }
     ],
-    "final": true
+    "final": false
   },
   {
     "version": "v3.6.0",
