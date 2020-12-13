@@ -1,4 +1,24 @@
-### v3.6.0 (2020-12-05)
+### v3.7.0 BETA (2020-12-13)
+
+**Feature** New display option to hide 'Results as ZIP' button.
+
+**Feature** New option to choose quickfilters that should be preselected.
+
+**Feature** New option to select the primary downloader for which the footer will show the status.
+
+**Fix** Re-add 'No category' to category selection which got lost in 3.5.0.
+
+**Fix** The multiselect widgets in the config will now show the labels of the selected values, not their internal ID.
+
+**Fix** 'Searching...' window was not closed when all found results were being filtered.
+
+**Fix** Don't show the blue loading bar when checking for notifications.
+
+**Fix** Report API errors as JSON instead of XML when appropriate.
+
+
+
+### v3.6.0
 
 **Feature** When aborting an indexer search because no ID conversion was possible Hydra will now show a less... serious message. This is an expected problem, not an error.
 
