@@ -1,3 +1,13 @@
+### v3.8.0 BETA (2020-12-13)
+
+**Feature** Add 'Show advanced' switch to config. I'd already tried to get this working twice - third time's the charm!.
+
+**Feature** Add button to clear color for an indexer.
+
+**Fix** Apply indexer colors to expanded results as well. To mark expanded results they're shown in a darker shade so it's recommended to use indexer colors which not only differ in lightness.
+
+
+
 ### v3.7.0 BETA (2020-12-13)
 
 **Feature** New display option to hide 'Results as ZIP' button.
@@ -18,7 +28,7 @@
 
 
 
-### v3.6.0
+### v3.6.0 (2020-12-05)
 
 **Feature** When aborting an indexer search because no ID conversion was possible Hydra will now show a less... serious message. This is an expected problem, not an error.
 
