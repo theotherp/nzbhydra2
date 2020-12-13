@@ -170,20 +170,16 @@ angular
         formlyConfigProvider.setType({
             name: 'colorInput',
             extends: 'horizontalInput',
-            template: [
-                '<div class="input-group">',
-                '<input type="text" class="form-control" value="{{convertColor()}}" style="background-color: {{convertColor()}}"/>',
-                '<span class="input-group-btn input-group-btn2">',
-                '<button colorpicker="rgb" ng-model="model[options.key]" class="btn btn-default" type="button"><i class="fa fa-eyedropper" aria-hidden="true"></i></input>',
-                '</div>'
-            ].join(' '),
+            templateUrl: 'static/html/config/color-control.html',
             controller: function ($scope) {
                 $scope.convertColor = function () {
                     if (_.isNullOrEmpty($scope.model.color)) {
                         return "";
                     }
-
                     return $scope.model.color.replace("rgb", "rgba").replace(")", ",0.5)");
+                }
+                $scope.clear = function () {
+                    $scope.model.color = null;
                 }
             }
         });

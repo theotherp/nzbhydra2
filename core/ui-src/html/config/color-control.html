@@ -1,0 +1,30 @@
+<!--
+  ~  (C) Copyright 2020 TheOtherP (theotherp@posteo.net)
+  ~
+  ~  Licensed under the Apache License, Version 2.0 (the "License");
+  ~  you may not use this file except in compliance with the License.
+  ~  You may obtain a copy of the License at
+  ~
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~  Unless required by applicable law or agreed to in writing, software
+  ~  distributed under the License is distributed on an "AS IS" BASIS,
+  ~  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~  See the License for the specific language governing permissions and
+  ~  limitations under the License.
+  -->
+
+<div class="input-group">
+  <input type="text" class="form-control" value="{{convertColor()}}" style="background-color: {{convertColor()}}"/>
+  <span class="input-group-btn input-group-btn2" style="border-left: 0">
+   <button colorpicker="rgb" ng-model="model[options.key]" class="btn btn-default" type="button">
+     <i class="fa fa-eyedropper" aria-hidden="true"></i>
+    </button>
+  </span>
+  <span class="input-group-btn input-group-btn2" style="border-left-width: 1px; border-radius: 0">
+   <button ng-click="clear()" class="btn btn-default" type="button">
+     <i class="fa fa-remove" aria-hidden="true"></i>
+    </button>
+  </span>
+
+</div>

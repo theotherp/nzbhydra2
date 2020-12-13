@@ -3865,6 +3865,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
             templateOptions: {
                 label: 'Color',
                 help: 'If set it will be used in the search results to mark the indexer\'s results.',
+                tooltip: 'To mark expanded results they\'re shown in a darker shade so it\'s recommended to use indexer colors which not only differ in lightness',
                 advanced: true
             }
         }
@@ -5154,20 +5155,16 @@ angular
         formlyConfigProvider.setType({
             name: 'colorInput',
             extends: 'horizontalInput',
-            template: [
-                '<div class="input-group">',
-                '<input type="text" class="form-control" value="{{convertColor()}}" style="background-color: {{convertColor()}}"/>',
-                '<span class="input-group-btn input-group-btn2">',
-                '<button colorpicker="rgb" ng-model="model[options.key]" class="btn btn-default" type="button"><i class="fa fa-eyedropper" aria-hidden="true"></i></input>',
-                '</div>'
-            ].join(' '),
+            templateUrl: 'static/html/config/color-control.html',
             controller: function ($scope) {
                 $scope.convertColor = function () {
                     if (_.isNullOrEmpty($scope.model.color)) {
                         return "";
                     }
-
                     return $scope.model.color.replace("rgb", "rgba").replace(")", ",0.5)");
+                }
+                $scope.clear = function() {
+                    $scope.model.color = null;
                 }
             }
         });
@@ -9833,11 +9830,12 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         }
 
         _.each(results, function (result) {
+            console.log("Retrieving color for " + result.title + " from " + result.indexer);
             var indexerColor = indexerColors[result.indexer];
             if (indexerColor === undefined || indexerColor === null) {
+                console.log("No color found for " + result.title + " from " + result.indexer);
                 return "";
             }
-            console.log(indexerColor);
             result.style = "background-color: " + indexerColor.replace("rgb", "rgba").replace(")", ",0.5)")
         });
 
@@ -10083,10 +10081,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         }, 1);
     });
 
-    $scope.getBgColorForResult = function (result) {
-        console.log(result.indexer);
-        return "background-color: red";
-    }
 
     $timeout(function () {
         DebugService.print();

@@ -388,6 +388,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
             templateOptions: {
                 label: 'Color',
                 help: 'If set it will be used in the search results to mark the indexer\'s results.',
+                tooltip: 'To mark expanded results they\'re shown in a darker shade so it\'s recommended to use indexer colors which not only differ in lightness',
                 advanced: true
             }
         }

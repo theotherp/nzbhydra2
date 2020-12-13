@@ -629,11 +629,12 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         }
 
         _.each(results, function (result) {
+            console.log("Retrieving color for " + result.title + " from " + result.indexer);
             var indexerColor = indexerColors[result.indexer];
             if (indexerColor === undefined || indexerColor === null) {
+                console.log("No color found for " + result.title + " from " + result.indexer);
                 return "";
             }
-            console.log(indexerColor);
             result.style = "background-color: " + indexerColor.replace("rgb", "rgba").replace(")", ",0.5)")
         });
 
@@ -879,10 +880,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         }, 1);
     });
 
-    $scope.getBgColorForResult = function (result) {
-        console.log(result.indexer);
-        return "background-color: red";
-    }
 
     $timeout(function () {
         DebugService.print();

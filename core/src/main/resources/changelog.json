@@ -5,6 +5,14 @@
       {
         "type": "feature",
         "text": "Add 'Show advanced' switch to config. I'd already tried to get this working twice - third time's the charm!."
+      },
+      {
+        "type": "feature",
+        "text": "Add button to clear color for an indexer."
+      },
+      {
+        "type": "fix",
+        "text": "Apply indexer colors to expanded results as well. To mark expanded results they're shown in a darker shade so it's recommended to use indexer colors which not only differ in lightness."
       }
     ],
     "final": false
