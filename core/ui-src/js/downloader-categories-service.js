@@ -18,7 +18,6 @@ function DownloaderCategoriesService($http, $q, $uibModal) {
 
     return service;
 
-
     function getCategories(downloader) {
         function loadAll() {
             if (downloader.name in categories) {

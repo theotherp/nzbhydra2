@@ -1,5 +1,15 @@
 [
   {
+    "version": "v3.7.0",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Re-add 'No category' to category selection which got lost in 3.5.0."
+      }
+    ],
+    "final": true
+  },
+  {
     "version": "v3.6.0",
     "changes": [
       {

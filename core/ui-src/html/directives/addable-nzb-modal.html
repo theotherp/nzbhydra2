@@ -2,8 +2,10 @@
   <h3 class="modal-title">Please select the category</h3>
 </div>
 <div class="modal-body" style="text-align: center">
-  
   <div>
+    <button class="btn btn-default category-button" type="button" ng-click="select('')">
+      No category
+    </button>
     <button ng-repeat="category in categories" class="btn btn-default category-button" type="button" ng-click="select(category)">
       {{ category }}
     </button>

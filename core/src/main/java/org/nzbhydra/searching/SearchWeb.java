@@ -53,7 +53,7 @@ public class SearchWeb {
 
     private Lock lock = new ReentrantLock();
 
-    private Map<Long, SearchState> searchStates = ExpiringMap.builder()
+    private final Map<Long, SearchState> searchStates = ExpiringMap.builder()
             .maxSize(10)
             .expiration(5, TimeUnit.MINUTES) //This should be more than enough... Nobody will wait that long
             .expirationPolicy(ExpirationPolicy.ACCESSED)
