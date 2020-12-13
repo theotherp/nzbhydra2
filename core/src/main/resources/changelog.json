@@ -20,6 +20,10 @@
       },
       {
         "type": "fix",
+        "text": "The multiselect widgets in the config will now show the labels of the selected values, not their internal ID."
+      },
+      {
+        "type": "fix",
         "text": "'Searching...' window was not closed when all found results were being filtered."
       },
       {

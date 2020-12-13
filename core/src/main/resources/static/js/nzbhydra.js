@@ -1416,7 +1416,13 @@ function dropdownMultiselectDirective() {
                         } else if ($scope.selectedModel.length === $scope.options.length) {
                             $scope.buttonText = "All selected";
                         } else {
-                            $scope.buttonText = $scope.selectedModel.join(", ");
+                            var selected = [];
+                            _.each($scope.options, function(x) {
+                                if ($scope.selectedModel.indexOf(x.id) > -1) {
+                                    selected.push(x.label);
+                                }
+                            })
+                            $scope.buttonText = selected.join(", ");
                         }
                     } else {
                         if (angular.isUndefined($scope.selectedModel) || ($scope.settings.noSelectedText && $scope.selectedModel.length === 0)) {
