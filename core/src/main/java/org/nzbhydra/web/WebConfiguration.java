@@ -7,6 +7,7 @@ import org.nzbhydra.api.stats.StatsRequestConverter;
 import org.nzbhydra.config.EmptyStringToNullDeserializer;
 import org.nzbhydra.config.EmptyStringToNullSerializer;
 import org.nzbhydra.mapping.newznab.NewznabResponse;
+import org.nzbhydra.mapping.newznab.OutputType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -177,8 +178,7 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
         @Override
         public void write(Object o, MediaType contentType, HttpOutputMessage outputMessage) throws IOException, HttpMessageNotWritableException {
             NewznabResponse newznabResponse = (NewznabResponse) o;
-            NewznabResponse.SearchType searchType = ((NewznabResponse) o).getSearchType();
-            if (searchType == NewznabResponse.SearchType.JSON) {
+            if (determineOutputType((NewznabResponse) o) == OutputType.JSON) {
                 jacksonConverter.setPrettyPrint(true);
                 jacksonConverter.write(o, MediaType.APPLICATION_JSON, outputMessage);
             } else {
@@ -195,6 +195,21 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
                 result = result.replace("<searchType>TORZNAB</searchType>", "").replace("<searchType>NEWZNAB</searchType>", "");
                 outputMessage.getBody().write(result.getBytes(StandardCharsets.UTF_8));
             }
+        }
+
+        private OutputType determineOutputType(NewznabResponse o) {
+            NewznabResponse.SearchType searchType = o.getSearchType();
+            OutputType outputType;
+            if (searchType != null) {
+                if (searchType == NewznabResponse.SearchType.JSON) {
+                    outputType = OutputType.JSON;
+                } else {
+                    outputType = OutputType.XML;
+                }
+            } else {
+                outputType = SessionStorage.outputType.get();
+            }
+            return outputType;
         }
 
 

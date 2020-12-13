@@ -1,5 +1,6 @@
 package org.nzbhydra.web;
 
+import org.nzbhydra.mapping.newznab.OutputType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,6 +17,8 @@ public class SessionStorage {
     public static final ThreadLocal<String> userAgent =
             ThreadLocal.withInitial(() -> null);
     public static final ThreadLocal<String> requestUrl =
+            ThreadLocal.withInitial(() -> null);
+    public static final ThreadLocal<OutputType> outputType =
             ThreadLocal.withInitial(() -> null);
 
 

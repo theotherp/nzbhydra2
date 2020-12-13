@@ -110,6 +110,7 @@ public class ExternalApi {
         if (params.getT() != null && params.getT().isSearch()) {
             MDC.put("SEARCH", String.valueOf(searchRequestId));
         }
+        SessionStorage.outputType.set(params.getO());
         NewznabResponse.SearchType searchType = getSearchType();
         logger.info("Received external {} API call: {}", searchType.name().toLowerCase(), params);
 

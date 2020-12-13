@@ -25,6 +25,10 @@
       {
         "type": "fix",
         "text": "Don't show the blue loading bar when checking for notifications."
+      },
+      {
+        "type": "fix",
+        "text": "Report API errors as JSON instead of XML when appropriate."
       }
     ],
     "final": true
