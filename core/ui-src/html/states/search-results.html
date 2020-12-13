@@ -147,7 +147,7 @@
               id="search-results-selection-button"></span>
         <download-nzbs-button search-results="selected" callback="downloadNzbsCallback(result)"></download-nzbs-button>
         <download-nzbzip-button search-results="selected" search-title="searchTitle"
-                                callback="downloadNzbsCallback(result)"></download-nzbzip-button>
+                                callback="downloadNzbsCallback(result)" ng-if="foo.showResultsAsZipButton"></download-nzbzip-button>
     </div>
 
     <div class="col-md-4" style="margin-top: 20px">

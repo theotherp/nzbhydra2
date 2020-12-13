@@ -9306,7 +9306,8 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         groupEpisodes: localStorageService.get("groupEpisodes") !== null ? localStorageService.get("groupEpisodes") : true,
         expandGroupsByDefault: localStorageService.get("expandGroupsByDefault") !== null ? localStorageService.get("expandGroupsByDefault") : false,
         showDownloadedIndicator: localStorageService.get("showDownloadedIndicator") !== null ? localStorageService.get("showDownloadedIndicator") : true,
-        hideAlreadyDownloadedResults: localStorageService.get("hideAlreadyDownloadedResults") !== null ? localStorageService.get("hideAlreadyDownloadedResults") : true
+        hideAlreadyDownloadedResults: localStorageService.get("hideAlreadyDownloadedResults") !== null ? localStorageService.get("hideAlreadyDownloadedResults") : true,
+        showResultsAsZipButton: localStorageService.get("showResultsAsZipButton") !== null ? localStorageService.get("showResultsAsZipButton") : true
     };
 
 
@@ -9347,7 +9348,8 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         {id: "groupEpisodes", label: "Group TV results by season/episode"},
         {id: "expandGroupsByDefault", label: "Expand groups by default"},
         {id: "showDownloadedIndicator", label: "Show already downloaded indicator"},
-        {id: "hideAlreadyDownloadedResults", label: "Hide already downloaded results"}
+        {id: "hideAlreadyDownloadedResults", label: "Hide already downloaded results"},
+        {id: "showResultsAsZipButton", label: "Show button to download results as ZIP"},
     ];
     $scope.optionsSelectedModel = [];
     for (var key in $scope.optionsOptions) {
@@ -9382,6 +9384,8 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
                 toggleDownloadedIndicator(newValue);
             } else if (item.id === "hideAlreadyDownloadedResults") {
                 toggleHideAlreadyDownloadedResults(newValue);
+            }else if (item.id === "showResultsAsZipButton") {
+                toggleShowResultsAsZipButton(newValue);
             }
         }
     };
@@ -9443,10 +9447,14 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
 
     function toggleHideAlreadyDownloadedResults(value) {
         localStorageService.set("hideAlreadyDownloadedResults", value);
-        $scope.shared.hideAlreadyDownloadedResults = value;
         $scope.foo.hideAlreadyDownloadedResults = value;
-        console.log("Bo")
         blockAndUpdate();
+    }
+
+function toggleShowResultsAsZipButton(value) {
+        localStorageService.set("showResultsAsZipButton", value);
+        $scope.shared.showResultsAsZipButton = value;
+        $scope.foo.showResultsAsZipButton = value;
     }
 
 

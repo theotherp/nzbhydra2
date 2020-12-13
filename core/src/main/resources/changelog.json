@@ -3,6 +3,10 @@
     "version": "v3.7.0",
     "changes": [
       {
+        "type": "feature",
+        "text": "Add display option to hide 'Results as ZIP' button."
+      },
+      {
         "type": "fix",
         "text": "Re-add 'No category' to category selection which got lost in 3.5.0."
       }
