@@ -53,9 +53,11 @@ angular
         formlyConfigProvider.setType({
             name: 'help',
             template: [
+                '<div  ng-show="model.showAdvanced || !to.advanced">',
                 '<div class="panel panel-default" style="margin-top: {{options.templateOptions.marginTop}}; margin-bottom: {{options.templateOptions.marginBottom}} ;">',
                 '<div class="panel-body {{options.templateOptions.class}}">',
                 '<div ng-repeat="line in options.templateOptions.lines"><h5>{{ line | derefererExtracting | unsafe }} </h5></div>',
+                '</div>',
                 '</div>',
                 '</div>'
             ].join(' ')

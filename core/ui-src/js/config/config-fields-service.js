@@ -59,7 +59,7 @@ function ConfigFields($injector) {
         };
     }
 
-    function getFields(rootModel) {
+    function getFields(rootModel, showAdvanced) {
         return {
             main: [
                 {
@@ -102,7 +102,8 @@ function ConfigFields($injector) {
                                 label: 'URL base',
                                 placeholder: '/nzbhydra',
                                 help: 'Adapt when using a reverse proxy. See <a href="https://github.com/theotherp/nzbhydra2/wiki/Exposing-Hydra-to-the-internet-and-using-reverse-proxies" target="_blank">wiki</a>. Always use when calling Hydra, even locally.',
-                                tooltip: 'If you use Hydra behind a reverse proxy you might want to set the URL base to a value like "/nzbhydra". If you accesses Hydra with tools running outside your network (for example from your phone) set the external URL so that it matches the full Hydra URL. That way the NZB links returned in the search results refer to your global URL and not your local address.'
+                                tooltip: 'If you use Hydra behind a reverse proxy you might want to set the URL base to a value like "/nzbhydra". If you accesses Hydra with tools running outside your network (for example from your phone) set the external URL so that it matches the full Hydra URL. That way the NZB links returned in the search results refer to your global URL and not your local address.',
+                                advanced: true
                             },
                             validators: {
                                 urlBase: regexValidator(/^((\/.*[^\/])|\/)$/, 'URL base has to start and may not end with /', false, true)
@@ -116,7 +117,8 @@ function ConfigFields($injector) {
                                 type: 'switch',
                                 label: 'Use SSL',
                                 help: 'Requires restart.',
-                                tooltip: 'You can use SSL but I recommend using a reverse proxy with SSL. See the wiki for notes regarding reverse proxies and SSL. It\'s more secure and can be configured better.'
+                                tooltip: 'You can use SSL but I recommend using a reverse proxy with SSL. See the wiki for notes regarding reverse proxies and SSL. It\'s more secure and can be configured better.',
+                                advanced: true
                             }
                         },
                         {
@@ -149,7 +151,8 @@ function ConfigFields($injector) {
                     wrapper: 'fieldset',
                     templateOptions: {
                         label: 'Proxy',
-                        tooltip: 'You can select to use either a SOCKS or an HTTPS proxy. All outside connections will be done via the configured proxy.'
+                        tooltip: 'You can select to use either a SOCKS or an HTTPS proxy. All outside connections will be done via the configured proxy.',
+                        advanced: true
                     }
                     ,
                     fieldGroup: [
@@ -268,7 +271,8 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'text',
                                 label: 'Dereferer',
-                                help: 'Redirect external links to hide your instance. Insert $s for target URL. Use empty value to disable.'
+                                help: 'Redirect external links to hide your instance. Insert $s for target URL. Use empty value to disable.',
+                                advanced: true
                             }
                         },
                         {
@@ -276,7 +280,8 @@ function ConfigFields($injector) {
                             type: 'horizontalSwitch',
                             templateOptions: {
                                 label: 'Verify SSL certificates',
-                                help: 'If enabled only valid/known SSL certificates will be accepted when accessing indexers. Change requires restart. See <a href="https://github.com/theotherp/nzbhydra2/wiki/SSL-verification-errors" target="_blank">wiki</a>.'
+                                help: 'If enabled only valid/known SSL certificates will be accepted when accessing indexers. Change requires restart. See <a href="https://github.com/theotherp/nzbhydra2/wiki/SSL-verification-errors" target="_blank">wiki</a>.',
+                                advanced: true
                             }
                         },
                         {
@@ -285,7 +290,8 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'text',
                                 label: 'Disable SSL for...',
-                                help: 'Add hosts for which to disable SSL verification. Apply words with return key.'
+                                help: 'Add hosts for which to disable SSL verification. Apply words with return key.',
+                                advanced: true
                             }
                         },
                         {
@@ -294,7 +300,8 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'text',
                                 label: 'Disable SSL locally',
-                                help: 'Disable SSL for local hosts.'
+                                help: 'Disable SSL for local hosts.',
+                                advanced: true
                             }
                         },
                         {
@@ -303,7 +310,8 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'text',
                                 label: 'Disable SNI',
-                                help: 'Add a host if you get an "unrecognized_name" error. Apply words with return key. See <a href="https://github.com/theotherp/nzbhydra2/wiki/SSL-verification-errors" target="_blank">wiki</a>.'
+                                help: 'Add a host if you get an "unrecognized_name" error. Apply words with return key. See <a href="https://github.com/theotherp/nzbhydra2/wiki/SSL-verification-errors" target="_blank">wiki</a>.',
+                                advanced: true
                             }
                         },
                         {
@@ -311,7 +319,8 @@ function ConfigFields($injector) {
                             type: 'horizontalSwitch',
                             templateOptions: {
                                 label: 'Use CSRF protection',
-                                help: 'Use <a href="https://en.wikipedia.org/wiki/Cross-site_request_forgery" target="_blank">CSRF protection</a>.'
+                                help: 'Use <a href="https://en.wikipedia.org/wiki/Cross-site_request_forgery" target="_blank">CSRF protection</a>.',
+                                advanced: true
                             }
                         }
                     ]
@@ -323,6 +332,7 @@ function ConfigFields($injector) {
                     templateOptions: {
                         label: 'Logging',
                         tooltip: 'The base settings should suffice for most users. If you want you can enable logging of IP adresses for failed logins and NZB downloads.',
+                        advanced: true
                     },
                     fieldGroup: [
                         {
@@ -449,7 +459,10 @@ function ConfigFields($injector) {
                 },
                 {
                     wrapper: 'fieldset',
-                    templateOptions: {label: 'Backup'},
+                    templateOptions: {
+                        label: 'Backup',
+                        advanced: true
+                    },
                     fieldGroup: [
                         {
                             key: 'backupFolder',
@@ -496,7 +509,8 @@ function ConfigFields($injector) {
                             type: 'horizontalSwitch',
                             templateOptions: {
                                 type: 'switch',
-                                label: 'Install prereleases'
+                                label: 'Install prereleases',
+                                advanced: true
                             }
                         },
                         {
@@ -507,7 +521,8 @@ function ConfigFields($injector) {
                                 label: 'Delete backups after...',
                                 addonRight: {
                                     text: 'weeks'
-                                }
+                                },
+                                advanced: true
                             }
                         },
                         {
@@ -522,7 +537,10 @@ function ConfigFields($injector) {
                 },
                 {
                     wrapper: 'fieldset',
-                    templateOptions: {label: 'History'},
+                    templateOptions: {
+                        label: 'History',
+                        advanced: true
+                    },
                     fieldGroup: [
                         {
                             key: 'keepHistory',
@@ -568,7 +586,8 @@ function ConfigFields($injector) {
                     wrapper: 'fieldset',
                     templateOptions: {
                         label: 'Database',
-                        tooltip: 'You should not change these values unless you\'re either told to or really know what you\'re doing.'
+                        tooltip: 'You should not change these values unless you\'re either told to or really know what you\'re doing.',
+                        advanced: true
                     },
                     fieldGroup: [
                         {
@@ -655,7 +674,8 @@ function ConfigFields($injector) {
                     wrapper: 'fieldset',
                     templateOptions: {
                         label: 'Indexer access',
-                        tooltip: 'Settings that control how communication with indexers is done and how to handle errors while doing that.'
+                        tooltip: 'Settings that control how communication with indexers is done and how to handle errors while doing that.',
+                        advanced: true
                     },
                     fieldGroup: [
                         {
@@ -679,7 +699,7 @@ function ConfigFields($injector) {
                                 label: 'User agent',
                                 help: 'Used when accessing indexers.',
                                 required: true,
-                                tooltip: 'Some indexers don\'t seem to like Hydra and disable access based on the user agent. You can change it here if you want. Please leave it as it is if you have no problems. This allows indexers to gather better statistics on how their API services are used.'
+                                tooltip: 'Some indexers don\'t seem to like Hydra and disable access based on the user agent. You can change it here if you want. Please leave it as it is if you have no problems. This allows indexers to gather better statistics on how their API services are used.',
                             }
                         },
                         {
@@ -688,7 +708,7 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'text',
                                 label: 'Map user agents',
-                                help: 'Used to map the user agent from accessing services to the service names. Apply words with return key.'
+                                help: 'Used to map the user agent from accessing services to the service names. Apply words with return key.',
                             }
                         },
                         {
@@ -697,7 +717,7 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'switch',
                                 label: 'Ignore load limiting internally',
-                                help: 'When enabled load limiting defined for indexers will be ignored for internal searches.'
+                                help: 'When enabled load limiting defined for indexers will be ignored for internal searches.',
                             }
                         },
                         {
@@ -706,7 +726,7 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'switch',
                                 label: 'Ignore temporary errors',
-                                tooltip: "By default if access to an indexer fails the indexer is disabled for a certain amount of time (for a short while first, then increasingly longer if the problems persist). Disable this and always try these indexers."
+                                tooltip: "By default if access to an indexer fails the indexer is disabled for a certain amount of time (for a short while first, then increasingly longer if the problems persist). Disable this and always try these indexers.",
                             }
                         }
                     ]
@@ -714,7 +734,8 @@ function ConfigFields($injector) {
                     wrapper: 'fieldset',
                     templateOptions: {
                         label: 'Category handling',
-                        tooltip: 'Settings that control the handling of newznab categories (e.g. 2000 for Movies).'
+                        tooltip: 'Settings that control the handling of newznab categories (e.g. 2000 for Movies).',
+                        advanced: true
                     },
                     fieldGroup: [
 
@@ -756,7 +777,8 @@ function ConfigFields($injector) {
                                     {name: 'All searches', value: 'BOTH'},
                                     {name: 'Never', value: 'NONE'}
                                 ],
-                                help: "When enabled media ID conversions will always be done even when an indexer supports the already known ID(s)."
+                                help: "When enabled media ID conversions will always be done even when an indexer supports the already known ID(s).",
+                                advanced: true
                             }
                         },
                         {
@@ -1170,7 +1192,8 @@ function ConfigFields($injector) {
                                 type: 'text',
                                 label: 'Wrap API errors in empty results page',
                                 help: 'When enabled accessing tools will think the search was completed successfully but without results.',
-                                tooltip: 'In (hopefully) rare cases Hydra may crash when processing an API search request. You can enable to return an empty search page in these cases (if Hydra hasn\'t crashed altogether ). This means that the calling tool (e.g. Sonarr) will think that the indexer (Hydra) is fine but just didn\'t return a result. That way Hydra won\'t be disabled as indexer but on the downside you may not be directly notified that an error occurred.'
+                                tooltip: 'In (hopefully) rare cases Hydra may crash when processing an API search request. You can enable to return an empty search page in these cases (if Hydra hasn\'t crashed altogether ). This means that the calling tool (e.g. Sonarr) will think that the indexer (Hydra) is fine but just didn\'t return a result. That way Hydra won\'t be disabled as indexer but on the downside you may not be directly notified that an error occurred.',
+                                advanced: true
                             }
                         },
                         {
@@ -1190,7 +1213,8 @@ function ConfigFields($injector) {
                                 type: 'switch',
                                 label: 'Use original categories',
                                 help: 'Enable to use the category descriptions provided by the indexer.',
-                                tooltip: 'Hydra attempts to parse the provided newznab category IDs for results and map them to the configured categories. In some cases this may lead to category names which are not quite correct. You can select to use the original category name used by the indexer. This will only affect which category name is shown in the results.'
+                                tooltip: 'Hydra attempts to parse the provided newznab category IDs for results and map them to the configured categories. In some cases this may lead to category names which are not quite correct. You can select to use the original category name used by the indexer. This will only affect which category name is shown in the results.',
+                                advanced: true
                             }
                         }
                     ]
@@ -1207,7 +1231,8 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'switch',
                                 label: 'Display all retrieved results',
-                                help: 'Load all results already retrieved from indexers. Might make sorting / filtering a bit slower. Will still be paged according to the limit set above.'
+                                help: 'Load all results already retrieved from indexers. Might make sorting / filtering a bit slower. Will still be paged according to the limit set above.',
+                                advanced: true
                             }
                         },
                         {
@@ -1221,7 +1246,8 @@ function ConfigFields($injector) {
                                 },
                                 max: 500,
                                 required: true,
-                                help: 'Determines the number of results shown on one page. This might also cause more API hits because indexers are queried until the number of results is matched or all indexers are exhausted. Limit is 500.'
+                                help: 'Determines the number of results shown on one page. This might also cause more API hits because indexers are queried until the number of results is matched or all indexers are exhausted. Limit is 500.',
+                                advanced: true
                             }
                         },
                         {
@@ -1314,7 +1340,8 @@ function ConfigFields($injector) {
                     wrapper: 'fieldset',
                     templateOptions: {
                         label: 'Duplicate detection',
-                        tooltip: 'Hydra tries to find duplicate results from different indexers using heuristics. You can control the parameters for that but usually the default values work quite well.'
+                        tooltip: 'Hydra tries to find duplicate results from different indexers using heuristics. You can control the parameters for that but usually the default values work quite well.',
+                        advanced: true
                     },
                     fieldGroup: [
                         {
@@ -1348,7 +1375,8 @@ function ConfigFields($injector) {
                 {
                     wrapper: 'fieldset',
                     templateOptions: {
-                        label: 'Other'
+                        label: 'Other',
+                        advanced: true
                     },
                     fieldGroup: [
                         {
@@ -1416,7 +1444,8 @@ function ConfigFields($injector) {
                             "The category configuration is not validated in any way. You can seriously fuck up Hydra's results and overall behavior so take care.",
                             "Restrictions will taken from a result's category, not the search request category which may not always be the same."
                         ],
-                        marginTop: '50px'
+                        marginTop: '50px',
+                        advanced: true
                     }
                 },
                 {
@@ -1426,6 +1455,7 @@ function ConfigFields($injector) {
                     templateOptions: {
                         btnText: 'Add new category',
                         headline: 'Categories',
+                        advanced: true,
                         fields: [
                             {
                                 key: 'name',
@@ -1638,7 +1668,9 @@ function ConfigFields($injector) {
                                     {name: 'Redirect to the indexer', value: 'REDIRECT'}
                                 ],
                                 help: "How access to NZBs is provided when NZBs are downloaded (by the user or external tools). Proxying is recommended as it allows fallback for failed downloads (see below)..",
-                                tooltip: 'NZB downloads from Hydra can either be achieved by redirecting the requester to the original indexer or by downloading the NZB from the indexer and serving this. Redirecting has the advantage that it causes the least load on Hydra but also the disadvantage that the requester might be forwarded to an indexer link that contains the indexer\'s API key. To prevent that select to proxy NZBs. It also allows fallback for failed downloads (next option).'
+                                tooltip: 'NZB downloads from Hydra can either be achieved by redirecting the requester to the original indexer or by downloading the NZB from the indexer and serving this. Redirecting has the advantage that it causes the least load on Hydra but also the disadvantage that the requester might be forwarded to an indexer link that contains the indexer\'s API key. To prevent that select to proxy NZBs. It also allows fallback for failed downloads (next option).',
+                                advanced: true
+
                             }
                         },
                         {
@@ -1652,7 +1684,8 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 label: 'External URL',
                                 help: 'Used for links when sending links to the downloader.',
-                                tooltip: 'When using "Add links" to add NZBs to your downloader the links are usually calculated using the URL with which you accessed NZBHydra. This might be a URL that\'s not accessible by the downloader (e.g. when it\'s inside a docker container). Set the URL for NZBHydra that\'s accessible by the downloader here and it will be used instead. '
+                                tooltip: 'When using "Add links" to add NZBs to your downloader the links are usually calculated using the URL with which you accessed NZBHydra. This might be a URL that\'s not accessible by the downloader (e.g. when it\'s inside a docker container). Set the URL for NZBHydra that\'s accessible by the downloader here and it will be used instead. ',
+                                advanced: true
                             }
                         },
 
@@ -1687,7 +1720,8 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'switch',
                                 label: 'Update statuses',
-                                help: "Query your downloader for status updates of downloads"
+                                help: "Query your downloader for status updates of downloads",
+                                advanced: true
                             }
                         },
                         {
@@ -1696,7 +1730,8 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'switch',
                                 label: 'Show downloader footer',
-                                help: "Show footer with downloader status"
+                                help: "Show footer with downloader status",
+                                advanced: true
                             }
                         },
                         {
@@ -1777,7 +1812,8 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'string',
                                 label: 'Auth header',
-                                help: 'Name of header that provides the username in requests from secure sources.'
+                                help: 'Name of header that provides the username in requests from secure sources.',
+                                advanced: true
                             },
                             hideExpression: function () {
                                 return rootModel.auth.authType === "NONE";
@@ -1789,7 +1825,8 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'text',
                                 label: 'Secure IP ranges',
-                                help: 'IP ranges from which the auth header will be accepted. Apply with return key. Use values like "192.168.0.1-192.168.0.100" or single IP addresses like "127.0.0.1".'
+                                help: 'IP ranges from which the auth header will be accepted. Apply with return key. Use values like "192.168.0.1-192.168.0.100" or single IP addresses like "127.0.0.1".',
+                                advanced: true
                             },
                             hideExpression: function () {
                                 return rootModel.auth.authType === "NONE" || _.isNullOrEmpty(rootModel.auth.authHeader);
@@ -1816,7 +1853,8 @@ function ConfigFields($injector) {
                                 help: 'How long users are remembered.',
                                 addonRight: {
                                     text: 'days'
-                                }
+                                },
+                                advanced: true
                             }
                         }
 

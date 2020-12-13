@@ -1,12 +1,21 @@
 <div class="row">
   <form name="form" name="ctrl.myform" novalidate>
-    <ul class="nav nav-tabs" role="tablist">
+    <ul class="nav nav-tabs" role="tablist" style="text-align: left">
       <li ng-repeat="tab in allTabs" ng-class="{'active': $index == activeTab}">
         <a href="" ng-click="goToConfigState($index)">{{ tab.name }}</a>
       </li>
       <li style="float: right">
-  
-  
+    
+        <!--        We need to make this switch ourselves becase bs-switch will always make the model dirty-->
+        <div class="bootstrap-switch-off bootstrap-switch bootstrap-switch-advanced-toggle-wrapper bootstrap-switch-animate {{showAdvanced ? 'bootstrap-switch-on' : 'bootstrap-switch-off'}}"
+             style="width: 200px;" ng-click="toggleShowAdvanced()">
+          <div class="bootstrap-switch-container" style="width: 352px; margin-left: {{showAdvanced ? '0' : '-154'}}px;">
+            <span class="bootstrap-switch-handle-on bootstrap-switch-primary" style="width: 154px; opacity: 1">Show advanced</span>
+            <span class="bootstrap-switch-label" style="width: 48px;">&nbsp;</span>
+            <span class="bootstrap-switch-handle-off bootstrap-switch-default" style="width: 154px;">Hide advanced</span>
+            <input type="checkbox" ng-model="showAdvanced" class="ng-untouched ng-valid ng-not-empty ng-dirty" aria-invalid="false"></div>
+        </div>
+    
         <button type="button" class="btn config-button btn-default" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
                 uib-tooltip="Allows you to automatically configure NZBHydra2 as an indexer in an external tool."
                 tooltip-placement="top"
@@ -25,7 +34,7 @@
             <a ng-click="configureIn('Readarr')">Readarr</a>
           </li>
         </ul>
-  
+    
         <button ng-click="apiHelp()" class="btn config-button config-api-button btn-default">API?</button>
         <button ng-click="submit()" class="btn config-button" ng-class="{'btn-info': isSavingNeeded(), 'pulse2': isSavingNeeded(), 'btn-success': !isSavingNeeded()}">
           Save
@@ -90,7 +99,7 @@
 
 <script type="text/ng-template" id="repeatSection.html">
   <!--loop through each element in model array-->
-  <div class="{{ hideRepeat }} repeatWrapperClass">
+  <div class="{{ hideRepeat }} repeatWrapperClass" ng-show="model.showAdvanced || !to.advanced">
     <legend><span class="config-fieldset-legend">{{to.headline}}</span></legend>
     <div class="repeatsection modal-content" ng-repeat="element in model[options.key]"
          ng-init="fields = copyFields(to.fields)">
@@ -120,7 +129,7 @@
 </script>
 
 <script type="text/ng-template" id="setting-wrapper.html">
-  <div class="form-group form-horizontal setting-wrapper" ng-class="{'row': !options.templateOptions.noRow}">
+  <div class="form-group form-horizontal setting-wrapper" ng-class="{'row': !options.templateOptions.noRow}" ng-show="model.showAdvanced || !to.advanced">
     <!--Test-->
     <div style="text-align:right;">
       <label class="col-md-7 control-label config-label align-middle">
@@ -159,7 +168,7 @@
 </script>
 
 <script type="text/ng-template" id="fieldset-wrapper.html">
-  <fieldset>
+  <fieldset ng-show="model.showAdvanced || !to.advanced">
     <legend style="overflow: hidden">
    <span class="config-fieldset-legend">{{options.templateOptions.label}}
        <span class="glyphicon glyphicon-question-sign" ng-if="::options.templateOptions.tooltip"

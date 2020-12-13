@@ -32,7 +32,25 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
 
     $scope.restartRequired = false;
     $scope.ignoreSaveNeeded = false;
+    console.log(localStorageService.get("showAdvanced"));
+    if (localStorageService.get("showAdvanced") === null) {
+        $scope.showAdvanced = false;
+        localStorageService.set("showAdvanced", false);
+    } else {
+        $scope.showAdvanced = localStorageService.get("showAdvanced");
+    }
 
+
+    $scope.toggleShowAdvanced = function () {
+        $scope.showAdvanced = !$scope.showAdvanced;
+        var wasDirty = $scope.form.$dirty === true;
+
+        $scope.allTabs[$scope.activeTab].model.showAdvanced = $scope.showAdvanced === true;
+        //Also save in main tab where it will be stored to file
+        $scope.allTabs[0].model.showAdvanced = $scope.allTabs[$scope.activeTab].model.showAdvanced === true;
+        $scope.form.$dirty = wasDirty;
+        localStorageService.set("showAdvanced", $scope.showAdvanced);
+    }
 
     function updateAndAskForRestartIfNecessary(responseData) {
         if (angular.isUndefined($scope.form)) {
@@ -181,8 +199,7 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
             state: 'root.config.main',
             name: 'Main',
             model: ConfigModel.main,
-            fields: $scope.fields.main,
-            options: {}
+            fields: $scope.fields.main
         },
         {
             active: false,
@@ -233,6 +250,11 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
             options: {}
         }
     ];
+
+    //Copy showAdvanced setting over from main tab's setting
+    _.each($scope.allTabs, function (tab) {
+        tab.model.showAdvanced = $scope.showAdvanced === true;
+    })
 
     $scope.isSavingNeeded = function () {
         return $scope.form.$dirty && $scope.form.$valid && !$scope.ignoreSaveNeeded;

@@ -222,7 +222,8 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
                 type: 'number',
                 label: 'Timeout',
                 min: 1,
-                help: 'Supercedes the general timeout in "Searching".'
+                help: 'Supercedes the general timeout in "Searching".',
+                advanced: true
             }
         },
         {
@@ -231,7 +232,8 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
             templateOptions: {
                 type: 'text',
                 label: 'Schedule',
-                help: 'Determines when an indexer should be selected. See <a href="https://github.com/theotherp/nzbhydra2/wiki/Indexer-schedules" target="_blank">wiki</a>. You can enter multiple time spans. Apply values with return key.'
+                help: 'Determines when an indexer should be selected. See <a href="https://github.com/theotherp/nzbhydra2/wiki/Indexer-schedules" target="_blank">wiki</a>. You can enter multiple time spans. Apply values with return key.',
+                advanced: true
             }
         }
     );
@@ -304,7 +306,8 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
                     type: 'number',
                     label: 'Load limiting',
                     help: 'If set indexer will only be picked for one out of x API searches (on average).',
-                    tooltip: 'For indexers with a low API hit limit you can enable load limiting. Define any number n so that the indexer will only be used for searches in 1/n cases (on average). For example if you define a load limit of 5 the indexer will only be picked every fifth search.'
+                    tooltip: 'For indexers with a low API hit limit you can enable load limiting. Define any number n so that the indexer will only be used for searches in 1/n cases (on average). For example if you define a load limit of 5 the indexer will only be picked every fifth search.',
+                    advanced: true
                 },
                 validators: {
                     greaterThanZero: {
@@ -339,7 +342,8 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
                     type: 'text',
                     required: false,
                     label: 'User agent',
-                    help: 'Rarely needed. Will supercede the one in the main searching settings.'
+                    help: 'Rarely needed. Will supercede the one in the main searching settings.',
+                    advanced: true
                 }
             }
         )
@@ -371,7 +375,8 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
                     {name: 'Only API update queries ', value: 'ONLY_RSS'},
                     {name: 'Internal and any API searches', value: 'BOTH'}
                 ],
-                help: 'Select for which searches this indexer will be used. "Update queries" are searches without query or ID (e.g. done by Sonarr periodically).'
+                help: 'Select for which searches this indexer will be used. "Update queries" are searches without query or ID (e.g. done by Sonarr periodically).',
+                advanced: true
             }
         }
     );
@@ -382,7 +387,8 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
             type: 'colorInput',
             templateOptions: {
                 label: 'Color',
-                help: 'If set it will be used in the search results to mark the indexer\'s results.'
+                help: 'If set it will be used in the search results to mark the indexer\'s results.',
+                advanced: true
             }
         }
     );
@@ -418,7 +424,8 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
                     settings: {
                         showSelectedValues: false,
                         noSelectedText: "None/All"
-                    }
+                    },
+                    advanced: true
                 }
             }
         );
@@ -441,7 +448,8 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
                         {label: 'IMDB', id: 'IMDB'},
                         {label: 'TMDB', id: 'TMDB'}
                     ],
-                    noSelectedText: "None"
+                    noSelectedText: "None",
+                    advanced: true
                 }
             }
         );
@@ -458,7 +466,8 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
                         {label: 'Search', id: 'SEARCH'},
                         {label: 'TV', id: 'TVSEARCH'}
                     ],
-                    buttonText: "None"
+                    buttonText: "None",
+                    advanced: true
                 }
             }
         );
@@ -500,6 +509,7 @@ function _showBox(indexerModel, parentModel, isInitial, $uibModal, CategoriesSer
         size: 'lg',
         resolve: {
             model: function () {
+                indexerModel.showAdvanced = parentModel.showAdvanced;
                 return indexerModel;
             },
             fields: function () {
