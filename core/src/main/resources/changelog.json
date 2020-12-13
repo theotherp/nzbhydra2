@@ -13,6 +13,10 @@
       {
         "type": "fix",
         "text": "Re-add 'No category' to category selection which got lost in 3.5.0."
+      },
+      {
+        "type": "fix",
+        "text": "'Searching...' window was not closed when all found results were being filtered."
       }
     ],
     "final": true

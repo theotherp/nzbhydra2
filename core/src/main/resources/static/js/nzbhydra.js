@@ -9280,7 +9280,9 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         var split1 = entry.split("|");
         var category = split1[0];
         var id = split1[1];
-        $scope.filterButtonsModel[category][id] = true;
+        if (category !== 'source' || $scope.isShowFilterButtonsSource) {
+            $scope.filterButtonsModel[category][id] = true;
+        }
     })
 
     $scope.numberOfFilteredResults = 0;
@@ -9526,7 +9528,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
 
     setDataFromSearchResult(SearchService.getLastResults(), []);
     $scope.$emit("searchResultsShown");
-    if (!SearchService.getLastResults().searchResults || SearchService.getLastResults().searchResults.length === 0) {
+    if (!SearchService.getLastResults().searchResults || SearchService.getLastResults().searchResults.length === 0 || $scope.allResultsFiltered) {
         //Close modal instance because no search results will be rendered that could trigger the closing
         SearchService.getModalInstance().close();
         $scope.doShowResults = true;
@@ -9846,6 +9848,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
 
         var filtered = _.filter(results, filter);
         $scope.numberOfFilteredResults = results.length - filtered.length;
+        $scope.allResultsFiltered = ($scope.numberOfFilteredResults === results.length);
         console.log("Filtered " + $scope.numberOfFilteredResults + " out of " + results.length);
         var newSelected = $scope.selected;
         _.forEach($scope.selected, function (x) {
@@ -10094,48 +10097,48 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         DebugService.print();
     }, 3000);
 
-    $timeout(function () {
-        function getWatchers(root) {
-            root = angular.element(root || document.documentElement);
-            var watcherCount = 0;
-            var ids = [];
-
-            function getElemWatchers(element, ids) {
-                var isolateWatchers = getWatchersFromScope(element.data().$isolateScope, ids);
-                var scopeWatchers = getWatchersFromScope(element.data().$scope, ids);
-                var watchers = scopeWatchers.concat(isolateWatchers);
-                angular.forEach(element.children(), function (childElement) {
-                    watchers = watchers.concat(getElemWatchers(angular.element(childElement), ids));
-                });
-                return watchers;
-            }
-
-            function getWatchersFromScope(scope, ids) {
-                if (scope) {
-                    if (_.indexOf(ids, scope.$id) > -1) {
-                        return [];
-                    }
-                    ids.push(scope.$id);
-                    if (scope.$$watchers) {
-                        if (scope.$$watchers.length > 1) {
-                            var a;
-                            a = 1;
-                        }
-                        return scope.$$watchers;
-                    }
-                    {
-                        return [];
-                    }
-
-                } else {
-                    return [];
-                }
-            }
-
-            return getElemWatchers(root, ids);
-        }
-
-    }, $scope.limitTo);
+    // $timeout(function () {
+    //     function getWatchers(root) {
+    //         root = angular.element(root || document.documentElement);
+    //         var watcherCount = 0;
+    //         var ids = [];
+    //
+    //         function getElemWatchers(element, ids) {
+    //             var isolateWatchers = getWatchersFromScope(element.data().$isolateScope, ids);
+    //             var scopeWatchers = getWatchersFromScope(element.data().$scope, ids);
+    //             var watchers = scopeWatchers.concat(isolateWatchers);
+    //             angular.forEach(element.children(), function (childElement) {
+    //                 watchers = watchers.concat(getElemWatchers(angular.element(childElement), ids));
+    //             });
+    //             return watchers;
+    //         }
+    //
+    //         function getWatchersFromScope(scope, ids) {
+    //             if (scope) {
+    //                 if (_.indexOf(ids, scope.$id) > -1) {
+    //                     return [];
+    //                 }
+    //                 ids.push(scope.$id);
+    //                 if (scope.$$watchers) {
+    //                     if (scope.$$watchers.length > 1) {
+    //                         var a;
+    //                         a = 1;
+    //                     }
+    //                     return scope.$$watchers;
+    //                 }
+    //                 {
+    //                     return [];
+    //                 }
+    //
+    //             } else {
+    //                 return [];
+    //             }
+    //         }
+    //
+    //         return getElemWatchers(root, ids);
+    //     }
+    //
+    // }, $scope.limitTo);
 
 }
 
