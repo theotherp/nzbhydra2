@@ -338,7 +338,15 @@ angular
         formlyConfigProvider.setType({
             name: 'horizontalSelect',
             extends: 'select',
-            wrapper: ['settingWrapper', 'bootstrapHasError']
+            wrapper: ['settingWrapper', 'bootstrapHasError'],
+            controller: function ($scope) {
+                if ($scope.options.templateOptions.optionsFunction !== undefined) {
+                    $scope.to.options.push.apply($scope.to.options, $scope.options.templateOptions.optionsFunction($scope.model));
+                }
+                if ($scope.options.templateOptions.optionsFunctionAfter !== undefined) {
+                    $scope.options.templateOptions.optionsFunctionAfter($scope.model);
+                }
+            }
         });
 
 
@@ -347,8 +355,7 @@ angular
             defaultOptions: {
                 templateOptions: {
                     optionsAttr: 'bs-options',
-                    ngOptions: 'option[to.valueProp] as option in to.options | filter: $select.search',
-                    // optionsFunction: function(){return []}
+                    ngOptions: 'option[to.valueProp] as option in to.options | filter: $select.search'
                 }
             },
             template: '<span multiselect-dropdown options="to.options" selected-model="model[options.key]" settings="settings" events="events"></span>',

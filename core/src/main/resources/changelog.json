@@ -11,12 +11,20 @@
         "text": "New option to choose quickfilters that should be preselected."
       },
       {
+        "type": "feature",
+        "text": "New option to select the primary downloader for which the footer will show the status."
+      },
+      {
         "type": "fix",
         "text": "Re-add 'No category' to category selection which got lost in 3.5.0."
       },
       {
         "type": "fix",
         "text": "'Searching...' window was not closed when all found results were being filtered."
+      },
+      {
+        "type": "fix",
+        "text": "Don't show the blue loading bar when checking for notifications."
       }
     ],
     "final": true

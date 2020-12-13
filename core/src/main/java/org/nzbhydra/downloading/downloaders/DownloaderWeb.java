@@ -17,6 +17,7 @@
 package org.nzbhydra.downloading.downloaders;
 
 import org.nzbhydra.GenericResponse;
+import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.downloading.DownloaderConfig;
 import org.nzbhydra.downloading.AddFilesRequest;
 import org.slf4j.Logger;
@@ -32,12 +33,15 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
 public class DownloaderWeb {
     private static final Logger logger = LoggerFactory.getLogger(DownloaderWeb.class);
 
+    @Autowired
+    private ConfigProvider configProvider;
 
     @Autowired
     private DownloaderProvider downloaderProvider;
@@ -52,14 +56,24 @@ public class DownloaderWeb {
     @RequestMapping(value = "/internalapi/downloader/getStatus", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public DownloaderStatus getStatus() {
         Collection<Downloader> allDownloaders = downloaderProvider.getAllDownloaders();
-        List<Downloader> enabledDownloaders = allDownloaders.stream().filter(Downloader::isEnabled).collect(Collectors.toList());
+        List<Downloader> enabledDownloaders = allDownloaders.stream()
+                .filter(Downloader::isEnabled)
+                .collect(Collectors.toList());
         if (enabledDownloaders.isEmpty()) {
+            return new DownloaderStatus();
+        }
+        final Optional<Downloader> downloader = enabledDownloaders.stream()
+                .filter(x -> enabledDownloaders.size() == 1 || x.getName().equals(configProvider.getBaseConfig().getDownloading().getPrimaryDownloader()))
+                .findFirst();
+
+        if (!downloader.isPresent()) {
+            logger.error("Unable to determine to choose downloader for which to retrieve status.");
             return new DownloaderStatus();
         }
         DownloaderStatus status = null;
         try {
-            status = enabledDownloaders.get(0).getStatus();
-            status.setUrl(enabledDownloaders.get(0).getUrl());
+            status = downloader.get().getStatus();
+            status.setUrl(downloader.get().getUrl());
         } catch (Exception e) {
             logger.error("Error while retrieving downloader status", e);
         }

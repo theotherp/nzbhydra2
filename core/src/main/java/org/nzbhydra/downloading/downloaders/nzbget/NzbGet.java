@@ -93,8 +93,8 @@ public class NzbGet extends Downloader {
     //LATER Handle username / password and failed auth, return codes
 
     @Override
-    public void intialize(DownloaderConfig downloaderConfig) {
-        super.intialize(downloaderConfig);
+    public void initialize(DownloaderConfig downloaderConfig) {
+        super.initialize(downloaderConfig);
         try {
             UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(downloaderConfig.getUrl());
             builder.path("jsonrpc");

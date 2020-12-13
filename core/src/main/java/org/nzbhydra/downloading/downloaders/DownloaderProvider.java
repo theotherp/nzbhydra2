@@ -72,7 +72,7 @@ public class DownloaderProvider implements InitializingBean {
                 logger.info("Initializing downloader {}", downloaderConfig.getName());
                 try {
                     Downloader downloader = beanFactory.createBean(downloaderClasses.get(downloaderConfig.getDownloaderType()));
-                    downloader.intialize(downloaderConfig);
+                    downloader.initialize(downloaderConfig);
                     downloadersMap.put(downloaderConfig.getName().toLowerCase(), downloader);
                 } catch (Exception e) {
                     logger.error("Error while initializing downloader", e);
@@ -89,7 +89,7 @@ public class DownloaderProvider implements InitializingBean {
 
     public GenericResponse checkConnection(DownloaderConfig downloaderConfig) {
         Downloader downloader = beanFactory.createBean(downloaderClasses.get(downloaderConfig.getDownloaderType()));
-        downloader.intialize(downloaderConfig);
+        downloader.initialize(downloaderConfig);
         return downloader.checkConnection();
     }
 

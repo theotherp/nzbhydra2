@@ -127,7 +127,8 @@ function downloaderStatusFooter() {
                                 clearInterval(timer);
                             }
                         },
-                        function () {
+                        function (e) {
+                            console.log(e);
                             console.error("Error while loading downloader status");
                             clearInterval(timer);
                         }

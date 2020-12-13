@@ -84,12 +84,16 @@ public abstract class Downloader {
     protected DownloaderConfig downloaderConfig;
     protected List<Long> downloadRates = new ArrayList<>();
 
-    public void intialize(DownloaderConfig downloaderConfig) {
+    public void initialize(DownloaderConfig downloaderConfig) {
         this.downloaderConfig = downloaderConfig;
     }
 
     public boolean isEnabled() {
         return downloaderConfig != null && downloaderConfig.isEnabled();
+    }
+
+    public String getName() {
+        return downloaderConfig.getName();
     }
 
     @Transactional

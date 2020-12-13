@@ -47,6 +47,7 @@ public class DownloadingConfig extends ValidatingConfig<DownloadingConfig> {
     private FileDownloadAccessType nzbAccessType = FileDownloadAccessType.REDIRECT;
     private SearchSourceRestriction fallbackForFailed = SearchSourceRestriction.BOTH;
     private String externalUrl;
+    private String primaryDownloader;
 
     @Override
     public ConfigValidationResult validateConfig(BaseConfig oldConfig, DownloadingConfig newConfig, BaseConfig newBaseConfig) {

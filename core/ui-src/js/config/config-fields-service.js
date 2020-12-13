@@ -1655,6 +1655,7 @@ function ConfigFields($injector) {
                                 tooltip: 'When using "Add links" to add NZBs to your downloader the links are usually calculated using the URL with which you accessed NZBHydra. This might be a URL that\'s not accessible by the downloader (e.g. when it\'s inside a docker container). Set the URL for NZBHydra that\'s accessible by the downloader here and it will be used instead. '
                             }
                         },
+
                         {
                             key: 'fallbackForFailed',
                             type: 'horizontalSelect',
@@ -1697,7 +1698,30 @@ function ConfigFields($injector) {
                                 label: 'Show downloader footer',
                                 help: "Show footer with downloader status"
                             }
-                        }
+                        },
+                        {
+                            key: 'primaryDownloader',
+                            type: 'horizontalSelect',
+                            hideExpression: 'model.downloaders.length <= 1 || !model.showDownloaderStatus',
+                            templateOptions: {
+                                label: 'Primary downloader',
+                                options: [],
+                                help: "This downloader's state will be shown in the footer.",
+                                tooltip: "To select a downloader you just added please save the config first.",
+                                optionsFunction: function (model) {
+                                    var downloaders = [];
+                                    _.each(model.downloaders, function (downloader) {
+                                        downloaders.push({name: downloader.name, value: downloader.name})
+                                    })
+                                    return downloaders;
+                                },
+                                optionsFunctionAfter: function (model) {
+                                    if (!model.primaryDownloader) {
+                                        model.primaryDownloader = model.downloaders[0].name;
+                                    }
+                                }
+                            }
+                        },
                     ]
                 },
                 {
