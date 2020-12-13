@@ -6,18 +6,25 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import com.google.common.base.Strings;
 import lombok.Data;
 import org.nzbhydra.indexers.QueryGenerator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 
 @SuppressWarnings("unchecked")
 @Data
 @ConfigurationProperties
 public class SearchingConfig extends ValidatingConfig<SearchingConfig> {
+
+    private static final Logger logger = LoggerFactory.getLogger(SearchingConfig.class);
 
     @JsonFormat(shape = Shape.STRING)
     private SearchSourceRestriction applyRestrictions = SearchSourceRestriction.BOTH;
@@ -110,6 +117,15 @@ public class SearchingConfig extends ValidatingConfig<SearchingConfig> {
 
     @Override
     public SearchingConfig prepareForSaving(BaseConfig oldBaseConfig) {
+        final Set<String> customQuickfilterNames = customQuickFilterButtons.stream().map(x -> x.split("=")[0]).collect(Collectors.toSet());
+        for (Iterator<String> iterator = getPreselectQuickFilterButtons().iterator(); iterator.hasNext(); ) {
+            String preselectQuickFilterButton = iterator.next();
+            final String[] split = preselectQuickFilterButton.split("\\|");
+            if ("custom".equals(split[0]) && !customQuickfilterNames.contains(split[0])) {
+                logger.info("Custom quickfilter {} doesn't exist anymore, removing it from list of filters to preselect.", preselectQuickFilterButton);
+                iterator.remove();
+            }
+        }
         return this;
     }
 
