@@ -11,7 +11,7 @@
     "type" : "fix",
     "text" : "Apply indexer colors to expanded results as well. To mark expanded results they're shown in a darker shade so it's recommended to use indexer colors which not only differ in lightness."
   } ],
-  "final" : false
+  "final" : true
 }, {
   "version" : "v3.7.0",
   "date" : "2020-12-13",
