@@ -75,14 +75,13 @@
                 <argLine>-Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
             </properties>
         </profile>
-
     </profiles>
 
     <properties>
-        <spring.boot.version>2.4.1</spring.boot.version>
-        <spring.oxm.version>5.3.2</spring.oxm.version>
-        <spring.test.version>5.3.2</spring.test.version>
-        <spring.security.test.version>5.4.2.RELEASE</spring.security.test.version>
+        <spring.boot.version>2.3.1.RELEASE</spring.boot.version>
+        <spring.oxm.version>5.2.7.RELEASE</spring.oxm.version>
+        <spring.test.version>5.2.0.RELEASE</spring.test.version>
+        <spring.security.test.version>5.3.3.RELEASE</spring.security.test.version>
         <jackson.version>2.9.8</jackson.version>
         <lombok.version>1.18.2</lombok.version>
         <logback.version>1.2.3</logback.version>
