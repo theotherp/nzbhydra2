@@ -1,4 +1,12 @@
-### v3.8.0 BETA (2020-12-13)
+### v3.8.1 (2020-12-28)
+
+**Fix** Remove NZBGeek from list of domains for which do disable SNI.
+
+**Fix** Change text for toggle of advanced options in the config to "Advanced hidden" and "Advanced shown".
+
+
+
+### v3.8.0 (2020-12-13)
 
 **Feature** Add 'Show advanced' switch to config. I'd already tried to get this working twice - third time's the charm!.
 
