@@ -9,7 +9,7 @@ function onFinishRender($timeout) {
     function linkFunction(scope, element, attr) {
 
         if (scope.$last === true) {
-            // console.log("Render finished");
+            console.log("Render finished");
             // console.timeEnd("Presenting");
             // console.timeEnd("searchall");
             scope.$emit("onFinishRender")

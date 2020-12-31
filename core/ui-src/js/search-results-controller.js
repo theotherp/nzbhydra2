@@ -323,8 +323,9 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         //Close modal instance because no search results will be rendered that could trigger the closing
         SearchService.getModalInstance().close();
         $scope.doShowResults = true;
+    } else {
+        console.log("Will leave the closing of the status window to finishRendering. # of search results: " + SearchService.getLastResults().searchResults.length + ". All results filtered: " + $scope.allResultsFiltered);
     }
-    //stopBlocking();
 
     //Returns the content of the property (defined by the current sortPredicate) of the first group element
     $scope.firstResultPredicate = firstResultPredicate;
@@ -869,12 +870,14 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
     };
 
     $scope.$on("onFinishRender", function () {
+        console.log("Finished rendering results.")
         $scope.doShowResults = true;
         $timeout(function () {
             if ($scope.foo.scrollToResults) {
                 var searchResultsElement = angular.element(document.getElementById('display-options'));
                 $document.scrollToElement(searchResultsElement, 0, 500);
             }
+            console.log("Closing search status window.")
             stopBlocking();
             SearchService.getModalInstance().close();
         }, 1);
