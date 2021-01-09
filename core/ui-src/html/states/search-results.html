@@ -126,14 +126,13 @@
     </div>
 </div>
 
-<div class="row" ng-if="::indexersearches.length > 0 && (numberOfAvailableResults === 0 || numberOfAcceptedResults === 0)" style="margin-top: 50px" id="no-search-results">
+<div class="row" ng-if="::indexersearches.length > 0 && (numberOfAvailableResults === 0)" style="margin-top: 50px" id="no-search-results">
     <div class="well">
         <h2 ng-if="!anyIndexersSearchedSuccessfully">Unable to search any indexer successfully; no results available</h2>
         <h2 ng-if="!anyResultsRejected && anyIndexersSearchedSuccessfully">No results were found for this search</h2>
-        <h2 ng-if="anyResultsRejected">No (non-rejected) results were found for this search</h2>
     </div>
 </div>
-<div class="row" ng-if="::indexersearches.length > 0 && numberOfAvailableResults > 0 && numberOfAcceptedResults > 0"
+<div class="row" ng-if="::indexersearches.length > 0 && numberOfAvailableResults > 0"
      style="margin-top: 10px">
     <div class="col-md-8" style="text-align: left;">
         <span id="display-options"
@@ -319,8 +318,9 @@
         </thead>
         <tbody>
         <tr>
-            <th style="text-align: center" colspan="67" ng-if="allResultsFiltered">
+            <th style="text-align: center; margin-top: 5px" colspan="67" ng-if="allResultsFiltered || numberOfAcceptedResults === 0">
                 <h2 ng-if="allResultsFiltered">All results are currently filtered</h2>
+                <h2 ng-if="numberOfAcceptedResults === 0">All found results have been rejected</h2>
             </th>
         </tr>
         </tbody>

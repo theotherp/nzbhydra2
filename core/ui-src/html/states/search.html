@@ -163,16 +163,14 @@
             <div class="input-group">
               <span class="input-group-addon">Min</span>
               <input type="number" class="form-control" id="minage" ng-model="minage" style="width: 90px"
-                     ng-enter="startSearch()"
-                     ng-model-options='{ debounce: 500 }'>
+                     ng-enter="initiateSearch()">
             </div>
           </div>
           <div class="col-sm-3" style="width: 11%">
             <div class="input-group">
               <span class="input-group-addon">Max</span>
               <input type="number" class="form-control" id="maxage" ng-model="maxage" style="width: 90px"
-                     ng-enter="startSearch()"
-                     ng-model-options='{ debounce: 500 }'>
+                     ng-enter="initiateSearch()">
             </div>
           </div>
           <label class="col-sm-5 control-label" style="width:5%">Size</label>
@@ -181,16 +179,14 @@
             <div class="input-group">
               <span class="input-group-addon">Min</span>
               <input type="number" class="form-control" id="minsize" ng-model="minsize"
-                     style="width: 90px" ng-enter="startSearch()"
-                     ng-model-options='{ debounce: 500 }'>
+                     style="width: 90px" ng-enter="initiateSearch()">
             </div>
           </div>
           <div class="col-sm-3" style="width: 11%">
             <div class="input-group">
               <span class="input-group-addon">Max</span>
               <input type="number" class="form-control" id="maxsize" ng-model="maxsize"
-                     style="width: 90px" ng-enter="startSearch()"
-                     ng-model-options='{ debounce: 500 }'>
+                     style="width: 90px" ng-enter="initiateSearch()">
             </div>
           </div>
         </div>

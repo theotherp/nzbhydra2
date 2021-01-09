@@ -319,8 +319,10 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
 
     setDataFromSearchResult(SearchService.getLastResults(), []);
     $scope.$emit("searchResultsShown");
-    if (!SearchService.getLastResults().searchResults || SearchService.getLastResults().searchResults.length === 0 || $scope.allResultsFiltered) {
+
+    if (!SearchService.getLastResults().searchResults || SearchService.getLastResults().searchResults.length === 0 || $scope.allResultsFiltered || $scope.numberOfAcceptedResults === 0) {
         //Close modal instance because no search results will be rendered that could trigger the closing
+        console.log("CLosing status window");
         SearchService.getModalInstance().close();
         $scope.doShowResults = true;
     } else {
@@ -641,7 +643,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
 
         var filtered = _.filter(results, filter);
         $scope.numberOfFilteredResults = results.length - filtered.length;
-        $scope.allResultsFiltered = ($scope.numberOfFilteredResults === results.length);
+        $scope.allResultsFiltered = results.length > 0 && ($scope.numberOfFilteredResults === results.length);
         console.log("Filtered " + $scope.numberOfFilteredResults + " out of " + results.length);
         var newSelected = $scope.selected;
         _.forEach($scope.selected, function (x) {
@@ -877,8 +879,8 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
                 var searchResultsElement = angular.element(document.getElementById('display-options'));
                 $document.scrollToElement(searchResultsElement, 0, 500);
             }
-            console.log("Closing search status window.")
             stopBlocking();
+            console.log("Closing search status window because rendering is finished.")
             SearchService.getModalInstance().close();
         }, 1);
     });

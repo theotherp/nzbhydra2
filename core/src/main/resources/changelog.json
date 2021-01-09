@@ -4,6 +4,10 @@
     "date": "2020-12-28",
     "changes": [
       {
+        "type": "feature",
+        "text": "NZBHydra will now show the search results table even if all results were rejected. This way you can see the reason for the rejections without having to check the log."
+      },
+      {
         "type": "fix",
         "text": "Show advanced features in downloader config if selected."
       }
