@@ -4605,7 +4605,7 @@ angular
         formlyConfigProvider.setType({
             name: 'downloaderConfig',
             templateUrl: 'static/html/config/downloader-config.html',
-            controller: function ($scope, $uibModal, growl, CategoriesService) {
+            controller: function ($scope, $uibModal, growl, CategoriesService, localStorageService) {
                 $scope.formOptions = {formState: $scope.formState};
                 $scope._showBox = _showBox;
                 $scope.showBox = showBox;
@@ -4639,7 +4639,9 @@ angular
                         size: 'lg',
                         resolve: {
                             model: function () {
-                                model.showAdvanced = parentModel.showAdvanced;
+                                //Isn't properly stored in parentmodel for some reason, this works just as well
+                                model.showAdvanced = localStorageService.get("showAdvanced");
+                                console.log(model.showAdvanced);
                                 return model;
                             },
                             fields: function () {

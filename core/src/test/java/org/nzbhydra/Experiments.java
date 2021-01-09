@@ -138,7 +138,7 @@ public class Experiments {
         OkHttpClient client = new OkHttpClient.Builder()
                 .build();
 
-        final int limit = 3000;
+        final int limit = 100;
         final Stopwatch started = Stopwatch.createStarted();
         ExecutorService executorService = Executors.newFixedThreadPool(8);
         executeCalls(client, executorService, "api", limit);
