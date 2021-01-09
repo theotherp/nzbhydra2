@@ -133,12 +133,6 @@
         <h2 ng-if="anyResultsRejected">No (non-rejected) results were found for this search</h2>
     </div>
 </div>
-<div class="row" ng-if="allResultsFiltered" style="margin-top: 50px" id="no-search-results">
-<div class="well">
-    
-    <h2 ng-if="allResultsFiltered">All results are currently filtered</h2>
-</div>
-</div>
 <div class="row" ng-if="::indexersearches.length > 0 && numberOfAvailableResults > 0 && numberOfAcceptedResults > 0"
      style="margin-top: 10px">
     <div class="col-md-8" style="text-align: left;">
@@ -259,7 +253,6 @@
             </div>
         </div>
     </div>
-
     <table class="search-results-table table">
         <thead class="search-results-header">
         <tr class="search-results-header-row">
@@ -324,6 +317,13 @@
             </th>
         </tr>
         </thead>
+        <tbody>
+        <tr>
+            <th style="text-align: center" colspan="67" ng-if="allResultsFiltered">
+                <h2 ng-if="allResultsFiltered">All results are currently filtered</h2>
+            </th>
+        </tr>
+        </tbody>
 
        <tbody dir-paginate-start="result in filteredResults | itemsPerPage:limitTo track by result.searchResultId"
               ng-show="0"></tbody>
