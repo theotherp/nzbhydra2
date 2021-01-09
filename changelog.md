@@ -1,3 +1,11 @@
+### v3.9.0 (2020-12-28)
+
+**Feature** NZBHydra will now show the search results table even if all results were rejected. This way you can see the reason for the rejections without having to check the log.
+
+**Fix** Show advanced features in downloader config if selected.
+
+
+
 ### v3.8.1 (2020-12-28)
 
 **Fix** Remove NZBGeek from list of domains for which do disable SNI.
