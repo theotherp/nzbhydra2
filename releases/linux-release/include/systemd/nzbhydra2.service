@@ -4,18 +4,16 @@ Documentation=https://github.com/theotherp/nzbhydra2
 After=network.target
 
 [Service]
-User=ubuntu
-Group=vboxsf
+# Create this user by running: adduser --system --group nzbhydra
+User=nzbhydra
+Group=nzbhydra
 Type=simple
 # Set to the folder where you extracted the ZIP
-WorkingDirectory=/home/nzbhydra/nzbhydra2
-
-
+WorkingDirectory=/opt/nzbhydra2
 # NZBHydra stores its data in a "data" subfolder of its installation path
 # To change that set the --datafolder parameter:
-# --datafolder /path-to/datafolder
-ExecStart=/home/nzbhydra/nzbhydra2/nzbhydra2 --nobrowser
-
+# --datafolder /var/local/lib/nzbhydra
+ExecStart=/opt/nzbhydra2/nzbhydra2 --nobrowser
 Restart=always
 
 [Install]
