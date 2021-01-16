@@ -1,3 +1,9 @@
+### v3.9.1 (2021-01-16)
+
+**Fix** Fixed an issue with time zones related to indexer API limits. It may only affect the log output but may also fix some problems with limit detection.
+
+
+
 ### v3.9.0 (2020-12-28)
 
 **Feature** NZBHydra will now show the search results table even if all results were rejected. This way you can see the reason for the rejections without having to check the log.
