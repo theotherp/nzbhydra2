@@ -5,8 +5,8 @@ After=network.target
 
 [Service]
 # Create this user by running: adduser --system --group nzbhydra
-User=nzbhydra
-Group=nzbhydra
+User=nzbhydra2
+Group=nzbhydra2
 Type=simple
 # Set to the folder where you extracted the ZIP
 WorkingDirectory=/opt/nzbhydra2
