@@ -75,7 +75,7 @@ public class IndexerForSearchSelector {
     @Autowired
     private IndexerLimitRepository indexerStatusRepository;
 
-    protected Clock clock = Clock.systemDefaultZone();
+    protected Clock clock = Clock.systemUTC();
 
     private SearchRequest searchRequest;
     protected Map<Indexer, String> notSelectedIndersWithReason = new HashMap<>();
@@ -290,24 +290,34 @@ public class IndexerForSearchSelector {
             //First check if there's usable info in the indexer_status table
             IndexerLimit indexerStatus = indexerStatusRepository.findByIndexer(indexer.getIndexerEntity());
             Instant oldestAccess = null;
-            if (indexerStatus.getApiHits() != null && accessType != IndexerApiAccessType.NZB && indexerStatus.getApiHitLimit() != null && indexerStatus.getOldestApiHit() != null) {
-                logger.debug(LoggingMarkers.LIMITS, "Indexer {}. Current API hits: {}. Max API hits: {}. Oldest API hit: {}", indexer.getName(), indexerStatus.getApiHits(), indexerStatus.getApiHitLimit(), indexerStatus.getOldestApiHit());
-                if (indexerStatus.getApiHits() >= indexerStatus.getApiHitLimit()) {
+            Integer apiHitLimit = indexerStatus.getApiHitLimit();
+            if (apiHitLimit == null) {
+                apiHitLimit = indexerConfig.getHitLimit().orElse(null);
+            }
+            if (indexerStatus.getApiHits() != null && accessType != IndexerApiAccessType.NZB && apiHitLimit != null && indexerStatus.getOldestApiHit() != null) {
+                logger.debug(LoggingMarkers.LIMITS, "Indexer {}. Current API hits: {}. Max API hits: {}. Oldest API hit: {}", indexer.getName(), indexerStatus.getApiHits(), apiHitLimit, indexerStatus.getOldestApiHit());
+                if (indexerStatus.getApiHits() >= apiHitLimit) {
                     oldestAccess = indexerStatus.getOldestApiHit();
                 } else {
                     return false;
                 }
-            } else if (indexerStatus.getDownloads() != null && accessType == IndexerApiAccessType.NZB && indexerStatus.getDownloadLimit() != null && indexerStatus.getOldestDownload() != null) {
-                logger.debug(LoggingMarkers.LIMITS, "Indexer {}. Current downloads: {}. Max downloads: {}. Oldest download: {}", indexer.getName(), indexerStatus.getDownloads(), indexerStatus.getDownloadLimit(), indexerStatus.getOldestDownload());
-                if (indexerStatus.getDownloads() >= indexerStatus.getDownloadLimit()) {
-                    oldestAccess = indexerStatus.getOldestDownload();
-                } else {
-                    return false;
+            } else {
+                Integer downloadLimit = indexerStatus.getDownloadLimit();
+                if (downloadLimit == null) {
+                    downloadLimit = indexerConfig.getDownloadLimit().orElse(null);
+                }
+                if (indexerStatus.getDownloads() != null && accessType == IndexerApiAccessType.NZB && downloadLimit != null && indexerStatus.getOldestDownload() != null) {
+                    logger.debug(LoggingMarkers.LIMITS, "Indexer {}. Current downloads: {}. Max downloads: {}. Oldest download: {}", indexer.getName(), indexerStatus.getDownloads(), downloadLimit, indexerStatus.getOldestDownload());
+                    if (indexerStatus.getDownloads() >= downloadLimit) {
+                        oldestAccess = indexerStatus.getOldestDownload();
+                    } else {
+                        return false;
+                    }
                 }
             }
 
             if (oldestAccess != null) {
-                if (oldestAccess.isBefore(Instant.now().minus(24, ChronoUnit.HOURS))) {
+                if (oldestAccess.isBefore(Instant.now(clock).minus(24, ChronoUnit.HOURS))) {
                     logger.debug(LoggingMarkers.LIMITS, "Indexer {}. Oldest access {} is more than 24 hours old, allowing access", indexer.getName(), oldestAccess);
                     return false;
                 }
@@ -348,7 +358,7 @@ public class IndexerForSearchSelector {
                 Instant earliestAccess = ((Timestamp) Iterables.getLast(resultList)).toInstant();
                 final Instant comparisonTimeUtc = comparisonTime.toInstant(ZoneOffset.UTC);
                 if (earliestAccess.isAfter(comparisonTimeUtc)) {
-                    LocalDateTime nextPossibleHit = calculateNextPossibleHit(indexerConfig, earliestAccess);
+                    Instant nextPossibleHit = calculateNextPossibleHit(indexerConfig, earliestAccess).toInstant(ZoneOffset.UTC);
                     logger.debug(LoggingMarkers.LIMITS, "Indexer {}. Earliest access {} is after {}. Not using indexer. Next possible hit at {}", indexer.getName(), earliestAccess, comparisonTimeUtc, nextPossibleHit);
 
                     String message = String.format("Not using %s because all %d allowed " + type + "s were already made. The next " + type + " should be possible at %s", indexerConfig.getName(), limit, nextPossibleHit);

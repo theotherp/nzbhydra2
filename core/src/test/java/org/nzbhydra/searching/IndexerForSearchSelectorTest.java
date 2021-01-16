@@ -32,10 +32,8 @@ import javax.persistence.Query;
 import java.sql.Timestamp;
 import java.time.Clock;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collections;
@@ -45,7 +43,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import static junit.framework.TestCase.*;
+import static junit.framework.TestCase.assertFalse;
+import static junit.framework.TestCase.assertTrue;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -85,7 +84,9 @@ public class IndexerForSearchSelectorTest {
     @Mock
     private IndexerLimitRepository indexerLimitRepositoryMock;
 
+
     private Map<Indexer, String> count;
+    private final IndexerLimit indexerLimit = new IndexerLimit();
 
     @InjectMocks
     private IndexerForSearchSelector testee;
@@ -103,7 +104,7 @@ public class IndexerForSearchSelectorTest {
         when(category.getName()).thenReturn("category");
         when(category.getSubtype()).thenReturn(Subtype.NONE);
         when(entityManagerMock.createNativeQuery(anyString())).thenReturn(queryMock);
-        when(indexerLimitRepositoryMock.findByIndexer(any())).thenReturn(new IndexerLimit());
+        when(indexerLimitRepositoryMock.findByIndexer(any())).thenReturn(indexerLimit);
     }
 
 
@@ -210,7 +211,6 @@ public class IndexerForSearchSelectorTest {
 
     @Test
     public void shouldIgnoreHitAndDownloadLimitIfNoneAreSet() {
-
         indexerConfigMock.setHitLimit(null);
         indexerConfigMock.setDownloadLimit(null);
         testee.checkIndexerHitLimit(indexer);
@@ -228,16 +228,142 @@ public class IndexerForSearchSelectorTest {
     }
 
     @Test
-    public void shouldFollowApiHitLimit() {
+    public void shouldFollowApiHitLimitRollingTimeWindowUsingAccessHistory() {
+        //Last access was yesterday afternoon, next possible hit should be today at afternoon
+        Instant currentTime = Instant.parse("2021-01-13T09:00:00.000Z");
+        Instant firstAccess = Instant.parse("2021-01-12T16:00:00.000Z");
+        testee.clock = Clock.fixed(currentTime, ZoneId.of("UTC"));
         indexerConfigMock.setHitLimit(1);
-        when(queryMock.getResultList()).thenReturn(Arrays.asList(Timestamp.from(Instant.now().minus(10, ChronoUnit.MILLIS))));
+        indexerConfigMock.setHitLimitResetTime(null);
+        when(queryMock.getResultList()).thenReturn(Arrays.asList(Timestamp.from(firstAccess)));
         boolean result = testee.checkIndexerHitLimit(indexer);
         assertFalse(result);
         verify(entityManagerMock).createNativeQuery(anyString());
     }
 
     @Test
-    public void shouldIgnoreDownloadLimitIfNotYetReached() {
+    public void shouldFollowApiHitLimitFixedResetTimeLaterUsingAccessHistoryAboveLimit() {
+        //Last access was yesterday afternoon, fixed reset time is later today, should allow then
+        Instant currentTime = Instant.parse("2021-01-13T09:00:00.000Z");
+        Instant firstAccess = Instant.parse("2021-01-12T16:00:00.000Z");
+        testee.clock = Clock.fixed(currentTime, ZoneId.of("UTC"));
+        indexerConfigMock.setHitLimit(1);
+        indexerConfigMock.setHitLimitResetTime(12);
+        when(queryMock.getResultList()).thenReturn(Arrays.asList(Timestamp.from(firstAccess)));
+        boolean result = testee.checkIndexerHitLimit(indexer);
+        assertFalse(result);
+        verify(entityManagerMock).createNativeQuery(anyString());
+    }
+
+    @Test
+    public void shouldFollowApiHitLimitFixedResetTimeLaterUsingAccessHistoryBelowLimit() {
+        //Last access was yesterday afternoon, fixed reset time is later today, should allow then
+        Instant currentTime = Instant.parse("2021-01-13T09:00:00.000Z");
+        Instant firstAccess = Instant.parse("2021-01-12T16:00:00.000Z");
+        testee.clock = Clock.fixed(currentTime, ZoneId.of("UTC"));
+        indexerConfigMock.setHitLimit(2);
+        indexerConfigMock.setHitLimitResetTime(12);
+        when(queryMock.getResultList()).thenReturn(Arrays.asList(Timestamp.from(firstAccess)));
+        boolean result = testee.checkIndexerHitLimit(indexer);
+        assertTrue(result);
+        verify(entityManagerMock).createNativeQuery(anyString());
+    }
+
+    @Test
+    public void shouldFollowApiHitLimitFixedResetTimeReachedUsingAccessHistoryA() {
+        //Last access was yesterday afternoon, fixed reset time was today, should allow
+        Instant currentTime = Instant.parse("2021-01-13T09:00:00.000Z");
+        Instant firstAccess = Instant.parse("2021-01-12T16:00:00.000Z");
+        testee.clock = Clock.fixed(currentTime, ZoneId.of("UTC"));
+        indexerConfigMock.setHitLimit(1);
+        indexerConfigMock.setHitLimitResetTime(6);
+        when(queryMock.getResultList()).thenReturn(Arrays.asList(Timestamp.from(firstAccess)));
+        boolean result = testee.checkIndexerHitLimit(indexer);
+        assertTrue(result);
+        verify(entityManagerMock).createNativeQuery(anyString());
+    }
+
+    @Test
+    public void shouldFollowApiHitLimitUsingApiHitsAndOldestHitAboveLimit() {
+        //Last access was yesterday afternoon, next possible hit should be today at afternoon
+        Instant currentTime = Instant.parse("2021-01-13T09:00:00.000Z");
+        Instant firstAccess = Instant.parse("2021-01-12T16:00:00.000Z");
+        testee.clock = Clock.fixed(currentTime, ZoneId.of("UTC"));
+        indexerConfigMock.setHitLimit(1);
+        indexerLimit.setApiHits(1);
+        indexerLimit.setOldestApiHit(firstAccess);
+
+        boolean result = testee.checkIndexerHitLimit(indexer);
+        assertFalse(result);
+        verify(entityManagerMock, never()).createNativeQuery(anyString());
+    }
+
+    @Test
+    public void shouldFollowApiHitLimitUsingApiHitsAndOldestHitOlderThanOneDay() {
+        //Last access was yesterday afternoon, next possible hit should be today at afternoon
+        Instant currentTime = Instant.parse("2021-01-13T09:00:00.000Z");
+        Instant firstAccess = Instant.parse("2021-01-11T16:00:00.000Z");
+        testee.clock = Clock.fixed(currentTime, ZoneId.of("UTC"));
+        indexerConfigMock.setHitLimit(1);
+        indexerLimit.setApiHits(1);
+        indexerLimit.setOldestApiHit(firstAccess);
+
+        boolean result = testee.checkIndexerHitLimit(indexer);
+        assertTrue(result);
+        verify(entityManagerMock, never()).createNativeQuery(anyString());
+    }
+
+    @Test
+    public void shouldFollowApiHitLimitUsingApiHitsAndOldestHitBelowlimit() {
+        //Last access was yesterday afternoon, next possible hit should be today at afternoon
+        Instant currentTime = Instant.parse("2021-01-13T09:00:00.000Z");
+        Instant firstAccess = Instant.parse("2021-01-12T16:00:00.000Z");
+        testee.clock = Clock.fixed(currentTime, ZoneId.of("UTC"));
+        indexerConfigMock.setHitLimit(2);
+        indexerLimit.setApiHits(1);
+        indexerLimit.setOldestApiHit(firstAccess);
+
+        boolean result = testee.checkIndexerHitLimit(indexer);
+        assertTrue(result);
+        verify(entityManagerMock, never()).createNativeQuery(anyString());
+    }
+
+    @Test
+    public void shouldPreferApiResultOldestHitOverHistory() {
+        //Last access was yesterday afternoon, next possible hit should be today at afternoon
+        Instant currentTime = Instant.parse("2021-01-13T09:00:00.000Z");
+        //A while ago
+        Instant oldestHitDatabase = Instant.parse("2021-01-01T16:00:00.000Z");
+        Instant oldestHitApiResult = Instant.parse("2021-01-12T16:00:00.000Z");
+        testee.clock = Clock.fixed(currentTime, ZoneId.of("UTC"));
+        indexerConfigMock.setHitLimit(1);
+        indexerLimit.setApiHits(1);
+        when(queryMock.getResultList()).thenReturn(Arrays.asList(Timestamp.from(oldestHitDatabase)));
+        indexerLimit.setOldestApiHit(oldestHitApiResult);
+
+        boolean result = testee.checkIndexerHitLimit(indexer);
+        assertFalse(result);
+        verify(entityManagerMock, never()).createNativeQuery(anyString());
+    }
+
+    @Test
+    public void shouldFollowApiHitLimitUsingApiHitsFromResponsAndOldestHitFromHistory() {
+        //Last access was yesterday afternoon, next possible hit should be today at afternoon
+        Instant currentTime = Instant.parse("2021-01-13T09:00:00.000Z");
+        Instant firstAccess = Instant.parse("2021-01-12T16:00:00.000Z");
+        testee.clock = Clock.fixed(currentTime, ZoneId.of("UTC"));
+        indexerConfigMock.setHitLimit(1);
+        indexerLimit.setApiHits(1);
+        when(queryMock.getResultList()).thenReturn(Arrays.asList(Timestamp.from(firstAccess)));
+
+        boolean result = testee.checkIndexerHitLimit(indexer);
+
+        assertFalse(result);
+        verify(entityManagerMock).createNativeQuery(anyString());
+    }
+
+    @Test
+    public void shouldIgnoreDownloadLimitIfNotYetReachedUsingAccessHistory() {
         indexerConfigMock.setDownloadLimit(10);
         when(queryMock.getResultList()).thenReturn(Arrays.asList(Timestamp.from(Instant.now().minus(10, ChronoUnit.MILLIS))));
         boolean result = testee.checkIndexerHitLimit(indexer);
@@ -246,10 +372,15 @@ public class IndexerForSearchSelectorTest {
 
     @Test
     public void shouldCalculateNextHitWithRollingTimeWindows() throws Exception {
+        //First access was at 05:38, hit limit reset time is 10:00, now it's 09:00, next possible hit tomorrow at 05:38
+        Instant currentTime = Instant.parse("2021-01-13T09:00:00.000Z");
+        Instant firstAccess = Instant.parse("2021-01-13T05:38:00.000Z");
+        testee.clock = Clock.fixed(currentTime, ZoneId.of("UTC"));
         indexerConfigMock.setHitLimitResetTime(null);
-        Instant firstInWindow = Instant.now().minus(12, ChronoUnit.HOURS);
-        LocalDateTime nextHit = testee.calculateNextPossibleHit(indexerConfigMock, firstInWindow);
-        assertEquals(LocalDateTime.ofInstant(firstInWindow, ZoneOffset.UTC).plus(24, ChronoUnit.HOURS), nextHit);
+
+        Instant nextHit = testee.calculateNextPossibleHit(indexerConfigMock, firstAccess).toInstant(ZoneOffset.UTC);
+
+        assertThat(nextHit).isEqualTo(Instant.parse("2021-01-14T05:38:00.000Z"));
     }
 
     @Test
@@ -275,27 +406,25 @@ public class IndexerForSearchSelectorTest {
 
     @Test
     public void shouldCalculateNextHitWithFixedResetTime() {
-        //First access was at 05:38, hit limit reset time is 10:00, next possible hit today at 10:00
-        Instant currentTime = Instant.ofEpochSecond(1518500323);//05:38
+        //First access was at 05:38, hit limit reset time is 10:00, now it's 09:00, next possible hit today at 10:00
+        Instant currentTime = Instant.parse("2021-01-13T09:00:00.000Z");
+        Instant firstAccess = Instant.parse("2021-01-13T05:38:00.000Z");
         testee.clock = Clock.fixed(currentTime, ZoneId.of("UTC"));
         indexerConfigMock.setHitLimitResetTime(10);
 
-        LocalDateTime nextHit = testee.calculateNextPossibleHit(indexerConfigMock, currentTime);
+        Instant nextHit = testee.calculateNextPossibleHit(indexerConfigMock, firstAccess).toInstant(ZoneOffset.UTC);
 
-        assertThat(nextHit.getHour()).isEqualTo(10);
-        assertThat(nextHit.getDayOfYear()).isEqualTo(LocalDateTime.ofInstant(currentTime, ZoneId.of("UTC")).get(ChronoField.DAY_OF_YEAR));
+        assertThat(nextHit).isEqualTo(Instant.parse("2021-01-13T10:00:00.000Z"));
 
-        //First access was at 05:38, hit limit time is 04:00, next possible hit tomorrow at 04:00
-        currentTime = Instant.ofEpochSecond(1518500323);//05:38
+        //First access was at 05:38, hit limit reset time is 10:00, now it's 14:00, next possible hit tomorrow at 04:00
+        currentTime = Instant.parse("2021-01-13T14:00:00.000Z");
         testee.clock = Clock.fixed(currentTime, ZoneId.of("UTC"));
         indexerConfigMock.setHitLimitResetTime(4);
 
-        nextHit = testee.calculateNextPossibleHit(indexerConfigMock, currentTime);
+        nextHit = testee.calculateNextPossibleHit(indexerConfigMock, firstAccess).toInstant(ZoneOffset.UTC);
 
-        assertThat(nextHit.getHour()).isEqualTo(4);
-        assertThat(nextHit.getDayOfYear()).isEqualTo(LocalDateTime.ofInstant(currentTime, ZoneId.of("UTC")).get(ChronoField.DAY_OF_YEAR) + 1);
+        assertThat(nextHit).isEqualTo(Instant.parse("2021-01-14T04:00:00.000Z"));
     }
-
 
 
     @Test

@@ -29,9 +29,9 @@ import org.springframework.stereotype.Component;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import java.sql.Timestamp;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoField;
@@ -202,8 +202,8 @@ public class IndexerStatusesAndLimits {
             String sqlString = "SELECT * FROM INDEXERAPIACCESS_SHORT x WHERE x.INDEXER_ID = :indexerId";
             if (indexerConfig.getHitLimitResetTime().isPresent()) {
                 //Fixed point in time where API resets
-                LocalDateTime lastResetTime = LocalDateTime.now(ZoneId.of("UTC")).truncatedTo(ChronoUnit.HOURS).with(ChronoField.HOUR_OF_DAY, indexerConfig.getHitLimitResetTime().get());
-                if (lastResetTime.isAfter(LocalDateTime.now())) {
+                LocalDateTime lastResetTime = LocalDateTime.now(Clock.systemUTC()).truncatedTo(ChronoUnit.HOURS).with(ChronoField.HOUR_OF_DAY, indexerConfig.getHitLimitResetTime().get());
+                if (lastResetTime.isAfter(LocalDateTime.now(Clock.systemUTC()))) {
                     lastResetTime = lastResetTime.minus(1, ChronoUnit.DAYS);
                 }
                 sqlString += " AND x.time > PARSEDATETIME('" + DATE_PATTERN.format(lastResetTime) + "', 'dd.MM.yyyy-HH:mm:ss:SSS')";
