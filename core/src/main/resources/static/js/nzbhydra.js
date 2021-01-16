@@ -3764,7 +3764,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
                     type: 'number',
                     label: 'Hit reset time',
                     help: 'UTC hour of day at which the API hit counter is reset (0-23). Leave empty for a rolling reset counter.',
-                    tooltip: 'Either define the time of day when the counter is reset by the indexer or leave it empty to use a rolling reset counter, meaning the number of hits for the last 24 at the time of the search is limited.'
+                    tooltip: 'Either define the time of day when the counter is reset by the indexer or leave it empty to use a rolling reset counter, meaning the number of hits for the last 24h at the time of the search is limited.'
                 },
                 validators: {
                     timeOfDay: {
