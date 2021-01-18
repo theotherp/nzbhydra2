@@ -1,3 +1,13 @@
+### v3.9.2 (2021-01-16)
+
+**Feature** Added some code that allows me to post a link to adapt the logging config and to download the debug infos.
+
+**Feature** Added config switch to add NZBs to downloader paused.
+
+**Fix** Added some more logging and handling of edge cases for API limits.
+
+
+
 ### v3.9.1 (2021-01-16)
 
 **Fix** Fixed an issue with time zones related to indexer API limits. It may only affect the log output but may also fix some problems with limit detection.
