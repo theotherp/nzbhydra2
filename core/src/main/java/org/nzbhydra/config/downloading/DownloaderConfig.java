@@ -47,6 +47,7 @@ public class DownloaderConfig extends ValidatingConfig<DownloaderConfig> {
     private String username;
     @SensitiveData
     private String password;
+    private boolean addPaused;
 
     public DownloaderType getDownloaderType() {
         return downloaderType;

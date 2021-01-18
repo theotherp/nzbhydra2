@@ -99,7 +99,7 @@ public class Sabnzbd extends Downloader {
         logger.debug("Sending link for NZB {} to sabnzbd", title);
         title = suffixNzbToTitle(title);
         UriComponentsBuilder urlBuilder = getBaseUrl();
-        urlBuilder.queryParam("mode", "addurl").queryParam("name", url).queryParam("nzbname", title).queryParam("priority", "-100");
+        urlBuilder.queryParam("mode", "addurl").queryParam("name", url).queryParam("nzbname", title).queryParam("priority", getPriority());
         if (!Strings.isNullOrEmpty(category)) {
             urlBuilder.queryParam("cat", category);
         }
@@ -140,7 +140,7 @@ public class Sabnzbd extends Downloader {
         logger.debug("Uploading NZB {} to sabnzbd", title);
         UriComponentsBuilder urlBuilder = getBaseUrl();
         title = suffixNzbToTitle(title);
-        urlBuilder.queryParam("mode", "addfile").queryParam("nzbname", title).queryParam("priority", "-100");
+        urlBuilder.queryParam("mode", "addfile").queryParam("nzbname", title).queryParam("priority", getPriority());
         if (!Strings.isNullOrEmpty(category)) {
             urlBuilder.queryParam("cat", category);
         }
@@ -168,6 +168,13 @@ public class Sabnzbd extends Downloader {
             throw new DownloaderException("Error while communicating with downloader: " + e.getMessage());
         }
 
+    }
+
+    private String getPriority() {
+        if (downloaderConfig.isAddPaused()) {
+            return "-2";
+        }
+        return "-100";
     }
 
     @Override

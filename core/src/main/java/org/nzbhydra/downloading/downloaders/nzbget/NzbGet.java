@@ -338,7 +338,12 @@ public class NzbGet extends Downloader {
         }
         category = category == null ? "" : category;
         //int append(string NZBFilename, string NZBContent, string Category, int Priority, bool AddToTop, bool AddPaused, string DupeKey, int DupeScore, string DupeMode, array PPParameters)
-        Object[] arguments = new Object[]{nzbName, contentOrLink, category, 0, false, false, "", 0, "SCORE", new Object[]{}};
+        final int priority = 0;
+        final boolean addToTop = false;
+        final boolean addPaused = downloaderConfig.isAddPaused();
+        final String dupeKey = "";
+        final int dupeScore = 0;
+        Object[] arguments = new Object[]{nzbName, contentOrLink, category, priority, addToTop, addPaused, dupeKey, dupeScore, "SCORE", new Object[]{}};
         int nzbId = client.invoke("append", arguments, Integer.class);
         if (nzbId <= 0) {
             throw new DownloaderException("NZBGet returned error code. Check its logs");

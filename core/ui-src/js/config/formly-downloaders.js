@@ -239,6 +239,16 @@ angular
                             }
                         },
                         {
+                            key: 'addPaused',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Add paused',
+                                help: 'Add NZBs paused',
+                                advanced: true
+                            }
+                        },
+                        {
                             key: 'iconCssClass',
                             type: 'horizontalInput',
                             templateOptions: {

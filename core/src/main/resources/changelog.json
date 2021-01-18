@@ -8,6 +8,10 @@
         "text": "Added some code that allows me to post a link to adapt the logging config and to download the debug infos."
       },
       {
+        "type": "feature",
+        "text": "Added config switch to add NZBs to downloader paused."
+      },
+      {
         "type": "fix",
         "text": "Added some more logging and handling of edge cases for API limits."
       }
