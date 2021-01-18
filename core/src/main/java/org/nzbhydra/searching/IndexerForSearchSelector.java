@@ -329,45 +329,76 @@ public class IndexerForSearchSelector {
             }
 
             //Check from API short term storage for other indexers
-            Query query = entityManager.createNativeQuery("SELECT x.TIME FROM INDEXERAPIACCESS_SHORT x WHERE x.INDEXER_ID = (:indexerId) AND x.API_ACCESS_TYPE = (:accessType) ORDER BY TIME DESC LIMIT (:hitLimit)");
+            final String whereApiAccessType;
+            if (accessType == IndexerApiAccessType.NZB) {
+                whereApiAccessType = "x.API_ACCESS_TYPE = 'NZB'";
+            } else {
+                whereApiAccessType = "x.API_ACCESS_TYPE = 'NFO' OR x.API_ACCESS_TYPE = 'SEARCH'";
+            }
+            Query query = entityManager.createNativeQuery("SELECT x.TIME FROM INDEXERAPIACCESS_SHORT x WHERE x.INDEXER_ID = (:indexerId) AND (" + whereApiAccessType + ") ORDER BY TIME DESC LIMIT (:hitLimit)");
             query.setParameter("indexerId", indexer.getIndexerEntity().getId());
-            query.setParameter("accessType", accessType.name());
             query.setParameter("hitLimit", limit);
             List resultList = query.getResultList();
+            boolean currentHitsFromApi = false;
+            boolean oldestAccessFromApi;
 
+            //currentHits is only the last x results where x is the limit. Only if the oldest is newer than the comparison time (reset time or -24 hours in case of rolling window) is the limit actually reached
             int currentHits;
             //If possible use the hits from the indexer status
             if (accessType != IndexerApiAccessType.NZB && indexerStatus.getApiHits() != null) {
                 currentHits = indexerStatus.getApiHits();
-                logger.debug(LoggingMarkers.LIMITS, "Indexer {}. Got current API hits ({}) from indexerstatus", indexer.getName(), currentHits);
+                oldestAccess = indexerStatus.getOldestApiHit();
+                logger.debug(LoggingMarkers.LIMITS, "Indexer {}. Got current API hits ({}) and oldest access ({}) from indexerstatus", indexer.getName(), currentHits, oldestAccess);
+                currentHitsFromApi = true;
+
             } else if (accessType == IndexerApiAccessType.NZB && indexerStatus.getDownloads() != null) {
                 currentHits = indexerStatus.getDownloads();
-                logger.debug(LoggingMarkers.LIMITS, "Indexer {}. Got current downloads ({}) from indexerstatus", indexer.getName(), currentHits);
+                oldestAccess = indexerStatus.getOldestDownload();
+                logger.debug(LoggingMarkers.LIMITS, "Indexer {}. Got current downloads ({}) and oldest access ({}) from indexerstatus from indexerstatus", indexer.getName(), currentHits, oldestAccess);
+                currentHitsFromApi = true;
             } else {
                 currentHits = resultList.size();
-                logger.debug(LoggingMarkers.LIMITS, "Indexer {}. Got current hits ({}) from indexerstatus", indexer.getName(), currentHits);
+                logger.debug(LoggingMarkers.LIMITS, "Indexer {}. Got current hits ({}) from database", indexer.getName(), currentHits);
             }
-            if (currentHits >= limit) { //Found as many as we want, so now we must check if they're all in the time window
-                if (resultList.isEmpty()) {
-                    logger.debug(LoggingMarkers.LIMITS, "Indexer {}. Current hits {} exceeds limit {} but we have no results in list", indexer.getName(), currentHits, limit);
+            if (currentHits < limit) {
+                logger.debug(LoggingMarkers.LIMITS, "Indexer {}. Current hits {} does not exceed limit of {}", indexer.getName(), currentHits, limit);
+                return false;
+            }
+            //Found as many as we want, so now we must check if they're all in the time window
+            if (resultList.isEmpty()) {
+                logger.debug(LoggingMarkers.LIMITS, "Indexer {}. Current hits {} exceeds limit {} but we have no results in list", indexer.getName(), currentHits, limit);
 
-                    String message = String.format("Not using %s because all %d allowed " + type + "s were already made.", indexerConfig.getName(), limit);
-                    return !handleIndexerNotSelected(indexer, message, type + " limit reached");
-                }
+                String message = String.format("Not using %s because all %d allowed " + type + "s were already made.", indexerConfig.getName(), limit);
+                return !handleIndexerNotSelected(indexer, message, type + " limit reached");
+            }
 
-                Instant earliestAccess = ((Timestamp) Iterables.getLast(resultList)).toInstant();
-                final Instant comparisonTimeUtc = comparisonTime.toInstant(ZoneOffset.UTC);
-                if (earliestAccess.isAfter(comparisonTimeUtc)) {
-                    Instant nextPossibleHit = calculateNextPossibleHit(indexerConfig, earliestAccess).toInstant(ZoneOffset.UTC);
-                    logger.debug(LoggingMarkers.LIMITS, "Indexer {}. Earliest access {} is after {}. Not using indexer. Next possible hit at {}", indexer.getName(), earliestAccess, comparisonTimeUtc, nextPossibleHit);
+            oldestAccessFromApi = (oldestAccess != null);
+            if (oldestAccess == null) {
+                oldestAccess = ((Timestamp) Iterables.getLast(resultList)).toInstant();
+                logger.debug(LoggingMarkers.LIMITS, "Got oldest access ({}) from database", oldestAccess);
+            }
+            final Instant comparisonTimeUtc = comparisonTime.toInstant(ZoneOffset.UTC);
+            if (oldestAccess.isAfter(comparisonTimeUtc)) {
+                Instant nextPossibleHit = calculateNextPossibleHit(indexerConfig, oldestAccess).toInstant(ZoneOffset.UTC);
+                logger.debug(LoggingMarkers.LIMITS, "Indexer {}. oldest access {} is after {}. Not using indexer. Next possible hit at {}", indexer.getName(), oldestAccess, comparisonTimeUtc, nextPossibleHit);
 
-                    String message = String.format("Not using %s because all %d allowed " + type + "s were already made. The next " + type + " should be possible at %s", indexerConfig.getName(), limit, nextPossibleHit);
-                    return !handleIndexerNotSelected(indexer, message, type + " limit reached");
+                String message = String.format("Not using %s because all %d allowed " + type + "s were already made. The next " + type + " should be possible at %s", indexerConfig.getName(), limit, nextPossibleHit);
+                return !handleIndexerNotSelected(indexer, message, type + " limit reached");
+            } else {
+                if (oldestAccessFromApi) {
+                    logger.debug(LoggingMarkers.LIMITS, "Indexer {}. oldest access from API {} is before {}. Allowing access", indexer.getName(), oldestAccess, comparisonTimeUtc);
                 } else {
-                    logger.debug(LoggingMarkers.LIMITS, "Indexer {}. Earliest access {} is before {} although current hits is above limit", indexer.getName(), earliestAccess, comparisonTimeUtc);
+                    if (currentHitsFromApi) {
+                        //If the current hits are from indexer's API response then the number of hits may be outdated (because it's from the last API hit, whenever thay may have been)
+                        logger.debug(LoggingMarkers.LIMITS, "Indexer {}. Current hits from API hits ({}) may be outdated. oldest access ({}) is after {} so we'll allow the access", indexer.getName(), currentHits, oldestAccess, comparisonTimeUtc);
+                    } else {
+                        //
+                        logger.debug(LoggingMarkers.LIMITS, "Indexer {}. Current hits is at limit but the oldest access {} is before {}. Allowing access", indexer.getName(), oldestAccess, comparisonTimeUtc);
+                    }
                 }
             }
             return false;
+
         } finally {
             logger.debug(LoggingMarkers.PERFORMANCE, "Limit detection for indexer {} took {}ms", indexerConfig.getName(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
         }
