@@ -4,6 +4,10 @@
     "date": "2021-01-16",
     "changes": [
       {
+        "type": "feature",
+        "text": "Added some code that allows me to post a link to adapt the logging config and to download the debug infos."
+      },
+      {
         "type": "fix",
         "text": "Added some more logging and handling of edge cases for API limits."
       }

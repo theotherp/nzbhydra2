@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.NzbHydra;
+import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.logging.LogContentProvider;
 import org.nzbhydra.logging.LogContentProvider.JsonLogResponse;
 import org.slf4j.Logger;
@@ -29,6 +30,7 @@ import java.io.File;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -48,6 +50,8 @@ public class DebugInfosWeb {
     private org.nzbhydra.debuginfos.DebugInfosProvider debugInfos;
     @Autowired
     private MappingsEndpoint mappingsEndpoint;
+    @Autowired
+    private ConfigProvider configProvider;
 
     private static final Logger logger = LoggerFactory.getLogger(DebugInfosWeb.class);
 
@@ -176,6 +180,21 @@ public class DebugInfosWeb {
         prefixAndEndpoints.sort(Comparator.comparing(x -> x.prefix));
 
         return ResponseEntity.ok(prefixAndEndpoints);
+    }
+
+    @Secured({"ROLE_ADMIN"})
+    @RequestMapping(value = "/internalapi/debuginfos/setLoggingConfig", method = RequestMethod.GET)
+    public ResponseEntity setLoggingConfig(@RequestParam(required = false) String markersToEnable) {
+        configProvider.getBaseConfig().getMain().getLogging().setLogfilelevel("DEBUG");
+        if (markersToEnable != null) {
+            configProvider.getBaseConfig().getMain().getLogging().setMarkersToLog(Arrays.asList(markersToEnable.split(",")));
+        }
+        final String msg = "Set log file level to debug and enabled the following logging markers: " + markersToEnable;
+        logger.info(msg);
+
+        configProvider.getBaseConfig().save(true);
+
+        return ResponseEntity.ok(msg);
     }
 
     @Data
