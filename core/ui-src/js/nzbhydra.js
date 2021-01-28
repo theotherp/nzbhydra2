@@ -12,7 +12,6 @@ nzbhydraapp.config(['$compileProvider', function ($compileProvider) {
 }]);
 
 nzbhydraapp.config(['$animateProvider', function ($animateProvider) {
-    //$animateProvider.classNameFilter(/ng-animate-enabled/);
 }]);
 
 angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvider, $locationProvider, blockUIConfig, $urlMatcherFactoryProvider, localStorageServiceProvider, bootstrapped) {

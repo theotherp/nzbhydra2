@@ -203,66 +203,52 @@ function hydraChecksFooter() {
 
         checkAndShowWelcome();
 
-        function showNotifications() {
-            RequestsErrorHandler.specificallyHandled(function () {
-                try {
-                    $http.get('internalapi/notifications', {ignoreLoadingBar: true}).then(function (response) {
-                        var unreadNotifications = response.data;
-                        if (unreadNotifications.length > ConfigService.getSafe().notificationConfig.displayNotificationsMax) {
-                            growl.info(unreadNotifications.length + ' notifications have piled up. <a href=stats/notifications>Go to the notification history to view them.</a>', {disableCountDown: true});
-                            for (var i = 0; i < unreadNotifications.length; i++) {
-                                if (unreadNotifications[i].id === undefined) {
-                                    console.log("Undefined ID found for notification " + unreadNotifications[i]);
-                                    continue;
-                                }
-                                $http.put('internalapi/notifications/markRead/' + unreadNotifications[i].id)
-                                    .then(function () {
-                                    }, function (reason) {
-                                        console.log(reason);
-                                    })
-                            }
-                            return;
-                        }
-                        for (var j = 0; j < unreadNotifications.length; j++) {
-                            var notification = unreadNotifications[j];
-                            var body = notification.body.replace("\n", "<br>");
-                            switch (notification.messageType) {
-                                case "INFO":
-                                    growl.info(body);
-                                    break;
-                                case "SUCCESS":
-                                    growl.success(body);
-                                    break;
-                                case "WARNING":
-                                    growl.warning(body);
-                                    break;
-                                case "FAILURE":
-                                    growl.danger(body);
-                                    break;
-                            }
-                            if (notification.id === undefined) {
-                                console.log("Undefined ID found for notification " + unreadNotifications[i]);
-                                continue;
-                            }
-                            $http.put('internalapi/notifications/markRead/' + notification.id).then(function () {
-                            }, function (reason) {
-                                console.log(reason);
-                            });
-                        }
-                    });
-
-                } catch (e) {
-                    console.log(e);
-                    clearInterval(notificationsTimer);
+        function showUnreadNotifications(unreadNotifications, stompClient) {
+            if (unreadNotifications.length > ConfigService.getSafe().notificationConfig.displayNotificationsMax) {
+                growl.info(unreadNotifications.length + ' notifications have piled up. <a href=stats/notifications>Go to the notification history to view them.</a>', {disableCountDown: true});
+                for (var i = 0; i < unreadNotifications.length; i++) {
+                    if (unreadNotifications[i].id === undefined) {
+                        console.log("Undefined ID found for notification " + unreadNotifications[i]);
+                        continue;
+                    }
+                    stompClient.send("/app/markNotificationRead", {}, unreadNotifications[i].id);
                 }
-            });
+                return;
+            }
+            for (var j = 0; j < unreadNotifications.length; j++) {
+                var notification = unreadNotifications[j];
+                var body = notification.body.replace("\n", "<br>");
+                switch (notification.messageType) {
+                    case "INFO":
+                        growl.info(body);
+                        break;
+                    case "SUCCESS":
+                        growl.success(body);
+                        break;
+                    case "WARNING":
+                        growl.warning(body);
+                        break;
+                    case "FAILURE":
+                        growl.danger(body);
+                        break;
+                }
+                if (notification.id === undefined) {
+                    console.log("Undefined ID found for notification " + unreadNotifications[i]);
+                    continue;
+                }
+                stompClient.send("/app/markNotificationRead", {}, notification.id);
+            }
         }
 
         if (ConfigService.getSafe().notificationConfig.displayNotifications) {
-            var notificationsTimer = setInterval(function () {
-                showNotifications();
-            }, 5000);
-            showNotifications();
+            var socket = new SockJS('/websocket');
+            var stompClient = Stomp.over(socket);
+            stompClient.debug = null;
+            stompClient.connect({}, function (frame) {
+                stompClient.subscribe('/topic/notifications', function (message) {
+                    showUnreadNotifications(JSON.parse(message.body), stompClient);
+                });
+            });
         }
 
     }

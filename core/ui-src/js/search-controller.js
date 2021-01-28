@@ -419,52 +419,42 @@ angular
 
 function SearchUpdateModalInstanceCtrl($scope, $interval, SearchService, $uibModalInstance, searchRequestId, onCancel) {
 
-    var updateSearchMessagesInterval = undefined;
     var loggedSearchFinished = false;
     $scope.messages = [];
     $scope.indexerSelectionFinished = false;
     $scope.indexersSelected = 0;
     $scope.indexersFinished = 0;
 
-    updateSearchMessagesInterval = $interval(function () {
-        SearchService.getSearchState(searchRequestId).then(function (response) {
-                $scope.indexerSelectionFinished = response.data.indexerSelectionFinished;
-                $scope.searchFinished = response.data.searchFinished;
-                $scope.indexersSelected = response.data.indexersSelected;
-                $scope.indexersFinished = response.data.indexersFinished;
-                $scope.progressMax = response.data.indexersSelected;
-                if ($scope.progressMax > response.data.indexersSelected) {
-                    $scope.progressMax = ">=" + response.data.indexersSelected;
-                }
-                if (response.data.messages) {
-                    $scope.messages = response.data.messages;
-                }
-                if ($scope.searchFinished && !loggedSearchFinished) {
-                    $scope.messages.push("Finished searching. Preparing results...");
-                    loggedSearchFinished = true;
-                }
-            },
-            function () {
-                $interval.cancel(updateSearchMessagesInterval);
+    var socket = new SockJS('/websocket');
+    var stompClient = Stomp.over(socket);
+    stompClient.debug = null;
+    stompClient.connect({}, function (frame) {
+        stompClient.subscribe('/topic/searchState', function (message) {
+            var data = JSON.parse(message.body);
+            if (searchRequestId !== data.searchRequestId) {
+                return;
             }
-        );
-    }, 100);
+            $scope.searchFinished = data.searchFinished;
+            $scope.indexersSelected = data.indexersSelected;
+            $scope.indexersFinished = data.indexersFinished;
+            $scope.progressMax = data.indexersSelected;
+            if ($scope.progressMax > data.indexersSelected) {
+                $scope.progressMax = ">=" + data.indexersSelected;
+            }
+            if (data.messages) {
+                $scope.messages = data.messages;
+            }
+            if ($scope.searchFinished && !loggedSearchFinished) {
+                $scope.messages.push("Finished searching. Preparing results...");
+                loggedSearchFinished = true;
+            }
+        });
+    });
 
     $scope.cancelSearch = function () {
-        if (angular.isDefined(updateSearchMessagesInterval)) {
-            $interval.cancel(updateSearchMessagesInterval);
-        }
         onCancel();
         $uibModalInstance.dismiss();
     };
-
-
-    $scope.$on('$destroy', function () {
-        if (angular.isDefined(updateSearchMessagesInterval)) {
-            $interval.cancel(updateSearchMessagesInterval);
-        }
-    });
-
 
 }
 

@@ -26,6 +26,19 @@ function downloaderStatusFooter() {
 
     function controller($scope, $http, RequestsErrorHandler, HydraAuthService) {
 
+        var socket = new SockJS('/websocket');
+        var stompClient = Stomp.over(socket);
+        stompClient.debug = null;
+        stompClient.connect({}, function (frame) {
+            stompClient.subscribe('/topic/downloaderStatus', function (message) {
+                updateFooter(JSON.parse(message.body));
+            });
+            stompClient.send("/app/connectDownloaderStatus", function (message) {
+                updateFooter(JSON.parse(message.body));
+            })
+        });
+
+
         $scope.$emit("showDownloaderStatus", true);
         var downloadRateCounter = 0;
 
@@ -75,73 +88,41 @@ function downloaderStatusFooter() {
             }
         };
 
-
-        function update() {
-            var userInfos = HydraAuthService.getUserInfos();
-            if (!userInfos.maySeeStats) {
-                return false;
+        function updateFooter(data) {
+            $scope.foo = data;
+            $scope.foo.downloaderImage = data.downloaderType === 'NZBGET' ? 'nzbgetlogo' : 'sabnzbdlogo';
+            $scope.foo.url = data.url;
+            //We need to splice the variable with the rates because it's watched by angular and when overwriting it we would lose the watch and it wouldn't be updated
+            var maxEntriesHistory = 200;
+            if ($scope.downloaderChart.data[0].values.length < maxEntriesHistory) {
+                //Not yet full, just fill up
+                for (var i = $scope.downloaderChart.data[0].values.length; i < maxEntriesHistory; i++) {
+                    if (i >= data.downloadingRatesInKilobytes.length) {
+                        break;
+                    }
+                    $scope.downloaderChart.data[0].values.push({x: downloadRateCounter++, y: data.downloadingRatesInKilobytes[i]});
+                }
+            } else {
+                //Remove first one, add to the end
+                $scope.downloaderChart.data[0].values.splice(0, 1);
+                $scope.downloaderChart.data[0].values.push({x: downloadRateCounter++, y: data.lastDownloadRate});
             }
-
             try {
-                RequestsErrorHandler.specificallyHandled(function () {
-                    $http.get("internalapi/downloader/getStatus", {ignoreLoadingBar: true}).then(function (response) {
-                            try {
-                                if (!response) {
-                                    console.error("No downloader status response from server");
-                                    return;
-                                }
-                                $scope.foo = response.data;
-                                $scope.foo.downloaderImage = response.data.downloaderType === 'NZBGET' ? 'nzbgetlogo' : 'sabnzbdlogo';
-                                $scope.foo.url = response.data.url;
-                                //We need to splice the variable with the rates because it's watched by angular and when overwriting it we would lose the watch and it wouldn't be updated
-                                var maxEntriesHistory = 200;
-                                if ($scope.downloaderChart.data[0].values.length < maxEntriesHistory) {
-                                    //Not yet full, just fill up
-                                    for (var i = $scope.downloaderChart.data[0].values.length; i < maxEntriesHistory; i++) {
-                                        if (i >= response.data.downloadingRatesInKilobytes.length) {
-                                            break;
-                                        }
-                                        $scope.downloaderChart.data[0].values.push({x: downloadRateCounter++, y: response.data.downloadingRatesInKilobytes[i]});
-                                    }
-                                } else {
-                                    //Remove first one, add to the end
-                                    $scope.downloaderChart.data[0].values.splice(0, 1);
-                                    $scope.downloaderChart.data[0].values.push({x: downloadRateCounter++, y: response.data.lastDownloadRate});
-                                }
-                                try {
-                                    $scope.api.update();
-                                } catch (ignored) {
-                                }
-                                if ($scope.foo.state === "DOWNLOADING") {
-                                    $scope.foo.buttonClass = "play";
-                                } else if ($scope.foo.state === "PAUSED") {
-                                    $scope.foo.buttonClass = "pause";
-                                } else if ($scope.foo.state === "OFFLINE") {
-                                    $scope.foo.buttonClass = "off";
-                                } else {
-                                    $scope.foo.buttonClass = "time";
-                                }
-                                $scope.foo.state = $scope.foo.state.substr(0, 1) + $scope.foo.state.substr(1).toLowerCase();
-                            } catch (e) {
-                                console.error(e);
-                                clearInterval(timer);
-                            }
-                        },
-                        function (e) {
-                            console.log(e);
-                            console.error("Error while loading downloader status");
-                            clearInterval(timer);
-                        }
-                    );
-                });
+                $scope.api.update();
             } catch (ignored) {
             }
+            if ($scope.foo.state === "DOWNLOADING") {
+                $scope.foo.buttonClass = "play";
+            } else if ($scope.foo.state === "PAUSED") {
+                $scope.foo.buttonClass = "pause";
+            } else if ($scope.foo.state === "OFFLINE") {
+                $scope.foo.buttonClass = "off";
+            } else {
+                $scope.foo.buttonClass = "time";
+            }
+            $scope.foo.state = $scope.foo.state.substr(0, 1) + $scope.foo.state.substr(1).toLowerCase();
         }
 
-        update();
-        var timer = setInterval(function () {
-            update();
-        }, 1000);
 
     }
 }

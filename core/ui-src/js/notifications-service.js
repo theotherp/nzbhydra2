@@ -40,18 +40,6 @@ function NotificationService($http) {
             templateHelp: "Available variables: $indexerName$, $disabledAt$.",
             messageType: "SUCCESS"
         },
-        // ALL_API_EXHAUSTED: {
-        //     readable: "All API hits exhausted",
-        //     titleTemplate: "All API hits exhausted",
-        //     bodyTemplate: "NZBHydra: All API hits have been exhausted. Next possible hit: $nextHitAt$.",
-        //     templateHelp: "Available variables: $nextHitAt$."
-        // },
-        // ALL_DOWNLOAD_EXHAUSTED: {
-        //     readable: "All downloads exhausted",
-        //     titleTemplate: "All downloads exhausted",
-        //     bodyTemplate: "NZBHydra: All downloads have been exhausted. Next possible hit: $nextDownloadAt$.",
-        //     templateHelp: "Available variables: $nextDownloadAt$."
-        // },
         UPDATE_INSTALLED: {
             readable: "Automatic update installed",
             titleTemplate: "Update installed",

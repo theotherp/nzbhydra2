@@ -18,8 +18,6 @@ package org.nzbhydra.notifications;
 
 public enum NotificationEventType {
 
-    ALL_API_EXHAUSTED,
-    ALL_DOWNLOAD_EXHAUSTED,
     VIP_RENEWAL_REQUIRED,
     INDEXER_DISABLED,
     INDEXER_REENABLED,

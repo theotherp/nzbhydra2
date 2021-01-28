@@ -21,14 +21,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.http.MediaType;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.simp.SimpMessageSendingOperations;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -37,25 +39,35 @@ import java.util.Set;
 @RestController
 public class NotificationsWeb {
 
+    private static final Logger logger = LoggerFactory.getLogger(NotificationsWeb.class);
+    private static final int INTERVAL = 1000;
+
     @Autowired
     private NotificationRepository notificationRepository;
     @Autowired
     private ApplicationEventPublisher applicationEventPublisher;
+    @Autowired
+    private SimpMessageSendingOperations messagingTemplate;
+    @Autowired
+    private ThreadPoolTaskScheduler scheduler;
 
-    private static final Logger logger = LoggerFactory.getLogger(NotificationsWeb.class);
-
-
-    @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/notifications", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    @Transactional
-    public List<NotificationEntity> getUnreadNotifications() {
-        return notificationRepository.findAllByDisplayedFalseOrderByTimeDesc();
+    @PostConstruct
+    public void sendNotificationsToWebSocket() {
+        scheduleDownloadStatusSending();
     }
 
-    @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/notifications/markRead/{id}", method = RequestMethod.PUT)
-    @Transactional
-    public void sendIndexerDisabledNotification(@PathVariable("id") int id) {
+    private void scheduleDownloadStatusSending() {
+        scheduler.scheduleAtFixedRate(() -> {
+            final List<NotificationEntity> newNotifications = notificationRepository.findAllByDisplayedFalseOrderByTimeDesc();
+            if (newNotifications.isEmpty()) {
+                return;
+            }
+            messagingTemplate.convertAndSend("/topic/notifications", newNotifications);
+        }, INTERVAL);
+    }
+
+    @MessageMapping("/markNotificationRead")
+    public void markRead(int id) {
         final Optional<NotificationEntity> byId = notificationRepository.findById(id);
         if (!byId.isPresent()) {
             logger.error("Unable to mark notification with ID {} as read because no notification with that ID was found", id);
@@ -64,6 +76,7 @@ public class NotificationsWeb {
         byId.get().setDisplayed(true);
         notificationRepository.save(byId.get());
     }
+
 
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/notifications/test/{eventType}", method = RequestMethod.GET)

@@ -73,7 +73,9 @@
     "typicons.font": "typicons#~2.0.7",
     "underscore": "~1.8.3",
     "angular": "~1.6.9",
-    "angular-bootstrap-colorpicker": "^3.0.32"
+    "angular-bootstrap-colorpicker": "^3.0.32",
+    "sockjs-client": "^1.5.0",
+    "stompjs": "^4.0.8"
   },
   "resolutions": {
     "angular-ui-select": "^0.18.0",

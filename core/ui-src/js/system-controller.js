@@ -197,4 +197,10 @@ function SystemController($scope, $state, activeTab, simpleInfos, $http, growl, 
         update();
     }, 5000);
 
+    $scope.$on('$destroy', function () {
+        if (timer !== null) {
+            clearInterval(timer);
+        }
+    });
+
 }

@@ -5,9 +5,13 @@
       {
         "type": "feature",
         "text": "Enabled compression for resources sent to the browser. This shouldn't matter on local connections but save bandwidth should you want to use UI on a mobile browser (horrible as it looks)."
+      },
+      {
+        "type": "feature",
+        "text": "The GUI will now retrieve notifications, the downloader status and search state via WebSocket. This means that the browser keeps a connection to the server open and is only sent data when new data is available (e.g. when the downloader status actually changed). This should result in considerably fewer requests and (negligible) faster UI update times."
       }
     ],
-    "final": true
+    "final": false
   },
   {
     "version": "v3.9.2",

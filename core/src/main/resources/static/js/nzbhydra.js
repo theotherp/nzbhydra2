@@ -12,7 +12,6 @@ nzbhydraapp.config(['$compileProvider', function ($compileProvider) {
 }]);
 
 nzbhydraapp.config(['$animateProvider', function ($animateProvider) {
-    //$animateProvider.classNameFilter(/ng-animate-enabled/);
 }]);
 
 angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$locationProvider", "blockUIConfig", "$urlMatcherFactoryProvider", "localStorageServiceProvider", "bootstrapped", function ($stateProvider, $urlRouterProvider, $locationProvider, blockUIConfig, $urlMatcherFactoryProvider, localStorageServiceProvider, bootstrapped) {
@@ -2186,66 +2185,52 @@ function hydraChecksFooter() {
 
         checkAndShowWelcome();
 
-        function showNotifications() {
-            RequestsErrorHandler.specificallyHandled(function () {
-                try {
-                    $http.get('internalapi/notifications', {ignoreLoadingBar: true}).then(function (response) {
-                        var unreadNotifications = response.data;
-                        if (unreadNotifications.length > ConfigService.getSafe().notificationConfig.displayNotificationsMax) {
-                            growl.info(unreadNotifications.length + ' notifications have piled up. <a href=stats/notifications>Go to the notification history to view them.</a>', {disableCountDown: true});
-                            for (var i = 0; i < unreadNotifications.length; i++) {
-                                if (unreadNotifications[i].id === undefined) {
-                                    console.log("Undefined ID found for notification " + unreadNotifications[i]);
-                                    continue;
-                                }
-                                $http.put('internalapi/notifications/markRead/' + unreadNotifications[i].id)
-                                    .then(function () {
-                                    }, function (reason) {
-                                        console.log(reason);
-                                    })
-                            }
-                            return;
-                        }
-                        for (var j = 0; j < unreadNotifications.length; j++) {
-                            var notification = unreadNotifications[j];
-                            var body = notification.body.replace("\n", "<br>");
-                            switch (notification.messageType) {
-                                case "INFO":
-                                    growl.info(body);
-                                    break;
-                                case "SUCCESS":
-                                    growl.success(body);
-                                    break;
-                                case "WARNING":
-                                    growl.warning(body);
-                                    break;
-                                case "FAILURE":
-                                    growl.danger(body);
-                                    break;
-                            }
-                            if (notification.id === undefined) {
-                                console.log("Undefined ID found for notification " + unreadNotifications[i]);
-                                continue;
-                            }
-                            $http.put('internalapi/notifications/markRead/' + notification.id).then(function () {
-                            }, function (reason) {
-                                console.log(reason);
-                            });
-                        }
-                    });
-
-                } catch (e) {
-                    console.log(e);
-                    clearInterval(notificationsTimer);
+        function showUnreadNotifications(unreadNotifications, stompClient) {
+            if (unreadNotifications.length > ConfigService.getSafe().notificationConfig.displayNotificationsMax) {
+                growl.info(unreadNotifications.length + ' notifications have piled up. <a href=stats/notifications>Go to the notification history to view them.</a>', {disableCountDown: true});
+                for (var i = 0; i < unreadNotifications.length; i++) {
+                    if (unreadNotifications[i].id === undefined) {
+                        console.log("Undefined ID found for notification " + unreadNotifications[i]);
+                        continue;
+                    }
+                    stompClient.send("/app/markNotificationRead", {}, unreadNotifications[i].id);
                 }
-            });
+                return;
+            }
+            for (var j = 0; j < unreadNotifications.length; j++) {
+                var notification = unreadNotifications[j];
+                var body = notification.body.replace("\n", "<br>");
+                switch (notification.messageType) {
+                    case "INFO":
+                        growl.info(body);
+                        break;
+                    case "SUCCESS":
+                        growl.success(body);
+                        break;
+                    case "WARNING":
+                        growl.warning(body);
+                        break;
+                    case "FAILURE":
+                        growl.danger(body);
+                        break;
+                }
+                if (notification.id === undefined) {
+                    console.log("Undefined ID found for notification " + unreadNotifications[i]);
+                    continue;
+                }
+                stompClient.send("/app/markNotificationRead", {}, notification.id);
+            }
         }
 
         if (ConfigService.getSafe().notificationConfig.displayNotifications) {
-            var notificationsTimer = setInterval(function () {
-                showNotifications();
-            }, 5000);
-            showNotifications();
+            var socket = new SockJS('/websocket');
+            var stompClient = Stomp.over(socket);
+            stompClient.debug = null;
+            stompClient.connect({}, function (frame) {
+                stompClient.subscribe('/topic/notifications', function (message) {
+                    showUnreadNotifications(JSON.parse(message.body), stompClient);
+                });
+            });
         }
 
     }
@@ -2416,6 +2401,19 @@ function downloaderStatusFooter() {
 
     function controller($scope, $http, RequestsErrorHandler, HydraAuthService) {
 
+        var socket = new SockJS('/websocket');
+        var stompClient = Stomp.over(socket);
+        stompClient.debug = null;
+        stompClient.connect({}, function (frame) {
+            stompClient.subscribe('/topic/downloaderStatus', function (message) {
+                updateFooter(JSON.parse(message.body));
+            });
+            stompClient.send("/app/connectDownloaderStatus", function (message) {
+                updateFooter(JSON.parse(message.body));
+            })
+        });
+
+
         $scope.$emit("showDownloaderStatus", true);
         var downloadRateCounter = 0;
 
@@ -2465,73 +2463,41 @@ function downloaderStatusFooter() {
             }
         };
 
-
-        function update() {
-            var userInfos = HydraAuthService.getUserInfos();
-            if (!userInfos.maySeeStats) {
-                return false;
+        function updateFooter(data) {
+            $scope.foo = data;
+            $scope.foo.downloaderImage = data.downloaderType === 'NZBGET' ? 'nzbgetlogo' : 'sabnzbdlogo';
+            $scope.foo.url = data.url;
+            //We need to splice the variable with the rates because it's watched by angular and when overwriting it we would lose the watch and it wouldn't be updated
+            var maxEntriesHistory = 200;
+            if ($scope.downloaderChart.data[0].values.length < maxEntriesHistory) {
+                //Not yet full, just fill up
+                for (var i = $scope.downloaderChart.data[0].values.length; i < maxEntriesHistory; i++) {
+                    if (i >= data.downloadingRatesInKilobytes.length) {
+                        break;
+                    }
+                    $scope.downloaderChart.data[0].values.push({x: downloadRateCounter++, y: data.downloadingRatesInKilobytes[i]});
+                }
+            } else {
+                //Remove first one, add to the end
+                $scope.downloaderChart.data[0].values.splice(0, 1);
+                $scope.downloaderChart.data[0].values.push({x: downloadRateCounter++, y: data.lastDownloadRate});
             }
-
             try {
-                RequestsErrorHandler.specificallyHandled(function () {
-                    $http.get("internalapi/downloader/getStatus", {ignoreLoadingBar: true}).then(function (response) {
-                            try {
-                                if (!response) {
-                                    console.error("No downloader status response from server");
-                                    return;
-                                }
-                                $scope.foo = response.data;
-                                $scope.foo.downloaderImage = response.data.downloaderType === 'NZBGET' ? 'nzbgetlogo' : 'sabnzbdlogo';
-                                $scope.foo.url = response.data.url;
-                                //We need to splice the variable with the rates because it's watched by angular and when overwriting it we would lose the watch and it wouldn't be updated
-                                var maxEntriesHistory = 200;
-                                if ($scope.downloaderChart.data[0].values.length < maxEntriesHistory) {
-                                    //Not yet full, just fill up
-                                    for (var i = $scope.downloaderChart.data[0].values.length; i < maxEntriesHistory; i++) {
-                                        if (i >= response.data.downloadingRatesInKilobytes.length) {
-                                            break;
-                                        }
-                                        $scope.downloaderChart.data[0].values.push({x: downloadRateCounter++, y: response.data.downloadingRatesInKilobytes[i]});
-                                    }
-                                } else {
-                                    //Remove first one, add to the end
-                                    $scope.downloaderChart.data[0].values.splice(0, 1);
-                                    $scope.downloaderChart.data[0].values.push({x: downloadRateCounter++, y: response.data.lastDownloadRate});
-                                }
-                                try {
-                                    $scope.api.update();
-                                } catch (ignored) {
-                                }
-                                if ($scope.foo.state === "DOWNLOADING") {
-                                    $scope.foo.buttonClass = "play";
-                                } else if ($scope.foo.state === "PAUSED") {
-                                    $scope.foo.buttonClass = "pause";
-                                } else if ($scope.foo.state === "OFFLINE") {
-                                    $scope.foo.buttonClass = "off";
-                                } else {
-                                    $scope.foo.buttonClass = "time";
-                                }
-                                $scope.foo.state = $scope.foo.state.substr(0, 1) + $scope.foo.state.substr(1).toLowerCase();
-                            } catch (e) {
-                                console.error(e);
-                                clearInterval(timer);
-                            }
-                        },
-                        function (e) {
-                            console.log(e);
-                            console.error("Error while loading downloader status");
-                            clearInterval(timer);
-                        }
-                    );
-                });
+                $scope.api.update();
             } catch (ignored) {
             }
+            if ($scope.foo.state === "DOWNLOADING") {
+                $scope.foo.buttonClass = "play";
+            } else if ($scope.foo.state === "PAUSED") {
+                $scope.foo.buttonClass = "pause";
+            } else if ($scope.foo.state === "OFFLINE") {
+                $scope.foo.buttonClass = "off";
+            } else {
+                $scope.foo.buttonClass = "time";
+            }
+            $scope.foo.state = $scope.foo.state.substr(0, 1) + $scope.foo.state.substr(1).toLowerCase();
         }
 
-        update();
-        var timer = setInterval(function () {
-            update();
-        }, 1000);
 
     }
 }
@@ -8684,6 +8650,12 @@ function SystemController($scope, $state, activeTab, simpleInfos, $http, growl, 
         update();
     }, 5000);
 
+    $scope.$on('$destroy', function () {
+        if (timer !== null) {
+            clearInterval(timer);
+        }
+    });
+
 }
 
 StatsService.$inject = ["$http"];angular
@@ -9120,7 +9092,6 @@ function SearchService($http) {
         search: search,
         getLastResults: getLastResults,
         loadMore: loadMore,
-        getSearchState: getSearchState,
         getModalInstance: getModalInstance,
         setModalInstance: setModalInstance,
     };
@@ -9176,9 +9147,6 @@ function SearchService($http) {
         return $http.post(lastExecutedQuery.toString(), lastExecutedSearchRequestParameters).then(processData);
     }
 
-    function getSearchState(searchRequestId) {
-        return $http.get("internalapi/search/state", {params: {searchrequestid: searchRequestId}});
-    }
 
     function processData(response) {
         var searchResults = response.data.searchResults;
@@ -10945,52 +10913,42 @@ angular
 
 function SearchUpdateModalInstanceCtrl($scope, $interval, SearchService, $uibModalInstance, searchRequestId, onCancel) {
 
-    var updateSearchMessagesInterval = undefined;
     var loggedSearchFinished = false;
     $scope.messages = [];
     $scope.indexerSelectionFinished = false;
     $scope.indexersSelected = 0;
     $scope.indexersFinished = 0;
 
-    updateSearchMessagesInterval = $interval(function () {
-        SearchService.getSearchState(searchRequestId).then(function (response) {
-                $scope.indexerSelectionFinished = response.data.indexerSelectionFinished;
-                $scope.searchFinished = response.data.searchFinished;
-                $scope.indexersSelected = response.data.indexersSelected;
-                $scope.indexersFinished = response.data.indexersFinished;
-                $scope.progressMax = response.data.indexersSelected;
-                if ($scope.progressMax > response.data.indexersSelected) {
-                    $scope.progressMax = ">=" + response.data.indexersSelected;
-                }
-                if (response.data.messages) {
-                    $scope.messages = response.data.messages;
-                }
-                if ($scope.searchFinished && !loggedSearchFinished) {
-                    $scope.messages.push("Finished searching. Preparing results...");
-                    loggedSearchFinished = true;
-                }
-            },
-            function () {
-                $interval.cancel(updateSearchMessagesInterval);
+    var socket = new SockJS('/websocket');
+    var stompClient = Stomp.over(socket);
+    stompClient.debug = null;
+    stompClient.connect({}, function (frame) {
+        stompClient.subscribe('/topic/searchState', function (message) {
+            var data = JSON.parse(message.body);
+            if (searchRequestId !== data.searchRequestId) {
+                return;
             }
-        );
-    }, 100);
+            $scope.searchFinished = data.searchFinished;
+            $scope.indexersSelected = data.indexersSelected;
+            $scope.indexersFinished = data.indexersFinished;
+            $scope.progressMax = data.indexersSelected;
+            if ($scope.progressMax > data.indexersSelected) {
+                $scope.progressMax = ">=" + data.indexersSelected;
+            }
+            if (data.messages) {
+                $scope.messages = data.messages;
+            }
+            if ($scope.searchFinished && !loggedSearchFinished) {
+                $scope.messages.push("Finished searching. Preparing results...");
+                loggedSearchFinished = true;
+            }
+        });
+    });
 
     $scope.cancelSearch = function () {
-        if (angular.isDefined(updateSearchMessagesInterval)) {
-            $interval.cancel(updateSearchMessagesInterval);
-        }
         onCancel();
         $uibModalInstance.dismiss();
     };
-
-
-    $scope.$on('$destroy', function () {
-        if (angular.isDefined(updateSearchMessagesInterval)) {
-            $interval.cancel(updateSearchMessagesInterval);
-        }
-    });
-
 
 }
 
@@ -11198,18 +11156,6 @@ function NotificationService($http) {
             templateHelp: "Available variables: $indexerName$, $disabledAt$.",
             messageType: "SUCCESS"
         },
-        // ALL_API_EXHAUSTED: {
-        //     readable: "All API hits exhausted",
-        //     titleTemplate: "All API hits exhausted",
-        //     bodyTemplate: "NZBHydra: All API hits have been exhausted. Next possible hit: $nextHitAt$.",
-        //     templateHelp: "Available variables: $nextHitAt$."
-        // },
-        // ALL_DOWNLOAD_EXHAUSTED: {
-        //     readable: "All downloads exhausted",
-        //     titleTemplate: "All downloads exhausted",
-        //     bodyTemplate: "NZBHydra: All downloads have been exhausted. Next possible hit: $nextDownloadAt$.",
-        //     templateHelp: "Available variables: $nextDownloadAt$."
-        // },
         UPDATE_INSTALLED: {
             readable: "Automatic update installed",
             titleTemplate: "Update installed",

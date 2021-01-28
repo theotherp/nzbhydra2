@@ -4,7 +4,6 @@ import com.google.common.base.Splitter;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import net.jodah.expiringmap.ExpirationPolicy;
 import net.jodah.expiringmap.ExpiringMap;
 import org.nzbhydra.config.category.Category;
@@ -23,11 +22,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.MediaType;
+import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
@@ -50,8 +49,10 @@ public class SearchWeb {
     private SearchRequestFactory searchRequestFactory;
     @Autowired
     private InternalSearchResultProcessor searchResultProcessor;
+    @Autowired
+    private SimpMessageSendingOperations messagingTemplate;
 
-    private Lock lock = new ReentrantLock();
+    private final Lock lock = new ReentrantLock();
 
     private final Map<Long, SearchState> searchStates = ExpiringMap.builder()
             .maxSize(10)
@@ -73,17 +74,18 @@ public class SearchWeb {
         lock.lock();
         SearchState searchState = searchStates.get(searchRequest.getSearchRequestId());
         searchState.setSearchFinished(true);
+        sendSearchState(searchState);
         lock.unlock();
 
         logger.info("Web search took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return searchResponse;
     }
 
-    @Secured({"ROLE_USER"})
-    @RequestMapping(value = "/internalapi/search/state", produces = MediaType.APPLICATION_JSON_VALUE)
-    public SearchState getSearchState(@RequestParam("searchrequestid") long searchRequestId) {
-        return searchStates.getOrDefault(searchRequestId, new SearchState());
+
+    private void sendSearchState(SearchState searchState) {
+        messagingTemplate.convertAndSend("/topic/searchState", searchState);
     }
+
 
     private SearchRequest createSearchRequest(@RequestBody SearchRequestParameters parameters) {
         Category category = categoryProvider.getByInternalName(parameters.getCategory());
@@ -142,7 +144,9 @@ public class SearchWeb {
         searchRequest = searchRequestFactory.extendWithSavedIdentifiers(searchRequest);
 
         //Initialize messages for this search request
-        searchStates.put(searchRequest.getSearchRequestId(), new SearchState());
+        final SearchState searchState = new SearchState(searchRequest.getSearchRequestId());
+        searchStates.put(searchRequest.getSearchRequestId(), searchState);
+        sendSearchState(searchState);
 
         return searchRequest;
     }
@@ -154,6 +158,7 @@ public class SearchWeb {
             SearchState searchState = searchStates.get(event.getSearchRequest().getSearchRequestId());
             if (!searchState.getMessages().contains(event.getMessage())) {
                 searchState.getMessages().add(event.getMessage());
+                sendSearchState(searchState);
             }
             lock.unlock();
         }
@@ -167,6 +172,7 @@ public class SearchWeb {
             searchState.setIndexerSelectionFinished(true);
             searchState.setIndexersSelected(event.getIndexersSelected());
             lock.unlock();
+            sendSearchState(searchState);
         }
     }
 
@@ -178,6 +184,7 @@ public class SearchWeb {
             SearchState searchState = searchStates.get(event.getSearchRequest().getSearchRequestId());
             searchState.setIndexersSelected(searchState.getIndexersSelected() + 1);
             lock.unlock();
+            sendSearchState(searchState);
         }
     }
 
@@ -188,19 +195,23 @@ public class SearchWeb {
             SearchState searchState = searchStates.get(event.getSearchRequest().getSearchRequestId());
             searchState.setIndexersFinished(searchState.getIndexersFinished() + 1);
             lock.unlock();
+            sendSearchState(searchState);
         }
     }
 
     @Data
-    @NoArgsConstructor
     private static class SearchState {
 
+        private long searchRequestId;
         private boolean indexerSelectionFinished = false;
         private boolean searchFinished = false;
         private int indexersSelected = 0;
         private int indexersFinished = 0;
         private List<String> messages = new ArrayList<>();
 
+        public SearchState(long searchRequestId) {
+            this.searchRequestId = searchRequestId;
+        }
     }
 
 }

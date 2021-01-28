@@ -28,7 +28,7 @@ public class MainWeb {
     }
 
 
-    @RequestMapping(value = "/**", method = RequestMethod.GET)
+    @RequestMapping(value = "/", method = RequestMethod.GET)
     @Secured({"ROLE_USER"})
     public String index(HttpSession session, Principal principal) {
         setSessionAttributes(session, principal);
@@ -42,21 +42,21 @@ public class MainWeb {
         return "login";
     }
 
-    @RequestMapping(value = "/config", method = RequestMethod.GET)
+    @RequestMapping(value = "/config/**", method = RequestMethod.GET)
     @Secured({"ROLE_ADMIN"})
     public String config(HttpSession session, Principal principal) {
         setSessionAttributes(session, principal);
         return "index";
     }
 
-    @RequestMapping(value = "/system", method = RequestMethod.GET)
+    @RequestMapping(value = "/system/**", method = RequestMethod.GET)
     @Secured({"ROLE_ADMIN"})
     public String system(HttpSession session, Principal principal) {
         setSessionAttributes(session, principal);
         return "index";
     }
 
-    @RequestMapping(value = "/stats", method = RequestMethod.GET)
+    @RequestMapping(value = "/stats/**", method = RequestMethod.GET)
     @Secured({"ROLE_STATS"})
     public String stats(HttpSession session, Principal principal) {
         setSessionAttributes(session, principal);

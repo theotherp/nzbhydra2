@@ -15,7 +15,6 @@ function SearchService($http) {
         search: search,
         getLastResults: getLastResults,
         loadMore: loadMore,
-        getSearchState: getSearchState,
         getModalInstance: getModalInstance,
         setModalInstance: setModalInstance,
     };
@@ -71,9 +70,6 @@ function SearchService($http) {
         return $http.post(lastExecutedQuery.toString(), lastExecutedSearchRequestParameters).then(processData);
     }
 
-    function getSearchState(searchRequestId) {
-        return $http.get("internalapi/search/state", {params: {searchrequestid: searchRequestId}});
-    }
 
     function processData(response) {
         var searchResults = response.data.searchResults;

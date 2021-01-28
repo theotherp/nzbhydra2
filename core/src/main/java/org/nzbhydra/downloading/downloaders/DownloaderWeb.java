@@ -31,10 +31,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @RestController
 public class DownloaderWeb {
@@ -46,6 +43,9 @@ public class DownloaderWeb {
     @Autowired
     private DownloaderProvider downloaderProvider;
 
+    @Autowired
+    private DownloaderStatusRetrieval downloaderStatusRetrieval;
+
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/downloader/checkConnection", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public GenericResponse checkConnection(@RequestBody DownloaderConfig downloaderConfig) {
@@ -55,29 +55,7 @@ public class DownloaderWeb {
     @Secured({"ROLE_STATS"})
     @RequestMapping(value = "/internalapi/downloader/getStatus", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public DownloaderStatus getStatus() {
-        Collection<Downloader> allDownloaders = downloaderProvider.getAllDownloaders();
-        List<Downloader> enabledDownloaders = allDownloaders.stream()
-                .filter(Downloader::isEnabled)
-                .collect(Collectors.toList());
-        if (enabledDownloaders.isEmpty()) {
-            return new DownloaderStatus();
-        }
-        final Optional<Downloader> downloader = enabledDownloaders.stream()
-                .filter(x -> enabledDownloaders.size() == 1 || x.getName().equals(configProvider.getBaseConfig().getDownloading().getPrimaryDownloader()))
-                .findFirst();
-
-        if (!downloader.isPresent()) {
-            logger.error("Unable to determine to choose downloader for which to retrieve status.");
-            return new DownloaderStatus();
-        }
-        DownloaderStatus status = null;
-        try {
-            status = downloader.get().getStatus();
-            status.setUrl(downloader.get().getUrl());
-        } catch (Exception e) {
-            logger.error("Error while retrieving downloader status", e);
-        }
-        return status;
+        return downloaderStatusRetrieval.getStatus();
     }
 
     @Secured({"ROLE_USER"})
