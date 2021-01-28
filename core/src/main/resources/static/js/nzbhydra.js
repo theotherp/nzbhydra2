@@ -9814,10 +9814,8 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         }
 
         _.each(results, function (result) {
-            console.log("Retrieving color for " + result.title + " from " + result.indexer);
             var indexerColor = indexerColors[result.indexer];
             if (indexerColor === undefined || indexerColor === null) {
-                console.log("No color found for " + result.title + " from " + result.indexer);
                 return "";
             }
             result.style = "background-color: " + indexerColor.replace("rgb", "rgba").replace(")", ",0.5)")
