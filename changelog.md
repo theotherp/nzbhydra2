@@ -1,3 +1,9 @@
+### v3.10.1 BETA (2021-01-28)
+
+**Fix** Fix an issue with hydra using a base URL (e.g. /nzbhydra2).
+
+
+
 ### v3.10.0 BETA (2021-01-28)
 
 **Feature** Enabled compression for resources sent to the browser. This shouldn't matter on local connections but save bandwidth should you want to use UI on a mobile browser (horrible as it looks).

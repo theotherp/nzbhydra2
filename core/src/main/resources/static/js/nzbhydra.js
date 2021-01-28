@@ -2407,7 +2407,7 @@ function downloaderStatusFooter() {
             stompClient.subscribe('/topic/downloaderStatus', function (message) {
                 updateFooter(JSON.parse(message.body));
             });
-            stompClient.send( "/app/connectDownloaderStatus", function (message) {
+            stompClient.send("/app/connectDownloaderStatus", function (message) {
                 updateFooter(JSON.parse(message.body));
             })
         });
