@@ -1,3 +1,11 @@
+### v3.10.0 BETA (2021-01-28)
+
+**Feature** Enabled compression for resources sent to the browser. This shouldn't matter on local connections but save bandwidth should you want to use UI on a mobile browser (horrible as it looks).
+
+**Feature** The GUI will now retrieve notifications, the downloader status and search state via WebSocket. This means that the browser keeps a connection to the server open and is only sent data when new data is available (e.g. when the downloader status actually changed). This should result in considerably fewer requests and (negligible) faster UI update times.
+
+
+
 ### v3.9.2 (2021-01-16)
 
 **Feature** Added some code that allows me to post a link to adapt the logging config and to download the debug infos.
