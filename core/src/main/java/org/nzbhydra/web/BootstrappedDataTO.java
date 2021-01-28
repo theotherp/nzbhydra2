@@ -18,5 +18,6 @@ public class BootstrappedDataTO {
     private Boolean authConfigured;
     private Boolean showIndexerSelection;
     private SafeConfig safeConfig;
+    private String baseUrl;
 
 }

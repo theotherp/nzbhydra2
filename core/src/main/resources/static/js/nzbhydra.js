@@ -2000,13 +2000,13 @@ angular
     .directive('hydraChecksFooter', hydraChecksFooter);
 
 function hydraChecksFooter() {
-    controller.$inject = ["$scope", "UpdateService", "RequestsErrorHandler", "HydraAuthService", "$http", "$uibModal", "ConfigService", "GenericStorageService", "ModalService", "growl", "NotificationService"];
+    controller.$inject = ["$scope", "UpdateService", "RequestsErrorHandler", "HydraAuthService", "$http", "$uibModal", "ConfigService", "GenericStorageService", "ModalService", "growl", "NotificationService", "bootstrapped"];
     return {
         templateUrl: 'static/html/directives/checks-footer.html',
         controller: controller
     };
 
-    function controller($scope, UpdateService, RequestsErrorHandler, HydraAuthService, $http, $uibModal, ConfigService, GenericStorageService, ModalService, growl, NotificationService) {
+    function controller($scope, UpdateService, RequestsErrorHandler, HydraAuthService, $http, $uibModal, ConfigService, GenericStorageService, ModalService, growl, NotificationService, bootstrapped) {
         $scope.updateAvailable = false;
         $scope.checked = false;
         var welcomeIsBeingShown = false;
@@ -2223,7 +2223,7 @@ function hydraChecksFooter() {
         }
 
         if (ConfigService.getSafe().notificationConfig.displayNotifications) {
-            var socket = new SockJS('/websocket');
+            var socket = new SockJS(bootstrapped.baseUrl + 'websocket');
             var stompClient = Stomp.over(socket);
             stompClient.debug = null;
             stompClient.connect({}, function (frame) {
@@ -2393,22 +2393,21 @@ angular
     .directive('downloaderStatusFooter', downloaderStatusFooter);
 
 function downloaderStatusFooter() {
-    controller.$inject = ["$scope", "$http", "RequestsErrorHandler", "HydraAuthService"];
+    controller.$inject = ["$scope", "$http", "RequestsErrorHandler", "HydraAuthService", "bootstrapped"];
     return {
         templateUrl: 'static/html/directives/downloader-status-footer.html',
         controller: controller
     };
 
-    function controller($scope, $http, RequestsErrorHandler, HydraAuthService) {
-
-        var socket = new SockJS('/websocket');
+    function controller($scope, $http, RequestsErrorHandler, HydraAuthService, bootstrapped) {
+        var socket = new SockJS(bootstrapped.baseUrl + 'websocket');
         var stompClient = Stomp.over(socket);
         stompClient.debug = null;
         stompClient.connect({}, function (frame) {
             stompClient.subscribe('/topic/downloaderStatus', function (message) {
                 updateFooter(JSON.parse(message.body));
             });
-            stompClient.send("/app/connectDownloaderStatus", function (message) {
+            stompClient.send( "/app/connectDownloaderStatus", function (message) {
                 updateFooter(JSON.parse(message.body));
             })
         });
@@ -10490,7 +10489,7 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
 
 
 SearchController.$inject = ["$scope", "$http", "$stateParams", "$state", "$uibModal", "$timeout", "$sce", "growl", "SearchService", "focus", "ConfigService", "HydraAuthService", "CategoriesService", "$element", "SearchHistoryService"];
-SearchUpdateModalInstanceCtrl.$inject = ["$scope", "$interval", "SearchService", "$uibModalInstance", "searchRequestId", "onCancel"];angular
+SearchUpdateModalInstanceCtrl.$inject = ["$scope", "$interval", "SearchService", "$uibModalInstance", "searchRequestId", "onCancel", "bootstrapped"];angular
     .module('nzbhydraApp')
     .controller('SearchController', SearchController);
 
@@ -10909,7 +10908,7 @@ angular
     .module('nzbhydraApp')
     .controller('SearchUpdateModalInstanceCtrl', SearchUpdateModalInstanceCtrl);
 
-function SearchUpdateModalInstanceCtrl($scope, $interval, SearchService, $uibModalInstance, searchRequestId, onCancel) {
+function SearchUpdateModalInstanceCtrl($scope, $interval, SearchService, $uibModalInstance, searchRequestId, onCancel, bootstrapped) {
 
     var loggedSearchFinished = false;
     $scope.messages = [];
@@ -10917,7 +10916,7 @@ function SearchUpdateModalInstanceCtrl($scope, $interval, SearchService, $uibMod
     $scope.indexersSelected = 0;
     $scope.indexersFinished = 0;
 
-    var socket = new SockJS('/websocket');
+    var socket = new SockJS(bootstrapped.baseUrl + 'websocket');
     var stompClient = Stomp.over(socket);
     stompClient.debug = null;
     stompClient.connect({}, function (frame) {

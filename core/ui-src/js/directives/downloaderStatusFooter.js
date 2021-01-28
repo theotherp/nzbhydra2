@@ -24,9 +24,8 @@ function downloaderStatusFooter() {
         controller: controller
     };
 
-    function controller($scope, $http, RequestsErrorHandler, HydraAuthService) {
-
-        var socket = new SockJS('/websocket');
+    function controller($scope, $http, RequestsErrorHandler, HydraAuthService, bootstrapped) {
+        var socket = new SockJS(bootstrapped.baseUrl + 'websocket');
         var stompClient = Stomp.over(socket);
         stompClient.debug = null;
         stompClient.connect({}, function (frame) {

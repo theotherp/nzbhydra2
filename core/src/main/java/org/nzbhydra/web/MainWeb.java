@@ -72,7 +72,9 @@ public class MainWeb {
         if (urlBase == null) {
             urlBase = "";
         }
-        session.setAttribute("baseUrl", (urlBase + "/").replace("//", "/"));
+        final String baseUrl = (urlBase + "/").replace("//", "/");
+        session.setAttribute("baseUrl", baseUrl);
+        bootstrappedData.setBaseUrl(baseUrl);
         session.setAttribute("bootstrap", bootstrappedData);
         String theme = configProvider.getBaseConfig().getMain().getTheme();
         session.setAttribute("cssUrl", "static/css/" + theme + ".css");

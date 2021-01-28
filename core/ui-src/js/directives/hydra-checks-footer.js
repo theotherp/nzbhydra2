@@ -24,7 +24,7 @@ function hydraChecksFooter() {
         controller: controller
     };
 
-    function controller($scope, UpdateService, RequestsErrorHandler, HydraAuthService, $http, $uibModal, ConfigService, GenericStorageService, ModalService, growl, NotificationService) {
+    function controller($scope, UpdateService, RequestsErrorHandler, HydraAuthService, $http, $uibModal, ConfigService, GenericStorageService, ModalService, growl, NotificationService, bootstrapped) {
         $scope.updateAvailable = false;
         $scope.checked = false;
         var welcomeIsBeingShown = false;
@@ -241,7 +241,7 @@ function hydraChecksFooter() {
         }
 
         if (ConfigService.getSafe().notificationConfig.displayNotifications) {
-            var socket = new SockJS('/websocket');
+            var socket = new SockJS(bootstrapped.baseUrl + 'websocket');
             var stompClient = Stomp.over(socket);
             stompClient.debug = null;
             stompClient.connect({}, function (frame) {

@@ -417,7 +417,7 @@ angular
     .module('nzbhydraApp')
     .controller('SearchUpdateModalInstanceCtrl', SearchUpdateModalInstanceCtrl);
 
-function SearchUpdateModalInstanceCtrl($scope, $interval, SearchService, $uibModalInstance, searchRequestId, onCancel) {
+function SearchUpdateModalInstanceCtrl($scope, $interval, SearchService, $uibModalInstance, searchRequestId, onCancel, bootstrapped) {
 
     var loggedSearchFinished = false;
     $scope.messages = [];
@@ -425,7 +425,7 @@ function SearchUpdateModalInstanceCtrl($scope, $interval, SearchService, $uibMod
     $scope.indexersSelected = 0;
     $scope.indexersFinished = 0;
 
-    var socket = new SockJS('/websocket');
+    var socket = new SockJS(bootstrapped.baseUrl + 'websocket');
     var stompClient = Stomp.over(socket);
     stompClient.debug = null;
     stompClient.connect({}, function (frame) {
