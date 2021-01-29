@@ -5,7 +5,7 @@
     "type" : "fix",
     "text" : "Fix an issue with hydra using a base URL (e.g. /nzbhydra2)."
   } ],
-  "final" : false
+  "final" : true
 }, {
   "version" : "v3.10.0",
   "date" : "2021-01-28",
