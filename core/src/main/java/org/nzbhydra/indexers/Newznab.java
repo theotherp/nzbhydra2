@@ -422,6 +422,14 @@ public class Newznab extends Indexer<Xml> {
 
         for (NewznabXmlItem item : newznabXmlRoot.getRssChannel().getItems()) {
             try {
+                if (config.getSearchModuleType() == SearchModuleType.TORZNAB && item.getEnclosures().stream().noneMatch(x -> Objects.equals(x.getType(), "application/x-bittorrent"))) {
+                    debug("Skipping result {} because it doesn't contain a torrent link", item.getTitle());
+                    continue;
+                }
+                if (config.getSearchModuleType() == SearchModuleType.NEWZNAB && item.getEnclosures().stream().noneMatch(x -> Objects.equals(x.getType(), "application/x-nzb"))) {
+                    debug("Skipping result {} because it doesn't contain an NZB link", item.getTitle());
+                    continue;
+                }
                 SearchResultItem searchResultItem = createSearchResultItem(item);
                 searchResultItems.add(searchResultItem);
             } catch (NzbHydraException e) {
@@ -449,13 +457,13 @@ public class Newznab extends Indexer<Xml> {
         final int actualNumberResults = indexerSearchResult.getSearchResultItems().size();
         if (newznabResponse != null) {
             indexerSearchResult.setTotalResultsKnown(true);
-            if (newznabResponse.getTotal() != null) { //Animetosho doesn't provide a total number of results
+            if (newznabResponse.getTotal() != null) { //If an indexer doesn't provide a total number of results
                 indexerSearchResult.setTotalResults(newznabResponse.getTotal());
                 indexerSearchResult.setHasMoreResults(newznabResponse.getTotal() > newznabResponse.getOffset() + actualNumberResults + acceptorResult.getNumberOfRejectedResults());
-             } else {
-                 indexerSearchResult.setTotalResults(actualNumberResults);
-                 indexerSearchResult.setHasMoreResults(false);
-             }
+            } else {
+                indexerSearchResult.setTotalResults(actualNumberResults);
+                indexerSearchResult.setHasMoreResults(false);
+            }
              indexerSearchResult.setOffset(newznabResponse.getOffset());
              indexerSearchResult.setLimit(100);
          } else {
