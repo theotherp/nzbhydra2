@@ -1,3 +1,9 @@
+### v3.11.1 (2021-01-31)
+
+**Fix** Introduced a stupid bug in v3.11.0 which prevented all but one particular indexer from being selected. Sorry about that.
+
+
+
 ### v3.11.0 (2021-01-31)
 
 **Feature** Implemented rate limiting for certain indexers which don't allow more than x hits in x seconds. If you know of such an indexer please let me know as this is hard coded and not configurable.
