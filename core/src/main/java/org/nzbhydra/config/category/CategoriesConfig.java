@@ -59,30 +59,30 @@ public class CategoriesConfig extends ValidatingConfig<CategoriesConfig> {
         ArrayList<String> warnings = new ArrayList<>();
         for (Category category : categories) {
             if (category.getNewznabCategories() == null || category.getNewznabCategories().isEmpty()) {
-                errors.add("Category " + category.getName() + " does not have any newznab categories configured");
+                errors.add("Category \"" + category.getName() + "\" does not have any newznab categories configured");
             } else {
                 Optional<Integer> baseNewznabCategory = category.getNewznabCategories().stream().flatMap(Collection::stream).filter(x -> x % 1000 == 0).findFirst();
                 if (baseNewznabCategory.isPresent()) {
                     boolean nonBaseNewznabCategoryDefined = category.getNewznabCategories().stream().flatMap(Collection::stream).anyMatch(x -> !x.equals(baseNewznabCategory.get()) && CategoryProvider.checkCategoryMatchingMainCategory(x, baseNewznabCategory.get()));
 
                     if (nonBaseNewznabCategoryDefined) {
-                        warnings.add("Category " + category.getName() + " uses the main category " + baseNewznabCategory.get() + ". It does not make sense to configure sublevel categories already contained by their parent category.");
+                        warnings.add("Category " + category.getName() + " uses the main category \"" + baseNewznabCategory.get() + "\". It does not make sense to configure sublevel categories already contained by their parent category.");
                     }
                 }
             }
 
             if (category.getRequiredRegex().isPresent()) {
-                checkRegex(errors, category.getRequiredRegex().get(), "Category " + category.getName() + " uses an invalid required regex");
+                checkRegex(errors, category.getRequiredRegex().get(), "Category \"" + category.getName() + "\" uses an invalid required regex");
             }
             if (category.getForbiddenRegex().isPresent()) {
-                checkRegex(errors, category.getForbiddenRegex().get(), "Category " + category.getName() + " uses an invalid forbidden regex");
+                checkRegex(errors, category.getForbiddenRegex().get(), "Category \"" + category.getName() + "\" uses an invalid forbidden regex");
             }
             if (category.getApplyRestrictionsType() == SearchSourceRestriction.NONE) {
                 if (!category.getRequiredWords().isEmpty() || !category.getForbiddenWords().isEmpty()) {
-                    warnings.add("You selected not to apply any word restrictions on category " + category.getName() + " but supplied forbidden or required words");
+                    warnings.add("You selected not to apply any word restrictions on category \"" + category.getName() + "\" but supplied forbidden or required words");
                 }
                 if (category.getRequiredRegex().isPresent() || category.getForbiddenRegex().isPresent()) {
-                    warnings.add("You selected not to apply any word restrictions on category " + category.getName() + " but supplied a forbidden or required regex");
+                    warnings.add("You selected not to apply any word restrictions on category \"" + category.getName() + "\" but supplied a forbidden or required regex");
                 }
             }
         }
@@ -93,7 +93,7 @@ public class CategoriesConfig extends ValidatingConfig<CategoriesConfig> {
         }
 
         if (!"All".equals(newConfig.getDefaultCategory()) && categories.stream().noneMatch(x -> x.getName().equals(newConfig.getDefaultCategory()))) {
-            errors.add("Category " + newConfig.getDefaultCategory() + " set as default category but no such category exists");
+            errors.add("Category \"" + newConfig.getDefaultCategory() + "\" set as default category but no such category exists");
         }
 
         return new ConfigValidationResult(errors.isEmpty(), false, errors, warnings);

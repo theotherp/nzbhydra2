@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.InetAddress;
@@ -176,6 +177,16 @@ public class MainConfig extends ValidatingConfig<MainConfig> {
         }
         if (newMain.getKeepStatsForWeeks() != null && newMain.getKeepHistoryForWeeks() != null && newMain.getKeepStatsForWeeks() > newMain.getKeepHistoryForWeeks()) {
             result.getErrorMessages().add("Please set the time to keep stats to a value not higher than the time to keep history.");
+        }
+
+        if (newMain.getBackupFolder() != null) {
+            final File backupFolderFile = new File(newMain.getBackupFolder());
+            if (!backupFolderFile.exists()) {
+                final boolean created = backupFolderFile.mkdirs();
+                if (!created) {
+                    result.getErrorMessages().add("Backup folder " + backupFolder + " does not exist and could not be created");
+                }
+            }
         }
 
 
