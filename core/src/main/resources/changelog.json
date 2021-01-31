@@ -4,7 +4,11 @@
     "changes": [
       {
         "type": "feature",
-        "text": "Implement rate limiting for certain indexers which don't allow more than x hits in x seconds. If you know of such an indexer please let me know as this is hard coded and not configurable."
+        "text": "Implemented rate limiting for certain indexers which don't allow more than x hits in x seconds. If you know of such an indexer please let me know as this is hard coded and not configurable."
+      },
+      {
+        "type": "feature",
+        "text": "Added option to disable \"What's new\" button after an automatic update was installed."
       },
       {
         "type": "fix",
@@ -13,10 +17,6 @@
       {
         "type": "fix",
         "text": "Allow direct input for indexer color."
-      },
-      {
-        "type": "fix",
-        "text": "Added option to disable \"What's new\" button after an automatic update was installed."
       },
       {
         "type": "fix",
