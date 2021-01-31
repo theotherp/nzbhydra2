@@ -1,3 +1,9 @@
+### v3.11.3 (2021-01-31)
+
+**Fix** Fix an issue where the backup folder was not properly validated when saving the config. Too bad I don't get paid by the update (=bug).
+
+
+
 ### v3.11.2 (2021-01-31)
 
 **Fix** Fix a websocket issue when using a reverse proxy. Should've tested that better... If you're running NZBHydra behind a reverse proxy please see https://github.com/theotherp/nzbhydra2/issues/683#issuecomment-770444576.
