@@ -54,6 +54,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("unchecked")
 @Component
 @RequestScope
 public class IndexerForSearchSelector {
@@ -129,6 +130,9 @@ public class IndexerForSearchSelector {
                 continue;
             }
             if (!checkIndexerHitLimit(indexer)) {
+                continue;
+            }
+            if (!checkTooManyFrequentHits(indexer)) {
                 continue;
             }
 
@@ -281,6 +285,31 @@ public class IndexerForSearchSelector {
     }
 
     /**
+     * @return true if more than x hits where made in the last x seconds, false if everything is OK or the indexer isn't know to have such a limit
+     */
+    private boolean checkTooManyFrequentHits(Indexer indexer) {
+        if (!indexer.getConfig().getHost().equalsIgnoreCase("omgwtfnzbs.me")) {
+            return false;
+        }
+        final int limitHits = 300;
+        final int timespanSeconds = 300;
+        final List recentHitsFromShortHistory = getRecentHitsFromShortHistory(indexer, IndexerApiAccessType.SEARCH, limitHits);
+        if (recentHitsFromShortHistory.isEmpty()) {
+            logger.debug(LoggingMarkers.LIMITS, "Indexer {}. No recent hits found", indexer.getName());
+            return true;
+        }
+        Instant oldestAccess = ((Timestamp) Iterables.getLast(recentHitsFromShortHistory)).toInstant();
+        long oldestSecondsAgo = Instant.now(clock).getEpochSecond() - oldestAccess.getEpochSecond();
+        logger.debug(LoggingMarkers.LIMITS, "Indexer {}. Oldest of {} hits was {} seconds ago while only {} hits are allowed in {} seconds", indexer.getName(), limitHits, oldestSecondsAgo, limitHits, timespanSeconds);
+        if (oldestAccess.isBefore(Instant.now(clock).minusSeconds(timespanSeconds))) {
+            return true;
+        }
+        logger.info(String.format("Not using %s because too many frequent hits were made: More than %d in %d seconds. Oldest of these hits was %d seconds ago", indexer.getName(), limitHits, timespanSeconds, oldestSecondsAgo));
+        notSelectedIndersWithReason.put(indexer, "Too many frequent hits");
+        return false;
+    }
+
+    /**
      * @return false if limit not exceeded, true if exceeded
      */
     private boolean checkIfHitLimitIsExceeded(Indexer indexer, IndexerConfig indexerConfig, LocalDateTime comparisonTime, IndexerApiAccessType accessType, int limit, final String type) {
@@ -329,16 +358,7 @@ public class IndexerForSearchSelector {
             }
 
             //Check from API short term storage for other indexers
-            final String whereApiAccessType;
-            if (accessType == IndexerApiAccessType.NZB) {
-                whereApiAccessType = "x.API_ACCESS_TYPE = 'NZB'";
-            } else {
-                whereApiAccessType = "x.API_ACCESS_TYPE = 'NFO' OR x.API_ACCESS_TYPE = 'SEARCH'";
-            }
-            Query query = entityManager.createNativeQuery("SELECT x.TIME FROM INDEXERAPIACCESS_SHORT x WHERE x.INDEXER_ID = (:indexerId) AND (" + whereApiAccessType + ") ORDER BY TIME DESC LIMIT (:hitLimit)");
-            query.setParameter("indexerId", indexer.getIndexerEntity().getId());
-            query.setParameter("hitLimit", limit);
-            List resultList = query.getResultList();
+            List resultList = getRecentHitsFromShortHistory(indexer, accessType, limit);
             boolean currentHitsFromApi = false;
             boolean oldestAccessFromApi;
 
@@ -402,6 +422,20 @@ public class IndexerForSearchSelector {
         } finally {
             logger.debug(LoggingMarkers.PERFORMANCE, "Limit detection for indexer {} took {}ms", indexerConfig.getName(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
         }
+    }
+
+    private List getRecentHitsFromShortHistory(Indexer indexer, IndexerApiAccessType accessType, int limit) {
+        final String whereApiAccessType;
+        if (accessType == IndexerApiAccessType.NZB) {
+            whereApiAccessType = "x.API_ACCESS_TYPE = 'NZB'";
+        } else {
+            whereApiAccessType = "x.API_ACCESS_TYPE = 'NFO' OR x.API_ACCESS_TYPE = 'SEARCH'";
+        }
+        Query query = entityManager.createNativeQuery("SELECT x.TIME FROM INDEXERAPIACCESS_SHORT x WHERE x.INDEXER_ID = (:indexerId) AND (" + whereApiAccessType + ") ORDER BY TIME DESC LIMIT (:hitLimit)");
+        query.setParameter("indexerId", indexer.getIndexerEntity().getId());
+        query.setParameter("hitLimit", limit);
+        List resultList = query.getResultList();
+        return resultList;
     }
 
     LocalDateTime calculateNextPossibleHit(IndexerConfig indexerConfig, Instant firstInWindowAccessTime) {

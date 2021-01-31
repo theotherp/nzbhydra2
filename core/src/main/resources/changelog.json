@@ -1,7 +1,11 @@
 [
   {
-    "version": "v3.10.2",
+    "version": "v3.11.0",
     "changes": [
+      {
+        "type": "feature",
+        "text": "Implement rate limiting for certain indexers which don't allow more than x hits in x seconds. If you know of such an indexer please let me know as this is hard coded and not configurable."
+      },
       {
         "type": "fix",
         "text": "Validate backup folder when saving config."

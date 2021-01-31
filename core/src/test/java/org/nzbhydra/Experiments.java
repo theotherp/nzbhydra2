@@ -138,11 +138,10 @@ public class Experiments {
         OkHttpClient client = new OkHttpClient.Builder()
                 .build();
 
-        final int limit = 100;
+        final int limit = 315;
         final Stopwatch started = Stopwatch.createStarted();
         ExecutorService executorService = Executors.newFixedThreadPool(8);
         executeCalls(client, executorService, "api", limit);
-        executeCalls(client, executorService, "torznab/api", limit);
 
 //        for (int i = 0; i < limit; i++) {
 //            Request request = new Request.Builder()
@@ -159,7 +158,7 @@ public class Experiments {
 
     private void executeCalls(OkHttpClient client, ExecutorService executorService, String endpoint, int numberOfRuns) throws InterruptedException {
         executorService.invokeAll(IntStream.range(0, numberOfRuns).mapToObj(i -> (Callable<Object>) () -> {
-            Thread.sleep(500);
+            Thread.sleep(100);
             Request request = new Request.Builder()
 //                    .url("http://127.0.0.1:5076/" + endpoint + "?apikey=apikey&t=search&q=blub" + i + "&cat=2000&cachetime=20")
                     .url("http://127.0.0.1:5076/" + endpoint + "?category=All&t=search&query=" + i + "&apikey=apikey")
