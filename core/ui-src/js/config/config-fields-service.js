@@ -532,6 +532,15 @@ function ConfigFields($injector) {
                                 type: 'switch',
                                 label: 'Show update banner when running docker'
                             }
+                        },
+                        {
+                            key: 'showWhatsNewBanner',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Show "What\'s new" banner after automatic updates',
+                                help: 'Please keep it enabled, I put some effort into the changelog ;-)'
+                            }
                         }
                     ]
                 },

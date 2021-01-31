@@ -308,6 +308,7 @@ main:
   repositoryBase: "https://github.com/theotherp"
   showNews: true
   showUpdateBannerOnDocker: true
+  showWhatsNewBanner: true
   shutdownForRestart: false
   sniDisabledFor: [ ]
   ssl: false

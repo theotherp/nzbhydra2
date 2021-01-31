@@ -2081,6 +2081,7 @@ function hydraChecksFooter() {
                     $scope.changelog = response.data.changelog;
                     $scope.runInDocker = response.data.runInDocker;
                     $scope.showUpdateBannerOnDocker = response.data.showUpdateBannerOnDocker;
+                    $scope.showWhatsNewBanner = response.data.showWhatsNewBanner;
                     if ($scope.runInDocker && !$scope.showUpdateBannerOnDocker) {
                         $scope.updateAvailable = false;
                     }
@@ -2322,9 +2323,9 @@ function footer() {
 
             if ($scope.showDownloaderStatus) {
                 if ($scope.showAutomaticUpdateFooter) {
-                    $scope.updateFooterBottom = 50;
+                    $scope.updateFooterBottom = 20;
                 } else {
-                    $scope.updateFooterBottom = 35;
+                    $scope.updateFooterBottom = 38;
                 }
             } else {
                 $scope.updateFooterBottom = 0;
@@ -5156,7 +5157,7 @@ angular
                     $scope.model.color = null;
                     $scope.color = null;
                 }
-                $scope.$watch("model.color", function() {
+                $scope.$watch("model.color", function () {
                     if (!_.isNullOrEmpty($scope.model.color)) {
                         $scope.color = $scope.model.color;
                     }
@@ -6302,6 +6303,15 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'switch',
                                 label: 'Show update banner when running docker'
+                            }
+                        },
+                        {
+                            key: 'showWhatsNewBanner',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Show "What\'s new" banner after automatic updates',
+                                help: 'Please keep it enabled, I put some effort into the changelog ;-)'
                             }
                         }
                     ]

@@ -9,6 +9,10 @@
       {
         "type": "fix",
         "text": "Allow direct input for indexer color."
+      },
+      {
+        "type": "fix",
+        "text": "Added option to disable \"What's new\" button after an automatic update was installed."
       }
     ],
     "final": true

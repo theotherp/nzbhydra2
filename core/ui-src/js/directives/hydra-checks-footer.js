@@ -99,6 +99,7 @@ function hydraChecksFooter() {
                     $scope.changelog = response.data.changelog;
                     $scope.runInDocker = response.data.runInDocker;
                     $scope.showUpdateBannerOnDocker = response.data.showUpdateBannerOnDocker;
+                    $scope.showWhatsNewBanner = response.data.showWhatsNewBanner;
                     if ($scope.runInDocker && !$scope.showUpdateBannerOnDocker) {
                         $scope.updateAvailable = false;
                     }

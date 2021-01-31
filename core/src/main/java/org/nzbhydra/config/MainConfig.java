@@ -89,6 +89,7 @@ public class MainConfig extends ValidatingConfig<MainConfig> {
     private boolean updateToPrereleases = false;
     private boolean updateCheckEnabled = true;
     private boolean showUpdateBannerOnDocker = true;
+    private boolean showWhatsNewBanner = true;
 
 
     //Startup / GUI settings

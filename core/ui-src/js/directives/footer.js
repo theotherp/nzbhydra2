@@ -53,9 +53,9 @@ function footer() {
 
             if ($scope.showDownloaderStatus) {
                 if ($scope.showAutomaticUpdateFooter) {
-                    $scope.updateFooterBottom = 50;
+                    $scope.updateFooterBottom = 20;
                 } else {
-                    $scope.updateFooterBottom = 35;
+                    $scope.updateFooterBottom = 38;
                 }
             } else {
                 $scope.updateFooterBottom = 0;

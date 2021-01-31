@@ -67,7 +67,7 @@ public class UpdatesWeb {
             try {
                 if (!configProvider.getBaseConfig().getMain().isUpdateCheckEnabled()) {
                     //Just for development
-                    return new VersionsInfo("", "", false, false, false, false, false, "false", new UpdateManager.PackageInfo());
+                    return new VersionsInfo("", "", false, false, false, false, false, false, "false", new UpdateManager.PackageInfo());
                 }
                 String currentVersion = updateManager.getCurrentVersionString();
                 String latestVersion = updateManager.getLatestVersionString();
@@ -75,9 +75,11 @@ public class UpdatesWeb {
                 boolean latestVersionIgnored = updateManager.latestVersionIgnored();
                 boolean isRunInDocker = DebugInfosProvider.isRunInDocker();
                 boolean isShowUpdateBannerOnDocker = configProvider.getBaseConfig().getMain().isShowUpdateBannerOnDocker();
+                boolean isShowWhatsNewBanner = configProvider.getBaseConfig().getMain().isShowWhatsNewBanner();
                 boolean outdatedWrapperDetected = outdatedWrapperDetector.isOutdatedWrapperDetected();
                 String automaticUpdateToNotice = genericStorage.get(AutomaticUpdater.TO_NOTICE_KEY, String.class).orElse(null);
-                return new VersionsInfo(currentVersion, latestVersion, isUpdateAvailable, latestVersionIgnored, isRunInDocker, isShowUpdateBannerOnDocker, outdatedWrapperDetected, automaticUpdateToNotice, updateManager.getPackageInfo());
+
+                return new VersionsInfo(currentVersion, latestVersion, isUpdateAvailable, latestVersionIgnored, isRunInDocker, isShowUpdateBannerOnDocker, isShowWhatsNewBanner, outdatedWrapperDetected, automaticUpdateToNotice, updateManager.getPackageInfo());
             } catch (UpdateException e) {
                 logger.error("An error occured while getting version information", e);
                 throw new RuntimeException("Unable to get update information");
@@ -176,6 +178,7 @@ public class UpdatesWeb {
         private boolean latestVersionIgnored;
         private boolean runInDocker;
         private boolean showUpdateBannerOnDocker;
+        private boolean showWhatsNewBanner;
         private boolean wrapperOutdated;
         private String automaticUpdateToNotice;
 
