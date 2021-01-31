@@ -1,3 +1,9 @@
+### v3.11.2 (2021-01-31)
+
+**Fix** Fix a websocket issue when using a reverse proxy. Should've tested that better... If you're running NZBHydra behind a reverse proxy please see https://github.com/theotherp/nzbhydra2/issues/683#issuecomment-770444576.
+
+
+
 ### v3.11.1 (2021-01-31)
 
 **Fix** Introduced a stupid bug in v3.11.0 which prevented all but one particular indexer from being selected. Sorry about that.
