@@ -289,7 +289,7 @@ public class IndexerForSearchSelector {
      */
     private boolean checkTooManyFrequentHits(Indexer indexer) {
         if (!indexer.getConfig().getHost().equalsIgnoreCase("omgwtfnzbs.me")) {
-            return false;
+            return true;
         }
         final int limitHits = 300;
         final int timespanSeconds = 300;
