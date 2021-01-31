@@ -17,6 +17,10 @@
       {
         "type": "fix",
         "text": "Fixed an issue where animetosho results would show up as a warning in the log. The indexer contains NZB and/or torrent links combined in one feed. When you made an NZB or torrent search and a result only contained a link for the other type this would be shown as a warning. This message will now only be shown on debug level."
+      },
+      {
+        "type": "fix",
+        "text": "Improve the connection check to sabNZBd so that false positives should be reduced (.i.e in NZBHydra connecting successfully to a proxy or other server is not interpreted as successful connection check)."
       }
     ],
     "final": true

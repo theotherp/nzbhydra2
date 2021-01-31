@@ -40,9 +40,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.UnknownContentTypeException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.URI;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -302,11 +304,29 @@ public class Sabnzbd extends Downloader {
         logger.debug("Checking connection");
         UriComponentsBuilder baseUrl = getBaseUrl();
         try {
-            restTemplate.exchange(baseUrl.queryParam("mode", "get_cats").build().toUri().toString(), HttpMethod.GET, null, CategoriesResponse.class);
-            logger.info("Connection check with sabnzbd using URL {} successful", baseUrl.toUriString());
+            final ResponseEntity<QueueResponse> exchange = restTemplate.exchange(baseUrl.queryParam("mode", "queue").build().toUri().toString(), HttpMethod.GET, null, QueueResponse.class);
+            if (!exchange.getStatusCode().is2xxSuccessful()) {
+                logger.info("Connection check with sabNZBd using URL {}\n failed: Response body: {}", baseUrl.toUriString(), exchange.getBody().toString());
+                return new GenericResponse(false, "Connection check with sabnzbd failed. Response message: " + exchange.getStatusCode().getReasonPhrase() + ".The log may contain more infos.");
+            }
+            if (exchange.getBody() == null || exchange.getBody().getQueue() == null) {
+                logger.info("Connection check with sabNZBd using URL {} failed. Unable to parse response.", baseUrl.toUriString());
+                return new GenericResponse(false, "Connection check with sabnzbd failed. Unable to parse response.");
+            }
+            logger.info("Connection check with sabNZBd using URL {} successful", baseUrl.toUriString());
             return new GenericResponse(true, null);
+        } catch (UnknownContentTypeException e) {
+            logger.info("Connection check with sabnzbd using URL {} failed. Hydra was unable to parse the response. This usually means that whatever is behind that URL is not sabNZBd. Response: {}", baseUrl.toUriString(), e.getMessage());
+            return new GenericResponse(false, "Connection check failed. Whatever is behind that URL is probably not sabNZBd.");
         } catch (RestClientException e) {
-            logger.info("Connection check with sabnzbd using URL {} failed: {}", baseUrl.toUriString(), e.getMessage());
+            Throwable exception = e;
+            if (exception.getCause() != null && exception.getCause() instanceof ConnectException) {
+                exception = exception.getCause();
+            }
+            logger.info("Connection check with sabNZBd using URL {} failed: {}", baseUrl.toUriString(), exception.getMessage());
+            return new GenericResponse(false, exception.getMessage());
+        } catch (Exception e) {
+            logger.info("Connection check with sabNZBd using URL {} failed: {}", baseUrl.toUriString(), e.getMessage());
             return new GenericResponse(false, e.getMessage());
         }
     }
