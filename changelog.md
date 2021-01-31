@@ -1,4 +1,20 @@
-### v3.10.1 BETA (2021-01-28)
+### v3.11.0 (2021-01-31)
+
+**Feature** Implemented rate limiting for certain indexers which don't allow more than x hits in x seconds. If you know of such an indexer please let me know as this is hard coded and not configurable.
+
+**Feature** Added option to disable "What's new" button after an automatic update was installed.
+
+**Fix** Validate backup folder when saving config.
+
+**Fix** Allow direct input for indexer color.
+
+**Fix** Fixed an issue where animetosho results would show up as a warning in the log. The indexer contains NZB and/or torrent links combined in one feed. When you made an NZB or torrent search and a result only contained a link for the other type this would be shown as a warning. This message will now only be shown on debug level.
+
+**Fix** Improve the connection check to sabNZBd so that false positives should be reduced (.i.e in NZBHydra connecting successfully to a proxy or other server is not interpreted as successful connection check).
+
+
+
+### v3.10.1 (2021-01-28)
 
 **Fix** Fix an issue with hydra using a base URL (e.g. /nzbhydra2).
 
