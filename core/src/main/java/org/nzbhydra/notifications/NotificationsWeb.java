@@ -16,11 +16,13 @@
 
 package org.nzbhydra.notifications;
 
+import org.nzbhydra.ShutdownEvent;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.event.EventListener;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
@@ -101,6 +103,13 @@ public class NotificationsWeb {
         }
         logger.info("Sending test notification for type {}", eventType);
         applicationEventPublisher.publishEvent(notificationEvent.get().getTestInstance());
+    }
+
+    @EventListener
+    public void onShutdown(ShutdownEvent event) {
+        if (scheduler != null) {
+            scheduler.shutdown();
+        }
     }
 
 

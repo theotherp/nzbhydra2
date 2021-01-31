@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import com.google.common.base.Strings;
 import lombok.Data;
 import org.javers.core.metamodel.annotation.DiffIgnore;
+import org.nzbhydra.NzbHydra;
 import org.nzbhydra.config.downloading.ProxyType;
 import org.nzbhydra.config.sensitive.SensitiveData;
 import org.nzbhydra.debuginfos.DebugInfosProvider;
@@ -181,7 +182,13 @@ public class MainConfig extends ValidatingConfig<MainConfig> {
         }
 
         if (newMain.getBackupFolder() != null) {
-            final File backupFolderFile = new File(newMain.getBackupFolder());
+
+            final File backupFolderFile;
+            if (backupFolder.contains(File.separator)) {
+                backupFolderFile = new File(backupFolder);
+            } else {
+                backupFolderFile = new File(NzbHydra.getDataFolder(), backupFolder);
+            }
             if (!backupFolderFile.exists()) {
                 final boolean created = backupFolderFile.mkdirs();
                 if (!created) {
