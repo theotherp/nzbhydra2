@@ -5,6 +5,10 @@
       {
         "type": "fix",
         "text": "Validate backup folder when saving config."
+      },
+      {
+        "type": "fix",
+        "text": "Allow direct input for indexer color."
       }
     ],
     "final": true

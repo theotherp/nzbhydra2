@@ -5135,15 +5135,32 @@ angular
             extends: 'horizontalInput',
             templateUrl: 'static/html/config/color-control.html',
             controller: function ($scope) {
-                $scope.convertColor = function () {
+                //Model format: rgb(116,18,18)
+                //Input format: rgba(100,42,41,0.5)
+                if (!_.isNullOrEmpty($scope.model.color)) {
+                    $scope.color = $scope.model.color;
+                }
+                $scope.convertColorToCss = function () {
                     if (_.isNullOrEmpty($scope.model.color)) {
                         return "";
                     }
                     return $scope.model.color.replace("rgb", "rgba").replace(")", ",0.5)");
                 }
+                $scope.convertColorFromInput = function () {
+                    if (_.isNullOrEmpty($scope.color)) {
+                        return;
+                    }
+                    $scope.model.color = $scope.color.replace("rgba", "rgb").replace(",0.5)", ")");
+                }
                 $scope.clear = function () {
                     $scope.model.color = null;
+                    $scope.color = null;
                 }
+                $scope.$watch("model.color", function() {
+                    if (!_.isNullOrEmpty($scope.model.color)) {
+                        $scope.color = $scope.model.color;
+                    }
+                })
             }
         });
 
