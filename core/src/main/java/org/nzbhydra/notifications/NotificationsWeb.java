@@ -36,8 +36,8 @@ import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ScheduledFuture;
 
-@SuppressWarnings("unchecked")
 @RestController
 public class NotificationsWeb {
 
@@ -52,6 +52,7 @@ public class NotificationsWeb {
     private SimpMessageSendingOperations messagingTemplate;
     @Autowired
     private ThreadPoolTaskScheduler scheduler;
+    private ScheduledFuture<?> scheduledFuture;
 
     @PostConstruct
     public void sendNotificationsToWebSocket() {
@@ -59,7 +60,7 @@ public class NotificationsWeb {
     }
 
     private void scheduleDownloadStatusSending() {
-        scheduler.scheduleAtFixedRate(() -> {
+        scheduledFuture = scheduler.scheduleAtFixedRate(() -> {
             final List<NotificationEntity> newNotifications = notificationRepository.findAllByDisplayedFalseOrderByTimeDesc();
             if (newNotifications.isEmpty()) {
                 return;
@@ -109,6 +110,10 @@ public class NotificationsWeb {
     public void onShutdown(ShutdownEvent event) {
         if (scheduler != null) {
             scheduler.shutdown();
+            scheduler = null;
+        }
+        if (scheduledFuture != null) {
+            scheduledFuture.cancel(true);
         }
     }
 

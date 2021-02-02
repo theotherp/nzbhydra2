@@ -16,6 +16,7 @@
 
 package org.nzbhydra.downloading.downloaders;
 
+import org.nzbhydra.ShutdownEvent;
 import org.nzbhydra.config.ConfigChangedEvent;
 import org.nzbhydra.config.ConfigProvider;
 import org.slf4j.Logger;
@@ -83,7 +84,17 @@ public class DownloaderWebSocket {
         } else if (scheduledFuture == null && configChangedEvent.getNewConfig().getDownloading().isShowDownloaderStatus()) {
             scheduleDownloadStatusSending();
         }
+    }
 
+    @EventListener
+    public void onShutdown(ShutdownEvent event) {
+        if (scheduler != null) {
+            scheduler.shutdown();
+            scheduler = null;
+        }
+        if (scheduledFuture != null) {
+            scheduledFuture.cancel(true);
+        }
     }
 
 
