@@ -48,6 +48,9 @@
                             <Built-By>TheOtherP</Built-By>
                         </manifestEntries>
                     </archive>
+                    <excludes>
+                        <exclude>**/*.map</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
             <plugin>
