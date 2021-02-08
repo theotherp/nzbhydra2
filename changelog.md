@@ -1,3 +1,11 @@
+### v3.11.4 (2021-02-08)
+
+**Fix** Fix warning "Destroy method on bean..." when shutting down NZBHydra.
+
+**Fix** Fix automatic configuration of Sonarr and Radarr v3.
+
+
+
 ### v3.11.3 (2021-01-31)
 
 **Fix** Fix an issue where the backup folder was not properly validated when saving the config. Too bad I don't get paid by the update (=bug).
