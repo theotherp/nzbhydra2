@@ -5,6 +5,10 @@
       {
         "type": "fix",
         "text": "Fix warning \"Destroy method on bean...\" when shutting down NZBHydra."
+      },
+      {
+        "type": "fix",
+        "text": "Fix automatic configuration of Sonarr and Radarr v3."
       }
     ],
     "final": true

@@ -254,22 +254,14 @@ public class ExternalTools {
         xdarrAddRequest.setSupportsSearch(true);
 
         xdarrAddRequest.getFields().add(new XdarrAddRequestField("apiKey", configProvider.getBaseConfig().getMain().getApiKey()));
-        if (Strings.isNullOrEmpty(addRequest.getCategories())) {
-            xdarrAddRequest.getFields().add(new XdarrAddRequestField("categories", ""));
-        } else {
-            xdarrAddRequest.getFields().add(new XdarrAddRequestField("categories", Arrays.asList(addRequest.getCategories().split(","))));
-        }
+        xdarrAddRequest.getFields().add(new XdarrAddRequestField("categories", mapCategories(addRequest.getCategories(), addRequest)));
         xdarrAddRequest.getFields().add(new XdarrAddRequestField("additionalParameters", getAdditionalParameters(addRequest, indexer == null ? null : indexer.getName())));
 
         if (externalTool == AddRequest.ExternalTool.Sonarrv3) {
             //V3 requires an empty list if no categories are supplied
             xdarrAddRequest.getFields().add(new XdarrAddRequestField("animeCategories", addRequest.getAnimeCategories() == null ? Collections.emptyList() : addRequest.getAnimeCategories()));
         } else if (externalTool != AddRequest.ExternalTool.Lidarr && externalTool != AddRequest.ExternalTool.Radarrv3) {
-            if (Strings.isNullOrEmpty(addRequest.getAnimeCategories())) {
-                xdarrAddRequest.getFields().add(new XdarrAddRequestField("animeCategories", ""));
-            } else {
-                xdarrAddRequest.getFields().add(new XdarrAddRequestField("animeCategories", addRequest.getAnimeCategories()));
-            }
+            new XdarrAddRequestField("animeCategories", mapCategories(addRequest.getCategories(), addRequest));
         }
         if (externalTool == AddRequest.ExternalTool.Lidarr || externalTool == AddRequest.ExternalTool.Readarr) {
             xdarrAddRequest.getFields().add(new XdarrAddRequestField("earlyReleaseLimit", addRequest.getEarlyDownloadLimit()));
@@ -371,6 +363,22 @@ public class ExternalTools {
             messages.add("Configured \"" + nameInXdarr + "\"");
         } catch (WebAccessException e) {
             handleXdarrError(addRequest, e);
+        }
+    }
+
+    private Object mapCategories(String categoriesString, AddRequest addRequest) {
+        if (Strings.isNullOrEmpty(categoriesString)) {
+            if (addRequest.getExternalTool().isV3()) {
+                return Collections.emptyList();
+            } else {
+                return "";
+            }
+        } else {
+            if (addRequest.getExternalTool().isV3()) {
+                return Stream.of(addRequest.getCategories().split(",")).map(Integer::parseInt).collect(Collectors.toList());
+            } else {
+                return Arrays.asList(addRequest.getCategories().split(","));
+            }
         }
     }
 

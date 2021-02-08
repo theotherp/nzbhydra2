@@ -6302,7 +6302,8 @@ function ConfigFields($injector) {
                             type: 'horizontalSwitch',
                             templateOptions: {
                                 type: 'switch',
-                                label: 'Show update banner when running docker'
+                                label: 'Show update banner when running docker',
+                                advanced: true
                             }
                         },
                         {
@@ -6310,8 +6311,9 @@ function ConfigFields($injector) {
                             type: 'horizontalSwitch',
                             templateOptions: {
                                 type: 'switch',
-                                label: 'Show "What\'s new" banner after automatic updates',
-                                help: 'Please keep it enabled, I put some effort into the changelog ;-)'
+                                label: 'Show info banner after automatic updates',
+                                help: 'Please keep it enabled, I put some effort into the changelog ;-)',
+                                advanced: true
                             }
                         }
                     ]
@@ -6429,7 +6431,8 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'switch',
                                 label: 'Show news',
-                                help: "Hydra will occasionally show news when opened. You can always find them in the system section"
+                                help: "Hydra will occasionally show news when opened. You can always find them in the system section",
+                                advanced: true
                             }
                         },
                         {
@@ -6442,7 +6445,8 @@ function ConfigFields($injector) {
                                     text: 'MB'
                                 },
                                 min: 128,
-                                help: '256 should suffice except when working with big databases / many indexers. See <a href="https://github.com/theotherp/nzbhydra2/wiki/Memory-requirements" target="_blank">wiki</a>.'
+                                help: '256 should suffice except when working with big databases / many indexers. See <a href="https://github.com/theotherp/nzbhydra2/wiki/Memory-requirements" target="_blank">wiki</a>.',
+                                advanced: true
                             }
                         }
                     ]
@@ -6865,7 +6869,8 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'text',
                                 label: 'Forbidden regex',
-                                help: 'Must not be present in a title (case is ignored).'
+                                help: 'Must not be present in a title (case is ignored).',
+                                advanced: true
                             },
                             hideExpression: function () {
                                 return rootModel.searching.applyRestrictions === "NONE";
@@ -6890,7 +6895,8 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'text',
                                 label: 'Required regex',
-                                help: 'Must be present in a title (case is ignored).'
+                                help: 'Must be present in a title (case is ignored).',
+                                advanced: true
                             },
                             hideExpression: function () {
                                 return rootModel.searching.applyRestrictions === "NONE";
@@ -6903,7 +6909,8 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'text',
                                 label: 'Forbidden groups',
-                                help: 'Posts from any groups containing any of these words will be ignored. Apply words with return key.'
+                                help: 'Posts from any groups containing any of these words will be ignored. Apply words with return key.',
+                                advanced: true
                             },
                             hideExpression: function () {
                                 return rootModel.searching.applyRestrictions === "NONE";
@@ -6915,7 +6922,8 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'text',
                                 label: 'Forbidden posters',
-                                help: 'Posts from any posters containing any of these words will be ignored. Apply words with return key.'
+                                help: 'Posts from any posters containing any of these words will be ignored. Apply words with return key.',
+                                advanced: true
                             }
                         },
                         {
@@ -7067,7 +7075,8 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'switch',
                                 label: 'Always show quick filters',
-                                help: 'Show all quick filter buttons for all types of searches.'
+                                help: 'Show all quick filter buttons for all types of searches.',
+                                advanced: true
                             }
                         },
                         {
@@ -7078,7 +7087,8 @@ function ConfigFields($injector) {
                                 type: 'text',
                                 label: 'Custom quick filters',
                                 help: 'Enter in the format "DisplayName=Required1,Required2". Apply values with enter key.',
-                                tooltip: 'E.g. use "WEB=webdl,web-dl." for a quick filter with the name "WEB" to be displayed that searches for "webdl" and "web-dl" in lowercase search results.'
+                                tooltip: 'E.g. use "WEB=webdl,web-dl." for a quick filter with the name "WEB" to be displayed that searches for "webdl" and "web-dl" in lowercase search results.',
+                                advanced: true
                             }
                         },
                         {
@@ -7112,7 +7122,8 @@ function ConfigFields($injector) {
                                     return customQuickFilters;
                                 },
                                 tooltip: 'To select custom quickfilters you just entered please save the config first.',
-                                buttonText: "None"
+                                buttonText: "None",
+                                advanced: true
                             }
                         }
                     ]
