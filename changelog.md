@@ -1,3 +1,17 @@
+### v3.12.0 (2021-02-13)
+
+**Feature** Add button to send results to black hole from download history.
+
+**Feature** Add support for custom parameters to be sent to indexers while searching.
+
+**Fix** Download status bar did not update properly when the downloader was idle after a download. The bar will now be updated until either a new download is started or the bar is properly filled, representing the downloader's idle state. This should hopefully also fix the long-standing issue with the browser tab freezing / crashing after a while.
+
+**Fix** Ensure that threads which send data to the frontend (like notifications or downloader status) are only active when a UI session (=browser tab) is open. Also only send downloader data if it's actually new (instead of e.g. repeatedly sending information that the downloader is idle.
+
+**Fix** Remove code for nzbs.org :-(
+
+
+
 ### v3.11.4 (2021-02-08)
 
 **Fix** Fix warning "Destroy method on bean..." when shutting down NZBHydra.
