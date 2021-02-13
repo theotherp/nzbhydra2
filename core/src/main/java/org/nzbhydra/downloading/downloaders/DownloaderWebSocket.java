@@ -27,14 +27,16 @@ import org.springframework.context.event.EventListener;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import org.springframework.web.socket.messaging.SessionSubscribeEvent;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 @Controller
 public class DownloaderWebSocket {
@@ -51,14 +53,14 @@ public class DownloaderWebSocket {
     @Autowired
     private SimpMessageSendingOperations messagingTemplate;
 
-    @Autowired
-    private ThreadPoolTaskScheduler scheduler;
+    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
     private ScheduledFuture<?> scheduledFuture;
 
     private DownloaderStatus lastSentStatus;
 
     private final Set<String> connectedSessionIds = new HashSet<>();
+
 
     @MessageMapping("/connectDownloaderStatus")
     @SendTo(TOPIC)
@@ -87,7 +89,7 @@ public class DownloaderWebSocket {
                 lastSentStatus = newStatus;
             }
 
-        }, INTERVAL);
+        }, 0, INTERVAL, TimeUnit.MILLISECONDS);
     }
 
     @EventListener
@@ -138,14 +140,11 @@ public class DownloaderWebSocket {
 
     @EventListener
     public void onShutdown(ShutdownEvent event) {
-        if (scheduler != null) {
-            scheduler.shutdown();
-            scheduler = null;
-        }
         if (scheduledFuture != null) {
             scheduledFuture.cancel(true);
             scheduledFuture = null;
         }
+        scheduler.shutdown();
     }
 
 

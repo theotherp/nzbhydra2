@@ -26,8 +26,9 @@ public class HydraTaskConfiguration {
     @Bean
     public ThreadPoolTaskScheduler taskExecutor() {
         ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
-        scheduler.setPoolSize(5);
+        scheduler.setPoolSize(1);
         scheduler.setThreadNamePrefix("HydraTask");
+        scheduler.setThreadGroupName("HydraTask");
         return scheduler;
     }
 }

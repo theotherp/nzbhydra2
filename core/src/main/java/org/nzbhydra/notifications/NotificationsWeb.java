@@ -26,7 +26,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,7 +38,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 @RestController
 public class NotificationsWeb {
@@ -54,8 +56,8 @@ public class NotificationsWeb {
     private ApplicationEventPublisher applicationEventPublisher;
     @Autowired
     private SimpMessageSendingOperations messagingTemplate;
-    @Autowired
-    private ThreadPoolTaskScheduler scheduler;
+
+    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private ScheduledFuture<?> scheduledFuture;
     private final Set<String> connectedSessionIds = new HashSet<>();
 
@@ -66,7 +68,7 @@ public class NotificationsWeb {
                 return;
             }
             messagingTemplate.convertAndSend(TOPIC, newNotifications);
-        }, INTERVAL);
+        }, 0, INTERVAL, TimeUnit.MILLISECONDS);
     }
 
     @MessageMapping("/markNotificationRead")
@@ -145,14 +147,11 @@ public class NotificationsWeb {
 
     @EventListener
     public void onShutdown(ShutdownEvent event) {
-        if (scheduler != null) {
-            scheduler.shutdown();
-            scheduler = null;
-        }
         if (scheduledFuture != null) {
             scheduledFuture.cancel(true);
             scheduledFuture = null;
         }
+        scheduler.shutdown();
     }
 
 

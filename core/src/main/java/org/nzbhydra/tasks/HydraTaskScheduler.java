@@ -61,9 +61,9 @@ public class HydraTaskScheduler implements BeanPostProcessor, SmartInitializingS
     @Autowired
     private ConfigurableEnvironment environment;
 
-    private Map<String, TaskRuntimeInformation> runtimeInformationMap = new HashMap<>();
-    private ConcurrentMap<HydraTask, TaskInformation> taskInformations = new ConcurrentHashMap<>();
-    private Map<String, ScheduledFuture> taskSchedules = new HashMap<>();
+    private final Map<String, TaskRuntimeInformation> runtimeInformationMap = new HashMap<>();
+    private final ConcurrentMap<HydraTask, TaskInformation> taskInformations = new ConcurrentHashMap<>();
+    private final Map<String, ScheduledFuture> taskSchedules = new HashMap<>();
     private boolean shutdownRequested;
 
     @EventListener
@@ -71,6 +71,12 @@ public class HydraTaskScheduler implements BeanPostProcessor, SmartInitializingS
         taskSchedules.values().forEach(x -> x.cancel(false));
         shutdownRequested = true;
     }
+
+    @Override
+    public void afterSingletonsInstantiated() {
+        scheduleTasks();
+    }
+
 
     private void scheduleTasks() {
         for (TaskRuntimeInformation runtimeInformation : runtimeInformationMap.values()) {
@@ -92,6 +98,7 @@ public class HydraTaskScheduler implements BeanPostProcessor, SmartInitializingS
         };
         if (runNow && !shutdownRequested) {
             scheduler.execute(runnable);
+            scheduler.setRemoveOnCancelPolicy(true);
         }
         ScheduledFuture scheduledTask = scheduler.schedule(runnable, new Trigger() {
             @Override
@@ -145,11 +152,6 @@ public class HydraTaskScheduler implements BeanPostProcessor, SmartInitializingS
             }
         }
         return bean;
-    }
-
-    @Override
-    public void afterSingletonsInstantiated() {
-        scheduleTasks();
     }
 
     @Data

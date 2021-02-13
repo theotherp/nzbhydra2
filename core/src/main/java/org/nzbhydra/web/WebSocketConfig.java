@@ -16,8 +16,12 @@
 
 package org.nzbhydra.web;
 
+import org.nzbhydra.ShutdownEvent;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.event.EventListener;
+import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
@@ -25,6 +29,8 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @Configuration
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+
+    private ThreadPoolTaskExecutor taskExecutor;
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
@@ -40,4 +46,26 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 .setClientLibraryUrl("//cdn.jsdelivr.net/sockjs/1.0.3/sockjs.min.js");
 
     }
+
+    @Override
+    public void configureClientOutboundChannel(ChannelRegistration registration) {
+        this.taskExecutor = new ThreadPoolTaskExecutor();
+        this.taskExecutor.setCorePoolSize(2);
+        this.taskExecutor.setAllowCoreThreadTimeOut(true);
+        registration.taskExecutor(taskExecutor);
+    }
+
+    @Override
+    public void configureClientInboundChannel(ChannelRegistration registration) {
+        this.taskExecutor = new ThreadPoolTaskExecutor();
+        this.taskExecutor.setCorePoolSize(2);
+        this.taskExecutor.setAllowCoreThreadTimeOut(true);
+        registration.taskExecutor(taskExecutor);
+    }
+
+    @EventListener
+    public void onShutdown(ShutdownEvent event) {
+        taskExecutor.shutdown();
+    }
+
 }
