@@ -36,8 +36,8 @@ load_rc_config ${name}
 : ${nzbhydra2_datafolder:="${nzbhydra2_dir}/data"}
 
 pidfile="/var/run/nzbhydra2/nzbhydra2.pid"
-command="/usr/local/bin/python2.7"
-command_args="${nzbhydra2_dir}/nzbhydra2wrapper.py --datafolder ${nzbhydra2_datafolder} --pidfile ${pidfile} --daemon --nobrowser"
+command="/usr/local/bin/python3"
+command_args="${nzbhydra2_dir}/nzbhydra2wrapperPy3.py --datafolder ${nzbhydra2_datafolder} --pidfile ${pidfile} --daemon --nobrowser"
 
 start_precmd="prestart"
 prestart() {
