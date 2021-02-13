@@ -1,14 +1,22 @@
 [
   {
-    "version": "v3.11.5",
+    "version": "v3.12.0",
     "changes": [
       {
         "type": "feature",
         "text": "Add button to send results to black hole from download history."
       },
       {
+        "type": "feature",
+        "text": "Add support for custom parameters to be sent to indexers while searching."
+      },
+      {
         "type": "fix",
         "text": "Download status bar did not update properly when the downloader was idle after a download. The bar will now be updated until either a new download is started or the bar is properly filled, representing the downloader's idle state. This should hopefully also fix the long-standing issue with the browser tab freezing / crashing after a while."
+      },
+      {
+        "type": "fix",
+        "text": "Remove code for nzbs.org :-("
       }
     ],
     "final": true

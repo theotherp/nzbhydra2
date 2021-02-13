@@ -3828,6 +3828,22 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
         )
     }
 
+    if (indexerModel.searchModuleType === 'NEWZNAB') {
+        fieldset.push(
+            {
+                key: 'customParameters',
+                type: 'horizontalChips',
+                templateOptions: {
+                    type: 'text',
+                    required: false,
+                    label: 'Custom parameters',
+                    help: 'Define custom parameters to be sent to the indexer when searching. Use the format "name=value"Apply values with return key.',
+                    advanced: 'true'
+                }
+            }
+        )
+    }
+
 
     fieldset.push(
         {

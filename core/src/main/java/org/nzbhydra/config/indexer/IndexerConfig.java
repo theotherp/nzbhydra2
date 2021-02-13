@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.ValidatingConfig;
@@ -98,6 +99,7 @@ public class IndexerConfig extends ValidatingConfig<IndexerConfig> {
     private String name;
     @SensitiveData
     private String password = null;
+    private List<String> customParameters = new ArrayList<>();
     private boolean preselect = true;
     private List<String> schedule = new ArrayList<>();
     private int score;
@@ -183,6 +185,12 @@ public class IndexerConfig extends ValidatingConfig<IndexerConfig> {
                 validationResult.getErrorMessages().add("Invalid expiry date for indexer " + newIndexerConfig.getName() + ". Either use 'Lifetime' or use the format `YYYY-MM-DD");
             }
         }
+
+        newIndexerConfig.getCustomParameters().forEach(x -> {
+            if (Strings.isNullOrEmpty(x) || StringUtils.countMatches(x, '=') > 1) {
+                validationResult.getErrorMessages().add("The custom paramater " + x + " is invalid. You must use the format name=value.");
+            }
+        });
 
         return validationResult;
     }

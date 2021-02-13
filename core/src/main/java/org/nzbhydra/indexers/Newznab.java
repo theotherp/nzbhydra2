@@ -84,7 +84,7 @@ public class Newznab extends Indexer<Xml> {
     private static Pattern GROUP_PATTERN = Pattern.compile(".*Group:<\\/b> ?([\\w\\.]+)<br ?\\/>.*");
     private static Pattern GUID_PATTERN = Pattern.compile("(.*\\/)?([a-zA-Z0-9@\\.]+)(#\\w+)?");
 
-    private static final List<String> HOSTS_NOT_SUPPORTING_EMPTY_TYPE_SEARCH = Arrays.asList("nzbgeek", "nzbs.org", "6box");
+    private static final List<String> HOSTS_NOT_SUPPORTING_EMPTY_TYPE_SEARCH = Arrays.asList("nzbgeek", "6box");
 
     private static final Pattern TV_PATTERN = Pattern.compile("(?<showtitle>[\\w\\.\\-_]+)S(?<season>\\d+)e(?<episode>\\d+)|(?<season2>\\d{1,2})x(?<episode2>\\d{1,2})", Pattern.CASE_INSENSITIVE);
 
@@ -199,8 +199,12 @@ public class Newznab extends Indexer<Xml> {
             componentsBuilder.queryParam(passwordParameter, "0");
         }
 
-
         calculateAndAddCategories(searchRequest, componentsBuilder);
+
+        config.getCustomParameters().forEach(x -> {
+            final String[] split = x.split("=");
+            componentsBuilder.queryParam(split[0], split[1]);
+        });
 
     }
 
@@ -464,14 +468,14 @@ public class Newznab extends Indexer<Xml> {
                 indexerSearchResult.setTotalResults(actualNumberResults);
                 indexerSearchResult.setHasMoreResults(false);
             }
-             indexerSearchResult.setOffset(newznabResponse.getOffset());
-             indexerSearchResult.setLimit(100);
-         } else {
-             indexerSearchResult.setTotalResultsKnown(false);
-             indexerSearchResult.setHasMoreResults(false);
-             indexerSearchResult.setOffset(0);
-             indexerSearchResult.setLimit(0);
-         }
+            indexerSearchResult.setOffset(newznabResponse.getOffset());
+            indexerSearchResult.setLimit(100);
+        } else {
+            indexerSearchResult.setTotalResultsKnown(false);
+            indexerSearchResult.setHasMoreResults(false);
+            indexerSearchResult.setOffset(0);
+            indexerSearchResult.setLimit(0);
+        }
         if (indexerSearchResult.getTotalResults() == 0) {
             //Fallback to make sure the total is not 0 when actually some results were reported
             indexerSearchResult.setTotalResults(actualNumberResults);
