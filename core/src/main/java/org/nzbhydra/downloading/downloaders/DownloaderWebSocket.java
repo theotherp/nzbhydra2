@@ -71,8 +71,11 @@ public class DownloaderWebSocket {
             final DownloaderStatus newStatus = downloaderStatusRetrieval.getStatus();
             if (!newStatus.equals(lastSentStatus)) {
                 messagingTemplate.convertAndSend("/topic/downloaderStatus", newStatus);
-                lastSentStatus = newStatus;
+            } else if (!lastSentStatus.isLastUpdateForNow()) {
+                newStatus.setLastUpdateForNow(true);
+                messagingTemplate.convertAndSend("/topic/downloaderStatus", newStatus);
             }
+            lastSentStatus = newStatus;
         }, INTERVAL);
     }
 

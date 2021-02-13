@@ -24,16 +24,22 @@ function downloaderStatusFooter() {
         controller: controller
     };
 
-    function controller($scope, $http, RequestsErrorHandler, HydraAuthService, bootstrapped) {
+    function controller($scope, $http, RequestsErrorHandler, HydraAuthService, $interval, bootstrapped) {
+
+        var downloaderStatus;
+        var updateInterval = null;
+
         var socket = new SockJS(bootstrapped.baseUrl + 'websocket');
         var stompClient = Stomp.over(socket);
         stompClient.debug = null;
         stompClient.connect({}, function (frame) {
             stompClient.subscribe('/topic/downloaderStatus', function (message) {
-                updateFooter(JSON.parse(message.body));
+                downloaderStatus = JSON.parse(message.body);
+                updateFooter(downloaderStatus);
             });
             stompClient.send("/app/connectDownloaderStatus", function (message) {
-                updateFooter(JSON.parse(message.body));
+                downloaderStatus = JSON.parse(message.body);
+                updateFooter(downloaderStatus);
             })
         });
 
@@ -87,24 +93,53 @@ function downloaderStatusFooter() {
             }
         };
 
-        function updateFooter(data) {
-            $scope.foo = data;
-            $scope.foo.downloaderImage = data.downloaderType === 'NZBGET' ? 'nzbgetlogo' : 'sabnzbdlogo';
-            $scope.foo.url = data.url;
+        function updateFooter() {
+            if (downloaderStatus.lastUpdateForNow && updateInterval === null) {
+                //Server will send no new status updates for a while because the last two retrieved statuses are the same.
+                //We must still update the footer so that the graph doesn't stand still
+                console.log("Retrieved last update for now, starting update interval");
+                updateInterval = $interval(function () {
+                    //Just put the last known rate at the end to keep it going
+                    $scope.downloaderChart.data[0].values.splice(0, 1);
+                    $scope.downloaderChart.data[0].values.push({x: downloadRateCounter++, y: downloaderStatus.lastDownloadRate});
+                    try {
+                        $scope.api.update();
+                    } catch (ignored) {
+                    }
+                    if (_.every($scope.downloaderChart.data[0].values, function (value) {
+                        return value === downloaderStatus.lastDownloadRate
+                    })) {
+                        //The bar has been filled with the latest known value, we can now stop until we get a new update
+                        console.log("Filled the bar with last known value, stopping update interval");
+                        $interval.cancel(updateInterval);
+                        updateInterval = null;
+                    }
+                }, 1000);
+            } else if (updateInterval !== null && !downloaderStatus.lastUpdateForNow) {
+                //New data is incoming, cancel interval
+                console.log("Got new update, stopping update interval")
+                $interval.cancel(updateInterval);
+                updateInterval = null;
+            }
+
+            $scope.foo = downloaderStatus;
+            $scope.foo.downloaderImage = downloaderStatus.downloaderType === 'NZBGET' ? 'nzbgetlogo' : 'sabnzbdlogo';
+            $scope.foo.url = downloaderStatus.url;
             //We need to splice the variable with the rates because it's watched by angular and when overwriting it we would lose the watch and it wouldn't be updated
             var maxEntriesHistory = 200;
             if ($scope.downloaderChart.data[0].values.length < maxEntriesHistory) {
                 //Not yet full, just fill up
+                console.log("Filling bar with initial values")
                 for (var i = $scope.downloaderChart.data[0].values.length; i < maxEntriesHistory; i++) {
-                    if (i >= data.downloadingRatesInKilobytes.length) {
+                    if (i >= downloaderStatus.downloadingRatesInKilobytes.length) {
                         break;
                     }
-                    $scope.downloaderChart.data[0].values.push({x: downloadRateCounter++, y: data.downloadingRatesInKilobytes[i]});
+                    $scope.downloaderChart.data[0].values.push({x: downloadRateCounter++, y: downloaderStatus.downloadingRatesInKilobytes[i]});
                 }
             } else {
                 //Remove first one, add to the end
                 $scope.downloaderChart.data[0].values.splice(0, 1);
-                $scope.downloaderChart.data[0].values.push({x: downloadRateCounter++, y: data.lastDownloadRate});
+                $scope.downloaderChart.data[0].values.push({x: downloadRateCounter++, y: downloaderStatus.lastDownloadRate});
             }
             try {
                 $scope.api.update();
@@ -120,8 +155,9 @@ function downloaderStatusFooter() {
                 $scope.foo.buttonClass = "time";
             }
             $scope.foo.state = $scope.foo.state.substr(0, 1) + $scope.foo.state.substr(1).toLowerCase();
-        }
 
+
+        }
 
     }
 }

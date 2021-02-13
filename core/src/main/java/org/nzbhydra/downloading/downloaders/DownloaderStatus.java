@@ -16,6 +16,7 @@
 
 package org.nzbhydra.downloading.downloaders;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.Iterables;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -58,6 +59,8 @@ public class DownloaderStatus {
 
     private String url;
 
+    private boolean lastUpdateForNow;
+
     public Long getLastDownloadRate() {
         return downloadingRatesInKilobytes.isEmpty() ? 1L : Iterables.getLast(downloadingRatesInKilobytes);
     }
@@ -83,6 +86,23 @@ public class DownloaderStatus {
             }
         }
         return downloadingRatesInKilobytes;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        DownloaderStatus that = (DownloaderStatus) o;
+        return elementsInQueue == that.elementsInQueue && downloadingTitlePercentFinished == that.downloadingTitlePercentFinished && downloadRateInKilobytes == that.downloadRateInKilobytes && remainingSeconds == that.remainingSeconds && remainingSizeInMegaBytes == that.remainingSizeInMegaBytes && Objects.equal(downloaderName, that.downloaderName) && downloaderType == that.downloaderType && Objects.equal(downloadingTitle, that.downloadingTitle) && Objects.equal(downloadingTitleRemainingSizeFormatted, that.downloadingTitleRemainingSizeFormatted) && Objects.equal(downloadingTitleRemainingTimeFormatted, that.downloadingTitleRemainingTimeFormatted) && Objects.equal(downloadRateFormatted, that.downloadRateFormatted) && Objects.equal(downloadingRatesInKilobytes, that.downloadingRatesInKilobytes) && Objects.equal(lastDownloadRate, that.lastDownloadRate) && Objects.equal(remainingTimeFormatted, that.remainingTimeFormatted) && Objects.equal(remainingSizeFormatted, that.remainingSizeFormatted) && state == that.state && Objects.equal(url, that.url);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(downloaderName, downloaderType, elementsInQueue, downloadingTitle, downloadingTitleRemainingSizeFormatted, downloadingTitleRemainingTimeFormatted, downloadingTitlePercentFinished, downloadRateFormatted, downloadRateInKilobytes, downloadingRatesInKilobytes, lastDownloadRate, remainingTimeFormatted, remainingSeconds, remainingSizeFormatted, remainingSizeInMegaBytes, state, url);
     }
 
     @Data
