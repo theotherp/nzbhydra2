@@ -17,6 +17,7 @@
 package org.nzbhydra.notifications;
 
 import org.nzbhydra.ShutdownEvent;
+import org.nzbhydra.logging.LoggingMarkers;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,8 +32,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.socket.messaging.SessionDisconnectEvent;
+import org.springframework.web.socket.messaging.SessionSubscribeEvent;
 
-import javax.annotation.PostConstruct;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -43,6 +46,7 @@ public class NotificationsWeb {
 
     private static final Logger logger = LoggerFactory.getLogger(NotificationsWeb.class);
     private static final int INTERVAL = 1000;
+    private static final String TOPIC = "/topic/notifications";
 
     @Autowired
     private NotificationRepository notificationRepository;
@@ -53,11 +57,7 @@ public class NotificationsWeb {
     @Autowired
     private ThreadPoolTaskScheduler scheduler;
     private ScheduledFuture<?> scheduledFuture;
-
-    @PostConstruct
-    public void sendNotificationsToWebSocket() {
-        scheduleDownloadStatusSending();
-    }
+    private final Set<String> connectedSessionIds = new HashSet<>();
 
     private void scheduleDownloadStatusSending() {
         scheduledFuture = scheduler.scheduleAtFixedRate(() -> {
@@ -65,7 +65,7 @@ public class NotificationsWeb {
             if (newNotifications.isEmpty()) {
                 return;
             }
-            messagingTemplate.convertAndSend("/topic/notifications", newNotifications);
+            messagingTemplate.convertAndSend(TOPIC, newNotifications);
         }, INTERVAL);
     }
 
@@ -107,6 +107,43 @@ public class NotificationsWeb {
     }
 
     @EventListener
+    public void onClientSubscribe(SessionSubscribeEvent event) {
+        final String simpDestination = (String) event.getMessage().getHeaders().get("simpDestination");
+        if (TOPIC.equals(simpDestination)) {
+            final String simpSessionId = (String) event.getMessage().getHeaders().get("simpSessionId");
+            logger.debug(LoggingMarkers.NOTIFICATIONS, "Registered new connection with session ID {}", simpSessionId);
+
+            if (connectedSessionIds.isEmpty()) {
+                logger.debug(LoggingMarkers.NOTIFICATIONS, "Scheduling notification update {}", simpSessionId);
+                scheduleDownloadStatusSending();
+            }
+
+            connectedSessionIds.add(simpSessionId);
+        }
+    }
+
+
+    @EventListener
+    public void onClientDisconnect(SessionDisconnectEvent event) {
+        final String simpSessionId = (String) event.getMessage().getHeaders().get("simpSessionId");
+        if (connectedSessionIds.contains(simpSessionId)) {
+            logger.debug(LoggingMarkers.NOTIFICATIONS, "Registered disconnect with session ID {}", simpSessionId);
+            connectedSessionIds.remove(simpSessionId);
+            if (connectedSessionIds.isEmpty()) {
+                if (scheduledFuture != null) {
+                    logger.debug(LoggingMarkers.NOTIFICATIONS, "Cancelling update schedule because no connections left");
+                    scheduledFuture.cancel(true);
+                    scheduledFuture = null;
+                } else {
+                    logger.debug(LoggingMarkers.NOTIFICATIONS, "No connections found but notifications update was also not scheduled");
+                }
+            } else {
+                logger.debug(LoggingMarkers.NOTIFICATIONS, "Not cancelling schedule because still connections left");
+            }
+        }
+    }
+
+    @EventListener
     public void onShutdown(ShutdownEvent event) {
         if (scheduler != null) {
             scheduler.shutdown();
@@ -114,6 +151,7 @@ public class NotificationsWeb {
         }
         if (scheduledFuture != null) {
             scheduledFuture.cancel(true);
+            scheduledFuture = null;
         }
     }
 

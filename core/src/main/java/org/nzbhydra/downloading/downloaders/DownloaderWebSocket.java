@@ -19,6 +19,7 @@ package org.nzbhydra.downloading.downloaders;
 import org.nzbhydra.ShutdownEvent;
 import org.nzbhydra.config.ConfigChangedEvent;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.logging.LoggingMarkers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,14 +29,18 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.socket.messaging.SessionDisconnectEvent;
+import org.springframework.web.socket.messaging.SessionSubscribeEvent;
 
-import javax.annotation.PostConstruct;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 
 @Controller
 public class DownloaderWebSocket {
     private static final Logger logger = LoggerFactory.getLogger(DownloaderWebSocket.class);
     private static final int INTERVAL = 1000;
+    private static final String TOPIC = "/topic/downloaderStatus";
 
     @Autowired
     private ConfigProvider configProvider;
@@ -53,15 +58,10 @@ public class DownloaderWebSocket {
 
     private DownloaderStatus lastSentStatus;
 
-    @PostConstruct
-    public void sendDownloaderStatusToWebSocket() {
-        if (configProvider.getBaseConfig().getDownloading().isShowDownloaderStatus()) {
-            scheduleDownloadStatusSending();
-        }
-    }
+    private final Set<String> connectedSessionIds = new HashSet<>();
 
     @MessageMapping("/connectDownloaderStatus")
-    @SendTo("/topic/downloaderStatus")
+    @SendTo(TOPIC)
     public DownloaderStatus connect() {
         return lastSentStatus;
     }
@@ -69,15 +69,62 @@ public class DownloaderWebSocket {
     private void scheduleDownloadStatusSending() {
         scheduledFuture = scheduler.scheduleAtFixedRate(() -> {
             final DownloaderStatus newStatus = downloaderStatusRetrieval.getStatus();
-            if (!newStatus.equals(lastSentStatus)) {
+            if (newStatus.getState() == DownloaderStatus.State.DOWNLOADING) {
+                //Always send updates when downloading
+                logger.debug(LoggingMarkers.DOWNLOADER_STATUS_UPDATE, "Sending new downloading status data. Status: {}. In queue: {}. Remaing time: {}. Download rate: {}", newStatus.getState(), newStatus.getElementsInQueue(), newStatus.getRemainingTimeFormatted(), newStatus.getDownloadRateFormatted());
                 messagingTemplate.convertAndSend("/topic/downloaderStatus", newStatus);
+                lastSentStatus = newStatus;
+            } else if (!newStatus.equals(lastSentStatus)) {
+                //Send update because data has changed
+                logger.debug(LoggingMarkers.DOWNLOADER_STATUS_UPDATE, "Sending new status data because it's different from the last sent. Status: {}. In queue: {}. Remaing time: {}. Download rate: {}", newStatus.getState(), newStatus.getElementsInQueue(), newStatus.getRemainingTimeFormatted(), newStatus.getDownloadRateFormatted());
+                messagingTemplate.convertAndSend("/topic/downloaderStatus", newStatus);
+                lastSentStatus = newStatus;
             } else if (!lastSentStatus.isLastUpdateForNow()) {
+                //Same data as before and we haven't nofified the backend yet that we'll send no further data for now
+                logger.debug(LoggingMarkers.DOWNLOADER_STATUS_UPDATE, "New status data is the same as the old. Informing the frontend this is the last update for now. Status: {}. In queue: {}. Remaing time: {}. Download rate: {}", newStatus.getState(), newStatus.getElementsInQueue(), newStatus.getRemainingTimeFormatted(), newStatus.getDownloadRateFormatted());
                 newStatus.setLastUpdateForNow(true);
                 messagingTemplate.convertAndSend("/topic/downloaderStatus", newStatus);
+                lastSentStatus = newStatus;
             }
-            lastSentStatus = newStatus;
+
         }, INTERVAL);
     }
+
+    @EventListener
+    public void onClientSubscribe(SessionSubscribeEvent event) {
+        final String simpDestination = (String) event.getMessage().getHeaders().get("simpDestination");
+        if (TOPIC.equals(simpDestination)) {
+            final String simpSessionId = (String) event.getMessage().getHeaders().get("simpSessionId");
+            logger.debug(LoggingMarkers.DOWNLOADER_STATUS_UPDATE, "Registered new connection with session ID {}", simpSessionId);
+
+            if (connectedSessionIds.isEmpty()) {
+                logger.debug(LoggingMarkers.DOWNLOADER_STATUS_UPDATE, "Scheduling downloader status update {}", simpSessionId);
+                scheduleDownloadStatusSending();
+            }
+            connectedSessionIds.add(simpSessionId);
+        }
+    }
+
+    @EventListener
+    public void onClientDisconnect(SessionDisconnectEvent event) {
+        final String simpSessionId = (String) event.getMessage().getHeaders().get("simpSessionId");
+        if (connectedSessionIds.contains(simpSessionId)) {
+            logger.debug(LoggingMarkers.DOWNLOADER_STATUS_UPDATE, "Registered disconnect with session ID {}", simpSessionId);
+            connectedSessionIds.remove(simpSessionId);
+            if (connectedSessionIds.isEmpty()) {
+                if (scheduledFuture != null) {
+                    logger.debug(LoggingMarkers.DOWNLOADER_STATUS_UPDATE, "Cancelling update schedule because no connections left");
+                    scheduledFuture.cancel(true);
+                    scheduledFuture = null;
+                } else {
+                    logger.debug(LoggingMarkers.DOWNLOADER_STATUS_UPDATE, "No connections found but update was also not scheduled");
+                }
+            } else {
+                logger.debug(LoggingMarkers.DOWNLOADER_STATUS_UPDATE, "Not cancelling schedule because still connections left");
+            }
+        }
+    }
+
 
     @EventListener
     public void handleNewConfig(ConfigChangedEvent configChangedEvent) {
@@ -97,6 +144,7 @@ public class DownloaderWebSocket {
         }
         if (scheduledFuture != null) {
             scheduledFuture.cancel(true);
+            scheduledFuture = null;
         }
     }
 

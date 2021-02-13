@@ -16,6 +16,10 @@
       },
       {
         "type": "fix",
+        "text": "Ensure that threads which send data to the frontend (like notifications or downloader status) are only active when a UI session (=browser tab) is open. Also only send downloader data if it's actually new (instead of e.g. repeatedly sending information that the downloader is idle."
+      },
+      {
+        "type": "fix",
         "text": "Remove code for nzbs.org :-("
       }
     ],

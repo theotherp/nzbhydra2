@@ -420,7 +420,7 @@ function ConfigFields($injector) {
                                 options: [
                                     {label: 'API limits', id: 'LIMITS'},
                                     {label: 'Config file handling', id: 'CONFIG_READ_WRITE'},
-                                    {label: 'Download status updating', id: 'DOWNLOAD_STATUS_UPDATE'},
+                                    {label: 'Downloader status updating', id: 'DOWNLOADER_STATUS_UPDATE'},
                                     {label: 'Duplicate detection', id: 'DUPLICATES'},
                                     {label: 'External tool configuration', id: 'EXTERNAL_TOOLS'},
                                     {label: 'History cleanup', id: 'HISTORY_CLEANUP'},
@@ -429,6 +429,7 @@ function ConfigFields($injector) {
                                     {label: 'HTTP Server', id: 'SERVER'},
                                     {label: 'Indexer scheduler', id: 'SCHEDULER'},
                                     {label: 'Notifications', id: 'NOTIFICATIONS'},
+                                    {label: 'NZB download status updating', id: 'DOWNLOAD_STATUS_UPDATE'},
                                     {label: 'Performance', id: 'PERFORMANCE'},
                                     {label: 'Rejected results', id: 'RESULT_ACCEPTOR'},
                                     {label: 'Removed trailing words', id: 'TRAILING'},

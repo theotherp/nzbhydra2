@@ -97,7 +97,7 @@ function downloaderStatusFooter() {
             if (downloaderStatus.lastUpdateForNow && updateInterval === null) {
                 //Server will send no new status updates for a while because the last two retrieved statuses are the same.
                 //We must still update the footer so that the graph doesn't stand still
-                console.log("Retrieved last update for now, starting update interval");
+                console.debug("Retrieved last update for now, starting update interval");
                 updateInterval = $interval(function () {
                     //Just put the last known rate at the end to keep it going
                     $scope.downloaderChart.data[0].values.splice(0, 1);
@@ -110,14 +110,14 @@ function downloaderStatusFooter() {
                         return value === downloaderStatus.lastDownloadRate
                     })) {
                         //The bar has been filled with the latest known value, we can now stop until we get a new update
-                        console.log("Filled the bar with last known value, stopping update interval");
+                        console.debug("Filled the bar with last known value, stopping update interval");
                         $interval.cancel(updateInterval);
                         updateInterval = null;
                     }
                 }, 1000);
             } else if (updateInterval !== null && !downloaderStatus.lastUpdateForNow) {
                 //New data is incoming, cancel interval
-                console.log("Got new update, stopping update interval")
+                console.debug("Got new update, stopping update interval")
                 $interval.cancel(updateInterval);
                 updateInterval = null;
             }
@@ -129,7 +129,7 @@ function downloaderStatusFooter() {
             var maxEntriesHistory = 200;
             if ($scope.downloaderChart.data[0].values.length < maxEntriesHistory) {
                 //Not yet full, just fill up
-                console.log("Filling bar with initial values")
+                console.debug("Adding data, filling bar with initial values")
                 for (var i = $scope.downloaderChart.data[0].values.length; i < maxEntriesHistory; i++) {
                     if (i >= downloaderStatus.downloadingRatesInKilobytes.length) {
                         break;
@@ -137,6 +137,7 @@ function downloaderStatusFooter() {
                     $scope.downloaderChart.data[0].values.push({x: downloadRateCounter++, y: downloaderStatus.downloadingRatesInKilobytes[i]});
                 }
             } else {
+                console.debug("Adding data, moving bar")
                 //Remove first one, add to the end
                 $scope.downloaderChart.data[0].values.splice(0, 1);
                 $scope.downloaderChart.data[0].values.push({x: downloadRateCounter++, y: downloaderStatus.lastDownloadRate});
