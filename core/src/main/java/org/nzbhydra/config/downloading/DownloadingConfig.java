@@ -54,18 +54,11 @@ public class DownloadingConfig extends ValidatingConfig<DownloadingConfig> {
         List<String> errors = new ArrayList<>();
         if (getSaveTorrentsTo().isPresent()) {
             File file = new File(getSaveTorrentsTo().get());
-            if (!file.isAbsolute()) {
-                errors.add("Torrent black hole folder " + getSaveTorrentsTo().get() + " is not absolute");
-            }
-            if (file.exists() && !file.isDirectory()) {
-                errors.add("Torrent black hole folder " + file.getAbsolutePath() + " is a file");
-            }
-            if (!file.exists()) {
-                boolean created = file.mkdir();
-                if (!created) {
-                    errors.add("Torrent black hole folder " + file.getAbsolutePath() + " could not be created");
-                }
-            }
+            validateBlackholeFolder(errors, file, getSaveTorrentsTo().get(), "Torrent");
+        }
+        if (getSaveNzbsTo().isPresent()) {
+            File file = new File(getSaveNzbsTo().get());
+            validateBlackholeFolder(errors, file, getSaveNzbsTo().get(), "NZB");
         }
         List<ConfigValidationResult> validationResults = downloaders.stream().map(downloaderConfig -> downloaderConfig.validateConfig(oldConfig, downloaderConfig, newBaseConfig)).collect(Collectors.toList());
         List<String> downloaderErrors = validationResults.stream().map(ConfigValidationResult::getErrorMessages).flatMap(Collection::stream).collect(Collectors.toList());
@@ -80,6 +73,21 @@ public class DownloadingConfig extends ValidatingConfig<DownloadingConfig> {
         warnings.addAll(validationResults.stream().map(ConfigValidationResult::getWarningMessages).flatMap(Collection::stream).collect(Collectors.toList()));
 
         return new ConfigValidationResult(errors.isEmpty(), false, errors, warnings);
+    }
+
+    private void validateBlackholeFolder(List<String> errors, File file, String blackholeSettings, final String blackholeType) {
+        if (!file.isAbsolute()) {
+            errors.add(blackholeType + " black hole folder " + blackholeSettings + " is not absolute");
+        }
+        if (file.exists() && !file.isDirectory()) {
+            errors.add(blackholeType + " black hole folder " + file.getAbsolutePath() + " is a file");
+        }
+        if (!file.exists()) {
+            boolean created = file.mkdir();
+            if (!created) {
+                errors.add(blackholeType + " black hole folder " + file.getAbsolutePath() + " could not be created");
+            }
+        }
     }
 
     public Optional<String> getSaveTorrentsTo() {

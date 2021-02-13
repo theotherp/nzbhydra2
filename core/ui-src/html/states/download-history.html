@@ -74,6 +74,7 @@
         <td class="narrow-row">{{ ::nzbDownload.searchResult.indexer.name }}</td>
         <td class="narrow-row">
             <span ng-style="{'visibility':!nzbDownload.searchResult.indexerGuid ? 'hidden' : 'initial'}">
+                <save-or-send-file search-result-id="nzbDownload.searchResult.id" type="nzbDownload.searchResult.downloadType"></save-or-send-file>
                 <span ng-switch on="::nzbDownload.searchResult.downloadType">
                     <span ng-switch-when="TORRENT">
                         <a target="_blank" href="gettorrent/user/{{ ::nzbDownload.searchResult.id }}"
@@ -83,8 +84,6 @@
                            tooltip-placement="top"
                            tooltip-trigger="mouseenter"><span class="glyphicon glyphicon-save"></span>
                         </a>
-                        <send-torrent-to-blackhole search-result-id="nzbDownload.searchResult.id"
-                                                   ng-if="::result.link.indexOf('magnet:') > -1"></send-torrent-to-blackhole>
                     </span>
                     <span ng-switch-default>
                         <a target="_blank" href="getnzb/user/{{ ::nzbDownload.searchResult.id }}"

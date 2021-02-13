@@ -182,7 +182,6 @@ public class MainConfig extends ValidatingConfig<MainConfig> {
         }
 
         if (newMain.getBackupFolder() != null) {
-
             final File backupFolderFile;
             if (backupFolder.contains(File.separator)) {
                 backupFolderFile = new File(backupFolder);
