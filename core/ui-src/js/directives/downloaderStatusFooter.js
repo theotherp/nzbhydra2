@@ -156,8 +156,8 @@ function downloaderStatusFooter() {
                 $scope.foo.buttonClass = "time";
             }
             $scope.foo.state = $scope.foo.state.substr(0, 1) + $scope.foo.state.substr(1).toLowerCase();
-
-
+            //Bad but without the state isn't updated
+            $scope.$apply();
         }
 
     }
