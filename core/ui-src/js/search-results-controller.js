@@ -398,7 +398,11 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
     };
 
     function getCleanedTitle(element) {
-        return element.title.toLowerCase().replace(/[\s\-\._]/ig, "");
+        try {
+            return element.title.toLowerCase().replace(/[\s\-\._]/ig, "");
+        } catch (e) {
+            console.error("Unable to clean title for result " + element);
+        }
     }
 
     function getGroupingString(element) {
@@ -429,6 +433,10 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         }
 
         function filter(item) {
+            if (item.title === null || item.title === undefined) {
+                //https://github.com/theotherp/nzbhydra2/issues/690
+                console.error("Item without title: " + item)
+            }
             if ("size" in $scope.filterModel) {
                 var filterValue = $scope.filterModel.size.filterValue;
                 if (angular.isDefined(filterValue.min) && item.size / 1024 / 1024 < filterValue.min) {
@@ -675,18 +683,22 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
             _.forEach(titleGroup, function (duplicateGroup) {
                 var duplicateIndex = 0;
                 _.forEach(duplicateGroup, function (result) {
-                    result.titleGroupIndicator = getGroupingString(result);
-                    result.titleGroupIndex = titleGroupIndex;
-                    result.duplicateGroupIndex = duplicateIndex;
-                    result.duplicatesLength = duplicateGroup.length;
-                    result.titlesLength = titleGroup.length;
-                    filteredResults.push(result);
-                    duplicateIndex += 1;
-                    if (countTitleGroups <= $scope.limitTo) {
-                        countResultsUntilTitleGroupLimitReached++;
+                    try {
+                        result.titleGroupIndicator = getGroupingString(result);
+                        result.titleGroupIndex = titleGroupIndex;
+                        result.duplicateGroupIndex = duplicateIndex;
+                        result.duplicatesLength = duplicateGroup.length;
+                        result.titlesLength = titleGroup.length;
+                        filteredResults.push(result);
+                        duplicateIndex += 1;
+                        if (countTitleGroups <= $scope.limitTo) {
+                            countResultsUntilTitleGroupLimitReached++;
+                        }
+                        if (duplicateGroup.length > 1)
+                            $scope.countDuplicates += (duplicateGroup.length - 1)
+                    } catch (e) {
+                        console.error("Error while processing result " + result, e);
                     }
-                    if (duplicateGroup.length > 1)
-                        $scope.countDuplicates += (duplicateGroup.length - 1)
                 });
                 titleGroupIndex += 1;
             });
@@ -930,5 +942,4 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
     //     }
     //
     // }, $scope.limitTo);
-
 }

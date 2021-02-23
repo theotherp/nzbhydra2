@@ -9,6 +9,7 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.io.Resources;
+import com.google.common.net.UrlEscapers;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -49,6 +50,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Component
@@ -60,6 +63,7 @@ public class UpdateManager implements InitializingBean {
     public static final int RESTART_RETURN_CODE = 22;
     public static final int RESTORE_RETURN_CODE = 33;
     public static final String KEY = "UpdateData";
+    private static final Pattern GITHUB_ISSUE_PATTERN = Pattern.compile("#(\\d{3,})");
 
     @Value("${nzbhydra.repositoryBaseUrl}")
     protected String repositoryBaseUrl;
@@ -256,10 +260,24 @@ public class UpdateManager implements InitializingBean {
         } catch (IOException e) {
             throw new UpdateException("Error while getting changelog: " + e.getMessage());
         }
+        changelogVersionEntries.forEach(x -> x.getChanges().forEach(y -> y.setText(getGithubLinkedText(y))));
 
         Collections.sort(changelogVersionEntries);
         Collections.reverse(changelogVersionEntries);
         return changelogVersionEntries;
+    }
+
+    private String getGithubLinkedText(org.nzbhydra.mapping.changelog.ChangelogChangeEntry entry) {
+        final Matcher matcher = GITHUB_ISSUE_PATTERN.matcher(entry.getText());
+        if (matcher.find()) {
+            String link = "https://github.com/theotherp/nzbhydra2/issues/" + matcher.group(1);
+            if (configProvider.getBaseConfig().getMain().getDereferer().isPresent()) {
+                link = configProvider.getBaseConfig().getMain().getDereferer().get().replace("$s", UrlEscapers.urlFragmentEscaper().escape(link));
+            }
+            return entry.getText().replace(matcher.group(), "<a href=\"" + link + "\" target=\"_blank\">" + matcher.group() + "</a>");
+
+        }
+        return entry.getText();
     }
 
 
