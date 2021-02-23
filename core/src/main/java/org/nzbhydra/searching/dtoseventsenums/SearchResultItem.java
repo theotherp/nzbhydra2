@@ -22,6 +22,7 @@ import lombok.Data;
 import org.nzbhydra.config.category.Category;
 import org.nzbhydra.indexers.Indexer;
 
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -78,6 +79,7 @@ public class SearchResultItem  {
     private Long size;
     private String source;
     @NotNull
+    @NotEmpty
     private String title;
     private Instant usenetDate;
 

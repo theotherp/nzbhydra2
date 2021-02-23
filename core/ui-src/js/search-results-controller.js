@@ -435,7 +435,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         function filter(item) {
             if (item.title === null || item.title === undefined) {
                 //https://github.com/theotherp/nzbhydra2/issues/690
-                console.error("Item without title: " + item)
+                console.error("Item without title: " + JSON.stringify(item))
             }
             if ("size" in $scope.filterModel) {
                 var filterValue = $scope.filterModel.size.filterValue;
