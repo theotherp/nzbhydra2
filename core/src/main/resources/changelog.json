@@ -8,11 +8,15 @@
       },
       {
         "type": "fix",
-        "text": "Improve category detection for MyAnonaMouse. See #689"
+        "text": "Improve category detection for MyAnonaMouse. See #689."
       },
       {
         "type": "fix",
-        "text": "Add some debug logging to find results without title, causing the search UI to break. See #690"
+        "text": "Add some debug logging to find results without title, causing the search UI to break. See #690."
+      },
+      {
+        "type": "fix",
+        "text": "Clarify the restrictions section in the auth config. See #687."
       }
     ],
     "final": true

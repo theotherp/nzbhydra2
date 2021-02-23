@@ -1886,7 +1886,7 @@ function ConfigFields($injector) {
                     wrapper: 'fieldset',
                     templateOptions: {
                         label: 'Restrictions',
-                        tooltip: 'You can decide for every user if he is allowed to:\n' +
+                        tooltip: 'Select which areas/features can only be accessed by logged in users (i.e. are restricted). If you don\'t to allow anonymous users to do anything just leave everything selected.<br>You can decide for every user if he is allowed to:<br>' +
                             '<ul>\n' +
                             '<li>view the search page at all</li>\n' +
                             '<li>view the stats</li>\n' +
