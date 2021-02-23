@@ -1,8 +1,20 @@
+### v3.13.0 (2021-02-23)
+
+**Feature** From now on I'll refer to the appropriate GitHub issues in the changelog (if I don't forget it).
+
+**Fix** Improve category detection for MyAnonaMouse. See #689.
+
+**Fix** Don't crash GUI when result titles are empty. See #690.
+
+**Fix** Clarify the restrictions section in the auth config. See #687.
+
+
+
 ### v3.12.0 (2021-02-13)
 
-**Feature** Add button to send results to black hole from download history.
+**Feature** Add button to send results to black hole from download history. See #685
 
-**Feature** Add support for custom parameters to be sent to indexers while searching.
+**Feature** Add support for custom parameters to be sent to indexers while searching. See #647
 
 **Fix** Download status bar did not update properly when the downloader was idle after a download. The bar will now be updated until either a new download is started or the bar is properly filled, representing the downloader's idle state. This should hopefully also fix the long-standing issue with the browser tab freezing / crashing after a while.
 

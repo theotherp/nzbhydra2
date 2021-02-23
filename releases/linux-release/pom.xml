@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.nzbhydra</groupId>
         <artifactId>releases</artifactId>
-        <version>3.12.1-SNAPSHOT</version>
+        <version>3.13.0</version>
     </parent>
 
     <artifactId>linux-release</artifactId>
@@ -15,7 +15,7 @@
         <dependency>
             <groupId>org.nzbhydra</groupId>
             <artifactId>core</artifactId>
-            <version>3.12.1-SNAPSHOT</version>
+            <version>3.13.0</version>
         </dependency>
     </dependencies>
 
