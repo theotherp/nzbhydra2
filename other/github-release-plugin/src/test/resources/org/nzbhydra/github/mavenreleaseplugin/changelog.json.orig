@@ -11,6 +11,6 @@
   "date" : null,
   "changes" : [ {
     "type" : "note",
-    "text" : "First version"
+    "text" : "First version. See #123"
   } ]
 } ]

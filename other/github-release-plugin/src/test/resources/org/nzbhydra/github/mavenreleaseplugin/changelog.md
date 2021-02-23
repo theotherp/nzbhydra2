@@ -6,5 +6,5 @@
 
 ### v0.0.1
 
-**Note** First version
+**Note** First version. See <a href="https://github.com/theotherp/nzbhydra2/issues/123">#123</a>
 

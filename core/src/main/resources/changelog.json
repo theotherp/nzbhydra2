@@ -1,15 +1,33 @@
 [
   {
+    "version": "v3.13.0",
+    "changes": [
+      {
+        "type": "feature",
+        "text": "From now on I'll refer to the appropriate GitHub issues in the changelog (if I don't forget it)."
+      },
+      {
+        "type": "fix",
+        "text": "Improve category detection for MyAnonaMouse. See #689"
+      },
+      {
+        "type": "fix",
+        "text": "Add some debug logging to find results without title, causing the search UI to break. See #690"
+      }
+    ],
+    "final": true
+  },
+  {
     "version": "v3.12.0",
     "date": "2021-02-13",
     "changes": [
       {
         "type": "feature",
-        "text": "Add button to send results to black hole from download history."
+        "text": "Add button to send results to black hole from download history. See #685"
       },
       {
         "type": "feature",
-        "text": "Add support for custom parameters to be sent to indexers while searching."
+        "text": "Add support for custom parameters to be sent to indexers while searching. See #647"
       },
       {
         "type": "fix",

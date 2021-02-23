@@ -86,7 +86,9 @@ public class ChangelogGeneratorMojo extends AbstractMojo {
         }
         lines.add(versionLine);
         for (ChangelogChangeEntry changeEntry : entry.getChanges()) {
-            lines.add("**" + StringUtils.capitalise(changeEntry.getType()) + "** " + changeEntry.getText());
+            final String text = changeEntry.getText()
+                    .replaceAll("#(\\d{3,})", "<a href=\"https://github.com/theotherp/nzbhydra2/issues/$1\">#$1</a>");
+            lines.add("**" + StringUtils.capitalise(changeEntry.getType()) + "** " + text);
         }
         lines.add("");
         return lines;
