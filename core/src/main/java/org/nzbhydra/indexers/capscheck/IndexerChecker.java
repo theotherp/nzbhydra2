@@ -356,7 +356,7 @@ public class IndexerChecker {
         Optional<CapsXmlCategory> comic = categories.stream().filter(x -> x.getName().toLowerCase().contains("comic")).findFirst();
         comic.ifPresent(capsCategory -> categoryConfig.setComic(capsCategory.getId()));
 
-        Optional<CapsXmlCategory> ebook = categories.stream().filter(x -> x.getName().toLowerCase().contains("ebook")).findFirst();
+        Optional<CapsXmlCategory> ebook = categories.stream().filter(x -> x.getName().toLowerCase().contains("ebook") || x.getName().toLowerCase().contains("e-book")).findFirst();
         ebook.ifPresent(capsCategory -> categoryConfig.setEbook(capsCategory.getId()));
 
         Optional<CapsXmlCategory> magazine = categories.stream().filter(x -> x.getName().toLowerCase().contains("magazine") || x.getName().toLowerCase().contains("mags")).findFirst();
