@@ -1,3 +1,9 @@
+### v3.13.1 (2021-03-10)
+
+**Fix** Fix external configuration of Readarr (0.1.0.520+). See #693.
+
+
+
 ### v3.13.0 (2021-02-23)
 
 **Feature** From now on I'll refer to the appropriate GitHub issues in the changelog (if I don't forget it).
