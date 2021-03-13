@@ -1,0 +1,5 @@
+Spring Native:
+Hibernate enhance mvn-Plugin needs to be run but IntelliJ overwrites the result (see https://youtrack.jetbrains.com/issue/IDEA-159903)
+Logback springProperty doesn't work right now
+Build currently only works properly on linux / WSL as the native image exe on windows needs a custom command line and it's hard getting maven use the graalvm jre
+Running a "regularly" built JAR with the image agent -agentlib:native-image-agent=config-output-dir=src/main/resources/META-INF/native-image will create hints. This doesn't work on windows (due to issues mentioned above)

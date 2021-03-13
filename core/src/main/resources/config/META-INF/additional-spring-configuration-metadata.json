@@ -1,0 +1,9 @@
+{
+  "properties": [
+    {
+      "name": "hibernate.bytecode.provider",
+      "type": "java.lang.String",
+      "description": "Disable bytecode enhancement to make spring native run."
+    }
+  ]
+}

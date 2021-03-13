@@ -1,7 +1,7 @@
 ---
 auth:
   authHeader: null
-  authHeaderIpRanges: []
+  authHeaderIpRanges: [ ]
   authType: "NONE"
   rememberUsers: true
   rememberMeValidityDays: 14
@@ -11,7 +11,7 @@ auth:
   restrictSearch: false
   restrictStats: false
   allowApiStats: true
-  users: []
+  users: [ ]
 categoriesConfig:
   enableCategorySizes: true
   defaultCategory: "All"
@@ -19,7 +19,7 @@ categoriesConfig:
     - name: Anime
       applyRestrictionsType: BOTH
       forbiddenRegex: null
-      forbiddenWords: []
+      forbiddenWords: [ ]
       ignoreResultsFrom: NONE
       maxSizePreset: 3000
       minSizePreset: 50
@@ -27,14 +27,14 @@ categoriesConfig:
       newznabCategories:
         - "5070"
       requiredRegex: null
-      requiredWords: []
+      requiredWords: [ ]
       preselect: true
       searchType: SEARCH
       subtype: ANIME
     - name: Audio
       applyRestrictionsType: BOTH
       forbiddenRegex: null
-      forbiddenWords: []
+      forbiddenWords: [ ]
       ignoreResultsFrom: NONE
       maxSizePreset: 2000
       minSizePreset: 1
@@ -42,14 +42,14 @@ categoriesConfig:
       newznabCategories:
         - "3000"
       requiredRegex: null
-      requiredWords: []
+      requiredWords: [ ]
       preselect: true
       searchType: MUSIC
       subtype: NONE
     - name: Audiobook
       applyRestrictionsType: BOTH
       forbiddenRegex: null
-      forbiddenWords: []
+      forbiddenWords: [ ]
       ignoreResultsFrom: NONE
       maxSizePreset: 1000
       minSizePreset: 50
@@ -57,14 +57,14 @@ categoriesConfig:
       newznabCategories:
         - "3030"
       requiredRegex: null
-      requiredWords: []
+      requiredWords: [ ]
       preselect: true
       searchType: MUSIC
       subtype: AUDIOBOOK
     - name: Comic
       applyRestrictionsType: BOTH
       forbiddenRegex: null
-      forbiddenWords: []
+      forbiddenWords: [ ]
       ignoreResultsFrom: NONE
       maxSizePreset: 250
       minSizePreset: 1
@@ -72,14 +72,14 @@ categoriesConfig:
       newznabCategories:
         - "7030"
       requiredRegex: null
-      requiredWords: []
+      requiredWords: [ ]
       preselect: true
       searchType: SEARCH
       subtype: COMIC
     - name: Console
       applyRestrictionsType: BOTH
       forbiddenRegex: null
-      forbiddenWords: []
+      forbiddenWords: [ ]
       ignoreResultsFrom: NONE
       maxSizePreset: 40000
       minSizePreset: 100
@@ -87,14 +87,14 @@ categoriesConfig:
       newznabCategories:
         - "1000"
       requiredRegex: null
-      requiredWords: []
+      requiredWords: [ ]
       preselect: true
       searchType: SEARCH
       subtype: NONE
     - name: Ebook
       applyRestrictionsType: BOTH
       forbiddenRegex: null
-      forbiddenWords: []
+      forbiddenWords: [ ]
       ignoreResultsFrom: NONE
       maxSizePreset: 100
       minSizePreset:
@@ -103,14 +103,14 @@ categoriesConfig:
         - "7020"
         - "8010"
       requiredRegex: null
-      requiredWords: []
+      requiredWords: [ ]
       preselect: true
       searchType: BOOK
       subtype: EBOOK
     - name: FLAC
       applyRestrictionsType: BOTH
       forbiddenRegex: null
-      forbiddenWords: []
+      forbiddenWords: [ ]
       ignoreResultsFrom: NONE
       maxSizePreset: 2000
       minSizePreset: 10
@@ -118,14 +118,14 @@ categoriesConfig:
       newznabCategories:
         - "3040"
       requiredRegex: null
-      requiredWords: []
+      requiredWords: [ ]
       preselect: true
       searchType: MUSIC
       subtype: NONE
     - name: Movies
       applyRestrictionsType: BOTH
       forbiddenRegex: null
-      forbiddenWords: []
+      forbiddenWords: [ ]
       ignoreResultsFrom: NONE
       maxSizePreset: 20000
       minSizePreset: 500
@@ -133,14 +133,14 @@ categoriesConfig:
       newznabCategories:
         - "2000"
       requiredRegex: null
-      requiredWords: []
+      requiredWords: [ ]
       preselect: true
       searchType: MOVIE
       subtype: NONE
     - name: Movies HD
       applyRestrictionsType: BOTH
       forbiddenRegex: null
-      forbiddenWords: []
+      forbiddenWords: [ ]
       ignoreResultsFrom: NONE
       maxSizePreset: 20000
       minSizePreset: 3000
@@ -151,14 +151,14 @@ categoriesConfig:
         - "2060"
         - "2070"
       requiredRegex: null
-      requiredWords: []
+      requiredWords: [ ]
       preselect: true
       searchType: MOVIE
       subtype: NONE
     - name: Movies SD
       applyRestrictionsType: BOTH
       forbiddenRegex: null
-      forbiddenWords: []
+      forbiddenWords: [ ]
       ignoreResultsFrom: NONE
       maxSizePreset: 3000
       minSizePreset: 500
@@ -166,13 +166,13 @@ categoriesConfig:
       newznabCategories:
         - "2030"
       requiredRegex: null
-      requiredWords: []
+      requiredWords: [ ]
       preselect: true
       searchType: MOVIE
     - name: MP3
       applyRestrictionsType: BOTH
       forbiddenRegex: null
-      forbiddenWords: []
+      forbiddenWords: [ ]
       ignoreResultsFrom: NONE
       maxSizePreset: 500
       minSizePreset: 1
@@ -180,14 +180,14 @@ categoriesConfig:
       newznabCategories:
         - "3010"
       requiredRegex: null
-      requiredWords: []
+      requiredWords: [ ]
       preselect: true
       searchType: MUSIC
       subtype: NONE
     - name: PC
       applyRestrictionsType: BOTH
       forbiddenRegex: null
-      forbiddenWords: []
+      forbiddenWords: [ ]
       ignoreResultsFrom: NONE
       maxSizePreset: 50000
       minSizePreset: 100
@@ -195,14 +195,14 @@ categoriesConfig:
       newznabCategories:
         - "4000"
       requiredRegex: null
-      requiredWords: []
+      requiredWords: [ ]
       preselect: true
       searchType: SEARCH
       subtype: NONE
     - name: TV
       applyRestrictionsType: BOTH
       forbiddenRegex: null
-      forbiddenWords: []
+      forbiddenWords: [ ]
       ignoreResultsFrom: NONE
       maxSizePreset: 5000
       minSizePreset: 50
@@ -210,14 +210,14 @@ categoriesConfig:
       newznabCategories:
         - "5000"
       requiredRegex: null
-      requiredWords: []
+      requiredWords: [ ]
       preselect: true
       searchType: TVSEARCH
       subtype: NONE
     - name: TV HD
       applyRestrictionsType: BOTH
       forbiddenRegex: null
-      forbiddenWords: []
+      forbiddenWords: [ ]
       ignoreResultsFrom: NONE
       maxSizePreset: 4500
       minSizePreset: 300
@@ -225,14 +225,14 @@ categoriesConfig:
       newznabCategories:
         - "5040"
       requiredRegex: null
-      requiredWords: []
+      requiredWords: [ ]
       preselect: true
       searchType: TVSEARCH
       subtype: NONE
     - name: TV SD
       applyRestrictionsType: BOTH
       forbiddenRegex: null
-      forbiddenWords: []
+      forbiddenWords: [ ]
       ignoreResultsFrom: NONE
       maxSizePreset: 1000
       minSizePreset: 50
@@ -240,14 +240,14 @@ categoriesConfig:
       newznabCategories:
         - "5030"
       requiredRegex: null
-      requiredWords: []
+      requiredWords: [ ]
       preselect: true
       searchType: TVSEARCH
       subtype: NONE
     - name: XXX
       applyRestrictionsType: BOTH
       forbiddenRegex: null
-      forbiddenWords: []
+      forbiddenWords: [ ]
       ignoreResultsFrom: NONE
       maxSizePreset: 10000
       minSizePreset: 100
@@ -255,12 +255,12 @@ categoriesConfig:
       newznabCategories:
         - "6000"
       requiredRegex: null
-      requiredWords: []
+      requiredWords: [ ]
       preselect: true
       searchType: SEARCH
       subtype: NONE
 downloading:
-  downloaders: []
+  downloaders: [ ]
   nzbAccessType: "PROXY"
   saveTorrentsTo: null
   saveNzbsTo: null
@@ -268,14 +268,14 @@ downloading:
   updateStatuses: true
   showDownloaderStatus: true
   fallbackForFailed: BOTH
-genericStorage: {}
-indexers: []
+genericStorage: { }
+indexers: [ ]
 main:
   apiKey: null
   backupFolder: "backup"
   backupEveryXDays: 7
   backupBeforeUpdate: true
-  configVersion: 17
+  configVersion: 18
   databaseCompactTime: 15000
   databaseRetentionTime: 1000
   databaseWriteDelay: 5000
@@ -296,13 +296,13 @@ main:
     logIpAddresses: true
     mapIpToHost: true
     logUsername: false
-    markersToLog: []
+    markersToLog: [ ]
   port: 5076
   proxyType: NONE
   proxyHost: null
   proxyPort: 1080
   proxyIgnoreLocal: true
-  proxyIgnoreDomains: []
+  proxyIgnoreDomains: [ ]
   proxyUsername: null
   proxyPassword: null
   repositoryBase: "https://github.com/theotherp"
@@ -322,7 +322,7 @@ main:
   urlBase: "/"
   useCsrf: true
   verifySsl: true
-  verifySslDisabledFor: []
+  verifySslDisabledFor: [ ]
   welcomeShown: false
   xmx: 256
 notificationConfig:
@@ -335,13 +335,13 @@ searching:
   alwaysShowQuickFilterButtons: false
   applyRestrictions: "NONE"
   coverSize: 128
-  customQuickFilterButtons: []
+  customQuickFilterButtons: [ ]
   duplicateAgeThreshold: 2.0
   duplicateSizeThresholdInPercent: 1.0
-  forbiddenGroups: []
-  forbiddenPosters: []
+  forbiddenGroups: [ ]
+  forbiddenPosters: [ ]
   forbiddenRegex: null
-  forbiddenWords: []
+  forbiddenWords: [ ]
   generateQueries: "INTERNAL"
   generateQueriesFormat: "TITLE"
   globalCacheTimeMinutes: null
@@ -351,14 +351,14 @@ searching:
   ignoreLoadLimitingForInternalSearches: false
   keepSearchResultsForDays: 14
   language: "en"
-  languagesToKeep: []
+  languagesToKeep: [ ]
   loadAllCachedOnInternal: true
   loadLimitInternal: 100
   maxAge: null
   minSeeders: null
-  removeTrailing: [".mp4", ".mkv", ".subs", ".REPOST", "repost", "~DG~", ".DG", "-DG", "-1", ".1", "(1)", "ReUp", "ReUp2", "-RP", "-AsRequested", "-Obfuscated", "-Scrambled", "-Chamele0n", "-BUYMORE", "-[TRP]", "-DG", ".par2", ".part01", "part01.rar", ".part02.rar", ".jpg", "[rartv]", "[rarbg]", "[eztv]", "English", "Korean", "Spanish", "French", "German", "Italian", "Danish", "Dutch", "Japanese", "Cantonese", "Mandarin", "Russian", "Polish", "Vietnamese", "Swedish", "Norwegian", "Finnish", "Turkish", "Portuguese", "Flemish", "Greek", "Hungarian"]
+  removeTrailing: [ ".mp4", ".mkv", ".subs", ".REPOST", "repost", "~DG~", ".DG", "-DG", "-1", ".1", "(1)", "ReUp", "ReUp2", "-RP", "-AsRequested", "-Obfuscated", "-Scrambled", "-Chamele0n", "-BUYMORE", "-[TRP]", "-DG", ".par2", ".part01", "part01.rar", ".part02.rar", ".jpg", "[rartv]", "[rarbg]", "[eztv]", "English", "Korean", "Spanish", "French", "German", "Italian", "Danish", "Dutch", "Japanese", "Cantonese", "Mandarin", "Russian", "Polish", "Vietnamese", "Swedish", "Norwegian", "Finnish", "Turkish", "Portuguese", "Flemish", "Greek", "Hungarian" ]
   requiredRegex: null
-  requiredWords: []
+  requiredWords: [ ]
   sendTorznabCategories: true
   showQuickFilterButtons: true
   timeout: 20

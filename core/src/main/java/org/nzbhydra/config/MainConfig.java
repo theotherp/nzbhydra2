@@ -28,6 +28,7 @@ public class MainConfig extends ValidatingConfig<MainConfig> {
 
     private static final Logger logger = LoggerFactory.getLogger(MainConfig.class);
 
+    //Also update baseConfig.yml!
     private Integer configVersion = 18;
 
     //Hosting settings

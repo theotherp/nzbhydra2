@@ -254,6 +254,12 @@ public class NzbHydra {
     private void addTrayIconIfApplicable() {
         boolean isOsWindows = isOsWindows();
         if (isOsWindows) {
+            final String createTrayProperty = System.getProperty("nzbhydra.createSystemTray");
+            boolean isCreateSystemTray = createTrayProperty == null || Boolean.parseBoolean(createTrayProperty);
+            if (!isCreateSystemTray) {
+                logger.info("Not showing system tray icon because it's disabled by property");
+                return;
+            }
             logger.info("Adding windows system tray icon");
             try {
                 new WindowsTrayIcon();
