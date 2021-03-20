@@ -105,7 +105,7 @@ public class IndexerChecker {
     public GenericResponse checkConnection(IndexerConfig indexerConfig) {
         Xml xmlResponse;
         try {
-            URI uri = getBaseUri(indexerConfig).queryParam("t", "search").build().toUri();
+            URI uri = getBaseUri(indexerConfig).queryParam("t", "search").queryParam("q", "mp3").build().toUri();
             xmlResponse = indexerWebAccess.get(uri, indexerConfig);
             logger.debug("Checking connection to indexer {} using URI {}", indexerConfig.getName(), uri);
             if (xmlResponse instanceof NewznabXmlError) {
