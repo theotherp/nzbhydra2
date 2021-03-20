@@ -1,6 +1,14 @@
+### v3.13.2 (2021-03-20)
+
+**Fix** Fix connection check for nzbgeek. See <a href="https://github.com/theotherp/nzbhydra2/issues/695">#695</a>.
+
+**Note** Java 16 is not supported. See <a href="https://github.com/theotherp/nzbhydra2/issues/697">#697</a>.
+
+
+
 ### v3.13.1 (2021-03-10)
 
-**Fix** Fix external configuration of Readarr (0.1.0.520+). See #693.
+**Fix** Fix external configuration of Readarr (0.1.0.520+). See <a href="https://github.com/theotherp/nzbhydra2/issues/693">#693</a>.
 
 
 
@@ -8,19 +16,19 @@
 
 **Feature** From now on I'll refer to the appropriate GitHub issues in the changelog (if I don't forget it).
 
-**Fix** Improve category detection for MyAnonaMouse. See #689.
+**Fix** Improve category detection for MyAnonaMouse. See <a href="https://github.com/theotherp/nzbhydra2/issues/689">#689</a>.
 
-**Fix** Don't crash GUI when result titles are empty. See #690.
+**Fix** Don't crash GUI when result titles are empty. See <a href="https://github.com/theotherp/nzbhydra2/issues/690">#690</a>.
 
-**Fix** Clarify the restrictions section in the auth config. See #687.
+**Fix** Clarify the restrictions section in the auth config. See <a href="https://github.com/theotherp/nzbhydra2/issues/687">#687</a>.
 
 
 
 ### v3.12.0 (2021-02-13)
 
-**Feature** Add button to send results to black hole from download history. See #685
+**Feature** Add button to send results to black hole from download history. See <a href="https://github.com/theotherp/nzbhydra2/issues/685">#685</a>
 
-**Feature** Add support for custom parameters to be sent to indexers while searching. See #647
+**Feature** Add support for custom parameters to be sent to indexers while searching. See <a href="https://github.com/theotherp/nzbhydra2/issues/647">#647</a>
 
 **Fix** Download status bar did not update properly when the downloader was idle after a download. The bar will now be updated until either a new download is started or the bar is properly filled, representing the downloader's idle state. This should hopefully also fix the long-standing issue with the browser tab freezing / crashing after a while.
 
@@ -710,7 +718,7 @@
 
 **Feature** Option to configure folder for backups.
 
-**Feature** Option to not send newznab categories for torznab indexers (trackers). See <a href="https://github.com/theotherp/nzbhydra2/issues/516">#516</a>.
+**Feature** Option to not send newznab categories for torznab indexers (trackers). See <a href="https://github.com/theotherp/nzbhydra2/issues/516"><a href="https://github.com/theotherp/nzbhydra2/issues/516">#516</a></a>.
 
 **Note** Previously a couple of settings (Time of last backup, time of first start, latest news shown, etc.) were stored in the database. That meant they were lost when starting with a new database. I've moved the settings to the config file wherey they belong.
 
