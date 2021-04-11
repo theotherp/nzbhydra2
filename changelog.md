@@ -1,3 +1,9 @@
+### v3.14.0 (2021-04-11)
+
+**Feature** Custom mapping for queries and titles. This allows you to customize / change the values used by external tools or returned by metadata providers like TVDB. See <a href="https://github.com/theotherp/nzbhydra2/issues/700">#700</a>.
+
+
+
 ### v3.13.2 (2021-03-20)
 
 **Fix** Fix connection check for nzbgeek. See <a href="https://github.com/theotherp/nzbhydra2/issues/695">#695</a>.
