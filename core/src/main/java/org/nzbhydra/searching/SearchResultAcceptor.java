@@ -180,7 +180,7 @@ public class SearchResultAcceptor {
 
     protected boolean checkForCategoryShouldBeIgnored(SearchRequest searchRequest, Multiset<String> reasonsForRejection, SearchResultItem item) {
         if (item.getCategory().getIgnoreResultsFrom().meets(searchRequest)) {
-            logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "{} is in forbidden category {}", item.getTitle(), searchRequest.getCategory().getName());
+            logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "{} is in forbidden category {}", item.getTitle(), item.getCategory().getName());
             reasonsForRejection.add("In forbidden category");
             return false;
         }
@@ -190,7 +190,7 @@ public class SearchResultAcceptor {
     protected boolean checkForCategoryDisabledForIndexer(SearchRequest searchRequest, Multiset<String> reasonsForRejection, SearchResultItem item) {
         List<String> enabledCategories = item.getIndexer().getConfig().getEnabledCategories();
         if (!item.getCategory().equals(CategoryProvider.naCategory) && !enabledCategories.isEmpty() && !enabledCategories.contains(item.getCategory().getName())) {
-            logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "{} is in category {} disabled for indexer", item.getTitle(), searchRequest.getCategory().getName());
+            logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "{} is in category {} disabled for indexer", item.getTitle(), item.getCategory().getName());
             reasonsForRejection.add("In forbidden category");
             return false;
         }

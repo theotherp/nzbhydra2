@@ -125,6 +125,12 @@ public class SearchingConfig extends ValidatingConfig<SearchingConfig> {
             } catch (Exception e) {
                 errors.add(String.format("Unable to process mapping %s:}\n%s", customMapping.toString(), e.getMessage()));
             }
+            if (customMapping.getFrom().contains("{episode:")) {
+                errors.add("The group 'episode' is not allowed in custom mapping input patterns.");
+            }
+            if (customMapping.getFrom().contains("{season:")) {
+                errors.add("The group 'season' is not allowed in custom mapping input patterns.");
+            }
         }
 
         return new ConfigValidationResult(errors.isEmpty(), false, errors, warnings);

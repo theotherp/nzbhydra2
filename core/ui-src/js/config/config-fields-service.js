@@ -420,6 +420,7 @@ function ConfigFields($injector) {
                                 options: [
                                     {label: 'API limits', id: 'LIMITS'},
                                     {label: 'Config file handling', id: 'CONFIG_READ_WRITE'},
+                                    {label: 'Config mapping', id: 'CUSTOM_MAPPING'},
                                     {label: 'Downloader status updating', id: 'DOWNLOADER_STATUS_UPDATE'},
                                     {label: 'Duplicate detection', id: 'DUPLICATES'},
                                     {label: 'External tool configuration', id: 'EXTERNAL_TOOLS'},

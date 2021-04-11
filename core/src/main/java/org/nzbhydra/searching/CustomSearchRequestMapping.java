@@ -64,11 +64,11 @@ public class CustomSearchRequestMapping {
                 .filter(x -> searchRequest.getSearchType() == x.searchType)
                 .filter(mapping -> isDatasetMatch(searchRequest, mapping))
                 .filter(mapping -> {
-                    if (mapping.to.contains("{season") && !searchRequest.getSeason().isPresent()) {
+                    if (mapping.to.contains("{season:") && !searchRequest.getSeason().isPresent()) {
                         logger.debug(LoggingMarkers.CUSTOM_MAPPING, "Can't use mapping {} because no season information is available for {}", mapping, searchRequest.simpleToString());
                         return false;
                     }
-                    if (mapping.to.contains("{episode") && !searchRequest.getEpisode().isPresent()) {
+                    if (mapping.to.contains("{episode:") && !searchRequest.getEpisode().isPresent()) {
                         logger.debug(LoggingMarkers.CUSTOM_MAPPING, "Can't use mapping {} because no episode information is available for {}", mapping, searchRequest.simpleToString());
                         return false;
                     }
