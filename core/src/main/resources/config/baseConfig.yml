@@ -365,6 +365,6 @@ searching:
   timeout: 20
   transformNewznabCategories: true
   userAgent: "NZBHydra2"
-  userAgents: [ "Mozilla", "Sonarr", "Radarr", "CouchPotato", "LazyLibrarian", "Lidarr", "NZBGet", "sabNZBd" ]
+  userAgents: [ "Mozilla", "Sonarr", "Radarr", "CouchPotato", "LazyLibrarian", "Lidarr", "Mylar", "Readarr", "NZB360", "NZBGet", "sabNZBd" ]
   useOriginalCategories: false
   wrapApiErrors: false
