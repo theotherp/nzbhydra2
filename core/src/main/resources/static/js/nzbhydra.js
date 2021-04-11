@@ -5269,7 +5269,7 @@ angular
                                     } else {
                                         $scope.exampleResult = "Input does not match example";
                                     }
-                                }, function(response) {
+                                }, function (response) {
                                     $scope.exampleResult = response.message;
                                 })
                             }
