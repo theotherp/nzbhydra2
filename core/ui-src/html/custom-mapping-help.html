@@ -1,0 +1,71 @@
+<div class="modal-header">
+  <h3 class="modal-title">Custom mapping help and test</h3>
+</div>
+<div class="modal-body" style="text-align: left">
+  <div class="well">
+    <ul>
+      <li>
+        The input must completely match the title or query for the mapping to be effective. The matching is case insensitive.
+      </li>
+      <li>
+        You may use regular expressions anywhere (e.g. <code>[a-z]</code> or <code>.*</code>). You may use named groups to reference them in the output pattern (e.g. <code>{title:.*}</code> can be referenced using <code>{title}</code>.
+        Brackets ("{}") may not be used in regexes.
+      </li>
+      <li>
+        The following meta groups are available: <code>{season:0}</code>, <code>{season:00}</code>, <code>{episode:0}</code>, <code>{episode:00}</code> (with and without leading zeroes, respectively). The data will be taken from the search
+        request's metadata. If it's not available the mapping will not be used.
+      </li>
+    
+    </ul>
+  </div>
+  
+  <div class="form-group row">
+    <div class="col-md-5" style="text-align: right">
+      <label>Input pattern</label>
+    </div>
+    <div class="col-md-15">
+      <input type="text" class="form-control" ng-model="model.from">
+    </div>
+  </div>
+  
+  <div class="form-group row">
+    <div class="col-md-5" style="text-align: right">
+      <label>Output pattern</label>
+    </div>
+    <div class="col-md-15">
+      <input type="text" class="form-control" ng-model="model.to">
+    </div>
+  </div>
+  
+  <div class="form-group row">
+    <div class="col-md-5" style="text-align: right">
+      <label>Example query/title</label>
+    </div>
+    <div class="col-md-15">
+      <input type="text" class="form-control" ng-model="exampleInput">
+    </div>
+  </div>
+  
+  <div class="form-group row">
+    <div class="col-md-5" style="text-align: right">
+    </div>
+    <div class="col-md-15">
+      <button class="btn btn-default" ng-click="test()">Test</button>
+    </div>
+  </div>
+  
+  <div class="form-group row">
+    <div class="col-md-5" style="text-align: right">
+      <label>Result</label>
+    </div>
+    <div class="col-md-15">
+      <input type="text" class="form-control" ng-model="exampleResult" disabled="disabled">
+    </div>
+  </div>
+
+
+</div>
+<div class="modal-footer">
+  <button class="btn btn-warning" type="button" ng-click="cancel()">Cancel</button>
+  <button class="btn btn-success" type="button" ng-click="submit()">Submit</button>
+</div>

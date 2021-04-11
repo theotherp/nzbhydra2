@@ -100,7 +100,15 @@
 <script type="text/ng-template" id="repeatSection.html">
   <!--loop through each element in model array-->
   <div class="{{ hideRepeat }} repeatWrapperClass" ng-show="model.showAdvanced || !to.advanced">
-    <legend><span class="config-fieldset-legend">{{to.headline}}</span></legend>
+    <legend style="overflow: hidden">
+   <span class="config-fieldset-legend">{{to.headline}}
+       <span class="glyphicon glyphicon-question-sign" ng-if="::options.templateOptions.tooltip"
+             uib-popover-html="options.templateOptions.tooltip"
+             popover-trigger="'outsideClick'"
+             style="font-size: 15px; cursor: pointer"></span>
+</span>
+    </legend>
+  
     <div class="repeatsection modal-content" ng-repeat="element in model[options.key]"
          ng-init="fields = copyFields(to.fields)">
       <fieldset>
@@ -121,7 +129,7 @@
       
       </fieldset>
     </div>
-    <hr>
+    <hr class="repeat-hr">
     <p class="addNewButton">
       <button type="button" class="btn btn-primary add-button" ng-click="addNew()">{{ to.btnText }}</button>
     </p>

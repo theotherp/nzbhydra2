@@ -6,6 +6,7 @@ import org.slf4j.MarkerFactory;
 public class LoggingMarkers {
 
     public static final Marker CONFIG_READ_WRITE = MarkerFactory.getMarker("CONFIG_READ_WRITE");
+    public static final Marker CUSTOM_MAPPING = MarkerFactory.getMarker("CUSTOM_MAPPING");
     public static final Marker DOWNLOADER_STATUS_UPDATE = MarkerFactory.getMarker("DOWNLOADER_STATUS_UPDATE");
     public static final Marker DOWNLOAD_STATUS_UPDATE = MarkerFactory.getMarker("DOWNLOAD_STATUS_UPDATE");
     public static final Marker DUPLICATES = MarkerFactory.getMarker("DUPLICATES");

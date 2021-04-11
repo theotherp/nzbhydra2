@@ -1238,6 +1238,78 @@ function ConfigFields($injector) {
                     ]
                 },
                 {
+                    type: 'repeatSection',
+                    key: 'customMappings',
+                    model: rootModel.searching,
+                    templateOptions: {
+                        btnText: 'Add new custom mapping',
+                        altLegendText: 'Mapping',
+                        headline: 'Custom mappings of queries and titles',
+                        advanced: true,
+                        fields: [
+                            {
+                                key: 'searchType',
+                                type: 'horizontalSelect',
+                                templateOptions: {
+                                    label: 'Search type',
+                                    options: [
+                                        {name: 'General', value: 'SEARCH'},
+                                        {name: 'Audio', value: 'MUSIC'},
+                                        {name: 'EBook', value: 'BOOK'},
+                                        {name: 'Movie', value: 'MOVIE'},
+                                        {name: 'TV', value: 'TVSEARCH'}
+                                    ],
+                                    help: "Determines in what context the mapping will be executed"
+                                }
+                            },
+                            {
+                                key: 'affectedValue',
+                                type: 'horizontalSelect',
+                                templateOptions: {
+                                    label: 'Affected value',
+                                    options: [
+                                        {name: 'Query', value: 'QUERY'},
+                                        {name: 'Title', value: 'TITLE'}
+                                    ],
+                                    required: true,
+                                    help: "Determines which value of the search request will be processed"
+                                }
+                            },
+                            {
+                                key: 'from',
+                                type: 'horizontalInput',
+                                templateOptions: {
+                                    type: 'text',
+                                    label: 'Input pattern',
+                                    help: 'Pattern which must match the query or title of a search request. You may use regexes in groups which can be referenced in the output puttern by using {group:regex}. Case insensitive.',
+                                    required: true
+                                }
+                            },
+                            {
+                                key: 'to',
+                                type: 'horizontalInput',
+                                templateOptions: {
+                                    type: 'text',
+                                    label: 'Output pattern',
+                                    help: 'If a query or title matches the input pattern it will be replaced using this. You may reference groups from the input pattern by using {group}. Additionally you may use {season:0} or {season:00} or {episode:0} or {episode:00} (with and without leading zeroes).',
+                                    required: true
+                                }
+                            },
+                            {
+                                type: 'customMappingTest',
+                            }
+                        ],
+                        defaultModel: {
+                            searchType: null,
+                            affectedValue: null,
+                            from: null,
+                            to: null
+                        }
+                    }
+                },
+
+
+                {
                     wrapper: 'fieldset',
                     templateOptions: {
                         label: 'Result display'

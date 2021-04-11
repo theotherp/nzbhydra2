@@ -161,6 +161,20 @@ public class SearchRequest {
                 .toString();
     }
 
+    public String simpleToString() {
+        return MoreObjects.toStringHelper(this)
+                .add("searchType", searchType)
+                .add("category", category.getName())
+                .add("query", query)
+                .add("identifiers", identifiers)
+                .add("title", title)
+                .add("season", season)
+                .add("episode", episode)
+                .add("author", author)
+                .omitNullValues()
+                .toString();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

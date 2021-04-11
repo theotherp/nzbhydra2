@@ -336,6 +336,7 @@ searching:
   applyRestrictions: "NONE"
   coverSize: 128
   customQuickFilterButtons: []
+  customQueryMappings: [ ]
   duplicateAgeThreshold: 2.0
   duplicateSizeThresholdInPercent: 1.0
   forbiddenGroups: []

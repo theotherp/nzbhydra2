@@ -212,6 +212,57 @@ angular
             wrapper: ['settingWrapper', 'bootstrapHasError']
         });
 
+        formlyConfigProvider.setType({
+            name: 'customMappingTest',
+            extends: 'horizontalInput',
+            template: [
+                '<div class="input-group">',
+                '<button class="btn btn-default" type="button" ng-click="open()">Help and test</button>',
+                '</div>'
+            ].join(' '),
+            controller: function ($scope, $uibModal, $http) {
+                var model = $scope.model;
+                var modelCopy = Object.assign({}, model);
+                $scope.open = function () {
+                    $uibModal.open({
+                        templateUrl: 'static/html/custom-mapping-help.html',
+                        controller: function ($scope, $uibModalInstance, $http) {
+                            $scope.model = modelCopy;
+                            $scope.cancel = function () {
+                                $uibModalInstance.close();
+                            }
+                            $scope.submit = function () {
+                                Object.assign(model, $scope.model)
+                                $uibModalInstance.close();
+                            }
+
+                            $scope.test = function () {
+                                if (!$scope.exampleInput) {
+                                    $scope.exampleResult = "Empty example data";
+                                    return;
+
+                                }
+                                $http.post('internalapi/customMapping/test', {mapping: model, exampleInput: $scope.exampleInput}).then(function (response) {
+                                    console.log(response.data);
+                                    console.log(response.data.output);
+                                    if (response.data.error) {
+                                        $scope.exampleResult = response.data.error;
+                                    } else if (response.data.match) {
+                                        $scope.exampleResult = response.data.output;
+                                    } else {
+                                        $scope.exampleResult = "Input does not match example";
+                                    }
+                                }, function (response) {
+                                    $scope.exampleResult = response.message;
+                                })
+                            }
+                        },
+                        size: "md"
+                    })
+                }
+            }
+        });
+
         function updateIndexerModel(model, indexerConfig) {
             model.supportedSearchIds = indexerConfig.supportedSearchIds;
             model.supportedSearchTypes = indexerConfig.supportedSearchTypes;

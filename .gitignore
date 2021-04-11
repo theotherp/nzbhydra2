@@ -18,3 +18,4 @@ pom.xml.versionsBackup
 *.phd
 javacore*
 heapdump*
+/ui

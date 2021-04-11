@@ -5229,6 +5229,57 @@ angular
             wrapper: ['settingWrapper', 'bootstrapHasError']
         });
 
+        formlyConfigProvider.setType({
+            name: 'customMappingTest',
+            extends: 'horizontalInput',
+            template: [
+                '<div class="input-group">',
+                '<button class="btn btn-default" type="button" ng-click="open()">Help and test</button>',
+                '</div>'
+            ].join(' '),
+            controller: function ($scope, $uibModal, $http) {
+                var model = $scope.model;
+                var modelCopy = Object.assign({}, model);
+                $scope.open = function () {
+                    $uibModal.open({
+                        templateUrl: 'static/html/custom-mapping-help.html',
+                        controller: ["$scope", "$uibModalInstance", "$http", function ($scope, $uibModalInstance, $http) {
+                            $scope.model = modelCopy;
+                            $scope.cancel = function () {
+                                $uibModalInstance.close();
+                            }
+                            $scope.submit = function () {
+                                Object.assign(model, $scope.model)
+                                $uibModalInstance.close();
+                            }
+
+                            $scope.test = function () {
+                                if (!$scope.exampleInput) {
+                                    $scope.exampleResult = "Empty example data";
+                                    return;
+
+                                }
+                                $http.post('internalapi/customMapping/test', {mapping: model, exampleInput: $scope.exampleInput}).then(function (response) {
+                                    console.log(response.data);
+                                    console.log(response.data.output);
+                                    if (response.data.error) {
+                                        $scope.exampleResult = response.data.error;
+                                    } else if (response.data.match) {
+                                        $scope.exampleResult = response.data.output;
+                                    } else {
+                                        $scope.exampleResult = "Input does not match example";
+                                    }
+                                }, function(response) {
+                                    $scope.exampleResult = response.message;
+                                })
+                            }
+                        }],
+                        size: "md"
+                    })
+                }
+            }
+        });
+
         function updateIndexerModel(model, indexerConfig) {
             model.supportedSearchIds = indexerConfig.supportedSearchIds;
             model.supportedSearchTypes = indexerConfig.supportedSearchTypes;
@@ -7063,6 +7114,78 @@ function ConfigFields($injector) {
                     ]
                 },
                 {
+                    type: 'repeatSection',
+                    key: 'customMappings',
+                    model: rootModel.searching,
+                    templateOptions: {
+                        btnText: 'Add new custom mapping',
+                        altLegendText: 'Mapping',
+                        headline: 'Custom mappings of queries and titles',
+                        advanced: true,
+                        fields: [
+                            {
+                                key: 'searchType',
+                                type: 'horizontalSelect',
+                                templateOptions: {
+                                    label: 'Search type',
+                                    options: [
+                                        {name: 'General', value: 'SEARCH'},
+                                        {name: 'Audio', value: 'MUSIC'},
+                                        {name: 'EBook', value: 'BOOK'},
+                                        {name: 'Movie', value: 'MOVIE'},
+                                        {name: 'TV', value: 'TVSEARCH'}
+                                    ],
+                                    help: "Determines in what context the mapping will be executed"
+                                }
+                            },
+                            {
+                                key: 'affectedValue',
+                                type: 'horizontalSelect',
+                                templateOptions: {
+                                    label: 'Affected value',
+                                    options: [
+                                        {name: 'Query', value: 'QUERY'},
+                                        {name: 'Title', value: 'TITLE'}
+                                    ],
+                                    required: true,
+                                    help: "Determines which value of the search request will be processed"
+                                }
+                            },
+                            {
+                                key: 'from',
+                                type: 'horizontalInput',
+                                templateOptions: {
+                                    type: 'text',
+                                    label: 'Input pattern',
+                                    help: 'Pattern which must match the query or title of a search request. You may use regexes in groups which can be referenced in the output puttern by using {group:regex}. Case insensitive.',
+                                    required: true
+                                }
+                            },
+                            {
+                                key: 'to',
+                                type: 'horizontalInput',
+                                templateOptions: {
+                                    type: 'text',
+                                    label: 'Output pattern',
+                                    help: 'If a query or title matches the input pattern it will be replaced using this. You may reference groups from the input pattern by using {group}. Additionally you may use {season:0} or {season:00} or {episode:0} or {episode:00} (with and without leading zeroes).',
+                                    required: true
+                                }
+                            },
+                            {
+                                type: 'customMappingTest',
+                            }
+                        ],
+                        defaultModel: {
+                            searchType: null,
+                            affectedValue: null,
+                            from: null,
+                            to: null
+                        }
+                    }
+                },
+
+
+                {
                     wrapper: 'fieldset',
                     templateOptions: {
                         label: 'Result display'
@@ -8042,6 +8165,7 @@ function handleConnectionCheckFail(ModalService, data, model, whatFailed, deferr
         }
     });
 }
+
 
 ConfigController.$inject = ["$scope", "$http", "activeTab", "ConfigService", "config", "DownloaderCategoriesService", "ConfigFields", "ConfigModel", "ModalService", "RestartService", "localStorageService", "$state", "growl", "$window"];angular
     .module('nzbhydraApp')

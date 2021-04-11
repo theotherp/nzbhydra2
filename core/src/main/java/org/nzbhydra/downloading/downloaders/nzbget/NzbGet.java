@@ -348,7 +348,7 @@ public class NzbGet extends Downloader {
         if (nzbId <= 0) {
             throw new DownloaderException("NZBGet returned error code. Check its logs");
         }
-        logger.info("Successfully added NZB \"{}\" to NZBGet queue with ID {} in category {}", title, nzbId, category);
+        logger.info("Successfully added NZB \"{}\" to NZBGet queue with ID {} in category \"{}\"", title, nzbId, category);
         return String.valueOf(nzbId);
     }
 

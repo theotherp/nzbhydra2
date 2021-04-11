@@ -51,6 +51,8 @@ public class SearchWeb {
     private InternalSearchResultProcessor searchResultProcessor;
     @Autowired
     private SimpMessageSendingOperations messagingTemplate;
+    @Autowired
+    private CustomSearchRequestMapping customSearchRequestMapping;
 
     private final Lock lock = new ReentrantLock();
 
@@ -142,6 +144,7 @@ public class SearchWeb {
         }
 
         searchRequest = searchRequestFactory.extendWithSavedIdentifiers(searchRequest);
+        searchRequest = customSearchRequestMapping.mapSearchRequest(searchRequest);
 
         //Initialize messages for this search request
         final SearchState searchState = new SearchState(searchRequest.getSearchRequestId());
