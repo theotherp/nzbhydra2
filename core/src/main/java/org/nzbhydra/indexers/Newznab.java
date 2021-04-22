@@ -5,6 +5,7 @@ import com.google.common.base.Strings;
 import lombok.Getter;
 import lombok.Setter;
 import org.nzbhydra.NzbHydraException;
+import org.nzbhydra.config.category.CategoriesConfig;
 import org.nzbhydra.config.category.Category;
 import org.nzbhydra.config.category.Category.Subtype;
 import org.nzbhydra.config.indexer.IndexerCategoryConfig;
@@ -236,10 +237,15 @@ public class Newznab extends Indexer<Xml> {
         } else {
             categoryIds = new ArrayList<>(searchRequest.getInternalData().getNewznabCategories()); //Use new instance of list to be sorted
         }
+        if (categoryIds.isEmpty() && searchRequest.getCategory() == CategoriesConfig.allCategory && !searchRequest.getInternalData().getNewznabCategories().isEmpty()) {
+            //Provided categories could not be mapped to a specific category - use them
+            categoryIds = new ArrayList<>(searchRequest.getInternalData().getNewznabCategories()); //Use new instance of list to be sorted
+        }
         if (!categoryIds.isEmpty()) {
             Collections.sort(categoryIds);
             componentsBuilder.queryParam("cat", Joiner.on(",").join(categoryIds));
         }
+
     }
 
     private boolean isIndexerNotSupportingEmptyTypeSearch() {
