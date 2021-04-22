@@ -1,3 +1,11 @@
+### v3.14.1 (2021-04-22)
+
+**Feature** Added NZB360, Readarr and Mylar to mapped user agents. Thanks to SAS-1
+
+**Bug** With the option to transform newznab categories enabled if provided categories of an API call could not be mapped to a category they weren't used at all. See <a href="https://github.com/theotherp/nzbhydra2/issues/704">#704</a>.
+
+
+
 ### v3.14.0 (2021-04-11)
 
 **Feature** Custom mapping for queries and titles. This allows you to customize / change the values used by external tools or returned by metadata providers like TVDB. See <a href="https://github.com/theotherp/nzbhydra2/issues/700">#700</a>.
