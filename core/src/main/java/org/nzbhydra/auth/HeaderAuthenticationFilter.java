@@ -49,6 +49,7 @@ public class HeaderAuthenticationFilter extends BasicAuthenticationFilter {
         this.authConfig = authConfig;
     }
 
+    //
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
         if (authConfig.getAuthHeader() == null || authConfig.getAuthHeaderIpRanges().isEmpty()) {
