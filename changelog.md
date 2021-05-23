@@ -1,3 +1,9 @@
+### v3.14.2 (2021-05-23)
+
+**Bug** Min and max size API parameters were ignored. See <a href="https://github.com/theotherp/nzbhydra2/issues/705">#705</a>
+
+
+
 ### v3.14.1 (2021-04-22)
 
 **Feature** Added NZB360, Readarr and Mylar to mapped user agents. Thanks to SAS-1

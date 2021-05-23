@@ -45,6 +45,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private HydraUserDetailsManager hydraUserDetailsManager;
     @Autowired
     private AuthAndAccessEventHandler authAndAccessEventHandler;
+    @Autowired
+    private AsyncSupportFilter asyncSupportFilter;
     private HeaderAuthenticationFilter headerAuthenticationFilter;
 
     @Override
@@ -112,6 +114,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.addFilterBefore(new ForwardedForRecognizingFilter(), ChannelProcessingFilter.class);
         http.addFilterAfter(new ForwardedHeaderFilter(), ForwardedForRecognizingFilter.class);
         http.addFilterAfter(headerAuthenticationFilter, BasicAuthenticationFilter.class);
+        http.addFilterAfter(asyncSupportFilter, BasicAuthenticationFilter.class);
 
         http.exceptionHandling().accessDeniedHandler(authAndAccessEventHandler);
     }
