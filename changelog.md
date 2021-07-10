@@ -1,3 +1,13 @@
+### v3.15.0 (2021-07-10)
+
+**Feature** Debug infos can now be created and directly uploaded to https://ufile.io/ for easier sharing.
+
+**Feature** The tooltip in the search results for the display of rejected, loaded and filtered results now also shows the number of filtered results for each reason (e.g. x results being too small, y results already downloaded).
+
+**Feature** The "Searching... please wait" box now highlights indexer searches that produced results. The messages are also sorted by indexer name and start with the number of results to allow easier reading. See <a href="https://github.com/theotherp/nzbhydra2/issues/696">#696</a>.
+
+
+
 ### v3.14.2 (2021-05-23)
 
 **Bug** Min and max size API parameters were ignored. See <a href="https://github.com/theotherp/nzbhydra2/issues/705">#705</a>
