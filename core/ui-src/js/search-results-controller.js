@@ -350,7 +350,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
 
     function blockAndUpdate() {
         startBlocking("Sorting / filtering...").then(function () {
-            $scope.filteredResults = sortAndFilter(allSearchResults);
+            [$scope.filteredResults, $scope.filterReasons] = sortAndFilter(allSearchResults);
             localStorageService.set("sorting", sortModel);
         });
     }
@@ -425,6 +425,23 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
     function sortAndFilter(results) {
         var query;
         var words;
+        var filterReasons = {
+            "tooSmall": 0,
+            "tooLarge": 0,
+            "tooYoung": 0,
+            "tooOld": 0,
+            "tooFewGrabs": 0,
+            "tooManyGrabs": 0,
+            "title": 0,
+            "tooindexer": 0,
+            "category": 0,
+            "tooOld": 0,
+            "quickFilter": 0,
+            "alreadyDownloaded": 0
+
+
+        };
+
         if ("title" in $scope.filterModel) {
             query = $scope.filterModel.title.filterValue;
             if (!(query.startsWith("/") && query.endsWith("/"))) {
@@ -440,9 +457,11 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
             if ("size" in $scope.filterModel) {
                 var filterValue = $scope.filterModel.size.filterValue;
                 if (angular.isDefined(filterValue.min) && item.size / 1024 / 1024 < filterValue.min) {
+                    filterReasons["tooSmall"] = filterReasons["tooSmall"] + 1;
                     return false;
                 }
                 if (angular.isDefined(filterValue.max) && item.size / 1024 / 1024 > filterValue.max) {
+                    filterReasons["tooLarge"] = filterReasons["tooLarge"] + 1;
                     return false;
                 }
             }
@@ -451,9 +470,11 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
                 var filterValue = $scope.filterModel.epoch.filterValue;
                 var ageDays = moment.utc().diff(moment.unix(item.epoch), "days");
                 if (angular.isDefined(filterValue.min) && ageDays < filterValue.min) {
+                    filterReasons["tooYoung"] = filterReasons["tooYoung"] + 1;
                     return false;
                 }
                 if (angular.isDefined(filterValue.max) && ageDays > filterValue.max) {
+                    filterReasons["tooOld"] = filterReasons["tooOld"] + 1;
                     return false;
                 }
             }
@@ -462,11 +483,13 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
                 var filterValue = $scope.filterModel.grabs.filterValue;
                 if (angular.isDefined(filterValue.min)) {
                     if ((item.seeders !== null && item.seeders < filterValue.min) || (item.seeders === null && item.grabs !== null && item.grabs < filterValue.min)) {
+                        filterReasons["tooFewGrabs"] = filterReasons["tooFewGrabs"] + 1;
                         return false;
                     }
                 }
                 if (angular.isDefined(filterValue.max)) {
                     if ((item.seeders !== null && item.seeders > filterValue.max) || (item.seeders === null && item.grabs !== null && item.grabs > filterValue.max)) {
+                        filterReasons["tooManyGrabs"] = filterReasons["tooManyGrabs"] + 1;
                         return false;
                     }
                 }
@@ -487,15 +510,21 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
                         return item.title.toLowerCase().indexOf(word) > -1;
                     });
                 }
-                if (!ok) return false;
+                if (!ok) {
+                    filterReasons["title"] = filterReasons["title"] + 1;
+                    return false;
+                }
+
             }
             if ("indexer" in $scope.filterModel) {
                 if (_.indexOf($scope.filterModel.indexer.filterValue, item.indexer) === -1) {
+                    filterReasons["title"] = filterReasons["title"] + 1;
                     return false;
                 }
             }
             if ("category" in $scope.filterModel) {
                 if (_.indexOf($scope.filterModel.category.filterValue, item.category) === -1) {
+                    filterReasons["category"] = filterReasons["category"] + 1;
                     return false;
                 }
             }
@@ -511,6 +540,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
                         return item.title.toLowerCase().indexOf(word.toLowerCase()) > -1
                     });
                     if (!containsAtLeastOne) {
+                        filterReasons["quickFilter"] = filterReasons["quickFilter"] + 1;
                         return false;
                     }
                 }
@@ -526,6 +556,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
                 });
 
                 if (!(!anyRequired || containsAtLeastOne)) {
+                    filterReasons["quickFilter"] = filterReasons["quickFilter"] + 1;
                     return false;
                 }
             }
@@ -539,6 +570,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
                     }
                 });
                 if (!(!anyRequired || containsAtLeastOne)) {
+                    filterReasons["quickFilter"] = filterReasons["quickFilter"] + 1;
                     return false;
                 }
             }
@@ -554,12 +586,14 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
                         return item.title.toLowerCase().indexOf(word.toLowerCase()) > -1
                     });
                     if (!containsAtLeastOne) {
+                        filterReasons["quickFilter"] = filterReasons["quickFilter"] + 1;
                         return false;
                     }
                 }
             }
 
             if ($scope.foo.hideAlreadyDownloadedResults && item.downloadedAt !== null) {
+                filterReasons["alreadyDownloaded"] = filterReasons["alreadyDownloaded"] + 1;
                 return false;
             }
 
@@ -707,7 +741,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
 
         $scope.$broadcast("calculateDisplayState");
 
-        return filteredResults;
+        return [filteredResults, filterReasons];
     }
 
     $scope.toggleTitlegroupExpand = function toggleTitlegroupExpand(titleGroup) {
@@ -724,7 +758,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
     function setDataFromSearchResult(data, previousSearchResults) {
         allSearchResults = previousSearchResults.concat(data.searchResults);
         allSearchResults = uniq(allSearchResults);
-        $scope.filteredResults = sortAndFilter(allSearchResults);
+        [$scope.filteredResults, $scope.filterReasons] = sortAndFilter(allSearchResults);
 
         $scope.numberOfAvailableResults = data.numberOfAvailableResults;
         $scope.rejectedReasonsMap = data.rejectedReasonsMap;
@@ -822,6 +856,16 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
                 tooltip += '<tr><td>' + count + '</td><td>' + reason + '</td></tr>';
             });
             tooltip += '</table>';
+            tooltip += '<br>';
+            tooltip += "<span >Filtered results:<span><br>";
+            tooltip += '<table class="rejected-tooltip-table"><thead><tr><th width="50px">Count</th><th>Reason</th></tr></thead>';
+            _.forEach($scope.filterReasons, function (count, reason) {
+                if (count > 0) {
+                    tooltip += '<tr><td>' + count + '</td><td>' + reason + '</td></tr>';
+                }
+            });
+            tooltip += '</table>';
+            tooltip += '<br>'
             return tooltip;
         }
     };

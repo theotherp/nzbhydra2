@@ -5,6 +5,10 @@
       {
         "type": "feature",
         "text": "Debug infos can now be created and directly uploaded to https://ufile.io/ for easier sharing."
+      },
+      {
+        "type": "feature",
+        "text": "The tooltip in the search results for the display of rejected, loaded and filtered results now also shows the number of filtered results for each reason (e.g. x results being too small, y results already downloaded)."
       }
     ],
     "final": true
