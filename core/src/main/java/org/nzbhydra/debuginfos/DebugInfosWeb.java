@@ -91,13 +91,33 @@ public class DebugInfosWeb {
     }
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/debuginfos/logandconfig", produces = "application/zip", method = RequestMethod.GET)
-    public byte[] logAndInfosAsZip() throws IOException {
+    @RequestMapping(value = "/internalapi/debuginfos/createAndProvideZipAsBytes", produces = "application/zip", method = RequestMethod.GET)
+    public byte[] createAndProvideDebugInfos() throws IOException {
         try {
             return debugInfos.getDebugInfosAsZip();
         } catch (IOException e) {
             logger.error("Error while getting debug infos", e);
             throw e;
+        }
+    }
+
+    @Secured({"ROLE_ADMIN"})
+    @RequestMapping(value = "/internalapi/debuginfos/createAndUploadDebugInfos", produces = "text/plain", method = RequestMethod.GET)
+    public String createAndUploadDebugInfos() throws IOException {
+        final File debugInfosZipFile;
+        try {
+            debugInfosZipFile = debugInfos.createDebugInfosZipFile();
+        } catch (IOException e) {
+            logger.error("Error while creating", e);
+            throw e;
+        }
+        try {
+            return UfileUploader.upload(debugInfosZipFile);
+        } catch (IOException e) {
+            logger.error("Error while creating or uploading debug infos", e);
+            throw e;
+        } finally {
+            debugInfosZipFile.delete();
         }
     }
 

@@ -175,6 +175,11 @@ public class DebugInfosProvider {
     }
 
     public byte[] getDebugInfosAsZip() throws IOException {
+        File tempFile = createDebugInfosZipFile();
+        return Files.readAllBytes(tempFile.toPath());
+    }
+
+    public File createDebugInfosZipFile() throws IOException {
         logger.info("Creating debug infos");
         logger.info("NZBHydra2 version: {}", updateManager.getCurrentVersionString());
         logger.info("Java command line: {}", System.getProperty("sun.java.command"));
@@ -241,7 +246,7 @@ public class DebugInfosProvider {
             }
         }
         logger.debug("Finished creating debug infos ZIP");
-        return Files.readAllBytes(tempFile.toPath());
+        return tempFile;
     }
 
     private void logConfigChanges(String anonymizedConfig) throws IOException {

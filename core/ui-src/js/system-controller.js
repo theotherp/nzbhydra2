@@ -88,9 +88,10 @@ function SystemController($scope, $state, activeTab, simpleInfos, $http, growl, 
     };
 
     $scope.downloadDebuggingInfos = function () {
+        $scope.isBackupCreationAction = true;
         $http({
             method: 'GET',
-            url: 'internalapi/debuginfos/logandconfig',
+            url: 'internalapi/debuginfos/createAndProvideZipAsBytes',
             responseType: 'arraybuffer'
         }).then(function (response, status, headers, config) {
             var a = document.createElement('a');
@@ -101,6 +102,21 @@ function SystemController($scope, $state, activeTab, simpleInfos, $http, growl, 
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
+            $scope.isBackupCreationAction = false;
+        });
+    };
+
+    $scope.uploadDebuggingInfos = function () {
+        $scope.isBackupCreationAction = true;
+        $http({
+            method: 'GET',
+            url: 'internalapi/debuginfos/createAndUploadDebugInfos'
+        }).then(function (response) {
+            $scope.debugInfosUrl = 'URL with debug infos: <a href="' + response.data + '" target="_blank">' + response.data + '</a>';
+            $scope.isBackupCreationAction = false;
+        }, function (response) {
+            $scope.debugInfosUrl = response.data;
+            $scope.isBackupCreationAction = false;
         });
     };
 

@@ -11,6 +11,7 @@ import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.ConfigReaderWriter;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.update.UpdateManager;
+import org.nzbhydra.webaccess.HydraOkHttp3ClientHttpRequestFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,6 +62,8 @@ public class BackupAndRestore {
     private ConfigProvider configProvider;
     @Autowired
     private UpdateManager updateManager;
+    @Autowired
+    private HydraOkHttp3ClientHttpRequestFactory requestFactory;
     private final ConfigReaderWriter configReaderWriter = new ConfigReaderWriter();
 
     @PostConstruct
@@ -107,6 +110,7 @@ public class BackupAndRestore {
         logger.debug(LoggingMarkers.PERFORMANCE, "Creation of backup took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return backupZip;
     }
+
 
     protected void deleteOldBackupFiles(File backupFolder) {
         if (configProvider.getBaseConfig().getMain().getDeleteBackupsAfterWeeks().isPresent()) {
