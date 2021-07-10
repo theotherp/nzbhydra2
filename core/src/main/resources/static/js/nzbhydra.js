@@ -11236,6 +11236,10 @@ function SearchUpdateModalInstanceCtrl($scope, $interval, SearchService, $uibMod
         $uibModalInstance.dismiss();
     };
 
+    $scope.hasResults = function (message) {
+        return /^[^0]\d+.*/.test(message);
+    };
+
 }
 
 angular

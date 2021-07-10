@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -161,6 +162,7 @@ public class SearchWeb {
             SearchState searchState = searchStates.get(event.getSearchRequest().getSearchRequestId());
             if (!searchState.getMessages().contains(event.getMessage())) {
                 searchState.getMessages().add(event.getMessage());
+                searchState.getMessages().sort(Comparator.naturalOrder());
                 sendSearchState(searchState);
             }
             lock.unlock();

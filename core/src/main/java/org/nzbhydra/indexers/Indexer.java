@@ -131,9 +131,9 @@ public abstract class Indexer<T> {
 
                 searchRequest.getInternalData().setFallbackStateByIndexer(getName(), FallbackState.REQUESTED);
                 indexerSearchResult = searchInternal(searchRequest, offset, limit);
-                eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, "Indexer " + getName() + " completed fallback search successfully with " + indexerSearchResult.getTotalResults() + " total results"));
+                eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, indexerSearchResult.getTotalResults() + " results via fallback search from " + getName()));
             } else {
-                eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, "Indexer " + getName() + " completed search successfully with " + indexerSearchResult.getTotalResults() + " total results"));
+                eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, indexerSearchResult.getTotalResults() + " results via search from " + getName()));
 
             }
 

@@ -9,6 +9,10 @@
       {
         "type": "feature",
         "text": "The tooltip in the search results for the display of rejected, loaded and filtered results now also shows the number of filtered results for each reason (e.g. x results being too small, y results already downloaded)."
+      },
+      {
+        "type": "feature",
+        "text": "The \"Searching... please wait\" box now highlight indexer searches that produced results. The messages are also sorted by indexer name and start with the number of results to allow easier reading. See #696."
       }
     ],
     "final": true
