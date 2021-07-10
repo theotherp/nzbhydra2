@@ -42,35 +42,35 @@ if not "%ERRORLEVEL%" == "0" (
 )
 
 echo Running clean
-call mvn -pl "!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin,!org.nzbhydra:discordbot" clean
+call mvn -T 1C -pl "!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin,!org.nzbhydra:discordbot" clean
 if not "%ERRORLEVEL%" == "0" (
     echo Error during clean
     goto error
 )
 
 echo Setting release version
-call mvn versions:set -DnewVersion=%1
+call mvn -T 1C versions:set -DnewVersion=%1
 if not "%ERRORLEVEL%" == "0" (
     echo Error setting release version
     goto error
 )
 
 echo Checking preconditions
-call mvn org.nzbhydra:github-release-plugin:1.0.0:precheck
+call mvn -T 1C org.nzbhydra:github-release-plugin:1.0.0:precheck
 if not "%ERRORLEVEL%" == "0" (
     echo Error during release precheck
     goto error
 )
 
 echo Generating changelog
-call mvn org.nzbhydra:github-release-plugin:1.0.0:generate-changelog
+call mvn -T 1C org.nzbhydra:github-release-plugin:1.0.0:generate-changelog
 if not "%ERRORLEVEL%" == "0" (
     echo Error generating changelog
     goto error
 )
 
 echo Generating wrapper hashes
-call mvn org.nzbhydra:github-release-plugin:1.0.0:generate-wrapper-hashes
+call mvn -T 1C org.nzbhydra:github-release-plugin:1.0.0:generate-wrapper-hashes
 if not "%ERRORLEVEL%" == "0" (
     echo Error generating wrapper hashes
     goto error
@@ -78,9 +78,9 @@ if not "%ERRORLEVEL%" == "0" (
 
 echo Running install
 if "%3" == "skiptests" (
-    call mvn -pl "!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin,!org.nzbhydra:discordbot" install -DskipTests=true
+    call mvn -T 1C -pl "!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin,!org.nzbhydra:discordbot" install -DskipTests=true
 ) else (
-    call mvn -pl "!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin,!org.nzbhydra:discordbot" install
+    call mvn -T 1C -pl "!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin,!org.nzbhydra:discordbot" install
 )
 if not "%ERRORLEVEL%" == "0" (
     echo Error during install
@@ -88,7 +88,7 @@ if not "%ERRORLEVEL%" == "0" (
 )
 
 echo Making version effective ***********************************************************************
-call mvn versions:commit
+call mvn -T 1C versions:commit
 if not "%ERRORLEVEL%" == "0" (
     echo Error setting version effective
     goto error
@@ -120,7 +120,7 @@ if not "%ERRORLEVEL%" == "0" (
 
 :release
 echo Releasing to GitHub ***********************************************************************
-call mvn org.nzbhydra:github-release-plugin:1.0.0:release
+call mvn -T 1C org.nzbhydra:github-release-plugin:1.0.0:release
 if not "%ERRORLEVEL%" == "0" (
     echo Error releasing to github
     goto error
@@ -128,7 +128,7 @@ if not "%ERRORLEVEL%" == "0" (
 
 :newsnapshot
 echo Setting new snapshot version ***********************************************************************
-call mvn versions:set -DnewVersion=%2-SNAPSHOT
+call mvn -T 1C versions:set -DnewVersion=%2-SNAPSHOT
 if not "%ERRORLEVEL%" == "0" (
     echo Error setting new snapshot
     goto error
@@ -136,7 +136,7 @@ if not "%ERRORLEVEL%" == "0" (
 
 :effective
 echo Making snapshot version effective ***********************************************************************
-call mvn versions:commit
+call mvn -T 1C versions:commit
 if not "%ERRORLEVEL%" == "0" (
     echo Error setting version effective
     goto error
@@ -144,7 +144,7 @@ if not "%ERRORLEVEL%" == "0" (
 
 :buildnewversions
 echo Building new versions ***********************************************************************
-call mvn -T 2 -pl "!org.nzbhydra:tests,!org.nzbhydra:linux-release,!org.nzbhydra:windows-release,!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin,!org.nzbhydra:discordbot" install -DskipTests=true
+call mvn -T 1C -pl "!org.nzbhydra:tests,!org.nzbhydra:linux-release,!org.nzbhydra:windows-release,!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin,!org.nzbhydra:discordbot" install -DskipTests=true
 if not "%ERRORLEVEL%" == "0" (
     echo Error building new versions
     goto error
