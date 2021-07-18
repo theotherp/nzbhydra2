@@ -29,6 +29,11 @@ public class WebAccessException extends IOException {
         this.message = e.getMessage();
     }
 
+    public WebAccessException(String errorMessage) {
+        super(errorMessage);
+        this.message = errorMessage;
+    }
+
     public WebAccessException(String responseMessage, String body, int code) {
         this.message = responseMessage;
         this.body = body;

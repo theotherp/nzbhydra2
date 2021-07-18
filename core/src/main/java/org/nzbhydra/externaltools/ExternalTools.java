@@ -241,7 +241,7 @@ public class ExternalTools {
         xdarrAddRequest.setEnableRss(addRequest.isEnableRss());
         xdarrAddRequest.setImplementation(backendType == BackendType.Newznab ? "Newznab" : "Torznab");
         xdarrAddRequest.setImplementationName(backendType == BackendType.Newznab ? "Newznab" : "Torznab");
-        xdarrAddRequest.setInfoLink("https://github.com/Sonarr/Sonarr/wiki/Supported-Indexers#newznab");
+        xdarrAddRequest.setInfoLink("https://wiki.servarr.com/Sonarr_Supported_Indexers");
         String nameInXdarr = addRequest.getNzbhydraName();
         if (addRequest.getAddType() == AddRequest.AddType.SINGLE && addRequest.isConfigureForTorrents() && addRequest.isConfigureForUsenet()) {
             nameInXdarr += " (" + backendType.name() + ")";
@@ -358,7 +358,11 @@ public class ExternalTools {
 
             response = webAccess.postToUrl(url, MediaType.get("application/json"), body, getAuthHeaders(addRequest), 10);
             logger.debug(LoggingMarkers.EXTERNAL_TOOLS, "Received response body: {}", response);
-
+            if (response == null) {
+                throw new WebAccessException("No response available from tool");
+            } else if (response.startsWith("[")) {
+                throw new WebAccessException("If you configured " + addRequest.getExternalTool().name() + " to use an URL base make sure to add it in the URL.");
+            }
             final Map requestResponse = Jackson.JSON_MAPPER.readValue(response, Map.class);
             messages.add("Configured \"" + nameInXdarr + "\"");
         } catch (WebAccessException e) {
