@@ -126,14 +126,14 @@ public abstract class Indexer<T> {
 
                 //Search should be shown as successful (albeit empty) and should result in the number of expected finished searches to be increased
                 eventPublisher.publishEvent(new IndexerSearchFinishedEvent(searchRequest));
-                eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, "Indexer " + getName() + " did not return any results. Will do a fallback search"));
+                eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, "Indexer " + getName() + " did not return any results. Will do a fallback search", getName()));
                 eventPublisher.publishEvent(new FallbackSearchInitiatedEvent(searchRequest));
 
                 searchRequest.getInternalData().setFallbackStateByIndexer(getName(), FallbackState.REQUESTED);
                 indexerSearchResult = searchInternal(searchRequest, offset, limit);
-                eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, indexerSearchResult.getTotalResults() + " results via fallback search from " + getName()));
+                eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, indexerSearchResult.getTotalResults() + " results via fallback search from " + getName(), getName()));
             } else {
-                eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, indexerSearchResult.getTotalResults() + " results via search from " + getName()));
+                eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, indexerSearchResult.getTotalResults() + " results via search from " + getName(), getName()));
 
             }
 
@@ -144,18 +144,18 @@ public abstract class Indexer<T> {
         } catch (IndexerSearchAbortedException e) {
             warn("Unexpected error while preparing search: " + e.getMessage());
             indexerSearchResult = new IndexerSearchResult(this, e.getMessage());
-            eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, "Unexpected error while preparing search for indexer " + getName()));
+            eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, "Unexpected error while preparing search for indexer " + getName(), getName()));
         } catch (IndexerAccessException e) {
             handleIndexerAccessException(e, IndexerApiAccessType.SEARCH);
             indexerSearchResult = new IndexerSearchResult(this, e.getMessage());
-            eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, "Error while accessing indexer " + getName()));
+            eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, "Error while accessing indexer " + getName(), getName()));
         } catch (Exception e) {
             if (e.getCause() instanceof InterruptedException) {
                 debug("Hydra was shut down, ignoring InterruptedException");
                 indexerSearchResult = new IndexerSearchResult(this, e.getMessage());
             } else {
                 error("Unexpected error while searching", e);
-                eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, "Unexpected error while searching indexer " + getName()));
+                eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, "Unexpected error while searching indexer " + getName(), getName()));
                 try {
                     handleFailure(e.getMessage(), false, IndexerApiAccessType.SEARCH, null, IndexerAccessResult.CONNECTION_ERROR); //LATER depending on type of error, perhaps not at all because it might be a bug
                 } catch (Exception e1) {

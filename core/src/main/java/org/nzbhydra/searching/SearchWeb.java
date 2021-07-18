@@ -3,7 +3,6 @@ package org.nzbhydra.searching;
 import com.google.common.base.Splitter;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
-import lombok.Data;
 import net.jodah.expiringmap.ExpirationPolicy;
 import net.jodah.expiringmap.ExpiringMap;
 import org.nzbhydra.config.category.Category;
@@ -29,9 +28,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
@@ -162,7 +160,7 @@ public class SearchWeb {
             SearchState searchState = searchStates.get(event.getSearchRequest().getSearchRequestId());
             if (!searchState.getMessages().contains(event.getMessage())) {
                 searchState.getMessages().add(event.getMessage());
-                searchState.getMessages().sort(Comparator.naturalOrder());
+                searchState.getMessages().sort(Comparator.comparing(x -> x.getMessageSortValue().toLowerCase(Locale.ROOT)));
                 sendSearchState(searchState);
             }
             lock.unlock();
@@ -201,21 +199,6 @@ public class SearchWeb {
             searchState.setIndexersFinished(searchState.getIndexersFinished() + 1);
             lock.unlock();
             sendSearchState(searchState);
-        }
-    }
-
-    @Data
-    private static class SearchState {
-
-        private long searchRequestId;
-        private boolean indexerSelectionFinished = false;
-        private boolean searchFinished = false;
-        private int indexersSelected = 0;
-        private int indexersFinished = 0;
-        private List<String> messages = new ArrayList<>();
-
-        public SearchState(long searchRequestId) {
-            this.searchRequestId = searchRequestId;
         }
     }
 

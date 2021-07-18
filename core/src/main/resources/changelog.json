@@ -5,6 +5,10 @@
       {
         "type": "feature",
         "text": "When configuring an external tool like sonarr and forgetting to provide its URL base in the URL it will return a misleading response. Hydra will now recognize this case and show a helpful message."
+      },
+      {
+        "type": "bug",
+        "text": "Fix sorting of search state messages."
       }
     ],
     "final": true

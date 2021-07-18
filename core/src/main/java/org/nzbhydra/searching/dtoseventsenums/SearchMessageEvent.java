@@ -19,6 +19,7 @@ package org.nzbhydra.searching.dtoseventsenums;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.nzbhydra.searching.SortableMessage;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 
 @Data
@@ -27,6 +28,16 @@ import org.nzbhydra.searching.searchrequests.SearchRequest;
 public class SearchMessageEvent {
 
     private SearchRequest searchRequest;
-    private String message;
+    private SortableMessage message;
+
+    public SearchMessageEvent(SearchRequest searchRequest, String message) {
+        this.searchRequest = searchRequest;
+        this.message = new SortableMessage(message, message);
+    }
+
+    public SearchMessageEvent(SearchRequest searchRequest, String message, String messageSortValue) {
+        this.searchRequest = searchRequest;
+        this.message = new SortableMessage(message, messageSortValue);
+    }
 
 }
