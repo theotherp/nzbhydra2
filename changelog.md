@@ -1,3 +1,13 @@
+### v3.15.1 (2021-08-05)
+
+**Feature** When configuring an external tool like sonarr and forgetting to provide its URL base in the URL it will return a misleading response. Hydra will now recognize this case and show a helpful message.
+
+**Bug** Fix sorting of search state messages.
+
+**Bug** Log to browser console which quick filters don't match a result. This will help with debugging some issues in this area.
+
+
+
 ### v3.15.0 (2021-07-10)
 
 **Feature** Debug infos can now be created and directly uploaded to https://ufile.io/ for easier sharing.
