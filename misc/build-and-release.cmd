@@ -49,28 +49,28 @@ if not "%ERRORLEVEL%" == "0" (
 )
 
 echo Setting release version
-call mvn -T 1C versions:set -DnewVersion=%1
+call mvn versions:set -DnewVersion=%1
 if not "%ERRORLEVEL%" == "0" (
     echo Error setting release version
     goto error
 )
 
 echo Checking preconditions
-call mvn -T 1C org.nzbhydra:github-release-plugin:1.0.0:precheck
+call mvn org.nzbhydra:github-release-plugin:1.0.0:precheck
 if not "%ERRORLEVEL%" == "0" (
     echo Error during release precheck
     goto error
 )
 
 echo Generating changelog
-call mvn -T 1C org.nzbhydra:github-release-plugin:1.0.0:generate-changelog
+call mvn org.nzbhydra:github-release-plugin:1.0.0:generate-changelog
 if not "%ERRORLEVEL%" == "0" (
     echo Error generating changelog
     goto error
 )
 
 echo Generating wrapper hashes
-call mvn -T 1C org.nzbhydra:github-release-plugin:1.0.0:generate-wrapper-hashes
+call mvn org.nzbhydra:github-release-plugin:1.0.0:generate-wrapper-hashes
 if not "%ERRORLEVEL%" == "0" (
     echo Error generating wrapper hashes
     goto error
@@ -88,7 +88,7 @@ if not "%ERRORLEVEL%" == "0" (
 )
 
 echo Making version effective ***********************************************************************
-call mvn -T 1C versions:commit
+call mvn versions:commit
 if not "%ERRORLEVEL%" == "0" (
     echo Error setting version effective
     goto error
@@ -120,7 +120,7 @@ if not "%ERRORLEVEL%" == "0" (
 
 :release
 echo Releasing to GitHub ***********************************************************************
-call mvn -T 1C org.nzbhydra:github-release-plugin:1.0.0:release
+call mvn org.nzbhydra:github-release-plugin:1.0.0:release
 if not "%ERRORLEVEL%" == "0" (
     echo Error releasing to github
     goto error
@@ -128,7 +128,7 @@ if not "%ERRORLEVEL%" == "0" (
 
 :newsnapshot
 echo Setting new snapshot version ***********************************************************************
-call mvn -T 1C versions:set -DnewVersion=%2-SNAPSHOT
+call mvn versions:set -DnewVersion=%2-SNAPSHOT
 if not "%ERRORLEVEL%" == "0" (
     echo Error setting new snapshot
     goto error
@@ -136,7 +136,7 @@ if not "%ERRORLEVEL%" == "0" (
 
 :effective
 echo Making snapshot version effective ***********************************************************************
-call mvn -T 1C versions:commit
+call mvn versions:commit
 if not "%ERRORLEVEL%" == "0" (
     echo Error setting version effective
     goto error
