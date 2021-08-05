@@ -89,6 +89,17 @@ public class ExternalTools {
                 return false;
             }
 
+            if (addRequest.isConfigureForUsenet()) {
+                final boolean anyUsenetIndexerEnabled = configProvider.getBaseConfig().getIndexers().stream()
+                        .filter(x -> x.getEnabledForSearchSource().meets(SearchRequest.SearchSource.API))
+                        .filter(x -> x.getState() == IndexerConfig.State.ENABLED)
+                        .anyMatch(x -> x.getSearchModuleType() != SearchModuleType.TORZNAB);
+                if (!anyUsenetIndexerEnabled) {
+                    messages.add("You selected to add NZBHydra as a usenet indexer but no usened indexers are enabled (for API access)");
+                    return false;
+                }
+            }
+
             if (deleteIndexers(addRequest)) {
                 return false;
             }

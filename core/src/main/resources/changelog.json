@@ -9,6 +9,10 @@
       {
         "type": "bug",
         "text": "Fix sorting of search state messages."
+      },
+      {
+        "type": "bug",
+        "text": "Log to browser console which quick filters don't match a result. This will help with debugging some issues in this area."
       }
     ],
     "final": true

@@ -1,0 +1,1 @@
+c:\Programme\graalvm-ce-java11-20.3.0\bin\native-image.cmd -jar c:\Users\strat\IdeaProjects\nzbhydra2\core\target\core-3.8.1-SNAPSHOT-exec.jar nzbhydra2ni

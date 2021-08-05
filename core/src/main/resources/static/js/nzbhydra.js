@@ -9929,7 +9929,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
                     filterReasons["title"] = filterReasons["title"] + 1;
                     return false;
                 }
-
             }
             if ("indexer" in $scope.filterModel) {
                 if (_.indexOf($scope.filterModel.indexer.filterValue, item.indexer) === -1) {
@@ -9955,55 +9954,67 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
                         return item.title.toLowerCase().indexOf(word.toLowerCase()) > -1
                     });
                     if (!containsAtLeastOne) {
+                        console.debug(item.title + " does not contain any of the words " + JSON.stringify(mustContain));
                         filterReasons["quickFilter"] = filterReasons["quickFilter"] + 1;
                         return false;
                     }
                 }
             }
             if ($scope.filterButtonsModel.quality !== null && !_.isEmpty($scope.filterButtonsModel.quality)) {
-                containsAtLeastOne = false;
-                var anyRequired = false;
-                _.each($scope.filterButtonsModel.quality, function (value, key) { //key is something like 'q720p', value is true or false. We need to remove the "q" which is there because keys may not start with a digit
-                    anyRequired = anyRequired || value;
-                    if (value && item.title.toLowerCase().indexOf(key.substring(1).toLowerCase()) > -1) {
-                        containsAtLeastOne = true;
-                    }
-                });
+                //key is something like 'q720p', value is true or false.
+                var requiresAnyOf = _.keys(_.pick($scope.filterButtonsModel.quality, function (value, key) {
+                    return value
+                }));
+                if (requiresAnyOf.length === 0) {
+                    return true;
+                }
 
-                if (!(!anyRequired || containsAtLeastOne)) {
+                var containsAtLeastOne = _.any(requiresAnyOf, function (required) {
+                    if (item.title.toLowerCase().indexOf(required.substring(1).toLowerCase()) > -1) {
+                        //We need to remove the "q" which is there because keys may not start with a digit
+                        return true;
+                    }
+                })
+                if (!containsAtLeastOne) {
+                    console.debug(item.title + " does not contain any of the qualities " + JSON.stringify(requiresAnyOf));
                     filterReasons["quickFilter"] = filterReasons["quickFilter"] + 1;
                     return false;
                 }
             }
             if ($scope.filterButtonsModel.other !== null && !_.isEmpty($scope.filterButtonsModel.other)) {
-                containsAtLeastOne = false;
-                var anyRequired = false;
-                _.each($scope.filterButtonsModel.other, function (value, key) { //key is something like 'hevc', value is true or false
-                    anyRequired = anyRequired || value;
-                    if (value && item.title.toLowerCase().indexOf(key.toLowerCase()) > -1) {
-                        containsAtLeastOne = true;
+                var requiresAnyOf = _.keys(_.pick($scope.filterButtonsModel.other, function (value, key) {
+                    return value
+                }));
+                if (requiresAnyOf.length === 0) {
+                    return true;
+                }
+                var containsAtLeastOne = _.any(requiresAnyOf, function (required) {
+                    if (item.title.toLowerCase().indexOf(required.toLowerCase()) > -1) {
+                        return true;
                     }
-                });
-                if (!(!anyRequired || containsAtLeastOne)) {
+                })
+                if (!containsAtLeastOne) {
+                    console.debug(item.title + " does not contain any of the 'other' values " + JSON.stringify(requiresAnyOf));
                     filterReasons["quickFilter"] = filterReasons["quickFilter"] + 1;
                     return false;
                 }
             }
             if ($scope.filterButtonsModel.custom !== null && !_.isEmpty($scope.filterButtonsModel.custom)) {
-                mustContain = [];
-                _.each($scope.filterButtonsModel.custom, function (value, key) { //key is something like 'camts', value is true or false
-                    if (value) {
-                        Array.prototype.push.apply(mustContain, $scope.filterButtonsModelMap[key]);
+                var requiresAnyOf = _.keys(_.pick($scope.filterButtonsModel.custom, function (value, key) {
+                    return value
+                }));
+                if (requiresAnyOf.length === 0) {
+                    return true;
+                }
+                var containsAtLeastOne = _.any(requiresAnyOf, function (required) {
+                    if (item.title.toLowerCase().indexOf(required.toLowerCase()) > -1) {
+                        return true;
                     }
-                });
-                if (mustContain.length > 0) {
-                    containsAtLeastOne = _.any(mustContain, function (word) {
-                        return item.title.toLowerCase().indexOf(word.toLowerCase()) > -1
-                    });
-                    if (!containsAtLeastOne) {
-                        filterReasons["quickFilter"] = filterReasons["quickFilter"] + 1;
-                        return false;
-                    }
+                })
+                if (!containsAtLeastOne) {
+                    console.debug(item.title + " does not contain any of the custom values' " + JSON.stringify(requiresAnyOf));
+                    filterReasons["quickFilter"] = filterReasons["quickFilter"] + 1;
+                    return false;
                 }
             }
 
