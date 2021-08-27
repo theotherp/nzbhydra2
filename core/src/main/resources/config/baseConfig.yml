@@ -275,13 +275,13 @@ main:
   backupFolder: "backup"
   backupEveryXDays: 7
   backupBeforeUpdate: true
-  configVersion: 17
+  configVersion: 19
   databaseCompactTime: 15000
   databaseRetentionTime: 1000
   databaseWriteDelay: 5000
   deleteBackupsAfterWeeks: 4
   disableSslLocally: false
-  dereferer: "http://www.dereferer.org/?$s"
+  dereferer: null
   host: "0.0.0.0"
   instanceCounterDownloaded: false
   keepHistory: true

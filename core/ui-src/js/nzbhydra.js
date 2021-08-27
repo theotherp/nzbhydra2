@@ -785,7 +785,9 @@ nzbhydraapp.run(function ($rootScope) {
 nzbhydraapp.filter('dereferer', function (ConfigService) {
     return function (url) {
         if (ConfigService.getSafe().dereferer) {
-            return ConfigService.getSafe().dereferer.replace("$s", escape(url));
+            return ConfigService.getSafe().dereferer
+                .replace("$s", escape(url))
+                .replace("$us", url);
         }
         return url;
     }
@@ -801,7 +803,10 @@ nzbhydraapp.filter('derefererExtracting', function (ConfigService) {
             return aString;
         }
 
-        aString = aString.replace(matches[0], ConfigService.getSafe().dereferer.replace("$s", escape(matches[0])))
+        aString = aString
+            .replace(matches[0], ConfigService.getSafe().dereferer.replace("$s", escape(matches[0])))
+            .replace(matches[0], ConfigService.getSafe().dereferer.replace("$us", matches[0]))
+        ;
 
         return aString;
     }

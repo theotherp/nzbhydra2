@@ -785,7 +785,9 @@ nzbhydraapp.run(["$rootScope", function ($rootScope) {
 nzbhydraapp.filter('dereferer', ["ConfigService", function (ConfigService) {
     return function (url) {
         if (ConfigService.getSafe().dereferer) {
-            return ConfigService.getSafe().dereferer.replace("$s", escape(url));
+            return ConfigService.getSafe().dereferer
+                .replace("$s", escape(url))
+                .replace("$us", url);
         }
         return url;
     }
@@ -801,7 +803,10 @@ nzbhydraapp.filter('derefererExtracting', ["ConfigService", function (ConfigServ
             return aString;
         }
 
-        aString = aString.replace(matches[0], ConfigService.getSafe().dereferer.replace("$s", escape(matches[0])))
+        aString = aString
+            .replace(matches[0], ConfigService.getSafe().dereferer.replace("$s", escape(matches[0])))
+            .replace(matches[0], ConfigService.getSafe().dereferer.replace("$us", matches[0]))
+        ;
 
         return aString;
     }
@@ -6147,7 +6152,7 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'text',
                                 label: 'Dereferer',
-                                help: 'Redirect external links to hide your instance. Insert $s for target URL. Use empty value to disable.',
+                                help: 'Redirect external links to hide your instance. Insert $s for escaped target URL and $us for unescaped target URL. Use empty value to disable.',
                                 advanced: true
                             }
                         },

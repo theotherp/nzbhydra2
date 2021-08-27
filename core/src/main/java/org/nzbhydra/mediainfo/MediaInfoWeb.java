@@ -4,6 +4,7 @@ import com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.net.UrlEscapers;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -82,7 +83,10 @@ public class MediaInfoWeb {
                 url = "https://www.tvmaze.com/shows/" + mediaInfo.getTvMazeId().get();
                 Optional<String> derefererOptional = configProvider.getBaseConfig().getMain().getDereferer();
                 if (derefererOptional.isPresent() && !Strings.isNullOrEmpty(derefererOptional.get())) {
-                    url = derefererOptional.get().replace("$s", url);
+                    url = derefererOptional.get()
+                            .replace("$s", UrlEscapers.urlFragmentEscaper().escape(url))
+                            .replace("$us", url)
+                    ;
                 }
             }
         } catch (InfoProviderException e) {

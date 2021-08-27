@@ -272,7 +272,9 @@ public class UpdateManager implements InitializingBean {
         if (matcher.find()) {
             String link = "https://github.com/theotherp/nzbhydra2/issues/" + matcher.group(1);
             if (configProvider.getBaseConfig().getMain().getDereferer().isPresent()) {
-                link = configProvider.getBaseConfig().getMain().getDereferer().get().replace("$s", UrlEscapers.urlFragmentEscaper().escape(link));
+                link = configProvider.getBaseConfig().getMain().getDereferer().get()
+                        .replace("$s", UrlEscapers.urlFragmentEscaper().escape(link)
+                                .replace("$us", link));
             }
             return entry.getText().replace(matcher.group(), "<a href=\"" + link + "\" target=\"_blank\">" + matcher.group() + "</a>");
 

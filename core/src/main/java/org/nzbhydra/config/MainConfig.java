@@ -28,7 +28,7 @@ public class MainConfig extends ValidatingConfig<MainConfig> {
 
     private static final Logger logger = LoggerFactory.getLogger(MainConfig.class);
 
-    private Integer configVersion = 18;
+    private Integer configVersion = 19;
 
     //Hosting settings
     @RestartRequired
