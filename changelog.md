@@ -1,3 +1,9 @@
+### v3.15.2 (2021-08-27)
+
+**Bug** Remove dereferer.org from preset config and from any instances still using it. Modern browsers all support the Referrer-Policy header that is set by NZBHydra anyway.
+
+
+
 ### v3.15.1 (2021-08-05)
 
 **Feature** When configuring an external tool like sonarr and forgetting to provide its URL base in the URL it will return a misleading response. Hydra will now recognize this case and show a helpful message.
