@@ -1,3 +1,13 @@
+### v3.16.0 BETA (2021-09-25)
+
+**Feature** Add support for Java 16. Please not that there's no reason for you to just willy-nilly update the java major version (e.g. 11 to 16). Newer releases are not automatically better or safer. Installing patches (e.g. Java 11.0.0 to Java 11.0.2 or such) is enough. Java 17 is still not supported.
+
+**Feature** Add "-xpost" to the list of trailing words to remove.
+
+**Bug** Make checkboxes and radioboxes grayscale because new browsers show them in weird blue.
+
+
+
 ### v3.15.2 (2021-08-27)
 
 **Bug** Remove dereferer.org from preset config and from any instances still using it. Modern browsers all support the Referrer-Policy header that is set by NZBHydra anyway.
