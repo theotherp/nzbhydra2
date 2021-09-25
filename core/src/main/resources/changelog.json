@@ -3,6 +3,10 @@
     "version": "v3.15.3",
     "changes": [
       {
+        "type": "feature",
+        "text": "Add \"-xpost\" to the list of trailing words to remove."
+      },
+      {
         "type": "bug",
         "text": "Make checkboxes and radioboxes grayscale because new browsers show them in weird blue."
       }
