@@ -78,10 +78,10 @@
     </profiles>
 
     <properties>
-        <spring.boot.version>2.3.1.RELEASE</spring.boot.version>
-        <spring.oxm.version>5.2.7.RELEASE</spring.oxm.version>
-        <spring.test.version>5.2.0.RELEASE</spring.test.version>
-        <spring.security.test.version>5.3.3.RELEASE</spring.security.test.version>
+        <spring.boot.version>2.5.5</spring.boot.version>
+        <spring.oxm.version>5.3.10</spring.oxm.version>
+        <spring.test.version>5.3.10</spring.test.version>
+        <spring.security.test.version>5.5.2</spring.security.test.version>
         <jackson.version>2.9.8</jackson.version>
         <lombok.version>1.18.2</lombok.version>
         <logback.version>1.2.3</logback.version>
@@ -92,14 +92,17 @@
         <commons-lang3.version>3.7</commons-lang3.version>
         <commons-io.version>2.6</commons-io.version>
         <flyway-core.version>6.2.0</flyway-core.version>
-        <jaxb.sun.core.version>2.3.0</jaxb.sun.core.version>
-        <jaxb.sun.impl.version>2.3.0</jaxb.sun.impl.version>
+        <jaxb.sun.api.version>2.3.1</jaxb.sun.api.version>
+        <jaxb.sun.core.version>3.0.2</jaxb.sun.core.version>
+        <jaxb.sun.impl.version>3.0.2</jaxb.sun.impl.version>
+
         <maven.compiler.plugin.version>3.6.2</maven.compiler.plugin.version>
+        <uri-scheme-handler.version>2.0.0</uri-scheme-handler.version>
+
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.javadoc.skip>true</maven.javadoc.skip>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <uri-scheme-handler.version>2.0.0</uri-scheme-handler.version>
     </properties>
 
 

@@ -26,7 +26,7 @@ Honest recommendation: If you don't understand what any or most of that means th
 
 ## How to Run
 
-You need Java (at least 8, at most 15). If you don't have an up-to-date Java installation install [OpenJDK](https://adoptopenjdk.net/?variant=openjdk8&jvmVariant=openj9).
+You need Java (at least 8, at most 16). If you don't have an up-to-date Java installation install [OpenJDK](https://adoptopenjdk.net/?variant=openjdk8&jvmVariant=openj9).
 
 Download the [latest release of NZBHydra 2](https://github.com/theotherp/nzbhydra2/releases/latest) for your platform ("linux" is any platform but windows). Extract it anywhere (the zip does not include a base directory) and start using the
 appropriate way:
