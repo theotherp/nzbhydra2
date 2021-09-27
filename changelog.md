@@ -1,16 +1,12 @@
+### v3.16.2 BETA (2021-09-27)
+
+**Bug** Fix missing quotation mark in base config (only used for new installations).
+
+
+
 ### v3.16.1 BETA (2021-09-27)
 
 **Bug** Roll back release of 3.16.0 because of some problems with form based logins which need some more analysis.
-
-
-
-### v3.16.0 BETA (2021-09-25)
-
-**Feature** Add support for Java 16. Please not that there's no reason for you to just willy-nilly update the java major version (e.g. 11 to 16). Newer releases are not automatically better or safer. Installing patches (e.g. Java 11.0.0 to Java 11.0.2 or such) is enough. Java 17 is still not supported.
-
-**Feature** Add "-xpost" to the list of trailing words to remove.
-
-**Bug** Make checkboxes and radioboxes grayscale because new browsers show them in weird blue.
 
 
 
