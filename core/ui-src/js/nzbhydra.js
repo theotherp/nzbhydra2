@@ -627,7 +627,7 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
             url: "/login",
             views: {
                 'container@': {
-                    templateUrl: "static/html/states/login",
+                    templateUrl: "static/html/states/login.html",
                     controller: "LoginController",
                     resolve: {
                         loginRequired: function () {
