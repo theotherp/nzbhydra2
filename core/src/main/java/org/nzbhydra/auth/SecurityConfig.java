@@ -79,7 +79,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     .authorizeRequests()
                     .antMatchers("/internalapi/userinfos").permitAll()
                     .and()
-                    .formLogin().loginPage("/login.html").loginProcessingUrl("/login").permitAll()
+                    .formLogin().loginPage("/login").loginProcessingUrl("/login").permitAll()
                     .authenticationDetailsSource(new WebAuthenticationDetailsSource() {
                         @Override
                         public WebAuthenticationDetails buildDetails(HttpServletRequest context) {

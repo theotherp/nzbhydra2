@@ -1,34 +1,64 @@
-[ {
-  "version" : "v3.16.0",
-  "date" : "2021-09-25",
-  "changes" : [ {
-    "type" : "feature",
-    "text" : "Add support for Java 16. Please not that there's no reason for you to just willy-nilly update the java major version (e.g. 11 to 16). Newer releases are not automatically better or safer. Installing patches (e.g. Java 11.0.0 to Java 11.0.2 or such) is enough. Java 17 is still not supported."
-  }, {
-    "type" : "feature",
-    "text" : "Add \"-xpost\" to the list of trailing words to remove."
-  }, {
-    "type" : "bug",
-    "text" : "Make checkboxes and radioboxes grayscale because new browsers show them in weird blue."
-  } ],
-  "final" : false
-}, {
-  "version" : "v3.15.2",
-  "date" : "2021-08-27",
-  "changes" : [ {
-    "type" : "bug",
-    "text" : "Remove dereferer.org from preset config and from any instances still using it. Modern browsers all support the Referrer-Policy header that is set by NZBHydra anyway."
-  } ],
-  "final" : true
-}, {
-  "version" : "v3.15.1",
-  "date" : "2021-08-05",
-  "changes" : [ {
-    "type" : "feature",
-    "text" : "When configuring an external tool like sonarr and forgetting to provide its URL base in the URL it will return a misleading response. Hydra will now recognize this case and show a helpful message."
-  }, {
-    "type" : "bug",
-    "text" : "Fix sorting of search state messages."
+[
+  {
+    "version": "v3.16.0",
+    "date": "2021-09-25",
+    "changes": [
+      {
+        "type": "feature",
+        "text": "Add support for Java 16. Please not that there's no reason for you to just willy-nilly update the java major version (e.g. 11 to 16). Newer releases are not automatically better or safer. Installing patches (e.g. Java 11.0.0 to Java 11.0.2 or such) is enough. Java 17 is still not supported."
+      },
+      {
+        "type": "feature",
+        "text": "Add \"-xpost\" to the list of trailing words to remove."
+      },
+      {
+        "type": "bug",
+        "text": "Make checkboxes and radioboxes grayscale because new browsers show them in weird blue."
+      }
+    ],
+    "final": false
+  },
+  {
+    "version": "v3.16.0",
+    "date": "2021-09-25",
+    "changes": [
+      {
+        "type": "feature",
+        "text": "Add support for Java 16. Please not that there's no reason for you to just willy-nilly update the java major version (e.g. 11 to 16). Newer releases are not automatically better or safer. Installing patches (e.g. Java 11.0.0 to Java 11.0.2 or such) is enough. Java 17 is still not supported."
+      },
+      {
+        "type": "feature",
+        "text": "Add \"-xpost\" to the list of trailing words to remove."
+      },
+      {
+        "type": "bug",
+        "text": "Make checkboxes and radioboxes grayscale because new browsers show them in weird blue."
+      }
+    ],
+    "final": false
+  },
+  {
+    "version": "v3.15.2",
+    "date": "2021-08-27",
+    "changes": [
+      {
+        "type": "bug",
+        "text": "Remove dereferer.org from preset config and from any instances still using it. Modern browsers all support the Referrer-Policy header that is set by NZBHydra anyway."
+      }
+    ],
+    "final": true
+  },
+  {
+    "version": "v3.15.1",
+    "date": "2021-08-05",
+    "changes": [
+      {
+        "type": "feature",
+        "text": "When configuring an external tool like sonarr and forgetting to provide its URL base in the URL it will return a misleading response. Hydra will now recognize this case and show a helpful message."
+      },
+      {
+        "type": "bug",
+        "text": "Fix sorting of search state messages."
   }, {
     "type" : "bug",
     "text" : "Log to browser console which quick filters don't match a result. This will help with debugging some issues in this area."
