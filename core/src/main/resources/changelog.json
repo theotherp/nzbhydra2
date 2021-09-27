@@ -1,5 +1,15 @@
 [
   {
+    "version": "v3.16.1",
+    "changes": [
+      {
+        "type": "bug",
+        "text": "Roll back release of 3.16.0 because of some problems with form based logins which need some more analysis."
+      }
+    ],
+    "final": false
+  },
+  {
     "version": "v3.16.0",
     "date": "2021-09-25",
     "changes": [
