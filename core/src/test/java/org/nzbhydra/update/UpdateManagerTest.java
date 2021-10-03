@@ -116,17 +116,10 @@ public class UpdateManagerTest {
         assertFalse(testee.isUpdateAvailable());
     }
 
-    @Test
-    public void shouldGetLatestReleaseFromGithub() throws Exception {
-        String latestVersionString = testee.getLatestVersionString();
-        assertEquals("2.0.0", latestVersionString);
 
-        //Should not contact repository again if last request was less than 15 minutes ago
-        testee.getLatestVersionString();
-    }
 
     @Test
-    public void shouldGetAllChangesIncludingPrereleaseWhenRunningFinal() throws Exception {
+    public void shouldGetChangesForVersion() throws Exception {
         //Ensures that when a final version is available the changelog retrieved for the footer also includes the changes from the beta versions before that final version
 
         when(webAccessMock.callUrl(eq("http:/127.0.0.1:7070/changelog"))).thenReturn(
@@ -137,48 +130,15 @@ public class UpdateManagerTest {
                         new ChangelogVersionEntry("1.0.0", null, true, Arrays.asList(new ChangelogChangeEntry("note", "Initial final release")))
                 )));
 
+        testee.currentVersionString = "1.0.0";
         //Should show changes for 1.01 and 2.0.0
-        List<ChangelogVersionEntry> changesSince = testee.getChangesSinceCurrentVersion();
+        List<ChangelogVersionEntry> changesSince = testee.getChangesBetweenCurrentVersionAnd(new SemanticVersion("2.0.0"));
 
         assertEquals(2, changesSince.size());
         assertEquals("2.0.0", changesSince.get(0).getVersion());
         assertEquals("1.0.1", changesSince.get(1).getVersion());
     }
 
-    @Test
-    public void shouldGetAllChangesIncludingPrereleaseWhenInstallingPrereleases() throws Exception {
-        baseConfig.getMain().setUpdateToPrereleases(true);
-
-        when(webAccessMock.callUrl(eq("http:/127.0.0.1:7070/changelog"))).thenReturn(
-                objectMapper.writeValueAsString(Arrays.asList(
-                        new ChangelogVersionEntry("2.0.1", null, false, Arrays.asList(new ChangelogChangeEntry("note", "this is a newer prerelease"))),
-                        new ChangelogVersionEntry("2.0.0", null, true, Arrays.asList(new ChangelogChangeEntry("note", "Next final release"))),
-                        new ChangelogVersionEntry("1.0.1", null, false, Arrays.asList(new ChangelogChangeEntry("note", "A betal release"))),
-                        new ChangelogVersionEntry("1.0.0", null, true, Arrays.asList(new ChangelogChangeEntry("note", "Initial final release")))
-                )));
-
-        List<ChangelogVersionEntry> changesSince = testee.getChangesSinceCurrentVersion();
-
-        assertEquals(3, changesSince.size());
-        assertEquals("2.0.1", changesSince.get(0).getVersion());
-        assertEquals("2.0.0", changesSince.get(1).getVersion());
-        assertEquals("1.0.1", changesSince.get(2).getVersion());
-    }
-
-    @Test
-    public void shouldGetAllChangesWithoutPrerelease() throws Exception {
-        when(webAccessMock.callUrl(eq("http:/127.0.0.1:7070/changelog"))).thenReturn(
-                objectMapper.writeValueAsString(Arrays.asList(
-                        new ChangelogVersionEntry("2.0.1", null, false, Arrays.asList(new ChangelogChangeEntry("note", "this is a newer prerelease"))),
-                        new ChangelogVersionEntry("2.0.0", null, true, Arrays.asList(new ChangelogChangeEntry("note", "Next final release"))),
-                        new ChangelogVersionEntry("1.0.0", null, true, Arrays.asList(new ChangelogChangeEntry("note", "Initial final release")))
-                )));
-
-        List<ChangelogVersionEntry> changesSince = testee.getChangesSinceCurrentVersion();
-
-        assertEquals(1, changesSince.size());
-        assertEquals("2.0.0", changesSince.get(0).getVersion());
-    }
 
 
 }

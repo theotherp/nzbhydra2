@@ -1737,8 +1737,11 @@ function hydraupdates() {
 
         $scope.loadingPromise = UpdateService.getInfos().then(function (response) {
             $scope.currentVersion = response.data.currentVersion;
-            $scope.repVersion = response.data.latestVersion;
+            $scope.latestVersion = response.data.latestVersion;
+            $scope.latestVersionIsBeta = response.data.latestVersionIsBeta;
+            $scope.betaVersion = response.data.betaVersion;
             $scope.updateAvailable = response.data.updateAvailable;
+            $scope.betaUpdateAvailable = response.data.betaUpdateAvailable;
             $scope.latestVersionIgnored = response.data.latestVersionIgnored;
             $scope.changelog = response.data.changelog;
             $scope.runInDocker = response.data.runInDocker;
@@ -1747,22 +1750,24 @@ function hydraupdates() {
             if ($scope.runInDocker && !$scope.showUpdateBannerOnDocker) {
                 $scope.updateAvailable = false;
             }
+            console.log(response.data);
         });
 
         UpdateService.getVersionHistory().then(function (response) {
             $scope.versionHistory = response.data;
         });
 
-        $scope.update = function () {
-            UpdateService.update();
+
+        $scope.update = function (version) {
+            UpdateService.update(version);
         };
 
-        $scope.showChangelog = function () {
-            UpdateService.showChanges($scope.changelog);
+        $scope.showChangelog = function (version) {
+            UpdateService.showChanges(version);
         };
 
         $scope.forceUpdate = function () {
-            UpdateService.update()
+            UpdateService.update($scope.latestVersion)
         };
     }
 }
@@ -2082,6 +2087,7 @@ function hydraChecksFooter() {
                 if (response) {
                     $scope.currentVersion = response.data.currentVersion;
                     $scope.latestVersion = response.data.latestVersion;
+                    $scope.latestVersionIsBeta = response.data.latestVersionIsBeta;
                     $scope.updateAvailable = response.data.updateAvailable;
                     $scope.changelog = response.data.changelog;
                     $scope.runInDocker = response.data.runInDocker;
@@ -2102,7 +2108,7 @@ function hydraChecksFooter() {
         }
 
         $scope.update = function () {
-            UpdateService.update();
+            UpdateService.update($scope.latestVersion);
         };
 
         $scope.ignore = function () {
@@ -2112,7 +2118,7 @@ function hydraChecksFooter() {
         };
 
         $scope.showChangelog = function () {
-            UpdateService.showChanges();
+            UpdateService.showChanges($scope.latestVersion);
         };
 
         $scope.showChangesFromAutomaticUpdate = function () {
@@ -2272,6 +2278,7 @@ function WelcomeModalInstanceCtrl($scope, $uibModalInstance, $state, MigrationSe
         $state.go("root.config.main");
     }
 }
+
 /*
  *  (C) Copyright 2017 TheOtherP (theotherp@posteo.net)
  *
@@ -8524,8 +8531,11 @@ function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandl
 
     var currentVersion;
     var latestVersion;
+    var betaVersion;
     var updateAvailable;
+    var betaUpdateAvailable;
     var latestVersionIgnored;
+    var betaVersionsEnabled;
     var versionHistory;
     var runInDocker;
     var automaticUpdateToNotice;
@@ -8546,8 +8556,11 @@ function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandl
                 function (response) {
                     currentVersion = response.data.currentVersion;
                     latestVersion = response.data.latestVersion;
+                    betaVersion = response.data.betaVersion;
                     updateAvailable = response.data.updateAvailable;
+                    betaUpdateAvailable = response.data.betaUpdateAvailable;
                     latestVersionIgnored = response.data.latestVersionIgnored;
+                    betaVersionsEnabled = response.data.betaVersionsEnabled;
                     runInDocker = response.data.runInDocker;
                     automaticUpdateToNotice = response.data.automaticUpdateToNotice;
                     return response;
@@ -8559,7 +8572,7 @@ function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandl
     }
 
     function ignore(version) {
-        return $http.put("internalapi/updates/ignore?version=" + version).then(function (response) {
+        return $http.put("internalapi/updates/ignore/" + version).then(function (response) {
             return response;
         });
     }
@@ -8571,8 +8584,8 @@ function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandl
         });
     }
 
-    function showChanges() {
-        return $http.get("internalapi/updates/changesSince").then(function (response) {
+    function showChanges(version) {
+        return $http.get("internalapi/updates/changesSince/" + version).then(function (response) {
             var params = {
                 size: "lg",
                 templateUrl: "static/html/changelog-modal.html",
@@ -8623,7 +8636,7 @@ function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandl
     }
 
 
-    function update() {
+    function update(version) {
         var modalInstance = $uibModal.open({
             templateUrl: 'static/html/update-modal.html',
             controller: 'UpdateModalInstanceCtrl',
@@ -8631,7 +8644,7 @@ function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandl
             backdrop: 'static',
             keyboard: false
         });
-        $http.put("internalapi/updates/installUpdate").then(function () {
+        $http.put("internalapi/updates/installUpdate/" + version).then(function () {
                 //Handle like restart, ping application and wait
                 //Perhaps save the version to which we want to update, ask later and see if they're equal. If not updating apparently failed...
                 $timeout(function () {
@@ -8672,6 +8685,7 @@ function UpdateModalInstanceCtrl($scope, $http, $interval, RequestsErrorHandler)
     });
 
 }
+
 
 SystemController.$inject = ["$scope", "$state", "activeTab", "simpleInfos", "$http", "growl", "RestartService", "MigrationService", "ConfigService", "NzbHydraControlService", "RequestsErrorHandler"];angular
     .module('nzbhydraApp')

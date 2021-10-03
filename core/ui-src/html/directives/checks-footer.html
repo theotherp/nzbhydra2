@@ -1,9 +1,8 @@
 <span style="bottom: {{updateFooterBottom}}px; z-index:100" id="update-footer" ng-if="updateAvailable || automaticUpdateToNotice">
 <div ng-if="updateAvailable" ng-cloak="" class="alert alert-info" role="alert" style="margin-bottom: 0; padding-top: 0">
     <div class="container" ng-if="!runInDocker">
-        An update is available. Your version: <span ng-bind-html="currentVersion"></span>. Latest version: <span
-      ng-bind-html="latestVersion"></span>.<br>
-        <button class="btn btn-default" type="button" ng-click="showChangelog()" style="margin-top: 5px;">See what's new!
+        An update is available. Your version: <span ng-bind-html="currentVersion"></span>. Latest version: <span ng-bind-html="latestVersion"></span><span ng-if="latestVersionIsBeta"> Beta</span>.<br>
+        <button class="btn btn-default" type="button" ng-click="showChangelog(latestVersion)" style="margin-top: 5px;">See what's new!
         </button>
         <button class="btn btn-warning" type="button" ng-click="ignore()" style="margin-top: 5px">Ignore this update
         </button>

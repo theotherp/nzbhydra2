@@ -37,4 +37,7 @@ public class Release {
 
     private List<Asset> assets = null;
 
+    public Boolean getPrerelease() {
+        return prerelease != null && prerelease;
+    }
 }

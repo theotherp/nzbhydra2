@@ -44,14 +44,15 @@ public class AutomaticUpdater {
     @HydraTask(configId = "installUpdate", name = "Check for and install updates", interval = HOUR)
     @Transactional
     public void checkAndInstall() {
-        if (configProvider.getBaseConfig().getMain().isUpdateAutomatically() && updateManager.isUpdateAvailable()) {
-            try {
+        try {
+            final UpdateManager.UpdateInfo updateInfo = updateManager.getUpdateInfo();
+            if (configProvider.getBaseConfig().getMain().isUpdateAutomatically() && updateInfo.isUpdateAvailable()) {
                 logger.info("Automatic updater found update");
 
-                updateManager.installUpdate(true);
-            } catch (UpdateException e) {
-                logger.error("Error while installing update", e);
+                updateManager.installUpdate(updateInfo.getLatestVersion(), true);
             }
+        } catch (UpdateException e) {
+            logger.error("Error while installing update", e);
         }
     }
 

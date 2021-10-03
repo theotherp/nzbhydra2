@@ -95,6 +95,7 @@ function hydraChecksFooter() {
                 if (response) {
                     $scope.currentVersion = response.data.currentVersion;
                     $scope.latestVersion = response.data.latestVersion;
+                    $scope.latestVersionIsBeta = response.data.latestVersionIsBeta;
                     $scope.updateAvailable = response.data.updateAvailable;
                     $scope.changelog = response.data.changelog;
                     $scope.runInDocker = response.data.runInDocker;
@@ -115,7 +116,7 @@ function hydraChecksFooter() {
         }
 
         $scope.update = function () {
-            UpdateService.update();
+            UpdateService.update($scope.latestVersion);
         };
 
         $scope.ignore = function () {
@@ -125,7 +126,7 @@ function hydraChecksFooter() {
         };
 
         $scope.showChangelog = function () {
-            UpdateService.showChanges();
+            UpdateService.showChanges($scope.latestVersion);
         };
 
         $scope.showChangesFromAutomaticUpdate = function () {

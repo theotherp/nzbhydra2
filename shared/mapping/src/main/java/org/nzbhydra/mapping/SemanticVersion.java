@@ -259,9 +259,17 @@ public final class SemanticVersion implements Comparable<SemanticVersion>, Seria
     }
 
     public void setAsString(String version) {
+        Objects.requireNonNull(version);
         if (version.startsWith("v")) {
             version = version.substring(1);
         }
+        final int firstDotIndex = version.indexOf('.');
+        final int lastDotIndex = version.lastIndexOf('.');
+        if (firstDotIndex > -1 && firstDotIndex == lastDotIndex) {
+            //Add missing ".0" for versions like "1.0"
+            version += ".0";
+        }
+
         vParts = new int[3];
         preParts = new ArrayList<String>(5);
         metaParts = new ArrayList<String>(5);

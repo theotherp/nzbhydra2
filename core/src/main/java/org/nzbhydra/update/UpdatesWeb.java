@@ -10,6 +10,7 @@ import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.debuginfos.DebugInfosProvider;
 import org.nzbhydra.genericstorage.GenericStorage;
+import org.nzbhydra.mapping.SemanticVersion;
 import org.nzbhydra.mapping.changelog.ChangelogVersionEntry;
 import org.nzbhydra.problemdetection.OutdatedWrapperDetector;
 import org.nzbhydra.update.UpdateManager.UpdateEvent;
@@ -24,9 +25,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
@@ -51,13 +52,14 @@ public class UpdatesWeb {
     @Autowired
     private GenericStorage genericStorage;
 
-    protected Supplier<VersionsInfo> versionsInfoCache = Suppliers.memoizeWithExpiration(versionsInfoSupplier(), 15, TimeUnit.MINUTES);
+    protected Supplier<VersionsInfo> versionsInfoCache = Suppliers.memoizeWithExpiration(versionsInfoSupplier(), UpdateManager.CACHE_DURATION_MINUTES, TimeUnit.MINUTES);
 
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/updates/infos", method = RequestMethod.GET)
     public VersionsInfo getVersions() {
         if (Boolean.parseBoolean(environment.getProperty("alwayscheckforupdates", "false"))) {
-            versionsInfoCache = Suppliers.memoizeWithExpiration(versionsInfoSupplier(), 15, TimeUnit.MINUTES);
+            updateManager.resetCache();
+            versionsInfoCache = Suppliers.memoizeWithExpiration(versionsInfoSupplier(), UpdateManager.CACHE_DURATION_MINUTES, TimeUnit.MINUTES);
         }
         return versionsInfoCache.get();
     }
@@ -67,19 +69,24 @@ public class UpdatesWeb {
             try {
                 if (!configProvider.getBaseConfig().getMain().isUpdateCheckEnabled()) {
                     //Just for development
-                    return new VersionsInfo("", "", false, false, false, false, false, false, "false", new UpdateManager.PackageInfo());
+                    return new VersionsInfo();
                 }
-                String currentVersion = updateManager.getCurrentVersionString();
-                String latestVersion = updateManager.getLatestVersionString();
-                boolean isUpdateAvailable = updateManager.isUpdateAvailable();
-                boolean latestVersionIgnored = updateManager.latestVersionIgnored();
-                boolean isRunInDocker = DebugInfosProvider.isRunInDocker();
-                boolean isShowUpdateBannerOnDocker = configProvider.getBaseConfig().getMain().isShowUpdateBannerOnDocker();
-                boolean isShowWhatsNewBanner = configProvider.getBaseConfig().getMain().isShowWhatsNewBanner();
-                boolean outdatedWrapperDetected = outdatedWrapperDetector.isOutdatedWrapperDetected();
-                String automaticUpdateToNotice = genericStorage.get(AutomaticUpdater.TO_NOTICE_KEY, String.class).orElse(null);
 
-                return new VersionsInfo(currentVersion, latestVersion, isUpdateAvailable, latestVersionIgnored, isRunInDocker, isShowUpdateBannerOnDocker, isShowWhatsNewBanner, outdatedWrapperDetected, automaticUpdateToNotice, updateManager.getPackageInfo());
+                final UpdateManager.UpdateInfo updateInfo = updateManager.getUpdateInfo();
+                return new VersionsInfo(updateInfo.getCurrentVersion(),
+                        updateInfo.getLatestVersion(),
+                        updateInfo.isLatestVersionIsBeta(),
+                        updateInfo.getBetaVersion(),
+                        updateInfo.isUpdateAvailable(),
+                        updateInfo.isBetaUpdateAvailable(),
+                        updateInfo.isLatestVersionIgnored(),
+                        updateInfo.isBetaVersionsEnabled(),
+                        DebugInfosProvider.isRunInDocker(),
+                        configProvider.getBaseConfig().getMain().isShowUpdateBannerOnDocker(),
+                        configProvider.getBaseConfig().getMain().isShowWhatsNewBanner(),
+                        outdatedWrapperDetector.isOutdatedWrapperDetected(),
+                        genericStorage.get(AutomaticUpdater.TO_NOTICE_KEY, String.class).orElse(null),
+                        updateInfo.getPackageInfo());
             } catch (UpdateException e) {
                 logger.error("An error occured while getting version information", e);
                 throw new RuntimeException("Unable to get update information");
@@ -98,9 +105,9 @@ public class UpdatesWeb {
 
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/updates/changesSince", method = RequestMethod.GET)
-    public List<ChangelogVersionEntry> getChangesSince() throws Exception {
-        return updateManager.getChangesSinceCurrentVersion();
+    @RequestMapping(value = "/internalapi/updates/changesSince/{version}", method = RequestMethod.GET)
+    public List<ChangelogVersionEntry> getChangesSince(@PathVariable String version) throws Exception {
+        return updateManager.getChangesBetweenCurrentVersionAnd(new SemanticVersion(version));
     }
 
     @Secured({"ROLE_ADMIN"})
@@ -124,17 +131,17 @@ public class UpdatesWeb {
     }
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/updates/ignore", method = RequestMethod.PUT, consumes = MediaType.ALL_VALUE)
-    public void ignore(@RequestParam("version") String version) {
+    @RequestMapping(value = "/internalapi/updates/ignore/{version}", method = RequestMethod.PUT, consumes = MediaType.ALL_VALUE)
+    public void ignore(@PathVariable String version) {
         updateManager.ignore(version);
     }
 
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/updates/installUpdate", method = RequestMethod.PUT)
-    public GenericResponse installUpdate() throws Exception {
+    @RequestMapping(value = "/internalapi/updates/installUpdate/{version}", method = RequestMethod.PUT)
+    public GenericResponse installUpdate(@PathVariable String version) throws Exception {
         updateMessages.clear();
-        updateManager.installUpdate(false);
+        updateManager.installUpdate(version, false);
         return new GenericResponse(true, null);
     }
 
@@ -148,6 +155,13 @@ public class UpdatesWeb {
     @RequestMapping(value = "/internalapi/updates/isDisplayWrapperOutdated", method = RequestMethod.GET)
     public boolean isWrapperOutdated() {
         return outdatedWrapperDetector.isOutdatedWrapperDetected() && outdatedWrapperDetector.isOutdatedWrapperDetectedWarningNotYetShown();
+    }
+
+    @Secured({"ROLE_ADMIN"})
+    @RequestMapping(value = "/internalapi/updates/resetCache", method = RequestMethod.GET)
+    public void resetCache() {
+        updateManager.resetCache();
+        versionsInfoCache = Suppliers.memoizeWithExpiration(versionsInfoSupplier(), UpdateManager.CACHE_DURATION_MINUTES, TimeUnit.MINUTES);
     }
 
     @Secured({"ROLE_ADMIN"})
@@ -174,8 +188,13 @@ public class UpdatesWeb {
     public static class VersionsInfo {
         private String currentVersion;
         private String latestVersion;
+        private boolean latestVersionIsBeta;
+        private String betaVersion;
         private boolean updateAvailable;
+        private boolean betaUpdateAvailable;
         private boolean latestVersionIgnored;
+        private boolean betaVersionsEnabled;
+
         private boolean runInDocker;
         private boolean showUpdateBannerOnDocker;
         private boolean showWhatsNewBanner;

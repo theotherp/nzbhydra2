@@ -35,15 +35,15 @@ public class MockGithub {
 
     public MockGithub() {
         releasev376 = new Release();
-        releasev376.setBody("Changes in version 3.7.6");
+        releasev376.setBody("Changes in version 3.16.3");
         releasev376.setUrl("http://127.0.0.1:5080/repos/theotherp/nzbhydra2/releases/1");
-        releasev376.setTagName("v3.7.6");
+        releasev376.setTagName("v3.16.3-SNAPSHOT");
         windowsAsset.setBrowserDownloadUrl("http://127.0.0.1:5080/static/nzbhyra2-2.0.0-SNAPSHOT-windows.zip");
         windowsAsset.setName("nzbhyra2-3.1.0-SNAPSHOT-windows.zip");
         windowsAsset.setSize(163L);
 
         releasev4pre = new Release();
-        releasev4pre.setTagName("v4.0.0");
+        releasev4pre.setTagName("v5.0.0");
         releasev4pre.setPrerelease(true);
 
         Asset linuxAsset = new Asset();
@@ -54,7 +54,8 @@ public class MockGithub {
 
         Release releasev1current = new Release();
         releasev1current.setBody("Changes in version 10.0");
-        releasev1current.setTagName("v10.0.0");
+        releasev1current.setTagName("v11.0.0");
+        releasev1current.setPrerelease(true);
 
         releases = Arrays.asList(releasev1current, releasev376, releasev4pre);
     }
@@ -93,7 +94,8 @@ public class MockGithub {
     @RequestMapping(value = "/changelog", method = RequestMethod.GET)
     public List<ChangelogVersionEntry> changelog() throws Exception {
         return Arrays.asList(
-                new ChangelogVersionEntry("3.0.0", null, true, Arrays.asList(new ChangelogChangeEntry("note", "a note"), new ChangelogChangeEntry("note", "another note"), new ChangelogChangeEntry("note", "yet another note"))),
+                new ChangelogVersionEntry("11.0.0", null, false, Arrays.asList(new ChangelogChangeEntry("note", "a note for beta release 11.0.0"), new ChangelogChangeEntry("note", "another note"), new ChangelogChangeEntry("note", "yet another note"))),
+                new ChangelogVersionEntry("4.0.0", null, true, Arrays.asList(new ChangelogChangeEntry("note", "a note"), new ChangelogChangeEntry("note", "another note"), new ChangelogChangeEntry("note", "yet another note"))),
                 new ChangelogVersionEntry("0.0.1", null, true, Arrays.asList(new ChangelogChangeEntry("fix", "a minor fix"))),
                 new ChangelogVersionEntry("0.1.0", null, true, Arrays.asList(new ChangelogChangeEntry("feature", "a new feature")))
         );

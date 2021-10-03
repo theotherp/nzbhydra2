@@ -63,6 +63,7 @@ public class UpdateManager implements InitializingBean {
     public static final int RESTART_RETURN_CODE = 22;
     public static final int RESTORE_RETURN_CODE = 33;
     public static final String KEY = "UpdateData";
+    public static final int CACHE_DURATION_MINUTES = 5;
     private static final Pattern GITHUB_ISSUE_PATTERN = Pattern.compile("#(\\d{3,})");
 
     @Value("${nzbhydra.repositoryBaseUrl}")
@@ -95,7 +96,7 @@ public class UpdateManager implements InitializingBean {
     private PackageInfo packageInfo;
 
     private final ObjectMapper objectMapper;
-    protected Supplier<Release> latestReleaseCache = Suppliers.memoizeWithExpiration(getLatestReleaseSupplier(), 15, TimeUnit.MINUTES);
+    protected Supplier<List<Release>> releasesCache = Suppliers.memoizeWithExpiration(getReleasesSupplier(), CACHE_DURATION_MINUTES, TimeUnit.MINUTES);
     protected TypeReference<List<ChangelogVersionEntry>> changelogEntryListTypeReference = new TypeReference<List<ChangelogVersionEntry>>() {
     };
 
@@ -130,60 +131,83 @@ public class UpdateManager implements InitializingBean {
         }
     }
 
-    private SemanticVersion getLatestVersion() throws UpdateException {
-        Release latestRelease = latestReleaseCache.get();
+    private SemanticVersion getLatestVersion(boolean includePrerelease) throws UpdateException {
+        Release latestRelease = getLatestRelease(includePrerelease);
         latestVersion = new SemanticVersion(latestRelease.getTagName());
         return latestVersion;
     }
 
+    public UpdateInfo getUpdateInfo() throws UpdateException {
+        UpdateInfo updateInfo = new UpdateInfo();
+        updateInfo.setCurrentVersion(currentVersionString);
+
+        final boolean updateToPrereleases = configProvider.getBaseConfig().getMain().isUpdateToPrereleases();
+        final Release latestRelease = getLatestRelease(updateToPrereleases);
+        final SemanticVersion latestVersion = new SemanticVersion(latestRelease.getTagName());
+        updateInfo.setLatestVersion(latestVersion.getAsString());
+        updateInfo.setLatestVersionIsBeta(latestRelease.getPrerelease());
+        final boolean latestVersionIgnored = isVersionIgnored(latestVersion);
+        final boolean latestIsUpdateAndViable = latestVersion.isUpdateFor(currentVersion)
+                && !latestVersionIgnored
+                && isVersionNotBlocked(latestVersion);
+        updateInfo.setUpdateAvailable(latestIsUpdateAndViable);
+        updateInfo.setLatestVersionIgnored(latestVersionIgnored);
+        updateInfo.setBetaVersionsEnabled(updateToPrereleases);
+
+        if (!updateToPrereleases) {
+            final SemanticVersion latestVersionWithBeta = new SemanticVersion(getLatestRelease(true).getTagName());
+            if (latestVersionWithBeta.isUpdateFor(latestVersion)) {
+                updateInfo.setBetaVersion(latestVersion.getAsString());
+
+                final boolean latestWithBetaIsUpdateAndViable = !isVersionIgnored(latestVersionWithBeta) && isVersionNotBlocked(latestVersionWithBeta);
+
+                //Only true when update to beta is not enabled but there's a new beta version. The user can then choose to install it anyway.
+                updateInfo.setBetaUpdateAvailable(latestWithBetaIsUpdateAndViable);
+                updateInfo.setBetaVersion(latestVersionWithBeta.getAsString());
+            }
+        }
+        updateInfo.setPackageInfo(getPackageInfo());
+
+        return updateInfo;
+    }
+
     public boolean isUpdateAvailable() {
         try {
-            return getLatestVersion().isUpdateFor(currentVersion) && !latestVersionIgnored() && !latestVersionBlocked() && latestVersionFinalOrPreEnabled();
+            return getUpdateInfo().isUpdateAvailable();
         } catch (UpdateException e) {
             logger.error("Error while checking if new version is available", e);
             return false;
         }
     }
 
-    public boolean latestVersionFinalOrPreEnabled() {
-        if (configProvider.getBaseConfig().getMain().isUpdateToPrereleases()) {
-            return true;
-        }
-        return latestReleaseCache.get().getPrerelease() == null || !latestReleaseCache.get().getPrerelease();
-    }
 
-    public boolean latestVersionIgnored() throws UpdateException {
-        SemanticVersion latestVersion = getLatestVersion();
+    private boolean isVersionIgnored(SemanticVersion version) throws UpdateException {
         Optional<UpdateData> updateData = genericStorage.get(KEY, UpdateData.class);
-        if (updateData.isPresent() && updateData.get().getIgnoreVersions().contains(latestVersion)) {
-            logger.debug("Version {} is in the list of ignored updates", latestVersion);
+        if (updateData.isPresent() && updateData.get().getIgnoreVersions().contains(version)) {
+            logger.debug("Version {} is in the list of ignored updates", version);
             return true;
         }
         return false;
     }
 
-    public boolean latestVersionBlocked() throws UpdateException {
-        SemanticVersion latestVersion = getLatestVersion();
-        if (getBlockedVersions().stream().anyMatch(x -> new SemanticVersion(x.getVersion()).equals(latestVersion))) {
-            logger.debug("Version {} is in the list of blocked updates", latestVersion);
-            return true;
+    private boolean isVersionNotBlocked(SemanticVersion version) throws UpdateException {
+        if (getBlockedVersions().stream().anyMatch(x -> new SemanticVersion(x.getVersion()).equals(version))) {
+            logger.debug("Version {} is in the list of blocked updates", version);
+            return false;
         }
-        return false;
+        return true;
     }
 
-    protected Supplier<Release> getLatestReleaseSupplier() {
+    protected Supplier<List<Release>> getReleasesSupplier() {
         return () -> {
             try {
-                return getLatestRelease();
+                return getReleases();
             } catch (UpdateException e) {
                 throw new RuntimeException(e);
             }
         };
     }
 
-    public String getLatestVersionString() throws UpdateException {
-        return getLatestVersion().toString();
-    }
 
     public String getCurrentVersionString() {
         return currentVersionString;
@@ -201,10 +225,7 @@ public class UpdateManager implements InitializingBean {
     }
 
 
-    public List<ChangelogVersionEntry> getChangesSinceCurrentVersion() throws UpdateException {
-        if (latestVersion == null) {
-            getLatestVersion();
-        }
+    public List<ChangelogVersionEntry> getChangesBetweenCurrentVersionAnd(SemanticVersion upToVersion) throws UpdateException {
         List<ChangelogVersionEntry> allChanges;
         try {
             String response = webAccess.callUrl(changelogUrl);
@@ -214,34 +235,11 @@ public class UpdateManager implements InitializingBean {
             throw new UpdateException("Error while getting changelog: " + e.getMessage());
         }
 
-           /*
-        3.0.1: Beta release
-        3.0.0: Final release
-        2.0.1: Beta release
-        2.0.0: Final release
-        */
-
-        //Current release: 3.0.0, install prereleases: Show changes for 3.0.1
-        //Current release 2.0.0, install prerelases: Show changes 2.0.1 and newer
-        //Current release 2.0.0, dont install prereleases: Show changes 2.0.1 and 3.0.0
-
-        final Optional<ChangelogVersionEntry> newestFinalUpdate = allChanges.stream().filter(x -> x.isFinal() && new SemanticVersion(x.getVersion()).isUpdateFor(currentVersion)).max(Comparator.naturalOrder());
-
         List<ChangelogVersionEntry> collectedVersionChanges = allChanges.stream().filter(x -> {
-                    if (!new SemanticVersion(x.getVersion()).isUpdateFor(currentVersion)) {
-                        return false;
-                    }
-                    if (x.isFinal()) {
-                        return true;
-                    } else {
-                        if (configProvider.getBaseConfig().getMain().isUpdateToPrereleases()) {
-                            return true;
-                        } else {
-                            return newestFinalUpdate.isPresent() && newestFinalUpdate.get().getSemanticVersion().isUpdateFor(x.getSemanticVersion());
-                        }
-                    }
-                }
+                    final SemanticVersion changeVersion = new SemanticVersion(x.getVersion());
 
+                    return upToVersion.isSameOrNewer(changeVersion) && changeVersion.isUpdateFor(currentVersion);
+                }
         ).sorted(Comparator.reverseOrder()).collect(Collectors.toList());
 
         return collectedVersionChanges.stream()
@@ -311,10 +309,15 @@ public class UpdateManager implements InitializingBean {
     }
 
 
-    public void installUpdate(boolean isAutomaticUpdate) throws UpdateException {
-        Release latestRelease = latestReleaseCache.get();
-        logger.info("Starting process to update to {}", latestRelease.getTagName());
-        Asset asset = getAsset(latestRelease);
+    public void installUpdate(String version, boolean isAutomaticUpdate) throws UpdateException {
+        final Optional<Release> optionalRelease = releasesCache.get().stream()
+                .sorted(Comparator.comparing(x -> new SemanticVersion(((Release) x).getTagName())).reversed())
+                .filter(x -> new SemanticVersion(x.getTagName()).isSame(new SemanticVersion((version))))
+                .findFirst();
+
+        Release release = optionalRelease.orElseThrow(() -> new UpdateException("Unable to find release with version " + version));
+        logger.info("Starting process to update to {}", release.getTagName());
+        Asset asset = getAsset(release);
         String url = asset.getBrowserDownloadUrl();
         logger.debug("Downloading update from URL {}", url);
 
@@ -350,7 +353,7 @@ public class UpdateManager implements InitializingBean {
             }
         }
 
-        if (latestRelease.getTagName().equals("v2.7.6")) {
+        if (release.getTagName().equals("v2.7.6")) {
             applicationEventPublisher.publishEvent(new UpdateEvent(UpdateEvent.State.MIGRATION_NEEDED, "NZBHydra's restart after the update will take longer than usual because the database needs to be migrated."));
         }
 
@@ -361,7 +364,7 @@ public class UpdateManager implements InitializingBean {
         logger.info("Shutting down to let wrapper execute the update");
         applicationEventPublisher.publishEvent(new UpdateEvent(UpdateEvent.State.SHUTDOWN, "Shutting down to let wrapper execute update."));
         if (isAutomaticUpdate) {
-            applicationEventPublisher.publishEvent(new UpdateNotificationEvent(latestRelease.getName()));
+            applicationEventPublisher.publishEvent(new UpdateNotificationEvent(release.getName()));
         }
         exitWithReturnCode(UPDATE_RETURN_CODE);
     }
@@ -383,23 +386,27 @@ public class UpdateManager implements InitializingBean {
         return optionalAsset.get();
     }
 
-    private Release getLatestRelease() throws UpdateException {
+    private List<Release> getReleases() throws UpdateException {
         try {
             String url = repositoryBaseUrl + "/releases";
             logger.debug("Retrieving latest release from GitHub using URL {}", url);
             List<Release> releases = webAccess.callUrl(url, new TypeReference<List<Release>>() {
             });
-            return releases.stream()
-                    .sorted(Comparator.comparing(x -> new SemanticVersion(((Release) x).getTagName())).reversed())
-                    .filter(release -> {
-                        if (configProvider.getBaseConfig().getMain().isUpdateToPrereleases()) {
-                            return true;
-                        }
-                        return release.getPrerelease() == null || !release.getPrerelease();
-                    }).findFirst().orElse(null);
+            return releases;
         } catch (IOException e) {
             throw new UpdateException("Error while getting latest version: " + e.getMessage());
         }
+    }
+
+    private Release getLatestRelease(boolean includePrereleases) {
+        return releasesCache.get().stream()
+                .sorted(Comparator.comparing(x -> new SemanticVersion(((Release) x).getTagName())).reversed())
+                .filter(release -> {
+                    if (includePrereleases) {
+                        return true;
+                    }
+                    return release.getPrerelease() == null || !release.getPrerelease();
+                }).findFirst().orElse(null);
     }
 
 
@@ -445,6 +452,9 @@ public class UpdateManager implements InitializingBean {
         }).start();
     }
 
+    public void resetCache() {
+        releasesCache = Suppliers.memoizeWithExpiration(getReleasesSupplier(), CACHE_DURATION_MINUTES, TimeUnit.MINUTES);
+    }
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -492,6 +502,21 @@ public class UpdateManager implements InitializingBean {
         private String releaseType;
         private String version;
         private String author;
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class UpdateInfo {
+        private String currentVersion;
+        private String latestVersion;
+        private boolean latestVersionIsBeta;
+        private boolean updateAvailable;
+        private String betaVersion;
+        private boolean betaUpdateAvailable;
+        private boolean latestVersionIgnored;
+        private boolean betaVersionsEnabled;
+        private PackageInfo packageInfo;
     }
 
 

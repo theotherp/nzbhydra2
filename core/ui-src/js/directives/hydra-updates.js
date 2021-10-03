@@ -12,8 +12,11 @@ function hydraupdates() {
 
         $scope.loadingPromise = UpdateService.getInfos().then(function (response) {
             $scope.currentVersion = response.data.currentVersion;
-            $scope.repVersion = response.data.latestVersion;
+            $scope.latestVersion = response.data.latestVersion;
+            $scope.latestVersionIsBeta = response.data.latestVersionIsBeta;
+            $scope.betaVersion = response.data.betaVersion;
             $scope.updateAvailable = response.data.updateAvailable;
+            $scope.betaUpdateAvailable = response.data.betaUpdateAvailable;
             $scope.latestVersionIgnored = response.data.latestVersionIgnored;
             $scope.changelog = response.data.changelog;
             $scope.runInDocker = response.data.runInDocker;
@@ -22,22 +25,24 @@ function hydraupdates() {
             if ($scope.runInDocker && !$scope.showUpdateBannerOnDocker) {
                 $scope.updateAvailable = false;
             }
+            console.log(response.data);
         });
 
         UpdateService.getVersionHistory().then(function (response) {
             $scope.versionHistory = response.data;
         });
 
-        $scope.update = function () {
-            UpdateService.update();
+
+        $scope.update = function (version) {
+            UpdateService.update(version);
         };
 
-        $scope.showChangelog = function () {
-            UpdateService.showChanges($scope.changelog);
+        $scope.showChangelog = function (version) {
+            UpdateService.showChanges(version);
         };
 
         $scope.forceUpdate = function () {
-            UpdateService.update()
+            UpdateService.update($scope.latestVersion)
         };
     }
 }

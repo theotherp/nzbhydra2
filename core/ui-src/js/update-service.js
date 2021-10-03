@@ -6,8 +6,11 @@ function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandl
 
     var currentVersion;
     var latestVersion;
+    var betaVersion;
     var updateAvailable;
+    var betaUpdateAvailable;
     var latestVersionIgnored;
+    var betaVersionsEnabled;
     var versionHistory;
     var runInDocker;
     var automaticUpdateToNotice;
@@ -28,8 +31,11 @@ function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandl
                 function (response) {
                     currentVersion = response.data.currentVersion;
                     latestVersion = response.data.latestVersion;
+                    betaVersion = response.data.betaVersion;
                     updateAvailable = response.data.updateAvailable;
+                    betaUpdateAvailable = response.data.betaUpdateAvailable;
                     latestVersionIgnored = response.data.latestVersionIgnored;
+                    betaVersionsEnabled = response.data.betaVersionsEnabled;
                     runInDocker = response.data.runInDocker;
                     automaticUpdateToNotice = response.data.automaticUpdateToNotice;
                     return response;
@@ -41,7 +47,7 @@ function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandl
     }
 
     function ignore(version) {
-        return $http.put("internalapi/updates/ignore?version=" + version).then(function (response) {
+        return $http.put("internalapi/updates/ignore/" + version).then(function (response) {
             return response;
         });
     }
@@ -53,8 +59,8 @@ function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandl
         });
     }
 
-    function showChanges() {
-        return $http.get("internalapi/updates/changesSince").then(function (response) {
+    function showChanges(version) {
+        return $http.get("internalapi/updates/changesSince/" + version).then(function (response) {
             var params = {
                 size: "lg",
                 templateUrl: "static/html/changelog-modal.html",
@@ -105,7 +111,7 @@ function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandl
     }
 
 
-    function update() {
+    function update(version) {
         var modalInstance = $uibModal.open({
             templateUrl: 'static/html/update-modal.html',
             controller: 'UpdateModalInstanceCtrl',
@@ -113,7 +119,7 @@ function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandl
             backdrop: 'static',
             keyboard: false
         });
-        $http.put("internalapi/updates/installUpdate").then(function () {
+        $http.put("internalapi/updates/installUpdate/" + version).then(function () {
                 //Handle like restart, ping application and wait
                 //Perhaps save the version to which we want to update, ask later and see if they're equal. If not updating apparently failed...
                 $timeout(function () {

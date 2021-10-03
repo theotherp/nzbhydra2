@@ -1,17 +1,25 @@
 [
   {
-    "version": "v3.16.3",
+    "version": "v3.17.0",
     "changes": [
+      {
+        "type": "feature",
+        "text": "Show beta releases in update section even when beta releases are disabled. You won't get notifications and automatic updates will still respect the config but you can then choose to install a beta version without having to switch to the beta branch."
+      },
       {
         "type": "feature",
         "text": "Show loading spinner while loading more results."
       },
       {
-        "type": "bug",
+        "type": "fix",
         "text": "Fix wrong API path used when configuring Radarr v4."
       },
       {
-        "type": "bug",
+        "type": "fix",
+        "text": "Fix display of fixes in version history (the little orange badge shown in the updates section next to this entry)."
+      },
+      {
+        "type": "fix",
         "text": "Don't log output of URL calls when status 429 is returned (Too Many Requests)."
       }
     ],
@@ -22,7 +30,7 @@
     "date": "2021-09-27",
     "changes": [
       {
-        "type": "bug",
+        "type": "fix",
         "text": "Fix missing quotation mark in base config (only used for new installations)."
       }
     ],
@@ -33,7 +41,7 @@
     "date": "2021-09-27",
     "changes": [
       {
-        "type": "bug",
+        "type": "fix",
         "text": "Roll back release of 3.16.0 because of some problems with form based logins which need some more analysis."
       }
     ],
@@ -49,18 +57,20 @@
   }, {
     "type" : "feature",
     "text" : "Add \"-xpost\" to the list of trailing words to remove."
-  }, {
-    "type" : "bug",
-    "text" : "Make checkboxes and radioboxes grayscale because new browsers show them in weird blue."
-  } ],
+  },
+      {
+        "type": "fix",
+        "text": "Make checkboxes and radioboxes grayscale because new browsers show them in weird blue."
+      } ],
   "final" : false
 }, {
   "version" : "v3.15.2",
   "date" : "2021-08-27",
-  "changes" : [ {
-    "type" : "bug",
-    "text" : "Remove dereferer.org from preset config and from any instances still using it. Modern browsers all support the Referrer-Policy header that is set by NZBHydra anyway."
-  } ],
+  "changes" : [
+    {
+      "type": "fix",
+      "text": "Remove dereferer.org from preset config and from any instances still using it. Modern browsers all support the Referrer-Policy header that is set by NZBHydra anyway."
+    } ],
   "final" : true
 }, {
   "version" : "v3.15.1",
@@ -68,13 +78,15 @@
   "changes" : [ {
     "type" : "feature",
     "text" : "When configuring an external tool like sonarr and forgetting to provide its URL base in the URL it will return a misleading response. Hydra will now recognize this case and show a helpful message."
-  }, {
-    "type" : "bug",
-    "text" : "Fix sorting of search state messages."
-  }, {
-    "type" : "bug",
-    "text" : "Log to browser console which quick filters don't match a result. This will help with debugging some issues in this area."
-  } ],
+  },
+    {
+      "type": "fix",
+      "text": "Fix sorting of search state messages."
+    },
+    {
+      "type": "fix",
+      "text": "Log to browser console which quick filters don't match a result. This will help with debugging some issues in this area."
+    } ],
   "final" : true
 }, {
   "version" : "v3.15.0",
@@ -93,10 +105,11 @@
 }, {
   "version" : "v3.14.2",
   "date" : "2021-05-23",
-  "changes" : [ {
-    "type" : "bug",
-    "text" : "Min and max size API parameters were ignored. See #705"
-  } ],
+  "changes" : [
+    {
+      "type": "fix",
+      "text": "Min and max size API parameters were ignored. See #705"
+    } ],
   "final" : true
 }, {
   "version" : "v3.14.1",
@@ -104,10 +117,11 @@
   "changes" : [ {
     "type" : "feature",
     "text" : "Added NZB360, Readarr and Mylar to mapped user agents. Thanks to SAS-1"
-  }, {
-    "type" : "bug",
-    "text" : "With the option to transform newznab categories enabled if provided categories of an API call could not be mapped to a category they weren't used at all. See #704."
-  } ],
+  },
+    {
+      "type": "fix",
+      "text": "With the option to transform newznab categories enabled if provided categories of an API call could not be mapped to a category they weren't used at all. See #704."
+    } ],
   "final" : true
 }, {
   "version" : "v3.14.0",
