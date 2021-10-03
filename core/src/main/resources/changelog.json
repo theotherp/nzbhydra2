@@ -3,6 +3,10 @@
     "version": "v3.16.3",
     "changes": [
       {
+        "type": "feature",
+        "text": "Show loading spinner while loading more results."
+      },
+      {
         "type": "bug",
         "text": "Fix wrong API path used when configuring Radarr v4."
       },

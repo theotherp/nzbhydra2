@@ -825,9 +825,11 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
 
     function loadMore(loadAll) {
         startBlocking(loadAll ? "Loading all results..." : "Loading more results...").then(function () {
+            $scope.loadingMore = true;
             var limit = loadAll ? $scope.numberOfAvailableResults - $scope.numberOfProcessedResults : null;
             SearchService.loadMore($scope.numberOfLoadedResults, limit, loadAll).then(function (data) {
                 setDataFromSearchResult(data, allSearchResults);
+                $scope.loadingMore = false;
                 //stopBlocking();
             });
         });
