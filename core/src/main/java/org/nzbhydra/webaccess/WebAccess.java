@@ -94,7 +94,10 @@ public class WebAccess {
             }
             if (!response.isSuccessful()) {
                 String error = String.format("URL call to %s returned %d: %s", url, response.code(), response.message());
-                logger.error(error + "\n" + bodyAsString);
+                if (response.code() != 429) {
+                    //No reason to log 429 errors, they all look more or less the same
+                    logger.error(error + "\n" + bodyAsString);
+                }
                 throw new WebAccessException(response.message(), bodyAsString, response.code());
             }
             return bodyAsString;

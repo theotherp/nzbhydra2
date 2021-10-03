@@ -5,9 +5,13 @@
       {
         "type": "bug",
         "text": "Fix wrong API path used when configuring Radarr v4."
+      },
+      {
+        "type": "bug",
+        "text": "Don't log output of URL calls when status 429 is returned (Too Many Requests)."
       }
     ],
-    "final": false
+    "final": true
   },
   {
     "version": "v3.16.2",
