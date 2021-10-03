@@ -18,20 +18,20 @@
     <br>
     A new release ({{ latestVersion }} <span ng-if="latestVersionIsBeta">Beta</span>) is available.
     <br>
-    <button class="btn btn-default" type="button" ng-click="showChangelog(latestVersion)">See what's new!</button>
-    <button class="btn btn-default" type="button" ng-click="update(latestVersion)">Update!</button>
+    <button class="btn btn-info" type="button" ng-click="showChangelog(latestVersion)">See what's new</button>
+    <button class="btn btn-success" type="button" ng-click="update(latestVersion)">Install update</button>
   </div>
   <div ng-if="betaUpdateAvailable">
     <br>
     A new beta release ({{ betaVersion }}) is available.
     <br>
-    <button class="btn btn-default" type="button" ng-click="showChangelog(betaVersion)">See what's new!</button>
-    <button class="btn btn-default" type="button" ng-click="update(betaVersion)">Update!</button>
+    <button class="btn btn-info" type="button" ng-click="showChangelog(betaVersion)">See what's new</button>
+    <button class="btn btn-warning" type="button" ng-click="update(betaVersion)">Install beta update</button>
   </div>
   <br>
   <span ng-if="!updateAvailable && !latestVersionIgnored && !betaUpdateAvailable">You're up to date!</span>
   <span ng-if="latestVersionIgnored">The latest version was ignored by you.</span>
-  <button ng-if="!updateAvailable && !betaUpdateAvailable" class="btn btn-default" type="button" ng-click="forceUpdate()">Force update
+  <button ng-if="!updateAvailable && !betaUpdateAvailable" class="btn btn-warning" type="button" ng-click="forceUpdate()">Force update
   </button>
   
   <div class="row">
