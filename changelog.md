@@ -1,12 +1,26 @@
+### v3.17.0 (2021-10-03)
+
+**Feature** Show beta releases in update section even when beta releases are disabled. You won't get notifications and automatic updates will still respect the config but you can then choose to install a beta version without having to switch to the beta branch.
+
+**Feature** Show loading spinner while loading more results.
+
+**Fix** Fix wrong API path used when configuring Radarr v4.
+
+**Fix** Fix display of fixes in version history (the little orange badge shown in the updates section next to this entry).
+
+**Fix** Don't log output of URL calls when status 429 is returned (Too Many Requests).
+
+
+
 ### v3.16.2 BETA (2021-09-27)
 
-**Bug** Fix missing quotation mark in base config (only used for new installations).
+**Fix** Fix missing quotation mark in base config (only used for new installations).
 
 
 
 ### v3.16.1 BETA (2021-09-27)
 
-**Bug** Roll back release of 3.16.0 because of some problems with form based logins which need some more analysis.
+**Fix** Roll back release of 3.16.0 because of some problems with form based logins which need some more analysis.
 
 
 
@@ -16,13 +30,13 @@
 
 **Feature** Add "-xpost" to the list of trailing words to remove.
 
-**Bug** Make checkboxes and radioboxes grayscale because new browsers show them in weird blue.
+**Fix** Make checkboxes and radioboxes grayscale because new browsers show them in weird blue.
 
 
 
 ### v3.15.2 (2021-08-27)
 
-**Bug** Remove dereferer.org from preset config and from any instances still using it. Modern browsers all support the Referrer-Policy header that is set by NZBHydra anyway.
+**Fix** Remove dereferer.org from preset config and from any instances still using it. Modern browsers all support the Referrer-Policy header that is set by NZBHydra anyway.
 
 
 
@@ -30,9 +44,9 @@
 
 **Feature** When configuring an external tool like sonarr and forgetting to provide its URL base in the URL it will return a misleading response. Hydra will now recognize this case and show a helpful message.
 
-**Bug** Fix sorting of search state messages.
+**Fix** Fix sorting of search state messages.
 
-**Bug** Log to browser console which quick filters don't match a result. This will help with debugging some issues in this area.
+**Fix** Log to browser console which quick filters don't match a result. This will help with debugging some issues in this area.
 
 
 
@@ -48,7 +62,7 @@
 
 ### v3.14.2 (2021-05-23)
 
-**Bug** Min and max size API parameters were ignored. See <a href="https://github.com/theotherp/nzbhydra2/issues/705">#705</a>
+**Fix** Min and max size API parameters were ignored. See <a href="https://github.com/theotherp/nzbhydra2/issues/705">#705</a>
 
 
 
@@ -56,7 +70,7 @@
 
 **Feature** Added NZB360, Readarr and Mylar to mapped user agents. Thanks to SAS-1
 
-**Bug** With the option to transform newznab categories enabled if provided categories of an API call could not be mapped to a category they weren't used at all. See <a href="https://github.com/theotherp/nzbhydra2/issues/704">#704</a>.
+**Fix** With the option to transform newznab categories enabled if provided categories of an API call could not be mapped to a category they weren't used at all. See <a href="https://github.com/theotherp/nzbhydra2/issues/704">#704</a>.
 
 
 
