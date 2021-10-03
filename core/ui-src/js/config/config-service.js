@@ -154,7 +154,7 @@ function ConfigService($http, $q, $cacheFactory, $uibModal, bootstrapped) {
             $scope.xdarrHost += "7878";
             $scope.categories = "2000";
             if (externalTool === "Radarrv3") {
-                $scope.externalToolDisplayName = "Radarr v3";
+                $scope.externalToolDisplayName = "Radarr v3+";
             }
         } else if (externalTool === "Lidarr") {
             $scope.xdarrHost += "8686";

@@ -31,6 +31,7 @@ public class AddRequest {
         Readarr,
         Radarr,
         Radarrv3,
+        Radarrv4,
         Sonarr,
         Sonarrv3,
         Lidarr;
@@ -49,6 +50,10 @@ public class AddRequest {
 
         public boolean isV3() {
             return this == Sonarrv3 || this == Radarrv3;
+        }
+
+        public boolean isV4() {
+            return this == Radarrv4;
         }
     }
 

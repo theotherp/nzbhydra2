@@ -171,7 +171,7 @@ public class ExternalTools {
         for (XdarrIndexer indexer : configuredNzbhydraIndexers) {
             logger.debug("Deleting indexer entry {}", indexer.getName());
             try {
-                webAccess.deleteToUrl(getExternalToolUrl(addRequest) + "/" + indexer.getId(), getAuthHeaders(addRequest), 10);
+                webAccess.deleteToUrl(getExternalToolUrl(addRequest) + "/indexer/" + indexer.getId(), getAuthHeaders(addRequest), 10);
             } catch (WebAccessException e) {
                 handleXdarrError(addRequest, e);
             }
@@ -189,15 +189,9 @@ public class ExternalTools {
     }
 
     private boolean failOnUnknownVersion(AddRequest addRequest) throws IOException {
-        String path;
-        if (addRequest.getExternalTool() == AddRequest.ExternalTool.Lidarr || addRequest.getExternalTool() == AddRequest.ExternalTool.Readarr) {
-            path = "/api/v1/system/status";
-        } else {
-            path = "/api/system/status";
-        }
         final String body;
         try {
-            final String url = addRequest.getXdarrHost() + path;
+            final String url = getExternalToolUrl(addRequest) + "/system/status";
             body = webAccess.callUrl(url, getAuthHeaders(addRequest));
             logger.debug(LoggingMarkers.EXTERNAL_TOOLS, "Received response body: {}", body);
         } catch (WebAccessException e) {
@@ -215,13 +209,13 @@ public class ExternalTools {
         }
         String version = (String) statusMap.get("version");
         if (addRequest.getExternalTool() == AddRequest.ExternalTool.Sonarrv3) {
-            if (version == null || !version.startsWith("3")) {
+            if (version == null || (!version.startsWith("3") && !version.startsWith("4"))) {
                 messages.add("Error: configuration for v3 but returned version is " + version);
                 throw new IOException("Error: configuration for v3 but returned version is " + version);
             }
         } else if (addRequest.getExternalTool() == AddRequest.ExternalTool.Radarrv3) {
-            //For some reason some radarr builds return 10.xxx instead of 3.xxx
-            if (version == null || (!version.startsWith("3") && !version.startsWith("10"))) {
+            //For some reason some radarr v3 builds return 10.xxx instead of 3.xxx
+            if (version == null || (!version.startsWith("3") && !version.startsWith("4") && !version.startsWith("10"))) {
                 messages.add("Error: configuration for v3 but returned version is " + version);
                 throw new IOException("Error: configuration for v3 but returned version is " + version);
             }
@@ -364,7 +358,7 @@ public class ExternalTools {
         }
         final String response;
         try {
-            final String url = getExternalToolUrl(addRequest);
+            final String url = getExternalToolUrl(addRequest) + "/indexer";
             logger.debug(LoggingMarkers.EXTERNAL_TOOLS, "Calling URL {} with data\n{} and body\n{}", url, xdarrAddRequest, body);
 
             response = webAccess.postToUrl(url, MediaType.get("application/json"), body, getAuthHeaders(addRequest), 10);
@@ -399,7 +393,7 @@ public class ExternalTools {
 
     private List<XdarrIndexer> getConfiguredNzbhydraIndexers(AddRequest addRequest) throws IOException {
         final String response;
-        final String url = getExternalToolUrl(addRequest);
+        final String url = getExternalToolUrl(addRequest) + "/indexer";
         logger.debug("Getting configured indexers using URL {}", url);
 
         response = webAccess.callUrl(url, getAuthHeaders(addRequest));
@@ -446,11 +440,11 @@ public class ExternalTools {
     private String getExternalToolUrl(AddRequest addRequest) {
         final String url;
         if (addRequest.getExternalTool() == AddRequest.ExternalTool.Sonarrv3 || addRequest.getExternalTool() == AddRequest.ExternalTool.Radarrv3) {
-            url = addRequest.getXdarrHost() + "/api/v3/indexer";
+            url = addRequest.getXdarrHost() + "/api/v3";
         } else if (addRequest.getExternalTool() == AddRequest.ExternalTool.Lidarr || addRequest.getExternalTool() == AddRequest.ExternalTool.Readarr) {
-            url = addRequest.getXdarrHost() + "/api/v1/indexer";
+            url = addRequest.getXdarrHost() + "/api/v1";
         } else {
-            url = addRequest.getXdarrHost() + "/api/indexer";
+            url = addRequest.getXdarrHost() + "/api";
         }
         return url;
     }
