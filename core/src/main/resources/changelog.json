@@ -1,32 +1,43 @@
-[ {
-  "version" : "v3.17.2",
-  "date" : "2021-10-05",
-  "changes" : [ {
-    "type" : "fix",
-    "text" : "The \"What's new\" views were empty. If you want the gritty details: I make a call to the backend /updates/changesSinceUpTo/3.17.1 which is supposed to return all changes between the current version and 3.17.1, in this example. For some stupid reason the backend framework converts the 3.17.1 to 3.17 which means for the running version 3.17.0 the changes between 3.17 and 3.17.0 were shown which are obviously empty."
-  } ],
-  "final" : true
-}, {
-  "version" : "v3.17.1",
-  "date" : "2021-10-05",
-  "changes" : [ {
-    "type" : "fix",
-    "text" : "Only allow (ZIP) files to be downloaded that were created by NZBHydra. See #744."
-  }, {
-    "type" : "fix",
-    "text" : "Hide button to download results as ZIP if access to indexer results is configured to work via redirect. See #734."
-  } ],
-  "final" : true
-}, {
-  "version" : "v3.17.0",
-  "date" : "2021-10-03",
-  "changes" : [ {
-    "type" : "feature",
-    "text" : "Show beta releases in update section even when beta releases are disabled. You won't get notifications and automatic updates will still respect the config but you can then choose to install a beta version without having to switch to the beta branch. See #730."
-  }, {
-    "type" : "feature",
-    "text" : "Show loading spinner while loading more results. See #729."
-  }, {
+[
+  {
+    "version": "v3.17.2",
+    "date": "2021-10-05",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Ugh, don't ask. I'm glad that releases don't cost anything."
+      }
+    ],
+    "final": true
+  },
+  {
+    "version": "v3.17.1",
+    "date": "2021-10-05",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Only allow (ZIP) files to be downloaded that were created by NZBHydra. See #744."
+      },
+      {
+        "type": "fix",
+        "text": "Hide button to download results as ZIP if access to indexer results is configured to work via redirect. See #734."
+      }
+    ],
+    "final": true
+  },
+  {
+    "version": "v3.17.0",
+    "date": "2021-10-03",
+    "changes": [
+      {
+        "type": "feature",
+        "text": "Show beta releases in update section even when beta releases are disabled. You won't get notifications and automatic updates will still respect the config but you can then choose to install a beta version without having to switch to the beta branch. See #730."
+      },
+      {
+        "type": "feature",
+        "text": "Show loading spinner while loading more results. See #729."
+      },
+      {
     "type" : "fix",
     "text" : "Fix wrong API path used when configuring Radarr v4. See #731."
   }, {

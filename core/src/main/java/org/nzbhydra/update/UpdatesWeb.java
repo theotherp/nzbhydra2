@@ -25,9 +25,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
@@ -105,8 +105,8 @@ public class UpdatesWeb {
 
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/updates/changesSinceUpTo", method = RequestMethod.GET)
-    public List<ChangelogVersionEntry> getChangesSince(@RequestParam String version) throws Exception {
+    @RequestMapping(value = "/internalapi/updates/changesSince/{version:.+}", method = RequestMethod.GET)
+    public List<ChangelogVersionEntry> getChangesSince(@PathVariable String version) throws Exception {
         return updateManager.getChangesBetweenCurrentVersionAnd(new SemanticVersion(version));
     }
 
@@ -131,15 +131,15 @@ public class UpdatesWeb {
     }
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/updates/ignore", method = RequestMethod.PUT, consumes = MediaType.ALL_VALUE)
-    public void ignore(@RequestParam String version) {
+    @RequestMapping(value = "/internalapi/updates/ignore/{version:.+}", method = RequestMethod.PUT, consumes = MediaType.ALL_VALUE)
+    public void ignore(@PathVariable String version) {
         updateManager.ignore(version);
     }
 
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/updates/installUpdate", method = RequestMethod.PUT)
-    public GenericResponse installUpdate(@RequestParam String version) throws Exception {
+    @RequestMapping(value = "/internalapi/updates/installUpdate/{version:.+}", method = RequestMethod.PUT)
+    public GenericResponse installUpdate(@PathVariable String version) throws Exception {
         updateMessages.clear();
         updateManager.installUpdate(version, false);
         return new GenericResponse(true, null);
