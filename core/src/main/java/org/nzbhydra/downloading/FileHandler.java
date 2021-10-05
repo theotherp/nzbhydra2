@@ -76,6 +76,8 @@ public class FileHandler {
     @Autowired
     protected UrlCalculator urlCalculator;
 
+    private final Set<File> temporaryZipFiles = new HashSet<>();
+
     @Transactional
     public DownloadResult getFileByGuid(long guid, FileDownloadAccessType fileDownloadAccessType, SearchSource accessSource) throws InvalidSearchResultIdException {
         Optional<SearchResultEntity> optionalResult = searchResultRepository.findById(guid);
@@ -242,6 +244,7 @@ public class FileHandler {
         logger.info("Creating ZIP with files");
 
         File tempFile = File.createTempFile("nzbhydra", ".zip");
+        temporaryZipFiles.add(tempFile);
         tempFile.deleteOnExit();
         logger.debug("Using temp file {}", tempFile.getAbsolutePath());
         FileOutputStream fos = new FileOutputStream(tempFile);
@@ -377,6 +380,9 @@ public class FileHandler {
         return GenericResponse.ok();
     }
 
+    public Set<File> getTemporaryZipFiles() {
+        return temporaryZipFiles;
+    }
 
     private static class NzbsDownload {
         private final List<File> files;

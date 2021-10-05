@@ -33,7 +33,6 @@ function downloadNzbzipButton() {
                 var filename = "NZBHydra NZBs" + searchTitle + ".zip";
                 $http({method: "post", url: link, data: values}).then(function (response) {
                     if (response.data.successful && response.data.zip !== null) {
-                        //FileDownloadService.sendFile($base64.decode(response.zip), filename);
                         link = "internalapi/nzbzipDownload";
                         FileDownloadService.downloadFile(link, filename, "POST", response.data.zipFilepath);
                         if (angular.isDefined($scope.callback)) {

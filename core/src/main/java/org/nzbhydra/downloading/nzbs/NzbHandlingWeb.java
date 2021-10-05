@@ -41,8 +41,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 public class NzbHandlingWeb {
@@ -95,7 +97,11 @@ public class NzbHandlingWeb {
     @RequestMapping(value = "/internalapi/nzbzipDownload", produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.POST)
     @Secured({"ROLE_USER"})
     public FileSystemResource downloadNzbZip(@RequestBody String zipFilepath) {
-        return new FileSystemResource(zipFilepath);
+        final Optional<File> matchingFile = fileHandler.getTemporaryZipFiles().stream().filter(x -> x.getAbsolutePath().equals(zipFilepath)).findFirst();
+        if (matchingFile.isPresent()) {
+            return new FileSystemResource(zipFilepath);
+        }
+        throw new RuntimeException("Not allowed to access file " + zipFilepath + " as it was not created by NZBHydra");
     }
 
 
