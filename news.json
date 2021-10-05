@@ -1,5 +1,9 @@
 [
   {
+    "showForVersion": "3.17.0",
+    "newsAsMarkdown": "I've borked the manual update in 3.17.0, meaning after a restart NZBHydra will still be running its old version. If you have installed 3.17.0 outside of docker and have automatic updates disabled, either enable automatic updates and let it do its thing or update manually using the latest release from GitHub."
+  },
+  {
     "showForVersion": "3.10.0",
     "newsAsMarkdown": "If you're running NZBHydra behind a reverse proxy please add the following lines to the location section: proxy_set_header Upgrade $http_upgrade;\nproxy_set_header Connection \"upgrade\";"
   },

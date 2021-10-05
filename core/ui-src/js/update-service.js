@@ -47,7 +47,7 @@ function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandl
     }
 
     function ignore(version) {
-        return $http.put("internalapi/updates/ignore/" + version).then(function (response) {
+        return $http.put("internalapi/updates/ignore?version=" + version).then(function (response) {
             return response;
         });
     }
@@ -110,7 +110,6 @@ function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandl
         });
     }
 
-
     function update(version) {
         var modalInstance = $uibModal.open({
             templateUrl: 'static/html/update-modal.html',
@@ -120,7 +119,7 @@ function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandl
             keyboard: false
         });
 
-        $http.put("internalapi/updates/installUpdate/" + version).then(function () {
+        $http.put("internalapi/updates/installUpdate?version=" + version).then(function () {
                 //Handle like restart, ping application and wait
                 //Perhaps save the version to which we want to update, ask later and see if they're equal. If not updating apparently failed...
                 $timeout(function () {
