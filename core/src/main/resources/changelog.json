@@ -5,6 +5,10 @@
       {
         "type": "fix",
         "text": "Only allow (ZIP) files to be downloaded that were created by NZBHydra."
+      },
+      {
+        "type": "fix",
+        "text": "Hide button to download results as ZIP if access to indexer results is configured to work via redirect."
       }
     ],
     "final": true

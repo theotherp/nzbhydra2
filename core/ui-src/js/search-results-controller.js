@@ -8,6 +8,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
     DebugService.log("foobar");
     $scope.limitTo = ConfigService.getSafe().searching.loadLimitInternal;
     $scope.offset = 0;
+    $scope.allowZipDownload = ConfigService.getSafe().downloading.fileDownloadAccessType === 'PROXY';
 
     var indexerColors = {};
 
@@ -195,9 +196,11 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         {id: "groupEpisodes", label: "Group TV results by season/episode"},
         {id: "expandGroupsByDefault", label: "Expand groups by default"},
         {id: "showDownloadedIndicator", label: "Show already downloaded indicator"},
-        {id: "hideAlreadyDownloadedResults", label: "Hide already downloaded results"},
-        {id: "showResultsAsZipButton", label: "Show button to download results as ZIP"},
+        {id: "hideAlreadyDownloadedResults", label: "Hide already downloaded results"}
     ];
+    if ($scope.allowZipDownload) {
+        $scope.optionsOptions.push({id: "showResultsAsZipButton", label: "Show button to download results as ZIP"});
+    }
     $scope.optionsSelectedModel = [];
     for (var key in $scope.optionsOptions) {
         if ($scope.foo[$scope.optionsOptions[key]["id"]]) {

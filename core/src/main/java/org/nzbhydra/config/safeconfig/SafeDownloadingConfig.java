@@ -2,6 +2,7 @@ package org.nzbhydra.config.safeconfig;
 
 import lombok.Getter;
 import org.nzbhydra.config.downloading.DownloadingConfig;
+import org.nzbhydra.config.downloading.FileDownloadAccessType;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -16,6 +17,7 @@ public class SafeDownloadingConfig {
     private final List<SafeDownloaderConfig> downloaders;
     private final boolean showDownloaderStatus;
     private final String primaryDownloader;
+    private final FileDownloadAccessType fileDownloadAccessType;
 
     public SafeDownloadingConfig(DownloadingConfig downloadingConfig) {
         saveTorrentsTo = downloadingConfig.getSaveTorrentsTo().orElse(null);
@@ -24,6 +26,7 @@ public class SafeDownloadingConfig {
         showDownloaderStatus = downloadingConfig.isShowDownloaderStatus();
         downloaders = downloadingConfig.getDownloaders().stream().map(SafeDownloaderConfig::new).collect(Collectors.toList());
         primaryDownloader = downloadingConfig.getPrimaryDownloader();
+        fileDownloadAccessType = downloadingConfig.getNzbAccessType();
     }
 
 

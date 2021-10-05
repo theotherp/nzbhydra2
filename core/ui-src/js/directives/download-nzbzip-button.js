@@ -14,6 +14,7 @@ function downloadNzbzipButton() {
         controller: controller
     };
 
+
     function controller($scope, growl, $http, FileDownloadService) {
         $scope.download = function () {
             if (angular.isUndefined($scope.searchResults) || $scope.searchResults.length === 0) {
