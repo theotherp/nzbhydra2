@@ -1,3 +1,9 @@
+### v3.17.3 (2021-10-05)
+
+**Fix** Ugh, don't ask. I'm glad that releases don't cost anything.
+
+
+
 ### v3.17.2 (2021-10-05)
 
 **Fix** The "What's new" views were empty. If you want the gritty details: I make a call to the backend /updates/changesSinceUpTo/3.17.1 which is supposed to return all changes between the current version and 3.17.1, in this example. For some stupid reason the backend framework converts the 3.17.1 to 3.17 which means for the running version 3.17.0 the changes between 3.17 and 3.17.0 were shown which are obviously empty.
