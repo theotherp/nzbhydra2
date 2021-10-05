@@ -1,11 +1,22 @@
 [
   {
-    "version": "v3.17.2",
+    "version": "v3.17.3",
     "date": "2021-10-05",
     "changes": [
       {
         "type": "fix",
         "text": "Ugh, don't ask. I'm glad that releases don't cost anything."
+      }
+    ],
+    "final": true
+  },
+  {
+    "version": "v3.17.2",
+    "date": "2021-10-05",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "The \"What's new\" views were empty. If you want the gritty details: I make a call to the backend /updates/changesSinceUpTo/3.17.1 which is supposed to return all changes between the current version and 3.17.1, in this example. For some stupid reason the backend framework converts the 3.17.1 to 3.17 which means for the running version 3.17.0 the changes between 3.17 and 3.17.0 were shown which are obviously empty."
       }
     ],
     "final": true
@@ -38,16 +49,19 @@
         "text": "Show loading spinner while loading more results. See #729."
       },
       {
-    "type" : "fix",
-    "text" : "Fix wrong API path used when configuring Radarr v4. See #731."
-  }, {
-    "type" : "fix",
-    "text" : "Fix display of fixes in version history (the little orange badge shown in the updates section next to this entry)."
-  }, {
-    "type" : "fix",
-    "text" : "Don't log output of URL calls when status 429 is returned (Too Many Requests)."
-  } ],
-  "final" : true
+        "type": "fix",
+        "text": "Fix wrong API path used when configuring Radarr v4. See #731."
+      },
+      {
+        "type": "fix",
+        "text": "Fix display of fixes in version history (the little orange badge shown in the updates section next to this entry)."
+      },
+      {
+        "type": "fix",
+        "text": "Don't log output of URL calls when status 429 is returned (Too Many Requests)."
+      }
+    ],
+    "final": true
 }, {
   "version" : "v3.16.2",
   "date" : "2021-09-27",
