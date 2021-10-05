@@ -1,3 +1,11 @@
+### v3.17.1 (2021-10-05)
+
+**Fix** Only allow (ZIP) files to be downloaded that were created by NZBHydra.
+
+**Fix** Hide button to download results as ZIP if access to indexer results is configured to work via redirect.
+
+
+
 ### v3.17.0 (2021-10-03)
 
 **Feature** Show beta releases in update section even when beta releases are disabled. You won't get notifications and automatic updates will still respect the config but you can then choose to install a beta version without having to switch to the beta branch.
