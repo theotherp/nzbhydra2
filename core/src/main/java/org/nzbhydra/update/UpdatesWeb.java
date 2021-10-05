@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
@@ -105,8 +106,8 @@ public class UpdatesWeb {
 
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/updates/changesSince/{version}", method = RequestMethod.GET)
-    public List<ChangelogVersionEntry> getChangesSince(@PathVariable String version) throws Exception {
+    @RequestMapping(value = "/internalapi/updates/changesSinceUpTo", method = RequestMethod.GET)
+    public List<ChangelogVersionEntry> getChangesSince(@RequestParam String version) throws Exception {
         return updateManager.getChangesBetweenCurrentVersionAnd(new SemanticVersion(version));
     }
 

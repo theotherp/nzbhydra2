@@ -60,7 +60,7 @@ function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandl
     }
 
     function showChanges(version) {
-        return $http.get("internalapi/updates/changesSince/" + version).then(function (response) {
+        return $http.get("internalapi/updates/changesSinceUpTo?version=" + version).then(function (response) {
             var params = {
                 size: "lg",
                 templateUrl: "static/html/changelog-modal.html",
@@ -119,6 +119,7 @@ function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandl
             backdrop: 'static',
             keyboard: false
         });
+
         $http.put("internalapi/updates/installUpdate/" + version).then(function () {
                 //Handle like restart, ping application and wait
                 //Perhaps save the version to which we want to update, ask later and see if they're equal. If not updating apparently failed...
