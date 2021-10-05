@@ -1,18 +1,24 @@
+### v3.17.2 (2021-10-05)
+
+**Fix** The "What's new" views were empty. If you want the gritty details: I make a call to the backend /updates/changesSinceUpTo/3.17.1 which is supposed to return all changes between the current version and 3.17.1, in this example. For some stupid reason the backend framework converts the 3.17.1 to 3.17 which means for the running version 3.17.0 the changes between 3.17 and 3.17.0 were shown which are obviously empty.
+
+
+
 ### v3.17.1 (2021-10-05)
 
-**Fix** Only allow (ZIP) files to be downloaded that were created by NZBHydra.
+**Fix** Only allow (ZIP) files to be downloaded that were created by NZBHydra. See <a href="https://github.com/theotherp/nzbhydra2/issues/744">#744</a>.
 
-**Fix** Hide button to download results as ZIP if access to indexer results is configured to work via redirect.
+**Fix** Hide button to download results as ZIP if access to indexer results is configured to work via redirect. See <a href="https://github.com/theotherp/nzbhydra2/issues/734">#734</a>.
 
 
 
 ### v3.17.0 (2021-10-03)
 
-**Feature** Show beta releases in update section even when beta releases are disabled. You won't get notifications and automatic updates will still respect the config but you can then choose to install a beta version without having to switch to the beta branch.
+**Feature** Show beta releases in update section even when beta releases are disabled. You won't get notifications and automatic updates will still respect the config but you can then choose to install a beta version without having to switch to the beta branch. See <a href="https://github.com/theotherp/nzbhydra2/issues/730">#730</a>.
 
-**Feature** Show loading spinner while loading more results.
+**Feature** Show loading spinner while loading more results. See <a href="https://github.com/theotherp/nzbhydra2/issues/729">#729</a>.
 
-**Fix** Fix wrong API path used when configuring Radarr v4.
+**Fix** Fix wrong API path used when configuring Radarr v4. See <a href="https://github.com/theotherp/nzbhydra2/issues/731">#731</a>.
 
 **Fix** Fix display of fixes in version history (the little orange badge shown in the updates section next to this entry).
 
@@ -36,9 +42,9 @@
 
 **Feature** Add support for Java 16. Please not that there's no reason for you to just willy-nilly update the java major version (e.g. 11 to 16). Newer releases are not automatically better or safer. Installing patches (e.g. Java 11.0.0 to Java 11.0.2 or such) is enough. Java 17 is still not supported.
 
-**Feature** Add "-xpost" to the list of trailing words to remove.
+**Feature** Add "-xpost" to the list of trailing words to remove. See <a href="https://github.com/theotherp/nzbhydra2/issues/717">#717</a>.
 
-**Fix** Make checkboxes and radioboxes grayscale because new browsers show them in weird blue.
+**Fix** Make checkboxes and radioboxes grayscale because new browsers show them in weird blue. See <a href="https://github.com/theotherp/nzbhydra2/issues/727">#727</a>.
 
 
 
