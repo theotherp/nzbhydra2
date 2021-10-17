@@ -127,7 +127,12 @@ public class ExternalApi {
             NewznabXmlError error = new NewznabXmlError("200", "Received call with parameters set in path and request variables");
             return new ResponseEntity<Object>(error, HttpStatus.OK);
         } else if (indexerName != null) {
-            params.setIndexers(Sets.newHashSet(indexerName));
+            if (indexerName.equals("api")) {
+                logger.warn("The URL to access the NZBHydra API is very likely wrong. Make sure that it does not end with /api");
+            } else {
+                params.setIndexers(Sets.newHashSet(indexerName));
+                logger.info("Setting selected indexer {} from path variable", indexerName);
+            }
         }
 
         if (params.getT() == ActionAttribute.CAPS) {

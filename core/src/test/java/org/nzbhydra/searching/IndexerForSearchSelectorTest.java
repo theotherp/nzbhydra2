@@ -114,18 +114,18 @@ public class IndexerForSearchSelectorTest {
         when(searchRequest.getSource()).thenReturn(SearchSource.INTERNAL);
         when(searchRequest.getIndexers()).thenReturn(Optional.of(Sets.newSet("anotherIndexer")));
 
-        assertFalse(testee.checkIndexerSelectedByUser(indexer));
+        assertFalse(testee.checkIndexerSelected(indexer));
 
         when(searchRequest.getSource()).thenReturn(SearchSource.API);
-        assertFalse(testee.checkIndexerSelectedByUser(indexer));
+        assertFalse(testee.checkIndexerSelected(indexer));
 
         when(searchRequest.getIndexers()).thenReturn(Optional.of(Sets.newSet("indexer")));
 
         when(searchRequest.getSource()).thenReturn(SearchSource.INTERNAL);
-        assertTrue(testee.checkIndexerSelectedByUser(indexer));
+        assertTrue(testee.checkIndexerSelected(indexer));
 
         when(searchRequest.getSource()).thenReturn(SearchSource.API);
-        assertTrue(testee.checkIndexerSelectedByUser(indexer));
+        assertTrue(testee.checkIndexerSelected(indexer));
     }
 
     @Test

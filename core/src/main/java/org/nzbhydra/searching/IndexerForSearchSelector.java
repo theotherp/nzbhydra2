@@ -99,7 +99,7 @@ public class IndexerForSearchSelector {
             if (!checkInternalAndNotEvenShown(indexer)) {
                 continue;
             }
-            if (!checkIndexerSelectedByUser(indexer)) {
+            if (!checkIndexerSelected(indexer)) {
                 continue;
             }
             if (!checkIndexerConfigComplete(indexer)) {
@@ -226,13 +226,17 @@ public class IndexerForSearchSelector {
         return true;
     }
 
-    protected boolean checkIndexerSelectedByUser(Indexer indexer) {
-        boolean indexerNotSelectedByUser =
-                (searchRequest.getIndexers().isPresent() && !searchRequest.getIndexers().get().isEmpty())
-                        && !searchRequest.getIndexers().get().contains(indexer.getName());
-        if (indexerNotSelectedByUser) {
+    protected boolean checkIndexerSelected(Indexer indexer) {
+        if (!searchRequest.getIndexers().isPresent()) {
+            return true;
+        }
+        if (searchRequest.getIndexers().get().isEmpty()) {
+            return true;
+        }
+        boolean indexerNotSelected = !searchRequest.getIndexers().get().contains(indexer.getName());
+        if (indexerNotSelected) {
             //Don't send a search log message for this because showing it to the leader would be useless. He knows he hasn't selected it
-            logger.info(String.format("Not using %s because it was not selected by the user", indexer.getName()));
+            logger.info(String.format("Not using %s because it's not in selection %s", indexer.getName(), searchRequest.getIndexers().get()));
             notSelectedIndersWithReason.put(indexer, "Not selected by the user");
             return false;
         }
