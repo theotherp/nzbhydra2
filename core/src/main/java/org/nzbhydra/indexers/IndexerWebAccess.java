@@ -101,7 +101,7 @@ public class IndexerWebAccess {
 
             throw new IndexerUnreachableException("Error while communicating with indexer " + indexerConfig.getName() + ". Server returned: " + e.getMessage(), e.getCause());
         } catch (TimeoutException e) {
-            throw new IndexerAccessException("Indexer did not complete request within " + timeout + " seconds");
+            throw new IndexerUnreachableException("Indexer did not complete request within " + timeout + " seconds");
         } catch (Exception e) {
             throw new RuntimeException("Unexpected error while accessing indexer", e);
         }

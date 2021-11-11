@@ -240,14 +240,17 @@ public class MockNewznab {
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }
 
-        if (params.getQ() != null && params.getQ().equals("sleep")) {
+        if (params.getQ() != null && params.getQ().startsWith("sleep")) {
             Thread.sleep(new Random().nextInt(5000));
         }
 
-        if (params.getQ() != null && params.getQ().equals("sleep10")) {
+        if (params.getQ() != null && params.getQ().startsWith("sleep10")) {
             Thread.sleep(10000);
         }
-        if (params.getQ() != null && params.getQ().equals("sleepforever")) {
+        if (params.getQ() != null && params.getQ().startsWith("sleep20")) {
+            Thread.sleep(20000);
+        }
+        if (params.getQ() != null && params.getQ().startsWith("sleepforever")) {
             Thread.sleep(10000 * 10000);
         }
 
