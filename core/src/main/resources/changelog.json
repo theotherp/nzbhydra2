@@ -3,8 +3,12 @@
     "version": "v3.18.0",
     "changes": [
       {
-        "type": "feature",
+        "type": "fix",
         "text": "Make sure that when the NZBHydra API is accessed with a duplicate /api in the URL this is not interpreted as wanting to only use an indexer with the name \"api\"."
+      },
+      {
+        "type": "feature",
+        "text": "Abort on startup if incompatible Java version is used."
       }
     ],
     "final": true

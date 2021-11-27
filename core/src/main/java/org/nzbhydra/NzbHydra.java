@@ -13,6 +13,7 @@ import org.nzbhydra.database.DatabaseRecreation;
 import org.nzbhydra.debuginfos.DebugInfosProvider;
 import org.nzbhydra.genericstorage.GenericStorage;
 import org.nzbhydra.logging.LoggingMarkers;
+import org.nzbhydra.mapping.SemanticVersion;
 import org.nzbhydra.misc.BrowserOpener;
 import org.nzbhydra.update.UpdateManager;
 import org.nzbhydra.web.UrlCalculator;
@@ -86,6 +87,15 @@ public class NzbHydra {
 
     public static void main(String[] args) throws Exception {
         LoggerFactory.getILoggerFactory();
+
+
+        final String javaVersion = System.getProperty("java.version");
+        if (javaVersion != null && !javaVersion.startsWith("1.8")) {
+            final SemanticVersion semanticVersion = new SemanticVersion(javaVersion);
+            if (semanticVersion.major > 15) {
+                throw new RuntimeException("Deteted Java version " + javaVersion + ". Please use Java 8, 11 or 15. Java 16 and above are not supported");
+            }
+        }
 
         OptionParser parser = new OptionParser();
         parser.accepts("datafolder", "Define path to main data folder. Must start with ./ for relative paths").withRequiredArg().defaultsTo("./data");
