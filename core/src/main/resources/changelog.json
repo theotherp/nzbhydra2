@@ -1,46 +1,35 @@
-[
-  {
-    "version": "v3.18.0",
-    "changes": [
-      {
-        "type": "fix",
-        "text": "Make sure that when the NZBHydra API is accessed with a duplicate /api in the URL this is not interpreted as wanting to only use an indexer with the name \"api\"."
-      },
-      {
-        "type": "feature",
-        "text": "Abort on startup if incompatible Java version is used."
-      }
-    ],
-    "final": true
-  },
-  {
-    "version": "v3.17.3",
-    "date": "2021-10-05",
-    "changes": [
-      {
-        "type": "fix",
-        "text": "Ugh, don't ask. I'm glad that releases don't cost anything."
-      }
-    ],
-    "final": true
-  },
-  {
-    "version": "v3.17.2",
-    "date": "2021-10-05",
-    "changes": [
-      {
-        "type": "fix",
-        "text": "The \"What's new\" views were empty. If you want the gritty details: I make a call to the backend /updates/changesSinceUpTo/3.17.1 which is supposed to return all changes between the current version and 3.17.1, in this example. For some stupid reason the backend framework converts the 3.17.1 to 3.17 which means for the running version 3.17.0 the changes between 3.17 and 3.17.0 were shown which are obviously empty."
-      }
-    ],
-    "final": true
-  },
-  {
-    "version": "v3.17.1",
-    "date": "2021-10-05",
-    "changes": [
-      {
-        "type": "fix",
+[ {
+  "version" : "v3.18.0",
+  "date" : "2021-11-27",
+  "changes" : [ {
+    "type" : "fix",
+    "text" : "Make sure that when the NZBHydra API is accessed with a duplicate /api in the URL this is not interpreted as wanting to only use an indexer with the name \"api\"."
+  }, {
+    "type" : "feature",
+    "text" : "Abort on startup if incompatible Java version is used."
+  } ],
+  "final" : true
+}, {
+  "version" : "v3.17.3",
+  "date" : "2021-10-05",
+  "changes" : [ {
+    "type" : "fix",
+    "text" : "Ugh, don't ask. I'm glad that releases don't cost anything."
+  } ],
+  "final" : true
+}, {
+  "version" : "v3.17.2",
+  "date" : "2021-10-05",
+  "changes" : [ {
+    "type" : "fix",
+    "text" : "The \"What's new\" views were empty. If you want the gritty details: I make a call to the backend /updates/changesSinceUpTo/3.17.1 which is supposed to return all changes between the current version and 3.17.1, in this example. For some stupid reason the backend framework converts the 3.17.1 to 3.17 which means for the running version 3.17.0 the changes between 3.17 and 3.17.0 were shown which are obviously empty."
+  } ],
+  "final" : true
+}, {
+  "version" : "v3.17.1",
+  "date" : "2021-10-05",
+  "changes" : [ {
+    "type" : "fix",
     "text" : "Only allow (ZIP) files to be downloaded that were created by NZBHydra. See #744."
   }, {
     "type" : "fix",

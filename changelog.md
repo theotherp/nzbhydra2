@@ -1,3 +1,11 @@
+### v3.18.0 (2021-11-27)
+
+**Fix** Make sure that when the NZBHydra API is accessed with a duplicate /api in the URL this is not interpreted as wanting to only use an indexer with the name "api".
+
+**Feature** Abort on startup if incompatible Java version is used.
+
+
+
 ### v3.17.3 (2021-10-05)
 
 **Fix** Ugh, don't ask. I'm glad that releases don't cost anything.
