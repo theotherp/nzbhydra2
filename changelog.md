@@ -1,3 +1,9 @@
+### v3.18.1 (2021-12-01)
+
+**Fix** Fix exception when unexpected java version is found. Why the fuck does every JDK have to have its own version format?
+
+
+
 ### v3.18.0 (2021-11-27)
 
 **Fix** Make sure that when the NZBHydra API is accessed with a duplicate /api in the URL this is not interpreted as wanting to only use an indexer with the name "api".
