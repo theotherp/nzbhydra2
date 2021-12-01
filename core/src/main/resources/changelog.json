@@ -1,24 +1,42 @@
-[ {
-  "version" : "v3.18.0",
-  "date" : "2021-11-27",
-  "changes" : [ {
-    "type" : "fix",
-    "text" : "Make sure that when the NZBHydra API is accessed with a duplicate /api in the URL this is not interpreted as wanting to only use an indexer with the name \"api\"."
-  }, {
-    "type" : "feature",
-    "text" : "Abort on startup if incompatible Java version is used."
-  } ],
-  "final" : true
-}, {
-  "version" : "v3.17.3",
-  "date" : "2021-10-05",
-  "changes" : [ {
-    "type" : "fix",
-    "text" : "Ugh, don't ask. I'm glad that releases don't cost anything."
-  } ],
-  "final" : true
-}, {
-  "version" : "v3.17.2",
+[
+  {
+    "version": "v3.18.1",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Fix exception when unexpected java version is found. Why the fuck does every JDK have to have its own version format?"
+      }
+    ],
+    "final": true
+  },
+  {
+    "version": "v3.18.0",
+    "date": "2021-11-27",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Make sure that when the NZBHydra API is accessed with a duplicate /api in the URL this is not interpreted as wanting to only use an indexer with the name \"api\"."
+      },
+      {
+        "type": "feature",
+        "text": "Abort on startup if incompatible Java version is used."
+      }
+    ],
+    "final": true
+  },
+  {
+    "version": "v3.17.3",
+    "date": "2021-10-05",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Ugh, don't ask. I'm glad that releases don't cost anything."
+      }
+    ],
+    "final": true
+  },
+  {
+    "version": "v3.17.2",
   "date" : "2021-10-05",
   "changes" : [ {
     "type" : "fix",

@@ -13,7 +13,6 @@ import org.nzbhydra.database.DatabaseRecreation;
 import org.nzbhydra.debuginfos.DebugInfosProvider;
 import org.nzbhydra.genericstorage.GenericStorage;
 import org.nzbhydra.logging.LoggingMarkers;
-import org.nzbhydra.mapping.SemanticVersion;
 import org.nzbhydra.misc.BrowserOpener;
 import org.nzbhydra.update.UpdateManager;
 import org.nzbhydra.web.UrlCalculator;
@@ -53,6 +52,8 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Configuration(proxyBeanMethods = false)
 @EnableAutoConfiguration(exclude = {
@@ -89,13 +90,7 @@ public class NzbHydra {
         LoggerFactory.getILoggerFactory();
 
 
-        final String javaVersion = System.getProperty("java.version");
-        if (javaVersion != null && !javaVersion.startsWith("1.8")) {
-            final SemanticVersion semanticVersion = new SemanticVersion(javaVersion);
-            if (semanticVersion.major > 15) {
-                throw new RuntimeException("Deteted Java version " + javaVersion + ". Please use Java 8, 11 or 15. Java 16 and above are not supported");
-            }
-        }
+        checkJavaVersion();
 
         OptionParser parser = new OptionParser();
         parser.accepts("datafolder", "Define path to main data folder. Must start with ./ for relative paths").withRequiredArg().defaultsTo("./data");
@@ -122,6 +117,33 @@ public class NzbHydra {
             logger.info("NZBHydra 2 version: " + version);
         } else {
             startup(args, options);
+        }
+    }
+
+    private static void checkJavaVersion() {
+        final String javaVersionString;
+        int javaMajor = 0;
+        try {
+            javaVersionString = System.getProperty("java.version");
+
+            final Matcher matcher = Pattern.compile("(?<major>\\d+)(\\.(?<minor>\\d+)\\.(?<patch>\\d)+[\\-_\\w]*)?.*").matcher(javaVersionString);
+            if (!matcher.find()) {
+                logger.error("Unable to determine JAVA version from {}", javaVersionString);
+                return;
+            }
+
+            javaMajor = Integer.parseInt(matcher.group("major"));
+            int javaMinor = Integer.parseInt(matcher.group("minor"));
+            int javaVersion = 0;
+            if ((javaMajor == 1 && javaMinor == 8)) {
+                return;
+            }
+        } catch (Exception e) {
+            logger.error("Unable to determine java version", e);
+            return;
+        }
+        if (javaMajor > 15) {
+            throw new RuntimeException("Deteted Java version " + javaVersionString + ". Please use Java 8, 11 or 15. Java 16 and above are not supported");
         }
     }
 
