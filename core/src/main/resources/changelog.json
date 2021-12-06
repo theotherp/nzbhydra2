@@ -1,42 +1,32 @@
-[
-  {
-    "version": "v3.18.3",
-    "changes": [
-      {
-        "type": "fix",
-        "text": "Added nzbgeek to the list of indexers which don't support movie/tvsearch searches without IDs."
-      }
-    ],
-    "final": true
-  },
-  {
-    "version": "v3.18.2",
-    "date": "2021-12-06",
-    "changes": [
-      {
-        "type": "fix",
-        "text": "Some indexers do not support movie/tvsearch type queries without IDs but with word based queries (I know of nzbplanet and dognzb). For these indexers the search type is automatically switched to search when no IDs but a word query is given."
-      }
-    ],
-    "final": true
-  },
-  {
-    "version": "v3.18.1",
-    "date": "2021-12-01",
-    "changes": [
-      {
-        "type": "fix",
-        "text": "Fix exception when unexpected java version is found. Why the fuck does every JDK have to have its own version format?"
-      }
-    ],
-    "final": true
-  },
-  {
-    "version": "v3.18.0",
-    "date": "2021-11-27",
-    "changes": [
-      {
-        "type": "fix",
+[ {
+  "version" : "v3.18.3",
+  "date" : "2021-12-06",
+  "changes" : [ {
+    "type" : "fix",
+    "text" : "Added nzbgeek to the list of indexers which don't support movie/tvsearch searches without IDs."
+  } ],
+  "final" : true
+}, {
+  "version" : "v3.18.2",
+  "date" : "2021-12-06",
+  "changes" : [ {
+    "type" : "fix",
+    "text" : "Some indexers do not support movie/tvsearch type queries without IDs but with word based queries (I know of nzbplanet and dognzb). For these indexers the search type is automatically switched to search when no IDs but a word query is given."
+  } ],
+  "final" : true
+}, {
+  "version" : "v3.18.1",
+  "date" : "2021-12-01",
+  "changes" : [ {
+    "type" : "fix",
+    "text" : "Fix exception when unexpected java version is found. Why the fuck does every JDK have to have its own version format?"
+  } ],
+  "final" : true
+}, {
+  "version" : "v3.18.0",
+  "date" : "2021-11-27",
+  "changes" : [ {
+    "type" : "fix",
     "text" : "Make sure that when the NZBHydra API is accessed with a duplicate /api in the URL this is not interpreted as wanting to only use an indexer with the name \"api\"."
   }, {
     "type" : "feature",
