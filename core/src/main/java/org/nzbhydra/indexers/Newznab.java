@@ -86,7 +86,7 @@ public class Newznab extends Indexer<Xml> {
     private static Pattern GUID_PATTERN = Pattern.compile("(.*\\/)?([a-zA-Z0-9@\\.]+)(#\\w+)?");
 
     private static final List<String> HOSTS_NOT_SUPPORTING_EMPTY_TYPE_SEARCH = Arrays.asList("nzbgeek", "6box");
-    private static final List<String> HOSTS_NOT_SUPPORTING_SPECIAL_TYPE_Q_SEARCH = Arrays.asList("dognzb", "nzbplanet");
+    private static final List<String> HOSTS_NOT_SUPPORTING_SPECIAL_TYPE_Q_SEARCH = Arrays.asList("dognzb", "nzbplanet", "nzbgeek", "6box");
 
     private static final Pattern TV_PATTERN = Pattern.compile("(?<showtitle>[\\w\\.\\-_]+)S(?<season>\\d+)e(?<episode>\\d+)|(?<season2>\\d{1,2})x(?<episode2>\\d{1,2})", Pattern.CASE_INSENSITIVE);
 
