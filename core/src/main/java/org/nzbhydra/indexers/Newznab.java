@@ -86,6 +86,7 @@ public class Newznab extends Indexer<Xml> {
     private static Pattern GUID_PATTERN = Pattern.compile("(.*\\/)?([a-zA-Z0-9@\\.]+)(#\\w+)?");
 
     private static final List<String> HOSTS_NOT_SUPPORTING_EMPTY_TYPE_SEARCH = Arrays.asList("nzbgeek", "6box");
+    private static final List<String> HOSTS_NOT_SUPPORTING_SPECIAL_TYPE_Q_SEARCH = Arrays.asList("dognzb", "nzbplanet");
 
     private static final Pattern TV_PATTERN = Pattern.compile("(?<showtitle>[\\w\\.\\-_]+)S(?<season>\\d+)e(?<episode>\\d+)|(?<season2>\\d{1,2})x(?<episode2>\\d{1,2})", Pattern.CASE_INSENSITIVE);
 
@@ -123,9 +124,14 @@ public class Newznab extends Indexer<Xml> {
             searchType = SearchType.SEARCH;
         }
         boolean searchTypeTvOrMovie = searchRequest.getSearchType() == SearchType.MOVIE || searchRequest.getSearchType() == SearchType.TVSEARCH;
-        if (searchTypeTvOrMovie && searchRequest.getIdentifiers().isEmpty() && isIndexerNotSupportingEmptyTypeSearch()) {
-            debug("Switching search type to SEARCH because this indexer doesn't allow using search type MOVIE/TVSEARCH without identifiers");
-            searchType = SearchType.SEARCH;
+        if (searchTypeTvOrMovie && searchRequest.getIdentifiers().isEmpty()) {
+            if (!searchRequest.getQuery().isPresent() && isIndexerNotSupportingEmptyTypeSearch()) {
+                debug("Switching search type to SEARCH because this indexer doesn't allow using search type MOVIE/TVSEARCH without identifiers and without query");
+                searchType = SearchType.SEARCH;
+            } else if (searchRequest.getQuery().isPresent() && isIndexerNotSupportingSpecialTypeQSearch()) {
+                debug("Switching search type to SEARCH because this indexer doesn't allow using search type MOVIE/TVSEARCH with a query");
+                searchType = SearchType.SEARCH;
+            }
         }
         componentsBuilder = componentsBuilder.queryParam("t", searchType.name().toLowerCase()).queryParam("extended", "1");
 
@@ -250,6 +256,10 @@ public class Newznab extends Indexer<Xml> {
 
     private boolean isIndexerNotSupportingEmptyTypeSearch() {
         return HOSTS_NOT_SUPPORTING_EMPTY_TYPE_SEARCH.stream().anyMatch(x -> getConfig().getHost().toLowerCase().contains(x));
+    }
+
+    private boolean isIndexerNotSupportingSpecialTypeQSearch() {
+        return HOSTS_NOT_SUPPORTING_SPECIAL_TYPE_Q_SEARCH.stream().anyMatch(x -> getConfig().getHost().toLowerCase().contains(x));
     }
 
     protected String addRequiredAndforbiddenWordsToQuery(SearchRequest searchRequest, String query) {
