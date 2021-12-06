@@ -1,3 +1,9 @@
+### v3.18.2 (2021-12-06)
+
+**Fix** Some indexers do not support movie/tvsearch type queries without IDs but with word based queries (I know of nzbplanet and dognzb). For these indexers the search type is automatically switched to search when no IDs but a word query is given.
+
+
+
 ### v3.18.1 (2021-12-01)
 
 **Fix** Fix exception when unexpected java version is found. Why the fuck does every JDK have to have its own version format?
