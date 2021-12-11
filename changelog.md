@@ -1,3 +1,9 @@
+### v3.18.4 (2021-12-11)
+
+**Fix** Update logging library to a newer version due to a security issue. This isn't much of an issue, in my opinion, as I use a different library although this one is used by others. It also only affects JDKs that are older than a year and it's not an issue on docker containers.
+
+
+
 ### v3.18.3 (2021-12-06)
 
 **Fix** Added nzbgeek to the list of indexers which don't support movie/tvsearch searches without IDs.
