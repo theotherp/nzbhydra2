@@ -26,6 +26,8 @@ import java.util.Collections;
 public class DevIndexer extends Newznab {
 
     protected Xml getAndStoreResultToDatabase(URI uri, IndexerApiAccessType apiAccessType) throws IndexerAccessException {
+
+
         NewznabXmlRoot rssRoot = new NewznabXmlRoot();
         if (uri.toString().contains("oneduplicate")) {
             NewznabMockRequest mockRequest = NewznabMockRequest.builder().numberOfResults(1).titleBase("oneresult").titleWords(Collections.emptyList()).total(1).build();

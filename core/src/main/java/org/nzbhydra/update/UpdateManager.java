@@ -15,8 +15,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.io.FileUtils;
 import org.nzbhydra.NzbHydra;
-import org.nzbhydra.ShutdownEvent;
-import org.nzbhydra.WindowsTrayIcon;
 import org.nzbhydra.backup.BackupAndRestore;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
@@ -26,6 +24,7 @@ import org.nzbhydra.mapping.changelog.ChangelogVersionEntry;
 import org.nzbhydra.mapping.github.Asset;
 import org.nzbhydra.mapping.github.Release;
 import org.nzbhydra.notifications.UpdateNotificationEvent;
+import org.nzbhydra.systemcontrol.SystemControl;
 import org.nzbhydra.webaccess.WebAccess;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +32,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
@@ -42,7 +40,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -58,10 +55,7 @@ import java.util.stream.Collectors;
 public class UpdateManager implements InitializingBean {
 
     private static final Logger logger = LoggerFactory.getLogger(UpdateManager.class);
-    public static final int SHUTDOWN_RETURN_CODE = 0;
-    public static final int UPDATE_RETURN_CODE = 11;
-    public static final int RESTART_RETURN_CODE = 22;
-    public static final int RESTORE_RETURN_CODE = 33;
+
     public static final String KEY = "UpdateData";
     public static final int CACHE_DURATION_MINUTES = 5;
     private static final Pattern GITHUB_ISSUE_PATTERN = Pattern.compile("#(\\d{3,})");
@@ -87,6 +81,8 @@ public class UpdateManager implements InitializingBean {
     private GenericStorage genericStorage;
     @Autowired
     private ApplicationEventPublisher applicationEventPublisher;
+    @Autowired
+    private SystemControl systemControl;
 
     @Value("${build.version:0.0.1}")
     protected String currentVersionString;
@@ -366,7 +362,7 @@ public class UpdateManager implements InitializingBean {
         if (isAutomaticUpdate) {
             applicationEventPublisher.publishEvent(new UpdateNotificationEvent(release.getName()));
         }
-        exitWithReturnCode(UPDATE_RETURN_CODE);
+        systemControl.exitWithReturnCode(SystemControl.UPDATE_RETURN_CODE);
     }
 
     protected Asset getAsset(Release latestRelease) throws UpdateException {
@@ -423,34 +419,6 @@ public class UpdateManager implements InitializingBean {
         return blockedVersions;
     }
 
-
-    public void exitWithReturnCode(final int returnCode) {
-        if (Boolean.parseBoolean(environment.getProperty("hydradontshutdown", "false"))) {
-            logger.warn("Not shutting down because property hydradontshutdown is set");
-            return;
-        }
-        new Thread(() -> {
-            try {
-                Path controlIdFilePath = new File(NzbHydra.getDataFolder(), "control.id").toPath();
-                logger.debug("Writing control ID {} to {}", returnCode, controlIdFilePath);
-                Files.write(controlIdFilePath, String.valueOf(returnCode).getBytes());
-            } catch (IOException e) {
-                logger.error("Unable to write control code to file. Wrapper might not behave as expected");
-            }
-            try {
-                //Wait just enough for the request to be completed
-                Thread.sleep(300);
-                applicationEventPublisher.publishEvent(new ShutdownEvent());
-                ((ConfigurableApplicationContext) NzbHydra.getApplicationContext()).close();
-                if (NzbHydra.isOsWindows()) {
-                    WindowsTrayIcon.remove();
-                }
-                System.exit(returnCode);
-            } catch (InterruptedException e) {
-                logger.error("Error while waiting to exit", e); //Doesn't ever happen anyway
-            }
-        }).start();
-    }
 
     public void resetCache() {
         releasesCache = Suppliers.memoizeWithExpiration(getReleasesSupplier(), CACHE_DURATION_MINUTES, TimeUnit.MINUTES);

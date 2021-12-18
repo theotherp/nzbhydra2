@@ -142,8 +142,8 @@ public class NzbHydra {
             logger.error("Unable to determine java version", e);
             return;
         }
-        if (javaMajor > 15) {
-            throw new RuntimeException("Deteted Java version " + javaVersionString + ". Please use Java 8, 11 or 15. Java 16 and above are not supported");
+        if (javaMajor > 17) {
+            throw new RuntimeException("Deteted Java version " + javaVersionString + ". Please use Java 8, 11, 15 or 17. Java 18 and above are not supported");
         }
     }
 

@@ -10,7 +10,7 @@ import org.nzbhydra.NzbHydra;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.ConfigReaderWriter;
 import org.nzbhydra.logging.LoggingMarkers;
-import org.nzbhydra.update.UpdateManager;
+import org.nzbhydra.systemcontrol.SystemControl;
 import org.nzbhydra.webaccess.HydraOkHttp3ClientHttpRequestFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,9 +61,9 @@ public class BackupAndRestore {
     @Autowired
     private ConfigProvider configProvider;
     @Autowired
-    private UpdateManager updateManager;
-    @Autowired
     private HydraOkHttp3ClientHttpRequestFactory requestFactory;
+    @Autowired
+    private SystemControl systemControl;
     private final ConfigReaderWriter configReaderWriter = new ConfigReaderWriter();
 
     @PostConstruct
@@ -227,7 +227,7 @@ public class BackupAndRestore {
         }
         extractZip(backupFile, restoreFolder);
         logger.info("Successfully extracted backup file for wrapper. Restarting.");
-        updateManager.exitWithReturnCode(UpdateManager.RESTORE_RETURN_CODE);
+        systemControl.exitWithReturnCode(SystemControl.RESTORE_RETURN_CODE);
     }
 
     private static void extractZip(File zipFile, File targetFolder) throws IOException {

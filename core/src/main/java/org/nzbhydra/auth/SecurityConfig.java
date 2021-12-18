@@ -38,7 +38,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private ConfigProvider configProvider;
-
     @Autowired
     private HydraAnonymousAuthenticationFilter hydraAnonymousAuthenticationFilter;
     @Autowired
@@ -64,6 +63,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         if (baseConfig.getAuth().getAuthType() == AuthType.BASIC) {
             http = http
+                    .authorizeRequests()
+                    .antMatchers("/internalapi/userinfos").permitAll()
+                    .and()
                     .httpBasic()
                     .authenticationDetailsSource(new WebAuthenticationDetailsSource() {
                         @Override
@@ -72,14 +74,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         }
                     })
                     .and()
-                    .logout().logoutUrl("/logout")
+                    .logout().logoutUrl("/logout").deleteCookies("remember-me")
                     .and();
         } else if (baseConfig.getAuth().getAuthType() == AuthType.FORM) {
             http = http
                     .authorizeRequests()
                     .antMatchers("/internalapi/userinfos").permitAll()
                     .and()
-                    .formLogin().loginPage("/login.html").loginProcessingUrl("/login").permitAll()
+                    .formLogin().loginPage("/login").loginProcessingUrl("/login").defaultSuccessUrl("/").permitAll()
                     .authenticationDetailsSource(new WebAuthenticationDetailsSource() {
                         @Override
                         public WebAuthenticationDetails buildDetails(HttpServletRequest context) {
@@ -87,7 +89,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         }
                     })
                     .and()
-                    .logout().permitAll().logoutUrl("/logout").deleteCookies("remember-me")
+                    .logout().permitAll().logoutUrl("/logout").logoutSuccessUrl("/loggedout").logoutSuccessUrl("/").deleteCookies("remember-me")
                     .and();
         }
         if (baseConfig.getAuth().isAuthConfigured()) {
@@ -104,7 +106,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         .userDetailsService(userDetailsService())
                         .and();
             }
-            http.logout().logoutUrl("/logout").logoutSuccessUrl("/").deleteCookies("remember-me");
             http.authorizeRequests()
                     .antMatchers("/actuator/**")
                     .hasRole("ADMIN")

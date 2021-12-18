@@ -111,7 +111,7 @@ public class WebAccess {
         return Jackson.JSON_MAPPER.readValue(body, clazz);
     }
 
-    public <T> T callUrl(String url, TypeReference valueTypeRef) throws IOException {
+    public <T> T callUrl(String url, TypeReference<T> valueTypeRef) throws IOException {
         String body = callUrl(url);
         return Jackson.JSON_MAPPER.readValue(body, valueTypeRef);
     }

@@ -1896,7 +1896,7 @@ function ConfigFields($injector) {
                                 tooltip: '<ul>' +
                                     '<li>With auth type "None" all areas are unrestricted.</li>' +
                                     '<li>With auth type "Form" the basic page is loaded and login is done via a form.</li>' +
-                                    '<li>With auth type "Basic" you login via basic HTTP authentication. With all areas restricted this is the most secure as nearly no data is loaded from the server before you auth.</li>' +
+                                    '<li>With auth type "Basic" you login via basic HTTP authentication. With all areas restricted this is the most secure as nearly no data is loaded from the server before you auth. Logging out is not supported with basic auth.</li>' +
                                     '</ul>'
                             }
                         },

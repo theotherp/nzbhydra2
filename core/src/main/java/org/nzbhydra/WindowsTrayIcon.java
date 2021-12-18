@@ -1,7 +1,7 @@
 package org.nzbhydra;
 
 import org.nzbhydra.misc.BrowserOpener;
-import org.nzbhydra.update.UpdateManager;
+import org.nzbhydra.systemcontrol.SystemControl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -51,7 +51,7 @@ public class WindowsTrayIcon extends TrayIcon {
         restartItem.addActionListener(e -> {
             ((ConfigurableApplicationContext) NzbHydra.getApplicationContext()).close();
             remove();
-            System.exit(UpdateManager.RESTART_RETURN_CODE);
+            System.exit(SystemControl.RESTART_RETURN_CODE);
         });
 
         MenuItem shutdownItem = new MenuItem("Shutdown");
@@ -64,7 +64,7 @@ public class WindowsTrayIcon extends TrayIcon {
             } finally {
                 remove();
             }
-            System.exit(UpdateManager.SHUTDOWN_RETURN_CODE);
+            System.exit(SystemControl.SHUTDOWN_RETURN_CODE);
         });
 
 
