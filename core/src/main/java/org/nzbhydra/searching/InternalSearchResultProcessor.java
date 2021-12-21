@@ -75,7 +75,6 @@ public class InternalSearchResultProcessor {
             indexerSearchMetaData.setErrorMessage(indexerSearchResult.getErrorMessage());
             indexerSearchMetaData.setHasMoreResults(indexerSearchResult.isHasMoreResults());
             indexerSearchMetaData.setIndexerName(indexerSearchResult.getIndexer().getName());
-            indexerSearchMetaData.setLimit(indexerSearchResult.getLimit());
             indexerSearchMetaData.setNumberOfAvailableResults(indexerSearchResult.getTotalResults());
             indexerSearchMetaData.setNumberOfFoundResults(indexerSearchResult.getSearchResultItems().size());
             indexerSearchMetaData.setOffset(indexerSearchResult.getOffset());

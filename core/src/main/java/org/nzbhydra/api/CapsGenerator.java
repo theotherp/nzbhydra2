@@ -130,7 +130,8 @@ public class CapsGenerator {
     private CapsXmlRoot getXmlCapsRoot(boolean torznabCall) {
         CapsXmlRoot capsRoot = new CapsXmlRoot();
         capsRoot.setRetention(new CapsXmlRetention(3000));
-        capsRoot.setLimits(new CapsXmlLimits(100, 100)); //later link to global setting when implemented
+        final int pageSize = configProvider.getBaseConfig().getSearching().getApiPageSize();
+        capsRoot.setLimits(new CapsXmlLimits(pageSize, pageSize));
 
         CapsXmlServer capsServer = new CapsXmlServer();
         capsServer.setEmail("theotherp@posteo.net");

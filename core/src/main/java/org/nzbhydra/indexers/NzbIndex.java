@@ -42,7 +42,7 @@ public class NzbIndex extends Indexer<NewznabXmlRoot> {
         indexerSearchResult.setTotalResults(acceptorResult.getNumberOfRejectedResults() + indexerSearchResult.getSearchResultItems().size());
         indexerSearchResult.setHasMoreResults(false);
         indexerSearchResult.setOffset(0);
-        indexerSearchResult.setLimit(250);
+        indexerSearchResult.setPageSize(250);
     }
 
     @Override

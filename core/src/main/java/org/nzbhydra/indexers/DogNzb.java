@@ -33,12 +33,12 @@ public class DogNzb extends Newznab {
                 indexerSearchResult.setTotalResults(searchRequest.getOffset() + newznabResponse.getTotal());
             }
             indexerSearchResult.setOffset(newznabResponse.getOffset());
-            indexerSearchResult.setLimit(100);
+            indexerSearchResult.setPageSize(100);
         } else {
             indexerSearchResult.setTotalResults(0);
             indexerSearchResult.setHasMoreResults(false);
             indexerSearchResult.setOffset(0);
-            indexerSearchResult.setLimit(0);
+            indexerSearchResult.setPageSize(0);
         }
     }
 

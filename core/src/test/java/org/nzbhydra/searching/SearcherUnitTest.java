@@ -195,7 +195,7 @@ public class SearcherUnitTest {
         Multiset<String> reasons = HashMultiset.create();
         reasons.add("foobar");
         result1.setReasonsForRejection(reasons);
-        result1.setLimit(10);
+        result1.setPageSize(10);
         when(indexer1.search(any(), anyInt(), anyInt())).thenReturn(result1, mockIndexerSearchResult(11, 10, false, 20, indexer1));
 
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 10);
@@ -274,7 +274,7 @@ public class SearcherUnitTest {
 
         IndexerSearchResult indexerSearchResult = new IndexerSearchResult();
         indexerSearchResult.setSearchResultItems(items);
-        indexerSearchResult.setLimit(limit);
+        indexerSearchResult.setPageSize(limit);
         indexerSearchResult.setOffset(offset);
         indexerSearchResult.setWasSuccessful(true);
         indexerSearchResult.setHasMoreResults(hasMoreResults);

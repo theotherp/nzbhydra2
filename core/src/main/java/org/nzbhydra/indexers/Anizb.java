@@ -35,7 +35,7 @@ public class Anizb extends Indexer<NewznabXmlRoot> {
 
         indexerSearchResult.setHasMoreResults(false);
         indexerSearchResult.setTotalResults(indexerSearchResult.getSearchResultItems().size());
-        indexerSearchResult.setLimit(100);
+        indexerSearchResult.setPageSize(100);
         indexerSearchResult.setOffset(0);
         indexerSearchResult.setTotalResultsKnown(true);
     }

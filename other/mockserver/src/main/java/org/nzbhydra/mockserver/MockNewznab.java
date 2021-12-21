@@ -43,15 +43,17 @@ public class MockNewznab {
     private static HashMap<Integer, NewznabXmlRoot> responsesPerApikey = new HashMap<>();
     private Random random = new Random();
 
+    private static final int API_MAX = 300;
+
     static {
         apikeyToResultCount.put(0, 10);
         apikeyToResultCount.put(1, 20);
         apikeyToResultCount.put(2, 400);
         apikeyToResultCount.put(3, 300);
         apikeyToResultCount.put(4, 200);
-        apikeyToResultCount.put(5, 100);
+        apikeyToResultCount.put(5, API_MAX);
         apikeyToResultCount.put(10, 10);
-        apikeyToResultCount.put(100, 30);
+        apikeyToResultCount.put(API_MAX, 30);
     }
 
 
@@ -119,13 +121,13 @@ public class MockNewznab {
         }
 
         if ("24".equals(params.getTmdbid())) {
-            NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, 100, itemTitleBase, false, Collections.emptyList(), false, 0);
+            NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, API_MAX, itemTitleBase, false, Collections.emptyList(), false, 0);
             rssRoot.getRssChannel().getNewznabResponse().setTotal(10_000);
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }
 
         if ("samenames".equals(params.getQ())) {
-            NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, 100, "", false, Collections.emptyList(), false, 0);
+            NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, API_MAX, "", false, Collections.emptyList(), false, 0);
             rssRoot.getRssChannel().getNewznabResponse().setTotal(1000);
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }
@@ -146,7 +148,7 @@ public class MockNewznab {
         }
 
         if (params.getQ() != null && params.getQ().equals("offsettest2")) {
-            NewznabMockRequest mockRequest = NewznabMockRequest.builder().numberOfResults(100).titleBase("offsettest").offset(params.getOffset()).titleWords(Collections.emptyList()).total(300).build();
+            NewznabMockRequest mockRequest = NewznabMockRequest.builder().numberOfResults(API_MAX).titleBase("offsettest").offset(params.getOffset()).titleWords(Collections.emptyList()).total(300).build();
             NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(mockRequest);
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }
@@ -187,7 +189,7 @@ public class MockNewznab {
         }
 
         if (params.getQ() != null && params.getQ().equals("slash")) {
-            NewznabMockRequest mockRequest = NewznabMockRequest.builder().numberOfResults(100).titleBase("/").offset(params.getOffset()).titleWords(Collections.emptyList()).total(300).build();
+            NewznabMockRequest mockRequest = NewznabMockRequest.builder().numberOfResults(API_MAX).titleBase("/").offset(params.getOffset()).titleWords(Collections.emptyList()).total(300).build();
             NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(mockRequest);
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }
@@ -229,9 +231,9 @@ public class MockNewznab {
                 NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, -1, itemTitleBase, false, Collections.emptyList(), false, 0);
                 return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
             }
-            NewznabMockRequest mockRequest = NewznabMockRequest.builder().numberOfResults(100).titleBase("dognzbtotaltest").offset(params.getOffset()).titleWords(Collections.emptyList()).total(300).build();
+            NewznabMockRequest mockRequest = NewznabMockRequest.builder().numberOfResults(API_MAX).titleBase("dognzbtotaltest").offset(params.getOffset()).titleWords(Collections.emptyList()).total(300).build();
             NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(mockRequest);
-            rssRoot.getRssChannel().getNewznabResponse().setTotal(100);
+            rssRoot.getRssChannel().getNewznabResponse().setTotal(API_MAX);
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }
 
@@ -256,8 +258,8 @@ public class MockNewznab {
 
 
         if (params.getQ() != null && params.getQ().contains("movies")) {
-            NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, 100, itemTitleBase, false, Arrays.asList("cam", "ts", "blu-ray 2160p", "web-dl 1080p", "bluray 1080p", "3d bluray"), false, 0);
-            rssRoot.getRssChannel().getNewznabResponse().setTotal(100);
+            NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, API_MAX, itemTitleBase, false, Arrays.asList("cam", "ts", "blu-ray 2160p", "web-dl 1080p", "bluray 1080p", "3d bluray"), false, 0);
+            rssRoot.getRssChannel().getNewznabResponse().setTotal(API_MAX);
             rssRoot.getRssChannel().getItems().forEach(x -> x.getNewznabAttributes().add(new NewznabAttribute("coverurl", "https://i.omgwtfnzbs.me/tvdb/697fdaeb0fb1ac87d4d6af684b20593a/697fdaeb0fb1ac87d4d6af684b20593a.jpg")));
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }
@@ -293,7 +295,7 @@ public class MockNewznab {
 
             NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, 10, "avengers", doGenerateDuplicates, Collections.emptyList(), false, 0);
             if (params.getApikey().contains("limits")) {
-                rssRoot.getRssChannel().setApiLimits(new NewznabXmlApilimits(0, 100, 0, 200));
+                rssRoot.getRssChannel().setApiLimits(new NewznabXmlApilimits(0, API_MAX, 0, 200));
             }
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }
@@ -307,7 +309,7 @@ public class MockNewznab {
             NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, 10, "avengers", doGenerateDuplicates, Collections.emptyList(), false, 0);
             rssRoot.getRssChannel().getNewznabResponse().setTotal(10);
             if (params.getApikey().contains("limits")) {
-                rssRoot.getRssChannel().setApiLimits(new NewznabXmlApilimits(0, 100, 0, 200));
+                rssRoot.getRssChannel().setApiLimits(new NewznabXmlApilimits(0, API_MAX, 0, 200));
             }
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }
@@ -333,7 +335,7 @@ public class MockNewznab {
         }
 
         if (params.getQ() != null && params.getQ().startsWith("blub")) {
-            endIndex = 100;
+            endIndex = API_MAX;
             String titleBase = params.getQ() + "_" + params.getApikey();
             if (!params.getCat().isEmpty()) {
                 titleBase += params.getCat().get(0);
@@ -352,7 +354,7 @@ public class MockNewznab {
                 endIndex = Math.min(params.getOffset() + params.getLimit(), endIndex);
             }
             if ("paging".equalsIgnoreCase(params.getQ())) {
-                endIndex = 100;
+                endIndex = API_MAX;
             } else if (params.getQ() != null && params.getQ().startsWith("paging")) {
 
                 NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(params.getOffset(), params.getOffset() + params.getLimit(), params.getApikey(), doGenerateDuplicates, Collections.emptyList(), false, params.getOffset());
@@ -396,9 +398,9 @@ public class MockNewznab {
                 }
             }
             if (params.getQ() != null && params.getQ().equals("limits")) {
-                rssRoot.getRssChannel().setApiLimits(new NewznabXmlApilimits(1, 100, 2, 200, Instant.now().minus(10, ChronoUnit.HOURS), Instant.now().minus(10, ChronoUnit.HOURS)));
+                rssRoot.getRssChannel().setApiLimits(new NewznabXmlApilimits(1, API_MAX, 2, 200, Instant.now().minus(10, ChronoUnit.HOURS), Instant.now().minus(10, ChronoUnit.HOURS)));
             } else if (params.getQ() != null && params.getQ().equals("limitswithoutdates")) {
-                rssRoot.getRssChannel().setApiLimits(new NewznabXmlApilimits(1, 100, 2, 200, null, null));
+                rssRoot.getRssChannel().setApiLimits(new NewznabXmlApilimits(1, API_MAX, 2, 200, null, null));
             }
 
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
@@ -424,7 +426,7 @@ public class MockNewznab {
             titleBase = "";
         }
 
-        NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, 100, titleBase, false, Collections.emptyList(), true, 0);
+        NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, API_MAX, titleBase, false, Collections.emptyList(), true, 0);
         rssRoot.getRssChannel().setNewznabResponse(null);
         Random random = new Random();
 

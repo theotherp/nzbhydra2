@@ -1,13 +1,13 @@
 package org.nzbhydra.searching.searchrequests;
 
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.SearchingConfig;
 import org.nzbhydra.config.category.Category;
 import org.nzbhydra.mediainfo.Imdb;
 import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.mediainfo.MediaIdType;
 import org.nzbhydra.mediainfo.MovieInfo;
 import org.nzbhydra.mediainfo.TvInfo;
-import org.nzbhydra.searching.Searcher;
 import org.nzbhydra.searching.dtoseventsenums.SearchType;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.slf4j.MDC;
@@ -24,8 +24,9 @@ public class SearchRequestFactory {
 
 
     public SearchRequest getSearchRequest(SearchType searchType, SearchSource source, Category category, long searchRequestId, Integer offset, Integer limit) {
+        final SearchingConfig searchingConfig = configProvider.getBaseConfig().getSearching();
         if (limit == null) {
-            limit = source == SearchSource.INTERNAL ? configProvider.getBaseConfig().getSearching().getLoadLimitInternal() : Searcher.LOAD_LIMIT_API;
+            limit = source == SearchSource.INTERNAL ? searchingConfig.getLoadLimitInternal() : searchingConfig.getApiPageSize();
         }
         if (offset == null) {
             offset = 0;
@@ -35,8 +36,8 @@ public class SearchRequestFactory {
         searchRequest.setCategory(category);
         searchRequest.setSearchRequestId(searchRequestId);
         MDC.put("SEARCH", String.valueOf(searchRequestId));
-        if (!searchRequest.getMaxage().isPresent() && configProvider.getBaseConfig().getSearching().getMaxAge().isPresent()) {
-            searchRequest.setMaxage(configProvider.getBaseConfig().getSearching().getMaxAge().get());
+        if (!searchRequest.getMaxage().isPresent() && searchingConfig.getMaxAge().isPresent()) {
+            searchRequest.setMaxage(searchingConfig.getMaxAge().get());
         }
 
         return searchRequest;

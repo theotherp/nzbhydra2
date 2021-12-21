@@ -25,7 +25,6 @@ public class IndexerSearchMetaData {
     private String errorMessage;
     private boolean hasMoreResults;
     private String indexerName;
-    private int limit;
     private String notPickedReason;
     private int numberOfAvailableResults;
     private int numberOfFoundResults;

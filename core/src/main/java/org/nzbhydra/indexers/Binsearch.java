@@ -83,7 +83,7 @@ public class Binsearch extends Indexer<String> {
             indexerSearchResult.setTotalResults(0);
             indexerSearchResult.setTotalResultsKnown(true);
         }
-        indexerSearchResult.setLimit(limit);
+        indexerSearchResult.setPageSize(100);
         indexerSearchResult.setOffset(offset);
     }
 

@@ -42,7 +42,7 @@ public class IndexerSearchResult {
     private Set<SearchResultEntity> searchResultEntities = new HashSet<>();
     private int totalResults;
     private int offset;
-    private int limit;
+    private int pageSize;
     private boolean totalResultsKnown;
     private boolean hasMoreResults;
     private long responseTime;

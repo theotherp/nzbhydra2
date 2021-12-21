@@ -107,7 +107,7 @@ public class BinsearchTest {
         indexerSearchResult.setSearchResultItems(items);
         testee.completeIndexerSearchResult(html, indexerSearchResult, null, searchRequest, 0, 100);
         assertThat(indexerSearchResult.getOffset(), is(0));
-        assertThat(indexerSearchResult.getLimit(), is(100));
+        assertThat(indexerSearchResult.getPageSize(), is(100));
         assertThat(indexerSearchResult.getTotalResults(), is(24));
         assertThat(indexerSearchResult.isTotalResultsKnown(), is(true));
         assertThat(indexerSearchResult.isHasMoreResults(), is(false));

@@ -52,7 +52,7 @@ import java.util.stream.Collectors;
 public class Searcher {
 
     private static final int MAX_QUERIES_UNTIL_BREAK = 15;
-    public static int LOAD_LIMIT_API = 100;
+    public static int LOAD_LIMIT_API = 500;
 
     private static final Logger logger = LoggerFactory.getLogger(Searcher.class);
 
@@ -188,16 +188,16 @@ public class Searcher {
 
     private void spliceSearchResultItemsAccordingToOffsetAndLimit(SearchRequest searchRequest, SearchResult searchResult, List<SearchResultItem> searchResultItems) {
         int offset = searchRequest.getOffset();
-        int limit;
-        if (searchRequest.getSource() == SearchSource.INTERNAL) {
-            limit = configProvider.getBaseConfig().getSearching().getLoadLimitInternal();
-        } else {
-            limit = searchRequest.getLimit();
-        }
+        int limit = searchRequest.getLimit();
+//        if (searchRequest.getSource() == SearchSource.INTERNAL) {
+//            limit = configProvider.getBaseConfig().getSearching().getLoadLimitInternal();
+//        } else {
+//            limit = searchRequest.getLimit();
+//        }
 
         if (searchRequest.getSource() == SearchSource.INTERNAL
                 && offset == 0
-                && limit == configProvider.getBaseConfig().getSearching().getLoadLimitInternal()
+//                && limit == configProvider.getBaseConfig().getSearching().getLoadLimitInternal()
                 && configProvider.getBaseConfig().getSearching().isLoadAllCachedOnInternal()) {
             logger.debug("Will load all cached results");
             limit = searchResultItems.size();
@@ -408,9 +408,10 @@ public class Searcher {
             offset = 0;
         } else {
             IndexerSearchResult indexerToSearch = Iterables.getLast(indexerSearchCacheEntry.getIndexerSearchResults());
-            offset = indexerToSearch.getOffset() + indexerToSearch.getLimit();
+            offset = indexerToSearch.getOffset() + indexerToSearch.getPageSize();
         }
-        return () -> indexerSearchCacheEntry.getIndexer().search(searchRequest, offset, LOAD_LIMIT_API);
+        int limit = LOAD_LIMIT_API;
+        return () -> indexerSearchCacheEntry.getIndexer().search(searchRequest, offset, limit);
     }
 
     @SuppressWarnings("unused")

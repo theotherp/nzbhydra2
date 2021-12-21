@@ -124,7 +124,7 @@ public class Torznab extends Newznab {
         indexerSearchResult.setHasMoreResults(false);
         indexerSearchResult.setOffset(0);
         indexerSearchResult.setTotalResults(rssChannel.getItems().size());
-        indexerSearchResult.setLimit(10000);
+        indexerSearchResult.setPageSize(10000);
     }
 
     @Override

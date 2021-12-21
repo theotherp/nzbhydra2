@@ -189,6 +189,7 @@ public abstract class Indexer<T> {
         stopwatch.start();
         IndexerSearchResult indexerSearchResult = new IndexerSearchResult(this, true);
         List<SearchResultItem> searchResultItems = getSearchResultItems(response, searchRequest);
+        indexerSearchResult.setPageSize(searchResultItems.size());
         debug(LoggingMarkers.PERFORMANCE, "Parsing of results took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         AcceptorResult acceptorResult = resultAcceptor.acceptResults(searchResultItems, searchRequest, config);
         searchResultItems = acceptorResult.getAcceptedResults();
@@ -201,7 +202,7 @@ public abstract class Indexer<T> {
         completeIndexerSearchResult(response, indexerSearchResult, acceptorResult, searchRequest, offset, limit);
         info("Successfully executed search call in {}ms with {} total results", responseTime, indexerSearchResult.getTotalResults());
 
-        int endIndex = Math.min(indexerSearchResult.getOffset() + indexerSearchResult.getLimit(), indexerSearchResult.getOffset() + searchResultItems.size());
+        int endIndex = Math.min(indexerSearchResult.getOffset() + indexerSearchResult.getPageSize(), indexerSearchResult.getOffset() + searchResultItems.size());
         endIndex = Math.min(indexerSearchResult.getTotalResults(), endIndex);
         debug("Returning results {}-{} of {} available ({} already rejected)", indexerSearchResult.getOffset(), endIndex, indexerSearchResult.getTotalResults(), acceptorResult.getNumberOfRejectedResults());
 

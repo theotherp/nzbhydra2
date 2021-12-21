@@ -2,7 +2,7 @@ angular
     .module('nzbhydraApp')
     .factory('ConfigService', ConfigService);
 
-function ConfigService($http, $q, $cacheFactory, $uibModal, bootstrapped) {
+function ConfigService($http, $q, $cacheFactory, $uibModal, bootstrapped, RequestsErrorHandler) {
 
     var cache = $cacheFactory("nzbhydra");
     var safeConfig = bootstrapped.safeConfig;
@@ -24,7 +24,9 @@ function ConfigService($http, $q, $cacheFactory, $uibModal, bootstrapped) {
             .then(function (response) {
                 if (response.data.ok && (ignoreWarnings || response.data.warningMessages.length === 0)) {
                     cache.put("config", newConfig);
-                    invalidateSafe();
+                    setTimeout(function () {
+                        invalidateSafe();
+                    }, 500)
                 }
                 deferred.resolve(response);
 
@@ -65,9 +67,12 @@ function ConfigService($http, $q, $cacheFactory, $uibModal, bootstrapped) {
     }
 
     function invalidateSafe() {
-        $http.get('internalapi/config/safe').then(function (response) {
-            safeConfig = response.data;
+        RequestsErrorHandler.specificallyHandled(function () {
+            $http.get('internalapi/config/safe').then(function (response) {
+                safeConfig = response.data;
+            });
         });
+
     }
 
     function maySeeAdminArea() {

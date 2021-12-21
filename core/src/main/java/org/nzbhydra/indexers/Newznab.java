@@ -147,9 +147,8 @@ public class Newznab extends Indexer<Xml> {
         query = cleanupQuery(query);
         addFurtherParametersToUri(searchRequest, componentsBuilder, query);
 
-        if (limit != null) {
-            componentsBuilder.queryParam("limit", limit);
-        }
+        //No reason not to get as many as we can
+        componentsBuilder.queryParam("limit", 1000);
         if (offset != null) {
             componentsBuilder.queryParam("offset", offset);
         }
@@ -485,18 +484,18 @@ public class Newznab extends Indexer<Xml> {
                 indexerSearchResult.setHasMoreResults(false);
             }
             indexerSearchResult.setOffset(newznabResponse.getOffset());
-            indexerSearchResult.setLimit(100);
+            indexerSearchResult.setPageSize(((NewznabXmlRoot) response).getRssChannel().getItems().size());
         } else {
             indexerSearchResult.setTotalResultsKnown(false);
             indexerSearchResult.setHasMoreResults(false);
             indexerSearchResult.setOffset(0);
-            indexerSearchResult.setLimit(0);
+            indexerSearchResult.setPageSize(0);
         }
         if (indexerSearchResult.getTotalResults() == 0) {
             //Fallback to make sure the total is not 0 when actually some results were reported
             indexerSearchResult.setTotalResults(actualNumberResults);
         }
-        checkForInvalidTotal(indexerSearchResult, limit, rssChannel);
+        checkForInvalidTotal(indexerSearchResult, rssChannel);
 
         final NewznabXmlApilimits apiLimits = rssChannel.getApiLimits();
         if (apiLimits != null) {
@@ -518,7 +517,7 @@ public class Newznab extends Indexer<Xml> {
 
     }
 
-    private void checkForInvalidTotal(IndexerSearchResult indexerSearchResult, Integer limit, NewznabXmlChannel rssChannel) {
+    private void checkForInvalidTotal(IndexerSearchResult indexerSearchResult, NewznabXmlChannel rssChannel) {
         final int newznabItemsCount = rssChannel.getItems().size();
         final NewznabXmlResponse newznabResponse = rssChannel.getNewznabResponse();
         if (newznabResponse == null || newznabResponse.getTotal() == null) {
@@ -526,7 +525,8 @@ public class Newznab extends Indexer<Xml> {
         }
         final int newznabTotal = newznabResponse.getTotal();
         int offset = newznabResponse.getOffset();
-        if (offset == 0 && newznabItemsCount < newznabTotal && newznabItemsCount < limit) {
+        //if an indexer returns less results in one page than its total number of results then the indexer misbehaves. But if we request more results than the indexer allows per page then this isn't an error
+        if (offset == 0 && newznabItemsCount < newznabTotal && newznabItemsCount < 100) {
             warn("Indexer's response indicates a total of " + newznabTotal + " results but actually only " + newznabItemsCount + " were returned");
             indexerSearchResult.setTotalResults(newznabItemsCount);
             indexerSearchResult.setHasMoreResults(false);
