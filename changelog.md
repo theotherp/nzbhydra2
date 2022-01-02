@@ -1,3 +1,15 @@
+### v4.0.0 BETA (2022-01-02)
+
+**Feature** Update framework libraries and add support for Java 17.
+
+**Feature** NZBHydra now (hopefully) properly supports indexers that return more than 100 results per API page. When I started developing 8 years ago no indexer I knew of returned more than 100 results, now some return 500 or even 1000. That obviously often tremendously reduces the API hits needed to fill a page or find a certain result. NZBHydra will now request 1000 results (many indexers will still only return 100) per page. The page size of the results returned by NZBHydra is still 100 (if not overwritten in the API request). The amount of API hits made by local programs doesn't matter and the time and performance overhead are negligible. Please note that these changes required some hefty changes in the deeps of the search logic and may have produced some bugs. Let me know if it works as expected.
+
+**Feature** Show assigned colors of indexers in config list.
+
+**Note** Happy new year!
+
+
+
 ### v3.18.4 (2021-12-11)
 
 **Fix** Update logging library to a newer version due to a security issue. This isn't much of an issue, in my opinion, as I use a different library although this one is used by others. It also only affects JDKs that are older than a year and it's not an issue on docker containers.
