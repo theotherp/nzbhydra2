@@ -16,7 +16,7 @@
 
 package org.nzbhydra.mapping.newznab.xml;
 
-import lombok.Data;
+import lombok.Setter;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -29,7 +29,7 @@ import java.time.temporal.ChronoUnit;
 
 @XmlRootElement(name = "apilimits", namespace = "http://www.newznab.com/DTD/2010/feeds/attributes/")
 @XmlAccessorType(XmlAccessType.FIELD)
-@Data
+@Setter
 public class NewznabXmlApilimits {
 
     @XmlAttribute(name = "apicurrent")

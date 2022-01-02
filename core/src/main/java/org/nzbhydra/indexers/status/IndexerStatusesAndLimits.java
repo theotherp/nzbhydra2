@@ -22,7 +22,10 @@ import lombok.NoArgsConstructor;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.indexers.IndexerEntity;
+import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.searching.SearchModuleProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -42,6 +45,8 @@ import java.util.stream.Collectors;
 
 @Component
 public class IndexerStatusesAndLimits {
+
+    private static final Logger logger = LoggerFactory.getLogger(IndexerStatusesAndLimits.class);
 
     private static final DateTimeFormatter DATE_PATTERN = DateTimeFormatter.ofPattern("dd.MM.yyyy-HH:mm:ss:SSS");
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -135,6 +140,7 @@ public class IndexerStatusesAndLimits {
                 indexerStatus.setDownloadResetTime(earliestDownload.plus(1, ChronoUnit.DAYS));
             }
         }
+        logger.debug(LoggingMarkers.LIMITS, "Indexer {}. Saving from API shot term storage: {}", x.getName(), indexerStatus);
     }
 
 
@@ -170,8 +176,8 @@ public class IndexerStatusesAndLimits {
     }
 
     private class LimitsRetrieval {
-        private IndexerConfig indexerConfig;
-        private IndexerEntity indexerEntity;
+        private final IndexerConfig indexerConfig;
+        private final IndexerEntity indexerEntity;
         private int countApiHits;
         private int countDownloads;
         private Instant earliestApiHit;
@@ -234,6 +240,7 @@ public class IndexerStatusesAndLimits {
                     }
                 }
             }
+            logger.debug(LoggingMarkers.LIMITS, "Indexer {}. Found result in database: {}", indexerEntity.getName(), this);
             return this;
         }
     }

@@ -500,7 +500,6 @@ public class Newznab extends Indexer<Xml> {
 
         final NewznabXmlApilimits apiLimits = rssChannel.getApiLimits();
         if (apiLimits != null) {
-            logger.debug(LoggingMarkers.LIMITS, "Indexer {}. ApiLimits data: {}", indexer.getName(), apiLimits);
 
             IndexerLimit indexerStatus = indexerStatusRepository.findByIndexer(indexer);
             indexerStatus.setApiHits(apiLimits.getApiCurrent());
@@ -511,6 +510,8 @@ public class Newznab extends Indexer<Xml> {
             indexerStatus.setOldestDownload(apiLimits.getGrabOldestTime());
 
             indexerStatusRepository.save(indexerStatus);
+            logger.debug(LoggingMarkers.LIMITS, "Indexer {}. Saving IndexerStatus data: {}", indexer.getName(), indexerStatus);
+
         } else {
             logger.debug(LoggingMarkers.LIMITS, "Indexer {}. No limits provided in response.", indexer.getName());
         }

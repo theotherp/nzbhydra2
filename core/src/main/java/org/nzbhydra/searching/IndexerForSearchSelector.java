@@ -74,7 +74,7 @@ public class IndexerForSearchSelector {
     @PersistenceContext
     private EntityManager entityManager;
     @Autowired
-    private IndexerLimitRepository indexerStatusRepository;
+    private IndexerLimitRepository indexerLimitRepository;
 
     protected Clock clock = Clock.systemUTC();
 
@@ -321,7 +321,8 @@ public class IndexerForSearchSelector {
 
         try {
             //First check if there's usable info in the indexer_status table
-            IndexerLimit indexerStatus = indexerStatusRepository.findByIndexer(indexer.getIndexerEntity());
+            IndexerLimit indexerStatus = indexerLimitRepository.findByIndexer(indexer.getIndexerEntity());
+            logger.debug(LoggingMarkers.LIMITS, "Indexer {}. IndexerStatus: {}", indexer.getName(), indexerStatus);
             Instant oldestAccess = null;
             Integer apiHitLimit = indexerStatus.getApiHitLimit();
             if (apiHitLimit == null) {
@@ -378,7 +379,7 @@ public class IndexerForSearchSelector {
             } else if (accessType == IndexerApiAccessType.NZB && indexerStatus.getDownloads() != null) {
                 currentHits = indexerStatus.getDownloads();
                 oldestAccess = indexerStatus.getOldestDownload();
-                logger.debug(LoggingMarkers.LIMITS, "Indexer {}. Got current downloads ({}) and oldest access ({}) from indexerstatus from indexerstatus", indexer.getName(), currentHits, oldestAccess);
+                logger.debug(LoggingMarkers.LIMITS, "Indexer {}. Got current downloads ({}) and oldest access ({}) from indexerstatus", indexer.getName(), currentHits, oldestAccess);
                 currentHitsFromApi = true;
             } else {
                 currentHits = resultList.size();
@@ -389,18 +390,15 @@ public class IndexerForSearchSelector {
                 return false;
             }
             //Found as many as we want, so now we must check if they're all in the time window
-            if (resultList.isEmpty()) {
-                logger.debug(LoggingMarkers.LIMITS, "Indexer {}. Current hits {} exceeds limit {} but we have no results in list", indexer.getName(), currentHits, limit);
-
-                String message = String.format("Not using %s because all %d allowed " + type + "s were already made.", indexerConfig.getName(), limit);
-                return !handleIndexerNotSelected(indexer, message, type + " limit reached");
-            }
-
-            oldestAccessFromApi = (oldestAccess != null);
-            if (oldestAccess == null) {
+            if (resultList.isEmpty() && oldestAccess == null) {
+                //If we found no results in the history and don't know the last access then the hits (or info) may be very old
+                logger.debug(LoggingMarkers.LIMITS, "Indexer {}. Current hits {} exceeds limit {} but we have no results in list. We'll have to allow it", indexer.getName(), currentHits, limit);
+                return true;
+            } else if (!resultList.isEmpty() && oldestAccess == null) {
                 oldestAccess = ((Timestamp) Iterables.getLast(resultList)).toInstant();
                 logger.debug(LoggingMarkers.LIMITS, "Got oldest access ({}) from database", oldestAccess);
             }
+            oldestAccessFromApi = (oldestAccess != null);
             final Instant comparisonTimeUtc = comparisonTime.toInstant(ZoneOffset.UTC);
             if (oldestAccess.isAfter(comparisonTimeUtc)) {
                 Instant nextPossibleHit = calculateNextPossibleHit(indexerConfig, oldestAccess).toInstant(ZoneOffset.UTC);
