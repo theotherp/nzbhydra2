@@ -26,7 +26,7 @@ public class SearchRequestFactory {
     public SearchRequest getSearchRequest(SearchType searchType, SearchSource source, Category category, long searchRequestId, Integer offset, Integer limit) {
         final SearchingConfig searchingConfig = configProvider.getBaseConfig().getSearching();
         if (limit == null) {
-            limit = source == SearchSource.INTERNAL ? searchingConfig.getLoadLimitInternal() : searchingConfig.getApiPageSize();
+            limit = source == SearchSource.INTERNAL ? searchingConfig.getLoadLimitInternal() : 100;
         }
         if (offset == null) {
             offset = 0;

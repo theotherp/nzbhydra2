@@ -54,7 +54,6 @@ public class SearchingConfig extends ValidatingConfig<SearchingConfig> {
     private List<String> languagesToKeep = new ArrayList<>();
     private boolean loadAllCachedOnInternal;
     private int loadLimitInternal = 100;
-    private int apiPageSize = 100;
     private Integer maxAge;
     private Integer minSeeders;
     @JsonSetter()

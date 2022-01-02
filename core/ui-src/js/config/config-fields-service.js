@@ -743,18 +743,6 @@ function ConfigFields($injector) {
                                 label: 'Ignore temporary errors',
                                 tooltip: "By default if access to an indexer fails the indexer is disabled for a certain amount of time (for a short while first, then increasingly longer if the problems persist). Disable this and always try these indexers.",
                             }
-                        },
-                        {
-                            key: 'apiPageSize',
-                            type: 'horizontalInput',
-                            templateOptions: {
-                                type: 'number',
-                                label: 'API page size',
-                                max: 5000,
-                                required: true,
-                                help: 'Determines the number of results returned per request (if not overwritten by the API request). With many indexers or such which return many results per page this is a good way to save time and API hits. If the value is too high this may result in more API hits.',
-                                advanced: true
-                            }
                         }
                     ]
                 }, {
