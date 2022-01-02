@@ -5,9 +5,13 @@
       {
         "type": "feature",
         "text": "Update framework libraries and add support for Java 17"
+      },
+      {
+        "type": "feature",
+        "text": "Show assigned colors of indexers in config list"
       }
     ],
-    "final": true
+    "final": false
   },
   {
     "version": "v3.18.4",

@@ -6752,7 +6752,11 @@ function indexerInput() {
         }
 
         $scope.expiryWarning = expiryWarning;
+        if ($scope.indexer.color !== null) {
+            $scope.style = "background-color: " + $scope.indexer.color.replace("rgb", "rgba").replace(")", ",0.5)")
+        }
     }
+
 }
 
 
