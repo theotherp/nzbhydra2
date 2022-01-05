@@ -14,7 +14,7 @@
     "type" : "note",
     "text" : "Happy new year!"
   } ],
-  "final" : false
+  "final" : true
 }, {
   "version" : "v3.18.4",
   "date" : "2021-12-11",
