@@ -24,7 +24,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
@@ -34,21 +33,7 @@ public class ForwardedForRecognizingFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String ipToUse;
-        String header = request.getHeader("X-Forwarded-For");
-        if (header != null) {
-            ipToUse = header;
-        } else {
-            ipToUse = request.getRemoteAddr();
-        }
         SessionStorage.originalIp.set(request.getRemoteAddr());
-        HttpServletRequestWrapper requestWrapper = new HttpServletRequestWrapper(request) {
-            @Override
-            public String getRemoteAddr() {
-                return ipToUse;
-            }
-        };
-
-        filterChain.doFilter(requestWrapper, response);
+        filterChain.doFilter(request, response);
     }
 }

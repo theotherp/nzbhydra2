@@ -113,6 +113,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         }
         headerAuthenticationFilter = new HeaderAuthenticationFilter(authenticationManager(), hydraUserDetailsManager, configProvider.getBaseConfig().getAuth());
         http.addFilterBefore(new ForwardedForRecognizingFilter(), ChannelProcessingFilter.class);
+        //We need to extract the original IP before it's removed and not retrievable anymore by the ForwardedHeaderFilter
         http.addFilterAfter(new ForwardedHeaderFilter(), ForwardedForRecognizingFilter.class);
         http.addFilterAfter(headerAuthenticationFilter, BasicAuthenticationFilter.class);
         http.addFilterAfter(asyncSupportFilter, BasicAuthenticationFilter.class);

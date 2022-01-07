@@ -40,7 +40,7 @@ public class HeaderAuthenticationFilter extends BasicAuthenticationFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(HeaderAuthenticationFilter.class);
 
-    private HydraUserDetailsManager userDetailsManager;
+    private final HydraUserDetailsManager userDetailsManager;
     private AuthConfig authConfig;
 
     public HeaderAuthenticationFilter(AuthenticationManager authenticationManager, HydraUserDetailsManager userDetailsManager, AuthConfig authConfig) {
