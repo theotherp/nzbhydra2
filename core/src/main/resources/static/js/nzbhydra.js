@@ -3654,6 +3654,13 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
                 templateOptions: {
                     type: 'text',
                     label: 'API Key'
+                },
+                watcher: {
+                    listener: function (field, newValue, oldValue, scope) {
+                        if (newValue !== oldValue) {
+                            scope.$parent.needsConnectionTest = true;
+                        }
+                    }
                 }
             }
         )

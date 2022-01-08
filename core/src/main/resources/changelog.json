@@ -5,6 +5,10 @@
       {
         "type": "fix",
         "text": "Properly read X-Forwarded-For header and original IP."
+      },
+      {
+        "type": "fix",
+        "text": "Execute connection check after an indexer's API key has changed."
       }
     ],
     "final": true
