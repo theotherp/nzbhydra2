@@ -73,7 +73,7 @@ public class NewsWeb {
     @ExceptionHandler(value = {IOException.class})
     protected ResponseEntity<ExceptionInfo> handleNewsException(IOException ex, WebRequest request) {
         String error = "An error occurred while getting news: " + ex.getMessage();
-        logger.error(error);
+        logger.error(error, ex);
         return new ResponseEntity<>(new ExceptionInfo(500, error, ex.getClass().getName(), error, request.getContextPath()), HttpStatus.valueOf(500));
     }
 
