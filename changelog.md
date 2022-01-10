@@ -1,4 +1,12 @@
-### v4.0.0 BETA (2022-01-02)
+### v4.0.1 (2022-01-10)
+
+**Fix** Properly read X-Forwarded-For header and original IP.
+
+**Fix** Execute connection check after an indexer's API key has changed.
+
+
+
+### v4.0.0 (2022-01-02)
 
 **Feature** Update framework libraries and add support for Java 17.
 
