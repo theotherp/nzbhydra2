@@ -1,3 +1,9 @@
+### v4.0.2 (2022-01-30)
+
+**Fix** Fix automatic configuration of Sonarr v3. See <a href="https://github.com/theotherp/nzbhydra2/issues/753">#753</a>
+
+
+
 ### v4.0.1 (2022-01-10)
 
 **Fix** Properly read X-Forwarded-For header and original IP.
