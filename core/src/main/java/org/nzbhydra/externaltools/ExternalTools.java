@@ -265,6 +265,8 @@ public class ExternalTools {
         if (externalTool == AddRequest.ExternalTool.Sonarrv3) {
             //V3 requires an empty list if no categories are supplied
             xdarrAddRequest.getFields().add(new XdarrAddRequestField("animeCategories", addRequest.getAnimeCategories() == null ? Collections.emptyList() : addRequest.getAnimeCategories()));
+            xdarrAddRequest.setDownloadClientId(0);
+            xdarrAddRequest.getFields().add(new XdarrAddRequestField("animeStandardFormatSearch", false));
         } else if (externalTool != AddRequest.ExternalTool.Lidarr && externalTool != AddRequest.ExternalTool.Radarrv3) {
             new XdarrAddRequestField("animeCategories", mapCategories(addRequest.getCategories(), addRequest));
         }
@@ -478,6 +480,7 @@ public class ExternalTools {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class XdarrIndexer {
 
+        public int downloadClientId = 0;
         public Boolean enableRss;
         public Boolean enableAutomaticSearch;
         public Boolean enableInteractiveSearch;
