@@ -1,3 +1,11 @@
+### v4.1.0 (2022-01-30)
+
+**Feature** Allow certain notifications to be filtered (not shown / being sent). See <a href="https://github.com/theotherp/nzbhydra2/issues/761">#761</a>
+
+**Fix** Change shebang for python 3 wrapper so that it siginifies being a python 3 script.
+
+
+
 ### v4.0.2 (2022-01-30)
 
 **Fix** Fix automatic configuration of Sonarr v3. See <a href="https://github.com/theotherp/nzbhydra2/issues/753">#753</a>

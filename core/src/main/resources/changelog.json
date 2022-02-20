@@ -1,60 +1,45 @@
-[
-  {
-    "version": "v4.1.0",
-    "date": "2022-01-30",
-    "changes": [
-      {
-        "type": "feature",
-        "text": "Allow certain notifications to be filtered (not shown / being sent). See #761"
-      },
-      {
-        "type": "fix",
-        "text": "Change shebang for python 3 wrapper so that it siginifies being a python 3 script."
-      }
-    ],
-    "final": true
-  },
-  {
-    "version": "v4.0.2",
-    "date": "2022-01-30",
-    "changes": [
-      {
-        "type": "fix",
-        "text": "Fix automatic configuration of Sonarr v3. See #753"
-      }
-    ],
-    "final": true
-  },
-  {
-    "version": "v4.0.1",
-    "date": "2022-01-10",
-    "changes": [
-      {
-        "type": "fix",
-        "text": "Properly read X-Forwarded-For header and original IP."
-      },
-      {
-        "type": "fix",
-        "text": "Execute connection check after an indexer's API key has changed."
-      }
-    ],
-    "final": true
-  },
-  {
-    "version": "v4.0.0",
-    "date": "2022-01-02",
-    "changes": [
-      {
-        "type": "feature",
-        "text": "Update framework libraries and add support for Java 17."
-      },
-      {
-        "type": "feature",
-        "text": "NZBHydra now (hopefully) properly supports indexers that return more than 100 results per API page. When I started developing 8 years ago no indexer I knew of returned more than 100 results, now some return 500 or even 1000. That obviously often tremendously reduces the API hits needed to fill a page or find a certain result. NZBHydra will now request 1000 results (many indexers will still only return 100) per page. The page size of the results returned by NZBHydra is still 100 (if not overwritten in the API request). The amount of API hits made by local programs doesn't matter and the time and performance overhead are negligible. Please note that these changes required some hefty changes in the deeps of the search logic and may have produced some bugs. Let me know if it works as expected."
-      },
-      {
-        "type": "feature",
-        "text": "Show assigned colors of indexers in config list."
+[ {
+  "version" : "v4.1.0",
+  "date" : "2022-01-30",
+  "changes" : [ {
+    "type" : "feature",
+    "text" : "Allow certain notifications to be filtered (not shown / being sent). See #761"
+  }, {
+    "type" : "fix",
+    "text" : "Change shebang for python 3 wrapper so that it siginifies being a python 3 script."
+  } ],
+  "final" : true
+}, {
+  "version" : "v4.0.2",
+  "date" : "2022-01-30",
+  "changes" : [ {
+    "type" : "fix",
+    "text" : "Fix automatic configuration of Sonarr v3. See #753"
+  } ],
+  "final" : true
+}, {
+  "version" : "v4.0.1",
+  "date" : "2022-01-10",
+  "changes" : [ {
+    "type" : "fix",
+    "text" : "Properly read X-Forwarded-For header and original IP."
+  }, {
+    "type" : "fix",
+    "text" : "Execute connection check after an indexer's API key has changed."
+  } ],
+  "final" : true
+}, {
+  "version" : "v4.0.0",
+  "date" : "2022-01-02",
+  "changes" : [ {
+    "type" : "feature",
+    "text" : "Update framework libraries and add support for Java 17."
+  }, {
+    "type" : "feature",
+    "text" : "NZBHydra now (hopefully) properly supports indexers that return more than 100 results per API page. When I started developing 8 years ago no indexer I knew of returned more than 100 results, now some return 500 or even 1000. That obviously often tremendously reduces the API hits needed to fill a page or find a certain result. NZBHydra will now request 1000 results (many indexers will still only return 100) per page. The page size of the results returned by NZBHydra is still 100 (if not overwritten in the API request). The amount of API hits made by local programs doesn't matter and the time and performance overhead are negligible. Please note that these changes required some hefty changes in the deeps of the search logic and may have produced some bugs. Let me know if it works as expected."
+  }, {
+    "type" : "feature",
+    "text" : "Show assigned colors of indexers in config list."
   }, {
     "type" : "note",
     "text" : "Happy new year!"
