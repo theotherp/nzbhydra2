@@ -6,6 +6,10 @@
       {
         "type": "feature",
         "text": "Allow certain notifications to be filtered (not shown / being sent). See #761"
+      },
+      {
+        "type": "fix",
+        "text": "Change shebang for python 3 wrapper so that it siginifies being a python 3 script."
       }
     ],
     "final": true
