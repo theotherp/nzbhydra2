@@ -328,6 +328,7 @@ main:
 notificationConfig:
   appriseApiUrl: null
   entries: [ ]
+  filterOuts: [ ]
   displayNotifications: true
   displayNotificationsMax: 5
 searching:

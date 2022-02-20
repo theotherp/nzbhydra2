@@ -2177,6 +2177,17 @@ function ConfigFields($injector) {
                                 help: 'Max number of notifications to show on the GUI. If more have piled up a notification will indicate this and link to the notification history.'
                             },
                             hideExpression: '!model.displayNotifications'
+                        },
+                        {
+                            key: 'filterOuts',
+                            type: 'horizontalChips',
+                            templateOptions: {
+                                type: 'text',
+                                label: 'Hide if message contains...',
+                                help: 'Apply values with return key. Surround with "/" for regex (e.g. /contains[0-9]This/). Case insensitive.',
+
+                            },
+                            hideExpression: '!model.displayNotifications'
                         }
                     ]
                 },

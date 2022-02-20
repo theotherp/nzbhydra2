@@ -28,6 +28,7 @@ public class NotificationConfig extends ValidatingConfig<NotificationConfig> {
     private boolean displayNotifications;
     private int displayNotificationsMax;
     private List<NotificationConfigEntry> entries = new ArrayList<>();
+    private List<String> filterOuts = new ArrayList<>();
 
     public NotificationConfig() {
     }

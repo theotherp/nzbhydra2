@@ -43,6 +43,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Component
@@ -76,8 +77,33 @@ public class NotificationHandler {
             logger.debug(LoggingMarkers.NOTIFICATIONS, "Found matching config entry with URLs {} and template {}", configEntry.getAppriseUrls(), configEntry.getBodyTemplate());
             final String notificationBody = fillTemplate(configEntry.getBodyTemplate(), event.getVariablesWithContent());
             final String notificationTitle = Strings.isNullOrEmpty(configEntry.getTitleTemplate()) ? null : fillTemplate(configEntry.getTitleTemplate(), event.getVariablesWithContent());
-            logger.debug(LoggingMarkers.NOTIFICATIONS, "Sending notification for URLs {} to {} with body:\n{}", configEntry.getAppriseUrls(), notificationConfig.getAppriseApiUrl(), notificationBody);
 
+            boolean isFilteredOut = false;
+            for (String filterOut : configProvider.getBaseConfig().getNotificationConfig().getFilterOuts()) {
+                if (filterOut.startsWith("/") && filterOut.endsWith("/")) {
+                    final String regex = filterOut.substring(1, filterOut.length() - 1);
+                    final Pattern pattern;
+                    try {
+                        pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+                    } catch (Exception e) {
+                        logger.error("Unable to parse regex: {}", regex);
+                        continue;
+                    }
+                    if (pattern.matcher(notificationBody).find()) {
+                        isFilteredOut = true;
+                    }
+                } else if (notificationBody.toLowerCase().contains(filterOut.toLowerCase())) {
+                    isFilteredOut = true;
+                }
+                if (isFilteredOut) {
+                    logger.debug(LoggingMarkers.NOTIFICATIONS, "Notification with body matches filter-out \"{}\":\n{}", filterOut, notificationBody);
+                }
+            }
+            if (isFilteredOut) {
+                continue;
+            }
+
+            logger.debug(LoggingMarkers.NOTIFICATIONS, "Sending notification for URLs {} to {} with body:\n{}", configEntry.getAppriseUrls(), notificationConfig.getAppriseApiUrl(), notificationBody);
             final String messageBody;
             try {
                 messageBody = Jackson.JSON_MAPPER.writeValueAsString(new AppriseMessage(configEntry.getAppriseUrls(), notificationBody, notificationTitle, configEntry.getMessageType().name().toLowerCase()));
