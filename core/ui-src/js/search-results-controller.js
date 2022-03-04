@@ -72,7 +72,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         var split1 = entry.split("|");
         var category = split1[0];
         var id = split1[1];
-        if (category !== 'source' || $scope.isShowFilterButtonsSource) {
+        if (category !== 'source' || $scope.isShowFilterButtonsVideo) {
             $scope.filterButtonsModel[category][id] = true;
         }
     })
@@ -161,7 +161,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
 
 
     $scope.isShowFilterButtons = ConfigService.getSafe().searching.showQuickFilterButtons;
-    $scope.isShowFilterButtonsSource = $scope.isShowFilterButtons && ($stateParams.category.toLowerCase().indexOf("tv") > -1 || $stateParams.category.toLowerCase().indexOf("movie") > -1 || ConfigService.getSafe().searching.alwaysShowQuickFilterButtons);
+    $scope.isShowFilterButtonsVideo = $scope.isShowFilterButtons && ($stateParams.category.toLowerCase().indexOf("tv") > -1 || $stateParams.category.toLowerCase().indexOf("movie") > -1 || ConfigService.getSafe().searching.alwaysShowQuickFilterButtons);
     $scope.isShowCustomFilterButtons = ConfigService.getSafe().searching.customQuickFilterButtons.length > 0;
 
     $scope.shared = {

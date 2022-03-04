@@ -15,6 +15,10 @@
         "text": "Use link to comments as detail link for torznab results. For some indexer the details would previously go to the download link. See #758"
       },
       {
+        "type": "fix",
+        "text": "Only show video related quick filter buttons when searching in a TV or movie category. See #732"
+      },
+      {
         "type": "note",
         "text": "I'm currently testing a new version of the database library.  This new version may hopefully be a bit more performant, may result in smaller database files (for those suffering from very larg ones) and / or give me options to fine tune how data is compacted (for those where a lot of IO is produced). Unfortunately it means that the old database needs to be migrated which is always a bit hairy. If you're interested in helping me by testing an alpha version please leave me a note in <a href=\"https://github.com/theotherp/nzbhydra2/issues/764\" target=\"blank\">this github Issue</a>."
       }

@@ -199,7 +199,7 @@
     <div class="row" ng-if="::(isShowFilterButtons)">
         <div class="col-md-20">
             <div class="btn-toolbar" role="toolbar" style="margin: auto; display:inline-block">
-                <div class="btn-group btn-group-xs" role="group" ng-if="isShowFilterButtonsSource">
+                <div class="btn-group btn-group-xs" role="group" ng-if="isShowFilterButtonsVideo">
                     <button type="button" class="btn btn-default filter-button" ng-change="onFilterButtonsModelChange()"
                             uncheckable ng-model="filterButtonsModel.source.camts" uib-btn-checkbox>CAM / TS
                     </button>
@@ -217,7 +217,7 @@
                         Blu-Ray
                     </button>
                 </div>
-                <div class="btn-group btn-group-xs" role="group">
+                <div class="btn-group btn-group-xs" role="group" ng-if="isShowFilterButtonsVideo">
                     <button type="button" class="btn btn-default filter-button" ng-change="onFilterButtonsModelChange()"
                             uncheckable ng-model="filterButtonsModel.quality.q480p" uib-btn-checkbox>480p
                     </button>
@@ -233,7 +233,7 @@
                         2160p
                     </button>
                 </div>
-                <div class="btn-group btn-group-xs" role="group">
+                <div class="btn-group btn-group-xs" role="group" ng-if="isShowFilterButtonsVideo">
                     <button type="button" class="btn btn-default filter-button" ng-change="onFilterButtonsModelChange()"
                             uncheckable ng-model="filterButtonsModel.other.q3d" uib-btn-checkbox>3D
                     </button>
