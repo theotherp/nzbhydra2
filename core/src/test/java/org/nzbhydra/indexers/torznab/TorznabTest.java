@@ -153,10 +153,10 @@ public class TorznabTest {
 
         SearchResultItem item = testee.createSearchResultItem(rssItem);
         assertThat(item.getLink(), is("http://indexer.com/abc"));
-        assertThat(item.getIndexerGuid(), is("http://indexer.com/123"));
+        assertThat(item.getIndexerGuid(), is("http://indexer.com/123RssGuid"));
         assertThat(item.getSize(), is(456L));
         assertThat(item.getCommentsLink(), is("http://indexer.com/123/details#comments"));
-        assertThat(item.getDetails(), is("http://indexer.com/123"));
+        assertThat(item.getDetails(), is("http://indexer.com/123/details#comments"));
         assertThat(item.isAgePrecise(), is(true));
         assertThat(item.getGrabs(), is(20));
         assertThat(item.getDownloadType(), is(DownloadType.TORRENT));
@@ -181,8 +181,8 @@ public class TorznabTest {
 
     private NewznabXmlItem buildBasicRssItem() {
         NewznabXmlItem rssItem = new NewznabXmlItem();
-        rssItem.setLink("http://indexer.com/123");
-        rssItem.setRssGuid(new NewznabXmlGuid("http://indexer.com/123", false));
+        rssItem.setLink("http://indexer.com/123Guid");
+        rssItem.setRssGuid(new NewznabXmlGuid("http://indexer.com/123RssGuid", false));
         rssItem.setTitle("title");
         rssItem.setEnclosure(new NewznabXmlEnclosure("http://indexer.com/123456", 456L, "application/x-nzb"));
         rssItem.setPubDate(Instant.ofEpochSecond(5555555));
