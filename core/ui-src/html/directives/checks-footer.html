@@ -18,6 +18,7 @@
     </div>
 </div>
 <div ng-if="automaticUpdateToNotice && showWhatsNewBanner" ng-cloak="" class="alert alert-info" role="alert" style="margin-bottom: 0; padding-top: 0">
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close" ng-click="dismissChangesFromAutomaticUpdate()"><span aria-hidden="true">&times;</span></button>
     <div class="container">
         An update was automatically installed.
         <button class="btn btn-default" type="button" ng-click="showChangesFromAutomaticUpdate()" style="margin-top: 5px;">See what's new!</button>

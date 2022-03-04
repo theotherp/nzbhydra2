@@ -135,6 +135,12 @@ function hydraChecksFooter() {
             $scope.$emit("showAutomaticUpdateFooter", false);
         };
 
+        $scope.dismissChangesFromAutomaticUpdate = function () {
+            $scope.automaticUpdateToNotice = null;
+            $scope.$emit("showAutomaticUpdateFooter", false);
+            console.log("Dismissing showAutomaticUpdateFooter");
+        };
+
         function checkAndShowNews() {
             RequestsErrorHandler.specificallyHandled(function () {
                 if (ConfigService.getSafe().showNews) {
