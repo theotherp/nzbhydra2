@@ -10,8 +10,7 @@
        uib-tooltip="Click to see or hide all results with the same title"
        tooltip-placement="top"
        tooltip-trigger="mouseenter"
-       style="text-decoration: none"
-    >
+       style="text-decoration: none">
                 <span class="glyphicon"
                       ng-class="{'glyphicon-minus': titlesExpanded, 'glyphicon-plus': !titlesExpanded}"></span></a>
     
@@ -25,7 +24,8 @@
            ng-class="{'glyphicon-minus': duplicatesExpanded, 'glyphicon-plus': !duplicatesExpanded}"></span>
     </a>
     <span class="title">
-                <span ng-if="(result.titleGroupIndex === 0 && result.duplicateGroupIndex === 0) || searchResultsControllerShared.isGroupEpisodes">
+      {{result.alwaysShowTitles}}
+                <span ng-if="(result.titleGroupIndex === 0 && result.duplicateGroupIndex === 0) || searchResultsControllerShared.isGroupEpisodes || foo.alwaysShowTitles">
                     <img ng-if="result.cover && foo.showCovers" ng-src="{{::result.cover}}" width="{{::coverSize}}px" style="margin-right: 5px" ng-click="showCover(result.cover)"/>
                     <span ng-if="result.downloadedAt && searchResultsControllerShared.showDownloadedIndicator" class="fa fa-check" uib-tooltip="Already downloaded at {{::result.downloadedAt}}"
                           tooltip-placement="top"

@@ -3,6 +3,10 @@
     "version": "v4.2.0",
     "changes": [
       {
+        "type": "details",
+        "text": "Add entry to display options to always show result titles. By default they're hidden when grouping results with the same name. See #763"
+      },
+      {
         "type": "fix",
         "text": "Use link to comments as detail link for torznab results. For some indexer the details would previously go to the download link. See #758"
       }

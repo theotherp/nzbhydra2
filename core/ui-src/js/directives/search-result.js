@@ -19,6 +19,7 @@ function searchResult() {
         //Display state / expansion
         $scope.foo.duplicatesDisplayed = localStorageService.get("duplicatesDisplayed") !== null ? localStorageService.get("duplicatesDisplayed") : false;
         $scope.foo.showCovers = localStorageService.get("showCovers") !== null ? localStorageService.get("showCovers") : true;
+        $scope.foo.alwaysShowTitles = localStorageService.get("alwaysShowTitles") !== null ? localStorageService.get("alwaysShowTitles") : true;
         $scope.duplicatesExpanded = false;
         $scope.titlesExpanded = $scope.searchResultsControllerShared.expandGroupsByDefault;
         $scope.coverSize = ConfigService.getSafe().searching.coverSize;
@@ -55,6 +56,11 @@ function searchResult() {
 
         $scope.$on("toggleShowCovers", function ($event, value) {
             $scope.foo.showCovers = value;
+        });
+
+        $scope.$on("toggleAlwaysShowTitles", function ($event, value) {
+            $scope.foo.alwaysShowTitles = value;
+            console.log("alwaysShowTitles: " + alwaysShowTitles);
         });
 
         $scope.$on("duplicatesDisplayed", function ($event, value) {

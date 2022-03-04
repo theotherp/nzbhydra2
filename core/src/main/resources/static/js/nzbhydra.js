@@ -1060,6 +1060,7 @@ function searchResult() {
         //Display state / expansion
         $scope.foo.duplicatesDisplayed = localStorageService.get("duplicatesDisplayed") !== null ? localStorageService.get("duplicatesDisplayed") : false;
         $scope.foo.showCovers = localStorageService.get("showCovers") !== null ? localStorageService.get("showCovers") : true;
+        $scope.foo.alwaysShowTitles = localStorageService.get("alwaysShowTitles") !== null ? localStorageService.get("alwaysShowTitles") : true;
         $scope.duplicatesExpanded = false;
         $scope.titlesExpanded = $scope.searchResultsControllerShared.expandGroupsByDefault;
         $scope.coverSize = ConfigService.getSafe().searching.coverSize;
@@ -1096,6 +1097,11 @@ function searchResult() {
 
         $scope.$on("toggleShowCovers", function ($event, value) {
             $scope.foo.showCovers = value;
+        });
+
+        $scope.$on("toggleAlwaysShowTitles", function ($event, value) {
+            $scope.foo.alwaysShowTitles = value;
+            console.log("alwaysShowTitles: " + alwaysShowTitles);
         });
 
         $scope.$on("duplicatesDisplayed", function ($event, value) {
@@ -1304,6 +1310,7 @@ angular
             return number;
         }
     });
+
 angular
     .module('nzbhydraApp')
     .directive('saveOrSendFile', saveOrSendFile);
@@ -9617,7 +9624,8 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         expandGroupsByDefault: localStorageService.get("expandGroupsByDefault") !== null ? localStorageService.get("expandGroupsByDefault") : false,
         showDownloadedIndicator: localStorageService.get("showDownloadedIndicator") !== null ? localStorageService.get("showDownloadedIndicator") : true,
         hideAlreadyDownloadedResults: localStorageService.get("hideAlreadyDownloadedResults") !== null ? localStorageService.get("hideAlreadyDownloadedResults") : true,
-        showResultsAsZipButton: localStorageService.get("showResultsAsZipButton") !== null ? localStorageService.get("showResultsAsZipButton") : true
+        showResultsAsZipButton: localStorageService.get("showResultsAsZipButton") !== null ? localStorageService.get("showResultsAsZipButton") : true,
+        alwaysShowTitles: localStorageService.get("alwaysShowTitles") !== null ? localStorageService.get("alwaysShowTitles") : true
     };
 
 
@@ -9629,7 +9637,8 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         isGroupEpisodes: $scope.foo.groupEpisodes && $stateParams.category.toLowerCase().indexOf("tv") > -1 && $stateParams.episode === undefined,
         expandGroupsByDefault: $scope.foo.expandGroupsByDefault,
         showDownloadedIndicator: $scope.foo.showDownloadedIndicator,
-        hideAlreadyDownloadedResults: $scope.foo.hideAlreadyDownloadedResults
+        hideAlreadyDownloadedResults: $scope.foo.hideAlreadyDownloadedResults,
+        alwaysShowTitles: $scope.foo.alwaysShowTitles
     };
 
     if ($scope.shared.isGroupEpisodes) {
@@ -9657,6 +9666,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         {id: "showCovers", label: "Show movie covers in results"},
         {id: "groupEpisodes", label: "Group TV results by season/episode"},
         {id: "expandGroupsByDefault", label: "Expand groups by default"},
+        {id: "alwaysShowTitles", label: "Always show result titles (even when grouped)"},
         {id: "showDownloadedIndicator", label: "Show already downloaded indicator"},
         {id: "hideAlreadyDownloadedResults", label: "Hide already downloaded results"}
     ];
@@ -9698,6 +9708,8 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
                 toggleHideAlreadyDownloadedResults(newValue);
             } else if (item.id === "showResultsAsZipButton") {
                 toggleShowResultsAsZipButton(newValue);
+            }else if (item.id === "alwaysShowTitles") {
+                toggleAlwaysShowTitles(newValue);
             }
         }
     };
@@ -9767,6 +9779,13 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         localStorageService.set("showResultsAsZipButton", value);
         $scope.shared.showResultsAsZipButton = value;
         $scope.foo.showResultsAsZipButton = value;
+    }
+
+function toggleAlwaysShowTitles(value) {
+        localStorageService.set("alwaysShowTitles", value);
+        $scope.shared.alwaysShowTitles = value;
+        $scope.foo.alwaysShowTitles = value;
+        $scope.$broadcast("toggleAlwaysShowTitles", value);
     }
 
 
