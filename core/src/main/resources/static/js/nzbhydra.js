@@ -9708,7 +9708,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
                 toggleHideAlreadyDownloadedResults(newValue);
             } else if (item.id === "showResultsAsZipButton") {
                 toggleShowResultsAsZipButton(newValue);
-            }else if (item.id === "alwaysShowTitles") {
+            } else if (item.id === "alwaysShowTitles") {
                 toggleAlwaysShowTitles(newValue);
             }
         }
@@ -9781,7 +9781,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         $scope.foo.showResultsAsZipButton = value;
     }
 
-function toggleAlwaysShowTitles(value) {
+    function toggleAlwaysShowTitles(value) {
         localStorageService.set("alwaysShowTitles", value);
         $scope.shared.alwaysShowTitles = value;
         $scope.foo.alwaysShowTitles = value;
