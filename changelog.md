@@ -1,3 +1,17 @@
+### v4.2.0 (2022-03-04)
+
+**Feature** Add entry to display options to always show result titles. By default they're hidden when grouping results with the same name. See <a href="https://github.com/theotherp/nzbhydra2/issues/763">#763</a>
+
+**Feature** Add dismiss button to banner shown after an automatic update has been installed. See <a href="https://github.com/theotherp/nzbhydra2/issues/737">#737</a>
+
+**Fix** Use link to comments as detail link for torznab results. For some indexer the details would previously go to the download link. See <a href="https://github.com/theotherp/nzbhydra2/issues/758">#758</a>
+
+**Fix** Only show video related quick filter buttons when searching in a TV or movie category. See <a href="https://github.com/theotherp/nzbhydra2/issues/732">#732</a>
+
+**Note** I'm currently testing a new version of the database library.  This new version may hopefully be a bit more performant, may result in smaller database files (for those suffering from very larg ones) and / or give me options to fine tune how data is compacted (for those where a lot of IO is produced). Unfortunately it means that the old database needs to be migrated which is always a bit hairy. If you're interested in helping me by testing an alpha version please leave me a note in <a href="https://github.com/theotherp/nzbhydra2/issues/764" target="blank">this github Issue</a>.
+
+
+
 ### v4.1.0 (2022-01-30)
 
 **Feature** Allow certain notifications to be filtered (not shown / being sent). See <a href="https://github.com/theotherp/nzbhydra2/issues/761">#761</a>
