@@ -2142,6 +2142,8 @@ function hydraChecksFooter() {
             $scope.automaticUpdateToNotice = null;
             $scope.$emit("showAutomaticUpdateFooter", false);
             console.log("Dismissing showAutomaticUpdateFooter");
+            return $http.get("internalapi/updates/ackAutomaticUpdateVersionHistory").then(function (response) {
+            });
         };
 
         function checkAndShowNews() {

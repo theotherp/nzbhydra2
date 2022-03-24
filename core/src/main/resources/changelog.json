@@ -5,6 +5,10 @@
       {
         "type": "note",
         "text": "Added a banner of and link to NewsDemon. Thanks for sponsoring me!"
+      },
+      {
+        "type": "fix",
+        "text": "The dismiss button for the banner shown after an automatic update has been installed didn't work reliably. See #737"
       }
     ],
     "final": true
