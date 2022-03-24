@@ -1,3 +1,11 @@
+### v4.2.1 (2022-03-24)
+
+**Note** Added a banner of and link to NewsDemon. Thanks for sponsoring me!
+
+**Fix** The dismiss button for the banner shown after an automatic update has been installed didn't work reliably. See <a href="https://github.com/theotherp/nzbhydra2/issues/737">#737</a>
+
+
+
 ### v4.2.0 (2022-03-04)
 
 **Feature** Add entry to display options to always show result titles. By default they're hidden when grouping results with the same name. See <a href="https://github.com/theotherp/nzbhydra2/issues/763">#763</a>
