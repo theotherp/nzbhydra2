@@ -77,11 +77,7 @@ if not "%ERRORLEVEL%" == "0" (
 )
 
 echo Running install
-if "%3" == "skiptests" (
-    call mvn -T 1C -pl "!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin,!org.nzbhydra:discordbot" install -DskipTests=true
-) else (
-    call mvn -T 1C -pl "!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin,!org.nzbhydra:discordbot" install
-)
+call mvn -T 1C -pl "!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin,!org.nzbhydra:discordbot" install -DskipTests=true
 if not "%ERRORLEVEL%" == "0" (
     echo Error during install
     goto error
