@@ -1,3 +1,11 @@
+### v4.3.0 (2022-04-03)
+
+**Feature** Allow to configure an indexer's API path. See <a href="https://github.com/theotherp/nzbhydra2/issues/766">#766</a>
+
+**Feature** OpenAPI docs are now available under http://127.0.0.1:5061/v3/api-docs/. This will only be interesting for very few (if any) users. Unfortunately I couldn't get the swagger UI working. You'll have to visit http://127.0.0.1:5061/swagger-ui/index.html and paste the api-docs URL.
+
+
+
 ### v4.2.1 (2022-03-24)
 
 **Note** Added a banner of and link to NewsDemon. Thanks for sponsoring me!
