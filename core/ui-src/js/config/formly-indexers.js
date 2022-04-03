@@ -169,6 +169,28 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
             }
         )
     }
+    if (indexerModel.searchModuleType === 'NEWZNAB' || indexerModel.searchModuleType === 'TORZNAB') {
+        fieldset.push(
+            {
+                key: 'apiPath',
+                type: 'horizontalInput',
+                templateOptions: {
+                    type: 'text',
+                    label: 'API path',
+                    help: 'Path to the API. If empty /api is used',
+                    required: false,
+                    advanced: true
+                },
+                watcher: {
+                    listener: function (field, newValue, oldValue, scope) {
+                        if (newValue !== oldValue) {
+                            scope.$parent.needsConnectionTest = true;
+                        }
+                    }
+                }
+            }
+        )
+    }
 
     if (indexerModel.searchModuleType === 'NEWZNAB' || indexerModel.searchModuleType === 'TORZNAB' || indexerModel.searchModuleType === 'JACKETT_CONFIG') {
         fieldset.push(

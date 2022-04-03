@@ -146,7 +146,7 @@ public class IndexerChecker {
     }
 
     static UriComponentsBuilder getBaseUri(IndexerConfig indexerConfig) {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(indexerConfig.getHost()).path("/api");
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(indexerConfig.getHost()).path(indexerConfig.getApiPath().orElse("/api"));
         if (!Strings.isNullOrEmpty(indexerConfig.getApiKey())) {
             builder.queryParam("apikey", indexerConfig.getApiKey());
         }

@@ -109,7 +109,7 @@ public class Newznab extends Indexer<Xml> {
 
 
     protected UriComponentsBuilder getBaseUri() {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(config.getHost()).path("/api");
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(config.getHost()).path(config.getApiPath().orElse("/api"));
         if (!Strings.isNullOrEmpty(config.getApiKey())) {
             builder.queryParam("apikey", config.getApiKey());
         }

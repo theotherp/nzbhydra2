@@ -72,6 +72,7 @@ public class IndexerConfig extends ValidatingConfig<IndexerConfig> {
     private boolean allCapsChecked;
     @SensitiveData
     private String apiKey;
+    private String apiPath;
     @JsonFormat(shape = Shape.STRING)
     private BackendType backend = BackendType.NEWZNAB;
     private IndexerCategoryConfig categoryMapping = new IndexerCategoryConfig();
@@ -113,6 +114,10 @@ public class IndexerConfig extends ValidatingConfig<IndexerConfig> {
     private String username = null;
     private String userAgent = null;
     private String vipExpirationDate;
+
+    public Optional<String> getApiPath() {
+        return Optional.ofNullable(apiPath);
+    }
 
     public Optional<Integer> getHitLimit() {
         return Optional.ofNullable(hitLimit);
