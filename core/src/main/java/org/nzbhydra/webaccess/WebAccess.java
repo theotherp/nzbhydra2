@@ -55,24 +55,24 @@ public class WebAccess {
 
     public String postToUrl(String url, MediaType mediaContent, String content, Map<String, String> headers, int timeout) throws IOException {
         Builder builder = new Builder()
-                .url(url)
-                .post(RequestBody.create(mediaContent, content));
+            .url(url)
+            .post(RequestBody.create(mediaContent, content));
 
         return callUrl(url, headers, timeout, builder);
     }
 
     public String putToUrl(String url, MediaType mediaContent, String content, Map<String, String> headers, int timeout) throws IOException {
         Builder builder = new Builder()
-                .url(url)
-                .put(RequestBody.create(mediaContent, content));
+            .url(url)
+            .put(RequestBody.create(mediaContent, content));
 
         return callUrl(url, headers, timeout, builder);
     }
 
     public String deleteToUrl(String url, Map<String, String> headers, int timeout) throws IOException {
         Builder builder = new Builder()
-                .url(url)
-                .delete();
+            .url(url)
+            .delete();
 
         return callUrl(url, headers, timeout, builder);
     }
@@ -90,6 +90,7 @@ public class WebAccess {
             try {
                 bodyAsString = body == null ? null : body.string();
             } catch (IOException e) {
+                logger.error("IO Exception loading body from URL " + url, e);
                 bodyAsString = null;
             }
             if (!response.isSuccessful()) {
