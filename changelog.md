@@ -1,3 +1,9 @@
+### v4.3.1 (2022-05-02)
+
+**Note** I removed the OpenAPI docs as for some really weird reason it may have introduced some unexpected bugs when connecting to indexers or even when trying to update the database
+
+
+
 ### v4.3.0 (2022-04-03)
 
 **Feature** Allow to configure an indexer's API path. See <a href="https://github.com/theotherp/nzbhydra2/issues/766">#766</a>
