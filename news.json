@@ -1,18 +1,22 @@
 [
-  {
-    "showForVersion": "3.17.0",
-    "newsAsMarkdown": "I've borked the manual update in 3.17.0, meaning after a restart NZBHydra will still be running its old version. If you have installed 3.17.0 outside of docker and have automatic updates disabled, either enable automatic updates and let it do its thing or update manually using the latest release from GitHub."
-  },
-  {
-    "showForVersion": "3.10.0",
-    "newsAsMarkdown": "If you're running NZBHydra behind a reverse proxy please add the following lines to the location section: proxy_set_header Upgrade $http_upgrade;\nproxy_set_header Connection \"upgrade\";"
-  },
-  {
-    "showForVersion": "3.0.0",
-    "newsAsMarkdown": "NZBHydra now allows sending and displaying notifications. Go to the config to explore this.."
-  },
-  {
-    "showForVersion": "2.21.0",
+    {
+        "showForVersion": "4.3.0",
+        "newsAsMarkdown": "If you're running the docker container by linuxserver.io and have problems connecting to indexers or other weird issues I suggest you use the tag v4.3.0-ls47 for now. Changes in the docker image seems to cause connection issues in some cases."
+    },
+    {
+        "showForVersion": "3.17.0",
+        "newsAsMarkdown": "I've borked the manual update in 3.17.0, meaning after a restart NZBHydra will still be running its old version. If you have installed 3.17.0 outside of docker and have automatic updates disabled, either enable automatic updates and let it do its thing or update manually using the latest release from GitHub."
+    },
+    {
+        "showForVersion": "3.10.0",
+        "newsAsMarkdown": "If you're running NZBHydra behind a reverse proxy please add the following lines to the location section: proxy_set_header Upgrade $http_upgrade;\nproxy_set_header Connection \"upgrade\";"
+    },
+    {
+        "showForVersion": "3.0.0",
+        "newsAsMarkdown": "NZBHydra now allows sending and displaying notifications. Go to the config to explore this.."
+    },
+    {
+        "showForVersion": "2.21.0",
     "newsAsMarkdown": "I've added a feature that allows NZBHydra to fall back to similar results when an NZB download fails. It only works if you've set the 'NZB access type' in the downloading config to proxy results. That way NZBHydra can recognize the failed download and automatically try a different one. This should prevent Sonarr & co from disabling NZBHydra due to failed downloads."
   },
   {
