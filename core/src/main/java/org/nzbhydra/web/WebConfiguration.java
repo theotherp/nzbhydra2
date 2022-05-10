@@ -73,6 +73,11 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
             .setCacheControl(CacheControl.noCache())
             .resourceChain(false);
 
+        //Otherwise swagger is not loaded using /swagger-ui/index.html
+        registry.addResourceHandler("/swagger-ui/**")
+            .addResourceLocations("classpath:/META-INF/resources/webjars/swagger-ui/4.5.0/");
+
+
         registry.setOrder(0);
     }
 

@@ -90,7 +90,6 @@ public class WebAccess {
             try {
                 bodyAsString = body == null ? null : body.string();
             } catch (IOException e) {
-                logger.error("IO Exception loading body from URL " + url, e);
                 bodyAsString = null;
             }
             if (!response.isSuccessful()) {
