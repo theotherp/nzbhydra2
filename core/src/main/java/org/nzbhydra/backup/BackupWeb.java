@@ -78,4 +78,11 @@ public class BackupWeb {
         return backup.restoreFromFile(file.getInputStream());
     }
 
+    @Secured({"ROLE_ADMIN"})
+    @RequestMapping(value = "/internalapi/backup/download", method = RequestMethod.GET, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public FileSystemResource getFile(@RequestParam("filename") String filename) throws Exception {
+        final FileSystemResource resource = new FileSystemResource(new File(backup.getBackupFolder(), filename));
+        return resource;
+    }
+
 }
