@@ -5,6 +5,10 @@
             {
                 "type": "fix",
                 "text": "Fix download of backup files. See #772"
+            },
+            {
+                "type": "note",
+                "text": "The mysterious issues with connections to indexers failing (and perhaps some other issues) were caused by changes in the linuxserver.io image and should be fixed by now."
             }
         ],
         "final": true
