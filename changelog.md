@@ -1,3 +1,13 @@
+### v4.3.2 (2022-06-13)
+
+**Fix** Fix use of groups in custom search request mapping. See <a href="https://github.com/theotherp/nzbhydra2/issues/700">#700</a>
+
+**Fix** Fix download of backup files. See <a href="https://github.com/theotherp/nzbhydra2/issues/772">#772</a>
+
+**Note** The mysterious issues with connections to indexers failing (and perhaps some other issues) were caused by changes in the linuxserver.io image and should be fixed by now.
+
+
+
 ### v4.3.1 (2022-05-02)
 
 **Note** I removed the OpenAPI docs as for some really weird reason it may have introduced some unexpected bugs when connecting to indexers or even when trying to update the database
