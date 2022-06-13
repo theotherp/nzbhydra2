@@ -162,7 +162,7 @@ public class CustomSearchRequestMapping {
                 replacementRegex = replacementRegex.replace("{episode}", searchRequest.getEpisode().get());
             }
         }
-        replacementRegex = replacementRegex.replaceAll("\\{(?<groupName>[^\\^}].*)}", "\\$\\{hydra${groupName}\\}");
+        replacementRegex = replacementRegex.replaceAll("\\{(?<groupName>[^\\}]*)\\}", "\\$\\{hydra${groupName}\\}");
         logger.debug(LoggingMarkers.CUSTOM_MAPPING, "Mapping input \"{}\" using replacement regex \"{}\"", value, replacementRegex);
         mappedValue = mappedValue.replaceAll(mapping.getFromPattern().pattern(), replacementRegex);
         logger.debug(LoggingMarkers.CUSTOM_MAPPING, "Mapped input \"{}\" to \"{}\"", value, mappedValue);

@@ -107,5 +107,16 @@ public class CustomSearchRequestMappingTest {
         assertThat(testee.isDatasetMatch(searchRequest, mapping)).isFalse();
     }
 
+    @Test
+    public void shouldReplaceAllCustomGroups() {
+        final SearchRequest searchRequest = new SearchRequest();
+        searchRequest.setTitle("Fairy Tail 49");
+        final CustomSearchRequestMapping.Mapping mapping = new CustomSearchRequestMapping.Mapping("TVSEARCH;TITLE;{title:Fairy Tail} {ep:[0-9]+};{title} german e{ep}");
+        assertThat(testee.isDatasetMatch(searchRequest, mapping)).isTrue();
+
+        testee.mapSearchRequest(searchRequest, mapping);
+        assertThat(searchRequest.getTitle()).isPresent().get().isEqualTo("Fairy Tail german e49");
+    }
+
 
 }

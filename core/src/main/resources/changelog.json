@@ -4,6 +4,10 @@
         "changes": [
             {
                 "type": "fix",
+                "text": "Fix use of groups in custom search request mapping. See #700"
+            },
+            {
+                "type": "fix",
                 "text": "Fix download of backup files. See #772"
             },
             {
