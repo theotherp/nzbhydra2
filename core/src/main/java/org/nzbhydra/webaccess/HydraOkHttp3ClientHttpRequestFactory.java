@@ -111,12 +111,12 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
 
 
     static Request buildRequest(HttpHeaders headers, byte[] content, URI uri, HttpMethod method)
-            throws MalformedURLException {
+        throws MalformedURLException {
 
         okhttp3.MediaType contentType = getContentType(headers);
         RequestBody body = (content.length > 0 ||
-                okhttp3.internal.http.HttpMethod.requiresRequestBody(method.name()) ?
-                RequestBody.create(contentType, content) : null);
+            okhttp3.internal.http.HttpMethod.requiresRequestBody(method.name()) ?
+            RequestBody.create(contentType, content) : null);
 
         Request.Builder builder = new Request.Builder().url(uri.toURL()).method(method.name(), body);
         for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
@@ -151,16 +151,20 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
         if (main.getProxyType() == ProxyType.SOCKS) {
             return builder.socketFactory(sockProxySocketFactory);
         } else if (main.getProxyType() == ProxyType.HTTP) {
-            builder = builder.proxy(new Proxy(Type.HTTP, new InetSocketAddress(main.getProxyHost(), main.getProxyPort()))).proxyAuthenticator((Route route, Response response) -> {
-                if (response.request().header("Proxy-Authorization") != null) {
-                    logger.warn("Authentication with proxy failed");
-                    return null; // Give up, we've already failed to authenticate.
-                }
+            builder = builder.proxy(new Proxy(Type.HTTP, new InetSocketAddress(main.getProxyHost(), main.getProxyPort())));
+            if (main.getProxyUsername() != null) {
 
-                String credential = Credentials.basic(main.getProxyUsername(), main.getProxyPassword());
-                return response.request().newBuilder()
+                builder = builder.proxyAuthenticator((Route route, Response response) -> {
+                    if (response.request().header("Proxy-Authorization") != null) {
+                        logger.warn("Authentication with proxy failed");
+                        return null; // Give up, we've already failed to authenticate.
+                    }
+
+                    String credential = Credentials.basic(main.getProxyUsername(), main.getProxyPassword());
+                    return response.request().newBuilder()
                         .header("Proxy-Authorization", credential).build();
-            });
+                });
+            }
         }
         return builder;
     }
@@ -174,10 +178,10 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
             builder.sslSocketFactory(ssl.getDefaultSslSocketFactory(), ssl.getDefaultTrustManager());
         } else if (verificationState == Ssl.SslVerificationState.DISABLED_HOST) {
             builder.sslSocketFactory(allTrustingSslSocketFactory, allTrustingDefaultTrustManager)
-                    .hostnameVerifier((hostname, session) -> {
-                        logger.debug(LoggingMarkers.HTTPS, "Not verifying host name {}", hostname);
-                        return true;
-                    });
+                .hostnameVerifier((hostname, session) -> {
+                    logger.debug(LoggingMarkers.HTTPS, "Not verifying host name {}", hostname);
+                    return true;
+                });
         } else {
             builder.sslSocketFactory(allTrustingSslSocketFactory, allTrustingDefaultTrustManager);
         }
@@ -225,13 +229,13 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
                 InetAddress byName = InetAddress.getByName(host);
                 long ipToLong = ipToLong(byName);
                 return host.equals("127.0.0.1")
-                        ||
-                        (ipToLong >= ipToLong(InetAddress.getByName("10.0.0.0")) && ipToLong <= ipToLong(InetAddress.getByName("10.255.255.255")))
-                        ||
-                        (ipToLong >= ipToLong(InetAddress.getByName("172.16.0.0")) && ipToLong <= ipToLong(InetAddress.getByName("172.16.255.255")))
-                        ||
-                        (ipToLong >= ipToLong(InetAddress.getByName("192.168.0.0")) && ipToLong <= ipToLong(InetAddress.getByName("192.168.255.255")))
-                        ;
+                    ||
+                    (ipToLong >= ipToLong(InetAddress.getByName("10.0.0.0")) && ipToLong <= ipToLong(InetAddress.getByName("10.255.255.255")))
+                    ||
+                    (ipToLong >= ipToLong(InetAddress.getByName("172.16.0.0")) && ipToLong <= ipToLong(InetAddress.getByName("172.16.255.255")))
+                    ||
+                    (ipToLong >= ipToLong(InetAddress.getByName("192.168.0.0")) && ipToLong <= ipToLong(InetAddress.getByName("192.168.255.255")))
+                    ;
             } catch (UnknownHostException e) {
                 logger.error("Unable to parse host " + host, e);
                 return false;
