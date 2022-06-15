@@ -501,7 +501,7 @@ public class Newznab extends Indexer<Xml> {
         if (apiLimits != null) {
 
             IndexerLimit indexerStatus = indexerStatusRepository.findByIndexer(indexer);
-            indexerStatus.setApiHits(apiLimits.getApiCurrent());
+            indexerStatus.setApiHits(apiLimits.getApiCurrent() != null ? apiLimits.getApiCurrent() + 1 : null);
             indexerStatus.setApiHitLimit(apiLimits.getApiMax());
             indexerStatus.setDownloads(apiLimits.getGrabCurrent());
             indexerStatus.setDownloadLimit(apiLimits.getGrabMax());

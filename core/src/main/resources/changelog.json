@@ -13,6 +13,10 @@
             {
                 "type": "fix",
                 "text": "Fix API hit and download detection for DogNZB"
+            },
+            {
+                "type": "fix",
+                "text": "Add the current API hit to the number of reported API hits in response"
             }
         ],
         "final": true
