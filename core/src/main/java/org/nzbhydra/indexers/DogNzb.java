@@ -20,6 +20,7 @@ public class DogNzb extends Newznab {
 
     protected void completeIndexerSearchResult(Xml response, IndexerSearchResult indexerSearchResult, AcceptorResult acceptorResult, SearchRequest searchRequest, int offset, Integer limit) {
         NewznabXmlResponse newznabResponse = ((NewznabXmlRoot) response).getRssChannel().getNewznabResponse();
+        super.completeIndexerSearchResult(response, indexerSearchResult, acceptorResult, searchRequest, offset, limit);
 
         //DogNZB does not return a reliable total number. It's always 100 if there are more results, less if it's the last page
         indexerSearchResult.setTotalResultsKnown(false);

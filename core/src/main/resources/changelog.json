@@ -9,6 +9,10 @@
             {
                 "type": "fix",
                 "text": "Use API hit information from indexer request when no download information was provided. In that case calculate the downloads from the history. See #778"
+            },
+            {
+                "type": "fix",
+                "text": "Fix API hit and download detection for DogNZB"
             }
         ],
         "final": true
