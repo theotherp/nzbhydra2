@@ -17,6 +17,10 @@
             {
                 "type": "fix",
                 "text": "Add the current API hit to the number of reported API hits in response"
+            },
+            {
+                "type": "fix",
+                "text": "Fix name of logging marker \"Custom mapping\" (was \"Config mapping\")"
             }
         ],
         "final": true
