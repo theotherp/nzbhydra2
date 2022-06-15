@@ -4,7 +4,7 @@
         "changes": [
             {
                 "type": "fix",
-                "text": "Using an HTTP proxy without username / password caused an error"
+                "text": "Fix error when using an HTTP proxy without username / password."
             },
             {
                 "type": "fix",
@@ -12,15 +12,15 @@
             },
             {
                 "type": "fix",
-                "text": "Fix API hit and download detection for DogNZB"
+                "text": "Fix API hit and download detection for DogNZB."
             },
             {
                 "type": "fix",
-                "text": "Add the current API hit to the number of reported API hits in response"
+                "text": "Add the current API hit to the number of reported API hits in response."
             },
             {
                 "type": "fix",
-                "text": "Fix name of logging marker \"Custom mapping\" (was \"Config mapping\")"
+                "text": "Fix name of logging marker \"Custom mapping\" (was \"Config mapping\")."
             }
         ],
         "final": true
