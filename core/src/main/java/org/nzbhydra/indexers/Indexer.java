@@ -334,11 +334,11 @@ public abstract class Indexer<T> {
             disablePermanently = true;
             apiAccessResult = IndexerAccessResult.AUTH_ERROR;
         } else if (e instanceof IndexerErrorCodeException) {
-            error(message);
+            error(message, e);
             apiAccessResult = IndexerAccessResult.API_ERROR;
         } else if (e instanceof IndexerUnreachableException) {
             message = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
-            error(message);
+            error(message, e);
             apiAccessResult = IndexerAccessResult.CONNECTION_ERROR;
         } else {
             //Anything else is probably a coding error, don't disable indexer
