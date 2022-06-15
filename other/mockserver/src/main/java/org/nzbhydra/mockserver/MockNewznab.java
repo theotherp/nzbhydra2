@@ -67,7 +67,7 @@ public class MockNewznab {
         }
         if (nzbId.endsWith("13")) {
             return ResponseEntity.status(429).body("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                    "<error code=\"429\" description=\"Request limit reached\"/>");
+                "<error code=\"429\" description=\"Request limit reached\"/>");
         }
 
         return ResponseEntity.ok("Would download NZB with ID" + nzbId);
@@ -266,10 +266,10 @@ public class MockNewznab {
 
         if ("oneduplicate".equals(params.getQ())) {
             NewznabMockRequest mockRequest = NewznabMockRequest.builder()
-                    .numberOfResults(1)
-                    .titleBase(itemTitleBase)
-                    .generateOneDuplicate(true)
-                    .build();
+                .numberOfResults(1)
+                .titleBase(itemTitleBase)
+                .generateOneDuplicate(true)
+                .build();
             NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(mockRequest);
             rssRoot.getRssChannel().getNewznabResponse().setTotal(1);
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
@@ -277,10 +277,10 @@ public class MockNewznab {
 
         if ("titlegroup".equals(params.getQ())) {
             NewznabMockRequest mockRequest = NewznabMockRequest.builder()
-                    .numberOfResults(1)
-                    .titleBase(itemTitleBase)
-                    .generateOneDuplicate(false)
-                    .build();
+                .numberOfResults(1)
+                .titleBase(itemTitleBase)
+                .generateOneDuplicate(false)
+                .build();
             NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(mockRequest);
             rssRoot.getRssChannel().getNewznabResponse().setTotal(1);
             rssRoot.getRssChannel().getItems().forEach(x -> x.setTitle("titlegroup"));
@@ -295,8 +295,17 @@ public class MockNewznab {
 
             NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, 10, "avengers", doGenerateDuplicates, Collections.emptyList(), false, 0);
             if (params.getApikey().contains("limits")) {
-                rssRoot.getRssChannel().setApiLimits(new NewznabXmlApilimits(0, API_MAX, 0, 200));
+                final NewznabXmlApilimits apiLimits = new NewznabXmlApilimits(0, API_MAX, null, null);
+
+                rssRoot.getRssChannel().setApiLimits(apiLimits);
             }
+            return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
+        }
+
+        if ("limitsNoDownloads".equals(params.getQ())) {
+            NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, 10, "avengers", doGenerateDuplicates, Collections.emptyList(), false, 0);
+            final NewznabXmlApilimits apiLimits = new NewznabXmlApilimits(0, API_MAX, null, null);
+            rssRoot.getRssChannel().setApiLimits(apiLimits);
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }
 

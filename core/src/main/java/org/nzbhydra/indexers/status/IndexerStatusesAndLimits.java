@@ -62,14 +62,14 @@ public class IndexerStatusesAndLimits {
 
     public List<IndexerStatus> getSortedStatuses() {
         return configProvider.getBaseConfig().getIndexers().stream()
-                .sorted(
-                        Comparator.comparing(IndexerConfig::getState)
-                                .thenComparing(o -> o.getName().toLowerCase())
-                )
-                .map(
-                        this::getIndexerStatus
-                )
-                .collect(Collectors.toList());
+            .sorted(
+                Comparator.comparing(IndexerConfig::getState)
+                    .thenComparing(o -> o.getName().toLowerCase())
+            )
+            .map(
+                this::getIndexerStatus
+            )
+            .collect(Collectors.toList());
     }
 
     private IndexerStatus getIndexerStatus(IndexerConfig x) {
@@ -91,56 +91,58 @@ public class IndexerStatusesAndLimits {
         return indexerStatus;
     }
 
-    private void setLimitRelatedValues(IndexerConfig x, IndexerStatus indexerStatus) {
-        IndexerEntity indexerEntity = searchModuleProvider.getIndexerByName(x.getName()).getIndexerEntity();
+    private void setLimitRelatedValues(IndexerConfig indexerConfig, IndexerStatus indexerStatus) {
+        IndexerEntity indexerEntity = searchModuleProvider.getIndexerByName(indexerConfig.getName()).getIndexerEntity();
         IndexerLimit limitEntity = indexerLimitRepository.findByIndexer(indexerEntity);
-        if (limitEntity.getApiHitLimit() != null) {
-            indexerStatus.setApiHitLimit(limitEntity.getApiHitLimit());
-        }
-        if (limitEntity.getDownloadLimit() != null) {
-            indexerStatus.setDownloadHitLimit(limitEntity.getDownloadLimit());
-        }
-        if (limitEntity.getApiHits() != null) {
-            indexerStatus.setApiHits(limitEntity.getApiHits());
-            indexerStatus.setDownloadHits(limitEntity.getDownloads());
-        } else {
-            setFromApiShortTermStorage(x, indexerStatus, indexerEntity);
+        indexerStatus.setApiHitLimit(limitEntity.getApiHitLimit());
+        indexerStatus.setDownloadHitLimit(limitEntity.getDownloadLimit());
+        indexerStatus.setApiHits(limitEntity.getApiHits());
+        indexerStatus.setDownloadHits(limitEntity.getDownloads());
+        logger.debug(LoggingMarkers.LIMITS, "Found limits in database for indexer {}: {}", indexerConfig.getName(), limitEntity);
+
+        if (limitEntity.getApiHits() == null || limitEntity.getDownloads() == null) {
+            setFromApiShortTermStorage(indexerConfig, indexerStatus, indexerEntity);
         }
     }
 
-    private void setFromApiShortTermStorage(IndexerConfig x, IndexerStatus indexerStatus, IndexerEntity indexerEntity) {
-        LimitsRetrieval limitsRetrieval = new LimitsRetrieval(x, indexerEntity).invoke();
+    private void setFromApiShortTermStorage(IndexerConfig indexerConfig, IndexerStatus indexerStatus, IndexerEntity indexerEntity) {
+        LimitsRetrieval limitsRetrieval = new LimitsRetrieval(indexerConfig, indexerEntity).invoke();
+        logger.debug(LoggingMarkers.LIMITS, "Setting api limits from short term storage for indexer {}: {}", indexerConfig.getName(), limitsRetrieval);
         int countApiHits = limitsRetrieval.getCountApiHits();
         int countDownloads = limitsRetrieval.getCountDownloads();
         Instant earliestApiHit = limitsRetrieval.getEarliestApiHit();
         Instant earliestDownload = limitsRetrieval.getEarliestDownload();
 
-        indexerStatus.setApiHits(countApiHits);
-        //Set reset time for API limits
-        if (x.getHitLimit().isPresent() && countApiHits >= x.getHitLimit().get()) {
-            if (x.getHitLimitResetTime().isPresent()) {
-                //Fixed time
-                Instant nextResetTime = getResetTime(x);
-                indexerStatus.setApiResetTime(nextResetTime);
-            } else {
-                //Rolling window
-                indexerStatus.setApiResetTime(earliestApiHit.plus(1, ChronoUnit.DAYS));
+        if (indexerStatus.getApiHits() == null) {
+            indexerStatus.setApiHits(countApiHits);
+            //Set reset time for API limits
+            if (indexerConfig.getHitLimit().isPresent() && countApiHits >= indexerConfig.getHitLimit().get()) {
+                if (indexerConfig.getHitLimitResetTime().isPresent()) {
+                    //Fixed time
+                    Instant nextResetTime = getResetTime(indexerConfig);
+                    indexerStatus.setApiResetTime(nextResetTime);
+                } else {
+                    //Rolling window
+                    indexerStatus.setApiResetTime(earliestApiHit.plus(1, ChronoUnit.DAYS));
+                }
             }
         }
 
-        indexerStatus.setDownloadHits(countDownloads);
-        //Set reset time for downloads
-        if (x.getDownloadLimit().isPresent() && countDownloads >= x.getDownloadLimit().get()) {
-            if (x.getHitLimitResetTime().isPresent()) {
-                //FIxed time
-                Instant nextResetTime = getResetTime(x);
-                indexerStatus.setDownloadResetTime(nextResetTime);
-            } else {
-                //Rolling window
-                indexerStatus.setDownloadResetTime(earliestDownload.plus(1, ChronoUnit.DAYS));
+        if (indexerStatus.getDownloadHits() == null) {
+            indexerStatus.setDownloadHits(countDownloads);
+            //Set reset time for downloads
+            if (indexerConfig.getDownloadLimit().isPresent() && countDownloads >= indexerConfig.getDownloadLimit().get()) {
+                if (indexerConfig.getHitLimitResetTime().isPresent()) {
+                    //FIxed time
+                    Instant nextResetTime = getResetTime(indexerConfig);
+                    indexerStatus.setDownloadResetTime(nextResetTime);
+                } else {
+                    //Rolling window
+                    indexerStatus.setDownloadResetTime(earliestDownload.plus(1, ChronoUnit.DAYS));
+                }
             }
         }
-        logger.debug(LoggingMarkers.LIMITS, "Indexer {}. Saving from API shot term storage: {}", x.getName(), indexerStatus);
+        logger.debug(LoggingMarkers.LIMITS, "Indexer {}. Saving from API shot term storage: {}", indexerConfig.getName(), indexerStatus);
     }
 
 

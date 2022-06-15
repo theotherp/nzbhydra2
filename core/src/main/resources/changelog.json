@@ -5,6 +5,10 @@
             {
                 "type": "fix",
                 "text": "Using an HTTP proxy without username / password caused an error"
+            },
+            {
+                "type": "fix",
+                "text": "Use API hit information from indexer request when no download information was provided. In that case calculate the downloads from the history. See #778"
             }
         ],
         "final": true
