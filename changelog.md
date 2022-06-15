@@ -1,3 +1,17 @@
+### v4.3.3 (2022-06-15)
+
+**Fix** Fix error when using an HTTP proxy without username / password.
+
+**Fix** Use API hit information from indexer request when no download information was provided. In that case calculate the downloads from the history. See <a href="https://github.com/theotherp/nzbhydra2/issues/778">#778</a>
+
+**Fix** Fix API hit and download detection for DogNZB.
+
+**Fix** Add the current API hit to the number of reported API hits in response.
+
+**Fix** Fix name of logging marker "Custom mapping" (was "Config mapping").
+
+
+
 ### v4.3.2 (2022-06-13)
 
 **Fix** Fix use of groups in custom search request mapping. See <a href="https://github.com/theotherp/nzbhydra2/issues/700">#700</a>

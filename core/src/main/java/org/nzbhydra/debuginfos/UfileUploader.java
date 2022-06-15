@@ -23,6 +23,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+import org.apache.commons.lang3.StringUtils;
 import org.nzbhydra.Jackson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +37,7 @@ import java.util.Map;
 public class UfileUploader {
 
     private static final Logger logger = LoggerFactory.getLogger(UfileUploader.class);
+    private static final String UFILE_UP_API_PATH = "https://ufile.io/v1";
 
     public static String upload(File file) throws IOException {
         final OkHttpClient httpClient = new OkHttpClient();
@@ -56,8 +58,10 @@ public class UfileUploader {
     }
 
     private static String getToken(OkHttpClient httpClient, File file) throws IOException {
+        final String url = UFILE_UP_API_PATH + "/upload/create_session";
+        logger.debug("Sending token POST to {}", url);
         final Response post = httpClient.newCall(new Request.Builder()
-                .url("https://up.ufile.io/v1/upload/create_session")
+                .url(url)
                 .method("POST",
                         new FormBody.Builder()
                                 .add("file_size", String.valueOf(file.length()))
@@ -77,8 +81,10 @@ public class UfileUploader {
     }
 
     private static void uploadFile(File file, OkHttpClient httpClient, String token) throws IOException {
+        final String url = UFILE_UP_API_PATH + "/upload/chunk";
+        logger.debug("Sending upload POST to {}", url);
         final Response post = httpClient.newCall(new Request.Builder()
-                .url("https://up.ufile.io/v1/upload/chunk")
+                .url(url)
                 .method("POST",
                         new MultipartBody.Builder()
                                 .setType(MultipartBody.FORM)
@@ -95,8 +101,10 @@ public class UfileUploader {
     }
 
     private static String finalize(File file, OkHttpClient httpClient, String token) throws IOException {
+        final String url = UFILE_UP_API_PATH + "/upload/finalise";
+        logger.debug("Sending finalise POST to {}", url);
         final Response post = httpClient.newCall(new Request.Builder()
-                .url("https://up.ufile.io/v1/upload/finalise")
+                .url(url)
                 .method("POST",
                         new FormBody.Builder()
                                 .add("fuid", token)
@@ -121,7 +129,8 @@ public class UfileUploader {
             message += ". Message: " + post.message();
         }
         if (post.body() != null) {
-            message += ". Body: " + post.body().string();
+            final String bodyString = post.body().string();
+            message += ". Body: " + StringUtils.abbreviate(bodyString, 500);
             post.body().close();
         }
         logger.error(message);
