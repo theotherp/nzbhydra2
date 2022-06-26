@@ -68,6 +68,9 @@ public class DownloaderConfig extends ValidatingConfig<DownloaderConfig> {
         if (newBaseConfig.getIndexers().stream().anyMatch(x -> x.getHost().toLowerCase().contains("nzbs.in")) && newDownloaderConfig.getNzbAddingType() != NzbAddingType.SEND_LINK) {
             warnings.add("nzbs.in requires special configurations to be made or your API account will be disabled. You should set the NZB adding type in the downloader config to \"Send link\".");
         }
+        if (newBaseConfig.getIndexers().stream().anyMatch(x -> x.getHost().toLowerCase().contains("omgwtfnzbs")) && newDownloaderConfig.getNzbAddingType() != NzbAddingType.SEND_LINK) {
+            warnings.add("omgwtfnzbs requires special configurations to be made or your API account will be disabled. You should set the NZB adding type in the downloader config to \"Send link\".");
+        }
         return new ConfigValidationResult(true, false, Collections.emptyList(), warnings);
     }
 

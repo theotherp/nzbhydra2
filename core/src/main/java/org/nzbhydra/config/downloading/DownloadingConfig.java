@@ -69,6 +69,9 @@ public class DownloadingConfig extends ValidatingConfig<DownloadingConfig> {
         if (newBaseConfig.getIndexers().stream().anyMatch(x -> x.getHost().toLowerCase().contains("nzbs.in")) && newConfig.getNzbAccessType() != FileDownloadAccessType.REDIRECT) {
             warnings.add("nzbs.in requires special configurations to be made or your API account will be disabled. You should set the NZB access type in the downloading config to \"Redirect to indexer\".");
         }
+        if (newBaseConfig.getIndexers().stream().anyMatch(x -> x.getHost().toLowerCase().contains("omgwtfnzbs")) && newConfig.getNzbAccessType() != FileDownloadAccessType.REDIRECT) {
+            warnings.add("omgwtfnzbs requires special configurations to be made or your API account will be disabled. You should set the NZB access type in the downloading config to \"Redirect to indexer\".");
+        }
 
         warnings.addAll(validationResults.stream().map(ConfigValidationResult::getWarningMessages).flatMap(Collection::stream).collect(Collectors.toList()));
 
