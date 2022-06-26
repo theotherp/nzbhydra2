@@ -6,6 +6,7 @@ import com.google.common.base.Strings;
 import lombok.Data;
 import org.javers.core.metamodel.annotation.DiffIgnore;
 import org.nzbhydra.NzbHydra;
+import org.nzbhydra.config.auth.AuthType;
 import org.nzbhydra.config.downloading.ProxyType;
 import org.nzbhydra.config.sensitive.SensitiveData;
 import org.nzbhydra.debuginfos.DebugInfosProvider;
@@ -194,6 +195,10 @@ public class MainConfig extends ValidatingConfig<MainConfig> {
                     result.getErrorMessages().add("Backup folder " + backupFolder + " does not exist and could not be created");
                 }
             }
+        }
+
+        if (host.equals("0.0.0.0") && newBaseConfig.getAuth().getAuthType() == AuthType.NONE) {
+            result.getWarningMessages().add("It looks like you're exposing NZBHydra to the internet but have no authentication enabled. It is *strongly* recommended not to do that. Certain people actively scan the internet for open instances to steal your API keys.");
         }
 
 
