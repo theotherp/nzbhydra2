@@ -1,3 +1,15 @@
+### v4.4.0 (2022-06-26)
+
+**Feature** Add validation to ensure your configuration matches the requirements of a certain indexer.
+
+**Feature** Warn when exposing NZBHydra to the internet via host 0.0.0.0 with no authentication enabled.
+
+**Note** In the same vein I decided to remove the option to ignore warnings when saving the config. You'll just have to live with it or, ideally, fix the things causing the warnings.
+
+**Note** All the above stems from the fact that a lot of people (=idiots) have their NZBHydra (or *arr) instances wide open to the world without any authentication whatsoever. DO NOT DO THAT! People will steal your API keys and possibly get your indexer access disabled or revoked for good. I'm trying to automatically detect that but it's not easy distinguishing valid accesses from fraudulent ones.
+
+
+
 ### v4.3.3 (2022-06-15)
 
 **Fix** Fix error when using an HTTP proxy without username / password.
