@@ -126,20 +126,20 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
                 message = '<br><span class="warning">The following warnings have been found. You can ignore them if you wish. The config was already saved.<ul>';
                 message = extendMessageWithList(message, response.data.warningMessages);
                 options = {
-                    cancel: {
-                        onCancel: function () {
-                            $scope.form.$setPristine();
-                            localStorageService.set("ignoreWarnings", true);
-                            ConfigService.set($scope.config, true).then(function (response) {
-                                handleConfigSetResponse(response, true, $scope.restartRequired);
-                                updateAndAskForRestartIfNecessary(response.data);
-                            }, function (response) {
-                                //Actual error while setting or validating config
-                                growl.error(response.data);
-                            });
-                        },
-                        text: "OK, don't show warnings again"
-                    },
+                    // cancel: {
+                    //     onCancel: function () {
+                    //         $scope.form.$setPristine();
+                    //         localStorageService.set("ignoreWarnings", true);
+                    //         ConfigService.set($scope.config, true).then(function (response) {
+                    //             handleConfigSetResponse(response, true, $scope.restartRequired);
+                    //             updateAndAskForRestartIfNecessary(response.data);
+                    //         }, function (response) {
+                    //             //Actual error while setting or validating config
+                    //             growl.error(response.data);
+                    //         });
+                    //     },
+                    //     text: "OK, don't show warnings again"
+                    // },
                     yes: {
                         onYes: function () {
                             handleConfigSetResponse(response, true, $scope.restartRequired);
@@ -149,7 +149,6 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
                     }
                 };
             }
-
             ModalService.open(title, message, options, "md", "left");
         } else {
             updateAndAskForRestartIfNecessary(response.data);

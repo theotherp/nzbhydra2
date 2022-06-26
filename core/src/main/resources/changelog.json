@@ -5,6 +5,14 @@
             {
                 "type": "feature",
                 "text": "Add validation to ensure your configuration matches the requirements of a certain indexer."
+            },
+            {
+                "type": "feature",
+                "text": "Warn when exposing NZBHydra to the internet via host 0.0.0.0 with no authentication enabled."
+            },
+            {
+                "type": "note",
+                "text": "In the same vein I decided to remove the option to ignore warnings when saving the config. You'll just have to live with it or, ideally, fix the things causing the warnings."
             }
         ],
         "final": true
