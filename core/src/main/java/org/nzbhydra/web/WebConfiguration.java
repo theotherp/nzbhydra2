@@ -75,7 +75,8 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
 
         //Otherwise swagger is not loaded using /swagger-ui/index.html
         registry.addResourceHandler("/swagger-ui/**")
-            .addResourceLocations("classpath:/META-INF/resources/webjars/swagger-ui/4.5.0/");
+            // Must match the dependency for swagger-ui
+            .addResourceLocations("classpath:/META-INF/resources/webjars/swagger-ui/4.10.3/");
 
 
         registry.setOrder(0);
