@@ -716,12 +716,14 @@ public class Newznab extends Indexer<Xml> {
 
     protected void computeCategory(SearchResultItem searchResultItem, List<Integer> newznabCategories) {
         if (!newznabCategories.isEmpty()) {
+            logger.debug(LoggingMarkers.CATEGORY_MAPPING, "Result {} has newznab categories {} and self-reported category {}", searchResultItem.getTitle(), newznabCategories, searchResultItem.getCategory());
             Integer mostSpecific = newznabCategories.stream().max(Integer::compareTo).get();
             IndexerCategoryConfig mapping = config.getCategoryMapping();
             Category category;
             if (mapping == null) { //May be the case in some corner cases
                 category = categoryProvider.fromSearchNewznabCategories(newznabCategories, categoryProvider.getNotAvailable());
                 searchResultItem.setOriginalCategory(categoryProvider.getNotAvailable().getName());
+                logger.debug(LoggingMarkers.CATEGORY_MAPPING, "No mapping available. Using original category N/A and new category {} for result {}", category, searchResultItem.getTitle());
             } else {
                 category = idToCategory.computeIfAbsent(mostSpecific, x -> {
                     Optional<Category> categoryOptional = Optional.empty();
@@ -742,11 +744,14 @@ public class Newznab extends Indexer<Xml> {
                 searchResultItem.setOriginalCategory(mapping.getNameFromId(mostSpecific));
             }
             if (category == null) {
+                logger.debug(LoggingMarkers.CATEGORY_MAPPING, "No category found for {}. Using N/A", searchResultItem.getTitle());
                 searchResultItem.setCategory(categoryProvider.getNotAvailable());
             } else {
+                logger.debug(LoggingMarkers.CATEGORY_MAPPING, "Determined category {} for {}", category, searchResultItem.getTitle());
                 searchResultItem.setCategory(category);
             }
         } else {
+            logger.debug(LoggingMarkers.CATEGORY_MAPPING, "No newznab categories exist for {}. Using N/A", searchResultItem.getTitle());
             searchResultItem.setCategory(categoryProvider.getNotAvailable());
         }
     }

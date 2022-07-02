@@ -336,7 +336,7 @@ public class SearchResultAcceptor {
                 List<String> titleWords = getTitleWords(item);
                 Optional<String> found = titleWords.stream().filter(x -> x.equalsIgnoreCase(forbiddenWord)).findFirst(); //Title word must match excluded word to reject result, not just be contained
                 if (found.isPresent()) {
-                    logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "Found forbidden word (from {}) in title word {}", source, found.get());
+                    logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "Found forbidden word (from {}) in title word {} (full title: {})", source, found.get(), item.getTitle());
                     reasonsForRejection.add("Forbidden word");
                     return false;
                 }

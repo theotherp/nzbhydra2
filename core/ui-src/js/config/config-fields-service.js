@@ -419,6 +419,7 @@ function ConfigFields($injector) {
                                 help: 'Select certain sections for more output on debug level. Please enable only when asked for.',
                                 options: [
                                     {label: 'API limits', id: 'LIMITS'},
+                                    {label: 'Category mapping', id: 'CATEGORY_MAPPING'},
                                     {label: 'Config file handling', id: 'CONFIG_READ_WRITE'},
                                     {label: 'Custom mapping', id: 'CUSTOM_MAPPING'},
                                     {label: 'Downloader status updating', id: 'DOWNLOADER_STATUS_UPDATE'},

@@ -1,12 +1,14 @@
 package org.nzbhydra.searching;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigChangedEvent;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.category.CategoriesConfig;
 import org.nzbhydra.config.category.Category;
 import org.nzbhydra.config.category.Category.Subtype;
+import org.nzbhydra.logging.LoggingMarkers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -14,11 +16,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -102,7 +104,7 @@ public class CategoryProvider implements InitializingBean {
         if (name == null) {
             return getNotAvailable();
         }
-        if (name.toLowerCase().equals("all")) {
+        if (name.equalsIgnoreCase("all")) {
             return CategoriesConfig.allCategory;
         }
         if (!categoryMap.containsKey(name)) {
@@ -124,7 +126,7 @@ public class CategoryProvider implements InitializingBean {
      * @return A category
      */
     public Category fromSearchNewznabCategories(String cats) {
-        if (StringUtils.isEmpty(cats)) {
+        if (Strings.isNullOrEmpty(cats)) {
             return getNotAvailable();
         }
 
@@ -168,6 +170,7 @@ public class CategoryProvider implements InitializingBean {
      */
     public Category fromResultNewznabCategories(List<Integer> cats) {
         if (cats == null || cats.size() == 0) {
+            logger.debug(LoggingMarkers.CATEGORY_MAPPING, "Empty newznab categories -> N/A");
             return naCategory;
         }
         //Start with higher numbers which are usually more specific (4050 is more specific than 4000, for example)
@@ -244,15 +247,16 @@ public class CategoryProvider implements InitializingBean {
     public Category getMatchingCategoryOrMatchingMainCategory(List<Integer> cats, Category defaultCategory) {
         //Try to find categories with combined numbers which match the provided numbers
         for (Map.Entry<List<Integer>, Category> listCategoryEntry : categoryMapByMultipleNumber.entrySet()) {
-            if (cats.containsAll(listCategoryEntry.getKey())) {
+            if (new HashSet<>(cats).containsAll(listCategoryEntry.getKey())) {
+                logger.debug(LoggingMarkers.CATEGORY_MAPPING, "Determined {} from {} via combined categories {}", listCategoryEntry.getValue(), cats, listCategoryEntry.getKey());
                 return listCategoryEntry.getValue();
             }
         }
 
         //Try to find a category that matches any of the provided numbers
-        Optional<Category> matchingCategory;
         for (Integer cat : cats) {
             if (categoryMapByNumber.containsKey(cat)) {
+                logger.debug(LoggingMarkers.CATEGORY_MAPPING, "Determined {} matching directly {}", categoryMapByNumber.get(cat), cat);
                 return categoryMapByNumber.get(cat);
             }
         }
@@ -263,10 +267,12 @@ public class CategoryProvider implements InitializingBean {
             List<Integer> categorySingleNewznabNumbers = category.getNewznabCategories().stream().filter(x -> x.size() == 1).map(x -> x.get(0)).collect(Collectors.toList());
             for (Integer cat : cats) {
                 if (categorySingleNewznabNumbers.contains(cat / 1000 * 1000)) {
+                    logger.debug(LoggingMarkers.CATEGORY_MAPPING, "Determined {} matching generally {}", cat, category);
                     return category;
                 }
             }
         }
+        logger.debug(LoggingMarkers.CATEGORY_MAPPING, "Unable to match category to {}. Using default category {}", cats, defaultCategory);
         return defaultCategory;
     }
 
