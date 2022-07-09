@@ -1,5 +1,6 @@
 package org.nzbhydra.config;
 
+import org.nzbhydra.config.indexer.IndexerConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -17,6 +18,10 @@ public class ConfigProvider {
 
     public BaseConfig getBaseConfig() {
         return baseConfig;
+    }
+
+    public IndexerConfig getIndexerByName(String name) {
+        return baseConfig.getIndexers().stream().filter(x -> x.getName().equals(name)).findFirst().orElseThrow(() -> new RuntimeException("Unable to find indexer with name " + name));
     }
 
 

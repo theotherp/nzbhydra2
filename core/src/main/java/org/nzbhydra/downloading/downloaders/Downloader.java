@@ -23,14 +23,17 @@ import com.google.common.collect.Sets;
 import net.jodah.expiringmap.ExpirationPolicy;
 import net.jodah.expiringmap.ExpiringMap;
 import org.nzbhydra.GenericResponse;
+import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.downloading.DownloaderConfig;
 import org.nzbhydra.config.downloading.FileDownloadAccessType;
 import org.nzbhydra.config.downloading.NzbAddingType;
+import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.downloading.AddFilesRequest;
 import org.nzbhydra.downloading.DownloadResult;
 import org.nzbhydra.downloading.FileDownloadEntity;
 import org.nzbhydra.downloading.FileDownloadStatus;
 import org.nzbhydra.downloading.FileHandler;
+import org.nzbhydra.downloading.IndexerSpecificDownloadExceptions;
 import org.nzbhydra.downloading.InvalidSearchResultIdException;
 import org.nzbhydra.downloading.exceptions.DownloaderException;
 import org.nzbhydra.downloading.exceptions.DuplicateNzbException;
@@ -54,6 +57,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -80,6 +84,10 @@ public abstract class Downloader {
     protected SearchResultRepository searchResultRepository;
     @Autowired
     private ApplicationEventPublisher applicationEventPublisher;
+    @Autowired
+    private IndexerSpecificDownloadExceptions indexerSpecificDownloadExceptions;
+    @Autowired
+    private ConfigProvider configProvider;
 
     protected DownloaderConfig downloaderConfig;
     protected List<Long> downloadRates = new ArrayList<>();
@@ -122,9 +130,16 @@ public abstract class Downloader {
                 }
 
                 SearchResultEntity searchResult = null;
+                Optional<SearchResultEntity> optionalResult = searchResultRepository.findById(guid);
+                if (!optionalResult.isPresent()) {
+                    logger.error("Download request with invalid/outdated GUID {}", guid);
+                    throw new InvalidSearchResultIdException(guid, true);
+                }
+                final IndexerConfig indexerConfig = configProvider.getIndexerByName(optionalResult.get().getIndexer().getName());
                 try {
-                    if (addingType == NzbAddingType.UPLOAD) {
-                        DownloadResult result = nzbHandler.getFileByGuid(guid, FileDownloadAccessType.PROXY, SearchSource.INTERNAL); //Uploading NZBs can only be done via proxying
+                    final FileDownloadAccessType accessTypeForIndexer = indexerSpecificDownloadExceptions.getAccessTypeForIndexer(indexerConfig, configProvider.getBaseConfig().getDownloading().getNzbAccessType());
+                    if (addingType == NzbAddingType.UPLOAD && accessTypeForIndexer == FileDownloadAccessType.PROXY) {
+                        DownloadResult result = nzbHandler.getFileByResult(FileDownloadAccessType.PROXY, SearchSource.INTERNAL, optionalResult.get()); //Uploading NZBs can only be done via proxying
                         searchResult = result.getDownloadEntity().getSearchResult();
                         if (result.isSuccessful()) {
                             String externalId = addNzb(result.getContent(), result.getTitle(), categoryToSend);
@@ -134,8 +149,8 @@ public abstract class Downloader {
                         } else {
                             missedNzbs.add(searchResult);
                         }
-                    } else if (addingType == NzbAddingType.SEND_LINK) {
-                        searchResult = searchResultRepository.getOne(guid);
+                    } else {
+                        searchResult = searchResultRepository.getById(guid);
                         String externalId = addLink(nzbHandler.getDownloadLinkForSendingToDownloader(guid, false, DownloadType.NZB), searchResult.getTitle(), categoryToSend);
                         guidExternalIds.put(guid, externalId);
                         addedNzbs.add(guid);

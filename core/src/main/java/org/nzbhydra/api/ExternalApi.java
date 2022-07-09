@@ -219,8 +219,7 @@ public class ExternalApi {
         }
         DownloadResult downloadResult;
         try {
-
-            downloadResult = fileHandler.getFileByGuid(Long.parseLong(params.getId()), configProvider.getBaseConfig().getDownloading().getNzbAccessType(), SearchSource.API);
+            downloadResult = fileHandler.getFileByGuid(Long.parseLong(params.getId()), SearchSource.API);
         } catch (InvalidSearchResultIdException e) {
             return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML).body("<error code=\"300\" description=\"Invalid or outdated search result ID\"/>");
         }
@@ -359,8 +358,8 @@ public class ExternalApi {
             }
             CacheEntryValue that = (CacheEntryValue) o;
             return com.google.common.base.Objects.equal(params, that.params) &&
-                    com.google.common.base.Objects.equal(lastUpdate, that.lastUpdate) &&
-                    com.google.common.base.Objects.equal(searchResult, that.searchResult);
+                com.google.common.base.Objects.equal(lastUpdate, that.lastUpdate) &&
+                com.google.common.base.Objects.equal(searchResult, that.searchResult);
         }
 
         @Override

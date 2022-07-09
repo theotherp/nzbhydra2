@@ -5,10 +5,12 @@ import com.google.common.collect.Sets;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+import org.jetbrains.annotations.NotNull;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.MainConfig;
 import org.nzbhydra.config.downloading.FileDownloadAccessType;
+import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.indexers.IndexerApiAccessEntityShort;
 import org.nzbhydra.indexers.IndexerApiAccessEntityShortRepository;
@@ -75,19 +77,42 @@ public class FileHandler {
     protected ApplicationEventPublisher eventPublisher;
     @Autowired
     protected UrlCalculator urlCalculator;
+    @Autowired
+    private IndexerSpecificDownloadExceptions indexerSpecificDownloadExceptions;
 
     private final Set<File> temporaryZipFiles = new HashSet<>();
 
+    public DownloadResult getFileByGuid(long guid, SearchSource accessSource) throws InvalidSearchResultIdException {
+        final SearchResultEntity searchResult = getResultFromGuid(guid, accessSource);
+        final IndexerConfig indexerConfig = configProvider.getIndexerByName(searchResult.getIndexer().getName());
+
+        FileDownloadAccessType fileDownloadAccessType = indexerSpecificDownloadExceptions.getAccessTypeForIndexer(indexerConfig, configProvider.getBaseConfig().getDownloading().getNzbAccessType());
+        return getFileByResult(fileDownloadAccessType, accessSource, searchResult);
+    }
+
     @Transactional
     public DownloadResult getFileByGuid(long guid, FileDownloadAccessType fileDownloadAccessType, SearchSource accessSource) throws InvalidSearchResultIdException {
+        SearchResultEntity result = getResultFromGuid(guid, accessSource);
+        String downloadType = result.getDownloadType() == DownloadType.NZB ? "NZB" : "Torrent";
+        logger.info("{} download request for \"{}\" from indexer {}", downloadType, result.getTitle(), result.getIndexer().getName());
+
+
+        return getFileByResult(fileDownloadAccessType, accessSource, result, new HashSet<>());
+    }
+
+    @NotNull
+    private SearchResultEntity getResultFromGuid(long guid, SearchSource accessSource) throws InvalidSearchResultIdException {
         Optional<SearchResultEntity> optionalResult = searchResultRepository.findById(guid);
         if (!optionalResult.isPresent()) {
             logger.error("Download request with invalid/outdated GUID {}", guid);
             throw new InvalidSearchResultIdException(guid, accessSource == SearchSource.INTERNAL);
         }
-        SearchResultEntity result = optionalResult.get();
-        String downloadType = result.getDownloadType() == DownloadType.NZB ? "NZB" : "Torrent";
-        logger.info("{} download request for \"{}\" from indexer {}", downloadType, result.getTitle(), result.getIndexer().getName());
+        return optionalResult.get();
+    }
+
+    @Transactional
+    public DownloadResult getFileByResult(FileDownloadAccessType fileDownloadAccessType, SearchSource accessSource, SearchResultEntity result) {
+        fileDownloadAccessType = indexerSpecificDownloadExceptions.getAccessTypeForIndexer(configProvider.getIndexerByName(result.getIndexer().getName()), fileDownloadAccessType);
         return getFileByResult(fileDownloadAccessType, accessSource, result, new HashSet<>());
     }
 
@@ -108,8 +133,8 @@ public class FileHandler {
                 alreadyTriedDownloading.add(result);
                 final Set<SearchResultEntity> similarResults = searchResultRepository.findAllByTitleLikeIgnoreCase(result.getTitle().replaceAll("[ .\\-_]", "_"));
                 final Optional<SearchResultEntity> similarResult = similarResults.stream()
-                        .filter(x -> x != result && !alreadyTriedDownloading.contains(x))
-                        .findFirst();
+                    .filter(x -> x != result && !alreadyTriedDownloading.contains(x))
+                    .findFirst();
                 if (similarResult.isPresent()) {
                     logger.info("Falling back from failed download to similar result {}", similarResult.get());
                     return getFileByResult(fileDownloadAccessType, accessSource, similarResult.get(), alreadyTriedDownloading);
@@ -215,7 +240,16 @@ public class FileHandler {
         for (Long guid : guids) {
             DownloadResult result;
             try {
-                result = getFileByGuid(guid, FileDownloadAccessType.PROXY, SearchSource.INTERNAL);
+                final SearchResultEntity searchResult = getResultFromGuid(guid, SearchSource.INTERNAL);
+                final IndexerConfig indexerConfig = configProvider.getIndexerByName(searchResult.getIndexer().getName());
+                final FileDownloadAccessType accessType = indexerSpecificDownloadExceptions.getAccessTypeForIndexer(indexerConfig, FileDownloadAccessType.PROXY);
+                if (accessType == FileDownloadAccessType.PROXY) {
+                    result = getFileByGuid(guid, FileDownloadAccessType.PROXY, SearchSource.INTERNAL);
+                } else {
+                    logger.info("Can't download NZB from indexer {} because it forbids direct access from NZBHydra", indexerConfig.getName());
+                    failedIds.add(guid);
+                    continue;
+                }
             } catch (InvalidSearchResultIdException e) {
                 failedIds.add(guid);
                 continue;

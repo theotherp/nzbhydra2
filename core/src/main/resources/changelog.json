@@ -4,7 +4,11 @@
         "changes": [
             {
                 "type": "feature",
-                "text": "Add debug logging for category mapping"
+                "text": "Automatically use NZB access and adding types required by certain indexers. See #784."
+            },
+            {
+                "type": "feature",
+                "text": "Add debug logging for category mapping."
             }
         ],
         "final": true

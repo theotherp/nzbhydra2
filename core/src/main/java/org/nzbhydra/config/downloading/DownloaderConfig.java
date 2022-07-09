@@ -66,10 +66,10 @@ public class DownloaderConfig extends ValidatingConfig<DownloaderConfig> {
         List<String> warnings = new ArrayList<>();
 
         if (newBaseConfig.getIndexers().stream().anyMatch(x -> x.getHost().toLowerCase().contains("nzbs.in")) && newDownloaderConfig.getNzbAddingType() != NzbAddingType.SEND_LINK) {
-            warnings.add("nzbs.in requires special configurations to be made or your API account will be disabled. You should set the NZB adding type in the downloader config to \"Send link\".");
+            warnings.add("nzbs.in forbids NZBHydra to download NZBs directly. The NZB adding type \"Send link\" will automatically used for this indexer.");
         }
         if (newBaseConfig.getIndexers().stream().anyMatch(x -> x.getHost().toLowerCase().contains("omgwtfnzbs")) && newDownloaderConfig.getNzbAddingType() != NzbAddingType.SEND_LINK) {
-            warnings.add("omgwtfnzbs requires special configurations to be made or your API account will be disabled. You should set the NZB adding type in the downloader config to \"Send link\".");
+            warnings.add("omgwtfnzbs forbids NZBHydra to download NZBs directly. The NZB adding type \"Send link\" will automatically used for this indexer.");
         }
         return new ConfigValidationResult(true, false, Collections.emptyList(), warnings);
     }
