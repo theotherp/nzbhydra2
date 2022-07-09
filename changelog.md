@@ -1,3 +1,11 @@
+### v4.5.0 BETA (2022-07-09)
+
+**Feature** Automatically use NZB access and adding types required by certain indexers. See <a href="https://github.com/theotherp/nzbhydra2/issues/784">#784</a>.
+
+**Feature** Add debug logging for category mapping.
+
+
+
 ### v4.4.0 (2022-06-26)
 
 **Feature** Add validation to ensure your configuration matches the requirements of a certain indexer.
