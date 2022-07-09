@@ -1,6 +1,6 @@
 [
     {
-        "version": "v4.4.1",
+        "version": "v4.5.0",
         "changes": [
             {
                 "type": "feature",
@@ -11,7 +11,7 @@
                 "text": "Add debug logging for category mapping."
             }
         ],
-        "final": true
+        "final": false
     },
     {
         "version": "v4.4.0",
