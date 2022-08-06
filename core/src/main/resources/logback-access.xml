@@ -15,29 +15,29 @@
   -->
 
 <configuration>
-    <springProperty scope="context" name="logging.baseFolder" source="nzbhydra.dataFolder" defaultValue="."/>
-    <springProperty scope="context" name="logging.level.console" source="main.logging.consolelevel" defaultValue="INFO"/>
-    <springProperty scope="context" name="logging.level.file" source="main.logging.logfilelevel" defaultValue="INFO"/>
-    <springProperty scope="context" name="logging.logMaxHistory" source="main.logging.logMaxHistory" defaultValue="30"/>
+    <!--    <springProperty scope="context" name="logging.baseFolder" source="nzbhydra.dataFolder" defaultValue="."/>-->
+    <!--    <springProperty scope="context" name="logging.level.console" source="main.logging.consolelevel" defaultValue="INFO"/>-->
+    <!--    <springProperty scope="context" name="logging.level.file" source="main.logging.logfilelevel" defaultValue="INFO"/>-->
+    <!--    <springProperty scope="context" name="logging.logMaxHistory" source="main.logging.logMaxHistory" defaultValue="30"/>-->
 
 
-    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>%t{yyyy-MM-dd HH:mm:ss.SSS} SERV --- %-58requestURL : status code: %statusCode | bytes: %-6bytesSent | elapsed ms: %-4elapsedTime | local: %localIP | remote: %remoteIP</pattern>
-        </encoder>
-    </appender>
+    <!--    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">-->
+    <!--        <encoder>-->
+    <!--            <pattern>%t{yyyy-MM-dd HH:mm:ss.SSS} SERV -&#45;&#45; %-58requestURL : status code: %statusCode | bytes: %-6bytesSent | elapsed ms: %-4elapsedTime | local: %localIP | remote: %remoteIP</pattern>-->
+    <!--        </encoder>-->
+    <!--    </appender>-->
 
-    <appender name="FILE"
-              class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <encoder>
-            <pattern>%t{yyyy-MM-dd HH:mm:ss.SSS} SERV --- %requestURL : status code: %statusCode | bytes: %bytesSent | elapsed ms: %elapsedTime | local: %localIP | remote: %remoteIP</pattern>
-        </encoder>
-        <file>${logging.baseFolder}/logs/nzbhydra2.serv.log</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${logging.baseFolder}/logs/nzbhydra2.serv.%d{yyyy-MM-dd}.log</fileNamePattern>
-            <maxHistory>${logging.logMaxHistory}</maxHistory>
-        </rollingPolicy>
-    </appender>
+    <!--    <appender name="FILE"-->
+    <!--              class="ch.qos.logback.core.rolling.RollingFileAppender">-->
+    <!--        <encoder>-->
+    <!--            <pattern>%t{yyyy-MM-dd HH:mm:ss.SSS} SERV -&#45;&#45; %requestURL : status code: %statusCode | bytes: %bytesSent | elapsed ms: %elapsedTime | local: %localIP | remote: %remoteIP</pattern>-->
+    <!--        </encoder>-->
+    <!--        <file>${logging.baseFolder}/logs/nzbhydra2.serv.log</file>-->
+    <!--        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">-->
+    <!--            <fileNamePattern>${logging.baseFolder}/logs/nzbhydra2.serv.%d{yyyy-MM-dd}.log</fileNamePattern>-->
+    <!--            <maxHistory>${logging.logMaxHistory}</maxHistory>-->
+    <!--        </rollingPolicy>-->
+    <!--    </appender>-->
 
     <appender-ref ref="CONSOLE"/>
     <appender-ref ref="FILE"/>

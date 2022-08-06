@@ -1,5 +1,5 @@
 /*
- *  (C) Copyright 2017 TheOtherP (theotherp@posteo.net)
+ *  (C) Copyright 2022 TheOtherP (theotherp@posteo.net)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.nzbhydra.downloading.downloaders.nzbget;
+package org.nzbhydra.downloading.downloaders;
 
 import com.google.common.base.Strings;
 import com.google.common.io.BaseEncoding;
@@ -23,10 +23,6 @@ import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.downloading.DownloaderConfig;
 import org.nzbhydra.downloading.FileDownloadStatus;
-import org.nzbhydra.downloading.downloaders.Converters;
-import org.nzbhydra.downloading.downloaders.Downloader;
-import org.nzbhydra.downloading.downloaders.DownloaderEntry;
-import org.nzbhydra.downloading.downloaders.DownloaderStatus;
 import org.nzbhydra.downloading.exceptions.DownloaderException;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.webaccess.Ssl;

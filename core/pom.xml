@@ -83,6 +83,26 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.0.0-M2</version>
             </plugin>
+            <plugin>
+                <groupId>org.springframework.experimental</groupId>
+                <artifactId>spring-aot-maven-plugin</artifactId>
+                <version>0.12.1</version>
+                <executions>
+                    <execution>
+                        <id>generate</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>test-generate</id>
+                        <goals>
+                            <goal>test-generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+
+            </plugin>
         </plugins>
     </build>
 
@@ -162,6 +182,11 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
             <version>${spring.boot.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.experimental</groupId>
+            <artifactId>spring-native</artifactId>
+            <version>0.12.1</version>
         </dependency>
 
 
@@ -442,7 +467,182 @@
             <scope>test</scope>
         </dependency>
 
+
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>native</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.graalvm.buildtools</groupId>
+                        <artifactId>native-maven-plugin</artifactId>
+                        <version>0.9.13</version>
+                        <extensions>true</extensions>
+                        <executions>
+                            <execution>
+                                <id>build-native</id>
+                                <goals>
+                                    <goal>build</goal>
+                                </goals>
+                                <phase>package</phase>
+                            </execution>
+                            <execution>
+                                <id>test-native</id>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <phase>test</phase>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <debug>true</debug>
+                            <mainClass>org.nzbhydra.NzbHydra</mainClass>
+                            <!--                            <buildArgs>&#45;&#45;trace-object-instantiation=java.util.jar.JarFile -H:+ReportUnsupportedElementsAtRuntime</buildArgs>-->
+                            <!--                            Attach to port 8000, if needed pause once and them continue-->
+                            <buildArgs>-H:+ReportExceptionStackTraces --debug-attach</buildArgs>
+
+                            <!-- ... -->
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.springframework.boot</groupId>
+                        <artifactId>spring-boot-maven-plugin</artifactId>
+                        <configuration>
+                            <classifier>exec</classifier>
+                        </configuration>
+                    </plugin>
+                    <!--                    Enable if tracing agent files not created-->
+                    <!--                    <plugin>-->
+                    <!--                        <groupId>org.springframework.experimental</groupId>-->
+                    <!--                        <artifactId>spring-aot-maven-plugin</artifactId>-->
+                    <!--                        <version>0.12.1</version>-->
+                    <!--                        <configuration>-->
+                    <!--                            <mode>native</mode>-->
+                    <!--                            <applicationClass>org.nzbhydra.NzbHydra</applicationClass>-->
+                    <!--                            <mainClass>org.nzbhydra.NzbHydra</mainClass>-->
+                    <!--                        </configuration>-->
+                    <!--                        <executions>-->
+                    <!--                            <execution>-->
+                    <!--                                <id>generate</id>-->
+                    <!--                                <goals>-->
+                    <!--                                    <goal>generate</goal>-->
+                    <!--                                </goals>-->
+                    <!--                            </execution>-->
+                    <!--                            <execution>-->
+                    <!--                                <id>test-generate</id>-->
+                    <!--                                <goals>-->
+                    <!--                                    <goal>test-generate</goal>-->
+                    <!--                                </goals>-->
+                    <!--                            </execution>-->
+                    <!--                        </executions>-->
+                    <!--                    </plugin>-->
+                </plugins>
+            </build>
+        </profile>
+
+
+        <profile>
+            <id>native-agent</id>
+            <!--
+            mvn clean install -Pnative-agent -DskipTests -Dmain.port=8080 -Dmain.host=127.0.0.1
+            java -DspringAot=true -agentlib:native-image-agent=config-output-dir=src/main/resources/META-INF/native-image -jar target\core-4.5.1-SNAPSHOT-exec.jar directstart  \-\-datafolder ./data
+            -->
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>copy-agent-config</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <mkdir dir="${project.build.directory}/native/agent-output/main"/>
+                                        <copy todir="${project.build.directory}/native/agent-output/main">
+                                            <fileset dir="${project.build.directory}/native/agent-output/test"/>
+                                        </copy>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.graalvm.buildtools</groupId>
+                        <artifactId>native-maven-plugin</artifactId>
+                        <version>0.9.13</version>
+                        <extensions>true</extensions>
+
+                        <configuration>
+                            <mainClass>org.nzbhydra.NzbHydra</mainClass>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.springframework.boot</groupId>
+                        <artifactId>spring-boot-maven-plugin</artifactId>
+                        <configuration>
+                            <classifier>exec</classifier>
+                        </configuration>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.springframework.experimental</groupId>
+                        <artifactId>spring-aot-maven-plugin</artifactId>
+                        <version>0.12.1</version>
+                        <configuration>
+                            <mode>native-agent</mode>
+                            <applicationClass>org.nzbhydra.NzbHydra</applicationClass>
+                            <mainClass>org.nzbhydra.NzbHydra</mainClass>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>generate</id>
+                                <goals>
+                                    <goal>generate</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>test-generate</id>
+                                <goals>
+                                    <goal>test-generate</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+            <dependencies>
+                <dependency>
+                    <groupId>org.springframework.experimental</groupId>
+                    <artifactId>spring-aot-maven-plugin</artifactId>
+                    <version>0.12.1</version>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
+
+    <repositories>
+        <repository>
+            <id>spring-release</id>
+            <name>Spring release</name>
+            <url>https://repo.spring.io/release</url>
+        </repository>
+    </repositories>
+
+
+    <pluginRepositories>
+        <!-- ... -->
+        <pluginRepository>
+            <id>spring-release</id>
+            <name>Spring release</name>
+            <url>https://repo.spring.io/release</url>
+        </pluginRepository>
+    </pluginRepositories>
 
 
 </project>

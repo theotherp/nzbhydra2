@@ -21,8 +21,6 @@ import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigChangedEvent;
 import org.nzbhydra.config.downloading.DownloaderConfig;
 import org.nzbhydra.config.downloading.DownloaderType;
-import org.nzbhydra.downloading.downloaders.nzbget.NzbGet;
-import org.nzbhydra.downloading.downloaders.sabnzbd.Sabnzbd;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;

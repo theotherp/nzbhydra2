@@ -78,12 +78,12 @@
     </profiles>
 
     <properties>
-        <spring.boot.version>2.6.1</spring.boot.version>
+        <spring.boot.version>2.7.1</spring.boot.version>
         <spring.oxm.version>5.3.14</spring.oxm.version>
         <spring.test.version>5.3.14</spring.test.version>
         <spring.security.test.version>5.6.0</spring.security.test.version>
         <jackson.version>2.13.0</jackson.version>
-        <lombok.version>1.18.2</lombok.version>
+        <lombok.version>1.18.24</lombok.version>
         <logback.version>1.2.11</logback.version>
         <guava.version>23.0</guava.version>
         <junit.version>4.13.2</junit.version>

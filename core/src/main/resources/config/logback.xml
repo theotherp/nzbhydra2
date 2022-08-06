@@ -1,9 +1,9 @@
 <configuration>
     <!-- Must be explicitly set in org.nzbhydra.NzbHydra#setApplicationPropertiesFromConfig   -->
-    <springProperty scope="context" name="logging.baseFolder" source="nzbhydra.dataFolder" defaultValue="."/>
-    <springProperty scope="context" name="logging.level.console" source="main.logging.consolelevel" defaultValue="INFO"/>
-    <springProperty scope="context" name="logging.level.file" source="main.logging.logfilelevel" defaultValue="INFO"/>
-    <springProperty scope="context" name="logging.logMaxHistory" source="main.logging.logMaxHistory" defaultValue="30"/>
+    <!--    <springProperty scope="context" name="logging.baseFolder" source="nzbhydra.dataFolder" defaultValue="."/>-->
+    <!--    <springProperty scope="context" name="logging.level.console" source="main.logging.consolelevel" defaultValue="INFO"/>-->
+    <!--    <springProperty scope="context" name="logging.level.file" source="main.logging.logfilelevel" defaultValue="INFO"/>-->
+    <!--    <springProperty scope="context" name="logging.logMaxHistory" source="main.logging.logMaxHistory" defaultValue="30"/>-->
     <!--
     consolelevel: "DEBUG"
     keepLogFiles: 25
@@ -75,7 +75,7 @@
             <charset>utf8</charset>
         </encoder>
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>${logging.level.console}</level>
+            <level>INF</level>
         </filter>
     </appender>
 
@@ -84,13 +84,13 @@
         <encoder class="org.nzbhydra.logging.SensitiveDataRemovingPatternLayoutEncoder">
             <pattern>${FILE_LOG_PATTERN}</pattern>
         </encoder>
-        <file>${logging.baseFolder}/logs/nzbhydra2.log</file>
+        <file>./logs/nzbhydra2.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${logging.baseFolder}/logs/nzbhydra2.%d{yyyy-MM-dd}.log</fileNamePattern>
-            <maxHistory>${logging.logMaxHistory}</maxHistory>
+            <fileNamePattern>./logs/nzbhydra2.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>10</maxHistory>
         </rollingPolicy>
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>${logging.level.file}</level>
+            <level>INFO</level>
         </filter>
 
     </appender>
@@ -99,9 +99,9 @@
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
             <level>info</level>
         </filter>
-        <file>${logging.baseFolder}/logs/nzbhydra2-log.json</file>
+        <file>./logs/nzbhydra2-log.json</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${logging.baseFolder}/logs/nzbhydra2-log.json.%d{yyyy-ww}</fileNamePattern>
+            <fileNamePattern>./logs/nzbhydra2-log.json.%d{yyyy-ww}</fileNamePattern>
             <maxHistory>1</maxHistory>
         </rollingPolicy>
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">

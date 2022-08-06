@@ -1,0 +1,12 @@
+{
+    "types": [
+        {
+            "name": "org.nzbhydra.searching.IndexerForSearchSelector$$EnhancerBySpringCGLIB$$7f2e34e1",
+            "customTargetConstructorClass": "java.lang.Object"
+        }
+    ],
+    "lambdaCapturingTypes": [
+    ],
+    "proxies": [
+    ]
+}

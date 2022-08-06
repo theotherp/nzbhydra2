@@ -41,9 +41,6 @@ import org.yaml.snakeyaml.error.YAMLException;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import javax.swing.*;
-import java.awt.GraphicsEnvironment;
-import java.awt.HeadlessException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -57,7 +54,7 @@ import java.util.regex.Pattern;
 
 @Configuration(proxyBeanMethods = false)
 @EnableAutoConfiguration(exclude = {
-        AopAutoConfiguration.class, org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration.class})
+    AopAutoConfiguration.class, org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration.class})
 @ComponentScan
 @RestController
 @EnableCaching
@@ -270,13 +267,13 @@ public class NzbHydra {
             msg = "An unexpected error occurred during startup: " + e;
             logger.error("An unexpected error occurred during startup", e);
         }
-        try {
-            if (!GraphicsEnvironment.isHeadless() && isOsWindows()) {
-                JOptionPane.showMessageDialog(null, msg, "NZBHydra 2 error", JOptionPane.ERROR_MESSAGE);
-            }
-        } catch (HeadlessException e1) {
-            logger.warn("Unable to show exception in message dialog: {}", e1.getMessage());
-        }
+//        try {
+//            if (!GraphicsEnvironment.isHeadless() && isOsWindows()) {
+//                JOptionPane.showMessageDialog(null, msg, "NZBHydra 2 error", JOptionPane.ERROR_MESSAGE);
+//            }
+//        } catch (HeadlessException e1) {
+//            logger.warn("Unable to show exception in message dialog: {}", e1.getMessage());
+//        }
         //Rethrow so that spring exception handlers can handle this
         throw e;
     }
@@ -363,11 +360,11 @@ public class NzbHydra {
         boolean isOsWindows = isOsWindows();
         if (isOsWindows) {
             logger.debug("Initiating removal of windows tray icon (if it exists)");
-            try {
-                WindowsTrayIcon.remove();
-            } catch (Throwable e) {
-                //An exception might be thrown while shutting down, ignore this
-            }
+//            try {
+//                WindowsTrayIcon.remove();
+//            } catch (Throwable e) {
+//                //An exception might be thrown while shutting down, ignore this
+//            }
         }
         applicationEventPublisher.publishEvent(new ShutdownEvent());
         logger.info("Shutting down and using up to {}ms to compact database", configProvider.getBaseConfig().getMain().getDatabaseCompactTime());

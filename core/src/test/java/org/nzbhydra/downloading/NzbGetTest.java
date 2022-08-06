@@ -2,7 +2,7 @@ package org.nzbhydra.downloading;
 
 import org.junit.Test;
 import org.mockito.InjectMocks;
-import org.nzbhydra.downloading.downloaders.nzbget.NzbGet;
+import org.nzbhydra.downloading.downloaders.NzbGet;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;

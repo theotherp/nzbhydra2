@@ -28,6 +28,9 @@ import java.util.stream.Collectors;
 
 public class NewznabCategoriesDeserializer extends JsonDeserializer<List<List<Integer>>> {
 
+    public NewznabCategoriesDeserializer() {
+    }
+
     @Override
     public List<List<Integer>> deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
         List<String> list = p.readValueAs(new TypeReference<List<String>>() {

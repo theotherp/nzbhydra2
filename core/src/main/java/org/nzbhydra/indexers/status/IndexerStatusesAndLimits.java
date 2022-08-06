@@ -30,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import java.sql.Timestamp;
 import java.time.Clock;
@@ -53,7 +54,7 @@ public class IndexerStatusesAndLimits {
 
     @Autowired
     private ConfigProvider configProvider;
-    @Autowired
+    @PersistenceContext
     private EntityManager entityManager;
     @Autowired
     private IndexerLimitRepository indexerLimitRepository;
