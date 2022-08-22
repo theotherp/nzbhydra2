@@ -1,3 +1,9 @@
+### v4.6.0 (2022-08-22)
+
+**Feature** Add option to replace german umlauts and special characters.
+
+
+
 ### v4.5.0 BETA (2022-07-09)
 
 **Feature** Automatically use NZB access and adding types required by certain indexers. See <a href="https://github.com/theotherp/nzbhydra2/issues/784">#784</a>.
