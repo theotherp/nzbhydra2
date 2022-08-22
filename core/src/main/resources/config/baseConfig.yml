@@ -332,7 +332,7 @@ notificationConfig:
   displayNotifications: true
   displayNotificationsMax: 5
 searching:
-    alwaysConvertIds: "NONE"
+  alwaysConvertIds: "NONE"
   alwaysShowQuickFilterButtons: false
   applyRestrictions: "NONE"
   coverSize: 128
