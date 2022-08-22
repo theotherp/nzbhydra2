@@ -60,15 +60,32 @@ public class CustomSearchRequestMapping {
     }
 
     public SearchRequest mapSearchRequest(SearchRequest searchRequest, List<Mapping> mappings) {
+        if (searchRequest.getQuery().isPresent() && configProvider.getBaseConfig().getSearching().isReplaceUmlauts()) {
+            final String oldQuery = searchRequest.getQuery().get();
+            searchRequest.setQuery(oldQuery
+                .replace("ä", "ae")
+                .replace("Ä", "Ae")
+                .replace("ö", "oe")
+                .replace("Ö", "Oe")
+                .replace("ü", "ue")
+                .replace("Ü", "Ue")
+                .replace("ß", "ss")
+            );
+            if (!oldQuery.equals(searchRequest.getQuery().get())) {
+                logger.debug("Replaced umlauts. Old query: {}. New query: {}", oldQuery, searchRequest.getQuery().get());
+            }
+
+        }
+
         final List<Mapping> datasets = mappings.stream()
-                .filter(x -> searchRequest.getSearchType() == x.searchType)
-                .filter(mapping -> isDatasetMatch(searchRequest, mapping))
-                .filter(mapping -> {
-                    if (mapping.to.contains("{season:") && !searchRequest.getSeason().isPresent()) {
-                        logger.debug(LoggingMarkers.CUSTOM_MAPPING, "Can't use mapping {} because no season information is available for {}", mapping, searchRequest.simpleToString());
-                        return false;
-                    }
-                    if (mapping.to.contains("{episode:") && !searchRequest.getEpisode().isPresent()) {
+            .filter(x -> searchRequest.getSearchType() == x.searchType)
+            .filter(mapping -> isDatasetMatch(searchRequest, mapping))
+            .filter(mapping -> {
+                if (mapping.to.contains("{season:") && !searchRequest.getSeason().isPresent()) {
+                    logger.debug(LoggingMarkers.CUSTOM_MAPPING, "Can't use mapping {} because no season information is available for {}", mapping, searchRequest.simpleToString());
+                    return false;
+                }
+                if (mapping.to.contains("{episode:") && !searchRequest.getEpisode().isPresent()) {
                         logger.debug(LoggingMarkers.CUSTOM_MAPPING, "Can't use mapping {} because no episode information is available for {}", mapping, searchRequest.simpleToString());
                         return false;
                     }

@@ -332,7 +332,7 @@ notificationConfig:
   displayNotifications: true
   displayNotificationsMax: 5
 searching:
-  alwaysConvertIds: "NONE"
+    alwaysConvertIds: "NONE"
   alwaysShowQuickFilterButtons: false
   applyRestrictions: "NONE"
   coverSize: 128
@@ -359,6 +359,7 @@ searching:
   maxAge: null
   minSeeders: null
   removeTrailing: [ ".mp4", ".mkv", ".subs", ".REPOST", "repost", "~DG~", ".DG", "-DG", "-1", ".1", "(1)", "ReUp", "ReUp2", "-RP", "-AsRequested", "-Obfuscated", "-Scrambled", "-Chamele0n", "-BUYMORE", "-[TRP]", "-DG", ".par2", ".part01", "part01.rar", ".part02.rar", ".jpg", "[rartv]", "[rarbg]", "[eztv]", "English", "Korean", "Spanish", "French", "German", "Italian", "Danish", "Dutch", "Japanese", "Cantonese", "Mandarin", "Russian", "Polish", "Vietnamese", "Swedish", "Norwegian", "Finnish", "Turkish", "Portuguese", "Flemish", "Greek", "Hungarian", "-xpost" ]
+  replaceUmlauts: false
   requiredRegex: null
   requiredWords: []
   sendTorznabCategories: true

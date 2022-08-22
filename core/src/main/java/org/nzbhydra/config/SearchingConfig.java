@@ -58,6 +58,7 @@ public class SearchingConfig extends ValidatingConfig<SearchingConfig> {
     private Integer minSeeders;
     @JsonSetter()
     private List<String> removeTrailing = new ArrayList<>();
+    private boolean replaceUmlauts = false;
     private String requiredRegex;
     private List<String> requiredWords = new ArrayList<>();
     private boolean sendTorznabCategories = true;
