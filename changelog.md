@@ -1,3 +1,9 @@
+### v4.6.1 (2022-08-23)
+
+**Fix** Fix startup error for new instances. Thanks @ cdloh.
+
+
+
 ### v4.6.0 (2022-08-22)
 
 **Feature** Add option to replace german umlauts and special characters.
