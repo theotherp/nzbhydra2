@@ -66,7 +66,7 @@ public class DebugInfosWeb {
     @RequestMapping(value = "/internalapi/debuginfos/downloadlog", method = RequestMethod.GET, produces = MediaType.TEXT_PLAIN_VALUE)
     public FileSystemResource downloadLogFile(@RequestParam String logfilename) throws IOException {
         File file = new File(new File(NzbHydra.getDataFolder(), "logs"), logfilename);
-        if (!file.getCanonicalPath().startsWith(new File(NzbHydra.getDataFolder()).getCanonicalPath())) {
+        if (!file.getCanonicalFile().toPath().startsWith(new File(NzbHydra.getDataFolder()).getCanonicalFile().toPath())) {
             throw new IOException("Log file not in data folder");
         }
         return new FileSystemResource(file);
