@@ -1405,6 +1405,7 @@ function ConfigFields($injector) {
                                 tooltip: 'E.g. use "WEB=webdl,web-dl." for a quick filter with the name "WEB" to be displayed that searches for "webdl" and "web-dl" in lowercase search results.',
                                 advanced: true
                             }
+
                         },
                         {
                             key: 'preselectQuickFilterButtons',
