@@ -116,7 +116,7 @@ public class SearchingConfig extends ValidatingConfig<SearchingConfig> {
                 warnings.add("You selected not to apply any word restrictions in \"Searching\" but supplied a forbidden or required regex there");
             }
         }
-        final CustomSearchRequestMapping customSearchRequestMapping = new CustomSearchRequestMapping();
+        final CustomSearchRequestMapping customSearchRequestMapping = new CustomSearchRequestMapping(newBaseConfig);
         final SearchRequest searchRequest = new SearchRequest();
         searchRequest.setTitle("test title");
         searchRequest.setQuery("test query");

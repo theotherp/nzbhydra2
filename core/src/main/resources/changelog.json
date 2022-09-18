@@ -9,6 +9,10 @@
             {
                 "type": "fix",
                 "text": "Only warn about settings violating indexers' rules if the indexers are actually enabled."
+            },
+            {
+                "type": "fix",
+                "text": "Fix saving config with custom mappings."
             }
         ],
         "final": false

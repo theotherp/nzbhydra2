@@ -20,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Joiner;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.searching.dtoseventsenums.SearchType;
@@ -54,6 +55,18 @@ public class CustomSearchRequestMapping {
     @Autowired
     private ConfigProvider configProvider;
 
+
+    public CustomSearchRequestMapping() {
+    }
+
+    public CustomSearchRequestMapping(BaseConfig baseConfig) {
+        this.configProvider = new ConfigProvider() {
+            @Override
+            public BaseConfig getBaseConfig() {
+                return baseConfig;
+            }
+        };
+    }
 
     public SearchRequest mapSearchRequest(SearchRequest searchRequest) {
         return mapSearchRequest(searchRequest, configProvider.getBaseConfig().getSearching().getCustomMappings());
