@@ -26,17 +26,19 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
+import java.io.IOException;
 
 @Component
 public class OpenPortChecker {
 
     private static final Logger logger = LoggerFactory.getLogger(OpenPortChecker.class);
 
-    public boolean isPortOpen(@Nullable String ip, String port) {
+    public boolean isPortOpen(@Nullable String ip, String port) throws IOException {
         if (ip == null) {
             ip = getPublicIp();
         }
         try (final WebClient webClient = new WebClient()) {
+            webClient.getOptions().setThrowExceptionOnScriptError(false);
 
             final HtmlPage page1 = webClient.getPage("https://portchecker.co/check");
 
@@ -58,9 +60,9 @@ public class OpenPortChecker {
                 logger.error("Unable to determine if port is open from response: {}", result);
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new IOException(e);
         }
-        throw new RuntimeException("Unable to determine if port " + port + " at public IP " + ip + " is open");
+        throw new IOException("Unable to determine if port " + port + " at public IP " + ip + " is open");
     }
 
     public String getPublicIp() {

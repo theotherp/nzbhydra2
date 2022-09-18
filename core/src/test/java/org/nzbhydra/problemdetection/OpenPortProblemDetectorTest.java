@@ -76,7 +76,7 @@ class OpenPortProblemDetectorTest {
     }
 
     @Test
-    public void shouldNotWarnIfPortIsClosed() {
+    public void shouldNotWarnIfPortIsClosed() throws Exception {
         when(openPortChecker.isPortOpen(any(), any())).thenReturn(false);
 
         testee.executeCheck();
@@ -85,7 +85,7 @@ class OpenPortProblemDetectorTest {
     }
 
     @Test
-    public void shouldWarnIfPortIsOpen() {
+    public void shouldWarnIfPortIsOpen() throws Exception {
         when(openPortChecker.isPortOpen(any(), any())).thenReturn(true);
 
         testee.executeCheck();

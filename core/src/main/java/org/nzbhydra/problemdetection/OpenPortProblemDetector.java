@@ -22,7 +22,6 @@ import org.nzbhydra.genericstorage.GenericStorage;
 import org.nzbhydra.misc.OpenPortChecker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -69,7 +68,7 @@ public class OpenPortProblemDetector implements ProblemDetector {
             logger.warn("Apparently NZBHydra is reachable from the internet via public IP {} and port {}. Please either make it not reachable or enable an authentication method to protect your data.", publicIp, port);
             genericStorage.setNoSave(KEY, Instant.now());
             genericStorage.save(WARNING_KEY, true);
-        } catch (BeansException e) {
+        } catch (Exception e) {
             logger.error("Error determining if NZBHydra is exposed to the internet");
         }
     }
