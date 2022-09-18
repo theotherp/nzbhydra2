@@ -1,3 +1,15 @@
+### v4.7.0 BETA (2022-09-18)
+
+**Feature** Use custom mappings to transform indexer result titles. Use this to clean up titles, add season or episode to it or whatever. See <a href="https://github.com/theotherp/nzbhydra2/issues/794">#794</a>
+
+**Fix** Some of you have an instance running which is exposed to the internet, without any authentication method. I previously tried to recognize this by some heuristic which was a bit naive and caused a lot of false positives. NZBHydra will now periodically try to determine your public IP and actually check if the used port is open. This might still not always work (e.g. in when you're running it using a VPN in which case I guess you know what're doing. Ultimately it's up to you to get your shit together.
+
+**Fix** Only warn about settings violating indexers' rules if the indexers are actually enabled.
+
+**Fix** Fix saving config with custom mappings.
+
+
+
 ### v4.6.1 (2022-08-23)
 
 **Fix** Fix startup error for new instances. Thanks @ cdloh.
