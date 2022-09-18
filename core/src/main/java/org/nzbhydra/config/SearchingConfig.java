@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import com.google.common.base.Strings;
 import lombok.Data;
 import org.nzbhydra.indexers.QueryGenerator;
-import org.nzbhydra.searching.CustomSearchRequestMapping;
+import org.nzbhydra.searching.CustomQueryAndTitleMapping;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +32,7 @@ public class SearchingConfig extends ValidatingConfig<SearchingConfig> {
     @JsonFormat(shape = Shape.STRING)
     private SearchSourceRestriction applyRestrictions = SearchSourceRestriction.BOTH;
     private int coverSize = 128;
-    private List<CustomSearchRequestMapping.Mapping> customMappings = new ArrayList<>();
+    private List<CustomQueryAndTitleMapping.Mapping> customMappings = new ArrayList<>();
     private Integer globalCacheTimeMinutes;
     private float duplicateAgeThreshold = 2.0F;
     private float duplicateSizeThresholdInPercent = 1.0F;
@@ -116,13 +116,13 @@ public class SearchingConfig extends ValidatingConfig<SearchingConfig> {
                 warnings.add("You selected not to apply any word restrictions in \"Searching\" but supplied a forbidden or required regex there");
             }
         }
-        final CustomSearchRequestMapping customSearchRequestMapping = new CustomSearchRequestMapping(newBaseConfig);
+        final CustomQueryAndTitleMapping customQueryAndTitleMapping = new CustomQueryAndTitleMapping(newBaseConfig);
         final SearchRequest searchRequest = new SearchRequest();
         searchRequest.setTitle("test title");
         searchRequest.setQuery("test query");
-        for (CustomSearchRequestMapping.Mapping customMapping : newConfig.getCustomMappings()) {
+        for (CustomQueryAndTitleMapping.Mapping customMapping : newConfig.getCustomMappings()) {
             try {
-                customSearchRequestMapping.mapSearchRequest(searchRequest, Collections.singletonList(customMapping));
+                customQueryAndTitleMapping.mapSearchRequest(searchRequest, Collections.singletonList(customMapping));
             } catch (Exception e) {
                 errors.add(String.format("Unable to process mapping %s:}\n%s", customMapping.toString(), e.getMessage()));
             }

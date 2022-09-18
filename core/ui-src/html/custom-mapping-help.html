@@ -13,13 +13,13 @@
       </li>
       <li>
         The following meta groups are available: <code>{season:0}</code>, <code>{season:00}</code>, <code>{episode:0}</code>, <code>{episode:00}</code> (with and without leading zeroes, respectively). The data will be taken from the search
-        request's metadata. If it's not available the mapping will not be used.
+          request's or title's metadata. If it's not available the mapping will not be used.
       </li>
-    
+
     </ul>
   </div>
-  
-  <div class="form-group row">
+
+    <div class="form-group row">
     <div class="col-md-5" style="text-align: right">
       <label>Input pattern</label>
     </div>
@@ -27,8 +27,8 @@
       <input type="text" class="form-control" ng-model="model.from">
     </div>
   </div>
-  
-  <div class="form-group row">
+
+    <div class="form-group row">
     <div class="col-md-5" style="text-align: right">
       <label>Output pattern</label>
     </div>
@@ -36,8 +36,8 @@
       <input type="text" class="form-control" ng-model="model.to">
     </div>
   </div>
-  
-  <div class="form-group row">
+
+    <div class="form-group row">
     <div class="col-md-5" style="text-align: right">
       <label>Example query/title</label>
     </div>
@@ -45,16 +45,16 @@
       <input type="text" class="form-control" ng-model="exampleInput">
     </div>
   </div>
-  
-  <div class="form-group row">
+
+    <div class="form-group row">
     <div class="col-md-5" style="text-align: right">
     </div>
     <div class="col-md-15">
       <button class="btn btn-default" ng-click="test()">Test</button>
     </div>
   </div>
-  
-  <div class="form-group row">
+
+    <div class="form-group row">
     <div class="col-md-5" style="text-align: right">
       <label>Result</label>
     </div>

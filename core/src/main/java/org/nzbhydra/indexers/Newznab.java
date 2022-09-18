@@ -570,6 +570,7 @@ public class Newznab extends Indexer<Xml> {
         searchResultItem.setOriginalCategory(item.getCategory()); //May be overwritten by mapping in attributes
         parseAttributes(item, searchResultItem);
 
+
         return searchResultItem;
     }
 

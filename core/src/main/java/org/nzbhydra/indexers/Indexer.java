@@ -19,6 +19,7 @@ import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.notifications.IndexerDisabledNotificationEvent;
 import org.nzbhydra.notifications.IndexerReenabledNotificationEvent;
 import org.nzbhydra.searching.CategoryProvider;
+import org.nzbhydra.searching.CustomQueryAndTitleMapping;
 import org.nzbhydra.searching.SearchResultAcceptor;
 import org.nzbhydra.searching.SearchResultAcceptor.AcceptorResult;
 import org.nzbhydra.searching.SearchResultIdCalculator;
@@ -104,6 +105,8 @@ public abstract class Indexer<T> {
     private ApplicationEventPublisher eventPublisher;
     @Autowired
     private QueryGenerator queryGenerator;
+    @Autowired
+    private CustomQueryAndTitleMapping titleMapping;
 
 
     public void initialize(IndexerConfig config, IndexerEntity indexer) {
@@ -189,6 +192,14 @@ public abstract class Indexer<T> {
         stopwatch.start();
         IndexerSearchResult indexerSearchResult = new IndexerSearchResult(this, true);
         List<SearchResultItem> searchResultItems = getSearchResultItems(response, searchRequest);
+        for (SearchResultItem searchResultItem : searchResultItems) {
+            try {
+                titleMapping.mapSearchResult(searchResultItem, configProvider.getBaseConfig().getSearching().getCustomMappings());
+            } catch (Exception e) {
+                error("Error mapping search result title for " + searchResultItem.getTitle(), e);
+            }
+        }
+
         indexerSearchResult.setPageSize(searchResultItems.size());
         debug(LoggingMarkers.PERFORMANCE, "Parsing of results took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         AcceptorResult acceptorResult = resultAcceptor.acceptResults(searchResultItems, searchRequest, config);

@@ -1253,14 +1253,30 @@ function ConfigFields($injector) {
                     key: 'customMappings',
                     model: rootModel.searching,
                     templateOptions: {
+                        tooltip: 'Here you can define mappings to modify either queries or titles for search requests or to dynamically change the titles of found results. The former allows you, for example,  to change requests made by external tools, the latter to clean up results by indexers in a more advanced way.',
                         btnText: 'Add new custom mapping',
                         altLegendText: 'Mapping',
-                        headline: 'Custom mappings of queries and titles',
+                        headline: 'Custom mappings of queries, search titles and result titles',
                         advanced: true,
                         fields: [
                             {
+                                key: 'affectedValue',
+                                type: 'horizontalSelect',
+                                templateOptions: {
+                                    label: 'Affected value',
+                                    options: [
+                                        {name: 'Query', value: 'QUERY'},
+                                        {name: 'Search title', value: 'TITLE'},
+                                        {name: 'Result title', value: 'RESULT_TITLE'},
+                                    ],
+                                    required: true,
+                                    help: "Determines which value of the search request or result will be processed"
+                                }
+                            },
+                            {
                                 key: 'searchType',
                                 type: 'horizontalSelect',
+                                hideExpression: 'model.affectedValue === "RESULT_TITLE"',
                                 templateOptions: {
                                     label: 'Search type',
                                     options: [
@@ -1271,19 +1287,6 @@ function ConfigFields($injector) {
                                         {name: 'TV', value: 'TVSEARCH'}
                                     ],
                                     help: "Determines in what context the mapping will be executed"
-                                }
-                            },
-                            {
-                                key: 'affectedValue',
-                                type: 'horizontalSelect',
-                                templateOptions: {
-                                    label: 'Affected value',
-                                    options: [
-                                        {name: 'Query', value: 'QUERY'},
-                                        {name: 'Title', value: 'TITLE'}
-                                    ],
-                                    required: true,
-                                    help: "Determines which value of the search request will be processed"
                                 }
                             },
                             {

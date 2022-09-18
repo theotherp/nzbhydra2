@@ -21,7 +21,7 @@ import org.nzbhydra.mapping.newznab.xml.NewznabXmlError;
 import org.nzbhydra.mediainfo.Imdb;
 import org.nzbhydra.mediainfo.MediaIdType;
 import org.nzbhydra.searching.CategoryProvider;
-import org.nzbhydra.searching.CustomSearchRequestMapping;
+import org.nzbhydra.searching.CustomQueryAndTitleMapping;
 import org.nzbhydra.searching.SearchResult;
 import org.nzbhydra.searching.Searcher;
 import org.nzbhydra.searching.dtoseventsenums.DownloadType;
@@ -90,7 +90,7 @@ public class ExternalApi {
     @Autowired
     private MockSearch mockSearch;
     @Autowired
-    private CustomSearchRequestMapping customSearchRequestMapping;
+    private CustomQueryAndTitleMapping customQueryAndTitleMapping;
     protected Clock clock = Clock.systemUTC();
     private final Random random = new Random();
 
@@ -336,7 +336,7 @@ public class ExternalApi {
             searchRequest.getInternalData().setIncludePasswords(true);
         }
         searchRequest = searchRequestFactory.extendWithSavedIdentifiers(searchRequest);
-        searchRequest = customSearchRequestMapping.mapSearchRequest(searchRequest);
+        searchRequest = customQueryAndTitleMapping.mapSearchRequest(searchRequest);
 
         return searchRequest;
     }
