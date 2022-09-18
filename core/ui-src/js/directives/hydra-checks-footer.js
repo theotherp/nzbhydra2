@@ -51,6 +51,20 @@ function hydraChecksFooter() {
             });
         }
 
+        function checkForOpenToInternet() {
+            GenericStorageService.get("showOpenToInternetWithoutAuth", false).then(function (response) {
+                if (response.data !== "" && response.data) {
+                    //headline, message, params, size, textAlign
+                    ModalService.open("Security issue - open to internet", 'It looks like NZBHydra is exposed to the internet without any authentication enable. Please make sure it cannot be reached from outside your network or enable an authentication method.', {
+                        yes: {
+                            text: "OK"
+                        }
+                    }, undefined, "left");
+                    GenericStorageService.put("showOpenToInternetWithoutAuth", false, false);
+                }
+            });
+        }
+
         function checkForOutdatedWrapper() {
             $http.get("internalapi/updates/isDisplayWrapperOutdated").then(function (response) {
                 var data = response.data;
@@ -87,6 +101,7 @@ function hydraChecksFooter() {
             retrieveUpdateInfos();
             checkForOutOfMemoryException();
             checkForOutdatedWrapper();
+            checkForOpenToInternet();
         }
 
         function retrieveUpdateInfos() {

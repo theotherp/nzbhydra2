@@ -6,7 +6,6 @@ import com.google.common.base.Strings;
 import lombok.Data;
 import org.javers.core.metamodel.annotation.DiffIgnore;
 import org.nzbhydra.NzbHydra;
-import org.nzbhydra.config.auth.AuthType;
 import org.nzbhydra.config.downloading.ProxyType;
 import org.nzbhydra.config.sensitive.SensitiveData;
 import org.nzbhydra.debuginfos.DebugInfosProvider;
@@ -157,9 +156,7 @@ public class MainConfig extends ValidatingConfig<MainConfig> {
         if (DebugInfosProvider.isRunInDocker() && !"0.0.0.0".equals(host)) {
             result.getWarningMessages().add("You've changed the host but NZBHydra seems to be run in docker. It's recommended to use the host '0.0.0.0'.");
         }
-        if (!DebugInfosProvider.isRunInDocker() && host.equals("0.0.0.0") && newBaseConfig.getAuth().getAuthType() == AuthType.NONE) {
-            result.getWarningMessages().add("It looks like you're exposing NZBHydra to the internet but have no authentication enabled. It is *strongly* recommended not to do that. Certain people actively scan the internet for open instances to steal your API keys.");
-        }
+
         if (!"0.0.0.0".equals(host)) {
             try {
                 boolean reachable = InetAddress.getByName(host).isReachable(1);

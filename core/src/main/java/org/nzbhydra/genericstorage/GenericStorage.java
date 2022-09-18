@@ -26,6 +26,14 @@ public class GenericStorage {
         }
     }
 
+    public <T extends Serializable> void setNoSave(String key, T value) {
+        try {
+            configProvider.getBaseConfig().getGenericStorage().put(key, Jackson.JSON_MAPPER.writeValueAsString(value));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Error writing data as JSON", e);
+        }
+    }
+
     public <T extends Serializable> void remove(String key) {
         configProvider.getBaseConfig().getGenericStorage().remove(key);
         configProvider.getBaseConfig().save(true);

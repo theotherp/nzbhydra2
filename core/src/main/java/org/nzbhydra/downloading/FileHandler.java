@@ -117,7 +117,7 @@ public class FileHandler {
     }
 
     private DownloadResult getFileByResult(FileDownloadAccessType fileDownloadAccessType, SearchSource accessSource, SearchResultEntity result, Set<SearchResultEntity> alreadyTriedDownloading) {
-
+        logger.info("{} download request for \"{}\" from indexer {}", fileDownloadAccessType, result.getTitle(), result.getIndexer().getName());
         if (fileDownloadAccessType == FileDownloadAccessType.REDIRECT) {
             return handleRedirect(accessSource, result, null);
         } else {
@@ -202,10 +202,14 @@ public class FileHandler {
     }
 
     private void publishEvents(SearchResultEntity result, FileDownloadEntity downloadEntity) {
-        eventPublisher.publishEvent(new FileDownloadEvent(downloadEntity, result));
-        String age = result.getDownloadType() == DownloadType.NZB ? String.valueOf(((int) (Duration.between(result.getPubDate(), Instant.now()).get(ChronoUnit.SECONDS) / (24 * 60 * 60)))) : "[]";
-        String source = result.getDownloadType() == DownloadType.NZB ? "NZB" : "torrent";
-        eventPublisher.publishEvent(new DownloadNotificationEvent(result.getIndexer().getName(), result.getTitle(), age, source));
+        try {
+            eventPublisher.publishEvent(new FileDownloadEvent(downloadEntity, result));
+            String age = result.getDownloadType() == DownloadType.NZB ? String.valueOf(((int) (Duration.between(result.getPubDate(), Instant.now()).get(ChronoUnit.SECONDS) / (24 * 60 * 60)))) : "[]";
+            String source = result.getDownloadType() == DownloadType.NZB ? "NZB" : "torrent";
+            eventPublisher.publishEvent(new DownloadNotificationEvent(result.getIndexer().getName(), result.getTitle(), age, source));
+        } catch (Exception e) {
+            logger.error("Error publishing event", e);
+        }
     }
 
 
