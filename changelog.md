@@ -1,3 +1,11 @@
+### v4.7.1 BETA (2022-09-18)
+
+**Feature** Improve display of errors on startup.
+
+**Fix** Properly handle errors that occur during the detection of open ports.
+
+
+
 ### v4.7.0 BETA (2022-09-18)
 
 **Feature** Use custom mappings to transform indexer result titles. Use this to clean up titles, add season or episode to it or whatever. See <a href="https://github.com/theotherp/nzbhydra2/issues/794">#794</a>

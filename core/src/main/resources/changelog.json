@@ -1,101 +1,75 @@
-[
-    {
-        "version": "v4.7.1",
-        "date": "2022-09-18",
-        "changes": [
-            {
-                "type": "feature",
-                "text": "Improve display of errors on startup."
-            },
-            {
-                "type": "fix",
-                "text": "Properly handle errors that occur during the detection of open ports."
-            }
-        ],
-        "final": false
-    },
-    {
-        "version": "v4.7.0",
-        "date": "2022-09-18",
-        "changes": [
-            {
-                "type": "feature",
-                "text": "Use custom mappings to transform indexer result titles. Use this to clean up titles, add season or episode to it or whatever. See #794"
-            },
-            {
-                "type": "fix",
-                "text": "Some of you have an instance running which is exposed to the internet, without any authentication method. I previously tried to recognize this by some heuristic which was a bit naive and caused a lot of false positives. NZBHydra will now periodically try to determine your public IP and actually check if the used port is open. This might still not always work (e.g. in when you're running it using a VPN in which case I guess you know what're doing. Ultimately it's up to you to get your shit together."
-            },
-            {
-                "type": "fix",
-                "text": "Only warn about settings violating indexers' rules if the indexers are actually enabled."
-            },
-            {
-                "type": "fix",
-                "text": "Fix saving config with custom mappings."
-            }
-        ],
-        "final": false
-    },
-    {
-        "version": "v4.6.1",
-        "date": "2022-08-23",
-        "changes": [
-            {
-                "type": "fix",
-                "text": "Fix startup error for new instances. Thanks @ cdloh."
-            }
-        ],
-        "final": true
-    },
-    {
-        "version": "v4.6.0",
-        "date": "2022-08-22",
-        "changes": [
-            {
-                "type": "feature",
-                "text": "Add option to replace german umlauts and special characters."
-            }
-        ],
-        "final": true
-    },
-    {
-        "version": "v4.5.0",
-        "date": "2022-07-09",
-        "changes": [
-            {
-                "type": "feature",
-                "text": "Automatically use NZB access and adding types required by certain indexers. See #784."
-            },
-            {
-                "type": "feature",
-                "text": "Add debug logging for category mapping."
-            }
-        ],
-        "final": false
-    },
-    {
-        "version": "v4.4.0",
-        "date": "2022-06-26",
-        "changes": [
-            {
-                "type": "feature",
-                "text": "Add validation to ensure your configuration matches the requirements of a certain indexer."
-            },
-            {
-                "type": "feature",
-                "text": "Warn when exposing NZBHydra to the internet via host 0.0.0.0 with no authentication enabled."
-            },
-            {
-                "type": "note",
-                "text": "In the same vein I decided to remove the option to ignore warnings when saving the config. You'll just have to live with it or, ideally, fix the things causing the warnings."
-            },
-            {
-                "type": "note",
-                "text": "All the above stems from the fact that a lot of people (=idiots) have their NZBHydra (or *arr) instances wide open to the world without any authentication whatsoever. DO NOT DO THAT! People will steal your API keys and possibly get your indexer access disabled or revoked for good. I'm trying to automatically detect that but it's not easy distinguishing valid accesses from fraudulent ones."
-            }
-        ],
-        "final": true
+[ {
+  "version" : "v4.7.1",
+  "date" : "2022-09-18",
+  "changes" : [ {
+    "type" : "feature",
+    "text" : "Improve display of errors on startup."
+  }, {
+    "type" : "fix",
+    "text" : "Properly handle errors that occur during the detection of open ports."
+  } ],
+  "final" : false
+}, {
+  "version" : "v4.7.0",
+  "date" : "2022-09-18",
+  "changes" : [ {
+    "type" : "feature",
+    "text" : "Use custom mappings to transform indexer result titles. Use this to clean up titles, add season or episode to it or whatever. See #794"
+  }, {
+    "type" : "fix",
+    "text" : "Some of you have an instance running which is exposed to the internet, without any authentication method. I previously tried to recognize this by some heuristic which was a bit naive and caused a lot of false positives. NZBHydra will now periodically try to determine your public IP and actually check if the used port is open. This might still not always work (e.g. in when you're running it using a VPN in which case I guess you know what're doing. Ultimately it's up to you to get your shit together."
+  }, {
+    "type" : "fix",
+    "text" : "Only warn about settings violating indexers' rules if the indexers are actually enabled."
+  }, {
+    "type" : "fix",
+    "text" : "Fix saving config with custom mappings."
+  } ],
+  "final" : false
+}, {
+  "version" : "v4.6.1",
+  "date" : "2022-08-23",
+  "changes" : [ {
+    "type" : "fix",
+    "text" : "Fix startup error for new instances. Thanks @ cdloh."
+  } ],
+  "final" : true
+}, {
+  "version" : "v4.6.0",
+  "date" : "2022-08-22",
+  "changes" : [ {
+    "type" : "feature",
+    "text" : "Add option to replace german umlauts and special characters."
+  } ],
+  "final" : true
+}, {
+  "version" : "v4.5.0",
+  "date" : "2022-07-09",
+  "changes" : [ {
+    "type" : "feature",
+    "text" : "Automatically use NZB access and adding types required by certain indexers. See #784."
+  }, {
+    "type" : "feature",
+    "text" : "Add debug logging for category mapping."
+  } ],
+  "final" : false
+}, {
+  "version" : "v4.4.0",
+  "date" : "2022-06-26",
+  "changes" : [ {
+    "type" : "feature",
+    "text" : "Add validation to ensure your configuration matches the requirements of a certain indexer."
+  }, {
+    "type" : "feature",
+    "text" : "Warn when exposing NZBHydra to the internet via host 0.0.0.0 with no authentication enabled."
+  }, {
+    "type" : "note",
+    "text" : "In the same vein I decided to remove the option to ignore warnings when saving the config. You'll just have to live with it or, ideally, fix the things causing the warnings."
+  }, {
+    "type" : "note",
+    "text" : "All the above stems from the fact that a lot of people (=idiots) have their NZBHydra (or *arr) instances wide open to the world without any authentication whatsoever. DO NOT DO THAT! People will steal your API keys and possibly get your indexer access disabled or revoked for good. I'm trying to automatically detect that but it's not easy distinguishing valid accesses from fraudulent ones."
+  } ],
+  "final" : true
 }, {
   "version" : "v4.3.3",
   "date" : "2022-06-15",
