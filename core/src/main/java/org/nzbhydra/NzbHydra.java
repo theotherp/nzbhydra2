@@ -267,12 +267,13 @@ public class NzbHydra {
             msg = "The existing database was created by a newer version of the program than the one you're running. Make sure to get the latest release. ";
             logger.error(msg);
         } else {
-            msg = "An unexpected error occurred during startup: " + e;
+            msg = "An unexpected error occurred during startup:\n" + e;
             logger.error("An unexpected error occurred during startup", e);
         }
         try {
             if (!GraphicsEnvironment.isHeadless() && isOsWindows()) {
-                JOptionPane.showMessageDialog(null, msg, "NZBHydra 2 error", JOptionPane.ERROR_MESSAGE);
+                final String htmlMessage = "<html>" + msg.replace("\n", "<br>") + "</html>";
+                JOptionPane.showMessageDialog(null, htmlMessage, "NZBHydra 2 error", JOptionPane.ERROR_MESSAGE);
             }
         } catch (HeadlessException e1) {
             logger.warn("Unable to show exception in message dialog: {}", e1.getMessage());
