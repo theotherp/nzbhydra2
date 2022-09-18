@@ -23,6 +23,7 @@ import org.javers.core.metamodel.annotation.DiffIgnore;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.ValidatingConfig;
+import org.nzbhydra.config.indexer.IndexerConfig;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.io.File;
@@ -66,16 +67,20 @@ public class DownloadingConfig extends ValidatingConfig<DownloadingConfig> {
 
         List<String> warnings = new ArrayList<>();
 
-        if (newBaseConfig.getIndexers().stream().anyMatch(x -> x.getHost().toLowerCase().contains("nzbs.in")) && newConfig.getNzbAccessType() != FileDownloadAccessType.REDIRECT) {
+        if (isEnabledWithoutRedirect(newBaseConfig, "nzbs.in")) {
             warnings.add("nzbs.in forbids NZBHydra to download NZBs directly. The NZB access type \"Redirect to indexer\" will automatically be used for this indexer.");
         }
-        if (newBaseConfig.getIndexers().stream().anyMatch(x -> x.getHost().toLowerCase().contains("omgwtfnzbs")) && newConfig.getNzbAccessType() != FileDownloadAccessType.REDIRECT) {
+        if (isEnabledWithoutRedirect(newBaseConfig, "omgwtfnzbs")) {
             warnings.add("omgwftnzbs forbids NZBHydra to download NZBs directly. The NZB access type \"Redirect to indexer\" will automatically be used for this indexer.");
         }
 
         warnings.addAll(validationResults.stream().map(ConfigValidationResult::getWarningMessages).flatMap(Collection::stream).collect(Collectors.toList()));
 
         return new ConfigValidationResult(errors.isEmpty(), false, errors, warnings);
+    }
+
+    private static boolean isEnabledWithoutRedirect(BaseConfig newBaseConfig, String hostContains) {
+        return newBaseConfig.getIndexers().stream().anyMatch(x -> x.getHost().toLowerCase().contains(hostContains) && x.getState() == IndexerConfig.State.ENABLED) && newBaseConfig.getDownloading().getNzbAccessType() != FileDownloadAccessType.REDIRECT;
     }
 
     private void validateBlackholeFolder(List<String> errors, File file, String blackholeSettings, final String blackholeType) {

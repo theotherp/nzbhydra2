@@ -20,6 +20,7 @@ import com.google.common.base.Strings;
 import lombok.Data;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ValidatingConfig;
+import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.sensitive.SensitiveData;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -65,13 +66,17 @@ public class DownloaderConfig extends ValidatingConfig<DownloaderConfig> {
     public ConfigValidationResult validateConfig(BaseConfig oldConfig, DownloaderConfig newDownloaderConfig, BaseConfig newBaseConfig) {
         List<String> warnings = new ArrayList<>();
 
-        if (newBaseConfig.getIndexers().stream().anyMatch(x -> x.getHost().toLowerCase().contains("nzbs.in")) && newDownloaderConfig.getNzbAddingType() != NzbAddingType.SEND_LINK) {
+        if (isEnabledWithoutSendLink(newBaseConfig, "nzbs.in", newDownloaderConfig)) {
             warnings.add("nzbs.in forbids NZBHydra to download NZBs directly. The NZB adding type \"Send link\" will automatically used for this indexer.");
         }
-        if (newBaseConfig.getIndexers().stream().anyMatch(x -> x.getHost().toLowerCase().contains("omgwtfnzbs")) && newDownloaderConfig.getNzbAddingType() != NzbAddingType.SEND_LINK) {
+        if (isEnabledWithoutSendLink(newBaseConfig, "omgwtfnzbs", newDownloaderConfig)) {
             warnings.add("omgwtfnzbs forbids NZBHydra to download NZBs directly. The NZB adding type \"Send link\" will automatically used for this indexer.");
         }
         return new ConfigValidationResult(true, false, Collections.emptyList(), warnings);
+    }
+
+    private static boolean isEnabledWithoutSendLink(BaseConfig newBaseConfig, String hostContains, DownloaderConfig newDownloaderConfig) {
+        return newBaseConfig.getIndexers().stream().anyMatch(x -> x.getHost().toLowerCase().contains(hostContains) && x.getState() == IndexerConfig.State.ENABLED) && newDownloaderConfig.getNzbAddingType() != NzbAddingType.SEND_LINK;
     }
 
     @Override
