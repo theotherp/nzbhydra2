@@ -58,7 +58,14 @@ public class IndexerSearchCacheEntry {
         for (IndexerSearchResult indexerSearchResult : indexerSearchResults) {
             searchResultItems.addAll(indexerSearchResult.getSearchResultItems());
         }
-        searchResultItems.sort(Comparator.comparingLong(x -> ((SearchResultItem) x).getBestDate().getEpochSecond()).reversed());
+        searchResultItems.sort(Comparator.comparingLong(x -> {
+
+            final SearchResultItem searchResultItem = (SearchResultItem) x;
+            if (searchResultItem.getBestDate() == null) {
+                return 0;
+            }
+            return searchResultItem.getBestDate().getEpochSecond();
+        }).reversed());
     }
 
     public List<SearchResultItem> getSearchResultItems() {

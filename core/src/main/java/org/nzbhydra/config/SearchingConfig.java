@@ -133,6 +133,10 @@ public class SearchingConfig extends ValidatingConfig<SearchingConfig> {
                 errors.add("The group 'season' is not allowed in custom mapping input patterns.");
             }
         }
+        final List<String> emptyTrailing = (newConfig.getRemoveTrailing().stream().filter(Strings::isNullOrEmpty)).collect(Collectors.toList());
+        if (!emptyTrailing.isEmpty()) {
+            errors.add("Trailing values to remove contains empty values");
+        }
 
         return new ConfigValidationResult(errors.isEmpty(), false, errors, warnings);
     }
