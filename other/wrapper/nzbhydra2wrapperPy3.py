@@ -424,7 +424,7 @@ def startup():
         while True:
             # Handle error first in case startup of main process returned only an error (on stderror)
             nextline = process.stdout.readline()
-            nextlineString = process.stdout.readline().decode("utf-8")
+            nextlineString = nextline.decode("utf-8")
             if nextlineString == '' and process.poll() is not None:
                 break
             if nextlineString != "":
