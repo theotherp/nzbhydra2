@@ -160,7 +160,7 @@ public class NotificationHandler {
 
     private void callAppriseApi(NotificationConfig notificationConfig, String messageBody) {
         try {
-            final String notifyUrl = UriComponentsBuilder.fromHttpUrl(notificationConfig.getAppriseApiUrl()).path("/notify").toUriString().replace("/notify/notify", "/notifiy");
+            final String notifyUrl = UriComponentsBuilder.fromHttpUrl(notificationConfig.getAppriseApiUrl()).path("/notify").toUriString().replace("/notify/notify", "/notify");
             logger.debug(LoggingMarkers.NOTIFICATIONS, "Posting body to {}:\n{}", notifyUrl, messageBody);
             webAccess.postToUrl(notificationConfig.getAppriseApiUrl(), MediaType.get("application/json"), messageBody, Collections.emptyMap(), 10);
         } catch (IOException e) {
