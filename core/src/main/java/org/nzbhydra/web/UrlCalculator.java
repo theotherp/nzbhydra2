@@ -18,6 +18,7 @@ package org.nzbhydra.web;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Strings;
+import jakarta.servlet.http.HttpServletRequest;
 import net.jodah.expiringmap.ExpirationPolicy;
 import net.jodah.expiringmap.ExpiringMap;
 import org.nzbhydra.debuginfos.DebugInfosProvider;
@@ -32,7 +33,6 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.servlet.http.HttpServletRequest;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;

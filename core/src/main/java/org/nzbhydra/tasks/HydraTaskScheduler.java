@@ -40,10 +40,7 @@ import org.springframework.stereotype.Component;
 import java.lang.reflect.Method;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Comparator;
-import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -102,13 +99,12 @@ public class HydraTaskScheduler implements BeanPostProcessor, SmartInitializingS
         }
         ScheduledFuture scheduledTask = scheduler.schedule(runnable, new Trigger() {
             @Override
-            public Date nextExecutionTime(TriggerContext triggerContext) {
-                Calendar nextExecutionTime = new GregorianCalendar();
-                Date lastCompletionTime = runNow ? new Date() : triggerContext.lastCompletionTime();
-                nextExecutionTime.setTime(lastCompletionTime != null ? lastCompletionTime : new Date());
-                nextExecutionTime.add(Calendar.MILLISECOND, (int) getIntervalForTask(task));
-                taskInformations.put(task, new TaskInformation(task.name(), lastCompletionTime != null ? lastCompletionTime.toInstant() : null, nextExecutionTime.toInstant()));
-                return nextExecutionTime.getTime();
+            public Instant nextExecution(TriggerContext triggerContext) {
+                Instant lastCompletionTime = runNow ? Instant.now() : triggerContext.lastCompletion();
+                Instant nextExecutionTime = lastCompletionTime != null ? lastCompletionTime : Instant.now();
+                nextExecutionTime = nextExecutionTime.plusMillis((int) getIntervalForTask(task));
+                taskInformations.put(task, new TaskInformation(task.name(), lastCompletionTime, nextExecutionTime));
+                return nextExecutionTime;
             }
         });
         taskSchedules.put(task.name(), scheduledTask);

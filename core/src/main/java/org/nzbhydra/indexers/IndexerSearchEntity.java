@@ -1,11 +1,17 @@
 package org.nzbhydra.indexers;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.Data;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.nzbhydra.searching.db.SearchEntity;
 
-import javax.persistence.*;
 import java.util.Objects;
 import java.util.Random;
 

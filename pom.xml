@@ -78,13 +78,14 @@
     </profiles>
 
     <properties>
-        <spring.boot.version>2.6.1</spring.boot.version>
-        <spring.oxm.version>5.3.14</spring.oxm.version>
-        <spring.test.version>5.3.14</spring.test.version>
-        <spring.security.test.version>5.6.0</spring.security.test.version>
+        <spring.boot.version>3.0.0-RC1</spring.boot.version>
+        <spring.boot.maven.version>2.7.5</spring.boot.maven.version>
+        <spring.oxm.version>6.0.0-RC1</spring.oxm.version>
+        <spring.test.version>6.0.0-RC1</spring.test.version>
+        <spring.security.test.version>6.0.0-M6</spring.security.test.version>
         <jackson.version>2.13.0</jackson.version>
-        <lombok.version>1.18.2</lombok.version>
-        <logback.version>1.2.11</logback.version>
+        <lombok.version>1.18.24</lombok.version>
+        <logback.version>1.4.4</logback.version>
         <guava.version>23.0</guava.version>
         <junit.version>4.13.2</junit.version>
         <okhttp.version>4.9.3</okhttp.version>
@@ -97,10 +98,17 @@
         <maven.compiler.plugin.version>3.6.2</maven.compiler.plugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.javadoc.skip>true</maven.javadoc.skip>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
         <uri-scheme-handler.version>2.0.0</uri-scheme-handler.version>
     </properties>
 
+    <repositories>
+        <repository>
+            <id>repository.spring.milestone</id>
+            <name>Spring Milestone Repository</name>
+            <url>https://repo.spring.io/milestone</url>
+        </repository>
+    </repositories>
 
 </project>

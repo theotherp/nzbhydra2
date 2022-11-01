@@ -1,9 +1,8 @@
 package org.nzbhydra.auth;
 
 import com.google.common.base.Objects;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
-
-import javax.servlet.http.HttpServletRequest;
 
 public class HydraWebAuthenticationDetails extends WebAuthenticationDetails {
 

@@ -16,6 +16,8 @@
 
 package org.nzbhydra.indexers.status;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -29,8 +31,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
 import java.sql.Timestamp;
 import java.time.Clock;
 import java.time.Instant;

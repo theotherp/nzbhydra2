@@ -16,13 +16,13 @@
 
 package org.nzbhydra.tests.searching;
 
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.Unmarshaller;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Unmarshaller;
 import java.net.URL;
 
 import static org.assertj.core.api.Assertions.assertThat;

@@ -1,5 +1,6 @@
 package org.nzbhydra.auth;
 
+import jakarta.servlet.http.HttpSession;
 import org.nzbhydra.web.BootstrappedDataTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -10,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpSession;
 import java.security.Principal;
 
 @RestController

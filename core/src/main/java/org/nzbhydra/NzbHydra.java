@@ -45,10 +45,10 @@ import javax.swing.*;
 import java.awt.GraphicsEnvironment;
 import java.awt.HeadlessException;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URI;
+import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Map;
@@ -73,7 +73,7 @@ public class NzbHydra {
     private static String dataFolder = null;
     private static boolean wasRestarted = false;
     private static boolean anySettingsOverwritten = false;
-    private static ConfigReaderWriter configReaderWriter = new ConfigReaderWriter();
+    private static final ConfigReaderWriter CONFIG_READER_WRITER = new ConfigReaderWriter();
 
     @Autowired
     private ConfigProvider configProvider;
@@ -122,7 +122,7 @@ public class NzbHydra {
 
     private static void checkJavaVersion() {
         final String javaVersionString;
-        int javaMajor = 0;
+        int javaMajor;
         try {
             javaVersionString = System.getProperty("java.version");
 
@@ -204,7 +204,7 @@ public class NzbHydra {
      * Sets all properties referenced in application.properties so that they can be resolved
      */
     private static void setApplicationPropertiesFromConfig() throws IOException {
-        BaseConfig baseConfig = configReaderWriter.loadSavedConfig();
+        BaseConfig baseConfig = CONFIG_READER_WRITER.loadSavedConfig();
         setApplicationProperty("main.host", "MAIN_HOST", baseConfig.getMain().getHost());
         setApplicationProperty("main.port", "MAIN_PORT", String.valueOf(baseConfig.getMain().getPort()));
         setApplicationProperty("main.urlBase", "MAIN_URL_BASE", baseConfig.getMain().getUrlBase().orElse("/"));
@@ -230,9 +230,9 @@ public class NzbHydra {
                 File systemErrLogFile = new File(NzbHydra.getDataFolder(), "logs/system.err.log");
                 File systemOutLogFile = new File(NzbHydra.getDataFolder(), "logs/system.out.log");
                 logger.info("Enabling SSL debugging. Will write to {}", systemErrLogFile);
-                System.setErr(new PrintStream(new FileOutputStream(systemErrLogFile)));
+                System.setErr(new PrintStream(Files.newOutputStream(systemErrLogFile.toPath())));
                 logger.info("Redirecting console output to system.out.log. You will not see any more log output in the console until you disable the HTTPS marker and restart NZBHydra");
-                System.setOut(new PrintStream(new FileOutputStream(systemOutLogFile)));
+                System.setOut(new PrintStream(Files.newOutputStream(systemOutLogFile.toPath())));
             }
         }
     }
@@ -245,11 +245,11 @@ public class NzbHydra {
     }
 
     private static void initializeAndValidateAndMigrateYamlFile(File yamlFile) throws IOException {
-        configReaderWriter.initializeIfNeeded(yamlFile);
-        configReaderWriter.validateExistingConfig();
-        Map<String, Object> map = configReaderWriter.loadSavedConfigAsMap();
+        CONFIG_READER_WRITER.initializeIfNeeded(yamlFile);
+        CONFIG_READER_WRITER.validateExistingConfig();
+        Map<String, Object> map = CONFIG_READER_WRITER.loadSavedConfigAsMap();
         Map<String, Object> migrated = new ConfigMigration().migrate(map);
-        configReaderWriter.save(migrated, yamlFile);
+        CONFIG_READER_WRITER.save(migrated, yamlFile);
     }
 
     private static void handleException(Exception e) throws Exception {

@@ -2,6 +2,7 @@ package org.nzbhydra.indexers;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Stopwatch;
+import jakarta.persistence.EntityExistsException;
 import joptsimple.internal.Strings;
 import org.nzbhydra.config.ConfigChangedEvent;
 import org.nzbhydra.config.ConfigProvider;
@@ -42,7 +43,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.persistence.EntityExistsException;
 import java.net.URI;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;

@@ -307,7 +307,7 @@ public class Sabnzbd extends Downloader {
             final ResponseEntity<QueueResponse> exchange = restTemplate.exchange(baseUrl.queryParam("mode", "queue").build().toUri().toString(), HttpMethod.GET, null, QueueResponse.class);
             if (!exchange.getStatusCode().is2xxSuccessful()) {
                 logger.info("Connection check with sabNZBd using URL {}\n failed: Response body: {}", baseUrl.toUriString(), exchange.getBody().toString());
-                return new GenericResponse(false, "Connection check with sabnzbd failed. Response message: " + exchange.getStatusCode().getReasonPhrase() + ".The log may contain more infos.");
+                return new GenericResponse(false, "Connection check with sabnzbd failed. Status code: " + exchange.getStatusCode() + ".The log may contain more infos.");
             }
             if (exchange.getBody() == null || exchange.getBody().getQueue() == null) {
                 logger.info("Connection check with sabNZBd using URL {} failed. Unable to parse response.", baseUrl.toUriString());

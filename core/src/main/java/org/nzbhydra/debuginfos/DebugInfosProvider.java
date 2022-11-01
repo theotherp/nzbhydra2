@@ -1,6 +1,8 @@
 package org.nzbhydra.debuginfos;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.apache.commons.io.IOUtils;
@@ -30,8 +32,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;

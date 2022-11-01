@@ -40,8 +40,6 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.client.AsyncClientHttpRequest;
-import org.springframework.http.client.AsyncClientHttpRequestFactory;
 import org.springframework.http.client.ClientHttpRequest;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
@@ -71,7 +69,7 @@ import static org.nzbhydra.webaccess.Ssl.isSameHost;
 
 @Component
 @Primary
-public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFactory, AsyncClientHttpRequestFactory {
+public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFactory {
 
     @Value("${nzbhydra.connectionTimeout:10}")
     private int timeout;
@@ -102,11 +100,6 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
     @Override
     public ClientHttpRequest createRequest(URI uri, HttpMethod httpMethod) {
         return new OkHttp3ClientHttpRequest(getOkHttpClientBuilder(uri).build(), uri, httpMethod);
-    }
-
-    @Override
-    public AsyncClientHttpRequest createAsyncRequest(URI uri, HttpMethod httpMethod) {
-        return new OkHttp3AsyncClientHttpRequest(getOkHttpClientBuilder(uri).build(), uri, httpMethod);
     }
 
 

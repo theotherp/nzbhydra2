@@ -43,7 +43,7 @@
               org.springframework.web.servlet,
               org.springframework.web.method,
               java.lang.reflect.Method,
-              javax.servlet,
+              jakarta.servlet,
               sun.reflect
               }}}"/>
     <property name="FILE_LOG_PATTERN"
@@ -65,7 +65,7 @@
               org.springframework.web.servlet,
               org.springframework.web.method,
               java.lang.reflect.Method,
-              javax.servlet,
+              jakarta.servlet,
               sun.reflect
               }}}"/>
 
@@ -113,10 +113,10 @@
     <logger name="org.nzbhydra" level="DEBUG">
         <appender-ref ref="STASH"/>
     </logger>
-    <logger name="org.spring" level="WARN"/>
+    <logger name="org.spring" level="DEBUG"/>
     <logger name="org.hibernate" level="WARN"/>
     <logger name="org.apache" level="WARN"/>
-    <logger name="org.springframework" level="WARN"/>
+    <logger name="org.springframework" level="DEBUG"/>
     <logger name="org.thymeleaf" level="WARN"/>
     <logger name="org.eclipse" level="WARN"/>
     <logger name="okhttp3.OkHttpClient" level="DEBUG"/>

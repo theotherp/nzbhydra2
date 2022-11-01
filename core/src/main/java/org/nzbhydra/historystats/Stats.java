@@ -1,10 +1,28 @@
 package org.nzbhydra.historystats;
 
 import com.google.common.base.Stopwatch;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
-import org.nzbhydra.historystats.stats.*;
-import org.nzbhydra.indexers.*;
+import org.nzbhydra.historystats.stats.AverageResponseTime;
+import org.nzbhydra.historystats.stats.CountPerDayOfWeek;
+import org.nzbhydra.historystats.stats.CountPerHourOfDay;
+import org.nzbhydra.historystats.stats.DownloadOrSearchSharePerUserOrIp;
+import org.nzbhydra.historystats.stats.DownloadPerAge;
+import org.nzbhydra.historystats.stats.DownloadPerAgeStats;
+import org.nzbhydra.historystats.stats.IndexerApiAccessStatsEntry;
+import org.nzbhydra.historystats.stats.IndexerDownloadShare;
+import org.nzbhydra.historystats.stats.IndexerScore;
+import org.nzbhydra.historystats.stats.StatsRequest;
+import org.nzbhydra.historystats.stats.SuccessfulDownloadsPerIndexer;
+import org.nzbhydra.historystats.stats.UserAgentShare;
+import org.nzbhydra.indexers.Indexer;
+import org.nzbhydra.indexers.IndexerAccessResult;
+import org.nzbhydra.indexers.IndexerApiAccessEntityShortRepository;
+import org.nzbhydra.indexers.IndexerEntity;
+import org.nzbhydra.indexers.IndexerRepository;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.searching.SearchModuleProvider;
 import org.nzbhydra.searching.db.SearchResultRepository;
@@ -16,13 +34,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 import java.math.BigInteger;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.*;
+import java.util.OptionalDouble;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("OptionalGetWithoutIsPresent")

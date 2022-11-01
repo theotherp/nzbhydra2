@@ -16,6 +16,7 @@
 
 package org.nzbhydra.downloading;
 
+import jakarta.persistence.EntityManagerFactory;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.nzbhydra.config.ConfigProvider;
@@ -33,7 +34,6 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManagerFactory;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;

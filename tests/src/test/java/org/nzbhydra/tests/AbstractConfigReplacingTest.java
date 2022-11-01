@@ -2,13 +2,13 @@ package org.nzbhydra.tests;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.EntityTransaction;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityTransaction;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;

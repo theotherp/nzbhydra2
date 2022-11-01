@@ -1,6 +1,7 @@
 package org.nzbhydra.tests;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.transaction.Transactional;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -46,7 +47,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import javax.transaction.Transactional;
 import java.time.Instant;
 import java.util.Collections;
 

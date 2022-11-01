@@ -16,6 +16,7 @@
 
 package org.nzbhydra.web;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -24,8 +25,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import javax.servlet.http.HttpServletRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;

@@ -17,6 +17,7 @@
 package org.nzbhydra.searching.cleanup;
 
 import com.google.common.base.Stopwatch;
+import jakarta.persistence.EntityManager;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.logging.LoggingMarkers;
@@ -27,7 +28,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
 import java.io.File;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;

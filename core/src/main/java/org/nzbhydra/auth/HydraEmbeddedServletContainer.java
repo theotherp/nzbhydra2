@@ -16,6 +16,7 @@
 
 package org.nzbhydra.auth;
 
+import jakarta.servlet.ServletException;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.valves.ValveBase;
@@ -27,7 +28,6 @@ import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.boot.web.servlet.server.ConfigurableServletWebServerFactory;
 import org.springframework.stereotype.Component;
 
-import javax.servlet.ServletException;
 import java.io.IOException;
 
 /**

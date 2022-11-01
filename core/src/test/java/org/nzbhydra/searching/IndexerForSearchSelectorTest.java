@@ -1,5 +1,7 @@
 package org.nzbhydra.searching;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -27,8 +29,6 @@ import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.springframework.context.ApplicationEventPublisher;
 
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
 import java.sql.Timestamp;
 import java.time.Clock;
 import java.time.Instant;

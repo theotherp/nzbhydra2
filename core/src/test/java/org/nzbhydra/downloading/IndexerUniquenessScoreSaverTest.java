@@ -17,6 +17,7 @@
 package org.nzbhydra.downloading;
 
 import com.google.common.collect.Sets;
+import jakarta.persistence.EntityManagerFactory;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.junit.Before;
@@ -39,7 +40,6 @@ import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.searching.uniqueness.IndexerUniquenessScoreEntity;
 import org.nzbhydra.searching.uniqueness.IndexerUniquenessScoreEntityRepository;
 
-import javax.persistence.EntityManagerFactory;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.HashSet;
