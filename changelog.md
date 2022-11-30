@@ -1,3 +1,17 @@
+### v4.7.2 BETA (2022-11-30)
+
+**Fix** Handle results without date.
+
+**Fix** Fix typo in apprise notification handler.
+
+**Fix** Hopefully fix notification sending test on arch-nzbhydra2. See <a href="https://github.com/theotherp/nzbhydra2/issues/806">#806</a>
+
+**Fix** Fix automatic configuration of Lidarr. See <a href="https://github.com/theotherp/nzbhydra2/issues/802">#802</a>
+
+**Note** As you can see development has slowed down a bit. The reason is kind of a mix of burnout, a new job and some other stuff. I'll try to get most bugs fixed faster and get back to some new features next year.
+
+
+
 ### v4.7.1 BETA (2022-09-18)
 
 **Feature** Improve display of errors on startup.
