@@ -16,9 +16,9 @@
 
 package org.nzbhydra.notifications;
 
+import com.google.common.collect.Sets;
 import org.nzbhydra.ShutdownEvent;
 import org.nzbhydra.logging.LoggingMarkers;
-import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +49,15 @@ public class NotificationsWeb {
     private static final Logger logger = LoggerFactory.getLogger(NotificationsWeb.class);
     private static final int INTERVAL = 1000;
     private static final String TOPIC = "/topic/notifications";
+    private static final Set<NotificationEvent> NOTIFICATION_EVENTS = Sets.newHashSet(
+        new DownloadNotificationEvent(),
+        new IndexerDisabledNotificationEvent(),
+        new UpdateNotificationEvent(),
+        new DownloadCompletionNotificationEvent(),
+        new IndexerVipExpiryNotificationEvent(),
+        new IndexerReenabledNotificationEvent(),
+        new AuthFailureNotificationEvent()
+    );
 
     @Autowired
     private NotificationRepository notificationRepository;
@@ -88,19 +97,10 @@ public class NotificationsWeb {
     public void testNotification(@PathVariable("eventType") String eventType) {
         final NotificationEventType notificationEventType = NotificationEventType.valueOf(eventType);
 
-        Reflections reflections = new Reflections("org.nzbhydra.notifications");
-        Set<Class<? extends NotificationEvent>> notificationEventClasses = reflections.getSubTypesOf(NotificationEvent.class);
-        final Optional<? extends NotificationEvent> notificationEvent = notificationEventClasses.stream()
-                .map(x -> {
-                    try {
-                        return x.newInstance();
-                    } catch (InstantiationException | IllegalAccessException e) {
-                        logger.error("Unable to instantiate event for {}", eventType, e);
-                        return null;
-                    }
-                })
-                .filter(x -> x != null && x.getEventType() == notificationEventType)
-                .findFirst();
+        final Optional<? extends NotificationEvent> notificationEvent = NOTIFICATION_EVENTS
+            .stream()
+            .filter(x -> x != null && x.getEventType() == notificationEventType)
+            .findFirst();
         if (!notificationEvent.isPresent()) {
             throw new RuntimeException("Unable to create test notification for event type " + eventType);
         }
