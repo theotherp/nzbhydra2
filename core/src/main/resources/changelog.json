@@ -17,6 +17,10 @@
             {
                 "type": "fix",
                 "text": "Fix automatic configuration of Lidarr. See #802"
+            },
+            {
+                "type": "note",
+                "text": "As you can see development has slowed down a bit. The reason is kind of a mix of burnout, a new job and some other stuff. I'll try to get most bugs fixed faster and get back to some new features next year."
             }
         ],
         "final": false
