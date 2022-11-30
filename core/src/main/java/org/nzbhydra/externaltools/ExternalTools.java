@@ -385,7 +385,7 @@ public class ExternalTools {
                 return "";
             }
         } else {
-            if (addRequest.getExternalTool().isV3() || addRequest.getExternalTool() == AddRequest.ExternalTool.Readarr) {
+            if (addRequest.getExternalTool().isV3() || addRequest.getExternalTool() == AddRequest.ExternalTool.Readarr || addRequest.getExternalTool() == AddRequest.ExternalTool.Lidarr) {
                 return Stream.of(addRequest.getCategories().split(",")).map(Integer::parseInt).collect(Collectors.toList());
             } else {
                 return Arrays.asList(addRequest.getCategories().split(","));

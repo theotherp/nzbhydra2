@@ -13,6 +13,10 @@
             {
                 "type": "fix",
                 "text": "Hopefully fix notification sending test on arch-nzbhydra2. See #806"
+            },
+            {
+                "type": "fix",
+                "text": "Fix automatic configuration of Lidarr. See #802"
             }
         ],
         "final": false
