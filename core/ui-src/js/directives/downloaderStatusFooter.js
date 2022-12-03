@@ -28,7 +28,7 @@ function downloaderStatusFooter() {
 
         var downloaderStatus;
         var updateInterval = null;
-
+        console.log("websocket");
         var socket = new SockJS(bootstrapped.baseUrl + 'websocket');
         var stompClient = Stomp.over(socket);
         stompClient.debug = null;

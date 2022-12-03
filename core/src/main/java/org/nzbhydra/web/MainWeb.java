@@ -49,7 +49,7 @@ public class MainWeb {
     }
 
     //Must exist and not be protected so that redirects to "/login" have a target
-    @RequestMapping(value = "/login", method = RequestMethod.GET)
+    @RequestMapping(value = "/login", method = {RequestMethod.GET, RequestMethod.PUT})
     public String index2(HttpSession session, Principal principal) {
         setSessionAttributes(session, principal);
         return "login";

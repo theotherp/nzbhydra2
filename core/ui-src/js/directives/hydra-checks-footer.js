@@ -235,8 +235,10 @@ function hydraChecksFooter() {
                             welcomeIsBeingShown = false;
                         });
                     } else {
-                        _.defer(checkAndShowNews);
-                        _.defer(checkExpiredIndexers);
+                        if (HydraAuthService.getUserInfos().maySeeAdmin) {
+                            _.defer(checkAndShowNews);
+                            _.defer(checkExpiredIndexers);
+                        }
                     }
                 }, function () {
                     console.log("Error while checking for welcome")
@@ -283,7 +285,7 @@ function hydraChecksFooter() {
             }
         }
 
-        if (ConfigService.getSafe().notificationConfig.displayNotifications) {
+        if (ConfigService.getSafe().notificationConfig.displayNotifications && HydraAuthService.getUserInfos().maySeeAdmin) {
             var socket = new SockJS(bootstrapped.baseUrl + 'websocket');
             var stompClient = Stomp.over(socket);
             stompClient.debug = null;

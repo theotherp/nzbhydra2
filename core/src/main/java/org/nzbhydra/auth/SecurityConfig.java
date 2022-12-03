@@ -77,12 +77,23 @@ public class SecurityConfig {
                 .and()
                 .logout().logoutUrl("/logout").deleteCookies("remember-me")
                 .and();
+            http.authorizeHttpRequests()
+                .requestMatchers(new AntPathRequestMatcher("/static/**"))
+                .authenticated();
         } else if (baseConfig.getAuth().getAuthType() == AuthType.FORM) {
             http = http
                 .authorizeHttpRequests()
                 .requestMatchers("/internalapi/userinfos").permitAll()
+                .requestMatchers("/internalapi/")
+                .authenticated()
+                .requestMatchers("/websocket/")
+                .authenticated()
                 .and()
-                .formLogin().loginPage("/login").loginProcessingUrl("/login").defaultSuccessUrl("/").permitAll()
+                .formLogin()
+                .loginPage("/login")
+                .loginProcessingUrl("/login")
+                .defaultSuccessUrl("/")
+                .permitAll()
                 .authenticationDetailsSource(new WebAuthenticationDetailsSource() {
                     @Override
                     public WebAuthenticationDetails buildDetails(HttpServletRequest context) {
@@ -92,6 +103,9 @@ public class SecurityConfig {
                 .and()
                 .logout().permitAll().logoutUrl("/logout").logoutSuccessUrl("/loggedout").logoutSuccessUrl("/").deleteCookies("remember-me")
                 .and();
+            http.authorizeHttpRequests()
+                .requestMatchers(new AntPathRequestMatcher("/static/**"))
+                .permitAll();
         }
         if (baseConfig.getAuth().isAuthConfigured()) {
             enableAnonymousAccessIfConfigured(http);
@@ -109,11 +123,10 @@ public class SecurityConfig {
             }
             http.authorizeHttpRequests()
                 .requestMatchers("/actuator/**")
-                .hasRole("ADMIN")
-                .anyRequest().permitAll();
+                .hasRole("ADMIN");
             http.authorizeHttpRequests()
-                .requestMatchers(new AntPathRequestMatcher("/static/**"))
-                .permitAll();
+                .anyRequest()
+                .authenticated();
             headerAuthenticationFilter = new HeaderAuthenticationFilter(authenticationManager, hydraUserDetailsManager, configProvider.getBaseConfig().getAuth());
             http.addFilterAfter(headerAuthenticationFilter, BasicAuthenticationFilter.class);
             http.addFilterAfter(asyncSupportFilter, BasicAuthenticationFilter.class);
@@ -129,14 +142,6 @@ public class SecurityConfig {
         return http.build();
     }
 
-//
-//    @Bean
-//    public WebSecurityCustomizer webSecurityCustomizer() {
-//        return (web) -> {
-//            web.pe
-//            web.ignoring().requestMatchers(new AntPathRequestMatcher("/static/**"));
-//        };
-//    }
 
     private void enableAnonymousAccessIfConfigured(HttpSecurity http) {
         //Create an anonymous auth filter. If any of the areas are not restricted the anonymous user will get its role
