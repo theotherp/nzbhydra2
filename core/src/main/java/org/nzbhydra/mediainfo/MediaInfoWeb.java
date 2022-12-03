@@ -38,27 +38,27 @@ public class MediaInfoWeb {
     @Autowired
     private ConfigProvider configProvider;
 
-    private LoadingCache<CacheKey, List<MediaInfoTO>> autocompleteCache = CacheBuilder.newBuilder()
-            .maximumSize(100)
-            .expireAfterWrite(7, TimeUnit.DAYS)
+    private final LoadingCache<CacheKey, List<MediaInfoTO>> autocompleteCache = CacheBuilder.newBuilder()
+        .maximumSize(100)
+        .expireAfterWrite(7, TimeUnit.DAYS)
 
-            .build(
-                    new CacheLoader<CacheKey, List<MediaInfoTO>>() {
-                        @Override
-                        public List<MediaInfoTO> load(CacheKey key) throws Exception {
-                            try {
-                                List<MediaInfo> infos;
-                                if (key.getType() == AutocompleteType.TV) {
-                                    infos = infoProvider.search(key.getInput(), MediaIdType.TVTITLE);
-                                } else {
-                                    infos = infoProvider.search(key.getInput(), MediaIdType.MOVIETITLE);
-                                }
+        .build(
+            new CacheLoader<CacheKey, List<MediaInfoTO>>() {
+                @Override
+                public List<MediaInfoTO> load(CacheKey key) throws Exception {
+                    try {
+                        List<MediaInfo> infos;
+                        if (key.getType() == AutocompleteType.TV) {
+                            infos = infoProvider.search(key.getInput(), MediaIdType.TVTITLE);
+                        } else {
+                            infos = infoProvider.search(key.getInput(), MediaIdType.MOVIETITLE);
+                        }
 
-                                return infos.stream().map(MediaInfoTO::new).collect(Collectors.toList());
-                            } catch (InfoProviderException e) {
-                                logger.error("Error while finding autocomplete data for input {} and type {}", key.getInput(), key.getType(), e);
-                                return Collections.emptyList();
-                            }
+                        return infos.stream().map(MediaInfoTO::new).collect(Collectors.toList());
+                    } catch (InfoProviderException e) {
+                        logger.warn("Error while finding autocomplete data for input {} and type {}", key.getInput(), key.getType(), e);
+                        return Collections.emptyList();
+                    }
                         }
                     });
 
