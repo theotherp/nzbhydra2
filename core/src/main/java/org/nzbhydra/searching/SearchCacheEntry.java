@@ -22,7 +22,7 @@ public class SearchCacheEntry {
 
     private Instant lastAccessed;
     private SearchRequest searchRequest;
-    private Map<Indexer, IndexerSearchCacheEntry> indexerCacheEntries = new HashMap<>();
+    private Map<String, IndexerSearchCacheEntry> indexerCacheEntries = new HashMap<>();
     private List<SearchResultItem> searchResultItems = new ArrayList<>();
     private IndexerForSearchSelection indexerSelectionResult;
     private SearchEntity searchEntity;
@@ -62,6 +62,11 @@ public class SearchCacheEntry {
 
     public int getNumberOfFoundResults() {
         return numberOfAvailableResults = indexerCacheEntries.values().stream().mapToInt(x -> x.getSearchResultItems().size()).sum();
+    }
+
+
+    public Map<String, IndexerSearchCacheEntry> getIndexerCacheEntries() {
+        return indexerCacheEntries;
     }
 
     public boolean equals(Object obj) {

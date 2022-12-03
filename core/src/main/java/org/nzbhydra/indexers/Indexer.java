@@ -463,7 +463,7 @@ public abstract class Indexer<T> {
 
     @Override
     public int hashCode() {
-        return (config == null || config.getName() == null) ? 0 : config.getName().hashCode();
+        return (getConfig() == null || getConfig().getName() == null) ? 0 : config.getName().hashCode();
     }
 
     @Override

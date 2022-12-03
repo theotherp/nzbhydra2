@@ -78,12 +78,13 @@ public class SearchModuleProvider {
         for (IndexerConfig config : indexers) {
             try {
                 Optional<IndexerHandlingStrategy> optionalStrategy = indexerHandlingStrategies.stream().filter(x -> x.handlesIndexerConfig(config)).findFirst();
-                if (!optionalStrategy.isPresent()) {
+                if (optionalStrategy.isEmpty()) {
                     logger.error("Unable to find implementation for indexer type {} and host {}", config.getSearchModuleType(), config.getHost());
                     continue;
                 }
 
                 Indexer searchModule = beanFactory.createBean(optionalStrategy.get().getIndexerClass());
+                beanFactory.autowireBean(searchModule);
                 logger.info("Initializing indexer {}", config.getName());
 
                 IndexerEntity indexerEntity = indexerRepository.findByName(config.getName());
@@ -113,7 +114,7 @@ public class SearchModuleProvider {
             }
         }
         logger.info("Finished initializing active indexers");
-        List<String> indexerNames = indexers.stream().map(IndexerConfig::getName).collect(Collectors.toList());
+        List<String> indexerNames = indexers.stream().map(IndexerConfig::getName).toList();
 
         if (searchModuleInstances.isEmpty()) {
             logger.warn("No indexers configured");

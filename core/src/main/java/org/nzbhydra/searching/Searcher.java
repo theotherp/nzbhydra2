@@ -121,7 +121,7 @@ public class Searcher {
                 List<SearchResultItem> newestItemsFromIndexers = indexersWithCachedResults.stream().map(IndexerSearchCacheEntry::peek).sorted(Comparator.comparingLong(x -> ((SearchResultItem) x).getBestDate().getEpochSecond()).reversed()).collect(Collectors.toList());
                 SearchResultItem newestResult = newestItemsFromIndexers.get(0);
                 Indexer newestResultIndexer = newestResult.getIndexer();
-                IndexerSearchCacheEntry newestIndexerSearchCacheEntry = searchCacheEntry.getIndexerCacheEntries().get(newestResultIndexer);
+                IndexerSearchCacheEntry newestIndexerSearchCacheEntry = searchCacheEntry.getIndexerCacheEntries().get(newestResultIndexer.getName());
                 searchResultItems.add(newestIndexerSearchCacheEntry.pop());
 
                 indexersWithCachedResults = getIndexersWithCachedResults(searchCacheEntry);
@@ -269,7 +269,7 @@ public class Searcher {
                     }
                 }
                 searchResultRepository.saveAll(indexerSearchResult.getSearchResultEntities());
-                searchCacheEntry.getIndexerCacheEntries().get(indexerSearchResult.getIndexer()).setIndexerSearchEntity(entity);
+                searchCacheEntry.getIndexerCacheEntries().get(indexerSearchResult.getIndexer().getName()).setIndexerSearchEntity(entity);
                 countEntities++;
             }
         }
@@ -313,7 +313,7 @@ public class Searcher {
     protected List<IndexerSearchCacheEntry> getIndexersToSearch(SearchCacheEntry searchCacheEntry) {
         List<IndexerSearchCacheEntry> indexerSearchCacheEntries = new ArrayList<>();
         for (Indexer selectedIndexer : searchCacheEntry.getIndexerSelectionResult().getSelectedIndexers()) {
-            searchCacheEntry.getIndexerCacheEntries().putIfAbsent(selectedIndexer, new IndexerSearchCacheEntry(selectedIndexer));
+            searchCacheEntry.getIndexerCacheEntries().putIfAbsent(selectedIndexer.getName(), new IndexerSearchCacheEntry(selectedIndexer));
         }
 
         for (IndexerSearchCacheEntry indexerSearchCacheEntry : searchCacheEntry.getIndexerCacheEntries().values()) {
@@ -361,8 +361,8 @@ public class Searcher {
             for (Future<IndexerSearchResult> future : futures) {
                 try {
                     IndexerSearchResult indexerSearchResult = future.get();
-                    searchCacheEntry.getIndexerCacheEntries().get(indexerSearchResult.getIndexer()).addIndexerSearchResult(indexerSearchResult);
-                    indexerSearchResults.put(indexerSearchResult.getIndexer(), searchCacheEntry.getIndexerCacheEntries().get(indexerSearchResult.getIndexer()).getIndexerSearchResults());
+                    searchCacheEntry.getIndexerCacheEntries().get(indexerSearchResult.getIndexer().getName()).addIndexerSearchResult(indexerSearchResult);
+                    indexerSearchResults.put(indexerSearchResult.getIndexer(), searchCacheEntry.getIndexerCacheEntries().get(indexerSearchResult.getIndexer().getName()).getIndexerSearchResults());
                 } catch (ExecutionException e) {
                     logger.error("Unexpected error while searching", e);
                 }

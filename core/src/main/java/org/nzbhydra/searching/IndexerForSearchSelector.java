@@ -7,7 +7,6 @@ import com.google.common.collect.Sets;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.nzbhydra.config.ConfigProvider;
@@ -85,7 +84,7 @@ public class IndexerForSearchSelector {
     public IndexerForSearchSelection pickIndexers(SearchRequest searchRequest) {
         this.searchRequest = searchRequest;
         //Check any indexer that's not disabled by the user. If it's disabled by the system it will be deselected with a proper message later
-        List<Indexer> eligibleIndexers = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().getState() != IndexerConfig.State.DISABLED_USER).collect(Collectors.toList());
+        List<Indexer> eligibleIndexers = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().getState() != IndexerConfig.State.DISABLED_USER).toList();
         if (eligibleIndexers.isEmpty()) {
             logger.warn("You don't have any enabled indexers");
             return new IndexerForSearchSelection();
@@ -159,7 +158,7 @@ public class IndexerForSearchSelector {
     }
 
     protected boolean checkSearchId(Indexer indexer) {
-        boolean needToSearchById = !searchRequest.getIdentifiers().isEmpty() && !searchRequest.getQuery().isPresent();
+        boolean needToSearchById = !searchRequest.getIdentifiers().isEmpty() && searchRequest.getQuery().isEmpty();
         if (needToSearchById) {
             boolean canUseAnyProvidedId = !Collections.disjoint(searchRequest.getIdentifiers().keySet(), indexer.getConfig().getSupportedSearchIds());
             boolean cannotSearchProvidedOrConvertableId = !canUseAnyProvidedId && !infoProvider.canConvertAny(searchRequest.getIdentifiers().keySet(), Sets.newHashSet(indexer.getConfig().getSupportedSearchIds()));
@@ -227,7 +226,7 @@ public class IndexerForSearchSelector {
     }
 
     protected boolean checkIndexerSelected(Indexer indexer) {
-        if (!searchRequest.getIndexers().isPresent()) {
+        if (searchRequest.getIndexers().isEmpty()) {
             return true;
         }
         if (searchRequest.getIndexers().get().isEmpty()) {
@@ -258,7 +257,7 @@ public class IndexerForSearchSelector {
     protected boolean checkIndexerHitLimit(Indexer indexer) {
         Stopwatch stopwatch = Stopwatch.createStarted();
         IndexerConfig indexerConfig = indexer.getConfig();
-        if (!indexerConfig.getHitLimit().isPresent() && !indexerConfig.getDownloadLimit().isPresent()) {
+        if (indexerConfig.getHitLimit().isEmpty() && indexerConfig.getDownloadLimit().isEmpty()) {
             return true;
         }
         LocalDateTime comparisonTime;
@@ -552,11 +551,15 @@ public class IndexerForSearchSelector {
 
 
     @Data
-    @AllArgsConstructor
     @NoArgsConstructor
     public static class IndexerForSearchSelection {
         private Map<Indexer, String> notPickedIndexersWithReason = new HashMap<>();
         private List<Indexer> selectedIndexers = new ArrayList<>();
+
+        public IndexerForSearchSelection(Map<Indexer, String> notPickedIndexersWithReason, List<Indexer> selectedIndexers) {
+            this.notPickedIndexersWithReason = notPickedIndexersWithReason;
+            this.selectedIndexers = selectedIndexers;
+        }
     }
 
 

@@ -105,7 +105,8 @@ public class Newznab extends Indexer<Xml> {
     private Unmarshaller unmarshaller;
     @Autowired
     private IndexerLimitRepository indexerStatusRepository;
-    private ConcurrentHashMap<Integer, Category> idToCategory = new ConcurrentHashMap<>();
+
+    private final ConcurrentHashMap<Integer, Category> idToCategory = new ConcurrentHashMap<>();
 
 
     protected UriComponentsBuilder getBaseUri() {
