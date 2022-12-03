@@ -57,12 +57,16 @@ public class SearchResultEntity {
 
 
     @GenericGenerator(
-            name = "search-result-sequence",
-            strategy = "org.nzbhydra.searching.db.SearchResultSequenceGenerator",
-            parameters = @org.hibernate.annotations.Parameter(
-                    name = "sequence_name",
-                    value = "HIBERNATE_SEQUENCE"
-            )
+        name = "search-result-sequence",
+        strategy = "org.nzbhydra.searching.db.SearchResultSequenceGenerator",
+        parameters = {@org.hibernate.annotations.Parameter(
+            name = "sequence_name",
+            value = "HIBERNATE_SEQUENCE"
+        ),
+            @org.hibernate.annotations.Parameter(
+                name = "increment_size",
+                value = "1"
+            )}
     )
     @Id
     @GeneratedValue(generator = "search-result-sequence", strategy = GenerationType.SEQUENCE)

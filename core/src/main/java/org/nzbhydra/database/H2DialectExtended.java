@@ -17,6 +17,8 @@
 package org.nzbhydra.database;
 
 import org.hibernate.dialect.H2Dialect;
+import org.hibernate.tool.schema.extract.internal.SequenceInformationExtractorLegacyImpl;
+import org.hibernate.tool.schema.extract.spi.SequenceInformationExtractor;
 
 public class H2DialectExtended extends H2Dialect {
 
@@ -25,4 +27,13 @@ public class H2DialectExtended extends H2Dialect {
         return bool ? "TRUE" : "FALSE";
     }
 
+    @Override
+    public SequenceInformationExtractor getSequenceInformationExtractor() {
+        return SequenceInformationExtractorLegacyImpl.INSTANCE;
+    }
+
+    @Override
+    public String getQuerySequencesString() {
+        return "select * from INFORMATION_SCHEMA.SEQUENCES";
+    }
 }

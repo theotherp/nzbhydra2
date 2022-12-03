@@ -19,6 +19,7 @@ package org.nzbhydra.searching.db;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.SequenceGenerator;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -32,6 +33,7 @@ public class IdentifierKeyValuePair {
 
     @Id
     @GeneratedValue
+    @SequenceGenerator(allocationSize = 1, name = "IDENTIFIER_KEY_VALUE_PAIR_SEQ")
     private Integer id;
 
     public IdentifierKeyValuePair(String identifierKey, String identifierValue) {

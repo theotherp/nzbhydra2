@@ -10,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.Data;
 import org.hibernate.annotations.OnDelete;
@@ -30,6 +31,7 @@ public class FileDownloadEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @SequenceGenerator(allocationSize = 1, name = "INDEXERNZBDOWNLOAD_SEQ")
     protected int id;
     @ManyToOne
     @OnDelete(action = OnDeleteAction.CASCADE)
