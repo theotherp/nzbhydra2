@@ -16,7 +16,10 @@
 
 package org.nzbhydra.database;
 
+import org.hibernate.MappingException;
 import org.hibernate.dialect.H2Dialect;
+import org.hibernate.dialect.sequence.ANSISequenceSupport;
+import org.hibernate.dialect.sequence.SequenceSupport;
 import org.hibernate.tool.schema.extract.internal.SequenceInformationExtractorLegacyImpl;
 import org.hibernate.tool.schema.extract.spi.SequenceInformationExtractor;
 
@@ -35,5 +38,15 @@ public class H2DialectExtended extends H2Dialect {
     @Override
     public String getQuerySequencesString() {
         return "select * from INFORMATION_SCHEMA.SEQUENCES";
+    }
+
+    @Override
+    public SequenceSupport getSequenceSupport() {
+        return new ANSISequenceSupport() {
+            @Override
+            public String getSequenceNextValString(String sequenceName) throws MappingException {
+                return "values next value for " + sequenceName;
+            }
+        };
     }
 }

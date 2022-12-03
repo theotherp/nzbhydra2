@@ -18,12 +18,12 @@ package org.nzbhydra.searching.dtoseventsenums;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.nzbhydra.config.category.Category;
 import org.nzbhydra.indexers.Indexer;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Comparator;

@@ -16,7 +16,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.channel.ChannelProcessingFilter;
@@ -25,6 +24,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.firewall.DefaultHttpFirewall;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.filter.ForwardedHeaderFilter;
 
 @Configuration
@@ -46,13 +46,11 @@ public class SecurityConfig {
     @Autowired
     private UserDetailsService userDetailsService;
     @Autowired
-    private AuthenticationManager authenticationManager;
-    @Autowired
     private AsyncSupportFilter asyncSupportFilter;
     private HeaderAuthenticationFilter headerAuthenticationFilter;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
         BaseConfig baseConfig = configProvider.getBaseConfig();
         if (configProvider.getBaseConfig().getMain().isUseCsrf()) {
             CookieCsrfTokenRepository csrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
@@ -113,23 +111,32 @@ public class SecurityConfig {
                 .requestMatchers("/actuator/**")
                 .hasRole("ADMIN")
                 .anyRequest().permitAll();
+            http.authorizeHttpRequests()
+                .requestMatchers(new AntPathRequestMatcher("/static/**"))
+                .permitAll();
+            headerAuthenticationFilter = new HeaderAuthenticationFilter(authenticationManager, hydraUserDetailsManager, configProvider.getBaseConfig().getAuth());
+            http.addFilterAfter(headerAuthenticationFilter, BasicAuthenticationFilter.class);
+            http.addFilterAfter(asyncSupportFilter, BasicAuthenticationFilter.class);
+
+            http.exceptionHandling().accessDeniedHandler(authAndAccessEventHandler);
+        } else {
+            http.authorizeHttpRequests().anyRequest().permitAll();
         }
 
-        headerAuthenticationFilter = new HeaderAuthenticationFilter(authenticationManager, hydraUserDetailsManager, configProvider.getBaseConfig().getAuth());
         http.addFilterBefore(new ForwardedForRecognizingFilter(), ChannelProcessingFilter.class);
         //We need to extract the original IP before it's removed and not retrievable anymore by the ForwardedHeaderFilter
         http.addFilterAfter(new ForwardedHeaderFilter(), ForwardedForRecognizingFilter.class);
-        http.addFilterAfter(headerAuthenticationFilter, BasicAuthenticationFilter.class);
-        http.addFilterAfter(asyncSupportFilter, BasicAuthenticationFilter.class);
-
-        http.exceptionHandling().accessDeniedHandler(authAndAccessEventHandler);
         return http.build();
     }
 
-    @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        return (web) -> web.ignoring().requestMatchers("/static/**");
-    }
+//
+//    @Bean
+//    public WebSecurityCustomizer webSecurityCustomizer() {
+//        return (web) -> {
+//            web.pe
+//            web.ignoring().requestMatchers(new AntPathRequestMatcher("/static/**"));
+//        };
+//    }
 
     private void enableAnonymousAccessIfConfigured(HttpSecurity http) {
         //Create an anonymous auth filter. If any of the areas are not restricted the anonymous user will get its role
