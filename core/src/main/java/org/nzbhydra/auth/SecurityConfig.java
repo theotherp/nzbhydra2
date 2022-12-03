@@ -59,14 +59,12 @@ public class SecurityConfig {
         } else {
             http.csrf().disable();
         }
-        http.headers().httpStrictTransportSecurity().disable();
-        http.headers().frameOptions().disable();
+        http.headers()
+            .httpStrictTransportSecurity().disable()
+            .frameOptions().disable();
 
         if (baseConfig.getAuth().getAuthType() == AuthType.BASIC) {
             http = http
-                .authorizeHttpRequests()
-                .requestMatchers("/internalapi/userinfos").permitAll()
-                .and()
                 .httpBasic()
                 .authenticationDetailsSource(new WebAuthenticationDetailsSource() {
                     @Override
@@ -74,21 +72,9 @@ public class SecurityConfig {
                         return new HydraWebAuthenticationDetails(context);
                     }
                 })
-                .and()
-                .logout().logoutUrl("/logout").deleteCookies("remember-me")
                 .and();
-            http.authorizeHttpRequests()
-                .requestMatchers(new AntPathRequestMatcher("/static/**"))
-                .authenticated();
         } else if (baseConfig.getAuth().getAuthType() == AuthType.FORM) {
             http = http
-                .authorizeHttpRequests()
-                .requestMatchers("/internalapi/userinfos").permitAll()
-                .requestMatchers("/internalapi/")
-                .authenticated()
-                .requestMatchers("/websocket/")
-                .authenticated()
-                .and()
                 .formLogin()
                 .loginPage("/login")
                 .loginProcessingUrl("/login")
@@ -100,15 +86,34 @@ public class SecurityConfig {
                         return new HydraWebAuthenticationDetails(context);
                     }
                 })
-                .and()
-                .logout().permitAll().logoutUrl("/logout").logoutSuccessUrl("/loggedout").logoutSuccessUrl("/").deleteCookies("remember-me")
                 .and();
-            http.authorizeHttpRequests()
-                .requestMatchers(new AntPathRequestMatcher("/static/**"))
-                .permitAll();
         }
         if (baseConfig.getAuth().isAuthConfigured()) {
+            http = http
+                .authorizeHttpRequests()
+                .requestMatchers("/internalapi/")
+                .authenticated()
+                .requestMatchers("/websocket/")
+                .authenticated()
+                .requestMatchers("/actuator/**")
+                .hasRole("ADMIN")
+                .requestMatchers(new AntPathRequestMatcher("/static/**"))
+                .permitAll()
+                .anyRequest()
+//                .authenticated() //Does not include anonymous
+                .hasAnyRole("ADMIN", "ANONYMOUS", "USER")
+                .and()
+                .logout()
+                .permitAll()
+                .logoutUrl("/logout")
+                .logoutSuccessUrl("/")
+                .deleteCookies("remember-me")
+                .invalidateHttpSession(true)
+                .clearAuthentication(true)
+                .and()
+            ;
             enableAnonymousAccessIfConfigured(http);
+
             if (baseConfig.getAuth().isRememberUsers()) {
                 int rememberMeValidityDays = configProvider.getBaseConfig().getAuth().getRememberMeValidityDays();
                 if (rememberMeValidityDays == 0) {
@@ -121,12 +126,7 @@ public class SecurityConfig {
                     .userDetailsService(userDetailsService)
                     .and();
             }
-            http.authorizeHttpRequests()
-                .requestMatchers("/actuator/**")
-                .hasRole("ADMIN");
-            http.authorizeHttpRequests()
-                .anyRequest()
-                .authenticated();
+
             headerAuthenticationFilter = new HeaderAuthenticationFilter(authenticationManager, hydraUserDetailsManager, configProvider.getBaseConfig().getAuth());
             http.addFilterAfter(headerAuthenticationFilter, BasicAuthenticationFilter.class);
             http.addFilterAfter(asyncSupportFilter, BasicAuthenticationFilter.class);
@@ -148,8 +148,11 @@ public class SecurityConfig {
         try {
             if (!hydraAnonymousAuthenticationFilter.getAuthorities().isEmpty()) {
                 http.anonymous().authenticationFilter(hydraAnonymousAuthenticationFilter);
+
                 hydraAnonymousAuthenticationFilter.enable();
+
             }
+
         } catch (Exception e) {
             logger.error("Unable to configure anonymous access", e);
         }
@@ -162,24 +165,11 @@ public class SecurityConfig {
         }
     }
 
-    // TODO spring 01.11.2022: What to do?
-//    @Bean(name = BeanIds.AUTHENTICATION_MANAGER)
-//    @Override
-//    public AuthenticationManager authenticationManagerBean() throws Exception {
-//        return super.authenticationManagerBean();
-//    }
-
     @Bean
     public DefaultHttpFirewall defaultHttpFirewall() {
         //Allow duplicate trailing slashes which happen when behind a reverse proxy, e.g. proxy_pass http://127.0.0.1:5076/nzbhydra2/;
         return new DefaultHttpFirewall();
     }
-
-    // TODO spring 01.11.2022: What to do?
-//    @Override
-//    public void configure(AuthenticationManagerBuilder auth) throws Exception {
-//        auth.userDetailsService(hydraUserDetailsManager);
-//}
 
     @Bean
     public AuthenticationManager authManager(HttpSecurity http)

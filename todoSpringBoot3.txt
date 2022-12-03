@@ -3,4 +3,4 @@
 - Migrate successfully on windows and linux
 - Test with new instances
 - todos in SecurityConfig
-- disable unauthorized access to /static
+- fix or note that anonymous access to search does not work with http auth
