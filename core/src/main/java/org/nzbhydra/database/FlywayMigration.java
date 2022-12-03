@@ -24,6 +24,7 @@ import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 
 @Configuration
@@ -44,7 +45,9 @@ public class FlywayMigration {
                         logger.info("Found failed database migration. Attempting repair");
                         flyway.repair();
                         try {
-                            flyway.getConfiguration().getDataSource().getConnection().createStatement().executeUpdate("delete from PUBLIC.\"schema_version\" where \"version\" = '1.15' or \"version\" = '1.16'");
+                            try (Connection connection = flyway.getConfiguration().getDataSource().getConnection()) {
+                                connection.createStatement().executeUpdate("delete from PUBLIC.\"schema_version\" where \"version\" = '1.15' or \"version\" = '1.16'");
+                            }
                         } catch (SQLException e1) {
                             logger.error("Error while deleting old migration steps", e);
                         }
@@ -53,8 +56,10 @@ public class FlywayMigration {
                         logger.info("Found failed database migration. Attempting repair");
                         flyway.repair();
                         try {
-                            flyway.getConfiguration().getDataSource().getConnection().createStatement().execute("delete from PUBLIC.\"schema_version\" where \"version\" = '1.15' or \"version\" = '1.16'");
-                            flyway.getConfiguration().getDataSource().getConnection().createStatement().executeUpdate("delete from PUBLIC.\"schema_version\" where \"version\" = '1.15' or \"version\" = '1.16'");
+                            try (Connection connection = flyway.getConfiguration().getDataSource().getConnection()) {
+                                connection.createStatement().execute("delete from PUBLIC.\"schema_version\" where \"version\" = '1.15' or \"version\" = '1.16'");
+                                connection.createStatement().executeUpdate("delete from PUBLIC.\"schema_version\" where \"version\" = '1.15' or \"version\" = '1.16'");
+                            }
                         } catch (SQLException e1) {
                             logger.error("Error while deleting old migration steps", e);
                         }
@@ -64,7 +69,9 @@ public class FlywayMigration {
                         logger.debug("Reparing changed initial migration SQL checksum");
 //                        flyway.repair();
                         try {
-                            flyway.getConfiguration().getDataSource().getConnection().createStatement().execute("update \"schema_version\" x set x.\"checksum\" = 1776042577 where x.\"script\" = 'V1.0__INITIAL.sql'");
+                            try (Connection connection = flyway.getConfiguration().getDataSource().getConnection()) {
+                                connection.createStatement().execute("update \"schema_version\" x set x.\"checksum\" = 1776042577 where x.\"script\" = 'V1.0__INITIAL.sql'");
+                            }
                         } catch (SQLException e1) {
                             logger.error("Error while changing initial migration SQL checksum", e);
                         }
