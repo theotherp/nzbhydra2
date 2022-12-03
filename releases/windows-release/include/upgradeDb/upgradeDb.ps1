@@ -58,8 +58,17 @@ if (!(Test-Path h2-2.1.214.jar))
 
 }
 
+Write-Output "Updating credentials"
+java -cp h2-1.4.200.jar org.h2.tools.Shell -url $URL -user sa -sql "alter user sa set password 'sa'"
+if (!$?)
+{
+    Write-Output "Error updating credentials"
+    exit
+}
+
+
 Write-Output "Writing old database version to file oldDbScript.zip"
-java -cp h2-1.4.200.jar org.h2.tools.Script -url $URL -user sa -script oldDbScript.zip -options compression zip
+java -cp h2-1.4.200.jar org.h2.tools.Script -url $URL -user sa -password sa -script oldDbScript.zip -options compression zip
 if (!$?)
 {
     Write-Output "Error writing old database version"
@@ -75,7 +84,7 @@ if (!$?)
 }
 
 Write-Output "Creating new database version from file oldDbScript.zip"
-java -cp h2-2.1.214.jar org.h2.tools.RunScript -url $URL -user sa -script oldDbScript.zip -options compression zip
+java -cp h2-2.1.214.jar org.h2.tools.RunScript -url $URL -user sa -password sa -script oldDbScript.zip -options compression zip
 if ($?)
 {
     Remove-Item h2-1.4.200.jar

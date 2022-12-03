@@ -77,6 +77,14 @@ if [ ! -f h2-2.1.214.jar ]; then
     fi
 fi
 
+echo "Updating credentials"
+java -cp h2-1.4.200.jar org.h2.tools.Shell -url $URL -user sa -sql "alter user sa set password 'sa'"
+if [ ! $? -eq 0 ]
+      then
+      echo "Error updating credentials" >&2
+      exit
+fi
+
 
 echo "Writing old database version to file oldDbScript.zip"
 java -cp h2-1.4.200.jar org.h2.tools.Script -url $URL -user sa -script oldDbScript.zip -options compression zip

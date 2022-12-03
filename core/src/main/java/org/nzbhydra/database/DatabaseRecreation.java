@@ -20,6 +20,7 @@ import com.google.common.base.Joiner;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.flywaydb.core.Flyway;
 import org.nzbhydra.NzbHydra;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -102,35 +103,44 @@ public class DatabaseRecreation {
                 final String scriptFile = Files.createTempFile("nzbhydra", ".zip").toFile().getCanonicalPath();
                 logger.info("Running database migration from 1.4 to 2");
 
-                final List<String> exportCommand = Arrays.asList(javaExecutable, "-cp", h2OldJar.toString(), "org.h2.tools.Script", "-url", dbConnectionUrl, "-user", "sa", "-script", scriptFile, "-options", "compression", "zip");
-                logger.info("Running command: " + Joiner.on(" ").join(exportCommand));
-                final Process exportProcess = new ProcessBuilder(exportCommand)
-                    .redirectErrorStream(true)
-                    .inheritIO()
-                    .start();
-                final int exportResult = exportProcess.waitFor();
-                if (exportResult != 0) {
-                    throw new RuntimeException("Database export returned with code " + exportResult);
-                }
-
                 File backupDatabaseFile = new File(databaseFile.getParent(), databaseFile.getName() + ".bak." + System.currentTimeMillis());
-                logger.info("Moving old database file {} to backup {}", databaseFile, backupDatabaseFile);
-                Files.move(databaseFile.toPath(), backupDatabaseFile.toPath());
+                logger.info("Copying old database file {} to backup {}", databaseFile, backupDatabaseFile);
+                Files.copy(databaseFile.toPath(), backupDatabaseFile.toPath());
 
-                final List<String> importCommand = Arrays.asList(javaExecutable, "-cp", h2NewJar.toString(), "org.h2.tools.RunScript", "-url", dbConnectionUrl, "-user", "sa", "-script", scriptFile, "-options", "compression", "zip");
-                logger.info("Running command: " + Joiner.on(" ").join(importCommand));
-                final Process importProcess = new ProcessBuilder(importCommand)
-                    .redirectErrorStream(true)
-                    .inheritIO()
-                    .start();
-                final int importResult = importProcess.waitFor();
-                if (importResult != 0) {
-                    throw new RuntimeException("Database import returned with code " + importResult);
+                runH2Command(Arrays.asList(javaExecutable, "-cp", h2OldJar.toString(), "org.h2.tools.Shell", "-url", dbConnectionUrl, "-user", "sa", "-sql", "\"alter user sa set password 'sa'\""), "Password update failed.");
+
+                runH2Command(Arrays.asList(javaExecutable, "-cp", h2OldJar.toString(), "org.h2.tools.Script", "-url", dbConnectionUrl, "-user", "sa", "-password", "sa", "-script", scriptFile, "-options", "compression", "zip"), "Database export failed.");
+
+
+                final boolean deleted = databaseFile.delete();
+                if (!deleted) {
+                    throw new RuntimeException("Unable to delete file " + databaseFile);
                 }
-//                Flyway.configure().dataSource(dbConnectionUrl, "sa", "sa").bas
+
+                runH2Command(Arrays.asList(javaExecutable, "-cp", h2NewJar.toString(), "org.h2.tools.RunScript", "-url", dbConnectionUrl, "-user", "sa", "-password", "sa", "-script", scriptFile, "-options", "compression", "zip"), "Database import failed.");
+
+                final Flyway flyway = Flyway.configure()
+                        .dataSource(dbConnectionUrl, "sa", "sa")
+                        .baselineDescription("INITIAL")
+                        .baselineVersion("1")
+                        .load();
+                flyway.baseline();
+
             } catch (IOException | InterruptedException e) {
                 logger.error("Error while trying to migrate database to 2.0");
             }
+        }
+    }
+
+    private static void runH2Command(List<String> updatePassCommand, String errorMessage) throws IOException, InterruptedException {
+        logger.info("Running command: " + Joiner.on(" ").join(updatePassCommand));
+        final Process process = new ProcessBuilder(updatePassCommand)
+                .redirectErrorStream(true)
+                .inheritIO()
+                .start();
+        final int result = process.waitFor();
+        if (result != 0) {
+            throw new RuntimeException(errorMessage + ". Code: " + result);
         }
     }
 
