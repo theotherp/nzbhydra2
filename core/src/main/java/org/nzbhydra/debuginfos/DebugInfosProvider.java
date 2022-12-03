@@ -213,7 +213,7 @@ public class DebugInfosProvider {
         logger.info("Metrics:");
         final Set<String> metricsNames = metricsEndpoint.listNames().getNames();
         for (String metric : metricsNames) {
-            final MetricsEndpoint.MetricResponse response = metricsEndpoint.metric(metric, null);
+            final MetricsEndpoint.MetricDescriptor response = metricsEndpoint.metric(metric, null);
             logger.info(metric + ": " + response.getMeasurements().stream()
                     .map(x -> x.getStatistic().name() + ": " + formatSample(metric, x.getValue()))
                     .collect(Collectors.joining(", ")));

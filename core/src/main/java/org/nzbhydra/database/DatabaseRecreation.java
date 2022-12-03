@@ -21,6 +21,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.apache.commons.io.IOUtils;
+import org.flywaydb.core.internal.resolver.ChecksumCalculator;
 import org.flywaydb.core.internal.resource.StringResource;
 import org.nzbhydra.NzbHydra;
 import org.slf4j.Logger;
@@ -100,7 +101,7 @@ public class DatabaseRecreation {
             if (resources.stream().allMatch(x -> {
                 try {
                     StringResource stringResource = new StringResource(IOUtils.toString(x.getInputStream(), Charset.defaultCharset()));
-                    ExecutedScript executedScript = new ExecutedScript(x.getFilename(), stringResource.checksum());
+                    ExecutedScript executedScript = new ExecutedScript(x.getFilename(), ChecksumCalculator.calculate(stringResource));
                     boolean scriptExecuted = executedScripts.contains(executedScript);
                     if (!scriptExecuted) {
                         logger.info("Database recreation needed because {} was not yet executed or its checksum has changed", executedScript);
