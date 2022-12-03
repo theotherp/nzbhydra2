@@ -3,7 +3,7 @@ package org.nzbhydra.mockserver;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
 import com.google.common.io.Resources;
-import org.apache.catalina.servlet4preview.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mapping.newznab.NewznabParameters;
 import org.nzbhydra.mapping.newznab.builder.RssItemBuilder;

@@ -1,17 +1,11 @@
 package org.nzbhydra.mockserver;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import org.nzbhydra.mapping.changelog.ChangelogChangeEntry;
 import org.nzbhydra.mapping.changelog.ChangelogVersionEntry;
 import org.nzbhydra.mapping.github.Asset;
 import org.nzbhydra.mapping.github.Release;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -94,10 +88,10 @@ public class MockGithub {
     @RequestMapping(value = "/changelog", method = RequestMethod.GET)
     public List<ChangelogVersionEntry> changelog() throws Exception {
         return Arrays.asList(
-                new ChangelogVersionEntry("11.0.0", null, false, Arrays.asList(new ChangelogChangeEntry("note", "a note for beta release 11.0.0"), new ChangelogChangeEntry("note", "another note"), new ChangelogChangeEntry("note", "yet another note"))),
-                new ChangelogVersionEntry("4.0.0", null, true, Arrays.asList(new ChangelogChangeEntry("note", "a note"), new ChangelogChangeEntry("note", "another note"), new ChangelogChangeEntry("note", "yet another note"))),
-                new ChangelogVersionEntry("0.0.1", null, true, Arrays.asList(new ChangelogChangeEntry("fix", "a minor fix"))),
-                new ChangelogVersionEntry("0.1.0", null, true, Arrays.asList(new ChangelogChangeEntry("feature", "a new feature")))
+            new ChangelogVersionEntry("11.0.0", null, false, Arrays.asList(new ChangelogChangeEntry("note", "a note for beta release 11.0.0"), new ChangelogChangeEntry("note", "another note"), new ChangelogChangeEntry("note", "yet another note"))),
+            new ChangelogVersionEntry("4.0.0", null, true, Arrays.asList(new ChangelogChangeEntry("note", "a note"), new ChangelogChangeEntry("note", "another note"), new ChangelogChangeEntry("note", "yet another note"))),
+            new ChangelogVersionEntry("0.0.1", null, true, Arrays.asList(new ChangelogChangeEntry("fix", "a minor fix"))),
+            new ChangelogVersionEntry("0.1.0", null, true, Arrays.asList(new ChangelogChangeEntry("feature", "a new feature")))
         );
     }
 
@@ -111,17 +105,4 @@ public class MockGithub {
         return "[{\"version\":\"3.2.1\",\"comment\":\"some comment\"}]";
     }
 
-    @Configuration
-    public class JacksonConfiguration {
-
-        @Bean
-        public ObjectMapper objectMapper() {
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-            mapper.configure(MapperFeature.DEFAULT_VIEW_INCLUSION, true);
-            mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
-
-            return mapper;
-        }
-    }
 }
