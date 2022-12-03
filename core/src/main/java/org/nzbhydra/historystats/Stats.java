@@ -139,20 +139,20 @@ public class Stats {
             }
         }
         if (statsRequest.isDownloadSharesPerUser()) {
-            BigInteger countDownloadsWithData = (BigInteger) entityManager.createNativeQuery("SELECT count(*) FROM INDEXERNZBDOWNLOAD t WHERE t.USERNAME IS NOT NULL").getSingleResult();
-            if (countDownloadsWithData.intValue() > 0) {
+            Long countDownloadsWithData = (Long) entityManager.createNativeQuery("SELECT count(*) FROM INDEXERNZBDOWNLOAD t WHERE t.USERNAME IS NOT NULL").getSingleResult();
+            if (countDownloadsWithData > 0) {
                 futures.add(executor.submit(() -> statsResponse.setDownloadSharesPerUser(downloadsOrSearchesPerUserOrIp(statsRequest, "INDEXERNZBDOWNLOAD", "USERNAME"))));
             }
         }
         if (statsRequest.isSearchSharesPerIp()) {
-            BigInteger countSearchesWithData = (BigInteger) entityManager.createNativeQuery("SELECT count(*) FROM SEARCH t WHERE t.IP IS NOT NULL").getSingleResult();
-            if (countSearchesWithData.intValue() > 0) {
+            Long countSearchesWithData = (Long) entityManager.createNativeQuery("SELECT count(*) FROM SEARCH t WHERE t.IP IS NOT NULL").getSingleResult();
+            if (countSearchesWithData > 0) {
                 futures.add(executor.submit(() -> statsResponse.setSearchSharesPerIp(downloadsOrSearchesPerUserOrIp(statsRequest, "SEARCH", "IP"))));
             }
         }
         if (statsRequest.isDownloadSharesPerIp()) {
-            BigInteger countDownloadsWithData = (BigInteger) entityManager.createNativeQuery("SELECT count(*) FROM INDEXERNZBDOWNLOAD t WHERE t.IP IS NOT NULL").getSingleResult();
-            if (countDownloadsWithData.intValue() > 0) {
+            Long countDownloadsWithData = (Long) entityManager.createNativeQuery("SELECT count(*) FROM INDEXERNZBDOWNLOAD t WHERE t.IP IS NOT NULL").getSingleResult();
+            if (countDownloadsWithData > 0) {
                 futures.add(executor.submit(() -> statsResponse.setDownloadSharesPerIp(downloadsOrSearchesPerUserOrIp(statsRequest, "INDEXERNZBDOWNLOAD", "IP"))));
             }
         }

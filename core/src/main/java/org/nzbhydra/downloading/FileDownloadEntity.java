@@ -1,5 +1,6 @@
 package org.nzbhydra.downloading;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
@@ -34,6 +35,7 @@ public class FileDownloadEntity {
     @SequenceGenerator(allocationSize = 1, name = "INDEXERNZBDOWNLOAD_SEQ")
     protected int id;
     @ManyToOne
+    @JsonIgnoreProperties(value = {"handler", "hibernateLazyInitializer"})
     @OnDelete(action = OnDeleteAction.CASCADE)
     private SearchResultEntity searchResult;
     @Enumerated(EnumType.STRING)

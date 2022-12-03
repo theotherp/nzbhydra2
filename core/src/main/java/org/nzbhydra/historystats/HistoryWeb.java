@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,12 +26,14 @@ public class HistoryWeb {
     private History history;
 
     @Secured({"ROLE_STATS"})
+    @Transactional
     @RequestMapping(value = "/internalapi/history/searches", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public Page<SearchEntity> searchHistory(@RequestBody HistoryRequest requestData) {
         return history.getHistory(requestData, History.SEARCH_TABLE, SearchEntity.class);
     }
 
     @Secured({"ROLE_STATS"})
+    @Transactional
     @RequestMapping(value = "/internalapi/history/searches/details/{searchId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public SearchDetails searchHistoryDetails(@PathVariable int searchId) {
         return history.getSearchDetails(searchId);
