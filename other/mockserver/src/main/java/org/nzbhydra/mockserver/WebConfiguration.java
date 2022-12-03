@@ -1,5 +1,6 @@
 package org.nzbhydra.mockserver;
 
+import jakarta.xml.bind.Marshaller;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,7 +13,6 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
-import javax.xml.bind.Marshaller;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

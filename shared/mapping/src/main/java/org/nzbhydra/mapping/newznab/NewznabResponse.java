@@ -16,7 +16,9 @@
 
 package org.nzbhydra.mapping.newznab;
 
-import javax.xml.bind.JAXB;
+
+import jakarta.xml.bind.JAXB;
+
 import java.io.IOException;
 import java.io.StringWriter;
 

@@ -61,7 +61,7 @@ public class SearchResultEntity {
             strategy = "org.nzbhydra.searching.db.SearchResultSequenceGenerator",
             parameters = @org.hibernate.annotations.Parameter(
                     name = "sequence_name",
-                    value = "hibernate_sequence"
+                    value = "HIBERNATE_SEQUENCE"
             )
     )
     @Id
