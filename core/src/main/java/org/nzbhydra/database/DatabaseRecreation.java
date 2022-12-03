@@ -107,7 +107,8 @@ public class DatabaseRecreation {
                 logger.info("Copying old database file {} to backup {}", databaseFile, backupDatabaseFile);
                 Files.copy(databaseFile.toPath(), backupDatabaseFile.toPath());
 
-                runH2Command(Arrays.asList(javaExecutable, "-cp", h2OldJar.toString(), "org.h2.tools.Shell", "-url", dbConnectionUrl, "-user", "sa", "-sql", "\"alter user sa set password 'sa'\""), "Password update failed.");
+                final String updatePasswordQuery = "alter user sa set password 'sa'";
+                runH2Command(Arrays.asList(javaExecutable, "-cp", h2OldJar.toString(), "org.h2.tools.Shell", "-url", dbConnectionUrl, "-user", "sa", "-sql", NzbHydra.isOsWindows() ? ("\"" + updatePasswordQuery + "\"") : updatePasswordQuery), "Password update failed.");
 
                 runH2Command(Arrays.asList(javaExecutable, "-cp", h2OldJar.toString(), "org.h2.tools.Script", "-url", dbConnectionUrl, "-user", "sa", "-password", "sa", "-script", scriptFile, "-options", "compression", "zip"), "Database export failed.");
 

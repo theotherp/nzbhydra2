@@ -1,5 +1,2 @@
-- Test all auth methods
 - Migrate successfully on windows and linux
 - Test with new instances
-- todos in SecurityConfig
-- fix or note that anonymous access to search does not work with http auth
