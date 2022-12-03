@@ -30,16 +30,6 @@ public class MainWeb {
         return new SafeConfig(configProvider.getBaseConfig());
     }
 
-
-//    @RequestMapping(value = "/{{ match.model.posterUrl }}", method = RequestMethod.GET)
-//    @Secured({"ROLE_USER"})
-//    public String indexMatch(HttpSession session, Principal principal, HttpServletResponse response) {
-//        //Super hacky. Autocomplete for some reason sometimes does not evaluate the expression and tries to use {{ match.model.posterUrl }} as a URL
-//        setSessionAttributes(session, principal);
-//
-//        return "index";
-//    }
-
     @RequestMapping(value = "/", method = RequestMethod.GET)
     @Secured({"ROLE_USER"})
     public String index(HttpSession session, Principal principal, HttpServletResponse response) {

@@ -1,4 +1,3 @@
-- match.model.posterUrl in MainWeb
 - Test all auth methods
 - Migrate successfully on windows and linux
 - Test with new instances

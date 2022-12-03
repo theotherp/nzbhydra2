@@ -1,7 +1,7 @@
 <script type="text/ng-template" id="autocompleteTemplate.html">
   <a>
       <span ng-if="match.model.posterUrl">
-    <img src="{{ match.model.posterUrl }}" style="width: 50px"></span> {{ match.model.title
+    <img ng-src="{{ match.model.posterUrl }}" style="width: 50px"></span> {{ match.model.title
       }} <span ng-if="match.model.year">( {{ match.model.year }} )</span>
   </a>
 </script>

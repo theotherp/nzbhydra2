@@ -11074,12 +11074,12 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         }
 
         if ($scope.category.searchType === "MOVIE") {
-            return $http.get('internalapi/autocomplete/MOVIE/', {params: {input: val}}).then(function (response) {
+            return $http.get('internalapi/autocomplete/MOVIE', {params: {input: val}}).then(function (response) {
                 $scope.autocompleteLoading = false;
                 return response.data;
             });
         } else if ($scope.category.searchType === "TVSEARCH") {
-            return $http.get('internalapi/autocomplete/TV/', {params: {input: val}}).then(function (response) {
+            return $http.get('internalapi/autocomplete/TV', {params: {input: val}}).then(function (response) {
                 $scope.autocompleteLoading = false;
                 return response.data;
             });
