@@ -30,7 +30,7 @@
                 <td class="col-md-5" style="text-align: left"><span ng-show="task.lastExecutionTime"
                                                                     uib-tooltip="{{task.lastExecutionTime | reformatDateSeconds}}">{{ task.lastExecutionTime | humanizeDate }}</span>
                 </td>
-                <td class="col-md-5" style="text-align: left"><span
+                <td class="col-md-5" style="text-align: left"><span ng-show="task.nextExecutionTime"
                         uib-tooltip="{{task.nextExecutionTime | reformatDateSeconds}}">{{task.nextExecutionTime | humanizeDate}}</span>
                 </td>
             </tr>

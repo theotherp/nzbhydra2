@@ -86,9 +86,7 @@ public class HydraTaskScheduler implements BeanPostProcessor, SmartInitializingS
 
     private void scheduleTask(TaskRuntimeInformation runtimeInformation, boolean runNow) {
         HydraTask task = runtimeInformation.getMethod().getAnnotation(HydraTask.class);
-        if (!taskSchedules.containsKey(task.name())) { //On startup
-            logger.info("Scheduling task \"{}\" to be run every {}", task.name(), DurationFormatUtils.formatDurationWords(getIntervalForTask(task), true, true));
-        }
+        long taskInterval = getIntervalForTask(task);
         Runnable runnable = () -> {
             if (shutdownRequested) {
                 return;
@@ -99,6 +97,18 @@ public class HydraTaskScheduler implements BeanPostProcessor, SmartInitializingS
         if (runNow && !shutdownRequested) {
             scheduler.execute(runnable);
             scheduler.setRemoveOnCancelPolicy(true);
+            if (taskInterval == 0) {  //tasks with an interval of 0 aren't scheduled, so the taskInformation has to be updated here
+                taskInformations.put(task, new TaskInformation(task.name(), new Date().toInstant(), null));
+                return; //return here, don't schedule the task
+            }
+        }
+        if (!taskSchedules.containsKey(task.name())) { //On startup
+            if (taskInterval == 0) {
+                logger.info("Disabling task \"{}\" (disabled by environment)", task.name());
+                taskInformations.put(task, new TaskInformation(task.name(), null, null));
+                return; //return here, don't schedule the task
+            }
+            logger.info("Scheduling task \"{}\" to be run every {}", task.name(), DurationFormatUtils.formatDurationWords(taskInterval, true, true));
         }
         ScheduledFuture scheduledTask = scheduler.schedule(runnable, new Trigger() {
             @Override
@@ -106,7 +116,7 @@ public class HydraTaskScheduler implements BeanPostProcessor, SmartInitializingS
                 Calendar nextExecutionTime = new GregorianCalendar();
                 Date lastCompletionTime = runNow ? new Date() : triggerContext.lastCompletionTime();
                 nextExecutionTime.setTime(lastCompletionTime != null ? lastCompletionTime : new Date());
-                nextExecutionTime.add(Calendar.MILLISECOND, (int) getIntervalForTask(task));
+                nextExecutionTime.add(Calendar.MILLISECOND, (int) taskInterval);
                 taskInformations.put(task, new TaskInformation(task.name(), lastCompletionTime != null ? lastCompletionTime.toInstant() : null, nextExecutionTime.toInstant()));
                 return nextExecutionTime.getTime();
             }
@@ -126,14 +136,16 @@ public class HydraTaskScheduler implements BeanPostProcessor, SmartInitializingS
 
     public List<TaskInformation> getTasks() {
         List<TaskInformation> information = new ArrayList<>(taskInformations.values());
-        information.sort(Comparator.comparingLong(x -> x.nextExecutionTime.getEpochSecond()));
+        information.sort(Comparator.comparingLong(x -> x.nextExecutionTime != null ? x.nextExecutionTime.getEpochSecond() : Long.MAX_VALUE));
         return information;
     }
 
     public void runNow(String taskName) {
         logger.info("Running task \"{}\" now", taskName);
         ScheduledFuture scheduledFuture = taskSchedules.get(taskName);
-        scheduledFuture.cancel(false);
+        if (scheduledFuture != null) {
+            scheduledFuture.cancel(false);
+        }
         scheduleTask(runtimeInformationMap.get(taskName), true);
     }
 
