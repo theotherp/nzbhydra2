@@ -391,10 +391,11 @@ def startup():
     java_arguments = ["-Xmx" + xmx + "M",
                       "-DfromWrapper",
                       "-XX:TieredStopAtLevel=1",
-                      "-noverify",
                       "-XX:+HeapDumpOnOutOfMemoryError",
                       "-XX:HeapDumpPath=" + os.path.join(args.datafolder, "logs")
                       ]
+    if javaVersion < 13:
+        java_arguments.append("-noverify")
     if logGc:
         java_arguments.extend(gcArguments)
     if args.debugport:
