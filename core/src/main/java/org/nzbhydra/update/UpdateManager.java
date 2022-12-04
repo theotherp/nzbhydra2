@@ -14,6 +14,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.JavaVersion;
+import org.apache.commons.lang3.SystemUtils;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.backup.BackupAndRestore;
 import org.nzbhydra.config.BaseConfig;
@@ -146,9 +148,12 @@ public class UpdateManager implements InitializingBean {
         final boolean latestIsUpdateAndViable = latestVersion.isUpdateFor(currentVersion)
                 && !latestVersionIgnored
                 && isVersionNotBlocked(latestVersion);
+
         updateInfo.setUpdateAvailable(latestIsUpdateAndViable);
+
         updateInfo.setLatestVersionIgnored(latestVersionIgnored);
         updateInfo.setBetaVersionsEnabled(updateToPrereleases);
+
 
         if (!updateToPrereleases) {
             final SemanticVersion latestVersionWithBeta = new SemanticVersion(getLatestRelease(true).getTagName());
@@ -161,6 +166,11 @@ public class UpdateManager implements InitializingBean {
                 updateInfo.setBetaUpdateAvailable(latestWithBetaIsUpdateAndViable);
                 updateInfo.setBetaVersion(latestVersionWithBeta.getAsString());
             }
+        }
+        if (currentVersion.major == 4 && latestVersion.major == 5 && !SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_17)) {
+            logger.info("Update from 4.x to 5.x not supported without Java 17");
+            updateInfo.setUpdateAvailable(false);
+            updateInfo.setBetaUpdateAvailable(false);
         }
         updateInfo.setPackageInfo(getPackageInfo());
 

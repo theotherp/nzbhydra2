@@ -65,6 +65,23 @@ function hydraChecksFooter() {
             });
         }
 
+        console.log("Checking for below Java 17");
+
+        function checkForJavaBelow17() {
+            GenericStorageService.get("belowJava17", false).then(function (response) {
+                if (response.data !== "" && response.data) {
+                    console.log("Java below 17");
+                    //headline, message, params, size, textAlign
+                    ModalService.open("Java version below 17", 'You\'re currently running NZBHydra2 with an older java version. A future update will require Java 17. Please update your system accordingly.', {
+                        yes: {
+                            text: "OK"
+                        }
+                    }, undefined, "left");
+                    GenericStorageService.put("belowJava17", false, false);
+                }
+            });
+        }
+
         function checkForOutdatedWrapper() {
             $http.get("internalapi/updates/isDisplayWrapperOutdated").then(function (response) {
                 var data = response.data;
@@ -102,6 +119,7 @@ function hydraChecksFooter() {
             checkForOutOfMemoryException();
             checkForOutdatedWrapper();
             checkForOpenToInternet();
+            checkForJavaBelow17();
         }
 
         function retrieveUpdateInfos() {

@@ -37,7 +37,7 @@ public class MockGithub {
         releasev376 = new Release();
         releasev376.setBody("Changes in version 3.16.3");
         releasev376.setUrl("http://127.0.0.1:5080/repos/theotherp/nzbhydra2/releases/1");
-        releasev376.setTagName("v3.16.3-SNAPSHOT");
+        releasev376.setTagName("v5.16.3-SNAPSHOT");
         windowsAsset.setBrowserDownloadUrl("http://127.0.0.1:5080/static/nzbhyra2-2.0.0-SNAPSHOT-windows.zip");
         windowsAsset.setName("nzbhyra2-3.1.0-SNAPSHOT-windows.zip");
         windowsAsset.setSize(163L);

@@ -17,6 +17,10 @@
 package org.nzbhydra.problemdetection;
 
 import com.google.common.base.Stopwatch;
+import org.apache.commons.lang3.JavaVersion;
+import org.apache.commons.lang3.SystemUtils;
+import org.nzbhydra.debuginfos.DebugInfosProvider;
+import org.nzbhydra.genericstorage.GenericStorage;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.tasks.HydraTask;
 import org.slf4j.Logger;
@@ -38,10 +42,18 @@ public class ProblemDetectorTask {
     @Autowired
     List<ProblemDetector> problemDetectors;
 
+    @Autowired
+    private GenericStorage genericStorage;
+
     @PostConstruct
     public void init() {
         //Check on startup if the wrapper has been updated
         detectProblems();
+        if (!DebugInfosProvider.isRunInDocker() && !SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_17)) {
+            genericStorage.save("belowJava17", true);
+            logger.info("Current Java version is below Java 17: " + SystemUtils.JAVA_SPECIFICATION_VERSION);
+        }
+
     }
 
 
