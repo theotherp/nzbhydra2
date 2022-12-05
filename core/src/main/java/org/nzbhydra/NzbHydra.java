@@ -185,7 +185,7 @@ public class NzbHydra {
             SpringApplication hydraApplication = new SpringApplication(NzbHydra.class);
             NzbHydra.originalArgs = args;
             wasRestarted = Arrays.asList(args).contains("restarted");
-            if (!options.has("quiet") && !options.has("nobrowser")) {
+            if (NzbHydra.isOsWindows() && !options.has("quiet") && !options.has("nobrowser")) {
                 hydraApplication.setHeadless(false);
             }
 
