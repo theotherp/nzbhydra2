@@ -1,4 +1,12 @@
-### v4.7.2 BETA (2022-11-30)
+### v4.7.3 (2022-12-06)
+
+**Note** A future update will require Java 17. To prepare for that a message will be shown asking you to update your system accordingly. If you're running NZBHydra2 in docker you don't need to do anything.
+
+**Feature** Set the environment variable NZBHYDRA_DISABLE_UPDATE to true to disable the NZBHydra update mechanism (similar as to when it's run inside docker). This can be used by package maintainers. See <a href="https://github.com/theotherp/nzbhydra2/issues/809">#809</a>
+
+
+
+### v4.7.2 (2022-11-30)
 
 **Fix** Handle results without date.
 
