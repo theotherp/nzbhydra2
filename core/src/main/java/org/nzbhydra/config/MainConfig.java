@@ -2,6 +2,7 @@ package org.nzbhydra.config;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
 import lombok.Data;
 import org.javers.core.metamodel.annotation.DiffIgnore;
@@ -89,7 +90,8 @@ public class MainConfig extends ValidatingConfig<MainConfig> {
     private boolean updateAutomatically = false;
     private boolean updateToPrereleases = false;
     private boolean updateCheckEnabled = true;
-    private boolean showUpdateBannerOnDocker = true;
+    @JsonProperty("showUpdateBannerOnDocker")
+    private boolean showUpdateBannerOnUpdatedExternally = true;
     private boolean showWhatsNewBanner = true;
 
 

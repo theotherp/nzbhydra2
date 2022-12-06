@@ -20,6 +20,7 @@ import org.nzbhydra.NzbHydra;
 import org.nzbhydra.backup.BackupAndRestore;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.debuginfos.DebugInfosProvider;
 import org.nzbhydra.genericstorage.GenericStorage;
 import org.nzbhydra.mapping.SemanticVersion;
 import org.nzbhydra.mapping.changelog.ChangelogVersionEntry;
@@ -61,6 +62,7 @@ public class UpdateManager implements InitializingBean {
     public static final String KEY = "UpdateData";
     public static final int CACHE_DURATION_MINUTES = 5;
     private static final Pattern GITHUB_ISSUE_PATTERN = Pattern.compile("#(\\d{3,})");
+    private static final String DISABLE_UPDATE_PROPERTY = "NZBHYDRA_DISABLE_UPDATE";
 
     @Value("${nzbhydra.repositoryBaseUrl}")
     protected String repositoryBaseUrl;
@@ -88,6 +90,8 @@ public class UpdateManager implements InitializingBean {
 
     @Value("${build.version:0.0.1}")
     protected String currentVersionString;
+
+
     protected SemanticVersion currentVersion;
     protected SemanticVersion latestVersion;
 
@@ -184,6 +188,10 @@ public class UpdateManager implements InitializingBean {
             logger.error("Error while checking if new version is available", e);
             return false;
         }
+    }
+
+    public boolean isUpdatedExternally() {
+        return DebugInfosProvider.isRunInDocker() || Boolean.parseBoolean(System.getProperty(DISABLE_UPDATE_PROPERTY)) || Boolean.parseBoolean(System.getenv(DISABLE_UPDATE_PROPERTY));
     }
 
 

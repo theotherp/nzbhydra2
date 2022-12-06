@@ -533,8 +533,9 @@ function ConfigFields($injector) {
                             type: 'horizontalSwitch',
                             templateOptions: {
                                 type: 'switch',
-                                label: 'Show update banner when running docker',
-                                advanced: true
+                                label: 'Show update banner when managed externally',
+                                advanced: true,
+                                help: 'If enabled a banner will be shown when new versions are available even when NZBHydra is run inside docker or is installed using a package manager (where you wouldn\'t let NZBHydra update itself).'
                             }
                         },
                         {

@@ -131,10 +131,10 @@ function hydraChecksFooter() {
                     $scope.latestVersionIsBeta = response.data.latestVersionIsBeta;
                     $scope.updateAvailable = response.data.updateAvailable;
                     $scope.changelog = response.data.changelog;
-                    $scope.runInDocker = response.data.runInDocker;
-                    $scope.showUpdateBannerOnDocker = response.data.showUpdateBannerOnDocker;
+                    $scope.updatedExternally = response.data.updatedExternally;
+                    $scope.showUpdateBannerOnUpdatedExternally = response.data.showUpdateBannerOnUpdatedExternally;
                     $scope.showWhatsNewBanner = response.data.showWhatsNewBanner;
-                    if ($scope.runInDocker && !$scope.showUpdateBannerOnDocker) {
+                    if ($scope.updatedExternally && !$scope.showUpdateBannerOnUpdatedExternally) {
                         $scope.updateAvailable = false;
                     }
                     $scope.automaticUpdateToNotice = response.data.automaticUpdateToNotice;

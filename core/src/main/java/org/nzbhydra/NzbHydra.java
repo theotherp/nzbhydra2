@@ -187,6 +187,8 @@ public class NzbHydra {
             wasRestarted = Arrays.asList(args).contains("restarted");
             if (NzbHydra.isOsWindows() && !options.has("quiet") && !options.has("nobrowser")) {
                 hydraApplication.setHeadless(false);
+            } else {
+                hydraApplication.setHeadless(true);
             }
 
             DatabaseRecreation.runDatabaseScript();

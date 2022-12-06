@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import org.nzbhydra.ExceptionInfo;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.ConfigProvider;
-import org.nzbhydra.debuginfos.DebugInfosProvider;
 import org.nzbhydra.genericstorage.GenericStorage;
 import org.nzbhydra.mapping.SemanticVersion;
 import org.nzbhydra.mapping.changelog.ChangelogVersionEntry;
@@ -74,19 +73,19 @@ public class UpdatesWeb {
 
                 final UpdateManager.UpdateInfo updateInfo = updateManager.getUpdateInfo();
                 return new VersionsInfo(updateInfo.getCurrentVersion(),
-                        updateInfo.getLatestVersion(),
-                        updateInfo.isLatestVersionIsBeta(),
-                        updateInfo.getBetaVersion(),
-                        updateInfo.isUpdateAvailable(),
-                        updateInfo.isBetaUpdateAvailable(),
-                        updateInfo.isLatestVersionIgnored(),
-                        updateInfo.isBetaVersionsEnabled(),
-                        DebugInfosProvider.isRunInDocker(),
-                        configProvider.getBaseConfig().getMain().isShowUpdateBannerOnDocker(),
-                        configProvider.getBaseConfig().getMain().isShowWhatsNewBanner(),
-                        outdatedWrapperDetector.isOutdatedWrapperDetected(),
-                        genericStorage.get(AutomaticUpdater.TO_NOTICE_KEY, String.class).orElse(null),
-                        updateInfo.getPackageInfo());
+                    updateInfo.getLatestVersion(),
+                    updateInfo.isLatestVersionIsBeta(),
+                    updateInfo.getBetaVersion(),
+                    updateInfo.isUpdateAvailable(),
+                    updateInfo.isBetaUpdateAvailable(),
+                    updateInfo.isLatestVersionIgnored(),
+                    updateInfo.isBetaVersionsEnabled(),
+                    updateManager.isUpdatedExternally(),
+                    configProvider.getBaseConfig().getMain().isShowUpdateBannerOnUpdatedExternally(),
+                    configProvider.getBaseConfig().getMain().isShowWhatsNewBanner(),
+                    outdatedWrapperDetector.isOutdatedWrapperDetected(),
+                    genericStorage.get(AutomaticUpdater.TO_NOTICE_KEY, String.class).orElse(null),
+                    updateInfo.getPackageInfo());
             } catch (UpdateException e) {
                 logger.error("An error occured while getting version information", e);
                 throw new RuntimeException("Unable to get update information");
@@ -195,8 +194,8 @@ public class UpdatesWeb {
         private boolean latestVersionIgnored;
         private boolean betaVersionsEnabled;
 
-        private boolean runInDocker;
-        private boolean showUpdateBannerOnDocker;
+        private boolean isUpdatedExternally;
+        private boolean showUpdateBannerOnUpdatedExternally;
         private boolean showWhatsNewBanner;
         private boolean wrapperOutdated;
         private String automaticUpdateToNotice;

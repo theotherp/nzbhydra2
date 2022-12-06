@@ -1,5 +1,5 @@
 <div cg-busy="{promise:loadingPromise,message:'Loading versions and changelog'}">
-  
+
   Current version: {{ currentVersion }}
   <br>
   Latest version: {{ latestVersion }} <span ng-if="latestVersionIsBeta">Beta</span>
@@ -8,12 +8,11 @@
         Latest beta version: {{ betaVersion }}
       </span>
   <br>
-  <div ng-if="runInDocker" class="alert alert-warning" role="alert"
-       style="margin-bottom: 0; padding-top: 0; margin-top: 5px">
-    <br>
-    You seem to be running Hydra inside docker. It's recommended to update the container instead of using Hydra's
-    update mechanism.
-  </div>
+    <div ng-if="updatedExternally" class="alert alert-warning" role="alert"
+         style="margin-bottom: 0; padding-top: 0; margin-top: 5px">
+        <br>
+        Your NZBHydra instance seems to run in docker or is installed via a package manager. Please update this instance accordingly instead of using the NZBHydra update mechanism.
+    </div>
   <div ng-if="updateAvailable">
     <br>
     A new release ({{ latestVersion }} <span ng-if="latestVersionIsBeta">Beta</span>) is available.
@@ -33,8 +32,8 @@
   <span ng-if="latestVersionIgnored">The latest version was ignored by you.</span>
   <button ng-if="!updateAvailable && !betaUpdateAvailable" class="btn btn-warning" type="button" ng-click="forceUpdate()">Force update
   </button>
-  
-  <div class="row">
+
+    <div class="row">
     <div class="col-md-4"></div>
     <div ng-if="wrapperOutdated" class="col-md-12 alert alert-warning" role="alert" style="margin-top: 20px">
       The NZBHydra wrappers (i.e. the executables or python scripts you use to run NZBHydra) seem to be outdated.Please update them.<br><br>
@@ -55,6 +54,6 @@
       Afterwards start NZBHydra again.
     </div>
   </div>
-  
-  <ng-include src="'static/html/directives/version-history.html'"></ng-include>
+
+    <ng-include src="'static/html/directives/version-history.html'"></ng-include>
 </div>

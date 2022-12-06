@@ -19,13 +19,12 @@ function hydraupdates() {
             $scope.betaUpdateAvailable = response.data.betaUpdateAvailable;
             $scope.latestVersionIgnored = response.data.latestVersionIgnored;
             $scope.changelog = response.data.changelog;
-            $scope.runInDocker = response.data.runInDocker;
+            $scope.updatedExternally = response.data.updatedExternally;
             $scope.wrapperOutdated = response.data.wrapperOutdated;
-            $scope.showUpdateBannerOnDocker = response.data.showUpdateBannerOnDocker;
-            if ($scope.runInDocker && !$scope.showUpdateBannerOnDocker) {
+            $scope.showUpdateBannerOnUpdatedExternally = response.data.showUpdateBannerOnUpdatedExternally;
+            if ($scope.updatedExternally && !$scope.showUpdateBannerOnUpdatedExternally) {
                 $scope.updateAvailable = false;
             }
-            console.log(response.data);
         });
 
         UpdateService.getVersionHistory().then(function (response) {

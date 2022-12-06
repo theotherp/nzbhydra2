@@ -12,7 +12,7 @@ function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandl
     var latestVersionIgnored;
     var betaVersionsEnabled;
     var versionHistory;
-    var runInDocker;
+    var updatedExternally;
     var automaticUpdateToNotice;
 
 
@@ -36,7 +36,7 @@ function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandl
                     betaUpdateAvailable = response.data.betaUpdateAvailable;
                     latestVersionIgnored = response.data.latestVersionIgnored;
                     betaVersionsEnabled = response.data.betaVersionsEnabled;
-                    runInDocker = response.data.runInDocker;
+                    updatedExternally = response.data.updatedExternally;
                     automaticUpdateToNotice = response.data.automaticUpdateToNotice;
                     return response;
                 }, function () {
