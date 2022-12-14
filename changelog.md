@@ -1,3 +1,9 @@
+### v4.7.4 (2022-12-14)
+
+**Fix** Hopefully make the java update message disappear after a java update. See <a href="https://github.com/theotherp/nzbhydra2/issues/810">#810</a>
+
+
+
 ### v4.7.3 (2022-12-06)
 
 **Note** A future update will require Java 17. To prepare for that a message will be shown asking you to update your system accordingly. If you're running NZBHydra2 in docker you don't need to do anything.
