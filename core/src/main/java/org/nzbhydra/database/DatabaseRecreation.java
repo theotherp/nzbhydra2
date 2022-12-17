@@ -101,7 +101,7 @@ public class DatabaseRecreation {
         if (isUpgrade14To210) {
 
             try {
-                final File[] traceFiles = databaseFile.getParentFile().listFiles((FilenameFilter) new WildcardFileFilter("*.trace"));
+                final File[] traceFiles = databaseFile.getParentFile().listFiles((FilenameFilter) new WildcardFileFilter("*.trace.db"));
                 if (traceFiles != null) {
                     for (File traceFile : traceFiles) {
                         traceFile.delete();
@@ -133,15 +133,14 @@ public class DatabaseRecreation {
                 Files.copy(databaseFile.toPath(), backupDatabaseFile.toPath());
 
                 final String updatePasswordQuery = "alter user sa set password 'sa'";
-                runH2Command(Arrays.asList(javaExecutable, "-cp", h2OldJar.toString(), "org.h2.tools.Shell", "-url", dbConnectionUrl, "-user", "sa", "-sql", NzbHydra.isOsWindows() ? ("\"" + updatePasswordQuery + "\"") : updatePasswordQuery), "Password update failed.");
+                updatePassword(dbConnectionUrl, javaExecutable, h2OldJar, updatePasswordQuery);
 
                 runH2Command(Arrays.asList(javaExecutable, "-cp", h2OldJar.toString(), "org.h2.tools.Script", "-url", dbConnectionUrl, "-user", "sa", "-password", "sa", "-script", scriptFile), "Database export failed.");
             } catch (Exception e) {
                 logger.error("Error migrating old database file to new one");
                 if (backupDatabaseFile != null && backupDatabaseFile.exists()) {
-                    if (databaseFile.length() != backupDatabaseFile.length()) {
-                        logger.info("Restoring database file {} from backup", databaseFile);
-                        Files.copy(backupDatabaseFile.toPath(), databaseFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    if (backupDatabaseFile != null && backupDatabaseFile.exists()) {
+                        backupDatabaseFile.delete();
                     }
                 }
 
@@ -172,12 +171,20 @@ public class DatabaseRecreation {
         }
     }
 
+    private static void updatePassword(String dbConnectionUrl, String javaExecutable, File h2OldJar, String updatePasswordQuery) throws IOException, InterruptedException {
+        try {
+            runH2Command(Arrays.asList(javaExecutable, "-cp", h2OldJar.toString(), "org.h2.tools.Shell", "-url", dbConnectionUrl, "-user", "sa", "-sql", NzbHydra.isOsWindows() ? ("\"" + updatePasswordQuery + "\"") : updatePasswordQuery), "Password update failed.");
+        } catch (Exception e) {
+            runH2Command(Arrays.asList(javaExecutable, "-cp", h2OldJar.toString(), "org.h2.tools.Shell", "-url", dbConnectionUrl, "-user", "sa", "-password", "sa", "-sql", NzbHydra.isOsWindows() ? ("\"" + updatePasswordQuery + "\"") : updatePasswordQuery), "Password update failed.");
+        }
+    }
+
     private static void runH2Command(List<String> updatePassCommand, String errorMessage) throws IOException, InterruptedException {
         logger.info("Running command: " + Joiner.on(" ").join(updatePassCommand));
         final Process process = new ProcessBuilder(updatePassCommand)
-                .redirectErrorStream(true)
-                .inheritIO()
-                .start();
+            .redirectErrorStream(true)
+            .inheritIO()
+            .start();
         final int result = process.waitFor();
         if (result != 0) {
             throw new RuntimeException(errorMessage + ". Code: " + result);
