@@ -363,16 +363,6 @@ public class NzbHydra {
 
     @PreDestroy
     public void destroy() {
-        boolean isOsWindows = isOsWindows();
-        if (isOsWindows) {
-            logger.debug("Initiating removal of windows tray icon (if it exists)");
-            try {
-                WindowsTrayIcon.remove();
-            } catch (Throwable e) {
-                //An exception might be thrown while shutting down, ignore this
-            }
-        }
-
         try {
             applicationEventPublisher.publishEvent(new ShutdownEvent());
         } catch (Exception e) {

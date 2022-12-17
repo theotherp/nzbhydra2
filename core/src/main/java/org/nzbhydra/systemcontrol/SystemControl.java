@@ -18,7 +18,6 @@ package org.nzbhydra.systemcontrol;
 
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.ShutdownEvent;
-import org.nzbhydra.WindowsTrayIcon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,9 +64,6 @@ public class SystemControl {
                 Thread.sleep(300);
                 applicationEventPublisher.publishEvent(new ShutdownEvent());
                 ((ConfigurableApplicationContext) NzbHydra.getApplicationContext()).close();
-                if (NzbHydra.isOsWindows()) {
-                    WindowsTrayIcon.remove();
-                }
                 System.exit(returnCode);
             } catch (InterruptedException e) {
                 logger.error("Error while waiting to exit", e); //Doesn't ever happen anyway

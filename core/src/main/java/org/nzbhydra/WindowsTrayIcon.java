@@ -50,7 +50,6 @@ public class WindowsTrayIcon extends TrayIcon {
         popup.add(restartItem);
         restartItem.addActionListener(e -> {
             ((ConfigurableApplicationContext) NzbHydra.getApplicationContext()).close();
-            remove();
             System.exit(SystemControl.RESTART_RETURN_CODE);
         });
 
@@ -61,8 +60,6 @@ public class WindowsTrayIcon extends TrayIcon {
                 ((ConfigurableApplicationContext) NzbHydra.getApplicationContext()).close();
             } catch (Exception e1) {
                 logger.error("Error while closing application context, will shut down hard");
-            } finally {
-                remove();
             }
             System.exit(SystemControl.SHUTDOWN_RETURN_CODE);
         });
@@ -105,19 +102,6 @@ public class WindowsTrayIcon extends TrayIcon {
             NzbHydra.getApplicationContext().getAutowireCapableBeanFactory().createBean(BrowserOpener.class).openBrowser();
         } catch (NullPointerException | IllegalStateException | BeansException e1) {
             logger.error("Unable to open browser. Process may not have started completely");
-        }
-    }
-
-    public static void remove() {
-        try {
-            if (tray != null && instance != null) {
-                logger.info("Removing tray icon");
-                tray.remove(instance);
-                tray = null;
-                instance = null;
-            }
-        } catch (Throwable e) {
-            logger.error("Unable to remove tray icon", e);
         }
     }
 
