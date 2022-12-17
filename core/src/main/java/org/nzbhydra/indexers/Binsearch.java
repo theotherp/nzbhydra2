@@ -2,9 +2,10 @@ package org.nzbhydra.indexers;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Throwables;
+import dev.failsafe.Failsafe;
+import dev.failsafe.RetryPolicy;
+import dev.failsafe.function.CheckedSupplier;
 import joptsimple.internal.Strings;
-import net.jodah.failsafe.Failsafe;
-import net.jodah.failsafe.RetryPolicy;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -26,9 +27,10 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -38,7 +40,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -56,7 +57,10 @@ public class Binsearch extends Indexer<String> {
     private static final DateTimeFormatter DATE_TIME_FORMATTER = new DateTimeFormatterBuilder().appendPattern("dd-MMM-yyyy").parseDefaulting(ChronoField.NANO_OF_DAY, 0).toFormatter().withZone(ZoneId.of("UTC")).withLocale(Locale.ENGLISH);
     private static final Pattern NFO_PATTERN = Pattern.compile("<pre>(?<nfo>.*)<\\/pre>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
-    private final RetryPolicy retry503policy = new RetryPolicy().retryOn(x -> x instanceof IndexerAccessException && Throwables.getStackTraceAsString(x).contains("503")).withDelay(500, TimeUnit.MILLISECONDS).withMaxRetries(2);
+    private final RetryPolicy<Object> retry503policy = RetryPolicy.builder()
+        .handleIf(x -> x instanceof IndexerAccessException && Throwables.getStackTraceAsString(x).contains("503"))
+        .withDelay(Duration.ofMillis(500))
+        .withMaxRetries(2).build();
 
 
     //LATER It's not ideal that currently the web response needs to be parsed twice, once for the search results and once for the completion of the indexer search result. Will need to check how much that impacts performance
@@ -154,12 +158,8 @@ public class Binsearch extends Indexer<String> {
         Matcher posterMatcher = POSTER_PATTERN.matcher(collectionLink); //e.g. Ramer%40marmer.com+%28Clown_nez%29
         if (posterMatcher.find()) {
             String poster = posterMatcher.group(1).trim();
-            try {
-                poster = URLDecoder.decode(poster, "UTF-8").replace("+", " ");
-                item.setPoster(poster);
-            } catch (UnsupportedEncodingException e) {
-                debug("Unable to decode poster {}", poster);
-            }
+            poster = URLDecoder.decode(poster, StandardCharsets.UTF_8).replace("+", " ");
+            item.setPoster(poster);
         }
 
         Matcher sizeMatcher = SIZE_PATTERN.matcher(infoElement.ownText());
@@ -250,8 +250,13 @@ public class Binsearch extends Indexer<String> {
     @Override
     protected String getAndStoreResultToDatabase(URI uri, IndexerApiAccessType apiAccessType) throws IndexerAccessException {
         return Failsafe.with(retry503policy)
-                .onFailedAttempt(throwable -> logger.warn("Encountered 503 error. Will retry"))
-                .get(() -> getAndStoreResultToDatabase(uri, String.class, apiAccessType));
+            .onFailure(throwable -> logger.warn("Encountered 503 error. Will retry"))
+            .get(new CheckedSupplier<String>() {
+                @Override
+                public String get() throws Throwable {
+                    return getAndStoreResultToDatabase(uri, String.class, apiAccessType);
+                }
+            });
     }
 
     @Override

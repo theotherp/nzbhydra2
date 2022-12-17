@@ -2,7 +2,7 @@ package org.nzbhydra.indexers;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
-import net.jodah.failsafe.FailsafeException;
+import dev.failsafe.FailsafeException;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
