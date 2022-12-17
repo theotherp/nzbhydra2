@@ -147,7 +147,6 @@ public class BaseConfig extends ValidatingConfig<BaseConfig> {
         };
         Timer delayedSaveTimer = new Timer("delayedConfigSave", false);
         delayedSaveTimer.scheduleAtFixedRate(delayedSaveTimerTask, 10000, 10000);
-
         initialized = true;
     }
 
@@ -159,6 +158,7 @@ public class BaseConfig extends ValidatingConfig<BaseConfig> {
     @EventListener
     public void onShutdown(ShutdownEvent event) {
         saveToSave();
+        delayedSaveTimerTask.cancel();
     }
 
     private void saveToSave() {

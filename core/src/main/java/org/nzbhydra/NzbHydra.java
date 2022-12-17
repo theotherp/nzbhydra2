@@ -372,7 +372,12 @@ public class NzbHydra {
                 //An exception might be thrown while shutting down, ignore this
             }
         }
-        applicationEventPublisher.publishEvent(new ShutdownEvent());
+
+        try {
+            applicationEventPublisher.publishEvent(new ShutdownEvent());
+        } catch (Exception e) {
+            logger.debug("Error handling shutdown event", e);
+        }
         logger.info("Shutting down and using up to {}ms to compact database", configProvider.getBaseConfig().getMain().getDatabaseCompactTime());
     }
 

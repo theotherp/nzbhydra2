@@ -114,6 +114,7 @@ public class WindowsTrayIcon extends TrayIcon {
                 logger.info("Removing tray icon");
                 tray.remove(instance);
                 tray = null;
+                instance = null;
             }
         } catch (Throwable e) {
             logger.error("Unable to remove tray icon", e);

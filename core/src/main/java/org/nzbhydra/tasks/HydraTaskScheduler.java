@@ -67,6 +67,7 @@ public class HydraTaskScheduler implements BeanPostProcessor, SmartInitializingS
     public void onShutdown(ShutdownEvent event) {
         taskSchedules.values().forEach(x -> x.cancel(false));
         shutdownRequested = true;
+        scheduler.shutdown();
     }
 
     @Override
