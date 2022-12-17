@@ -15,3 +15,5 @@ services:
         ports:
             - 8686:8686
         restart: unless-stopped
+        extra_hosts:
+            - "host.docker.internal:host-gateway"

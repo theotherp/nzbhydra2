@@ -49,7 +49,7 @@ public class AddRequest {
         }
 
         public boolean isV3() {
-            return this == Sonarrv3 || this == Radarrv3;
+            return this == Sonarrv3 || this == Radarrv3 || this == Lidarr;
         }
 
         public boolean isV4() {
