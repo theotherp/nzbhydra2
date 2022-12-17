@@ -43,15 +43,21 @@
     <option name="GENERATE_NO_WARNINGS" value="true" />
   </component>
   <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_STRING" value="-parameters" />
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="core" options="" />
-      <module name="linux-release" options="" />
-      <module name="mapping" options="" />
-      <module name="nzbhydra2" options="" />
-      <module name="releases" options="" />
-      <module name="shared" options="" />
-      <module name="tests" options="" />
-      <module name="windows-release" options="" />
+      <module name="core" options="-parameters" />
+      <module name="discordbot" options="" />
+      <module name="github-release-plugin" options="" />
+      <module name="linux-release" options="-parameters" />
+      <module name="mapping" options="-parameters" />
+      <module name="mockserver" options="" />
+      <module name="nzbhydra2" options="-parameters" />
+      <module name="other" options="" />
+      <module name="releases" options="-parameters" />
+      <module name="shared" options="-parameters" />
+      <module name="sockslib" options="" />
+      <module name="tests" options="-parameters" />
+      <module name="windows-release" options="-parameters" />
     </option>
   </component>
   <component name="TypeScriptCompiler">
