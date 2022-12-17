@@ -3,6 +3,7 @@ package org.nzbhydra.backup;
 import com.google.common.base.Stopwatch;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -93,6 +94,9 @@ public class BackupAndRestore {
 
         File backupZip = new File(backupFolder, "nzbhydra-" + LocalDateTime.now().format(DATE_PATTERN) + ".zip");
         backupDatabase(backupZip);
+        if (!backupZip.exists()) {
+            throw new RuntimeException("Export to file " + backupZip + " was not executed by database");
+        }
         Map<String, String> env = new HashMap<>();
         env.put("create", "true");
         //We use the jar filesystem so we can add files to the existing ZIP
@@ -167,8 +171,9 @@ public class BackupAndRestore {
     private void backupDatabase(File targetFile) {
         String formattedFilepath = targetFile.getAbsolutePath().replace("\\", "/");
         logger.info("Backing up database to " + formattedFilepath);
-        entityManager.createNativeQuery("BACKUP TO '" + formattedFilepath + "';").executeUpdate();
-        logger.debug("Wrote database backup files to {}", targetFile.getAbsolutePath());
+        final Query nativeQuery = entityManager.createNativeQuery("SCRIPT TO '%s' COMPRESSION ZIP;".formatted(formattedFilepath));
+        final List resultList = nativeQuery.getResultList();
+        logger.debug("Wrote database backup data to {}", targetFile.getAbsolutePath());
     }
 
     private void backupCertificates(FileSystem fileSystem) throws IOException {
