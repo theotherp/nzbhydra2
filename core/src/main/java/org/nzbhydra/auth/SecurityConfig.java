@@ -23,6 +23,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.firewall.DefaultHttpFirewall;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.filter.ForwardedHeaderFilter;
@@ -55,7 +56,12 @@ public class SecurityConfig {
         if (configProvider.getBaseConfig().getMain().isUseCsrf()) {
             CookieCsrfTokenRepository csrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
             csrfTokenRepository.setCookieName("HYDRA-XSRF-TOKEN");
-            http.csrf().csrfTokenRepository(csrfTokenRepository);
+            //https://docs.spring.io/spring-security/reference/5.8/migration/servlet/exploits.html#_i_am_using_angularjs_or_another_javascript_framework
+            CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
+            requestHandler.setCsrfRequestAttributeName(null);
+            http.csrf()
+                .csrfTokenRepository(csrfTokenRepository)
+                .csrfTokenRequestHandler(requestHandler);
         } else {
             http.csrf().disable();
         }
