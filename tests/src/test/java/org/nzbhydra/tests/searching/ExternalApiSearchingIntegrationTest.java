@@ -8,6 +8,7 @@ import okhttp3.mockwebserver.RecordedRequest;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.MockitoAnnotations;
@@ -47,6 +48,7 @@ import static org.mockito.Mockito.when;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = NzbHydra.class)
 @Transactional
+@Ignore
 public class ExternalApiSearchingIntegrationTest extends AbstractConfigReplacingTest {
 
     @Autowired
@@ -66,7 +68,7 @@ public class ExternalApiSearchingIntegrationTest extends AbstractConfigReplacing
     @Before
     public void setUp() throws IOException {
         MockitoAnnotations.initMocks(this);
-        webServer.start(7070);
+        webServer.start(7077);
         replaceConfig(getClass().getResource("twoIndexers.json"));
         configProvider.getBaseConfig().getSearching().setGenerateQueries(SearchSourceRestriction.NONE);
         searchResultRepository.deleteAll();

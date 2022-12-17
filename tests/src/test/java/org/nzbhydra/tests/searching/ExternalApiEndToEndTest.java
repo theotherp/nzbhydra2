@@ -25,6 +25,7 @@ import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.nzbhydra.config.IndexerConfigBuilder;
@@ -58,6 +59,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(SpringRunner.class)
 @NzbhydraMockMvcTest
 @TestPropertySource(locations = "classpath:config/application.properties")
+@Ignore
 public class ExternalApiEndToEndTest extends AbstractConfigReplacingTest {
 
     private IPoFactory factory;
