@@ -113,10 +113,10 @@
     <logger name="org.nzbhydra" level="DEBUG">
         <appender-ref ref="STASH"/>
     </logger>
-    <logger name="org.spring" level="DEBUG"/>
+    <logger name="org.spring" level="INFO"/>
     <logger name="org.hibernate" level="WARN"/>
     <logger name="org.apache" level="WARN"/>
-    <logger name="org.springframework" level="DEBUG"/>
+    <logger name="org.springframework" level="INFO"/>
     <logger name="org.thymeleaf" level="WARN"/>
     <logger name="org.eclipse" level="WARN"/>
     <logger name="okhttp3.OkHttpClient" level="DEBUG"/>
