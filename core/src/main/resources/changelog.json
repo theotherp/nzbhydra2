@@ -1,5 +1,31 @@
 [
     {
+        "version": "v5.0.0",
+        "changes": [
+            {
+                "type": "feature",
+                "text": "Massive upgrade of the underlying framework and used libraries. Java 17 is now mandatory."
+            },
+            {
+                "type": "feature",
+                "text": "Update of database to a newer version. This requires a recreation of the whole database which hopefully will be executed automatically and without errors ;-)"
+            },
+            {
+                "type": "feature",
+                "text": "Ensure integrity of database when creating backup."
+            },
+            {
+                "type": "feature",
+                "text": "Only delete old backups if a newer one exists."
+            },
+            {
+                "type": "feature",
+                "text": "Improve startup time by moving some tasks into the background."
+            }
+        ],
+        "final": false
+    },
+    {
         "version": "v4.7.5",
         "changes": [
             {
