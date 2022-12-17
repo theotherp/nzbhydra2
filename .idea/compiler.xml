@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <option name="BUILD_PROCESS_HEAP_SIZE" value="1024" />
+    <option name="BUILD_PROCESS_ADDITIONAL_VM_OPTIONS" value="-Djps.track.ap.dependencies=true" />
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="github-release-maven-plugin" />
+        <module name="core" />
+        <module name="sockslib" />
+        <module name="mapping" />
+        <module name="tests" />
+        <module name="ui" />
+        <module name="classloader" />
+        <module name="discordbot" />
+        <module name="github-release-plugin" />
+        <module name="updater" />
+        <module name="mockserver" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel target="17">
+      <module name="core" target="17" />
+      <module name="discordbot" target="17" />
+      <module name="github-release-plugin" target="1.8" />
+      <module name="linux-release" target="17" />
+      <module name="mapping" target="17" />
+      <module name="mockserver" target="17" />
+      <module name="nzbhydra2" target="17" />
+      <module name="other" target="17" />
+      <module name="releases" target="17" />
+      <module name="shared" target="17" />
+      <module name="sockslib" target="1.8" />
+      <module name="tests" target="17" />
+      <module name="ui" target="1.5" />
+      <module name="windows-release" target="17" />
+    </bytecodeTargetLevel>
+  </component>
+  <component name="EclipseCompilerSettings">
+    <option name="GENERATE_NO_WARNINGS" value="true" />
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="core" options="" />
+      <module name="linux-release" options="" />
+      <module name="mapping" options="" />
+      <module name="nzbhydra2" options="" />
+      <module name="releases" options="" />
+      <module name="shared" options="" />
+      <module name="tests" options="" />
+      <module name="windows-release" options="" />
+    </option>
+  </component>
+  <component name="TypeScriptCompiler">
+    <option name="recompileOnChanges" value="true" />
+    <option name="scopeName" value="All Places" />
+  </component>
+</project>

@@ -19,3 +19,7 @@ pom.xml.versionsBackup
 javacore*
 heapdump*
 /ui
+
+!/.idea/compiler.xml
+!/.idea/vcs.xml
+!/.idea/misc.xml
