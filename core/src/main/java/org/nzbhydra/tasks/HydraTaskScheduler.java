@@ -78,7 +78,7 @@ public class HydraTaskScheduler implements BeanPostProcessor, SmartInitializingS
 
     private void scheduleTasks() {
         for (TaskRuntimeInformation runtimeInformation : runtimeInformationMap.values()) {
-            scheduleTask(runtimeInformation, false);
+            scheduleTask(runtimeInformation, true);
         }
     }
 

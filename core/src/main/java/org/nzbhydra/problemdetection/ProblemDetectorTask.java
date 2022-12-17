@@ -48,7 +48,6 @@ public class ProblemDetectorTask {
     @PostConstruct
     public void init() {
         //Check on startup if the wrapper has been updated
-        detectProblems();
         if (!DebugInfosProvider.isRunInDocker() && !SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_17)) {
             genericStorage.save("belowJava17", true);
             logger.info("Current Java version is below Java 17: " + SystemUtils.JAVA_SPECIFICATION_VERSION);
