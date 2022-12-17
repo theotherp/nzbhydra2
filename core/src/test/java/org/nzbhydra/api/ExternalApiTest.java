@@ -20,6 +20,7 @@ import org.nzbhydra.mapping.newznab.json.NewznabJsonRoot;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.nzbhydra.misc.UserAgentMapper;
 import org.nzbhydra.searching.CategoryProvider;
+import org.nzbhydra.searching.CustomQueryAndTitleMapping;
 import org.nzbhydra.searching.SearchResult;
 import org.nzbhydra.searching.Searcher;
 import org.nzbhydra.searching.dtoseventsenums.SearchType;
@@ -69,6 +70,8 @@ public class ExternalApiTest {
     private NewznabJsonTransformer newznabJsonTransformerMock;
     @Mock
     private Jaxb2Marshaller jaxb2MarshallerMock;
+    @Mock
+    private CustomQueryAndTitleMapping customQueryAndTitleMapping;
     IndexerConfig indexerConfig = new IndexerConfig();
 
 
@@ -97,7 +100,8 @@ public class ExternalApiTest {
         }).when(jaxb2MarshallerMock).marshal(any(), any());
         when(indexerMock.getConfig()).thenReturn(indexerConfig);
 
-        when(newznabXmlTransformerMock.getRssRoot(any(), anyInt(), anyInt(), any())).thenReturn(new NewznabXmlRoot());
+        when(newznabXmlTransformerMock.getRssRoot(any(), anyInt(), anyInt(), any(Boolean.class))).thenReturn(new NewznabXmlRoot());
+        when(customQueryAndTitleMapping.mapSearchRequest(any())).thenAnswer((Answer<SearchRequest>) invocation -> invocation.getArgument(0));
     }
 
     @Test
@@ -172,7 +176,7 @@ public class ExternalApiTest {
     @Test
     public void shouldUseCorrectHeaders() throws Exception {
         NewznabJsonRoot jsonRoot = new NewznabJsonRoot();
-        when(newznabJsonTransformerMock.transformToRoot(any(), any(), anyInt(), any())).thenReturn(jsonRoot);
+        when(newznabJsonTransformerMock.transformToRoot(any(), any(), anyInt(), any(Boolean.class))).thenReturn(jsonRoot);
         NewznabParameters parameters = new NewznabParameters();
         parameters.setQ("q1");
         parameters.setApikey("apikey");
@@ -183,7 +187,7 @@ public class ExternalApiTest {
         assertThat(responseEntity.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON_UTF8);
 
         NewznabXmlRoot xmlRoot = new NewznabXmlRoot();
-        when(newznabXmlTransformerMock.getRssRoot(any(), any(), anyInt(), any())).thenReturn(xmlRoot);
+        when(newznabXmlTransformerMock.getRssRoot(any(), any(), anyInt(), any(Boolean.class))).thenReturn(xmlRoot);
 
         parameters.setO(OutputType.XML);
         responseEntity = testee.api(parameters, null, null);

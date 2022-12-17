@@ -382,6 +382,9 @@ public class DebugInfosProvider {
     public static class DiffableCategoriesConfig extends CategoriesConfig {
         private Map<String, Category> categoriesMap = new HashMap<>();
 
+        public DiffableCategoriesConfig() {
+        }
+
         public DiffableCategoriesConfig(CategoriesConfig categoriesConfig) {
             categoriesConfig.getCategories().forEach(x -> {
                 categoriesMap.put(x.getName(), x);

@@ -1,6 +1,7 @@
 package org.nzbhydra.mapping;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import org.junit.Before;
@@ -225,6 +226,7 @@ public class RssMappingTest {
     @Test
     public void shouldSerializeToJson() throws Exception{
         ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
         NewznabXmlRoot rssRoot = getRssRootFromXml("newznab_3results.xml");
         String json = objectMapper.writeValueAsString(rssRoot);
         System.out.println(json);
