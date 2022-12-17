@@ -21,6 +21,10 @@
             {
                 "type": "feature",
                 "text": "Improve startup time by moving some tasks into the background."
+            },
+            {
+                "type": "fix",
+                "text": "Improve startup time by moving some tasks into the background."
             }
         ],
         "final": false

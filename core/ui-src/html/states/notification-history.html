@@ -2,7 +2,7 @@
   <div class="row" style="margin-top: 30px; margin-bottom: 20px">
     <div class="col-md-5"></div>
     <div class="col-md-10" style="text-align: center">
-      <dir-pagination-controls on-page-change="update()" pagination-id="searches"></dir-pagination-controls>
+      <dir-pagination-controls on-page-change="update()" pagination-id="notification"></dir-pagination-controls>
     </div>
     <div class="col-md-5" style="text-align: right">
       <button class="btn btn-default" ng-click="update()"><span class="glyphicon glyphicon-refresh"></span></button>
@@ -25,7 +25,7 @@
           <checkboxes-filter column="NOTIFICATION_EVENT_TYPE" entries="eventTypesForFiltering" preselect="true" show-invert="true"/>
         </column-filter-wrapper>
       </th>
-      
+
       <th style="width: {{columnSizes.title}}%">
         Title
       </th>
@@ -49,6 +49,6 @@
     </tr>
     </tbody>
   </table>
-  <dir-pagination-controls on-page-change="pageChanged(newPageNumber)" pagination-id="searches"></dir-pagination-controls>
+    <dir-pagination-controls on-page-change="pageChanged(newPageNumber)" pagination-id="notifications"></dir-pagination-controls>
 
 </div>
