@@ -20,6 +20,7 @@ import com.google.common.base.Joiner;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.flywaydb.core.Flyway;
 import org.nzbhydra.NzbHydra;
 import org.slf4j.Logger;
@@ -32,11 +33,12 @@ import org.springframework.http.client.OkHttp3ClientHttpRequestFactory;
 
 import java.io.File;
 import java.io.FileReader;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Files;
-import java.sql.SQLException;
+import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -51,7 +53,7 @@ public class DatabaseRecreation {
     static {
     }
 
-    public static void runDatabaseScript() throws ClassNotFoundException, SQLException {
+    public static void runDatabaseScript() throws Exception {
         if (!Thread.currentThread().getName().equals("main")) {
             //During development this class is called twice (because of the Spring developer tools)
             logger.debug("Skipping database script check for thread {}", Thread.currentThread().getName());
@@ -74,7 +76,8 @@ public class DatabaseRecreation {
 
     }
 
-    private static void migrateToH2v2IfNeeded(File databaseFile, String dbConnectionUrl) {
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    private static void migrateToH2v2IfNeeded(File databaseFile, String dbConnectionUrl) throws Exception {
         try {
             char[] buffer;
             try (FileReader fileReader = new FileReader(databaseFile)) {
@@ -96,39 +99,75 @@ public class DatabaseRecreation {
         }
         boolean isUpgrade14To210 = true;
         if (isUpgrade14To210) {
+
             try {
-                String javaExecutable = getJavaExecutable();
-                final File h2OldJar = downloadJarFile("https://repo1.maven.org/maven2/com/h2database/h2/1.4.200/h2-1.4.200.jar");
-                final File h2NewJar = downloadJarFile("https://repo1.maven.org/maven2/com/h2database/h2/2.1.214/h2-2.1.214.jar");
-                final String scriptFile = Files.createTempFile("nzbhydra", ".zip").toFile().getCanonicalPath();
+                final File[] traceFiles = databaseFile.getParentFile().listFiles((FilenameFilter) new WildcardFileFilter("*.trace"));
+                if (traceFiles != null) {
+                    for (File traceFile : traceFiles) {
+                        traceFile.delete();
+                    }
+                }
+            } catch (Exception e) {
+                logger.error("Unable to delete trace files", e);
+            }
+
+            File backupDatabaseFile = null;
+            String javaExecutable;
+            final File h2OldJar;
+            final File h2NewJar;
+            final String scriptFile;
+            try {
+                javaExecutable = getJavaExecutable();
+                h2OldJar = downloadJarFile("https://repo1.maven.org/maven2/com/h2database/h2/1.4.200/h2-1.4.200.jar");
+                h2NewJar = downloadJarFile("https://repo1.maven.org/maven2/com/h2database/h2/2.1.214/h2-2.1.214.jar");
+            } catch (Exception e) {
+                logger.error("Error migrating old database. Unable to download h2 jars");
+                throw e;
+            }
+            try {
+                scriptFile = Files.createTempFile("nzbhydra", ".sql").toFile().getCanonicalPath();
                 logger.info("Running database migration from 1.4 to 2");
 
-                File backupDatabaseFile = new File(databaseFile.getParent(), databaseFile.getName() + ".bak." + System.currentTimeMillis());
-                logger.info("Copying old database file {} to backup {}", databaseFile, backupDatabaseFile);
+                backupDatabaseFile = new File(databaseFile.getParent(), databaseFile.getName() + ".old.bak." + System.currentTimeMillis());
+                logger.info("Copying old database file {} to backup {} which will be automatically deleted after 14 days", databaseFile, backupDatabaseFile);
                 Files.copy(databaseFile.toPath(), backupDatabaseFile.toPath());
 
                 final String updatePasswordQuery = "alter user sa set password 'sa'";
                 runH2Command(Arrays.asList(javaExecutable, "-cp", h2OldJar.toString(), "org.h2.tools.Shell", "-url", dbConnectionUrl, "-user", "sa", "-sql", NzbHydra.isOsWindows() ? ("\"" + updatePasswordQuery + "\"") : updatePasswordQuery), "Password update failed.");
 
-                runH2Command(Arrays.asList(javaExecutable, "-cp", h2OldJar.toString(), "org.h2.tools.Script", "-url", dbConnectionUrl, "-user", "sa", "-password", "sa", "-script", scriptFile, "-options", "compression", "zip"), "Database export failed.");
-
-
-                final boolean deleted = databaseFile.delete();
-                if (!deleted) {
-                    throw new RuntimeException("Unable to delete file " + databaseFile);
+                runH2Command(Arrays.asList(javaExecutable, "-cp", h2OldJar.toString(), "org.h2.tools.Script", "-url", dbConnectionUrl, "-user", "sa", "-password", "sa", "-script", scriptFile), "Database export failed.");
+            } catch (Exception e) {
+                logger.error("Error migrating old database file to new one");
+                if (backupDatabaseFile != null && backupDatabaseFile.exists()) {
+                    if (databaseFile.length() != backupDatabaseFile.length()) {
+                        logger.info("Restoring database file {} from backup", databaseFile);
+                        Files.copy(backupDatabaseFile.toPath(), databaseFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    }
                 }
 
-                runH2Command(Arrays.asList(javaExecutable, "-cp", h2NewJar.toString(), "org.h2.tools.RunScript", "-url", dbConnectionUrl, "-user", "sa", "-password", "sa", "-script", scriptFile, "-options", "compression", "zip"), "Database import failed.");
+                throw e;
+            }
+            try {
+                final boolean deleted = databaseFile.delete();
+                if (!deleted) {
+                    throw new RuntimeException("Unable to delete old database file " + databaseFile);
+                }
+
+                runH2Command(Arrays.asList(javaExecutable, "-cp", h2NewJar.toString(), "org.h2.tools.RunScript", "-url", dbConnectionUrl, "-user", "sa", "-password", "sa", "-script", scriptFile, "-options", "FROM_1X"), "Database import failed.");
 
                 final Flyway flyway = Flyway.configure()
-                        .dataSource(dbConnectionUrl, "sa", "sa")
-                        .baselineDescription("INITIAL")
-                        .baselineVersion("1")
-                        .load();
+                    .dataSource(dbConnectionUrl, "sa", "sa")
+                    .baselineDescription("INITIAL")
+                    .baselineVersion("1")
+                    .load();
                 flyway.baseline();
-
-            } catch (IOException | InterruptedException e) {
+            } catch (Exception e) {
                 logger.error("Error while trying to migrate database to 2.0");
+                if (backupDatabaseFile != null && backupDatabaseFile.exists()) {
+                    logger.info("Restoring database file {} from backup {}", databaseFile, backupDatabaseFile);
+                    Files.move(backupDatabaseFile.toPath(), databaseFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                }
+                throw new RuntimeException(e);
             }
         }
     }
@@ -150,6 +189,8 @@ public class DatabaseRecreation {
         final File jarFile;
         try (ClientHttpResponse response = request.execute()) {
             jarFile = Files.createTempFile("nzbhydra", ".jar").toFile();
+            logger.debug("Downloaded file from {} to {}. Will be deleted on exit", url, jarFile);
+            jarFile.deleteOnExit();
             try (InputStream body = response.getBody()) {
                 com.google.common.io.Files.asByteSink(jarFile).writeFrom(body);
             }
@@ -168,6 +209,7 @@ public class DatabaseRecreation {
         } else {
             javaExecutable = System.getProperties().getProperty("java.home") + File.separator + "bin" + File.separator + "java";
         }
+        logger.debug("Determined java executable: {}", javaExecutable);
         return javaExecutable;
     }
 
