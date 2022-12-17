@@ -12,6 +12,7 @@ import org.nzbhydra.GenericResponse;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.ConfigReaderWriter;
+import org.nzbhydra.genericstorage.GenericStorage;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.systemcontrol.SystemControl;
 import org.nzbhydra.webaccess.HydraOkHttp3ClientHttpRequestFactory;
@@ -65,6 +66,9 @@ public class BackupAndRestore {
     private HydraOkHttp3ClientHttpRequestFactory requestFactory;
     @Autowired
     private SystemControl systemControl;
+
+    @Autowired
+    private GenericStorage genericStorage;
     private final ConfigReaderWriter configReaderWriter = new ConfigReaderWriter();
 
     @PostConstruct
@@ -121,8 +125,8 @@ public class BackupAndRestore {
             logger.info("Deleting old backups if any exist");
             Integer backupMaxAgeInWeeks = configProvider.getBaseConfig().getMain().getDeleteBackupsAfterWeeks().get();
             File[] zips = backupFolder.listFiles((dir, name) -> name != null && name.startsWith("nzbhydra") && name.endsWith(".zip"));
-
             if (zips != null) {
+                Map<File, LocalDateTime> fileToBackupTime = new HashMap<>();
                 for (File zip : zips) {
                     Matcher matcher = FILE_PATTERN.matcher(zip.getName());
                     if (!matcher.matches()) {
@@ -130,8 +134,20 @@ public class BackupAndRestore {
                         continue;
                     }
                     LocalDateTime backupDate = LocalDateTime.from(DATE_PATTERN.parse(matcher.group(1)));
-                    if (backupDate.isBefore(LocalDateTime.now().minusSeconds(60 * 60 * 24 * 7 * backupMaxAgeInWeeks))) {
-                        logger.info("Deleting backup file {} because it's older than {} weeks", zip, backupMaxAgeInWeeks);
+                    fileToBackupTime.put(zip, backupDate);
+                }
+                for (File zip : zips) {
+                    if (!fileToBackupTime.containsKey(zip)) {
+                        continue;
+                    }
+                    LocalDateTime backupDate = fileToBackupTime.get(zip);
+                    if (backupDate.isBefore(LocalDateTime.now().minusSeconds(60L * 60 * 24 * 7 * backupMaxAgeInWeeks))) {
+                        final boolean successfulNewerBackup = fileToBackupTime.entrySet().stream().anyMatch(x -> x.getKey() != zip && x.getValue().isAfter(backupDate));
+                        if (!successfulNewerBackup) {
+                            logger.warn("No successful backup was made after the creation of {}. Will not delete it.", zip.getAbsolutePath());
+                            continue;
+                        }
+                        logger.info("Deleting backup file {} because it's older than {} weeks and a newer successful backup exists", zip, backupMaxAgeInWeeks);
                         boolean deleted = zip.delete();
                         if (!deleted) {
                             logger.warn("Unable to delete old backup file {}", zip.getName());
@@ -169,11 +185,17 @@ public class BackupAndRestore {
 
 
     private void backupDatabase(File targetFile) {
-        String formattedFilepath = targetFile.getAbsolutePath().replace("\\", "/");
-        logger.info("Backing up database to " + formattedFilepath);
-        final Query nativeQuery = entityManager.createNativeQuery("SCRIPT TO '%s' COMPRESSION ZIP;".formatted(formattedFilepath));
-        final List resultList = nativeQuery.getResultList();
-        logger.debug("Wrote database backup data to {}", targetFile.getAbsolutePath());
+        try {
+            String formattedFilepath = targetFile.getAbsolutePath().replace("\\", "/");
+            logger.info("Backing up database to " + formattedFilepath);
+            final Query nativeQuery = entityManager.createNativeQuery("SCRIPT TO '%s' COMPRESSION ZIP;".formatted(formattedFilepath));
+            final List resultList = nativeQuery.getResultList();
+            logger.debug("Wrote database backup data to {}", targetFile.getAbsolutePath());
+        } catch (Exception e) {
+            logger.info("Deleting invalid backup file {}", targetFile);
+            targetFile.delete();
+            throw e;
+        }
     }
 
     private void backupCertificates(FileSystem fileSystem) throws IOException {
@@ -270,6 +292,7 @@ public class BackupAndRestore {
         }
     }
 
+
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
@@ -277,5 +300,7 @@ public class BackupAndRestore {
         private String filename;
         private Instant creationDate;
     }
+
+
 
 }
