@@ -17,6 +17,7 @@
 package org.nzbhydra.problemdetection;
 
 import com.google.common.base.Stopwatch;
+import jakarta.annotation.PostConstruct;
 import org.apache.commons.lang3.JavaVersion;
 import org.apache.commons.lang3.SystemUtils;
 import org.nzbhydra.debuginfos.DebugInfosProvider;
@@ -28,7 +29,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 

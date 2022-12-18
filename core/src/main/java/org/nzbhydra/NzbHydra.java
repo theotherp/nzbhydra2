@@ -2,6 +2,8 @@ package org.nzbhydra;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import joptsimple.OptionException;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
@@ -39,8 +41,6 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.bind.annotation.RestController;
 import org.yaml.snakeyaml.error.YAMLException;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import javax.swing.*;
 import java.awt.GraphicsEnvironment;
 import java.awt.HeadlessException;

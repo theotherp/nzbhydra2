@@ -17,6 +17,7 @@
 package org.nzbhydra.notifications;
 
 import com.google.common.collect.Sets;
+import jakarta.annotation.PreDestroy;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +34,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import org.springframework.web.socket.messaging.SessionSubscribeEvent;
 
-import javax.annotation.PreDestroy;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;

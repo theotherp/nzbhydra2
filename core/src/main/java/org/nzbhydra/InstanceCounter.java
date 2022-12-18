@@ -16,6 +16,7 @@
 
 package org.nzbhydra;
 
+import jakarta.annotation.PostConstruct;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.webaccess.HydraOkHttp3ClientHttpRequestFactory;
 import org.slf4j.Logger;
@@ -26,7 +27,6 @@ import org.springframework.http.client.ClientHttpRequest;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.net.URI;
 

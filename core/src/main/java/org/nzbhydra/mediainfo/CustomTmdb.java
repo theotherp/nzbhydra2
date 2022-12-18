@@ -2,6 +2,7 @@ package org.nzbhydra.mediainfo;
 
 import com.uwetrottmann.tmdb2.Tmdb;
 import com.uwetrottmann.tmdb2.TmdbHelper;
+import jakarta.annotation.PostConstruct;
 import okhttp3.OkHttpClient;
 import okhttp3.OkHttpClient.Builder;
 import org.nzbhydra.webaccess.HydraOkHttp3ClientHttpRequestFactory;
@@ -11,7 +12,6 @@ import org.springframework.stereotype.Component;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-import javax.annotation.PostConstruct;
 import java.net.URI;
 import java.net.URISyntaxException;
 

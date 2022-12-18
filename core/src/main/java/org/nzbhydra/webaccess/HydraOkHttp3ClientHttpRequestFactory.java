@@ -17,6 +17,7 @@
 package org.nzbhydra.webaccess;
 
 import com.google.common.net.InetAddresses;
+import jakarta.annotation.PostConstruct;
 import joptsimple.internal.Strings;
 import okhttp3.ConnectionPool;
 import okhttp3.Credentials;
@@ -48,7 +49,6 @@ import sockslib.client.Socks5;
 import sockslib.client.SocksProxy;
 import sockslib.client.SocksSocket;
 
-import javax.annotation.PostConstruct;
 import javax.net.SocketFactory;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.X509TrustManager;

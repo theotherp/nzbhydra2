@@ -16,6 +16,7 @@
 
 package org.nzbhydra.downloading.downloaders;
 
+import jakarta.annotation.PreDestroy;
 import org.nzbhydra.config.ConfigChangedEvent;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.logging.LoggingMarkers;
@@ -30,7 +31,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import org.springframework.web.socket.messaging.SessionSubscribeEvent;
 
-import javax.annotation.PreDestroy;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Executors;
