@@ -363,11 +363,6 @@ public class NzbHydra {
 
     @PreDestroy
     public void destroy() {
-        try {
-            applicationEventPublisher.publishEvent(new ShutdownEvent());
-        } catch (Exception e) {
-            logger.debug("Error handling shutdown event", e);
-        }
         logger.info("Shutting down and using up to {}ms to compact database", configProvider.getBaseConfig().getMain().getDatabaseCompactTime());
     }
 

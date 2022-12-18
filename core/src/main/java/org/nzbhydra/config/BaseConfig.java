@@ -2,6 +2,7 @@ package org.nzbhydra.config;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Joiner;
+import jakarta.annotation.PreDestroy;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -10,7 +11,6 @@ import lombok.Setter;
 import lombok.ToString;
 import org.javers.core.metamodel.annotation.DiffIgnore;
 import org.nzbhydra.NzbHydra;
-import org.nzbhydra.ShutdownEvent;
 import org.nzbhydra.config.auth.AuthConfig;
 import org.nzbhydra.config.category.CategoriesConfig;
 import org.nzbhydra.config.downloading.DownloadingConfig;
@@ -20,7 +20,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -155,8 +154,8 @@ public class BaseConfig extends ValidatingConfig<BaseConfig> {
     }
 
 
-    @EventListener
-    public void onShutdown(ShutdownEvent event) {
+    @PreDestroy
+    public void onShutdown() {
         saveToSave();
         delayedSaveTimerTask.cancel();
     }

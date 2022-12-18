@@ -3,10 +3,10 @@ package org.nzbhydra.searching;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multiset;
+import jakarta.annotation.PreDestroy;
 import lombok.Getter;
 import net.jodah.expiringmap.ExpirationPolicy;
 import net.jodah.expiringmap.ExpiringMap;
-import org.nzbhydra.ShutdownEvent;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.indexers.IndexerSearchEntity;
@@ -28,7 +28,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -415,8 +414,8 @@ public class Searcher {
     }
 
     @SuppressWarnings("unused")
-    @EventListener
-    public void onShutdown(ShutdownEvent event) {
+    @PreDestroy
+    public void onShutdown() {
         shutdownRequested = true;
         synchronized (executors) {
             if (executors.size() > 0) {

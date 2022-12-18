@@ -25,6 +25,10 @@
             {
                 "type": "fix",
                 "text": "Improve startup time by moving some tasks into the background."
+            },
+            {
+                "type": "fix",
+                "text": "Misleading error messages were shown when shutting down."
             }
         ],
         "final": false

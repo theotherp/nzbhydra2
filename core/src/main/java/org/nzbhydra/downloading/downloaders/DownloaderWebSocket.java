@@ -16,7 +16,6 @@
 
 package org.nzbhydra.downloading.downloaders;
 
-import org.nzbhydra.ShutdownEvent;
 import org.nzbhydra.config.ConfigChangedEvent;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.logging.LoggingMarkers;
@@ -31,6 +30,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import org.springframework.web.socket.messaging.SessionSubscribeEvent;
 
+import javax.annotation.PreDestroy;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Executors;
@@ -138,8 +138,8 @@ public class DownloaderWebSocket {
         }
     }
 
-    @EventListener
-    public void onShutdown(ShutdownEvent event) {
+    @PreDestroy
+    public void onShutdown() {
         if (scheduledFuture != null) {
             scheduledFuture.cancel(true);
             scheduledFuture = null;
