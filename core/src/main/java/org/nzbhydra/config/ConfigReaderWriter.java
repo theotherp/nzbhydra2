@@ -132,6 +132,7 @@ public class ConfigReaderWriter {
             try {
                 try (InputStream stream = BaseConfig.class.getResource("/config/baseConfig.yml").openStream()) {
                     logger.debug(LoggingMarkers.CONFIG_READ_WRITE, "Copying YAML to {}", yamlFile);
+                    yamlFile.mkdirs();
                     Files.copy(stream, yamlFile.toPath());
                     return true;
                 }

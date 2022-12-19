@@ -46,14 +46,13 @@ import java.awt.GraphicsEnvironment;
 import java.awt.HeadlessException;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.URI;
 import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Configuration(proxyBeanMethods = false)
 @EnableAutoConfiguration(exclude = {
@@ -90,8 +89,6 @@ public class NzbHydra {
         LoggerFactory.getILoggerFactory();
 
 
-        checkJavaVersion();
-
         OptionParser parser = new OptionParser();
         parser.accepts("datafolder", "Define path to main data folder. Must start with ./ for relative paths").withRequiredArg().defaultsTo("./data");
         parser.accepts("host", "Run on this host").withOptionalArg();
@@ -108,6 +105,8 @@ public class NzbHydra {
             logger.error("Invalid startup options detected: {}", e.getMessage());
             System.exit(1);
         }
+
+
         if (System.getProperty("fromWrapper") == null && Arrays.stream(args).noneMatch(x -> x.equals("directstart"))) {
             logger.info("NZBHydra 2 must be started using the wrapper for restart and updates to work. If for some reason you need to start it from the JAR directly provide the command line argument \"directstart\"");
         } else if (options.has("help")) {
@@ -117,33 +116,6 @@ public class NzbHydra {
             logger.info("NZBHydra 2 version: " + version);
         } else {
             startup(args, options);
-        }
-    }
-
-    private static void checkJavaVersion() {
-        final String javaVersionString;
-        int javaMajor;
-        try {
-            javaVersionString = System.getProperty("java.version");
-
-            final Matcher matcher = Pattern.compile("(?<major>\\d+)(\\.(?<minor>\\d+)\\.(?<patch>\\d)+[\\-_\\w]*)?.*").matcher(javaVersionString);
-            if (!matcher.find()) {
-                logger.error("Unable to determine JAVA version from {}", javaVersionString);
-                return;
-            }
-
-            javaMajor = Integer.parseInt(matcher.group("major"));
-            int javaMinor = Integer.parseInt(matcher.group("minor"));
-            int javaVersion = 0;
-            if ((javaMajor == 1 && javaMinor == 8)) {
-                return;
-            }
-        } catch (Exception e) {
-            logger.error("Unable to determine java version", e);
-            return;
-        }
-        if (javaMajor > 17) {
-            throw new RuntimeException("Deteted Java version " + javaVersionString + ". Please use Java 8, 11, 15 or 17. Java 18 and above are not supported");
         }
     }
 
@@ -192,10 +164,12 @@ public class NzbHydra {
             }
 
             DatabaseRecreation.runDatabaseScript();
-
             applicationContext = hydraApplication.run(args);
         } catch (Exception e) {
-            handleException(e);
+            //Is thrown by SpringApplicationAotProcessor
+            if (!(e instanceof SpringApplication.AbandonedRunException)) {
+                handleException(e);
+            }
         }
     }
 
@@ -286,9 +260,9 @@ public class NzbHydra {
 
 
     @PostConstruct
-    private void addTrayIconIfApplicable() {
+    public void addTrayIconIfApplicable() {
         boolean isOsWindows = isOsWindows();
-        if (isOsWindows) {
+        if (!GraphicsEnvironment.isHeadless() && isOsWindows) {
             logger.info("Adding windows system tray icon");
             try {
                 new WindowsTrayIcon();
@@ -304,7 +278,7 @@ public class NzbHydra {
     }
 
     @PostConstruct
-    private void warnIfSettingsOverwritten() {
+    public void warnIfSettingsOverwritten() {
         if (anySettingsOverwritten) {
             logger.warn("Overwritten settings will be displayed with their original value in the config section of the GUI");
         }
@@ -338,7 +312,7 @@ public class NzbHydra {
             //I don't know why I have to do this but otherwise genericStorage is always empty
             configProvider.getBaseConfig().setGenericStorage(new ConfigReaderWriter().loadSavedConfig().getGenericStorage());
 
-            if (!genericStorage.get("FirstStart", LocalDateTime.class).isPresent()) {
+            if (genericStorage.get("FirstStart", LocalDateTime.class).isEmpty()) {
                 logger.info("First start of NZBHydra detected");
                 genericStorage.save("FirstStart", LocalDateTime.now());
                 configProvider.getBaseConfig().save(false);
@@ -366,11 +340,20 @@ public class NzbHydra {
         logger.info("Shutting down and using up to {}ms to compact database", configProvider.getBaseConfig().getMain().getDatabaseCompactTime());
     }
 
+    @PostConstruct
+    public void loadBaseConfig() throws Exception {
+        try (InputStream resourceAsStream = getClass().getResourceAsStream("/config/baseConfig.yml")) {
+            //Simple hack to make sure the file is loaded so that the native tracing agent can detect this
+        }
+    }
+
 
     @Bean
     public CacheManager getCacheManager() {
         return new CaffeineCacheManager("infos", "titles", "updates", "dev");
     }
 
-
+    static void setDataFolder(String dataFolder) {
+        NzbHydra.dataFolder = dataFolder;
+    }
 }

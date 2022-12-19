@@ -1,0 +1,15 @@
+Windows:
+- Run vcvars64.bat
+- Set path to graalvm
+- Set java_home to graalvm
+Tracing: Run java -DspringAot=true -agentlib:native-image-agent=config-output-dir=src/main/resources/META-INF/native-image -jar core-5.0.0-SNAPSHOT-exec.jar directstart
+
+Build:
+mvn -P native native:compile -DskipTests
+
+
+Maven-Plugin:
+https://docs.spring.io/spring-boot/docs/3.0.0/maven-plugin/reference/htmlsingle/#aot
+
+Spring Boot 3 Native support:
+https://docs.spring.io/spring-boot/docs/current/reference/html/native-image.html#native-image.introducing-graalvm-native-images

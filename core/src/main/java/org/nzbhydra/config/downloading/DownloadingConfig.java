@@ -25,6 +25,7 @@ import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.ValidatingConfig;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -37,6 +38,7 @@ import java.util.stream.Collectors;
 @ConfigurationProperties(prefix = "downloading")
 public class DownloadingConfig extends ValidatingConfig<DownloadingConfig> {
 
+    @NestedConfigurationProperty
     @DiffIgnore
     private List<DownloaderConfig> downloaders = new ArrayList<>();
     private String saveTorrentsTo;

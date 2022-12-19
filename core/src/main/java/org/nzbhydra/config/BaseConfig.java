@@ -20,6 +20,7 @@ import org.nzbhydra.logging.LoggingMarkers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
@@ -55,13 +56,20 @@ public class BaseConfig extends ValidatingConfig<BaseConfig> {
     private boolean initialized = false;
     @JsonIgnore
     private ConfigReaderWriter configReaderWriter = new ConfigReaderWriter();
+    @NestedConfigurationProperty
     private AuthConfig auth = new AuthConfig();
+    @NestedConfigurationProperty
     private CategoriesConfig categoriesConfig = new CategoriesConfig();
+    @NestedConfigurationProperty
     private DownloadingConfig downloading = new DownloadingConfig();
     @DiffIgnore
+    @NestedConfigurationProperty
     private List<IndexerConfig> indexers = new ArrayList<>();
+    @NestedConfigurationProperty
     private MainConfig main = new MainConfig();
+    @NestedConfigurationProperty
     private SearchingConfig searching = new SearchingConfig();
+    @NestedConfigurationProperty
     private NotificationConfig notificationConfig = new NotificationConfig();
 
     @DiffIgnore

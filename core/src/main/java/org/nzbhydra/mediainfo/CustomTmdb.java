@@ -38,7 +38,7 @@ public class CustomTmdb extends Tmdb {
     }
 
     @PostConstruct
-    private void initWithApiKey() {
+    public void initWithApiKey() {
         this.apiKey(tmdbApiKey);
     }
 

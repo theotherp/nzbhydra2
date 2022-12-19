@@ -92,7 +92,7 @@
 
     <properties>
         <spring.boot.version>3.0.0</spring.boot.version>
-        <spring.boot.maven.version>2.7.5</spring.boot.maven.version>
+        <spring.boot.maven.version>3.0.0</spring.boot.maven.version>
         <spring.oxm.version>6.0.2</spring.oxm.version>
         <spring.test.version>6.0.0</spring.test.version>
         <spring.security.test.version>6.0.0</spring.security.test.version>
