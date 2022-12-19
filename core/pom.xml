@@ -459,7 +459,7 @@
         <profile>
             <id>native</id>
             <properties>
-                <start-class>org.nzbhydra.NzbHydraNative</start-class>
+                <start-class>org.nzbhydra.NzbHydra</start-class>
             </properties>
             <build>
                 <pluginManagement>
@@ -468,7 +468,7 @@
                             <groupId>org.springframework.boot</groupId>
                             <artifactId>spring-boot-maven-plugin</artifactId>
                             <configuration>
-                                <mainClass>org.nzbhydra.NzbHydraNative</mainClass>
+                                <mainClass>org.nzbhydra.NzbHydra</mainClass>
                                 <image>
                                     <builder>paketobuildpacks/builder:tiny</builder>
                                     <env>

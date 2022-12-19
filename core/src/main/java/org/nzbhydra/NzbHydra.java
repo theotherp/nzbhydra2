@@ -88,6 +88,24 @@ public class NzbHydra {
     public static void main(String[] args) throws Exception {
         LoggerFactory.getILoggerFactory();
 
+        if (System.getenv("HYDRA_NATIVE_BUILD") != null) {
+            logger.warn("Running for native build");
+            System.setProperty("spring.datasource.url", "jdbc:h2:mem:testdb");
+
+            String dataFolder = "./data";
+            NzbHydra.setDataFolder(dataFolder);
+
+            System.setProperty("nzbhydra.dataFolder", dataFolder);
+            File yamlFile = new File(dataFolder, "nzbhydra.yml");
+            initializeAndValidateAndMigrateYamlFile(yamlFile);
+
+            setApplicationPropertiesFromConfig();
+
+            SpringApplication hydraApplication = new SpringApplication(NzbHydra.class);
+            hydraApplication.run(args);
+            logger.info("Native application returned");
+
+        }
 
         OptionParser parser = new OptionParser();
         parser.accepts("datafolder", "Define path to main data folder. Must start with ./ for relative paths").withRequiredArg().defaultsTo("./data");
@@ -95,6 +113,7 @@ public class NzbHydra {
         parser.accepts("nobrowser", "Don't open browser to Hydra");
         parser.accepts("port", "Run on this port (default: 5076)").withOptionalArg();
         parser.accepts("baseurl", "Set base URL (e.g. /nzbhydra)").withOptionalArg();
+        parser.accepts("headless", "Set base URL (e.g. /nzbhydra)");
         parser.accepts("help", "Print help");
         parser.accepts("version", "Print version");
 
@@ -104,6 +123,9 @@ public class NzbHydra {
         } catch (OptionException e) {
             logger.error("Invalid startup options detected: {}", e.getMessage());
             System.exit(1);
+        }
+        if (options.has("headless")) {
+            System.setProperty("java.awt.headless", "true");
         }
 
 
@@ -157,7 +179,7 @@ public class NzbHydra {
             SpringApplication hydraApplication = new SpringApplication(NzbHydra.class);
             NzbHydra.originalArgs = args;
             wasRestarted = Arrays.asList(args).contains("restarted");
-            if (NzbHydra.isOsWindows() && !options.has("quiet") && !options.has("nobrowser")) {
+            if (NzbHydra.isOsWindows() && !options.has("quiet") && !options.has("nobrowser") && !options.has("headless")) {
                 hydraApplication.setHeadless(false);
             } else {
                 hydraApplication.setHeadless(true);

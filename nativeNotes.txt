@@ -13,3 +13,7 @@ https://docs.spring.io/spring-boot/docs/3.0.0/maven-plugin/reference/htmlsingle/
 
 Spring Boot 3 Native support:
 https://docs.spring.io/spring-boot/docs/current/reference/html/native-image.html#native-image.introducing-graalvm-native-images
+
+
+TODO
+Check out https://www.graalvm.org/22.2/reference-manual/native-image/guides/use-graalvm-dashboard/
