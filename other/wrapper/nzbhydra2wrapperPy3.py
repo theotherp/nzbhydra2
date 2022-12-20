@@ -287,6 +287,13 @@ def startup():
     if not os.path.exists(readme):
         logger.critical("Unable to determine base path correctly. Please make sure to run NZBHydra in the folder where its binary is located. Current base path: " + basePath)
         sys.exit(-1)
+    core = False
+    if os.path.isfile("core"):
+        args.java = "core"
+        core = True
+    if os.path.isfile("core.exe"):
+        args.java = "core.exe"
+        core = True
 
     debugSwitchFile = os.path.join(args.datafolder, "DEBUG")
     if os.path.exists(debugSwitchFile):
@@ -298,25 +305,26 @@ def startup():
 
     isWindows = platform.system().lower() == "windows"
     libFolder = os.path.join(basePath, "lib")
-    if not os.path.exists(libFolder):
-        logger.critical("Error: Lib folder %s not found. An update might've failed or the installation folder is corrupt", libFolder)
-        sys.exit(-1)
+    if not core:
+        if not os.path.exists(libFolder):
+            logger.critical("Error: Lib folder %s not found. An update might've failed or the installation folder is corrupt", libFolder)
+            sys.exit(-1)
 
-    jarFiles = [os.path.join(libFolder, f) for f in os.listdir(libFolder) if os.path.isfile(os.path.join(libFolder, f)) and f.endswith(".jar")]
-    if len(jarFiles) == 0:
-        logger.critical("Error: No JAR files found in folder %s. An update might've failed or the installation folder is corrupt", libFolder)
-        sys.exit(-1)
-    if len(jarFiles) == 1:
-        jarFile = jarFiles[0]
-    else:
-        latestFile = max(jarFiles, key=os.path.getmtime)
-        logger.warning("Expected the number of JAR files in folder %s to be 1 but it's %d. Will remove all JARs except the one last changed: %s", libFolder, len(jarFiles), latestFile)
-        for file in jarFiles:
-            if file is not latestFile:
-                logger.info("Deleting file %s", file)
-                os.remove(file)
-        jarFile = latestFile
-    logger.debug("Using JAR file " + jarFile)
+        jarFiles = [os.path.join(libFolder, f) for f in os.listdir(libFolder) if os.path.isfile(os.path.join(libFolder, f)) and f.endswith(".jar")]
+        if len(jarFiles) == 0:
+            logger.critical("Error: No JAR files found in folder %s. An update might've failed or the installation folder is corrupt", libFolder)
+            sys.exit(-1)
+        if len(jarFiles) == 1:
+            jarFile = jarFiles[0]
+        else:
+            latestFile = max(jarFiles, key=os.path.getmtime)
+            logger.warning("Expected the number of JAR files in folder %s to be 1 but it's %d. Will remove all JARs except the one last changed: %s", libFolder, len(jarFiles), latestFile)
+            for file in jarFiles:
+                if file is not latestFile:
+                    logger.info("Deleting file %s", file)
+                    os.remove(file)
+            jarFile = latestFile
+        logger.debug("Using JAR file " + jarFile)
 
     if args.repairdb:
         arguments = ["--repairdb", args.repairdb]
@@ -367,9 +375,10 @@ def startup():
         xmx = xmx[:-1]
 
     javaVersion = args.javaversion
-    if javaVersion is None:
+    if javaVersion is None and not core:
         javaVersion = getJavaVersion(args.java)
-
+    if core:
+        javaVersion = 17
     gcLogFilename = (os.path.join(args.datafolder, "logs") + "/gclog-" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".log").replace("\\", "/")
     gcLogFilename = os.path.relpath(gcLogFilename, basePath)
 
@@ -389,11 +398,12 @@ def startup():
             "-Xlog:gc*:file=" + gcLogFilename + "::filecount=10,filesize=5000"]
 
     java_arguments = ["-Xmx" + xmx + "M",
-                      "-DfromWrapper",
-                      "-XX:TieredStopAtLevel=1",
-                      "-XX:+HeapDumpOnOutOfMemoryError",
-                      "-XX:HeapDumpPath=" + os.path.join(args.datafolder, "logs")
+                      "-DfromWrapper=true"
                       ]
+    if not core:
+        java_arguments.append("-XX:TieredStopAtLevel=1")
+        java_arguments.append("-XX:+HeapDumpOnOutOfMemoryError")
+        java_arguments.append("-XX:HeapDumpPath=" + os.path.join(args.datafolder, "logs"))
     if javaVersion < 13:
         java_arguments.append("-noverify")
     if logGc:
@@ -404,7 +414,11 @@ def startup():
         java_arguments.append("-Dspring.output.ansi.enabled=ALWAYS")
     if args.debug:
         java_arguments.append("-Ddebug=true")
-    arguments = [args.java] + java_arguments + ["-jar", escape_parameter(isWindows, jarFile)] + arguments
+
+    if not core:
+        arguments = [args.java] + java_arguments + ["-jar", escape_parameter(isWindows, jarFile)] + arguments
+    else:
+        arguments = [args.java] + java_arguments + arguments
     commandLine = " ".join(arguments)
     logger.info("Starting NZBHydra main process with command line: %s in folder %s", commandLine, basePath)
     if hasattr(subprocess, 'STARTUPINFO'):
