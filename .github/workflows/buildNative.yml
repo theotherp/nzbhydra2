@@ -4,6 +4,8 @@ on: [ workflow_dispatch, push ]
 
 jobs:
     build:
+        env:
+            HYDRA_NATIVE_BUILD: true
         runs-on: ubuntu-latest
         steps:
             -   uses: actions/checkout@v3
@@ -14,7 +16,7 @@ jobs:
                     distribution: 'adopt'
                     cache: maven
             -   name: Install all with Maven
-                run: mvn install -DskipTests
+                run: mvn --batch-mode install -DskipTests
             -   name: NativeImage
                 uses: graalvm/setup-graalvm@v1
                 with:
@@ -28,4 +30,4 @@ jobs:
                 run: |
                   java --version
                   gu --version
-                  mvn -P native native:compile -DskipTests
+                  mvn --batch-mode -P native native:compile -DskipTests
