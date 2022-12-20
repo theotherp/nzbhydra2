@@ -3,3 +3,5 @@ target/
 *.iws
 *.ipr
 include/*.exe
+/binaries/v1/*
+/binaries/v2/*

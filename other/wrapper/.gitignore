@@ -11,4 +11,9 @@
 
 **/.cache
 nzbhydra.pid
-*.spec
+#Ignore wrapper files copied to folders for pyinstaller to find
+/pyInstaller/**/*.py
+/pyInstaller/**/*.ico
+/pyInstaller/**/VersionInfo*.txt
+/**/dist/
+/venv
