@@ -13,8 +13,8 @@ jobs:
                     java-version: '17'
                     distribution: 'adopt'
                     cache: maven
-            -   name: Test with Maven
-                run: mvn package -DskipTests
+            -   name: Install all with Maven
+                run: mvn install -DskipTests
             -   name: NativeImage
                 uses: graalvm/setup-graalvm@v1
                 with:

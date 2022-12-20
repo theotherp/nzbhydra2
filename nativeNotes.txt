@@ -2,6 +2,7 @@ Windows:
 - Run vcvars64.bat
 - Set path to graalvm
 - Set java_home to graalvm
+- Set env variable HYDRA_NATIVE_BUILD=true
 Tracing: Run:
     java -DspringAot=true -agentlib:native-image-agent=config-output-dir=hints -jar core-5.0.0-SNAPSHOT-exec.jar directstart
 
