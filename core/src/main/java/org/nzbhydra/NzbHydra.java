@@ -88,22 +88,20 @@ public class NzbHydra {
     public static void main(String[] args) throws Exception {
         LoggerFactory.getILoggerFactory();
 
-        if (System.getenv("HYDRA_NATIVE_BUILD") != null) {
+        if (isNativeBuild()) {
             logger.warn("Running for native build");
 
             String dataFolder = "./data";
             NzbHydra.setDataFolder(dataFolder);
-
             System.setProperty("nzbhydra.dataFolder", dataFolder);
-            File yamlFile = new File(dataFolder, "nzbhydra.yml");
-            initializeAndValidateAndMigrateYamlFile(yamlFile);
+            System.setProperty("spring.datasource.url", "jdbc:h2:mem:testdb;NON_KEYWORDS=YEAR,DATA,KEY");
 
             setApplicationPropertiesFromConfig();
 
             SpringApplication hydraApplication = new SpringApplication(NzbHydra.class);
             applicationContext = hydraApplication.run(args);
             logger.info("Native application returned");
-
+            return;
         }
 
         OptionParser parser = new OptionParser();
@@ -240,6 +238,9 @@ public class NzbHydra {
     }
 
     private static void initializeAndValidateAndMigrateYamlFile(File yamlFile) throws IOException {
+        if (NzbHydra.isNativeBuild()) {
+            return;
+        }
         CONFIG_READER_WRITER.initializeIfNeeded(yamlFile);
         CONFIG_READER_WRITER.validateExistingConfig();
         Map<String, Object> map = CONFIG_READER_WRITER.loadSavedConfigAsMap();
@@ -376,5 +377,9 @@ public class NzbHydra {
 
     static void setDataFolder(String dataFolder) {
         NzbHydra.dataFolder = dataFolder;
+    }
+
+    public static boolean isNativeBuild() {
+        return System.getenv("HYDRA_NATIVE_BUILD") != null;
     }
 }

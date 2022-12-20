@@ -14,6 +14,6 @@ jobs:
                 with:
                     java-version: '17'
                     distribution: 'adopt'
-                    cache: maven
+                    cache: 'maven'
             -   name: Test with Maven
                 run: mvn --batch-mode --update-snapshots verify

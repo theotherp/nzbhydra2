@@ -14,7 +14,7 @@ jobs:
                 with:
                     java-version: '17'
                     distribution: 'adopt'
-                    cache: maven
+                    cache: 'maven'
             -   name: Install all with Maven
                 run: mvn --batch-mode install -DskipTests
             -   name: NativeImage
@@ -23,7 +23,7 @@ jobs:
                     java-version: '17'
                     version: 'latest'
                     components: 'native-image'
-                    cache: maven
+                    cache: 'maven'
 
             -   name: Build
                 working-directory: ./core

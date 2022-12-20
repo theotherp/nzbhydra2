@@ -85,6 +85,9 @@ public class ConfigReaderWriter {
     }
 
     protected void save(File targetFile, String configAsYamlString) {
+        if (NzbHydra.isNativeBuild()) {
+            return;
+        }
         synchronized (Jackson.YAML_MAPPER) {
             Failsafe.with(saveRetryPolicy)
                 .onFailure(new EventListener<ExecutionCompletedEvent<Object>>() {
@@ -127,6 +130,9 @@ public class ConfigReaderWriter {
      * @return true if initialization was needed
      */
     public boolean initializeIfNeeded(File yamlFile) throws IOException {
+        if (NzbHydra.isNativeBuild()) {
+            return false;
+        }
         if (!yamlFile.exists()) {
             logger.info("No config file found at {}. Initializing with base config", yamlFile);
             try {
@@ -145,6 +151,9 @@ public class ConfigReaderWriter {
     }
 
     public void validateExistingConfig() {
+        if (NzbHydra.isNativeBuild()) {
+            return;
+        }
         File configFile = buildConfigFileFile();
         if (!configFile.exists()) {
             logger.debug(LoggingMarkers.CONFIG_READ_WRITE, "Config file {} doesn't exist. Nothing to validate", configFile);
