@@ -78,19 +78,22 @@ public abstract class Downloader {
     }
 
 
-    @Autowired
     protected FileHandler nzbHandler;
-    @Autowired
     protected SearchResultRepository searchResultRepository;
-    @Autowired
-    private ApplicationEventPublisher applicationEventPublisher;
-    @Autowired
-    private IndexerSpecificDownloadExceptions indexerSpecificDownloadExceptions;
-    @Autowired
-    private ConfigProvider configProvider;
+    private final ApplicationEventPublisher applicationEventPublisher;
+    private final IndexerSpecificDownloadExceptions indexerSpecificDownloadExceptions;
+    protected final ConfigProvider configProvider;
 
     protected DownloaderConfig downloaderConfig;
     protected List<Long> downloadRates = new ArrayList<>();
+
+    public Downloader(FileHandler nzbHandler, SearchResultRepository searchResultRepository, ApplicationEventPublisher applicationEventPublisher, IndexerSpecificDownloadExceptions indexerSpecificDownloadExceptions, ConfigProvider configProvider) {
+        this.nzbHandler = nzbHandler;
+        this.searchResultRepository = searchResultRepository;
+        this.applicationEventPublisher = applicationEventPublisher;
+        this.indexerSpecificDownloadExceptions = indexerSpecificDownloadExceptions;
+        this.configProvider = configProvider;
+    }
 
     public void initialize(DownloaderConfig downloaderConfig) {
         this.downloaderConfig = downloaderConfig;

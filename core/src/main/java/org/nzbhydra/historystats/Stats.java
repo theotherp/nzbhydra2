@@ -687,7 +687,8 @@ public class Stats {
         result.setPercentOlder1000(((BigDecimal) entityManager.createNativeQuery(String.format(percentage, 1000, 1000)).getResultList().get(0)).intValue());
         result.setPercentOlder2000(((BigDecimal) entityManager.createNativeQuery(String.format(percentage, 2000, 2000)).getResultList().get(0)).intValue());
         result.setPercentOlder3000(((BigDecimal) entityManager.createNativeQuery(String.format(percentage, 3000, 3000)).getResultList().get(0)).intValue());
-        result.setAverageAge(((Double) entityManager.createNativeQuery("SELECT AVG(AGE) FROM INDEXERNZBDOWNLOAD").getResultList().get(0)).intValue());
+        final Double averageAge = (Double) entityManager.createNativeQuery("SELECT AVG(AGE) FROM INDEXERNZBDOWNLOAD").getResultList().get(0);
+        result.setAverageAge(averageAge == null ? 0 : averageAge.intValue());
         logger.debug(LoggingMarkers.PERFORMANCE, "Calculated downloads per age percentages . Took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
         result.setDownloadsPerAge(downloadsPerAge());

@@ -13,8 +13,11 @@ import org.joda.time.format.PeriodFormatter;
 import org.joda.time.format.PeriodFormatterBuilder;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.Jackson;
+import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.downloading.DownloaderType;
 import org.nzbhydra.downloading.FileDownloadStatus;
+import org.nzbhydra.downloading.FileHandler;
+import org.nzbhydra.downloading.IndexerSpecificDownloadExceptions;
 import org.nzbhydra.downloading.downloaders.Converters;
 import org.nzbhydra.downloading.downloaders.Downloader;
 import org.nzbhydra.downloading.downloaders.DownloaderEntry;
@@ -30,10 +33,12 @@ import org.nzbhydra.downloading.exceptions.DownloaderException;
 import org.nzbhydra.downloading.exceptions.DownloaderUnreachableException;
 import org.nzbhydra.downloading.exceptions.DuplicateNzbException;
 import org.nzbhydra.logging.LoggingMarkers;
+import org.nzbhydra.searching.db.SearchResultRepository;
 import org.nzbhydra.webaccess.HydraOkHttp3ClientHttpRequestFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -53,7 +58,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Component
 public class Sabnzbd extends Downloader {
 
     private static final Logger logger = LoggerFactory.getLogger(Sabnzbd.class);
@@ -82,10 +86,14 @@ public class Sabnzbd extends Downloader {
 
     private Instant lastErrorLogged;
 
-    @Autowired
-    private RestTemplate restTemplate;
-    @Autowired
-    private HydraOkHttp3ClientHttpRequestFactory requestFactory;
+    private final RestTemplate restTemplate;
+    private final HydraOkHttp3ClientHttpRequestFactory requestFactory;
+
+    public Sabnzbd(FileHandler nzbHandler, SearchResultRepository searchResultRepository, ApplicationEventPublisher applicationEventPublisher, IndexerSpecificDownloadExceptions indexerSpecificDownloadExceptions, ConfigProvider configProvider, RestTemplate restTemplate, HydraOkHttp3ClientHttpRequestFactory requestFactory) {
+        super(nzbHandler, searchResultRepository, applicationEventPublisher, indexerSpecificDownloadExceptions, configProvider);
+        this.restTemplate = restTemplate;
+        this.requestFactory = requestFactory;
+    }
 
     private UriComponentsBuilder getBaseUrl() {
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(downloaderConfig.getUrl()).pathSegment("api");

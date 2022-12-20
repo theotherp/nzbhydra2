@@ -36,6 +36,7 @@ import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
+import org.springframework.aot.hint.annotation.Reflective;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
@@ -61,6 +62,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("TypeParameterHidesVisibleType")
+@Reflective
 @Component
 public abstract class Indexer<T> {
 
@@ -109,9 +111,32 @@ public abstract class Indexer<T> {
     private CustomQueryAndTitleMapping titleMapping;
 
 
+
+    protected Indexer() {
+    }
+
+    public Indexer(ConfigProvider configProvider, IndexerRepository indexerRepository, SearchResultRepository searchResultRepository, IndexerApiAccessRepository indexerApiAccessRepository, IndexerApiAccessEntityShortRepository indexerApiAccessShortRepository, IndexerLimitRepository indexerStatusRepository, IndexerWebAccess indexerWebAccess, SearchResultAcceptor resultAcceptor, CategoryProvider categoryProvider, InfoProvider infoProvider, ApplicationEventPublisher eventPublisher, QueryGenerator queryGenerator, CustomQueryAndTitleMapping titleMapping) {
+        this.configProvider = configProvider;
+        this.indexerRepository = indexerRepository;
+        this.searchResultRepository = searchResultRepository;
+        this.indexerApiAccessRepository = indexerApiAccessRepository;
+        this.indexerApiAccessShortRepository = indexerApiAccessShortRepository;
+        this.indexerStatusRepository = indexerStatusRepository;
+        this.indexerWebAccess = indexerWebAccess;
+        this.resultAcceptor = resultAcceptor;
+        this.categoryProvider = categoryProvider;
+        this.infoProvider = infoProvider;
+        this.eventPublisher = eventPublisher;
+        this.queryGenerator = queryGenerator;
+        this.titleMapping = titleMapping;
+    }
+
     public void initialize(IndexerConfig config, IndexerEntity indexer) {
         this.indexer = indexer;
         this.config = config;
+        if (queryGenerator == null) {
+            logger.error("Indexer {} not properly initialized. No beans autowired.", config.getName());
+        }
     }
 
     @EventListener

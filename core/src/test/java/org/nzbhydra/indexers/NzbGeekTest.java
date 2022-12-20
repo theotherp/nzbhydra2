@@ -9,7 +9,7 @@ import static org.junit.Assert.assertThat;
 public class NzbGeekTest {
 
     @InjectMocks
-    private NzbGeek testee = new NzbGeek();
+    private NzbGeek testee = new NzbGeek(null,null,null,null,null,null,null,null,null,null,null,null,null,null);
 
 
     @Test

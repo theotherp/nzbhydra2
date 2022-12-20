@@ -2,10 +2,13 @@ Windows:
 - Run vcvars64.bat
 - Set path to graalvm
 - Set java_home to graalvm
-Tracing: Run java -DspringAot=true -agentlib:native-image-agent=config-output-dir=src/main/resources/META-INF/native-image -jar core-5.0.0-SNAPSHOT-exec.jar directstart
+Tracing: Run:
+    java -DspringAot=true -agentlib:native-image-agent=config-output-dir=hints -jar core-5.0.0-SNAPSHOT-exec.jar directstart
 
 Build:
 mvn -P native native:compile -DskipTests
+
+run upx to compress image
 
 
 Maven-Plugin:

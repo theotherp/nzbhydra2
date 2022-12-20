@@ -104,7 +104,7 @@ public class TorznabTest {
     private QueryGenerator queryGeneratorMock;
 
     @InjectMocks
-    private Torznab testee = new Torznab();
+    private Torznab testee = new Torznab(null,null,null,null,null,null,null,null,null,null,null,null,null,null);
 
 
     @Before

@@ -25,6 +25,7 @@ import org.nzbhydra.downloading.downloaders.nzbget.NzbGet;
 import org.nzbhydra.downloading.downloaders.sabnzbd.Sabnzbd;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.aot.hint.annotation.Reflective;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
@@ -49,12 +50,12 @@ public class DownloaderProvider implements InitializingBean {
     }
 
     @Autowired
-    private AutowireCapableBeanFactory beanFactory;
-    @Autowired
     private BaseConfig baseConfig;
+    @Autowired
+    private DownloaderInstatiator downloaderInstatiator;
 
 
-    private HashMap<String, Downloader> downloadersMap = new HashMap<>();
+    private final HashMap<String, Downloader> downloadersMap = new HashMap<>();
 
     @EventListener
     public void handleNewConfig(ConfigChangedEvent configChangedEvent) throws Exception {
@@ -71,7 +72,7 @@ public class DownloaderProvider implements InitializingBean {
             for (DownloaderConfig downloaderConfig : downloaderConfigs) {
                 logger.info("Initializing downloader {}", downloaderConfig.getName());
                 try {
-                    Downloader downloader = beanFactory.createBean(downloaderClasses.get(downloaderConfig.getDownloaderType()));
+                    Downloader downloader = downloaderInstatiator.instantiate(downloaderConfig.getDownloaderType());
                     downloader.initialize(downloaderConfig);
                     downloadersMap.put(downloaderConfig.getName().toLowerCase(), downloader);
                 } catch (Exception e) {
@@ -88,7 +89,7 @@ public class DownloaderProvider implements InitializingBean {
     }
 
     public GenericResponse checkConnection(DownloaderConfig downloaderConfig) {
-        Downloader downloader = beanFactory.createBean(downloaderClasses.get(downloaderConfig.getDownloaderType()));
+        Downloader downloader = downloaderInstatiator.instantiate(downloaderConfig.getDownloaderType());
         downloader.initialize(downloaderConfig);
         return downloader.checkConnection();
     }

@@ -13,7 +13,6 @@ import org.nzbhydra.indexers.status.IndexerLimitRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,20 +30,20 @@ public class SearchModuleProvider {
     private static final Logger logger = LoggerFactory.getLogger(SearchModuleProvider.class);
 
     @Autowired
-    private AutowireCapableBeanFactory beanFactory;
-
-    @Autowired
     private IndexerRepository indexerRepository;
     @Autowired
     private IndexerApiAccessEntityShortRepository shortRepository;
     @Autowired
     private IndexerLimitRepository indexerStatusRepository;
+    @Autowired
+    private IndexerInstantiator indexerInstantiator;
 
     private final Map<String, Indexer> searchModuleInstances = new HashMap<>();
     private final Map<String, Integer> apiHitsToStoreInitially = new HashMap<>();
 
     @Autowired
     private List<IndexerHandlingStrategy> indexerHandlingStrategies;
+
 
 
     public List<Indexer> getIndexers() {
@@ -83,8 +82,7 @@ public class SearchModuleProvider {
                     continue;
                 }
 
-                Indexer searchModule = beanFactory.createBean(optionalStrategy.get().getIndexerClass());
-                beanFactory.autowireBean(searchModule);
+                Indexer searchModule = indexerInstantiator.instantiateIndexer(optionalStrategy.get().getName());
                 logger.info("Initializing indexer {}", config.getName());
 
                 IndexerEntity indexerEntity = indexerRepository.findByName(config.getName());

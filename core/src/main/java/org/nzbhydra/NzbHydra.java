@@ -90,7 +90,6 @@ public class NzbHydra {
 
         if (System.getenv("HYDRA_NATIVE_BUILD") != null) {
             logger.warn("Running for native build");
-            System.setProperty("spring.datasource.url", "jdbc:h2:mem:testdb");
 
             String dataFolder = "./data";
             NzbHydra.setDataFolder(dataFolder);
@@ -102,7 +101,7 @@ public class NzbHydra {
             setApplicationPropertiesFromConfig();
 
             SpringApplication hydraApplication = new SpringApplication(NzbHydra.class);
-            hydraApplication.run(args);
+            applicationContext = hydraApplication.run(args);
             logger.info("Native application returned");
 
         }

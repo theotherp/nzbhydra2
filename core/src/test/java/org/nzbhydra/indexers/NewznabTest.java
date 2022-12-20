@@ -119,7 +119,8 @@ public class NewznabTest {
     private ConfigProvider configProviderMock;
 
     @InjectMocks
-    private Newznab testee = new Newznab();
+    private Newznab testee = new Newznab(configProviderMock,indexerRepositoryMock,searchResultRepositoryMock, indexerApiAccessRepositoryMock, shortRepositoryMock, null,indexerWebAccessMock,resultAcceptorMock,
+        categoryProviderMock,infoProviderMock,null,queryGeneratorMock,null,unmarshallerMock);
 
 
     @Before
