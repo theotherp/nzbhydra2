@@ -151,5 +151,8 @@
   },
   {
     "interfaces":["org.springframework.web.bind.annotation.ResponseStatus"]
+  },
+  {
+    "interfaces":["org.mockito.plugins.PluginSwitch"]
   }
 ]

@@ -1,0 +1,22 @@
+name: Native Build
+
+on: [ workflow_dispatch ]
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+            - name: NativeImage
+              uses: graalvm/setup-graalvm@v1
+              with:
+                  java-version: '17'
+                  version: 'latest'
+                  components: 'native-image'
+                  cache: maven
+            - name: Build
+              working-directory: ./core
+              run: |
+                  java --version
+                  gu --version
+                  mvn -P native native:compile -DskipTests
