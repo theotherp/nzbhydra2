@@ -15,5 +15,6 @@ nzbhydra.pid
 /pyInstaller/**/*.py
 /pyInstaller/**/*.ico
 /pyInstaller/**/VersionInfo*.txt
+/pyInstaller/**/*.spec
 /**/dist/
 /venv
