@@ -1,0 +1,8 @@
+FROM python:3.8.2-alpine
+RUN apk update && apk add bash
+COPY core /
+RUN ["chmod", "+x", "/core"]
+CMD ["/core"]
+
+# To debug docker run --rm -it --entrypoint bash <image-name-or-id>
+# or for a running container docker exec -it <container-name-or-id> bash
