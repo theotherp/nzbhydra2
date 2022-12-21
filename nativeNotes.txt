@@ -24,10 +24,7 @@ Native:
     Check out https://www.graalvm.org/22.2/reference-manual/native-image/guides/use-graalvm-dashboard/
     Compare with https://gist.github.com/linux-china/8745394fbc308168b20068386771ea1b
     Add package / asset with jar and python3 wrapper only (call it os agnostic)
-    docker containers should probably just call the executable?
-        check if xmx actually needed
     Change update mechanism
-    add marker file for windows, linux, macos, agnostic
 
 
 General:

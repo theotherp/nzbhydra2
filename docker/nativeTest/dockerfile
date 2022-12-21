@@ -1,5 +1,6 @@
-FROM python:3.8.2-alpine
-RUN apk update && apk add bash
+FROM frolvlad/alpine-glibc
+#RUN apk update && apk add bash && apk add gcompat && apk add --no-cache libstdc++ && apk add freetype && apk add --no-cache  python3 && apk add --no-cache  py3-pip
+RUN apk update && apk add --no-cache bash && apk add --no-cache python3 && apk add --no-cache py3-pip
 COPY core /
 RUN ["chmod", "+x", "/core"]
 CMD ["/core"]
