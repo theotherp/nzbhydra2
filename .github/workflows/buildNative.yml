@@ -7,7 +7,8 @@ jobs:
     build:
         strategy:
             matrix:
-                os: [ubuntu-latest, windows-latest, macOS-latest]
+#                os: [ubuntu-latest, windows-latest, macOS-latest]
+                os: [ macOS-latest ]
         env:
             HYDRA_NATIVE_BUILD: true
         runs-on: ${{ matrix.os }}
@@ -29,6 +30,7 @@ jobs:
                     version: 'latest'
                     components: 'native-image'
                     cache: 'maven'
+                    github-token: ${{ secrets.GITHUB_TOKEN }}
             -   name: Build
                 working-directory: ./core
                 run: |
