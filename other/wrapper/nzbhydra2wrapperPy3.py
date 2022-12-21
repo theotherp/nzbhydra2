@@ -315,6 +315,9 @@ def startup():
             args.java = "core.exe"
         else:
             args.java = "core"
+    if not os.path.exists(args.java):
+        logger.critical("Error: executable " + args.java + " does not exist")
+        sys.exit(-1)
 
     debugSwitchFile = os.path.join(args.datafolder, "DEBUG")
     if os.path.exists(debugSwitchFile):

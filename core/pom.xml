@@ -490,7 +490,6 @@
                             <artifactId>native-maven-plugin</artifactId>
                             <configuration>
                                 <buildArgs>
-                                    <buildArg>--static</buildArg>
                                     <buildArg>-H:+ReportExceptionStackTraces</buildArg>
                                     <buildArg>--initialize-at-build-time=org.apache.commons.logging.LogFactoryService</buildArg>
                             </buildArgs>

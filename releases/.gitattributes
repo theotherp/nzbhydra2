@@ -1,0 +1,3 @@
+linux-release/binaries/v1/nzbhydra2 filter=lfs diff=lfs
+windows-release/binaries/v1/NZBHydra2.exe filter=lfs diff=lfs
+windows-release/binaries/v1/NZBHydra2[[:space:]]Console.exe filter=lfs

@@ -82,7 +82,7 @@ public class OutdatedWrapperDetector implements ProblemDetector {
             boolean outdatedWrapperFound = false;
             if (wrapperFile.exists()) {
                 try {
-                    HashCode hash = Files.hash(wrapperFile, Hashing.sha1());
+                    HashCode hash = Files.asByteSource(wrapperFile).hash( Hashing.sha1());
                     final String expectedHash = filenamesToExpectedHashes.get(filename);
                     final String actualHash = hash.toString();
                     if (!expectedHash.equals(actualHash)) {

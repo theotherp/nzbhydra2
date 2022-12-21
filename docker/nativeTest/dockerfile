@@ -1,9 +1,13 @@
-FROM frolvlad/alpine-glibc
-#RUN apk update && apk add bash && apk add gcompat && apk add --no-cache libstdc++ && apk add freetype && apk add --no-cache  python3 && apk add --no-cache  py3-pip
-RUN apk update && apk add --no-cache bash && apk add --no-cache python3 && apk add --no-cache py3-pip
+# alpine doesn't work because we need libgc for the native image
+FROM ubuntu:22.04
+# See https://octopus.com/blog/using-ubuntu-docker-image
+RUN echo 'APT::Install-Suggests "0";' >> /etc/apt/apt.conf.d/00-docker
+RUN echo 'APT::Install-Recommends "0";' >> /etc/apt/apt.conf.d/00-docker
+# Python isn't needed for tests
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y libfreetype6 && rm -rf /var/lib/apt/lists/*
 COPY core /
 RUN ["chmod", "+x", "/core"]
-CMD ["/core"]
+CMD ["/core", "directstart"]
 
 # To debug docker run --rm -it --entrypoint bash <image-name-or-id>
 # or for a running container docker exec -it <container-name-or-id> bash

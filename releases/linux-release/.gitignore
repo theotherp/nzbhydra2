@@ -2,7 +2,3 @@ target/
 .idea/*
 *.iws
 *.ipr
-*.exe
-include/nzbhydra2
-/binaries/v1/*
-/binaries/v2/*

@@ -21,7 +21,7 @@
             <lineEnding>keep</lineEnding>
         </fileSet>
         <fileSet>
-            <directory>binaries/v2/</directory>
+            <directory>binaries/v1/</directory>
             <outputDirectory>./</outputDirectory>
         </fileSet>
         <fileSet>
