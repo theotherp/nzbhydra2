@@ -40,7 +40,7 @@ jobs:
                 if: runner.os == 'Linux'
                 with:
                     name: core
-                    path: /home/runner/work/nzbhydra2/nzbhydra2/core/target/core
+                    path: /Users/runner/work/nzbhydra2/nzbhydra2/core/target/core
             -   name: Upload macOS artifact
                 uses: actions/upload-artifact@v3
                 if: runner.os == 'macOS'
