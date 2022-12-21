@@ -30,7 +30,6 @@ jobs:
                     version: 'latest'
                     components: 'native-image'
                     cache: 'maven'
-                    native-image-musl: true
                     github-token: ${{ secrets.GITHUB_TOKEN }}
             -   name: Build
                 working-directory: ./core

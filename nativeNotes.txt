@@ -36,4 +36,5 @@ General:
     https://levelup.gitconnected.com/upgrade-java8-to-java17-every-java-developer-should-know-43358b30532a
     Parameters in wrapper
     Build tests that run against an instance running native code
+    Wrapper and update manager must support 4.x and 5.0
 

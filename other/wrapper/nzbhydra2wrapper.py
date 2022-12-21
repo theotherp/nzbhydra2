@@ -21,6 +21,7 @@ import re
 import shutil
 import subprocess
 import zipfile
+import json
 from __builtin__ import file
 from logging.handlers import RotatingFileHandler
 
@@ -40,6 +41,7 @@ logger.addHandler(console_logger)
 file_logger = None
 logger.setLevel(LOGGER_DEFAULT_LEVEL)
 consoleLines = []
+
 
 def getBasePath():
     global basepath
@@ -289,13 +291,17 @@ def startup():
     if not os.path.exists(readme):
         logger.critical("Unable to determine base path correctly. Please make sure to run NZBHydra in the folder where its binary is located. Current base path: " + basePath)
         sys.exit(-1)
-    core = False
-    if os.path.isfile("core"):
-        args.java = "core"
-        core = True
-    if os.path.isfile("core.exe"):
-        args.java = "core.exe"
-        core = True
+
+    releaseType = determineReleaseType()
+    isWindows = platform.system().lower() == "windows"
+
+    if releaseType == "generic":
+        args.java = "java"
+    else:
+        if isWindows:
+            args.java = "core.exe"
+        else:
+            args.java = "core"
 
     debugSwitchFile = os.path.join(args.datafolder, "DEBUG")
     if os.path.exists(debugSwitchFile):
@@ -305,9 +311,8 @@ def startup():
         console_logger.setLevel("DEBUG")
         logger.info("Setting wrapper log level to DEBUG")
 
-    isWindows = platform.system().lower() == "windows"
     libFolder = os.path.join(basePath, "lib")
-    if not core:
+    if releaseType == "generic":
         if not os.path.exists(libFolder):
             logger.critical("Error: Lib folder %s not found. An update might've failed or the installation folder is corrupt", libFolder)
             sys.exit(-1)
@@ -375,38 +380,23 @@ def startup():
         logger.info("Removing superfluous M from XMX value " + xmx)
         xmx = xmx[:-1]
 
-    javaVersion = args.javaversion
-    if javaVersion is None and not core:
+    if releaseType == "generic":
         javaVersion = getJavaVersion(args.java)
-    if core:
-        javaVersion = 17
+        if javaVersion < 17:
+            logger.critical("Error: Java 17 (not older, not newer) is required")
+            sys.exit(-1)
+
     gcLogFilename = (os.path.join(args.datafolder, "logs") + "/gclog-" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".log").replace("\\", "/")
     gcLogFilename = os.path.relpath(gcLogFilename, basePath)
 
-    gcArguments = []
-    if javaVersion < 9:
-        gcArguments = ["-Xloggc:" + gcLogFilename,
-                       "-XX:+PrintGCDetails",
-                       "-XX:+PrintGCTimeStamps",
-                       "-XX:+PrintTenuringDistribution",
-                       "-XX:+PrintGCCause",
-                       "-XX:+UseGCLogFileRotation",
-                       "-XX:NumberOfGCLogFiles=10",
-                       "-XX:GCLogFileSize=5M",
-                       ]
-    else:
-        gcArguments = [
-            "-Xlog:gc*:file=" + gcLogFilename + "::filecount=10,filesize=5000"]
+    gcArguments = [
+        "-Xlog:gc*:file=" + gcLogFilename + "::filecount=10,filesize=5000"]
 
-    java_arguments = ["-Xmx" + xmx + "M",
-                      "-DfromWrapper=true"
-                      ]
-    if not core:
+    java_arguments = ["-Xmx" + xmx + "M", "-DfromWrapper=true"]
+    if releaseType == "generic":
         java_arguments.append("-XX:TieredStopAtLevel=1")
         java_arguments.append("-XX:+HeapDumpOnOutOfMemoryError")
         java_arguments.append("-XX:HeapDumpPath=" + os.path.join(args.datafolder, "logs"))
-    if javaVersion < 13:
-        java_arguments.append("-noverify")
     if logGc:
         java_arguments.extend(gcArguments)
     if args.debugport:
@@ -416,10 +406,10 @@ def startup():
     if args.debug:
         java_arguments.append("-Ddebug=true")
 
-    if not core:
-        arguments = [args.java] + java_arguments + ["-jar", escape_parameter(isWindows, jarFile)] + arguments
-    else:
+    if releaseType == "native":
         arguments = [args.java] + java_arguments + arguments
+    else:
+        arguments = [args.java] + java_arguments + ["-jar", escape_parameter(isWindows, jarFile)] + arguments
     commandLine = " ".join(arguments)
     logger.info("Starting NZBHydra main process with command line: %s in folder %s", commandLine, basePath)
     if hasattr(subprocess, 'STARTUPINFO'):
@@ -455,6 +445,21 @@ def startup():
         return process
     except Exception as e:
         logger.error("Unable to start process; make sure Java is installed and callable. Error message: " + str(e))
+
+
+def determineReleaseType():
+    if os.path.exists("ReleaseInfo.json"):
+        with open("ReleaseInfo.json", 'r') as f:
+            versionInfo = json.load(f)
+        releaseType = versionInfo["ReleaseType"]
+    elif os.path.exists("lib"):
+        releaseType = "generic"
+    else:
+        logger.critical(
+            "Unable to determine the release type. No VersionInfo.json file and no lib folder found")
+        sys.exit(-1)
+    logger.info("Determined release type: " + releaseType)
+    return releaseType
 
 
 def escape_parameter(is_windows, parameter):
@@ -536,7 +541,7 @@ if __name__ == '__main__':
     GracefulKiller()
     parser = argparse.ArgumentParser(description='NZBHydra 2')
     parser.add_argument('--java', action='store', help='Full path to java executable', default="java")
-    parser.add_argument('--javaversion', action='store',help='Force version of java  for which parameters java will be created', default=None)
+    parser.add_argument('--javaversion', action='store', help='Force version of java for which parameters java will be created', default=None)
     parser.add_argument('--debugport', action='store', help='Set debug port to enable remote debugging', default=None)
     parser.add_argument('--daemon', '-D', action='store_true', help='Run as daemon. *nix only', default=False)
     parser.add_argument('--pidfile', action='store', help='Path to PID file. Only relevant with daemon argument', default="nzbhydra2.pid")
@@ -559,6 +564,7 @@ if __name__ == '__main__':
 
     # Internal logic
     parser.add_argument('--restarted', action='store_true', default=False, help=argparse.SUPPRESS)
+    parser.add_argument('--update', action='store_true', default=False, help=argparse.SUPPRESS)
 
     args, unknownArgs = parser.parse_known_args()
     setupLogger()
@@ -580,6 +586,10 @@ if __name__ == '__main__':
     if os.path.exists(controlIdFilePath):
         os.remove(controlIdFilePath)
     doStart = True
+    if args.update:
+        logger.info("Executing update")
+        update()
+        sys.exit(0)
 
     if "--version" in unknownArgs or "--help" in unknownArgs:
         # no fancy shit, just start the file

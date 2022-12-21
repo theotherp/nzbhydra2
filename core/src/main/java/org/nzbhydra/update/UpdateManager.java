@@ -254,7 +254,7 @@ public class UpdateManager implements InitializingBean {
 
                     return upToVersion.isSameOrNewer(changeVersion) && changeVersion.isUpdateFor(currentVersion);
                 }
-        ).sorted(Comparator.reverseOrder()).collect(Collectors.toList());
+        ).sorted(Comparator.reverseOrder()).toList();
 
         return collectedVersionChanges.stream()
                 .sorted(Comparator.reverseOrder())
@@ -300,7 +300,7 @@ public class UpdateManager implements InitializingBean {
      */
     public List<ChangelogVersionEntry> getAutomaticUpdateVersionHistory() throws UpdateException {
         Optional<String> previousVersion = genericStorage.get(AutomaticUpdater.TO_NOTICE_KEY, String.class);
-        if (!previousVersion.isPresent()) {
+        if (previousVersion.isEmpty()) {
             logger.error("Unable to find the version from which the automatic update was installed");
             return Collections.emptyList();
         }
@@ -365,10 +365,6 @@ public class UpdateManager implements InitializingBean {
             } catch (Exception e) {
                 throw new UpdateException("Unable to create backup before update", e);
             }
-        }
-
-        if (release.getTagName().equals("v2.7.6")) {
-            applicationEventPublisher.publishEvent(new UpdateEvent(UpdateEvent.State.MIGRATION_NEEDED, "NZBHydra's restart after the update will take longer than usual because the database needs to be migrated."));
         }
 
         if (isAutomaticUpdate) {

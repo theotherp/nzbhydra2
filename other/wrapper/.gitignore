@@ -18,3 +18,4 @@ nzbhydra.pid
 /pyInstaller/**/*.spec
 /**/dist/
 /venv
+/venv_py3
