@@ -31,3 +31,7 @@ jobs:
                   java --version
                   gu --version
                   mvn --batch-mode -P native native:compile -DskipTests
+            -   uses: actions/upload-artifact@v3
+                with:
+                    name: core
+                    path: /home/runner/work/nzbhydra2/nzbhydra2/core/target/core
