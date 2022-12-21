@@ -20,5 +20,20 @@ https://docs.spring.io/spring-boot/docs/current/reference/html/native-image.html
 
 
 TODO
-Check out https://www.graalvm.org/22.2/reference-manual/native-image/guides/use-graalvm-dashboard/
-Compare with https://gist.github.com/linux-china/8745394fbc308168b20068386771ea1b
+Native:
+    Check out https://www.graalvm.org/22.2/reference-manual/native-image/guides/use-graalvm-dashboard/
+    Compare with https://gist.github.com/linux-china/8745394fbc308168b20068386771ea1b
+    Add package / asset with jar and python3 wrapper only (call it os agnostic)
+    docker containers should probably just call the executable?
+        check if xmx actually needed
+    Change update mechanism
+    add marker file for windows, linux, macos, agnostic
+
+
+General:
+    Migrate successfully on windows and linux
+    Test with new instances
+    https://levelup.gitconnected.com/upgrade-java8-to-java17-every-java-developer-should-know-43358b30532a
+    Parameters in wrapper
+    Build tests that run against an instance running native code
+

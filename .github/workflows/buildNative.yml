@@ -38,17 +38,19 @@ jobs:
                 uses: actions/upload-artifact@v3
                 if: runner.os == 'Linux'
                 with:
-                    name: core
-                    path: target/core
+                    name: coreLinux
+                    path: /home/runner/work/nzbhydra2/nzbhydra2/core/target/core
             -   name: Upload macOS artifact
                 uses: actions/upload-artifact@v3
                 if: runner.os == 'macOS'
                 with:
-                    name: core
-                    path: target/core
+                    name: coreMacOS
+                    path: /Users/runner/work/nzbhydra2/nzbhydra2/core/target/core
             -   name: Upload windows artifact
                 uses: actions/upload-artifact@v3
                 if: runner.os == 'Windows'
                 with:
-                    name: core
-                    path: target/*.exe
+                    name: coreWindows
+                    path: |
+                        D:\a\nzbhydra2\nzbhydra2\core\target\core.exe
+                        D:\a\nzbhydra2\nzbhydra2\core\target\*.dll
