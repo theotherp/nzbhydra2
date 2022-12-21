@@ -32,8 +32,6 @@ jobs:
             -   name: Build
                 working-directory: ./core
                 run: |
-                  java --version
-                  gu --version
                   mvn --batch-mode -P native native:compile -DskipTests
             -   name: Upload linux artifact
                 uses: actions/upload-artifact@v3
