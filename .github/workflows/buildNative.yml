@@ -8,6 +8,7 @@ jobs:
         strategy:
             matrix:
                 os: [ ubuntu-latest, macOS-latest, windows-latest ]
+            fail-fast: false
         env:
             HYDRA_NATIVE_BUILD: true
         runs-on: ${{ matrix.os }}
