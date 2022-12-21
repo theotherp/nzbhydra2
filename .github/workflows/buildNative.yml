@@ -7,12 +7,10 @@ jobs:
     build:
         strategy:
             matrix:
-#                os: [ubuntu-latest, windows-latest, macOS-latest]
-                os: [ macOS-latest, windows-latest ]
+                os: [ ubuntu-latest, macOS-latest, windows-latest ]
         env:
             HYDRA_NATIVE_BUILD: true
         runs-on: ${{ matrix.os }}
-#        runs-on: self-hosted
         steps:
             -   uses: actions/checkout@v3
             -   name: Set up JDK 17
@@ -40,16 +38,16 @@ jobs:
                 if: runner.os == 'Linux'
                 with:
                     name: core
-                    path: /Users/runner/work/nzbhydra2/nzbhydra2/core/target/core
+                    path: target/core
             -   name: Upload macOS artifact
                 uses: actions/upload-artifact@v3
                 if: runner.os == 'macOS'
                 with:
                     name: core
-                    path: /home/runner/work/nzbhydra2/nzbhydra2/core/target/core
+                    path: target/core
             -   name: Upload windows artifact
                 uses: actions/upload-artifact@v3
                 if: runner.os == 'Windows'
                 with:
                     name: core
-                    path: /home/runner/work/nzbhydra2/nzbhydra2/core/target/core.exe
+                    path: target/*.exe
