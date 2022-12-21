@@ -40,8 +40,6 @@ public class ReleaseMojo extends AbstractMojo {
     @Parameter(property = "githubTokenFile", required = false)
     protected File githubTokenFile;
 
-    @Parameter(property = "githubReleasesUrl", required = true)
-    protected String githubReleasesUrl;
 
     @Parameter(property = "tagName", required = true)
     protected String tagName;
@@ -58,12 +56,22 @@ public class ReleaseMojo extends AbstractMojo {
     @Parameter(property = "changelogJsonFile", required = true)
     protected File changelogJsonFile;
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    protected String githubReleasesUrl;
 
 
     @Override
     public void execute() throws MojoExecutionException {
         client = new OkHttpClient.Builder().readTimeout(25, TimeUnit.SECONDS).connectTimeout(25, TimeUnit.SECONDS).build();
+        if (githubReleasesUrl == null) {
+            if (System.getenv("githubReleasesUrl") != null) {
+                githubReleasesUrl = System.getenv("githubReleasesUrl");
+            } else if (System.getProperty("githubReleasesUrl") != null) {
+                githubReleasesUrl = System.getProperty("githubReleasesUrl");
+            } else {
+                throw new MojoExecutionException("githubReleasesUrl not set anywhere");
+            }
+        }
 
         getLog().info("Will release version " + tagName + " to GitHub");
 
@@ -82,6 +90,9 @@ public class ReleaseMojo extends AbstractMojo {
             } catch (IOException e) {
                 throw new MojoExecutionException("Unable to read token.txt", e);
             }
+        }
+        if (githubToken == null && System.getenv("GITHUB_TOKEN") != null) {
+            githubToken = System.getenv("GITHUB_TOKEN");
         }
 
 

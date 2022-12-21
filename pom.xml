@@ -35,7 +35,6 @@
                 <version>2.0.0</version>
                 <configuration>
                     <commitish>master</commitish>
-                    <githubReleasesUrl>https://api.github.com/repos/theotherp/nzbhydra2/releases</githubReleasesUrl>
                     <githubTokenFile>${basedir}/core/token.txt</githubTokenFile>
                     <linuxAsset>${basedir}/releases/linux-release/target/nzbhydra2-${project.version}-linux.zip</linuxAsset>
                     <windowsAsset>${basedir}/releases/windows-release/target/nzbhydra2-${project.version}-windows.zip</windowsAsset>

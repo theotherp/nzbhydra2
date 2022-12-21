@@ -46,7 +46,7 @@ public class SetReleaseFinalMojo extends AbstractMojo {
 
     protected String version = System.getProperty("finalVersion");
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper();
     private OkHttpClient client;
 
     @Override
@@ -61,6 +61,9 @@ public class SetReleaseFinalMojo extends AbstractMojo {
             } catch (IOException e) {
                 throw new MojoExecutionException("Unable to read token.txt", e);
             }
+        }
+        if (githubToken == null && System.getenv("GITHUB_TOKEN") != null) {
+            githubToken = System.getenv("GITHUB_TOKEN");
         }
 
         client = new OkHttpClient.Builder().readTimeout(25, TimeUnit.SECONDS).connectTimeout(25, TimeUnit.SECONDS).build();
