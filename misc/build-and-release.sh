@@ -7,7 +7,7 @@ echo "call like this misc/build-and-release.sh 0.0.3 0.0.4 <skiptests> from main
 [[ -z "$1" ]] && { echo "Release version missing" ; exit 1; }
 [[ -z "$2" ]] && { echo "New snapshot version missing" ; exit 1; }
 
-if [[ -z "${DEPLOY_ENV}" ]]; then
+if [[ -z "${githubReleasesUrl}" ]]; then
     echo "Environment variable githubReleasesUrl not set. It should look like this: https://api.github.com/repos/theotherp/nzbhydra2/releases"
     exit 1
 fi
@@ -46,7 +46,7 @@ if [[ "$?" -ne 0 ]] ; then
 fi
 
 echo "Setting release version"
-call mvn versions:set -DnewVersion=%1
+call mvn versions:set -DnewVersion="$1"
 if [[ "$?" -ne 0 ]] ; then
     echo "Error setting release version"
     exit 1
@@ -80,6 +80,16 @@ if [[ "$?" -ne 0 ]] ; then
     exit 1
 fi
 
+if [[ ! -f releases/linux-release/include/core ]] ; then
+    echo "releases/linux-release/include/core does not exist"
+    exit 1
+fi
+if [[ ! -f releases/windows-release/include/core.exe ]] ; then
+    echo "releases/windows-release/include/core.exe does not exist"
+    exit 1
+fi
+
+
 echo "Making version effective ***********************************************************************"
 call mvn versions:commit
 if [[ "$?" -ne 0 ]] ; then
@@ -89,7 +99,7 @@ fi
 
 :commitrelease
 echo "Committing ***********************************************************************"
-call git commit -am "Update to %1"
+call git commit -am "Update to $1"
 if [[ "$?" -ne 0 ]] ; then
     echo "Error committinging new source code"
     exit 1
@@ -97,7 +107,7 @@ fi
 
 :tag
 echo "Tagging ***********************************************************************"
-call git tag -a v%1 -m "v%1"
+call git tag -a v"$1" -m "v$1"
 if [[ "$?" -ne 0 ]] ; then
     echo "Error setting tag"
     exit 1
@@ -121,7 +131,7 @@ fi
 
 :newsnapshot
 echo "Setting new snapshot version ***********************************************************************"
-call mvn versions:set -DnewVersion=%2-SNAPSHOT
+call mvn versions:set -DnewVersion="$2"-SNAPSHOT
 if [[ "$?" -ne 0 ]] ; then
     echo "Error setting new snapshot"
     exit 1
@@ -131,7 +141,7 @@ fi
 echo "Making snapshot version effective ***********************************************************************"
 call mvn versions:commit
 if [[ "$?" -ne 0 ]] ; then
-    echo "Error setting version effective"
+    echo "Error setting snapshot version effective"
     exit 1
 fi
 
@@ -145,7 +155,7 @@ fi
 
 :commitsnapshot
 echo "Committing snapshot ***********************************************************************"
-call git commit -am "Set snapshot to %2"
+call git commit -am "Set snapshot to $2"
 if [[ "$?" -ne 0 ]] ; then
     echo "Error commiting new snapshot source code"
     exit 1

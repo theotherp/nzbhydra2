@@ -8,9 +8,11 @@
 
     <fileSets>
         <fileSet>
-            <directory>include</directory>
-            <outputDirectory>./</outputDirectory>
-            <lineEnding>keep</lineEnding>
+            <directory>../../core/target</directory>
+            <outputDirectory>./lib/</outputDirectory>
+            <includes>
+                <include>*exec.jar</include>
+            </includes>
         </fileSet>
         <fileSet>
             <directory>../../</directory>

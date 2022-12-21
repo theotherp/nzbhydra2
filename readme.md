@@ -26,23 +26,18 @@ Honest recommendation: If you don't understand what any or most of that means th
 
 ## How to Run
 
-You need Java 17. You can use [OpenJDK](https://adoptium.net/).
-
-Download the [latest release of NZBHydra 2](https://github.com/theotherp/nzbhydra2/releases/latest) for your platform ("linux" is any platform but windows). Extract it anywhere (the zip does not include a base directory) and start using the
+Download the [latest release of NZBHydra 2](https://github.com/theotherp/nzbhydra2/releases/latest) for your platform. Extract it anywhere (the zip does not include a base directory) and start using the
 appropriate way:
-* On Windows (64-bit) you can either start `NZBHydra2.exe` which will add a tray icon (give it some time) or `NZBHydra2 Console.exe` which will open a console window. Note: Do *not* use the folders `C:\Program Files` or `C:\Program Files (x86)`.
-* On Linux start `nzbhydra2` (currently working only on x64). You may need to `chmod +x` it first. 
-* On Mac: No executable yet, see next point
-* If you cannot run the executables for some reason, there's another way (the executables are just compiled Java):
-  * Download [nzbhydra2wrapper.py](https://raw.githubusercontent.com/theotherp/nzbhydra2/master/other/wrapper/nzbhydra2wrapper.py) or [nzbhydra2wrapperPy3.py](https://raw.githubusercontent.com/theotherp/nzbhydra2/master/other/wrapper/nzbhydra2wrapperPy3.py), put it in the NZBHydra folder containing the executables and run it with Python 2.7 or Python 3.5+, respectively.
-  * Or you can use...
-* Docker. You might want to use [hotio's container](https://hub.docker.com/r/hotio/nzbhydra2/), [binhex's container](https://hub.docker.com/r/binhex/arch-nzbhydra2/) or the one by popular maintainers [LinuxServer.io](https://github.com/linuxserver/docker-nzbhydra2).
+* On Windows (x64) you can either start `NZBHydra2.exe` which will add a tray icon (give it some time) or `NZBHydra2 Console.exe` which will open a console window.
+  * Note: Do *not* use the folders `C:\Program Files` or `C:\Program Files (x86)`.
+* On Linux (x64) start `nzbhydra2`. You may need to `chmod +x` it first.
+* On any other OS or architecture or as a fallback:
+  * You need to install [Java 17](https://adoptium.net/) (not lower, not higher).
+  * Download the generic asset. This contains python scripts and java libraries. Run either wrapper file (Python 2.7 / 3.x respectively). This should work basically everwhere.
+  * The Java executable is expected to be in the PATH. If it's not and you can't/won't put it there then you need to provide the full path using the `--java` paramater.
+* Docker: You can choose between [hotio's container](https://hub.docker.com/r/hotio/nzbhydra2/), [binhex's container](https://hub.docker.com/r/binhex/arch-nzbhydra2/) or the one by [LinuxServer.io](https://github.com/linuxserver/docker-nzbhydra2).
 
 After a while your browser should open to http://127.0.0.1:5076.
-
-The Java executable is expected to be in the PATH. If it's not and you can't/won't put it there then you need to provide the full path using the `--java` paramater.
-
-If you get SSL errors when contacting indexers please update your Java runtime.
 
 ### Install as a Service
 
@@ -52,12 +47,6 @@ Please see the [wiki](https://github.com/theotherp/nzbhydra2/wiki/Windows-servic
 * Without a "proper" indexer that supports media ID based searches (anything unlike Binsearch, NZBINdex, Anizb, etc) automation tools like Sonarr or Radarr will not work properly
 * Hydra queries indexers for the latest 100 results for a given search query and aggregates them on the GUI. That means that even if you sort the results by, say, the name then older results not yet loaded may be missing. You will never know if a certain result is available unless you click the "Load more / Load all" buttons. This may require many API hits and take some time. I recommend using queries that are specific enough to return less than 100 results.
 
-### A Note on Memory
-
-The memory usage mainly depends on the database size which depends on the amount of indexers you use, how long you've been running NZBHydra and how many queries are done.
-
-"Normal" sized installations with five indexers should run great with the default memory settings. With a big history and a dozen or more indexers you may need to increase
-the memory usage (see main config), especially for calculating stats.
 
 ### Disclaimer
 
@@ -67,7 +56,7 @@ Bugs may/do exist. Don't run it on the machine where the nuclear launch codes ar
 
 Generally testing and any bug reports are very welcome.
 
-The backend is written in Java and uses Spring Boot with an H2 file database. Maven is used for dependency management and build. 
+The backend is written in Java and uses Spring Boot with an H2 file database. Maven is used for dependency management and build.
 
 Project structure:
 * `core`: The main code for the project

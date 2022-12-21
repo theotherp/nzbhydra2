@@ -53,6 +53,9 @@ public class ReleaseMojo extends AbstractMojo {
     @Parameter(property = "linuxAsset", required = true)
     protected File linuxAsset;
 
+    @Parameter(property = "genericAsset", required = true)
+    protected File genericAsset;
+
     @Parameter(property = "changelogJsonFile", required = true)
     protected File changelogJsonFile;
 
@@ -84,6 +87,10 @@ public class ReleaseMojo extends AbstractMojo {
             throw new MojoExecutionException("Unable to find linux asset at " + linuxAsset.getAbsolutePath());
         }
 
+        if (!genericAsset.exists()) {
+            throw new MojoExecutionException("Unable to find generic asset at " + genericAsset.getAbsolutePath());
+        }
+
         if (githubTokenFile != null && githubTokenFile.exists()) {
             try {
                 githubToken = new String(Files.readAllBytes(githubTokenFile.toPath()));
@@ -98,6 +105,7 @@ public class ReleaseMojo extends AbstractMojo {
 
         getLog().info("Will use windows asset " + windowsAsset.getAbsolutePath());
         getLog().info("Will use linux asset " + linuxAsset.getAbsolutePath());
+        getLog().info("Will use generic asset " + genericAsset.getAbsolutePath());
         getLog().info("Will use changelog entry from " + changelogJsonFile.getAbsolutePath());
 
         try {
@@ -218,6 +226,24 @@ public class ReleaseMojo extends AbstractMojo {
         } catch (IOException e) {
             getLog().error("Error while uploading linux asset", e);
             throw new MojoExecutionException("When trying to upload linux asset the following error occurred: " + e.getMessage());
+        }
+
+        getLog().info("Uploading generic asset to " + uploadUrl);
+        name = genericAsset.getName();
+        try {
+            Builder callBuilder = new Builder().header("Content-Length", String.valueOf(genericAsset.length())).url(uploadUrl + "?name=" + name);
+            callBuilder.header("Authorization", "token " + githubToken);
+            response = client.newCall(callBuilder
+                .post(
+                    RequestBody.create(MediaType.parse("application/gzip"), genericAsset))
+                .build()).execute();
+            if (!response.isSuccessful()) {
+                throw new MojoExecutionException("When trying to upload generic asset Github returned code " + response.code() + " and message: " + response.message());
+            }
+            getLog().info("Successfully uploaded generic asset");
+        } catch (IOException e) {
+            getLog().error("Error while uploading generic asset", e);
+            throw new MojoExecutionException("When trying to upload generic asset the following error occurred: " + e.getMessage());
         }
     }
 

@@ -38,6 +38,7 @@ public class ReleaseMojoTest extends AbstractMojoTestCase {
         releaseMojo.githubReleasesUrl = url.toString();
         releaseMojo.windowsAsset = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/windowsAsset.txt");
         releaseMojo.linuxAsset = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/linuxAsset.txt");
+        releaseMojo.genericAsset = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/genericAsset.txt");
 
         releaseMojo.execute();
         verifyExecution(server);
@@ -52,6 +53,7 @@ public class ReleaseMojoTest extends AbstractMojoTestCase {
         ));
         releaseMojo.windowsAsset = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/windowsAsset.txt");
         releaseMojo.linuxAsset = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/linuxAsset.txt");
+        releaseMojo.genericAsset = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/genericAsset.txt");
 
         try {
             releaseMojo.execute();
@@ -70,6 +72,7 @@ public class ReleaseMojoTest extends AbstractMojoTestCase {
         releaseMojo.githubReleasesUrl = "http://127.0.0.1";
         releaseMojo.windowsAsset = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/windowsAsset.txt");
         releaseMojo.linuxAsset = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/linuxAsset.txt");
+        releaseMojo.genericAsset = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/genericAsset.txt");
 
         try {
             releaseMojo.execute();
@@ -91,6 +94,7 @@ public class ReleaseMojoTest extends AbstractMojoTestCase {
         releaseMojo.githubReleasesUrl = url.toString();
         releaseMojo.windowsAsset = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/windowsAsset.txt");
         releaseMojo.linuxAsset = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/linuxAsset.txt");
+        releaseMojo.genericAsset = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/genericAsset.txt");
 
         releaseMojo.execute();
 

@@ -1,13 +1,13 @@
 name: Native Build
 
-on: [ workflow_dispatch, push ]
+on: [ workflow_dispatch, push, workflow_call ]
 
 
 jobs:
     build:
         strategy:
             matrix:
-                os: [ ubuntu-20.04, macOS-latest, windows-latest ]
+                os: [ ubuntu-20.04, windows-latest ]
             fail-fast: false
         env:
             HYDRA_NATIVE_BUILD: true
@@ -41,12 +41,6 @@ jobs:
                 with:
                     name: coreLinux
                     path: /home/runner/work/nzbhydra2/nzbhydra2/core/target/core
-            -   name: Upload macOS artifact
-                uses: actions/upload-artifact@v3
-                if: runner.os == 'macOS'
-                with:
-                    name: coreMacOS
-                    path: /Users/runner/work/nzbhydra2/nzbhydra2/core/target/core
             -   name: Upload windows artifact
                 uses: actions/upload-artifact@v3
                 if: runner.os == 'Windows'
