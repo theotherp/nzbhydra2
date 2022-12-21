@@ -25,7 +25,7 @@ cp NzbHydra2.spec linux/
 echo "Running linux build"
 cd linux || exit
 docker run -v "$(pwd):/src/" cdrx/pyinstaller-linux
-cp dist/linux/NZBHydra2 ../../../../releases/linux-release/binaries/v1/
+cp dist/linux/NZBHydra2 ../../../../releases/linux-release/include/nzbhydra2
 cd ../
 
 echo "Preparing windows build"
@@ -38,7 +38,7 @@ cp NzbHydra2.spec windows/
 echo "Running windows build"
 cd windows || exit
 docker run -v "$(pwd):/src/" cdrx/pyinstaller-windows
-cp dist/windows/NZBHydra2.exe ../../../../releases/windows-release/binaries/v1/
+cp dist/windows/NZBHydra2.exe ../../../../releases/windows-release/include
 cd ../
 
 echo "Preparing windows console build"
@@ -51,5 +51,5 @@ cp NZBHydra2\ Console.spec windows_console/
 echo "Running windows_console build"
 cd windows_console || exit
 docker run -v "$(pwd):/src/" cdrx/pyinstaller-windows
-cp dist/windows/NZBHydra2\ Console.exe ../../../../releases/windows-release/binaries/v1/
+cp dist/windows/NZBHydra2\ Console.exe ../../../../releases/windows-release/include
 cd ../
