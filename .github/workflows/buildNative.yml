@@ -5,10 +5,13 @@ on: [ workflow_dispatch, push ]
 
 jobs:
     build:
+        strategy:
+            matrix:
+                os: [ubuntu-latest, windows-latest, macOS-latest]
         env:
             HYDRA_NATIVE_BUILD: true
-#        runs-on: ubuntu-latest
-        runs-on: self-hosted
+        runs-on: ${{ matrix.os }}
+#        runs-on: self-hosted
         steps:
             -   uses: actions/checkout@v3
             -   name: Set up JDK 17
@@ -26,14 +29,27 @@ jobs:
                     version: 'latest'
                     components: 'native-image'
                     cache: 'maven'
-
             -   name: Build
                 working-directory: ./core
                 run: |
                   java --version
                   gu --version
                   mvn --batch-mode -P native native:compile -DskipTests
-            -   uses: actions/upload-artifact@v3
+            -   name: Upload linux artifact
+                uses: actions/upload-artifact@v3
+                if: runner.os == 'Linux'
                 with:
                     name: core
                     path: /home/runner/work/nzbhydra2/nzbhydra2/core/target/core
+            -   name: Upload macOS artifact
+                uses: actions/upload-artifact@v3
+                if: runner.os == 'macOS'
+                with:
+                    name: core
+                    path: /home/runner/work/nzbhydra2/nzbhydra2/core/target/core
+            -   name: Upload windows artifact
+                uses: actions/upload-artifact@v3
+                if: runner.os == 'Windows'
+                with:
+                    name: core
+                    path: /home/runner/work/nzbhydra2/nzbhydra2/core/target/core.exe
