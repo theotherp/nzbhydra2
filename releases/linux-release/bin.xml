@@ -21,10 +21,6 @@
             <lineEnding>keep</lineEnding>
         </fileSet>
         <fileSet>
-            <directory>binaries/v1/</directory>
-            <outputDirectory>./</outputDirectory>
-        </fileSet>
-        <fileSet>
             <directory>../../</directory>
             <outputDirectory>./</outputDirectory>
             <includes>
