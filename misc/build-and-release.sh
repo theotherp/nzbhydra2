@@ -39,7 +39,7 @@ if [[ "$?" -ne 0 ]] ; then
 fi
 
 echo "Running clean"
-call mvn -T 1C -pl "!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin,!org.nzbhydra:discordbot" clean
+call mvn -T 1C -pl "!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin,!org.nzbhydra:discordbot" clean -DskipTests=true
 if [[ "$?" -ne 0 ]] ; then
     echo "Error during clean"
     exit 1
@@ -88,7 +88,6 @@ if [[ ! -f releases/windows-release/include/core.exe ]] ; then
     echo "releases/windows-release/include/core.exe does not exist"
     exit 1
 fi
-
 
 echo "Making version effective ***********************************************************************"
 call mvn versions:commit
