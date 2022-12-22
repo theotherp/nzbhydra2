@@ -5,7 +5,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.google.common.base.Charsets;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -15,8 +14,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.JavaVersion;
-import org.apache.commons.lang3.SystemUtils;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.backup.BackupAndRestore;
 import org.nzbhydra.config.BaseConfig;
@@ -172,8 +169,10 @@ public class UpdateManager implements InitializingBean {
                 updateInfo.setBetaVersion(latestVersionWithBeta.getAsString());
             }
         }
-        if (currentVersion.major == 4 && latestVersion.major == 5 && !DebugInfosProvider.isRunInDocker() && !genericStorage.get("MANUAL_UPDATE_5x", Boolean.class).orElse(false)) {
-            logger.info("An automatic update from 4.x to 5.x is not possible. Please make the update as explained here: https://github.com/theotherp/nzbhydra2/wiki/Updating-from-4.x-to-5.x");
+        if (currentVersion.major == 4 && latestVersion.major == 5 && !DebugInfosProvider.isRunInDocker()) {
+            if (!genericStorage.get("MANUAL_UPDATE_5x", Boolean.class).orElse(false)) {
+                logger.info("An automatic update from 4.x to 5.x is not possible. Please update as explained here: https://github.com/theotherp/nzbhydra2/wiki/Updating-from-4.x-to-5.x");
+            }
             updateInfo.setUpdateAvailable(false);
             updateInfo.setBetaUpdateAvailable(false);
             genericStorage.save("MANUAL_UPDATE_5x", true);

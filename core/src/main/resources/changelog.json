@@ -1,5 +1,15 @@
 [
     {
+        "version": "v4.7.6",
+        "changes": [
+            {
+                "type": "feature",
+                "text": "The next major update (5.0.0) will require a manual update. I've added logic to handle this and prevent the automatic updates from being executed."
+            }
+        ],
+        "final": true
+    },
+    {
         "version": "v4.7.5",
         "changes": [
             {
