@@ -4,6 +4,7 @@ package org.nzbhydra.update;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.google.common.base.Charsets;
 import com.google.common.base.Supplier;
@@ -104,7 +105,7 @@ public class UpdateManager implements InitializingBean {
 
     public UpdateManager() {
         objectMapper = new ObjectMapper();
-        objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+        objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
@@ -171,10 +172,13 @@ public class UpdateManager implements InitializingBean {
                 updateInfo.setBetaVersion(latestVersionWithBeta.getAsString());
             }
         }
-        if (currentVersion.major == 4 && latestVersion.major == 5 && !SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_17)) {
-            logger.info("Update from 4.x to 5.x not supported without Java 17");
+        if (currentVersion.major == 4 && latestVersion.major == 5 && !DebugInfosProvider.isRunInDocker() && !genericStorage.get("MANUAL_UPDATE_5x", Boolean.class).orElse(false)) {
+            logger.info("An automatic update from 4.x to 5.x is not possible. Please make the update as explained here: https://github.com/theotherp/nzbhydra2/wiki/Updating-from-4.x-to-5.x");
             updateInfo.setUpdateAvailable(false);
             updateInfo.setBetaUpdateAvailable(false);
+            genericStorage.save("MANUAL_UPDATE_5x", true);
+        } else {
+            genericStorage.save("MANUAL_UPDATE_5x", false);
         }
         updateInfo.setPackageInfo(getPackageInfo());
 
@@ -193,7 +197,6 @@ public class UpdateManager implements InitializingBean {
     public boolean isUpdatedExternally() {
         return DebugInfosProvider.isRunInDocker() || Boolean.parseBoolean(System.getProperty(DISABLE_UPDATE_PROPERTY)) || Boolean.parseBoolean(System.getenv(DISABLE_UPDATE_PROPERTY));
     }
-
 
     private boolean isVersionIgnored(SemanticVersion version) throws UpdateException {
         Optional<UpdateData> updateData = genericStorage.get(KEY, UpdateData.class);

@@ -39,6 +39,7 @@ public class GenericStorage {
         configProvider.getBaseConfig().save(true);
     }
 
+
     public <T> Optional<T> get(String key, Class<T> clazz) {
         if (configProvider.getBaseConfig().getGenericStorage().containsKey(key)) {
             String json = configProvider.getBaseConfig().getGenericStorage().get(key);
