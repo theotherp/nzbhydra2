@@ -13,6 +13,7 @@ on:
                 description: "Version to be set afterwards, like 1.2.4-SNAPSHOT"
             dryRun:
                 required: true
+                default: true
                 type: boolean
                 description: "Set to true to make a dry run, set to false to actually execute the release"
 
@@ -20,6 +21,7 @@ jobs:
     build:
         uses: ./.github/workflows/buildNative.yml
     release:
+        needs: [build]
         runs-on: ubuntu-latest
         env:
             githubReleasesUrl: https://api.github.com/repos/{{github.repository}}/releases
