@@ -2,9 +2,6 @@ package org.nzbhydra.tests;
 
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.phantomjs.PhantomJSDriver;
-import org.openqa.selenium.phantomjs.PhantomJSDriverService;
-import org.openqa.selenium.remote.DesiredCapabilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -14,32 +11,11 @@ import org.springframework.context.annotation.Profile;
 @Configuration
 public class WebDriverConfiguration {
 
-    private final static String PHANTJOMJS = "c:\\programme\\phantomjs-2.1.1-windows\\bin\\phantomjs.exe";
     private final static String CHROMEDRIVER = "c:\\programme\\chromedriver\\chromedriver.exe";
 
     private static final Logger logger = LoggerFactory.getLogger(WebDriverConfiguration.class);
 
     public static WebDriver webDriver;
-
-    @Bean
-    @Profile("!dev")
-    public WebDriver getPhantomJsWebDriver() {
-        logger.info("Creating PhantomJS web driver");
-        DesiredCapabilities caps = new DesiredCapabilities();
-        caps.setJavascriptEnabled(true);
-        caps.setCapability("takesScreenshot", true);
-        String phantomJsPath = PHANTJOMJS;
-        if (System.getenv("PHANTOMJSBIN") != null) {
-            phantomJsPath = System.getenv("PHANTOMJSBIN");
-            logger.info("Using phantomJs bin {} from environment", phantomJsPath);
-        } else {
-            logger.info("Using default phantomJs bin {}", phantomJsPath);
-        }
-        caps.setCapability(
-                PhantomJSDriverService.PHANTOMJS_EXECUTABLE_PATH_PROPERTY, phantomJsPath);
-        WebDriverConfiguration.webDriver = new PhantomJSDriver(caps);
-        return WebDriverConfiguration.webDriver;
-    }
 
     @Bean
     @Profile("dev")

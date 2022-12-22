@@ -1,6 +1,6 @@
 name: Native Build
 
-on: [ workflow_dispatch, push, workflow_call ]
+on: [ workflow_call ]
 
 
 jobs:
