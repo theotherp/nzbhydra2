@@ -11,6 +11,10 @@ on:
                 required: true
                 type: string
                 description: "Version to be set afterwards, like 1.2.4-SNAPSHOT"
+            dryRun:
+                required: true
+                type: boolean
+                description: "Set to true to make a dry run, set to false to actually execute the release"
 
 jobs:
     build:

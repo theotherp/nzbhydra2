@@ -58,6 +58,8 @@ public class ReleaseMojo extends AbstractMojo {
 
     @Parameter(property = "changelogJsonFile", required = true)
     protected File changelogJsonFile;
+    @Parameter(property = "dryRun")
+    protected boolean dryRun;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     protected String githubReleasesUrl;
@@ -65,6 +67,9 @@ public class ReleaseMojo extends AbstractMojo {
 
     @Override
     public void execute() throws MojoExecutionException {
+        if (dryRun) {
+            getLog().info("Dry run");
+        }
         client = new OkHttpClient.Builder().readTimeout(25, TimeUnit.SECONDS).connectTimeout(25, TimeUnit.SECONDS).build();
         if (githubReleasesUrl == null) {
             if (System.getenv("githubReleasesUrl") != null) {
@@ -167,21 +172,28 @@ public class ReleaseMojo extends AbstractMojo {
         getLog().info("Creating release in draft mode using base URL " + githubReleasesUrl);
         String requestBody = objectMapper.writeValueAsString(releaseRequest);
         getLog().info("Sending body to create release: " + requestBody);
-        Builder callBuilder = new Builder().url(githubReleasesUrl).post(RequestBody.create(MediaType.parse("application/json"), requestBody));
-        callBuilder.header("Authorization", "token " + githubToken);
-        Call call = client.newCall(callBuilder.build());
-        Response response = call.execute();
-        if (!response.isSuccessful() || response.body() == null) {
-            throw new MojoExecutionException("When trying to create release with URL " + githubReleasesUrl + " Github returned code " + response.code() + " and message: " + response.message());
-        }
-        String body = response.body().string();
-        response.body().close();
-        try {
-            return objectMapper.readValue(body, org.nzbhydra.github.mavenreleaseplugin.Release.class);
-        } catch (Exception e) {
-            throw new MojoExecutionException("Unable to parse GitHub's release response: " + body, e);
-        } finally {
-            getLog().info("Successfully created release");
+        if (!dryRun) {
+            Builder callBuilder = new Builder().url(githubReleasesUrl).post(RequestBody.create(MediaType.parse("application/json"), requestBody));
+            callBuilder.header("Authorization", "token " + githubToken);
+            Call call = client.newCall(callBuilder.build());
+            Response response = call.execute();
+            if (!response.isSuccessful() || response.body() == null) {
+                throw new MojoExecutionException("When trying to create release with URL " + githubReleasesUrl + " Github returned code " + response.code() + " and message: " + response.message());
+            }
+            String body = response.body().string();
+            response.body().close();
+            try {
+                return objectMapper.readValue(body, org.nzbhydra.github.mavenreleaseplugin.Release.class);
+            } catch (Exception e) {
+                throw new MojoExecutionException("Unable to parse GitHub's release response: " + body, e);
+            } finally {
+                getLog().info("Successfully created release");
+            }
+        } else {
+            getLog().info("Skipping POST of release because of dry run");
+            final Release release = new Release();
+            release.setUploadUrl("dryRunUploadUrl");
+            return release;
         }
     }
 
@@ -192,83 +204,101 @@ public class ReleaseMojo extends AbstractMojo {
         String name = windowsAsset.getName();
         getLog().info("Uploading windows asset to " + uploadUrl);
 
-        Response response = null;
-        try {
-            Builder callBuilder = new Builder().header("Content-Length", String.valueOf(windowsAsset.length())).url(uploadUrl + "?name=" + name);
-            callBuilder.header("Authorization", "token " + githubToken);
-            response = client.newCall(callBuilder
+        Response response ;
+        if (!dryRun) {
+            try {
+                Builder callBuilder = new Builder().header("Content-Length", String.valueOf(windowsAsset.length())).url(uploadUrl + "?name=" + name);
+                callBuilder.header("Authorization", "token " + githubToken);
+                response = client.newCall(callBuilder
                     .post(
-                            RequestBody.create(MediaType.parse("application/zip"), windowsAsset))
+                        RequestBody.create(MediaType.parse("application/zip"), windowsAsset))
                     .build()).execute();
-            getLog().info("Successfully uploaded windows asset");
-            if (!response.isSuccessful()) {
-                throw new MojoExecutionException("When trying to upload windows asset Github returned code " + response.code() + " and message: " + response.message());
+                getLog().info("Successfully uploaded windows asset");
+                if (!response.isSuccessful()) {
+                    throw new MojoExecutionException("When trying to upload windows asset Github returned code " + response.code() + " and message: " + response.message());
+                }
+            } catch (IOException e) {
+                getLog().error("Error while uploading windows asset", e);
+                throw new MojoExecutionException("When trying to upload windows asset the following error occurred: " + e.getMessage());
             }
-        } catch (IOException e) {
-            getLog().error("Error while uploading windows asset", e);
-            throw new MojoExecutionException("When trying to upload windows asset the following error occurred: " + e.getMessage());
+        } else {
+            getLog().info("Skipping upload of windows asset because of dry run");
         }
 
 
         getLog().info("Uploading linux asset to " + uploadUrl);
         name = linuxAsset.getName();
-        try {
-            Builder callBuilder = new Builder().header("Content-Length", String.valueOf(linuxAsset.length())).url(uploadUrl + "?name=" + name);
-            callBuilder.header("Authorization", "token " + githubToken);
-            response = client.newCall(callBuilder
+        if (!dryRun) {
+
+            try {
+                Builder callBuilder = new Builder().header("Content-Length", String.valueOf(linuxAsset.length())).url(uploadUrl + "?name=" + name);
+                callBuilder.header("Authorization", "token " + githubToken);
+                response = client.newCall(callBuilder
                     .post(
-                            RequestBody.create(MediaType.parse("application/gzip"), linuxAsset))
+                        RequestBody.create(MediaType.parse("application/gzip"), linuxAsset))
                     .build()).execute();
-            if (!response.isSuccessful()) {
-                throw new MojoExecutionException("When trying to upload linux asset Github returned code " + response.code() + " and message: " + response.message());
+                if (!response.isSuccessful()) {
+                    throw new MojoExecutionException("When trying to upload linux asset Github returned code " + response.code() + " and message: " + response.message());
+                }
+                getLog().info("Successfully uploaded linux asset");
+            } catch (IOException e) {
+                getLog().error("Error while uploading linux asset", e);
+                throw new MojoExecutionException("When trying to upload linux asset the following error occurred: " + e.getMessage());
             }
-            getLog().info("Successfully uploaded linux asset");
-        } catch (IOException e) {
-            getLog().error("Error while uploading linux asset", e);
-            throw new MojoExecutionException("When trying to upload linux asset the following error occurred: " + e.getMessage());
+        } else {
+            getLog().info("Skipping upload of linux assed because of dry run");
         }
 
         getLog().info("Uploading generic asset to " + uploadUrl);
-        name = genericAsset.getName();
-        try {
-            Builder callBuilder = new Builder().header("Content-Length", String.valueOf(genericAsset.length())).url(uploadUrl + "?name=" + name);
-            callBuilder.header("Authorization", "token " + githubToken);
-            response = client.newCall(callBuilder
-                .post(
-                    RequestBody.create(MediaType.parse("application/gzip"), genericAsset))
-                .build()).execute();
-            if (!response.isSuccessful()) {
-                throw new MojoExecutionException("When trying to upload generic asset Github returned code " + response.code() + " and message: " + response.message());
+        if (!dryRun) {
+            name = genericAsset.getName();
+            try {
+                Builder callBuilder = new Builder().header("Content-Length", String.valueOf(genericAsset.length())).url(uploadUrl + "?name=" + name);
+                callBuilder.header("Authorization", "token " + githubToken);
+                response = client.newCall(callBuilder
+                    .post(
+                        RequestBody.create(MediaType.parse("application/gzip"), genericAsset))
+                    .build()).execute();
+                if (!response.isSuccessful()) {
+                    throw new MojoExecutionException("When trying to upload generic asset Github returned code " + response.code() + " and message: " + response.message());
+                }
+                getLog().info("Successfully uploaded generic asset");
+            } catch (IOException e) {
+                getLog().error("Error while uploading generic asset", e);
+                throw new MojoExecutionException("When trying to upload generic asset the following error occurred: " + e.getMessage());
             }
-            getLog().info("Successfully uploaded generic asset");
-        } catch (IOException e) {
-            getLog().error("Error while uploading generic asset", e);
-            throw new MojoExecutionException("When trying to upload generic asset the following error occurred: " + e.getMessage());
+        } else {
+            getLog().info("Skipping upload of generic asset because of dry run");
         }
     }
 
 
     private void setReleaseEffective(org.nzbhydra.github.mavenreleaseplugin.ReleaseRequest releaseRequest, org.nzbhydra.github.mavenreleaseplugin.Release release) throws IOException, MojoExecutionException {
         getLog().info("Setting release effective");
-        releaseRequest.setDraft(false);
-        Builder callBuilder = new Builder().url(release.getUrl()).patch(RequestBody.create(MediaType.parse("application/json"), objectMapper.writeValueAsString(releaseRequest)));
-        callBuilder.header("Authorization", "token " + githubToken);
-        Call call = client.newCall(callBuilder.build());
-        Response response = call.execute();
-        if (!response.isSuccessful()) {
-            throw new MojoExecutionException("When trying to set release effective Github returned code " + response.code() + " and message: " + response.message());
-        }
-        String body = response.body().string();
-        response.body().close();
-        try {
-            org.nzbhydra.github.mavenreleaseplugin.Release effectiveRelease = objectMapper.readValue(body, org.nzbhydra.github.mavenreleaseplugin.Release.class);
-            if (effectiveRelease.isDraft()) {
-                getLog().error("Release is still in state 'draft'");
-            } else {
-                getLog().info("Successfully set release effective");
+        if (!dryRun) {
+
+            releaseRequest.setDraft(false);
+            Builder callBuilder = new Builder().url(release.getUrl()).patch(RequestBody.create(MediaType.parse("application/json"), objectMapper.writeValueAsString(releaseRequest)));
+            callBuilder.header("Authorization", "token " + githubToken);
+            Call call = client.newCall(callBuilder.build());
+            Response response = call.execute();
+            if (!response.isSuccessful()) {
+                throw new MojoExecutionException("When trying to set release effective Github returned code " + response.code() + " and message: " + response.message());
             }
-        } catch (Exception e) {
-            throw new MojoExecutionException("Unable to parse GitHub's release edit response: " + body, e);
+            String body = response.body().string();
+            response.body().close();
+            try {
+                org.nzbhydra.github.mavenreleaseplugin.Release effectiveRelease = objectMapper.readValue(body, org.nzbhydra.github.mavenreleaseplugin.Release.class);
+                if (effectiveRelease.isDraft()) {
+                    getLog().error("Release is still in state 'draft'");
+                } else {
+                    getLog().info("Successfully set release effective");
+                }
+            } catch (Exception e) {
+                throw new MojoExecutionException("Unable to parse GitHub's release edit response: " + body, e);
+            }
+        } else {
+            getLog().info("Skipping setting release effective because of dry run");
         }
 
     }

@@ -7,6 +7,10 @@ echo "call like this misc/build-and-release.sh 0.0.3 0.0.4 <skiptests> from main
 [[ -z "$1" ]] && { echo "Release version missing" ; exit 1; }
 [[ -z "$2" ]] && { echo "New snapshot version missing" ; exit 1; }
 
+if [ "$3" = "dryRun" ]; then
+  echo "Executing script as dry run"
+fi
+
 if [[ -z "${githubReleasesUrl}" ]]; then
     echo "Environment variable githubReleasesUrl not set. It should look like this: https://api.github.com/repos/theotherp/nzbhydra2/releases"
     exit 1
@@ -95,40 +99,51 @@ if [[ "$?" -ne 0 ]] ; then
     echo "Error setting version effective"
     exit 1
 fi
-
-:commitrelease
-echo "Committing ***********************************************************************"
-call git commit -am "Update to $1"
-if [[ "$?" -ne 0 ]] ; then
-    echo "Error committinging new source code"
-    exit 1
+if [ "$3" = "dryRun" ]; then
+  echo "Committing ***********************************************************************"
+else
+    echo "Committing ***********************************************************************"
+    call git commit -am "Update to $1"
+    if [[ "$?" -ne 0 ]] ; then
+        echo "Error committinging new source code"
+        exit 1
+    fi
 fi
 
-:tag
-echo "Tagging ***********************************************************************"
-call git tag -a v"$1" -m "v$1"
-if [[ "$?" -ne 0 ]] ; then
-    echo "Error setting tag"
-    exit 1
+if [ "$3" = "dryRun" ]; then
+  echo "Tagging ***********************************************************************"
+else
+    echo "Tagging ***********************************************************************"
+    call git tag -a v"$1" -m "v$1"
+    if [[ "$?" -ne 0 ]] ; then
+        echo "Error setting tag"
+        exit 1
+    fi
 fi
 
-:pushrelease
-echo "Pushing ***********************************************************************"
-call git push origin master
-if [[ "$?" -ne 0 ]] ; then
-    echo "Error pushing to origin"
-    exit 1
+if [ "$3" = "dryRun" ]; then
+  echo "Pushing ***********************************************************************"
+else
+    echo "Pushing ***********************************************************************"
+    call git push origin master
+    if [[ "$?" -ne 0 ]] ; then
+        echo "Error pushing to origin"
+        exit 1
+    fi
 fi
 
-:release
+
 echo "Releasing to GitHub ***********************************************************************"
-call mvn org.nzbhydra:github-release-plugin:1.0.0:release
+if [ "$3" = "dryRun" ]; then
+    call mvn org.nzbhydra:github-release-plugin:3.0.0:release -DdryRun
+else
+    call mvn org.nzbhydra:github-release-plugin:3.0.0:release
+fi
 if [[ "$?" -ne 0 ]] ; then
     echo "Error releasing to github"
     exit 1
 fi
 
-:newsnapshot
 echo "Setting new snapshot version ***********************************************************************"
 call mvn versions:set -DnewVersion="$2"-SNAPSHOT
 if [[ "$?" -ne 0 ]] ; then
@@ -136,7 +151,6 @@ if [[ "$?" -ne 0 ]] ; then
     exit 1
 fi
 
-:effective
 echo "Making snapshot version effective ***********************************************************************"
 call mvn versions:commit
 if [[ "$?" -ne 0 ]] ; then
@@ -144,7 +158,6 @@ if [[ "$?" -ne 0 ]] ; then
     exit 1
 fi
 
-:buildnewversions
 echo "Building new versions ***********************************************************************"
 call mvn -T 1C -pl "!org.nzbhydra:tests,!org.nzbhydra:linux-release,!org.nzbhydra:windows-release,!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin,!org.nzbhydra:discordbot" install -DskipTests=true
 if [[ "$?" -ne 0 ]] ; then
@@ -152,10 +165,13 @@ if [[ "$?" -ne 0 ]] ; then
     exit 1
 fi
 
-:commitsnapshot
-echo "Committing snapshot ***********************************************************************"
-call git commit -am "Set snapshot to $2"
-if [[ "$?" -ne 0 ]] ; then
-    echo "Error commiting new snapshot source code"
-    exit 1
+if [ "$3" = "dryRun" ]; then
+  echo "Committing snapshot ***********************************************************************"
+else
+    echo "Committing snapshot ***********************************************************************"
+    call git commit -am "Set snapshot to $2"
+    if [[ "$?" -ne 0 ]] ; then
+        echo "Error commiting new snapshot source code"
+        exit 1
+    fi
 fi

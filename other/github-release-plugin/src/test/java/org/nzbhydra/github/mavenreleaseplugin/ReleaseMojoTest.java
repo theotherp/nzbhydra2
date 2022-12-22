@@ -8,6 +8,7 @@ import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.testing.AbstractMojoTestCase;
+import org.codehaus.plexus.configuration.PlexusConfiguration;
 
 import java.io.File;
 import java.io.IOException;
@@ -51,6 +52,7 @@ public class ReleaseMojoTest extends AbstractMojoTestCase {
         ReleaseMojo releaseMojo = new ReleaseMojo();
         releaseMojo = (ReleaseMojo) configureMojo(releaseMojo, extractPluginConfiguration("github-release-plugin", pom
         ));
+        releaseMojo.githubReleasesUrl = "notUsed";
         releaseMojo.windowsAsset = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/windowsAsset.txt");
         releaseMojo.linuxAsset = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/linuxAsset.txt");
         releaseMojo.genericAsset = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/genericAsset.txt");
@@ -101,6 +103,27 @@ public class ReleaseMojoTest extends AbstractMojoTestCase {
         verifyExecution(server);
     }
 
+    public void testDryRun() throws Exception {
+        MockWebServer server = getMockWebServer();
+        HttpUrl url = server.url("/repos/theotherp/nzbhydra2/releases");
+
+        File pom = getTestFile("/src/test/resources/org/nzbhydra/github/mavenreleaseplugin/pomWithTokenFile.xml");
+        assertTrue(pom.exists());
+        ReleaseMojo releaseMojo = new ReleaseMojo();
+        releaseMojo.dryRun = true;
+        final PlexusConfiguration pluginConfiguration = extractPluginConfiguration("github-release-plugin", pom);
+
+        releaseMojo = (ReleaseMojo) configureMojo(releaseMojo, pluginConfiguration);
+        releaseMojo.githubReleasesUrl = url.toString();
+        releaseMojo.windowsAsset = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/windowsAsset.txt");
+        releaseMojo.linuxAsset = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/linuxAsset.txt");
+        releaseMojo.genericAsset = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/genericAsset.txt");
+
+        releaseMojo.execute();
+
+        assertEquals(0, server.getRequestCount());
+    }
+
     protected void verifyExecution(MockWebServer server) throws InterruptedException, IOException {
         //Creating the release
         verifyDraftReleaseIsCreated(server);
@@ -112,6 +135,9 @@ public class ReleaseMojoTest extends AbstractMojoTestCase {
         RecordedRequest linuxAssetUploadRequest = server.takeRequest(2, TimeUnit.SECONDS);
         assertTrue(linuxAssetUploadRequest.getPath(), linuxAssetUploadRequest.getPath().contains("releases/1/assets?name=linuxAsset.txt"));
         assertEquals(linuxAssetUploadRequest.getHeader("Authorization"), "token token");
+        RecordedRequest genericAssetUploadRequest = server.takeRequest(2, TimeUnit.SECONDS);
+        assertTrue(genericAssetUploadRequest.getPath(), genericAssetUploadRequest.getPath().contains("releases/1/assets?name=genericAsset.txt"));
+        assertEquals(genericAssetUploadRequest.getHeader("Authorization"), "token token");
 
         //Setting it effective
         RecordedRequest setEffectiveRequest = server.takeRequest(2, TimeUnit.SECONDS);
@@ -142,6 +168,7 @@ public class ReleaseMojoTest extends AbstractMojoTestCase {
                 .setBody(objectMapper.writeValueAsString(draftReleaseResponse));
         server.enqueue(releaseMockResponse);
         server.enqueue(new MockResponse().setResponseCode(200)); //Windows asset upload
+        server.enqueue(new MockResponse().setResponseCode(200)); //generic asset upload
         server.enqueue(new MockResponse().setResponseCode(200)); //Linux asset upload
         server.enqueue(new MockResponse().setResponseCode(200).setBody(objectMapper.writeValueAsString(effectiveReleaseResponse))); //Setting the release effective
         return server;
