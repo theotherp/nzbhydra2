@@ -9,14 +9,6 @@
     </parent>
 
     <artifactId>tests</artifactId>
-
-    <repositories>
-        <repository>
-            <id>jitpack.io</id>
-            <url>https://jitpack.io</url>
-        </repository>
-    </repositories>
-
     <build>
         <plugins>
             <plugin>
@@ -152,17 +144,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-test-autoconfigure</artifactId>
             <version>${spring.boot.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.github.detro</groupId>
-            <artifactId>ghostdriver</artifactId>
-            <version>2.1.0</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>gson</artifactId>
-                    <groupId>com.google.code.gson</groupId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>

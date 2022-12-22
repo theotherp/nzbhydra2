@@ -40,7 +40,6 @@ public class ReleaseMojo extends AbstractMojo {
     @Parameter(property = "githubTokenFile", required = false)
     protected File githubTokenFile;
 
-
     @Parameter(property = "tagName", required = true)
     protected String tagName;
 
@@ -103,10 +102,6 @@ public class ReleaseMojo extends AbstractMojo {
                 throw new MojoExecutionException("Unable to read token.txt", e);
             }
         }
-        if (githubToken == null && System.getenv("GITHUB_TOKEN") != null) {
-            githubToken = System.getenv("GITHUB_TOKEN");
-        }
-
 
         getLog().info("Will use windows asset " + windowsAsset.getAbsolutePath());
         getLog().info("Will use linux asset " + linuxAsset.getAbsolutePath());

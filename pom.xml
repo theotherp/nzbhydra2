@@ -35,7 +35,7 @@
                 <version>3.0.0</version>
                 <configuration>
                     <commitish>master</commitish>
-                    <githubTokenFile>${basedir}/core/token.txt</githubTokenFile>
+                    <githubToken>${env.GITHUB_TOKEN}</githubToken>
                     <linuxAsset>${basedir}/releases/linux-release/target/nzbhydra2-${project.version}-linux.zip</linuxAsset>
                     <windowsAsset>${basedir}/releases/windows-release/target/nzbhydra2-${project.version}-windows.zip</windowsAsset>
                     <genericAsset>${basedir}/releases/windows-release/target/nzbhydra2-${project.version}-generic.zip</genericAsset>

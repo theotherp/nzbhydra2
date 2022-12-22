@@ -1,4 +1,4 @@
-name: Native Build
+name: Release
 
 on:
     workflow_dispatch:
@@ -47,4 +47,4 @@ jobs:
                     cache: 'maven'
             -   name: "Run release script"
                 run: |
-                    misc/build-and-release.sh ${{ github.event.inputs.releaseVersion }} ${{ github.event.inputs.nextVersion }}
+                    misc/build-and-release.sh ${{ github.event.inputs.releaseVersion }} ${{ github.event.inputs.nextVersion }} ${{ github.event.inputs.dryRun }}

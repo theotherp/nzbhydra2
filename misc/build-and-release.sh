@@ -6,9 +6,14 @@ echo "call like this misc/build-and-release.sh 0.0.3 0.0.4 <skiptests> from main
 
 [[ -z "$1" ]] && { echo "Release version missing" ; exit 1; }
 [[ -z "$2" ]] && { echo "New snapshot version missing" ; exit 1; }
+[[ -z "$3" ]] && { echo "Dry run setting missing (true/false)" ; exit 1; }
 
-if [ "$3" = "dryRun" ]; then
+if [ "$3" = "true" ]; then
   echo "Executing script as dry run"
+elif [ "$3" = "false" ]; then
+  echo "Not executing script as dry run - will actually release"
+else
+    echo "Dry run setting wrong. Must be either true or false"
 fi
 
 if [[ -z "${githubReleasesUrl}" ]]; then
@@ -99,7 +104,7 @@ if [[ "$?" -ne 0 ]] ; then
     echo "Error setting version effective"
     exit 1
 fi
-if [ "$3" = "dryRun" ]; then
+if [ "$3" = "true" ]; then
   echo "Committing ***********************************************************************"
 else
     echo "Committing ***********************************************************************"
@@ -110,7 +115,7 @@ else
     fi
 fi
 
-if [ "$3" = "dryRun" ]; then
+if [ "$3" = "true" ]; then
   echo "Tagging ***********************************************************************"
 else
     echo "Tagging ***********************************************************************"
@@ -121,7 +126,7 @@ else
     fi
 fi
 
-if [ "$3" = "dryRun" ]; then
+if [ "$3" = "true" ]; then
   echo "Pushing ***********************************************************************"
 else
     echo "Pushing ***********************************************************************"
@@ -134,7 +139,7 @@ fi
 
 
 echo "Releasing to GitHub ***********************************************************************"
-if [ "$3" = "dryRun" ]; then
+if [ "$3" = "true" ]; then
     call mvn org.nzbhydra:github-release-plugin:3.0.0:release -DdryRun
 else
     call mvn org.nzbhydra:github-release-plugin:3.0.0:release
@@ -165,7 +170,7 @@ if [[ "$?" -ne 0 ]] ; then
     exit 1
 fi
 
-if [ "$3" = "dryRun" ]; then
+if [ "$3" = "true" ]; then
   echo "Committing snapshot ***********************************************************************"
 else
     echo "Committing snapshot ***********************************************************************"
@@ -175,3 +180,4 @@ else
         exit 1
     fi
 fi
+
