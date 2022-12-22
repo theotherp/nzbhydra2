@@ -1,7 +1,0 @@
-target/
-!.mvn/wrapper/maven-wrapper.jar
-*.swp
-lib/
-*.py
-readme.md
-changelog.md
