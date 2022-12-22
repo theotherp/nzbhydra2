@@ -17,16 +17,16 @@ if not exist readme.md (
 )
 
 echo Checking if all needed files exist
-if not exist "%~dp0..\releases\linux-release\binaries\v1\nzbhydra2" (
-    echo %~dp0..\releases\linux-release\binaries\v1\nzbhydra2 does not exist
+if not exist "%~dp0..\releases\linux-release\include\nzbhydra2" (
+    echo %~dp0..\releases\linux-release\include\nzbhydra2 does not exist
     goto error
 )
-if not exist "%~dp0..\releases\binaries\v1\nzbhydra2.exe" (
-    echo %~dp0..\releases\binaries\v1\nzbhydra2.exe does not exist
+if not exist "%~dp0..\releases\windows-release\include\nzbhydra2.exe" (
+    echo %~dp0..\releases\windows-release\include\nzbhydra2.exe does not exist
     goto error
 )
-if not exist "%~dp0..\releases\binaries\v1\nzbhydra2 console.exe" (
-    echo %~dp0..\releases\binaries\v1\nzbhydra2 console.exe does not exist
+if not exist "%~dp0..\releases\windows-release\include\nzbhydra2 console.exe" (
+    echo %~dp0..\releases\windows-release\include\nzbhydra2 console.exe does not exist
     goto error
 )
 
