@@ -1,3 +1,15 @@
+### v4.7.6 (2022-12-22)
+
+**Feature** The next major update (5.0.0) will require a manual update. I've added logic to handle this and prevent the automatic updates from being executed.
+
+
+
+### v4.7.5
+
+**Fix** Configure separate indexers in lidarr using categories. See <a href="https://github.com/theotherp/nzbhydra2/issues/802">#802</a>
+
+
+
 ### v4.7.4 (2022-12-14)
 
 **Fix** Hopefully make the java update message disappear after a java update. See <a href="https://github.com/theotherp/nzbhydra2/issues/810">#810</a>

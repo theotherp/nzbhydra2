@@ -1,65 +1,50 @@
-[
-    {
-        "version": "v4.7.6",
-        "changes": [
-            {
-                "type": "feature",
-                "text": "The next major update (5.0.0) will require a manual update. I've added logic to handle this and prevent the automatic updates from being executed."
-            }
-        ],
-        "final": true
-    },
-    {
-        "version": "v4.7.5",
-        "changes": [
-            {
-                "type": "fix",
-                "text": "Configure separate indexers in lidarr using categories. See #802"
-            }
-        ],
-        "final": true
-    },
-    {
-        "version": "v4.7.4",
-        "date": "2022-12-14",
-        "changes": [
-            {
-                "type": "fix",
-                "text": "Hopefully make the java update message disappear after a java update. See #810"
-            }
-        ],
-        "final": true
-    },
-    {
-        "version": "v4.7.3",
-        "date": "2022-12-06",
-        "changes": [
-            {
-                "type": "note",
-                "text": "A future update will require Java 17. To prepare for that a message will be shown asking you to update your system accordingly. If you're running NZBHydra2 in docker you don't need to do anything."
-            },
-            {
-                "type": "feature",
-                "text": "Set the environment variable NZBHYDRA_DISABLE_UPDATE to true to disable the NZBHydra update mechanism (similar as to when it's run inside docker). This can be used by package maintainers. See #809"
-            }
-        ],
-        "final": true
-    },
-    {
-        "version": "v4.7.2",
-        "date": "2022-11-30",
-        "changes": [
-            {
-                "type": "fix",
-                "text": "Handle results without date."
-            },
-            {
-                "type": "fix",
-                "text": "Fix typo in apprise notification handler."
-            },
-            {
-                "type": "fix",
-                "text": "Hopefully fix notification sending test on arch-nzbhydra2. See #806"
+[ {
+  "version" : "v4.7.6",
+  "date" : "2022-12-22",
+  "changes" : [ {
+    "type" : "feature",
+    "text" : "The next major update (5.0.0) will require a manual update. I've added logic to handle this and prevent the automatic updates from being executed."
+  } ],
+  "final" : true
+}, {
+  "version" : "v4.7.5",
+  "date" : null,
+  "changes" : [ {
+    "type" : "fix",
+    "text" : "Configure separate indexers in lidarr using categories. See #802"
+  } ],
+  "final" : true
+}, {
+  "version" : "v4.7.4",
+  "date" : "2022-12-14",
+  "changes" : [ {
+    "type" : "fix",
+    "text" : "Hopefully make the java update message disappear after a java update. See #810"
+  } ],
+  "final" : true
+}, {
+  "version" : "v4.7.3",
+  "date" : "2022-12-06",
+  "changes" : [ {
+    "type" : "note",
+    "text" : "A future update will require Java 17. To prepare for that a message will be shown asking you to update your system accordingly. If you're running NZBHydra2 in docker you don't need to do anything."
+  }, {
+    "type" : "feature",
+    "text" : "Set the environment variable NZBHYDRA_DISABLE_UPDATE to true to disable the NZBHydra update mechanism (similar as to when it's run inside docker). This can be used by package maintainers. See #809"
+  } ],
+  "final" : true
+}, {
+  "version" : "v4.7.2",
+  "date" : "2022-11-30",
+  "changes" : [ {
+    "type" : "fix",
+    "text" : "Handle results without date."
+  }, {
+    "type" : "fix",
+    "text" : "Fix typo in apprise notification handler."
+  }, {
+    "type" : "fix",
+    "text" : "Hopefully fix notification sending test on arch-nzbhydra2. See #806"
   }, {
     "type" : "fix",
     "text" : "Fix automatic configuration of Lidarr. See #802"
