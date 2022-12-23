@@ -16,6 +16,11 @@ on:
                 default: true
                 type: boolean
                 description: "Set to true to make a dry run, set to false to actually execute the release"
+            selfHostedRunner:
+                required: true
+                default: false
+                type: boolean
+                description: "Has no effect, just as a reminder that the self-hosted windows runner must be running"
 
 jobs:
     build:
