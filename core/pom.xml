@@ -491,6 +491,8 @@
                             <configuration>
                                 <buildArgs>
                                     <buildArg>-H:+ReportExceptionStackTraces</buildArg>
+                                    <buildArg>-H:-DeadlockWatchdogExitOnTimeout</buildArg>
+                                    <buildArg>-H:DeadlockWatchdogInterval=0</buildArg>
                                     <buildArg>--initialize-at-build-time=org.apache.commons.logging.LogFactoryService</buildArg>
                             </buildArgs>
                                 <classesDirectory>${project.build.outputDirectory}</classesDirectory>

@@ -7,7 +7,7 @@ jobs:
     build:
         strategy:
             matrix:
-                os: [ ubuntu-20.04, windows ]
+                os: [ ubuntu-20.04, windows-latest ]
             fail-fast: false
         env:
             HYDRA_NATIVE_BUILD: true

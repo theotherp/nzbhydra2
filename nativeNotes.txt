@@ -35,4 +35,5 @@ General:
     Build tests that run against an instance running native code
     Require manual update to 5.x, explain options and what may go wrong (only when not docker)
     Create tickets for docker image maintainers, explain options, prepare ZIPs
+    Write ReleaseInfo.json using maven plugin or just detect type by existance of files. If so warn when lib and core exist or whatever
 

@@ -15,7 +15,7 @@ on:
                 required: true
                 default: true
                 type: boolean
-                description: "Set to true to make a dry run, set to false to actually execute the release"
+                description: "Uncheck to actually execute the release"
             selfHostedRunner:
                 required: true
                 default: false
