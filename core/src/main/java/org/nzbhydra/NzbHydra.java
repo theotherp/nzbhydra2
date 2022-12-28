@@ -126,16 +126,16 @@ public class NzbHydra {
         }
 
 
-        if (System.getProperty("fromWrapper") == null && Arrays.stream(args).noneMatch(x -> x.equals("directstart"))) {
-            logger.info("NZBHydra 2 must be started using the wrapper for restart and updates to work. If for some reason you need to start it from the JAR directly provide the command line argument \"directstart\"");
-        } else if (options.has("help")) {
-            parser.printHelpOn(System.out);
-        } else if (options.has("version")) {
-            String version = new UpdateManager().getAllVersionChangesUpToCurrentVersion().get(0).getVersion();
-            logger.info("NZBHydra 2 version: " + version);
-        } else {
-            startup(args, options);
-        }
+         if (options.has("help")) {
+             parser.printHelpOn(System.out);
+         } else if (options.has("version")) {
+             String version = new UpdateManager().getAllVersionChangesUpToCurrentVersion().get(0).getVersion();
+             logger.info("NZBHydra 2 version: " + version);
+         } else if (System.getProperty("fromWrapper") == null && Arrays.stream(args).noneMatch(x -> x.equals("directstart"))) {
+             logger.info("NZBHydra 2 must be started using the wrapper for restart and updates to work. If for some reason you need to start it from the JAR directly provide the command line argument \"directstart\"");
+         } else {
+             startup(args, options);
+         }
     }
 
     protected static void startup(String[] args, OptionSet options) throws Exception {
