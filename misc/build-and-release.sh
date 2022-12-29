@@ -40,6 +40,28 @@ if [[ ! -f releases/windows-release/include/NZBHydra2\ Console.exe ]] ; then
     exit 1
 fi
 
+if [[ ! -f releases/linux-release/include/core ]] ; then
+    echo "releases/linux-release/include/core does not exist"
+    exit 1
+fi
+
+linuxVersion=$(releases/linux-release/include/core | grep -o  "[0-9]\.[0-9]\.[0-9]")
+if [ "$linuxVersion" != "$1" ]; then
+  echo "Release version is $1 but linux executable version is $linuxVersion"
+  exit 1
+fi
+
+if [[ ! -f releases/windows-release/include/core.exe ]] ; then
+    echo "releases/windows-release/include/core.exe does not exist"
+    exit 1
+fi
+
+winVersion=$(releases/windows-release/include/core.exe -version | grep -o  "[0-9]\.[0-9]\.[0-9]")
+if [ "$winVersion" != "$1" ]; then
+  echo "Release version is $1 but windows executable version is $winVersion"
+  exit 1
+fi
+
 echo "Pulling"
 git pull
 if [[ "$?" -ne 0 ]] ; then
@@ -86,15 +108,6 @@ echo "Running install"
 call mvn -T 1C -pl "!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin,!org.nzbhydra:discordbot" install -DskipTests=true
 if [[ "$?" -ne 0 ]] ; then
     echo "Error during install"
-    exit 1
-fi
-
-if [[ ! -f releases/linux-release/include/core ]] ; then
-    echo "releases/linux-release/include/core does not exist"
-    exit 1
-fi
-if [[ ! -f releases/windows-release/include/core.exe ]] ; then
-    echo "releases/windows-release/include/core.exe does not exist"
     exit 1
 fi
 

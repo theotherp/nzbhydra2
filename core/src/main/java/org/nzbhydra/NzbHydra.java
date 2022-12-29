@@ -16,7 +16,6 @@ import org.nzbhydra.debuginfos.DebugInfosProvider;
 import org.nzbhydra.genericstorage.GenericStorage;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.misc.BrowserOpener;
-import org.nzbhydra.update.UpdateManager;
 import org.nzbhydra.web.UrlCalculator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,6 +52,8 @@ import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 
 @Configuration(proxyBeanMethods = false)
 @EnableAutoConfiguration(exclude = {
@@ -129,7 +130,9 @@ public class NzbHydra {
          if (options.has("help")) {
              parser.printHelpOn(System.out);
          } else if (options.has("version")) {
-             String version = new UpdateManager().getAllVersionChangesUpToCurrentVersion().get(0).getVersion();
+             Manifest manifest = new Manifest(NzbHydra.class.getResourceAsStream("/META-INF/MANIFEST.MF"));
+             Attributes attr = manifest.getMainAttributes();
+             String version = attr.getValue("Version");
              logger.info("NZBHydra 2 version: " + version);
          } else if (System.getProperty("fromWrapper") == null && Arrays.stream(args).noneMatch(x -> x.equals("directstart"))) {
              logger.info("NZBHydra 2 must be started using the wrapper for restart and updates to work. If for some reason you need to start it from the JAR directly provide the command line argument \"directstart\"");
