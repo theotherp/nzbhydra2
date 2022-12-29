@@ -30,7 +30,6 @@ TODO
 Native:
     Check out https://www.graalvm.org/22.2/reference-manual/native-image/guides/use-graalvm-dashboard/
     Compare with https://gist.github.com/linux-china/8745394fbc308168b20068386771ea1b
-    Add package / asset with jar and python3 wrapper only (call it os agnostic)
     Change update mechanism
 
 
@@ -44,5 +43,4 @@ General:
     Create tickets for docker image maintainers, explain options, prepare ZIPs
     Call discord webhook directly instead of using discord bot
     Make wrapper catch common errors (like freetype or whatever) and link to a wiki page
-    Run --version in release script and read output to ensure that current executable will be packaged
 

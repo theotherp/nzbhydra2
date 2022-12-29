@@ -446,16 +446,20 @@ def startup():
 
         return process
     except Exception as e:
-        logger.error("Unable to start process; make sure Java is installed and callable. Error message: " + str(e))
+        if releaseType == "generic"
+            logger.error("Unable to start process; make sure Java is installed and callable. Error message: " + str(e))
+        else:
+            logger.error(
+                "Unable to start process; make sure \"core\" exists and is executable. Error message: " + str(e))
 
 
 def determineReleaseType():
     if os.path.exists("lib"):
-        releaseType = ReleaseType.GENERIC
+        releaseType = "generic"
         if os.path.exists("core") or os.path.exists("core.exe"):
             logger.warning("lib folder and core(.exe) found. Either delete the executable to use the generic release type (using java and ignoring the executable) or delete the lib folder to use the executable and not require java")
     elif os.path.exists("core") or os.path.exists("core.exe"):
-        releaseType = ReleaseType.NATIVE
+        releaseType = "native"
     else:
         logger.critical(
             "Unable to determine the release type. Neither lib folder nor core(.exe) found")

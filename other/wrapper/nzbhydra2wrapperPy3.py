@@ -313,7 +313,7 @@ def startup():
         if isWindows:
             args.java = "core.exe"
         else:
-            args.java = "core"
+            args.java = "./core"
     if not os.path.exists(args.java):
         logger.critical("Error: executable " + args.java + " does not exist")
         sys.exit(-1)
@@ -461,7 +461,10 @@ def startup():
 
         return process
     except Exception as e:
-        logger.error("Unable to start process; make sure Java is installed and callable. Error message: " + str(e))
+        if releaseType == ReleaseType.GENERIC:
+            logger.error("Unable to start process; make sure Java is installed and callable. Error message: " + str(e))
+        else:
+            logger.error("Unable to start process; make sure \"core\" exists and is executable. Error message: " + str(e))
 
 
 def determineReleaseType():

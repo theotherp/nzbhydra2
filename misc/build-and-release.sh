@@ -62,6 +62,9 @@ if [ "$winVersion" != "$1" ]; then
   exit 1
 fi
 
+echo "Compressing linux executable using upx"
+upx -5 core/target/core
+
 echo "Pulling"
 git pull
 if [[ "$?" -ne 0 ]] ; then
