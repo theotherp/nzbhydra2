@@ -8,7 +8,7 @@ jobs:
     build:
         strategy:
             matrix:
-                os: [ ubuntu-20.04 ]
+                os: [ windows-latest ]
             fail-fast: false
         env:
             HYDRA_NATIVE_BUILD: true
@@ -30,23 +30,23 @@ jobs:
                     version: 'latest'
                     components: 'native-image'
                     cache: 'maven'
-#                    native-image-musl: true
+                    #                    native-image-musl: true
                     github-token: ${{ secrets.GITHUB_TOKEN }}
             -   name: Build
                 working-directory: ./core
                 run: |
                     mvn --batch-mode -P native native:compile -DskipTests
-            -   name: Upload linux artifact
+            #            -   name: Upload linux artifact
+            #                uses: actions/upload-artifact@v3
+            #                if: runner.os == 'Linux'
+            #                with:
+            #                    name: coreLinux
+            #                    path: core/target/core
+            -   name: Upload windows artifact
                 uses: actions/upload-artifact@v3
-                if: runner.os == 'Linux'
+                if: runner.os == 'Windows'
                 with:
-                    name: coreLinux
-                    path: core/target/core
-#            -   name: Upload windows artifact
-#                uses: actions/upload-artifact@v3
-#                if: runner.os == 'Windows'
-#                with:
-#                    name: coreWindows
-#                    path: |
-#                        core\target\core.exe
-#                        core\target\*.dll
+                    name: coreWindows
+                    path: |
+                        core\target\core.exe
+                        core\target\*.dll
