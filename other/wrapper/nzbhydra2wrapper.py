@@ -21,7 +21,6 @@ import re
 import shutil
 import subprocess
 import zipfile
-import json
 from __builtin__ import file
 from logging.handlers import RotatingFileHandler
 
@@ -451,15 +450,15 @@ def startup():
 
 
 def determineReleaseType():
-    if os.path.exists("ReleaseInfo.json"):
-        with open("ReleaseInfo.json", 'r') as f:
-            versionInfo = json.load(f)
-        releaseType = versionInfo["ReleaseType"]
-    elif os.path.exists("lib"):
-        releaseType = "generic"
+    if os.path.exists("lib"):
+        releaseType = ReleaseType.GENERIC
+        if os.path.exists("core") or os.path.exists("core.exe"):
+            logger.warning("lib folder and core(.exe) found. Either delete the executable to use the generic release type (using java and ignoring the executable) or delete the lib folder to use the executable and not require java")
+    elif os.path.exists("core") or os.path.exists("core.exe"):
+        releaseType = ReleaseType.NATIVE
     else:
         logger.critical(
-            "Unable to determine the release type. No VersionInfo.json file and no lib folder found")
+            "Unable to determine the release type. Neither lib folder nor core(.exe) found")
         sys.exit(-1)
     logger.info("Determined release type: " + releaseType)
     return releaseType

@@ -19,6 +19,13 @@ Spring Boot 3 Native support:
 https://docs.spring.io/spring-boot/docs/current/reference/html/native-image.html#native-image.introducing-graalvm-native-images
 
 
+Compatibility:
+Linux executable compiled with github actions on ubuntu-20 works on local WSL Ubuntu and on Ubuntu docker but not on alpine.
+Musl compilation hasn't worked so far and only seems to work for simple class files anyway
+Linux executable can be compressed using UPX.
+Windows executable seems to work anywhere. UPX compressed exe returns without any output.
+
+
 TODO
 Native:
     Check out https://www.graalvm.org/22.2/reference-manual/native-image/guides/use-graalvm-dashboard/
@@ -35,7 +42,7 @@ General:
     Build tests that run against an instance running native code
     Require manual update to 5.x, explain options and what may go wrong (only when not docker)
     Create tickets for docker image maintainers, explain options, prepare ZIPs
-    Write ReleaseInfo.json using maven plugin or just detect type by existance of files. If so warn when lib and core exist or whatever
     Call discord webhook directly instead of using discord bot
     Make wrapper catch common errors (like freetype or whatever) and link to a wiki page
+    Run --version in release script and read output to ensure that current executable will be packaged
 
