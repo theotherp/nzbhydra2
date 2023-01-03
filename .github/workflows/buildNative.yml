@@ -8,7 +8,7 @@ jobs:
     build:
         strategy:
             matrix:
-                os: [ windows-latest ]
+                os: [ ubuntu-20.04 ]
             fail-fast: false
         env:
             HYDRA_NATIVE_BUILD: true
@@ -36,17 +36,17 @@ jobs:
                 working-directory: ./core
                 run: |
                     mvn --batch-mode -P native native:compile -DskipTests
-            #            -   name: Upload linux artifact
-            #                uses: actions/upload-artifact@v3
-            #                if: runner.os == 'Linux'
-            #                with:
-            #                    name: coreLinux
-            #                    path: core/target/core
-            -   name: Upload windows artifact
+            -   name: Upload linux artifact
                 uses: actions/upload-artifact@v3
-                if: runner.os == 'Windows'
+                if: runner.os == 'Linux'
                 with:
-                    name: coreWindows
-                    path: |
-                        core\target\core.exe
-                        core\target\*.dll
+                    name: coreLinux
+                    path: core/target/core
+            #            -   name: Upload windows artifact
+            #                uses: actions/upload-artifact@v3
+            #                if: runner.os == 'Windows'
+            #                with:
+#                    name: coreWindows
+#                    path: |
+#                        core\target\core.exe
+#                        core\target\*.dll

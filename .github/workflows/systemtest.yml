@@ -1,0 +1,51 @@
+name: system-test
+
+on: [ push ]
+
+jobs:
+    build:
+        uses: ./.github/workflows/buildNative.yml
+    prepareContainer:
+        needs: [ build ]
+        runs-on: ubuntu-latest
+        steps:
+            -   uses: actions/checkout@v3
+                name: "Check out source"
+            -   name: "Display structure of working directory"
+                run: ls .
+            -   uses: actions/download-artifact@v3
+                name: "Download native artifacts"
+                with:
+                    path: ~/artifacts
+            -   name: "Display structure of artifacts folder"
+                run: ls -laR ~/artifacts
+            -   name: "Display structure of current folder"
+                run: ls -la .
+            -   name: "Copy artifacts to include folders"
+                run: |
+                    mv ~/artifacts/coreLinux/* ./docker/nativeTest/
+                    chmod +x ./docker/nativeTest/nzbhydra2
+            -   name: "Build core container"
+                run: |
+                    cd ./docker/nativeTest/
+                    cp other/wrapper/nzbhydra2wrapperPy3.py ./docker/nativeTest/
+                    docker build -t hydradocker .
+    runTests:
+        needs: [ prepareContainer ]
+        runs-on: ubuntu-latest
+        services:
+            core:
+                image: hydradocker
+                ports:
+                    - 5076:5076
+        steps:
+            -   name: Set up JDK 17
+                uses: actions/setup-java@v3
+                with:
+                    java-version: '17'
+                    distribution: 'adopt'
+                    cache: 'maven'
+            -   name: "Run release script"
+                run: |
+                    cd tests/system
+                    mvn --batch-mode test
