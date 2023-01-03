@@ -16,9 +16,9 @@
 
 package org.nzbhydra.downloading.downloaders;
 
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -38,7 +38,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-@Ignore
+@Disabled
 public class DownloaderTest {
 
     @Mock
@@ -54,7 +54,7 @@ public class DownloaderTest {
 
     private Downloader testee = Mockito.mock(Downloader.class, Mockito.CALLS_REAL_METHODS);
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         testee.nzbHandler = nzbHandler;
@@ -66,14 +66,14 @@ public class DownloaderTest {
     }
 
     @Test
-    public void shouldReturnWhenGivenNoDownloads() throws Exception{
+    void shouldReturnWhenGivenNoDownloads() throws Exception {
         testee.checkForStatusUpdates(Collections.emptyList(), StatusCheckType.HISTORY);
 
         verify(testee, never()).getHistory(any());
     }
 
     @Test
-    public void shouldSkipDownloadsWithoutSearchResult() throws Exception{
+    void shouldSkipDownloadsWithoutSearchResult() throws Exception {
         when(testee.getHistory(any())).thenReturn(Collections.singletonList(downloaderEntry));
 
         testee.checkForStatusUpdates(Collections.singletonList(new FileDownloadEntity()), StatusCheckType.HISTORY);
@@ -82,7 +82,7 @@ public class DownloaderTest {
     }
 
     @Test
-    public void shouldSkipDownloadEntriesWithUnparsableStatus() throws Exception{
+    void shouldSkipDownloadEntriesWithUnparsableStatus() throws Exception {
         when(testee.getHistory(any())).thenReturn(Collections.singletonList(downloaderEntry));
         when(testee.getDownloadStatusFromDownloaderEntry(any(), any())).thenReturn(null);
         when(testee.isDownloadMatchingDownloaderEntry(any(), any())).thenReturn(true);
@@ -93,7 +93,7 @@ public class DownloaderTest {
     }
 
     @Test
-    public void shouldSetNewStatusIfUpdates() throws Exception{
+    void shouldSetNewStatusIfUpdates() throws Exception {
         when(testee.getHistory(any())).thenReturn(Collections.singletonList(downloaderEntry));
         when(testee.getDownloadStatusFromDownloaderEntry(any(), any())).thenReturn(FileDownloadStatus.NZB_DOWNLOAD_SUCCESSFUL);
         when(testee.isDownloadMatchingDownloaderEntry(any(), any())).thenReturn(true);
@@ -104,7 +104,7 @@ public class DownloaderTest {
     }
 
     @Test
-    public void shouldSkipNewStatusIfNotUpdates() throws Exception{
+    void shouldSkipNewStatusIfNotUpdates() throws Exception {
         when(testee.getHistory(any())).thenReturn(Collections.singletonList(downloaderEntry));
         when(testee.getDownloadStatusFromDownloaderEntry(any(), any())).thenReturn(FileDownloadStatus.NONE);
         when(testee.isDownloadMatchingDownloaderEntry(any(), any())).thenReturn(true);
@@ -115,7 +115,7 @@ public class DownloaderTest {
     }
 
     @Test
-    public void shouldSetExternalIdIfNotSetBefore() throws Exception{
+    void shouldSetExternalIdIfNotSetBefore() throws Exception {
         when(downloaderEntry.getNzbId()).thenReturn("nzbId");
         when(testee.getDownloadStatusFromDownloaderEntry(any(), any())).thenReturn(FileDownloadStatus.NZB_ADDED);
         when(testee.getQueue(any())).thenReturn(Collections.singletonList(downloaderEntry));

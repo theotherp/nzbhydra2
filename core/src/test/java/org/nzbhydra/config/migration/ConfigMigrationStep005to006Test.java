@@ -17,7 +17,7 @@
 package org.nzbhydra.config.migration;
 
 import com.google.common.io.Resources;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.nzbhydra.Jackson;
 import org.nzbhydra.config.BaseConfig;
@@ -35,7 +35,7 @@ public class ConfigMigrationStep005to006Test {
 
 
     @Test
-    public void migrate() throws Exception {
+    void migrate() throws Exception {
         String yaml = Resources.toString(ConfigMigrationStep005to006Test.class.getResource("migrate5to6.yaml"), Charset.defaultCharset());
 
         Map<String, Object> map = Jackson.YAML_MAPPER.readValue(yaml, ConfigReaderWriter.MAP_TYPE_REFERENCE);

@@ -14,6 +14,8 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.concurrent.TimeUnit;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 public class SetReleaseFinalMojoTest extends AbstractMojoTestCase {
 
     private ObjectMapper objectMapper = new ObjectMapper();
@@ -80,12 +82,12 @@ public class SetReleaseFinalMojoTest extends AbstractMojoTestCase {
 
         String body = new String(releaseRequest.getBody().readByteArray());
         Release bodyJson = objectMapper.readValue(body, Release.class);
-        assertEquals("v1.0.0", bodyJson.getTagName());
-        assertFalse(bodyJson.isPrerelease());
-        assertFalse(bodyJson.isDraft());
-        assertEquals("v1.0.0", bodyJson.getName());
+        assertThat(bodyJson.getTagName()).isEqualTo("v1.0.0");
+        assertThat(bodyJson.isPrerelease()).isFalse();
+        assertThat(bodyJson.isDraft()).isFalse();
+        assertThat(bodyJson.getName()).isEqualTo("v1.0.0");
         assertEquals("### v1.0.0 (2019-11-16)\n\n" +
-                "**Note** First major release\n\n", bodyJson.getBody());
+            "**Note** First major release\n\n", bodyJson.getBody());
     }
 
 

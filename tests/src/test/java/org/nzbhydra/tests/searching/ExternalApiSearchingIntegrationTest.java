@@ -5,12 +5,11 @@ import com.google.common.io.Resources;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.MockitoAnnotations;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.api.ExternalApi;
@@ -32,7 +31,7 @@ import org.nzbhydra.tests.AbstractConfigReplacingTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
@@ -41,14 +40,13 @@ import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.core.Is.is;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = NzbHydra.class)
 @Transactional
-@Ignore
+@Disabled
 public class ExternalApiSearchingIntegrationTest extends AbstractConfigReplacingTest {
 
     @Autowired
@@ -65,7 +63,7 @@ public class ExternalApiSearchingIntegrationTest extends AbstractConfigReplacing
     private final MockWebServer webServer = new MockWebServer();
 
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
         MockitoAnnotations.initMocks(this);
         webServer.start(7077);
@@ -74,7 +72,7 @@ public class ExternalApiSearchingIntegrationTest extends AbstractConfigReplacing
         searchResultRepository.deleteAll();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws IOException {
         webServer.close();
     }
@@ -95,17 +93,17 @@ public class ExternalApiSearchingIntegrationTest extends AbstractConfigReplacing
         apiCallParameters.setLimit(2);
         apiCallParameters.setT(ActionAttribute.SEARCH);
         NewznabXmlRoot apiSearchResult = (NewznabXmlRoot) externalApi.api(apiCallParameters, null, null).getBody();
-        Assert.assertThat(apiSearchResult.getRssChannel().getItems().size(), is(2));
-        Assert.assertThat(apiSearchResult.getRssChannel().getItems().get(0).getTitle(), is("itemTitle1a"));
-        Assert.assertThat(apiSearchResult.getRssChannel().getItems().get(1).getTitle(), is("itemTitle2"));
+        assertThat(apiSearchResult.getRssChannel().getItems().size()).isEqualTo(2);
+        assertThat(apiSearchResult.getRssChannel().getItems().get(0).getTitle()).isEqualTo("itemTitle1a");
+        assertThat(apiSearchResult.getRssChannel().getItems().get(1).getTitle()).isEqualTo("itemTitle2");
 
         apiCallParameters.setLimit(100);
         apiCallParameters.setOffset(2);
 
         apiSearchResult = (NewznabXmlRoot) externalApi.api(apiCallParameters, null, null).getBody();
 
-        Assert.assertThat(apiSearchResult.getRssChannel().getItems().size(), is(1));
-        Assert.assertThat(apiSearchResult.getRssChannel().getItems().get(0).getTitle(), is("itemTitle1b"));
+        assertThat(apiSearchResult.getRssChannel().getItems().size()).isEqualTo(1);
+        assertThat(apiSearchResult.getRssChannel().getItems().get(0).getTitle()).isEqualTo("itemTitle1b");
     }
 
     @Test

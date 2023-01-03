@@ -20,7 +20,7 @@ import com.google.common.collect.Sets;
 import jakarta.persistence.EntityManagerFactory;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Captor;
@@ -46,6 +46,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
@@ -76,7 +77,7 @@ public class IndexerUniquenessScoreSaverTest {
     @InjectMocks
     private IndexerUniquenessScoreSaver testee = new IndexerUniquenessScoreSaver();
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         final BaseConfig value = new BaseConfig();
@@ -134,13 +135,13 @@ public class IndexerUniquenessScoreSaverTest {
         assertThat(score1.getIndexer()).isEqualTo(indexerHasDownloaded);
         assertThat(score1.getInvolved()).isEqualTo(3);
         assertThat(score1.getHave()).isEqualTo(2);
-        assertThat(score1.isHasResult()).isTrue();
+        assertTrue(score1.isHasResult());
 
         IndexerUniquenessScoreEntity score2 = scoreCaptor.getValue().get(1);
         assertThat(score2.getIndexer()).isEqualTo(indexerhasToo);
         assertThat(score2.getInvolved()).isEqualTo(3);
         assertThat(score2.getHave()).isEqualTo(2);
-        assertThat(score2.isHasResult()).isTrue();
+        assertTrue(score2.isHasResult());
 
         IndexerUniquenessScoreEntity score3 = scoreCaptor.getValue().get(2);
         assertThat(score3.getIndexer()).isEqualTo(indexerHasNot);
@@ -198,7 +199,7 @@ public class IndexerUniquenessScoreSaverTest {
         assertThat(score1.getIndexer()).isEqualTo(indexerHasDownloaded);
         assertThat(score1.getInvolved()).isEqualTo(3);
         assertThat(score1.getHave()).isEqualTo(1);
-        assertThat(score1.isHasResult()).isTrue();
+        assertTrue(score1.isHasResult());
 
         IndexerUniquenessScoreEntity score2 = scores.get(1);
         assertThat(score2.getIndexer()).isEqualTo(indexerHasNot);

@@ -16,7 +16,7 @@
 
 package org.nzbhydra.downloading;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -24,10 +24,10 @@ public class NzbDownloadEntityTest {
 
 
     @Test
-    public void shouldTruncatLongError() {
+    void shouldTruncatLongError() {
         FileDownloadEntity testee = new FileDownloadEntity();
         StringBuilder builder = new StringBuilder();
-        for (int i = 1; i<=799;i++) {
+        for (int i = 1; i <= 799; i++) {
             builder.append("12345");
         }
         builder.append("abcdef");

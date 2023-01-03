@@ -1,8 +1,8 @@
 package org.nzbhydra.searching;
 
 import com.google.common.collect.Sets;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Random;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 public class DuplicateDetectorTest {
@@ -32,7 +33,7 @@ public class DuplicateDetectorTest {
     private ConfigProvider configProviderMock;
 
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         BaseConfig baseConfig = new BaseConfig();
@@ -43,7 +44,7 @@ public class DuplicateDetectorTest {
     }
 
     @Test
-    public void shouldDetectThatTheSame() throws Exception {
+    void shouldDetectThatTheSame() throws Exception {
         SearchResultItem item1 = new SearchResultItem();
         setValues(item1, "1", "poster", "group", Instant.now());
         SearchResultItem item2 = new SearchResultItem();
@@ -60,7 +61,7 @@ public class DuplicateDetectorTest {
     }
 
     @Test
-    public void shouldWorkWithOneIndexerProvidingGroupAndPosterAndOneNot() throws Exception {
+    void shouldWorkWithOneIndexerProvidingGroupAndPosterAndOneNot() throws Exception {
         SearchResultItem item1 = new SearchResultItem();
         setValues(item1, "Indexer1", "chuck@norris.com", "alt.binaries.triballs", Instant.ofEpochSecond(1447928064));
         item1.setUsenetDate(item1.getPubDate());
@@ -104,7 +105,7 @@ public class DuplicateDetectorTest {
 
 
     @Test
-    public void duplicateIdsShouldBeSameForDuplicates() throws Exception {
+    void duplicateIdsShouldBeSameForDuplicates() throws Exception {
         SearchResultItem item1 = new SearchResultItem();
         setValues(item1, "1", "poster1", "group", Instant.now());
         SearchResultItem item2 = new SearchResultItem();
@@ -124,7 +125,7 @@ public class DuplicateDetectorTest {
     }
 
     @Test
-    public void shouldUseUsenetDateForComparison() throws Exception {
+    void shouldUseUsenetDateForComparison() throws Exception {
         SearchResultItem item1 = new SearchResultItem();
         setValues(item1, "1", "poster1", "group", Instant.now());
         item1.setPubDate(Instant.now().minus(100, ChronoUnit.DAYS));
@@ -134,7 +135,7 @@ public class DuplicateDetectorTest {
 
         item1.setUsenetDate(Instant.now());
         item2.setUsenetDate(Instant.now());
-        assertThat(testee.testForDuplicateAge(item1, item2, 1F)).isTrue();
+        assertTrue(testee.testForDuplicateAge(item1, item2, 1F));
 
         item2.setUsenetDate(null);
         assertThat(testee.testForDuplicateAge(item1, item2, 1F)).isFalse();

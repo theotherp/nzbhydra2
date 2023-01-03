@@ -18,8 +18,8 @@ package org.nzbhydra.tests.searching;
 
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.Unmarshaller;
-import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 
@@ -39,7 +39,7 @@ public class SearchingSystemTest {
     }
 
     @Test
-    @Ignore
+    @Disabled
     public void testPaging() throws Exception {
         //mock 1 and mock 100 configured
         NewznabXmlRoot page1 = (NewznabXmlRoot) jaxbUnmarshaller.unmarshal(new URL("http://127.0.0.1:5076/api?t=search&q=paging&offset=0&apikey=apikey"));

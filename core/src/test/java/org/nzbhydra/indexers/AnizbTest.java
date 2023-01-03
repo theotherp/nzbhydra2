@@ -1,7 +1,7 @@
 package org.nzbhydra.indexers;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -18,8 +18,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Arrays;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -34,7 +34,7 @@ public class AnizbTest {
     @InjectMocks
     private Anizb testee = new Anizb(configProviderMock,null,null,null,null,null,null,null,null,null,null,queryGeneratorMock,null);
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         when(configProviderMock.getBaseConfig()).thenReturn(baseConfig);
@@ -55,31 +55,33 @@ public class AnizbTest {
     }
 
     @Test
-    public void shouldParseXml() {
+    void shouldParseXml() {
 
     }
 
     @Test
-    public void shouldBuildSimpleQuery() throws IndexerSearchAbortedException {
+    void shouldBuildSimpleQuery() throws IndexerSearchAbortedException {
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         searchRequest.setQuery("query");
         UriComponentsBuilder builder = testee.buildSearchUrl(searchRequest, 0, 100);
-        assertThat(builder.toUriString(), is("https://anizb.org/api/?q=query"));
+        assertThat(builder.toUriString()).isEqualTo("https://anizb.org/api/?q=query");
     }
 
     @Test
-    public void shouldAddRequiredWords() throws IndexerSearchAbortedException {
+    void shouldAddRequiredWords() throws IndexerSearchAbortedException {
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         searchRequest.getInternalData().setRequiredWords(Arrays.asList("a", "b"));
         searchRequest.setQuery("query");
         UriComponentsBuilder builder = testee.buildSearchUrl(searchRequest, 0, 100);
-        assertThat(builder.toUriString(), is("https://anizb.org/api/?q=query%20a%20b"));
+        assertThat(builder.toUriString()).isEqualTo("https://anizb.org/api/?q=query%20a%20b");
     }
 
-    @Test(expected = IndexerSearchAbortedException.class)
-    public void shouldAbortIfSearchNotPossible() throws IndexerSearchAbortedException {
-        SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
-        testee.buildSearchUrl(searchRequest, 0, 100);
+    @Test
+    void shouldAbortIfSearchNotPossible() throws IndexerSearchAbortedException {
+        assertThrows(IndexerSearchAbortedException.class, () -> {
+            SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
+            testee.buildSearchUrl(searchRequest, 0, 100);
+        });
     }
 
 

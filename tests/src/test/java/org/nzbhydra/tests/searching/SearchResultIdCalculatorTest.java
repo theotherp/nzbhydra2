@@ -1,7 +1,7 @@
 package org.nzbhydra.tests.searching;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.indexers.IndexerEntity;
 import org.nzbhydra.indexers.IndexerRepository;
@@ -15,12 +15,12 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureDataJpa;
 import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureTestEntityManager;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = NzbHydra.class)
 @Transactional
 @AutoConfigureCache
@@ -47,10 +47,10 @@ public class SearchResultIdCalculatorTest {
         searchResultEntity.setTitle("title");
         searchResultEntity = searchResultRepository.save(searchResultEntity);
 
-        assertEquals(-2991137394797183212L, SearchResultIdCalculator.calculateSearchResultId(searchResultEntity));
-        assertEquals(-2991137394797183212L, searchResultEntity.getId());
+        assertThat(SearchResultIdCalculator.calculateSearchResultId(searchResultEntity)).isEqualTo(-2991137394797183212L);
+        assertThat(searchResultEntity.getId()).isEqualTo(-2991137394797183212L);
 
-        assertEquals(searchResultEntity, searchResultRepository.findById(-2991137394797183212L).get());
+        assertThat(searchResultRepository.findById(-2991137394797183212L).get()).isEqualTo(searchResultEntity);
     }
 
 }

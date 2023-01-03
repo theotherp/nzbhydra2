@@ -2,11 +2,11 @@ package org.nzbhydra.mapping;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.nzbhydra.mapping.newznab.xml.caps.jackett.JacketCapsXmlRoot;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestTemplate;
 
@@ -17,13 +17,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 public class JackettCapsMappingTest {
 
 
-    @Test
     //@Ignore //Needs tbe mapped from XML to class
-    public void testMappingFromXml() throws Exception {
+    @Test
+    void testMappingFromXml() throws Exception {
         JacketCapsXmlRoot root = getRssRootFromXml("jackettConfiguredIndexers.xml");
         assertThat(root.getIndexers()).hasSize(13);
         assertThat(root.getIndexers().get(0).getTitle()).isEqualTo("BroadcastTheNet");

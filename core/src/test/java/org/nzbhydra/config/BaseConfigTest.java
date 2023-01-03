@@ -6,8 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.collect.Sets;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
 import org.nzbhydra.config.category.Category;
@@ -22,12 +22,16 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.stream.Collectors;
 
-import static junit.framework.TestCase.fail;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -38,7 +42,7 @@ public class BaseConfigTest {
     private static final boolean COMPARE_CONFIG_VALUES = false;
     private Set<String> dontCheckTheseLists = Sets.newHashSet("categories");
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
     }
@@ -48,7 +52,7 @@ public class BaseConfigTest {
 
 
     @Test
-    public void shouldRecognizeRestartRequired() {
+    void shouldRecognizeRestartRequired() {
         MainConfig mainConfig1 = new MainConfig();
         mainConfig1.setPort(123);
         MainConfig mainConfig2 = new MainConfig();
@@ -56,7 +60,7 @@ public class BaseConfigTest {
         assertTrue(mainConfig1.isRestartNeeded(mainConfig2));
 
         mainConfig2.setPort(123);
-        assertFalse(mainConfig1.isRestartNeeded(mainConfig2));
+        assertThat(mainConfig1.isRestartNeeded(mainConfig2)).isFalse();
 
         mainConfig1.setSsl(true);
         mainConfig2.setSsl(false);
@@ -64,7 +68,7 @@ public class BaseConfigTest {
     }
 
     @Test
-    public void applicationPropertiesShouldHaveTheSameKeysAsConfigClasses() throws Exception {
+    void applicationPropertiesShouldHaveTheSameKeysAsConfigClasses() throws Exception {
         ObjectMapper jsonMapper = new ObjectMapper();
         jsonMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
 
@@ -91,7 +95,7 @@ public class BaseConfigTest {
     }
 
     @Test
-    public void shouldValidateIndexers() {
+    void shouldValidateIndexers() {
         IndexerConfig indexerConfigMock = mock(IndexerConfig.class);
         when(indexerConfigMock.validateConfig(any(), any(), any())).thenReturn(new ValidatingConfig.ConfigValidationResult(true, false, new ArrayList<String>(), new ArrayList<String>()));
         testee.getIndexers().add(indexerConfigMock);
@@ -100,7 +104,7 @@ public class BaseConfigTest {
     }
 
     @Test
-    public void shouldRecognizeDuplicateIndexerNames() {
+    void shouldRecognizeDuplicateIndexerNames() {
         IndexerConfig indexerConfigMock = mock(IndexerConfig.class);
         when(indexerConfigMock.getName()).thenReturn("name");
         IndexerConfig indexerConfigMock2 = mock(IndexerConfig.class);
@@ -110,18 +114,18 @@ public class BaseConfigTest {
         testee.getIndexers().add(indexerConfigMock);
         testee.getIndexers().add(indexerConfigMock2);
         ValidatingConfig.ConfigValidationResult result = testee.validateConfig(new BaseConfig(), testee, new BaseConfig());
-        assertEquals(3, result.getErrorMessages().size());
+        assertThat(result.getErrorMessages()).hasSize(3);
         assertTrue(result.getErrorMessages().get(2).contains("Duplicate"));
     }
 
     @Test
-    public void shouldInitializeAllListsAsEmptyInBaseConfigYaml() throws Exception {
+    void shouldInitializeAllListsAsEmptyInBaseConfigYaml() throws Exception {
         BaseConfig baseConfig = new ConfigReaderWriter().originalConfig();
         validateListsNotNull(baseConfig);
     }
 
     @Test
-    public void shouldInitializeAllListsAsEmptyInClasses() throws Exception {
+    void shouldInitializeAllListsAsEmptyInClasses() throws Exception {
         Reflections reflections = new Reflections("org.nzbhydra");
         Set<Class<? extends ValidatingConfig>> classes = reflections.getSubTypesOf(ValidatingConfig.class);
         for (Class<? extends ValidatingConfig> configClass : classes) {
@@ -134,7 +138,7 @@ public class BaseConfigTest {
                     break;
                 }
             }
-            assertTrue("No default constructor found for class " + configClass.getName(), constructorFound);
+            assertTrue(constructorFound, "No default constructor found for class " + configClass.getName());
         }
     }
 
@@ -143,7 +147,7 @@ public class BaseConfigTest {
         for (PropertyDescriptor pd : beanInfo.getPropertyDescriptors()) {
             if (pd.getReadMethod().getReturnType().isAssignableFrom(List.class)) {
                 List list = (List) pd.getReadMethod().invoke(config);
-                assertNotNull("Property of " + config.getClass().getName() + "#" + pd.getReadMethod().getName() + " should be initialized as empty list", list);
+                assertNotNull(list, "Property of " + config.getClass().getName() + "#" + pd.getReadMethod().getName() + " should be initialized as empty list");
                 if (!list.isEmpty()) {
                     if (list.get(0).getClass().getSuperclass() == ValidatingConfig.class) {
                         for (Object o : list) {
@@ -164,13 +168,13 @@ public class BaseConfigTest {
         } else if (left instanceof List) {
             compareLists((List) left, (List) right);
         } else {
-            assertEquals("Setting in baseConfig.yml is different than in base config", left, left);
+            assertEquals(left, left, "Setting in baseConfig.yml is different than in base config");
         }
     }
 
     private void compareMaps(HashMap<String, Object> left, HashMap<String, Object> right) {
         for (Entry<String, Object> entry : left.entrySet()) {
-            assertTrue(entry.getValue() + " is contained in baseConfig.yml but not in base config", right.containsKey(entry.getKey()));
+            assertTrue(right.containsKey(entry.getKey()), entry.getValue() + " is contained in baseConfig.yml but not in base config");
             if (entry.getValue() instanceof LinkedHashMap) {
                 compareMaps((HashMap) entry.getValue(), (HashMap) right.get(entry.getKey()));
             } else if (entry.getValue() instanceof List) {
@@ -178,7 +182,7 @@ public class BaseConfigTest {
                     compareLists((List) entry.getValue(), (List) right.get(entry.getKey()));
                 }
             } else if (COMPARE_CONFIG_VALUES) {
-                assertEquals("Setting " + entry.getKey() + " in baseConfig.yml is different than in base config", entry.getValue(), right.get(entry.getKey()));
+                assertEquals(entry.getValue(), right.get(entry.getKey()), "Setting " + entry.getKey() + " in baseConfig.yml is different than in base config");
             }
         }
         Set<String> rightKeys = right.keySet();
@@ -205,15 +209,15 @@ public class BaseConfigTest {
                 fail("Different lists. Found in right but not left: " + newRight);
             }
         }
-        assertEquals("Both should contain the same amount of config entries", left.size(), right.size());
+        assertEquals(left.size(), right.size(), "Both should contain the same amount of config entries");
         if (COMPARE_CONFIG_VALUES) {
             for (int i = 0; i < left.size(); i++) {
                 Object l = left.get(i);
-                assertEquals(l.getClass(), right.getClass());
+                assertThat(right.getClass()).isEqualTo(l.getClass());
                 if (l instanceof Category) {
-                    assertTrue("Both categories should be the same", ((Category) l).deepEquals((Category) right.get(i)));
+                    assertTrue(((Category) l).deepEquals((Category) right.get(i)), "Both categories should be the same");
                 } else {
-                    assertEquals("Setting in baseConfig.yml is different than in base config", l, right.get(i));
+                    assertEquals(l, right.get(i), "Setting in baseConfig.yml is different than in base config");
                 }
             }
         }

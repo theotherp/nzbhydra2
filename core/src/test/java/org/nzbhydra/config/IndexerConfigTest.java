@@ -16,7 +16,7 @@
 
 package org.nzbhydra.config;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.nzbhydra.config.ValidatingConfig.ConfigValidationResult;
 import org.nzbhydra.config.indexer.IndexerConfig;
@@ -31,7 +31,7 @@ public class IndexerConfigTest {
     private IndexerConfig testee = new IndexerConfig();
 
     @Test
-    public void shouldValidateSchedules() {
+    void shouldValidateSchedules() {
         testee.setSchedule(Arrays.asList("blabla"));
         testee.setName("indexer");
         BaseConfig baseConfig = new BaseConfig();

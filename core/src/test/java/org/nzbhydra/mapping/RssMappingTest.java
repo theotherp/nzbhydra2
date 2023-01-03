@@ -4,9 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.nzbhydra.mapping.newznab.xml.NewznabAttribute;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlChannel;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlEnclosure;
@@ -15,7 +15,7 @@ import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlResponse;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestTemplate;
 
@@ -23,195 +23,194 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 public class RssMappingTest {
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
 
     }
 
     @Test
-    public void testMappingFromXml() throws Exception {
+    void testMappingFromXml() throws Exception {
         NewznabXmlRoot rssRoot = getRssRootFromXml("newznab_3results.xml");
         NewznabXmlChannel channel = rssRoot.getRssChannel();
-        assertThat(channel.getDescription(), is("indexerName(dot)com Feed"));
-        assertThat(channel.getLink(), is("https://indexerName.com/"));
-        assertThat(channel.getLanguage(), is("en-gb"));
-        assertThat(channel.getWebMaster(), is("admin@indexerName.com (indexerName(dot)com)"));
+        assertThat(channel.getDescription()).isEqualTo("indexerName(dot)com Feed");
+        assertThat(channel.getLink()).isEqualTo("https://indexerName.com/");
+        assertThat(channel.getLanguage()).isEqualTo("en-gb");
+        assertThat(channel.getWebMaster()).isEqualTo("admin@indexerName.com (indexerName(dot)com)");
 
         NewznabXmlResponse newznabResponse = channel.getNewznabResponse();
-        assertThat(newznabResponse.getOffset(), is(0));
-        assertThat(newznabResponse.getTotal(), is(1000));
+        assertThat(newznabResponse.getOffset()).isEqualTo(0);
+        assertThat(newznabResponse.getTotal()).isEqualTo(1000);
 
         List<NewznabXmlItem> items = channel.getItems();
-        assertThat(items.size(), is(3));
+        assertThat(items.size()).isEqualTo(3);
 
         NewznabXmlItem item = items.get(0);
-        assertThat(item.getLink(), is("https://indexerName.com/getnzb/eff551fbdb69d6777d5030c209ee5d4b.nzb&i=1692&r=apikey"));
-        assertThat(item.getPubDate(), is(Instant.ofEpochSecond(1444584857)));
-        assertThat(item.getDescription(), is("testtitle1"));
-        assertThat(item.getComments(), is("https://indexerName.com/details/eff551fbdb69d6777d5030c209ee5d4b#comments"));
+        assertThat(item.getLink()).isEqualTo("https://indexerName.com/getnzb/eff551fbdb69d6777d5030c209ee5d4b.nzb&i=1692&r=apikey");
+        assertThat(item.getPubDate()).isEqualTo(Instant.ofEpochSecond(1444584857));
+        assertThat(item.getDescription()).isEqualTo("testtitle1");
+        assertThat(item.getComments()).isEqualTo("https://indexerName.com/details/eff551fbdb69d6777d5030c209ee5d4b#comments");
 
         NewznabXmlGuid rssGuid = item.getRssGuid();
-        assertThat(rssGuid.getGuid(), is("eff551fbdb69d6777d5030c209ee5d4b"));
-        assertThat(rssGuid.isPermaLink(), is(false));
+        assertThat(rssGuid.getGuid()).isEqualTo("eff551fbdb69d6777d5030c209ee5d4b");
+        assertThat(rssGuid.isPermaLink()).isEqualTo(false);
 
         NewznabXmlEnclosure enclosure = item.getEnclosure();
-        assertThat(enclosure.getUrl(), is("https://indexerName.com/getnzb/eff551fbdb69d6777d5030c209ee5d4b.nzb&i=1692&r=apikey"));
-        assertThat(enclosure.getLength(), is(2893890900L));
+        assertThat(enclosure.getUrl()).isEqualTo("https://indexerName.com/getnzb/eff551fbdb69d6777d5030c209ee5d4b.nzb&i=1692&r=apikey");
+        assertThat(enclosure.getLength()).isEqualTo(2893890900L);
 
         List<NewznabAttribute> attributes = item.getNewznabAttributes();
-        assertThat(attributes.size(), is(6));
-        assertThat(attributes.get(0).getName(), is("category"));
-        assertThat(attributes.get(0).getValue(), is("7000"));
-        assertThat(attributes.get(2).getName(), is("size"));
-        assertThat(attributes.get(2).getValue(), is("2893890900"));
-        assertThat(attributes.get(3).getName(), is("guid"));
-        assertThat(attributes.get(3).getValue(), is("eff551fbdb69d6777d5030c209ee5d4b"));
-        assertThat(attributes.get(4).getName(), is("poster"));
-        assertThat(attributes.get(4).getValue(), is("chuck@norris.com"));
-        assertThat(attributes.get(5).getName(), is("group"));
-        assertThat(attributes.get(5).getValue(), is("alt.binaries.mom"));
+        assertThat(attributes.size()).isEqualTo(6);
+        assertThat(attributes.get(0).getName()).isEqualTo("category");
+        assertThat(attributes.get(0).getValue()).isEqualTo("7000");
+        assertThat(attributes.get(2).getName()).isEqualTo("size");
+        assertThat(attributes.get(2).getValue()).isEqualTo("2893890900");
+        assertThat(attributes.get(3).getName()).isEqualTo("guid");
+        assertThat(attributes.get(3).getValue()).isEqualTo("eff551fbdb69d6777d5030c209ee5d4b");
+        assertThat(attributes.get(4).getName()).isEqualTo("poster");
+        assertThat(attributes.get(4).getValue()).isEqualTo("chuck@norris.com");
+        assertThat(attributes.get(5).getName()).isEqualTo("group");
+        assertThat(attributes.get(5).getValue()).isEqualTo("alt.binaries.mom");
     }
 
     @Test
-    public void shouldParseResponseFromNzbsOrg() throws Exception {
+    void shouldParseResponseFromNzbsOrg() throws Exception {
         NewznabXmlRoot rssRoot = getRssRootFromXml("nzbsOrgResponse.xml");
 
-        assertEquals(Integer.valueOf(1000), rssRoot.getRssChannel().getNewznabResponse().getTotal());
-        assertNotNull(rssRoot.getRssChannel().getItems().get(0).getPubDate());
+        assertThat(rssRoot.getRssChannel().getNewznabResponse().getTotal()).isEqualTo(Integer.valueOf(1000));
+        assertThat(rssRoot.getRssChannel().getItems().get(0).getPubDate()).isNotNull();
     }
 
     @Test
-    public void shouldParseResponseFromOmgwtf() throws Exception {
+    void shouldParseResponseFromOmgwtf() throws Exception {
         NewznabXmlRoot rssRoot = getRssRootFromXml("omgwtfResponse.xml");
 
-        assertEquals(Integer.valueOf(416), rssRoot.getRssChannel().getNewznabResponse().getTotal());
-        assertNotNull(rssRoot.getRssChannel().getItems().get(0).getPubDate());
+        assertThat(rssRoot.getRssChannel().getNewznabResponse().getTotal()).isEqualTo(Integer.valueOf(416));
+        assertThat(rssRoot.getRssChannel().getItems().get(0).getPubDate()).isNotNull();
     }
 
     @Test
-    public void shouldParseResponseFromNzbAG() throws Exception {
+    void shouldParseResponseFromNzbAG() throws Exception {
         NewznabXmlRoot rssRoot = getRssRootFromXml("nzbAgResponse.xml");
 
-        assertEquals(Integer.valueOf(125000), rssRoot.getRssChannel().getNewznabResponse().getTotal());
-        assertNotNull(rssRoot.getRssChannel().getItems().get(0).getPubDate());
+        assertThat(rssRoot.getRssChannel().getNewznabResponse().getTotal()).isEqualTo(Integer.valueOf(125000));
+        assertThat(rssRoot.getRssChannel().getItems().get(0).getPubDate()).isNotNull();
     }
 
     @Test
-    public void shouldParseResponseFromTabulaRasa() throws Exception {
+    void shouldParseResponseFromTabulaRasa() throws Exception {
         NewznabXmlRoot rssRoot = getRssRootFromXml("tabulaRasaResponse.xml");
 
-        assertEquals(Integer.valueOf(125000), rssRoot.getRssChannel().getNewznabResponse().getTotal());
-        assertNotNull(rssRoot.getRssChannel().getItems().get(0).getPubDate());
+        assertThat(rssRoot.getRssChannel().getNewznabResponse().getTotal()).isEqualTo(Integer.valueOf(125000));
+        assertThat(rssRoot.getRssChannel().getItems().get(0).getPubDate()).isNotNull();
     }
 
     @Test
-    public void shouldParseResponseFromNzbCat() throws Exception {
+    void shouldParseResponseFromNzbCat() throws Exception {
         NewznabXmlRoot rssRoot = getRssRootFromXml("nzbCatResponse.xml");
 
-        assertEquals(Integer.valueOf(125000), rssRoot.getRssChannel().getNewznabResponse().getTotal());
-        assertNotNull(rssRoot.getRssChannel().getItems().get(0).getPubDate());
+        assertThat(rssRoot.getRssChannel().getNewznabResponse().getTotal()).isEqualTo(Integer.valueOf(125000));
+        assertThat(rssRoot.getRssChannel().getItems().get(0).getPubDate()).isNotNull();
     }
 
     @Test
-    public void shouldParseResponseFromDrunkenSlug() throws Exception {
+    void shouldParseResponseFromDrunkenSlug() throws Exception {
         NewznabXmlRoot rssRoot = getRssRootFromXml("drunkenSlugResponse.xml");
 
-        assertEquals(Integer.valueOf(125000), rssRoot.getRssChannel().getNewznabResponse().getTotal());
-        assertNotNull(rssRoot.getRssChannel().getItems().get(0).getPubDate());
+        assertThat(rssRoot.getRssChannel().getNewznabResponse().getTotal()).isEqualTo(Integer.valueOf(125000));
+        assertThat(rssRoot.getRssChannel().getItems().get(0).getPubDate()).isNotNull();
     }
 
     @Test
-    public void shouldParseResponseFromDrunkenSlugWithSomeApilimits() throws Exception {
+    void shouldParseResponseFromDrunkenSlugWithSomeApilimits() throws Exception {
         NewznabXmlRoot rssRoot = getRssRootFromXml("drunkenSlug_withSomeLimits.xml");
 
-        assertEquals(Integer.valueOf(44), rssRoot.getRssChannel().getApiLimits().getApiCurrent());
-        assertEquals(Integer.valueOf(50), rssRoot.getRssChannel().getApiLimits().getApiMax());
-        assertNull(rssRoot.getRssChannel().getApiLimits().getGrabCurrent());
-        assertEquals(Integer.valueOf(5), rssRoot.getRssChannel().getApiLimits().getGrabMax());
+        assertThat(rssRoot.getRssChannel().getApiLimits().getApiCurrent()).isEqualTo(Integer.valueOf(44));
+        assertThat(rssRoot.getRssChannel().getApiLimits().getApiMax()).isEqualTo(Integer.valueOf(50));
+        assertThat(rssRoot.getRssChannel().getApiLimits().getGrabCurrent()).isNull();
+        assertThat(rssRoot.getRssChannel().getApiLimits().getGrabMax()).isEqualTo(Integer.valueOf(5));
     }
 
     @Test
-    public void shouldParseResponseFromDrunkenSlugWithApilimits() throws Exception {
+    void shouldParseResponseFromDrunkenSlugWithApilimits() throws Exception {
         NewznabXmlRoot rssRoot = getRssRootFromXml("drunkenSlug_withLimits.xml");
 
-        assertEquals(Integer.valueOf(44), rssRoot.getRssChannel().getApiLimits().getApiCurrent());
-        assertEquals(Integer.valueOf(50), rssRoot.getRssChannel().getApiLimits().getApiMax());
-        assertEquals(Integer.valueOf(1), rssRoot.getRssChannel().getApiLimits().getGrabCurrent());
-        assertEquals(Integer.valueOf(5), rssRoot.getRssChannel().getApiLimits().getGrabMax());
-        assertNull(rssRoot.getRssChannel().getApiLimits().getApiOldestTime());
-        assertNull(rssRoot.getRssChannel().getApiLimits().getGrabOldestTime());
+        assertThat(rssRoot.getRssChannel().getApiLimits().getApiCurrent()).isEqualTo(Integer.valueOf(44));
+        assertThat(rssRoot.getRssChannel().getApiLimits().getApiMax()).isEqualTo(Integer.valueOf(50));
+        assertThat(rssRoot.getRssChannel().getApiLimits().getGrabCurrent()).isEqualTo(Integer.valueOf(1));
+        assertThat(rssRoot.getRssChannel().getApiLimits().getGrabMax()).isEqualTo(Integer.valueOf(5));
+        assertThat(rssRoot.getRssChannel().getApiLimits().getApiOldestTime()).isNull();
+        assertThat(rssRoot.getRssChannel().getApiLimits().getGrabOldestTime()).isNull();
     }
 
     @Test
-    public void shouldParseResponseFromTabulaRasaWithApilimits() throws Exception {
+    void shouldParseResponseFromTabulaRasaWithApilimits() throws Exception {
         NewznabXmlRoot rssRoot = getRssRootFromXml("tabluaRasa_withSomeLimits.xml");
 
-        assertEquals(Integer.valueOf(763), rssRoot.getRssChannel().getApiLimits().getApiCurrent());
-        assertEquals(Integer.valueOf(8000), rssRoot.getRssChannel().getApiLimits().getApiMax());
-        assertEquals(Integer.valueOf(4), rssRoot.getRssChannel().getApiLimits().getGrabCurrent());
-        assertEquals(Integer.valueOf(8001), rssRoot.getRssChannel().getApiLimits().getGrabMax());
-        assertEquals("2020-04-30T10:39:38Z", rssRoot.getRssChannel().getApiLimits().getApiOldestTime().toString());
-        assertEquals("2020-04-30T17:54:30Z", rssRoot.getRssChannel().getApiLimits().getGrabOldestTime().toString());
+        assertThat(rssRoot.getRssChannel().getApiLimits().getApiCurrent()).isEqualTo(Integer.valueOf(763));
+        assertThat(rssRoot.getRssChannel().getApiLimits().getApiMax()).isEqualTo(Integer.valueOf(8000));
+        assertThat(rssRoot.getRssChannel().getApiLimits().getGrabCurrent()).isEqualTo(Integer.valueOf(4));
+        assertThat(rssRoot.getRssChannel().getApiLimits().getGrabMax()).isEqualTo(Integer.valueOf(8001));
+        assertThat(rssRoot.getRssChannel().getApiLimits().getApiOldestTime().toString()).isEqualTo("2020-04-30T10:39:38Z");
+        assertThat(rssRoot.getRssChannel().getApiLimits().getGrabOldestTime().toString()).isEqualTo("2020-04-30T17:54:30Z");
     }
 
     @Test
-    public void shouldParseResponseFromNzbFinder() throws Exception {
+    void shouldParseResponseFromNzbFinder() throws Exception {
         NewznabXmlRoot rssRoot = getRssRootFromXml("nzbFinderResponse.xml");
 
-        assertEquals(Integer.valueOf(125000), rssRoot.getRssChannel().getNewznabResponse().getTotal());
-        assertNotNull(rssRoot.getRssChannel().getItems().get(0).getPubDate());
+        assertThat(rssRoot.getRssChannel().getNewznabResponse().getTotal()).isEqualTo(Integer.valueOf(125000));
+        assertThat(rssRoot.getRssChannel().getItems().get(0).getPubDate()).isNotNull();
     }
 
     @Test
-    public void shouldParseResponseFromNewztown() throws Exception {
+    void shouldParseResponseFromNewztown() throws Exception {
         NewznabXmlRoot rssRoot = getRssRootFromXml("newztownResponse.xml");
 
-        assertEquals(Integer.valueOf(4443964), rssRoot.getRssChannel().getNewznabResponse().getTotal());
-        assertNotNull(rssRoot.getRssChannel().getItems().get(0).getPubDate());
+        assertThat(rssRoot.getRssChannel().getNewznabResponse().getTotal()).isEqualTo(Integer.valueOf(4443964));
+        assertThat(rssRoot.getRssChannel().getItems().get(0).getPubDate()).isNotNull();
     }
 
     @Test
-    public void shouldParseResponseFromNzbSu() throws Exception {
+    void shouldParseResponseFromNzbSu() throws Exception {
         NewznabXmlRoot rssRoot = getRssRootFromXml("nzbSuResponse.xml");
 
-        assertEquals(Integer.valueOf(20000), rssRoot.getRssChannel().getNewznabResponse().getTotal());
-        assertNotNull(rssRoot.getRssChannel().getItems().get(0).getPubDate());
+        assertThat(rssRoot.getRssChannel().getNewznabResponse().getTotal()).isEqualTo(Integer.valueOf(20000));
+        assertThat(rssRoot.getRssChannel().getItems().get(0).getPubDate()).isNotNull();
     }
 
     @Test
-    public void shouldParseResponseFromCardigann() throws Exception {
+    void shouldParseResponseFromCardigann() throws Exception {
         NewznabXmlRoot rssRoot = getRssRootFromXml("btnJackettResponse.xml");
 
         NewznabXmlChannel channel = rssRoot.getRssChannel();
-        assertThat(channel.getDescription(), is("Needs no description.."));
+        assertThat(channel.getDescription()).isEqualTo("Needs no description..");
 
         NewznabXmlResponse newznabResponse = channel.getNewznabResponse();
-        assertThat(newznabResponse, is(nullValue()));
+        assertThat(newznabResponse).isNull();
 
         List<NewznabXmlItem> items = channel.getItems();
-        assertThat(items.size(), is(3));
+        assertThat(items.size()).isEqualTo(3);
         NewznabXmlItem item = items.get(0);
-        assertThat(item.getTitle(), is("The.Challenge.S30.Special.14.Times.Our.Challengers.Found.Their.Shit.1080p.WEB.x264-CookieMonster"));
-        assertThat(item.getRssGuid().getGuid(), is("https://unicasthe.net/torrents.php?action=download&id=799031&authkey=authkey&torrent_pass=torrentPass"));
-        assertThat(item.getLink(), startsWith("http://127.0.0.1:9117/dl/unicasthenet/jackettApiKey?path=linkstuff&file=The.Challenge.S30.Special.14.Times.Our.Challengers.Found.Their.Shit.1080p.WEB.x264-CookieMonster.torrent"));
-        assertThat(item.getCategory(), is("5000"));
-        assertThat(item.getEnclosure().getLength(), is(1459519537L));
-        assertThat(item.getTorznabAttributes().size(), is(6));
-        assertThat(item.getTorznabAttributes().get(0).getName(), is("rageid"));
-        assertThat(item.getTorznabAttributes().get(0).getValue(), is("6126"));
+        assertThat(item.getTitle()).isEqualTo("The.Challenge.S30.Special.14.Times.Our.Challengers.Found.Their.Shit.1080p.WEB.x264-CookieMonster");
+        assertThat(item.getRssGuid().getGuid()).isEqualTo("https://unicasthe.net/torrents.php?action=download&id=799031&authkey=authkey&torrent_pass=torrentPass");
+        assertThat(item.getLink()).startsWith("http://127.0.0.1:9117/dl/unicasthenet/jackettApiKey?path=linkstuff&file=The.Challenge.S30.Special.14.Times.Our.Challengers.Found.Their.Shit.1080p.WEB.x264-CookieMonster.torrent");
+        assertThat(item.getCategory()).isEqualTo("5000");
+        assertThat(item.getEnclosure().getLength()).isEqualTo(1459519537L);
+        assertThat(item.getTorznabAttributes().size()).isEqualTo(6);
+        assertThat(item.getTorznabAttributes().get(0).getName()).isEqualTo("rageid");
+        assertThat(item.getTorznabAttributes().get(0).getValue()).isEqualTo("6126");
     }
 
     @Test
-    public void shouldParseResponseFromNzbIndex() throws Exception {
+    void shouldParseResponseFromNzbIndex() throws Exception {
         NewznabXmlRoot rssRoot = getRssRootFromXml("nzbIndexResponse.xml");
-        assertEquals(100, rssRoot.getRssChannel().getItems().size());
+        assertThat(rssRoot.getRssChannel().getItems()).hasSize(100);
     }
 
 
@@ -224,7 +223,7 @@ public class RssMappingTest {
     }
 
     @Test
-    public void shouldSerializeToJson() throws Exception{
+    void shouldSerializeToJson() throws Exception {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
         NewznabXmlRoot rssRoot = getRssRootFromXml("newznab_3results.xml");

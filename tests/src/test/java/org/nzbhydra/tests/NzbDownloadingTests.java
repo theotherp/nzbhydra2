@@ -2,11 +2,11 @@ package org.nzbhydra.tests;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockserver.integration.ClientAndProxy;
 import org.mockserver.integration.ClientAndServer;
 import org.mockserver.model.HttpRequest;
@@ -39,7 +39,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -55,7 +55,7 @@ import static org.mockserver.integration.ClientAndServer.startClientAndServer;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = NzbHydra.class)
 @Transactional
 @AutoConfigureCache
@@ -66,7 +66,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @TestPropertySource(locations = "classpath:/org/nzbhydra/tests/downloadingTests.properties")
 @DirtiesContext
 //For some reason multiple indexers are loaded. Looks like TestPropertySource doesn't work
-@Ignore
+@Disabled
 public class NzbDownloadingTests {
 
     @Autowired
@@ -88,13 +88,13 @@ public class NzbDownloadingTests {
     private long searchResultId;
 
 
-    @After
+    @AfterEach
     public void stopProxy() {
         proxy.stop();
         mockServer.stop();
     }
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         System.setProperty("nzbhydra.dev.noApiKey", "true");
         System.setProperty("server.host", "127.0.0.1");
@@ -168,7 +168,7 @@ public class NzbDownloadingTests {
     }
 
     @Test
-    @Ignore //Went kaputt when switching to Spring Boot 2.1
+    @Disabled //Went kaputt when switching to Spring Boot 2.1
     public void shouldSendUrlToDownloader() throws Exception {
         baseConfig.getDownloading().getDownloaders().get(0).setNzbAddingType(NzbAddingType.SEND_LINK);
         //http://127.0.0.1:7070/sabnzbd/api?apikey=apikey&output=json&mode=addurl&name=http://127.0.0.1:5076/getnzb/api/5293954792479313301?apikey&nzbname=someNzb.nzb

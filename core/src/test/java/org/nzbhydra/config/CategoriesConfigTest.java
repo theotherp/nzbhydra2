@@ -1,6 +1,6 @@
 package org.nzbhydra.config;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.nzbhydra.config.ValidatingConfig.ConfigValidationResult;
 import org.nzbhydra.config.category.CategoriesConfig;
@@ -8,9 +8,7 @@ import org.nzbhydra.config.category.Category;
 
 import java.util.Arrays;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class CategoriesConfigTest {
 
@@ -18,7 +16,7 @@ public class CategoriesConfigTest {
     private CategoriesConfig testee = new CategoriesConfig();
 
     @Test
-    public void shouldValidateTorrentsFolder() throws Exception {
+    void shouldValidateTorrentsFolder() throws Exception {
         BaseConfig baseConfig = new BaseConfig();
 
         Category moviesCategory = new Category("Movies");
@@ -38,13 +36,13 @@ public class CategoriesConfigTest {
 
     private void validateAndCheckForSublevelError(BaseConfig baseConfig) {
         ConfigValidationResult result = testee.validateConfig(baseConfig, testee, null);
-        assertThat(result.getWarningMessages().size(), is(1));
-        assertThat(result.getWarningMessages().get(0), containsString("sublevel"));
+        assertThat(result.getWarningMessages().size()).isEqualTo(1);
+        assertThat(result.getWarningMessages().get(0)).contains("sublevel");
     }
 
     private void validateAndCheckForNoError(BaseConfig baseConfig) {
         ConfigValidationResult result = testee.validateConfig(baseConfig, testee, null);
-        assertThat(result.getWarningMessages().size(), is(0));
+        assertThat(result.getWarningMessages().size()).isEqualTo(0);
     }
 
 }

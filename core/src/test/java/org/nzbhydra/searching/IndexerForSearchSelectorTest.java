@@ -2,8 +2,8 @@ package org.nzbhydra.searching;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -43,9 +43,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import static junit.framework.TestCase.assertFalse;
-import static junit.framework.TestCase.assertTrue;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -91,7 +91,7 @@ public class IndexerForSearchSelectorTest {
     @InjectMocks
     private IndexerForSearchSelector testee;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         count = new HashMap<>();
@@ -109,15 +109,15 @@ public class IndexerForSearchSelectorTest {
 
 
     @Test
-    public void shouldCheckIfSelectedByUser() {
+    void shouldCheckIfSelectedByUser() {
         when(searchModuleProviderMock.getIndexers()).thenReturn(Arrays.asList(indexer));
         when(searchRequest.getSource()).thenReturn(SearchSource.INTERNAL);
         when(searchRequest.getIndexers()).thenReturn(Optional.of(Sets.newSet("anotherIndexer")));
 
-        assertFalse(testee.checkIndexerSelected(indexer));
+        assertThat(testee.checkIndexerSelected(indexer)).isFalse();
 
         when(searchRequest.getSource()).thenReturn(SearchSource.API);
-        assertFalse(testee.checkIndexerSelected(indexer));
+        assertThat(testee.checkIndexerSelected(indexer)).isFalse();
 
         when(searchRequest.getIndexers()).thenReturn(Optional.of(Sets.newSet("indexer")));
 
@@ -129,7 +129,7 @@ public class IndexerForSearchSelectorTest {
     }
 
     @Test
-    public void shouldCheckIfDisabledBySystem() {
+    void shouldCheckIfDisabledBySystem() {
         when(searchingConfig.isIgnoreTemporarilyDisabled()).thenReturn(false);
 
         indexerConfigMock.setState(IndexerConfig.State.ENABLED);
@@ -138,28 +138,28 @@ public class IndexerForSearchSelectorTest {
 
         indexerConfigMock.setState(IndexerConfig.State.DISABLED_SYSTEM_TEMPORARY);
         indexerConfigMock.setDisabledUntil(Instant.now().plus(1, ChronoUnit.DAYS).toEpochMilli());
-        assertFalse(testee.checkIndexerStatus(indexer));
+        assertThat(testee.checkIndexerStatus(indexer)).isFalse();
 
         indexerConfigMock.setState(IndexerConfig.State.DISABLED_SYSTEM);
-        assertFalse(testee.checkIndexerStatus(indexer));
+        assertThat(testee.checkIndexerStatus(indexer)).isFalse();
     }
 
     @Test
-    public void shouldCheckForCategory() {
+    void shouldCheckForCategory() {
         when(searchRequest.getCategory()).thenReturn(category);
         indexerConfigMock.setEnabledCategories(Collections.emptyList());
 
         assertTrue(testee.checkDisabledForCategory(indexer));
 
         indexerConfigMock.setEnabledCategories(Arrays.asList("anotherCategory"));
-        assertFalse(testee.checkDisabledForCategory(indexer));
+        assertThat(testee.checkDisabledForCategory(indexer)).isFalse();
 
         indexerConfigMock.setEnabledCategories(Arrays.asList(("category")));
         assertTrue(testee.checkDisabledForCategory(indexer));
     }
 
     @Test
-    public void shouldCheckForLoadLimiting() {
+    void shouldCheckForLoadLimiting() {
         indexerConfigMock.setLoadLimitOnRandom(null);
         assertTrue(testee.checkLoadLimiting(indexer));
 
@@ -177,19 +177,19 @@ public class IndexerForSearchSelectorTest {
     }
 
     @Test
-    public void shouldCheckContext() {
+    void shouldCheckContext() {
         when(searchModuleProviderMock.getIndexers()).thenReturn(Arrays.asList(indexer));
         when(searchRequest.getSource()).thenReturn(SearchSource.INTERNAL);
         indexerConfigMock.setEnabledForSearchSource(SearchSourceRestriction.API);
 
-        assertFalse(testee.checkSearchSource(indexer));
+        assertThat(testee.checkSearchSource(indexer)).isFalse();
 
         when(searchRequest.getSource()).thenReturn(SearchSource.API);
         assertTrue(testee.checkSearchSource(indexer));
     }
 
     @Test
-    public void shouldCheckIdConversion() {
+    void shouldCheckIdConversion() {
         Set<MediaIdType> supported = Sets.newSet(MediaIdType.TVMAZE, MediaIdType.TVDB);
         Set<MediaIdType> provided = Sets.newSet(MediaIdType.TVMAZE);
 
@@ -210,7 +210,7 @@ public class IndexerForSearchSelectorTest {
     }
 
     @Test
-    public void shouldIgnoreHitAndDownloadLimitIfNoneAreSet() {
+    void shouldIgnoreHitAndDownloadLimitIfNoneAreSet() {
         indexerConfigMock.setHitLimit(null);
         indexerConfigMock.setDownloadLimit(null);
         testee.checkIndexerHitLimit(indexer);
@@ -219,7 +219,7 @@ public class IndexerForSearchSelectorTest {
     }
 
     @Test
-    public void shouldIgnoreHitLimitIfNotYetReached() {
+    void shouldIgnoreHitLimitIfNotYetReached() {
         indexerConfigMock.setHitLimit(10);
         when(queryMock.getResultList()).thenReturn(Collections.emptyList());
         boolean result = testee.checkIndexerHitLimit(indexer);
@@ -228,7 +228,7 @@ public class IndexerForSearchSelectorTest {
     }
 
     @Test
-    public void shouldFollowApiHitLimitRollingTimeWindowUsingAccessHistory() {
+    void shouldFollowApiHitLimitRollingTimeWindowUsingAccessHistory() {
         //Last access was yesterday afternoon, next possible hit should be today at afternoon
         Instant currentTime = Instant.parse("2021-01-13T09:00:00.000Z");
         Instant firstAccess = Instant.parse("2021-01-12T16:00:00.000Z");
@@ -237,12 +237,12 @@ public class IndexerForSearchSelectorTest {
         indexerConfigMock.setHitLimitResetTime(null);
         when(queryMock.getResultList()).thenReturn(Arrays.asList(Timestamp.from(firstAccess)));
         boolean result = testee.checkIndexerHitLimit(indexer);
-        assertFalse(result);
+        assertThat(result).isFalse();
         verify(entityManagerMock).createNativeQuery(anyString());
     }
 
     @Test
-    public void shouldFollowApiHitLimitFixedResetTimeLaterUsingAccessHistoryAboveLimit() {
+    void shouldFollowApiHitLimitFixedResetTimeLaterUsingAccessHistoryAboveLimit() {
         //Last access was yesterday afternoon, fixed reset time is later today, should allow then
         Instant currentTime = Instant.parse("2021-01-13T09:00:00.000Z");
         Instant firstAccess = Instant.parse("2021-01-12T16:00:00.000Z");
@@ -251,12 +251,12 @@ public class IndexerForSearchSelectorTest {
         indexerConfigMock.setHitLimitResetTime(12);
         when(queryMock.getResultList()).thenReturn(Arrays.asList(Timestamp.from(firstAccess)));
         boolean result = testee.checkIndexerHitLimit(indexer);
-        assertFalse(result);
+        assertThat(result).isFalse();
         verify(entityManagerMock).createNativeQuery(anyString());
     }
 
     @Test
-    public void shouldFollowApiHitLimitFixedResetTimeLaterUsingAccessHistoryBelowLimit() {
+    void shouldFollowApiHitLimitFixedResetTimeLaterUsingAccessHistoryBelowLimit() {
         //Last access was yesterday afternoon, fixed reset time is later today, should allow then
         Instant currentTime = Instant.parse("2021-01-13T09:00:00.000Z");
         Instant firstAccess = Instant.parse("2021-01-12T16:00:00.000Z");
@@ -270,7 +270,7 @@ public class IndexerForSearchSelectorTest {
     }
 
     @Test
-    public void shouldFollowApiHitLimitFixedResetTimeReachedUsingAccessHistoryA() {
+    void shouldFollowApiHitLimitFixedResetTimeReachedUsingAccessHistoryA() {
         //Last access was yesterday afternoon, fixed reset time was today, should allow
         Instant currentTime = Instant.parse("2021-01-13T09:00:00.000Z");
         Instant firstAccess = Instant.parse("2021-01-12T16:00:00.000Z");
@@ -284,7 +284,7 @@ public class IndexerForSearchSelectorTest {
     }
 
     @Test
-    public void shouldFollowApiHitLimitUsingApiHitsAndOldestHitAboveLimit() {
+    void shouldFollowApiHitLimitUsingApiHitsAndOldestHitAboveLimit() {
         //Last access was yesterday afternoon, next possible hit should be today at afternoon
         Instant currentTime = Instant.parse("2021-01-13T09:00:00.000Z");
         Instant firstAccess = Instant.parse("2021-01-12T16:00:00.000Z");
@@ -294,12 +294,12 @@ public class IndexerForSearchSelectorTest {
         indexerLimit.setOldestApiHit(firstAccess);
 
         boolean result = testee.checkIndexerHitLimit(indexer);
-        assertFalse(result);
+        assertThat(result).isFalse();
         verify(entityManagerMock, never()).createNativeQuery(anyString());
     }
 
     @Test
-    public void shouldFollowApiHitLimitUsingApiHitsAndOldestHitOlderThanOneDay() {
+    void shouldFollowApiHitLimitUsingApiHitsAndOldestHitOlderThanOneDay() {
         //Last access was yesterday afternoon, next possible hit should be today at afternoon
         Instant currentTime = Instant.parse("2021-01-13T09:00:00.000Z");
         Instant firstAccess = Instant.parse("2021-01-11T16:00:00.000Z");
@@ -314,7 +314,7 @@ public class IndexerForSearchSelectorTest {
     }
 
     @Test
-    public void shouldFollowApiHitLimitUsingApiHitsAndOldestHitBelowlimit() {
+    void shouldFollowApiHitLimitUsingApiHitsAndOldestHitBelowlimit() {
         //Last access was yesterday afternoon, next possible hit should be today at afternoon
         Instant currentTime = Instant.parse("2021-01-13T09:00:00.000Z");
         Instant firstAccess = Instant.parse("2021-01-12T16:00:00.000Z");
@@ -329,7 +329,7 @@ public class IndexerForSearchSelectorTest {
     }
 
     @Test
-    public void shouldPreferApiResultOldestHitOverHistory() {
+    void shouldPreferApiResultOldestHitOverHistory() {
         //Last access was yesterday afternoon, next possible hit should be today at afternoon
         Instant currentTime = Instant.parse("2021-01-13T09:00:00.000Z");
         //A while ago
@@ -342,12 +342,12 @@ public class IndexerForSearchSelectorTest {
         indexerLimit.setOldestApiHit(oldestHitApiResult);
 
         boolean result = testee.checkIndexerHitLimit(indexer);
-        assertFalse(result);
+        assertThat(result).isFalse();
         verify(entityManagerMock, never()).createNativeQuery(anyString());
     }
 
     @Test
-    public void shouldFollowApiHitLimitUsingApiHitsFromResponsAndOldestHitFromHistory() {
+    void shouldFollowApiHitLimitUsingApiHitsFromResponsAndOldestHitFromHistory() {
         //Last access was yesterday afternoon, next possible hit should be today at afternoon
         Instant currentTime = Instant.parse("2021-01-13T09:00:00.000Z");
         Instant firstAccess = Instant.parse("2021-01-12T16:00:00.000Z");
@@ -358,12 +358,12 @@ public class IndexerForSearchSelectorTest {
 
         boolean result = testee.checkIndexerHitLimit(indexer);
 
-        assertFalse(result);
+        assertThat(result).isFalse();
         verify(entityManagerMock).createNativeQuery(anyString());
     }
 
     @Test
-    public void shouldIgnoreDownloadLimitIfNotYetReachedUsingAccessHistory() {
+    void shouldIgnoreDownloadLimitIfNotYetReachedUsingAccessHistory() {
         indexerConfigMock.setDownloadLimit(10);
         when(queryMock.getResultList()).thenReturn(Arrays.asList(Timestamp.from(Instant.now().minus(10, ChronoUnit.MILLIS))));
         boolean result = testee.checkIndexerHitLimit(indexer);
@@ -371,7 +371,7 @@ public class IndexerForSearchSelectorTest {
     }
 
     @Test
-    public void shouldCalculateNextHitWithRollingTimeWindows() throws Exception {
+    void shouldCalculateNextHitWithRollingTimeWindows() throws Exception {
         //First access was at 05:38, hit limit reset time is 10:00, now it's 09:00, next possible hit tomorrow at 05:38
         Instant currentTime = Instant.parse("2021-01-13T09:00:00.000Z");
         Instant firstAccess = Instant.parse("2021-01-13T05:38:00.000Z");
@@ -384,28 +384,28 @@ public class IndexerForSearchSelectorTest {
     }
 
     @Test
-    public void shouldOnlyUseTorznabIndexersForTorrentSearches() throws Exception {
+    void shouldOnlyUseTorznabIndexersForTorrentSearches() throws Exception {
         indexerConfigMock.setSearchModuleType(SearchModuleType.NEWZNAB);
         when(searchRequest.getDownloadType()).thenReturn(org.nzbhydra.searching.dtoseventsenums.DownloadType.TORRENT);
-        assertFalse("Only torznab indexers should be used for torrent searches", testee.checkTorznabOnlyUsedForTorrentOrInternalSearches(indexer));
+        assertFalse(testee.checkTorznabOnlyUsedForTorrentOrInternalSearches(indexer), "Only torznab indexers should be used for torrent searches");
 
         indexerConfigMock.setSearchModuleType(SearchModuleType.TORZNAB);
         when(searchRequest.getDownloadType()).thenReturn(org.nzbhydra.searching.dtoseventsenums.DownloadType.TORRENT);
-        assertTrue("Torznab indexers should be used for torrent searches", testee.checkTorznabOnlyUsedForTorrentOrInternalSearches(indexer));
+        assertTrue(testee.checkTorznabOnlyUsedForTorrentOrInternalSearches(indexer), "Torznab indexers should be used for torrent searches");
 
         indexerConfigMock.setSearchModuleType(SearchModuleType.TORZNAB);
         when(searchRequest.getSource()).thenReturn(SearchSource.INTERNAL);
         when(searchRequest.getDownloadType()).thenReturn(org.nzbhydra.searching.dtoseventsenums.DownloadType.NZB);
-        assertTrue("Torznab indexers should be selected for internal NZB searches", testee.checkTorznabOnlyUsedForTorrentOrInternalSearches(indexer));
+        assertTrue(testee.checkTorznabOnlyUsedForTorrentOrInternalSearches(indexer), "Torznab indexers should be selected for internal NZB searches");
 
         indexerConfigMock.setSearchModuleType(SearchModuleType.TORZNAB);
         when(searchRequest.getSource()).thenReturn(SearchSource.API);
         when(searchRequest.getDownloadType()).thenReturn(DownloadType.NZB);
-        assertFalse("Torznab indexers should not be selected for API NZB searches", testee.checkTorznabOnlyUsedForTorrentOrInternalSearches(indexer));
+        assertFalse(testee.checkTorznabOnlyUsedForTorrentOrInternalSearches(indexer), "Torznab indexers should not be selected for API NZB searches");
     }
 
     @Test
-    public void shouldCalculateNextHitWithFixedResetTime() {
+    void shouldCalculateNextHitWithFixedResetTime() {
         //First access was at 05:38, hit limit reset time is 10:00, now it's 09:00, next possible hit today at 10:00
         Instant currentTime = Instant.parse("2021-01-13T09:00:00.000Z");
         Instant firstAccess = Instant.parse("2021-01-13T05:38:00.000Z");
@@ -428,44 +428,44 @@ public class IndexerForSearchSelectorTest {
 
 
     @Test
-    public void shouldHonorSchedule() throws Exception {
+    void shouldHonorSchedule() throws Exception {
         testee.clock = Clock.fixed(Instant.ofEpochSecond(1512974083), ZoneId.of("UTC")); //Monday, December 11, 2017 6:34:43 AM
-        assertThat(testee.isInTime("mo")).isTrue();
-        assertThat(testee.isInTime("mo-tu")).isTrue();
-        assertThat(testee.isInTime("mo-su")).isTrue();
-        assertThat(testee.isInTime("tu-mo")).isTrue();
+        assertTrue(testee.isInTime("mo"));
+        assertTrue(testee.isInTime("mo-tu"));
+        assertTrue(testee.isInTime("mo-su"));
+        assertTrue(testee.isInTime("tu-mo"));
         assertThat(testee.isInTime("tu")).isFalse();
         assertThat(testee.isInTime("tu-we")).isFalse();
 
-        assertThat(testee.isInTime("mo6")).isTrue();
-        assertThat(testee.isInTime("mo6-10")).isTrue();
-        assertThat(testee.isInTime("mo6-23")).isTrue();
-        assertThat(testee.isInTime("mo1-10")).isTrue();
+        assertTrue(testee.isInTime("mo6"));
+        assertTrue(testee.isInTime("mo6-10"));
+        assertTrue(testee.isInTime("mo6-23"));
+        assertTrue(testee.isInTime("mo1-10"));
         assertThat(testee.isInTime("mo1-5")).isFalse();
         assertThat(testee.isInTime("mo7-23")).isFalse();
-        assertThat(testee.isInTime("mo22-8")).isTrue();
+        assertTrue(testee.isInTime("mo22-8"));
         assertThat(testee.isInTime("mo22-5")).isFalse();
 
-        assertThat(testee.isInTime("mo-tu6")).isTrue();
-        assertThat(testee.isInTime("mo-tu6-10")).isTrue();
+        assertTrue(testee.isInTime("mo-tu6"));
+        assertTrue(testee.isInTime("mo-tu6-10"));
         assertThat(testee.isInTime("mo-tu1-2")).isFalse();
         assertThat(testee.isInTime("tu-we6")).isFalse();
         assertThat(testee.isInTime("tu-we6-10")).isFalse();
 
-        assertThat(testee.isInTime("6")).isTrue();
-        assertThat(testee.isInTime("6-10")).isTrue();
+        assertTrue(testee.isInTime("6"));
+        assertTrue(testee.isInTime("6-10"));
         assertThat(testee.isInTime("7-10")).isFalse();
-        assertThat(testee.isInTime("10-7")).isTrue();
+        assertTrue(testee.isInTime("10-7"));
 
         indexerConfigMock.setSchedule(Arrays.asList("tu-we6", "mo"));
-        assertThat(testee.checkSchedule(indexer)).isTrue();
+        assertTrue(testee.checkSchedule(indexer));
 
         indexerConfigMock.setSchedule(Arrays.asList("tu-we6"));
         assertThat(testee.checkSchedule(indexer)).isFalse();
 
         testee.clock = Clock.fixed(Instant.ofEpochSecond(1513412203), ZoneId.of("UTC")); //Saturday, December 16, 2017 8:16:43 AM
-        assertThat(testee.isInTime("fr-sa")).isTrue();
-        assertThat(testee.isInTime("mo-sa")).isTrue();
+        assertTrue(testee.isInTime("fr-sa"));
+        assertTrue(testee.isInTime("mo-sa"));
     }
 
 

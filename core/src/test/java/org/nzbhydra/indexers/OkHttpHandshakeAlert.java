@@ -2,8 +2,8 @@ package org.nzbhydra.indexers;
 
 import okhttp3.OkHttpClient.Builder;
 import okhttp3.Request;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
@@ -14,7 +14,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
-@Ignore //Only of OkHTTP bug report, call methods separately. See https://github.com/square/okhttp/issues/3573
+@Disabled //Only of OkHTTP bug report, call methods separately. See https://github.com/square/okhttp/issues/3573
 public class OkHttpHandshakeAlert {
     private final String HOST_DOES_NOT_WORK_WITHOUT_SNI = "https://binsearch.info";
     private final String HOST_DOES_NOT_WORK_WITH_SNI = "https://nzbgeek.info";
@@ -24,14 +24,14 @@ public class OkHttpHandshakeAlert {
     //Caused by RealConnection.java:281 which cannot be skipped / disabled
 
     @Test
-    public void causesSslException() throws Exception {
+    void causesSslException() throws Exception {
         Builder builder = getUnsafeOkHttpClientBuilder(new Builder());
 
         builder.build().newCall(new Request.Builder().url(HOST_DOES_NOT_WORK_WITH_SNI).build()).execute();
     }
 
     @Test
-    public void doesNotCauseException() throws Exception {
+    void doesNotCauseException() throws Exception {
         //Will work with SNI disabled
         System.setProperty("jsse.enableSNIExtension", "false");
         Builder builder = getUnsafeOkHttpClientBuilder(new Builder());
@@ -39,7 +39,7 @@ public class OkHttpHandshakeAlert {
     }
 
     @Test
-    public void doesNotCauseExceptionForTheOneButForTheOther() throws Exception {
+    void doesNotCauseExceptionForTheOneButForTheOther() throws Exception {
         System.setProperty("jsse.enableSNIExtension", "false");
         Builder builder = getUnsafeOkHttpClientBuilder(new Builder());
         //Will work with SNI disabled
@@ -49,7 +49,7 @@ public class OkHttpHandshakeAlert {
     }
 
     @Test
-    public void worksWithSNI() throws Exception {
+    void worksWithSNI() throws Exception {
         System.setProperty("jsse.enableSNIExtension", "true"); //default setting
         Builder builder = getUnsafeOkHttpClientBuilder(new Builder());
         //Will work with SNI enabled

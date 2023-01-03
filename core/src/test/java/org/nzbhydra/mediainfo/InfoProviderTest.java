@@ -1,7 +1,7 @@
 package org.nzbhydra.mediainfo;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -12,8 +12,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 
-import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.*;
 
 public class InfoProviderTest {
@@ -30,7 +31,7 @@ public class InfoProviderTest {
     @InjectMocks
     private InfoProvider testee = new InfoProvider();
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
 
@@ -51,7 +52,7 @@ public class InfoProviderTest {
     }
 
     @Test
-    public void canConvert() throws Exception {
+    void canConvert() throws Exception {
         for (MediaIdType type : Arrays.asList(MediaIdType.IMDB, MediaIdType.TMDB, MediaIdType.MOVIETITLE)) {
             for (MediaIdType type2 : Arrays.asList(MediaIdType.IMDB, MediaIdType.TMDB, MediaIdType.MOVIETITLE)) {
                 assertTrue(testee.canConvert(type, type2));
@@ -60,36 +61,36 @@ public class InfoProviderTest {
 
         for (MediaIdType type : Arrays.asList(MediaIdType.TVMAZE, MediaIdType.TVDB, MediaIdType.TVRAGE, MediaIdType.TVTITLE, MediaIdType.TVIMDB)) {
             for (MediaIdType type2 : Arrays.asList(MediaIdType.TVMAZE, MediaIdType.TVDB, MediaIdType.TVRAGE, MediaIdType.TVTITLE, MediaIdType.TVIMDB)) {
-                assertTrue("Should be able to convert " + type + " to " + type2, testee.canConvert(type, type2));
+                assertTrue(testee.canConvert(type, type2), "Should be able to convert " + type + " to " + type2);
             }
         }
     }
 
     @Test
-    public void canConvertAny() throws Exception {
+    void canConvertAny() throws Exception {
         assertTrue(testee.canConvertAny(Sets.newSet(MediaIdType.TVMAZE, MediaIdType.TVDB), Sets.newSet(MediaIdType.TVRAGE)));
         assertTrue(testee.canConvertAny(Sets.newSet(MediaIdType.TVMAZE, MediaIdType.TVDB), Sets.newSet(MediaIdType.TVMAZE)));
         assertTrue(testee.canConvertAny(Sets.newSet(MediaIdType.TVMAZE), Sets.newSet(MediaIdType.TVMAZE, MediaIdType.TVDB)));
 
-        assertFalse(testee.canConvertAny(Sets.newSet(), Sets.newSet(MediaIdType.TVMAZE, MediaIdType.TVDB)));
-        assertFalse(testee.canConvertAny(Sets.newSet(MediaIdType.TVMAZE, MediaIdType.TVDB), Sets.newSet()));
+        assertThat(testee.canConvertAny(Sets.newSet(), Sets.newSet(MediaIdType.TVMAZE, MediaIdType.TVDB))).isFalse();
+        assertThat(testee.canConvertAny(Sets.newSet(MediaIdType.TVMAZE, MediaIdType.TVDB), Sets.newSet())).isFalse();
 
-        assertFalse(testee.canConvertAny(Sets.newSet(MediaIdType.TVMAZE, MediaIdType.TVDB), Sets.newSet(MediaIdType.TMDB)));
+        assertThat(testee.canConvertAny(Sets.newSet(MediaIdType.TVMAZE, MediaIdType.TVDB), Sets.newSet(MediaIdType.TMDB))).isFalse();
     }
 
     @Test
-    public void shouldCatchUnexpectedError() throws Exception {
+    void shouldCatchUnexpectedError() throws Exception {
         when(tvMazeHandlerMock.getInfos(anyString(), eq(MediaIdType.TVDB))).thenThrow(IllegalArgumentException.class);
         try {
             testee.convert("", MediaIdType.TVDB);
             fail("Should've failed");
         } catch (Exception e) {
-            assertEquals(InfoProviderException.class, e.getClass());
+            assertThat(e.getClass()).isEqualTo(InfoProviderException.class);
         }
     }
 
     @Test
-    public void shouldCallTvMaze() throws Exception {
+    void shouldCallTvMaze() throws Exception {
         ArgumentCaptor<TvInfo> tvInfoArgumentCaptor = ArgumentCaptor.forClass(TvInfo.class);
         for (MediaIdType type : Arrays.asList(MediaIdType.TVMAZE, MediaIdType.TVDB, MediaIdType.TVRAGE, MediaIdType.TVTITLE, MediaIdType.TVIMDB)) {
             reset(tvMazeHandlerMock);
@@ -103,17 +104,17 @@ public class InfoProviderTest {
         verify(tvInfoRepositoryMock).findByTvmazeId("value");
         verify(tvInfoRepositoryMock).findByImdbId("ttvalue");
         verify(tvInfoRepositoryMock, times(5)).save(tvInfoArgumentCaptor.capture());
-        assertEquals(5, tvInfoArgumentCaptor.getAllValues().size());
-        assertEquals("title", tvInfoArgumentCaptor.getValue().getTitle());
-        assertEquals("tvdbId", tvInfoArgumentCaptor.getValue().getTvdbId().get());
-        assertEquals("tvmazeId", tvInfoArgumentCaptor.getValue().getTvmazeId().get());
-        assertEquals("tvrageId", tvInfoArgumentCaptor.getValue().getTvrageId().get());
-        assertEquals("ttimdbId", tvInfoArgumentCaptor.getValue().getImdbId().get());
-        assertEquals(Integer.valueOf(0), tvInfoArgumentCaptor.getValue().getYear());
+        assertThat(tvInfoArgumentCaptor.getAllValues()).hasSize(5);
+        assertThat(tvInfoArgumentCaptor.getValue().getTitle()).isEqualTo("title");
+        assertThat(tvInfoArgumentCaptor.getValue().getTvdbId().get()).isEqualTo("tvdbId");
+        assertThat(tvInfoArgumentCaptor.getValue().getTvmazeId().get()).isEqualTo("tvmazeId");
+        assertThat(tvInfoArgumentCaptor.getValue().getTvrageId().get()).isEqualTo("tvrageId");
+        assertThat(tvInfoArgumentCaptor.getValue().getImdbId().get()).isEqualTo("ttimdbId");
+        assertThat(tvInfoArgumentCaptor.getValue().getYear()).isEqualTo(Integer.valueOf(0));
     }
 
     @Test
-    public void shouldCallTmdb() throws Exception {
+    void shouldCallTmdb() throws Exception {
         for (MediaIdType type : Arrays.asList(MediaIdType.IMDB, MediaIdType.TMDB, MediaIdType.MOVIETITLE)) {
             testConvertByType(type, type == MediaIdType.IMDB ? "ttvalue" : "value");
         }
@@ -129,7 +130,7 @@ public class InfoProviderTest {
     }
 
     @Test
-    public void shouldSearch() throws Exception {
+    void shouldSearch() throws Exception {
         testee.search("title", MediaIdType.TVTITLE);
         verify(tvMazeHandlerMock).search("title");
 
@@ -138,16 +139,16 @@ public class InfoProviderTest {
     }
 
     @Test
-    public void shouldGetInfoWithMostIds() {
+    void shouldGetInfoWithMostIds() {
         TvInfo mostInfo = new TvInfo("abc", "abc", "abc", null, null, null, null);
         when(tvInfoRepositoryMock.findByTvrageIdOrTvmazeIdOrTvdbIdOrImdbId(anyString(), anyString(), anyString(), anyString())).thenReturn(Arrays.asList(
-                mostInfo,
-                new TvInfo("abc", "abc", null, null, null, null, null),
-                new TvInfo("abc", null, null, null, null, null, null)
+            mostInfo,
+            new TvInfo("abc", "abc", null, null, null, null, null),
+            new TvInfo("abc", null, null, null, null, null, null)
         ));
 
         TvInfo info = testee.findTvInfoInDatabase(new HashMap<>());
-        assertEquals(mostInfo, info);
+        assertThat(info).isEqualTo(mostInfo);
     }
 
 }

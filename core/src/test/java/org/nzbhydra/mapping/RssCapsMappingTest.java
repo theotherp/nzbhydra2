@@ -4,15 +4,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import jakarta.xml.bind.JAXBException;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlCategory;
 import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlRoot;
 import org.nzbhydra.web.WebConfiguration;
 import org.springframework.http.MediaType;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestTemplate;
 
@@ -22,25 +22,24 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 public class RssCapsMappingTest {
 
 
     private Jaxb2Marshaller jaxb2Marshaller = new WebConfiguration().marshaller();
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
 
     }
 
 
     @Test
-    public void shouldGenerateCorrectXml() throws JsonProcessingException, JAXBException {
+    void shouldGenerateCorrectXml() throws JsonProcessingException, JAXBException {
         CapsXmlRoot caps = new CapsXmlRoot();
         List<CapsXmlCategory> categories = new ArrayList<>();
         CapsXmlCategory capsCategory = new CapsXmlCategory(1000, "1000");
@@ -52,11 +51,11 @@ public class RssCapsMappingTest {
 
         StreamResult streamResult = new StreamResult(writer);
         jaxb2Marshaller.marshal(caps, streamResult);
-        assertThat(writer.toString(), containsString("<categories>\n" +
-                "        <category id=\"1000\" name=\"1000\">\n" +
-                "            <subcat id=\"1010\" name=\"1010\"/>\n" +
-                "        </category>\n" +
-                "    </categories>"));
+        assertThat(writer.toString()).contains("<categories>\n" +
+            "        <category id=\"1000\" name=\"1000\">\n" +
+            "            <subcat id=\"1010\" name=\"1010\"/>\n" +
+            "        </category>\n" +
+            "    </categories>");
     }
 
 

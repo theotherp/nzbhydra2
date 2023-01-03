@@ -16,7 +16,7 @@
 
 package org.nzbhydra.downloading;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.nzbhydra.searching.db.SearchResultEntity;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.springframework.http.HttpHeaders;
@@ -26,7 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class DownloadResultTest {
 
     @Test
-    public void shouldBuildFilenameCorrectly() {
+    void shouldBuildFilenameCorrectly() {
         SearchResultEntity searchResultEntity = new SearchResultEntity();
         searchResultEntity.setDownloadType(SearchResultItem.DownloadType.NZB);
         FileDownloadEntity nzbDownloadEntity = new FileDownloadEntity();
@@ -41,9 +41,9 @@ public class DownloadResultTest {
     }
 
     @Test
-    public void shouldCleanMagnetLink() {
+    void shouldCleanMagnetLink() {
         FileDownloadEntity nzbDownloadEntity = new FileDownloadEntity();
-        DownloadResult testee = DownloadResult.createSuccessfulRedirectResult("title","magnet:?xt=urn:btih:738c4612aefe678bf76aa8e2e4fbacf8bd541&dn=Some Guy S06E35.Title.WEB.h264-GROUP" , nzbDownloadEntity);
+        DownloadResult testee = DownloadResult.createSuccessfulRedirectResult("title", "magnet:?xt=urn:btih:738c4612aefe678bf76aa8e2e4fbacf8bd541&dn=Some Guy S06E35.Title.WEB.h264-GROUP", nzbDownloadEntity);
         String cleanedUrl = testee.getCleanedUrl();
         assertThat(cleanedUrl).contains("Some+Guy+S06E35.Title.WEB.h264-GROUP");
     }

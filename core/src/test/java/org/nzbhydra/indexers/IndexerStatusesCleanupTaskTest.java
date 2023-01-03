@@ -16,8 +16,8 @@
 
 package org.nzbhydra.indexers;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -52,7 +52,7 @@ public class IndexerStatusesCleanupTaskTest {
     private IndexerStatusesCleanupTask testee;
 
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         testee = new IndexerStatusesCleanupTask(configProvider);
@@ -75,7 +75,7 @@ public class IndexerStatusesCleanupTaskTest {
     }
 
     @Test
-    public void shouldCleanup() {
+    void shouldCleanup() {
         testee.cleanup();
 
         //Was reenabled

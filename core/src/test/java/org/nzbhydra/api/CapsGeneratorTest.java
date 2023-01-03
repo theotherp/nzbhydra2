@@ -16,8 +16,8 @@
 
 package org.nzbhydra.api;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -40,7 +40,7 @@ public class CapsGeneratorTest {
     @InjectMocks
     private CapsGenerator testee = new CapsGenerator();
 
-    @Before
+    @BeforeEach
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         BaseConfig baseConfig = new BaseConfig();
@@ -70,7 +70,7 @@ public class CapsGeneratorTest {
     }
 
     @Test
-    public void shouldGenerateCategoriesFromConfig() throws Exception {
+    void shouldGenerateCategoriesFromConfig() throws Exception {
         CapsXmlCategories xmlCategories = testee.getCapsXmlCategories();
 
         assertThat(xmlCategories.getCategories().size()).isEqualTo(3);

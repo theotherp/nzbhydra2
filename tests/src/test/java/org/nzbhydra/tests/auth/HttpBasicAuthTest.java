@@ -1,9 +1,9 @@
 package org.nzbhydra.tests.auth;
 
 import jakarta.servlet.http.Cookie;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.auth.HydraUserDetailsManager;
 import org.nzbhydra.config.BaseConfig;
@@ -19,7 +19,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -27,12 +27,12 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import static org.junit.Assert.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = NzbHydra.class)
 @WebAppConfiguration
 @TestPropertySource(locations = "classpath:/org/nzbhydra/tests/auth/allRestrictedWithBasicStatsAndAdminUser.properties")
@@ -50,7 +50,7 @@ public class HttpBasicAuthTest {
 
     private MockMvc mvc;
 
-    @Before
+    @BeforeEach
     public void setup() {
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
@@ -89,7 +89,7 @@ public class HttpBasicAuthTest {
         mvc.perform(MockMvcRequestBuilders.get("/").with(csrf())).andExpect(status().is(401));
         MvcResult result = mvc.perform(MockMvcRequestBuilders.get("/").with(csrf()).with(httpBasic("u", "u"))).andExpect(status().is(200)).andReturn();
         Cookie cookie = result.getResponse().getCookie("remember-me");
-        assertNotNull(cookie);
+        assertThat(cookie).isNotNull();
         mvc.perform(MockMvcRequestBuilders.get("/").with(csrf()).cookie(cookie)).andExpect(status().isOk());
     }
 

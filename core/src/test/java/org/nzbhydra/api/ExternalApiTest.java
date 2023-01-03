@@ -1,7 +1,7 @@
 package org.nzbhydra.api;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -37,7 +37,6 @@ import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 
@@ -75,7 +74,7 @@ public class ExternalApiTest {
     IndexerConfig indexerConfig = new IndexerConfig();
 
 
-    @Before
+    @BeforeEach
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         when(configProvider.getBaseConfig()).thenReturn(baseConfig);
@@ -105,7 +104,7 @@ public class ExternalApiTest {
     }
 
     @Test
-    public void shouldCache() throws Exception {
+    void shouldCache() throws Exception {
         NewznabParameters parameters = new NewznabParameters();
         parameters.setQ("q");
         parameters.setApikey("apikey");
@@ -120,7 +119,7 @@ public class ExternalApiTest {
     }
 
     @Test
-    public void shouldRepeatSearchWhenCacheTimeIsOver() throws Exception {
+    void shouldRepeatSearchWhenCacheTimeIsOver() throws Exception {
         NewznabParameters parameters = new NewznabParameters();
         parameters.setQ("q");
         parameters.setApikey("apikey");
@@ -139,7 +138,7 @@ public class ExternalApiTest {
     }
 
     @Test
-    public void shouldCacheRemoveEntriesWhenLimitReached() throws Exception {
+    void shouldCacheRemoveEntriesWhenLimitReached() throws Exception {
         NewznabParameters parameters = getNewznabParameters("q1");
 
         testee.api(parameters, null, null);
@@ -174,7 +173,7 @@ public class ExternalApiTest {
     }
 
     @Test
-    public void shouldUseCorrectHeaders() throws Exception {
+    void shouldUseCorrectHeaders() throws Exception {
         NewznabJsonRoot jsonRoot = new NewznabJsonRoot();
         when(newznabJsonTransformerMock.transformToRoot(any(), any(), anyInt(), any(Boolean.class))).thenReturn(jsonRoot);
         NewznabParameters parameters = new NewznabParameters();

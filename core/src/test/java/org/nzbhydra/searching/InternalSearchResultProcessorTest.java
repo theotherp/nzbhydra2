@@ -16,7 +16,7 @@
 
 package org.nzbhydra.searching;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultWebTO;
@@ -34,7 +34,7 @@ public class InternalSearchResultProcessorTest {
 
 
     @Test
-    public void setSearchResultDateRelatedValues() {
+    void setSearchResultDateRelatedValues() {
 
         SearchResultWebTOBuilder builder = SearchResultWebTO.builder();
         SearchResultItem item = new SearchResultItem();

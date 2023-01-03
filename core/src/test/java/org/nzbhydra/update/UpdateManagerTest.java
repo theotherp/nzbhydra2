@@ -3,8 +3,8 @@ package org.nzbhydra.update;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -23,9 +23,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -47,7 +46,7 @@ public class UpdateManagerTest {
     private ObjectMapper objectMapper;
     private BaseConfig baseConfig;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         objectMapper = new ObjectMapper();
@@ -102,41 +101,40 @@ public class UpdateManagerTest {
 
 
     @Test
-    public void testThatChecksForUpdateAvailable() throws Exception {
+    void testThatChecksForUpdateAvailable() throws Exception {
         assertTrue(testee.isUpdateAvailable());
         testee.currentVersion = new SemanticVersion("v2.0.0");
-        assertFalse(testee.isUpdateAvailable());
+        assertThat(testee.isUpdateAvailable()).isFalse();
     }
 
     @Test
-    public void testThatChecksForUpdateAvailableWithPrerelease() throws Exception {
+    void testThatChecksForUpdateAvailableWithPrerelease() throws Exception {
         assertTrue(testee.isUpdateAvailable());
         configProviderMock.getBaseConfig().getMain().setUpdateToPrereleases(true);
         testee.currentVersion = new SemanticVersion("v2.3.4");
-        assertFalse(testee.isUpdateAvailable());
+        assertThat(testee.isUpdateAvailable()).isFalse();
     }
 
 
-
     @Test
-    public void shouldGetChangesForVersion() throws Exception {
+    void shouldGetChangesForVersion() throws Exception {
         //Ensures that when a final version is available the changelog retrieved for the footer also includes the changes from the beta versions before that final version
 
         when(webAccessMock.callUrl(eq("http:/127.0.0.1:7070/changelog"))).thenReturn(
-                objectMapper.writeValueAsString(Arrays.asList(
-                        new ChangelogVersionEntry("2.0.1", null, false, Arrays.asList(new ChangelogChangeEntry("note", "this is a newer prerelease"))),
-                        new ChangelogVersionEntry("2.0.0", null, true, Arrays.asList(new ChangelogChangeEntry("note", "Next final release"))),
-                        new ChangelogVersionEntry("1.0.1", null, false, Arrays.asList(new ChangelogChangeEntry("note", "A betal release"))),
-                        new ChangelogVersionEntry("1.0.0", null, true, Arrays.asList(new ChangelogChangeEntry("note", "Initial final release")))
-                )));
+            objectMapper.writeValueAsString(Arrays.asList(
+                new ChangelogVersionEntry("2.0.1", null, false, Arrays.asList(new ChangelogChangeEntry("note", "this is a newer prerelease"))),
+                new ChangelogVersionEntry("2.0.0", null, true, Arrays.asList(new ChangelogChangeEntry("note", "Next final release"))),
+                new ChangelogVersionEntry("1.0.1", null, false, Arrays.asList(new ChangelogChangeEntry("note", "A betal release"))),
+                new ChangelogVersionEntry("1.0.0", null, true, Arrays.asList(new ChangelogChangeEntry("note", "Initial final release")))
+            )));
 
         testee.currentVersionString = "1.0.0";
         //Should show changes for 1.01 and 2.0.0
         List<ChangelogVersionEntry> changesSince = testee.getChangesBetweenCurrentVersionAnd(new SemanticVersion("2.0.0"));
 
-        assertEquals(2, changesSince.size());
-        assertEquals("2.0.0", changesSince.get(0).getVersion());
-        assertEquals("1.0.1", changesSince.get(1).getVersion());
+        assertThat(changesSince).hasSize(2);
+        assertThat(changesSince.get(0).getVersion()).isEqualTo("2.0.0");
+        assertThat(changesSince.get(1).getVersion()).isEqualTo("1.0.1");
     }
 
 

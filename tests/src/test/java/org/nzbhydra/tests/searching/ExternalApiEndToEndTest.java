@@ -23,11 +23,11 @@ import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.nzbhydra.config.IndexerConfigBuilder;
 import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.mapping.newznab.builder.RssItemBuilder;
@@ -42,7 +42,7 @@ import org.nzbhydra.tests.NzbhydraMockMvcTest;
 import org.popper.fw.interfaces.IPoFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -53,13 +53,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @NzbhydraMockMvcTest
 @TestPropertySource(locations = "classpath:config/application.properties")
-@Ignore
+@Disabled
 public class ExternalApiEndToEndTest extends AbstractConfigReplacingTest {
 
     private IPoFactory factory;
@@ -71,7 +72,7 @@ public class ExternalApiEndToEndTest extends AbstractConfigReplacingTest {
     String url = null;
 
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
         new Thread(new Runnable() {
             @Override
@@ -89,7 +90,7 @@ public class ExternalApiEndToEndTest extends AbstractConfigReplacingTest {
     }
 
 
-    @After
+    @AfterEach
     public void tearDown() throws IOException {
         mockWebServer.close();
     }
@@ -100,7 +101,7 @@ public class ExternalApiEndToEndTest extends AbstractConfigReplacingTest {
         String body = getStringFromUrl("http://127.0.0.1:5077/api?apikey=apikey&t=search&q=whatever");
         //Extract link
         Matcher matcher = Pattern.compile("enclosure url=\"([^\"]+)\"").matcher(body);
-        assertThat(matcher.find()).isTrue();
+        assertTrue(matcher.find());
         String link = matcher.group(1);
 
         //Download NZB using link
@@ -108,14 +109,14 @@ public class ExternalApiEndToEndTest extends AbstractConfigReplacingTest {
         assertThat(nzbContent).isEqualTo("nzbcontent1");
 
         //And the same for the next link (to make sure multiple links are built correctly)
-        assertThat(matcher.find()).isTrue();
+        assertTrue(matcher.find());
         link = matcher.group(1);
         nzbContent = getStringFromUrl(link);
         assertThat(nzbContent).isEqualTo("nzbcontent2");
 
         //Also test that we can download the NZB using t=get
         matcher = Pattern.compile("\"guid\" value=\"([^\"]+)\"").matcher(body);
-        assertThat(matcher.find()).isTrue();
+        assertTrue(matcher.find());
         String guid = matcher.group(1);
 
         nzbContent = getStringFromUrl("http://127.0.0.1:5077/api?apikey=apikey&t=get&id=" + guid);
@@ -134,7 +135,7 @@ public class ExternalApiEndToEndTest extends AbstractConfigReplacingTest {
 
         //Extract link
         Matcher matcher = Pattern.compile("enclosure url=\"([^\"]+)\"").matcher(body);
-        assertThat(matcher.find()).isTrue();
+        assertTrue(matcher.find());
         String link = matcher.group(1);
 
         //Download torrent using link
@@ -154,7 +155,7 @@ public class ExternalApiEndToEndTest extends AbstractConfigReplacingTest {
 
         //Extract link
         Matcher matcher = Pattern.compile("enclosure url=\"([^\"]+)\"").matcher(body);
-        assertThat(matcher.find()).isTrue();
+        assertTrue(matcher.find());
         String link = matcher.group(1);
 
         Response response = new OkHttpClient.Builder().build().newCall(new Request.Builder().url(link).build()).execute();

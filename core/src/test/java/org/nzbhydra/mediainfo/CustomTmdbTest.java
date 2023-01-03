@@ -19,19 +19,19 @@ package org.nzbhydra.mediainfo;
 import com.uwetrottmann.tmdb2.Tmdb;
 import com.uwetrottmann.tmdb2.entities.FindResults;
 import com.uwetrottmann.tmdb2.enumerations.ExternalSource;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import retrofit2.Call;
 
-@Ignore
+@Disabled
 public class CustomTmdbTest {
 
     @InjectMocks
     private CustomTmdb testee = new CustomTmdb();
 
     @Test
-    public void bla() {
+    void bla() {
         Tmdb tm = new Tmdb("4df99d58875c2d01fc04936759fea56f");
         Call<FindResults> findResultsCall = tm.findService().find("tt0019798", ExternalSource.IMDB_ID, null);
         System.out.println(findResultsCall);

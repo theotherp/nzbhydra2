@@ -1,13 +1,13 @@
 package org.nzbhydra.downloading;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class NzbDownloadStatusTest {
 
     @Test
-    public void testCanUpdate() {
+    void testCanUpdate() {
         assertTrue(FileDownloadStatus.NZB_ADDED.canUpdate(FileDownloadStatus.NONE));
         assertTrue(FileDownloadStatus.NZB_ADDED.canUpdate(FileDownloadStatus.REQUESTED));
         assertTrue(FileDownloadStatus.NZB_DOWNLOAD_SUCCESSFUL.canUpdate(FileDownloadStatus.REQUESTED));

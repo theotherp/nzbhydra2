@@ -1,9 +1,10 @@
 package org.nzbhydra.mapping.newznab;
 
-import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 public class NewznabParametersTest {
 
@@ -16,7 +17,7 @@ public class NewznabParametersTest {
         NewznabParameters testee2 = new NewznabParameters();
         testee2.setQ("q");
 
-        assertEquals(testee1.cacheKey(NewznabResponse.SearchType.TORZNAB), testee2.cacheKey(NewznabResponse.SearchType.TORZNAB));
+        assertThat(testee2.cacheKey(NewznabResponse.SearchType.TORZNAB)).isEqualTo(testee1.cacheKey(NewznabResponse.SearchType.TORZNAB));
         assertNotEquals(testee1.cacheKey(NewznabResponse.SearchType.TORZNAB), testee2.cacheKey(NewznabResponse.SearchType.NEWZNAB));
 
         testee2.setQ("anotherQ");

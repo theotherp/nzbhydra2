@@ -17,8 +17,8 @@
 package org.nzbhydra.downloading.torrents;
 
 import org.assertj.core.api.Assertions;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -39,7 +39,7 @@ public class TorrentFileHandlerTest {
     @InjectMocks
     private TorrentFileHandler testee;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
@@ -50,20 +50,20 @@ public class TorrentFileHandlerTest {
     }
 
     @Test
-    public void shouldCalculateTorrentFilePath() {
+    void shouldCalculateTorrentFilePath() {
         final File targetFile = testee.getTargetFile(DownloadResult.createSuccessfulDownloadResult("Some title", "".getBytes(), null), null);
         Assertions.assertThat(targetFile).isEqualTo(new File("c:\\torrents\\Some title.torrent"));
     }
 
     @Test
-    public void shouldShortenFileName() {
+    void shouldShortenFileName() {
         final File targetFile = testee.getTargetFile(DownloadResult.createSuccessfulDownloadResult("Some title that is so long that the resulting path exceeds 220 characters which is roughly the max length of a path on windows and perhaps even some linux systems, not sure about that. I think 255 is the limit but let's just be sure, no filename should be that long anyway.", "".getBytes(), null), null);
         Assertions.assertThat(targetFile).isEqualTo(new File("c:\\torrents\\Some title that is so long that the resulting path exceeds 220 characters which is roughly the max length of a path on windows and perhaps even some linux systems, not sure about that. I think 255 is .torrent"));
         Assertions.assertThat(targetFile.getAbsolutePath()).hasSize(220);
     }
 
     @Test
-    public void shouldCalculateMagnetFilePath() throws Exception {
+    void shouldCalculateMagnetFilePath() throws Exception {
         final File targetFile = testee.getTargetFile(DownloadResult.createSuccessfulDownloadResult("Some title", "".getBytes(), null), new URI("http://127.0.0.1"));
         Assertions.assertThat(targetFile).isEqualTo(new File("c:\\torrents\\Some title.magnet"));
     }

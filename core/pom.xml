@@ -82,9 +82,12 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.0.0-M2</version>
+                <version>2.22.2</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>2.22.2</version>
             </plugin>
         </plugins>
     </build>
@@ -438,12 +441,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${junit.version}</version>
-            <scope>test</scope>
-        </dependency>
 
     </dependencies>
 
@@ -521,14 +518,14 @@
         </profile>
         <profile>
             <id>nativeTest</id>
-            <dependencies>
-                <dependency>
-                    <groupId>org.junit.platform</groupId>
-                    <artifactId>junit-platform-launcher</artifactId>
-                    <version>1.9.1</version>
-                    <scope>test</scope>
-                </dependency>
-            </dependencies>
+            <!--            <dependencies>-->
+            <!--                <dependency>-->
+            <!--                    <groupId>org.junit.platform</groupId>-->
+            <!--                    <artifactId>junit-platform-launcher</artifactId>-->
+            <!--                    <version>1.9.1</version>-->
+            <!--                    <scope>test</scope>-->
+            <!--                </dependency>-->
+            <!--            </dependencies>-->
             <build>
                 <plugins>
                     <plugin>

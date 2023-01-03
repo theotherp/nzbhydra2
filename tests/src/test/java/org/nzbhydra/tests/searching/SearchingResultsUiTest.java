@@ -6,11 +6,11 @@ import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.nzbhydra.config.IndexerConfigBuilder;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.downloading.FileZipResponse;
@@ -38,7 +38,7 @@ import org.popper.fw.webdriver.DefaultWebdriverConfig;
 import org.popper.fw.webdriver.WebdriverContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -51,13 +51,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @NzbhydraMockMvcTest
 @TestPropertySource(locations = "classpath:config/application.properties")
-@Ignore //Currently chromedriver doesn't work
+@Disabled //Currently chromedriver doesn't work
 public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
 
     private IPoFactory factory;
@@ -69,7 +70,7 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
     SearchRepository searchRepository;
     String url = null;
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
         new Thread(new Runnable() {
             @Override
@@ -100,9 +101,7 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
     }
 
 
-
-
-    @After
+    @AfterEach
     public void tearDown() throws IOException {
         mockWebServer.close();
         try {
@@ -122,34 +121,34 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
         WebDriverWait wait = new WebDriverWait(webDriver, 10);
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("searchfield")));
 
-        assertThat(searchPage.indexerSelectionCheckboxes().get(0).ischecked()).as("Should be preselected").isTrue();
+        assertTrue(searchPage.indexerSelectionCheckboxes().get(0).ischecked(), "Should be preselected");
         assertThat(searchPage.indexerSelectionCheckboxes().get(1).ischecked()).as("Should not be preselected").isFalse();
         assertThat(searchPage.indexerSelectionCheckboxes().get(2).ischecked()).as("Should not be preselected").isFalse();
 
         searchPage.indexerSelectionButton().invertSelection();
         assertThat(searchPage.indexerSelectionCheckboxes().get(0).ischecked()).isFalse();
-        assertThat(searchPage.indexerSelectionCheckboxes().get(1).ischecked()).isTrue();
-        assertThat(searchPage.indexerSelectionCheckboxes().get(2).ischecked()).isTrue();
+        assertTrue(searchPage.indexerSelectionCheckboxes().get(1).ischecked());
+        assertTrue(searchPage.indexerSelectionCheckboxes().get(2).ischecked());
         searchPage.indexerSelectionButton().deselectAll();
         assertThat(searchPage.indexerSelectionCheckboxes().get(0).ischecked()).isFalse();
         assertThat(searchPage.indexerSelectionCheckboxes().get(1).ischecked()).isFalse();
         assertThat(searchPage.indexerSelectionCheckboxes().get(2).ischecked()).isFalse();
         searchPage.indexerSelectionButton().selectAll();
-        assertThat(searchPage.indexerSelectionCheckboxes().get(0).ischecked()).isTrue();
-        assertThat(searchPage.indexerSelectionCheckboxes().get(1).ischecked()).isTrue();
-        assertThat(searchPage.indexerSelectionCheckboxes().get(2).ischecked()).isTrue();
+        assertTrue(searchPage.indexerSelectionCheckboxes().get(0).ischecked());
+        assertTrue(searchPage.indexerSelectionCheckboxes().get(1).ischecked());
+        assertTrue(searchPage.indexerSelectionCheckboxes().get(2).ischecked());
         searchPage.indexerSelectionButton().reset();
-        assertThat(searchPage.indexerSelectionCheckboxes().get(0).ischecked()).isTrue();
+        assertTrue(searchPage.indexerSelectionCheckboxes().get(0).ischecked());
         assertThat(searchPage.indexerSelectionCheckboxes().get(1).ischecked()).isFalse();
         assertThat(searchPage.indexerSelectionCheckboxes().get(2).ischecked()).isFalse();
         searchPage.indexerSelectionButton().selectAllUsenet();
-        assertThat(searchPage.indexerSelectionCheckboxes().get(0).ischecked()).isTrue();
-        assertThat(searchPage.indexerSelectionCheckboxes().get(1).ischecked()).isTrue();
+        assertTrue(searchPage.indexerSelectionCheckboxes().get(0).ischecked());
+        assertTrue(searchPage.indexerSelectionCheckboxes().get(1).ischecked());
         assertThat(searchPage.indexerSelectionCheckboxes().get(2).ischecked()).isFalse();
         searchPage.indexerSelectionButton().selectAllTorrent();
         assertThat(searchPage.indexerSelectionCheckboxes().get(0).ischecked()).isFalse();
         assertThat(searchPage.indexerSelectionCheckboxes().get(1).ischecked()).isFalse();
-        assertThat(searchPage.indexerSelectionCheckboxes().get(2).ischecked()).isTrue();
+        assertTrue(searchPage.indexerSelectionCheckboxes().get(2).ischecked());
 
         searchPage.categoryDropdownButton().click();
         searchPage.categoryOptions().stream().filter(x -> x.text().equals("Anime")).findFirst().get().click();
@@ -161,7 +160,7 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
     }
 
     @Test
-    @Ignore //Doesn't run properly on CircleCI
+    @Disabled //Doesn't run properly on CircleCI
     public void testSearchResults() throws Exception {
         SearchResultsPO searchResultsPage = prepareAndOpenSearchResultsPage();
 
@@ -241,7 +240,7 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
 
         searchResultsPage.tableHeader().titleHeader().sortAscending();
         assertThat(searchResultsPage.searchResultRows().get(0).showNfoButton().getAttribute("class")).contains("no-nfo");
-        assertThat(searchResultsPage.searchResultRows().get(1).showNfoButton().isDisplayed()).isTrue();
+        assertTrue(searchResultsPage.searchResultRows().get(1).showNfoButton().isDisplayed());
 
         assertThat(searchResultsPage.searchResultRows().get(0).downloadNzbLink().href()).contains("/getnzb/user/");
 
@@ -330,7 +329,7 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
 
         assertThat(searchResultsPage.titleGroupToggles().size()).isEqualTo(2).as("Duplicates should be hidden");
         assertThat(searchResultsPage.titleGroupToggles().get(0).isVisible()).isFalse();
-        assertThat(searchResultsPage.titleGroupToggles().get(1).isVisible()).isTrue();
+        assertTrue(searchResultsPage.titleGroupToggles().get(1).isVisible());
         assertThat(searchResultsPage.titles().size()).isEqualTo(2);
 
         //Expand "grouptitle"
@@ -344,7 +343,7 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
         assertThat(searchResultsPage.duplicateGroupToggles().size()).as("Duplicate toggle buttons should not exist").isEqualTo(0);
         searchResultsPage.displayOptions().select(displayTriggers);
         assertThat(searchResultsPage.duplicateGroupToggles().size()).as("Duplicate toggle buttons should exist").isEqualTo(2);
-        assertThat(searchResultsPage.duplicateGroupToggles().get(0).isVisible()).as("A duplicate buttom should be visible for the duplicates").isTrue();
+        assertTrue(searchResultsPage.duplicateGroupToggles().get(0).isVisible(), "A duplicate buttom should be visible for the duplicates");
         assertThat(searchResultsPage.duplicateGroupToggles().get(1).isVisible()).as("No duplicate buttom should be visible for the titlegroup").isFalse();
         //Expand duplicates
         Sleep.sleep(100);
@@ -391,7 +390,7 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
 
         SearchResultsPO searchResultsPage = factory.createPage(SearchResultsPO.class);
         assertThat(searchResultsPage.noSearchResultsWarning().text()).isEqualTo("No results were found for this search");
-        assertThat(webDriver.findElements(By.className("search-results-table")).isEmpty()).isTrue();
+        assertTrue(webDriver.findElements(By.className("search-results-table")).isEmpty());
     }
 
     @Test
@@ -410,7 +409,7 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
 
         SearchResultsPO searchResultsPage = factory.createPage(SearchResultsPO.class);
         assertThat(searchResultsPage.noSearchResultsWarning().text()).isEqualTo("No (non-rejected) results were found for this search");
-        assertThat(webDriver.findElements(By.className("search-results-table")).isEmpty()).isTrue();
+        assertTrue(webDriver.findElements(By.className("search-results-table")).isEmpty());
     }
 
     @Test
@@ -424,7 +423,7 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
 
         SearchResultsPO searchResultsPage = factory.createPage(SearchResultsPO.class);
         assertThat(searchResultsPage.noSearchResultsWarning().text()).isEqualTo("Unable to search any indexer successfully; no results available");
-        assertThat(webDriver.findElements(By.className("search-results-table")).isEmpty()).isTrue();
+        assertTrue(webDriver.findElements(By.className("search-results-table")).isEmpty());
     }
 
 

@@ -17,6 +17,8 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 public class ReleaseMojoTest extends AbstractMojoTestCase {
 
     private ObjectMapper objectMapper = new ObjectMapper();
@@ -121,7 +123,7 @@ public class ReleaseMojoTest extends AbstractMojoTestCase {
 
         releaseMojo.execute();
 
-        assertEquals(0, server.getRequestCount());
+        assertThat(server.getRequestCount()).isEqualTo(0);
     }
 
     protected void verifyExecution(MockWebServer server) throws InterruptedException, IOException {
@@ -131,21 +133,21 @@ public class ReleaseMojoTest extends AbstractMojoTestCase {
         //Uploading the assets
         RecordedRequest windowsAssetUploadRequest = server.takeRequest(2, TimeUnit.SECONDS);
         assertTrue(windowsAssetUploadRequest.getPath(), windowsAssetUploadRequest.getPath().contains("releases/1/assets?name=windowsAsset.txt"));
-        assertEquals(windowsAssetUploadRequest.getHeader("Authorization"), "token token");
+        assertThat("token token").isEqualTo(windowsAssetUploadRequest.getHeader("Authorization"));
         RecordedRequest linuxAssetUploadRequest = server.takeRequest(2, TimeUnit.SECONDS);
         assertTrue(linuxAssetUploadRequest.getPath(), linuxAssetUploadRequest.getPath().contains("releases/1/assets?name=linuxAsset.txt"));
-        assertEquals(linuxAssetUploadRequest.getHeader("Authorization"), "token token");
+        assertThat("token token").isEqualTo(linuxAssetUploadRequest.getHeader("Authorization"));
         RecordedRequest genericAssetUploadRequest = server.takeRequest(2, TimeUnit.SECONDS);
         assertTrue(genericAssetUploadRequest.getPath(), genericAssetUploadRequest.getPath().contains("releases/1/assets?name=genericAsset.txt"));
-        assertEquals(genericAssetUploadRequest.getHeader("Authorization"), "token token");
+        assertThat("token token").isEqualTo(genericAssetUploadRequest.getHeader("Authorization"));
 
         //Setting it effective
         RecordedRequest setEffectiveRequest = server.takeRequest(2, TimeUnit.SECONDS);
         assertTrue(setEffectiveRequest.getPath(), setEffectiveRequest.getPath().contains("releases/1"));
-        assertEquals(setEffectiveRequest.getHeader("Authorization"), "token token");
+        assertThat("token token").isEqualTo(setEffectiveRequest.getHeader("Authorization"));
         String body = new String(setEffectiveRequest.getBody().readByteArray());
         Release bodyJson = objectMapper.readValue(body, Release.class);
-        assertFalse(bodyJson.isDraft());
+        assertThat(bodyJson.isDraft()).isFalse();
     }
 
 
@@ -182,13 +184,13 @@ public class ReleaseMojoTest extends AbstractMojoTestCase {
 
         String body = new String(releaseRequest.getBody().readByteArray());
         Release bodyJson = objectMapper.readValue(body, Release.class);
-        assertEquals("v1.0.0", bodyJson.getTagName());
+        assertThat(bodyJson.getTagName()).isEqualTo("v1.0.0");
         assertTrue(bodyJson.isPrerelease());
-        assertEquals("commitish", bodyJson.getTargetCommitish());
+        assertThat(bodyJson.getTargetCommitish()).isEqualTo("commitish");
         assertTrue(bodyJson.isDraft());
-        assertEquals("v1.0.0", bodyJson.getName());
+        assertThat(bodyJson.getName()).isEqualTo("v1.0.0");
         assertEquals("### v1.0.0 BETA (2019-11-16)\n\n" +
-                "**Note** First major release\n\n", bodyJson.getBody());
+            "**Note** First major release\n\n", bodyJson.getBody());
     }
 
 

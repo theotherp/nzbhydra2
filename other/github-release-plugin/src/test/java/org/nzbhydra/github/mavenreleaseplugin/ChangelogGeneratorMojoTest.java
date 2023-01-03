@@ -6,6 +6,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
+
 public class ChangelogGeneratorMojoTest extends AbstractMojoTestCase {
 
     public void setUp() throws Exception {

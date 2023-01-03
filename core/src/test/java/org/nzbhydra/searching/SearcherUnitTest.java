@@ -4,9 +4,9 @@ import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -46,12 +46,11 @@ import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
 
-//@RunWith(SpringRunner.class)
+//@ExtendWith(SpringExtension.class)
 //@ContextConfiguration(classes = {Searcher.class, DuplicateDetector.class})
 public class SearcherUnitTest {
 
@@ -101,7 +100,7 @@ public class SearcherUnitTest {
     private Random random = new Random();
 
 
-    @Before
+    @BeforeEach
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         when(searchResultEntityMock.getIndexer()).thenReturn(indexerEntity);
@@ -139,32 +138,32 @@ public class SearcherUnitTest {
     }
 
 
-    @Ignore //TODO FIX
+    @Disabled //TODO FIX
     @Test
-    public void shouldFollowOffsetAndLimit() throws Exception {
+    void shouldFollowOffsetAndLimit() throws Exception {
         when(indexer1.search(any(), anyInt(), anyInt())).thenReturn(mockIndexerSearchResult(0, 2, true, 200, indexer1));
 
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 1);
         searchRequest.setTitle("some title so it will be found in the search request cache");
         SearchResult result = searcher.search(searchRequest);
         List<SearchResultItem> foundResults = result.getSearchResultItems();
-        assertThat(foundResults.size(), is(1));
-        assertThat(foundResults.get(0).getTitle(), is("item0"));
+        assertThat(foundResults.size()).isEqualTo(1);
+        assertThat(foundResults.get(0).getTitle()).isEqualTo("item0");
 
 
         searchRequest.setOffset(1);
         result = searcher.search(searchRequest);
         foundResults = result.getSearchResultItems();
-        assertThat(foundResults.size(), is(1));
-        assertThat(foundResults.get(0).getTitle(), is("item1"));
+        assertThat(foundResults.size()).isEqualTo(1);
+        assertThat(foundResults.get(0).getTitle()).isEqualTo("item1");
 
         verify(indexer1).search(any(), eq(0), any());
         verify(indexer1, times(1)).search(any(), anyInt(), any());
     }
 
-    @Ignore //TODO FIX
+    @Disabled //TODO FIX
     @Test
-    public void shouldReturnNewestFirst() throws Exception {
+    void shouldReturnNewestFirst() throws Exception {
         when(pickingResultMock.getSelectedIndexers()).thenReturn(Arrays.asList(indexer1, indexer2));
         Instant now = Instant.now();
         IndexerSearchResult indexer1results = mockIndexerSearchResult(0, 100, true, 100, indexer1);
@@ -178,17 +177,17 @@ public class SearcherUnitTest {
         searchRequest.setTitle("some title so it will be found in the search request cache");
         SearchResult result = searcher.search(searchRequest);
         List<SearchResultItem> foundResults = result.getSearchResultItems();
-        assertThat(foundResults.size(), is(2));
-        assertThat(foundResults.get(0).getTitle(), is("item0"));
-        assertThat(foundResults.get(0).getIndexer(), is(indexer1));
-        assertThat(foundResults.get(1).getTitle(), is("item0"));
-        assertThat(foundResults.get(1).getIndexer(), is(indexer2));
+        assertThat(foundResults.size()).isEqualTo(2);
+        assertThat(foundResults.get(0).getTitle()).isEqualTo("item0");
+        assertThat(foundResults.get(0).getIndexer()).isEqualTo(indexer1);
+        assertThat(foundResults.get(1).getTitle()).isEqualTo("item0");
+        assertThat(foundResults.get(1).getIndexer()).isEqualTo(indexer2);
 
     }
 
-    @Ignore //TODO FIX
+    @Disabled //TODO FIX
     @Test
-    public void shouldWorkWithRejectedItems() throws Exception {
+    void shouldWorkWithRejectedItems() throws Exception {
         IndexerSearchResult result1 = mockIndexerSearchResult(0, 9, true, 20, indexer1);
         Multiset<String> reasons = HashMultiset.create();
         reasons.add("foobar");
@@ -200,20 +199,20 @@ public class SearcherUnitTest {
         searchRequest.setTitle("some title so it will be found in the search request cache");
         SearchResult result = searcher.search(searchRequest);
         List<SearchResultItem> foundResults = result.getSearchResultItems();
-        assertThat(foundResults.size(), is(10));
+        assertThat(foundResults.size()).isEqualTo(10);
 
         searchRequest.setOffset(10);
         searchRequest.setLimit(100);
         result = searcher.search(searchRequest);
         foundResults = result.getSearchResultItems();
-        assertThat(foundResults.size(), is(9));
+        assertThat(foundResults.size()).isEqualTo(9);
 
         verify(indexer1).search(any(), eq(0), any());
         verify(indexer1, times(2)).search(any(), anyInt(), any());
     }
 
     @Test
-    public void shouldPageCorrectly() throws Exception {
+    void shouldPageCorrectly() throws Exception {
 
         IndexerSearchResult result1a = mockIndexerSearchResult(0, 100, true, 200, indexer1);
         setResultsPerDay(0, result1a);

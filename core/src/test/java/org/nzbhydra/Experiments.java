@@ -27,8 +27,8 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.indexer.IndexerCategoryConfig;
 import org.nzbhydra.config.indexer.IndexerConfig;
@@ -53,8 +53,8 @@ import java.util.stream.IntStream;
 public class Experiments {
 
     @Test
-    @Ignore
-    public void bla() throws IOException, InterruptedException {
+    @Disabled
+    void bla() throws IOException, InterruptedException {
         for (int i = 0; i < 1000; i++) {
             Call call = new OkHttpClient.Builder().build().newCall(new Request.Builder().url("http://127.0.0.1:5076/api?apikey=apikey&t=search&q=blade%20runner").build());
             call.execute();
@@ -63,8 +63,8 @@ public class Experiments {
     }
 
     @Test
-    @Ignore
-    public void updateChangelogDates() throws Exception {
+    @Disabled
+    void updateChangelogDates() throws Exception {
         File jsonFile = new File("..\\core\\src\\main\\resources\\changelog.json");
         OkHttpClient client = new OkHttpClient.Builder().build();
         Map<String, String> releaseDates = new HashMap<>();
@@ -100,8 +100,8 @@ public class Experiments {
     }
 
     @Test
-    @Ignore
-    public void createSimpleYaml() throws IOException, InterruptedException {
+    @Disabled
+    void createSimpleYaml() throws IOException, InterruptedException {
         ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
         objectMapper.registerModule(new Jdk8Module());
 
@@ -117,8 +117,8 @@ public class Experiments {
     }
 
     @Test
-    @Ignore
-    public void createTestYaml() throws IOException, InterruptedException {
+    @Disabled
+    void createTestYaml() throws IOException, InterruptedException {
         ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
 
         MainClass mainClass = new MainClass();
@@ -132,11 +132,11 @@ public class Experiments {
     }
 
     @Test
-    @Ignore
-    public void stressTest() throws Exception {
+    @Disabled
+    void stressTest() throws Exception {
 
         OkHttpClient client = new OkHttpClient.Builder()
-                .build();
+            .build();
 
         final int limit = 315;
         final Stopwatch started = Stopwatch.createStarted();

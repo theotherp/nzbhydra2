@@ -19,8 +19,8 @@ package org.nzbhydra.config.migration;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -34,6 +34,8 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -51,14 +53,14 @@ public class ConfigMigrationTest {
     };
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    @Before
+    @BeforeEach
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         objectMapper.registerModule(new Jdk8Module());
     }
 
     @Test
-    public void shouldMigrate() {
+    void shouldMigrate() {
         BaseConfig input = new BaseConfig();
         input.getMain().setConfigVersion(1);
         BaseConfig afterMigration = new BaseConfig();
@@ -77,25 +79,27 @@ public class ConfigMigrationTest {
         assertThat(input.getMain().getConfigVersion()).isEqualTo(2);
     }
 
-    @Test(expected = RuntimeException.class)
-    public void shouldThrowExceptionIfWrongConfigVersionAfterMigration() {
-        BaseConfig input = new BaseConfig();
-        input.getMain().setConfigVersion(1);
-        Map<String, Object> map = objectMapper.convertValue(input, typeRef);
+    @Test
+    void shouldThrowExceptionIfWrongConfigVersionAfterMigration() {
+        assertThrows(RuntimeException.class, () -> {
+            BaseConfig input = new BaseConfig();
+            input.getMain().setConfigVersion(1);
+            Map<String, Object> map = objectMapper.convertValue(input, typeRef);
 
-        testee.steps = Collections.emptyList(); //Just don't call any steps, this will skip the loop, not increasing the version
-        testee.expectedConfigVersion = 2;
+            testee.steps = Collections.emptyList(); //Just don't call any steps, this will skip the loop, not increasing the version
+            testee.expectedConfigVersion = 2;
 
-        testee.migrate(map);
+            testee.migrate(map);
+        });
     }
 
     @Test
-    public void shouldFindMigrationStepsForAllPossibleConfigVersions() {
+    void shouldFindMigrationStepsForAllPossibleConfigVersions() {
         Integer currentConfigVersion = new MainConfig().getConfigVersion();
         List<ConfigMigrationStep> steps = ConfigMigration.getMigrationSteps();
         for (int i = 3; i < currentConfigVersion; i++) {
             int finalI = i;
-            assertThat(steps.stream().anyMatch(x -> x.forVersion() == finalI)).isTrue();
+            assertTrue(steps.stream().anyMatch(x -> x.forVersion() == finalI));
         }
 
     }
