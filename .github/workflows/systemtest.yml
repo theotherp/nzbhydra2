@@ -1,12 +1,23 @@
 name: system-test
 
-on: [ push, workflow_dispatch ]
+on:
+    push:
+    workflow_dispatch:
+#    workflow_call:
+#        inputs:
+#            buildNewNativeImage:
+#                required: true
+#                type: boolean
+#                default: true
+#                description: "If false use last built artifact instead of building a new one. Only for testing the build scripts."
 
 jobs:
-    build:
-        uses: ./.github/workflows/buildNative.yml
+#    build:
+    #todo Reenable when it works
+    #        if: ${{ github.event.inputs.buildNewNativeImage }}
+    #        uses: ./.github/workflows/buildNative.yml
     prepareContainer:
-        needs: [ build ]
+        #        needs: [ build ]
         runs-on: ubuntu-latest
         steps:
             -   uses: actions/checkout@v3
