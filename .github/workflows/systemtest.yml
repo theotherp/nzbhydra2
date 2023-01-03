@@ -54,6 +54,12 @@ jobs:
                     cp other/wrapper/nzbhydra2wrapperPy3.py ./docker/nativeTest/
                     cd ./docker/nativeTest/
                     docker build -t hydradocker .
+                    docker save --output hydradocker.tar hydradocker
+            -   name: Upload hydra docker image
+                uses: actions/upload-artifact@v3
+                with:
+                    name: hydradocker
+                    path: hydradocker.tar
     buildMockserver:
         runs-on: ubuntu-latest
         steps:
@@ -70,25 +76,61 @@ jobs:
                     mvn --batch-mode install -DskipTests -T 1C
                     cd other/mockserver/
                     mvn --batch-mode spring-boot:build-image
+                    docker save --output mockserver.tar mockserver:3.0.0
+            -   name: "Upload mockserver docker image"
+                uses: actions/upload-artifact@v3
+                with:
+                    name: mockserver
+                    path: mockserver.tar
+
     runTests:
         needs: [ prepareContainer, buildMockserver ]
         runs-on: ubuntu-latest
-        services:
-            core:
-                image: hydradocker
-                ports:
-                    - 5076:5076
-            mockServer:
-                image: mockserver:3.0.0
-                ports:
-                    - 5080:5080
+        #todo can't use images uploaded above
+        #        services:
+        #            core:
+        #                image: hydradocker
+        #                ports:
+        #                    - 5076:5076
+        #            mockServer:
+        #                image: mockserver:3.0.0
+        #                ports:
+        #                    - 5080:5080
+
         steps:
+            -   uses: actions/download-artifact@v3
+                name: "Download hydradocker image"
+                with:
+                    path: .
+                    name: hydradocker
+
+            -   name: "Load hydradocker image into docker"
+                run: docker load --input hydradocker.tar
+
+            -   name: "Run hydradocker"
+                run: docker run hydradocker -p 5076:5076 -d
+
+
+            -   uses: actions/download-artifact@v3
+                name: "Download mockserver image"
+                with:
+                    path: .
+                    name: mockserver
+
+            -   name: "Load mockserver image into docker"
+                run: docker load --input mockserver.tar
+
+            -   name: "Run mockserver"
+                run: docker run mockserver -p 5080:5080 -d
+
+
             -   name: Set up JDK 17
                 uses: actions/setup-java@v3
                 with:
                     java-version: '17'
                     distribution: 'adopt'
                     cache: 'maven'
+
             -   name: "Run release script"
                 #todo Inject name of mockserver
                 run: |
