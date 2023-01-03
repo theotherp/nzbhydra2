@@ -50,6 +50,7 @@
       <writeAnnotation name="org.apache.maven.plugins.annotations.Parameter" />
     </writeAnnotations>
   </component>
+  <component name="ExternalStorageConfigurationManager" enabled="true" />
   <component name="JavaScriptSettings">
     <option name="languageLevel" value="ES6" />
   </component>

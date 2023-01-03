@@ -37,7 +37,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Data
-@ConfigurationProperties
+@ConfigurationProperties(prefix = "auth")
 @EqualsAndHashCode
 public class AuthConfig extends ValidatingConfig<AuthConfig> {
 

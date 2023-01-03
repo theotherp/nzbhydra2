@@ -10,7 +10,7 @@ import java.util.List;
 
 
 @SuppressWarnings("unchecked")
-@ConfigurationProperties
+@ConfigurationProperties(prefix = "notificationConfig")
 @Data
 public class NotificationConfig extends ValidatingConfig<NotificationConfig> {
 

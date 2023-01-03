@@ -16,18 +16,7 @@
 
 package org.nzbhydra;
 
-import org.nzbhydra.backup.BackupData;
-import org.nzbhydra.news.NewsWeb;
-import org.springframework.aot.hint.RuntimeHints;
-import org.springframework.aot.hint.RuntimeHintsRegistrar;
 
-public class NativeHints implements RuntimeHintsRegistrar {
-
-
-    @Override
-    public void registerHints(RuntimeHints hints, ClassLoader classLoader) {
-        hints.reflection().registerType(NewsWeb.NewsEntryForWeb.class);
-        hints.reflection().registerType(BackupData.class);
-    }
+public record HydraResponse(String body, int status) {
 
 }

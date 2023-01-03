@@ -13,9 +13,10 @@
         <module name="core" />
         <module name="sockslib" />
         <module name="mapping" />
-        <module name="tests" />
+        <module name="system" />
         <module name="ui" />
         <module name="classloader" />
+        <module name="integration" />
         <module name="discordbot" />
         <module name="github-release-plugin" />
         <module name="updater" />
@@ -23,22 +24,8 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel target="17">
-      <module name="core" target="17" />
-      <module name="discordbot" target="17" />
-      <module name="generic-release" target="17" />
-      <module name="github-release-plugin" target="1.8" />
-      <module name="linux-release" target="17" />
       <module name="linux-release (1)" target="17" />
-      <module name="mapping" target="17" />
-      <module name="mockserver" target="17" />
-      <module name="nzbhydra2" target="17" />
-      <module name="other" target="17" />
-      <module name="releases" target="17" />
-      <module name="shared" target="17" />
-      <module name="sockslib" target="1.8" />
-      <module name="tests" target="17" />
       <module name="ui" target="1.5" />
-      <module name="windows-release" target="17" />
     </bytecodeTargetLevel>
   </component>
   <component name="EclipseCompilerSettings">
@@ -50,6 +37,7 @@
       <module name="core" options="-parameters" />
       <module name="discordbot" options="" />
       <module name="github-release-plugin" options="" />
+      <module name="integration" options="-parameters" />
       <module name="linux-release" options="-parameters" />
       <module name="linux-release (1)" options="-parameters" />
       <module name="mapping" options="-parameters" />

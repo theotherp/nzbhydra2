@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 
 @SuppressWarnings("unchecked")
 @Data
-@ConfigurationProperties
+@ConfigurationProperties(prefix = "searching")
 public class SearchingConfig extends ValidatingConfig<SearchingConfig> {
 
     private static final Logger logger = LoggerFactory.getLogger(SearchingConfig.class);

@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
-@ConfigurationProperties("main")
+@ConfigurationProperties(prefix = "main")
 @Data
 public class MainConfig extends ValidatingConfig<MainConfig> {
 

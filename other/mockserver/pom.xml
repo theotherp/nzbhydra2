@@ -13,7 +13,7 @@
     <artifactId>mockserver</artifactId>
 
     <properties>
-        <spring.boot.version>3.0.0</spring.boot.version>
+        <spring.boot.version>3.0.1</spring.boot.version>
         <spring.oxm.version>6.0.2</spring.oxm.version>
         <spring.test.version>6.0.0</spring.test.version>
         <spring.security.test.version>4.2.3.RELEASE</spring.security.test.version>
