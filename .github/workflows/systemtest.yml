@@ -12,12 +12,24 @@ on:
 #                description: "If false use last built artifact instead of building a new one. Only for testing the build scripts."
 
 jobs:
-#    build:
-    #todo Reenable when it works
-    #        if: ${{ github.event.inputs.buildNewNativeImage }}
-    #        uses: ./.github/workflows/buildNative.yml
+    build:
+        #todo Reenable when it works
+        #        if: ${{ github.event.inputs.buildNewNativeImage }}
+        #        uses: ./.github/workflows/buildNative.yml
+        runs-on: ubuntu-latest
+        steps:
+            -   uses: dawidd6/action-download-artifact@v2
+                name: Download artifact from previous build
+                with:
+                    workflow: buildNative.yml
+                    name: coreLinux
+            -   uses: actions/upload-artifact@v3
+                name: Upload linux artifact
+                with:
+                    name: coreLinux
+                    path: core
     prepareContainer:
-        #        needs: [ build ]
+        needs: [ build ]
         runs-on: ubuntu-latest
         steps:
             -   uses: actions/checkout@v3
@@ -28,18 +40,19 @@ jobs:
                 name: "Download native artifacts"
                 with:
                     path: ~/artifacts
+                    name: coreLinux
             -   name: "Display structure of artifacts folder"
                 run: ls -laR ~/artifacts
             -   name: "Display structure of current folder"
                 run: ls -la .
             -   name: "Copy artifacts to include folders"
                 run: |
-                    mv ~/artifacts/coreLinux/* ./docker/nativeTest/
-                    chmod +x ./docker/nativeTest/nzbhydra2
+                    mv ~/artifacts/core ./docker/nativeTest/
+                    chmod +x ./docker/nativeTest/core
             -   name: "Build core container"
                 run: |
-                    cd ./docker/nativeTest/
                     cp other/wrapper/nzbhydra2wrapperPy3.py ./docker/nativeTest/
+                    cd ./docker/nativeTest/
                     docker build -t hydradocker .
     buildMockserver:
         runs-on: ubuntu-latest
