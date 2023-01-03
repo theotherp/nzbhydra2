@@ -9,6 +9,10 @@
     </parent>
 
     <artifactId>tests</artifactId>
+    <packaging>pom</packaging>
+    <modules>
+        <module>integration</module>
+    </modules>
     <build>
         <plugins>
             <plugin>

@@ -1,0 +1,57 @@
+{
+    "indexers": [
+        {
+            "apiKey": "apikey1",
+            "state": "ENABLED",
+            "enabledForSearchSource": "BOTH",
+            "host": "http://127.0.0.1:7070",
+            "name": "hallo1",
+            "score": 0,
+            "searchModuleType": "NEWZNAB",
+            "configComplete": true
+        },
+        {
+            "apiKey": "apikey2",
+            "state": "ENABLED",
+            "enabledForSearchSource": "BOTH",
+            "host": "http://127.0.0.1:7070",
+            "name": "hallo2",
+            "score": 0,
+            "searchModuleType": "NEWZNAB",
+            "configComplete": true
+        },
+        {
+            "apiKey": "apikey3",
+            "state": "ENABLED",
+            "enabledForSearchSource": "BOTH",
+            "host": "http://127.0.0.1:7070",
+            "name": "hallo3",
+            "score": 0,
+            "searchModuleType": "NEWZNAB",
+            "configComplete": true
+        },
+        {
+            "apiKey": "apikey4",
+            "state": "ENABLED",
+            "enabledForSearchSource": "BOTH",
+            "host": "http://127.0.0.1:7070",
+            "name": "hallo4",
+            "score": 0,
+            "searchModuleType": "NEWZNAB",
+            "configComplete": true
+        },
+        {
+            "apiKey": "apikey5",
+            "state": "ENABLED",
+            "enabledForSearchSource": "BOTH",
+            "host": "http://127.0.0.1:7070",
+            "name": "hallo5",
+            "score": 0,
+            "searchModuleType": "NEWZNAB",
+            "configComplete": true
+        }
+    ],
+    "main": {
+        "apiKey": "apikey"
+    }
+}

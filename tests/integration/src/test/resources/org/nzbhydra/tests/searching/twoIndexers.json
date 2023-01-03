@@ -1,0 +1,32 @@
+{
+    "indexers": [
+        {
+            "apiKey": "apikey1",
+            "state": "ENABLED",
+            "enabledForSearchSource": "BOTH",
+            "host": "http://127.0.0.1:7077",
+            "name": "mock1",
+            "score": 0,
+            "searchModuleType": "NEWZNAB",
+            "configComplete": true
+        },
+        {
+            "apiKey": "apikey2",
+            "state": "ENABLED",
+            "enabledForSearchSource": "BOTH",
+            "host": "http://127.0.0.1:7077",
+            "name": "mock2",
+            "preselect": false,
+            "score": 0,
+            "searchModuleType": "NEWZNAB",
+            "configComplete": true
+        }
+    ],
+    "main": {
+        "apiKey": "apikey",
+        "welcomeShown": true,
+        "theme": "grey"
+    },
+    "searching": {
+    }
+}
