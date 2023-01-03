@@ -8,6 +8,9 @@ Tracing: Run:
 
 Build:
 mvn -P native native:compile -DskipTests
+Push to nzbhydra2-build master:
+git push build springboot3:master --force
+
 
 run upx to compress image
 

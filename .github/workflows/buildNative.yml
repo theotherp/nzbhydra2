@@ -22,7 +22,7 @@ jobs:
                     distribution: 'adopt'
                     cache: 'maven'
             -   name: Install all with Maven
-                run: mvn --batch-mode install -DskipTests
+                run: mvn --batch-mode install -DskipTests -T 1C
             -   name: NativeImage
                 uses: graalvm/setup-graalvm@v1
                 with:

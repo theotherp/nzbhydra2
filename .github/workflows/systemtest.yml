@@ -43,9 +43,8 @@ jobs:
                     cache: 'maven'
             -   name: "Build mockserver container"
                 run: |
-                    cd shared/mapping/
-                    mvn --batch-mode install -DskipTests
-                    cd ../../other/mockserver/
+                    mvn --batch-mode install -DskipTests -T 1C
+                    cd other/mockserver/
                     mvn --batch-mode spring-boot:build-image
     runTests:
         needs: [ prepareContainer, buildMockserver ]
