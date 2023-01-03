@@ -59,7 +59,7 @@ public class HeaderAuthenticationFilter extends BasicAuthenticationFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
         final String sentInternalApiKey = request.getParameterValues("internalApiKey") == null ? null : request.getParameterValues("internalApiKey")[0];
-        if (Objects.equals(sentInternalApiKey, internalApiKey)) {
+        if (sentInternalApiKey != null && Objects.equals(sentInternalApiKey, internalApiKey)) {
             final AnonymousAuthenticationToken token = new AnonymousAuthenticationToken("key", "internalApi", AuthorityUtils.createAuthorityList("ROLE_ADMIN"));
             token.setDetails(new HydraWebAuthenticationDetails(request));
             SecurityContextHolder.getContext().setAuthentication(token);
