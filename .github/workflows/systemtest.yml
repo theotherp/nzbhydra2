@@ -1,6 +1,6 @@
 name: system-test
 
-on: [ push ]
+on: [ push, workflow_dispatch ]
 
 jobs:
     build:
@@ -33,15 +33,19 @@ jobs:
     buildMockserver:
         runs-on: ubuntu-latest
         steps:
+            -   uses: actions/checkout@v3
+                name: "Check out source"
             -   name: Set up JDK 17
                 uses: actions/setup-java@v3
                 with:
                     java-version: '17'
                     distribution: 'adopt'
                     cache: 'maven'
-            -   name: "Run release script"
+            -   name: "Build mockserver container"
                 run: |
-                    cd other/mockserver
+                    cd shared/mapping/
+                    mvn --batch-mode install -DskipTests
+                    cd ../../other/mockserver/
                     mvn --batch-mode spring-boot:build-image
     runTests:
         needs: [ prepareContainer, buildMockserver ]

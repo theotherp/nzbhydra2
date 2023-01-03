@@ -1,6 +1,6 @@
 package org.nzbhydra.tests.searching;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.indexers.IndexerEntity;
