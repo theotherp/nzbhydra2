@@ -396,11 +396,14 @@ def startup():
 
     java_arguments = ["-Xmx" + xmx + "M", "-DfromWrapper=true"]
     if releaseType == "generic":
-        java_arguments.append("-XX:TieredStopAtLevel=1")
         java_arguments.append("-XX:+HeapDumpOnOutOfMemoryError")
         java_arguments.append("-XX:HeapDumpPath=" + os.path.join(args.datafolder, "logs"))
     if logGc:
-        java_arguments.extend(gcArguments)
+        if releaseType == "generic":
+            java_arguments.extend(gcArguments)
+        else:
+            logging.warning("GC logging not available with native image. Using -XX:+PrintGC -XX:+VerboseGC")
+            java_arguments.extend(["-XX:+PrintGC", "-XX:+VerboseGC"])
     if args.debugport:
         java_arguments.append("-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:" + args.debugport)
     if not args.nocolors and not isWindows:
@@ -446,7 +449,7 @@ def startup():
 
         return process
     except Exception as e:
-        if releaseType == "generic"
+        if releaseType == "generic":
             logger.error("Unable to start process; make sure Java is installed and callable. Error message: " + str(e))
         else:
             logger.error(

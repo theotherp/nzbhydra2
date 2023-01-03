@@ -40,9 +40,6 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.bind.annotation.RestController;
 import org.yaml.snakeyaml.error.YAMLException;
 
-import javax.swing.*;
-import java.awt.GraphicsEnvironment;
-import java.awt.HeadlessException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -86,6 +83,7 @@ public class NzbHydra {
     @Autowired
     private ApplicationEventPublisher applicationEventPublisher;
 
+
     public static void main(String[] args) throws Exception {
         LoggerFactory.getILoggerFactory();
 
@@ -111,7 +109,6 @@ public class NzbHydra {
         parser.accepts("nobrowser", "Don't open browser to Hydra");
         parser.accepts("port", "Run on this port (default: 5076)").withOptionalArg();
         parser.accepts("baseurl", "Set base URL (e.g. /nzbhydra)").withOptionalArg();
-        parser.accepts("headless", "Set base URL (e.g. /nzbhydra)");
         parser.accepts("help", "Print help");
         parser.accepts("version", "Print version");
 
@@ -122,10 +119,6 @@ public class NzbHydra {
             logger.error("Invalid startup options detected: {}", e.getMessage());
             System.exit(1);
         }
-        if (options.has("headless")) {
-            System.setProperty("java.awt.headless", "true");
-        }
-
 
          if (options.has("help")) {
              parser.printHelpOn(System.out);
@@ -179,11 +172,7 @@ public class NzbHydra {
             SpringApplication hydraApplication = new SpringApplication(NzbHydra.class);
             NzbHydra.originalArgs = args;
             wasRestarted = Arrays.asList(args).contains("restarted");
-            if (NzbHydra.isOsWindows() && !options.has("quiet") && !options.has("nobrowser") && !options.has("headless")) {
-                hydraApplication.setHeadless(false);
-            } else {
-                hydraApplication.setHeadless(true);
-            }
+            hydraApplication.setHeadless(true);
 
             DatabaseRecreation.runDatabaseScript();
             applicationContext = hydraApplication.run(args);
@@ -271,30 +260,10 @@ public class NzbHydra {
             msg = "An unexpected error occurred during startup:\n" + e;
             logger.error("An unexpected error occurred during startup", e);
         }
-        try {
-            if (!GraphicsEnvironment.isHeadless() && isOsWindows()) {
-                final String htmlMessage = "<html>" + msg.replace("\n", "<br>") + "</html>";
-                JOptionPane.showMessageDialog(null, htmlMessage, "NZBHydra 2 error", JOptionPane.ERROR_MESSAGE);
-            }
-        } catch (HeadlessException e1) {
-            logger.warn("Unable to show exception in message dialog: {}", e1.getMessage());
-        }
+        logger.error("FATAL: " + msg, e);
+
         //Rethrow so that spring exception handlers can handle this
         throw e;
-    }
-
-
-    @PostConstruct
-    public void addTrayIconIfApplicable() {
-        boolean isOsWindows = isOsWindows();
-        if (!GraphicsEnvironment.isHeadless() && isOsWindows) {
-            logger.info("Adding windows system tray icon");
-            try {
-                new WindowsTrayIcon();
-            } catch (Throwable e) {
-                logger.error("Can't add a windows tray icon because running headless");
-            }
-        }
     }
 
     public static boolean isOsWindows() {
@@ -345,13 +314,14 @@ public class NzbHydra {
 
             if (DebugInfosProvider.isRunInDocker()) {
                 logger.info("You seem to be running NZBHydra 2 in docker. You can access Hydra using your local address and the IP you provided");
-            } else if (configProvider.getBaseConfig().getMain().isStartupBrowser() && !"true".equals(System.getProperty(BROWSER_DISABLED))) {
-                if (wasRestarted) {
-                    logger.info("Not opening browser after restart");
-                    return;
-                }
-                browserOpener.openBrowser();
             } else {
+                if (configProvider.getBaseConfig().getMain().isStartupBrowser() && !"true".equals(System.getProperty(BROWSER_DISABLED))) {
+                    if (wasRestarted) {
+                        logger.info("Not opening browser after restart");
+                        return;
+                    }
+                    browserOpener.openBrowser();
+                }
                 URI uri = urlCalculator.getLocalBaseUriBuilder().build().toUri();
                 logger.info("You can access NZBHydra 2 in your browser via {}", uri);
             }

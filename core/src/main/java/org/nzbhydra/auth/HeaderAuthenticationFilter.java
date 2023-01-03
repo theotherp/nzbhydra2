@@ -26,15 +26,18 @@ import org.nzbhydra.web.SessionStorage;
 import org.nzbhydra.webaccess.HydraOkHttp3ClientHttpRequestFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 import java.io.IOException;
+import java.util.Objects;
 
 public class HeaderAuthenticationFilter extends BasicAuthenticationFilter {
 
@@ -43,14 +46,27 @@ public class HeaderAuthenticationFilter extends BasicAuthenticationFilter {
     private final HydraUserDetailsManager userDetailsManager;
     private AuthConfig authConfig;
 
+    private final String internalApiKey;
+
     public HeaderAuthenticationFilter(AuthenticationManager authenticationManager, HydraUserDetailsManager userDetailsManager, AuthConfig authConfig) {
         super(authenticationManager);
         this.userDetailsManager = userDetailsManager;
         this.authConfig = authConfig;
+        //Must be provided by wrapper
+        this.internalApiKey = System.getProperty("internalApiKey");
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
+        final String sentInternalApiKey = request.getParameterValues("internalApiKey") == null ? null : request.getParameterValues("internalApiKey")[0];
+        if (Objects.equals(sentInternalApiKey, internalApiKey)) {
+            final AnonymousAuthenticationToken token = new AnonymousAuthenticationToken("key", "internalApi", AuthorityUtils.createAuthorityList("ROLE_ADMIN"));
+            token.setDetails(new HydraWebAuthenticationDetails(request));
+            SecurityContextHolder.getContext().setAuthentication(token);
+            onSuccessfulAuthentication(request, response, token);
+            chain.doFilter(request, response);
+            return;
+        }
         if (authConfig.getAuthHeader() == null || authConfig.getAuthHeaderIpRanges().isEmpty()) {
             chain.doFilter(request, response);
             return;

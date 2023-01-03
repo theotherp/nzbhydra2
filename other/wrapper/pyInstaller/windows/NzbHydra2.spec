@@ -3,9 +3,9 @@
 block_cipher = None
 
 
-a = Analysis(['nzbhydra2wrapperPy3.py'],
+a = Analysis(['nzbhydra2wrapperWindows.py'],
              binaries=None,
-             datas=None,
+             datas=[('nzbhydra.ico', '.')],
              hiddenimports=[],
              hookspath=[],
              runtime_hooks=[],

@@ -16,6 +16,7 @@
 
 package org.nzbhydra.systemcontrol;
 
+import org.jetbrains.annotations.NotNull;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.web.UrlCalculator;
 import org.slf4j.Logger;
@@ -40,6 +41,11 @@ public class SystemControlWeb {
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/control/shutdown", method = RequestMethod.GET)
     public GenericResponse shutdown() throws Exception {
+        return doShutdown();
+    }
+
+    @NotNull
+    private GenericResponse doShutdown() {
         logger.info("Shutting down due to external request");
         systemControl.exitWithReturnCode(SystemControl.SHUTDOWN_RETURN_CODE);
         return GenericResponse.ok();
@@ -49,6 +55,11 @@ public class SystemControlWeb {
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/control/restart", method = RequestMethod.GET)
     public GenericResponse restart() throws Exception {
+        return doRestart();
+    }
+
+    @NotNull
+    private GenericResponse doRestart() {
         String baseUrl = urlCalculator.getRequestBasedUriBuilder().toUriString();
         logger.info("Shutting down due to external request. Restart will be handled by wrapper. Web interface will reload to URL {}", baseUrl);
         systemControl.exitWithReturnCode(SystemControl.RESTART_RETURN_CODE);

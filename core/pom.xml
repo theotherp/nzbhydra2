@@ -338,14 +338,6 @@
             <version>6.8.1</version>
         </dependency>
 
-
-        <dependency>
-            <!--https://stackoverflow.com/a/47412779-->
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-devtools</artifactId>
-            <version>${spring.boot.version}</version>
-            <optional>true</optional>
-        </dependency>
         <!--        todo spring only supports spring 2.x-->
         <!--        <dependency>-->
         <!--            <groupId>org.springdoc</groupId>-->
@@ -457,6 +449,18 @@
 
 
     <profiles>
+        <profile>
+            <id>dev</id>
+            <dependencies>
+                <dependency>
+                    <!--https://stackoverflow.com/a/47412779-->
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-devtools</artifactId>
+                    <version>${spring.boot.version}</version>
+                    <optional>true</optional>
+                </dependency>
+            </dependencies>
+        </profile>
         <profile>
             <id>native</id>
             <properties>

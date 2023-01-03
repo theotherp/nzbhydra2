@@ -8242,8 +8242,20 @@
   "queryAllDeclaredMethods":true,
   "queryAllDeclaredConstructors":true,
   "methods":[
-    {"name":"<init>","parameterTypes":[] },
-    {"name":"setLastBackup","parameterTypes":["java.time.LocalDateTime"] }
+      {
+          "name": "<init>",
+          "parameterTypes": []
+      },
+      {
+          "name": "setLastBackup",
+          "parameterTypes": [
+              "java.time.LocalDateTime"
+          ]
+      },
+      {
+          "name": "getLastBackup",
+          "parameterTypes": []
+      }
   ]
 },
 {

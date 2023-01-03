@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import random
+import string
 import sys
 
 CURRENT_PYTHON = sys.version_info[:2]
@@ -38,6 +40,8 @@ basepath = None
 args = []
 unknownArgs = []
 terminatedByWrapper = False
+uri = None
+internalApiKey = None
 
 LOGGER_DEFAULT_FORMAT = '%(asctime)s  %(levelname)s - %(message)s'
 LOGGER_DEFAULT_LEVEL = 'INFO'
@@ -306,6 +310,10 @@ def startup():
 
     releaseType = determineReleaseType()
     isWindows = platform.system().lower() == "windows"
+    isWithTrayIcon = os.path.exists("isWindowsTrayMarkerFile")
+    if isWithTrayIcon:
+        logger.info("Running for windows with tray icon - using generic run type which requires java")
+        releaseType = ReleaseType.GENERIC
 
     if releaseType == ReleaseType.GENERIC:
         args.java = "java"
@@ -407,14 +415,19 @@ def startup():
 
     gcArguments = [
         "-Xlog:gc*:file=" + gcLogFilename + "::filecount=10,filesize=5000"]
+    global internalApiKey
+    internalApiKey = ''.join(random.choice(string.ascii_lowercase) for i in range(20))
+    java_arguments = ["-Xmx" + xmx + "M", "-DfromWrapper=true", "-DinternalApiKey=" + internalApiKey]
 
-    java_arguments = ["-Xmx" + xmx + "M", "-DfromWrapper=true"]
     if releaseType == ReleaseType.GENERIC:
-        java_arguments.append("-XX:TieredStopAtLevel=1")
         java_arguments.append("-XX:+HeapDumpOnOutOfMemoryError")
         java_arguments.append("-XX:HeapDumpPath=" + os.path.join(args.datafolder, "logs"))
     if logGc:
-        java_arguments.extend(gcArguments)
+        if releaseType == ReleaseType.GENERIC:
+            java_arguments.extend(gcArguments)
+        else:
+            logging.warning("GC logging not available with native image. Using -XX:+PrintGC -XX:+VerboseGC")
+            java_arguments.extend(["-XX:+PrintGC", "-XX:+VerboseGC"])
     if args.debugport:
         java_arguments.append("-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:" + args.debugport)
     if not args.nocolors and not isWindows:
@@ -457,6 +470,11 @@ def startup():
             if not args.quiet:
                 sys.stdout.write(nextlineString)
                 sys.stdout.flush()
+            markerLine = "You can access NZBHydra 2 in your browser via "
+            if markerLine in nextlineString:
+                global uri
+                uri = nextlineString[nextlineString.find(markerLine) + len(markerLine):1000].strip()
+                logger.info("Determined process URI to be " + uri)
         process.wait()
 
         return process
@@ -559,50 +577,55 @@ def getJavaVersion(javaExecutable):
         sys.exit(-1)
 
 
-if __name__ == '__main__':
+def main(arguments):
+    global args, unknownArgs, args
     GracefulKiller()
     parser = argparse.ArgumentParser(description='NZBHydra 2')
     parser.add_argument('--java', action='store', help='Full path to java executable', default="java")
-    parser.add_argument('--javaversion', action='store', help='Force version of java for which parameters java will be created', default=None)
+    parser.add_argument('--javaversion', action='store',
+                        help='Force version of java for which parameters java will be created', default=None)
     parser.add_argument('--debugport', action='store', help='Set debug port to enable remote debugging', default=None)
     parser.add_argument('--daemon', '-D', action='store_true', help='Run as daemon. *nix only', default=False)
-    parser.add_argument('--pidfile', action='store', help='Path to PID file. Only relevant with daemon argument', default="nzbhydra2.pid")
-    parser.add_argument('--nopidfile', action='store_true', help='Disable writing of PID file. Only relevant with daemon argument', default=False)
-    parser.add_argument('--nocolors', action='store_true', help='Disable color coded console output (disabled on Windows by default)', default=False)
-    parser.add_argument('--listfiles', action='store', help='Lists all files in given folder and quits. For debugging docker', default=None)
-
+    parser.add_argument('--pidfile', action='store', help='Path to PID file. Only relevant with daemon argument',
+                        default="nzbhydra2.pid")
+    parser.add_argument('--nopidfile', action='store_true',
+                        help='Disable writing of PID file. Only relevant with daemon argument', default=False)
+    parser.add_argument('--nocolors', action='store_true',
+                        help='Disable color coded console output (disabled on Windows by default)', default=False)
+    parser.add_argument('--listfiles', action='store',
+                        help='Lists all files in given folder and quits. For debugging docker', default=None)
     # Pass to main process
-    parser.add_argument('--datafolder', action='store', help='Set the main data folder containing config, database, etc using an absolute path', default=os.path.join(getBasePath(), "data"))
+    parser.add_argument('--datafolder', action='store',
+                        help='Set the main data folder containing config, database, etc using an absolute path',
+                        default=os.path.join(getBasePath(), "data"))
     parser.add_argument('--xmx', action='store', help='Java Xmx setting in MB (e.g. 256)', default=None)
     parser.add_argument('--quiet', action='store_true', help='Set to disable all console output', default=False)
     parser.add_argument('--host', action='store', help='Set the host')
     parser.add_argument('--port', action='store', help='Set the port')
     parser.add_argument('--baseurl', action='store', help='Set the base URL (e.g. /nzbhydra)')
-    parser.add_argument('--nobrowser', action='store_true', help='Set to disable opening of browser at startup', default=False)
+    parser.add_argument('--nobrowser', action='store_true', help='Set to disable opening of browser at startup',
+                        default=False)
     parser.add_argument('--debug', action='store_true', help='Start with more debugging output', default=False)
     # Main process actions
-    parser.add_argument('--repairdb', action='store', help='Attempt to repair the database. Provide path to database file as parameter')
+    parser.add_argument('--repairdb', action='store',
+                        help='Attempt to repair the database. Provide path to database file as parameter')
     parser.add_argument('--version', action='store_true', help='Print version')
-
     # Internal logic
     parser.add_argument('--restarted', action='store_true', default=False, help=argparse.SUPPRESS)
     parser.add_argument('--update', action='store_true', default=False, help=argparse.SUPPRESS)
-
-    args, unknownArgs = parser.parse_known_args()
+    args, unknownArgs = parser.parse_known_args(arguments)
     setupLogger()
-
     # Delete old files from last backup
-    oldFiles = [f for f in os.listdir(getBasePath()) if os.path.isfile(os.path.join(getBasePath(), f)) and f.endswith(".old")]
+    oldFiles = [f for f in os.listdir(getBasePath()) if
+                os.path.isfile(os.path.join(getBasePath(), f)) and f.endswith(".old")]
     if len(oldFiles) > 0:
         logger.info("Deleting .old files from last update")
         for f in oldFiles:
             logger.debug("Deleting file %s", f)
             os.remove(f)
-
     if not (os.path.isabs(args.datafolder)):
         args.datafolder = os.path.join(os.getcwd(), args.datafolder)
         logger.info("Data folder path is not absolute. Will assume " + args.datafolder + " was meant")
-
     # Delete old control id file if it exists. Shouldn't ever exist or if it does it should be overwritten by main process, but who knows
     controlIdFilePath = os.path.join(args.datafolder, "control.id")
     if os.path.exists(controlIdFilePath):
@@ -612,7 +635,6 @@ if __name__ == '__main__':
         logger.info("Executing update")
         update()
         sys.exit(0)
-
     if "--version" in unknownArgs or "--help" in unknownArgs:
         # no fancy shit, just start the file
         startup()
@@ -652,7 +674,8 @@ if __name__ == '__main__':
             except Exception as e:
                 controlCode = process.returncode
                 if not (args.version or args.repairdb):
-                    logger.warning("Unable to read control ID from %s: %s. Falling back to process return code %d", controlIdFilePath, e, controlCode)
+                    logger.warning("Unable to read control ID from %s: %s. Falling back to process return code %d",
+                                   controlIdFilePath, e, controlCode)
             if os.path.exists(controlIdFilePath):
                 try:
                     logger.debug("Deleting old control ID file %s", controlIdFilePath)
@@ -677,3 +700,7 @@ if __name__ == '__main__':
             else:
                 logger.info("NZBHydra main process has terminated for shutdown")
                 doStart = False
+
+
+if __name__ == '__main__':
+    main(sys.argv[1:])
