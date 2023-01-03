@@ -1,1 +1,2 @@
 org.springframework.boot.diagnostics.FailureAnalyzer=org.nzbhydra.exceptionanalyzers.YAMLExceptionAnalyzer
+org.springframework.aot.hint.RuntimeHintsRegistrar=org.nzbhydra.NativeHints

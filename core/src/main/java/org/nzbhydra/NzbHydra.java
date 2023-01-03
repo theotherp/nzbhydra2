@@ -34,6 +34,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.ImportRuntimeHints;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
@@ -52,9 +53,10 @@ import java.util.Map;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
+@ImportRuntimeHints(NativeHints.class)
 @Configuration(proxyBeanMethods = false)
 @EnableAutoConfiguration(exclude = {
-        AopAutoConfiguration.class, org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration.class})
+    AopAutoConfiguration.class, org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration.class})
 @ComponentScan
 @RestController
 @EnableCaching
@@ -120,18 +122,18 @@ public class NzbHydra {
             System.exit(1);
         }
 
-         if (options.has("help")) {
-             parser.printHelpOn(System.out);
-         } else if (options.has("version")) {
-             Manifest manifest = new Manifest(NzbHydra.class.getResourceAsStream("/META-INF/MANIFEST.MF"));
-             Attributes attr = manifest.getMainAttributes();
-             String version = attr.getValue("Version");
-             logger.info("NZBHydra 2 version: " + version);
-         } else if (System.getProperty("fromWrapper") == null && Arrays.stream(args).noneMatch(x -> x.equals("directstart"))) {
-             logger.info("NZBHydra 2 must be started using the wrapper for restart and updates to work. If for some reason you need to start it from the JAR directly provide the command line argument \"directstart\"");
-         } else {
-             startup(args, options);
-         }
+        if (options.has("help")) {
+            parser.printHelpOn(System.out);
+        } else if (options.has("version")) {
+            Manifest manifest = new Manifest(NzbHydra.class.getResourceAsStream("/META-INF/MANIFEST.MF"));
+            Attributes attr = manifest.getMainAttributes();
+            String version = attr.getValue("Version");
+            logger.info("NZBHydra 2 version: " + version);
+        } else if (System.getProperty("fromWrapper") == null && Arrays.stream(args).noneMatch(x -> x.equals("directstart"))) {
+            logger.info("NZBHydra 2 must be started using the wrapper for restart and updates to work. If for some reason you need to start it from the JAR directly provide the command line argument \"directstart\"");
+        } else {
+            startup(args, options);
+        }
     }
 
     protected static void startup(String[] args, OptionSet options) throws Exception {

@@ -8236,29 +8236,7 @@
   ],
   "methods":[{"name":"CGLIB$SET_THREAD_CALLBACKS","parameterTypes":["org.springframework.cglib.proxy.Callback[]"] }]
 },
-{
-  "name":"org.nzbhydra.backup.BackupData",
-  "allDeclaredFields":true,
-  "queryAllDeclaredMethods":true,
-  "queryAllDeclaredConstructors":true,
-  "methods":[
-      {
-          "name": "<init>",
-          "parameterTypes": []
-      },
-      {
-          "name": "setLastBackup",
-          "parameterTypes": [
-              "java.time.LocalDateTime"
-          ]
-      },
-      {
-          "name": "getLastBackup",
-          "parameterTypes": []
-      }
-  ]
-},
-{
+  {
   "name":"org.nzbhydra.backup.BackupTask",
   "allDeclaredFields":true,
   "queryAllDeclaredMethods":true,
