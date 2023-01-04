@@ -100,6 +100,8 @@ jobs:
                 credentials:
                     username: ${{ github.actor }}
                     password: ${{ secrets.GITHUB_TOKEN }}
+                volumes:
+                    - ${{env.GITHUB_WORKSPACE}}/data:/data
             mockServer:
                 image: ghcr.io/theotherp/mockserver:3.0.0
                 ports:
@@ -124,3 +126,9 @@ jobs:
                 run: |
                     cd tests/system
                     mvn --batch-mode test
+            -   name: "Upload data folder artifact"
+                uses: actions/upload-artifact@v3
+                if: always()
+                with:
+                    name: data
+                    path: data

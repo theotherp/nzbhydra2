@@ -57,7 +57,10 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
         BaseConfig baseConfig = configProvider.getBaseConfig();
-        if (configProvider.getBaseConfig().getMain().isUseCsrf() && useCsrf) {
+        if (!useCsrf) {
+            logger.info("CSRF is disabled");
+            http.csrf().disable();
+        } else if (configProvider.getBaseConfig().getMain().isUseCsrf()) {
             CookieCsrfTokenRepository csrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
             csrfTokenRepository.setCookieName("HYDRA-XSRF-TOKEN");
             //https://docs.spring.io/spring-security/reference/5.8/migration/servlet/exploits.html#_i_am_using_angularjs_or_another_javascript_framework
