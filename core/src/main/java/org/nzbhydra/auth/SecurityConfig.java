@@ -8,7 +8,6 @@ import org.nzbhydra.config.auth.AuthType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
@@ -37,9 +36,6 @@ public class SecurityConfig {
     private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
     private static final int SECONDS_PER_DAY = 60 * 60 * 24;
 
-    @Value("${main.useCsrf:true}")
-    private boolean useCsrf;
-
     @Autowired
     private ConfigProvider configProvider;
     @Autowired
@@ -57,6 +53,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
         BaseConfig baseConfig = configProvider.getBaseConfig();
+        boolean useCsrf = Boolean.parseBoolean(System.getProperty("main.useCsrf"));
         if (configProvider.getBaseConfig().getMain().isUseCsrf() && useCsrf) {
             CookieCsrfTokenRepository csrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
             csrfTokenRepository.setCookieName("HYDRA-XSRF-TOKEN");
@@ -142,10 +139,10 @@ public class SecurityConfig {
             http.addFilterAfter(headerAuthenticationFilter, BasicAuthenticationFilter.class);
             http.addFilterAfter(asyncSupportFilter, BasicAuthenticationFilter.class);
 
-            http.exceptionHandling().accessDeniedHandler(authAndAccessEventHandler);
         } else {
             http.authorizeHttpRequests().anyRequest().permitAll();
         }
+        http.exceptionHandling().accessDeniedHandler(authAndAccessEventHandler);
 
         http.addFilterBefore(new ForwardedForRecognizingFilter(), ChannelProcessingFilter.class);
         //We need to extract the original IP before it's removed and not retrievable anymore by the ForwardedHeaderFilter

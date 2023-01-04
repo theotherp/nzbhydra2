@@ -69,6 +69,7 @@ public class HeaderAuthenticationFilter extends BasicAuthenticationFilter {
                 token.setDetails(new HydraWebAuthenticationDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(token);
                 onSuccessfulAuthentication(request, response, token);
+                logger.debug("Authorized access to {} via internal API key", request.getRequestURI());
                 chain.doFilter(request, response);
                 return;
             } else {

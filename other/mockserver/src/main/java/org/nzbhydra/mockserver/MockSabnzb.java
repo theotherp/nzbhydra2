@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import org.nzbhydra.downloading.downloaders.sabnzbd.mapping.History;
+import org.nzbhydra.downloading.downloaders.sabnzbd.mapping.HistoryResponse;
 import org.nzbhydra.downloading.downloaders.sabnzbd.mapping.Queue;
 import org.nzbhydra.downloading.downloaders.sabnzbd.mapping.QueueResponse;
 import org.springframework.context.annotation.Bean;
@@ -38,6 +40,12 @@ public class MockSabnzb {
             queue.setStatus("Downloading");
             queueResponse.setQueue(queue);
             response = new ObjectMapper().convertValue(queueResponse, Map.class);
+        } else if (mode.equals("history")) {
+            HistoryResponse historyResponse = new HistoryResponse();
+            final History history = new History();
+            history.setSlots(Collections.emptyList());
+            historyResponse.setHistory(history);
+            response = new ObjectMapper().convertValue(historyResponse, Map.class);
         }
         return response;
     }

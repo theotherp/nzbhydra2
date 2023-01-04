@@ -27,6 +27,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.http.MediaType;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -56,6 +58,18 @@ public class DevEndpoint {
     public BigInteger countDanglingIndexersearches() throws Exception {
         final List<BigInteger> resultList = entityManager.createNativeQuery("select count(*) from SEARCHRESULT x where x.INDEXERSEARCHENTITY not in (select y.id from INDEXERSEARCH y)").getResultList();
         return resultList.get(0);
+    }
+
+    @Secured({"ROLE_ADMIN"})
+    @RequestMapping(value = "/dev/throwException", method = RequestMethod.GET)
+    public BigInteger throwException() throws Exception {
+        throw new RuntimeException("test");
+    }
+
+    @Secured({"ROLE_ADMIN"})
+    @RequestMapping(value = "/dev/throwAccessDeniedException", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public BigInteger throwAccessDeniedException() throws Exception {
+        throw new AccessDeniedException("test");
     }
 
     @Secured({"ROLE_ADMIN"})

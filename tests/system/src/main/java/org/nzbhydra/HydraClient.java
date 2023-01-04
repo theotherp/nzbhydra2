@@ -16,6 +16,7 @@
 
 package org.nzbhydra;
 
+import jakarta.annotation.PostConstruct;
 import okhttp3.Headers;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
@@ -25,6 +26,8 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import org.apache.commons.lang3.StringUtils;
+import org.junit.platform.commons.logging.Logger;
+import org.junit.platform.commons.logging.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -36,10 +39,17 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class HydraClient {
 
+    private static final Logger logger = LoggerFactory.getLogger(HydraClient.class);
+
     @Value("${nzbhydra.host}")
     private String nzbhydraHost;
     @Value("${nzbhydra.port}")
     private int nzbhydraPort;
+
+    @PostConstruct
+    public void logData() {
+        logger.info(() -> "Using NZBHydra host " + nzbhydraHost + " and port " + nzbhydraPort);
+    }
 
     private OkHttpClient getClient() {
         return new OkHttpClient.Builder().readTimeout(20, TimeUnit.SECONDS).build();
