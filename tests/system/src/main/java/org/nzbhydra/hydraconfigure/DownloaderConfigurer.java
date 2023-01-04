@@ -18,6 +18,7 @@ package org.nzbhydra.hydraconfigure;
 
 import org.nzbhydra.HydraClient;
 import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.config.downloading.DownloaderConfig;
 import org.nzbhydra.downloading.DownloaderType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +46,7 @@ public class DownloaderConfigurer {
         downloaderConfig.setName("Mock");
         downloaderConfig.setUrl(mockUrl + "/sabnzbd");
         downloaderConfig.setDownloaderType(DownloaderType.SABNZBD);
+        downloaderConfig.setDownloadType(DownloadType.NZB);
         downloaderConfig.setEnabled(true);
 
         config.getDownloading().setDownloaders(Collections.singletonList(downloaderConfig));

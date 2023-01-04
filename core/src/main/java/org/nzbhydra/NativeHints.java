@@ -16,8 +16,12 @@
 
 package org.nzbhydra;
 
+import org.javers.core.json.JsonConverterBuilder;
 import org.nzbhydra.backup.BackupData;
+import org.nzbhydra.downloading.downloaders.sabnzbd.mapping.QueueResponse;
+import org.nzbhydra.mapping.newznab.NewznabParameters;
 import org.nzbhydra.news.NewsWeb;
+import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.RuntimeHintsRegistrar;
 
@@ -26,8 +30,10 @@ public class NativeHints implements RuntimeHintsRegistrar {
 
     @Override
     public void registerHints(RuntimeHints hints, ClassLoader classLoader) {
-        hints.reflection().registerType(NewsWeb.NewsEntryForWeb.class);
-        hints.reflection().registerType(BackupData.class);
+        hints.reflection().registerType(NewsWeb.NewsEntryForWeb.class, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS);
+        hints.reflection().registerType(BackupData.class, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS);
+        hints.reflection().registerType(NewznabParameters.class, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS);
+        hints.reflection().registerType(QueueResponse.class, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS);
         hints.resources().registerResourceBundle("joptsimple.ExceptionMessages");
     }
 

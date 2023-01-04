@@ -35,6 +35,7 @@
               org.springframework.security.web.header.HeaderWriterFilter,
               org.springframework.security.web.servletapi,
               org.springframework.security.web.context.SecurityContextPersistenceFilter
+              org.springframework.security.web.ObservationFilterChainDecorato
               org.springframework.security.web.savedrequest,
               org.springframework.security.web.authentication.AnonymousAuthenticationFilter,
               org.springframework.web.filter,
@@ -57,6 +58,7 @@
               org.springframework.security.web.header.HeaderWriterFilter,
               org.springframework.security.web.servletapi,
               org.springframework.security.web.context.SecurityContextPersistenceFilter
+              org.springframework.security.web.ObservationFilterChainDecorato
               org.springframework.security.web.savedrequest,
               org.springframework.security.web.authentication.AnonymousAuthenticationFilter,
               org.springframework.web.filter,
@@ -124,7 +126,6 @@
     <logger name="org.springframework.web.filter.CommonsRequestLoggingFilter" level="DEBUG"/>
     <logger name="org.reflections" level="WARN"/>
     <logger name="com.gargoylesoftware.htmlunit" level="off"/>
-    <logger name="org.springframework.security" level="DEBUG"/>
 
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>

@@ -17,6 +17,7 @@
 package org.nzbhydra.externalapi;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.nzbhydra.HydraClient;
 import org.nzbhydra.HydraResponse;
@@ -66,9 +67,11 @@ public class DebugInfosTest {
     }
 
     @Test
+    @Disabled("Not available in native image")
     public void shouldLogThreadDump() throws Exception {
-        final HydraResponse response = hydraClient.get("internalapi/debuginfos/logThreadDump").raiseIfUnsuccessful();
-        final String body = response.body();
+        hydraClient.get("internalapi/debuginfos/logThreadDump").raiseIfUnsuccessful();
+        HydraResponse response = hydraClient.get("internalapi/debuginfos/currentlogfile");
+        String body = response.body();
         assertThat(body).contains("Full thread dump");
     }
 

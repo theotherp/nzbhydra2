@@ -108,8 +108,8 @@ public class IndexerUniquenessScoreSaver {
         int involved = allIndexerSearchesInvolved.size();
         int haveResult = indexersContainingSameResult.size() + 1;
         scoreEntities.add(new IndexerUniquenessScoreEntity(indexerDownloadedFrom, involved, haveResult, true));
-        scoreEntities.addAll(indexersContainingSameResult.stream().map(x -> new IndexerUniquenessScoreEntity(x, involved, haveResult, true)).collect(Collectors.toList()));
-        scoreEntities.addAll(involvedIndexersWithoutResult.stream().map(x -> new IndexerUniquenessScoreEntity(x.getIndexerEntity(), involved, haveResult, false)).collect(Collectors.toList()));
+        scoreEntities.addAll(indexersContainingSameResult.stream().map(x -> new IndexerUniquenessScoreEntity(x, involved, haveResult, true)).toList());
+        scoreEntities.addAll(involvedIndexersWithoutResult.stream().map(x -> new IndexerUniquenessScoreEntity(x.getIndexerEntity(), involved, haveResult, false)).toList());
         indexerUniquenessScoreEntityRepository.saveAll(scoreEntities);
     }
 

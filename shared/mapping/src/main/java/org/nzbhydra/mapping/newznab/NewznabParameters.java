@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Set;
 
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class NewznabParameters {
@@ -37,9 +36,7 @@ public class NewznabParameters {
     private String author;
     private String title;
 
-    @Builder.Default
     private Integer offset = 0;
-    @Builder.Default
     private Integer limit = 100;
     private Integer minage;
     private Integer maxage;
@@ -49,7 +46,7 @@ public class NewznabParameters {
     private String id;
 
     private boolean raw;
-    @Builder.Default
+
     private OutputType o = OutputType.XML;
 
     private Integer cachetime;
@@ -58,7 +55,7 @@ public class NewznabParameters {
 
     //Not (yet) supported
     private String genre;
-    @Builder.Default
+
     private List<String> attrs = new ArrayList<>();
     private boolean extended;
 
