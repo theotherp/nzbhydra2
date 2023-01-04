@@ -21,7 +21,7 @@ import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigChangedEvent;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.downloading.DownloaderConfig;
-import org.nzbhydra.config.downloading.DownloaderType;
+import org.nzbhydra.downloading.DownloaderType;
 import org.nzbhydra.downloading.downloaders.nzbget.NzbGet;
 import org.nzbhydra.downloading.downloaders.sabnzbd.Sabnzbd;
 import org.slf4j.Logger;

@@ -131,18 +131,18 @@ public abstract class Downloader {
                     categoryToSend = category;
                 }
 
-                SearchResultEntity searchResult = null;
                 Optional<SearchResultEntity> optionalResult = searchResultRepository.findById(guid);
-                if (!optionalResult.isPresent()) {
+                if (optionalResult.isEmpty()) {
                     logger.error("Download request with invalid/outdated GUID {}", guid);
                     throw new InvalidSearchResultIdException(guid, true);
                 }
+                final SearchResultEntity searchResult = optionalResult.get();
+                final String searchResultTitle = optionalResult.get().getTitle();
                 final IndexerConfig indexerConfig = configProvider.getIndexerByName(optionalResult.get().getIndexer().getName());
                 try {
                     final FileDownloadAccessType accessTypeForIndexer = indexerSpecificDownloadExceptions.getAccessTypeForIndexer(indexerConfig, configProvider.getBaseConfig().getDownloading().getNzbAccessType());
                     if (addingType == NzbAddingType.UPLOAD && accessTypeForIndexer == FileDownloadAccessType.PROXY) {
                         DownloadResult result = nzbHandler.getFileByResult(FileDownloadAccessType.PROXY, SearchSource.INTERNAL, optionalResult.get()); //Uploading NZBs can only be done via proxying
-                        searchResult = result.getDownloadEntity().getSearchResult();
                         if (result.isSuccessful()) {
                             String externalId = addNzb(result.getContent(), result.getTitle(), categoryToSend);
                             result.getDownloadEntity().setExternalId(externalId);
@@ -152,8 +152,7 @@ public abstract class Downloader {
                             missedNzbs.add(searchResult);
                         }
                     } else {
-                        searchResult = searchResultRepository.getById(guid);
-                        String externalId = addLink(nzbHandler.getDownloadLinkForSendingToDownloader(guid, false, DownloadType.NZB), searchResult.getTitle(), categoryToSend);
+                        String externalId = addLink(nzbHandler.getDownloadLinkForSendingToDownloader(guid, false, DownloadType.NZB), searchResultTitle, categoryToSend);
                         guidExternalIds.put(guid, externalId);
                         addedNzbs.add(guid);
                     }

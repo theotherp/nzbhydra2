@@ -17,7 +17,7 @@
 package org.nzbhydra.downloading.downloaders;
 
 import org.nzbhydra.config.ConfigProvider;
-import org.nzbhydra.config.downloading.DownloaderType;
+import org.nzbhydra.downloading.DownloaderType;
 import org.nzbhydra.downloading.FileHandler;
 import org.nzbhydra.downloading.IndexerSpecificDownloadExceptions;
 import org.nzbhydra.downloading.downloaders.nzbget.NzbGet;

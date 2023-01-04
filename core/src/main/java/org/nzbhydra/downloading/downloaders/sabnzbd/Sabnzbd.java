@@ -14,7 +14,7 @@ import org.joda.time.format.PeriodFormatterBuilder;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.Jackson;
 import org.nzbhydra.config.ConfigProvider;
-import org.nzbhydra.config.downloading.DownloaderType;
+import org.nzbhydra.downloading.DownloaderType;
 import org.nzbhydra.downloading.FileDownloadStatus;
 import org.nzbhydra.downloading.FileHandler;
 import org.nzbhydra.downloading.IndexerSpecificDownloadExceptions;

@@ -18,8 +18,8 @@ package org.nzbhydra.config;
 
 import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.config.downloading.DownloaderConfig;
-import org.nzbhydra.config.downloading.DownloaderType;
 import org.nzbhydra.config.downloading.NzbAddingType;
+import org.nzbhydra.downloading.DownloaderType;
 
 public final class DownloaderConfigBuilder {
     private String apiKey = "apikey";

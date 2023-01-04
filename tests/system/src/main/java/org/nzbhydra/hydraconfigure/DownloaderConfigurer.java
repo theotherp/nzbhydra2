@@ -14,32 +14,41 @@
  *  limitations under the License.
  */
 
-package org.nzbhydra;
+package org.nzbhydra.hydraconfigure;
 
-import jakarta.annotation.PostConstruct;
+import org.nzbhydra.HydraClient;
 import org.nzbhydra.config.BaseConfig;
-import org.nzbhydra.hydraconfigure.ConfigManager;
-import org.nzbhydra.hydraconfigure.DownloaderConfigurer;
-import org.nzbhydra.hydraconfigure.IndexerConfigurer;
+import org.nzbhydra.config.downloading.DownloaderConfig;
+import org.nzbhydra.downloading.DownloaderType;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
+
 @Component
-public class BeforeAll {
+public class DownloaderConfigurer {
 
     @Autowired
     private ConfigManager configManager;
-    @Autowired
-    private IndexerConfigurer indexerConfigurer;
-    @Autowired
-    private DownloaderConfigurer downloaderConfigurer;
 
-    @PostConstruct
-    public void init() {
+    @Autowired
+    private HydraClient hydraClient;
+
+    @Value("${nzbhydra.mockUrl}")
+    private String mockUrl;
+
+    public void configureSabnzbdMock() {
         final BaseConfig config = configManager.getCurrentConfig();
-        config.getMain().setApiKey("apikey");
+        DownloaderConfig downloaderConfig = new DownloaderConfig();
+        downloaderConfig.setApiKey("apikey");
+        downloaderConfig.setName("Mock");
+        downloaderConfig.setUrl(mockUrl + "/sabnzbd");
+        downloaderConfig.setDownloaderType(DownloaderType.SABNZBD);
+        downloaderConfig.setEnabled(true);
+
+        config.getDownloading().setDownloaders(Collections.singletonList(downloaderConfig));
         configManager.setConfig(config);
-        indexerConfigurer.configureTwoMockIndexers();
-        downloaderConfigurer.configureSabnzbdMock();
+
     }
 }

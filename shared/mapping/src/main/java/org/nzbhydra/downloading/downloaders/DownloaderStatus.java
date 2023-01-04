@@ -1,5 +1,5 @@
 /*
- *  (C) Copyright 2017 TheOtherP (theotherp@posteo.net)
+ *  (C) Copyright 2023 TheOtherP (theotherp@posteo.net)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Iterables;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.nzbhydra.config.downloading.DownloaderType;
+import org.nzbhydra.downloading.DownloaderType;
 
 import java.util.ArrayList;
 import java.util.List;

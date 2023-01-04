@@ -17,6 +17,8 @@
 package org.nzbhydra;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+
 public record HydraResponse(String body, int status) {
 
     public HydraResponse raiseIfUnsuccessful() {
@@ -24,6 +26,14 @@ public record HydraResponse(String body, int status) {
             throw new RuntimeException("Unsuccessful HTTP call. Status: " + status + ". Body:\n" + body);
         }
         return this;
+    }
+
+    public <T> T as(Class<T> clazz) {
+        try {
+            return Jackson.JSON_MAPPER.readValue(body, clazz);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

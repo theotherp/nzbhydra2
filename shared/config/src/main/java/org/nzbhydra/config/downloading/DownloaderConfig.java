@@ -1,5 +1,5 @@
 /*
- *  (C) Copyright 2017 TheOtherP (theotherp@posteo.net)
+ *  (C) Copyright 2023 TheOtherP (theotherp@posteo.net)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.nzbhydra.config.downloading;
 import com.google.common.base.Strings;
 import lombok.Data;
 import org.nzbhydra.config.sensitive.SensitiveData;
+import org.nzbhydra.downloading.DownloaderType;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.Optional;
