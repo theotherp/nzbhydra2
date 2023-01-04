@@ -31,6 +31,7 @@ import org.springframework.stereotype.Component;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @Component
 public class HydraClient {
@@ -41,7 +42,7 @@ public class HydraClient {
     private int nzbhydraPort;
 
     private OkHttpClient getClient() {
-        return new OkHttpClient();
+        return new OkHttpClient.Builder().readTimeout(20, TimeUnit.SECONDS).build();
     }
 
     public HydraResponse call(String method, String endpoint, Map<String, String> headers, String jsonRequestBody, String... parameters) {
