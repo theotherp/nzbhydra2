@@ -23,8 +23,6 @@ import com.google.common.base.Strings;
 import lombok.Data;
 import org.nzbhydra.config.indexer.QueryFormat;
 import org.nzbhydra.config.searching.CustomQueryAndTitleMapping;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.ArrayList;
@@ -38,7 +36,6 @@ import java.util.Optional;
 @ConfigurationProperties(prefix = "searching")
 public class SearchingConfig {
 
-    private static final Logger logger = LoggerFactory.getLogger(SearchingConfig.class);
 
     @JsonFormat(shape = Shape.STRING)
     private SearchSourceRestriction applyRestrictions = SearchSourceRestriction.BOTH;

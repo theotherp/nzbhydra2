@@ -27,6 +27,7 @@ import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.SearchingConfig;
 import org.nzbhydra.config.indexer.BackendType;
+import org.nzbhydra.config.indexer.CheckCapsResponse;
 import org.nzbhydra.config.indexer.IndexerCategoryConfig;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.fortests.NewznabResponseBuilder;

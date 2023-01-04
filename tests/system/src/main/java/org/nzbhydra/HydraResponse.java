@@ -1,5 +1,5 @@
 /*
- *  (C) Copyright 2017 TheOtherP (theotherp@posteo.net)
+ *  (C) Copyright 2023 TheOtherP (theotherp@posteo.net)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,18 +14,16 @@
  *  limitations under the License.
  */
 
-package org.nzbhydra.indexers.capscheck;
+package org.nzbhydra;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.nzbhydra.config.indexer.IndexerConfig;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class CheckCapsResponse {
-    private IndexerConfig indexerConfig;
-    private boolean allCapsChecked;
-    private boolean configComplete;
+public record HydraResponse(String body, int status) {
+
+    public HydraResponse raiseIfUnsuccessful() {
+        if (status != 200) {
+            throw new RuntimeException("Unsuccessful HTTP call. Status: " + status + ". Body:\n" + body);
+        }
+        return this;
+    }
+
 }

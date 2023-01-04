@@ -7,7 +7,7 @@ RUN echo 'APT::Install-Recommends "0";' >> /etc/apt/apt.conf.d/00-docker
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y libfreetype6 && rm -rf /var/lib/apt/lists/*
 COPY core /
 RUN ["chmod", "+x", "/core"]
-CMD ["/core", "directstart"]
+CMD ["/core", "directstart", "-DinternalApiKey=internalApiKey", "-main.useCsrf=false"]
 
 # To debug docker run --rm -it --entrypoint bash <image-name-or-id>
 # or for a running container docker exec -it <container-name-or-id> bash

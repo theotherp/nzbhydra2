@@ -1,5 +1,5 @@
 /*
- *  (C) Copyright 2017 TheOtherP (theotherp@posteo.net)
+ *  (C) Copyright 2023 TheOtherP (theotherp@posteo.net)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,19 +14,17 @@
  *  limitations under the License.
  */
 
-package org.nzbhydra.indexers.capscheck;
+package org.nzbhydra.config.indexer;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.nzbhydra.config.indexer.IndexerConfig;
+import lombok.NoArgsConstructor;
 
 @Data
-public class CapsCheckRequest {
-    public enum CheckType {
-        ALL,
-        INCOMPLETE,
-        SINGLE
-    }
-
+@AllArgsConstructor
+@NoArgsConstructor
+public class CheckCapsResponse {
     private IndexerConfig indexerConfig;
-    private CheckType checkType;
+    private boolean allCapsChecked;
+    private boolean configComplete;
 }

@@ -48,17 +48,12 @@ public class IndexerConfig {
         DISABLED_USER;
 
         public String humanize() {
-            switch (this) {
-                case ENABLED:
-                    return "Enabled";
-                case DISABLED_SYSTEM_TEMPORARY:
-                    return "Disabled temporarily";
-                case DISABLED_SYSTEM:
-                    return "Disabled permanently";
-                case DISABLED_USER:
-                    return "Disabled by user";
-            }
-            return "Unknown";
+            return switch (this) {
+                case ENABLED -> "Enabled";
+                case DISABLED_SYSTEM_TEMPORARY -> "Disabled temporarily";
+                case DISABLED_SYSTEM -> "Disabled permanently";
+                case DISABLED_USER -> "Disabled by user";
+            };
         }
     }
 

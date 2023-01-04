@@ -65,7 +65,6 @@ public class ConfigWeb {
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/config", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ConfigValidationResult setConfig(@RequestBody BaseConfig newConfig) throws IOException {
-
         for (PropertySource<?> source : environment.getPropertySources()) {
             Set propertyNames = new HashSet();
             if (source.getSource() instanceof Properties) {

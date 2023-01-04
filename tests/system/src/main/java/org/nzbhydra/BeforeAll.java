@@ -14,10 +14,28 @@
  *  limitations under the License.
  */
 
-package org.nzbhydra.hydraconfigure;
+package org.nzbhydra;
 
+import jakarta.annotation.PostConstruct;
+import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.hydraconfigure.ConfigManager;
+import org.nzbhydra.hydraconfigure.IndexerConfigurer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ConfigManager {
+public class BeforeAll {
+
+    @Autowired
+    private ConfigManager configManager;
+    @Autowired
+    private IndexerConfigurer indexerConfigurer;
+
+    @PostConstruct
+    public void init() {
+        final BaseConfig config = configManager.getCurrentConfig();
+        config.getMain().setApiKey("apikey");
+        configManager.setConfig(config);
+        indexerConfigurer.configureTwoMockIndexers();
+    }
 }

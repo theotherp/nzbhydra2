@@ -14,9 +14,22 @@
  *  limitations under the License.
  */
 
-package org.nzbhydra;
+package org.nzbhydra.config.indexer;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-public record HydraResponse(String body, int status) {
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class CapsCheckRequest {
+    public enum CheckType {
+        ALL,
+        INCOMPLETE,
+        SINGLE
+    }
 
+    private IndexerConfig indexerConfig;
+    private CheckType checkType;
 }

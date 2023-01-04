@@ -43,7 +43,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <version>${spring.boot.version}</version>
-            <scope>test</scope>
             <exclusions>
                 <exclusion>
                     <artifactId>log4j-api</artifactId>
@@ -73,12 +72,17 @@
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
             <version>3.23.1</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.nzbhydra</groupId>
             <artifactId>config</artifactId>
             <version>5.0.0-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>slf4j-api</artifactId>
+                    <groupId>org.slf4j</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
@@ -114,6 +118,11 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-oxm</artifactId>
             <version>${spring.oxm.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.nzbhydra</groupId>
+            <artifactId>mapping</artifactId>
+            <version>5.0.0-SNAPSHOT</version>
         </dependency>
 
 

@@ -322,9 +322,6 @@ def startup():
             args.java = "core.exe"
         else:
             args.java = "./core"
-    if not os.path.exists(args.java):
-        logger.critical("Error: executable " + args.java + " does not exist")
-        sys.exit(-1)
 
     debugSwitchFile = os.path.join(args.datafolder, "DEBUG")
     if os.path.exists(debugSwitchFile):
@@ -416,7 +413,8 @@ def startup():
     gcArguments = [
         "-Xlog:gc*:file=" + gcLogFilename + "::filecount=10,filesize=5000"]
     global internalApiKey
-    internalApiKey = ''.join(random.choice(string.ascii_lowercase) for i in range(20))
+    if internalApiKey is None:
+        internalApiKey = ''.join(random.choice(string.ascii_lowercase) for i in range(20))
     java_arguments = ["-Xmx" + xmx + "M", "-DfromWrapper=true", "-DinternalApiKey=" + internalApiKey]
 
     if releaseType == ReleaseType.GENERIC:
@@ -613,6 +611,7 @@ def main(arguments):
     # Internal logic
     parser.add_argument('--restarted', action='store_true', default=False, help=argparse.SUPPRESS)
     parser.add_argument('--update', action='store_true', default=False, help=argparse.SUPPRESS)
+    parser.add_argument('--internalApiKey', action='store', default=False, help=argparse.SUPPRESS)
     args, unknownArgs = parser.parse_known_args(arguments)
     setupLogger()
     # Delete old files from last backup
@@ -631,6 +630,8 @@ def main(arguments):
     if os.path.exists(controlIdFilePath):
         os.remove(controlIdFilePath)
     doStart = True
+    global internalApiKey
+    internalApiKey = args.internalApiKey
     if args.update:
         logger.info("Executing update")
         update()

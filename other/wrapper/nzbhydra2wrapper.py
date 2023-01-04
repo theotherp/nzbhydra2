@@ -2,6 +2,8 @@
 
 from __future__ import print_function
 
+import random
+import string
 import sys
 
 CURRENT_PYTHON = sys.version_info[:2]
@@ -29,6 +31,7 @@ basepath = None
 args = []
 unknownArgs = []
 terminatedByWrapper = False
+internalApiKey = None
 
 LOGGER_DEFAULT_FORMAT = u'%(asctime)s  %(levelname)s - %(message)s'
 LOGGER_DEFAULT_LEVEL = 'INFO'
@@ -300,10 +303,10 @@ def startup():
         if isWindows:
             args.java = "core.exe"
         else:
-            args.java = "core"
-    if not os.path.exists(args.java):
-        logger.critical("Error: executable " + args.java + " does not exist")
-        sys.exit(-1)
+            args.java = "./core"
+        if not os.path.exists(args.java):
+            logger.critical("Error: executable " + args.java + " does not exist")
+            sys.exit(-1)
 
     debugSwitchFile = os.path.join(args.datafolder, "DEBUG")
     if os.path.exists(debugSwitchFile):
@@ -393,8 +396,11 @@ def startup():
 
     gcArguments = [
         "-Xlog:gc*:file=" + gcLogFilename + "::filecount=10,filesize=5000"]
+    global internalApiKey
+    if internalApiKey is None:
+        internalApiKey = ''.join(random.choice(string.ascii_lowercase) for i in range(20))
+    java_arguments = ["-Xmx" + xmx + "M", "-DfromWrapper=true", "-DinternalApiKey=" + internalApiKey]
 
-    java_arguments = ["-Xmx" + xmx + "M", "-DfromWrapper=true"]
     if releaseType == "generic":
         java_arguments.append("-XX:+HeapDumpOnOutOfMemoryError")
         java_arguments.append("-XX:HeapDumpPath=" + os.path.join(args.datafolder, "logs"))
@@ -445,6 +451,11 @@ def startup():
             if not args.quiet:
                 sys.stdout.write(nextline)
                 sys.stdout.flush()
+            markerLine = "You can access NZBHydra 2 in your browser via "
+            if markerLine in nextline:
+                global uri
+                uri = nextline[nextline.find(markerLine) + len(markerLine):1000].strip()
+                logger.info("Determined process URI to be " + uri)
         process.wait()
 
         return process
@@ -574,8 +585,8 @@ if __name__ == '__main__':
     # Internal logic
     parser.add_argument('--restarted', action='store_true', default=False, help=argparse.SUPPRESS)
     parser.add_argument('--update', action='store_true', default=False, help=argparse.SUPPRESS)
-
-    args, unknownArgs = parser.parse_known_args()
+    parser.add_argument('--internalApiKey', action='store', default=False, help=argparse.SUPPRESS)
+    args, unknownArgs = parser.parse_known_args(arguments)
     setupLogger()
 
     # Delete old files from last backup
@@ -595,6 +606,8 @@ if __name__ == '__main__':
     if os.path.exists(controlIdFilePath):
         os.remove(controlIdFilePath)
     doStart = True
+    global internalApiKey
+    internalApiKey = args.internalApiKey
     if args.update:
         logger.info("Executing update")
         update()

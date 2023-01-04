@@ -28,6 +28,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 
@@ -43,7 +44,7 @@ public class HydraClient {
         return new OkHttpClient();
     }
 
-    public HydraResponse call(String method, String endpoint, Map<String, String> headers, String jsonRequestBody, String... parameters) throws Exception {
+    public HydraResponse call(String method, String endpoint, Map<String, String> headers, String jsonRequestBody, String... parameters) {
         final HttpUrl.Builder urlBuilder = new HttpUrl.Builder().scheme("http")
             .host(nzbhydraHost)
             .port(nzbhydraPort)
@@ -52,6 +53,10 @@ public class HydraClient {
         for (String parameter : parameters) {
             final String[] split = parameter.split("=");
             urlBuilder.addQueryParameter(split[0], split[1]);
+        }
+        if (endpoint.contains("internalapi") && Arrays.stream(parameters).noneMatch(x -> x.startsWith("internalApiKey"))) {
+            //Must be provided to instance in docker container
+            urlBuilder.addQueryParameter("internalApiKey", "internalApiKey");
         }
 
         final RequestBody body = jsonRequestBody == null ? null : RequestBody.create(jsonRequestBody, MediaType.parse("application/json"));
@@ -63,15 +68,25 @@ public class HydraClient {
             try (ResponseBody responseBody = response.body()) {
                 return new HydraResponse(responseBody.string(), response.code());
             }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
-    public HydraResponse get(String endpoint, Map<String, String> headers, String... parameters) throws Exception {
+    public HydraResponse get(String endpoint, Map<String, String> headers, String... parameters) {
         return call("GET", endpoint, headers, null, parameters);
     }
 
-    public HydraResponse get(String endpoint, String... parameters) throws Exception {
+    public HydraResponse get(String endpoint, String... parameters) {
         return call("GET", endpoint, Collections.emptyMap(), null, parameters);
+    }
+
+    public HydraResponse put(String endpoint, String body, String... parameters) {
+        return call("PUT", endpoint, Collections.emptyMap(), body, parameters);
+    }
+
+    public HydraResponse post(String endpoint, String body, String... parameters) {
+        return call("POST", endpoint, Collections.emptyMap(), body, parameters);
     }
 
 

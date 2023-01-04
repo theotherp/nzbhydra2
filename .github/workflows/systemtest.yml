@@ -93,6 +93,8 @@ jobs:
     runTests:
         needs: [ prepareContainer, buildMockserver ]
         runs-on: ubuntu-latest
+        env:
+            spring_profiles_active: build
         #todo can't use images uploaded above
         #        services:
         #            core:
@@ -105,6 +107,8 @@ jobs:
         #                    - 5080:5080
 
         steps:
+            -   uses: actions/checkout@v3
+                name: "Check out source"
             # Run hydra
             -   uses: actions/download-artifact@v3
                 name: "Download hydradocker image"
@@ -116,7 +120,10 @@ jobs:
                 run: docker load --input hydradocker.tar
 
             -   name: "Run hydradocker"
-                run: docker run -p 5076:5076 -d hydradocker
+                run: |
+                    mkdir data
+                    cp tests/system/src/test/resources/initialNzbhydra.yml data/nzbhydra.yml
+                    docker run -p 5076:5076 -d hydradocker
 
             # Run mockserver
             -   uses: actions/download-artifact@v3
@@ -132,8 +139,6 @@ jobs:
                 run: docker run -p 5080:5080 -d mockserver:3.0.0
 
             # Run tests
-            -   uses: actions/checkout@v3
-                name: "Check out source"
             -   name: Set up JDK 17
                 uses: actions/setup-java@v3
                 with:
@@ -141,7 +146,7 @@ jobs:
                     distribution: 'adopt'
                     cache: 'maven'
 
-            -   name: "Run release script"
+            -   name: "Run tests"
                 run: |
                     cd tests/system
                     mvn --batch-mode test

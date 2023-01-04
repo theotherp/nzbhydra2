@@ -23,8 +23,6 @@ import com.google.common.base.Strings;
 import lombok.Data;
 import org.javers.core.metamodel.annotation.DiffIgnore;
 import org.nzbhydra.config.sensitive.SensitiveData;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.ArrayList;
@@ -35,7 +33,6 @@ import java.util.Optional;
 @Data
 public class MainConfig {
 
-    private static final Logger logger = LoggerFactory.getLogger(MainConfig.class);
 
     private Integer configVersion = 19;
 

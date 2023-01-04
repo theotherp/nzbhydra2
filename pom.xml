@@ -12,7 +12,6 @@
         <module>core</module>
         <module>tests</module>
         <module>releases</module>
-        <module>shared/config</module>
     </modules>
 
     <scm>

@@ -21,6 +21,8 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import lombok.Data;
 import org.nzbhydra.GenericResponse;
+import org.nzbhydra.config.indexer.CapsCheckRequest;
+import org.nzbhydra.config.indexer.CheckCapsResponse;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.indexers.capscheck.IndexerChecker.CheckerEvent;
