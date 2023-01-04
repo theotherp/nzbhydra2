@@ -115,7 +115,7 @@ jobs:
                 run: docker load --input hydradocker.tar
 
             -   name: "Run hydradocker"
-                run: docker run -p 5076:5076 hydradocker  -d
+                run: docker run -p 5076:5076 -d hydradocker
 
 
             -   uses: actions/download-artifact@v3
@@ -128,7 +128,7 @@ jobs:
                 run: docker load --input mockserver.tar
 
             -   name: "Run mockserver"
-                run: docker run -p 5080:5080 mockserver -d
+                run: docker run -p 5080:5080 -d mockserver:3.0.0
 
 
             -   name: Set up JDK 17
