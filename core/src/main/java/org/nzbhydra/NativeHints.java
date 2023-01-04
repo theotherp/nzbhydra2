@@ -28,6 +28,7 @@ public class NativeHints implements RuntimeHintsRegistrar {
     public void registerHints(RuntimeHints hints, ClassLoader classLoader) {
         hints.reflection().registerType(NewsWeb.NewsEntryForWeb.class);
         hints.reflection().registerType(BackupData.class);
+        hints.resources().registerResourceBundle("joptsimple.ExceptionMessages");
     }
 
 }

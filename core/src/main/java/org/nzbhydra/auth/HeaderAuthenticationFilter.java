@@ -53,19 +53,27 @@ public class HeaderAuthenticationFilter extends BasicAuthenticationFilter {
         this.userDetailsManager = userDetailsManager;
         this.authConfig = authConfig;
         //Must be provided by wrapper
-        this.internalApiKey = System.getProperty("internalApiKey");
+        internalApiKey = System.getProperty("internalApiKey");
+        if (internalApiKey != null) {
+            logger.info("Using internal API key");
+        }
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
         final String sentInternalApiKey = request.getParameterValues("internalApiKey") == null ? null : request.getParameterValues("internalApiKey")[0];
-        if (sentInternalApiKey != null && Objects.equals(sentInternalApiKey, internalApiKey)) {
-            final AnonymousAuthenticationToken token = new AnonymousAuthenticationToken("key", "internalApi", AuthorityUtils.createAuthorityList("ROLE_ADMIN"));
-            token.setDetails(new HydraWebAuthenticationDetails(request));
-            SecurityContextHolder.getContext().setAuthentication(token);
-            onSuccessfulAuthentication(request, response, token);
-            chain.doFilter(request, response);
-            return;
+        if (sentInternalApiKey != null) {
+            if (Objects.equals(sentInternalApiKey, internalApiKey)) {
+
+                final AnonymousAuthenticationToken token = new AnonymousAuthenticationToken("key", "internalApi", AuthorityUtils.createAuthorityList("ROLE_ADMIN"));
+                token.setDetails(new HydraWebAuthenticationDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(token);
+                onSuccessfulAuthentication(request, response, token);
+                chain.doFilter(request, response);
+                return;
+            } else {
+                logger.warn("Invalid internal API key provided");
+            }
         }
         if (authConfig.getAuthHeader() == null || authConfig.getAuthHeaderIpRanges().isEmpty()) {
             chain.doFilter(request, response);

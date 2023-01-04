@@ -2710,9 +2710,9 @@
           ]
       },
       {
-          "name": "sun.awt.resources.awt",
-          "classNames": [
-              "sun.awt.resources.awt"
+          "name": "joptsimple.ExceptionMessages",
+          "locales": [
+              "en"
           ]
       }
   ]
