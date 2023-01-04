@@ -55,7 +55,10 @@ jobs:
                     cd ./docker/nativeTest/
                     docker build -t hydradocker .
                     docker save --output hydradocker.tar hydradocker
-            -   name: Upload hydra docker image
+            -   name: "Save core container image"
+                run: |
+                    docker save --output hydradocker.tar hydradocker
+            -   name: "Upload hydra docker image"
                 uses: actions/upload-artifact@v3
                 with:
                     name: hydradocker
@@ -76,6 +79,8 @@ jobs:
                     mvn --batch-mode install -DskipTests -T 1C
                     cd other/mockserver/
                     mvn --batch-mode spring-boot:build-image
+            -   name: "Save core container image"
+                run: |
                     docker save --output mockserver.tar mockserver:3.0.0
             -   name: "Upload mockserver docker image"
                 uses: actions/upload-artifact@v3
