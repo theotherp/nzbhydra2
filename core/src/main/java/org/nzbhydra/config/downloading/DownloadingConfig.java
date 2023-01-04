@@ -20,23 +20,17 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.google.common.base.Strings;
 import lombok.Data;
 import org.javers.core.metamodel.annotation.DiffIgnore;
-import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.SearchSourceRestriction;
-import org.nzbhydra.config.ValidatingConfig;
-import org.nzbhydra.config.indexer.IndexerConfig;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Data
 @ConfigurationProperties(prefix = "downloading")
-public class DownloadingConfig extends ValidatingConfig<DownloadingConfig> {
+public class DownloadingConfig {
 
     @NestedConfigurationProperty
     @DiffIgnore
@@ -52,53 +46,8 @@ public class DownloadingConfig extends ValidatingConfig<DownloadingConfig> {
     private String externalUrl;
     private String primaryDownloader;
 
-    @Override
-    public ConfigValidationResult validateConfig(BaseConfig oldConfig, DownloadingConfig newConfig, BaseConfig newBaseConfig) {
-        List<String> errors = new ArrayList<>();
-        if (getSaveTorrentsTo().isPresent()) {
-            File file = new File(getSaveTorrentsTo().get());
-            validateBlackholeFolder(errors, file, getSaveTorrentsTo().get(), "Torrent");
-        }
-        if (getSaveNzbsTo().isPresent()) {
-            File file = new File(getSaveNzbsTo().get());
-            validateBlackholeFolder(errors, file, getSaveNzbsTo().get(), "NZB");
-        }
-        List<ConfigValidationResult> validationResults = downloaders.stream().map(downloaderConfig -> downloaderConfig.validateConfig(oldConfig, downloaderConfig, newBaseConfig)).collect(Collectors.toList());
-        List<String> downloaderErrors = validationResults.stream().map(ConfigValidationResult::getErrorMessages).flatMap(Collection::stream).collect(Collectors.toList());
-        errors.addAll(downloaderErrors);
 
-        List<String> warnings = new ArrayList<>();
 
-        if (isEnabledWithoutRedirect(newBaseConfig, "nzbs.in")) {
-            warnings.add("nzbs.in forbids NZBHydra to download NZBs directly. The NZB access type \"Redirect to indexer\" will automatically be used for this indexer.");
-        }
-        if (isEnabledWithoutRedirect(newBaseConfig, "omgwtfnzbs")) {
-            warnings.add("omgwftnzbs forbids NZBHydra to download NZBs directly. The NZB access type \"Redirect to indexer\" will automatically be used for this indexer.");
-        }
-
-        warnings.addAll(validationResults.stream().map(ConfigValidationResult::getWarningMessages).flatMap(Collection::stream).collect(Collectors.toList()));
-
-        return new ConfigValidationResult(errors.isEmpty(), false, errors, warnings);
-    }
-
-    private static boolean isEnabledWithoutRedirect(BaseConfig newBaseConfig, String hostContains) {
-        return newBaseConfig.getIndexers().stream().anyMatch(x -> x.getHost().toLowerCase().contains(hostContains) && x.getState() == IndexerConfig.State.ENABLED) && newBaseConfig.getDownloading().getNzbAccessType() != FileDownloadAccessType.REDIRECT;
-    }
-
-    private void validateBlackholeFolder(List<String> errors, File file, String blackholeSettings, final String blackholeType) {
-        if (!file.isAbsolute()) {
-            errors.add(blackholeType + " black hole folder " + blackholeSettings + " is not absolute");
-        }
-        if (file.exists() && !file.isDirectory()) {
-            errors.add(blackholeType + " black hole folder " + file.getAbsolutePath() + " is a file");
-        }
-        if (!file.exists()) {
-            boolean created = file.mkdir();
-            if (!created) {
-                errors.add(blackholeType + " black hole folder " + file.getAbsolutePath() + " could not be created");
-            }
-        }
-    }
 
     public Optional<String> getSaveTorrentsTo() {
         return Optional.ofNullable(Strings.emptyToNull(saveTorrentsTo));
@@ -112,19 +61,6 @@ public class DownloadingConfig extends ValidatingConfig<DownloadingConfig> {
         return Optional.ofNullable(externalUrl);
     }
 
-    @Override
-    public DownloadingConfig prepareForSaving(BaseConfig oldBaseConfig) {
-        return this;
-    }
 
-    @Override
-    public DownloadingConfig updateAfterLoading() {
-        return this;
-    }
-
-    @Override
-    public DownloadingConfig initializeNewConfig() {
-        return this;
-    }
 
 }

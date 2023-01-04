@@ -21,9 +21,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Strings;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.SearchSourceRestriction;
-import org.nzbhydra.config.ValidatingConfig;
 import org.nzbhydra.searching.dtoseventsenums.SearchType;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -36,7 +34,7 @@ import java.util.Optional;
 @ConfigurationProperties(prefix = "categories")
 @Data
 @NoArgsConstructor
-public class Category extends ValidatingConfig<Category> {
+public class Category {
 
     public enum Subtype {
         NONE,
@@ -78,25 +76,8 @@ public class Category extends ValidatingConfig<Category> {
         this.name = name;
     }
 
-    @Override
-    public ConfigValidationResult validateConfig(BaseConfig oldConfig, Category newConfig, BaseConfig newBaseConfig) {
-        return new ConfigValidationResult();
-    }
 
-    @Override
-    public Category prepareForSaving(BaseConfig oldBaseConfig) {
-        return this;
-    }
 
-    @Override
-    public Category updateAfterLoading() {
-        return this;
-    }
-
-    @Override
-    public Category initializeNewConfig() {
-        return this;
-    }
 
     public Optional<String> getForbiddenRegex() {
         return Optional.ofNullable(Strings.emptyToNull(forbiddenRegex));

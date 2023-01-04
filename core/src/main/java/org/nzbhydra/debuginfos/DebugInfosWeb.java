@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.NzbHydra;
+import org.nzbhydra.config.BaseConfigHandler;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.logging.LogContentProvider;
 import org.nzbhydra.logging.LogContentProvider.JsonLogResponse;
@@ -52,6 +53,8 @@ public class DebugInfosWeb {
     private MappingsEndpoint mappingsEndpoint;
     @Autowired
     private ConfigProvider configProvider;
+    @Autowired
+    private BaseConfigHandler baseConfigHandler;
 
     private static final Logger logger = LoggerFactory.getLogger(DebugInfosWeb.class);
 
@@ -212,7 +215,7 @@ public class DebugInfosWeb {
         final String msg = "Set log file level to debug and enabled the following logging markers: " + markersToEnable;
         logger.info(msg);
 
-        configProvider.getBaseConfig().save(true);
+        baseConfigHandler.save(true);
 
         return ResponseEntity.ok(msg);
     }

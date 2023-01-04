@@ -16,6 +16,7 @@
 
 package org.nzbhydra.indexers;
 
+import org.nzbhydra.config.BaseConfigHandler;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.ConfigReaderWriter;
 import org.nzbhydra.config.indexer.IndexerConfig;
@@ -35,10 +36,12 @@ public class IndexerStatusesCleanupTask {
 
     private ConfigProvider configProvider;
     ConfigReaderWriter configReaderWriter = new ConfigReaderWriter();
+    private BaseConfigHandler baseConfigHandler;
 
     @Autowired
-    public IndexerStatusesCleanupTask(ConfigProvider configProvider) {
+    public IndexerStatusesCleanupTask(ConfigProvider configProvider, BaseConfigHandler baseConfigHandler) {
         this.configProvider = configProvider;
+        this.baseConfigHandler = baseConfigHandler;
     }
 
     @HydraTask(configId = "cleanUpIndexerStatuses", name = "Clean up indexer statuses", interval = MINUTE)
@@ -56,7 +59,7 @@ public class IndexerStatusesCleanupTask {
             }
         }
         if (anyChanges) {
-            configProvider.getBaseConfig().save(false);
+            baseConfigHandler.save(false);
         }
     }
 }

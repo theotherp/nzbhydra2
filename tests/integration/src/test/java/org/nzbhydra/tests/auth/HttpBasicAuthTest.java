@@ -108,7 +108,6 @@ public class HttpBasicAuthTest {
             BaseConfig baseConfig = new BaseConfig();
             baseConfig.getMain().setUseCsrf(false);
             baseConfig.setAuth(getBasicAuthConfig());
-            BaseConfig.isProductive = false;
             return baseConfig;
         }
 

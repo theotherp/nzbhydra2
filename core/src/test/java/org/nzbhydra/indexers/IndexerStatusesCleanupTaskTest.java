@@ -22,6 +22,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.BaseConfigHandler;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.ConfigReaderWriter;
 import org.nzbhydra.config.indexer.IndexerConfig;
@@ -41,6 +42,8 @@ public class IndexerStatusesCleanupTaskTest {
     private BaseConfig baseConfig;
     @Mock
     private ConfigReaderWriter configReaderWriterMock;
+    @Mock
+    private BaseConfigHandler baseConfigHandler;
 
     IndexerConfig indexerConfigEnabled = new IndexerConfig();
     IndexerConfig indexerConfigDisabledSystem = new IndexerConfig();
@@ -55,7 +58,7 @@ public class IndexerStatusesCleanupTaskTest {
     @BeforeEach
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        testee = new IndexerStatusesCleanupTask(configProvider);
+        testee = new IndexerStatusesCleanupTask(configProvider, baseConfigHandler);
         indexerConfigEnabled.setState(IndexerConfig.State.ENABLED);
         indexerConfigUserDisabled.setState(IndexerConfig.State.DISABLED_USER);
         indexerConfigDisabledSystem.setState(IndexerConfig.State.DISABLED_SYSTEM);

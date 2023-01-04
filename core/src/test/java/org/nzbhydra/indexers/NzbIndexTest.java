@@ -30,7 +30,7 @@ public class NzbIndexTest {
     private CategoryProvider categoryProviderMock;
 
     @InjectMocks
-    private NzbIndex testee = new NzbIndex(null,null,null,null,null,null,null,null,categoryProviderMock,null,null,null,null);
+    private NzbIndex testee = new NzbIndex(null, null, null, null, null, null, null, null, categoryProviderMock, null, null, null, null, null);
 
     @BeforeEach
     public void setUp() throws Exception {

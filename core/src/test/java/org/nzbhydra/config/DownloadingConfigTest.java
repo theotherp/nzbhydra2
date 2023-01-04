@@ -2,8 +2,9 @@ package org.nzbhydra.config;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
-import org.nzbhydra.config.ValidatingConfig.ConfigValidationResult;
 import org.nzbhydra.config.downloading.DownloadingConfig;
+import org.nzbhydra.config.validation.ConfigValidationResult;
+import org.nzbhydra.config.validation.DownloadingConfigValidator;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -14,6 +15,7 @@ public class DownloadingConfigTest {
 
     @InjectMocks
     private DownloadingConfig testee = new DownloadingConfig();
+    private DownloadingConfigValidator downloadingConfigValidator = new DownloadingConfigValidator();
 
     @Test
     void shouldValidateTorrentsFolder() throws Exception {
@@ -21,7 +23,7 @@ public class DownloadingConfigTest {
         testee.setSaveTorrentsTo("relative");
         new File("relative").deleteOnExit();
 
-        ConfigValidationResult result = testee.validateConfig(baseConfig, testee, new BaseConfig());
+        ConfigValidationResult result = downloadingConfigValidator.validateConfig(baseConfig, new BaseConfig(), testee);
         assertThat(result.getErrorMessages().size()).isEqualTo(1);
         assertThat(result.getErrorMessages().get(0)).contains("not absolute");
 
@@ -30,13 +32,13 @@ public class DownloadingConfigTest {
         PrintWriter out = new PrintWriter("afile.txt");
         out.write("out");
         testee.setSaveTorrentsTo(afile.getAbsolutePath());
-        result = testee.validateConfig(baseConfig, testee, new BaseConfig());
+        result = downloadingConfigValidator.validateConfig(baseConfig, new BaseConfig(), testee);
         assertThat(result.getErrorMessages().size()).isEqualTo(1);
         assertThat(result.getErrorMessages().get(0)).contains("is a file");
 
         File folder = new File("");
         testee.setSaveTorrentsTo(folder.getAbsolutePath());
-        result = testee.validateConfig(baseConfig, testee, new BaseConfig());
+        result = downloadingConfigValidator.validateConfig(baseConfig, new BaseConfig(), testee);
         assertThat(result.getErrorMessages().size()).isEqualTo(0);
         afile.delete();
 

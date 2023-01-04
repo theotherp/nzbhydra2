@@ -19,27 +19,20 @@ package org.nzbhydra.config.auth;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.base.Joiner;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.javers.core.metamodel.annotation.DiffIgnore;
-import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.RestartRequired;
-import org.nzbhydra.config.ValidatingConfig;
 import org.nzbhydra.config.sensitive.SensitiveData;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Data
 @ConfigurationProperties(prefix = "auth")
 @EqualsAndHashCode
-public class AuthConfig extends ValidatingConfig<AuthConfig> {
+public class AuthConfig {
 
     @JsonFormat(shape = Shape.STRING)
     @RestartRequired
@@ -64,55 +57,5 @@ public class AuthConfig extends ValidatingConfig<AuthConfig> {
         return authType != AuthType.NONE;
     }
 
-    @Override
-    public ConfigValidationResult validateConfig(BaseConfig oldConfig, AuthConfig newConfig, BaseConfig newBaseConfig) {
-        List<String> errors = new ArrayList<>();
-        List<String> warnings = new ArrayList<>();
-        if (authType != AuthType.NONE && users.isEmpty()) {
-            errors.add("You've enabled security but not defined any users");
-        } else if (authType != AuthType.NONE && restrictAdmin && users.stream().noneMatch(UserAuthConfig::isMaySeeAdmin)) {
-            errors.add("You've restricted admin access but no user has admin rights");
-        } else if (authType != AuthType.NONE && !restrictSearch && !restrictAdmin) {
-            errors.add("You haven't enabled any access restrictions. Auth will not take any effect");
-        }
-        Set<String> usernames = new HashSet<>();
-        List<String> duplicateUsernames = new ArrayList<>();
-        for (UserAuthConfig user : users) {
-            if (usernames.contains(user.getUsername())) {
-                duplicateUsernames.add(user.getUsername());
-            }
-            usernames.add(user.getUsername());
-        }
-        if (!duplicateUsernames.isEmpty()) {
-            errors.add("The following user names are not unique: " + Joiner.on(", ").join(duplicateUsernames));
-        }
 
-        if (!authHeaderIpRanges.isEmpty()) {
-            authHeaderIpRanges.forEach(x -> {
-                Matcher matcher = Pattern.compile("^((?:[0-9]{1,3}\\.){3}[0-9]{1,3}(-(?:[0-9]{1,3}\\.){3}[0-9]{1,3})?,?)+$").matcher(x);
-                if (!matcher.matches()) {
-                    errors.add("IP range " + x + " is invalid");
-                }
-            });
-        }
-
-        return new ConfigValidationResult(errors.isEmpty(), isRestartNeeded(oldConfig.getAuth()), errors, warnings);
-    }
-
-    @Override
-    public AuthConfig prepareForSaving(BaseConfig oldBaseConfig) {
-        getUsers().forEach(userAuthConfig -> userAuthConfig.prepareForSaving(oldBaseConfig));
-        return this;
-    }
-
-    @Override
-    public AuthConfig updateAfterLoading() {
-        getUsers().forEach(ValidatingConfig::updateAfterLoading);
-        return this;
-    }
-
-    @Override
-    public AuthConfig initializeNewConfig() {
-        return this;
-    }
 }

@@ -99,6 +99,11 @@
             <artifactId>mapping</artifactId>
             <version>5.0.0-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>org.nzbhydra</groupId>
+            <artifactId>config</artifactId>
+            <version>5.0.0-SNAPSHOT</version>
+        </dependency>
 
         <!-- spring (boot) -->
         <dependency>
@@ -208,7 +213,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
-            <version>2.14.0</version>
+            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
@@ -338,7 +343,7 @@
         <dependency>
             <groupId>org.javers</groupId>
             <artifactId>javers-core</artifactId>
-            <version>6.8.1</version>
+            <version>${javers-core.version}</version>
         </dependency>
 
         <!--        todo spring only supports spring 2.x-->

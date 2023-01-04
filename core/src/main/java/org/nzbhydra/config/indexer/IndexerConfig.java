@@ -24,29 +24,23 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import lombok.Data;
-import org.apache.commons.lang3.StringUtils;
-import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.SearchSourceRestriction;
-import org.nzbhydra.config.ValidatingConfig;
 import org.nzbhydra.config.sensitive.SensitiveData;
 import org.nzbhydra.indexers.Indexer.BackendType;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mapping.newznab.json.JsonPubdateDeserializer;
 import org.nzbhydra.mapping.newznab.json.JsonPubdateSerializer;
 import org.nzbhydra.mediainfo.MediaIdType;
-import org.nzbhydra.searching.IndexerForSearchSelector;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.time.Instant;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.regex.Matcher;
 
 @Data
 @ConfigurationProperties(prefix = "indexers")
-public class IndexerConfig extends ValidatingConfig<IndexerConfig> {
+public class IndexerConfig {
 
     public enum State {
         ENABLED,
@@ -166,39 +160,6 @@ public class IndexerConfig extends ValidatingConfig<IndexerConfig> {
                 )));
     }
 
-    @Override
-    public ConfigValidationResult validateConfig(BaseConfig oldConfig, IndexerConfig newIndexerConfig, BaseConfig newBaseConfig) {
-        ConfigValidationResult validationResult = new ConfigValidationResult();
-
-        for (String schedule : getSchedule()) {
-            Matcher matcher = IndexerForSearchSelector.SCHEDULER_PATTERN.matcher(schedule);
-            if (!matcher.matches()) {
-                validationResult.getErrorMessages().add("Indexer " + getName() + " contains an invalid schedule: " + schedule);
-            }
-        }
-        if (newIndexerConfig.getHitLimit().isPresent() && newIndexerConfig.getHitLimit().get() <= 0) {
-            validationResult.getErrorMessages().add("Indexer " + getName() + " has a hit limit of 0 or lower which doesn't make sense: ");
-        }
-        if (newIndexerConfig.getDownloadLimit().isPresent() && newIndexerConfig.getDownloadLimit().get() <= 0) {
-            validationResult.getErrorMessages().add("Indexer " + getName() + " has a download limit of 0 or lower which doesn't make sense: ");
-        }
-        final String newExpirationDate = newIndexerConfig.getVipExpirationDate();
-        if (newExpirationDate != null && !newExpirationDate.equals("Lifetime")) {
-            try {
-                DateTimeFormatter.ofPattern("yyyy-MM-dd").parse(newExpirationDate);
-            } catch (Exception e) {
-                validationResult.getErrorMessages().add("Invalid expiry date for indexer " + newIndexerConfig.getName() + ". Either use 'Lifetime' or use the format `YYYY-MM-DD");
-            }
-        }
-
-        newIndexerConfig.getCustomParameters().forEach(x -> {
-            if (Strings.isNullOrEmpty(x) || StringUtils.countMatches(x, '=') > 1) {
-                validationResult.getErrorMessages().add("The custom paramater " + x + " is invalid. You must use the format name=value.");
-            }
-        });
-
-        return validationResult;
-    }
 
     @Override
     public boolean equals(Object o) {
@@ -218,25 +179,7 @@ public class IndexerConfig extends ValidatingConfig<IndexerConfig> {
         return Objects.hashCode(super.hashCode(), host, name);
     }
 
-    @Override
-    public IndexerConfig prepareForSaving(BaseConfig oldBaseConfig) {
-        if (state == State.ENABLED || state == State.DISABLED_USER) {
-            this.disabledUntil = null;
-            this.disabledLevel = 0;
-            this.lastError = null;
-        }
-        return this;
-    }
 
-    @Override
-    public IndexerConfig updateAfterLoading() {
-        return this;
-    }
-
-    @Override
-    public IndexerConfig initializeNewConfig() {
-        return this;
-    }
 
     public static boolean isIndexerEquals(IndexerConfig a, IndexerConfig b) {
         return java.util.Objects.equals(b.getHost(), a.getHost())

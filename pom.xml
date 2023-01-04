@@ -12,6 +12,7 @@
         <module>core</module>
         <module>tests</module>
         <module>releases</module>
+        <module>shared/config</module>
     </modules>
 
     <scm>
@@ -114,6 +115,7 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <uri-scheme-handler.version>2.0.0</uri-scheme-handler.version>
+        <javers-core.version>6.8.1</javers-core.version>
     </properties>
 
     <repositories>

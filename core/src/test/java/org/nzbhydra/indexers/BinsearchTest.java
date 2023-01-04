@@ -49,8 +49,8 @@ public class BinsearchTest {
     private QueryGenerator queryGeneratorMock;
 
     @InjectMocks
-    private Binsearch testee = new Binsearch(configProviderMock,null,null,null,null,null,
-        null,null,categoryProviderMock,null,null,queryGeneratorMock,null);
+    private Binsearch testee = new Binsearch(configProviderMock, null, null, null, null, null,
+        null, null, categoryProviderMock, null, null, queryGeneratorMock, null, null);
 
     @BeforeEach
     public void setUp() throws Exception {

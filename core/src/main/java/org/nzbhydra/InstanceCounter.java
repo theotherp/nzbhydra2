@@ -17,6 +17,7 @@
 package org.nzbhydra;
 
 import jakarta.annotation.PostConstruct;
+import org.nzbhydra.config.BaseConfigHandler;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.webaccess.HydraOkHttp3ClientHttpRequestFactory;
 import org.slf4j.Logger;
@@ -42,6 +43,8 @@ public class InstanceCounter {
 
     @Autowired
     private ConfigProvider configProvider;
+    @Autowired
+    private BaseConfigHandler baseConfigHandler;
 
     @PostConstruct
     public void downloadInstanceCounter() {
@@ -51,7 +54,7 @@ public class InstanceCounter {
                 if (response.getStatusCode().is2xxSuccessful()) {
                     logger.info("Instance counted");
                     configProvider.getBaseConfig().getMain().setInstanceCounterDownloaded(true);
-                    configProvider.getBaseConfig().save(false);
+                    baseConfigHandler.save(false);
                 } else {
                     logger.error("Unable to count instance. Response: " + response.getStatusText());
                 }

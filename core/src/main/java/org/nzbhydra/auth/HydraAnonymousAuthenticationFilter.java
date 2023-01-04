@@ -5,8 +5,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
-import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigChangedEvent;
+import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.auth.AuthConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,9 +43,9 @@ public class HydraAnonymousAuthenticationFilter extends AnonymousAuthenticationF
     //Disabled by default because just by existing it will be used for static resource accesses where spring security is disabled
     private boolean enabled = false;
 
-    public HydraAnonymousAuthenticationFilter(@Autowired BaseConfig baseConfig) {
+    public HydraAnonymousAuthenticationFilter(@Autowired ConfigProvider configProvider) {
         super("anonymous", "anonymousUser", AuthorityUtils.createAuthorityList("ROLE_ANONYMOUS"));
-        updateAuthorities(baseConfig.getAuth());
+        updateAuthorities(configProvider.getBaseConfig().getAuth());
     }
 
     public void enable() {

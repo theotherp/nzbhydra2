@@ -266,7 +266,7 @@ public class SearchResultAcceptorTest {
 
     @Test
     void shouldCheckForCategoryDisabledForIndexer() {
-        Indexer indexer = new Newznab(null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+        Indexer indexer = new Newznab(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
         indexer.initialize(indexerConfig, new IndexerEntity());
         item.setIndexer(indexer);
 

@@ -11,17 +11,11 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
 import org.nzbhydra.config.category.Category;
-import org.nzbhydra.config.indexer.IndexerConfig;
-import org.reflections.Reflections;
+import org.nzbhydra.config.validation.BaseConfigValidator;
+import org.nzbhydra.config.validation.ConfigValidationTools;
 
-import java.beans.BeanInfo;
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -32,8 +26,6 @@ import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 public class BaseConfigTest {
 
@@ -49,6 +41,7 @@ public class BaseConfigTest {
 
     @InjectMocks
     private BaseConfig testee = new BaseConfig();
+    private BaseConfigValidator baseConfigValidator = new BaseConfigValidator();
 
 
     @Test
@@ -57,14 +50,14 @@ public class BaseConfigTest {
         mainConfig1.setPort(123);
         MainConfig mainConfig2 = new MainConfig();
         mainConfig2.setPort(234);
-        assertTrue(mainConfig1.isRestartNeeded(mainConfig2));
+        assertTrue(ConfigValidationTools.isRestartNeeded(mainConfig1, mainConfig2));
 
         mainConfig2.setPort(123);
-        assertThat(mainConfig1.isRestartNeeded(mainConfig2)).isFalse();
+        assertThat(ConfigValidationTools.isRestartNeeded(mainConfig1, mainConfig2)).isFalse();
 
         mainConfig1.setSsl(true);
         mainConfig2.setSsl(false);
-        assertTrue(mainConfig1.isRestartNeeded(mainConfig2));
+        assertTrue(ConfigValidationTools.isRestartNeeded(mainConfig1, mainConfig2));
     }
 
     @Test
@@ -94,73 +87,8 @@ public class BaseConfigTest {
         compare(mapFromApplicationYml, mapFromBaseConfig);
     }
 
-    @Test
-    void shouldValidateIndexers() {
-        IndexerConfig indexerConfigMock = mock(IndexerConfig.class);
-        when(indexerConfigMock.validateConfig(any(), any(), any())).thenReturn(new ValidatingConfig.ConfigValidationResult(true, false, new ArrayList<String>(), new ArrayList<String>()));
-        testee.getIndexers().add(indexerConfigMock);
-        testee.validateConfig(new BaseConfig(), testee, new BaseConfig());
-        verify(indexerConfigMock).validateConfig(any(), any(), any());
-    }
 
-    @Test
-    void shouldRecognizeDuplicateIndexerNames() {
-        IndexerConfig indexerConfigMock = mock(IndexerConfig.class);
-        when(indexerConfigMock.getName()).thenReturn("name");
-        IndexerConfig indexerConfigMock2 = mock(IndexerConfig.class);
-        when(indexerConfigMock2.getName()).thenReturn("name");
-        when(indexerConfigMock.validateConfig(any(), any(), any())).thenReturn(new ValidatingConfig.ConfigValidationResult(true, false, new ArrayList<String>(), new ArrayList<String>()));
-        when(indexerConfigMock2.validateConfig(any(), any(), any())).thenReturn(new ValidatingConfig.ConfigValidationResult(true, false, new ArrayList<String>(), new ArrayList<String>()));
-        testee.getIndexers().add(indexerConfigMock);
-        testee.getIndexers().add(indexerConfigMock2);
-        ValidatingConfig.ConfigValidationResult result = testee.validateConfig(new BaseConfig(), testee, new BaseConfig());
-        assertThat(result.getErrorMessages()).hasSize(3);
-        assertTrue(result.getErrorMessages().get(2).contains("Duplicate"));
-    }
 
-    @Test
-    void shouldInitializeAllListsAsEmptyInBaseConfigYaml() throws Exception {
-        BaseConfig baseConfig = new ConfigReaderWriter().originalConfig();
-        validateListsNotNull(baseConfig);
-    }
-
-    @Test
-    void shouldInitializeAllListsAsEmptyInClasses() throws Exception {
-        Reflections reflections = new Reflections("org.nzbhydra");
-        Set<Class<? extends ValidatingConfig>> classes = reflections.getSubTypesOf(ValidatingConfig.class);
-        for (Class<? extends ValidatingConfig> configClass : classes) {
-            boolean constructorFound = false;
-            for (Constructor<?> constructor : configClass.getDeclaredConstructors()) {
-                if (constructor.getParameterCount() == 0) {
-                    ValidatingConfig config = (ValidatingConfig) constructor.newInstance();
-                    validateListsNotNull(config);
-                    constructorFound = true;
-                    break;
-                }
-            }
-            assertTrue(constructorFound, "No default constructor found for class " + configClass.getName());
-        }
-    }
-
-    protected void validateListsNotNull(ValidatingConfig config) throws IntrospectionException, IllegalAccessException, InvocationTargetException {
-        BeanInfo beanInfo = Introspector.getBeanInfo(config.getClass());
-        for (PropertyDescriptor pd : beanInfo.getPropertyDescriptors()) {
-            if (pd.getReadMethod().getReturnType().isAssignableFrom(List.class)) {
-                List list = (List) pd.getReadMethod().invoke(config);
-                assertNotNull(list, "Property of " + config.getClass().getName() + "#" + pd.getReadMethod().getName() + " should be initialized as empty list");
-                if (!list.isEmpty()) {
-                    if (list.get(0).getClass().getSuperclass() == ValidatingConfig.class) {
-                        for (Object o : list) {
-                            validateListsNotNull((ValidatingConfig) o);
-                        }
-                    }
-                }
-            } else if (pd.getReadMethod().getReturnType().getSuperclass() == ValidatingConfig.class) {
-                ValidatingConfig subConfig = (ValidatingConfig) pd.getReadMethod().invoke(config);
-                validateListsNotNull(subConfig);
-            }
-        }
-    }
 
     private void compare(Object left, Object right) {
         if (left instanceof HashMap) {

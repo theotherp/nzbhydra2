@@ -1,3 +1,19 @@
+/*
+ *  (C) Copyright 2023 TheOtherP (theotherp@posteo.net)
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
 package org.nzbhydra.config;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -6,26 +22,19 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
 import lombok.Data;
 import org.javers.core.metamodel.annotation.DiffIgnore;
-import org.nzbhydra.NzbHydra;
 import org.nzbhydra.config.downloading.ProxyType;
 import org.nzbhydra.config.sensitive.SensitiveData;
-import org.nzbhydra.debuginfos.DebugInfosProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import java.io.File;
-import java.io.IOException;
-import java.math.BigInteger;
-import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 
 @ConfigurationProperties(prefix = "main")
 @Data
-public class MainConfig extends ValidatingConfig<MainConfig> {
+public class MainConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(MainConfig.class);
 
@@ -142,102 +151,5 @@ public class MainConfig extends ValidatingConfig<MainConfig> {
         return Optional.ofNullable(backupEveryXDays);
     }
 
-    @Override
-    public ConfigValidationResult validateConfig(BaseConfig oldConfig, MainConfig newMainConfig, BaseConfig newBaseConfig) {
-        ConfigValidationResult result = new ConfigValidationResult();
-        MainConfig oldMain = oldConfig.getMain();
-        boolean portChanged = oldMain.getPort() != port;
-        boolean urlBaseChanged = oldMain.getUrlBase().isPresent() && !oldMain.getUrlBase().get().equals(urlBase);
-        if (urlBase == null && oldMain.getUrlBase().isPresent() && oldMain.getUrlBase().get().equals("/")) {
-            urlBaseChanged = false;
-        }
-        boolean sslChanged = oldMain.isSsl() != isSsl();
-        if (portChanged || urlBaseChanged || sslChanged && !startupBrowser) {
-            result.getWarningMessages().add("You've made changes that affect Hydra's URL and require a restart. Hydra will try and reload using the new URL when it's back.");
-        }
-        if (DebugInfosProvider.isRunInDocker() && !"0.0.0.0".equals(host)) {
-            result.getWarningMessages().add("You've changed the host but NZBHydra seems to be run in docker. It's recommended to use the host '0.0.0.0'.");
-        }
-
-        if (!"0.0.0.0".equals(host)) {
-            try {
-                boolean reachable = InetAddress.getByName(host).isReachable(1);
-                if (!reachable) {
-                    result.getWarningMessages().add("The configured host address cannot be reached. Are you sure it is correct?");
-                }
-            } catch (IOException e) {
-                //Ignore, user will have to know what he does
-            }
-        }
-        if (oldConfig.getMain().getXmx() < 128) {
-            result.getErrorMessages().add("The JVM memory must be set to at least 128");
-        }
-
-        MainConfig newMain = newBaseConfig.getMain();
-        if (newMain.getKeepHistoryForWeeks() != null && newMain.getKeepHistoryForWeeks() <= 0) {
-            result.getErrorMessages().add("Please either delete the value for \"Keep history for\" or set it to a positive value.");
-        }
-        if (newMain.getKeepStatsForWeeks() != null && newMain.getKeepStatsForWeeks() <= 0) {
-            result.getErrorMessages().add("Please either delete the value for \"Keep stats for\" or set it to a positive value.");
-        }
-        if (newMain.getKeepStatsForWeeks() != null && newMain.getKeepHistoryForWeeks() != null && newMain.getKeepStatsForWeeks() > newMain.getKeepHistoryForWeeks()) {
-            result.getErrorMessages().add("Please set the time to keep stats to a value not higher than the time to keep history.");
-        }
-
-        if (newMain.getBackupFolder() != null) {
-            final File backupFolderFile;
-            if (backupFolder.contains(File.separator)) {
-                backupFolderFile = new File(backupFolder);
-            } else {
-                backupFolderFile = new File(NzbHydra.getDataFolder(), backupFolder);
-            }
-            if (!backupFolderFile.exists()) {
-                final boolean created = backupFolderFile.mkdirs();
-                if (!created) {
-                    result.getErrorMessages().add("Backup folder " + backupFolder + " does not exist and could not be created");
-                }
-            }
-        }
-
-
-        ConfigValidationResult validationResult = getLogging().validateConfig(oldConfig, getLogging(), newBaseConfig);
-        result.getWarningMessages().addAll(validationResult.getWarningMessages());
-        result.getErrorMessages().addAll(validationResult.getErrorMessages());
-
-        oldMain = oldMain.prepareForSaving(oldConfig);
-        result.setRestartNeeded(validationResult.isRestartNeeded() || isRestartNeeded(oldMain));
-        result.setOk(validationResult.isOk() && result.isOk());
-
-        return result;
-    }
-
-    @Override
-    public MainConfig prepareForSaving(BaseConfig oldBaseConfig) {
-        if (!Strings.isNullOrEmpty(urlBase) && (!urlBase.startsWith("/") || urlBase.endsWith("/") || "/".equals(urlBase))) {
-            if (!urlBase.startsWith("/")) {
-                urlBase = "/" + urlBase;
-            }
-            if (urlBase.endsWith("/")) {
-                urlBase = urlBase.substring(0, urlBase.length() - 1);
-            }
-            if ("/".equals(urlBase) || "".equals(urlBase)) {
-                urlBase = "/";
-            }
-            setUrlBase(urlBase);
-        }
-        return this;
-    }
-
-    @Override
-    public MainConfig updateAfterLoading() {
-        return this;
-    }
-
-    @Override
-    public MainConfig initializeNewConfig() {
-        Random random = new Random();
-        setApiKey(new BigInteger(130, random).toString(32).toUpperCase());
-        return this;
-    }
 
 }

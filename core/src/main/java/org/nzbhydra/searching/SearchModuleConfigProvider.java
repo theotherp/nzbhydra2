@@ -1,7 +1,7 @@
 package org.nzbhydra.searching;
 
-import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigChangedEvent;
+import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,11 +25,10 @@ public class SearchModuleConfigProvider implements InitializingBean {
     @Autowired
     private SearchModuleProvider searchModuleProvider;
     @Autowired
-    private BaseConfig baseConfig;
+    private ConfigProvider configProvider;
 
     @EventListener
     public void handleNewConfig(ConfigChangedEvent configChangedEvent) {
-        baseConfig = configChangedEvent.getNewConfig();
         afterPropertiesSet();
     }
 
@@ -44,7 +43,7 @@ public class SearchModuleConfigProvider implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() {
-        indexers = baseConfig.getIndexers();
+        indexers = configProvider.getBaseConfig().getIndexers();
         searchModuleProvider.loadIndexers(indexers);
     }
 }

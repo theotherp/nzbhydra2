@@ -1,17 +1,29 @@
+/*
+ *  (C) Copyright 2023 TheOtherP (theotherp@posteo.net)
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
 package org.nzbhydra.config;
 
 import com.google.common.base.Strings;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import org.nzbhydra.config.validation.ConfigValidationResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
@@ -28,24 +40,6 @@ public abstract class ValidatingConfig<T> {
      * @return a list of error messages or an empty list when everything is fine
      */
     public abstract ConfigValidationResult validateConfig(BaseConfig oldConfig, T newConfig, BaseConfig newBaseConfig);
-
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class ConfigValidationResult {
-        private boolean ok = true;
-        private boolean restartNeeded;
-        private List<String> errorMessages = new ArrayList<>();
-        private List<String> warningMessages = new ArrayList<>();
-        private BaseConfig newConfig;
-
-        public ConfigValidationResult(boolean ok, boolean restartNeeded, List<String> errorMessages, List<String> warningMessages) {
-            this.ok = ok;
-            this.restartNeeded = restartNeeded;
-            this.errorMessages.addAll(new HashSet<>(errorMessages));
-            this.warningMessages.addAll(new HashSet<>(warningMessages));
-        }
-    }
 
     protected void checkRegex(List<String> errorMessages, String regex, String errorMessage) {
         if (!Strings.isNullOrEmpty(regex)) {
@@ -101,8 +95,6 @@ public abstract class ValidatingConfig<T> {
      * Called for a new config to initialize itself
      */
     public abstract T initializeNewConfig();
-
-
 
 
 }

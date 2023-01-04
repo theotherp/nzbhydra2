@@ -8,6 +8,7 @@ import joptsimple.OptionException;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.BaseConfigHandler;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.ConfigReaderWriter;
 import org.nzbhydra.config.migration.ConfigMigration;
@@ -84,6 +85,8 @@ public class NzbHydra {
     private GenericStorage genericStorage;
     @Autowired
     private ApplicationEventPublisher applicationEventPublisher;
+    @Autowired
+    private BaseConfigHandler baseConfigHandler;
 
 
     public static void main(String[] args) throws Exception {
@@ -311,7 +314,7 @@ public class NzbHydra {
             if (genericStorage.get("FirstStart", LocalDateTime.class).isEmpty()) {
                 logger.info("First start of NZBHydra detected");
                 genericStorage.save("FirstStart", LocalDateTime.now());
-                configProvider.getBaseConfig().save(false);
+                baseConfigHandler.save(false);
             }
 
             if (DebugInfosProvider.isRunInDocker()) {

@@ -7,25 +7,20 @@ import com.google.common.base.Strings;
 import lombok.Data;
 import org.nzbhydra.indexers.QueryGenerator;
 import org.nzbhydra.searching.CustomQueryAndTitleMapping;
-import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 
 @SuppressWarnings("unchecked")
 @Data
 @ConfigurationProperties(prefix = "searching")
-public class SearchingConfig extends ValidatingConfig<SearchingConfig> {
+public class SearchingConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(SearchingConfig.class);
 
@@ -100,69 +95,5 @@ public class SearchingConfig extends ValidatingConfig<SearchingConfig> {
         return Optional.ofNullable(Strings.emptyToNull(language));
     }
 
-
-    @Override
-    public ConfigValidationResult validateConfig(BaseConfig oldConfig, SearchingConfig newConfig, BaseConfig newBaseConfig) {
-        List<String> errors = new ArrayList<>();
-        List<String> warnings = new ArrayList<>();
-        checkRegex(errors, requiredRegex, "The required regex in \"Searching\" is invalid");
-        checkRegex(errors, forbiddenRegex, "The forbidden in \"Searching\" is invalid");
-
-        if (applyRestrictions == SearchSourceRestriction.NONE) {
-            if (!getRequiredWords().isEmpty() || !getForbiddenWords().isEmpty()) {
-                warnings.add("You selected not to apply any word restrictions in \"Searching\" but supplied forbidden or required words there");
-            }
-            if (getRequiredRegex().isPresent() || getForbiddenRegex().isPresent()) {
-                warnings.add("You selected not to apply any word restrictions in \"Searching\" but supplied a forbidden or required regex there");
-            }
-        }
-        final CustomQueryAndTitleMapping customQueryAndTitleMapping = new CustomQueryAndTitleMapping(newBaseConfig);
-        final SearchRequest searchRequest = new SearchRequest();
-        searchRequest.setTitle("test title");
-        searchRequest.setQuery("test query");
-        for (CustomQueryAndTitleMapping.Mapping customMapping : newConfig.getCustomMappings()) {
-            try {
-                customQueryAndTitleMapping.mapSearchRequest(searchRequest, Collections.singletonList(customMapping));
-            } catch (Exception e) {
-                errors.add(String.format("Unable to process mapping %s:}\n%s", customMapping.toString(), e.getMessage()));
-            }
-            if (customMapping.getFrom().contains("{episode:")) {
-                errors.add("The group 'episode' is not allowed in custom mapping input patterns.");
-            }
-            if (customMapping.getFrom().contains("{season:")) {
-                errors.add("The group 'season' is not allowed in custom mapping input patterns.");
-            }
-        }
-        final List<String> emptyTrailing = (newConfig.getRemoveTrailing().stream().filter(Strings::isNullOrEmpty)).collect(Collectors.toList());
-        if (!emptyTrailing.isEmpty()) {
-            errors.add("Trailing values to remove contains empty values");
-        }
-
-        return new ConfigValidationResult(errors.isEmpty(), false, errors, warnings);
-    }
-
-    @Override
-    public SearchingConfig prepareForSaving(BaseConfig oldBaseConfig) {
-        final Set<String> customQuickfilterNames = customQuickFilterButtons.stream().map(x -> x.split("=")[0]).collect(Collectors.toSet());
-        for (Iterator<String> iterator = getPreselectQuickFilterButtons().iterator(); iterator.hasNext(); ) {
-            String preselectQuickFilterButton = iterator.next();
-            final String[] split = preselectQuickFilterButton.split("\\|");
-            if ("custom".equals(split[0]) && !customQuickfilterNames.contains(split[0])) {
-                logger.info("Custom quickfilter {} doesn't exist anymore, removing it from list of filters to preselect.", preselectQuickFilterButton);
-                iterator.remove();
-            }
-        }
-        return this;
-    }
-
-    @Override
-    public SearchingConfig updateAfterLoading() {
-        return this;
-    }
-
-    @Override
-    public SearchingConfig initializeNewConfig() {
-        return this;
-    }
 
 }

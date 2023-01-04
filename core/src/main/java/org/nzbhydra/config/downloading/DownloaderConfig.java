@@ -18,20 +18,14 @@ package org.nzbhydra.config.downloading;
 
 import com.google.common.base.Strings;
 import lombok.Data;
-import org.nzbhydra.config.BaseConfig;
-import org.nzbhydra.config.ValidatingConfig;
-import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.sensitive.SensitiveData;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
 @Data
 @ConfigurationProperties(prefix = "downloaders")
-public class DownloaderConfig extends ValidatingConfig<DownloaderConfig> {
+public class DownloaderConfig {
 
     @SensitiveData
     private String apiKey;
@@ -62,37 +56,9 @@ public class DownloaderConfig extends ValidatingConfig<DownloaderConfig> {
         return Optional.ofNullable(Strings.emptyToNull(password));
     }
 
-    @Override
-    public ConfigValidationResult validateConfig(BaseConfig oldConfig, DownloaderConfig newDownloaderConfig, BaseConfig newBaseConfig) {
-        List<String> warnings = new ArrayList<>();
 
-        if (isEnabledWithoutSendLink(newBaseConfig, "nzbs.in", newDownloaderConfig)) {
-            warnings.add("nzbs.in forbids NZBHydra to download NZBs directly. The NZB adding type \"Send link\" will automatically used for this indexer.");
-        }
-        if (isEnabledWithoutSendLink(newBaseConfig, "omgwtfnzbs", newDownloaderConfig)) {
-            warnings.add("omgwtfnzbs forbids NZBHydra to download NZBs directly. The NZB adding type \"Send link\" will automatically used for this indexer.");
-        }
-        return new ConfigValidationResult(true, false, Collections.emptyList(), warnings);
-    }
 
-    private static boolean isEnabledWithoutSendLink(BaseConfig newBaseConfig, String hostContains, DownloaderConfig newDownloaderConfig) {
-        return newBaseConfig.getIndexers().stream().anyMatch(x -> x.getHost().toLowerCase().contains(hostContains) && x.getState() == IndexerConfig.State.ENABLED) && newDownloaderConfig.getNzbAddingType() != NzbAddingType.SEND_LINK;
-    }
 
-    @Override
-    public DownloaderConfig prepareForSaving(BaseConfig oldBaseConfig) {
-        return this;
-    }
-
-    @Override
-    public DownloaderConfig updateAfterLoading() {
-        return this;
-    }
-
-    @Override
-    public DownloaderConfig initializeNewConfig() {
-        return this;
-    }
 
 
 }

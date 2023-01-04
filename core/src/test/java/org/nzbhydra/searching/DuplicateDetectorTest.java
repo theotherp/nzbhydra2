@@ -151,7 +151,7 @@ public class DuplicateDetectorTest {
         item.setGroup(group);
         item.setSize(10000L);
         item.setLink("" + new Random().nextInt());
-        Newznab indexer = new Newznab(null,null,null,null,null,null,null,null,null,null,null,null,null,null);
+        Newznab indexer = new Newznab(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
         IndexerConfig config = new IndexerConfig();
         config.setName(indexerName);
         IndexerEntity indexerEntity = new IndexerEntity();

@@ -12,6 +12,7 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.BaseConfigHandler;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.SearchingConfig;
@@ -106,6 +107,8 @@ public class NewznabTest {
     @Mock
     BaseConfig baseConfigMock;
     @Mock
+    private BaseConfigHandler baseConfigHandler;
+    @Mock
     SearchingConfig searchingConfigMock;
     @Mock
     private QueryGenerator queryGeneratorMock;
@@ -116,8 +119,8 @@ public class NewznabTest {
     private ConfigProvider configProviderMock;
 
     @InjectMocks
-    private Newznab testee = new Newznab(configProviderMock,indexerRepositoryMock,searchResultRepositoryMock, indexerApiAccessRepositoryMock, shortRepositoryMock, null,indexerWebAccessMock,resultAcceptorMock,
-        categoryProviderMock,infoProviderMock,null,queryGeneratorMock,null,unmarshallerMock);
+    private Newznab testee = new Newznab(configProviderMock, indexerRepositoryMock, searchResultRepositoryMock, indexerApiAccessRepositoryMock, shortRepositoryMock, null, indexerWebAccessMock, resultAcceptorMock,
+        categoryProviderMock, infoProviderMock, null, queryGeneratorMock, null, unmarshallerMock, null);
 
 
     @BeforeEach

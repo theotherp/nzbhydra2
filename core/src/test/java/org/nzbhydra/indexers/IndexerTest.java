@@ -13,6 +13,7 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.BaseConfigHandler;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.indexer.IndexerConfig;
@@ -96,6 +97,8 @@ public class IndexerTest {
     private InfoProvider infoProviderMock;
     @Mock
     private QueryGenerator queryGeneratorMock;
+    @Mock
+    private BaseConfigHandler baseConfigHandler;
 
     private List<SearchResultItem> searchResultItemsToReturn = Collections.emptyList();
 

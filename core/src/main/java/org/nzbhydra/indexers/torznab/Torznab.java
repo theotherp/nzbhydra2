@@ -19,10 +19,10 @@ package org.nzbhydra.indexers.torznab;
 import lombok.Getter;
 import lombok.Setter;
 import org.nzbhydra.NzbHydraException;
+import org.nzbhydra.config.BaseConfigHandler;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
-import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.indexers.IndexerApiAccessEntityShortRepository;
 import org.nzbhydra.indexers.IndexerApiAccessRepository;
 import org.nzbhydra.indexers.IndexerHandlingStrategy;
@@ -51,7 +51,6 @@ import org.nzbhydra.searching.dtoseventsenums.SearchResultItem.HasNfo;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.BeanFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.annotation.Order;
 import org.springframework.oxm.Unmarshaller;
@@ -70,8 +69,8 @@ public class Torznab extends Newznab {
 
     private static final Logger logger = LoggerFactory.getLogger(Torznab.class);
 
-    public Torznab(ConfigProvider configProvider, IndexerRepository indexerRepository, SearchResultRepository searchResultRepository, IndexerApiAccessRepository indexerApiAccessRepository, IndexerApiAccessEntityShortRepository indexerApiAccessShortRepository, IndexerLimitRepository indexerStatusRepository, IndexerWebAccess indexerWebAccess, SearchResultAcceptor resultAcceptor, CategoryProvider categoryProvider, InfoProvider infoProvider, ApplicationEventPublisher eventPublisher, QueryGenerator queryGenerator, CustomQueryAndTitleMapping titleMapping, Unmarshaller unmarshaller) {
-        super(configProvider, indexerRepository, searchResultRepository, indexerApiAccessRepository, indexerApiAccessShortRepository, indexerStatusRepository, indexerWebAccess, resultAcceptor, categoryProvider, infoProvider, eventPublisher, queryGenerator, titleMapping, unmarshaller);
+    public Torznab(ConfigProvider configProvider, IndexerRepository indexerRepository, SearchResultRepository searchResultRepository, IndexerApiAccessRepository indexerApiAccessRepository, IndexerApiAccessEntityShortRepository indexerApiAccessShortRepository, IndexerLimitRepository indexerStatusRepository, IndexerWebAccess indexerWebAccess, SearchResultAcceptor resultAcceptor, CategoryProvider categoryProvider, InfoProvider infoProvider, ApplicationEventPublisher eventPublisher, QueryGenerator queryGenerator, CustomQueryAndTitleMapping titleMapping, Unmarshaller unmarshaller, BaseConfigHandler baseConfigHandler) {
+        super(configProvider, indexerRepository, searchResultRepository, indexerApiAccessRepository, indexerApiAccessShortRepository, indexerStatusRepository, indexerWebAccess, resultAcceptor, categoryProvider, infoProvider, eventPublisher, queryGenerator, titleMapping, unmarshaller, baseConfigHandler);
     }
 
     protected SearchResultItem createSearchResultItem(NewznabXmlItem item) throws NzbHydraException {
