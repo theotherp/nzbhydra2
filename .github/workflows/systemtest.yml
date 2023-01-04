@@ -63,6 +63,7 @@ jobs:
                 with:
                     name: hydradocker
                     path: hydradocker.tar
+                    retention-days: 1
     buildMockserver:
         runs-on: ubuntu-latest
         steps:
@@ -87,6 +88,7 @@ jobs:
                 with:
                     name: mockserver
                     path: mockserver.tar
+                    retention-days: 1
 
     runTests:
         needs: [ prepareContainer, buildMockserver ]
@@ -113,7 +115,7 @@ jobs:
                 run: docker load --input hydradocker.tar
 
             -   name: "Run hydradocker"
-                run: docker run hydradocker -p 5076:5076 -d
+                run: docker run -p 5076:5076 hydradocker  -d
 
 
             -   uses: actions/download-artifact@v3
@@ -126,7 +128,7 @@ jobs:
                 run: docker load --input mockserver.tar
 
             -   name: "Run mockserver"
-                run: docker run mockserver -p 5080:5080 -d
+                run: docker run -p 5080:5080 mockserver -d
 
 
             -   name: Set up JDK 17
