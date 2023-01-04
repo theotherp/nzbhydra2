@@ -26,7 +26,7 @@ import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.mediainfo.MediaIdType;
 import org.nzbhydra.searching.dtoseventsenums.DownloadType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
-import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
+import org.nzbhydra.searching.searchrequests.SearchSource;
 import org.springframework.context.ApplicationEventPublisher;
 
 import java.sql.Timestamp;

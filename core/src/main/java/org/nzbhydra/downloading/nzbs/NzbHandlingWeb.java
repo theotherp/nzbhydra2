@@ -25,7 +25,7 @@ import org.nzbhydra.downloading.FileZipResponse;
 import org.nzbhydra.downloading.InvalidSearchResultIdException;
 import org.nzbhydra.indexers.NfoResult;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
-import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
+import org.nzbhydra.searching.searchrequests.SearchSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

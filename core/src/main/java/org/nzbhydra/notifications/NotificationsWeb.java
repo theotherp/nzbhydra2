@@ -18,6 +18,7 @@ package org.nzbhydra.notifications;
 
 import com.google.common.collect.Sets;
 import jakarta.annotation.PreDestroy;
+import org.nzbhydra.config.notification.NotificationEventType;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

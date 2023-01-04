@@ -1,5 +1,5 @@
 /*
- *  (C) Copyright 2017 TheOtherP (theotherp@posteo.net)
+ *  (C) Copyright 2023 TheOtherP (theotherp@posteo.net)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,20 +14,16 @@
  *  limitations under the License.
  */
 
-package org.nzbhydra.searching.dtoseventsenums;
+package org.nzbhydra.config.notification;
 
-import org.nzbhydra.mapping.newznab.ActionAttribute;
+public enum NotificationEventType {
 
-public enum SearchType {
-
-    BOOK,
-    MOVIE,
-    MUSIC,
-    SEARCH,
-    TVSEARCH;
-
-    public boolean matches(ActionAttribute attribute) {
-        return attribute.name().toLowerCase().equals(this.name().toLowerCase());
-    }
+    VIP_RENEWAL_REQUIRED,
+    INDEXER_DISABLED,
+    INDEXER_REENABLED,
+    UPDATE_INSTALLED,
+    AUTH_FAILURE,
+    RESULT_DOWNLOAD,
+    RESULT_DOWNLOAD_COMPLETION
 
 }

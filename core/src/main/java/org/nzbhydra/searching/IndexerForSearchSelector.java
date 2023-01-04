@@ -13,6 +13,7 @@ import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.category.Category.Subtype;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
+import org.nzbhydra.config.searching.SearchType;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.indexers.IndexerApiAccessType;
 import org.nzbhydra.indexers.status.IndexerLimit;
@@ -22,9 +23,8 @@ import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.searching.dtoseventsenums.DownloadType;
 import org.nzbhydra.searching.dtoseventsenums.IndexerSelectionEvent;
 import org.nzbhydra.searching.dtoseventsenums.SearchMessageEvent;
-import org.nzbhydra.searching.dtoseventsenums.SearchType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
-import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
+import org.nzbhydra.searching.searchrequests.SearchSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -162,7 +162,7 @@ public class IndexerForSearchSelector {
         if (needToSearchById) {
             boolean canUseAnyProvidedId = !Collections.disjoint(searchRequest.getIdentifiers().keySet(), indexer.getConfig().getSupportedSearchIds());
             boolean cannotSearchProvidedOrConvertableId = !canUseAnyProvidedId && !infoProvider.canConvertAny(searchRequest.getIdentifiers().keySet(), Sets.newHashSet(indexer.getConfig().getSupportedSearchIds()));
-            boolean queryGenerationEnabled = configProvider.getBaseConfig().getSearching().getGenerateQueries().meets(searchRequest);
+            boolean queryGenerationEnabled = searchRequest.meets(configProvider.getBaseConfig().getSearching().getGenerateQueries());
             if (cannotSearchProvidedOrConvertableId && !queryGenerationEnabled) {
                 String message = String.format("Not using %s because the search did not provide any ID that the indexer can handle and query generation is disabled", indexer.getName());
                 return handleIndexerNotSelected(indexer, message, "No usable ID");
@@ -174,7 +174,7 @@ public class IndexerForSearchSelector {
     protected boolean checkSearchType(Indexer indexer) {
         boolean audioOrBookSearch = searchRequest.getSearchType() == SearchType.BOOK || searchRequest.getSearchType() == SearchType.MUSIC;
         if (audioOrBookSearch) {
-            boolean queryGenerationEnabled = configProvider.getBaseConfig().getSearching().getGenerateQueries().meets(searchRequest);
+            boolean queryGenerationEnabled = searchRequest.meets(configProvider.getBaseConfig().getSearching().getGenerateQueries());
             boolean indexerSupportsType = indexer.getConfig().getSupportedSearchTypes().stream().anyMatch(x -> searchRequest.getSearchType().matches(x));
             if (!indexerSupportsType && !queryGenerationEnabled) {
                 String message = String.format("Not using %s because the search uses type %s which the indexer can't handle and query generation is disabled", searchRequest.getSearchType(), indexer.getName());
@@ -456,7 +456,7 @@ public class IndexerForSearchSelector {
     }
 
     protected boolean checkSearchSource(Indexer indexer) {
-        boolean wrongSearchSource = !indexer.getConfig().getEnabledForSearchSource().meets(searchRequest);
+        boolean wrongSearchSource = !searchRequest.meets(indexer.getConfig().getEnabledForSearchSource());
         if (wrongSearchSource) {
             String message = String.format("Not using %s because the search source is %s but the indexer is only enabled for %s searches", indexer.getName(), searchRequest.getSource(), indexer.getConfig().getEnabledForSearchSource());
             return handleIndexerNotSelected(indexer, message, "Not enabled for this search context");

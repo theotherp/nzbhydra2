@@ -22,7 +22,7 @@ import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.downloading.DownloadResult;
 import org.nzbhydra.downloading.InvalidSearchResultIdException;
-import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
+import org.nzbhydra.searching.searchrequests.SearchSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

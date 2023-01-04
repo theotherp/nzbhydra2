@@ -11,7 +11,7 @@ import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.NotificationConfigEntry;
 import org.nzbhydra.config.auth.UserAuthConfig;
 import org.nzbhydra.config.indexer.IndexerConfig;
-import org.nzbhydra.notifications.NotificationEventType;
+import org.nzbhydra.config.notification.NotificationEventType;
 
 import java.util.Arrays;
 

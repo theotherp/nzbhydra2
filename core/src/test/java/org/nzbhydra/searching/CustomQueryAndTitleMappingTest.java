@@ -19,8 +19,8 @@ package org.nzbhydra.searching;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.searching.SearchType;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
-import org.nzbhydra.searching.dtoseventsenums.SearchType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 
 import java.util.Collections;

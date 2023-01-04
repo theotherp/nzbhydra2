@@ -18,7 +18,7 @@ import org.nzbhydra.indexers.Newznab;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.nzbhydra.searching.searchrequests.InternalData;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
-import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
+import org.nzbhydra.searching.searchrequests.SearchSource;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;

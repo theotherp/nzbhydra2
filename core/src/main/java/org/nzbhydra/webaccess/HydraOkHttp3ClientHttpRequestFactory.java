@@ -31,7 +31,7 @@ import okhttp3.logging.HttpLoggingInterceptor;
 import org.nzbhydra.config.ConfigChangedEvent;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.MainConfig;
-import org.nzbhydra.config.downloading.ProxyType;
+import org.nzbhydra.config.ProxyType;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

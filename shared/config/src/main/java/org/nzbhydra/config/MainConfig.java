@@ -22,7 +22,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
 import lombok.Data;
 import org.javers.core.metamodel.annotation.DiffIgnore;
-import org.nzbhydra.config.downloading.ProxyType;
 import org.nzbhydra.config.sensitive.SensitiveData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

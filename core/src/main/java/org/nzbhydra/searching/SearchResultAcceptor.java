@@ -21,7 +21,7 @@ import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
-import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
+import org.nzbhydra.searching.searchrequests.SearchSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -179,7 +179,7 @@ public class SearchResultAcceptor {
     }
 
     protected boolean checkForCategoryShouldBeIgnored(SearchRequest searchRequest, Multiset<String> reasonsForRejection, SearchResultItem item) {
-        if (item.getCategory().getIgnoreResultsFrom().meets(searchRequest)) {
+        if (searchRequest.meets(item.getCategory().getIgnoreResultsFrom())) {
             logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "{} is in forbidden category {}", item.getTitle(), item.getCategory().getName());
             reasonsForRejection.add("In forbidden category");
             return false;

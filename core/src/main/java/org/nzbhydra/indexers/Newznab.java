@@ -13,6 +13,7 @@ import org.nzbhydra.config.category.Category.Subtype;
 import org.nzbhydra.config.indexer.IndexerCategoryConfig;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
+import org.nzbhydra.config.searching.SearchType;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.exceptions.IndexerAuthException;
 import org.nzbhydra.indexers.exceptions.IndexerErrorCodeException;
@@ -47,7 +48,6 @@ import org.nzbhydra.searching.dtoseventsenums.IndexerSearchResult;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem.DownloadType;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem.HasNfo;
-import org.nzbhydra.searching.dtoseventsenums.SearchType;
 import org.nzbhydra.searching.searchrequests.InternalData;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
@@ -383,7 +383,7 @@ public class Newznab extends Indexer<Xml> {
             debug("Indexer doesn't support any of the provided search IDs: {}", Joiner.on(", ").join(searchRequest.getIdentifiers().keySet()));
             return true;
         }
-        if (configProvider.getBaseConfig().getSearching().getAlwaysConvertIds().meets(searchRequest.getSource())) {
+        if (searchRequest.getSource().meets(configProvider.getBaseConfig().getSearching().getAlwaysConvertIds())) {
             debug("Will convert IDs as ID conversion is to be always done for {}", configProvider.getBaseConfig().getSearching().getAlwaysConvertIds());
             return true;
         }

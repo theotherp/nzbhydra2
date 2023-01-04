@@ -20,13 +20,13 @@ import net.jodah.expiringmap.ExpirationPolicy;
 import net.jodah.expiringmap.ExpiringMap;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.indexer.IndexerConfig;
+import org.nzbhydra.config.searching.SearchType;
 import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.mediainfo.InfoProviderException;
 import org.nzbhydra.mediainfo.MediaIdType;
 import org.nzbhydra.mediainfo.MediaInfo;
-import org.nzbhydra.searching.dtoseventsenums.SearchType;
 import org.nzbhydra.searching.searchrequests.InternalData;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
@@ -70,7 +70,7 @@ public class QueryGenerator {
         boolean anyIdsAvailable = !searchRequest.getIdentifiers().isEmpty();
         boolean indexerDoesntSupportAnyOfTheProvidedIds = anyIdsAvailable && searchRequest.getIdentifiers().keySet().stream().noneMatch(x -> config.getSupportedSearchIds().contains(x));
         boolean queryGenerationPossible = !searchRequest.getIdentifiers().isEmpty() || searchRequest.getTitle().isPresent();
-        boolean queryGenerationEnabled = configProvider.getBaseConfig().getSearching().getGenerateQueries().meets(searchRequest);
+        boolean queryGenerationEnabled = searchRequest.meets(configProvider.getBaseConfig().getSearching().getGenerateQueries());
         final InternalData.FallbackState fallbackState = searchRequest.getInternalData().getFallbackStateByIndexer(config.getName());
         boolean fallbackRequested = fallbackState == InternalData.FallbackState.REQUESTED;
 

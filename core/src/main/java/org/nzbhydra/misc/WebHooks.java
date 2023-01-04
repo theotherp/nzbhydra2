@@ -11,7 +11,7 @@ import org.nzbhydra.downloading.FileDownloadEntity;
 import org.nzbhydra.downloading.FileDownloadEvent;
 import org.nzbhydra.downloading.FileDownloadRepository;
 import org.nzbhydra.searching.Searcher.SearchEvent;
-import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
+import org.nzbhydra.searching.searchrequests.SearchSource;
 import org.nzbhydra.webaccess.HydraOkHttp3ClientHttpRequestFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

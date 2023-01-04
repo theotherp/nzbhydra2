@@ -32,7 +32,7 @@ import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.logging.LoggingMarkers;
-import org.nzbhydra.searching.searchrequests.SearchRequest;
+import org.nzbhydra.searching.searchrequests.SearchSource;
 import org.nzbhydra.web.UrlCalculator;
 import org.nzbhydra.webaccess.WebAccess;
 import org.nzbhydra.webaccess.WebAccessException;
@@ -91,7 +91,7 @@ public class ExternalTools {
 
             if (addRequest.isConfigureForUsenet()) {
                 final boolean anyUsenetIndexerEnabled = configProvider.getBaseConfig().getIndexers().stream()
-                        .filter(x -> x.getEnabledForSearchSource().meets(SearchRequest.SearchSource.API))
+                    .filter(x -> SearchSource.API.meets(x.getEnabledForSearchSource()))
                         .filter(x -> x.getState() == IndexerConfig.State.ENABLED)
                         .anyMatch(x -> x.getSearchModuleType() != SearchModuleType.TORZNAB);
                 if (!anyUsenetIndexerEnabled) {
@@ -109,8 +109,8 @@ public class ExternalTools {
 
             logger.info("Received request to configure {} at URL {} with add type {} for usenet: {} and torrents: {}", addRequest.getExternalTool(), addRequest.getXdarrHost(), addRequest.getAddType(), addRequest.isConfigureForUsenet(), addRequest.isConfigureForTorrents());
             final List<IndexerConfig> availableIndexers = configProvider.getBaseConfig().getIndexers().stream()
-                    .filter(x -> (x.getState() == IndexerConfig.State.ENABLED || addRequest.isAddDisabledIndexers()) && x.isConfigComplete() && x.isAllCapsChecked())
-                    .filter(x -> x.getEnabledForSearchSource().meets(SearchRequest.SearchSource.API))
+                .filter(x -> (x.getState() == IndexerConfig.State.ENABLED || addRequest.isAddDisabledIndexers()) && x.isConfigComplete() && x.isAllCapsChecked())
+                .filter(x -> SearchSource.API.meets(x.getEnabledForSearchSource()))
                     .collect(Collectors.toList());
 
             final Optional<Integer> maxPriority = availableIndexers.stream().map(IndexerConfig::getScore).max(Comparator.naturalOrder());

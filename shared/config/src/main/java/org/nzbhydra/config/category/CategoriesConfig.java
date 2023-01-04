@@ -27,7 +27,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.nzbhydra.searching.dtoseventsenums.SearchType.SEARCH;
+import static org.nzbhydra.config.searching.SearchType.SEARCH;
 
 @Data
 public class CategoriesConfig {

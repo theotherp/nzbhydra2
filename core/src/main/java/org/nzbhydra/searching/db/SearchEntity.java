@@ -30,8 +30,8 @@ import jakarta.persistence.Table;
 import lombok.Data;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
-import org.nzbhydra.searching.dtoseventsenums.SearchType;
-import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
+import org.nzbhydra.config.searching.SearchType;
+import org.nzbhydra.searching.searchrequests.SearchSource;
 import org.nzbhydra.web.SessionStorage;
 
 import java.time.Instant;

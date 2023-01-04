@@ -10,10 +10,10 @@ import org.mockito.stubbing.Answer;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.indexer.IndexerConfig;
+import org.nzbhydra.config.searching.SearchType;
 import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
-import org.nzbhydra.searching.dtoseventsenums.SearchType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
-import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
+import org.nzbhydra.searching.searchrequests.SearchSource;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Arrays;

@@ -48,7 +48,7 @@ import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlSearching;
 import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlServer;
 import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.mediainfo.MediaIdType;
-import org.nzbhydra.searching.searchrequests.SearchRequest;
+import org.nzbhydra.searching.searchrequests.SearchSource;
 import org.nzbhydra.update.UpdateManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -174,7 +174,7 @@ public class CapsGenerator {
             if (x.getState() != IndexerConfig.State.ENABLED && x.getState() != IndexerConfig.State.DISABLED_SYSTEM_TEMPORARY) {
                 return false;
             }
-            if (!x.getEnabledForSearchSource().meets(SearchRequest.SearchSource.API)) {
+            if (!SearchSource.API.meets(x.getEnabledForSearchSource())) {
                 //Indexer will not be picked for API searches
                 return false;
             }

@@ -20,6 +20,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.nzbhydra.config.indexer.IndexerConfig;
+import org.nzbhydra.config.notification.NotificationEventType;
 
 import java.util.HashMap;
 import java.util.Map;

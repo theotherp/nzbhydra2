@@ -22,7 +22,7 @@ import org.nzbhydra.searching.SearchModuleProvider;
 import org.nzbhydra.searching.db.SearchResultEntity;
 import org.nzbhydra.searching.db.SearchResultRepository;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem.DownloadType;
-import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
+import org.nzbhydra.searching.searchrequests.SearchSource;
 import org.nzbhydra.web.UrlCalculator;
 import org.nzbhydra.webaccess.HydraOkHttp3ClientHttpRequestFactory;
 import org.slf4j.Logger;
@@ -126,7 +126,7 @@ public class FileHandler {
                 if (downloadResult.isSuccessful()) {
                     return downloadResult;
                 }
-                if (!configProvider.getBaseConfig().getDownloading().getFallbackForFailed().meets(accessSource)) {
+                if (!accessSource.meets(configProvider.getBaseConfig().getDownloading().getFallbackForFailed())) {
                     return downloadResult;
                 }
 

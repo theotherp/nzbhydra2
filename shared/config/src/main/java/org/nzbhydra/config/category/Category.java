@@ -22,7 +22,7 @@ import com.google.common.base.Strings;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.nzbhydra.config.SearchSourceRestriction;
-import org.nzbhydra.searching.dtoseventsenums.SearchType;
+import org.nzbhydra.config.searching.SearchType;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.ArrayList;

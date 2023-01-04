@@ -18,7 +18,7 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.nzbhydra.config.downloading.FileDownloadAccessType;
 import org.nzbhydra.searching.db.SearchResultEntity;
-import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
+import org.nzbhydra.searching.searchrequests.SearchSource;
 import org.nzbhydra.web.SessionStorage;
 
 import java.time.Duration;

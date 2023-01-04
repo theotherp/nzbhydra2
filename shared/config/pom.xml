@@ -83,6 +83,11 @@
             <artifactId>spring-boot</artifactId>
             <version>${spring.boot.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.nzbhydra</groupId>
+            <artifactId>mapping</artifactId>
+            <version>5.0.0-SNAPSHOT</version>
+        </dependency>
 
     </dependencies>
 

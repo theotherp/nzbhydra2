@@ -36,7 +36,7 @@ import org.nzbhydra.indexers.IndexerSearchRepository;
 import org.nzbhydra.searching.db.SearchEntity;
 import org.nzbhydra.searching.db.SearchResultEntity;
 import org.nzbhydra.searching.db.SearchResultRepository;
-import org.nzbhydra.searching.searchrequests.SearchRequest;
+import org.nzbhydra.searching.searchrequests.SearchSource;
 import org.nzbhydra.searching.uniqueness.IndexerUniquenessScoreEntity;
 import org.nzbhydra.searching.uniqueness.IndexerUniquenessScoreEntityRepository;
 
@@ -119,7 +119,7 @@ public class IndexerUniquenessScoreSaverTest {
         SearchResultEntity searchResultEntityhasNot = new SearchResultEntity(indexerHasNot, Instant.now(), "", "", "", "", null, null);
         searchResultEntityhasNot.setIndexerSearchEntity(indexerSearchEntityHasNot);
 
-        FileDownloadEntity fileDownloadEntity = new FileDownloadEntity(searchResultEntityHasDownloaded, FileDownloadAccessType.REDIRECT, SearchRequest.SearchSource.API, FileDownloadStatus.NONE, null);
+        FileDownloadEntity fileDownloadEntity = new FileDownloadEntity(searchResultEntityHasDownloaded, FileDownloadAccessType.REDIRECT, SearchSource.API, FileDownloadStatus.NONE, null);
         FileDownloadEvent downloadEvent = new FileDownloadEvent(fileDownloadEntity, searchResultEntityHasDownloaded);
 
         when(searchResultRepository.findAllByTitleLikeIgnoreCase(anyString())).thenReturn(Sets.newHashSet(searchResultEntityHasDownloaded, searchResultEntityhasToo));
@@ -181,7 +181,7 @@ public class IndexerUniquenessScoreSaverTest {
         SearchResultEntity searchResultEntityhasNot = new SearchResultEntity(indexerHasNot, Instant.now(), "", "", "", "", null, null);
         searchResultEntityhasNot.setIndexerSearchEntity(indexerSearchEntityHasNot);
 
-        FileDownloadEntity fileDownloadEntity = new FileDownloadEntity(searchResultEntityHasDownloaded, FileDownloadAccessType.REDIRECT, SearchRequest.SearchSource.API, FileDownloadStatus.NONE, null);
+        FileDownloadEntity fileDownloadEntity = new FileDownloadEntity(searchResultEntityHasDownloaded, FileDownloadAccessType.REDIRECT, SearchSource.API, FileDownloadStatus.NONE, null);
         FileDownloadEvent downloadEvent = new FileDownloadEvent(fileDownloadEntity, searchResultEntityHasDownloaded);
 
         when(searchResultRepository.findAllByTitleLikeIgnoreCase(anyString())).thenReturn(Sets.newHashSet(searchResultEntityHasDownloaded));

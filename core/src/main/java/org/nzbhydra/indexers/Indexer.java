@@ -201,7 +201,10 @@ public abstract class Indexer<T> {
 
     private boolean isFallbackRequired(SearchRequest searchRequest, IndexerSearchResult indexerSearchResult) {
         final FallbackState fallbackStateByIndexer = searchRequest.getInternalData().getFallbackStateByIndexer(getName());
-        return indexerSearchResult.getTotalResults() == 0 && !searchRequest.getIdentifiers().isEmpty() && fallbackStateByIndexer != FallbackState.USED && configProvider.getBaseConfig().getSearching().getIdFallbackToQueryGeneration().meets(searchRequest);
+        if (indexerSearchResult.getTotalResults() != 0 || searchRequest.getIdentifiers().isEmpty() || fallbackStateByIndexer == FallbackState.USED) {
+            return false;
+        }
+        return searchRequest.meets(configProvider.getBaseConfig().getSearching().getIdFallbackToQueryGeneration());
     }
 
     protected IndexerSearchResult searchInternal(SearchRequest searchRequest, int offset, Integer limit) throws IndexerSearchAbortedException, IndexerAccessException {

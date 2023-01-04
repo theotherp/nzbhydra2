@@ -9,7 +9,7 @@ import org.mockito.MockitoAnnotations;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigChangedEvent;
 import org.nzbhydra.config.ConfigProvider;
-import org.nzbhydra.config.downloading.ProxyType;
+import org.nzbhydra.config.ProxyType;
 import org.nzbhydra.webaccess.HydraOkHttp3ClientHttpRequestFactory.SockProxySocketFactory;
 
 import java.net.InetSocketAddress;

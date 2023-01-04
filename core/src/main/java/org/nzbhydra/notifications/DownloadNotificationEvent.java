@@ -19,6 +19,7 @@ package org.nzbhydra.notifications;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.nzbhydra.config.notification.NotificationEventType;
 
 import java.util.HashMap;
 import java.util.Map;
