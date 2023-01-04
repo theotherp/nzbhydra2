@@ -121,11 +121,16 @@ jobs:
                     java-version: '17'
                     distribution: 'adopt'
                     cache: 'maven'
-
+            -   name: "Install"
+                run: |
+                  #                    cd shared
+                  #                    mvn --batch-mode install -pl shared
+                         mvn --batch-mode install -pl org.nzbhydra:shared,org.nzbhydra:mapping,org.nzbhydra:config
             -   name: "Run tests"
                 run: |
-                    cd tests/system
-                    mvn --batch-mode test
+                  #                    cd tests/system
+                  #                    mvn --batch-mode test
+                         mvn --batch-mode test -pl org.nzbhydra.tests:system
             -   name: "Upload data folder artifact"
                 uses: actions/upload-artifact@v3
                 if: always()
