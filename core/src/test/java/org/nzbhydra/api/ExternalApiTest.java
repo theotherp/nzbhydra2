@@ -21,7 +21,7 @@ import org.nzbhydra.mapping.newznab.json.NewznabJsonRoot;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.nzbhydra.misc.UserAgentMapper;
 import org.nzbhydra.searching.CategoryProvider;
-import org.nzbhydra.searching.CustomQueryAndTitleMapping;
+import org.nzbhydra.searching.CustomQueryAndTitleMappingHandler;
 import org.nzbhydra.searching.SearchResult;
 import org.nzbhydra.searching.Searcher;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
@@ -70,7 +70,7 @@ public class ExternalApiTest {
     @Mock
     private Jaxb2Marshaller jaxb2MarshallerMock;
     @Mock
-    private CustomQueryAndTitleMapping customQueryAndTitleMapping;
+    private CustomQueryAndTitleMappingHandler customQueryAndTitleMappingHandler;
     IndexerConfig indexerConfig = new IndexerConfig();
 
 
@@ -100,7 +100,7 @@ public class ExternalApiTest {
         when(indexerMock.getConfig()).thenReturn(indexerConfig);
 
         when(newznabXmlTransformerMock.getRssRoot(any(), anyInt(), anyInt(), any(Boolean.class))).thenReturn(new NewznabXmlRoot());
-        when(customQueryAndTitleMapping.mapSearchRequest(any())).thenAnswer((Answer<SearchRequest>) invocation -> invocation.getArgument(0));
+        when(customQueryAndTitleMappingHandler.mapSearchRequest(any())).thenAnswer((Answer<SearchRequest>) invocation -> invocation.getArgument(0));
     }
 
     @Test

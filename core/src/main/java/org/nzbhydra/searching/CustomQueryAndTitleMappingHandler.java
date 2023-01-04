@@ -16,7 +16,6 @@
 
 package org.nzbhydra.searching;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Joiner;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -24,6 +23,8 @@ import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.Nullable;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.searching.AffectedValue;
+import org.nzbhydra.config.searching.CustomQueryAndTitleMapping;
 import org.nzbhydra.config.searching.SearchType;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
@@ -41,30 +42,21 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.StringJoiner;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 @Component
 @RestController
-public class CustomQueryAndTitleMapping {
+public class CustomQueryAndTitleMappingHandler {
 
-    public enum AffectedValue {
-        TITLE,
-        QUERY,
-        RESULT_TITLE
-    }
-
-    private static final Logger logger = LoggerFactory.getLogger(CustomQueryAndTitleMapping.class);
+    private static final Logger logger = LoggerFactory.getLogger(CustomQueryAndTitleMappingHandler.class);
 
     @Autowired
     private ConfigProvider configProvider;
 
 
-    public CustomQueryAndTitleMapping() {
+    public CustomQueryAndTitleMappingHandler() {
     }
 
-    public CustomQueryAndTitleMapping(BaseConfig baseConfig) {
+    public CustomQueryAndTitleMappingHandler(BaseConfig baseConfig) {
         this.configProvider = new ConfigProvider() {
             @Override
             public BaseConfig getBaseConfig() {
@@ -77,11 +69,11 @@ public class CustomQueryAndTitleMapping {
         return mapSearchRequest(searchRequest, configProvider.getBaseConfig().getSearching().getCustomMappings());
     }
 
-    public SearchRequest mapSearchRequest(SearchRequest searchRequest, List<Mapping> mappings) {
-        if (mappings.isEmpty() || mappings.stream().allMatch(x -> x.getAffectedValue() == AffectedValue.RESULT_TITLE)) {
+    public SearchRequest mapSearchRequest(SearchRequest searchRequest, List<CustomQueryAndTitleMapping> customQueryAndTitleMappings) {
+        if (customQueryAndTitleMappings.isEmpty() || customQueryAndTitleMappings.stream().allMatch(x -> x.getAffectedValue() == AffectedValue.RESULT_TITLE)) {
             return searchRequest;
         }
-        final MetaData metaData = mapMetaData(MetaData.fromSearchRequest(searchRequest), mappings);
+        final MetaData metaData = mapMetaData(MetaData.fromSearchRequest(searchRequest), customQueryAndTitleMappings);
 
         metaData.getQuery().ifPresent(searchRequest::setQuery);
         metaData.getTitle().ifPresent(searchRequest::setTitle);
@@ -89,17 +81,17 @@ public class CustomQueryAndTitleMapping {
     }
 
 
-    public SearchResultItem mapSearchResult(SearchResultItem searchResult, List<Mapping> mappings) {
-        if (mappings.isEmpty() || mappings.stream().noneMatch(x -> x.getAffectedValue() == AffectedValue.RESULT_TITLE)) {
+    public SearchResultItem mapSearchResult(SearchResultItem searchResult, List<CustomQueryAndTitleMapping> customQueryAndTitleMappings) {
+        if (customQueryAndTitleMappings.isEmpty() || customQueryAndTitleMappings.stream().noneMatch(x -> x.getAffectedValue() == AffectedValue.RESULT_TITLE)) {
             return searchResult;
         }
-        final MetaData metaData = mapMetaData(MetaData.fromSearchResult(searchResult), mappings);
+        final MetaData metaData = mapMetaData(MetaData.fromSearchResult(searchResult), customQueryAndTitleMappings);
 
         metaData.getTitle().ifPresent(searchResult::setTitle);
         return searchResult;
     }
 
-    public MetaData mapMetaData(MetaData metaData, List<Mapping> mappings) {
+    public MetaData mapMetaData(MetaData metaData, List<CustomQueryAndTitleMapping> customQueryAndTitleMappings) {
         if (metaData.getQuery().isPresent() && configProvider.getBaseConfig().getSearching().isReplaceUmlauts()) {
             final String oldQuery = metaData.getQuery().get();
             metaData.setQuery(oldQuery
@@ -117,33 +109,33 @@ public class CustomQueryAndTitleMapping {
 
         }
 
-        final List<Mapping> datasets = mappings.stream()
-            .filter(x -> metaData.getSearchType() == x.searchType || metaData.type == MetaData.Type.RESULT_TITLE)
-            .filter(mapping -> isDatasetMatch(metaData, mapping))
-            .filter(mapping -> {
-                if (mapping.to.contains("{season:") && !metaData.getSeason().isPresent()) {
-                    logger.debug(LoggingMarkers.CUSTOM_MAPPING, "Can't use mapping {} because no season information is available for {}", mapping, metaData);
+        final List<CustomQueryAndTitleMapping> datasets = customQueryAndTitleMappings.stream()
+            .filter(x -> metaData.getSearchType() == x.getSearchType() || metaData.type == MetaData.Type.RESULT_TITLE)
+            .filter(customQueryAndTitleMapping -> isDatasetMatch(metaData, customQueryAndTitleMapping))
+            .filter(customQueryAndTitleMapping -> {
+                if (customQueryAndTitleMapping.getTo().contains("{season:") && metaData.getSeason().isEmpty()) {
+                    logger.debug(LoggingMarkers.CUSTOM_MAPPING, "Can't use customQueryAndTitleMapping {} because no season information is available for {}", customQueryAndTitleMapping, metaData);
                     return false;
                 }
-                if (mapping.to.contains("{episode:") && !metaData.getEpisode().isPresent()) {
-                    logger.debug(LoggingMarkers.CUSTOM_MAPPING, "Can't use mapping {} because no episode information is available for {}", mapping, metaData);
+                if (customQueryAndTitleMapping.getTo().contains("{episode:") && metaData.getEpisode().isEmpty()) {
+                    logger.debug(LoggingMarkers.CUSTOM_MAPPING, "Can't use customQueryAndTitleMapping {} because no episode information is available for {}", customQueryAndTitleMapping, metaData);
                     return false;
                 }
                 return true;
             })
-            .collect(Collectors.toList());
+            .toList();
 
         if (datasets.isEmpty()) {
             logger.debug(LoggingMarkers.CUSTOM_MAPPING, "No datasets found matching: {}", metaData);
             return metaData;
         }
         if (datasets.size() > 1) {
-            logger.error("Unable to map search request ({}) because multiple mappings match it:\n{}", metaData, Joiner.on("\n").join(mappings));
+            logger.error("Unable to map search request ({}) because multiple customQueryAndTitleMappings match it:\n{}", metaData, Joiner.on("\n").join(customQueryAndTitleMappings));
             return metaData;
         }
-        final Mapping mapping = datasets.get(0);
+        final CustomQueryAndTitleMapping customQueryAndTitleMapping = datasets.get(0);
 
-        mapMetaData(metaData, mapping);
+        mapMetaData(metaData, customQueryAndTitleMapping);
 
         return metaData;
     }
@@ -154,20 +146,20 @@ public class CustomQueryAndTitleMapping {
     public TestResponse testMapping(@RequestBody TestRequest testRequest) {
         MetaData metaData = new MetaData();
         final String exampleInput = testRequest.exampleInput;
-        if (!testRequest.mapping.getFromPattern().matcher(exampleInput).matches()) {
+        if (!testRequest.customQueryAndTitleMapping.getFromPattern().matcher(exampleInput).matches()) {
             return new TestResponse(null, null, false);
         }
-        if (testRequest.mapping.affectedValue == AffectedValue.QUERY) {
+        if (testRequest.customQueryAndTitleMapping.getAffectedValue() == AffectedValue.QUERY) {
             metaData.setQuery(exampleInput);
         } else {
             metaData.setTitle(exampleInput);
         }
-        metaData.setSearchType(testRequest.mapping.searchType);
+        metaData.setSearchType(testRequest.customQueryAndTitleMapping.getSearchType());
         metaData.setSeason(1);
         metaData.setEpisode(2);
         try {
-            mapMetaData(metaData, testRequest.mapping);
-            if (testRequest.mapping.affectedValue == AffectedValue.QUERY) {
+            mapMetaData(metaData, testRequest.customQueryAndTitleMapping);
+            if (testRequest.customQueryAndTitleMapping.getAffectedValue() == AffectedValue.QUERY) {
                 return new TestResponse(metaData.getQuery().get(), null, true);
             } else {
                 return new TestResponse(metaData.getTitle().get(), null, true);
@@ -179,27 +171,27 @@ public class CustomQueryAndTitleMapping {
     }
 
 
-    protected void mapMetaData(MetaData metaData, Mapping mapping) {
+    protected void mapMetaData(MetaData metaData, CustomQueryAndTitleMapping customQueryAndTitleMapping) {
         //What should happen: q=Boku no Hero Academia S4, season=4, ep=21 -> Boku no Hero Academia s04e21
         //What the user should enter roughly: {0:(my hero academia|Boku no Hero Academia) {ignore:.*} -> {0} s{season:00} e{episode:00}
         //How it's configured: "TVSEARCH;QUERY;{0:(my hero academia|Boku no Hero Academia) {ignore:.*};{0} s{season:00} e{episode:00}"
 
         //{title:the haunting} {0:.*} -> The Haunting of Bly Manor {0}
 
-        if (mapping.affectedValue == AffectedValue.QUERY && metaData.getQuery().isPresent()) {
-            final String newQuery = mapValue(metaData, mapping, metaData.getQuery().get());
+        if (customQueryAndTitleMapping.getAffectedValue() == AffectedValue.QUERY && metaData.getQuery().isPresent()) {
+            final String newQuery = mapValue(metaData, customQueryAndTitleMapping, metaData.getQuery().get());
             metaData.setQuery(newQuery);
-        } else if ((mapping.affectedValue == AffectedValue.TITLE || mapping.affectedValue == AffectedValue.RESULT_TITLE) && metaData.getTitle().isPresent()) {
-            final String newTitle = mapValue(metaData, mapping, metaData.getTitle().get());
+        } else if ((customQueryAndTitleMapping.getAffectedValue() == AffectedValue.TITLE || customQueryAndTitleMapping.getAffectedValue() == AffectedValue.RESULT_TITLE) && metaData.getTitle().isPresent()) {
+            final String newTitle = mapValue(metaData, customQueryAndTitleMapping, metaData.getTitle().get());
             metaData.setTitle(newTitle);
         }
     }
 
-    private String mapValue(MetaData metaData, Mapping mapping, String value) {
-        logger.debug(LoggingMarkers.CUSTOM_MAPPING, "Mapping input \"{}\" using dataset \"{}\"", value, mapping);
+    private String mapValue(MetaData metaData, CustomQueryAndTitleMapping customQueryAndTitleMapping, String value) {
+        logger.debug(LoggingMarkers.CUSTOM_MAPPING, "CustomQueryAndTitleMapping input \"{}\" using dataset \"{}\"", value, customQueryAndTitleMapping);
         String mappedValue = value;
 
-        String replacementRegex = mapping.to;
+        String replacementRegex = customQueryAndTitleMapping.getTo();
         if (metaData.getSeason().isPresent()) {
             replacementRegex = replacementRegex.replace("{season:00}", String.format("%02d", metaData.getSeason().get()));
             replacementRegex = replacementRegex.replace("{season:0}", String.valueOf(metaData.getSeason().get()));
@@ -214,72 +206,30 @@ public class CustomQueryAndTitleMapping {
             replacementRegex = replacementRegex.replace("{episode}", String.valueOf(metaData.getEpisode().get()));
         }
         replacementRegex = replacementRegex.replaceAll("\\{(?<groupName>[^\\}]*)\\}", "\\$\\{hydra${groupName}\\}");
-        logger.debug(LoggingMarkers.CUSTOM_MAPPING, "Mapping input \"{}\" using replacement regex \"{}\"", value, replacementRegex);
-        mappedValue = mapping.getFromPattern().matcher(mappedValue).replaceFirst(replacementRegex);
+        logger.debug(LoggingMarkers.CUSTOM_MAPPING, "CustomQueryAndTitleMapping input \"{}\" using replacement regex \"{}\"", value, replacementRegex);
+        mappedValue = customQueryAndTitleMapping.getFromPattern().matcher(mappedValue).replaceFirst(replacementRegex);
         logger.debug(LoggingMarkers.CUSTOM_MAPPING, "Mapped input \"{}\" to \"{}\"", value, mappedValue);
         return mappedValue;
     }
 
-    protected boolean isDatasetMatch(MetaData metaData, Mapping mapping) {
-        if (mapping.affectedValue == AffectedValue.QUERY && metaData.getQuery().isPresent()) {
-            final boolean matches = mapping.getFromPattern().matcher(metaData.getQuery().get()).matches();
-            logger.debug(LoggingMarkers.CUSTOM_MAPPING, "Query \"{}\" matches regex \"{}\": {}", metaData.getQuery().get(), mapping.getFromPattern().pattern(), matches);
+    protected boolean isDatasetMatch(MetaData metaData, CustomQueryAndTitleMapping customQueryAndTitleMapping) {
+        if (customQueryAndTitleMapping.getAffectedValue() == AffectedValue.QUERY && metaData.getQuery().isPresent()) {
+            final boolean matches = customQueryAndTitleMapping.getFromPattern().matcher(metaData.getQuery().get()).matches();
+            logger.debug(LoggingMarkers.CUSTOM_MAPPING, "Query \"{}\" matches regex \"{}\": {}", metaData.getQuery().get(), customQueryAndTitleMapping.getFromPattern().pattern(), matches);
             return matches;
         }
-        if ((mapping.affectedValue == AffectedValue.RESULT_TITLE || mapping.affectedValue == AffectedValue.TITLE) && metaData.getTitle().isPresent()) {
-            final boolean matches = mapping.getFromPattern().matcher(metaData.getTitle().get()).matches();
-            logger.debug(LoggingMarkers.CUSTOM_MAPPING, "Title \"{}\" matches regex \"{}\": {}", metaData.getTitle().get(), mapping.getFromPattern().pattern(), matches);
+        if ((customQueryAndTitleMapping.getAffectedValue() == AffectedValue.RESULT_TITLE || customQueryAndTitleMapping.getAffectedValue() == AffectedValue.TITLE) && metaData.getTitle().isPresent()) {
+            final boolean matches = customQueryAndTitleMapping.getFromPattern().matcher(metaData.getTitle().get()).matches();
+            logger.debug(LoggingMarkers.CUSTOM_MAPPING, "Title \"{}\" matches regex \"{}\": {}", metaData.getTitle().get(), customQueryAndTitleMapping.getFromPattern().pattern(), matches);
             return matches;
         }
-        logger.debug(LoggingMarkers.CUSTOM_MAPPING, "Dataset does not match search request.\nDataset: {}\nSearch request:{}", mapping.from, metaData);
+        logger.debug(LoggingMarkers.CUSTOM_MAPPING, "Dataset does not match search request.\nDataset: {}\nSearch request:{}", customQueryAndTitleMapping.getFrom(), metaData);
         return false;
     }
 
     @Data
-    public static class Mapping {
-
-        private SearchType searchType;
-        private AffectedValue affectedValue;
-        private String from;
-        private String to;
-        @JsonIgnore
-        private Pattern fromPattern;
-
-        public Mapping() {
-        }
-
-        public Mapping(String configValue) {
-            final String[] split = configValue.split(";");
-            if (split.length != 4) {
-                throw new IllegalArgumentException("Unable to parse value: " + configValue);
-            }
-            this.searchType = split[0].equals("null") ? SearchType.SEARCH : SearchType.valueOf(split[0].toUpperCase());
-            this.affectedValue = AffectedValue.valueOf(split[1].toUpperCase());
-            this.from = split[2];
-            this.to = split[3];
-        }
-
-        @JsonIgnore
-        public Pattern getFromPattern() {
-            if (fromPattern == null) {
-                String regex = from.replaceAll("\\{(?<groupName>[^:]*):(?<hydraContent>[^\\{\\}]*)\\}", "(?<hydra${groupName}>${hydraContent})");
-                fromPattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
-            }
-            return fromPattern;
-        }
-
-        @Override
-        public String toString() {
-            return new StringJoiner(", ", Mapping.class.getSimpleName() + "[", "]")
-                    .add("from='" + from + "'")
-                    .add("to='" + to + "'")
-                    .toString();
-        }
-    }
-
-    @Data
     static class TestRequest {
-        private Mapping mapping;
+        private CustomQueryAndTitleMapping customQueryAndTitleMapping;
         private String exampleInput;
     }
 

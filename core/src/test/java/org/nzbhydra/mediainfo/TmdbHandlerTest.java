@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
+import org.nzbhydra.config.mediainfo.MediaIdType;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

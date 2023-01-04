@@ -19,6 +19,7 @@ package org.nzbhydra.searching;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.searching.CustomQueryAndTitleMapping;
 import org.nzbhydra.config.searching.SearchType;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
@@ -29,11 +30,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
-public class CustomQueryAndTitleMappingTest {
+public class CustomQueryAndTitleCustomQueryAndTitleMappingHandlerTest {
 
 
     @InjectMocks
-    private CustomQueryAndTitleMapping testee = new CustomQueryAndTitleMapping(new BaseConfig());
+    private CustomQueryAndTitleMappingHandler testee = new CustomQueryAndTitleMappingHandler(new BaseConfig());
 
 
     @Test
@@ -43,8 +44,8 @@ public class CustomQueryAndTitleMappingTest {
         searchRequest.setSeason(4);
         searchRequest.setEpisode("21");
 
-        CustomQueryAndTitleMapping.Mapping mapping = new CustomQueryAndTitleMapping.Mapping("SEARCH;QUERY;{title:my show name}{0:.*};{title} s{season:00}e{episode:00}");
-        testee.mapSearchRequest(searchRequest, Collections.singletonList(mapping));
+        CustomQueryAndTitleMapping customQueryAndTitleMapping = new CustomQueryAndTitleMapping("SEARCH;QUERY;{title:my show name}{0:.*};{title} s{season:00}e{episode:00}");
+        testee.mapSearchRequest(searchRequest, Collections.singletonList(customQueryAndTitleMapping));
         assertThat(searchRequest.getQuery()).isPresent().get().isEqualTo("my show name s04e21");
     }
 
@@ -53,8 +54,8 @@ public class CustomQueryAndTitleMappingTest {
         final SearchRequest searchRequest = new SearchRequest();
         searchRequest.setQuery("my show name s4");
 
-        CustomQueryAndTitleMapping.Mapping mapping = new CustomQueryAndTitleMapping.Mapping("SEARCH;QUERY;{title:my show name}{0:.*};{title} s{season:00}e{episode:00}");
-        testee.mapSearchRequest(searchRequest, Collections.singletonList(mapping));
+        CustomQueryAndTitleMapping customQueryAndTitleMapping = new CustomQueryAndTitleMapping("SEARCH;QUERY;{title:my show name}{0:.*};{title} s{season:00}e{episode:00}");
+        testee.mapSearchRequest(searchRequest, Collections.singletonList(customQueryAndTitleMapping));
         assertThat(searchRequest.getQuery()).isPresent().get().isEqualTo("my show name s4");
     }
 
@@ -65,8 +66,8 @@ public class CustomQueryAndTitleMappingTest {
         searchRequest.setSeason(4);
         searchRequest.setEpisode("21");
 
-        CustomQueryAndTitleMapping.Mapping mapping = new CustomQueryAndTitleMapping.Mapping("SEARCH;QUERY;{title:my show name}{0:.*};some other title I want{0}");
-        testee.mapSearchRequest(searchRequest, Collections.singletonList(mapping));
+        CustomQueryAndTitleMapping customQueryAndTitleMapping = new CustomQueryAndTitleMapping("SEARCH;QUERY;{title:my show name}{0:.*};some other title I want{0}");
+        testee.mapSearchRequest(searchRequest, Collections.singletonList(customQueryAndTitleMapping));
         assertThat(searchRequest.getQuery()).isPresent().get().isEqualTo("some other title I want s4");
     }
 
@@ -75,8 +76,8 @@ public class CustomQueryAndTitleMappingTest {
         final SearchRequest searchRequest = new SearchRequest();
         searchRequest.setQuery("my show name s4");
 
-        CustomQueryAndTitleMapping.Mapping mapping = new CustomQueryAndTitleMapping.Mapping("SEARCH;QUERY;my show name.*;some other title I want");
-        testee.mapSearchRequest(searchRequest, Collections.singletonList(mapping));
+        CustomQueryAndTitleMapping customQueryAndTitleMapping = new CustomQueryAndTitleMapping("SEARCH;QUERY;my show name.*;some other title I want");
+        testee.mapSearchRequest(searchRequest, Collections.singletonList(customQueryAndTitleMapping));
         assertThat(searchRequest.getQuery()).isPresent().get().isEqualTo("some other title I want");
     }
 
@@ -85,8 +86,8 @@ public class CustomQueryAndTitleMappingTest {
         final SearchRequest searchRequest = new SearchRequest();
         searchRequest.setTitle("my show name");
 
-        CustomQueryAndTitleMapping.Mapping mapping = new CustomQueryAndTitleMapping.Mapping("SEARCH;TITLE;{title:my show name};some other title I want");
-        testee.mapSearchRequest(searchRequest, Collections.singletonList(mapping));
+        CustomQueryAndTitleMapping customQueryAndTitleMapping = new CustomQueryAndTitleMapping("SEARCH;TITLE;{title:my show name};some other title I want");
+        testee.mapSearchRequest(searchRequest, Collections.singletonList(customQueryAndTitleMapping));
         assertThat(searchRequest.getTitle()).isPresent().get().isEqualTo("some other title I want");
     }
 
@@ -95,25 +96,25 @@ public class CustomQueryAndTitleMappingTest {
         final SearchRequest searchRequest = new SearchRequest();
 
         searchRequest.setQuery("my show name s4");
-        final CustomQueryAndTitleMapping.Mapping mapping = new CustomQueryAndTitleMapping.Mapping("SEARCH;QUERY;{title:my show name}{0:.*};{title} s{season:00}e{episode:00}");
-        assertTrue(testee.isDatasetMatch(CustomQueryAndTitleMapping.MetaData.fromSearchRequest(searchRequest), mapping));
+        final CustomQueryAndTitleMapping customQueryAndTitleMapping = new CustomQueryAndTitleMapping("SEARCH;QUERY;{title:my show name}{0:.*};{title} s{season:00}e{episode:00}");
+        assertTrue(testee.isDatasetMatch(CustomQueryAndTitleMappingHandler.MetaData.fromSearchRequest(searchRequest), customQueryAndTitleMapping));
 
         searchRequest.setQuery("my show name whatever");
-        assertTrue(testee.isDatasetMatch(CustomQueryAndTitleMapping.MetaData.fromSearchRequest(searchRequest), mapping));
+        assertTrue(testee.isDatasetMatch(CustomQueryAndTitleMappingHandler.MetaData.fromSearchRequest(searchRequest), customQueryAndTitleMapping));
 
         searchRequest.setQuery("my other show name");
-        assertThat(testee.isDatasetMatch(CustomQueryAndTitleMapping.MetaData.fromSearchRequest(searchRequest), mapping)).isFalse();
+        assertThat(testee.isDatasetMatch(CustomQueryAndTitleMappingHandler.MetaData.fromSearchRequest(searchRequest), customQueryAndTitleMapping)).isFalse();
     }
 
     @Test
     public void shouldFindMatchingDatasetTitle() {
         final SearchRequest searchRequest = new SearchRequest();
         searchRequest.setTitle("my wrongly mapped title");
-        final CustomQueryAndTitleMapping.Mapping mapping = new CustomQueryAndTitleMapping.Mapping("TVSEARCH;TITLE;{title:my wrongly mapped title};my correct title");
-        assertTrue(testee.isDatasetMatch(CustomQueryAndTitleMapping.MetaData.fromSearchRequest(searchRequest), mapping));
+        final CustomQueryAndTitleMapping customQueryAndTitleMapping = new CustomQueryAndTitleMapping("TVSEARCH;TITLE;{title:my wrongly mapped title};my correct title");
+        assertTrue(testee.isDatasetMatch(CustomQueryAndTitleMappingHandler.MetaData.fromSearchRequest(searchRequest), customQueryAndTitleMapping));
 
         searchRequest.setTitle("my correctly mapped title");
-        assertThat(testee.isDatasetMatch(CustomQueryAndTitleMapping.MetaData.fromSearchRequest(searchRequest), mapping)).isFalse();
+        assertThat(testee.isDatasetMatch(CustomQueryAndTitleMappingHandler.MetaData.fromSearchRequest(searchRequest), customQueryAndTitleMapping)).isFalse();
     }
 
     @Test
@@ -121,10 +122,10 @@ public class CustomQueryAndTitleMappingTest {
         final SearchRequest searchRequest = new SearchRequest();
         searchRequest.setSearchType(SearchType.TVSEARCH);
         searchRequest.setTitle("Fairy Tail 49");
-        final CustomQueryAndTitleMapping.Mapping mapping = new CustomQueryAndTitleMapping.Mapping("TVSEARCH;TITLE;{title:Fairy Tail} {ep:[0-9]+};{title} german e{ep}");
-        assertTrue(testee.isDatasetMatch(CustomQueryAndTitleMapping.MetaData.fromSearchRequest(searchRequest), mapping));
+        final CustomQueryAndTitleMapping customQueryAndTitleMapping = new CustomQueryAndTitleMapping("TVSEARCH;TITLE;{title:Fairy Tail} {ep:[0-9]+};{title} german e{ep}");
+        assertTrue(testee.isDatasetMatch(CustomQueryAndTitleMappingHandler.MetaData.fromSearchRequest(searchRequest), customQueryAndTitleMapping));
 
-        testee.mapSearchRequest(searchRequest, Collections.singletonList(mapping));
+        testee.mapSearchRequest(searchRequest, Collections.singletonList(customQueryAndTitleMapping));
         assertThat(searchRequest.getTitle()).isPresent().get().isEqualTo("Fairy Tail german e49");
     }
 
@@ -136,8 +137,8 @@ public class CustomQueryAndTitleMappingTest {
         item.getAttributes().put("season", "1");
         item.getAttributes().put("episode", "2");
 
-        final CustomQueryAndTitleMapping.Mapping mapping = new CustomQueryAndTitleMapping.Mapping("null;RESULT_TITLE;{title:.*};{title} {season:0} {episode:00}");
-        final SearchResultItem newItem = testee.mapSearchResult(item, Collections.singletonList(mapping));
+        final CustomQueryAndTitleMapping customQueryAndTitleMapping = new CustomQueryAndTitleMapping("null;RESULT_TITLE;{title:.*};{title} {season:0} {episode:00}");
+        final SearchResultItem newItem = testee.mapSearchResult(item, Collections.singletonList(customQueryAndTitleMapping));
         assertThat(newItem.getTitle()).isEqualTo("Fairy Tail 1 02");
     }
 

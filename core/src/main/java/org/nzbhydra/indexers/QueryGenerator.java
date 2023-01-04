@@ -20,12 +20,12 @@ import net.jodah.expiringmap.ExpirationPolicy;
 import net.jodah.expiringmap.ExpiringMap;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.indexer.IndexerConfig;
+import org.nzbhydra.config.mediainfo.MediaIdType;
 import org.nzbhydra.config.searching.SearchType;
 import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.mediainfo.InfoProviderException;
-import org.nzbhydra.mediainfo.MediaIdType;
 import org.nzbhydra.mediainfo.MediaInfo;
 import org.nzbhydra.searching.searchrequests.InternalData;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
@@ -40,12 +40,6 @@ import java.util.concurrent.TimeUnit;
 
 @Component
 public class QueryGenerator {
-
-    public enum QueryFormat {
-        TITLE,
-        TITLE_YEAR,
-        TITLE_YEAR_LANGUAGE
-    }
 
     private static final Logger logger = LoggerFactory.getLogger(QueryGenerator.class);
 

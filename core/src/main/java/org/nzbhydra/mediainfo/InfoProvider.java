@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
 import net.jodah.expiringmap.ExpirationPolicy;
 import net.jodah.expiringmap.ExpiringMap;
+import org.nzbhydra.config.mediainfo.MediaIdType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +20,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static org.nzbhydra.mediainfo.MediaIdType.*;
+import static org.nzbhydra.config.mediainfo.MediaIdType.*;
 
 @Component
 public class InfoProvider {

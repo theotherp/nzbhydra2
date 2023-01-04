@@ -18,7 +18,7 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 @ExtendWith(SpringExtension.class)
-public class JackettCapsMappingTest {
+public class JackettCapsCustomQueryAndTitleMappingTest {
 
 
     //@Ignore //Needs tbe mapped from XML to class
@@ -35,7 +35,7 @@ public class JackettCapsMappingTest {
     private JacketCapsXmlRoot getRssRootFromXml(String xmlFileName) throws IOException {
         RestTemplate restTemplate = new RestTemplate();
         MockRestServiceServer mockServer = MockRestServiceServer.createServer(restTemplate);
-        final URL resource = Resources.getResource(JackettCapsMappingTest.class, xmlFileName);
+        final URL resource = Resources.getResource(JackettCapsCustomQueryAndTitleMappingTest.class, xmlFileName);
         final String xmlContent = Resources.toString(resource, Charsets.UTF_8);
         mockServer.expect(requestTo("/api")).andRespond(withSuccess(xmlContent, MediaType.APPLICATION_XML));
 

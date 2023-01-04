@@ -16,12 +16,12 @@
 
 package org.nzbhydra.config;
 
+import org.nzbhydra.config.indexer.BackendType;
 import org.nzbhydra.config.indexer.IndexerCategoryConfig;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
-import org.nzbhydra.indexers.Indexer;
+import org.nzbhydra.config.mediainfo.MediaIdType;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
-import org.nzbhydra.mediainfo.MediaIdType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +29,7 @@ import java.util.List;
 public final class IndexerConfigBuilder {
     private boolean allCapsChecked;
     private String apiKey = "apikey";
-    private Indexer.BackendType backend = Indexer.BackendType.NEWZNAB;
+    private BackendType backend = BackendType.NEWZNAB;
     private IndexerCategoryConfig categoryMapping = new IndexerCategoryConfig();
     private boolean configComplete = true;
     private List<String> enabledCategories = new ArrayList<>();
@@ -71,7 +71,7 @@ public final class IndexerConfigBuilder {
         return this;
     }
 
-    public IndexerConfigBuilder backend(Indexer.BackendType backend) {
+    public IndexerConfigBuilder backend(BackendType backend) {
         this.backend = backend;
         return this;
     }

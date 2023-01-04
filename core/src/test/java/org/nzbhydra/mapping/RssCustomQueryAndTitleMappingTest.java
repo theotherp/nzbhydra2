@@ -28,7 +28,7 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 @ExtendWith(SpringExtension.class)
-public class RssMappingTest {
+public class RssCustomQueryAndTitleMappingTest {
     @BeforeEach
     public void setUp() throws Exception {
 
@@ -217,7 +217,7 @@ public class RssMappingTest {
     private NewznabXmlRoot getRssRootFromXml(String xmlFileName) throws IOException {
         RestTemplate restTemplate = new RestTemplate();
         MockRestServiceServer mockServer = MockRestServiceServer.createServer(restTemplate);
-        mockServer.expect(requestTo("/api")).andRespond(withSuccess(Resources.toString(Resources.getResource(RssMappingTest.class, xmlFileName), Charsets.UTF_8), MediaType.APPLICATION_XML));
+        mockServer.expect(requestTo("/api")).andRespond(withSuccess(Resources.toString(Resources.getResource(RssCustomQueryAndTitleMappingTest.class, xmlFileName), Charsets.UTF_8), MediaType.APPLICATION_XML));
 
         return restTemplate.getForObject("/api", NewznabXmlRoot.class);
     }

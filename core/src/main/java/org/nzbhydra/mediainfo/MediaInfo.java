@@ -3,6 +3,7 @@ package org.nzbhydra.mediainfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.MoreObjects;
 import lombok.Setter;
+import org.nzbhydra.config.mediainfo.MediaIdType;
 
 import java.util.Collection;
 import java.util.Optional;

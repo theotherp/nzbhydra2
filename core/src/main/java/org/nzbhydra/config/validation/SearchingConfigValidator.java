@@ -20,7 +20,8 @@ import com.google.common.base.Strings;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.SearchingConfig;
-import org.nzbhydra.searching.CustomQueryAndTitleMapping;
+import org.nzbhydra.config.searching.CustomQueryAndTitleMapping;
+import org.nzbhydra.searching.CustomQueryAndTitleMappingHandler;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,20 +61,20 @@ public class SearchingConfigValidator implements ConfigValidator<SearchingConfig
                 warnings.add("You selected not to apply any word restrictions in \"Searching\" but supplied a forbidden or required regex there");
             }
         }
-        final CustomQueryAndTitleMapping customQueryAndTitleMapping = new CustomQueryAndTitleMapping(newBaseConfig);
+        final CustomQueryAndTitleMappingHandler customQueryAndTitleMappingHandler = new CustomQueryAndTitleMappingHandler(newBaseConfig);
         final SearchRequest searchRequest = new SearchRequest();
         searchRequest.setTitle("test title");
         searchRequest.setQuery("test query");
-        for (CustomQueryAndTitleMapping.Mapping customMapping : newConfig.getCustomMappings()) {
+        for (CustomQueryAndTitleMapping customCustomQueryAndTitleMapping : newConfig.getCustomMappings()) {
             try {
-                customQueryAndTitleMapping.mapSearchRequest(searchRequest, Collections.singletonList(customMapping));
+                customQueryAndTitleMappingHandler.mapSearchRequest(searchRequest, Collections.singletonList(customCustomQueryAndTitleMapping));
             } catch (Exception e) {
-                errors.add(String.format("Unable to process mapping %s:}\n%s", customMapping.toString(), e.getMessage()));
+                errors.add(String.format("Unable to process mapping %s:}\n%s", customCustomQueryAndTitleMapping.toString(), e.getMessage()));
             }
-            if (customMapping.getFrom().contains("{episode:")) {
+            if (customCustomQueryAndTitleMapping.getFrom().contains("{episode:")) {
                 errors.add("The group 'episode' is not allowed in custom mapping input patterns.");
             }
-            if (customMapping.getFrom().contains("{season:")) {
+            if (customCustomQueryAndTitleMapping.getFrom().contains("{season:")) {
                 errors.add("The group 'season' is not allowed in custom mapping input patterns.");
             }
         }

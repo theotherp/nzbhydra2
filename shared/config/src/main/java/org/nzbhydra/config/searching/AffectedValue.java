@@ -1,5 +1,5 @@
 /*
- *  (C) Copyright 2020 TheOtherP (theotherp@posteo.net)
+ *  (C) Copyright 2023 TheOtherP (theotherp@posteo.net)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,17 +14,10 @@
  *  limitations under the License.
  */
 
-package org.nzbhydra.mediainfo;
+package org.nzbhydra.config.searching;
 
-public enum MediaIdType {
-    TVDB,
-    TVRAGE,
-    TVMAZE,
-    TRAKT,
-    IMDB,
-    TVIMDB,
-    TMDB,
-    TVTITLE,
-    MOVIETITLE
-
+public enum AffectedValue {
+    TITLE,
+    QUERY,
+    RESULT_TITLE
 }

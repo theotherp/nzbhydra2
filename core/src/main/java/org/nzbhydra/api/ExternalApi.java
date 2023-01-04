@@ -9,6 +9,7 @@ import lombok.Data;
 import org.apache.catalina.connector.ClientAbortException;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.category.CategoriesConfig;
+import org.nzbhydra.config.mediainfo.MediaIdType;
 import org.nzbhydra.config.searching.SearchType;
 import org.nzbhydra.downloading.DownloadResult;
 import org.nzbhydra.downloading.FileHandler;
@@ -20,9 +21,8 @@ import org.nzbhydra.mapping.newznab.NewznabResponse;
 import org.nzbhydra.mapping.newznab.OutputType;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlError;
 import org.nzbhydra.mediainfo.Imdb;
-import org.nzbhydra.mediainfo.MediaIdType;
 import org.nzbhydra.searching.CategoryProvider;
-import org.nzbhydra.searching.CustomQueryAndTitleMapping;
+import org.nzbhydra.searching.CustomQueryAndTitleMappingHandler;
 import org.nzbhydra.searching.SearchResult;
 import org.nzbhydra.searching.Searcher;
 import org.nzbhydra.searching.dtoseventsenums.DownloadType;
@@ -90,7 +90,7 @@ public class ExternalApi {
     @Autowired
     private MockSearch mockSearch;
     @Autowired
-    private CustomQueryAndTitleMapping customQueryAndTitleMapping;
+    private CustomQueryAndTitleMappingHandler customQueryAndTitleMappingHandler;
     protected Clock clock = Clock.systemUTC();
     private final Random random = new Random();
 
@@ -336,7 +336,7 @@ public class ExternalApi {
             searchRequest.getInternalData().setIncludePasswords(true);
         }
         searchRequest = searchRequestFactory.extendWithSavedIdentifiers(searchRequest);
-        searchRequest = customQueryAndTitleMapping.mapSearchRequest(searchRequest);
+        searchRequest = customQueryAndTitleMappingHandler.mapSearchRequest(searchRequest);
 
         return searchRequest;
     }

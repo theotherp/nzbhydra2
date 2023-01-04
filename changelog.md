@@ -36,13 +36,15 @@
 
 ### v4.7.0 BETA (2022-09-18)
 
-**Feature** Use custom mappings to transform indexer result titles. Use this to clean up titles, add season or episode to it or whatever. See <a href="https://github.com/theotherp/nzbhydra2/issues/794">#794</a>
+**Feature** Use custom customQueryAndTitleMappings to transform indexer result titles. Use this to clean up titles, add season or episode to it or whatever. See <a href="https://github.com/theotherp/nzbhydra2/issues/794">#794</a>
 
-**Fix** Some of you have an instance running which is exposed to the internet, without any authentication method. I previously tried to recognize this by some heuristic which was a bit naive and caused a lot of false positives. NZBHydra will now periodically try to determine your public IP and actually check if the used port is open. This might still not always work (e.g. in when you're running it using a VPN in which case I guess you know what're doing. Ultimately it's up to you to get your shit together.
+**Fix** Some of you have an instance running which is exposed to the internet, without any authentication method. I previously tried to recognize this by some heuristic which was a bit naive and caused a lot of false positives. NZBHydra
+will now periodically try to determine your public IP and actually check if the used port is open. This might still not always work (e.g. in when you're running it using a VPN in which case I guess you know what're doing. Ultimately it's up
+to you to get your shit together.
 
 **Fix** Only warn about settings violating indexers' rules if the indexers are actually enabled.
 
-**Fix** Fix saving config with custom mappings.
+**Fix** Fix saving config with custom customQueryAndTitleMappings.
 
 
 
@@ -62,7 +64,7 @@
 
 **Feature** Automatically use NZB access and adding types required by certain indexers. See <a href="https://github.com/theotherp/nzbhydra2/issues/784">#784</a>.
 
-**Feature** Add debug logging for category mapping.
+**Feature** Add debug logging for category customQueryAndTitleMapping.
 
 
 
@@ -88,13 +90,13 @@
 
 **Fix** Add the current API hit to the number of reported API hits in response.
 
-**Fix** Fix name of logging marker "Custom mapping" (was "Config mapping").
+**Fix** Fix name of logging marker "Custom customQueryAndTitleMapping" (was "Config customQueryAndTitleMapping").
 
 
 
 ### v4.3.2 (2022-06-13)
 
-**Fix** Fix use of groups in custom search request mapping. See <a href="https://github.com/theotherp/nzbhydra2/issues/700">#700</a>
+**Fix** Fix use of groups in custom search request customQueryAndTitleMapping. See <a href="https://github.com/theotherp/nzbhydra2/issues/700">#700</a>
 
 **Fix** Fix download of backup files. See <a href="https://github.com/theotherp/nzbhydra2/issues/772">#772</a>
 
@@ -302,7 +304,8 @@
 
 ### v3.14.0 (2021-04-11)
 
-**Feature** Custom mapping for queries and titles. This allows you to customize / change the values used by external tools or returned by metadata providers like TVDB. See <a href="https://github.com/theotherp/nzbhydra2/issues/700">#700</a>.
+**Feature** Custom customQueryAndTitleMapping for queries and titles. This allows you to customize / change the values used by external tools or returned by metadata providers like TVDB.
+See <a href="https://github.com/theotherp/nzbhydra2/issues/700">#700</a>.
 
 
 
@@ -1354,7 +1357,8 @@
 
 ### v2.9.5 (2019-11-23)
 
-**Feature** I realised the indexer score is too complex to show in a chart and replaced it with a table, that shows more information. It will now contain the average uniqueness score, the number of unique downloads and the number of searches which resulted in a download and where an indexer was involved. 
+**Feature** I realised the indexer score is too complex to show in a chart and replaced it with a table, that shows more information. It will now contain the average uniqueness score, the number of unique downloads and the number of
+searches which resulted in a download and where an indexer was involved.
 
 
 
@@ -1948,7 +1952,7 @@
 
 ### v2.1.7 (2018-12-30)
 
-**Fix** Fix/improve category mapping introduced in 2.1.6. Use custom newznab categories if none from the predefined range are provided.
+**Fix** Fix/improve category customQueryAndTitleMapping introduced in 2.1.6. Use custom newznab categories if none from the predefined range are provided.
 
 
 
@@ -1956,7 +1960,7 @@
 
 **Fix** When uploading a backup file the UI didn't update to inform the user about the progress after the file was uploaded.
 
-**Fix** Improve category mapping for (torznab) indexers. Some use custom newznab category numbers (>9999) which could not be properly mapped to preconfigured categories.
+**Fix** Improve category customQueryAndTitleMapping for (torznab) indexers. Some use custom newznab category numbers (>9999) which could not be properly mapped to preconfigured categories.
 
 
 
@@ -2166,7 +2170,7 @@
 
 **Fix** Restoring from web UI had no effect
 
-**Fix** Category mapping would sometimes not work for incoming searches
+**Fix** Category customQueryAndTitleMapping would sometimes not work for incoming searches
 
 
 

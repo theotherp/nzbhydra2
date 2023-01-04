@@ -5,6 +5,7 @@ import com.uwetrottmann.tmdb2.entities.Movie;
 import com.uwetrottmann.tmdb2.entities.MovieResultsPage;
 import com.uwetrottmann.tmdb2.enumerations.ExternalSource;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.mediainfo.MediaIdType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

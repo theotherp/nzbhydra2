@@ -67,7 +67,7 @@ public class IndexerInstantiator {
     @Autowired
     private QueryGenerator queryGenerator;
     @Autowired
-    private CustomQueryAndTitleMapping titleMapping;
+    private CustomQueryAndTitleMappingHandler titleMapping;
     @Autowired
     private Unmarshaller unmarshaller;
     @Autowired

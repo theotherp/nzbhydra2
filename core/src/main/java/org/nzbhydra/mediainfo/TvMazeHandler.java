@@ -2,6 +2,7 @@ package org.nzbhydra.mediainfo;
 
 import com.google.common.base.MoreObjects;
 import lombok.Data;
+import org.nzbhydra.config.mediainfo.MediaIdType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

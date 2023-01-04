@@ -16,6 +16,7 @@ import org.nzbhydra.config.category.Category;
 import org.nzbhydra.config.category.Category.Subtype;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
+import org.nzbhydra.config.mediainfo.MediaIdType;
 import org.nzbhydra.downloading.FileDownloadRepository;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.indexers.IndexerApiAccessRepository;
@@ -23,7 +24,6 @@ import org.nzbhydra.indexers.IndexerEntity;
 import org.nzbhydra.indexers.status.IndexerLimit;
 import org.nzbhydra.indexers.status.IndexerLimitRepository;
 import org.nzbhydra.mediainfo.InfoProvider;
-import org.nzbhydra.mediainfo.MediaIdType;
 import org.nzbhydra.searching.dtoseventsenums.DownloadType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.searching.searchrequests.SearchSource;
@@ -105,6 +105,7 @@ public class IndexerForSearchSelectorTest {
         when(category.getSubtype()).thenReturn(Subtype.NONE);
         when(entityManagerMock.createNativeQuery(anyString())).thenReturn(queryMock);
         when(indexerLimitRepositoryMock.findByIndexer(any())).thenReturn(indexerLimit);
+        when(searchRequest.meets(any())).thenCallRealMethod();
     }
 
 

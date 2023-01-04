@@ -27,7 +27,7 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 @ExtendWith(SpringExtension.class)
-public class RssCapsMappingTest {
+public class RssCapsCustomQueryAndTitleMappingTest {
 
 
     private Jaxb2Marshaller jaxb2Marshaller = new WebConfiguration().marshaller();
@@ -62,7 +62,7 @@ public class RssCapsMappingTest {
     private CapsXmlRoot getCaps(String xmlFileName) throws IOException {
         RestTemplate restTemplate = new RestTemplate();
         MockRestServiceServer mockServer = MockRestServiceServer.createServer(restTemplate);
-        mockServer.expect(requestTo("/api")).andRespond(withSuccess(Resources.toString(Resources.getResource(RssCapsMappingTest.class, xmlFileName), Charsets.UTF_8), MediaType.APPLICATION_XML));
+        mockServer.expect(requestTo("/api")).andRespond(withSuccess(Resources.toString(Resources.getResource(RssCapsCustomQueryAndTitleMappingTest.class, xmlFileName), Charsets.UTF_8), MediaType.APPLICATION_XML));
 
         return restTemplate.getForObject("/api", CapsXmlRoot.class);
     }

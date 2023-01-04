@@ -7,6 +7,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.internal.util.collections.Sets;
+import org.nzbhydra.config.mediainfo.MediaIdType;
 
 import java.util.Arrays;
 import java.util.Collections;

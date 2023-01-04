@@ -1,5 +1,5 @@
 /*
- *  (C) Copyright 2017 TheOtherP (theotherp@posteo.net)
+ *  (C) Copyright 2023 TheOtherP (theotherp@posteo.net)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -25,12 +25,11 @@ import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import lombok.Data;
 import org.nzbhydra.config.SearchSourceRestriction;
+import org.nzbhydra.config.mediainfo.MediaIdType;
 import org.nzbhydra.config.sensitive.SensitiveData;
-import org.nzbhydra.indexers.Indexer.BackendType;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mapping.newznab.json.JsonPubdateDeserializer;
 import org.nzbhydra.mapping.newznab.json.JsonPubdateSerializer;
-import org.nzbhydra.mediainfo.MediaIdType;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.time.Instant;

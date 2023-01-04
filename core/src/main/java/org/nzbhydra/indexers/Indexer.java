@@ -21,7 +21,7 @@ import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.notifications.IndexerDisabledNotificationEvent;
 import org.nzbhydra.notifications.IndexerReenabledNotificationEvent;
 import org.nzbhydra.searching.CategoryProvider;
-import org.nzbhydra.searching.CustomQueryAndTitleMapping;
+import org.nzbhydra.searching.CustomQueryAndTitleMappingHandler;
 import org.nzbhydra.searching.SearchResultAcceptor;
 import org.nzbhydra.searching.SearchResultAcceptor.AcceptorResult;
 import org.nzbhydra.searching.SearchResultIdCalculator;
@@ -66,12 +66,6 @@ import java.util.stream.Collectors;
 @Component
 public abstract class Indexer<T> {
 
-    public enum BackendType {
-        NZEDB,
-        NNTMUX,
-        NEWZNAB
-    }
-
     protected static final List<Integer> DISABLE_PERIODS = Arrays.asList(0, 5, 15, 30, 60, 3 * 60);
     private static final Logger logger = LoggerFactory.getLogger(Indexer.class);
 
@@ -108,7 +102,7 @@ public abstract class Indexer<T> {
 
     private QueryGenerator queryGenerator;
 
-    private CustomQueryAndTitleMapping titleMapping;
+    private CustomQueryAndTitleMappingHandler titleMapping;
 
     private BaseConfigHandler baseConfigHandler;
 
@@ -116,7 +110,7 @@ public abstract class Indexer<T> {
     protected Indexer() {
     }
 
-    public Indexer(ConfigProvider configProvider, IndexerRepository indexerRepository, SearchResultRepository searchResultRepository, IndexerApiAccessRepository indexerApiAccessRepository, IndexerApiAccessEntityShortRepository indexerApiAccessShortRepository, IndexerLimitRepository indexerStatusRepository, IndexerWebAccess indexerWebAccess, SearchResultAcceptor resultAcceptor, CategoryProvider categoryProvider, InfoProvider infoProvider, ApplicationEventPublisher eventPublisher, QueryGenerator queryGenerator, CustomQueryAndTitleMapping titleMapping, BaseConfigHandler baseConfigHandler) {
+    public Indexer(ConfigProvider configProvider, IndexerRepository indexerRepository, SearchResultRepository searchResultRepository, IndexerApiAccessRepository indexerApiAccessRepository, IndexerApiAccessEntityShortRepository indexerApiAccessShortRepository, IndexerLimitRepository indexerStatusRepository, IndexerWebAccess indexerWebAccess, SearchResultAcceptor resultAcceptor, CategoryProvider categoryProvider, InfoProvider infoProvider, ApplicationEventPublisher eventPublisher, QueryGenerator queryGenerator, CustomQueryAndTitleMappingHandler titleMapping, BaseConfigHandler baseConfigHandler) {
         this.configProvider = configProvider;
         this.indexerRepository = indexerRepository;
         this.searchResultRepository = searchResultRepository;
