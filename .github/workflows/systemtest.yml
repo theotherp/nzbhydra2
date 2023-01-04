@@ -101,7 +101,7 @@ jobs:
                     username: ${{ github.actor }}
                     password: ${{ secrets.GITHUB_TOKEN }}
                 volumes:
-                    - $RUNNER_TEMP/data:/data
+                    - /tmp/data:/data
             mockServer:
                 image: ghcr.io/theotherp/mockserver:3.0.0
                 ports:
@@ -131,4 +131,4 @@ jobs:
                 if: always()
                 with:
                     name: data
-                    path: $RUNNER_TEMP/data
+                    path: /tmp/data
