@@ -49,21 +49,19 @@ jobs:
                 run: |
                     mv ~/artifacts/core ./docker/nativeTest/
                     chmod +x ./docker/nativeTest/core
+            -   name: "Login to GitHub Container Registry"
+                uses: docker/login-action@v2
+                with:
+                    registry: ghcr.io
+                    username: ${{ github.actor }}
+                    password: ${{ secrets.GITHUB_TOKEN }}
             -   name: "Build core container"
                 run: |
                     cp other/wrapper/nzbhydra2wrapperPy3.py ./docker/nativeTest/
                     cd ./docker/nativeTest/
                     docker build -t hydradocker .
-                    docker save --output hydradocker.tar hydradocker
-            -   name: "Save core container image"
-                run: |
-                    docker save --output hydradocker.tar hydradocker
-            -   name: "Upload hydra docker image"
-                uses: actions/upload-artifact@v3
-                with:
-                    name: hydradocker
-                    path: hydradocker.tar
-                    retention-days: 1
+                    docker tag hydradocker:latest ghcr.io/theotherp/hydradocker:latest
+                    docker push ghcr.io/theotherp/hydradocker:latest
     buildMockserver:
         runs-on: ubuntu-latest
         steps:
@@ -75,68 +73,44 @@ jobs:
                     java-version: '17'
                     distribution: 'adopt'
                     cache: 'maven'
-            -   name: "Build mockserver container"
+            -   name: "Login to GitHub Container Registry"
+                uses: docker/login-action@v2
+                with:
+                    registry: ghcr.io
+                    username: ${{ github.actor }}
+                    password: ${{ secrets.GITHUB_TOKEN }}
+            -   name: "Build and push mockserver container"
                 run: |
                     mvn --batch-mode install -DskipTests -T 1C
                     cd other/mockserver/
                     mvn --batch-mode spring-boot:build-image
-            -   name: "Save core container image"
-                run: |
-                    docker save --output mockserver.tar mockserver:3.0.0
-            -   name: "Upload mockserver docker image"
-                uses: actions/upload-artifact@v3
-                with:
-                    name: mockserver
-                    path: mockserver.tar
-                    retention-days: 1
+                    docker tag mockserver:3.0.0 ghcr.io/theotherp/mockserver:3.0.0
+                    docker push ghcr.io/theotherp/mockserver:3.0.0
 
     runTests:
         needs: [ prepareContainer, buildMockserver ]
         runs-on: ubuntu-latest
         env:
             spring_profiles_active: build
-        #todo can't use images uploaded above
-        #        services:
-        #            core:
-        #                image: hydradocker
-        #                ports:
-        #                    - 5076:5076
-        #            mockServer:
-        #                image: mockserver:3.0.0
-        #                ports:
-        #                    - 5080:5080
+        services:
+            core:
+                image: ghcr.io/theotherp/hydradocker:latest
+                ports:
+                    - 5076:5076
+                credentials:
+                    username: ${{ github.actor }}
+                    password: ${{ secrets.GITHUB_TOKEN }}
+            mockServer:
+                image: ghcr.io/theotherp/mockserver:3.0.0
+                ports:
+                    - 5080:5080
+                credentials:
+                    username: ${{ github.actor }}
+                    password: ${{ secrets.GITHUB_TOKEN }}
 
         steps:
             -   uses: actions/checkout@v3
                 name: "Check out source"
-            # Run hydra
-            -   uses: actions/download-artifact@v3
-                name: "Download hydradocker image"
-                with:
-                    path: .
-                    name: hydradocker
-
-            -   name: "Load hydradocker image into docker"
-                run: docker load --input hydradocker.tar
-
-            -   name: "Run hydradocker"
-                run: |
-                    mkdir data
-                    cp tests/system/src/test/resources/initialNzbhydra.yml data/nzbhydra.yml
-                    docker run -p 5076:5076 -d hydradocker
-
-            # Run mockserver
-            -   uses: actions/download-artifact@v3
-                name: "Download mockserver image"
-                with:
-                    path: .
-                    name: mockserver
-
-            -   name: "Load mockserver image into docker"
-                run: docker load --input mockserver.tar
-
-            -   name: "Run mockserver"
-                run: docker run -p 5080:5080 -d mockserver:3.0.0
 
             # Run tests
             -   name: Set up JDK 17
