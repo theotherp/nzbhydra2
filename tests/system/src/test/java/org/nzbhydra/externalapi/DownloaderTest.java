@@ -21,13 +21,13 @@ import org.nzbhydra.GenericResponse;
 import org.nzbhydra.HydraClient;
 import org.nzbhydra.HydraResponse;
 import org.nzbhydra.Jackson;
+import org.nzbhydra.SearchResultProvider;
 import org.nzbhydra.TestConfig;
 import org.nzbhydra.config.downloading.DownloaderConfig;
 import org.nzbhydra.downloading.AddFilesRequest;
 import org.nzbhydra.downloading.downloaders.AddNzbsResponse;
 import org.nzbhydra.downloading.downloaders.DownloaderStatus;
 import org.nzbhydra.hydraconfigure.ConfigManager;
-import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -47,6 +47,9 @@ public class DownloaderTest {
 
     @Autowired
     private ConfigManager configManager;
+
+    @Autowired
+    private SearchResultProvider searchResultProvider;
 
     @Value("${nzbhydra.mockUrl}")
     private String mockUrl;
@@ -75,7 +78,7 @@ public class DownloaderTest {
 
     @Test
     public void shouldAddNzb() throws Exception {
-        final String guid = findSearchResult();
+        final String guid = searchResultProvider.findOneGuid();
 
         DownloaderConfig config = getDownloaderConfig();
         AddFilesRequest addFilesRequest = new AddFilesRequest();
@@ -86,14 +89,6 @@ public class DownloaderTest {
         final HydraResponse response = hydraClient.put("internalapi/downloader/addNzbs", addFilesRequestJson);
         final AddNzbsResponse status = response.as(AddNzbsResponse.class);
         assertThat(status.isSuccessful()).isTrue();
-    }
-
-    private String findSearchResult() {
-        final HydraResponse response = hydraClient.get("/api", "apikey=apikey", "t=search", "q=123");
-        final String body = response.body();
-        NewznabXmlRoot root = Jackson.getUnmarshal(body);
-        final String guid = root.getRssChannel().getItems().get(0).getRssGuid().getGuid();
-        return guid;
     }
 
 

@@ -59,13 +59,13 @@ public class MockNewznab {
 
     @RequestMapping(value = "/nzb/{nzbId}", produces = MediaType.TEXT_HTML_VALUE)
     public ResponseEntity<String> nzbDownload(@PathVariable String nzbId) throws Exception {
-        if (nzbId.endsWith("11")) {
+        if (nzbId.endsWith("91")) {
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
         }
-        if (nzbId.endsWith("12")) {
+        if (nzbId.endsWith("92")) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-        if (nzbId.endsWith("13")) {
+        if (nzbId.endsWith("93")) {
             return ResponseEntity.status(429).body("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                 "<error code=\"429\" description=\"Request limit reached\"/>");
         }
