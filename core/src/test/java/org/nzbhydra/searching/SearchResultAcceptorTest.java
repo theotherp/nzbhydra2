@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.SearchSource;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.SearchingConfig;
 import org.nzbhydra.config.category.Category;
@@ -18,7 +19,6 @@ import org.nzbhydra.indexers.Newznab;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.nzbhydra.searching.searchrequests.InternalData;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
-import org.nzbhydra.searching.searchrequests.SearchSource;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;

@@ -1,13 +1,16 @@
 package org.nzbhydra.historystats;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.nzbhydra.Jackson;
 import org.nzbhydra.downloading.FileDownloadEntity;
 import org.nzbhydra.historystats.History.SearchDetails;
 import org.nzbhydra.historystats.stats.HistoryRequest;
 import org.nzbhydra.notifications.NotificationEntity;
 import org.nzbhydra.searching.db.SearchEntity;
+import org.nzbhydra.searching.db.SearchEntityTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,8 +31,12 @@ public class HistoryWeb {
     @Secured({"ROLE_STATS"})
     @Transactional
     @RequestMapping(value = "/internalapi/history/searches", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public Page<SearchEntity> searchHistory(@RequestBody HistoryRequest requestData) {
-        return history.getHistory(requestData, History.SEARCH_TABLE, SearchEntity.class);
+    public Page<SearchEntityTO> searchHistory(@RequestBody HistoryRequest requestData) {
+        final Page<SearchEntity> page = history.getHistory(requestData, History.SEARCH_TABLE, SearchEntity.class);
+        final List<SearchEntityTO> searchEntityTOS = page.getContent().stream()
+            .map(x -> Jackson.JSON_MAPPER.convertValue(x, SearchEntityTO.class))
+            .toList();
+        return new PageImpl<>(searchEntityTOS);
     }
 
     @Secured({"ROLE_STATS"})

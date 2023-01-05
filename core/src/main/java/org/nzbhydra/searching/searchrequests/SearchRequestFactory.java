@@ -1,6 +1,7 @@
 package org.nzbhydra.searching.searchrequests;
 
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.SearchSource;
 import org.nzbhydra.config.SearchingConfig;
 import org.nzbhydra.config.category.Category;
 import org.nzbhydra.config.mediainfo.MediaIdType;

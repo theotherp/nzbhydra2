@@ -14,9 +14,7 @@
  *  limitations under the License.
  */
 
-package org.nzbhydra.searching.searchrequests;
-
-import org.nzbhydra.config.SearchSourceRestriction;
+package org.nzbhydra.config;
 
 public enum SearchSource {
     INTERNAL,

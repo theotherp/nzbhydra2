@@ -43,7 +43,7 @@ public class BackupTest {
 
     @Test
     public void shouldBackupAndShowInListAndBeDownloadable() throws Exception {
-        GenericResponse backupResponse = hydraClient.get("internalapi/backup/backuponly").raiseIfUnsuccessful().as(GenericResponse.class);
+        GenericResponse backupResponse = hydraClient.get("internalapi/backup/backuponly").as(GenericResponse.class);
         assertThat(backupResponse.isSuccessful()).isTrue();
         List<BackupEntry> backupEntries = hydraClient.get("internalapi/backup/list").as(new TypeReference<>() {
         });

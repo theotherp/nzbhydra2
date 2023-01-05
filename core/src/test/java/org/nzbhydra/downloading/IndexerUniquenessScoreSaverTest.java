@@ -29,6 +29,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.SearchSource;
 import org.nzbhydra.config.downloading.FileDownloadAccessType;
 import org.nzbhydra.indexers.IndexerEntity;
 import org.nzbhydra.indexers.IndexerSearchEntity;
@@ -36,7 +37,6 @@ import org.nzbhydra.indexers.IndexerSearchRepository;
 import org.nzbhydra.searching.db.SearchEntity;
 import org.nzbhydra.searching.db.SearchResultEntity;
 import org.nzbhydra.searching.db.SearchResultRepository;
-import org.nzbhydra.searching.searchrequests.SearchSource;
 import org.nzbhydra.searching.uniqueness.IndexerUniquenessScoreEntity;
 import org.nzbhydra.searching.uniqueness.IndexerUniquenessScoreEntityRepository;
 

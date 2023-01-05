@@ -19,17 +19,39 @@ package org.nzbhydra;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import lombok.Data;
 
-public record HydraResponse(String body, int status) {
+@Data
+public class HydraResponse {
+
+
+    private final String body;
+    private final int status;
+    private boolean dontThrowExceptionOnErrorStatus;
+
+    public HydraResponse(String body, int status) {
+        this.body = body;
+        this.status = status;
+    }
+
+    public String body() {
+        return body;
+    }
+
+    public int status() {
+        return status;
+    }
+
 
     public HydraResponse raiseIfUnsuccessful() {
-        if (status != 200) {
-            throw new RuntimeException("Unsuccessful HTTP call. Status: " + status + ". Body:\n" + body);
-        }
         return this;
     }
 
     public <T> T as(Class<T> clazz) {
+        if (!dontThrowExceptionOnErrorStatus && status != 200) {
+            throw new RuntimeException("Unsuccessful HTTP call. Status: " + status + ". Body:\n" + body);
+
+        }
         try {
             return Jackson.JSON_MAPPER.readValue(body, clazz);
         } catch (JsonProcessingException e) {
@@ -38,6 +60,10 @@ public record HydraResponse(String body, int status) {
     }
 
     public <T> T as(TypeReference<T> tTypeReference) {
+        if (!dontThrowExceptionOnErrorStatus && status != 200) {
+            throw new RuntimeException("Unsuccessful HTTP call. Status: " + status + ". Body:\n" + body);
+
+        }
         try {
             return Jackson.JSON_MAPPER.readValue(body, tTypeReference);
         } catch (JsonProcessingException e) {

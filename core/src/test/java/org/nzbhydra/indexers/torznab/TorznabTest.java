@@ -29,6 +29,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.SearchSource;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.SearchingConfig;
 import org.nzbhydra.config.category.Category;
@@ -52,7 +53,6 @@ import org.nzbhydra.searching.CategoryProvider;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem.DownloadType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
-import org.nzbhydra.searching.searchrequests.SearchSource;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.Instant;

@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.nzbhydra.HydraClient;
 import org.nzbhydra.HydraResponse;
 import org.nzbhydra.Jackson;
+import org.nzbhydra.Searcher;
 import org.nzbhydra.TestConfig;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
@@ -39,6 +40,9 @@ public class ExternalApiSearchingTest {
     @Autowired
     private HydraClient hydraClient;
 
+    @Autowired
+    private Searcher searcher;
+
     @Test
     public void shouldComplainWithoutApiKey() throws Exception {
         final HydraResponse response = hydraClient.get("/api");
@@ -48,9 +52,7 @@ public class ExternalApiSearchingTest {
 
     @Test
     public void shouldSearch() throws Exception {
-        final HydraResponse response = hydraClient.get("/api", "apikey=apikey", "t=search", "q=123");
-        final String body = response.body();
-        NewznabXmlRoot root = Jackson.getUnmarshal(body);
+        NewznabXmlRoot root = searcher.searchExternalApi("123");
         Assertions.assertThat(root).isNotNull();
         Assertions.assertThat(root.getRssChannel().getItems()).isNotEmpty();
     }

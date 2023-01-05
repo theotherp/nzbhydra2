@@ -42,12 +42,12 @@ public class DebugInfosTest {
 
     @Test
     public void shouldListAndDownloadLog() throws Exception {
-        HydraResponse response = hydraClient.get("internalapi/debuginfos/logfilenames").raiseIfUnsuccessful();
+        HydraResponse response = hydraClient.get("internalapi/debuginfos/logfilenames");
         String body = response.body();
         final List<String> names = Jackson.JSON_MAPPER.readValue(body, new TypeReference<>() {
         });
         assertThat(names).isNotEmpty();
-        response = hydraClient.get("internalapi/debuginfos/downloadlog", "logfilename=" + names.get(0)).raiseIfUnsuccessful();
+        response = hydraClient.get("internalapi/debuginfos/downloadlog", "logfilename=" + names.get(0));
         body = response.body();
         assertThat(body)
             .contains("Started NzbHydra in");

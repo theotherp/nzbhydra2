@@ -19,6 +19,7 @@
         <module name="sockslib" />
         <module name="system" />
         <module name="ui" />
+        <module name="entities" />
         <module name="github-release-plugin" />
         <module name="config" />
       </profile>

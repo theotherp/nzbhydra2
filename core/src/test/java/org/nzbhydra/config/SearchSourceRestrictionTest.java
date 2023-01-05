@@ -20,7 +20,6 @@ import org.junit.jupiter.api.Test;
 import org.nzbhydra.config.mediainfo.MediaIdType;
 import org.nzbhydra.config.searching.SearchType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
-import org.nzbhydra.searching.searchrequests.SearchSource;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -5,6 +5,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.nzbhydra.config.SearchSource;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.category.Category;
 import org.nzbhydra.config.mediainfo.MediaIdType;

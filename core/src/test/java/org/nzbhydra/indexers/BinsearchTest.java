@@ -13,6 +13,7 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.stubbing.Answer;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.SearchSource;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.searching.SearchType;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
@@ -21,7 +22,6 @@ import org.nzbhydra.searching.CategoryProvider;
 import org.nzbhydra.searching.dtoseventsenums.IndexerSearchResult;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
-import org.nzbhydra.searching.searchrequests.SearchSource;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;

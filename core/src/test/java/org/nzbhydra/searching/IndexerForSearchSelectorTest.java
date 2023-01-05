@@ -10,6 +10,7 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.internal.util.collections.Sets;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.SearchSource;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.SearchingConfig;
 import org.nzbhydra.config.category.Category;
@@ -26,7 +27,6 @@ import org.nzbhydra.indexers.status.IndexerLimitRepository;
 import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.searching.dtoseventsenums.DownloadType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
-import org.nzbhydra.searching.searchrequests.SearchSource;
 import org.springframework.context.ApplicationEventPublisher;
 
 import java.sql.Timestamp;

@@ -16,9 +16,9 @@ import jakarta.persistence.Table;
 import lombok.Data;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.nzbhydra.config.SearchSource;
 import org.nzbhydra.config.downloading.FileDownloadAccessType;
 import org.nzbhydra.searching.db.SearchResultEntity;
-import org.nzbhydra.searching.searchrequests.SearchSource;
 import org.nzbhydra.springnative.ReflectionMarker;
 import org.nzbhydra.web.SessionStorage;
 

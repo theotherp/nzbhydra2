@@ -2,6 +2,7 @@ package org.nzbhydra.searching.searchrequests;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.nzbhydra.config.SearchSource;
 import org.nzbhydra.config.searching.SearchType;
 
 import static org.assertj.core.api.Assertions.assertThat;

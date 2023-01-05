@@ -18,6 +18,7 @@ package org.nzbhydra.api;
 
 import com.google.common.collect.Sets;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.SearchSource;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.category.Category;
 import org.nzbhydra.config.indexer.IndexerConfig;
@@ -48,7 +49,6 @@ import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlSearch;
 import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlSearching;
 import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlServer;
 import org.nzbhydra.mediainfo.InfoProvider;
-import org.nzbhydra.searching.searchrequests.SearchSource;
 import org.nzbhydra.update.UpdateManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;

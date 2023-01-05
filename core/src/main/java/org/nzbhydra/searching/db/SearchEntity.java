@@ -1,5 +1,5 @@
 /*
- *  (C) Copyright 2017 TheOtherP (theotherp@posteo.net)
+ *  (C) Copyright 2023 TheOtherP (theotherp@posteo.net)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -30,8 +30,8 @@ import jakarta.persistence.Table;
 import lombok.Data;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
+import org.nzbhydra.config.SearchSource;
 import org.nzbhydra.config.searching.SearchType;
-import org.nzbhydra.searching.searchrequests.SearchSource;
 import org.nzbhydra.springnative.ReflectionMarker;
 import org.nzbhydra.web.SessionStorage;
 

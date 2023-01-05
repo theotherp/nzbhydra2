@@ -11,4 +11,5 @@ public enum SearchSourceRestriction {
     public boolean isEnabled() {
         return this != NONE;
     }
+
 }

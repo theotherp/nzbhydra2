@@ -63,7 +63,7 @@ public class NzbHandlingTest {
         configManager.setConfig(config);
 
         final String guid = searchResultProvider.findOneGuid();
-        hydraClient.put("internalapi/saveNzbToBlackhole", guid).raiseIfUnsuccessful();
+        hydraClient.put("internalapi/saveNzbToBlackhole", guid);
         final File[] files = tempFolder.listFiles();
         assertThat(files).isNotEmpty();
         assertThat(files[0].getName()).endsWith(".nzb");
@@ -73,11 +73,11 @@ public class NzbHandlingTest {
     public void shouldDownloadZipWithNzbs() throws Exception {
         final List<String> guids = searchResultProvider.findSearchResults().stream().map(x -> x.getRssGuid().getGuid())
             .limit(2).toList();
-        final FileZipResponse zipResponse = hydraClient.post("internalapi/nzbzip", Jackson.JSON_MAPPER.writeValueAsString(guids)).raiseIfUnsuccessful().as(FileZipResponse.class);
+        final FileZipResponse zipResponse = hydraClient.post("internalapi/nzbzip", Jackson.JSON_MAPPER.writeValueAsString(guids)).as(FileZipResponse.class);
         assertThat(zipResponse.isSuccessful()).isTrue();
         assertThat(zipResponse.getAddedIds()).hasSize(2);
 
-        final HydraResponse downloadResponse = hydraClient.post("internalapi/nzbzipDownload", zipResponse.getZipFilepath()).raiseIfUnsuccessful();
+        final HydraResponse downloadResponse = hydraClient.post("internalapi/nzbzipDownload", zipResponse.getZipFilepath());
         //Good enough
         assertThat(downloadResponse.body()).startsWith("PK");
     }

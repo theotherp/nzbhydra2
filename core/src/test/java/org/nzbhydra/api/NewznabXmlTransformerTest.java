@@ -24,6 +24,7 @@ import org.mockito.MockitoAnnotations;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.MainConfig;
+import org.nzbhydra.config.SearchSource;
 import org.nzbhydra.config.category.Category;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.searching.SearchType;
@@ -34,7 +35,6 @@ import org.nzbhydra.searching.SearchResult;
 import org.nzbhydra.searching.dtoseventsenums.DownloadType;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
-import org.nzbhydra.searching.searchrequests.SearchSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;

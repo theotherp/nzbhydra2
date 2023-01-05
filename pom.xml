@@ -95,6 +95,8 @@
         <spring.boot.maven.version>3.0.1</spring.boot.maven.version>
         <spring.oxm.version>6.0.3</spring.oxm.version>
         <spring.test.version>6.0.3</spring.test.version>
+        <spring-data-jpa.version>3.0.0</spring-data-jpa.version>
+        <hibernate-core.version>6.1.6.Final</hibernate-core.version>
         <spring.security.test.version>6.0.0</spring.security.test.version>
         <jackson.version>2.14.0</jackson.version>
         <lombok.version>1.18.24</lombok.version>
