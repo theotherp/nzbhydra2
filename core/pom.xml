@@ -259,11 +259,6 @@
             <version>${commons-lang3.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.uwetrottmann.tmdb2</groupId>
-            <artifactId>tmdb-java</artifactId>
-            <version>1.6.0</version>
-        </dependency>
-        <dependency>
             <groupId>com.github.briandilley.jsonrpc4j</groupId>
             <artifactId>jsonrpc4j</artifactId>
             <version>1.6</version>

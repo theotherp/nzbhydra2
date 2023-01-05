@@ -16,10 +16,8 @@
 
 package org.nzbhydra;
 
-import org.nzbhydra.config.migration.ConfigMigrationStep003to004;
-import org.nzbhydra.downloading.downloaders.sabnzbd.mapping.QueueResponse;
-import org.nzbhydra.mapping.newznab.NewznabParameters;
-import org.nzbhydra.news.NewsWeb;
+import com.vladsch.flexmark.html.HtmlRenderer;
+import org.nzbhydra.config.migration.ConfigMigrationStep;
 import org.nzbhydra.springnative.ReflectionMarker;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
@@ -31,6 +29,8 @@ import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.RuntimeHintsRegistrar;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Set;
 
 public class NativeHints implements RuntimeHintsRegistrar {
@@ -41,12 +41,15 @@ public class NativeHints implements RuntimeHintsRegistrar {
     @Override
     public void registerHints(RuntimeHints hints, ClassLoader classLoader) {
         logger.info("Registering native hints");
-        hints.reflection().registerType(NewsWeb.NewsEntryForWeb.class, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS);
-        hints.reflection().registerType(NewznabParameters.class, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS);
-        hints.reflection().registerType(QueueResponse.class, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS);
-        hints.reflection().registerType(ConfigMigrationStep003to004.class, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS);
+
         hints.resources().registerResourceBundle("joptsimple.ExceptionMessages");
-        final Set<Class<?>> classes = new Reflections("org.nzbhydra", Scanners.TypesAnnotated).getTypesAnnotatedWith(ReflectionMarker.class);
+
+
+        final Set<Class<?>> classes = getClassesToRegister();
+        classes.add(HashSet.class);
+        classes.add(ArrayList.class);
+        classes.add(HtmlRenderer.class);
+
         for (Class<?> clazz : classes) {
             hints.reflection().registerType(clazz, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS);
             for (Method method : clazz.getDeclaredMethods()) {
@@ -54,6 +57,14 @@ public class NativeHints implements RuntimeHintsRegistrar {
                 hints.reflection().registerMethod(method, ExecutableMode.INVOKE);
             }
         }
+
+    }
+
+    private static Set<Class<?>> getClassesToRegister() {
+        final Reflections reflections = new Reflections("org.nzbhydra", Scanners.TypesAnnotated, Scanners.SubTypes);
+        final Set<Class<?>> classes = reflections.getTypesAnnotatedWith(ReflectionMarker.class);
+        classes.addAll(reflections.getSubTypesOf(ConfigMigrationStep.class));
+        return classes;
     }
 
 }
