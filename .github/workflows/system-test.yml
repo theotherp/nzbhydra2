@@ -78,15 +78,6 @@ jobs:
                     registry: ghcr.io
                     username: ${{ github.actor }}
                     password: ${{ secrets.GITHUB_TOKEN }}
-            -   name: "Upload settings.xml"
-                uses: actions/upload-artifact@v3
-                with:
-                    name: settings
-                    path: ~/.m2/settings.xml
-            -   name: maven-settings-xml-action
-                uses: whelk-io/maven-settings-xml-action@v20
-                with:
-                    repositories: '[{ "id": "central", "url": "https://repo1.maven.org/maven2" }]'
             -   name: "Build and push mockserver container"
                 run: |
                     mvn --batch-mode install -DskipTests -T 1C
@@ -121,24 +112,6 @@ jobs:
                     password: ${{ secrets.GITHUB_TOKEN }}
                 env:
                     spring_profiles_active: build,systemtest
-            sonarr:
-                image: lscr.io/linuxserver/sonarr:latest
-                ports:
-                    - 8989:8989
-                credentials:
-                    username: ${{ github.actor }}
-                    password: ${{ secrets.GITHUB_TOKEN }}
-                volumes:
-                    - ./docker/sonarr/data/:/config
-            radarr:
-                image: lscr.io/linuxserver/radarr:latest
-                ports:
-                    - 8989:8989
-                credentials:
-                    username: ${{ github.actor }}
-                    password: ${{ secrets.GITHUB_TOKEN }}
-                volumes:
-                    - ./docker/radarr/data/:/config
         steps:
             -   uses: actions/checkout@v3
                 name: "Check out source"
@@ -150,9 +123,18 @@ jobs:
                     distribution: 'adopt'
                     cache: 'maven'
             -   name: "Install"
-                run: mvn --batch-mode clean install -pl org.nzbhydra:shared,org.nzbhydra:mapping,org.nzbhydra:config
+                run: mvn --batch-mode clean install -pl org.nzbhydra:shared,org.nzbhydra:mapping
+
+            # We must wait for the code to be checked out so we can access the data folders with preconfigured settings
+            -   name: "Run sonarr docker"
+                run: docker run -d -p 8989:8989 --name=sonar -v ${{ github.workspace }}/docker/sonarr/data/:/config lscr.io/linuxserver/sonarr:latest
+
+            -   name: "Run radarr docker"
+                run: docker run -d -p 7878:7878 --name=radarr -v ${{ github.workspace }}/docker/radarr/data/:/config lscr.io/linuxserver/radarr:latest
+
             -   name: "Run tests"
                 run: mvn --batch-mode test -pl org.nzbhydra.tests:system
+
             -   name: "Upload data folder artifact"
                 uses: actions/upload-artifact@v3
                 if: always()
