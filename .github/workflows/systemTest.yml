@@ -91,7 +91,7 @@ jobs:
                     docker tag mockserver:3.0.0 ghcr.io/theotherp/mockserver:3.0.0
                     docker push ghcr.io/theotherp/mockserver:3.0.0
 
-    runTests:
+    runSystemTests:
         needs: [ prepareContainer, buildMockserver ]
         runs-on: ubuntu-latest
         env:
@@ -136,7 +136,6 @@ jobs:
                 volumes:
                     - ./docker/radarr/data/:/config
         steps:
-
             -   uses: actions/checkout@v3
                 name: "Check out source"
 
@@ -147,11 +146,16 @@ jobs:
                     java-version: '17'
                     distribution: 'adopt'
                     cache: 'maven'
-
-            -   name: "Install required modules"
-                run: mvn --batch-mode install -pl org.nzbhydra:shared,org.nzbhydra:mapping,org.nzbhydra:config
+            -   name: "Install"
+                run: |
+                #                    cd shared
+                #                    mvn --batch-mode install -pl shared
+                         mvn --batch-mode install -pl org.nzbhydra:shared,org.nzbhydra:mapping,org.nzbhydra:config
             -   name: "Run tests"
-                run: mvn --batch-mode test -pl org.nzbhydra.tests:system
+                run: |
+                #                    cd tests/system
+                #                    mvn --batch-mode test
+                 mvn --batch-mode test -pl org.nzbhydra.tests:system
             -   name: "Upload data folder artifact"
                 uses: actions/upload-artifact@v3
                 if: always()
@@ -160,4 +164,4 @@ jobs:
                     path: /tmp/data
             -   name: "Publish Test Report"
                 uses: scacap/action-surefire-report@v1
-                if: always()
+                if: ${{ always() }}

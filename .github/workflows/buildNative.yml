@@ -29,25 +29,21 @@ jobs:
                     version: 'latest'
                     components: 'native-image'
                     cache: 'maven'
-                    #                    native-image-musl: true
                     github-token: ${{ secrets.GITHUB_TOKEN }}
-            -   name: Install all with Maven
+            -   name: "Install all with Maven"
                 run: mvn --batch-mode install -DskipTests -T 1C
-            -   name: Build native image
+            -   name: "Run unit tests"
+                run: mvn --batch-mode test -T 1C -pl !org.nzbhydra:tests,!org.nzbhydra.tests:system,!org.nzbhydra.tests:integration --fail-at-end
+            -   name: "Build native image"
                 working-directory: ./core
                 run: |
                     mvn --batch-mode -Pnative clean native:compile -DskipTests
-            -   name: Upload linux artifact
+            -   name: "Upload linux artifact"
                 uses: actions/upload-artifact@v3
                 if: runner.os == 'Linux'
                 with:
                     name: coreLinux
                     path: core/target/core
-            #            -   name: Upload windows artifact
-            #                uses: actions/upload-artifact@v3
-            #                if: runner.os == 'Windows'
-            #                with:
-#                    name: coreWindows
-#                    path: |
-#                        core\target\core.exe
-#                        core\target\*.dll
+            -   name: "Publish Test Report"
+                uses: scacap/action-surefire-report@v1
+                if: ${{ always() }}

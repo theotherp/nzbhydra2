@@ -49,7 +49,9 @@ public class LogAnonymizerTest {
 
     @Test
     void shouldAnonymizeIPs() throws Exception {
-        String toAnonymize = "192.168.0.1 127.0.0.1 2001:db8:3:4:: 64:ff9b:: 2001:db8:a0b:12f0::1 2001:0db8:0a0b:12f0:0000:0000:0000:0001";
+        //IPv6 anonymisation disabled for performance reasons
+//        String toAnonymize = "192.168.0.1 127.0.0.1 2001:db8:3:4:: 64:ff9b:: 2001:db8:a0b:12f0::1 2001:0db8:0a0b:12f0:0000:0000:0000:0001";
+        String toAnonymize = "192.168.0.1 127.0.0.1";
 
         String anonymized = testee.getAnonymizedLog(toAnonymize);
 
