@@ -127,7 +127,7 @@ jobs:
 
             # We must wait for the code to be checked out so we can access the data folders with preconfigured settings
             -   name: "Run sonarr docker"
-                run: docker run -d -p 8989:8989 --name=sonar -v ${{ github.workspace }}/docker/sonarr/data/:/config lscr.io/linuxserver/sonarr:latest
+                run: docker run -d -p 8989:8989 --name=sonarr -v ${{ github.workspace }}/docker/sonarr/data/:/config lscr.io/linuxserver/sonarr:latest
 
             -   name: "Run radarr docker"
                 run: docker run -d -p 7878:7878 --name=radarr -v ${{ github.workspace }}/docker/radarr/data/:/config lscr.io/linuxserver/radarr:latest

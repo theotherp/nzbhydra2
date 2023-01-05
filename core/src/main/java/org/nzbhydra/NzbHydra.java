@@ -124,6 +124,7 @@ public class NzbHydra {
             logger.error("Invalid startup options detected: {}", e.getMessage());
             System.exit(1);
         }
+        logger.info("1");
 
         if (options.has("help")) {
             parser.printHelpOn(System.out);
