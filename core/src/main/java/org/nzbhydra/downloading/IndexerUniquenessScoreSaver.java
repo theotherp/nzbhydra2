@@ -17,8 +17,6 @@
 package org.nzbhydra.downloading;
 
 import jakarta.persistence.EntityManagerFactory;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.indexers.IndexerEntity;
 import org.nzbhydra.indexers.IndexerSearchEntity;
@@ -30,9 +28,8 @@ import org.nzbhydra.searching.uniqueness.IndexerUniquenessScoreEntityRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -56,7 +53,7 @@ public class IndexerUniquenessScoreSaver {
     @Autowired
     private EntityManagerFactory entityManagerFactory;
 
-    @EventListener
+    @TransactionalEventListener
     public void onNzbDownloadEvent(FileDownloadEvent downloadEvent) {
         if (!configProvider.getBaseConfig().getMain().isKeepHistory()) {
             logger.debug("Not saving uniqueness score because no history is kept");
@@ -66,11 +63,10 @@ public class IndexerUniquenessScoreSaver {
         handleDownloadEvent(downloadEvent);
     }
 
-    @Transactional
     public void handleDownloadEvent(FileDownloadEvent downloadEvent) {
-        try (Session session = entityManagerFactory.unwrap(SessionFactory.class).openSession()) {
+        try {
             //For some reason the IndexerSearchEntity is not readable (LazyInitializationException) if the result is not loaded again
-            SearchResultEntity searchResultEntity = session.load(SearchResultEntity.class, downloadEvent.getSearchResultEntity().getId());
+            SearchResultEntity searchResultEntity = searchResultRepository.getReferenceById(downloadEvent.getSearchResultEntityId());
 
             if (searchResultEntity.getIndexerSearchEntity() == null) {
                 logger.debug("Unable to determine indexer uniqueness score for result {} because no indexer search is saved", searchResultEntity.getTitle());
