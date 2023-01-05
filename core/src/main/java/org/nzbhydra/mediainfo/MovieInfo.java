@@ -8,10 +8,12 @@ import jakarta.persistence.Id;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.Data;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.util.Optional;
 
 @Data
+@ReflectionMarker
 @Entity
 @Table(name = "movieinfo")
 

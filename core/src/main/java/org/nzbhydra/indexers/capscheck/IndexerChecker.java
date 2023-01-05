@@ -45,6 +45,7 @@ import org.nzbhydra.mapping.newznab.xml.Xml;
 import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlCategory;
 import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlRoot;
 import org.nzbhydra.searching.SearchModuleProvider;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -444,6 +445,7 @@ public class IndexerChecker {
     }
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     public static class CheckerEvent {
@@ -452,6 +454,7 @@ public class IndexerChecker {
     }
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     public static class ConnectionCheckResponse {
@@ -461,6 +464,7 @@ public class IndexerChecker {
 
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     private static class CheckCapsRequest {
@@ -473,6 +477,7 @@ public class IndexerChecker {
     }
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     private static class SingleCheckCapsResponse {

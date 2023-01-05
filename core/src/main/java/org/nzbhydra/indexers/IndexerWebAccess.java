@@ -10,6 +10,7 @@ import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.exceptions.IndexerProgramErrorException;
 import org.nzbhydra.indexers.exceptions.IndexerUnreachableException;
 import org.nzbhydra.logging.MdcThreadPoolExecutor;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.nzbhydra.web.WebConfiguration;
 import org.nzbhydra.webaccess.WebAccess;
 import org.slf4j.Logger;
@@ -122,6 +123,7 @@ public class IndexerWebAccess {
     }
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     public static class HydraUnmarshallingFailureException extends Exception {
         private org.springframework.oxm.UnmarshallingFailureException unmarshallingFailureException;

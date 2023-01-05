@@ -24,6 +24,7 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +32,7 @@ import java.util.List;
 @XmlRootElement(name = "category")
 @XmlAccessorType(XmlAccessType.FIELD)
 @Data
+@ReflectionMarker
 @AllArgsConstructor
 @NoArgsConstructor
 public class CapsXmlCategory {

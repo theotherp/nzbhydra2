@@ -103,7 +103,7 @@ public class FileHandler {
     @NotNull
     private SearchResultEntity getResultFromGuid(long guid, SearchSource accessSource) throws InvalidSearchResultIdException {
         Optional<SearchResultEntity> optionalResult = searchResultRepository.findById(guid);
-        if (!optionalResult.isPresent()) {
+        if (optionalResult.isEmpty()) {
             logger.error("Download request with invalid/outdated GUID {}", guid);
             throw new InvalidSearchResultIdException(guid, accessSource == SearchSource.INTERNAL);
         }
@@ -351,7 +351,7 @@ public class FileHandler {
 
     public NfoResult getNfo(Long searchResultId) {
         Optional<SearchResultEntity> optionalResult = searchResultRepository.findById(searchResultId);
-        if (!optionalResult.isPresent()) {
+        if (optionalResult.isEmpty()) {
             logger.error("Download request with invalid/outdated search result ID " + searchResultId);
             throw new RuntimeException("Download request with invalid/outdated search result ID " + searchResultId);
         }
@@ -406,7 +406,7 @@ public class FileHandler {
     }
 
     public GenericResponse saveNzbToBlackhole(Long searchResultId) {
-        if (!configProvider.getBaseConfig().getDownloading().getSaveNzbsTo().isPresent()) {
+        if (configProvider.getBaseConfig().getDownloading().getSaveNzbsTo().isEmpty()) {
             //Shouldn't happen
             return GenericResponse.notOk("NZBs black hole not set");
         }

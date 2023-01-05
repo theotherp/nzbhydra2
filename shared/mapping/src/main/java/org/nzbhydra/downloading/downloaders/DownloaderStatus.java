@@ -21,11 +21,13 @@ import com.google.common.collect.Iterables;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.nzbhydra.downloading.DownloaderType;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Data
+@ReflectionMarker
 public class DownloaderStatus {
 
     public enum State {
@@ -106,6 +108,7 @@ public class DownloaderStatus {
     }
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     static class DownloadRate {
         private long x;

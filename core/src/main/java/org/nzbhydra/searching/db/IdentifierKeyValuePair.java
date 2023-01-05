@@ -22,11 +22,13 @@ import jakarta.persistence.Id;
 import jakarta.persistence.SequenceGenerator;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.util.Objects;
 
 
 @Data
+@ReflectionMarker
 @Entity
 @NoArgsConstructor
 public class IdentifierKeyValuePair {

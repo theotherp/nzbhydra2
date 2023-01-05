@@ -22,6 +22,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.time.DurationFormatUtils;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.support.AopUtils;
@@ -151,6 +152,7 @@ public class HydraTaskScheduler implements BeanPostProcessor, SmartInitializingS
     }
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     public static class TaskInformation {
@@ -160,6 +162,7 @@ public class HydraTaskScheduler implements BeanPostProcessor, SmartInitializingS
     }
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     public static class TaskRuntimeInformation {

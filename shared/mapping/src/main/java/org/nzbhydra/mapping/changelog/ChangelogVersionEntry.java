@@ -5,10 +5,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.nzbhydra.mapping.SemanticVersion;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.util.List;
 
 @Data
+@ReflectionMarker
 @AllArgsConstructor
 @NoArgsConstructor
 public class ChangelogVersionEntry implements Comparable<ChangelogVersionEntry> {

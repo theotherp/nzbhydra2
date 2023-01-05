@@ -24,6 +24,7 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import lombok.Data;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -33,6 +34,7 @@ import java.util.List;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "item")
 @Data
+@ReflectionMarker
 //Link must be before enclosure for HeadPhones to work
 @XmlType(propOrder = {"title", "link", "enclosures", "pubDate", "rssGuid", "description", "comments", "category", "grabs", "size", "newznabAttributes", "torznabAttributes"})
 public class NewznabXmlItem {

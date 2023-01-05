@@ -27,6 +27,7 @@ import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.genericstorage.GenericStorage;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.notifications.IndexerVipExpiryNotificationEvent;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +41,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
 @Component
 public class VipExpiryDetector implements ProblemDetector {
 
@@ -64,17 +64,17 @@ public class VipExpiryDetector implements ProblemDetector {
     @Override
     public void executeCheck() {
         final List<IndexerConfig> indexersSoonExpiring = configProvider.getBaseConfig().getIndexers().stream()
-                .filter(x -> !Strings.isNullOrEmpty(x.getVipExpirationDate()) && !x.getVipExpirationDate().equals("Lifetime"))
-                .filter(x -> {
-                    try {
-                        final LocalDate expiryDate = LocalDate.parse(x.getVipExpirationDate(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-                        return expiryDate.isBefore(LocalDate.now().plusDays(14)) && expiryDate.isAfter(LocalDate.now());
-                    } catch (Exception e) {
-                        logger.error("Unable to parse expiry date {}", x.getVipExpirationDate(), e);
-                        return false;
-                    }
-                })
-                .collect(Collectors.toList());
+            .filter(x -> !Strings.isNullOrEmpty(x.getVipExpirationDate()) && !x.getVipExpirationDate().equals("Lifetime"))
+            .filter(x -> {
+                try {
+                    final LocalDate expiryDate = LocalDate.parse(x.getVipExpirationDate(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                    return expiryDate.isBefore(LocalDate.now().plusDays(14)) && expiryDate.isAfter(LocalDate.now());
+                } catch (Exception e) {
+                    logger.error("Unable to parse expiry date {}", x.getVipExpirationDate(), e);
+                    return false;
+                }
+            })
+            .toList();
 
         logger.debug(LoggingMarkers.VIP_EXPIRY, "Found indexers with VIP expiry data in the next 14 days: {}", indexersSoonExpiring.stream().map(x -> x.getName() + ": " + x.getVipExpirationDate()).collect(Collectors.joining(", ")));
 
@@ -97,6 +97,7 @@ public class VipExpiryDetector implements ProblemDetector {
     }
 
     @Data
+    @ReflectionMarker
     @NoArgsConstructor
     private static class VipExpiryData implements Serializable {
 
@@ -109,6 +110,7 @@ public class VipExpiryDetector implements ProblemDetector {
     @NoArgsConstructor
     @EqualsAndHashCode
     @ToString
+    @ReflectionMarker
     private static class VipExpiryDataEntry implements Serializable {
 
         private String indexerName;

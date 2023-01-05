@@ -27,6 +27,7 @@ import org.nzbhydra.mapping.changelog.ChangelogVersionEntry;
 import org.nzbhydra.mapping.github.Asset;
 import org.nzbhydra.mapping.github.Release;
 import org.nzbhydra.notifications.UpdateNotificationEvent;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.nzbhydra.systemcontrol.SystemControl;
 import org.nzbhydra.webaccess.WebAccess;
 import org.slf4j.Logger;
@@ -454,6 +455,7 @@ public class UpdateManager implements InitializingBean {
     }
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     public static class UpdateEvent {
@@ -470,6 +472,7 @@ public class UpdateManager implements InitializingBean {
     }
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     public static class BlockedVersion {
@@ -478,6 +481,7 @@ public class UpdateManager implements InitializingBean {
     }
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     public static class PackageInfo {
@@ -487,6 +491,7 @@ public class UpdateManager implements InitializingBean {
     }
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     public static class UpdateInfo {

@@ -3,11 +3,13 @@ package org.nzbhydra.downloading;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Data
+@ReflectionMarker
 @NoArgsConstructor
 @AllArgsConstructor
 public class AddFilesRequest {
@@ -17,6 +19,7 @@ public class AddFilesRequest {
     private String category;
 
     @Data
+@ReflectionMarker
     @NoArgsConstructor
     @AllArgsConstructor
     public static class SearchResult {

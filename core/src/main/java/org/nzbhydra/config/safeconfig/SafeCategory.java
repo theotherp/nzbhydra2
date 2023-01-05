@@ -2,9 +2,11 @@ package org.nzbhydra.config.safeconfig;
 
 import lombok.Data;
 import org.nzbhydra.config.category.Category;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 //Only needed because I can't convince Thymeleaf to serialize enums as their names
 @Data
+@ReflectionMarker
 public class SafeCategory {
 
     private final boolean mayBeSelected;

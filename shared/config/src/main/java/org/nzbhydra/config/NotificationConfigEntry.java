@@ -22,10 +22,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.nzbhydra.config.notification.NotificationEventType;
 import org.nzbhydra.config.sensitive.SensitiveData;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 
 @SuppressWarnings("unchecked")
 @Data
+@ReflectionMarker
 @NoArgsConstructor
 @AllArgsConstructor
 public class NotificationConfigEntry {

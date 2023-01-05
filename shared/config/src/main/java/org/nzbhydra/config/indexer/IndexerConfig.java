@@ -30,6 +30,7 @@ import org.nzbhydra.config.sensitive.SensitiveData;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mapping.newznab.json.JsonPubdateDeserializer;
 import org.nzbhydra.mapping.newznab.json.JsonPubdateSerializer;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.time.Instant;
@@ -38,6 +39,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Data
+@ReflectionMarker
 @ConfigurationProperties(prefix = "indexers")
 public class IndexerConfig {
 

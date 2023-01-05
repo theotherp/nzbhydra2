@@ -17,8 +17,10 @@
 package org.nzbhydra.searching.dtoseventsenums;
 
 import lombok.Data;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 @Data
+@ReflectionMarker
 public class IndexerSearchMetaData {
 
     private boolean didSearch;

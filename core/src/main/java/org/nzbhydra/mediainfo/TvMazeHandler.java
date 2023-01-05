@@ -3,6 +3,7 @@ package org.nzbhydra.mediainfo;
 import com.google.common.base.MoreObjects;
 import lombok.Data;
 import org.nzbhydra.config.mediainfo.MediaIdType;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -119,12 +120,14 @@ public class TvMazeHandler {
 
 
     @Data
+@ReflectionMarker
     private static class TvmazeShowSearch { //Without static deserialization fails
         private Integer score;
         private TvmazeShow show;
     }
 
     @Data
+@ReflectionMarker
     private static class TvmazeShow { //Without static deserialization fails
         private Integer id;
         private String name;
@@ -148,6 +151,7 @@ public class TvMazeHandler {
     }
 
     @Data
+@ReflectionMarker
     private static class TvmazeExternals { //Without static deserialization fails
         private String tvrage;
         private String thetvdb;
@@ -164,6 +168,7 @@ public class TvMazeHandler {
     }
 
     @Data
+@ReflectionMarker
     private static class TvmazeImage { //Without static deserialization fails
         private String medium;
         private String original;

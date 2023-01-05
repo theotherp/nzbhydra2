@@ -2,8 +2,10 @@ package org.nzbhydra.config.safeconfig;
 
 import lombok.Data;
 import org.nzbhydra.config.downloading.DownloaderConfig;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 @Data
+@ReflectionMarker
 public class SafeDownloaderConfig {
 
     private String defaultCategory;

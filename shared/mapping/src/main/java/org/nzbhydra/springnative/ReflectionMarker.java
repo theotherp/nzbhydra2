@@ -1,5 +1,5 @@
 /*
- *  (C) Copyright 2017 TheOtherP (theotherp@posteo.net)
+ *  (C) Copyright 2023 TheOtherP (theotherp@posteo.net)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,13 +14,14 @@
  *  limitations under the License.
  */
 
-package org.nzbhydra.downloading.downloaders.sabnzbd.mapping;
+package org.nzbhydra.springnative;
 
-import lombok.Data;
-import org.nzbhydra.springnative.ReflectionMarker;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-@Data
-@ReflectionMarker
-public class HistoryResponse {
-    private History history;
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface  ReflectionMarker {
 }

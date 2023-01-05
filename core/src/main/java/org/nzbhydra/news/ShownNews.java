@@ -7,8 +7,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.Data;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 @Data
+@ReflectionMarker
 @Entity
 @Table(name = "shownnews")
 public class ShownNews {

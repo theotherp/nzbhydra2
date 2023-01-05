@@ -20,11 +20,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.nzbhydra.config.notification.NotificationEventType;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @Data
+@ReflectionMarker
 @AllArgsConstructor
 @NoArgsConstructor
 public class UpdateNotificationEvent implements NotificationEvent {

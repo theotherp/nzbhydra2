@@ -29,6 +29,7 @@ import org.nzbhydra.searching.dtoseventsenums.DownloadType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.searching.searchrequests.SearchRequestFactory;
 import org.nzbhydra.searching.searchrequests.SearchSource;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.nzbhydra.web.SessionStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -343,6 +344,7 @@ public class ExternalApi {
 
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     private static class CacheEntryValue {
         private final NewznabParameters params;

@@ -12,12 +12,14 @@ import lombok.Data;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.nzbhydra.searching.db.SearchEntity;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.util.Objects;
 import java.util.Random;
 
 
 @Data
+@ReflectionMarker
 @Entity
 @Table(name = "indexersearch", indexes = {@Index(name = "ISINDEX1", columnList = "INDEXER_ENTITY_ID"), @Index(name = "ISINDEX2", columnList = "SEARCH_ENTITY_ID")})
 public class IndexerSearchEntity {

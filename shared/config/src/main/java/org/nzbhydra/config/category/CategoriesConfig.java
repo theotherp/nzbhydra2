@@ -21,6 +21,7 @@ import com.google.common.base.MoreObjects;
 import lombok.Data;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.category.Category.Subtype;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -30,6 +31,7 @@ import java.util.stream.Collectors;
 import static org.nzbhydra.config.searching.SearchType.SEARCH;
 
 @Data
+@ReflectionMarker
 public class CategoriesConfig {
 
     public final static Category allCategory = new Category("All");

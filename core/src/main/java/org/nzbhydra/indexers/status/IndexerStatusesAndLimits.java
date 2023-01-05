@@ -26,6 +26,7 @@ import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.indexers.IndexerEntity;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.searching.SearchModuleProvider;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -159,6 +160,7 @@ public class IndexerStatusesAndLimits {
     }
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     public static class IndexerStatus {

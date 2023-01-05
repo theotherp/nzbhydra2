@@ -29,6 +29,7 @@ import org.nzbhydra.config.searching.SearchType;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -228,6 +229,7 @@ public class CustomQueryAndTitleMappingHandler {
     }
 
     @Data
+@ReflectionMarker
     static class TestRequest {
         private CustomQueryAndTitleMapping customQueryAndTitleMapping;
         private String exampleInput;
@@ -235,6 +237,7 @@ public class CustomQueryAndTitleMappingHandler {
 
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     static class TestResponse {
         private final String output;
@@ -243,6 +246,7 @@ public class CustomQueryAndTitleMappingHandler {
     }
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     static class MetaData {

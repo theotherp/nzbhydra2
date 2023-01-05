@@ -2,6 +2,7 @@ package org.nzbhydra.config;
 
 import lombok.Data;
 import org.nzbhydra.config.sensitive.SensitiveData;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ import java.util.List;
 @SuppressWarnings("unchecked")
 @ConfigurationProperties(prefix = "notificationConfig")
 @Data
+@ReflectionMarker
 public class NotificationConfig {
 
     public enum AppriseType {

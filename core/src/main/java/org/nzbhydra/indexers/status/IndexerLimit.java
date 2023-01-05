@@ -9,10 +9,12 @@ import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.Data;
 import org.nzbhydra.indexers.IndexerEntity;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.time.Instant;
 
 @Data
+@ReflectionMarker
 @Entity
 @Table(name = "indexerlimit")
 

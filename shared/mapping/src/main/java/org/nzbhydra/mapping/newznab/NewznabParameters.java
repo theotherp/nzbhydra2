@@ -3,9 +3,9 @@ package org.nzbhydra.mapping.newznab;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Set;
 
 @Data
+@ReflectionMarker
 @NoArgsConstructor
 @AllArgsConstructor
 public class NewznabParameters {

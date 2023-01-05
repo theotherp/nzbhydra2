@@ -1,11 +1,12 @@
 package org.nzbhydra.backup;
 
-import lombok.Data;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-@Data
+
+@ReflectionMarker
 public class BackupData implements Serializable {
 
     protected LocalDateTime lastBackup;
@@ -18,5 +19,11 @@ public class BackupData implements Serializable {
         this.lastBackup = LocalDateTime.now();
     }
 
+    public LocalDateTime getLastBackup() {
+        return lastBackup;
+    }
 
+    public void setLastBackup(LocalDateTime lastBackup) {
+        this.lastBackup = lastBackup;
+    }
 }

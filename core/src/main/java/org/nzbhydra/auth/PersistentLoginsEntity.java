@@ -6,6 +6,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.sql.Timestamp;
 
@@ -16,6 +17,7 @@ import java.sql.Timestamp;
 @Entity
 @Table(name = "persistent_logins")
 @Data
+@ReflectionMarker
 public class PersistentLoginsEntity {
 
     @Id

@@ -12,6 +12,7 @@ import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.time.Instant;
 
@@ -21,6 +22,7 @@ import java.time.Instant;
  * checking for API hit limits much faster
  */
 @Data
+@ReflectionMarker
 @Entity
 @NoArgsConstructor
 @Table(name = "indexerapiaccess_short")

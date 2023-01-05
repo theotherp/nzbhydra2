@@ -1,15 +1,22 @@
 package org.nzbhydra.update;
 
-import lombok.Data;
 import org.nzbhydra.mapping.SemanticVersion;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
+@ReflectionMarker
 public class UpdateData implements Serializable {
 
-    protected List<SemanticVersion> ignoreVersions = new ArrayList<>();
+    private List<SemanticVersion> ignoreVersions = new ArrayList<>();
 
+    public List<SemanticVersion> getIgnoreVersions() {
+        return ignoreVersions;
+    }
+
+    public void setIgnoreVersions(List<SemanticVersion> ignoreVersions) {
+        this.ignoreVersions = ignoreVersions;
+    }
 }

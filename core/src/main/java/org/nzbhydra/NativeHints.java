@@ -16,25 +16,46 @@
 
 package org.nzbhydra;
 
-import org.javers.core.json.JsonConverterBuilder;
-import org.nzbhydra.backup.BackupData;
+import org.nzbhydra.config.migration.ConfigMigrationStep003to004;
 import org.nzbhydra.downloading.downloaders.sabnzbd.mapping.QueueResponse;
 import org.nzbhydra.mapping.newznab.NewznabParameters;
 import org.nzbhydra.news.NewsWeb;
+import org.nzbhydra.springnative.ReflectionMarker;
+import org.reflections.Reflections;
+import org.reflections.scanners.Scanners;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.aot.hint.ExecutableMode;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.RuntimeHintsRegistrar;
 
+import java.lang.reflect.Method;
+import java.util.Set;
+
 public class NativeHints implements RuntimeHintsRegistrar {
+
+    private static final Logger logger = LoggerFactory.getLogger(NativeHints.class);
 
 
     @Override
     public void registerHints(RuntimeHints hints, ClassLoader classLoader) {
+        logger.info("Registering native hints");
         hints.reflection().registerType(NewsWeb.NewsEntryForWeb.class, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS);
-        hints.reflection().registerType(BackupData.class, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS);
         hints.reflection().registerType(NewznabParameters.class, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS);
         hints.reflection().registerType(QueueResponse.class, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS);
+        hints.reflection().registerType(ConfigMigrationStep003to004.class, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS);
         hints.resources().registerResourceBundle("joptsimple.ExceptionMessages");
+        final Set<Class<?>> classes = new Reflections("org.nzbhydra", Scanners.TypesAnnotated).getTypesAnnotatedWith(ReflectionMarker.class);
+        for (Class<?> clazz : classes) {
+            hints.reflection().registerType(clazz, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS);
+            for (Method method : clazz.getDeclaredMethods()) {
+                logger.info("Registering " + method + " for reflection");
+                hints.reflection().registerMethod(method, ExecutableMode.INVOKE);
+            }
+        }
+
+
     }
 
 }

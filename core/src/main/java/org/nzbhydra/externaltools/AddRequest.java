@@ -17,8 +17,10 @@
 package org.nzbhydra.externaltools;
 
 import lombok.Data;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 @Data
+@ReflectionMarker
 public class AddRequest {
 
     public enum AddType {

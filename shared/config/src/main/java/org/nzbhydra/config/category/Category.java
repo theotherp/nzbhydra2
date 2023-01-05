@@ -23,6 +23,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.searching.SearchType;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.ArrayList;
@@ -33,6 +34,7 @@ import java.util.Optional;
 @SuppressWarnings("unchecked")
 @ConfigurationProperties(prefix = "categories")
 @Data
+@ReflectionMarker
 @NoArgsConstructor
 public class Category {
 

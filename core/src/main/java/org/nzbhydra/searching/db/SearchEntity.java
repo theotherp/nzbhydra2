@@ -32,6 +32,7 @@ import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 import org.nzbhydra.config.searching.SearchType;
 import org.nzbhydra.searching.searchrequests.SearchSource;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.nzbhydra.web.SessionStorage;
 
 import java.time.Instant;
@@ -41,6 +42,7 @@ import java.util.Set;
 
 
 @Data
+@ReflectionMarker
 @Entity
 @Table(name = "search")
 public class SearchEntity {

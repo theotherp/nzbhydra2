@@ -18,8 +18,10 @@ package org.nzbhydra.api.stats;
 
 import lombok.Data;
 import org.nzbhydra.historystats.stats.StatsRequest;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 @Data
+@ReflectionMarker
 public class ApiStatsRequest {
 
     protected String apikey;

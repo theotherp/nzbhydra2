@@ -19,6 +19,7 @@ import org.hibernate.annotations.OnDeleteAction;
 import org.nzbhydra.config.downloading.FileDownloadAccessType;
 import org.nzbhydra.searching.db.SearchResultEntity;
 import org.nzbhydra.searching.searchrequests.SearchSource;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.nzbhydra.web.SessionStorage;
 
 import java.time.Duration;
@@ -26,6 +27,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 @Data
+@ReflectionMarker
 @Entity
 @Table(name = "indexernzbdownload", indexes = {@Index(name = "NZB_DOWNLOAD_EXT_ID", columnList = "EXTERNAL_ID")})
 public class FileDownloadEntity {

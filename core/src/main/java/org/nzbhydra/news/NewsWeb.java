@@ -10,6 +10,7 @@ import org.nzbhydra.Markdown;
 import org.nzbhydra.auth.UserInfosProvider;
 import org.nzbhydra.mapping.SemanticVersion;
 import org.nzbhydra.news.NewsProvider.NewsEntry;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.nzbhydra.update.UpdateManager;
 import org.nzbhydra.web.BootstrappedDataTO;
 import org.slf4j.Logger;
@@ -90,6 +91,7 @@ public class NewsWeb {
 
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     public static class NewsEntryForWeb {

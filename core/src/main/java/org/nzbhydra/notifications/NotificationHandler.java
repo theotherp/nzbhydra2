@@ -28,6 +28,7 @@ import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.NotificationConfig;
 import org.nzbhydra.config.NotificationConfigEntry;
 import org.nzbhydra.logging.LoggingMarkers;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.nzbhydra.webaccess.WebAccess;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -176,6 +177,7 @@ public class NotificationHandler {
     }
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     private static class AppriseMessage {
 

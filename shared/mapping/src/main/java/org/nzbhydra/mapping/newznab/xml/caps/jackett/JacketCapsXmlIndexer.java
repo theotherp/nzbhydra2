@@ -23,16 +23,13 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import lombok.Data;
 import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlRoot;
-
-
-
-
-
+import org.nzbhydra.springnative.ReflectionMarker;
 
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement
 @Data
+@ReflectionMarker
 public class JacketCapsXmlIndexer {
 
     public JacketCapsXmlIndexer() {

@@ -13,6 +13,7 @@ import org.nzbhydra.config.validation.BaseConfigValidator;
 import org.nzbhydra.config.validation.ConfigValidationResult;
 import org.nzbhydra.indexers.IndexerEntity;
 import org.nzbhydra.indexers.IndexerRepository;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.nzbhydra.web.UrlCalculator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -155,6 +156,7 @@ public class ConfigWeb {
     }
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     private static class ApiHelpResponse {

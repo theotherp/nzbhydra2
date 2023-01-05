@@ -2,11 +2,13 @@ package org.nzbhydra.mapping.newznab.mock;
 
 import lombok.Builder;
 import lombok.Data;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Data
+@ReflectionMarker
 @Builder
 public class NewznabMockRequest {
 

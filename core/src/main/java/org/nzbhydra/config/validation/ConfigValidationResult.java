@@ -20,12 +20,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
 @Data
+@ReflectionMarker
 @AllArgsConstructor
 @NoArgsConstructor
 public class ConfigValidationResult {

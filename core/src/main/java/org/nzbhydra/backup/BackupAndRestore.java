@@ -15,6 +15,7 @@ import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.ConfigReaderWriter;
 import org.nzbhydra.genericstorage.GenericStorage;
 import org.nzbhydra.logging.LoggingMarkers;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.nzbhydra.systemcontrol.SystemControl;
 import org.nzbhydra.webaccess.HydraOkHttp3ClientHttpRequestFactory;
 import org.slf4j.Logger;
@@ -294,6 +295,7 @@ public class BackupAndRestore {
 
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     public static class BackupEntry {

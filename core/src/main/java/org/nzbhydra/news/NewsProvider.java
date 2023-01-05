@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.nzbhydra.mapping.SemanticVersion;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.nzbhydra.update.UpdateManager;
 import org.nzbhydra.webaccess.WebAccess;
 import org.slf4j.Logger;
@@ -77,6 +78,7 @@ public class NewsProvider {
 
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     public static class NewsEntry {

@@ -20,11 +20,13 @@ import com.google.common.base.Strings;
 import lombok.Data;
 import org.nzbhydra.config.sensitive.SensitiveData;
 import org.nzbhydra.downloading.DownloaderType;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.Optional;
 
 @Data
+@ReflectionMarker
 @ConfigurationProperties(prefix = "downloaders")
 public class DownloaderConfig {
 

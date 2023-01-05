@@ -11,6 +11,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.nzbhydra.Jackson;
 import org.nzbhydra.NzbHydra;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
@@ -135,6 +136,7 @@ public class LogContentProvider {
     }
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     public static class JsonLogResponse {

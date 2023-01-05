@@ -20,6 +20,7 @@ import org.nzbhydra.logging.LogAnonymizer;
 import org.nzbhydra.logging.LogContentProvider;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.problemdetection.OutdatedWrapperDetector;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.nzbhydra.update.UpdateManager;
 import org.nzbhydra.webaccess.HydraOkHttp3ClientHttpRequestFactory;
 import org.nzbhydra.webaccess.Ssl;
@@ -362,6 +363,7 @@ public class DebugInfosProvider {
     }
 
     @Data
+@ReflectionMarker
     public static class TimeAndThreadCpuUsages {
         private final Instant time;
         private final List<ThreadCpuUsage> threadCpuUsages = new ArrayList<>();
@@ -372,6 +374,7 @@ public class DebugInfosProvider {
     }
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     public static class ThreadCpuUsage {
         private final String threadName;
@@ -379,6 +382,7 @@ public class DebugInfosProvider {
     }
 
     @Data
+@ReflectionMarker
     public static class DiffableCategoriesConfig extends CategoriesConfig {
         private Map<String, Category> categoriesMap = new HashMap<>();
 

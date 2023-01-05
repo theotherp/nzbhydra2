@@ -23,6 +23,7 @@ import lombok.EqualsAndHashCode;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.flywaydb.core.Flyway;
 import org.nzbhydra.NzbHydra;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
@@ -233,6 +234,7 @@ public class DatabaseRecreation {
 
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     @EqualsAndHashCode
     private static class ExecutedScript {

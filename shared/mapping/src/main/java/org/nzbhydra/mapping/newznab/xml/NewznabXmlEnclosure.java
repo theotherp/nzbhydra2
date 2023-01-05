@@ -21,11 +21,13 @@ import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import lombok.Data;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 
 @XmlRootElement(name = "guid")
 @XmlAccessorType(XmlAccessType.FIELD)
 @Data
+@ReflectionMarker
 public class NewznabXmlEnclosure {
 
     public NewznabXmlEnclosure() {

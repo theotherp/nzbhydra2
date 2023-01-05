@@ -1,6 +1,7 @@
 package org.nzbhydra.searching.searchrequests;
 
 import lombok.Data;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,6 +10,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @Data
+@ReflectionMarker
 public class InternalData {
 
     public enum FallbackState {

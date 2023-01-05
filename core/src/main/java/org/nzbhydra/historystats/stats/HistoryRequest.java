@@ -3,8 +3,10 @@ package org.nzbhydra.historystats.stats;
 import lombok.Data;
 import org.nzbhydra.historystats.FilterModel;
 import org.nzbhydra.historystats.SortModel;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 @Data
+@ReflectionMarker
 public class HistoryRequest {
 
     protected boolean distinct = false;

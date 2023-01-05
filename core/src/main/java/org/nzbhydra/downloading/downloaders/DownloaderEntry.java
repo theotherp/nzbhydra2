@@ -20,10 +20,12 @@ import com.google.common.base.MoreObjects;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.time.Instant;
 
 @Data
+@ReflectionMarker
 @AllArgsConstructor
 @NoArgsConstructor
 public class DownloaderEntry {

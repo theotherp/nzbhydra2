@@ -33,6 +33,7 @@ import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.searching.searchrequests.SearchSource;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.nzbhydra.web.UrlCalculator;
 import org.nzbhydra.webaccess.WebAccess;
 import org.nzbhydra.webaccess.WebAccessException;
@@ -477,6 +478,7 @@ public class ExternalTools {
     }
 
     @Data
+@ReflectionMarker
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class XdarrIndexer {
 
@@ -501,6 +503,7 @@ public class ExternalTools {
     }
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -511,6 +514,7 @@ public class ExternalTools {
     }
 
     @Data
+@ReflectionMarker
     public static class XdarrAddRequestResponse {
         private boolean isWarning;
         private String propertyName;

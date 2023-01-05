@@ -17,12 +17,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.time.Instant;
 import java.util.Objects;
 
 
 @Data
+@ReflectionMarker
 @Entity
 @NoArgsConstructor
 @Table(name = "indexerapiaccess")

@@ -11,6 +11,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.mediainfo.MediaIdType;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -104,6 +105,7 @@ public class MediaInfoWeb {
     }
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     private static class CacheKey {
@@ -117,6 +119,7 @@ public class MediaInfoWeb {
     }
 
     @Data
+@ReflectionMarker
     public static class MediaInfoTO {
         private String imdbId;
         private String tmdbId;

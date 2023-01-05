@@ -10,6 +10,7 @@ import org.nzbhydra.config.category.Category;
 import org.nzbhydra.config.mediainfo.MediaIdType;
 import org.nzbhydra.config.searching.SearchType;
 import org.nzbhydra.searching.dtoseventsenums.DownloadType;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,6 +24,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Data
+@ReflectionMarker
 @NoArgsConstructor
 public class SearchRequest {
 

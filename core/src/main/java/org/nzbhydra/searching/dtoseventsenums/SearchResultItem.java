@@ -23,6 +23,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.nzbhydra.config.category.Category;
 import org.nzbhydra.indexers.Indexer;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -32,6 +33,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @Data
+@ReflectionMarker
 public class SearchResultItem  {
 
     public enum HasNfo {

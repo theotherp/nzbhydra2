@@ -23,6 +23,7 @@ import com.google.common.base.Strings;
 import lombok.Data;
 import org.nzbhydra.config.indexer.QueryFormat;
 import org.nzbhydra.config.searching.CustomQueryAndTitleMapping;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.ArrayList;
@@ -33,6 +34,7 @@ import java.util.Optional;
 
 @SuppressWarnings("unchecked")
 @Data
+@ReflectionMarker
 @ConfigurationProperties(prefix = "searching")
 public class SearchingConfig {
 

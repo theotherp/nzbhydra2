@@ -11,6 +11,7 @@ import org.nzbhydra.config.BaseConfigHandler;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.logging.LogContentProvider;
 import org.nzbhydra.logging.LogContentProvider.JsonLogResponse;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -221,6 +222,7 @@ public class DebugInfosWeb {
     }
 
     @Data
+@ReflectionMarker
     public static class ThreadCpuUsageChartData {
         private final String key;
         private final List<TimeAndValue> values;
@@ -237,6 +239,7 @@ public class DebugInfosWeb {
     }
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     public static class TimeAndValue {
         private final Instant time;
@@ -244,6 +247,7 @@ public class DebugInfosWeb {
     }
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     public static class PrefixAndEndpoint {
         private final String prefix;
@@ -252,6 +256,7 @@ public class DebugInfosWeb {
     }
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     public static class Endpoint {
         private final String endpoint;

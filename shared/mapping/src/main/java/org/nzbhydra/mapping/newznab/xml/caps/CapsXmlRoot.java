@@ -21,12 +21,14 @@ import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import lombok.Data;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.util.ArrayList;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "caps")
 @Data
+@ReflectionMarker
 public class CapsXmlRoot {
 
     @XmlElement

@@ -21,11 +21,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.nzbhydra.indexers.Indexer;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.util.LinkedHashSet;
 import java.util.List;
 
 @Data
+@ReflectionMarker
 @AllArgsConstructor
 @NoArgsConstructor
 public class DuplicateDetectionResult {

@@ -18,9 +18,11 @@ package org.nzbhydra.config.auth;
 
 import lombok.Data;
 import org.nzbhydra.config.sensitive.SensitiveData;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @Data
+@ReflectionMarker
 @ConfigurationProperties(prefix = "auth.users")
 public class UserAuthConfig {
 

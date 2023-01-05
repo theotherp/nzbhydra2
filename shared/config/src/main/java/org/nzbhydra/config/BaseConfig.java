@@ -23,6 +23,7 @@ import org.nzbhydra.config.auth.AuthConfig;
 import org.nzbhydra.config.category.CategoriesConfig;
 import org.nzbhydra.config.downloading.DownloadingConfig;
 import org.nzbhydra.config.indexer.IndexerConfig;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.stereotype.Component;
 
@@ -33,6 +34,7 @@ import java.util.Map;
 
 @Component
 @Data
+@ReflectionMarker
 @EqualsAndHashCode
 public class BaseConfig {
 

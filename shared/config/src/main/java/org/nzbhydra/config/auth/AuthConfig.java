@@ -24,12 +24,14 @@ import lombok.EqualsAndHashCode;
 import org.javers.core.metamodel.annotation.DiffIgnore;
 import org.nzbhydra.config.RestartRequired;
 import org.nzbhydra.config.sensitive.SensitiveData;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Data
+@ReflectionMarker
 @ConfigurationProperties(prefix = "auth")
 @EqualsAndHashCode
 public class AuthConfig {

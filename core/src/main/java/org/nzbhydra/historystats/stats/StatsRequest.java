@@ -3,11 +3,13 @@ package org.nzbhydra.historystats.stats;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 @Data
+@ReflectionMarker
 @AllArgsConstructor
 @NoArgsConstructor
 public class StatsRequest {

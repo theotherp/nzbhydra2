@@ -18,11 +18,13 @@ package org.nzbhydra.config.searching;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.util.StringJoiner;
 import java.util.regex.Pattern;
 
 @Data
+@ReflectionMarker
 public class CustomQueryAndTitleMapping {
 
     private SearchType searchType;

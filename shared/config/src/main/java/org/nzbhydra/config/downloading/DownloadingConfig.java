@@ -21,6 +21,7 @@ import com.google.common.base.Strings;
 import lombok.Data;
 import org.javers.core.metamodel.annotation.DiffIgnore;
 import org.nzbhydra.config.SearchSourceRestriction;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
@@ -29,6 +30,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Data
+@ReflectionMarker
 @ConfigurationProperties(prefix = "downloading")
 public class DownloadingConfig {
 

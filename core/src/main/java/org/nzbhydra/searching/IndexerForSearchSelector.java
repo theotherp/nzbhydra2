@@ -25,6 +25,7 @@ import org.nzbhydra.searching.dtoseventsenums.IndexerSelectionEvent;
 import org.nzbhydra.searching.dtoseventsenums.SearchMessageEvent;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.searching.searchrequests.SearchSource;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -551,6 +552,7 @@ public class IndexerForSearchSelector {
 
 
     @Data
+@ReflectionMarker
     @NoArgsConstructor
     public static class IndexerForSearchSelection {
         private Map<Indexer, String> notPickedIndexersWithReason = new HashMap<>();

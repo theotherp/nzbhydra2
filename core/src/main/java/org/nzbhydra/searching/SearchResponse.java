@@ -3,6 +3,7 @@ package org.nzbhydra.searching;
 import lombok.Data;
 import org.nzbhydra.searching.dtoseventsenums.IndexerSearchMetaData;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultWebTO;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 @Data
+@ReflectionMarker
 public class SearchResponse {
 
     private List<IndexerSearchMetaData> indexerSearchMetaDatas = new ArrayList<>();

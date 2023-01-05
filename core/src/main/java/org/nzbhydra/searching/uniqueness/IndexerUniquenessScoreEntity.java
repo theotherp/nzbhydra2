@@ -28,10 +28,12 @@ import lombok.Data;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.nzbhydra.indexers.IndexerEntity;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 
 @Entity
 @Data
+@ReflectionMarker
 @Table(name = "indexeruniquenessscore")
 public class IndexerUniquenessScoreEntity {
 
