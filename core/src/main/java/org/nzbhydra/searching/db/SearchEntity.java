@@ -16,6 +16,7 @@
 
 package org.nzbhydra.searching.db;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
@@ -81,7 +82,7 @@ public class SearchEntity {
         this.ip = SessionStorage.IP.get();
     }
 
-
+    @JsonIgnore
     public boolean equalsSearchEntity(SearchEntity that) {
         return Objects.equals(categoryName, that.categoryName) &&
                 Objects.equals(query, that.query) &&
@@ -92,6 +93,7 @@ public class SearchEntity {
                 Objects.equals(author, that.author);
     }
 
+    @JsonIgnore
     public int getComparingHash() {
         return Objects.hash(getQuery(), getCategoryName(), getSeason(), getEpisode(), getTitle(), identifiers);
     }

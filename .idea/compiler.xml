@@ -21,10 +21,10 @@
         <module name="ui" />
         <module name="entities" />
         <module name="github-release-plugin" />
-        <module name="config" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel target="17">
+      <module name="config" target="17" />
       <module name="integration" target="17" />
       <module name="ui" target="1.5" />
     </bytecodeTargetLevel>

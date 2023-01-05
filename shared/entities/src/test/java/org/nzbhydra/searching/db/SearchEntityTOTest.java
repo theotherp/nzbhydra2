@@ -14,12 +14,14 @@
  *  limitations under the License.
  */
 
-package org.nzbhydra.config;
+package org.nzbhydra.searching.db;
 
-public enum ProxyType {
 
-    NONE,
-    SOCKS,
-    HTTP
+class SearchEntityTOTest {
+
+    //    @Test
+    public void should() {
+
+    }
 
 }
