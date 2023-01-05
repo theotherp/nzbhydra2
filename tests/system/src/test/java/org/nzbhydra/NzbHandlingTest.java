@@ -14,14 +14,9 @@
  *  limitations under the License.
  */
 
-package org.nzbhydra.externalapi;
+package org.nzbhydra;
 
 import org.junit.jupiter.api.Test;
-import org.nzbhydra.HydraClient;
-import org.nzbhydra.HydraResponse;
-import org.nzbhydra.Jackson;
-import org.nzbhydra.SearchResultProvider;
-import org.nzbhydra.TestConfig;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.downloading.DownloaderConfig;
 import org.nzbhydra.downloading.FileZipResponse;

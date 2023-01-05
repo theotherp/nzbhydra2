@@ -230,8 +230,8 @@ public class BackupAndRestore {
         try {
             File tempFile = File.createTempFile("nzbhydra-restore", ".zip");
             FileUtils.copyInputStreamToFile(inputStream, tempFile);
-            restoreFromFile(tempFile);
             tempFile.deleteOnExit();
+            restoreFromFile(tempFile);
             return GenericResponse.ok();
         } catch (Exception e) {
             logger.error("Error while restoring", e);

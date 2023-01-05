@@ -1,5 +1,5 @@
 /*
- *  (C) Copyright 2020 TheOtherP (theotherp@posteo.net)
+ *  (C) Copyright 2023 TheOtherP (theotherp@posteo.net)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -33,7 +33,6 @@ public class AddRequest {
         Readarr,
         Radarr,
         Radarrv3,
-        Radarrv4,
         Sonarr,
         Sonarrv3,
         Lidarr;
@@ -54,9 +53,6 @@ public class AddRequest {
             return this == Sonarrv3 || this == Radarrv3 || this == Lidarr;
         }
 
-        public boolean isV4() {
-            return this == Radarrv4;
-        }
     }
 
     private boolean configureForUsenet;

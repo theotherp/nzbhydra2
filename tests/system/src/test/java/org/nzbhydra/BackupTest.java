@@ -14,14 +14,10 @@
  *  limitations under the License.
  */
 
-package org.nzbhydra.externalapi;
+package org.nzbhydra;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.Test;
-import org.nzbhydra.GenericResponse;
-import org.nzbhydra.HydraClient;
-import org.nzbhydra.HydraResponse;
-import org.nzbhydra.TestConfig;
 import org.nzbhydra.backup.BackupEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

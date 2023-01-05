@@ -20,6 +20,8 @@ jobs:
         #        if: ${{ github.event.inputs.buildNewNativeImage }}
         runs-on: ubuntu-latest
         steps:
+            # Download from previous build for when we don't want to wait for the native image before doing tests
+            # Makes only sense when no changes to the code base were made but instead we're trying to get the tests to run
             -   uses: dawidd6/action-download-artifact@v2
                 name: Download artifact from previous build
                 with:
@@ -115,7 +117,24 @@ jobs:
                     password: ${{ secrets.GITHUB_TOKEN }}
                 env:
                     spring_profiles_active: build,systemtest
-
+            sonarr:
+                image: lscr.io/linuxserver/sonarr:latest
+                ports:
+                    - 8989:8989
+                credentials:
+                    username: ${{ github.actor }}
+                    password: ${{ secrets.GITHUB_TOKEN }}
+                volumes:
+                    - ./docker/sonarr/data/:/config
+            radarr:
+                image: lscr.io/linuxserver/radarr:latest
+                ports:
+                    - 8989:8989
+                credentials:
+                    username: ${{ github.actor }}
+                    password: ${{ secrets.GITHUB_TOKEN }}
+                volumes:
+                    - ./docker/radarr/data/:/config
         steps:
             -   uses: actions/checkout@v3
                 name: "Check out source"
