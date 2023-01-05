@@ -13,8 +13,6 @@ import org.nzbhydra.config.auth.UserAuthConfig;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.notification.NotificationEventType;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -109,15 +107,6 @@ public class LogAnonymizerTest {
         assertThat(anonymized).isEqualTo("Cookies: Parsing b[]: remember-me=0:<HIDDEN> Auth-Type=http; Auth-Token=b:<HIDDEN> HYDRA-XSRF-TOKEN=2:<HIDDEN>");
     }
 
-    @Test
-    void testPerformance() throws Exception {
-        String toAnonymize = Files.readString(Paths.get("C:\\Users\\strat\\IdeaProjects\\nzbhydra2\\tests\\system\\data\\logs\\nzbhydra2.log"));
-
-        for (int i = 0; i < 10; i++) {
-            testee.getAnonymizedLog(toAnonymize);
-        }
-
-    }
 
 
 }
