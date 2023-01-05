@@ -141,7 +141,7 @@ jobs:
                     distribution: 'adopt'
                     cache: 'maven'
             -   name: "Install"
-                run: mvn --batch-mode install -pl org.nzbhydra:shared,org.nzbhydra:mapping,org.nzbhydra:config
+                run: mvn --batch-mode clean install -pl org.nzbhydra:shared,org.nzbhydra:mapping,org.nzbhydra:config
             -   name: "Run tests"
                 run: mvn --batch-mode test -pl org.nzbhydra.tests:system
             -   name: "Upload data folder artifact"

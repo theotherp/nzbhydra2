@@ -45,6 +45,7 @@ public class HistoryTest {
     @Test
     public void shouldShowSearchHistory() throws Exception {
         searcher.searchExternalApi("historyTest");
+        searcher.searchExternalApi("historyTest2");
 
         HistoryRequest historyRequest = new HistoryRequest();
         //Sort by time descending
