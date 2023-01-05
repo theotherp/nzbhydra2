@@ -1,7 +1,6 @@
 package org.nzbhydra.backup;
 
 import org.nzbhydra.GenericResponse;
-import org.nzbhydra.backup.BackupAndRestore.BackupEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

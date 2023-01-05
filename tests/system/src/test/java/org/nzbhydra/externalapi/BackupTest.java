@@ -18,10 +18,11 @@ package org.nzbhydra.externalapi;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.Test;
+import org.nzbhydra.GenericResponse;
 import org.nzbhydra.HydraClient;
 import org.nzbhydra.HydraResponse;
-import org.nzbhydra.Jackson;
 import org.nzbhydra.TestConfig;
+import org.nzbhydra.backup.BackupEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
@@ -32,37 +33,30 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @ContextConfiguration(classes = {TestConfig.class})
-public class DebugInfosTest {
+public class BackupTest {
 
     @Autowired
     private HydraClient hydraClient;
 
     @Test
-    public void shouldDownloadCurrentLog() throws Exception {
-        final HydraResponse response = hydraClient.get("internalapi/debuginfos/currentlogfile");
+    public void shouldBackupAndDownload() throws Exception {
+        final HydraResponse response = hydraClient.get("internalapi/backup/backup");
         final String body = response.body();
-        assertThat(body).contains("Started NzbHydra in");
-    }
-
-    @Test
-    public void shouldListAndDownloadLog() throws Exception {
-        HydraResponse response = hydraClient.get("internalapi/debuginfos/logfilenames").raiseIfUnsuccessful();
-        String body = response.body();
-        final List<String> names = Jackson.JSON_MAPPER.readValue(body, new TypeReference<>() {
-        });
-        assertThat(names).isNotEmpty();
-        response = hydraClient.get("internalapi/debuginfos/downloadlog", "logfilename=" + names.get(0)).raiseIfUnsuccessful();
-        body = response.body();
-        assertThat(body)
-            .contains("Started NzbHydra in");
-    }
-
-    @Test
-    public void shouldDownloadDebugInfosAsBytes() throws Exception {
-        final HydraResponse response = hydraClient.get("internalapi/debuginfos/createAndProvideZipAsBytes");
-        final String body = response.body();
-        //Good enough that it was created
         assertThat(body).startsWith("PK");
     }
+
+    @Test
+    public void shouldBackupAndShowInListAndBeDownloadable() throws Exception {
+        GenericResponse backupResponse = hydraClient.get("internalapi/backup/backuponly").raiseIfUnsuccessful().as(GenericResponse.class);
+        assertThat(backupResponse.isSuccessful()).isTrue();
+        List<BackupEntry> backupEntries = hydraClient.get("internalapi/backup/list").as(new TypeReference<>() {
+        });
+        assertThat(backupEntries).isNotEmpty();
+        final HydraResponse downloadResponse = hydraClient.get("internalapi/backup/download", "filename=" + backupEntries.get(0).getFilename());
+        assertThat(downloadResponse.body()).startsWith("PK");
+
+
+    }
+
 
 }

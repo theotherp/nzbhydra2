@@ -5,9 +5,6 @@ import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.apache.commons.io.FileUtils;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.NzbHydra;
@@ -15,7 +12,6 @@ import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.ConfigReaderWriter;
 import org.nzbhydra.genericstorage.GenericStorage;
 import org.nzbhydra.logging.LoggingMarkers;
-import org.nzbhydra.springnative.ReflectionMarker;
 import org.nzbhydra.systemcontrol.SystemControl;
 import org.nzbhydra.webaccess.HydraOkHttp3ClientHttpRequestFactory;
 import org.slf4j.Logger;
@@ -39,7 +35,6 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.spi.FileSystemProvider;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -292,17 +287,6 @@ public class BackupAndRestore {
             }
         }
     }
-
-
-    @Data
-@ReflectionMarker
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class BackupEntry {
-        private String filename;
-        private Instant creationDate;
-    }
-
 
 
 }

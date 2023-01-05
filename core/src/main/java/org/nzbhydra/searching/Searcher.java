@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -82,6 +83,7 @@ public class Searcher {
             .expirationListener((k, v) -> logger.debug("Removing expired search cache entry {}", ((SearchCacheEntry) v).getSearchRequest()))
             .build();
 
+    @Transactional
     public SearchResult search(SearchRequest searchRequest) {
         Stopwatch stopwatch = Stopwatch.createStarted();
         eventPublisher.publishEvent(new SearchEvent(searchRequest));
@@ -163,9 +165,9 @@ public class Searcher {
         }
         searchResult.setNumberOfTotalAvailableResults(searchCacheEntry.getNumberOfTotalAvailableResults());
         searchResult.setIndexerSearchResults(searchCacheEntry.getIndexerCacheEntries().values().stream()
-                .filter(x -> !x.getIndexerSearchResults().isEmpty())
-                .map(x -> Iterables.getLast(x.getIndexerSearchResults()))
-                .collect(Collectors.toList()));
+            .filter(x -> !x.getIndexerSearchResults().isEmpty())
+            .map(x -> Iterables.getLast(x.getIndexerSearchResults()))
+            .collect(Collectors.toList()));
         searchResult.setReasonsForRejection(searchCacheEntry.getReasonsForRejection());
         searchCacheEntry.setNumberOfRemovedDuplicates(searchResult.getNumberOfRemovedDuplicates());
 

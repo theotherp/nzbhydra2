@@ -267,7 +267,12 @@ public class DebugInfosProvider {
     }
 
     public void logThreadDump() {
-        logger.debug(threadDumpEndpoint.textThreadDump());
+        try {
+            //Fails on native image
+            logger.debug(threadDumpEndpoint.textThreadDump());
+        } catch (Exception e) {
+            logger.error("Unable to create thread dump : {}", e.getMessage());
+        }
     }
 
     private String formatSample(String name, Double value) {

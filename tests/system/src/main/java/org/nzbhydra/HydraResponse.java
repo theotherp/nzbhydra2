@@ -18,6 +18,7 @@ package org.nzbhydra;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 public record HydraResponse(String body, int status) {
 
@@ -35,5 +36,14 @@ public record HydraResponse(String body, int status) {
             throw new RuntimeException(e);
         }
     }
+
+    public <T> T as(TypeReference<T> tTypeReference) {
+        try {
+            return Jackson.JSON_MAPPER.readValue(body, tTypeReference);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
 }
