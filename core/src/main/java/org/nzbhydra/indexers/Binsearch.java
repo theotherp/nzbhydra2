@@ -104,7 +104,6 @@ public class Binsearch extends Indexer<String> {
     }
 
 
-    @SuppressWarnings("ConstantConditions")
     @Override
     protected List<SearchResultItem> getSearchResultItems(String searchRequestResponse, SearchRequest searchRequest) throws IndexerParsingException {
         List<SearchResultItem> items = new ArrayList<>();
@@ -176,18 +175,12 @@ public class Binsearch extends Indexer<String> {
 
         Matcher sizeMatcher = SIZE_PATTERN.matcher(infoElement.ownText());
         if (sizeMatcher.find()) {
-            Float size = Float.valueOf(sizeMatcher.group("size"));
+            Float size = Float.parseFloat(sizeMatcher.group("size"));
             String unit = sizeMatcher.group("unit");
             switch (unit) {
-                case "GB":
-                    size = size * 1000 * 1000 * 1000;
-                    break;
-                case "MB":
-                    size = size * 1000 * 1000;
-                    break;
-                case "KB":
-                    size = size * 1000;
-                    break;
+                case "GB" -> size = size * 1000 * 1000 * 1000;
+                case "MB" -> size = size * 1000 * 1000;
+                case "KB" -> size = size * 1000;
             }
             item.setSize(size.longValue());
         } else {
@@ -263,7 +256,7 @@ public class Binsearch extends Indexer<String> {
     protected String getAndStoreResultToDatabase(URI uri, IndexerApiAccessType apiAccessType) throws IndexerAccessException {
         return Failsafe.with(retry503policy)
             .onFailure(throwable -> logger.warn("Encountered 503 error. Will retry"))
-            .get(new CheckedSupplier<String>() {
+            .get(new CheckedSupplier<>() {
                 @Override
                 public String get() throws Throwable {
                     return getAndStoreResultToDatabase(uri, String.class, apiAccessType);

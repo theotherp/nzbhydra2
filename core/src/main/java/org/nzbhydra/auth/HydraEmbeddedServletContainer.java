@@ -41,10 +41,9 @@ public class HydraEmbeddedServletContainer implements WebServerFactoryCustomizer
 
     @Override
     public void customize(ConfigurableServletWebServerFactory factory) {
-        if (!(factory instanceof TomcatServletWebServerFactory)) {
+        if (!(factory instanceof TomcatServletWebServerFactory containerFactory)) {
             return; //Is the case in tests
         }
-        TomcatServletWebServerFactory containerFactory = (TomcatServletWebServerFactory) factory;
         containerFactory.addContextValves(new ValveBase() {
             @Override
             public void invoke(Request request, Response response) throws IOException, ServletException {

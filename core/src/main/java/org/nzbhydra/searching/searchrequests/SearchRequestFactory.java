@@ -35,7 +35,7 @@ public class SearchRequestFactory {
         searchRequest.setCategory(category);
         searchRequest.setSearchRequestId(searchRequestId);
         MDC.put("SEARCH", String.valueOf(searchRequestId));
-        if (!searchRequest.getMaxage().isPresent() && searchingConfig.getMaxAge().isPresent()) {
+        if (searchRequest.getMaxage().isEmpty() && searchingConfig.getMaxAge().isPresent()) {
             searchRequest.setMaxage(searchingConfig.getMaxAge().get());
         }
 

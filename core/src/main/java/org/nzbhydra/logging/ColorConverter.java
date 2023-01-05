@@ -30,7 +30,7 @@ public class ColorConverter extends org.springframework.boot.logging.logback.Col
     private static final Map<Integer, AnsiElement> LEVELS;
 
     static {
-        Map<Integer, AnsiElement> levels = new HashMap<Integer, AnsiElement>();
+        Map<Integer, AnsiElement> levels = new HashMap<>();
         levels.put(Level.DEBUG_INTEGER, AnsiColor.BLUE); //Only change in implementation, use different color for debug
         levels.put(Level.ERROR_INTEGER, AnsiColor.RED);
         levels.put(Level.WARN_INTEGER, AnsiColor.YELLOW);

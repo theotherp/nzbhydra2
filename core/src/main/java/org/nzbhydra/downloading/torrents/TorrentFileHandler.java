@@ -61,7 +61,7 @@ public class TorrentFileHandler {
     public DownloadResult getTorrentByGuid(long guid, FileDownloadAccessType accessType, SearchSource accessSource) throws InvalidSearchResultIdException {
         //Get result. if link contains magnet: return redirect to magnet URI. otherwise return file
         Optional<SearchResultEntity> optionalResult = searchResultRepository.findById(guid);
-        if (!optionalResult.isPresent()) {
+        if (optionalResult.isEmpty()) {
             logger.error("Download request with invalid/outdated GUID {}", guid);
             throw new InvalidSearchResultIdException(guid, accessSource == SearchSource.INTERNAL);
         }
@@ -140,7 +140,7 @@ public class TorrentFileHandler {
     }
 
     private boolean saveToBlackHole(DownloadResult result, URI magnetLinkUri) {
-        if (!configProvider.getBaseConfig().getDownloading().getSaveTorrentsTo().isPresent()) {
+        if (configProvider.getBaseConfig().getDownloading().getSaveTorrentsTo().isEmpty()) {
             logger.error("Torrent black hole folder not set");
             return false;
         }

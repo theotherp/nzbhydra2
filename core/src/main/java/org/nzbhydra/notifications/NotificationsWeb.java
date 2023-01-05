@@ -84,7 +84,7 @@ public class NotificationsWeb {
     @MessageMapping("/markNotificationRead")
     public void markRead(int id) {
         final Optional<NotificationEntity> byId = notificationRepository.findById(id);
-        if (!byId.isPresent()) {
+        if (byId.isEmpty()) {
             logger.error("Unable to mark notification with ID {} as read because no notification with that ID was found", id);
             return;
         }
@@ -102,7 +102,7 @@ public class NotificationsWeb {
             .stream()
             .filter(x -> x != null && x.getEventType() == notificationEventType)
             .findFirst();
-        if (!notificationEvent.isPresent()) {
+        if (notificationEvent.isEmpty()) {
             throw new RuntimeException("Unable to create test notification for event type " + eventType);
         }
         logger.info("Sending test notification for type {}", eventType);

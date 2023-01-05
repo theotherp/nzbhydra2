@@ -51,7 +51,6 @@ public class DownloaderConfigurer {
         downloaderConfig.setEnabled(true);
 
         final DownloadingConfig downloadingConfig = config.getDownloading();
-        downloadingConfig.setExternalUrl();
         downloadingConfig.setDownloaders(Collections.singletonList(downloaderConfig));
         configManager.setConfig(config);
 

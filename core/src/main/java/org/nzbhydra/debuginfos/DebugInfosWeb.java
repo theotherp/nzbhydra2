@@ -182,8 +182,8 @@ public class DebugInfosWeb {
     public ResponseEntity<List<PrefixAndEndpoint>> getEndpoints() {
 
         final List<RequestMappingConditionsDescription> conditionsDescriptions = ((Map<String, List<DispatcherServletMappingDescription>>) mappingsEndpoint.mappings().getContexts().get("NZBHydra2").getMappings().get("dispatcherServlets")).get("dispatcherServlet")
-                .stream().filter(x1 -> x1.getHandler().contains("nzbhydra"))
-                .map(x -> x.getDetails().getRequestMappingConditions()).collect(Collectors.toList());
+            .stream().filter(x1 -> x1.getHandler().contains("nzbhydra"))
+            .map(x -> x.getDetails().getRequestMappingConditions()).toList();
 
         final List<PrefixAndEndpoint> prefixAndEndpoints = new ArrayList<>();
         final Multimap<String, Endpoint> endpoints = HashMultimap.create();

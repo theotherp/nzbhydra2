@@ -74,15 +74,12 @@ public enum FileDownloadStatus {
     }
 
     public String humanize() {
-        switch (this) {
-            case CONTENT_DOWNLOAD_SUCCESSFUL:
-                return "Download successful";
-            case CONTENT_DOWNLOAD_WARNING:
-                return "Download warning";
-            case CONTENT_DOWNLOAD_ERROR:
-                return "Download error";
-        }
-        return this.name();
+        return switch (this) {
+            case CONTENT_DOWNLOAD_SUCCESSFUL -> "Download successful";
+            case CONTENT_DOWNLOAD_WARNING -> "Download warning";
+            case CONTENT_DOWNLOAD_ERROR -> "Download error";
+            default -> this.name();
+        };
     }
 
 

@@ -219,7 +219,7 @@ public class Ssl {
             return false;
         }
 
-        return aMatcher.group(3).toLowerCase().equals(bMatcher.group(3).toLowerCase());
+        return aMatcher.group(3).equalsIgnoreCase(bMatcher.group(3));
     }
 
     //https://stackoverflow.com/a/2406819/184264

@@ -39,7 +39,7 @@ public class BackupTask {
         int backupEveryXDays = configProvider.getBaseConfig().getMain().getBackupEveryXDays().get();
 
         Optional<LocalDateTime> firstStartOptional = genericStorage.get("FirstStart", LocalDateTime.class);
-        if (!firstStartOptional.isPresent()) {
+        if (firstStartOptional.isEmpty()) {
             logger.debug("First start date time not set (for some reason), aborting backup");
             return;
         }
@@ -52,7 +52,7 @@ public class BackupTask {
 
 
         Optional<BackupData> backupData = genericStorage.get(KEY, BackupData.class);
-        if (!backupData.isPresent()) {
+        if (backupData.isEmpty()) {
             logger.debug("Executing first backup: {} days since first start and backup is to be executed every {} days", daysSinceFirstStart, backupEveryXDays);
             executeBackup();
             return;

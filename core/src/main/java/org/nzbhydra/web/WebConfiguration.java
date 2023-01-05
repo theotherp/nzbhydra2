@@ -137,8 +137,7 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
     @Override
     protected void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
         for (HttpMessageConverter<?> converter : converters) {
-            if (converter instanceof MappingJackson2HttpMessageConverter) {
-                MappingJackson2HttpMessageConverter jacksonConverter = (MappingJackson2HttpMessageConverter) converter;
+            if (converter instanceof MappingJackson2HttpMessageConverter jacksonConverter) {
                 jacksonConverter.setPrettyPrint(true);
                 SimpleModule simpleModule = new SimpleModule();
                 simpleModule.addDeserializer(String.class, new EmptyStringToNullDeserializer());

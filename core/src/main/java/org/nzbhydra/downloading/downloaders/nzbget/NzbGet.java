@@ -203,7 +203,7 @@ public class NzbGet extends Downloader {
 
     protected void fillStatusFromQueue(DownloaderStatus status) throws DownloaderException {
         ArrayList<LinkedHashMap<String, Object>> queue = callNzbget("listgroups", new Object[]{0});
-        List<LinkedHashMap<String, Object>> nzbs = queue.stream().filter(x -> "NZB".equals(x.get("Kind"))).collect(Collectors.toList());
+        List<LinkedHashMap<String, Object>> nzbs = queue.stream().filter(x -> "NZB".equals(x.get("Kind"))).toList();
         if (!nzbs.isEmpty()) {
 
             status.setElementsInQueue(queue.size());

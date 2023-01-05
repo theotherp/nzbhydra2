@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
-@SuppressWarnings("ConstantConditions")
 @Component
 public class WebAccess {
 

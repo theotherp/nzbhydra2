@@ -42,7 +42,6 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Component
@@ -179,10 +178,10 @@ public class UrlCalculator {
         try {
             InetAddress candidateAddress = null;
             final List<NetworkInterface> networkInterfaces = Collections.list(NetworkInterface.getNetworkInterfaces()).stream()
-                    .filter(i -> Stream.of("VirtualBox", "Hyper-V", "Bluetooth", "Miniport").noneMatch(name -> i.getDisplayName() != null && i.getDisplayName().contains(name)))
-                    .filter(i -> i.getInetAddresses().hasMoreElements())
-                    .filter(i -> !(i.getInetAddresses().nextElement() instanceof Inet6Address))
-                    .collect(Collectors.toList());
+                .filter(i -> Stream.of("VirtualBox", "Hyper-V", "Bluetooth", "Miniport").noneMatch(name -> i.getDisplayName() != null && i.getDisplayName().contains(name)))
+                .filter(i -> i.getInetAddresses().hasMoreElements())
+                .filter(i -> !(i.getInetAddresses().nextElement() instanceof Inet6Address))
+                .toList();
             for (NetworkInterface iface : networkInterfaces) {
 
                 for (Enumeration inetAddrs = iface.getInetAddresses(); inetAddrs.hasMoreElements(); ) {

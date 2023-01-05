@@ -148,7 +148,7 @@ public class IndexerStatusesAndLimits {
 
 
     private Instant getResetTime(IndexerConfig indexerConfig) {
-        if (!indexerConfig.getHitLimitResetTime().isPresent()) {
+        if (indexerConfig.getHitLimitResetTime().isEmpty()) {
             return null;
         }
         LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);

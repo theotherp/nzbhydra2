@@ -139,7 +139,7 @@ public class Newznab extends Indexer<Xml> {
         }
         boolean searchTypeTvOrMovie = searchRequest.getSearchType() == SearchType.MOVIE || searchRequest.getSearchType() == SearchType.TVSEARCH;
         if (searchTypeTvOrMovie && searchRequest.getIdentifiers().isEmpty()) {
-            if (!searchRequest.getQuery().isPresent() && isIndexerNotSupportingEmptyTypeSearch()) {
+            if (searchRequest.getQuery().isEmpty() && isIndexerNotSupportingEmptyTypeSearch()) {
                 debug("Switching search type to SEARCH because this indexer doesn't allow using search type MOVIE/TVSEARCH without identifiers and without query");
                 searchType = SearchType.SEARCH;
             } else if (searchRequest.getQuery().isPresent() && isIndexerNotSupportingSpecialTypeQSearch()) {
@@ -594,7 +594,7 @@ public class Newznab extends Indexer<Xml> {
             link = item.getEnclosures().get(0).getUrl();
         } else {
             Optional<NewznabXmlEnclosure> nzbEnclosure = item.getEnclosures().stream().filter(x -> getEnclosureType().equals(x.getType())).findAny();
-            if (!nzbEnclosure.isPresent()) {
+            if (nzbEnclosure.isEmpty()) {
                 warn("Unable to find URL for result " + item.getTitle() + ". Will skip it.");
                 throw new NzbHydraException();
             }
@@ -668,7 +668,7 @@ public class Newznab extends Indexer<Xml> {
             //For these backends if not specified it doesn't exist
             searchResultItem.setHasNfo(HasNfo.NO);
         }
-        if (!searchResultItem.getGroup().isPresent() && !Strings.isNullOrEmpty(item.getDescription()) && item.getDescription().contains("Group:")) {
+        if (searchResultItem.getGroup().isEmpty() && !Strings.isNullOrEmpty(item.getDescription()) && item.getDescription().contains("Group:")) {
             //Dog has the group in the description, perhaps others too
             Matcher matcher = GROUP_PATTERN.matcher(item.getDescription());
             if (matcher.matches() && !Objects.equals(matcher.group(1), "not available")) {

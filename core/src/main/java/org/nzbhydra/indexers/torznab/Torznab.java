@@ -61,7 +61,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -81,18 +80,10 @@ public class Torznab extends Newznab {
         for (NewznabAttribute attribute : item.getTorznabAttributes()) {
             searchResultItem.getAttributes().put(attribute.getName(), attribute.getValue());
             switch (attribute.getName()) {
-                case "grabs":
-                    searchResultItem.setGrabs(Integer.valueOf(attribute.getValue()));
-                    break;
-                case "guid":
-                    searchResultItem.setIndexerGuid(attribute.getValue());
-                    break;
-                case "seeders":
-                    searchResultItem.setSeeders(Integer.valueOf(attribute.getValue()));
-                    break;
-                case "peers":
-                    searchResultItem.setPeers(Integer.valueOf(attribute.getValue()));
-                    break;
+                case "grabs" -> searchResultItem.setGrabs(Integer.valueOf(attribute.getValue()));
+                case "guid" -> searchResultItem.setIndexerGuid(attribute.getValue());
+                case "seeders" -> searchResultItem.setSeeders(Integer.valueOf(attribute.getValue()));
+                case "peers" -> searchResultItem.setPeers(Integer.valueOf(attribute.getValue()));
             }
         }
         if (item.getSize() != null) {
@@ -125,8 +116,8 @@ public class Torznab extends Newznab {
             }
         }
 
-        foundCategories.addAll(item.getNewznabAttributes().stream().filter(x -> x.getName().equals("category")).map(x -> Integer.valueOf(x.getValue())).collect(Collectors.toList()));
-        foundCategories.addAll(item.getTorznabAttributes().stream().filter(x -> x.getName().equals("category")).map(x -> Integer.valueOf(x.getValue())).collect(Collectors.toList()));
+        foundCategories.addAll(item.getNewznabAttributes().stream().filter(x -> x.getName().equals("category")).map(x -> Integer.valueOf(x.getValue())).toList());
+        foundCategories.addAll(item.getTorznabAttributes().stream().filter(x -> x.getName().equals("category")).map(x -> Integer.valueOf(x.getValue())).toList());
         return new ArrayList<>(foundCategories);
     }
 

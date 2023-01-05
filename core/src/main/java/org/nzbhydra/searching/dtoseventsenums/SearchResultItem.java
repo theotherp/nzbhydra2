@@ -136,10 +136,9 @@ public class SearchResultItem  {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof SearchResultItem)) {
+        if (!(o instanceof SearchResultItem item)) {
             return false;
         }
-        SearchResultItem item = (SearchResultItem) o;
         return Objects.equal(indexer, item.indexer) &&
                 Objects.equal(indexerGuid, item.indexerGuid) &&
                 Objects.equal(link, item.link) &&

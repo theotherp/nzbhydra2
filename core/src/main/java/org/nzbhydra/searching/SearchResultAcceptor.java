@@ -40,7 +40,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 @Component
 public class SearchResultAcceptor {
@@ -160,9 +159,9 @@ public class SearchResultAcceptor {
 
             Set<String> messages = new HashSet<>(constraintViolations.size());
             messages.addAll(constraintViolations.stream()
-                    .map(constraintViolation -> String.format("%s value '%s' %s", constraintViolation.getPropertyPath(),
-                            constraintViolation.getInvalidValue(), constraintViolation.getMessage()))
-                    .collect(Collectors.toList()));
+                .map(constraintViolation -> String.format("%s value '%s' %s", constraintViolation.getPropertyPath(),
+                    constraintViolation.getInvalidValue(), constraintViolation.getMessage()))
+                .toList());
             logger.error("Coding error: SearchResultItem validation messages: {}", Joiner.on(" ").join(messages));
             reasonsForRejection.add("Important data could not be mapped from the indexers returned response");
             return false;

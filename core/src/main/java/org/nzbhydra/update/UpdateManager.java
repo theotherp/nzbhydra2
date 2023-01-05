@@ -100,7 +100,7 @@ public class UpdateManager implements InitializingBean {
 
     private final ObjectMapper objectMapper;
     protected Supplier<List<Release>> releasesCache = Suppliers.memoizeWithExpiration(getReleasesSupplier(), CACHE_DURATION_MINUTES, TimeUnit.MINUTES);
-    protected TypeReference<List<ChangelogVersionEntry>> changelogEntryListTypeReference = new TypeReference<List<ChangelogVersionEntry>>() {
+    protected TypeReference<List<ChangelogVersionEntry>> changelogEntryListTypeReference = new TypeReference<>() {
     };
 
     public UpdateManager() {
@@ -244,7 +244,7 @@ public class UpdateManager implements InitializingBean {
         List<ChangelogVersionEntry> allChanges;
         try {
             String response = webAccess.callUrl(changelogUrl);
-            allChanges = objectMapper.readValue(response, new TypeReference<List<ChangelogVersionEntry>>() {
+            allChanges = objectMapper.readValue(response, new TypeReference<>() {
             });
         } catch (IOException e) {
             throw new UpdateException("Error while getting changelog: " + e.getMessage());
@@ -389,7 +389,7 @@ public class UpdateManager implements InitializingBean {
         boolean isOsWindows = osName.toLowerCase().contains("windows");
         String assetToContain = isOsWindows ? "windows" : "linux"; //LATER What about OSX?
         Optional<Asset> optionalAsset = assets.stream().filter(x -> x.getName().toLowerCase().contains(assetToContain)).findFirst();
-        if (!optionalAsset.isPresent()) {
+        if (optionalAsset.isEmpty()) {
             logger.error("Unable to find asset for platform {} in these assets: {}", assetToContain, assets.stream().map(Asset::getName).collect(Collectors.joining(", ")));
             throw new UpdateException("Unable to find asset for current platform " + assetToContain);
         }
@@ -401,7 +401,7 @@ public class UpdateManager implements InitializingBean {
         try {
             String url = repositoryBaseUrl + "/releases";
             logger.debug("Retrieving latest release from GitHub using URL {}", url);
-            List<Release> releases = webAccess.callUrl(url, new TypeReference<List<Release>>() {
+            List<Release> releases = webAccess.callUrl(url, new TypeReference<>() {
             });
             return releases;
         } catch (IOException e) {
@@ -426,7 +426,7 @@ public class UpdateManager implements InitializingBean {
         List<BlockedVersion> blockedVersions;
         try {
             String response = webAccess.callUrl(blockedVersionsUrl);
-            blockedVersions = objectMapper.readValue(response, new TypeReference<List<BlockedVersion>>() {
+            blockedVersions = objectMapper.readValue(response, new TypeReference<>() {
             });
         } catch (IOException e) {
             throw new UpdateException("Error while getting blocked versions: " + e.getMessage());

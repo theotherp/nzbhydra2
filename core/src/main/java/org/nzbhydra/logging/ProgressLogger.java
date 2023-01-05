@@ -345,7 +345,7 @@ public final class ProgressLogger {
         return logger;
     }
 
-    private final String itemName() {
+    private String itemName() {
         if (Objects.equals(referenceItemsName, itemsName)) {
             return itemName;
         }
@@ -492,7 +492,6 @@ public final class ProgressLogger {
 
         lastLogTime = currentTime;
         lastCount = count;
-        return;
     }
 
     /**

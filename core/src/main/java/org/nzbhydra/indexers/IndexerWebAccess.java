@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import com.google.common.io.BaseEncoding;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
@@ -48,7 +49,6 @@ public class IndexerWebAccess {
     protected Unmarshaller unmarshaller = new WebConfiguration().marshaller();
 
 
-    @SuppressWarnings("unchecked")
     public <T> T get(URI uri, IndexerConfig indexerConfig) throws IndexerAccessException {
         return get(uri, indexerConfig, null);
     }
@@ -122,6 +122,7 @@ public class IndexerWebAccess {
         }
     }
 
+    @EqualsAndHashCode(callSuper = true)
     @Data
 @ReflectionMarker
     @AllArgsConstructor

@@ -18,7 +18,11 @@ package org.nzbhydra.logging;
 
 import org.apache.commons.io.Charsets;
 
-import java.io.*;
+import java.io.Closeable;
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 
@@ -34,9 +38,6 @@ public class ReversedLinesFileReader implements Closeable {
     private final Charset encoding;
 
     private final RandomAccessFile randomAccessFile;
-
-    private final long totalByteLength;
-    private final long totalBlockCount;
 
     private final byte[][] newLineSequences;
     private final int avoidNewlineSplitBufferSize;
@@ -124,8 +125,9 @@ public class ReversedLinesFileReader implements Closeable {
 
         // Open file
         randomAccessFile = new RandomAccessFile(file, "r");
-        totalByteLength = randomAccessFile.length();
+        long totalByteLength = randomAccessFile.length();
         int lastBlockLength = (int) (totalByteLength % blockSize);
+        long totalBlockCount;
         if (lastBlockLength > 0) {
             totalBlockCount = totalByteLength / blockSize + 1;
         } else {

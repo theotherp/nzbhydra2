@@ -63,7 +63,7 @@ public class LogContentProvider {
         if (logFiles == null) {
             return Collections.emptyList();
         }
-        return Stream.of(logFiles).sorted(Comparator.comparingLong(File::lastModified).reversed()).filter(x -> x.getName().toLowerCase().endsWith("log")).map(File::getName).collect(Collectors.toList());
+        return Stream.of(logFiles).sorted(Comparator.comparingLong(File::lastModified).reversed()).map(File::getName).filter(name -> name.toLowerCase().endsWith("log")).collect(Collectors.toList());
     }
 
     public JsonLogResponse getLogsAsJsonLines(int offset, int limit) throws IOException {
@@ -76,23 +76,25 @@ public class LogContentProvider {
         }
         List<HashMap<String, Object>> objects = new ArrayList<>();
         int count = 0;
-        ReversedLinesFileReader reversedLinesFileReader = new ReversedLinesFileReader(logfile, Charset.defaultCharset());
-        String line = reversedLinesFileReader.readLine();
-        while (offset > 0 && count++ < offset && line != null) {
+        String line;
+        try (ReversedLinesFileReader reversedLinesFileReader = new ReversedLinesFileReader(logfile, Charset.defaultCharset())) {
             line = reversedLinesFileReader.readLine();
-        }
-        if (count > 0 && line == null) {
-            return new JsonLogResponse(Collections.emptyList(), false, offset, 0);
-        }
-        count = 1;
-        while (line != null && count++ <= limit) {
-            TypeReference<HashMap<String, Object>> typeRef
-                    = new TypeReference<HashMap<String, Object>>() {
-            };
+            while (offset > 0 && count++ < offset && line != null) {
+                line = reversedLinesFileReader.readLine();
+            }
+            if (count > 0 && line == null) {
+                return new JsonLogResponse(Collections.emptyList(), false, offset, 0);
+            }
+            count = 1;
+            while (line != null && count++ <= limit) {
+                TypeReference<HashMap<String, Object>> typeRef
+                    = new TypeReference<>() {
+                };
 
-            HashMap<String, Object> o = Jackson.JSON_MAPPER.readValue(line, typeRef);
-            objects.add(o);
-            line = reversedLinesFileReader.readLine();
+                HashMap<String, Object> o = Jackson.JSON_MAPPER.readValue(line, typeRef);
+                objects.add(o);
+                line = reversedLinesFileReader.readLine();
+            }
         }
 
         return new JsonLogResponse(objects, line != null, offset, objects.size());
@@ -109,8 +111,7 @@ public class LogContentProvider {
             for (Iterator<Appender<ILoggingEvent>> index = logger.iteratorForAppenders();
                  index.hasNext(); ) {
                 Object enumElement = index.next();
-                if (enumElement instanceof FileAppender) {
-                    FileAppender<?> temp = (FileAppender<?>) enumElement;
+                if (enumElement instanceof FileAppender<?> temp) {
                     if (getJsonFile) {
                         if (!temp.getEncoder().getClass().getName().equals(SensitiveDataRemovingPatternLayoutEncoder.class.getName())) {
                             fileAppender = temp;

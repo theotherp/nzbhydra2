@@ -87,12 +87,12 @@ public class QueryGenerator {
             logger.debug("Using internally provided title {}", query);
         } else {
             Optional<Map.Entry<MediaIdType, String>> firstIdentifierEntry = searchRequest.getIdentifiers().entrySet().stream().filter(java.util.Objects::nonNull).findFirst();
-            if (!firstIdentifierEntry.isPresent()) {
+            if (firstIdentifierEntry.isEmpty()) {
                 throw new IndexerSearchAbortedException("Unable to generate query because no identifier is known");
             }
             try {
                 MediaInfo mediaInfo = infoProvider.convert(firstIdentifierEntry.get().getValue(), firstIdentifierEntry.get().getKey());
-                if (!mediaInfo.getTitle().isPresent()) {
+                if (mediaInfo.getTitle().isEmpty()) {
                     throw new IndexerSearchAbortedException("Unable to generate query because no title is known");
                 }
                 query = sanitizeTitleForQuery(mediaInfo.getTitle().get());

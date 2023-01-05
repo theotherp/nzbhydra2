@@ -66,7 +66,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Component
 public class CapsGenerator {
@@ -217,9 +216,9 @@ public class CapsGenerator {
             }
             for (Category category : configProvider.getBaseConfig().getCategoriesConfig().getCategories()) {
                 List<Integer> subCategories = category.getNewznabCategories().stream().flatMap(Collection::stream).filter(x -> x % 1000 != 0)
-                        //Lower numbers first so that predefined category numbers take precedence over custom ones
-                        .sorted(Comparator.naturalOrder())
-                        .collect(Collectors.toList());
+                    //Lower numbers first so that predefined category numbers take precedence over custom ones
+                    .sorted(Comparator.naturalOrder())
+                    .toList();
                 //Use lowest category first
                 for (Integer subCategory : subCategories) {
                     if (alreadyAdded.contains(category.getName())) {

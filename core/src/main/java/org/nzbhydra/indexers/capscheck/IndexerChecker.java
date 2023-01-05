@@ -222,10 +222,10 @@ public class IndexerChecker {
             Optional<SingleCheckCapsResponse> responseWithLimits = responses.stream().filter(x -> x.getApiMax() != null).findFirst();
             if (responseWithLimits.isPresent()) {
                 logger.info("Determined an api hit limit of {} and a download limit of {}", responseWithLimits.get().apiMax, responseWithLimits.get().downloadsMax);
-                if (!indexerConfig.getHitLimit().isPresent() && responseWithLimits.get().apiMax > -1) {
+                if (indexerConfig.getHitLimit().isEmpty() && responseWithLimits.get().apiMax > -1) {
                     indexerConfig.setHitLimit(responseWithLimits.get().apiMax);
                 }
-                if (!indexerConfig.getDownloadLimit().isPresent() && responseWithLimits.get().downloadsMax > -1) {
+                if (indexerConfig.getDownloadLimit().isEmpty() && responseWithLimits.get().downloadsMax > -1) {
                     indexerConfig.setDownloadLimit(responseWithLimits.get().downloadsMax);
                 }
             }
@@ -283,7 +283,7 @@ public class IndexerChecker {
                 && (checkType == CheckType.ALL || !x.isAllCapsChecked());
         List<IndexerConfig> configsToCheck = configProvider.getBaseConfig().getIndexers().stream()
             .filter(isToBeCheckedPredicate)
-            .collect(Collectors.toList());
+            .toList();
         if (configsToCheck.isEmpty()) {
             logger.info("No indexers to check");
             return Collections.emptyList();

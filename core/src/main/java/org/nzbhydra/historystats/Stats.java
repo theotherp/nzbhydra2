@@ -271,7 +271,7 @@ public class Stats {
         logger.debug("Calculating indexer result uniqueness scores");
 
         List<SearchModuleType> typesToUse = Arrays.asList(SearchModuleType.NEWZNAB, SearchModuleType.TORZNAB, SearchModuleType.ANIZB);
-        final Set<String> indexersToInclude = (statsRequest.isIncludeDisabled() ? searchModuleProvider.getIndexers() : searchModuleProvider.getEnabledIndexers().stream().filter(x -> typesToUse.contains(x.getConfig().getSearchModuleType())).collect(Collectors.toList())).stream().map(Indexer::getName).collect(Collectors.toSet());
+        final Set<String> indexersToInclude = (statsRequest.isIncludeDisabled() ? searchModuleProvider.getIndexers() : searchModuleProvider.getEnabledIndexers().stream().filter(x -> typesToUse.contains(x.getConfig().getSearchModuleType())).toList()).stream().map(Indexer::getName).collect(Collectors.toSet());
 
         List<IndexerScore> indexerUniquenessScores = calculateIndexerScores(indexersToInclude, uniquenessScoreEntityRepository.findAll());
         logger.debug(LoggingMarkers.PERFORMANCE, "Calculated indexer result uniqueness scores. Took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
@@ -637,15 +637,16 @@ public class Stats {
     List<DownloadPerAge> downloadsPerAge() {
         Stopwatch stopwatch = Stopwatch.createStarted();
         logger.debug("Calculating downloads per age");
-        String sql = "SELECT\n" +
-            "  steps,\n" +
-            "  count(*)\n" +
-            "FROM\n" +
-            "  (SELECT age / 100 AS steps\n" +
-            "   FROM INDEXERNZBDOWNLOAD\n" +
-            "   WHERE age IS NOT NULL)\n" +
-            "GROUP BY steps\n" +
-            "ORDER BY steps ASC";
+        String sql = """
+            SELECT
+              steps,
+              count(*)
+            FROM
+              (SELECT age / 100 AS steps
+               FROM INDEXERNZBDOWNLOAD
+               WHERE age IS NOT NULL)
+            GROUP BY steps
+            ORDER BY steps ASC""";
         Query query = entityManager.createNativeQuery(sql);
         List resultList = query.getResultList();
         List<DownloadPerAge> results = new ArrayList<>();
@@ -674,16 +675,17 @@ public class Stats {
         Stopwatch stopwatch = Stopwatch.createStarted();
         logger.debug("Calculating downloads per age percentages");
         DownloadPerAgeStats result = new DownloadPerAgeStats();
-        String percentage = "SELECT CASE\n" +
-            "       WHEN (SELECT CAST(COUNT(*) AS FLOAT) AS COUNT\n" +
-            "             FROM INDEXERNZBDOWNLOAD\n" +
-            "             WHERE AGE > %d) > 0\n" +
-            "         THEN SELECT CAST(100 AS FLOAT) / (CAST(COUNT(i.*) AS FLOAT)/ x.COUNT)\n" +
-            "FROM INDEXERNZBDOWNLOAD i,\n" +
-            "( SELECT COUNT(*) AS COUNT\n" +
-            "FROM INDEXERNZBDOWNLOAD\n" +
-            "WHERE AGE > %d) AS x\n" +
-            "ELSE 0 END";
+        String percentage = """
+            SELECT CASE
+                   WHEN (SELECT CAST(COUNT(*) AS FLOAT) AS COUNT
+                         FROM INDEXERNZBDOWNLOAD
+                         WHERE AGE > %d) > 0
+                     THEN SELECT CAST(100 AS FLOAT) / (CAST(COUNT(i.*) AS FLOAT)/ x.COUNT)
+            FROM INDEXERNZBDOWNLOAD i,
+            ( SELECT COUNT(*) AS COUNT
+            FROM INDEXERNZBDOWNLOAD
+            WHERE AGE > %d) AS x
+            ELSE 0 END""";
         result.setPercentOlder1000(((BigDecimal) entityManager.createNativeQuery(String.format(percentage, 1000, 1000)).getResultList().get(0)).intValue());
         result.setPercentOlder2000(((BigDecimal) entityManager.createNativeQuery(String.format(percentage, 2000, 2000)).getResultList().get(0)).intValue());
         result.setPercentOlder3000(((BigDecimal) entityManager.createNativeQuery(String.format(percentage, 3000, 3000)).getResultList().get(0)).intValue());

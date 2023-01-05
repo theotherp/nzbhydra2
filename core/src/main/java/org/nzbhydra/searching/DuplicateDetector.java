@@ -51,7 +51,7 @@ public class DuplicateDetector {
                 boolean foundBucket = false;
                 //Iterate over already existing buckets
                 for (LinkedHashSet<SearchResultItem> bucket : listOfBuckets) {
-                    if (bucket.stream().map(SearchResultItem::getIndexer).collect(Collectors.toList()).contains(searchResultItem.getIndexer())) {
+                    if (bucket.stream().map(SearchResultItem::getIndexer).toList().contains(searchResultItem.getIndexer())) {
                         continue;
                     }
                     //And all searchResults in those buckets

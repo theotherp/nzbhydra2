@@ -90,7 +90,7 @@ public class LogAnonymizer {
     private String replaceWithHashedValues(String log, String regex, final String tag) {
         Pattern ipPattern = Pattern.compile(regex);
         Matcher matcher = ipPattern.matcher(log);
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         while (matcher.find()) {
             if (matcher.group(0).equals("127.0.0.1") || matcher.group(0).startsWith("192.168") || matcher.group(0).startsWith("10.")) {
                 continue;

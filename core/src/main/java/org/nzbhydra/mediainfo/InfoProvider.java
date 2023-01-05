@@ -182,7 +182,7 @@ public class InfoProvider {
             List<MediaInfo> infos;
             //Always do a search and don't rely on the database, otherwise results might be outdated
             switch (titleType) {
-                case TVTITLE: {
+                case TVTITLE -> {
                     List<TvMazeSearchResult> results = tvMazeHandler.search(title);
                     infos = results.stream().map(MediaInfo::new).collect(Collectors.toList());
                     for (MediaInfo mediaInfo : infos) {
@@ -191,16 +191,13 @@ public class InfoProvider {
                             tvInfoRepository.save(tvInfo);
                         }
                     }
-                    break;
                 }
-                case MOVIETITLE: {
+                case MOVIETITLE -> {
                     List<TmdbSearchResult> results = tmdbHandler.search(title, null);
                     infos = results.stream().map(MediaInfo::new).collect(Collectors.toList());
                     //Do not save these infos to database because TMDB only returns basic info. IMDB ID might be missing and when the repository is queried for conversion it returns an empty IMDB ID
-                    break;
                 }
-                default:
-                    throw new IllegalArgumentException("Wrong IdType");
+                default -> throw new IllegalArgumentException("Wrong IdType");
             }
 
 

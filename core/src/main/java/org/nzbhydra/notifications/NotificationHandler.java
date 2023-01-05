@@ -45,7 +45,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 @Component
 public class NotificationHandler {
@@ -66,8 +65,8 @@ public class NotificationHandler {
         final NotificationConfig notificationConfig = configProvider.getBaseConfig().getNotificationConfig();
 
         final List<NotificationConfigEntry> configEntries = notificationConfig.getEntries().stream()
-                .filter(x -> x.getEventType() == event.getEventType())
-                .collect(Collectors.toList());
+            .filter(x -> x.getEventType() == event.getEventType())
+            .toList();
 
         if (configEntries.isEmpty()) {
             logger.debug(LoggingMarkers.NOTIFICATIONS, "No matching config entries found");

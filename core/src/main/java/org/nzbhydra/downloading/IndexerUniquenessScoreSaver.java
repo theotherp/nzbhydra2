@@ -65,8 +65,7 @@ public class IndexerUniquenessScoreSaver {
 
     public void handleDownloadEvent(FileDownloadEvent downloadEvent) {
         try {
-            //For some reason the IndexerSearchEntity is not readable (LazyInitializationException) if the result is not loaded again
-            SearchResultEntity searchResultEntity = searchResultRepository.getReferenceById(downloadEvent.getSearchResultEntityId());
+            SearchResultEntity searchResultEntity = downloadEvent.getSearchResultEntity();
 
             if (searchResultEntity.getIndexerSearchEntity() == null) {
                 logger.debug("Unable to determine indexer uniqueness score for result {} because no indexer search is saved", searchResultEntity.getTitle());

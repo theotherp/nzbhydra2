@@ -84,6 +84,7 @@ public class ConfigReaderWriter {
         save(converted, buildConfigFileFile());
     }
 
+    @SuppressWarnings({"Convert2Lambda", "Convert2Diamond"}) // Will not work with diamond
     protected void save(File targetFile, String configAsYamlString) {
         if (NzbHydra.isNativeBuild()) {
             return;
@@ -96,7 +97,7 @@ public class ConfigReaderWriter {
                         logger.error("Unable to save config", event.getException());
                     }
                 })
-                    .run(() -> doWrite(targetFile, configAsYamlString))
+                .run(() -> doWrite(targetFile, configAsYamlString))
             ;
         }
     }

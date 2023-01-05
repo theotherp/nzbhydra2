@@ -6,6 +6,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.apache.commons.io.IOUtils;
 import org.javers.core.JaversBuilder;
 import org.javers.core.diff.Diff;
@@ -381,8 +382,9 @@ public class DebugInfosProvider {
         private final long cpuUsage;
     }
 
+    @EqualsAndHashCode(callSuper = true)
     @Data
-@ReflectionMarker
+    @ReflectionMarker
     public static class DiffableCategoriesConfig extends CategoriesConfig {
         private Map<String, Category> categoriesMap = new HashMap<>();
 

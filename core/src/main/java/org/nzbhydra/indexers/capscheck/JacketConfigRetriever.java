@@ -59,14 +59,12 @@ public class JacketConfigRetriever {
                 .build().toUri();
         logger.info("Getting configured jackett trackers from {}", uri);
         final Object response = indexerWebAccess.get(uri, jackettConfig);
-        if (response instanceof NewznabXmlError) {
-            NewznabXmlError error = (NewznabXmlError) response;
+        if (response instanceof NewznabXmlError error) {
             throw new IndexerAccessException("Jackett report error " + error.getCode() + ": " + error.getDescription());
         }
-        if (!(response instanceof JacketCapsXmlRoot)) {
+        if (!(response instanceof JacketCapsXmlRoot root)) {
             throw new IOException("Unable to parse response from jackett");
         }
-        JacketCapsXmlRoot root = (JacketCapsXmlRoot) response;
 
         List<IndexerConfig> configs = new ArrayList<>();
         for (JacketCapsXmlIndexer indexer : root.getIndexers()) {
