@@ -54,8 +54,6 @@ public class NativeHints implements RuntimeHintsRegistrar {
                 hints.reflection().registerMethod(method, ExecutableMode.INVOKE);
             }
         }
-
-
     }
 
 }
