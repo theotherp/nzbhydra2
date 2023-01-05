@@ -36,7 +36,7 @@ public class SearchEntityTO {
     private SearchSource source;
     private SearchType searchType;
     private Instant time;
-    private Set<IdentifierKeyValuePair> identifiers = new HashSet<>();
+    private Set<IdentifierKeyValuePairTO> identifiers = new HashSet<>();
     private String categoryName;
     private String query;
     private Integer season;

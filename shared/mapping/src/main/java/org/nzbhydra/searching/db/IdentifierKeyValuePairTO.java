@@ -16,12 +16,15 @@
 
 package org.nzbhydra.searching.db;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-class SearchEntityTOTest {
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class IdentifierKeyValuePairTO {
 
-    //    @Test
-    public void should() {
-
-    }
-
+    private String identifierKey;
+    private String identifierValue;
 }

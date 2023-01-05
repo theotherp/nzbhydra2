@@ -100,16 +100,7 @@
             <artifactId>mapping</artifactId>
             <version>5.0.0-SNAPSHOT</version>
         </dependency>
-        <dependency>
-            <groupId>org.nzbhydra</groupId>
-            <artifactId>config</artifactId>
-            <version>5.0.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>org.nzbhydra</groupId>
-            <artifactId>entities</artifactId>
-            <version>5.0.0-SNAPSHOT</version>
-        </dependency>
+
 
         <!-- spring (boot) -->
         <dependency>

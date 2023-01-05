@@ -13,7 +13,6 @@
 
     <modules>
         <module>mapping</module>
-        <module>entities</module>
     </modules>
 
 </project>

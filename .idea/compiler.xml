@@ -19,12 +19,12 @@
         <module name="sockslib" />
         <module name="system" />
         <module name="ui" />
-        <module name="entities" />
         <module name="github-release-plugin" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel target="17">
       <module name="config" target="17" />
+      <module name="entities" target="17" />
       <module name="integration" target="17" />
       <module name="ui" target="1.5" />
     </bytecodeTargetLevel>
