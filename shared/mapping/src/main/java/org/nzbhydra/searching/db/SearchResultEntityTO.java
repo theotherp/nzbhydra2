@@ -25,11 +25,13 @@ import lombok.NoArgsConstructor;
 import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.indexers.IndexerEntityTO;
 import org.nzbhydra.searching.IndexerSearchEntityTO;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.time.Instant;
 
 
 @Data
+@ReflectionMarker
 @AllArgsConstructor
 @NoArgsConstructor
 public class SearchResultEntityTO {

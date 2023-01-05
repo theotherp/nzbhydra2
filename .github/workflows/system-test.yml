@@ -82,7 +82,11 @@ jobs:
                 uses: actions/upload-artifact@v3
                 with:
                     name: settings
-                    path: $HOME/.m2/settings.xml
+                    path: ~/.m2/settings.xml
+            -   name: maven-settings-xml-action
+                uses: whelk-io/maven-settings-xml-action@v20
+                with:
+                    repositories: '[{ "id": "central", "url": "https://repo1.maven.org/maven2" }]'
             -   name: "Build and push mockserver container"
                 run: |
                     mvn --batch-mode install -DskipTests -T 1C
