@@ -122,19 +122,5 @@
         <javers-core.version>6.8.1</javers-core.version>
     </properties>
 
-    <repositories>
-        <!-- Shouldn't be used -->
-        <repository>
-            <id>spring</id>
-            <url>https://repo.spring.io/release</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
-
 
 </project>
