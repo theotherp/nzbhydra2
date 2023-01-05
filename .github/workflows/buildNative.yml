@@ -44,6 +44,11 @@ jobs:
                 with:
                     name: coreLinux
                     path: core/target/core
-            -   name: "Publish Test Report"
-                uses: scacap/action-surefire-report@v1
-                if: ${{ always() }}
+            -   name: "Test Report"
+                uses: dorny/test-reporter@v1
+                if: always()
+                continue-on-error: true
+                with:
+                    name: Test report
+                    path: "**/surefire-reports/*.xml"
+                    reporter: java-junit

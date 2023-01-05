@@ -139,7 +139,6 @@ jobs:
             -   uses: actions/checkout@v3
                 name: "Check out source"
 
-            # Run tests
             -   name: Set up JDK 17
                 uses: actions/setup-java@v3
                 with:
@@ -147,21 +146,12 @@ jobs:
                     distribution: 'adopt'
                     cache: 'maven'
             -   name: "Install"
-                run: |
-                #                    cd shared
-                #                    mvn --batch-mode install -pl shared
-                         mvn --batch-mode install -pl org.nzbhydra:shared,org.nzbhydra:mapping,org.nzbhydra:config
+                run: mvn --batch-mode install -pl org.nzbhydra:shared,org.nzbhydra:mapping,org.nzbhydra:config
             -   name: "Run tests"
-                run: |
-                #                    cd tests/system
-                #                    mvn --batch-mode test
-                 mvn --batch-mode test -pl org.nzbhydra.tests:system
+                run: mvn --batch-mode test -pl org.nzbhydra.tests:system
             -   name: "Upload data folder artifact"
                 uses: actions/upload-artifact@v3
                 if: always()
                 with:
                     name: data
                     path: /tmp/data
-            -   name: "Publish Test Report"
-                uses: scacap/action-surefire-report@v1
-                if: ${{ always() }}

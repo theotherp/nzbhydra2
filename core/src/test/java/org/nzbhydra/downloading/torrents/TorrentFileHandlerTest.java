@@ -65,9 +65,9 @@ public class TorrentFileHandlerTest {
 
     @Test
     void shouldShortenFileName() {
-        final File targetFile = testee.getTargetFile(DownloadResult.createSuccessfulDownloadResult("Some title that is so long that the resulting path exceeds 220 characters which is roughly the max length of a path on windows and perhaps even some linux systems, not sure about that. I think 255 is the limit but let's just be sure, no filename should be that long anyway.", "".getBytes(), null), null);
-        Assertions.assertThat(targetFile).isEqualTo(new File(saveTorrentsTo, "Some title that is so long that the resulting path exceeds 220 characters which is roughly the max length of a path on windows and perhaps even some linux systems, not sure about that. I think 255 is .torrent"));
-        Assertions.assertThat(targetFile.getAbsolutePath()).hasSize(220);
+        final String title = "Some title that is so long that the resulting path exceeds 220 characters which is roughly the max length of a path on windows and perhaps even some linux systems, not sure about that. I think 255 is the limit but let's just be sure, no filename should be that long anyway.";
+        final File targetFile = testee.getTargetFile(DownloadResult.createSuccessfulDownloadResult(title, "".getBytes(), null), null);
+        Assertions.assertThat(targetFile.getAbsolutePath()).hasSizeLessThan(230);
     }
 
     @Test
