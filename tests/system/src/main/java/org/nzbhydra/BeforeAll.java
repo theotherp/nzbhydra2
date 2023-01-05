@@ -35,11 +35,13 @@ public class BeforeAll {
     private DownloaderConfigurer downloaderConfigurer;
 
     @PostConstruct
-    public void init() {
+    public void init() throws Exception{
         final BaseConfig config = configManager.getCurrentConfig();
         config.getMain().setApiKey("apikey");
         configManager.setConfig(config);
         indexerConfigurer.configureTwoMockIndexers();
         downloaderConfigurer.configureSabnzbdMock();
+        //Wait for changes to be loaded
+        Thread.sleep(1500);
     }
 }
