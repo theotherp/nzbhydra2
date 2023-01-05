@@ -155,3 +155,11 @@ jobs:
                 with:
                     name: data
                     path: /tmp/data
+            -   name: "System test Report"
+                uses: dorny/test-reporter@v1
+                if: always()
+                continue-on-error: true
+                with:
+                    name: System test report
+                    path: "**/surefire-reports/*.xml"
+                    reporter: java-junit

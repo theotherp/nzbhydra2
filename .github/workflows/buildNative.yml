@@ -34,6 +34,15 @@ jobs:
                 run: mvn --batch-mode install -DskipTests -T 1C
             -   name: "Run unit tests"
                 run: mvn --batch-mode test -T 1C -pl !org.nzbhydra:tests,!org.nzbhydra.tests:system,!org.nzbhydra.tests:integration --fail-at-end
+                # Needs to be done now because the compile step does a clean
+            -   name: "Test Report"
+                uses: dorny/test-reporter@v1
+                if: always()
+                continue-on-error: true
+                with:
+                    name: Unit test report
+                    path: "**/surefire-reports/*.xml"
+                    reporter: java-junit
             -   name: "Build native image"
                 working-directory: ./core
                 run: |
@@ -44,11 +53,3 @@ jobs:
                 with:
                     name: coreLinux
                     path: core/target/core
-            -   name: "Test Report"
-                uses: dorny/test-reporter@v1
-                if: always()
-                continue-on-error: true
-                with:
-                    name: Test report
-                    path: "**/surefire-reports/*.xml"
-                    reporter: java-junit
