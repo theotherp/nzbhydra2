@@ -3,37 +3,33 @@ name: system-test
 on:
     push:
     workflow_dispatch:
-#    workflow_call:
-#        inputs:
-#            buildNewNativeImage:
-#                required: true
-#                type: boolean
-#                default: true
-#                description: "If false use last built artifact instead of building a new one. Only for testing the build scripts."
 
 jobs:
     waitForNative:
+        # If we just want to test the pipeline or the tests we can save time and disable this and instead use the artifact from an older build
         uses: ./.github/workflows/buildNative.yml
-    build:
+    prepareArtifacts:
         needs: [ waitForNative ]
-        #        todo Reenable when it works
-        #        if: ${{ github.event.inputs.buildNewNativeImage }}
+        if: "contains(github.event.head_commit.message, 'skipnativebuild')"
         runs-on: ubuntu-latest
         steps:
+            -   run: true
             # Download from previous build for when we don't want to wait for the native image before doing tests
             # Makes only sense when no changes to the code base were made but instead we're trying to get the tests to run
-            -   uses: dawidd6/action-download-artifact@v2
-                name: Download artifact from previous build
+            -   name: "Download artifact from previous build"
+                if: "contains(github.event.head_commit.message, 'skipnativebuild')"
+                uses: dawidd6/action-download-artifact@v2
                 with:
                     workflow: buildNative.yml
                     name: coreLinux
-            -   uses: actions/upload-artifact@v3
-                name: Upload linux artifact
+            -   name: "Upload linux artifact"
+                if: "contains(github.event.head_commit.message, 'skipnativebuild')"
+                uses: actions/upload-artifact@v3
                 with:
                     name: coreLinux
                     path: core
     prepareContainer:
-        needs: [ build ]
+        needs: [ prepareArtifacts ]
         runs-on: ubuntu-latest
         steps:
             -   uses: actions/checkout@v3

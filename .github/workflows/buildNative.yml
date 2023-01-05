@@ -44,12 +44,13 @@ jobs:
                     path: "**/surefire-reports/*.xml"
                     reporter: java-junit
             -   name: "Build native image"
+                if: "!contains(github.event.head_commit.message, 'skipnativebuild')"
                 working-directory: ./core
                 run: |
                     mvn --batch-mode -Pnative clean native:compile -DskipTests
             -   name: "Upload linux artifact"
+                if: "!contains(github.event.head_commit.message, 'skipnativebuild')"
                 uses: actions/upload-artifact@v3
-                if: runner.os == 'Linux'
                 with:
                     name: coreLinux
                     path: core/target/core
