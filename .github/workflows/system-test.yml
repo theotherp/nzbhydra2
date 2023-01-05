@@ -78,6 +78,11 @@ jobs:
                     registry: ghcr.io
                     username: ${{ github.actor }}
                     password: ${{ secrets.GITHUB_TOKEN }}
+            -   name: "Upload settings.xml"
+                uses: actions/upload-artifact@v3
+                with:
+                    name: settings
+                    path: $HOME/.m2/settings.xml
             -   name: "Build and push mockserver container"
                 run: |
                     mvn --batch-mode install -DskipTests -T 1C
