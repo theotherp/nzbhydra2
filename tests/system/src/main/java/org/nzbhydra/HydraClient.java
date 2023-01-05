@@ -16,6 +16,7 @@
 
 package org.nzbhydra;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.annotation.PostConstruct;
 import okhttp3.Headers;
 import okhttp3.HttpUrl;
@@ -26,6 +27,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.Nullable;
 import org.junit.platform.commons.logging.Logger;
 import org.junit.platform.commons.logging.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -55,7 +57,8 @@ public class HydraClient {
         return new OkHttpClient.Builder().readTimeout(20, TimeUnit.SECONDS).build();
     }
 
-    public HydraResponse call(String method, String endpoint, Map<String, String> headers, String jsonRequestBody, String... parameters) {
+    public HydraResponse call(String method, String endpoint, Map<String, String> headers, Object requestBody, String... parameters) {
+
         final HttpUrl.Builder urlBuilder = new HttpUrl.Builder().scheme("http")
             .host(nzbhydraHost)
             .port(nzbhydraPort)
@@ -69,8 +72,7 @@ public class HydraClient {
             //Must be provided to instance in docker container
             urlBuilder.addQueryParameter("internalApiKey", "internalApiKey");
         }
-
-        final RequestBody body = jsonRequestBody == null ? null : RequestBody.create(jsonRequestBody, MediaType.parse("application/json"));
+        final RequestBody body = createRequestBody(requestBody);
         try (Response response = getClient().newCall(new Request.Builder()
             .headers(Headers.of(headers))
             .method(method, body)
@@ -84,6 +86,27 @@ public class HydraClient {
         }
     }
 
+    @Nullable
+    private static RequestBody createRequestBody(Object requestBody) {
+        final RequestBody body;
+        if (requestBody == null) {
+            body = null;
+        } else {
+            String jsonRequestBody;
+            if (requestBody instanceof String) {
+                jsonRequestBody = (String) requestBody;
+            } else {
+                try {
+                    jsonRequestBody = Jackson.JSON_MAPPER.writeValueAsString(requestBody);
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            body = RequestBody.create(jsonRequestBody, MediaType.parse("application/json"));
+        }
+        return body;
+    }
+
     public HydraResponse get(String endpoint, Map<String, String> headers, String... parameters) {
         return call("GET", endpoint, headers, null, parameters);
     }
@@ -92,11 +115,11 @@ public class HydraClient {
         return call("GET", endpoint, Collections.emptyMap(), null, parameters);
     }
 
-    public HydraResponse put(String endpoint, String body, String... parameters) {
+    public HydraResponse put(String endpoint, Object body, String... parameters) {
         return call("PUT", endpoint, Collections.emptyMap(), body, parameters);
     }
 
-    public HydraResponse post(String endpoint, String body, String... parameters) {
+    public HydraResponse post(String endpoint, Object body, String... parameters) {
         return call("POST", endpoint, Collections.emptyMap(), body, parameters);
     }
 

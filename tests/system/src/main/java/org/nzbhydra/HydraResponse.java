@@ -19,6 +19,7 @@ package org.nzbhydra;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import lombok.Data;
 
 @Data
@@ -53,7 +54,9 @@ public class HydraResponse {
 
         }
         try {
-            return Jackson.JSON_MAPPER.readValue(body, clazz);
+            return Jackson.JSON_MAPPER
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                .readValue(body, clazz);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
@@ -65,7 +68,9 @@ public class HydraResponse {
 
         }
         try {
-            return Jackson.JSON_MAPPER.readValue(body, tTypeReference);
+            return Jackson.JSON_MAPPER
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                .readValue(body, tTypeReference);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }

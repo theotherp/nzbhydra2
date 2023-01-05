@@ -16,10 +16,20 @@
 
 package org.nzbhydra;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.junit.jupiter.api.Test;
+import org.nzbhydra.historystats.SortModel;
+import org.nzbhydra.historystats.stats.HistoryRequest;
+import org.nzbhydra.searching.db.SearchEntityTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
+
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @ContextConfiguration(classes = {TestConfig.class})
@@ -34,8 +44,31 @@ public class HistoryTest {
 
     @Test
     public void shouldShowSearchHistory() throws Exception {
-//        Page<SearchEntity> page = hydraClient.get("internalapi/history/searches").as(new TypeReference<Page<SearchEntity>>() {
-//        });
+        searcher.searchExternalApi("historyTest");
+
+        HistoryRequest historyRequest = new HistoryRequest();
+        //Sort by time descending
+        historyRequest.setSortModel(new SortModel("time", 0));
+
+        HydraPage<SearchEntityTO> page = hydraClient.post("internalapi/history/searches", historyRequest)
+            .as(new TypeReference<>() {
+            });
+        assertThat(page.empty).isFalse();
+        assertThat(page.content).anyMatch(x -> "historyTest".equals(x.getQuery()));
+    }
+
+    @Data
+    @NoArgsConstructor
+    private static class HydraPage<T> {
+
+        private List<T> content;
+        private boolean last;
+        private int totalPages;
+        private int totalElements;
+        private int size;
+        private boolean first;
+        private boolean empty;
+
     }
 
 

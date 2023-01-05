@@ -41,7 +41,5 @@ public class BeforeAll {
         configManager.setConfig(config);
         indexerConfigurer.configureTwoMockIndexers();
         downloaderConfigurer.configureSabnzbdMock();
-        //Wait for changes to be loaded
-        Thread.sleep(1500);
     }
 }
