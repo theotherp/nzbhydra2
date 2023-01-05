@@ -404,9 +404,6 @@
           "pattern": "\\Qorg/nzbhydra/auth/UserInfosProvider.class\\E"
       },
       {
-          "pattern": "\\Qorg/nzbhydra/backup/BackupAndRestore$BackupEntry.class\\E"
-      },
-      {
           "pattern": "\\Qorg/nzbhydra/backup/BackupAndRestore.class\\E"
       },
       {

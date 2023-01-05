@@ -12,10 +12,12 @@ on:
 #                description: "If false use last built artifact instead of building a new one. Only for testing the build scripts."
 
 jobs:
+    waitForNative:
+        uses: ./.github/workflows/buildNative.yml
     build:
-        #todo Reenable when it works
+        needs: [ waitForNative ]
+        #        todo Reenable when it works
         #        if: ${{ github.event.inputs.buildNewNativeImage }}
-        #        uses: ./.github/workflows/buildNative.yml
         runs-on: ubuntu-latest
         steps:
             -   uses: dawidd6/action-download-artifact@v2

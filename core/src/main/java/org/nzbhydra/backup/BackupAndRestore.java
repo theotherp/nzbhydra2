@@ -16,6 +16,7 @@ import org.nzbhydra.systemcontrol.SystemControl;
 import org.nzbhydra.webaccess.HydraOkHttp3ClientHttpRequestFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.aot.hint.annotation.Reflective;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -154,6 +155,7 @@ public class BackupAndRestore {
         }
     }
 
+    @Reflective
     protected File getBackupFolder() {
         final String backupFolder = configProvider.getBaseConfig().getMain().getBackupFolder();
         if (backupFolder.contains(File.separator)) {
