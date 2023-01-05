@@ -48,8 +48,10 @@ public class HistoryWeb {
 
     @Secured({"ROLE_USER"})
     @RequestMapping(value = "/internalapi/history/searches/forsearching", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<SearchEntity> searchHistoryForSearchPage(HttpServletRequest request) {
-        return history.getHistoryForSearching();
+    public List<SearchEntityTO> searchHistoryForSearchPage(HttpServletRequest request) {
+        return history.getHistoryForSearching().stream()
+            .map(x -> Jackson.JSON_MAPPER.convertValue(x, SearchEntityTO.class))
+            .toList();
     }
 
 

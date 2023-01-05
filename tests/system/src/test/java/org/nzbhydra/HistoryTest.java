@@ -20,8 +20,10 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.junit.jupiter.api.Test;
+import org.nzbhydra.config.searching.SearchType;
 import org.nzbhydra.historystats.SortModel;
 import org.nzbhydra.historystats.stats.HistoryRequest;
+import org.nzbhydra.searching.db.IdentifierKeyValuePairTO;
 import org.nzbhydra.searching.db.SearchEntityTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -45,7 +47,8 @@ public class HistoryTest {
     @Test
     public void shouldShowSearchHistory() throws Exception {
         searcher.searchExternalApi("historyTest");
-        searcher.searchExternalApi("historyTest2");
+        searcher.searchExternalApiMovie("imdbid");
+        searcher.searchExternalApiTV("tvmazeid", 1, 2);
 
         HistoryRequest historyRequest = new HistoryRequest();
         //Sort by time descending
@@ -54,8 +57,49 @@ public class HistoryTest {
         HydraPage<SearchEntityTO> page = hydraClient.post("internalapi/history/searches", historyRequest)
             .as(new TypeReference<>() {
             });
+
         assertThat(page.empty).isFalse();
-        assertThat(page.content).anyMatch(x -> "historyTest".equals(x.getQuery()));
+
+        final SearchEntityTO tvSearch = page.getContent().get(0);
+        assertThat(tvSearch.getIdentifiers()).contains(new IdentifierKeyValuePairTO("TVMAZE", "tvmazeid"));
+        assertThat(tvSearch.getSeason()).isEqualTo(1);
+        assertThat(tvSearch.getEpisode()).isEqualTo("2");
+        assertThat(tvSearch.getSearchType()).isEqualTo(SearchType.TVSEARCH);
+
+        final SearchEntityTO movieSearch = page.getContent().get(1);
+        assertThat(movieSearch.getIdentifiers()).contains(new IdentifierKeyValuePairTO("IMDB", "ttimdbid"));
+        assertThat(movieSearch.getSearchType()).isEqualTo(SearchType.MOVIE);
+
+        final SearchEntityTO querySearch = page.getContent().get(2);
+        assertThat(querySearch.getSearchType()).isEqualTo(SearchType.SEARCH);
+        assertThat(querySearch.getQuery()).isEqualTo("historyTest");
+        assertThat(querySearch.getUserAgent()).isEqualTo("Other");
+
+        assertThat(tvSearch.getTime()).isAfter(movieSearch.getTime());
+        assertThat(movieSearch.getTime()).isAfter(querySearch.getTime());
+
+        //Sort by time ascending
+        historyRequest.setSortModel(new SortModel("time", 1));
+
+        page = hydraClient.post("internalapi/history/searches", historyRequest)
+            .as(new TypeReference<>() {
+            });
+        assertThat(page.getContent().get(0).getTime()).isBefore(page.getContent().get(1).getTime());
+    }
+
+    @Test
+    public void shouldShowSearchHistoryForSearching() throws Exception {
+        searcher.searchInternal("internalQueryForHistoryTest");
+
+        HistoryRequest historyRequest = new HistoryRequest();
+        //Sort by time descending
+        historyRequest.setSortModel(new SortModel("time", 0));
+
+        List<SearchEntityTO> list = hydraClient.post("internalapi/history/searches/forsearching", historyRequest)
+            .as(new TypeReference<>() {
+            });
+        assertThat(list).isNotEmpty();
+        assertThat(list.get(0).getQuery()).isEqualTo("internalQueryForHistoryTest");
     }
 
     @Data

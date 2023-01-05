@@ -38,6 +38,8 @@ public class BeforeAll {
     public void init() throws Exception{
         final BaseConfig config = configManager.getCurrentConfig();
         config.getMain().setApiKey("apikey");
+        config.getMain().getLogging().setLogIpAddresses(true);
+        config.getMain().getLogging().setLogUsername(true);
         configManager.setConfig(config);
         indexerConfigurer.configureTwoMockIndexers();
         downloaderConfigurer.configureSabnzbdMock();

@@ -20,12 +20,9 @@ import lombok.Data;
 import org.apache.commons.io.FileUtils;
 import org.assertj.core.api.Assertions;
 import org.jboss.forge.roaster.Roaster;
-import org.jboss.forge.roaster.model.impl.JavaClassImpl;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaSource;
 import org.junit.jupiter.api.Test;
-import org.nzbhydra.config.migration.ConfigMigrationStep;
-import org.nzbhydra.config.migration.ConfigMigrationStep003to004;
 import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.io.File;
