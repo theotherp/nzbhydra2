@@ -3,6 +3,7 @@ package org.nzbhydra.historystats;
 import jakarta.servlet.http.HttpServletRequest;
 import org.nzbhydra.Jackson;
 import org.nzbhydra.downloading.FileDownloadEntity;
+import org.nzbhydra.downloading.FileDownloadEntityTO;
 import org.nzbhydra.historystats.History.SearchDetails;
 import org.nzbhydra.historystats.stats.HistoryRequest;
 import org.nzbhydra.notifications.NotificationEntity;
@@ -57,8 +58,13 @@ public class HistoryWeb {
 
     @Secured({"ROLE_STATS"})
     @RequestMapping(value = "/internalapi/history/downloads", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public Page<FileDownloadEntity> downloadHistory(@RequestBody HistoryRequest requestData) {
-        return history.getHistory(requestData, History.DOWNLOAD_TABLE, FileDownloadEntity.class);
+    public Page<FileDownloadEntityTO> downloadHistory(@RequestBody HistoryRequest requestData) {
+        final Page<FileDownloadEntity> page = history.getHistory(requestData, History.DOWNLOAD_TABLE, FileDownloadEntity.class);
+        final List<FileDownloadEntityTO> downloadEntityTOS = page
+            .stream()
+            .map(x -> Jackson.JSON_MAPPER.convertValue(x, FileDownloadEntityTO.class))
+            .toList();
+        return new PageImpl<>(downloadEntityTOS);
     }
 
     @Secured({"ROLE_STATS"})

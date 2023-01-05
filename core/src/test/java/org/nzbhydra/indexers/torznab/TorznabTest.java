@@ -33,6 +33,7 @@ import org.nzbhydra.config.SearchSource;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.SearchingConfig;
 import org.nzbhydra.config.category.Category;
+import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.mediainfo.MediaIdType;
 import org.nzbhydra.config.searching.SearchType;
@@ -51,7 +52,6 @@ import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
 import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.searching.CategoryProvider;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
-import org.nzbhydra.searching.dtoseventsenums.SearchResultItem.DownloadType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.springframework.web.util.UriComponentsBuilder;
 

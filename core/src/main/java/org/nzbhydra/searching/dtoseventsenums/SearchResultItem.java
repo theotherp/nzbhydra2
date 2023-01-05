@@ -22,6 +22,7 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.nzbhydra.config.category.Category;
+import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.springnative.ReflectionMarker;
 
@@ -42,10 +43,6 @@ public class SearchResultItem  {
         MAYBE
     }
 
-    public enum DownloadType {
-        NZB,
-        TORRENT
-    }
     //Note: Validation annotations relate to the needed state after the item was created by an indexer
     private boolean agePrecise;
     private Map<String, String> attributes = new HashMap<>();

@@ -40,9 +40,9 @@ import lombok.Getter;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.indexers.IndexerEntity;
 import org.nzbhydra.indexers.IndexerSearchEntity;
-import org.nzbhydra.searching.dtoseventsenums.SearchResultItem.DownloadType;
 
 import java.time.Instant;
 

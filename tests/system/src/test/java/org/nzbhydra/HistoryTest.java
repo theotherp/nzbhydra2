@@ -21,8 +21,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.nzbhydra.config.searching.SearchType;
+import org.nzbhydra.downloading.FileDownloadEntityTO;
 import org.nzbhydra.historystats.SortModel;
 import org.nzbhydra.historystats.stats.HistoryRequest;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
 import org.nzbhydra.searching.db.IdentifierKeyValuePairTO;
 import org.nzbhydra.searching.db.SearchEntityTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +45,8 @@ public class HistoryTest {
     @Autowired
     private Searcher searcher;
 
+    @Autowired
+    private Downloader downloader;
 
     @Test
     public void shouldShowSearchHistory() throws Exception {
@@ -100,6 +104,21 @@ public class HistoryTest {
             });
         assertThat(list).isNotEmpty();
         assertThat(list.get(0).getQuery()).isEqualTo("internalQueryForHistoryTest");
+    }
+
+    @Test
+    public void shouldShowDownloadHistory() throws Exception {
+        final NewznabXmlItem downloadedItem = downloader.searchSomethingAndTriggerDownload("downloadHistoryTest");
+
+        HistoryRequest historyRequest = new HistoryRequest();
+        //Sort by time descending
+        historyRequest.setSortModel(new SortModel("time", 0));
+        HydraPage<FileDownloadEntityTO> page = hydraClient.post("internalapi/history/downloads", historyRequest)
+            .as(new TypeReference<>() {
+            });
+
+        assertThat(page.empty).isFalse();
+        assertThat(page.getContent().get(0).getSearchResult().getTitle()).isEqualTo(downloadedItem.getTitle());
     }
 
     @Data

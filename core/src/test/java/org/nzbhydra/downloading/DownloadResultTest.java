@@ -17,8 +17,8 @@
 package org.nzbhydra.downloading;
 
 import org.junit.jupiter.api.Test;
+import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.searching.db.SearchResultEntity;
-import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.springframework.http.HttpHeaders;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -28,14 +28,14 @@ public class DownloadResultTest {
     @Test
     void shouldBuildFilenameCorrectly() {
         SearchResultEntity searchResultEntity = new SearchResultEntity();
-        searchResultEntity.setDownloadType(SearchResultItem.DownloadType.NZB);
+        searchResultEntity.setDownloadType(DownloadType.NZB);
         FileDownloadEntity nzbDownloadEntity = new FileDownloadEntity();
         nzbDownloadEntity.setSearchResult(searchResultEntity);
 
         DownloadResult testee = DownloadResult.createSuccessfulDownloadResult("title", "content".getBytes(), nzbDownloadEntity);
         assertThat(testee.getAsResponseEntity().getHeaders().get(HttpHeaders.CONTENT_DISPOSITION)).containsExactly("attachment; filename=\"title.nzb\"");
 
-        searchResultEntity.setDownloadType(SearchResultItem.DownloadType.TORRENT);
+        searchResultEntity.setDownloadType(DownloadType.TORRENT);
         testee = DownloadResult.createSuccessfulDownloadResult("title", "content".getBytes(), nzbDownloadEntity);
         assertThat(testee.getAsResponseEntity().getHeaders().get(HttpHeaders.CONTENT_DISPOSITION)).containsExactly("attachment; filename=\"title.torrent\"");
     }

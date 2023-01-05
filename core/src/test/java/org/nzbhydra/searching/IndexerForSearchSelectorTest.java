@@ -15,6 +15,7 @@ import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.SearchingConfig;
 import org.nzbhydra.config.category.Category;
 import org.nzbhydra.config.category.Category.Subtype;
+import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.config.mediainfo.MediaIdType;
@@ -25,7 +26,6 @@ import org.nzbhydra.indexers.IndexerEntity;
 import org.nzbhydra.indexers.status.IndexerLimit;
 import org.nzbhydra.indexers.status.IndexerLimitRepository;
 import org.nzbhydra.mediainfo.InfoProvider;
-import org.nzbhydra.searching.dtoseventsenums.DownloadType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.springframework.context.ApplicationEventPublisher;
 
@@ -387,16 +387,16 @@ public class IndexerForSearchSelectorTest {
     @Test
     void shouldOnlyUseTorznabIndexersForTorrentSearches() throws Exception {
         indexerConfigMock.setSearchModuleType(SearchModuleType.NEWZNAB);
-        when(searchRequest.getDownloadType()).thenReturn(org.nzbhydra.searching.dtoseventsenums.DownloadType.TORRENT);
+        when(searchRequest.getDownloadType()).thenReturn(DownloadType.TORRENT);
         assertFalse(testee.checkTorznabOnlyUsedForTorrentOrInternalSearches(indexer), "Only torznab indexers should be used for torrent searches");
 
         indexerConfigMock.setSearchModuleType(SearchModuleType.TORZNAB);
-        when(searchRequest.getDownloadType()).thenReturn(org.nzbhydra.searching.dtoseventsenums.DownloadType.TORRENT);
+        when(searchRequest.getDownloadType()).thenReturn(DownloadType.TORRENT);
         assertTrue(testee.checkTorznabOnlyUsedForTorrentOrInternalSearches(indexer), "Torznab indexers should be used for torrent searches");
 
         indexerConfigMock.setSearchModuleType(SearchModuleType.TORZNAB);
         when(searchRequest.getSource()).thenReturn(SearchSource.INTERNAL);
-        when(searchRequest.getDownloadType()).thenReturn(org.nzbhydra.searching.dtoseventsenums.DownloadType.NZB);
+        when(searchRequest.getDownloadType()).thenReturn(DownloadType.NZB);
         assertTrue(testee.checkTorznabOnlyUsedForTorrentOrInternalSearches(indexer), "Torznab indexers should be selected for internal NZB searches");
 
         indexerConfigMock.setSearchModuleType(SearchModuleType.TORZNAB);

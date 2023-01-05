@@ -61,7 +61,6 @@ public class SearchEntityTest {
         final String jsonTO = Jackson.JSON_MAPPER.writeValueAsString(to);
         final String jsonEntity = Jackson.JSON_MAPPER.writeValueAsString(testee);
         assertThat(jsonTO).isEqualTo(jsonEntity);
-
     }
 
 }
