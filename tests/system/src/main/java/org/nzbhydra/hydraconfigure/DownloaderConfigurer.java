@@ -20,6 +20,7 @@ import org.nzbhydra.HydraClient;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.config.downloading.DownloaderConfig;
+import org.nzbhydra.config.downloading.DownloadingConfig;
 import org.nzbhydra.downloading.DownloaderType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -49,7 +50,9 @@ public class DownloaderConfigurer {
         downloaderConfig.setDownloadType(DownloadType.NZB);
         downloaderConfig.setEnabled(true);
 
-        config.getDownloading().setDownloaders(Collections.singletonList(downloaderConfig));
+        final DownloadingConfig downloadingConfig = config.getDownloading();
+        downloadingConfig.setExternalUrl();
+        downloadingConfig.setDownloaders(Collections.singletonList(downloaderConfig));
         configManager.setConfig(config);
 
     }

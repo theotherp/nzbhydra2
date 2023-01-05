@@ -91,7 +91,7 @@ jobs:
         needs: [ prepareContainer, buildMockserver ]
         runs-on: ubuntu-latest
         env:
-            spring_profiles_active: build
+            spring_profiles_active: build,systemtest
         services:
             core:
                 image: ghcr.io/theotherp/hydradocker:latest
@@ -102,6 +102,8 @@ jobs:
                     password: ${{ secrets.GITHUB_TOKEN }}
                 volumes:
                     - /tmp/data:/data
+                env:
+                    spring_profiles_active: build,systemtest
             mockServer:
                 image: ghcr.io/theotherp/mockserver:3.0.0
                 ports:
@@ -109,6 +111,8 @@ jobs:
                 credentials:
                     username: ${{ github.actor }}
                     password: ${{ secrets.GITHUB_TOKEN }}
+                env:
+                    spring_profiles_active: build,systemtest
 
         steps:
             -   uses: actions/checkout@v3

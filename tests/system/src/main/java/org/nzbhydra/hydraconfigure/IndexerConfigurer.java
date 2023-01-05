@@ -16,6 +16,8 @@
 
 package org.nzbhydra.hydraconfigure;
 
+import org.junit.platform.commons.logging.Logger;
+import org.junit.platform.commons.logging.LoggerFactory;
 import org.nzbhydra.HydraClient;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.indexer.BackendType;
@@ -32,6 +34,8 @@ import java.util.Collections;
 @Component
 public class IndexerConfigurer {
 
+    private static final Logger logger = LoggerFactory.getLogger(IndexerConfigurer.class);
+
     @Autowired
     private ConfigManager configManager;
 
@@ -42,6 +46,7 @@ public class IndexerConfigurer {
     private String mockUrl;
 
     public void configureTwoMockIndexers() {
+        logger.info(()->"Configuring two indexers using host " + mockUrl);
         final BaseConfig config = configManager.getCurrentConfig();
         config.getIndexers().clear();
         for (int i = 1; i < 4; i++) {

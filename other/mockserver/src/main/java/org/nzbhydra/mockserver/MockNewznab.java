@@ -3,6 +3,7 @@ package org.nzbhydra.mockserver;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
 import com.google.common.io.Resources;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mapping.newznab.NewznabParameters;
@@ -17,6 +18,7 @@ import org.nzbhydra.mapping.newznab.xml.NewznabXmlResponse;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -43,6 +45,11 @@ public class MockNewznab {
     private static HashMap<Integer, NewznabXmlRoot> responsesPerApikey = new HashMap<>();
     private Random random = new Random();
 
+    @Value("${main.host:127.0.0.1}")
+    private String host;
+    @Value("${server.port:5080}")
+    private int port;
+
     private static final int API_MAX = 300;
 
     static {
@@ -54,6 +61,12 @@ public class MockNewznab {
         apikeyToResultCount.put(5, API_MAX);
         apikeyToResultCount.put(10, 10);
         apikeyToResultCount.put(API_MAX, 30);
+    }
+
+    @PostConstruct
+    public void init() {
+        NewznabMockBuilder.host = this.host;
+        NewznabMockBuilder.port = this.port;
     }
 
 
