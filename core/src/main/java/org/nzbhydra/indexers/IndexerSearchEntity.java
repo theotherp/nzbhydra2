@@ -15,7 +15,6 @@ import org.nzbhydra.searching.db.SearchEntity;
 import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.util.Objects;
-import java.util.Random;
 
 
 @Data
@@ -46,10 +45,10 @@ public class IndexerSearchEntity {
     public IndexerSearchEntity() {
     }
 
-    public IndexerSearchEntity(IndexerEntity indexerEntity, SearchEntity searchEntity) {
+    public IndexerSearchEntity(IndexerEntity indexerEntity, SearchEntity searchEntity, int id) {
         this.indexerEntity = indexerEntity;
         this.searchEntity = searchEntity;
-        this.id = new Random().nextInt();
+        this.id = id;
     }
 
     @Override

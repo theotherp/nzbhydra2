@@ -24,7 +24,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.indexers.IndexerEntityTO;
-import org.nzbhydra.searching.IndexerSearchEntityTO;
 import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.time.Instant;
@@ -48,7 +47,7 @@ public class SearchResultEntityTO {
     private DownloadType downloadType;
     private Instant pubDate;
     @JsonIgnore
-    private IndexerSearchEntityTO indexerSearchEntity;
+    private int indexerSearchEntityId;
 
 
 }

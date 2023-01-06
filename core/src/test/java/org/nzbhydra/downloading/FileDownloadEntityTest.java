@@ -23,7 +23,6 @@ import org.nzbhydra.config.SearchSource;
 import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.config.downloading.FileDownloadAccessType;
 import org.nzbhydra.indexers.IndexerEntity;
-import org.nzbhydra.indexers.IndexerSearchEntity;
 import org.nzbhydra.searching.db.SearchEntity;
 import org.nzbhydra.searching.db.SearchResultEntity;
 
@@ -56,7 +55,7 @@ class FileDownloadEntityTest {
         searchResult.setIndexer(indexerEntity);
         final SearchEntity searchEntity = new SearchEntity();
         searchEntity.setQuery("query");
-        searchResult.setIndexerSearchEntity(new IndexerSearchEntity(indexerEntity, searchEntity));
+        searchResult.setIndexerSearchEntityId(1);
 
         testee.setSearchResult(searchResult);
 

@@ -266,7 +266,7 @@ public class Searcher {
                 if (configProvider.getBaseConfig().getMain().isKeepHistory()) {
                     entity = indexerSearchRepository.save(entity);
                     for (SearchResultEntity x : indexerSearchResult.getSearchResultEntities()) {
-                        x.setIndexerSearchEntity(entity);
+                        x.setIndexerSearchEntityId(entity.getId());
                     }
                 }
                 searchResultRepository.saveAll(indexerSearchResult.getSearchResultEntities());
