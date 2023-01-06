@@ -59,7 +59,7 @@ public class ExternalToolsTest {
         addRequest.setEnableRss(true);
         addRequest.setEnableInteractiveSearch(true);
         addRequest.setEnableInteractiveSearch(true);
-        addRequest.setCategories("1234");
+        addRequest.setCategories("2000");
         addRequest.setAddType(AddRequest.AddType.SINGLE);
 
         final Boolean response = hydraClient.post("internalapi/externalTools/configure", Jackson.JSON_MAPPER.writeValueAsString(addRequest)).as(Boolean.class);

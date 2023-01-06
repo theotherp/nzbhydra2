@@ -99,7 +99,7 @@ public class IndexerWebAccess {
             if (e.getCause() instanceof HydraUnmarshallingFailureException) {
                 throw new IndexerAccessException("Unable to parse indexer output", e.getCause());
             }
-
+            logger.debug("Indexer communication error", e.getCause());
             throw new IndexerUnreachableException("Error while communicating with indexer " + indexerConfig.getName() + ". Server returned: " + e.getMessage(), e.getCause());
         } catch (TimeoutException e) {
             throw new IndexerUnreachableException("Indexer did not complete request within " + timeout + " seconds");
