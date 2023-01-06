@@ -88,7 +88,6 @@ public abstract class Indexer<T> {
 
     protected IndexerApiAccessEntityShortRepository indexerApiAccessShortRepository;
 
-    private IndexerLimitRepository indexerStatusRepository;
 
     protected IndexerWebAccess indexerWebAccess;
 
@@ -116,7 +115,6 @@ public abstract class Indexer<T> {
         this.searchResultRepository = searchResultRepository;
         this.indexerApiAccessRepository = indexerApiAccessRepository;
         this.indexerApiAccessShortRepository = indexerApiAccessShortRepository;
-        this.indexerStatusRepository = indexerStatusRepository;
         this.indexerWebAccess = indexerWebAccess;
         this.resultAcceptor = resultAcceptor;
         this.categoryProvider = categoryProvider;

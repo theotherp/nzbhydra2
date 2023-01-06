@@ -16,7 +16,6 @@
 
 package org.nzbhydra.searching.db;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import lombok.AllArgsConstructor;
@@ -46,8 +45,7 @@ public class SearchResultEntityTO {
     private String details;
     private DownloadType downloadType;
     private Instant pubDate;
-    @JsonIgnore
-    private int indexerSearchEntityId;
+    private Integer indexerSearchEntityId;
 
 
 }

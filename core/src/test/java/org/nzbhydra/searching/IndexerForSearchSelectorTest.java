@@ -216,7 +216,6 @@ public class IndexerForSearchSelectorTest {
         indexerConfigMock.setDownloadLimit(null);
         testee.checkIndexerHitLimit(indexer);
         verify(nzbDownloadRepository, never()).findBySearchResultIndexerOrderByTimeDesc(any(), any());
-        verify(indexerApiAccessRepository, never()).findByIndexerOrderByTimeDesc(any(), any());
     }
 
     @Test

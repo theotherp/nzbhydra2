@@ -1,19 +1,10 @@
 package org.nzbhydra.indexers;
 
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.Collection;
-
+//Only used for stats, do not delete just because there's usages of reading methods!
 public interface IndexerApiAccessRepository extends JpaRepository<IndexerApiAccessEntity, Integer> {
-
-    IndexerApiAccessEntity findByIndexer(IndexerEntity indexerEntity);
-
-    Page<IndexerApiAccessEntity> findByIndexerOrderByTimeDesc(IndexerEntity indexerEntity, Pageable pageable);
-
-    void deleteAllByIndexerIn(Collection<IndexerEntity> searchEntity);
 
 
 }
