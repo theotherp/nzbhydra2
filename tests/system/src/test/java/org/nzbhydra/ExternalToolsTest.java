@@ -17,11 +17,13 @@
 package org.nzbhydra;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledOnOs;
 import org.junit.jupiter.api.condition.OS;
 import org.nzbhydra.backup.BackupEntry;
 import org.nzbhydra.externaltools.AddRequest;
+import org.nzbhydra.hydraconfigure.ConfigManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -39,6 +41,9 @@ public class ExternalToolsTest {
 
     @Autowired
     private HydraClient hydraClient;
+
+    @Autowired
+    private ConfigManager configManager;
 
     @Value("${sonarr.host}")
     private String sonarrHost;
@@ -59,7 +64,7 @@ public class ExternalToolsTest {
         addRequest.setEnableRss(true);
         addRequest.setEnableInteractiveSearch(true);
         addRequest.setEnableInteractiveSearch(true);
-        addRequest.setCategories("2000");
+        addRequest.setCategories(getIdFromConfiguredIndexer());
         addRequest.setAddType(AddRequest.AddType.SINGLE);
 
         final Boolean response = hydraClient.post("internalapi/externalTools/configure", Jackson.JSON_MAPPER.writeValueAsString(addRequest)).as(Boolean.class);
@@ -78,11 +83,16 @@ public class ExternalToolsTest {
         addRequest.setEnableRss(true);
         addRequest.setEnableInteractiveSearch(true);
         addRequest.setEnableInteractiveSearch(true);
-        addRequest.setCategories("1234");
+        addRequest.setCategories(getIdFromConfiguredIndexer());
         addRequest.setAddType(AddRequest.AddType.SINGLE);
 
         final Boolean response = hydraClient.post("internalapi/externalTools/configure", Jackson.JSON_MAPPER.writeValueAsString(addRequest)).as(Boolean.class);
         assertThat(response).isTrue();
+    }
+
+    @NotNull
+    private String getIdFromConfiguredIndexer() {
+        return String.valueOf(configManager.getCurrentConfig().getIndexers().get(0).getCategoryMapping().getCategories().get(0).getId());
     }
 
     @Test
@@ -94,8 +104,6 @@ public class ExternalToolsTest {
         assertThat(backupEntries).isNotEmpty();
         final HydraResponse downloadResponse = hydraClient.get("internalapi/backup/download", "filename=" + backupEntries.get(0).getFilename());
         assertThat(downloadResponse.body()).startsWith("PK");
-
-
     }
 
 
