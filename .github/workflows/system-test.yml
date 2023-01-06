@@ -87,29 +87,6 @@ jobs:
     runSystemTests:
         needs: [ prepareContainer, buildMockserver ]
         runs-on: ubuntu-latest
-        env:
-            spring_profiles_active: build,systemtest
-        services:
-            core:
-                image: ghcr.io/theotherp/hydradocker:latest
-                ports:
-                    - 5076:5076
-                credentials:
-                    username: ${{ github.actor }}
-                    password: ${{ secrets.GITHUB_TOKEN }}
-                volumes:
-                    - /tmp/data:/data
-                env:
-                    spring_profiles_active: build,systemtest
-            mockServer:
-                image: ghcr.io/theotherp/mockserver:3.0.0
-                ports:
-                    - 5080:5080
-                credentials:
-                    username: ${{ github.actor }}
-                    password: ${{ secrets.GITHUB_TOKEN }}
-                env:
-                    spring_profiles_active: build,systemtest
         steps:
             -   uses: actions/checkout@v3
                 name: "Check out source"
@@ -121,14 +98,21 @@ jobs:
                     distribution: 'adopt'
                     cache: 'maven'
             -   name: "Install"
-                run: mvn --batch-mode clean install -pl org.nzbhydra:shared,org.nzbhydra:mapping
+                run: mvn --batch-mode clean install -DskipTests -pl org.nzbhydra:shared,org.nzbhydra:mapping
 
             # We must wait for the code to be checked out so we can access the data folders with preconfigured settings
+            # We run all containers manually (instead of services) so they are in the same network
             -   name: "Run sonarr docker"
                 run: docker run -d -p 8989:8989 --name=sonarr -v ${{ github.workspace }}/docker/sonarr/data/:/config lscr.io/linuxserver/sonarr:latest
 
             -   name: "Run radarr docker"
                 run: docker run -d -p 7878:7878 --name=radarr -v ${{ github.workspace }}/docker/radarr/data/:/config lscr.io/linuxserver/radarr:latest
+
+            -   name: "Run core docker"
+                run: docker run -d -p 5076:5076 -v /tmp/data:/data -e spring_profiles_active=build,systemtest --name=core ghcr.io/theotherp/hydradocker:latest
+
+            -   name: "Run mockserver docker"
+                run: docker run -d -p 5080:5080 -e spring_profiles_active=build,systemtest --name=mockserver ghcr.io/theotherp/mockserver:3.0.0
 
             -   name: "Run tests"
                 run: mvn --batch-mode test -pl org.nzbhydra.tests:system
