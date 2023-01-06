@@ -87,6 +87,8 @@ jobs:
     runSystemTests:
         needs: [ prepareContainer, buildMockserver ]
         runs-on: ubuntu-latest
+        env:
+            spring_profiles_active: build,systemtest
         steps:
             -   uses: actions/checkout@v3
                 name: "Check out source"

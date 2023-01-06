@@ -39,10 +39,7 @@ Native:
 General:
     Migrate successfully on windows and linux
     Test with new instances
-    Test on virtualbox VMs (windows, debian)
-    https://levelup.gitconnected.com/upgrade-java8-to-java17-every-java-developer-should-know-43358b30532a
-    Build tests that run against an instance running native code
     Call discord webhook directly instead of using discord bot
     Make wrapper catch common errors (like freetype or whatever) and link to a wiki page
     In release script as a precondition check that wrapper executables are not much older than wrapper script files
-    Write test that ensures that all @Data classes are registered in hints
+    Add existing database (v1?) and perhaps even config to pipeline to ensure that migration keeps working
