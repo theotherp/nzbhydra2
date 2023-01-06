@@ -27,7 +27,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.io.File;
-import java.nio.file.Files;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -47,6 +46,11 @@ public class NzbHandlingTest {
 
     @Value("${nzbhydra.mockUrl}")
     private String mockUrl;
+    @Value("${blackholeFolder.nzbhydra}")
+    private String blackholeFolderNnzbhydra;
+
+    @Value("${blackholeFolder.testaccess}")
+    private String blackholeFolderTestAccess;
 
     @Test
     public void shouldDownloadNzb() throws Exception {
@@ -58,13 +62,12 @@ public class NzbHandlingTest {
     @Test
     public void shouldSaveToBlackhole() throws Exception {
         final BaseConfig config = configManager.getCurrentConfig();
-        final File tempFolder = Files.createTempDirectory("nzbhydra").toFile();
-        config.getDownloading().setSaveNzbsTo(tempFolder.getAbsolutePath());
+        config.getDownloading().setSaveNzbsTo(blackholeFolderNnzbhydra);
         configManager.setConfig(config);
 
         final String guid = searchResultProvider.findOneGuid();
         hydraClient.put("internalapi/saveNzbToBlackhole", guid);
-        final File[] files = tempFolder.listFiles();
+        final File[] files = new File(blackholeFolderTestAccess).listFiles();
         assertThat(files).isNotEmpty();
         assertThat(files[0].getName()).endsWith(".nzb");
     }
