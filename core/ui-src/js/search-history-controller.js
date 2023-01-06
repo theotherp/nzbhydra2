@@ -158,6 +158,16 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
             }
 
             pair = _.find(request.identifiers, function (pair) {
+                return pair.identifierKey === "TVMAZE"
+            });
+            if (angular.isDefined(pair)) {
+                key = "TVMAZE ID";
+                href = "https://www.tvmaze.com/shows/" + pair.identifierValue;
+                href = $filter("dereferer")(href);
+                value = pair.identifierValue;
+            }
+
+            pair = _.find(request.identifiers, function (pair) {
                 return pair.identifierKey === "TVRAGE"
             });
             if (angular.isDefined(pair)) {
