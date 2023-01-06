@@ -119,6 +119,10 @@ public class HydraClient {
         return call("PUT", endpoint, Collections.emptyMap(), body, parameters);
     }
 
+    public HydraResponse put(String endpoint, Object body, Map<String, String> headers, String... parameters) {
+        return call("PUT", endpoint, headers, body, parameters);
+    }
+
     public HydraResponse post(String endpoint, Object body, String... parameters) {
         return call("POST", endpoint, Collections.emptyMap(), body, parameters);
     }

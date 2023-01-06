@@ -74,7 +74,7 @@ public class NzbHandlingTest {
 
     @Test
     public void shouldDownloadZipWithNzbs() throws Exception {
-        final List<String> guids = searchResultProvider.findSearchResults().stream().map(x -> x.getRssGuid().getGuid())
+        final List<String> guids = searchResultProvider.searchAndReturnResults().stream().map(x -> x.getRssGuid().getGuid())
             .limit(2).toList();
         final FileZipResponse zipResponse = hydraClient.post("internalapi/nzbzip", Jackson.JSON_MAPPER.writeValueAsString(guids)).as(FileZipResponse.class);
         assertThat(zipResponse.isSuccessful()).isTrue();

@@ -32,7 +32,7 @@ public class GenericStorageWeb {
     private GenericStorage genericStorage;
 
     @RequestMapping(value = "/internalapi/genericstorage/{key}", method = RequestMethod.GET)
-    public Object get(@PathVariable String key, @RequestParam boolean forUser, HttpServletRequest request) {
+    public Object get(@PathVariable String key, @RequestParam(required = false) boolean forUser, HttpServletRequest request) {
         String keyToUse = key;
         if (forUser && request.getRemoteUser() != null) {
             keyToUse = key + "-" + request.getRemoteUser();
@@ -41,7 +41,7 @@ public class GenericStorageWeb {
     }
 
     @RequestMapping(value = "/internalapi/genericstorage/{key}", method = RequestMethod.PUT)
-    public void put(@PathVariable String key, @RequestParam boolean forUser, @RequestBody String data, HttpServletRequest request) {
+    public void put(@PathVariable String key, @RequestParam(required = false) boolean forUser, @RequestBody String data, HttpServletRequest request) {
         String keyToUse = key;
         if (forUser && request.getRemoteUser() != null) {
             keyToUse = key + "-" + request.getRemoteUser();

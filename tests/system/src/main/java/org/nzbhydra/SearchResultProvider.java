@@ -30,7 +30,7 @@ public class SearchResultProvider {
     @Autowired
     private HydraClient hydraClient;
 
-    public List<NewznabXmlItem> findSearchResults() {
+    public List<NewznabXmlItem> searchAndReturnResults() {
         final HydraResponse response = hydraClient.get("/api", "apikey=apikey", "t=search", "q=123");
         final String body = response.body();
         NewznabXmlRoot root = Jackson.getUnmarshal(body);
@@ -38,7 +38,7 @@ public class SearchResultProvider {
     }
 
     public String findOneGuid() {
-        final List<NewznabXmlItem> searchResults = findSearchResults();
+        final List<NewznabXmlItem> searchResults = searchAndReturnResults();
         Assertions.assertThat(searchResults).isNotEmpty();
         return searchResults.get(0).getRssGuid().getGuid();
     }
