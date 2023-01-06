@@ -53,6 +53,8 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
@@ -170,6 +172,17 @@ public class DebugInfosProvider {
 
     public List<TimeAndThreadCpuUsages> getThreadCpuUsageChartData() {
         return timeAndThreadCpuUsagesList;
+    }
+
+    public static void printVersion() {
+        try {
+            Manifest manifest = new Manifest(NzbHydra.class.getResourceAsStream("/META-INF/MANIFEST.MF"));
+            Attributes attr = manifest.getMainAttributes();
+            logger.info("NZBHydra 2 version: " + attr.getValue("Version"));
+            logger.info("NZBHydra 2 build timestamp: " + attr.getValue("BuildTimestamp"));
+        } catch (IOException e) {
+            logger.error("Unable to load version information", e);
+        }
     }
 
     private double getUpTimeInMiliseconds() {

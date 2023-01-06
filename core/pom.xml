@@ -58,6 +58,7 @@
                         <manifestEntries>
                             <Built-By>TheOtherP</Built-By>
                             <Version>${project.version}</Version>
+                            <BuildTimestamp>${maven.build.timestamp}</BuildTimestamp>
                         </manifestEntries>
                     </archive>
                     <excludes>

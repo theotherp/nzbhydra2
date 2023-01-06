@@ -89,6 +89,9 @@
           "pattern": "\\QMETA-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports\\E"
       },
       {
+          "pattern": "\\QMETA-INF/MANIFEST.MF\\E"
+      },
+      {
           "pattern": "\\Qapplication.properties\\E"
       },
       {
