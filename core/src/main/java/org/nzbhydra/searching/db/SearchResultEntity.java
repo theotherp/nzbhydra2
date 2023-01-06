@@ -16,8 +16,6 @@
 
 package org.nzbhydra.searching.db;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import jakarta.persistence.Column;
@@ -65,7 +63,6 @@ public final class SearchResultEntity {
     )
     @Id
     @GeneratedValue(generator = "search-result-sequence", strategy = GenerationType.SEQUENCE)
-    @JsonSerialize(using = ToStringSerializer.class) //JS cannot handle long. We don't need to calculate with this so string is fine to not lose any digits
     private long id;
 
     @ManyToOne

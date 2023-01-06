@@ -35,7 +35,7 @@ public final class FileDownloadEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @SequenceGenerator(allocationSize = 1, name = "INDEXERNZBDOWNLOAD_SEQ")
-    protected int id;
+    private int id;
     @ManyToOne
     @JsonIgnoreProperties(value = {"handler", "hibernateLazyInitializer"})
     @OnDelete(action = OnDeleteAction.CASCADE)
