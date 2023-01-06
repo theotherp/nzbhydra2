@@ -44,7 +44,6 @@ import org.yaml.snakeyaml.error.YAMLException;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.URI;
 import java.nio.file.Files;
@@ -323,9 +322,9 @@ public class NzbHydra {
                     browserOpener.openBrowser();
                 }
                 URI uri = urlCalculator.getLocalBaseUriBuilder().build().toUri();
-                DebugInfosProvider.printVersion();
                 logger.info("You can access NZBHydra 2 in your browser via {}", uri);
             }
+            DebugInfosProvider.printVersion();
         } catch (Exception e) {
             logger.error("Unable to complete startup initialization", e);
         }
@@ -334,13 +333,6 @@ public class NzbHydra {
     @PreDestroy
     public void destroy() {
         logger.info("Shutting down and using up to {}ms to compact database", configProvider.getBaseConfig().getMain().getDatabaseCompactTime());
-    }
-
-    @PostConstruct
-    public void loadBaseConfig() throws Exception {
-        try (InputStream resourceAsStream = getClass().getResourceAsStream("/config/baseConfig.yml")) {
-            //Simple hack to make sure the file is loaded so that the native tracing agent can detect this
-        }
     }
 
 
