@@ -106,6 +106,10 @@ jobs:
             # We run all containers manually (instead of services) so we can add them to the same network
             -   name: "Create docker network"
                 run: docker network create systemtest
+
+            -   name: "Run mockserver docker"
+                run: docker run --net=systemtest -d -p 5080:5080 --name=mockserver -e spring_profiles_active=build,systemtest ghcr.io/theotherp/mockserver:3.0.0
+
             -   name: "Run sonarr docker"
                 run: docker run --net=systemtest -d -p 8989:8989 --name=sonarr -v ${{ github.workspace }}/docker/sonarr/data/:/config lscr.io/linuxserver/sonarr:latest
 
@@ -113,10 +117,7 @@ jobs:
                 run: docker run --net=systemtest -d -p 7878:7878 --name=radarr -v ${{ github.workspace }}/docker/radarr/data/:/config lscr.io/linuxserver/radarr:latest
 
             -   name: "Run core docker"
-                run: docker run --net=systemtest -d -p 5076:5076 --name=core -v /tmp/data:/data -e spring_profiles_active=build,systemtest ghcr.io/theotherp/hydradocker:latest
-
-            -   name: "Run mockserver docker"
-                run: docker run --net=systemtest -d -p 5080:5080 --name=mockserver -e spring_profiles_active=build,systemtest ghcr.io/theotherp/mockserver:3.0.0
+                run: docker run --net=systemtest -d -p 5076:5076 --name=core -v /tmp/data:/data -v /tmp/hydraBlackhole:/hydraBlackhole -e spring_profiles_active=build,systemtest ghcr.io/theotherp/hydradocker:latest
 
             -   name: "Inspect docker network"
                 run: docker network inspect systemtest
