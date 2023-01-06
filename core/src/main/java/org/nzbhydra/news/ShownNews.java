@@ -13,7 +13,7 @@ import org.nzbhydra.springnative.ReflectionMarker;
 @ReflectionMarker
 @Entity
 @Table(name = "shownnews")
-public class ShownNews {
+public final class ShownNews {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

@@ -78,8 +78,8 @@ public class NewznabTest {
     private InfoProvider infoProviderMock;
     @Mock
     private IndexerWebAccess indexerWebAccessMock;
-    @Mock
-    private IndexerEntity indexerEntityMock;
+
+    private IndexerEntity indexerEntityMock = new IndexerEntity("indexer");
     @Mock
     private CategoryProvider categoryProviderMock;
     @Mock
@@ -143,6 +143,7 @@ public class NewznabTest {
         testee.config = new IndexerConfig();
         testee.config.setSupportedSearchIds(Lists.newArrayList(MediaIdType.TMDB, MediaIdType.TVRAGE));
         testee.config.setHost("http://127.0.0.1:1234");
+        testee.indexer = indexerEntityMock;
 
         baseConfig = new BaseConfig();
         when(configProviderMock.getBaseConfig()).thenReturn(baseConfig);

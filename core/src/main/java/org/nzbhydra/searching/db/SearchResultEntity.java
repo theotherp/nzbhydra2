@@ -45,10 +45,10 @@ import java.time.Instant;
 @Entity
 @Getter
 @Table(name = "searchresult"
-        , indexes = {
-        @Index(columnList = "indexer_id,indexerguid", unique = true)}
+    , indexes = {
+    @Index(columnList = "indexer_id,indexerguid", unique = true)}
 )
-public class SearchResultEntity {
+public final class SearchResultEntity {
 
 
     @GenericGenerator(
@@ -66,31 +66,31 @@ public class SearchResultEntity {
     @Id
     @GeneratedValue(generator = "search-result-sequence", strategy = GenerationType.SEQUENCE)
     @JsonSerialize(using = ToStringSerializer.class) //JS cannot handle long. We don't need to calculate with this so string is fine to not lose any digits
-    protected long id;
+    private long id;
 
     @ManyToOne
     @NotNull
     @OnDelete(action = OnDeleteAction.CASCADE)
-    protected IndexerEntity indexer;
+    private IndexerEntity indexer;
 
     @Convert(converter = org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters.InstantConverter.class)
-    protected Instant firstFound;
+    private Instant firstFound;
 
     @NotNull
     @Column(length = 4000)
-    protected String title;
+    private String title;
 
     @Column(name = "indexerguid")
     @NotNull
-    protected String indexerGuid;
+    private String indexerGuid;
     @Column(length = 4000)
-    protected String link;
+    private String link;
     @Column(length = 4000)
-    protected String details;
+    private String details;
     @Enumerated(EnumType.STRING)
-    protected DownloadType downloadType;
+    private DownloadType downloadType;
     @Convert(converter = org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters.InstantConverter.class)
-    protected Instant pubDate;
+    private Instant pubDate;
 
     @Column(name = "INDEXERSEARCHENTITY")
     private Integer indexerSearchEntityId;

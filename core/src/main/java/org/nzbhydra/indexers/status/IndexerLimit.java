@@ -18,7 +18,7 @@ import java.time.Instant;
 @Entity
 @Table(name = "indexerlimit")
 
-public class IndexerLimit {
+public final class IndexerLimit {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

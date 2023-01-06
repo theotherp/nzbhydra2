@@ -26,7 +26,7 @@ import java.time.Instant;
 @Entity
 @NoArgsConstructor
 @Table(name = "indexerapiaccess_short")
-public class IndexerApiAccessEntityShort {
+public final class IndexerApiAccessEntityShort {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)

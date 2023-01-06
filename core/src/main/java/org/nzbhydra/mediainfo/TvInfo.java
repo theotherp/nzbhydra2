@@ -17,7 +17,7 @@ import java.util.Optional;
 @ReflectionMarker
 @Entity
 @Table(name = "tvinfo")
-public class TvInfo implements Comparable<TvInfo> {
+public final class TvInfo implements Comparable<TvInfo> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

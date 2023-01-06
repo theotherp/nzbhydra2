@@ -32,7 +32,7 @@ import java.util.Objects;
 @ReflectionMarker
 @Entity
 @NoArgsConstructor
-public class IdentifierKeyValuePair {
+public final class IdentifierKeyValuePair {
 
     @Id
     @GeneratedValue

@@ -17,7 +17,7 @@ import java.util.Optional;
 @Entity
 @Table(name = "movieinfo")
 
-public class MovieInfo implements Comparable<MovieInfo> {
+public final class MovieInfo implements Comparable<MovieInfo> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

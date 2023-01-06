@@ -18,12 +18,12 @@ import java.util.Objects;
 @ReflectionMarker
 @Entity
 @Table(name = "indexer")
-public class IndexerEntity {
+public final class IndexerEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @SequenceGenerator(allocationSize = 1, name = "INDEXER_SEQ")
-    protected int id;
+    private int id;
 
     @Column(unique = true)
     private String name;

@@ -60,8 +60,7 @@ public class IndexerForSearchSelectorTest {
     private SearchModuleProvider searchModuleProviderMock;
     @Mock
     private Indexer indexer;
-    @Mock
-    private IndexerEntity indexerEntity;
+    private IndexerEntity indexerEntity = new IndexerEntity("indexer");
     @Mock
     private InfoProvider infoProviderMock;
     @Mock

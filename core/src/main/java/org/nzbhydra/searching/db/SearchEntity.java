@@ -46,7 +46,7 @@ import java.util.Set;
 @ReflectionMarker
 @Entity
 @Table(name = "search")
-public class SearchEntity {
+public final class SearchEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

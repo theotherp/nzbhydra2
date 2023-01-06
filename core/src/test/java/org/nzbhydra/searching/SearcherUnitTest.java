@@ -71,12 +71,11 @@ public class SearcherUnitTest {
     private IndexerSearchResult searchResultMock2;
     @Mock
     private SearchRepository searchRepositoryMock;
-    @Mock
-    private IndexerEntity indexerEntity;
+
+    private IndexerEntity indexerEntity = new IndexerEntity();
     @Mock
     private SearchResultRepository searchResultRepositoryMock;
-    @Mock
-    private SearchResultEntity searchResultEntityMock;
+    private SearchResultEntity searchResultEntityMock = new SearchResultEntity();
     @Mock
     private InfoProvider infoProviderMock;
     @Mock
@@ -91,8 +90,7 @@ public class SearcherUnitTest {
     private ArgumentCaptor<List<SearchResultItem>> searchResultItemsCaptor;
     @Mock
     private IndexerForSearchSelection pickingResultMock;
-    @Mock
-    private IndexerSearchEntity indexerSearchEntityMock;
+    private IndexerSearchEntity indexerSearchEntityMock = new IndexerSearchEntity();
     @Mock
     private ApplicationEventPublisher applicationEventPublisherMock;
     @Mock
@@ -103,7 +101,7 @@ public class SearcherUnitTest {
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        when(searchResultEntityMock.getIndexer()).thenReturn(indexerEntity);
+        searchResultEntityMock.setIndexer(indexerEntity);
         searcher.duplicateDetector = duplicateDetector;
 
         when(indexer1.getName()).thenReturn("indexer1");

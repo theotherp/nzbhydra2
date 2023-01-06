@@ -75,8 +75,8 @@ public class TorznabTest {
     private InfoProvider infoProviderMock;
     @Mock
     private IndexerWebAccess indexerWebAccessMock;
-    @Mock
-    private IndexerEntity indexerEntityMock;
+
+    private IndexerEntity indexerEntityMock = new IndexerEntity("indexer");
     @Mock
     private CategoryProvider categoryProviderMock;
     @Mock

@@ -18,7 +18,7 @@ import java.sql.Timestamp;
 @Table(name = "persistent_logins")
 @Data
 @ReflectionMarker
-public class PersistentLoginsEntity {
+public final class PersistentLoginsEntity {
 
     @Id
     @NotNull

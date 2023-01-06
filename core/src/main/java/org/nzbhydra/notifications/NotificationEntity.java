@@ -19,7 +19,7 @@ import java.time.Instant;
 @ReflectionMarker
 @Entity
 @Table(name = "notification")
-public class NotificationEntity {
+public final class NotificationEntity {
 
     public enum MessageType {
         INFO,

@@ -27,7 +27,7 @@ import java.util.Objects;
 @Entity
 @NoArgsConstructor
 @Table(name = "indexerapiaccess")
-public class IndexerApiAccessEntity {
+public final class IndexerApiAccessEntity {
 
     @Id
     @SequenceGenerator(allocationSize = 1, name = "INDEXERAPIACCESS_SEQ")

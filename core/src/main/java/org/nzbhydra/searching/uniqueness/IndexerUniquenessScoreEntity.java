@@ -35,7 +35,7 @@ import org.nzbhydra.springnative.ReflectionMarker;
 @Data
 @ReflectionMarker
 @Table(name = "indexeruniquenessscore")
-public class IndexerUniquenessScoreEntity {
+public final class IndexerUniquenessScoreEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)

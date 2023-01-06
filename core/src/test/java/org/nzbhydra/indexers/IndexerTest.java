@@ -17,6 +17,7 @@ import org.nzbhydra.config.BaseConfigHandler;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.SearchSource;
 import org.nzbhydra.config.SearchSourceRestriction;
+import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.mediainfo.MediaIdType;
 import org.nzbhydra.config.searching.SearchType;
@@ -60,13 +61,12 @@ import static org.mockito.Mockito.*;
 public class IndexerTest {
 
     private BaseConfig baseConfig;
-    @Mock
-    private IndexerEntity indexerEntityMock;
+    private IndexerEntity indexerEntityMock = new IndexerEntity("indexerName");
     private IndexerConfig indexerConfig = new IndexerConfig();
     @Mock
     private Indexer indexerMock;
-    @Mock
-    private SearchResultEntity searchResultEntityMock;
+
+    private SearchResultEntity searchResultEntityMock = new SearchResultEntity(indexerEntityMock, Instant.now(), "title", "guid", "link", "details", DownloadType.NZB, Instant.now());
     @Mock
     private IndexerRepository indexerRepositoryMock;
     @Mock
@@ -147,7 +147,7 @@ public class IndexerTest {
         MockitoAnnotations.initMocks(this);
         when(indexerMock.getIndexerEntity()).thenReturn(indexerEntityMock);
         when(indexerMock.getConfig()).thenReturn(indexerConfig);
-        when(indexerEntityMock.getName()).thenReturn("indexerName");
+
         when(indexerMock.getName()).thenReturn("indexerName");
 
         testee.indexer = indexerEntityMock;
@@ -201,7 +201,7 @@ public class IndexerTest {
         SearchResultItem item = new SearchResultItem();
         item.setIndexerGuid("guid");
         item.setIndexer(indexerMock);
-        when(searchResultEntityMock.getIndexerGuid()).thenReturn("guid");
+        searchResultEntityMock.setIndexerGuid("guid");
         when(searchResultRepositoryMock.findAllIdsByIdIn(anyList())).thenReturn(Sets.newHashSet(299225959498991027L));
 
         testee.persistSearchResults(Collections.singletonList(item), new IndexerSearchResult());

@@ -30,7 +30,7 @@ import java.time.temporal.ChronoUnit;
 @ReflectionMarker
 @Entity
 @Table(name = "indexernzbdownload", indexes = {@Index(name = "NZB_DOWNLOAD_EXT_ID", columnList = "EXTERNAL_ID")})
-public class FileDownloadEntity {
+public final class FileDownloadEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
