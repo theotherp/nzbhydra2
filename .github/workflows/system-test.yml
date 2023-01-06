@@ -11,10 +11,8 @@ jobs:
         # If we skipped the build of the native image we need to download the last uploaded one (from a previous run)
         # and upload it again to make it available to the next jobs
         needs: [ waitForNative ]
-        if: "contains(github.event.head_commit.message, 'skipnativebuild')"
         runs-on: ubuntu-latest
         steps:
-            -   run: true
             -   name: "Download artifact from previous build"
                 if: "contains(github.event.head_commit.message, 'skipnativebuild')"
                 uses: dawidd6/action-download-artifact@v2
