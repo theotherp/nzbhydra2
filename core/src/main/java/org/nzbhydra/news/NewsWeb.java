@@ -1,16 +1,12 @@
 package org.nzbhydra.news;
 
 import jakarta.servlet.http.HttpSession;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.nzbhydra.ExceptionInfo;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.Markdown;
 import org.nzbhydra.auth.UserInfosProvider;
 import org.nzbhydra.mapping.SemanticVersion;
 import org.nzbhydra.news.NewsProvider.NewsEntry;
-import org.nzbhydra.springnative.ReflectionMarker;
 import org.nzbhydra.update.UpdateManager;
 import org.nzbhydra.web.BootstrappedDataTO;
 import org.slf4j.Logger;
@@ -90,14 +86,4 @@ public class NewsWeb {
     }
 
 
-    @Data
-@ReflectionMarker
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class NewsEntryForWeb {
-        private String version;
-        private String news;
-        private boolean forCurrentVersion;
-        private boolean forNewerVersion;
-    }
 }

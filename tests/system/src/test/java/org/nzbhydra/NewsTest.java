@@ -20,7 +20,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.nzbhydra.config.indexer.CapsCheckRequest;
-import org.nzbhydra.mediainfo.MediaInfoTO;
+import org.nzbhydra.news.NewsEntryForWeb;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
@@ -29,34 +29,20 @@ import java.util.List;
 
 @SpringBootTest
 @ContextConfiguration(classes = {TestConfig.class})
-public class MediaInfoTest {
+public class NewsTest {
 
     @Autowired
     private HydraClient hydraClient;
 
     @Test
-    public void shouldAutocompleteTV() throws Exception {
+    public void shouldLoadAllNews() throws Exception {
         CapsCheckRequest capsCheckRequest = new CapsCheckRequest();
 
-        List<MediaInfoTO> checkCapsResponses = hydraClient.get("internalapi/autocomplete/TV", "input=Lost").as(new TypeReference<>() {
+        List<NewsEntryForWeb> newsEntries = hydraClient.get("internalapi/news").as(new TypeReference<>() {
         });
-        Assertions.assertThat(checkCapsResponses)
+        Assertions.assertThat(newsEntries)
             .isNotEmpty()
-            .first(AssertFactories.MediaInfoTO)
-            .hasTvmazeId("123")
-            .hasTitle("Lost")
-            .hasYear(2004);
-    }
-
-    @Test
-    public void shouldAutocompleteMovie() throws Exception {
-        CapsCheckRequest capsCheckRequest = new CapsCheckRequest();
-
-        List<MediaInfoTO> checkCapsResponses = hydraClient.get("internalapi/autocomplete/MOVIE", "input=Gladiator").as(new TypeReference<>() {
-        });
-        Assertions.assertThat(checkCapsResponses).isNotEmpty()
-            .first(AssertFactories.MediaInfoTO)
-            .hasTmdbId("98");
+            .anyMatch(x -> x.getVersion().equals("4.3.0"));
     }
 
 
