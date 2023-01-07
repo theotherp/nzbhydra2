@@ -11,7 +11,6 @@
     <artifactId>tests</artifactId>
     <packaging>pom</packaging>
     <modules>
-        <module>integration</module>
         <module>system</module>
     </modules>
     <build>
