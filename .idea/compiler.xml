@@ -18,6 +18,7 @@
         <module name="classloader" />
         <module name="discordbot" />
         <module name="github-release-plugin" />
+        <module name="assertions" />
         <module name="updater" />
         <module name="mockserver" />
       </profile>
