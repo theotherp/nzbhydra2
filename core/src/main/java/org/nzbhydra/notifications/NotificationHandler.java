@@ -111,7 +111,7 @@ public class NotificationHandler {
                 throw new RuntimeException("Unable to generate notification body", e);
             }
 
-            notificationRepository.save(new NotificationEntity(event.getEventType(), NotificationEntity.MessageType.valueOf(configEntry.getMessageType().name()), notificationTitle, notificationBody, configEntry.getAppriseUrls(), Instant.now()));
+            notificationRepository.save(new NotificationEntity(event.getEventType(), NotificationMessageType.valueOf(configEntry.getMessageType().name()), notificationTitle, notificationBody, configEntry.getAppriseUrls(), Instant.now()));
 
             if (notificationConfig.getAppriseType() == NotificationConfig.AppriseType.NONE) {
                 logger.debug(LoggingMarkers.NOTIFICATIONS, "Apprise type set to None");

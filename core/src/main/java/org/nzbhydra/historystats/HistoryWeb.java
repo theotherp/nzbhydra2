@@ -7,6 +7,7 @@ import org.nzbhydra.downloading.FileDownloadEntityTO;
 import org.nzbhydra.historystats.History.SearchDetails;
 import org.nzbhydra.historystats.stats.HistoryRequest;
 import org.nzbhydra.notifications.NotificationEntity;
+import org.nzbhydra.notifications.NotificationEntityTO;
 import org.nzbhydra.searching.db.SearchEntity;
 import org.nzbhydra.searching.db.SearchEntityTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,8 +70,14 @@ public class HistoryWeb {
 
     @Secured({"ROLE_STATS"})
     @RequestMapping(value = "/internalapi/history/notifications", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public Page<NotificationEntity> notificationHistory(@RequestBody HistoryRequest requestData) {
-        return history.getHistory(requestData, History.NOTIFICATION_TABLE, NotificationEntity.class);
+    public Page<NotificationEntityTO> notificationHistory(@RequestBody HistoryRequest requestData) {
+        final Page<NotificationEntity> page = history.getHistory(requestData, History.NOTIFICATION_TABLE, NotificationEntity.class);
+
+        final List<NotificationEntityTO> tos = page
+            .stream()
+            .map(x -> Jackson.JSON_MAPPER.convertValue(x, NotificationEntityTO.class))
+            .toList();
+        return new PageImpl<>(tos);
     }
 
 }

@@ -21,13 +21,6 @@ import java.time.Instant;
 @Table(name = "notification")
 public final class NotificationEntity {
 
-    public enum MessageType {
-        INFO,
-        SUCCESS,
-        WARNING,
-        FAILURE
-    }
-
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @SequenceGenerator(allocationSize = 1, name = "NOTIFICATION_SEQ")
@@ -37,7 +30,7 @@ public final class NotificationEntity {
     private NotificationEventType notificationEventType;
 
     @Enumerated(EnumType.STRING)
-    private MessageType messageType;
+    private NotificationMessageType messageType;
 
     private String title;
     private String body;
@@ -51,7 +44,7 @@ public final class NotificationEntity {
     public NotificationEntity() {
     }
 
-    public NotificationEntity(NotificationEventType notificationEventType, MessageType messageType, String title, String body, String urls, Instant time) {
+    public NotificationEntity(NotificationEventType notificationEventType, NotificationMessageType messageType, String title, String body, String urls, Instant time) {
         this.notificationEventType = notificationEventType;
         this.title = title;
         this.body = body;

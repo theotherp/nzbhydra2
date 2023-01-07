@@ -17,8 +17,6 @@
 package org.nzbhydra;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.nzbhydra.config.searching.SearchType;
 import org.nzbhydra.downloading.FileDownloadEntityTO;
@@ -62,7 +60,7 @@ public class HistoryTest {
             .as(new TypeReference<>() {
             });
 
-        assertThat(page.empty).isFalse();
+        assertThat(page.isEmpty()).isFalse();
 
         final SearchEntityTO tvSearch = page.getContent().get(0);
         assertThat(tvSearch.getIdentifiers()).contains(new IdentifierKeyValuePairTO("TVMAZE", "tvmazeid"));
@@ -117,22 +115,8 @@ public class HistoryTest {
             .as(new TypeReference<>() {
             });
 
-        assertThat(page.empty).isFalse();
+        assertThat(page.isEmpty()).isFalse();
         assertThat(page.getContent().get(0).getSearchResult().getTitle()).isEqualTo(downloadedItem.getTitle());
-    }
-
-    @Data
-    @NoArgsConstructor
-    private static class HydraPage<T> {
-
-        private List<T> content;
-        private boolean last;
-        private int totalPages;
-        private int totalElements;
-        private int size;
-        private boolean first;
-        private boolean empty;
-
     }
 
 
