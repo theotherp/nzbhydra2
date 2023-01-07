@@ -16,7 +16,6 @@
 
 package org.nzbhydra;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.nzbhydra.hydraconfigure.IndexerConfigurer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,7 +52,6 @@ public class MigrationFromV1Test {
     private IndexerConfigurer indexerConfigurer;
 
 
-    @Disabled("Migration not yet working because docker is missing java")
     @Test
     public void shouldMigrateFromV1() throws Exception {
         try {
