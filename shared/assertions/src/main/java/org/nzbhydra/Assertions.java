@@ -657,6 +657,83 @@ public class Assertions {
     }
 
     /**
+     * Creates a new instance of <code>{@link org.nzbhydra.historystats.StatsResponseAssert}</code>.
+     *
+     * @param actual the actual value.
+     * @return the created assertion object.
+     */
+    @org.assertj.core.util.CheckReturnValue
+    public static org.nzbhydra.historystats.StatsResponseAssert assertThat(org.nzbhydra.historystats.StatsResponse actual) {
+        return new org.nzbhydra.historystats.StatsResponseAssert(actual);
+    }
+
+    /**
+     * Creates a new instance of <code>{@link org.nzbhydra.historystats.stats.AverageResponseTimeAssert}</code>.
+     *
+     * @param actual the actual value.
+     * @return the created assertion object.
+     */
+    @org.assertj.core.util.CheckReturnValue
+    public static org.nzbhydra.historystats.stats.AverageResponseTimeAssert assertThat(org.nzbhydra.historystats.stats.AverageResponseTime actual) {
+        return new org.nzbhydra.historystats.stats.AverageResponseTimeAssert(actual);
+    }
+
+    /**
+     * Creates a new instance of <code>{@link org.nzbhydra.historystats.stats.CountPerDayOfWeekAssert}</code>.
+     *
+     * @param actual the actual value.
+     * @return the created assertion object.
+     */
+    @org.assertj.core.util.CheckReturnValue
+    public static org.nzbhydra.historystats.stats.CountPerDayOfWeekAssert assertThat(org.nzbhydra.historystats.stats.CountPerDayOfWeek actual) {
+        return new org.nzbhydra.historystats.stats.CountPerDayOfWeekAssert(actual);
+    }
+
+    /**
+     * Creates a new instance of <code>{@link org.nzbhydra.historystats.stats.CountPerHourOfDayAssert}</code>.
+     *
+     * @param actual the actual value.
+     * @return the created assertion object.
+     */
+    @org.assertj.core.util.CheckReturnValue
+    public static org.nzbhydra.historystats.stats.CountPerHourOfDayAssert assertThat(org.nzbhydra.historystats.stats.CountPerHourOfDay actual) {
+        return new org.nzbhydra.historystats.stats.CountPerHourOfDayAssert(actual);
+    }
+
+    /**
+     * Creates a new instance of <code>{@link org.nzbhydra.historystats.stats.DownloadOrSearchSharePerUserOrIpAssert}</code>.
+     *
+     * @param actual the actual value.
+     * @return the created assertion object.
+     */
+    @org.assertj.core.util.CheckReturnValue
+    public static org.nzbhydra.historystats.stats.DownloadOrSearchSharePerUserOrIpAssert assertThat(org.nzbhydra.historystats.stats.DownloadOrSearchSharePerUserOrIp actual) {
+        return new org.nzbhydra.historystats.stats.DownloadOrSearchSharePerUserOrIpAssert(actual);
+    }
+
+    /**
+     * Creates a new instance of <code>{@link org.nzbhydra.historystats.stats.DownloadPerAgeAssert}</code>.
+     *
+     * @param actual the actual value.
+     * @return the created assertion object.
+     */
+    @org.assertj.core.util.CheckReturnValue
+    public static org.nzbhydra.historystats.stats.DownloadPerAgeAssert assertThat(org.nzbhydra.historystats.stats.DownloadPerAge actual) {
+        return new org.nzbhydra.historystats.stats.DownloadPerAgeAssert(actual);
+    }
+
+    /**
+     * Creates a new instance of <code>{@link org.nzbhydra.historystats.stats.DownloadPerAgeStatsAssert}</code>.
+     *
+     * @param actual the actual value.
+     * @return the created assertion object.
+     */
+    @org.assertj.core.util.CheckReturnValue
+    public static org.nzbhydra.historystats.stats.DownloadPerAgeStatsAssert assertThat(org.nzbhydra.historystats.stats.DownloadPerAgeStats actual) {
+        return new org.nzbhydra.historystats.stats.DownloadPerAgeStatsAssert(actual);
+    }
+
+    /**
      * Creates a new instance of <code>{@link org.nzbhydra.historystats.stats.HistoryRequestAssert}</code>.
      *
      * @param actual the actual value.
@@ -665,6 +742,72 @@ public class Assertions {
     @org.assertj.core.util.CheckReturnValue
     public static org.nzbhydra.historystats.stats.HistoryRequestAssert assertThat(org.nzbhydra.historystats.stats.HistoryRequest actual) {
         return new org.nzbhydra.historystats.stats.HistoryRequestAssert(actual);
+    }
+
+    /**
+     * Creates a new instance of <code>{@link org.nzbhydra.historystats.stats.IndexerApiAccessStatsEntryAssert}</code>.
+     *
+     * @param actual the actual value.
+     * @return the created assertion object.
+     */
+    @org.assertj.core.util.CheckReturnValue
+    public static org.nzbhydra.historystats.stats.IndexerApiAccessStatsEntryAssert assertThat(org.nzbhydra.historystats.stats.IndexerApiAccessStatsEntry actual) {
+        return new org.nzbhydra.historystats.stats.IndexerApiAccessStatsEntryAssert(actual);
+    }
+
+    /**
+     * Creates a new instance of <code>{@link org.nzbhydra.historystats.stats.IndexerDownloadShareAssert}</code>.
+     *
+     * @param actual the actual value.
+     * @return the created assertion object.
+     */
+    @org.assertj.core.util.CheckReturnValue
+    public static org.nzbhydra.historystats.stats.IndexerDownloadShareAssert assertThat(org.nzbhydra.historystats.stats.IndexerDownloadShare actual) {
+        return new org.nzbhydra.historystats.stats.IndexerDownloadShareAssert(actual);
+    }
+
+    /**
+     * Creates a new instance of <code>{@link org.nzbhydra.historystats.stats.IndexerScoreAssert}</code>.
+     *
+     * @param actual the actual value.
+     * @return the created assertion object.
+     */
+    @org.assertj.core.util.CheckReturnValue
+    public static org.nzbhydra.historystats.stats.IndexerScoreAssert assertThat(org.nzbhydra.historystats.stats.IndexerScore actual) {
+        return new org.nzbhydra.historystats.stats.IndexerScoreAssert(actual);
+    }
+
+    /**
+     * Creates a new instance of <code>{@link org.nzbhydra.historystats.stats.StatsRequestAssert}</code>.
+     *
+     * @param actual the actual value.
+     * @return the created assertion object.
+     */
+    @org.assertj.core.util.CheckReturnValue
+    public static org.nzbhydra.historystats.stats.StatsRequestAssert assertThat(org.nzbhydra.historystats.stats.StatsRequest actual) {
+        return new org.nzbhydra.historystats.stats.StatsRequestAssert(actual);
+    }
+
+    /**
+     * Creates a new instance of <code>{@link org.nzbhydra.historystats.stats.SuccessfulDownloadsPerIndexerAssert}</code>.
+     *
+     * @param actual the actual value.
+     * @return the created assertion object.
+     */
+    @org.assertj.core.util.CheckReturnValue
+    public static org.nzbhydra.historystats.stats.SuccessfulDownloadsPerIndexerAssert assertThat(org.nzbhydra.historystats.stats.SuccessfulDownloadsPerIndexer actual) {
+        return new org.nzbhydra.historystats.stats.SuccessfulDownloadsPerIndexerAssert(actual);
+    }
+
+    /**
+     * Creates a new instance of <code>{@link org.nzbhydra.historystats.stats.UserAgentShareAssert}</code>.
+     *
+     * @param actual the actual value.
+     * @return the created assertion object.
+     */
+    @org.assertj.core.util.CheckReturnValue
+    public static org.nzbhydra.historystats.stats.UserAgentShareAssert assertThat(org.nzbhydra.historystats.stats.UserAgentShare actual) {
+        return new org.nzbhydra.historystats.stats.UserAgentShareAssert(actual);
     }
 
     /**
@@ -1358,6 +1501,17 @@ public class Assertions {
     @org.assertj.core.util.CheckReturnValue
     public static org.nzbhydra.mapping.newznab.xml.caps.jackett.JacketCapsXmlRootAssert assertThat(org.nzbhydra.mapping.newznab.xml.caps.jackett.JacketCapsXmlRoot actual) {
         return new org.nzbhydra.mapping.newznab.xml.caps.jackett.JacketCapsXmlRootAssert(actual);
+    }
+
+    /**
+     * Creates a new instance of <code>{@link org.nzbhydra.mediainfo.MediaInfoTOAssert}</code>.
+     *
+     * @param actual the actual value.
+     * @return the created assertion object.
+     */
+    @org.assertj.core.util.CheckReturnValue
+    public static org.nzbhydra.mediainfo.MediaInfoTOAssert assertThat(org.nzbhydra.mediainfo.MediaInfoTO actual) {
+        return new org.nzbhydra.mediainfo.MediaInfoTOAssert(actual);
     }
 
     /**

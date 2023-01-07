@@ -56,7 +56,7 @@ public class MediaInfoWeb {
                                 infos = infoProvider.search(key.getInput(), MediaIdType.MOVIETITLE);
                             }
 
-                            return infos.stream().map(MediaInfoTO::new).collect(Collectors.toList());
+                            return infos.stream().map(MediaInfoWeb::from).collect(Collectors.toList());
                         } catch (InfoProviderException e) {
                             logger.warn("Error while finding autocomplete data for input {} and type {}", key.getInput(), key.getType(), e);
                             return Collections.emptyList();
@@ -104,8 +104,21 @@ public class MediaInfoWeb {
 
     }
 
+    private static MediaInfoTO from(MediaInfo info) {
+        MediaInfoTO to = new MediaInfoTO();
+        to.setImdbId(info.getImdbId().orElse(null));
+        to.setTmdbId(info.getTmdbId().orElse(null));
+        to.setTvmazeId(info.getTvMazeId().orElse(null));
+        to.setTvrageId(info.getTvRageId().orElse(null));
+        to.setTvdbId(info.getTvDbId().orElse(null));
+        to.setTitle(info.getTitle().orElse(null));
+        to.setYear(info.getYear().orElse(null));
+        to.setPosterUrl(info.getPosterUrl().orElse(null));
+        return to;
+    }
+
     @Data
-@ReflectionMarker
+    @ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     private static class CacheKey {
@@ -113,33 +126,4 @@ public class MediaInfoWeb {
         private String input;
     }
 
-    private enum AutocompleteType {
-        TV,
-        MOVIE
-    }
-
-    @Data
-@ReflectionMarker
-    public static class MediaInfoTO {
-        private String imdbId;
-        private String tmdbId;
-        private String tvmazeId;
-        private String tvrageId;
-        private String tvdbId;
-        private String title;
-        private Integer year;
-        private String posterUrl;
-
-        public MediaInfoTO(MediaInfo info) {
-            this.imdbId = info.getImdbId().orElse(null);
-            this.tmdbId = info.getTmdbId().orElse(null);
-            this.tvmazeId = info.getTvMazeId().orElse(null);
-            this.tvrageId = info.getTvRageId().orElse(null);
-            this.tvdbId = info.getTvDbId().orElse(null);
-            this.title = info.getTitle().orElse(null);
-            this.year = info.getYear().orElse(null);
-            this.posterUrl = info.getPosterUrl().orElse(null);
-        }
-
-    }
 }

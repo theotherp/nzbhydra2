@@ -656,6 +656,83 @@ public class SoftAssertions extends org.assertj.core.api.SoftAssertions {
     }
 
     /**
+     * Creates a new "soft" instance of <code>{@link org.nzbhydra.historystats.StatsResponseAssert}</code>.
+     *
+     * @param actual the actual value.
+     * @return the created "soft" assertion object.
+     */
+    @org.assertj.core.util.CheckReturnValue
+    public org.nzbhydra.historystats.StatsResponseAssert assertThat(org.nzbhydra.historystats.StatsResponse actual) {
+        return proxy(org.nzbhydra.historystats.StatsResponseAssert.class, org.nzbhydra.historystats.StatsResponse.class, actual);
+    }
+
+    /**
+     * Creates a new "soft" instance of <code>{@link org.nzbhydra.historystats.stats.AverageResponseTimeAssert}</code>.
+     *
+     * @param actual the actual value.
+     * @return the created "soft" assertion object.
+     */
+    @org.assertj.core.util.CheckReturnValue
+    public org.nzbhydra.historystats.stats.AverageResponseTimeAssert assertThat(org.nzbhydra.historystats.stats.AverageResponseTime actual) {
+        return proxy(org.nzbhydra.historystats.stats.AverageResponseTimeAssert.class, org.nzbhydra.historystats.stats.AverageResponseTime.class, actual);
+    }
+
+    /**
+     * Creates a new "soft" instance of <code>{@link org.nzbhydra.historystats.stats.CountPerDayOfWeekAssert}</code>.
+     *
+     * @param actual the actual value.
+     * @return the created "soft" assertion object.
+     */
+    @org.assertj.core.util.CheckReturnValue
+    public org.nzbhydra.historystats.stats.CountPerDayOfWeekAssert assertThat(org.nzbhydra.historystats.stats.CountPerDayOfWeek actual) {
+        return proxy(org.nzbhydra.historystats.stats.CountPerDayOfWeekAssert.class, org.nzbhydra.historystats.stats.CountPerDayOfWeek.class, actual);
+    }
+
+    /**
+     * Creates a new "soft" instance of <code>{@link org.nzbhydra.historystats.stats.CountPerHourOfDayAssert}</code>.
+     *
+     * @param actual the actual value.
+     * @return the created "soft" assertion object.
+     */
+    @org.assertj.core.util.CheckReturnValue
+    public org.nzbhydra.historystats.stats.CountPerHourOfDayAssert assertThat(org.nzbhydra.historystats.stats.CountPerHourOfDay actual) {
+        return proxy(org.nzbhydra.historystats.stats.CountPerHourOfDayAssert.class, org.nzbhydra.historystats.stats.CountPerHourOfDay.class, actual);
+    }
+
+    /**
+     * Creates a new "soft" instance of <code>{@link org.nzbhydra.historystats.stats.DownloadOrSearchSharePerUserOrIpAssert}</code>.
+     *
+     * @param actual the actual value.
+     * @return the created "soft" assertion object.
+     */
+    @org.assertj.core.util.CheckReturnValue
+    public org.nzbhydra.historystats.stats.DownloadOrSearchSharePerUserOrIpAssert assertThat(org.nzbhydra.historystats.stats.DownloadOrSearchSharePerUserOrIp actual) {
+        return proxy(org.nzbhydra.historystats.stats.DownloadOrSearchSharePerUserOrIpAssert.class, org.nzbhydra.historystats.stats.DownloadOrSearchSharePerUserOrIp.class, actual);
+    }
+
+    /**
+     * Creates a new "soft" instance of <code>{@link org.nzbhydra.historystats.stats.DownloadPerAgeAssert}</code>.
+     *
+     * @param actual the actual value.
+     * @return the created "soft" assertion object.
+     */
+    @org.assertj.core.util.CheckReturnValue
+    public org.nzbhydra.historystats.stats.DownloadPerAgeAssert assertThat(org.nzbhydra.historystats.stats.DownloadPerAge actual) {
+        return proxy(org.nzbhydra.historystats.stats.DownloadPerAgeAssert.class, org.nzbhydra.historystats.stats.DownloadPerAge.class, actual);
+    }
+
+    /**
+     * Creates a new "soft" instance of <code>{@link org.nzbhydra.historystats.stats.DownloadPerAgeStatsAssert}</code>.
+     *
+     * @param actual the actual value.
+     * @return the created "soft" assertion object.
+     */
+    @org.assertj.core.util.CheckReturnValue
+    public org.nzbhydra.historystats.stats.DownloadPerAgeStatsAssert assertThat(org.nzbhydra.historystats.stats.DownloadPerAgeStats actual) {
+        return proxy(org.nzbhydra.historystats.stats.DownloadPerAgeStatsAssert.class, org.nzbhydra.historystats.stats.DownloadPerAgeStats.class, actual);
+    }
+
+    /**
      * Creates a new "soft" instance of <code>{@link org.nzbhydra.historystats.stats.HistoryRequestAssert}</code>.
      *
      * @param actual the actual value.
@@ -664,6 +741,72 @@ public class SoftAssertions extends org.assertj.core.api.SoftAssertions {
     @org.assertj.core.util.CheckReturnValue
     public org.nzbhydra.historystats.stats.HistoryRequestAssert assertThat(org.nzbhydra.historystats.stats.HistoryRequest actual) {
         return proxy(org.nzbhydra.historystats.stats.HistoryRequestAssert.class, org.nzbhydra.historystats.stats.HistoryRequest.class, actual);
+    }
+
+    /**
+     * Creates a new "soft" instance of <code>{@link org.nzbhydra.historystats.stats.IndexerApiAccessStatsEntryAssert}</code>.
+     *
+     * @param actual the actual value.
+     * @return the created "soft" assertion object.
+     */
+    @org.assertj.core.util.CheckReturnValue
+    public org.nzbhydra.historystats.stats.IndexerApiAccessStatsEntryAssert assertThat(org.nzbhydra.historystats.stats.IndexerApiAccessStatsEntry actual) {
+        return proxy(org.nzbhydra.historystats.stats.IndexerApiAccessStatsEntryAssert.class, org.nzbhydra.historystats.stats.IndexerApiAccessStatsEntry.class, actual);
+    }
+
+    /**
+     * Creates a new "soft" instance of <code>{@link org.nzbhydra.historystats.stats.IndexerDownloadShareAssert}</code>.
+     *
+     * @param actual the actual value.
+     * @return the created "soft" assertion object.
+     */
+    @org.assertj.core.util.CheckReturnValue
+    public org.nzbhydra.historystats.stats.IndexerDownloadShareAssert assertThat(org.nzbhydra.historystats.stats.IndexerDownloadShare actual) {
+        return proxy(org.nzbhydra.historystats.stats.IndexerDownloadShareAssert.class, org.nzbhydra.historystats.stats.IndexerDownloadShare.class, actual);
+    }
+
+    /**
+     * Creates a new "soft" instance of <code>{@link org.nzbhydra.historystats.stats.IndexerScoreAssert}</code>.
+     *
+     * @param actual the actual value.
+     * @return the created "soft" assertion object.
+     */
+    @org.assertj.core.util.CheckReturnValue
+    public org.nzbhydra.historystats.stats.IndexerScoreAssert assertThat(org.nzbhydra.historystats.stats.IndexerScore actual) {
+        return proxy(org.nzbhydra.historystats.stats.IndexerScoreAssert.class, org.nzbhydra.historystats.stats.IndexerScore.class, actual);
+    }
+
+    /**
+     * Creates a new "soft" instance of <code>{@link org.nzbhydra.historystats.stats.StatsRequestAssert}</code>.
+     *
+     * @param actual the actual value.
+     * @return the created "soft" assertion object.
+     */
+    @org.assertj.core.util.CheckReturnValue
+    public org.nzbhydra.historystats.stats.StatsRequestAssert assertThat(org.nzbhydra.historystats.stats.StatsRequest actual) {
+        return proxy(org.nzbhydra.historystats.stats.StatsRequestAssert.class, org.nzbhydra.historystats.stats.StatsRequest.class, actual);
+    }
+
+    /**
+     * Creates a new "soft" instance of <code>{@link org.nzbhydra.historystats.stats.SuccessfulDownloadsPerIndexerAssert}</code>.
+     *
+     * @param actual the actual value.
+     * @return the created "soft" assertion object.
+     */
+    @org.assertj.core.util.CheckReturnValue
+    public org.nzbhydra.historystats.stats.SuccessfulDownloadsPerIndexerAssert assertThat(org.nzbhydra.historystats.stats.SuccessfulDownloadsPerIndexer actual) {
+        return proxy(org.nzbhydra.historystats.stats.SuccessfulDownloadsPerIndexerAssert.class, org.nzbhydra.historystats.stats.SuccessfulDownloadsPerIndexer.class, actual);
+    }
+
+    /**
+     * Creates a new "soft" instance of <code>{@link org.nzbhydra.historystats.stats.UserAgentShareAssert}</code>.
+     *
+     * @param actual the actual value.
+     * @return the created "soft" assertion object.
+     */
+    @org.assertj.core.util.CheckReturnValue
+    public org.nzbhydra.historystats.stats.UserAgentShareAssert assertThat(org.nzbhydra.historystats.stats.UserAgentShare actual) {
+        return proxy(org.nzbhydra.historystats.stats.UserAgentShareAssert.class, org.nzbhydra.historystats.stats.UserAgentShare.class, actual);
     }
 
     /**
@@ -1357,6 +1500,17 @@ public class SoftAssertions extends org.assertj.core.api.SoftAssertions {
     @org.assertj.core.util.CheckReturnValue
     public org.nzbhydra.mapping.newznab.xml.caps.jackett.JacketCapsXmlRootAssert assertThat(org.nzbhydra.mapping.newznab.xml.caps.jackett.JacketCapsXmlRoot actual) {
         return proxy(org.nzbhydra.mapping.newznab.xml.caps.jackett.JacketCapsXmlRootAssert.class, org.nzbhydra.mapping.newznab.xml.caps.jackett.JacketCapsXmlRoot.class, actual);
+    }
+
+    /**
+     * Creates a new "soft" instance of <code>{@link org.nzbhydra.mediainfo.MediaInfoTOAssert}</code>.
+     *
+     * @param actual the actual value.
+     * @return the created "soft" assertion object.
+     */
+    @org.assertj.core.util.CheckReturnValue
+    public org.nzbhydra.mediainfo.MediaInfoTOAssert assertThat(org.nzbhydra.mediainfo.MediaInfoTO actual) {
+        return proxy(org.nzbhydra.mediainfo.MediaInfoTOAssert.class, org.nzbhydra.mediainfo.MediaInfoTO.class, actual);
     }
 
     /**
