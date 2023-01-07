@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.nzbhydra.externalapi;
+package org.nzbhydra;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -22,11 +22,6 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.nzbhydra.HydraClient;
-import org.nzbhydra.HydraResponse;
-import org.nzbhydra.Jackson;
-import org.nzbhydra.Searcher;
-import org.nzbhydra.TestConfig;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.springframework.beans.factory.annotation.Autowired;

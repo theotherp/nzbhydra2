@@ -14,14 +14,10 @@
  *  limitations under the License.
  */
 
-package org.nzbhydra.test;
+package org.nzbhydra;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.nzbhydra.DockerConfig;
-import org.nzbhydra.DockerController;
-import org.nzbhydra.HydraClient;
-import org.nzbhydra.Searcher;
 import org.nzbhydra.hydraconfigure.IndexerConfigurer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,7 +32,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 })
 @ContextConfiguration(classes = {DockerConfig.class})
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-public class TestMigrationFromV1 {
+public class MigrationFromV1Test {
 
 
     @Value("${nzbhydra.port}")

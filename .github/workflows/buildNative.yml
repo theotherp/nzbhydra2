@@ -34,7 +34,6 @@ jobs:
                 run: mvn --batch-mode clean install -DskipTests -T 1C
             -   name: "Run unit tests"
                 run: mvn --batch-mode test -T 1C -pl !org.nzbhydra:tests,!org.nzbhydra.tests:system --fail-at-end
-                # Needs to be done now because the compile step does a clean
             -   name: "Create test Report"
                 uses: dorny/test-reporter@v1
                 if: always()
