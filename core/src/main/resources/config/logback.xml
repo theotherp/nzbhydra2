@@ -34,10 +34,11 @@
               org.springframework.security.web.csrf.CsrfFilter,
               org.springframework.security.web.header.HeaderWriterFilter,
               org.springframework.security.web.servletapi,
-              org.springframework.security.web.context.SecurityContextPersistenceFilter
-              org.springframework.security.web.ObservationFilterChainDecorato
+              org.springframework.security.web.context.SecurityContextPersistenceFilter,
+              org.springframework.security.web.context.SecurityContextHolderFilter,
               org.springframework.security.web.savedrequest,
               org.springframework.security.web.authentication.AnonymousAuthenticationFilter,
+              org.springframework.security.web.ObservationFilterChainDecorator,
               org.springframework.web.filter,
               org.springframework.cglib,
               org.springframework.aop,
@@ -57,10 +58,11 @@
               org.springframework.security.web.csrf.CsrfFilter,
               org.springframework.security.web.header.HeaderWriterFilter,
               org.springframework.security.web.servletapi,
-              org.springframework.security.web.context.SecurityContextPersistenceFilter
-              org.springframework.security.web.ObservationFilterChainDecorato
+              org.springframework.security.web.context.SecurityContextPersistenceFilter,
+              org.springframework.security.web.context.SecurityContextHolderFilter,
               org.springframework.security.web.savedrequest,
               org.springframework.security.web.authentication.AnonymousAuthenticationFilter,
+              org.springframework.security.web.ObservationFilterChainDecorator,
               org.springframework.web.filter,
               org.springframework.cglib,
               org.springframework.aop,
