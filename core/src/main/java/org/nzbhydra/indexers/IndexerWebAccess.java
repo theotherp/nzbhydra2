@@ -119,6 +119,8 @@ public class IndexerWebAccess {
             int to = Math.min(lines.length, lineNumber + 5);
             String excerpt = String.join("\r\n", Arrays.asList(lines).subList(from, to));
             logger.error("Unable to parse indexer output at line {} and column {} with error message: {}. Excerpt:\r\n{}", lineNumber, columnNumber, message, excerpt);
+        } else {
+            logger.debug("Unable to parse indexer output:\n {}", response, e);
         }
     }
 

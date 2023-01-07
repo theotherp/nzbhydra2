@@ -123,7 +123,7 @@ jobs:
                 run: docker network inspect systemtest
 
             -   name: "Run tests"
-                run: mvn --batch-mode test -pl org.nzbhydra.tests:system
+                run: mvn --batch-mode test -pl org.nzbhydra.tests:system -DtrimStackTrace=false
 
             -   name: "Upload data folder artifact"
                 uses: actions/upload-artifact@v3
