@@ -4,7 +4,7 @@ FROM ubuntu:22.04
 RUN echo 'APT::Install-Suggests "0";' >> /etc/apt/apt.conf.d/00-docker
 RUN echo 'APT::Install-Recommends "0";' >> /etc/apt/apt.conf.d/00-docker
 # Python isn't needed for tests. But java is for the migration!!
-RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y libfreetype6 curl default-jre-17-headless && rm -rf /var/lib/apt/lists/*
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y libfreetype6 curl openjdk-17-jdk && rm -rf /var/lib/apt/lists/*
 COPY core /
 HEALTHCHECK --interval=5s --timeout=30s --retries=6 CMD curl --fail http://localhost:5076 || exit 1
 RUN ["chmod", "+x", "/core"]
