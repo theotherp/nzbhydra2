@@ -117,7 +117,7 @@ jobs:
                 run: docker run --net=systemtest -d -p 7878:7878 --name=radarr -v ${{ github.workspace }}/docker/radarr/data/:/config lscr.io/linuxserver/radarr:latest
 
             -   name: "Run core docker"
-                run: docker run --net=systemtest -d -p 5076:5076 --name=core -v /tmp/data:/data -v /tmp/hydraBlackhole:/hydraBlackhole -e spring_profiles_active=build,systemtest ghcr.io/theotherp/hydradocker:latest
+                run: docker run --net=systemtest -d -p 5076:5076 --name=core -v /tmp/data/defaultDataFolder:/data -v /tmp/hydraBlackhole:/hydraBlackhole -e spring_profiles_active=build,systemtest ghcr.io/theotherp/hydradocker:latest
 
             -   name: "Inspect docker network"
                 run: docker network inspect systemtest

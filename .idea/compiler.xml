@@ -10,22 +10,19 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="github-release-maven-plugin" />
-        <module name="mapping" />
-        <module name="classloader" />
-        <module name="discordbot" />
-        <module name="updater" />
-        <module name="mockserver" />
         <module name="core" />
+        <module name="mapping" />
         <module name="sockslib" />
         <module name="system" />
         <module name="ui" />
+        <module name="classloader" />
+        <module name="discordbot" />
         <module name="github-release-plugin" />
+        <module name="updater" />
+        <module name="mockserver" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel target="17">
-      <module name="config" target="17" />
-      <module name="entities" target="17" />
-      <module name="integration" target="17" />
       <module name="ui" target="1.5" />
     </bytecodeTargetLevel>
   </component>
@@ -38,7 +35,6 @@
       <module name="core" options="-parameters" />
       <module name="discordbot" options="" />
       <module name="github-release-plugin" options="" />
-      <module name="integration" options="-parameters" />
       <module name="linux-release" options="-parameters" />
       <module name="mapping" options="-parameters" />
       <module name="mockserver" options="" />
