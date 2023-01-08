@@ -634,7 +634,7 @@ notificationConfig:
 genericStorage:
   belowJava17: "false"
   FirstStart: "\"2023-01-04T17:22:31.7399757\""
-  outdatedWrapperDetectedWarningDisplayed: "false"
+  outdatedWrapperDetectedWarningDisplayed: "true"
   outdatedWrapperDetected: "true"
   key: "\"aBody\""
   SGxIdnLCaS: "\"aBody\""

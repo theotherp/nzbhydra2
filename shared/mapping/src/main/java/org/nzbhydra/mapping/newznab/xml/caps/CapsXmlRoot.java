@@ -21,6 +21,7 @@ import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import lombok.Data;
+import org.nzbhydra.mapping.newznab.xml.Xml;
 import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.util.ArrayList;
@@ -29,7 +30,7 @@ import java.util.ArrayList;
 @XmlRootElement(name = "caps")
 @Data
 @ReflectionMarker
-public class CapsXmlRoot {
+public class CapsXmlRoot extends Xml {
 
     @XmlElement
     private CapsXmlServer server;

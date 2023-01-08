@@ -81,7 +81,6 @@ public class NewsWeb {
             boolean isForCurrentVersion = entry.getShowForVersion().equals(new SemanticVersion(updateManager.getCurrentVersionString()));
             boolean isForNewerVersion = entry.getShowForVersion().isUpdateFor(new SemanticVersion(updateManager.getCurrentVersionString()));
             final String newsAsMarkdown = entry.getNewsAsMarkdown();
-            logger.debug("News as markdown:\n{}", newsAsMarkdown);
             transformedEntries.add(new NewsEntryForWeb(entry.getShowForVersion().getAsString(), Markdown.renderMarkdownAsHtml(newsAsMarkdown), isForCurrentVersion, isForNewerVersion));
         }
         return transformedEntries;
