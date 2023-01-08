@@ -8,19 +8,19 @@ jobs:
     waitForNative:
         uses: ./.github/workflows/buildNative.yml
     prepareArtifacts:
-        # If we skipped the build of the native image we need to download the last uploaded one (from a previous run)
+        # We need to download the last uploaded artifact (from the previous workflow run)
         # and upload it again to make it available to the next jobs
         needs: [ waitForNative ]
         runs-on: ubuntu-latest
         steps:
             -   name: "Download artifact from previous build"
-                if: "contains(github.event.head_commit.message, 'skipnativebuild')"
+                if: "!contains(github.event.head_commit.message, 'skipnativebuild')"
                 uses: dawidd6/action-download-artifact@v2
                 with:
                     workflow: buildNative.yml
                     name: coreLinux
             -   name: "Upload linux artifact"
-                if: "contains(github.event.head_commit.message, 'skipnativebuild')"
+                if: "!contains(github.event.head_commit.message, 'skipnativebuild')"
                 uses: actions/upload-artifact@v3
                 with:
                     name: coreLinux
@@ -29,30 +29,32 @@ jobs:
         needs: [ prepareArtifacts ]
         runs-on: ubuntu-latest
         steps:
+            -   run: |
+                    true
+                # Just to make sure this job contains a step that is executed
             -   uses: actions/checkout@v3
+                if: "!contains(github.event.head_commit.message, 'skipnativebuild')"
                 name: "Check out source"
-            -   name: "Display structure of working directory"
-                run: ls .
             -   uses: actions/download-artifact@v3
+                if: "!contains(github.event.head_commit.message, 'skipnativebuild')"
                 name: "Download native artifacts"
                 with:
                     path: ~/artifacts
                     name: coreLinux
-            -   name: "Display structure of artifacts folder"
-                run: ls -laR ~/artifacts
-            -   name: "Display structure of current folder"
-                run: ls -la .
             -   name: "Copy artifacts to include folders"
+                if: "!contains(github.event.head_commit.message, 'skipnativebuild')"
                 run: |
                     mv ~/artifacts/core ./docker/nativeTest/
                     chmod +x ./docker/nativeTest/core
             -   name: "Login to GitHub Container Registry"
+                if: "!contains(github.event.head_commit.message, 'skipnativebuild')"
                 uses: docker/login-action@v2
                 with:
                     registry: ghcr.io
                     username: ${{ github.actor }}
                     password: ${{ secrets.GITHUB_TOKEN }}
             -   name: "Build core container"
+                if: "!contains(github.event.head_commit.message, 'skipnativebuild')"
                 run: |
                     cp other/wrapper/nzbhydra2wrapperPy3.py ./docker/nativeTest/
                     cd ./docker/nativeTest/
