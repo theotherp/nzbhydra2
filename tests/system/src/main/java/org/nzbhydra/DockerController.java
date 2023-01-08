@@ -58,12 +58,8 @@ public class DockerController {
         File systemModuleFolder = new File(DockerController.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParentFile().getParentFile();
         final File targetDataFolder = new File(dataFolderToUse);
         if (targetDataFolder.exists()) {
-            logger.info(() -> "Deleting target data folder " + targetDataFolder);
-            FileUtils.deleteDirectory(targetDataFolder);
+            logger.info(() -> "Cleaning target data folder " + targetDataFolder);
             FileUtils.cleanDirectory(targetDataFolder);
-        } else {
-            logger.info(() -> "Creating target data folder " + targetDataFolder);
-            targetDataFolder.mkdirs();
         }
         FileUtils.copyDirectory(new File(systemModuleFolder, "instanceData/" + sourceDataFolder), targetDataFolder);
 

@@ -41,8 +41,8 @@ public class NewsTest {
         List<NewsEntryForWeb> newsEntries = hydraClient.get("internalapi/news").as(new TypeReference<>() {
         });
         Assertions.assertThat(newsEntries)
-            .isNotEmpty()
-            .anyMatch(x -> x.getVersion().equals("4.3.0"));
+            .hasSize(4)
+            .anyMatch(x -> x.getVersion().equals("2.3.13"));
     }
 
 
