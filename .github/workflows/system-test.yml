@@ -135,8 +135,10 @@ jobs:
             -   name: "Wait for healthy containers"
                 run: |
                     docker ps
-                    while [ "`docker container inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}undefined{{end}}' core`" != "healthy" ]; do     sleep 1; done
-                    while [ "`docker container inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}undefined{{end}}' v1Migration`" != "healthy" ]; do     sleep 1; done
+                    sleep 10
+                    docker ps
+                    sleep 10
+                    docker ps
 
             -   name: "Run tests"
                 run: mvn --batch-mode test -pl org.nzbhydra.tests:system -DtrimStackTrace=false
