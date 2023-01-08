@@ -28,6 +28,7 @@ import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientBuilder;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.SystemUtils;
+import org.assertj.core.api.Assertions;
 import org.awaitility.Awaitility;
 import org.junit.platform.commons.logging.Logger;
 import org.junit.platform.commons.logging.LoggerFactory;
@@ -60,6 +61,7 @@ public class DockerController {
             logger.info(() -> "Deleting target data folder " + targetDataFolder);
             FileUtils.deleteDirectory(targetDataFolder);
         }
+        Assertions.assertThat(targetDataFolder.mkdirs()).isTrue();
         FileUtils.copyDirectory(new File(systemModuleFolder, "instanceData/" + sourceDataFolder), targetDataFolder);
 
         final DefaultDockerClientConfig config = DefaultDockerClientConfig.createDefaultConfigBuilder()
