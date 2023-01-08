@@ -122,12 +122,11 @@ public class NzbHydra {
             System.exit(1);
         }
 
-        DebugInfosProvider.printVersion();
+
         if (options.has("help")) {
             parser.printHelpOn(System.out);
         } else if (options.has("version")) {
-            //Already printed version
-            System.exit(0);
+            DebugInfosProvider.printVersion();
         } else if (System.getProperty("fromWrapper") == null && Arrays.stream(args).noneMatch(x -> x.equals("directstart"))) {
             logger.info("NZBHydra 2 must be started using the wrapper for restart and updates to work. If for some reason you need to start it from the JAR directly provide the command line argument \"directstart\"");
         } else {
@@ -174,7 +173,6 @@ public class NzbHydra {
             NzbHydra.originalArgs = args;
             wasRestarted = Arrays.asList(args).contains("restarted");
             hydraApplication.setHeadless(true);
-
             DatabaseRecreation.runDatabaseScript();
             applicationContext = hydraApplication.run(args);
         } catch (Exception e) {
@@ -312,6 +310,7 @@ public class NzbHydra {
                 genericStorage.save("FirstStart", LocalDateTime.now());
                 baseConfigHandler.save(false);
             }
+            DebugInfosProvider.printVersion();
 
             if (DebugInfosProvider.isRunInDocker()) {
                 logger.info("You seem to be running NZBHydra 2 in docker. You can access Hydra using your local address and the IP you provided");

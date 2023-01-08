@@ -129,7 +129,7 @@ jobs:
                     cp -R tests/system/instanceData/v1Migration/* /tmp/hydra/v1MigrationDataFolder/
 
             -   name: "Run v1Migration docker"
-                run: docker run --net=systemtest -d -p 5077:5076 --name=core -v /tmp/hydra/v1MigrationDataFolder:/data -e spring_profiles_active=build,systemtest ghcr.io/theotherp/hydradocker:latest
+                run: docker run --net=systemtest -d -p 5077:5076 --name=v1Migration -v /tmp/hydra/v1MigrationDataFolder:/data -e spring_profiles_active=build,systemtest ghcr.io/theotherp/hydradocker:latest
 
             -   name: "Run tests"
                 run: mvn --batch-mode test -pl org.nzbhydra.tests:system -DtrimStackTrace=false
