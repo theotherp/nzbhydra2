@@ -123,6 +123,13 @@ jobs:
             -   name: "Run core docker"
                 run: docker run --net=systemtest -d -p 5076:5076 --name=core -v /tmp/hydra/defaultDataFolder:/data -v /tmp/hydraBlackhole:/hydraBlackhole -e spring_profiles_active=build,systemtest ghcr.io/theotherp/hydradocker:latest
 
+            -   name: "Copy v1Migration docker data"
+                run: |
+                    mkdir /tmp/hydra/v1Migration
+                    cp -R tests/system/instanceData/v1Migration/* /tmp/hydra/v1MigrationDataFolder/
+
+            -   name: "Run v1Migration docker"
+                run: docker run --net=systemtest -d -p 5077:5076 --name=core -v /tmp/hydra/v1MigrationDataFolder:/data -e spring_profiles_active=build,systemtest ghcr.io/theotherp/hydradocker:latest
 
             -   name: "Run tests"
                 run: mvn --batch-mode test -pl org.nzbhydra.tests:system -DtrimStackTrace=false

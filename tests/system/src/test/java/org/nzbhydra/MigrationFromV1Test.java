@@ -55,11 +55,11 @@ public class MigrationFromV1Test {
     @Test
     public void shouldMigrateFromV1() throws Exception {
         try {
-            dockerController.initializeContainer(this.dataFolderv1Migration, "v1Migration", "v1Migration", nzbhydraPort);
+//            dockerController.initializeContainer(this.dataFolderv1Migration, "v1Migration", "v1Migration", nzbhydraPort);
             indexerConfigurer.configureTwoMockIndexers();
             assertThat(searcher.searchExternalApi("v1MigrationTest").getRssChannel().getItems()).isNotEmpty();
         } finally {
-            dockerController.killAndRemoveContainer("v1Migration");
+//            dockerController.killAndRemoveContainer("v1Migration");
         }
     }
 
