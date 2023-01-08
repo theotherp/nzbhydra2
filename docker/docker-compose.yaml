@@ -1,0 +1,67 @@
+version: '3'
+networks:
+    systemtest:
+        external: true
+services:
+    mockserver:
+        image: ghcr.io/theotherp/mockserver:3.0.0
+        container_name: mockserver
+        ports:
+            - "5080:5080"
+        environment:
+            - spring_profiles_active=build,systemtest
+        networks: [ "systemtest" ]
+        restart: unless-stopped
+    sonarr:
+        image: lscr.io/linuxserver/sonarr:latest
+        container_name: sonarr
+        environment:
+            - PUID=1000
+            - PGID=1000
+            - TZ=Europe/London
+        volumes:
+            - ./sonarr/data:/config
+        ports:
+            - "8989:8989"
+        networks: [ "systemtest" ]
+        restart: unless-stopped
+    radarr:
+        image: lscr.io/linuxserver/radarr:latest
+        container_name: radarr
+        environment:
+            - PUID=1000
+            - PGID=1000
+            - TZ=Europe/London
+        volumes:
+            - ./radarr/data:/config
+        ports:
+            - "7878:7878"
+        networks: [ "systemtest" ]
+        restart: unless-stopped
+    core:
+        depends_on:
+            - mockserver
+        image: ghcr.io/theotherp/hydradocker:latest
+        container_name: core
+        ports:
+            - "5076:5076"
+        environment:
+            - spring_profiles_active=build,systemtest
+        volumes:
+            - /tmp/hydra/defaultDataFolder:/data
+            - /tmp/hydraBlackhole:/hydraBlackhole
+        networks: [ "systemtest" ]
+        restart: unless-stopped
+    v1Migration:
+        depends_on:
+            - mockserver
+        image: ghcr.io/theotherp/hydradocker:latest
+        container_name: v1Migration
+        ports:
+            - "5077:5076"
+        environment:
+            - spring_profiles_active=build,systemtest
+        volumes:
+            - /tmp/hydra/v1MigrationDataFolder:/data
+        networks: [ "systemtest" ]
+        restart: unless-stopped

@@ -113,24 +113,30 @@ jobs:
             -   name: "Create docker network"
                 run: docker network create systemtest
 
-            -   name: "Run mockserver docker"
-                run: docker run --net=systemtest -d -p 5080:5080 --name=mockserver -e spring_profiles_active=build,systemtest ghcr.io/theotherp/mockserver:3.0.0
-
-            -   name: "Run sonarr docker"
-                run: docker run --net=systemtest -d -p 8989:8989 --name=sonarr -v ${{ github.workspace }}/docker/sonarr/data/:/config lscr.io/linuxserver/sonarr:latest
-
-            -   name: "Run radarr docker"
-                run: docker run --net=systemtest -d -p 7878:7878 --name=radarr -v ${{ github.workspace }}/docker/radarr/data/:/config lscr.io/linuxserver/radarr:latest
-
-            -   name: "Run core docker"
-                run: docker run --net=systemtest -d -p 5076:5076 --name=core -v /tmp/hydra/defaultDataFolder:/data -v /tmp/hydraBlackhole:/hydraBlackhole -e spring_profiles_active=build,systemtest ghcr.io/theotherp/hydradocker:latest
-
             -   name: "Copy v1Migration docker data"
                 run: |
                     mkdir /tmp/hydra/v1Migration
                     cp -R tests/system/instanceData/v1Migration/* /tmp/hydra/v1MigrationDataFolder/
-            -   name: "Run v1Migration docker"
-                run: docker run --net=systemtest -d -p 5077:5076 --name=v1Migration -v /tmp/hydra/v1MigrationDataFolder:/data -e spring_profiles_active=build,systemtest ghcr.io/theotherp/hydradocker:latest
+
+            #            -   name: "Run mockserver docker"
+            #                run: docker run --net=systemtest -d -p 5080:5080 --name=mockserver -e spring_profiles_active=build,systemtest ghcr.io/theotherp/mockserver:3.0.0
+            #
+            #            -   name: "Run sonarr docker"
+            #                run: docker run --net=systemtest -d -p 8989:8989 --name=sonarr -v ${{ github.workspace }}/docker/sonarr/data/:/config lscr.io/linuxserver/sonarr:latest
+            #
+            #            -   name: "Run radarr docker"
+            #                run: docker run --net=systemtest -d -p 7878:7878 --name=radarr -v ${{ github.workspace }}/docker/radarr/data/:/config lscr.io/linuxserver/radarr:latest
+            #
+            #            -   name: "Run core docker"
+            #                run: docker run --net=systemtest -d -p 5076:5076 --name=core -v /tmp/hydra/defaultDataFolder:/data -v /tmp/hydraBlackhole:/hydraBlackhole -e spring_profiles_active=build,systemtest ghcr.io/theotherp/hydradocker:latest
+            #
+            #            -   name: "Run v1Migration docker"
+            #                run: docker run --net=systemtest -d -p 5077:5076 --name=v1Migration -v /tmp/hydra/v1MigrationDataFolder:/data -e spring_profiles_active=build,systemtest ghcr.io/theotherp/hydradocker:latest
+
+            -   name: "Run docker compose"
+                run: |
+                    cd docker
+                    docker-compose up -d
 
             -   name: "Wait for healthy containers"
                 run: |
