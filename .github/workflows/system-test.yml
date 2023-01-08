@@ -13,12 +13,19 @@ jobs:
         needs: [ waitForNative ]
         runs-on: ubuntu-latest
         steps:
+            -   name: Extract branch name
+                shell: bash
+                run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+                id: extract_branch
             -   name: "Download artifact from previous build"
                 if: "!contains(github.event.head_commit.message, 'skipnativebuild')"
                 uses: dawidd6/action-download-artifact@v2
                 with:
                     workflow: buildNative.yml
                     name: coreLinux
+                    search_artifacts: true
+                    check_artifacts: true
+                    branch: ${{ steps.extract_branch.outputs.branch }}
             -   name: "Upload linux artifact"
                 if: "!contains(github.event.head_commit.message, 'skipnativebuild')"
                 uses: actions/upload-artifact@v3
