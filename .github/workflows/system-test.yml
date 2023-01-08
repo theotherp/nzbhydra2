@@ -130,13 +130,11 @@ jobs:
             -   name: "Run v1Migration docker"
                 run: docker run --net=systemtest -d -p 5077:5076 --name=v1Migration -v /tmp/hydra/v1MigrationDataFolder:/data -e spring_profiles_active=build,systemtest ghcr.io/theotherp/hydradocker:latest
 
-
             -   name: "Wait for healthy containers"
                 run: |
                     docker ps
-                    docker/waitForHealthyContainer.sh core
-                    docker/waitForHealthyContainer.sh v1Migration
-
+                    while [ "`docker container inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}undefined{{end}}' core`" != "healthy" ]; do     sleep 1; done
+                    while [ "`docker container inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}undefined{{end}}' v1Migration`" != "healthy" ]; do     sleep 1; done
 
             -   name: "Run tests"
                 run: mvn --batch-mode test -pl org.nzbhydra.tests:system -DtrimStackTrace=false
