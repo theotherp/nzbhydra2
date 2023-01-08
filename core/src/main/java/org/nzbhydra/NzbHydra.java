@@ -122,10 +122,12 @@ public class NzbHydra {
             System.exit(1);
         }
 
+        DebugInfosProvider.printVersion();
         if (options.has("help")) {
             parser.printHelpOn(System.out);
         } else if (options.has("version")) {
-            DebugInfosProvider.printVersion();
+            //Already printed version
+            System.exit(0);
         } else if (System.getProperty("fromWrapper") == null && Arrays.stream(args).noneMatch(x -> x.equals("directstart"))) {
             logger.info("NZBHydra 2 must be started using the wrapper for restart and updates to work. If for some reason you need to start it from the JAR directly provide the command line argument \"directstart\"");
         } else {
@@ -324,7 +326,6 @@ public class NzbHydra {
                 URI uri = urlCalculator.getLocalBaseUriBuilder().build().toUri();
                 logger.info("You can access NZBHydra 2 in your browser via {}", uri);
             }
-            DebugInfosProvider.printVersion();
         } catch (Exception e) {
             logger.error("Unable to complete startup initialization", e);
         }
