@@ -104,9 +104,6 @@ jobs:
             -   name: "Install"
                 run: mvn --batch-mode clean install -DskipTests -pl org.nzbhydra:shared,org.nzbhydra:mapping
 
-            -   name: "Create folder in /tmp/data directory"
-                #For some reason this does not work when executed in java
-                run: mkdir -p /tmp/hydra/v1MigrationDataFolder
 
             # We must wait for the code to be checked out so we can access the data folders with preconfigured settings
             # We run all containers manually (instead of services) so we can add them to the same network
@@ -115,7 +112,7 @@ jobs:
 
             -   name: "Copy v1Migration docker data"
                 run: |
-                    mkdir /tmp/hydra/v1Migration
+                    mkdir -p /tmp/hydra/v1MigrationDataFolder
                     cp -R tests/system/instanceData/v1Migration/* /tmp/hydra/v1MigrationDataFolder/
 
             #            -   name: "Run mockserver docker"

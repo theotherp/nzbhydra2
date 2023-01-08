@@ -228,7 +228,12 @@ public class DatabaseRecreation {
         } else {
             javaExecutable = System.getProperties().getProperty("java.home") + File.separator + "bin" + File.separator + "java";
         }
-        logger.debug("Determined java executable: {}", javaExecutable);
+        if (new File(javaExecutable).exists()) {
+            logger.debug("Determined java executable: {}", javaExecutable);
+        } else {
+            logger.debug("Java executable not found. Trying just java and hope it's in path");
+            javaExecutable = "java";
+        }
         return javaExecutable;
     }
 
