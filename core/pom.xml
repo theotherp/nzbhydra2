@@ -275,9 +275,9 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>com.vladsch.flexmark</groupId>
-            <artifactId>flexmark</artifactId>
-            <version>0.64.0</version>
+            <groupId>org.commonmark</groupId>
+            <artifactId>commonmark</artifactId>
+            <version>0.20.0</version>
         </dependency>
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>

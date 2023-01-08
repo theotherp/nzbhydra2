@@ -16,7 +16,7 @@
 
 package org.nzbhydra;
 
-import com.vladsch.flexmark.html.HtmlRenderer;
+import org.commonmark.renderer.html.HtmlRenderer;
 import org.nzbhydra.config.migration.ConfigMigrationStep;
 import org.nzbhydra.springnative.ReflectionMarker;
 import org.reflections.Reflections;
@@ -49,7 +49,6 @@ public class NativeHints implements RuntimeHintsRegistrar {
         classes.add(HashSet.class);
         classes.add(ArrayList.class);
         classes.add(HtmlRenderer.class);
-
         for (Class<?> clazz : classes) {
             hints.reflection().registerType(clazz, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS);
             for (Method method : clazz.getDeclaredMethods()) {

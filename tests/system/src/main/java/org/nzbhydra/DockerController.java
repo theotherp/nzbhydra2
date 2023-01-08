@@ -28,7 +28,6 @@ import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientBuilder;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.SystemUtils;
-import org.assertj.core.api.Assertions;
 import org.awaitility.Awaitility;
 import org.junit.platform.commons.logging.Logger;
 import org.junit.platform.commons.logging.LoggerFactory;
@@ -40,6 +39,7 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 
+@SuppressWarnings("ResultOfMethodCallIgnored")
 @Component
 public class DockerController {
 
@@ -60,8 +60,11 @@ public class DockerController {
         if (targetDataFolder.exists()) {
             logger.info(() -> "Deleting target data folder " + targetDataFolder);
             FileUtils.deleteDirectory(targetDataFolder);
+            FileUtils.cleanDirectory(targetDataFolder);
+        } else {
+            logger.info(() -> "Creating target data folder " + targetDataFolder);
+            targetDataFolder.mkdirs();
         }
-        Assertions.assertThat(targetDataFolder.mkdirs()).isTrue();
         FileUtils.copyDirectory(new File(systemModuleFolder, "instanceData/" + sourceDataFolder), targetDataFolder);
 
         final DefaultDockerClientConfig config = DefaultDockerClientConfig.createDefaultConfigBuilder()
