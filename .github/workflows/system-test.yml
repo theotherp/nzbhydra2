@@ -7,67 +7,6 @@ on:
 jobs:
     waitForNative:
         uses: ./.github/workflows/buildNative.yml
-    prepareArtifacts:
-        # We need to download the last uploaded artifact (from the previous workflow run)
-        # and upload it again to make it available to the next jobs
-        needs: [ waitForNative ]
-        runs-on: ubuntu-latest
-        steps:
-            -   name: Extract branch name
-                shell: bash
-                run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
-                id: extract_branch
-            -   name: "Download artifact from previous build"
-                if: "!contains(github.event.head_commit.message, 'skipnativebuild')"
-                uses: dawidd6/action-download-artifact@v2
-                with:
-                    workflow: buildNative.yml
-                    name: coreLinux
-                    search_artifacts: true
-                    check_artifacts: true
-                    branch: ${{ steps.extract_branch.outputs.branch }}
-            -   name: "Upload linux artifact"
-                if: "!contains(github.event.head_commit.message, 'skipnativebuild')"
-                uses: actions/upload-artifact@v3
-                with:
-                    name: coreLinux
-                    path: core
-    prepareContainer:
-        needs: [ prepareArtifacts ]
-        runs-on: ubuntu-latest
-        steps:
-            -   run: |
-                    true
-                # Just to make sure this job contains a step that is executed
-            -   uses: actions/checkout@v3
-                if: "!contains(github.event.head_commit.message, 'skipnativebuild')"
-                name: "Check out source"
-            -   uses: actions/download-artifact@v3
-                if: "!contains(github.event.head_commit.message, 'skipnativebuild')"
-                name: "Download native artifacts"
-                with:
-                    path: ~/artifacts
-                    name: coreLinux
-            -   name: "Copy artifacts to include folders"
-                if: "!contains(github.event.head_commit.message, 'skipnativebuild')"
-                run: |
-                    mv ~/artifacts/core ./docker/nativeTest/
-                    chmod +x ./docker/nativeTest/core
-            -   name: "Login to GitHub Container Registry"
-                if: "!contains(github.event.head_commit.message, 'skipnativebuild')"
-                uses: docker/login-action@v2
-                with:
-                    registry: ghcr.io
-                    username: ${{ github.actor }}
-                    password: ${{ secrets.GITHUB_TOKEN }}
-            -   name: "Build core container"
-                if: "!contains(github.event.head_commit.message, 'skipnativebuild')"
-                run: |
-                    cp other/wrapper/nzbhydra2wrapperPy3.py ./docker/nativeTest/
-                    cd ./docker/nativeTest/
-                    docker build -t hydradocker .
-                    docker tag hydradocker:latest ghcr.io/theotherp/hydradocker:latest
-                    docker push ghcr.io/theotherp/hydradocker:latest
     buildMockserver:
         runs-on: ubuntu-latest
         steps:
@@ -79,12 +18,14 @@ jobs:
                     java-version: '17'
                     distribution: 'adopt'
                     cache: 'maven'
+
             -   name: "Login to GitHub Container Registry"
                 uses: docker/login-action@v2
                 with:
                     registry: ghcr.io
                     username: ${{ github.actor }}
                     password: ${{ secrets.GITHUB_TOKEN }}
+
             -   name: "Build and push mockserver container"
                 run: |
                     mvn --batch-mode install -DskipTests -T 1C
@@ -94,7 +35,7 @@ jobs:
                     docker push ghcr.io/theotherp/mockserver:3.0.0
 
     runSystemTests:
-        needs: [ prepareContainer, buildMockserver ]
+        needs: [ waitForNative, buildMockserver ]
         runs-on: ubuntu-latest
         env:
             spring_profiles_active: build,systemtest
@@ -108,12 +49,10 @@ jobs:
                     java-version: '17'
                     distribution: 'adopt'
                     cache: 'maven'
+
             -   name: "Install"
                 run: mvn --batch-mode clean install -DskipTests -pl org.nzbhydra:shared,org.nzbhydra:mapping
 
-
-            # We must wait for the code to be checked out so we can access the data folders with preconfigured settings
-            # We run all containers manually (instead of services) so we can add them to the same network
             -   name: "Create docker network"
                 run: docker network create systemtest
 
@@ -121,21 +60,6 @@ jobs:
                 run: |
                     mkdir -p /tmp/hydra/v1MigrationDataFolder
                     cp -R tests/system/instanceData/v1Migration/* /tmp/hydra/v1MigrationDataFolder/
-
-            #            -   name: "Run mockserver docker"
-            #                run: docker run --net=systemtest -d -p 5080:5080 --name=mockserver -e spring_profiles_active=build,systemtest ghcr.io/theotherp/mockserver:3.0.0
-            #
-            #            -   name: "Run sonarr docker"
-            #                run: docker run --net=systemtest -d -p 8989:8989 --name=sonarr -v ${{ github.workspace }}/docker/sonarr/data/:/config lscr.io/linuxserver/sonarr:latest
-            #
-            #            -   name: "Run radarr docker"
-            #                run: docker run --net=systemtest -d -p 7878:7878 --name=radarr -v ${{ github.workspace }}/docker/radarr/data/:/config lscr.io/linuxserver/radarr:latest
-            #
-            #            -   name: "Run core docker"
-            #                run: docker run --net=systemtest -d -p 5076:5076 --name=core -v /tmp/hydra/defaultDataFolder:/data -v /tmp/hydraBlackhole:/hydraBlackhole -e spring_profiles_active=build,systemtest ghcr.io/theotherp/hydradocker:latest
-            #
-            #            -   name: "Run v1Migration docker"
-            #                run: docker run --net=systemtest -d -p 5077:5076 --name=v1Migration -v /tmp/hydra/v1MigrationDataFolder:/data -e spring_profiles_active=build,systemtest ghcr.io/theotherp/hydradocker:latest
 
             -   name: "Run docker compose"
                 run: |
@@ -159,6 +83,7 @@ jobs:
                 with:
                     name: data
                     path: /tmp/hydra
+
             -   name: "Create test Report"
                 uses: dorny/test-reporter@v1
                 if: always()

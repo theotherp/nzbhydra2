@@ -53,3 +53,23 @@ jobs:
                 with:
                     name: coreLinux
                     path: core/target/core
+            -   name: "Copy artifact to include folder"
+                if: "!contains(github.event.head_commit.message, 'skipnativebuild')"
+                run: |
+                    mv core/target/core ./docker/nativeTest/
+                    chmod +x ./docker/nativeTest/core
+            -   name: "Login to GitHub Container Registry"
+                if: "!contains(github.event.head_commit.message, 'skipnativebuild')"
+                uses: docker/login-action@v2
+                with:
+                    registry: ghcr.io
+                    username: ${{ github.actor }}
+                    password: ${{ secrets.GITHUB_TOKEN }}
+            -   name: "Build core and push container"
+                if: "!contains(github.event.head_commit.message, 'skipnativebuild')"
+                run: |
+                    cp other/wrapper/nzbhydra2wrapperPy3.py ./docker/nativeTest/
+                    cd ./docker/nativeTest/
+                    docker build -t hydradocker .
+                    docker tag hydradocker:latest ghcr.io/theotherp/hydradocker:latest
+                    docker push ghcr.io/theotherp/hydradocker:latest
