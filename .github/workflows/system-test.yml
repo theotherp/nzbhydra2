@@ -127,9 +127,16 @@ jobs:
                 run: |
                     mkdir /tmp/hydra/v1Migration
                     cp -R tests/system/instanceData/v1Migration/* /tmp/hydra/v1MigrationDataFolder/
-
             -   name: "Run v1Migration docker"
                 run: docker run --net=systemtest -d -p 5077:5076 --name=v1Migration -v /tmp/hydra/v1MigrationDataFolder:/data -e spring_profiles_active=build,systemtest ghcr.io/theotherp/hydradocker:latest
+
+
+            -   name: "Wait for healthy containers"
+                run: |
+                    docker ps
+                    docker/waitForHealthyContainer.sh core
+                    docker/waitForHealthyContainer.sh v1Migration
+
 
             -   name: "Run tests"
                 run: mvn --batch-mode test -pl org.nzbhydra.tests:system -DtrimStackTrace=false
