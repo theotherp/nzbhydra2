@@ -85,6 +85,9 @@ public class NzbHydra {
     @Autowired
     private BaseConfigHandler baseConfigHandler;
 
+    @Autowired
+    private DebugInfosProvider debugInfosProvider;
+
 
     public static void main(String[] args) throws Exception {
         LoggerFactory.getILoggerFactory();
@@ -112,7 +115,6 @@ public class NzbHydra {
         parser.accepts("port", "Run on this port (default: 5076)").withOptionalArg();
         parser.accepts("baseurl", "Set base URL (e.g. /nzbhydra)").withOptionalArg();
         parser.accepts("help", "Print help");
-        parser.accepts("version", "Print version");
 
         OptionSet options = null;
         try {
@@ -125,8 +127,6 @@ public class NzbHydra {
 
         if (options.has("help")) {
             parser.printHelpOn(System.out);
-        } else if (options.has("version")) {
-            DebugInfosProvider.printVersion();
         } else if (System.getProperty("fromWrapper") == null && Arrays.stream(args).noneMatch(x -> x.equals("directstart"))) {
             logger.info("NZBHydra 2 must be started using the wrapper for restart and updates to work. If for some reason you need to start it from the JAR directly provide the command line argument \"directstart\"");
         } else {
@@ -305,12 +305,13 @@ public class NzbHydra {
             //I don't know why I have to do this but otherwise genericStorage is always empty
             configProvider.getBaseConfig().setGenericStorage(new ConfigReaderWriter().loadSavedConfig().getGenericStorage());
 
+            debugInfosProvider.printVersion();
             if (genericStorage.get("FirstStart", LocalDateTime.class).isEmpty()) {
                 logger.info("First start of NZBHydra detected");
                 genericStorage.save("FirstStart", LocalDateTime.now());
                 baseConfigHandler.save(false);
             }
-            DebugInfosProvider.printVersion();
+
 
             if (DebugInfosProvider.isRunInDocker()) {
                 logger.info("You seem to be running NZBHydra 2 in docker. You can access Hydra using your local address and the IP you provided");

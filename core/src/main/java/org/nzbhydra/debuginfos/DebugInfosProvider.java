@@ -31,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.management.ThreadDumpEndpoint;
 import org.springframework.boot.actuate.metrics.MetricsEndpoint;
+import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -53,8 +54,6 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.jar.Attributes;
-import java.util.jar.Manifest;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
@@ -86,6 +85,9 @@ public class DebugInfosProvider {
     private EntityManager entityManager;
     @Autowired
     private OutdatedWrapperDetector wrapperDetector;
+
+    @Autowired
+    private ConfigurableEnvironment environment;
     @Autowired
     private Ssl ssl;
 
@@ -174,15 +176,9 @@ public class DebugInfosProvider {
         return timeAndThreadCpuUsagesList;
     }
 
-    public static void printVersion() {
-        try {
-            Manifest manifest = new Manifest(NzbHydra.class.getResourceAsStream("/META-INF/MANIFEST.MF"));
-            Attributes attr = manifest.getMainAttributes();
-            logger.info("NZBHydra 2 version: " + attr.getValue("Version"));
-            logger.info("NZBHydra 2 build timestamp: " + attr.getValue("BuildTimestamp"));
-        } catch (IOException e) {
-            logger.error("Unable to load version information", e);
-        }
+    public void printVersion() {
+        logger.info("NZBHydra 2 version: {}", environment.getProperty("build.version"));
+        logger.info("NZBHydra 2 build timestamp: {}", environment.getProperty("build.timestamp"));
     }
 
     private double getUpTimeInMiliseconds() {
