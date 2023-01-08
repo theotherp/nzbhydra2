@@ -102,6 +102,10 @@ jobs:
             -   name: "Install"
                 run: mvn --batch-mode clean install -DskipTests -pl org.nzbhydra:shared,org.nzbhydra:mapping
 
+            -   name: "Create folder in /tmp/data directory"
+                #For some reason this does not work when executed in java
+                run: mkdir -p /tmp/hydra/v1MigrationDataFolder
+
             # We must wait for the code to be checked out so we can access the data folders with preconfigured settings
             # We run all containers manually (instead of services) so we can add them to the same network
             -   name: "Create docker network"
@@ -117,11 +121,8 @@ jobs:
                 run: docker run --net=systemtest -d -p 7878:7878 --name=radarr -v ${{ github.workspace }}/docker/radarr/data/:/config lscr.io/linuxserver/radarr:latest
 
             -   name: "Run core docker"
-                run: docker run --net=systemtest -d -p 5076:5076 --name=core -v /tmp/data/defaultDataFolder:/data -v /tmp/hydraBlackhole:/hydraBlackhole -e spring_profiles_active=build,systemtest ghcr.io/theotherp/hydradocker:latest
+                run: docker run --net=systemtest -d -p 5076:5076 --name=core -v /tmp/hydra/defaultDataFolder:/data -v /tmp/hydraBlackhole:/hydraBlackhole -e spring_profiles_active=build,systemtest ghcr.io/theotherp/hydradocker:latest
 
-            -   name: "Create folder in /tmp/data directory"
-                #For some reason this does not work when executed in java
-                run: mkdir -p /tmp/data/v1MigrationDataFolder
 
             -   name: "Run tests"
                 run: mvn --batch-mode test -pl org.nzbhydra.tests:system -DtrimStackTrace=false
@@ -131,7 +132,7 @@ jobs:
                 if: always()
                 with:
                     name: data
-                    path: /tmp/data
+                    path: /tmp/hydra
             -   name: "Create test Report"
                 uses: dorny/test-reporter@v1
                 if: always()
