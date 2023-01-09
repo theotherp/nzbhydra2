@@ -36,18 +36,23 @@ public class PrecheckMojoTest extends AbstractMojoTestCase {
 
         precheckMojo.py3 = Files.createTempFile("hydra", "executable").toFile();
         IOUtils.write("py3", new FileWriter(precheckMojo.py3));
+        Thread.sleep(10);
 
         precheckMojo.windowsPy = Files.createTempFile("hydra", "executable").toFile();
         IOUtils.write("windowsPy", new FileWriter(precheckMojo.windowsPy));
+        Thread.sleep(10);
 
         precheckMojo.windowsExecutable = Files.createTempFile("hydra", "executable").toFile();
         IOUtils.write("windowsExecutable", new FileWriter(precheckMojo.windowsExecutable));
+        Thread.sleep(10);
 
         precheckMojo.linuxExecutable = Files.createTempFile("hydra", "executable").toFile();
         IOUtils.write("linuxExecutable", new FileWriter(precheckMojo.linuxExecutable));
+        Thread.sleep(10);
 
         precheckMojo.windowsConsoleExecutable = Files.createTempFile("hydra", "executable").toFile();
         IOUtils.write("windowsConsoleExecutable", new FileWriter(precheckMojo.windowsConsoleExecutable));
+
 
         precheckMojo.execute();
 
