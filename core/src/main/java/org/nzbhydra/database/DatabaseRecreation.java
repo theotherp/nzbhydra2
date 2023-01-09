@@ -54,15 +54,8 @@ public class DatabaseRecreation {
 
     private static final Map<String, String> SCHEMA_VERSION_CHANGES = new LinkedHashMap<>();
 
-    static {
-    }
 
     public static void runDatabaseScript() throws Exception {
-        if (!Thread.currentThread().getName().equals("main")) {
-            //During development this class is called twice (because of the Spring developer tools)
-            logger.debug("Skipping database script check for thread {}", Thread.currentThread().getName());
-            return;
-        }
         File databaseFile = new File(NzbHydra.getDataFolder(), "database/nzbhydra.mv.db");
         File databaseScriptFile = new File(NzbHydra.getDataFolder(), "databaseScript.sql");
         File databaseScriptFileNew = new File(NzbHydra.getDataFolder(), "databaseScriptNew.sql");
@@ -71,7 +64,7 @@ public class DatabaseRecreation {
         Class.forName("org.h2.Driver");
         migrateToH2v2IfNeeded(databaseFile, dbConnectionUrl);
         if (restoreScriptFile.exists() && !databaseScriptFile.exists()) {
-            logger.info("No database file found but script.sql - restoring database");
+            DatabaseRecreation.logger.info("No database file found but script.sql - restoring database");
             try (Connection connection = DriverManager.getConnection(dbConnectionUrl, "sa", "sa")) {
                 connection.createStatement().executeUpdate("runscript from '%s';".formatted(restoreScriptFile.getCanonicalPath().replace("\\", "/")));
                 restoreScriptFile.delete();
@@ -95,13 +88,13 @@ public class DatabaseRecreation {
             }
             final String header = new String(buffer).trim();
             if (header.contains("format:1")) {
-                logger.info("Determined existing database to be version 1.4");
+                logger.info("Determined existing database to be version 1.4. Migration needed.");
             } else if (header.contains("format:2")) {
-                logger.info("Determined existing database to be version 2");
+                logger.info("Determined existing database to be version 2. No migration needed.");
                 return;
             } else {
                 logger.error("Unable to determine database version from header {}", header);
-                return;
+                throw new RuntimeException("Invalid database file header");
             }
         } catch (Exception e) {
             throw new RuntimeException("Unable to open database file " + databaseFile, e);
@@ -239,7 +232,7 @@ public class DatabaseRecreation {
 
 
     @Data
-@ReflectionMarker
+    @ReflectionMarker
     @AllArgsConstructor
     @EqualsAndHashCode
     private static class ExecutedScript {

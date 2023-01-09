@@ -13,7 +13,6 @@ import org.nzbhydra.config.BaseConfigHandler;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.ConfigReaderWriter;
 import org.nzbhydra.config.migration.ConfigMigration;
-import org.nzbhydra.database.DatabaseRecreation;
 import org.nzbhydra.debuginfos.DebugInfosProvider;
 import org.nzbhydra.genericstorage.GenericStorage;
 import org.nzbhydra.logging.LoggingMarkers;
@@ -91,8 +90,6 @@ public class NzbHydra {
 
 
     public static void main(String[] args) throws Exception {
-        LoggerFactory.getILoggerFactory();
-
         if (isNativeBuild()) {
             logger.warn("Running for native build");
 
@@ -126,6 +123,7 @@ public class NzbHydra {
             System.exit(1);
         }
 
+        setDataFolder(options);
 
         if (options.has("help")) {
             parser.printHelpOn(System.out);
@@ -138,7 +136,8 @@ public class NzbHydra {
         }
     }
 
-    protected static void startup(String[] args, OptionSet options) throws Exception {
+
+    private static void setDataFolder(OptionSet options) throws IOException {
         if (options.has("datafolder")) {
             dataFolder = (String) options.valueOf("datafolder");
         } else {
@@ -146,6 +145,10 @@ public class NzbHydra {
         }
         File dataFolderFile = new File(dataFolder);
         dataFolder = dataFolderFile.getCanonicalPath();
+    }
+
+    protected static void startup(String[] args, OptionSet options) throws Exception {
+        File dataFolderFile = new File(dataFolder);
         //Check if we can write in the data folder. If not we can just quit now
         if (!dataFolderFile.exists() && !dataFolderFile.mkdirs()) {
             logger.error("Unable to read or write data folder {}", dataFolder);
@@ -177,7 +180,6 @@ public class NzbHydra {
             NzbHydra.originalArgs = args;
             wasRestarted = Arrays.asList(args).contains("restarted");
             hydraApplication.setHeadless(true);
-            DatabaseRecreation.runDatabaseScript();
             applicationContext = hydraApplication.run(args);
         } catch (Exception e) {
             //Is thrown by SpringApplicationAotProcessor
@@ -309,7 +311,7 @@ public class NzbHydra {
             //I don't know why I have to do this but otherwise genericStorage is always empty
             configProvider.getBaseConfig().setGenericStorage(new ConfigReaderWriter().loadSavedConfig().getGenericStorage());
 
-            final Pair<String, String> versionAndBuildTimestamp = debugInfosProvider.getVersionAndBuildTimestamp();
+            final Pair<String, String> versionAndBuildTimestamp = DebugInfosProvider.getVersionAndBuildTimestamp();
             logger.info("Version: {}", versionAndBuildTimestamp.getLeft());
             logger.info("Build timestamp: {}", versionAndBuildTimestamp.getRight());
             if (genericStorage.get("FirstStart", LocalDateTime.class).isEmpty()) {

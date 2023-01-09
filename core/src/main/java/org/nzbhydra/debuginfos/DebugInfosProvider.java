@@ -182,8 +182,12 @@ public class DebugInfosProvider {
         final Properties properties = new Properties();
         try {
             properties.load(DebugInfosProvider.class.getResourceAsStream("/config/application.properties"));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            try {
+                properties.load(DebugInfosProvider.class.getResourceAsStream("/application.properties"));
+            } catch (Exception ex) {
+                throw new RuntimeException("Unable to load application properties", ex);
+            }
         }
         return Pair.of(properties.getProperty("build.version"), properties.getProperty("build.timestamp"));
     }
