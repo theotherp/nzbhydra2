@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.javers.core.JaversBuilder;
 import org.javers.core.diff.Diff;
 import org.nzbhydra.Jackson;
@@ -50,6 +51,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -176,9 +178,14 @@ public class DebugInfosProvider {
         return timeAndThreadCpuUsagesList;
     }
 
-    public void printVersion() {
-        logger.info("NZBHydra 2 version: {}", environment.getProperty("build.version"));
-        logger.info("NZBHydra 2 build timestamp: {}", environment.getProperty("build.timestamp"));
+    public static Pair<String, String> getVersionAndBuildTimestamp() {
+        final Properties properties = new Properties();
+        try {
+            properties.load(DebugInfosProvider.class.getResourceAsStream("/config/application.properties"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return Pair.of(properties.getProperty("build.version"), properties.getProperty("build.timestamp"));
     }
 
     private double getUpTimeInMiliseconds() {

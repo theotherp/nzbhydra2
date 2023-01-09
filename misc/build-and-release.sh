@@ -87,21 +87,21 @@ if [[ "$?" -ne 0 ]] ; then
 fi
 
 echo "Checking preconditions"
-call mvn org.nzbhydra:github-release-plugin:1.0.0:precheck
+call mvn org.nzbhydra:github-release-plugin:3.0.0:precheck
 if [[ "$?" -ne 0 ]] ; then
     echo "Error during release precheck"
     exit 1
 fi
 
 echo "Generating changelog"
-call mvn org.nzbhydra:github-release-plugin:1.0.0:generate-changelog
+call mvn org.nzbhydra:github-release-plugin:3.0.0:generate-changelog
 if [[ "$?" -ne 0 ]] ; then
     echo "Error generating changelog"
     exit 1
 fi
 
 echo "Generating wrapper hashes"
-call mvn org.nzbhydra:github-release-plugin:1.0.0:generate-wrapper-hashes
+call mvn org.nzbhydra:github-release-plugin:3.0.0:generate-wrapper-hashes
 if [[ "$?" -ne 0 ]] ; then
     echo "Error generating wrapper hashes"
     exit 1

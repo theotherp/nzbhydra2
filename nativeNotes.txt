@@ -33,14 +33,12 @@ TODO
 Native:
     Check out https://www.graalvm.org/22.2/reference-manual/native-image/guides/use-graalvm-dashboard/
     Compare with https://gist.github.com/linux-china/8745394fbc308168b20068386771ea1b
-    Change update mechanism
 
 
 General:
     Migrate successfully on windows and linux
-    Test with new instances
     Call discord webhook directly instead of using discord bot
     Make wrapper catch common errors (like freetype or whatever) and link to a wiki page
-    In release script as a precondition check that wrapper executables are not much older than wrapper script files
-    Add existing database (v1?) and perhaps even config to pipeline to ensure that migration keeps working
     Maintainers: java needs to be installed for the database migration to work
+    run new instance and migrated instance(s) in build matrix so that every test is run against every instance, remove migrationtest
+    Try to get to work self hosted windows runner so that the release can be triggered from github

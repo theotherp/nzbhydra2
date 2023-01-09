@@ -10,6 +10,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request.Builder;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -18,6 +19,8 @@ import org.apache.maven.plugins.annotations.Parameter;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -57,8 +60,25 @@ public class ReleaseMojo extends AbstractMojo {
 
     @Parameter(property = "changelogJsonFile", required = true)
     protected File changelogJsonFile;
+
+    @Parameter(property = "linuxExecutable", required = false)
+    protected File linuxExecutable;
+    @Parameter(property = "windowsExecutable", required = false)
+    protected File windowsExecutable;
+    @Parameter(property = "windowsConsoleExecutable", required = false)
+    protected File windowsConsoleExecutable;
+    @Parameter(property = "py3", required = false)
+    protected File py3;
+    @Parameter(property = "windowsPy", required = false)
+    protected File windowsPy;
+    @Parameter(property = "skipExecutablesCheck", required = false)
+    protected boolean skipExecutablesCheck;
+
     @Parameter(property = "dryRun")
     protected boolean dryRun;
+
+    @Parameter(defaultValue = "${session}", readonly = true)
+    private MavenSession mavenSession;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     protected String githubReleasesUrl;
@@ -138,6 +158,34 @@ public class ReleaseMojo extends AbstractMojo {
 
         if (!changelogJsonFile.exists()) {
             throw new MojoExecutionException("JSON file does not exist: " + changelogJsonFile.getAbsolutePath());
+        }
+
+        if (skipExecutablesCheck) {
+            return;
+        }
+        try {
+            final Instant linuxExecutableCreationTime = Files.readAttributes(linuxExecutable.toPath(), BasicFileAttributes.class).creationTime().toInstant();
+            final Instant windowsExecutableCreationTime = Files.readAttributes(windowsExecutable.toPath(), BasicFileAttributes.class).creationTime().toInstant();
+            final Instant windowsConsoleExecutableCreationTime = Files.readAttributes(windowsConsoleExecutable.toPath(), BasicFileAttributes.class).creationTime().toInstant();
+            final Instant py3CreationTime = Files.readAttributes(py3.toPath(), BasicFileAttributes.class).creationTime().toInstant();
+            final Instant windowsPyCreationTime = Files.readAttributes(windowsPy.toPath(), BasicFileAttributes.class).creationTime().toInstant();
+            verifyIsYounger(linuxExecutable, py3);
+            verifyIsYounger(windowsExecutable, py3);
+            verifyIsYounger(windowsExecutable, windowsPy);
+            verifyIsYounger(windowsConsoleExecutable, py3);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    private void verifyIsYounger(File file, File youngerThanThis) throws IOException, MojoExecutionException {
+        final Instant fileTime = Files.readAttributes(file.toPath(), BasicFileAttributes.class).lastModifiedTime().toInstant();
+        final Instant youngerThanThisTime = Files.readAttributes(youngerThanThis.toPath(), BasicFileAttributes.class).lastModifiedTime().toInstant();
+        if (fileTime.isBefore(youngerThanThisTime)) {
+            throw new MojoExecutionException("Creation date of " + file + " is older than that of " + youngerThanThis);
+        } else {
+            getLog().info(file + " is younger than " + youngerThanThis);
         }
     }
 

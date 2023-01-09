@@ -7,6 +7,7 @@ import jakarta.annotation.PreDestroy;
 import joptsimple.OptionException;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
+import org.apache.commons.lang3.tuple.Pair;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.BaseConfigHandler;
 import org.nzbhydra.config.ConfigProvider;
@@ -115,6 +116,7 @@ public class NzbHydra {
         parser.accepts("port", "Run on this port (default: 5076)").withOptionalArg();
         parser.accepts("baseurl", "Set base URL (e.g. /nzbhydra)").withOptionalArg();
         parser.accepts("help", "Print help");
+        parser.accepts("version", "Print version");
 
         OptionSet options = null;
         try {
@@ -127,6 +129,8 @@ public class NzbHydra {
 
         if (options.has("help")) {
             parser.printHelpOn(System.out);
+        } else if (options.has("version")) {
+            System.out.println(DebugInfosProvider.getVersionAndBuildTimestamp().getLeft());
         } else if (System.getProperty("fromWrapper") == null && Arrays.stream(args).noneMatch(x -> x.equals("directstart"))) {
             logger.info("NZBHydra 2 must be started using the wrapper for restart and updates to work. If for some reason you need to start it from the JAR directly provide the command line argument \"directstart\"");
         } else {
@@ -305,7 +309,9 @@ public class NzbHydra {
             //I don't know why I have to do this but otherwise genericStorage is always empty
             configProvider.getBaseConfig().setGenericStorage(new ConfigReaderWriter().loadSavedConfig().getGenericStorage());
 
-            debugInfosProvider.printVersion();
+            final Pair<String, String> versionAndBuildTimestamp = debugInfosProvider.getVersionAndBuildTimestamp();
+            logger.info("Version: {}", versionAndBuildTimestamp.getLeft());
+            logger.info("Build timestamp: {}", versionAndBuildTimestamp.getRight());
             if (genericStorage.get("FirstStart", LocalDateTime.class).isEmpty()) {
                 logger.info("First start of NZBHydra detected");
                 genericStorage.save("FirstStart", LocalDateTime.now());
