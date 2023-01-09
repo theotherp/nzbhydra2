@@ -15,8 +15,9 @@
                 <version>1.0-SNAPSHOT</version>
                 <configuration>
                     <changelogJsonFile>${basedir}/src/test/resources/org/nzbhydra/github/mavenreleaseplugin/changelog.json</changelogJsonFile>
-                    <changelogMdFile>${basedir}/src/test/resources/org/nzbhydra/github/mavenreleaseplugin/changelog.md</changelogMdFile>
                     <discordToken>someToken</discordToken>
+                    <tagName>v1.0.0</tagName>
+                    <dryRun>true</dryRun>
                 </configuration>
             </plugin>
         </plugins>

@@ -73,7 +73,7 @@ if [[ "$?" -ne 0 ]] ; then
 fi
 
 echo "Running clean"
-call mvn -T 1C -pl "!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin,!org.nzbhydra:discordbot" clean -DskipTests=true
+call mvn -T 1C -pl "!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin" clean -DskipTests=true
 if [[ "$?" -ne 0 ]] ; then
     echo "Error during clean"
     exit 1
@@ -108,7 +108,7 @@ if [[ "$?" -ne 0 ]] ; then
 fi
 
 echo "Running install"
-call mvn -T 1C -pl "!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin,!org.nzbhydra:discordbot" install -DskipTests=true
+call mvn -T 1C -pl "!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin" install -DskipTests=true
 if [[ "$?" -ne 0 ]] ; then
     echo "Error during install"
     exit 1
@@ -165,6 +165,16 @@ if [[ "$?" -ne 0 ]] ; then
     exit 1
 fi
 
+echo "Publishing on discord  ***********************************************************************"
+if [ "$3" = "true" ]; then
+    call mvn org.nzbhydra:github-release-plugin:3.0.0:publish-on-discord -DdryRun
+else
+    call mvn org.nzbhydra:github-release-plugin:3.0.0:publish-on-discord
+fi
+if [[ "$?" -ne 0 ]] ; then
+    echo "Error publishing on github. Not quitting"
+fi
+
 echo "Setting new snapshot version ***********************************************************************"
 call mvn versions:set -DnewVersion="$2"-SNAPSHOT
 if [[ "$?" -ne 0 ]] ; then
@@ -180,7 +190,7 @@ if [[ "$?" -ne 0 ]] ; then
 fi
 
 echo "Building new versions ***********************************************************************"
-call mvn -T 1C -pl "!org.nzbhydra:tests,!org.nzbhydra:linux-release,!org.nzbhydra:windows-release,!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin,!org.nzbhydra:discordbot" install -DskipTests=true
+call mvn -T 1C -pl "!org.nzbhydra:tests,!org.nzbhydra:linux-release,!org.nzbhydra:windows-release,!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin" install -DskipTests=true
 if [[ "$?" -ne 0 ]] ; then
     echo "Error building new versions"
     exit 1
@@ -196,4 +206,6 @@ else
         exit 1
     fi
 fi
+
+call git push origin master
 

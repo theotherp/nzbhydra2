@@ -36,6 +36,7 @@
                 <configuration>
                     <commitish>master</commitish>
                     <githubToken>${env.GITHUB_TOKEN}</githubToken>
+                    <discordToken>${env.DISCORD_TOKEN}</discordToken>
                     <linuxAsset>${basedir}/releases/linux-release/target/nzbhydra2-${project.version}-linux.zip</linuxAsset>
                     <windowsAsset>${basedir}/releases/windows-release/target/nzbhydra2-${project.version}-windows.zip</windowsAsset>
                     <genericAsset>${basedir}/releases/windows-release/target/nzbhydra2-${project.version}-generic.zip</genericAsset>
