@@ -16,7 +16,6 @@
                 <configuration>
                     <changelogJsonFile>${basedir}/src/test/resources/org/nzbhydra/github/mavenreleaseplugin/changelog.json</changelogJsonFile>
                     <changelogMdFile>${basedir}/src/test/resources/org/nzbhydra/github/mavenreleaseplugin/changelog.md</changelogMdFile>
-                    <discordToken>someToken</discordToken>
                 </configuration>
             </plugin>
         </plugins>
