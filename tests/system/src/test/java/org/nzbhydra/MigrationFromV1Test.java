@@ -27,7 +27,7 @@ import org.springframework.test.context.ContextConfiguration;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(properties = {
-    "nzbhydra.port=5077"
+//    "nzbhydra.port=5077"
 })
 @ContextConfiguration(classes = {DockerConfig.class})
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
