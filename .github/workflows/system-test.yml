@@ -44,6 +44,7 @@ jobs:
             spring_profiles_active: build,systemtest
             nzbhydra_port: ${{ matrix.test.port }}
             nzbhydra_host_external: http://${{ matrix.test.name }}:${{ matrix.test.port }}
+            nzbhydra.host.external: http://${{ matrix.test.name }}:${{ matrix.test.port }}
         steps:
             -   run: echo Running test ${{ matrix.test.name }} with port ${{ matrix.test.port }}
             -   uses: actions/checkout@v3

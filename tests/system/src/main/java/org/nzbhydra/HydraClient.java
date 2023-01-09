@@ -28,8 +28,8 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
-import org.junit.platform.commons.logging.Logger;
-import org.junit.platform.commons.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -43,6 +43,7 @@ public class HydraClient {
 
     private static final Logger logger = LoggerFactory.getLogger(HydraClient.class);
 
+
     @Value("${nzbhydra.host}")
     private String nzbhydraHost;
     @Value("${nzbhydra.port}")
@@ -50,7 +51,7 @@ public class HydraClient {
 
     @PostConstruct
     public void logData() {
-        logger.info(() -> "Using NZBHydra host " + nzbhydraHost + " and port " + nzbhydraPort);
+        logger.info("Using NZBHydra host " + nzbhydraHost + " and port " + nzbhydraPort);
     }
 
     private OkHttpClient getClient() {

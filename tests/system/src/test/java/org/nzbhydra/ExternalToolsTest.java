@@ -17,6 +17,7 @@
 package org.nzbhydra;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import jakarta.annotation.PostConstruct;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledOnOs;
@@ -24,6 +25,8 @@ import org.junit.jupiter.api.condition.OS;
 import org.nzbhydra.backup.BackupEntry;
 import org.nzbhydra.externaltools.AddRequest;
 import org.nzbhydra.hydraconfigure.ConfigManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -39,6 +42,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DisabledOnOs(OS.WINDOWS)
 public class ExternalToolsTest {
 
+
+    private static final Logger logger = LoggerFactory.getLogger(ExternalToolsTest.class);
+
     @Autowired
     private HydraClient hydraClient;
 
@@ -51,6 +57,12 @@ public class ExternalToolsTest {
     private String radarrHost;
     @Value("${nzbhydra.host.external}")
     private String nzbhydraHostExternal;
+
+    @PostConstruct
+    public void log() {
+        logger.info("Using sonarr host: " + sonarrHost + ", radarr host: " + radarrHost + ", nzbhydra external host: " + nzbhydraHostExternal);
+    }
+
 
     @Test
     public void shouldAddToSonar() throws Exception {

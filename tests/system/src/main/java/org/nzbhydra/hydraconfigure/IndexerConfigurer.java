@@ -16,14 +16,14 @@
 
 package org.nzbhydra.hydraconfigure;
 
-import org.junit.platform.commons.logging.Logger;
-import org.junit.platform.commons.logging.LoggerFactory;
 import org.nzbhydra.HydraClient;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.indexer.BackendType;
 import org.nzbhydra.config.indexer.IndexerCategoryConfig;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.mediainfo.MediaIdType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -35,7 +35,6 @@ import java.util.Collections;
 public class IndexerConfigurer {
 
     private static final Logger logger = LoggerFactory.getLogger(IndexerConfigurer.class);
-
     @Autowired
     private ConfigManager configManager;
 
@@ -46,7 +45,7 @@ public class IndexerConfigurer {
     private String mockUrl;
 
     public void configureTwoMockIndexers() {
-        logger.info(() -> "Configuring two indexers using host " + mockUrl);
+        logger.info("Configuring two indexers using host " + mockUrl);
         final BaseConfig config = configManager.getCurrentConfig();
         config.getIndexers().clear();
         for (int i = 1; i < 4; i++) {
