@@ -11,3 +11,4 @@ target/
 /config
 /database/
 changelog.json
+changelog.yaml

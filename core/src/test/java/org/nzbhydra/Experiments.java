@@ -16,7 +16,6 @@
 
 package org.nzbhydra;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
@@ -26,23 +25,16 @@ import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import okhttp3.ResponseBody;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.indexer.IndexerCategoryConfig;
 import org.nzbhydra.config.indexer.IndexerConfig;
-import org.nzbhydra.mapping.changelog.ChangelogVersionEntry;
-import org.nzbhydra.mapping.github.Release;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -62,42 +54,6 @@ public class Experiments {
         }
     }
 
-    @Test
-    @Disabled
-    void updateChangelogDates() throws Exception {
-        File jsonFile = new File("..\\core\\src\\main\\resources\\changelog.json");
-        OkHttpClient client = new OkHttpClient.Builder().build();
-        Map<String, String> releaseDates = new HashMap<>();
-        for (int i = 1; i <= 6; i++) {
-            Response response = client.newCall(new Request.Builder().url("https://api.github.com/repos/theotherp/nzbhydra2/releases?page=" + i).build()).execute();
-
-            ResponseBody body = response.body();
-            List<Release> entries = Jackson.JSON_MAPPER.readValue(body.string(), new TypeReference<List<Release>>() {
-            });
-            for (Release entry : entries) {
-                releaseDates.put(entry.getTagName(), entry.getPublishedAt().substring(0, 10));
-            }
-            Thread.sleep(250);
-        }
-
-        List<ChangelogVersionEntry> changelogEntries = Jackson.JSON_MAPPER.readValue(jsonFile, new TypeReference<List<ChangelogVersionEntry>>() {
-        });
-
-        List<ChangelogVersionEntry> updatedChangelogEntries = new ArrayList<>();
-        for (ChangelogVersionEntry versionEntry : changelogEntries) {
-            if (releaseDates.containsKey(versionEntry.getVersion())) {
-                versionEntry.setDate(releaseDates.get(versionEntry.getVersion()));
-            }
-            updatedChangelogEntries.add(versionEntry);
-        }
-
-        Collections.sort(updatedChangelogEntries);
-        Collections.reverse(updatedChangelogEntries);
-
-        Jackson.JSON_MAPPER.writeValue(jsonFile, updatedChangelogEntries);
-
-        System.out.println();
-    }
 
     @Test
     @Disabled

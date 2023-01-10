@@ -15,7 +15,7 @@
                 <version>1.0-SNAPSHOT</version>
                 <configuration>
                     <githubToken>token</githubToken>
-                    <changelogJsonFile>${basedir}/src/test/resources/org/nzbhydra/github/mavenreleaseplugin/changelog.json</changelogJsonFile>
+                    <changelogYamlFile>${basedir}/src/test/resources/org/nzbhydra/github/mavenreleaseplugin/changelog.yaml</changelogYamlFile>
                 </configuration>
             </plugin>
         </plugins>

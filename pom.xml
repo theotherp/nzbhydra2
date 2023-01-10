@@ -40,7 +40,7 @@
                     <linuxAsset>${basedir}/releases/linux-release/target/nzbhydra2-${project.version}-linux.zip</linuxAsset>
                     <windowsAsset>${basedir}/releases/windows-release/target/nzbhydra2-${project.version}-windows.zip</windowsAsset>
                     <genericAsset>${basedir}/releases/windows-release/target/nzbhydra2-${project.version}-generic.zip</genericAsset>
-                    <changelogJsonFile>${basedir}/core/src/main/resources/changelog.json</changelogJsonFile>
+                    <changelogYamlFile>${basedir}/core/src/main/resources/changelog.yaml</changelogYamlFile>
                     <changelogMdFile>${basedir}/changelog.md</changelogMdFile>
 
                     <linuxExecutable>${basedir}/releases/linux-release/include/nzbhydra2</linuxExecutable>

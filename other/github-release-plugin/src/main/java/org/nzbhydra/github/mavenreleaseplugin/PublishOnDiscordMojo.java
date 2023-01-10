@@ -2,6 +2,7 @@ package org.nzbhydra.github.mavenreleaseplugin;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
@@ -29,8 +30,8 @@ public class PublishOnDiscordMojo extends AbstractMojo {
                                            "\n" +
                                            "Link: https://github.com/theotherp/nzbhydra2/releases/tag/%s\n";
 
-    @Parameter(property = "changelogJsonFile", required = true)
-    protected File changelogJsonFile;
+    @Parameter(property = "changelogYamlFile", required = true)
+    protected File changelogYamlFile;
 
     @Parameter(property = "tagName", required = true)
     protected String tagName;
@@ -40,18 +41,18 @@ public class PublishOnDiscordMojo extends AbstractMojo {
     @Parameter(property = "dryRun")
     protected boolean dryRun;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
 
     @Override
     public void execute() throws MojoExecutionException {
 
-        if (!changelogJsonFile.exists()) {
-            throw new MojoExecutionException("JSON file does not exist: " + changelogJsonFile.getAbsolutePath());
+        if (!changelogYamlFile.exists()) {
+            throw new MojoExecutionException("JSON file does not exist: " + changelogYamlFile.getAbsolutePath());
         }
 
         List<ChangelogVersionEntry> entries;
         try {
-            entries = objectMapper.readValue(Files.readAllBytes(changelogJsonFile.toPath()), new TypeReference<List<ChangelogVersionEntry>>() {
+            entries = yamlMapper.readValue(Files.readAllBytes(changelogYamlFile.toPath()), new TypeReference<List<ChangelogVersionEntry>>() {
             });
         } catch (IOException e) {
             throw new MojoExecutionException("Unable to read JSON file", e);

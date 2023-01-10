@@ -32,6 +32,9 @@
           "pattern": "\\Qchangelog.json\\E"
       },
       {
+          "pattern": "\\Qchangelog.yaml\\E"
+      },
+      {
           "pattern": "\\QwrapperHashes.json\\E"
       },
       {

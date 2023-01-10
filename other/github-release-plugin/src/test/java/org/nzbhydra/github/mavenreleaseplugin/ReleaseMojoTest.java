@@ -25,7 +25,7 @@ public class ReleaseMojoTest extends AbstractMojoTestCase {
 
     public void setUp() throws Exception {
         super.setUp();
-        Files.copy(getTestFile("/src/test/resources/org/nzbhydra/github/mavenreleaseplugin/changelog.json.orig").toPath(), getTestFile("/src/test/resources/org/nzbhydra/github/mavenreleaseplugin/changelog.json").toPath(), StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(getTestFile("/src/test/resources/org/nzbhydra/github/mavenreleaseplugin/changelog.yaml.orig").toPath(), getTestFile("/src/test/resources/org/nzbhydra/github/mavenreleaseplugin/changelog.yaml").toPath(), StandardCopyOption.REPLACE_EXISTING);
     }
 
     public void testExecute() throws Exception {
@@ -63,7 +63,7 @@ public class ReleaseMojoTest extends AbstractMojoTestCase {
             releaseMojo.execute();
             fail("Expected mojo exception");
         } catch (MojoExecutionException e) {
-            assertTrue(e.getMessage().contains("Latest changelog entry version v0.0.1 does not match tag name v1.0.0"));
+            assertThat(e.getMessage()).contains("Latest changelog entry version v0.0.1 does not match tag name v1.0.0");
         }
     }
 
@@ -82,7 +82,7 @@ public class ReleaseMojoTest extends AbstractMojoTestCase {
             releaseMojo.execute();
             fail("Expected mojo exception");
         } catch (MojoExecutionException e) {
-            assertTrue(e.getMessage().contains("GitHub Token and GitHub token file not set"));
+            assertThat(e.getMessage()).contains("GitHub Token and GitHub token file not set");
         }
     }
 

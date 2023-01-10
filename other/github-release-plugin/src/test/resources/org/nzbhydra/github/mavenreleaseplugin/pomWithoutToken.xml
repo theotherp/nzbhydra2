@@ -18,7 +18,7 @@
                     <linuxAsset>b</linuxAsset>
                     <commitish>commitish</commitish>
                     <tagName>v1.0.0</tagName>
-                    <changelogJsonFile>${basedir}/src/test/resources/org/nzbhydra/github/mavenreleaseplugin/changelog.json</changelogJsonFile>
+                    <changelogYamlFile>${basedir}/src/test/resources/org/nzbhydra/github/mavenreleaseplugin/changelog.yaml</changelogYamlFile>
                     <skipExecutablesCheck>true</skipExecutablesCheck>
                 </configuration>
             </plugin>

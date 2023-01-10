@@ -19,7 +19,7 @@
                     <commitish>commitish</commitish>
                     <tagName>v1.0.0</tagName>
                     <githubToken>token</githubToken>
-                    <changelogJsonFile>${basedir}/src/test/resources/org/nzbhydra/github/mavenreleaseplugin/changelogOld.json</changelogJsonFile>
+                    <changelogYamlFile>${basedir}/src/test/resources/org/nzbhydra/github/mavenreleaseplugin/changelogOld.yaml</changelogYamlFile>
                     <linuxExecutable>${basedir}/releases/linux-release/include/nzbhydra2</linuxExecutable>
                     <windowsExecutable>${basedir}/releases/windows-release/include/NZBHydra2.exe</windowsExecutable>
                     <windowsConsoleExecutable>${basedir}/releases/windows-release/include/NZBHydra2 Console.exe</windowsConsoleExecutable>

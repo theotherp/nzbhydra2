@@ -22,7 +22,7 @@ public class SetReleaseFinalMojoTest extends AbstractMojoTestCase {
 
     public void setUp() throws Exception {
         super.setUp();
-        Files.copy(getTestFile("/src/test/resources/org/nzbhydra/github/mavenreleaseplugin/changelog.json.orig").toPath(), getTestFile("/src/test/resources/org/nzbhydra/github/mavenreleaseplugin/changelog.json").toPath(), StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(getTestFile("/src/test/resources/org/nzbhydra/github/mavenreleaseplugin/changelog.yaml.orig").toPath(), getTestFile("/src/test/resources/org/nzbhydra/github/mavenreleaseplugin/changelog.yaml").toPath(), StandardCopyOption.REPLACE_EXISTING);
         System.setProperty("finalVersion", "v1.0.0");
     }
 

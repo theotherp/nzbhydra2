@@ -2,6 +2,7 @@ package org.nzbhydra.github.mavenreleaseplugin;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import okhttp3.Call;
@@ -27,13 +28,13 @@ import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings("unchecked")
 @Mojo(name = "set-final",
-        inheritByDefault = false,
-        aggregator = true //Only call for parent POM
+    inheritByDefault = false,
+    aggregator = true //Only call for parent POM
 )
 public class SetReleaseFinalMojo extends AbstractMojo {
 
-    @Parameter(property = "changelogJsonFile", required = true)
-    protected File changelogJsonFile;
+    @Parameter(property = "changelogYamlFile", required = true)
+    protected File changelogYamlFile;
 
     @Parameter(property = "githubTokenFile", required = false)
     protected File githubTokenFile;
@@ -47,6 +48,7 @@ public class SetReleaseFinalMojo extends AbstractMojo {
     protected String version = System.getProperty("finalVersion");
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
     private OkHttpClient client;
 
     @Override
@@ -67,14 +69,14 @@ public class SetReleaseFinalMojo extends AbstractMojo {
         }
 
         client = new OkHttpClient.Builder().readTimeout(25, TimeUnit.SECONDS).connectTimeout(25, TimeUnit.SECONDS).build();
-        if (!changelogJsonFile.exists()) {
-            throw new MojoExecutionException("JSON file does not exist: " + changelogJsonFile.getAbsolutePath());
+        if (!changelogYamlFile.exists()) {
+            throw new MojoExecutionException("JSON file does not exist: " + changelogYamlFile.getAbsolutePath());
         }
         getLog().info("Will set version " + version + " to final");
 
         List<ChangelogVersionEntry> entries;
         try {
-            entries = objectMapper.readValue(Files.readAllBytes(changelogJsonFile.toPath()), new TypeReference<List<ChangelogVersionEntry>>() {
+            entries = yamlMapper.readValue(Files.readAllBytes(changelogYamlFile.toPath()), new TypeReference<List<ChangelogVersionEntry>>() {
             });
         } catch (IOException e) {
             throw new MojoExecutionException("Unable to read JSON file", e);
@@ -89,9 +91,9 @@ public class SetReleaseFinalMojo extends AbstractMojo {
         latestChangelogEntry.get().setFinal(true);
 
         try {
-            objectMapper.writerWithDefaultPrettyPrinter().writeValue(changelogJsonFile, entries);
+            yamlMapper.writerWithDefaultPrettyPrinter().writeValue(changelogYamlFile, entries);
         } catch (IOException e) {
-            throw new MojoExecutionException("Unable to update json file " + changelogJsonFile.getAbsolutePath(), e);
+            throw new MojoExecutionException("Unable to update json file " + changelogYamlFile.getAbsolutePath(), e);
         }
 
 

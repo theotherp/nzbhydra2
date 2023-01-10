@@ -2,6 +2,7 @@ package org.nzbhydra.github.mavenreleaseplugin;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import okhttp3.Call;
@@ -58,8 +59,8 @@ public class ReleaseMojo extends AbstractMojo {
     @Parameter(property = "genericAsset", required = true)
     protected File genericAsset;
 
-    @Parameter(property = "changelogJsonFile", required = true)
-    protected File changelogJsonFile;
+    @Parameter(property = "changelogYamlFile", required = true)
+    protected File changelogYamlFile;
 
     @Parameter(property = "linuxExecutable", required = false)
     protected File linuxExecutable;
@@ -81,6 +82,7 @@ public class ReleaseMojo extends AbstractMojo {
     private MavenSession mavenSession;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
     protected String githubReleasesUrl;
 
 
@@ -126,7 +128,7 @@ public class ReleaseMojo extends AbstractMojo {
         getLog().info("Will use windows asset " + windowsAsset.getAbsolutePath());
         getLog().info("Will use linux asset " + linuxAsset.getAbsolutePath());
         getLog().info("Will use generic asset " + genericAsset.getAbsolutePath());
-        getLog().info("Will use changelog entry from " + changelogJsonFile.getAbsolutePath());
+        getLog().info("Will use changelog entry from " + changelogYamlFile.getAbsolutePath());
 
         try {
             org.nzbhydra.github.mavenreleaseplugin.ReleaseRequest releaseRequest = new org.nzbhydra.github.mavenreleaseplugin.ReleaseRequest();
@@ -156,8 +158,8 @@ public class ReleaseMojo extends AbstractMojo {
             }
         }
 
-        if (!changelogJsonFile.exists()) {
-            throw new MojoExecutionException("JSON file does not exist: " + changelogJsonFile.getAbsolutePath());
+        if (!changelogYamlFile.exists()) {
+            throw new MojoExecutionException("JSON file does not exist: " + changelogYamlFile.getAbsolutePath());
         }
 
         if (skipExecutablesCheck) {
@@ -197,7 +199,7 @@ public class ReleaseMojo extends AbstractMojo {
     protected ChangelogVersionEntry getChangelogVersionEntry() throws MojoExecutionException {
         List<ChangelogVersionEntry> entries;
         try {
-            entries = objectMapper.readValue(Files.readAllBytes(changelogJsonFile.toPath()), new TypeReference<List<ChangelogVersionEntry>>() {
+            entries = yamlMapper.readValue(Files.readAllBytes(changelogYamlFile.toPath()), new TypeReference<List<ChangelogVersionEntry>>() {
             });
         } catch (IOException e) {
             throw new MojoExecutionException("Unable to read JSON file", e);

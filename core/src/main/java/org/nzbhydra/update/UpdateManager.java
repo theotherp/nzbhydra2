@@ -2,9 +2,6 @@ package org.nzbhydra.update;
 
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.google.common.base.Charsets;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -16,6 +13,7 @@ import lombok.NoArgsConstructor;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.JavaVersion;
 import org.apache.commons.lang3.SystemUtils;
+import org.nzbhydra.Jackson;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.backup.BackupAndRestore;
 import org.nzbhydra.config.BaseConfig;
@@ -98,16 +96,9 @@ public class UpdateManager implements InitializingBean {
 
     private PackageInfo packageInfo;
 
-    private final ObjectMapper objectMapper;
     protected Supplier<List<Release>> releasesCache = Suppliers.memoizeWithExpiration(getReleasesSupplier(), CACHE_DURATION_MINUTES, TimeUnit.MINUTES);
     protected TypeReference<List<ChangelogVersionEntry>> changelogEntryListTypeReference = new TypeReference<>() {
     };
-
-    public UpdateManager() {
-        objectMapper = new ObjectMapper();
-        objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    }
 
     private void loadPackageInfo() {
         File packageFile = new File("/app/nzbhydra2/package_info");
@@ -244,7 +235,7 @@ public class UpdateManager implements InitializingBean {
         List<ChangelogVersionEntry> allChanges;
         try {
             String response = webAccess.callUrl(changelogUrl);
-            allChanges = objectMapper.readValue(response, new TypeReference<>() {
+            allChanges = Jackson.YAML_MAPPER.readValue(response, new TypeReference<>() {
             });
         } catch (IOException e) {
             throw new UpdateException("Error while getting changelog: " + e.getMessage());
@@ -268,8 +259,8 @@ public class UpdateManager implements InitializingBean {
     public List<ChangelogVersionEntry> getAllVersionChangesUpToCurrentVersion() throws UpdateException {
         List<ChangelogVersionEntry> changelogVersionEntries;
         try {
-            String changelogJsonString = Resources.toString(Resources.getResource(UpdateManager.class, "/changelog.json"), Charsets.UTF_8);
-            changelogVersionEntries = objectMapper.readValue(changelogJsonString, changelogEntryListTypeReference);
+            String changelogYamlString = Resources.toString(Resources.getResource(UpdateManager.class, "/changelog.yaml"), Charsets.UTF_8);
+            changelogVersionEntries = Jackson.YAML_MAPPER.readValue(changelogYamlString, changelogEntryListTypeReference);
         } catch (IOException e) {
             throw new UpdateException("Error while getting changelog: " + e.getMessage());
         }
@@ -308,8 +299,8 @@ public class UpdateManager implements InitializingBean {
 
         List<ChangelogVersionEntry> changelogVersionEntries;
         try {
-            String changelogJsonString = Resources.toString(Resources.getResource(UpdateManager.class, "/changelog.json"), Charsets.UTF_8);
-            changelogVersionEntries = objectMapper.readValue(changelogJsonString, changelogEntryListTypeReference);
+            String changelogJsonString = Resources.toString(Resources.getResource(UpdateManager.class, "/changelog.yaml"), Charsets.UTF_8);
+            changelogVersionEntries = Jackson.YAML_MAPPER.readValue(changelogJsonString, changelogEntryListTypeReference);
         } catch (IOException e) {
             throw new UpdateException("Error while getting changelog: " + e.getMessage());
         }
@@ -426,7 +417,7 @@ public class UpdateManager implements InitializingBean {
         List<BlockedVersion> blockedVersions;
         try {
             String response = webAccess.callUrl(blockedVersionsUrl);
-            blockedVersions = objectMapper.readValue(response, new TypeReference<>() {
+            blockedVersions = Jackson.YAML_MAPPER.readValue(response, new TypeReference<>() {
             });
         } catch (IOException e) {
             throw new UpdateException("Error while getting blocked versions: " + e.getMessage());
