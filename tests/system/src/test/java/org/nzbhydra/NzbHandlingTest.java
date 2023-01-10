@@ -16,11 +16,14 @@
 
 package org.nzbhydra;
 
+import jakarta.annotation.PostConstruct;
 import org.junit.jupiter.api.Test;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.downloading.DownloaderConfig;
 import org.nzbhydra.downloading.FileZipResponse;
 import org.nzbhydra.hydraconfigure.ConfigManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -34,6 +37,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 @ContextConfiguration(classes = {TestConfig.class})
 public class NzbHandlingTest {
+
+    private static final Logger logger = LoggerFactory.getLogger(NzbHandlingTest.class);
 
     @Autowired
     private HydraClient hydraClient;
@@ -51,6 +56,11 @@ public class NzbHandlingTest {
 
     @Value("${blackholeFolder.testaccess}")
     private String blackholeFolderTestAccess;
+
+    @PostConstruct
+    public void init() {
+        logger.info("nzbhydra.mockUrl: {}, blackholeFolder.nzbhydra: {}, blackholeFolder.testaccess: {}", mockUrl, blackholeFolderNnzbhydra, blackholeFolderTestAccess);
+    }
 
     @Test
     public void shouldDownloadNzb() throws Exception {

@@ -81,6 +81,8 @@ jobs:
                     docker ps
                     sleep 10
                     docker ps
+                    docker container inspect -f '{{ .Mounts}}' core
+                    docker container inspect -f '{{ .Mounts}}' v1Migration
 
             -   name: "Run tests"
                 run: mvn --batch-mode test -pl org.nzbhydra.tests:system -DtrimStackTrace=false
