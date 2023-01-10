@@ -81,7 +81,9 @@ jobs:
                     docker ps
                     sleep 10
                     docker ps
+                    echo "Core container mounts:"
                     docker container inspect -f '{{ .Mounts}}' core
+                    echo "v1Migration container mounts:"
                     docker container inspect -f '{{ .Mounts}}' v1Migration
 
             -   name: "Run tests"
