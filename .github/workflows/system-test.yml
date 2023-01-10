@@ -26,12 +26,12 @@ jobs:
 
             -   if: steps.changed-files-specific.outputs.any_changed == 'true'
                 run: |
-                    echo "Will build new mock server container. Changed files since last push:"
+                    echo "::notice::Will build new mock server container. Changed files since last push:"
                     echo "${{ steps.changed-files-specific.outputs.all_changed_files }}"
 
             -   if: steps.changed-files-specific.outputs.any_changed == 'false'
                 run: |
-                    echo "Will skip build of new mock server container. No changed files since last push."
+                    echo "::notice::Will skip build of new mock server container. No changed files since last push."
 
             -   name: Set up JDK 17
                 if: steps.changed-files-specific.outputs.any_changed == 'true'

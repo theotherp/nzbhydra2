@@ -36,12 +36,12 @@ jobs:
 
             -   if: steps.changed-files-specific.outputs.any_changed == 'true'
                 run: |
-                    echo "Will build new native image / docker container. Changed files in core since last push:"
+                    echo "::notice::Will build new native image / docker container. Changed files in core since last push:"
                     echo "${{ steps.changed-files-specific.outputs.all_changed_files }}"
 
             -   if: steps.changed-files-specific.outputs.any_changed == 'false'
                 run: |
-                    echo "Will skip build of native image / docker container. No changed files in core since last push."
+                    echo "::notice::Will skip build of native image / docker container. No changed files in core since last push."
 
             -   name: NativeImage
                 uses: graalvm/setup-graalvm@v1
