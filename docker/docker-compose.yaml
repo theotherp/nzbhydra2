@@ -49,7 +49,7 @@ services:
             - spring_profiles_active=build,systemtest
         volumes:
             - /tmp/hydra/defaultDataFolder:/data
-            - /tmp/hydraBlackhole:/hydraBlackhole
+            - /tmp/hydraBlackhole_${NZBHYDRA_NAME}:/hydraBlackhole
         networks: [ "systemtest" ]
         restart: unless-stopped
     v1Migration:
