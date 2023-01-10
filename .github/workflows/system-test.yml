@@ -12,7 +12,29 @@ jobs:
         steps:
             -   uses: actions/checkout@v3
                 name: "Check out source"
+                with:
+                    # Check out last 15 commits
+                    fetch-depth: 15
+
+            -   name: "Get changed files in core module"
+                id: changed-files-specific
+                uses: tj-actions/changed-files@v35
+                with:
+                    since_last_remote_commit: true
+                    files: |
+                        other/mockserver/**
+
+            -   if: steps.changed-files-specific.outputs.any_changed == 'true'
+                run: |
+                    echo "Will build new mock server container. Changed files since last push:"
+                    echo "${{ steps.changed-files-specific.outputs.all_changed_files }}"
+
+            -   if: steps.changed-files-specific.outputs.any_changed == 'false'
+                run: |
+                    echo "Will skip build of new mock server container. No changed files since last push."
+
             -   name: Set up JDK 17
+                if: steps.changed-files-specific.outputs.any_changed == 'true'
                 uses: actions/setup-java@v3
                 with:
                     java-version: '17'
@@ -20,6 +42,7 @@ jobs:
                     cache: 'maven'
 
             -   name: "Login to GitHub Container Registry"
+                if: steps.changed-files-specific.outputs.any_changed == 'true'
                 uses: docker/login-action@v2
                 with:
                     registry: ghcr.io
@@ -27,6 +50,7 @@ jobs:
                     password: ${{ secrets.GITHUB_TOKEN }}
 
             -   name: "Build and push mockserver container"
+                if: steps.changed-files-specific.outputs.any_changed == 'true'
                 run: |
                     mvn --batch-mode install -DskipTests -T 1C
                     cd other/mockserver/
