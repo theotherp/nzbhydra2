@@ -35,7 +35,7 @@
           "pattern": "\\Qchangelog.yaml\\E"
       },
       {
-          "pattern": "\\QwrapperHashes.json\\E"
+          "pattern": "\\QwrapperHashes2.json\\E"
       },
       {
           "pattern": "\\QMETA-INF/services/ch.qos.logback.classic.spi.Configurator\\E"
@@ -2483,7 +2483,7 @@
           "pattern": "\\Qtemplates/index.html\\E"
       },
       {
-          "pattern": "\\QwrapperHashes.json\\E"
+          "pattern": "\\QwrapperHashes2.json\\E"
       },
       {
           "pattern": "java.base:\\Qjdk/internal/icu/impl/data/icudt67b/nfkc.nrm\\E"

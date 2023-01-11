@@ -54,7 +54,7 @@
                     <wrapperFile3>${basedir}/releases/windows-release/include/NZBHydra2.exe</wrapperFile3>
                     <wrapperFile4>${basedir}/other/wrapper/nzbhydra2wrapper.py</wrapperFile4>
                     <wrapperFile5>${basedir}/other/wrapper/nzbhydra2wrapperPy3.py</wrapperFile5>
-                    <wrapperHashesJsonFile>${basedir}/core/src/main/resources/wrapperHashes.json</wrapperHashesJsonFile>
+                    <wrapperHashesJsonFile>${basedir}/core/src/main/resources/wrapperHashes2.json</wrapperHashesJsonFile>
 
                     <tagName>v${project.version}</tagName>
                 </configuration>
