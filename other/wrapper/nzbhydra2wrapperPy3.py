@@ -413,7 +413,7 @@ def startup():
     gcArguments = [
         "-Xlog:gc*:file=" + gcLogFilename + "::filecount=10,filesize=5000"]
     global internalApiKey
-    if internalApiKey is None:
+    if internalApiKey is None or internalApiKey is False:
         internalApiKey = ''.join(random.choice(string.ascii_lowercase) for i in range(20))
     java_arguments = ["-Xmx" + xmx + "M", "-DfromWrapper=true", "-DinternalApiKey=" + internalApiKey]
 

@@ -1,0 +1,4 @@
+core
+*.py
+readme.md
+/data

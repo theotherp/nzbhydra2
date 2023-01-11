@@ -30,9 +30,10 @@ Windows executable seems to work anywhere. UPX compressed exe returns without an
 
 
 TODO
-Native:
-    Check out https://www.graalvm.org/22.2/reference-manual/native-image/guides/use-graalvm-dashboard/
-    Compare with https://gist.github.com/linux-china/8745394fbc308168b20068386771ea1b
+Edit wiki page - explain that java is needed for the migration
+Update readme.md
+Test release on nzbhydra2-build
+Get OK from all container managers
 
 
 General:
