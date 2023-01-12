@@ -54,7 +54,7 @@ public class BackupTaskTest {
         when(genericStorage.get("FirstStart", LocalDateTime.class)).thenReturn(Optional.of(LocalDateTime.now(testee.clock).minus(200, ChronoUnit.DAYS)));
 
         testee.createBackup();
-        verify(backupAndRestore).backup();
+        verify(backupAndRestore).backup(false);
         verify(genericStorage).save(eq("BackupData"), backupDataArgumentCaptor.capture());
         BackupData backupData = backupDataArgumentCaptor.getValue();
         assertThat(backupData.getLastBackup()).isEqualTo(LocalDateTime.now(testee.clock));
@@ -67,7 +67,7 @@ public class BackupTaskTest {
         when(genericStorage.get(BackupTask.KEY, BackupData.class)).thenReturn(Optional.of(new BackupData(LocalDateTime.now(testee.clock).minus(8, ChronoUnit.DAYS))));
 
         testee.createBackup();
-        verify(backupAndRestore).backup();
+        verify(backupAndRestore).backup(false);
         verify(genericStorage).save(eq("BackupData"), backupDataArgumentCaptor.capture());
         BackupData backupData = backupDataArgumentCaptor.getValue();
         assertThat(backupData.getLastBackup()).isEqualTo(LocalDateTime.now(testee.clock));
@@ -80,7 +80,7 @@ public class BackupTaskTest {
         when(genericStorage.get(BackupTask.KEY, BackupData.class)).thenReturn(Optional.of(new BackupData(LocalDateTime.now(testee.clock).minus(5, ChronoUnit.DAYS))));
 
         testee.createBackup();
-        verify(backupAndRestore, never()).backup();
+        verify(backupAndRestore, never()).backup(false);
         verify(genericStorage, never()).save(eq("BackupData"), backupDataArgumentCaptor.capture());
     }
 
@@ -88,21 +88,21 @@ public class BackupTaskTest {
     void shouldNotCreateBackupIfDisabled() throws Exception {
         config.getMain().setBackupEveryXDays(null);
         testee.createBackup();
-        verify(backupAndRestore, never()).backup();
+        verify(backupAndRestore, never()).backup(false);
     }
 
     @Test
     void shouldNotCreateBackupIfStartedToday() throws Exception {
         when(genericStorage.get("FirstStart", LocalDateTime.class)).thenReturn(Optional.of(LocalDateTime.now(testee.clock)));
         testee.createBackup();
-        verify(backupAndRestore, never()).backup();
+        verify(backupAndRestore, never()).backup(false);
     }
 
     @Test
     void shouldNotCreateBackupIfLastBackupWasToday() throws Exception {
         when(genericStorage.get("BackupData", BackupData.class)).thenReturn(Optional.of(new BackupData(LocalDateTime.now(testee.clock))));
         testee.createBackup();
-        verify(backupAndRestore, never()).backup();
+        verify(backupAndRestore, never()).backup(false);
     }
 
 }

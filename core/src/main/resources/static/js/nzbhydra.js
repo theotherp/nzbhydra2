@@ -2067,7 +2067,7 @@ function hydraChecksFooter() {
             });
         }
 
-        console.log("Checking for below Java 17");
+        console.log("Checking for below Java 17.");
 
         function checkForJavaBelow17() {
             GenericStorageService.get("belowJava17", false).then(function (response) {
@@ -2080,6 +2080,23 @@ function hydraChecksFooter() {
                         }
                     }, undefined, "left");
                     GenericStorageService.put("belowJava17", false, false);
+                }
+            });
+        }
+
+        console.log("Checking for failed backup.");
+
+        function checkForFailedBackup() {
+            GenericStorageService.get("FAILED_BACKUP", false).then(function (response) {
+                if (response.data !== "" && response.data && !response.data) {
+                    console.log("Failed backup detected");
+                    //headline, message, params, size, textAlign
+                    ModalService.open("Failed backup", 'The creation of a backup file has failed. Error message: \"' + response.data.message + '."<br> For details please check the log around ' + response.data.time + '.', {
+                        yes: {
+                            text: "OK"
+                        }
+                    }, undefined, "left");
+                    GenericStorageService.put("FAILED_BACKUP", false, null);
                 }
             });
         }
@@ -2122,6 +2139,7 @@ function hydraChecksFooter() {
             checkForOutdatedWrapper();
             checkForOpenToInternet();
             checkForJavaBelow17();
+            checkForFailedBackup();
         }
 
         function retrieveUpdateInfos() {

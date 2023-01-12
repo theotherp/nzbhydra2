@@ -1,11 +1,13 @@
 package org.nzbhydra.backup;
 
 import com.google.common.base.Stopwatch;
+import com.google.common.base.Throwables;
 import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 import org.apache.commons.io.FileUtils;
+import org.h2.message.DbException;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.config.ConfigProvider;
@@ -79,7 +81,7 @@ public class BackupAndRestore {
     }
 
     @Transactional
-    public File backup() throws Exception {
+    public File backup(boolean triggeredByUsed) throws Exception {
         Stopwatch stopwatch = Stopwatch.createStarted();
         File backupFolder = getBackupFolder();
         if (!backupFolder.exists()) {
@@ -94,7 +96,7 @@ public class BackupAndRestore {
         logger.info("Creating backup");
 
         File backupZip = new File(backupFolder, "nzbhydra-" + LocalDateTime.now().format(DATE_PATTERN) + ".zip");
-        backupDatabase(backupZip);
+        backupDatabase(backupZip, triggeredByUsed);
         if (!backupZip.exists()) {
             throw new RuntimeException("Export to file " + backupZip + " was not executed by database");
         }
@@ -182,7 +184,7 @@ public class BackupAndRestore {
     }
 
 
-    private void backupDatabase(File targetFile) {
+    private void backupDatabase(File targetFile, boolean triggeredByUsed) {
         final String tempPath;
         try {
             tempPath = Files.createTempFile("nzbhydra", "zip").toFile().getAbsolutePath().replace("\\", "/");
@@ -201,6 +203,10 @@ public class BackupAndRestore {
         } catch (Exception e) {
             logger.info("Deleting invalid backup file {}", targetFile);
             targetFile.delete();
+            if (!triggeredByUsed) {
+                final String dbExceptionMessage = Throwables.getCausalChain(e).stream().filter(x -> x instanceof DbException).findFirst().map(Throwable::getMessage).orElse(null);
+                genericStorage.save("FAILED_BACKUP", new FailedBackupData(dbExceptionMessage));
+            }
             throw e;
         }
     }

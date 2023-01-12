@@ -49,7 +49,7 @@ Try to get to work self hosted windows runner so that the release can be trigger
 You don't need to know anything special. You'd just need to make a copy of your hydra folder (or the config folder if you use docker) and then download and run a new release or docker which I'll provide.
 Unfortunately if you don't run docker, windows or linux x64 the new release type will not work for you (e.g. mac m1 or raspberry pi). You will still be able to update but nothing will change for you so I don't need beta testers for you.
 
-If you're interested give this a thumbs up and I'll invite you to a channel with instructions.
+If you're interested give this a thumbs up and I'll invite you to a channel with instructions. Everybody else will get the update soon if everything goes as planned.
 
 Disclaimer: It's a beta test, so expect problems ;-) It may be possible to keep the test instance running until the full release is there but it may not. So any history or settings changes you make to this test instance may get lost.
 ***

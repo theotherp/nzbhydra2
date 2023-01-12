@@ -32,7 +32,7 @@ public class BackupWeb {
     @Transactional
     public Object backupAndDownload() throws Exception {
         try {
-            File backupFile = backup.backup();
+            File backupFile = backup.backup(true);
 
             logger.debug("Sending contents of file {}", backupFile.getAbsolutePath());
             return ResponseEntity
@@ -51,7 +51,7 @@ public class BackupWeb {
     @Transactional
     public GenericResponse backupOnly() throws Exception {
         try {
-            backup.backup();
+            backup.backup(true);
             return GenericResponse.ok();
         } catch (Exception e) {
             logger.error("Error while creating backup", e);

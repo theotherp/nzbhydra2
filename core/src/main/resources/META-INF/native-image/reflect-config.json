@@ -11043,6 +11043,13 @@
       {
           "name": "isSuccessful",
           "parameterTypes": []
+      },
+      {
+          "name": "<init>",
+          "parameterTypes": [
+              "java.lang.Boolean",
+              "java.lang.String"
+          ]
       }
   ]
 },

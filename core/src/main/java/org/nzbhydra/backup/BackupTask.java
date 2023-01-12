@@ -68,7 +68,7 @@ public class BackupTask {
     private void executeBackup() {
         try {
             logger.info("Starting weekly backup");
-            backupAndRestore.backup();
+            backupAndRestore.backup(false);
             genericStorage.save(KEY, new BackupData(LocalDateTime.now(clock)));
         } catch (Exception e) {
             logger.error("An error occured while doing a background backup", e);

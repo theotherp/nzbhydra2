@@ -353,7 +353,7 @@ public class UpdateManager implements InitializingBean {
             try {
                 logger.info("Creating backup before shutting down");
                 applicationEventPublisher.publishEvent(new UpdateEvent(UpdateEvent.State.CREATING_BACKUP, "Creating backup before update."));
-                backupAndRestore.backup();
+                backupAndRestore.backup(false);
             } catch (Exception e) {
                 throw new UpdateException("Unable to create backup before update", e);
             }
