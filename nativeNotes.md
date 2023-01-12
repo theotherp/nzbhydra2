@@ -33,7 +33,7 @@ Edit wiki page - explain that java is needed for the migration
 Update readme.md
 Test release on nzbhydra2-build
 Get OK from all container managers
-!!! backup now creates a script.sql but it's not imported on startup
+If backup of database recognized that the db is invalid show warning in UI
 show notifications for windows, configurable
 
 Discord announcement:

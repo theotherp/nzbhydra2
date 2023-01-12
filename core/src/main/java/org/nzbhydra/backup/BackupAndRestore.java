@@ -183,10 +183,19 @@ public class BackupAndRestore {
 
 
     private void backupDatabase(File targetFile) {
+        final String tempPath;
+        try {
+            tempPath = Files.createTempFile("nzbhydra", "zip").toFile().getAbsolutePath().replace("\\", "/");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         try {
             String formattedFilepath = targetFile.getAbsolutePath().replace("\\", "/");
             logger.info("Backing up database to " + formattedFilepath);
-            final Query nativeQuery = entityManager.createNativeQuery("SCRIPT TO '%s' COMPRESSION ZIP;".formatted(formattedFilepath));
+            //Write a script to ensure that the backed up database is actually valid
+            final Query nativeQuery = entityManager.createNativeQuery("SCRIPT TO '%s';".formatted(tempPath));
+            //If the database is corrupted this command will back it up without exception
+            entityManager.createNativeQuery("BACKUP TO '" + formattedFilepath + "';").executeUpdate();
             final List resultList = nativeQuery.getResultList();
             logger.debug("Wrote database backup data to {}", targetFile.getAbsolutePath());
         } catch (Exception e) {
