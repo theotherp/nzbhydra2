@@ -12505,7 +12505,10 @@ nzbhydraapp.factory('RequestsErrorHandler', ["$q", "growl", "blockUI", "GeneralM
             if (shouldHandle) {
                 if (rejection.data) {
 
-                    var message = "An error occurred:<br>" + rejection.data.status + ": " + rejection.data.error;
+                    var message = "An error occurred:<br>" + rejection.data.status;
+                    if (rejection.data.error) {
+                        message += ": " + rejection.data.error
+                    }
                     if (rejection.data.path) {
                         message += "<br><br>Path: " + rejection.data.path;
                     }
@@ -12589,6 +12592,7 @@ nzbhydraapp.config(['$provide', '$httpProvider', function ($provide, $httpProvid
         return newHttp;
     }]);
 }]);
+
 var filters = angular.module('filters', []);
 
 filters.filter('bytes', function () {

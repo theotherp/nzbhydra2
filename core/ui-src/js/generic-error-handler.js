@@ -20,7 +20,10 @@ nzbhydraapp.factory('RequestsErrorHandler', function ($q, growl, blockUI, Genera
             if (shouldHandle) {
                 if (rejection.data) {
 
-                    var message = "An error occurred:<br>" + rejection.data.status + ": " + rejection.data.error;
+                    var message = "An error occurred:<br>" + rejection.data.status;
+                    if (rejection.data.error) {
+                        message += ": " + rejection.data.error
+                    }
                     if (rejection.data.path) {
                         message += "<br><br>Path: " + rejection.data.path;
                     }
