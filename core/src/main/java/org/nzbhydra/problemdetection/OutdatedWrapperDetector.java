@@ -31,6 +31,7 @@ import org.springframework.stereotype.Component;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -97,12 +98,27 @@ public class OutdatedWrapperDetector implements ProblemDetector {
                     genericStorage.save(KEY_OUTDATED_WRAPPER_DETECTED_WARNING_DISPLAYED, false);
                     genericStorage.save(KEY_OUTDATED_WRAPPER_DETECTED, true);
                     logger.warn("The NZBHydra wrappers (i.e. the executables or python scripts you use to run NZBHydra) seem to be outdated. Please update them:\n" +
-                            "Shut down NZBHydra, download the latest version and extract *all files* into your main NZBHydra folder (overwriting all). Start NZBHydra again.");
+                        "Shut down NZBHydra, download the latest version and extract *all files* into your main NZBHydra folder (overwriting all). Start NZBHydra again.");
                 } else {
                     genericStorage.save(KEY_OUTDATED_WRAPPER_DETECTED, false);
                 }
             }
         }
     }
+
+    public static void main(String[] args) throws Exception {
+        final List<File> files = Arrays.asList(new File("releases/windows-release/include/NZBHydra2.exe"),
+            new File("releases/windows-release/include/NZBHydra2 Console.exe"),
+            new File("releases/linux-release/include/nzbhydra2"),
+            new File("other/wrapper/nzbhydra2wrapper.py"),
+            new File("other/wrapper/nzbhydra2wrapperPy3.py"));
+        final Map<String, String> hashes = new HashMap<>();
+        for (File file : files) {
+            hashes.put(file.getName(), Files.asByteSource(file).hash(Hashing.sha1()).toString());
+        }
+        System.out.println(Jackson.JSON_MAPPER.writeValueAsString(hashes));
+
+    }
+
 
 }
