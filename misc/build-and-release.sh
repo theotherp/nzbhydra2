@@ -51,7 +51,12 @@ if [[ ! -f releases/linux-release/include/core ]] ; then
     exit 1
 fi
 
-linuxVersion=$(releases/linux-release/include/core | grep -o  "[0-9]\.[0-9]\.[0-9]")
+if [[ ! -f releases/linux-release/include/core ]] ; then
+    echo "releases/linux-release/include/core does not exist"
+    exit 1
+fi
+
+linuxVersion=$(releases/linux-release/include/core -version | grep -o  "[0-9]\.[0-9]\.[0-9]")
 if [ "$linuxVersion" != "$1" ]; then
   echo "Release version is $1 but linux executable version is $linuxVersion"
   exit 1
@@ -67,6 +72,8 @@ if [ "$winVersion" != "$1" ]; then
   echo "Release version is $1 but windows executable version is $winVersion"
   exit 1
 fi
+
+echo "All required files exist and are up to date"
 
 echo "Resetting git hard"
 git reset --hard
