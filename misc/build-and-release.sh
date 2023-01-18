@@ -137,7 +137,7 @@ if [[ "$?" -ne 0 ]] ; then
 fi
 
 info "Running clean"
-mvn -B -T 1C -pl "!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin" clean -DskipTests=true
+mvn -B -T 1C clean -DskipTests=true
 if [[ "$?" -ne 0 ]] ; then
     error "Error during clean"
     exit 1
@@ -175,8 +175,16 @@ if [[ "$?" -ne 0 ]] ; then
     exit 1
 fi
 
-info "Running install"
-mvn -B -T 1C -pl "!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin" install -DskipTests=true
+info "Running install for shared module"
+mvn -B -T 1C -pl "org.nzbhydra:shared" install -DskipTests=true
+if [[ "$?" -ne 0 ]] ; then
+    error "Error during install"
+    git reset --hard
+    exit 1
+fi
+
+info "Running install for main modules"
+mvn -B -T 1C -pl "!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin,!org.nzbhydra:shared,org.nzbhydra:assertions,org.nzbhydra:mapping" install -DskipTests=true
 if [[ "$?" -ne 0 ]] ; then
     error "Error during install"
     git reset --hard
