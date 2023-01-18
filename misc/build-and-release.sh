@@ -22,6 +22,16 @@ if [[ -z "${githubReleasesUrl}" ]]; then
     exit 1
 fi
 
+if [[ -z "${DISCORD_TOKEN}" ]]; then
+    echo "Environment variable DISCORD_TOKEN not set."
+    exit 1
+fi
+
+if [[ -z "${GITHUB_TOKEN}" ]]; then
+    echo "Environment variable GITHUB_TOKEN not set."
+    exit 1
+fi
+
 if [[ ! -f readme.md ]] ; then
     echo "Not running in main folder"
     exit 1
