@@ -137,14 +137,14 @@ if [[ "$?" -ne 0 ]] ; then
 fi
 
 info "Running clean"
-mvn -T 1C -pl "!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin" clean -DskipTests=true
+mvn -B -T 1C -pl "!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin" clean -DskipTests=true
 if [[ "$?" -ne 0 ]] ; then
     error "Error during clean"
     exit 1
 fi
 
 info "Setting release version"
-mvn versions:set -DnewVersion="$1"
+mvn -B versions:set -DnewVersion="$1"
 if [[ "$?" -ne 0 ]] ; then
     error "Error setting release version. Reverting changes"
     git reset --hard
@@ -152,7 +152,7 @@ if [[ "$?" -ne 0 ]] ; then
 fi
 
 info "Checking preconditions"
-mvn org.nzbhydra:github-release-plugin:3.0.0:precheck
+mvn -B org.nzbhydra:github-release-plugin:3.0.0:precheck
 if [[ "$?" -ne 0 ]] ; then
     error "Error during release precheck. Reverting changes"
     git reset --hard
@@ -160,7 +160,7 @@ if [[ "$?" -ne 0 ]] ; then
 fi
 
 info "Generating changelog"
-mvn org.nzbhydra:github-release-plugin:3.0.0:generate-changelog
+mvn -B org.nzbhydra:github-release-plugin:3.0.0:generate-changelog
 if [[ "$?" -ne 0 ]] ; then
     error "Error generating changelog"
     git reset --hard
@@ -168,7 +168,7 @@ if [[ "$?" -ne 0 ]] ; then
 fi
 
 info "Generating wrapper hashes"
-mvn org.nzbhydra:github-release-plugin:3.0.0:generate-wrapper-hashes
+mvn -B org.nzbhydra:github-release-plugin:3.0.0:generate-wrapper-hashes
 if [[ "$?" -ne 0 ]] ; then
     error "Error generating wrapper hashes"
     git reset --hard
@@ -176,7 +176,7 @@ if [[ "$?" -ne 0 ]] ; then
 fi
 
 info "Running install"
-mvn -T 1C -pl "!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin" install -DskipTests=true
+mvn -B -T 1C -pl "!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin" install -DskipTests=true
 if [[ "$?" -ne 0 ]] ; then
     error "Error during install"
     git reset --hard
@@ -184,7 +184,7 @@ if [[ "$?" -ne 0 ]] ; then
 fi
 
 info "Making version effective ***********************************************************************"
-mvn versions:commit
+mvn -B versions:commit
 if [[ "$?" -ne 0 ]] ; then
     error "Error setting version effective"
     exit 1
@@ -226,9 +226,9 @@ fi
 
 info "Releasing to GitHub ***********************************************************************"
 if [ "$3" = "true" ]; then
-    mvn org.nzbhydra:github-release-plugin:3.0.0:release -DdryRun
+    mvn -B org.nzbhydra:github-release-plugin:3.0.0:release -DdryRun
 else
-    mvn org.nzbhydra:github-release-plugin:3.0.0:release
+    mvn -B org.nzbhydra:github-release-plugin:3.0.0:release
 fi
 if [[ "$?" -ne 0 ]] ; then
     error "Error releasing to github"
@@ -237,30 +237,30 @@ fi
 
 info "Publishing on discord  ***********************************************************************"
 if [ "$3" = "true" ]; then
-    mvn org.nzbhydra:github-release-plugin:3.0.0:publish-on-discord -DdryRun
+    mvn -B org.nzbhydra:github-release-plugin:3.0.0:publish-on-discord -DdryRun
 else
-    mvn org.nzbhydra:github-release-plugin:3.0.0:publish-on-discord
+    mvn -B org.nzbhydra:github-release-plugin:3.0.0:publish-on-discord
 fi
 if [[ "$?" -ne 0 ]] ; then
     error "Error publishing on github. Not quitting"
 fi
 
 info "Setting new snapshot version ***********************************************************************"
-mvn versions:set -DnewVersion="$2"-SNAPSHOT
+mvn -B versions:set -DnewVersion="$2"-SNAPSHOT
 if [[ "$?" -ne 0 ]] ; then
     error "Error setting new snapshot"
     exit 1
 fi
 
 info "Making snapshot version effective ***********************************************************************"
-mvn versions:commit
+mvn -B versions:commit
 if [[ "$?" -ne 0 ]] ; then
     error "Error setting snapshot version effective"
     exit 1
 fi
 
 info "Building new versions ***********************************************************************"
-mvn -T 1C -pl "!org.nzbhydra:tests,!org.nzbhydra:linux-release,!org.nzbhydra:windows-release,!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin" install -DskipTests=true
+mvn -B -T 1C -pl "!org.nzbhydra:tests,!org.nzbhydra:linux-release,!org.nzbhydra:windows-release,!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin" install -DskipTests=true
 if [[ "$?" -ne 0 ]] ; then
     error "Error building new versions"
     exit 1
