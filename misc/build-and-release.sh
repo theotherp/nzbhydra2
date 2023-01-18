@@ -1,12 +1,18 @@
 #!/bin/bash
 # shellcheck disable=SC2181
 
-echo "call like this misc/build-and-release.sh 0.0.3 0.0.4 <true/false for dry run or not> from main folder"
+echo "call like this misc/build-and-release.sh 0.0.3 0.0.4 <true/false for dry run or not> <githubReleasesUrl> from main folder"
 
 
 [[ -z "$1" ]] && { echo "Release version missing" ; exit 1; }
 [[ -z "$2" ]] && { echo "New snapshot version missing" ; exit 1; }
 [[ -z "$3" ]] && { echo "Dry run setting missing (true/false)" ; exit 1; }
+
+
+if [[ -z "$4" ]] ; then
+    export githubReleasesUrl=$4
+    echo "Using githubReleasesUrl ${githubReleasesUrl}"
+fi
 
 if [ "$3" = "true" ]; then
   echo "Executing script as dry run"
@@ -17,9 +23,22 @@ else
     exit 1
 fi
 
+if [[ -f discordtoken.txt ]] ; then
+    export DISCORD_TOKEN=$(cat discordtoken.txt | tr -d '\n')
+    echo "Read discord token ${DISCORD_TOKEN} from file"
+fi
+
+if [[ -f githubtoken.txt ]] ; then
+    export GITHUB_TOKEN=$(cat githubtoken.txt | tr -d '\n')
+    echo "Read github token ${GITHUB_TOKEN} from file"
+fi
+
+
 if [[ -z "${githubReleasesUrl}" ]]; then
     echo "Environment variable githubReleasesUrl not set. It should look like this: https://api.github.com/repos/theotherp/nzbhydra2/releases"
     exit 1
+else
+    echo "Using supplied variable githubReleasesUrl=${githubReleasesUrl}"
 fi
 
 if [[ -z "${DISCORD_TOKEN}" ]]; then
@@ -86,16 +105,9 @@ fi
 echo "All required files exist and are up to date"
 
 
+echo "Checking for untracked files or uncommitted changes"
 if [[ -n "$(git status --porcelain)" ]]; then
     echo "Untracked files or uncommitted changes found"
-    exit 1
-fi
-
-
-echo "Resetting git hard"
-git reset --hard
-if [[ "$?" -ne 0 ]] ; then
-    echo "Error during reset"
     exit 1
 fi
 
