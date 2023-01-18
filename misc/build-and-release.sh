@@ -137,14 +137,14 @@ if [[ "$?" -ne 0 ]] ; then
 fi
 
 info "Running clean"
-call mvn -T 1C -pl "!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin" clean -DskipTests=true
+mvn -T 1C -pl "!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin" clean -DskipTests=true
 if [[ "$?" -ne 0 ]] ; then
     error "Error during clean"
     exit 1
 fi
 
 info "Setting release version"
-call mvn versions:set -DnewVersion="$1"
+mvn versions:set -DnewVersion="$1"
 if [[ "$?" -ne 0 ]] ; then
     error "Error setting release version. Reverting changes"
     git reset --hard
@@ -152,7 +152,7 @@ if [[ "$?" -ne 0 ]] ; then
 fi
 
 info "Checking preconditions"
-call mvn org.nzbhydra:github-release-plugin:3.0.0:precheck
+mvn org.nzbhydra:github-release-plugin:3.0.0:precheck
 if [[ "$?" -ne 0 ]] ; then
     error "Error during release precheck. Reverting changes"
     git reset --hard
@@ -160,7 +160,7 @@ if [[ "$?" -ne 0 ]] ; then
 fi
 
 info "Generating changelog"
-call mvn org.nzbhydra:github-release-plugin:3.0.0:generate-changelog
+mvn org.nzbhydra:github-release-plugin:3.0.0:generate-changelog
 if [[ "$?" -ne 0 ]] ; then
     error "Error generating changelog"
     git reset --hard
@@ -168,7 +168,7 @@ if [[ "$?" -ne 0 ]] ; then
 fi
 
 info "Generating wrapper hashes"
-call mvn org.nzbhydra:github-release-plugin:3.0.0:generate-wrapper-hashes
+mvn org.nzbhydra:github-release-plugin:3.0.0:generate-wrapper-hashes
 if [[ "$?" -ne 0 ]] ; then
     error "Error generating wrapper hashes"
     git reset --hard
@@ -176,7 +176,7 @@ if [[ "$?" -ne 0 ]] ; then
 fi
 
 info "Running install"
-call mvn -T 1C -pl "!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin" install -DskipTests=true
+mvn -T 1C -pl "!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin" install -DskipTests=true
 if [[ "$?" -ne 0 ]] ; then
     error "Error during install"
     git reset --hard
@@ -184,7 +184,7 @@ if [[ "$?" -ne 0 ]] ; then
 fi
 
 info "Making version effective ***********************************************************************"
-call mvn versions:commit
+mvn versions:commit
 if [[ "$?" -ne 0 ]] ; then
     error "Error setting version effective"
     exit 1
@@ -194,7 +194,7 @@ if [ "$3" = "true" ]; then
   info "Committing (not really, just dry run) ***********************************************************************"
 else
     info "Committing ***********************************************************************"
-    call git commit -am "Update to $1"
+    git commit -am "Update to $1"
     if [[ "$?" -ne 0 ]] ; then
         error "Error committinging new source code"
         exit 1
@@ -205,7 +205,7 @@ if [ "$3" = "true" ]; then
   info "Tagging (not really, dry run) ***********************************************************************"
 else
     info "Tagging ***********************************************************************"
-    call git tag -a v"$1" -m "v$1"
+    git tag -a v"$1" -m "v$1"
     if [[ "$?" -ne 0 ]] ; then
         error "Error setting tag"
         exit 1
@@ -216,7 +216,7 @@ if [ "$3" = "true" ]; then
   info "Pushing (not really, dry run) ***********************************************************************"
 else
     info "Pushing ***********************************************************************"
-    call git push origin master
+    git push origin master
     if [[ "$?" -ne 0 ]] ; then
         error "Error pushing to origin"
         exit 1
@@ -226,9 +226,9 @@ fi
 
 info "Releasing to GitHub ***********************************************************************"
 if [ "$3" = "true" ]; then
-    call mvn org.nzbhydra:github-release-plugin:3.0.0:release -DdryRun
+    mvn org.nzbhydra:github-release-plugin:3.0.0:release -DdryRun
 else
-    call mvn org.nzbhydra:github-release-plugin:3.0.0:release
+    mvn org.nzbhydra:github-release-plugin:3.0.0:release
 fi
 if [[ "$?" -ne 0 ]] ; then
     error "Error releasing to github"
@@ -237,30 +237,30 @@ fi
 
 info "Publishing on discord  ***********************************************************************"
 if [ "$3" = "true" ]; then
-    call mvn org.nzbhydra:github-release-plugin:3.0.0:publish-on-discord -DdryRun
+    mvn org.nzbhydra:github-release-plugin:3.0.0:publish-on-discord -DdryRun
 else
-    call mvn org.nzbhydra:github-release-plugin:3.0.0:publish-on-discord
+    mvn org.nzbhydra:github-release-plugin:3.0.0:publish-on-discord
 fi
 if [[ "$?" -ne 0 ]] ; then
     error "Error publishing on github. Not quitting"
 fi
 
 info "Setting new snapshot version ***********************************************************************"
-call mvn versions:set -DnewVersion="$2"-SNAPSHOT
+mvn versions:set -DnewVersion="$2"-SNAPSHOT
 if [[ "$?" -ne 0 ]] ; then
     error "Error setting new snapshot"
     exit 1
 fi
 
 info "Making snapshot version effective ***********************************************************************"
-call mvn versions:commit
+mvn versions:commit
 if [[ "$?" -ne 0 ]] ; then
     error "Error setting snapshot version effective"
     exit 1
 fi
 
 info "Building new versions ***********************************************************************"
-call mvn -T 1C -pl "!org.nzbhydra:tests,!org.nzbhydra:linux-release,!org.nzbhydra:windows-release,!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin" install -DskipTests=true
+mvn -T 1C -pl "!org.nzbhydra:tests,!org.nzbhydra:linux-release,!org.nzbhydra:windows-release,!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin" install -DskipTests=true
 if [[ "$?" -ne 0 ]] ; then
     error "Error building new versions"
     exit 1
@@ -270,7 +270,7 @@ if [ "$3" = "true" ]; then
   info "Committing snapshot (not really, dry run) ***********************************************************************"
 else
     info "Committing snapshot ***********************************************************************"
-    call git commit -am "Set snapshot to $2"
+    git commit -am "Set snapshot to $2"
     if [[ "$?" -ne 0 ]] ; then
         error "Error commiting new snapshot source code"
         exit 1
@@ -281,7 +281,7 @@ if [ "$3" = "true" ]; then
   info "Pushing to master (not really, dry run) ***********************************************************************"
 else
     info "Pushing to master ***********************************************************************"
-    # call git push origin master
+    #git push origin master
     if [[ "$?" -ne 0 ]] ; then
         error "Error pushing to master"
         exit 1
