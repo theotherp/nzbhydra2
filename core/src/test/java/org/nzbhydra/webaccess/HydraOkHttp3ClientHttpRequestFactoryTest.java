@@ -74,7 +74,8 @@ public class HydraOkHttp3ClientHttpRequestFactoryTest {
     @Test
     void shouldNotUseProxyIfNotConfigured() throws URISyntaxException {
         baseConfig.getMain().setProxyType(ProxyType.NONE);
-        OkHttpClient client = testee.getOkHttpClientBuilder(new URI("http://www.google.de")).build();
+        final URI requestUri = new URI("http://www.google.de");
+        OkHttpClient client = testee.getOkHttpClientBuilder(requestUri.getHost()).build();
         assertThat(client.socketFactory() instanceof SockProxySocketFactory).isEqualTo(false);
         assertThat(client.proxy()).isNull();
     }
@@ -84,7 +85,8 @@ public class HydraOkHttp3ClientHttpRequestFactoryTest {
         baseConfig.getMain().setProxyType(ProxyType.HTTP);
         baseConfig.getMain().setProxyHost("proxyhost");
         baseConfig.getMain().setProxyPort(1234);
-        OkHttpClient client = testee.getOkHttpClientBuilder(new URI("http://www.google.de")).build();
+        final URI requestUri = new URI("http://www.google.de");
+        OkHttpClient client = testee.getOkHttpClientBuilder(requestUri.getHost()).build();
         assertThat(client.proxy().address()).isEqualTo(new InetSocketAddress("proxyhost", 1234));
     }
 
@@ -94,7 +96,8 @@ public class HydraOkHttp3ClientHttpRequestFactoryTest {
         baseConfig.getMain().setProxyHost("proxyhost");
         testee.handleConfigChangedEvent(new ConfigChangedEvent(this, baseConfig, baseConfig));
 
-        OkHttpClient client = testee.getOkHttpClientBuilder(new URI("http://www.google.de")).build();
+        final URI requestUri = new URI("http://www.google.de");
+        OkHttpClient client = testee.getOkHttpClientBuilder(requestUri.getHost()).build();
         assertThat(client.socketFactory() instanceof SockProxySocketFactory).isEqualTo(true);
         assertThat(((SockProxySocketFactory) client.socketFactory()).host).isEqualTo("proxyhost");
         assertThat(((SockProxySocketFactory) client.socketFactory()).username).isNull();
@@ -104,9 +107,20 @@ public class HydraOkHttp3ClientHttpRequestFactoryTest {
         baseConfig.getMain().setProxyPassword("pass");
         testee.handleConfigChangedEvent(new ConfigChangedEvent(this, baseConfig, baseConfig));
 
-        client = testee.getOkHttpClientBuilder(new URI("http://www.google.de")).build();
+        final URI requestUri1 = new URI("http://www.google.de");
+        client = testee.getOkHttpClientBuilder(requestUri1.getHost()).build();
         assertThat(((SockProxySocketFactory) client.socketFactory()).username).isEqualTo("user");
         assertThat(((SockProxySocketFactory) client.socketFactory()).password).isEqualTo("pass");
+    }
+
+    @Test
+    public void shouldCacheClients() {
+        final String googleHost = "http://www.google.de";
+        final String yahooHost = "http://www.yaboo.de";
+        assertThat(testee.getOkHttpClient(googleHost)).isSameAs(testee.getOkHttpClient(googleHost));
+        assertThat(testee.getOkHttpClient(googleHost, 1)).isSameAs(testee.getOkHttpClient(googleHost, 1));
+        assertThat(testee.getOkHttpClient(googleHost, 1)).isNotSameAs(testee.getOkHttpClient(googleHost, 2));
+        assertThat(testee.getOkHttpClient(googleHost)).isNotSameAs(testee.getOkHttpClient(yahooHost));
     }
 
 

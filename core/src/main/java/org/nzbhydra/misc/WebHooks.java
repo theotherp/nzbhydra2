@@ -41,7 +41,7 @@ public class WebHooks {
         if (!Strings.isNullOrEmpty(searchHook)) {
             if (searchEvent.getSearchRequest().getSource() == SearchSource.INTERNAL) {
                 try {
-                    OkHttpClient client = requestFactory.getOkHttpClientBuilder(URI.create(searchHook)).build();
+                    OkHttpClient client = requestFactory.getOkHttpClient(URI.create(searchHook).getHost());
                     String content = Jackson.JSON_MAPPER.writeValueAsString(searchEvent.getSearchRequest());
                     Response response = client.newCall(new Builder().url(searchHook).method("PUT", RequestBody.create(MediaType.parse(org.springframework.http.MediaType.APPLICATION_JSON_VALUE), content)).build()).execute();
                     response.close();
@@ -63,7 +63,7 @@ public class WebHooks {
             FileDownloadEntity downloadEntity = downloadEvent.getFileDownloadEntity();
             if (downloadEntity.getAccessSource() == SearchSource.INTERNAL) {
                 try {
-                    OkHttpClient client = requestFactory.getOkHttpClientBuilder(URI.create(downloadHook)).build();
+                    OkHttpClient client = requestFactory.getOkHttpClient(URI.create(downloadHook).getHost());
                     String content = Jackson.JSON_MAPPER.writeValueAsString(downloadEntity);
                     Response response = client.newCall(new Builder().url(downloadHook).method("PUT", RequestBody.create(MediaType.parse(org.springframework.http.MediaType.APPLICATION_JSON_VALUE), content)).build()).execute();
                     response.close();

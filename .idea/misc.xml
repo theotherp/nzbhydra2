@@ -66,6 +66,7 @@
         <option value="$PROJECT_DIR$/databaseperformance/pom.xml" />
         <option value="$PROJECT_DIR$/pom.xml" />
         <option value="$PROJECT_DIR$/shared/mapping/pom.xml" />
+        <option value="$PROJECT_DIR$/other/loadtest/pom.xml" />
       </list>
     </option>
   </component>

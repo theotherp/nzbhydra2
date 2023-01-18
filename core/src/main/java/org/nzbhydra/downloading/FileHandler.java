@@ -2,6 +2,7 @@ package org.nzbhydra.downloading;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Sets;
+import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
@@ -372,7 +373,8 @@ public class FileHandler {
         Request request = new Request.Builder().url(result.getLink()).build();
         Indexer indexerByName = searchModuleProvider.getIndexerByName(result.getIndexer().getName());
         Integer timeout = indexerByName.getConfig().getTimeout().orElse(configProvider.getBaseConfig().getSearching().getTimeout());
-        try (Response response = clientHttpRequestFactory.getOkHttpClientBuilder(request.url().uri()).readTimeout(timeout, TimeUnit.SECONDS).connectTimeout(timeout, TimeUnit.SECONDS).followRedirects(true).build().newCall(request).execute()) {
+        final OkHttpClient build = clientHttpRequestFactory.getOkHttpClient(request.url().uri().getHost(), timeout);
+        try (Response response = build.newCall(request).execute()) {
             if (response.isRedirect()) {
                 return handleRedirect(result, response);
             }

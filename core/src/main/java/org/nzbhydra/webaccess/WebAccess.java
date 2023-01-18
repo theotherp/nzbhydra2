@@ -83,7 +83,9 @@ public class WebAccess {
 
         Request request = builder.build();
 
-        OkHttpClient client = requestFactory.getOkHttpClientBuilder(request.url().uri()).readTimeout(timeout, TimeUnit.SECONDS).connectTimeout(timeout, TimeUnit.SECONDS).writeTimeout(timeout, TimeUnit.SECONDS).build();
+        OkHttpClient client = requestFactory.getOkHttpClient(request.url().uri().getHost(), timeout);
+
+
         String bodyAsString;
         try (Response response = client.newCall(request).execute(); ResponseBody body = response.body()) {
             try {
@@ -119,7 +121,7 @@ public class WebAccess {
         logger.debug("Downloading file from {} to {}", url, file.getAbsolutePath());
         Stopwatch stopwatch = Stopwatch.createStarted();
         Request request = new Request.Builder().url(url).build();
-        try (Response response = requestFactory.getOkHttpClientBuilder(request.url().uri()).build().newCall(request).execute(); ResponseBody body = response.body()) {
+        try (Response response = requestFactory.getOkHttpClient(request.url().uri().getHost()).newCall(request).execute(); ResponseBody body = response.body()) {
             long contentLength = body.contentLength();
             if (!response.isSuccessful()) {
                 String error = String.format("URL call to %s returned %d:%s", url, response.code(), response.message());

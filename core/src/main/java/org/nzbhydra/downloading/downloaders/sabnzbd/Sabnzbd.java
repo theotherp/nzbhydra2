@@ -157,7 +157,7 @@ public class Sabnzbd extends Downloader {
                 .url(urlBuilder.toUriString())
                 .post(formBody)
                 .build();
-        OkHttpClient client = requestFactory.getOkHttpClientBuilder(urlBuilder.build().encode().toUri()).build();
+        OkHttpClient client = requestFactory.getOkHttpClient(urlBuilder.build().encode().toUri().getHost());
         try (Response response = client.newCall(request).execute(); ResponseBody body = response.body()) {
             if (!response.isSuccessful()) {
                 throw new DownloaderException("Downloader returned status code " + response.code() + " and message " + response.message());

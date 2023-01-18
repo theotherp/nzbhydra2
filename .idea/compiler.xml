@@ -16,6 +16,7 @@
         <module name="system" />
         <module name="ui" />
         <module name="classloader" />
+        <module name="loadtest" />
         <module name="github-release-plugin" />
         <module name="assertions" />
         <module name="updater" />
@@ -37,6 +38,7 @@
       <module name="discordbot" options="" />
       <module name="github-release-plugin" options="" />
       <module name="linux-release" options="-parameters" />
+      <module name="loadtest" options="" />
       <module name="mapping" options="-parameters" />
       <module name="mockserver" options="" />
       <module name="nzbhydra2" options="-parameters" />

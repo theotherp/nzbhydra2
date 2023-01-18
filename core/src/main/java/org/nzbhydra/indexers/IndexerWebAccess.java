@@ -74,8 +74,11 @@ public class IndexerWebAccess {
                     return (T) response;
                 }
                 try {
-                    T unmarshalled = (T) unmarshaller.unmarshal(new StreamSource(new StringReader(response)));
-                    return unmarshalled;
+                    try (StringReader reader = new StringReader(response)) {
+                        final StreamSource source = new StreamSource(reader);
+                        T unmarshalled = (T) unmarshaller.unmarshal(source);
+                        return unmarshalled;
+                    }
                 } catch (UnmarshallingFailureException e) {
                     if (!response.toLowerCase().contains("function not available")) {
                         //Some indexers like Animetosho don't return a proper error code. This error may happen during caps check and we don't want to log it

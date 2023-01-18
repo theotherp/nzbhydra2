@@ -25,3 +25,4 @@ heapdump*
 !/.idea/misc.xml
 misc/rsyncToServers.sh
 /nzbhydra.yml
+/results

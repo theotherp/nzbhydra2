@@ -1,23 +1,24 @@
 ---
 -   version: v5.0.0
     changes:
-        -   type: feature
-            text: Massive upgrade of the underlying framework and used libraries. Java 17
-                is now mandatory.
-        -   type: feature
-            text: Update of database to a newer version. This requires a recreation of the
-                whole database which hopefully will be executed automatically and without errors
-                ;-)
-        -   type: feature
-            text: Ensure integrity of database when creating backup.
-        -   type: feature
-            text: Only delete old backups if a newer one exists.
-        -   type: feature
-            text: Improve startup time by moving some tasks into the background.
-        -   type: fix
-            text: Improve startup time by moving some tasks into the background.
-        -   type: fix
-            text: Misleading error messages were shown when shutting down.
+        - type: feature
+          text: Massive upgrade of the underlying framework and used libraries. Java is not needed anymore in most cases.
+              Highly increased startup and memory performance (on my machine using docker and as a fresh install it starts
+              in 0.9 seconds and uses 180MB memory now versus 9 seconds and 332MB memory before).
+        - type: feature
+          text: Update of database to a newer version. This requires a recreation of the
+              whole database which hopefully will be executed automatically and without errors
+              ;-)
+        - type: feature
+          text: Improve startup time by moving some tasks into the background.
+        - type: feature
+          text: Improve performance when handling search results and making HTTP calls.
+        - type: feature
+          text: Ensure integrity of database when creating backup.
+        - type: feature
+          text: Only delete old backups if a newer one exists.
+        - type: fix
+          text: Misleading error messages were shown when shutting down.
     final: false
 -   version: v4.7.5
     changes:
