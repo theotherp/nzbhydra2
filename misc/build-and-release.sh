@@ -1,7 +1,7 @@
 #!/bin/bash
 # shellcheck disable=SC2181
 
-echo "call like this misc/build-and-release.sh 0.0.3 0.0.4 <skiptests> from main folder"
+echo "call like this misc/build-and-release.sh 0.0.3 0.0.4 <true/false for dry run or not> from main folder"
 
 
 [[ -z "$1" ]] && { echo "Release version missing" ; exit 1; }
@@ -14,6 +14,7 @@ elif [ "$3" = "false" ]; then
   echo "Not executing script as dry run - will actually release"
 else
     echo "Dry run setting wrong. Must be either true or false"
+    exit 1
 fi
 
 if [[ -z "${githubReleasesUrl}" ]]; then
@@ -23,7 +24,7 @@ fi
 
 if [[ ! -f readme.md ]] ; then
     echo "Not running in main folder"
-    exit
+    exit 1
 fi
 
 echo "Checking if all needed files exist"
@@ -37,6 +38,11 @@ if [[ ! -f releases/windows-release/include/NZBHydra2.exe ]] ; then
 fi
 if [[ ! -f releases/windows-release/include/NZBHydra2\ Console.exe ]] ; then
     echo "releases/windows-release/include/NZBHydra2 Console.exe does not exist"
+    exit 1
+fi
+
+if [[ ! -f releases/linux-release/include/core ]] ; then
+    echo "releases/linux-release/include/core does not exist"
     exit 1
 fi
 
@@ -62,8 +68,12 @@ if [ "$winVersion" != "$1" ]; then
   exit 1
 fi
 
-echo "Compressing linux executable using upx"
-upx -5 core/target/core
+echo "Resetting git hard"
+git reset --hard
+if [[ "$?" -ne 0 ]] ; then
+    echo "Error during reset"
+    exit 1
+fi
 
 echo "Pulling"
 git pull
@@ -82,14 +92,16 @@ fi
 echo "Setting release version"
 call mvn versions:set -DnewVersion="$1"
 if [[ "$?" -ne 0 ]] ; then
-    echo "Error setting release version"
+    echo "Error setting release version. Reverting changes"
+    git reset --hard
     exit 1
 fi
 
 echo "Checking preconditions"
 call mvn org.nzbhydra:github-release-plugin:3.0.0:precheck
 if [[ "$?" -ne 0 ]] ; then
-    echo "Error during release precheck"
+    echo "Error during release precheck. Reverting changes"
+    git reset --hard
     exit 1
 fi
 
@@ -97,6 +109,7 @@ echo "Generating changelog"
 call mvn org.nzbhydra:github-release-plugin:3.0.0:generate-changelog
 if [[ "$?" -ne 0 ]] ; then
     echo "Error generating changelog"
+    git reset --hard
     exit 1
 fi
 
@@ -104,6 +117,7 @@ echo "Generating wrapper hashes"
 call mvn org.nzbhydra:github-release-plugin:3.0.0:generate-wrapper-hashes
 if [[ "$?" -ne 0 ]] ; then
     echo "Error generating wrapper hashes"
+    git reset --hard
     exit 1
 fi
 
@@ -111,6 +125,7 @@ echo "Running install"
 call mvn -T 1C -pl "!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin" install -DskipTests=true
 if [[ "$?" -ne 0 ]] ; then
     echo "Error during install"
+    git reset --hard
     exit 1
 fi
 
@@ -120,8 +135,9 @@ if [[ "$?" -ne 0 ]] ; then
     echo "Error setting version effective"
     exit 1
 fi
+
 if [ "$3" = "true" ]; then
-  echo "Committing ***********************************************************************"
+  echo "Committing (not really, just dry run) ***********************************************************************"
 else
     echo "Committing ***********************************************************************"
     call git commit -am "Update to $1"
@@ -132,7 +148,7 @@ else
 fi
 
 if [ "$3" = "true" ]; then
-  echo "Tagging ***********************************************************************"
+  echo "Tagging (not really, dry run) ***********************************************************************"
 else
     echo "Tagging ***********************************************************************"
     call git tag -a v"$1" -m "v$1"
@@ -143,7 +159,7 @@ else
 fi
 
 if [ "$3" = "true" ]; then
-  echo "Pushing ***********************************************************************"
+  echo "Pushing (not really, dry run) ***********************************************************************"
 else
     echo "Pushing ***********************************************************************"
     call git push origin master
@@ -197,7 +213,7 @@ if [[ "$?" -ne 0 ]] ; then
 fi
 
 if [ "$3" = "true" ]; then
-  echo "Committing snapshot ***********************************************************************"
+  echo "Committing snapshot (not really, dry run) ***********************************************************************"
 else
     echo "Committing snapshot ***********************************************************************"
     call git commit -am "Set snapshot to $2"
@@ -207,5 +223,14 @@ else
     fi
 fi
 
-call git push origin master
+if [ "$3" = "true" ]; then
+  echo "Pushing to master (not really, dry run) ***********************************************************************"
+else
+    echo "Pushing to master ***********************************************************************"
+    # call git push origin master
+    if [[ "$?" -ne 0 ]] ; then
+        echo "Error pushing to master"
+        exit 1
+    fi
+fi
 

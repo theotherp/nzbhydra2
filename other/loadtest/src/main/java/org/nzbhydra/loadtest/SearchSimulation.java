@@ -45,7 +45,7 @@ public class SearchSimulation extends Simulation {
 
         final PopulationBuilder populationBuilder = scenarioBuilder.injectOpen(
 
-            constantUsersPerSec(20).during(100)
+            constantUsersPerSec(50).during(15)
         );
 
 
