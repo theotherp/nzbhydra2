@@ -91,8 +91,6 @@ public class Newznab extends Indexer<Xml> {
 
     private static final List<String> LANGUAGES = Arrays.asList(" English", " Korean", " Spanish", " French", " German", " Italian", " Danish", " Dutch", " Japanese", " Cantonese", " Mandarin", " Russian", " Polish", " Vietnamese", " Swedish", " Norwegian", " Finnish", " Turkish", " Portuguese", " Flemish", " Greek", " Hungarian");
     private static Pattern GROUP_PATTERN = Pattern.compile(".*Group:<\\/b> ?([\\w\\.]+)<br ?\\/>.*");
-    private static Pattern GUID_PATTERN = Pattern.compile("(.*\\/)?([a-zA-Z0-9@\\.]+)(#\\w+)?");
-
     private static final List<String> HOSTS_NOT_SUPPORTING_EMPTY_TYPE_SEARCH = Arrays.asList("nzbgeek", "6box");
     private static final List<String> HOSTS_NOT_SUPPORTING_SPECIAL_TYPE_Q_SEARCH = Arrays.asList("dognzb", "nzbplanet", "nzbgeek", "6box");
 
@@ -552,16 +550,23 @@ public class Newznab extends Indexer<Xml> {
         String link = getEnclosureUrl(item);
         searchResultItem.setLink(link);
 
+        String guid = item.getRssGuid().getGuid();
         if (item.getRssGuid().isPermaLink()) {
-            searchResultItem.setDetails(item.getRssGuid().getGuid());
-            Matcher matcher = GUID_PATTERN.matcher(item.getRssGuid().getGuid());
-            if (matcher.matches()) {
-                searchResultItem.setIndexerGuid(matcher.group(2));
+            searchResultItem.setDetails(guid);
+            int index = guid.lastIndexOf("id=");
+            if (index > -1) {
+                guid = guid.substring(index + 3);
             } else {
-                searchResultItem.setIndexerGuid(item.getRssGuid().getGuid());
+                index = guid.lastIndexOf("/");
+                guid = guid.substring(index + 1);
+                index = guid.indexOf("#");
+                if (index > -1) {
+                    guid = guid.substring(0, index);
+                }
             }
+            searchResultItem.setIndexerGuid(guid);
         } else {
-            searchResultItem.setIndexerGuid(item.getRssGuid().getGuid());
+            searchResultItem.setIndexerGuid(guid);
         }
 
         if (!Strings.isNullOrEmpty(item.getComments()) && Strings.isNullOrEmpty(searchResultItem.getDetails())) {

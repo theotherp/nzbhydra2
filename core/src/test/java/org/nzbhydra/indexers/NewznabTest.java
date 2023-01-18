@@ -1,5 +1,6 @@
 package org.nzbhydra.indexers;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Lists;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,6 +12,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.nzbhydra.NzbHydraException;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.BaseConfigHandler;
 import org.nzbhydra.config.ConfigProvider;
@@ -514,6 +516,81 @@ public class NewznabTest {
         assertThat(item.getIndexerGuid()).isEqualTo("123");
         assertThat(item.isPassworded()).isEqualTo(true);
         assertThat(item.getHasNfo()).isEqualTo(HasNfo.YES);
+    }
+
+    @Test
+    public void shouldParseGuid() throws Exception {
+        NewznabXmlItem rssItem = buildBasicRssItem();
+        rssItem.getRssGuid().setPermaLink(false);
+        rssItem.getRssGuid().setGuid("123abc");
+        SearchResultItem item = testee.createSearchResultItem(rssItem);
+        assertThat(item.getIndexerGuid()).isEqualTo("123abc");
+
+        rssItem.getRssGuid().setPermaLink(true);
+        rssItem.getRssGuid().setGuid("https://hello.com/details?id=123abc");
+        item = testee.createSearchResultItem(rssItem);
+        assertThat(item.getIndexerGuid()).isEqualTo("123abc");
+
+        rssItem.getRssGuid().setGuid("https://newztown.co.za/details/123abc");
+        item = testee.createSearchResultItem(rssItem);
+        assertThat(item.getIndexerGuid()).isEqualTo("123abc");
+
+        rssItem.getRssGuid().setGuid("https://newztown.co.za/details/123abc#details");
+        item = testee.createSearchResultItem(rssItem);
+        assertThat(item.getIndexerGuid()).isEqualTo("123abc");
+
+        rssItem.getRssGuid().setGuid("https://nzbfinder.ws/details/1db2ba7c-0605-4a98-9c56-71da12cbd18c");
+        item = testee.createSearchResultItem(rssItem);
+        assertThat(item.getIndexerGuid()).isEqualTo("1db2ba7c-0605-4a98-9c56-71da12cbd18c");
+
+        rssItem.getRssGuid().setGuid("https://nzbgeek.info/geekseek.php?guid=66a34818a38ae8aea3dd77e828dae05b");
+        item = testee.createSearchResultItem(rssItem);
+        assertThat(item.getIndexerGuid()).isEqualTo("66a34818a38ae8aea3dd77e828dae05b");
+
+        rssItem.getRssGuid().setGuid("https://www.tabula-rasa.pw/details/552aeb3c-6617-4741-9218-f15012b7d21c");
+        item = testee.createSearchResultItem(rssItem);
+        assertThat(item.getIndexerGuid()).isEqualTo("552aeb3c-6617-4741-9218-f15012b7d21c");
+    }
+
+    @Test
+    public void shouldPerformance() throws Exception {
+
+        for (int i = 0; i < 1000; i++) {
+            parse();
+        }
+        final Stopwatch stopwatch = Stopwatch.createStarted();
+        for (int i = 0; i < 5000; i++) {
+            parse();
+        }
+        System.out.println(stopwatch.elapsed());
+
+    }
+
+    private void parse() throws NzbHydraException {
+        NewznabXmlItem rssItem = buildBasicRssItem();
+        rssItem.getRssGuid().setPermaLink(false);
+        rssItem.getRssGuid().setGuid("123abc");
+        SearchResultItem item = testee.createSearchResultItem(rssItem);
+
+
+        rssItem.getRssGuid().setPermaLink(true);
+        rssItem.getRssGuid().setGuid("https://hello.com/details?id=123abc");
+        item = testee.createSearchResultItem(rssItem);
+
+        rssItem.getRssGuid().setGuid("https://newztown.co.za/details/123abc");
+        item = testee.createSearchResultItem(rssItem);
+
+        rssItem.getRssGuid().setGuid("https://newztown.co.za/details/123abc#details");
+        item = testee.createSearchResultItem(rssItem);
+
+        rssItem.getRssGuid().setGuid("https://nzbfinder.ws/details/1db2ba7c-0605-4a98-9c56-71da12cbd18c");
+        item = testee.createSearchResultItem(rssItem);
+
+        rssItem.getRssGuid().setGuid("https://nzbgeek.info/geekseek.php?guid=66a34818a38ae8aea3dd77e828dae05b");
+        item = testee.createSearchResultItem(rssItem);
+
+        rssItem.getRssGuid().setGuid("https://www.tabula-rasa.pw/details/552aeb3c-6617-4741-9218-f15012b7d21c");
+        item = testee.createSearchResultItem(rssItem);
     }
 
     @Test
