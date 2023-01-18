@@ -18,7 +18,7 @@ success() {
 }
 
 info "call like this misc/build-and-release.sh 0.0.3 0.0.4 <true/false for dry run or not> <githubReleasesUrl> from main folder"
-
+echo ""
 
 [[ -z "$1" ]] && { error "Release version missing" ; exit 1; }
 [[ -z "$2" ]] && { error "New snapshot version missing" ; exit 1; }
@@ -31,11 +31,13 @@ if [[ -z "$4" ]] ; then
 fi
 
 if [ "$3" = "true" ]; then
-  echo "Executing script as dry run"
+  info "Executing script as dry run"
+  echo ""
 elif [ "$3" = "false" ]; then
-  echo "Not executing script as dry run - will actually release"
+  info "Not executing script as dry run - will actually release"
+  echo ""
 else
-    echo "Dry run setting wrong. Must be either true or false"
+    error "Dry run setting wrong. Must be either true or false"
     exit 1
 fi
 
@@ -72,7 +74,8 @@ if [[ ! -f readme.md ]] ; then
     exit 1
 fi
 
-echo "Checking if all needed files exist"
+echo ""
+info "Checking if all needed files exist"
 if [[ ! -f releases/linux-release/include/nzbhydra2 ]] ; then
     error "releases/linux-release/include/nzbhydra2 does not exist"
     exit 1
@@ -120,7 +123,7 @@ fi
 
 success "All required files exist and are up to date"
 
-
+echo ""
 info "Checking for untracked files or uncommitted changes"
 if [[ -n "$(git status --porcelain)" ]]; then
     error "Untracked files or uncommitted changes found"
@@ -129,6 +132,7 @@ else
     success "No untracked files or uncommitted changes found"
 fi
 
+echo ""
 info "Pulling"
 git pull
 if [[ "$?" -ne 0 ]] ; then
@@ -136,6 +140,7 @@ if [[ "$?" -ne 0 ]] ; then
     exit 1
 fi
 
+echo ""
 info "Running clean"
 mvn -B -T 1C clean -DskipTests=true
 if [[ "$?" -ne 0 ]] ; then
@@ -151,6 +156,7 @@ if [[ "$?" -ne 0 ]] ; then
     exit 1
 fi
 
+echo ""
 info "Checking preconditions"
 mvn -B org.nzbhydra:github-release-plugin:3.0.0:precheck
 if [[ "$?" -ne 0 ]] ; then
@@ -159,6 +165,7 @@ if [[ "$?" -ne 0 ]] ; then
     exit 1
 fi
 
+echo ""
 info "Generating changelog"
 mvn -B org.nzbhydra:github-release-plugin:3.0.0:generate-changelog
 if [[ "$?" -ne 0 ]] ; then
@@ -167,6 +174,7 @@ if [[ "$?" -ne 0 ]] ; then
     exit 1
 fi
 
+echo ""
 info "Generating wrapper hashes"
 mvn -B org.nzbhydra:github-release-plugin:3.0.0:generate-wrapper-hashes
 if [[ "$?" -ne 0 ]] ; then
@@ -175,22 +183,17 @@ if [[ "$?" -ne 0 ]] ; then
     exit 1
 fi
 
-info "Running install for shared module"
-mvn -B -T 1C -pl "org.nzbhydra:shared" install -DskipTests=true
-if [[ "$?" -ne 0 ]] ; then
-    error "Error during install"
-    git reset --hard
-    exit 1
-fi
-
+echo ""
 info "Running install for main modules"
-mvn -B -T 1C -pl "!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin,!org.nzbhydra:shared,org.nzbhydra:assertions,org.nzbhydra:mapping" install -DskipTests=true
+mvn -B -T 1C -pl 'org.nzbhydra:mapping,org.nzbhydra:core,org.nzbhydra:generic-release,org.nzbhydra:linux-release,org.nzbhydra:windows-release' \
+    install -Dmaven.test.skip=true -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
 if [[ "$?" -ne 0 ]] ; then
     error "Error during install"
     git reset --hard
     exit 1
 fi
 
+echo ""
 info "Making version effective ***********************************************************************"
 mvn -B versions:commit
 if [[ "$?" -ne 0 ]] ; then
@@ -198,6 +201,7 @@ if [[ "$?" -ne 0 ]] ; then
     exit 1
 fi
 
+echo ""
 if [ "$3" = "true" ]; then
   info "Committing (not really, just dry run) ***********************************************************************"
 else
@@ -209,6 +213,7 @@ else
     fi
 fi
 
+echo ""
 if [ "$3" = "true" ]; then
   info "Tagging (not really, dry run) ***********************************************************************"
 else
@@ -220,6 +225,7 @@ else
     fi
 fi
 
+echo ""
 if [ "$3" = "true" ]; then
   info "Pushing (not really, dry run) ***********************************************************************"
 else
@@ -231,7 +237,7 @@ else
     fi
 fi
 
-
+echo ""
 info "Releasing to GitHub ***********************************************************************"
 if [ "$3" = "true" ]; then
     mvn -B org.nzbhydra:github-release-plugin:3.0.0:release -DdryRun
@@ -243,6 +249,7 @@ if [[ "$?" -ne 0 ]] ; then
     exit 1
 fi
 
+echo ""
 info "Publishing on discord  ***********************************************************************"
 if [ "$3" = "true" ]; then
     mvn -B org.nzbhydra:github-release-plugin:3.0.0:publish-on-discord -DdryRun
@@ -253,6 +260,7 @@ if [[ "$?" -ne 0 ]] ; then
     error "Error publishing on github. Not quitting"
 fi
 
+echo ""
 info "Setting new snapshot version ***********************************************************************"
 mvn -B versions:set -DnewVersion="$2"-SNAPSHOT
 if [[ "$?" -ne 0 ]] ; then
@@ -260,6 +268,7 @@ if [[ "$?" -ne 0 ]] ; then
     exit 1
 fi
 
+echo ""
 info "Making snapshot version effective ***********************************************************************"
 mvn -B versions:commit
 if [[ "$?" -ne 0 ]] ; then
@@ -267,6 +276,7 @@ if [[ "$?" -ne 0 ]] ; then
     exit 1
 fi
 
+echo ""
 info "Building new versions ***********************************************************************"
 mvn -B -T 1C -pl "!org.nzbhydra:tests,!org.nzbhydra:linux-release,!org.nzbhydra:windows-release,!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin" install -DskipTests=true
 if [[ "$?" -ne 0 ]] ; then
@@ -274,6 +284,7 @@ if [[ "$?" -ne 0 ]] ; then
     exit 1
 fi
 
+echo ""
 if [ "$3" = "true" ]; then
   info "Committing snapshot (not really, dry run) ***********************************************************************"
 else
@@ -285,6 +296,7 @@ else
     fi
 fi
 
+echo ""
 if [ "$3" = "true" ]; then
   info "Pushing to master (not really, dry run) ***********************************************************************"
 else

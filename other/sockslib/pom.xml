@@ -14,7 +14,7 @@
     <version>3.0.0</version>
     <packaging>jar</packaging>
 
-    <name>sockslibs</name>
+    <name>sockslib</name>
     <description>A Java library for SOCKS5 client and SOCKS5 server</description>
     <url>http://fengyouchao.github.io/sockslib/</url>
 
