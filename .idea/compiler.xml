@@ -16,7 +16,6 @@
         <module name="system" />
         <module name="ui" />
         <module name="classloader" />
-        <module name="loadtest" />
         <module name="github-release-plugin" />
         <module name="assertions" />
         <module name="updater" />
@@ -25,6 +24,7 @@
     </annotationProcessing>
     <bytecodeTargetLevel target="17">
       <module name="discordbot" target="17" />
+      <module name="loadtest" target="17" />
       <module name="ui" target="1.5" />
     </bytecodeTargetLevel>
   </component>

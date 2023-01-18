@@ -74,6 +74,13 @@ jobs:
                 run: |
                     mvn --batch-mode -Pnative clean native:compile -DskipTests
 
+            -   name: "UPX linux artifact"
+                if: steps.changed-files-specific.outputs.any_changed == 'true'
+                uses: crazy-max/ghaction-upx@v2
+                with:
+                    files: core/target/core
+                    args: -q
+
             -   name: "Upload linux artifact"
                 if: steps.changed-files-specific.outputs.any_changed == 'true'
                 uses: actions/upload-artifact@v3
