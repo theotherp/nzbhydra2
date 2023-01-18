@@ -85,6 +85,13 @@ fi
 
 echo "All required files exist and are up to date"
 
+
+if [[ -n "$(git status --porcelain)" ]]; then
+    echo "Untracked files or uncommitted changes found"
+    exit 1
+fi
+
+
 echo "Resetting git hard"
 git reset --hard
 if [[ "$?" -ne 0 ]] ; then
