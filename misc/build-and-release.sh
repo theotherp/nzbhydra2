@@ -94,16 +94,6 @@ if [[ ! -f releases/linux-release/include/core ]] ; then
     exit 1
 fi
 
-if [[ ! -f releases/linux-release/include/core ]] ; then
-    error "releases/linux-release/include/core does not exist"
-    exit 1
-fi
-
-if [[ ! -f releases/linux-release/include/core ]] ; then
-    error "releases/linux-release/include/core does not exist"
-    exit 1
-fi
-
 linuxVersion=$(releases/linux-release/include/core -version | grep -o  "[0-9]\.[0-9]\.[0-9]")
 if [ "$linuxVersion" != "$1" ]; then
   error "Release version is $1 but linux executable version is $linuxVersion"
@@ -183,15 +173,21 @@ if [[ "$?" -ne 0 ]] ; then
     exit 1
 fi
 
+#Running this on WSL is extremely slow
 echo ""
 info "Running install for main modules"
-mvn -B -T 1C -pl 'org.nzbhydra:mapping,org.nzbhydra:core,org.nzbhydra:generic-release,org.nzbhydra:linux-release,org.nzbhydra:windows-release' \
-    install -Dmaven.test.skip=true -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
-if [[ "$?" -ne 0 ]] ; then
-    error "Error during install"
-    git reset --hard
-    exit 1
-fi
+info "Please run this in windows:"
+info "mvn -B -T 1C -pl 'org.nzbhydra:mapping,org.nzbhydra:core,org.nzbhydra:generic-release,org.nzbhydra:linux-release,org.nzbhydra:windows-release' \
+          install -Dmaven.test.skip=true -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
+read -p "Press any key to continue... " -n1 -s
+
+#mvn -B -T 1C -pl 'org.nzbhydra:mapping,org.nzbhydra:core,org.nzbhydra:generic-release,org.nzbhydra:linux-release,org.nzbhydra:windows-release' \
+#    install -Dmaven.test.skip=true -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+#if [[ "$?" -ne 0 ]] ; then
+#    error "Error during install"
+#    git reset --hard
+#    exit 1
+#fi
 
 echo ""
 info "Making version effective ***********************************************************************"
