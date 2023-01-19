@@ -70,14 +70,14 @@ else {
 }
 
 Write-Host "Running clean"
-mvn -B -T 1C clean -DskipTests=true
+mvn -q -B -T 1C clean -DskipTests=true
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Clean failed"
     exit 1
 }
 
 Write-Host "Setting release version"
-mvn -B versions:set -DnewVersion="$version"
+mvn -q -B versions:set -DnewVersion="$version"
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Setting release version failed"
     git reset --hard
@@ -85,7 +85,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host "Checking preconditions"
-mvn -B org.nzbhydra:github-release-plugin:3.0.0:precheck
+mvn -q -B org.nzbhydra:github-release-plugin:3.0.0:precheck
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Preconditions failed"
     git reset --hard
@@ -93,7 +93,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host "Generating changelog"
-mvn -B org.nzbhydra:github-release-plugin:3.0.0:generate-changelog
+mvn -q -B org.nzbhydra:github-release-plugin:3.0.0:generate-changelog
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Changing log generation failed"
     git reset --hard
@@ -101,7 +101,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host "Generating wrapper hashes"
-mvn -B org.nzbhydra:github-release-plugin:3.0.0:generate-wrapper-hashes
+mvn -q -B org.nzbhydra:github-release-plugin:3.0.0:generate-wrapper-hashes
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Wrapper hash generation failed"
     git reset --hard
@@ -110,7 +110,7 @@ if ($LASTEXITCODE -ne 0) {
 
 
 Write-Host "Making versions effective"
-mvn -B versions:commit
+mvn -q -B versions:commit
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Making versions effective failed"
     git reset --hard
@@ -154,8 +154,9 @@ if ($dryRun) {
 }
 
 Write-Host "Building shared"
-cd shared
-mvn clean install -B -T 1C -Dmaven.test.skip = true -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener = warn
+#@formatter:off
+mvn -q -f shared/pom.xml clean install -B -T 1C -Dmaven.test.skip=true
+#@formatter:on
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Clean install of shared failed"
     git reset --hard
@@ -164,8 +165,9 @@ if ($LASTEXITCODE -ne 0) {
 cd ..
 
 Write-Host "Building core jar"
-cd core
-mvn clean package -B -T 1C -Dmaven.test.skip = true -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener = warn
+#@formatter:off
+mvn -q -f core/pom.xml clean package -B -T 1C -Dmaven.test.skip=true
+#@formatter:on
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Clean install of core failed"
     git reset --hard
