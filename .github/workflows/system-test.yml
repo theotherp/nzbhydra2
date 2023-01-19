@@ -83,7 +83,7 @@ jobs:
                     cache: 'maven'
 
             -   name: "Install"
-                run: mvn --batch-mode clean install -DskipTests -pl org.nzbhydra:shared,org.nzbhydra:mapping
+                run: mvn --batch-mode clean install -DskipTests -pl org.nzbhydra:nzbhydra2,org.nzbhydra:shared,org.nzbhydra:mapping,org.nzbhydra:assertions
 
             -   name: "Create docker network"
                 run: docker network create systemtest
