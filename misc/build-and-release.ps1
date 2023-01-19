@@ -131,41 +131,41 @@ if (-not $?) {
     exit 1
 }
 
-if ($dryRun) {
-    Write-Host "Committing (not really, just dry run) ***********************************************************************"
-} else {
-    Write-Host "Committing ***********************************************************************"
-    git commit -am "Update to $version"
-    if (-not $?) {
-        Write-Error "Commit failed"
-        git reset --hard
-        exit 1
-    }
-}
-
-if ($dryRun) {
-    Write-Host "Tagging (not really, just dry run) ***********************************************************************"
-} else {
-    Write-Host "Tagging ***********************************************************************"
-    git tag -a v"$version" -m "v$nextVersion"
-    if (-not $?) {
-        Write-Error "Tagging failed"
-        git reset --hard
-        exit 1
-    }
-}
-
-if ($dryRun) {
-    Write-Host "Pushing (not really, just dry run) ***********************************************************************"
-} else {
-    Write-Host "Pushing ***********************************************************************"
-    git push
-    if (-not $?) {
-        Write-Error "Tagging failed"
-        git reset --hard
-        exit 1
-    }
-}
+#if ($dryRun) {
+#    Write-Host "Committing (not really, just dry run) ***********************************************************************"
+#} else {
+#    Write-Host "Committing ***********************************************************************"
+#    git commit -am "Update to $version"
+#    if (-not $?) {
+#        Write-Error "Commit failed"
+#        git reset --hard
+#        exit 1
+#    }
+#}
+#
+#if ($dryRun) {
+#    Write-Host "Tagging (not really, just dry run) ***********************************************************************"
+#} else {
+#    Write-Host "Tagging ***********************************************************************"
+#    git tag -a v"$version" -m "v$nextVersion"
+#    if (-not $?) {
+#        Write-Error "Tagging failed"
+#        git reset --hard
+#        exit 1
+#    }
+#}
+#
+#if ($dryRun) {
+#    Write-Host "Pushing (not really, just dry run) ***********************************************************************"
+#} else {
+#    Write-Host "Pushing ***********************************************************************"
+#    git push
+#    if (-not $?) {
+#        Write-Error "Tagging failed"
+#        git reset --hard
+#        exit 1
+#    }
+#}
 
 
 Write-Host "Building core jar"
@@ -179,9 +179,13 @@ if (-not $?) {
 
 Write-Host "Building windows executable"
 cd core
-.\buildCore.cmd
-
-cd ..
+try {
+    .\buildCore.cmd
+} catch {
+    exit 1
+} finally {
+    cd ..
+}
 
 $windowsVersion = releases/windows-release/include/core.exe -version
 if ($windowsVersion -ne $version) {
