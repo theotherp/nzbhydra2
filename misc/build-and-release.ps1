@@ -70,7 +70,7 @@ else {
 }
 
 Write-Host "Running clean"
-mvn -q -B -T 1C clean -DskipTests=true
+mvn -q -B -T 1C clean `-DskipTests = true`
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Clean failed"
     exit 1
@@ -155,7 +155,7 @@ if ($dryRun) {
 
 Write-Host "Building shared"
 #@formatter:off
-mvn -q -f shared/pom.xml clean install -B -T 1C -Dmaven.test.skip=true
+mvn -q -f shared/pom.xml clean install -B -T 1C `-Dmaven.test.skip=true`
 #@formatter:on
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Clean install of shared failed"
@@ -166,7 +166,7 @@ cd ..
 
 Write-Host "Building core jar"
 #@formatter:off
-mvn -q -f core/pom.xml clean package -B -T 1C -Dmaven.test.skip=true
+mvn -q -f core/pom.xml clean package -B -T 1C `-Dmaven.test.skip=true`
 #@formatter:on
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Clean install of core failed"
@@ -203,10 +203,12 @@ Write-Host "All required files exist and versions match"
 
 if ($dryRun) {
     Write-Host "Releasing to github (not really, just dry run) ***********************************************************************"
-    mvn -B org.nzbhydra:github-release-plugin:3.0.0:release -DdryRun
+    mvn -B org.nzbhydra:github-release-plugin:3.0.0:release `-DdryRun`
+
 } else {
     Write-Host "Releasing to github ***********************************************************************"
-    mvn -B org.nzbhydra:github-release-plugin:3.0.0:release -DdryRun
+    mvn -B org.nzbhydra:github-release-plugin:3.0.0:release `-DdryRun`
+
 }
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Releasing to github failed"
@@ -215,7 +217,8 @@ if ($LASTEXITCODE -ne 0) {
 
 if ($dryRun) {
     Write-Host "Publishing to discord (not really, just dry run) ***********************************************************************"
-    mvn -B org.nzbhydra:github-release-plugin:3.0.0:publish-on-discord -DdryRun
+    mvn -B org.nzbhydra:github-release-plugin:3.0.0:publish-on-discord `-DdryRun`
+
 } else {
     Write-Host "Publishing to discord  ***********************************************************************"
     mvn -B org.nzbhydra:github-release-plugin:3.0.0:publish-on-discord
@@ -227,7 +230,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host "Setting new snapshot version"
-mvn -B versions:set -DnewVersion="$nextVersion"-SNAPSHOT
+mvn -B versions:set `-DnewVersion = "$nextVersion"-SNAPSHOT`
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Setting new snapshot version failed"
     git reset --hard
