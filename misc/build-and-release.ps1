@@ -12,7 +12,8 @@ $ErrorActionPreference = 'Stop'
 $version = $args[0]
 $nextVersion = $args[1]
 $dryRun = $args[2]
-$githubReleaseUrl = $args[3]
+$doRelease = $args[3]
+$githubReleaseUrl = $args[4]
 
 if (!$version) {
     Write-Error "Version is required"
@@ -34,14 +35,23 @@ if ($dryRun -ne "true" -and $dryRun -ne "false") {
     Write-Error "Dry run must be true or false"
     exit 1
 }
+if ($doRelease -ne "true" -and $doRelease -ne "false") {
+    Write-Error "doRelease must be true or false"
+    exit 1
+}
 
 $dryRun = [System.Convert]::ToBoolean($dryRun)
+$doRelease = [System.Convert]::ToBoolean($doRelease)
 
 if ($dryRun) {
     Write-Host "Dry run is enabled"
-}
-else {
+} else {
     Write-Host "Dry run is disabled"
+}
+if ($doRelease) {
+    Write-Host "Release is enabled"
+} else {
+    Write-Host "Release is disabled"
 }
 
 if (Test-Path "discordtoken.txt") {
@@ -168,6 +178,7 @@ if (-not $?) {
 }
 
 Write-Host "Building windows executable"
+cd core
 buildCore.cmd
 
 cd ..
@@ -194,27 +205,26 @@ if ($genericVersion -ne $version) {
 
 Write-Host "All required files exist and versions match"
 
-if ($dryRun) {
+if ($dryRun -or -not $doRelease) {
     Write-Host "Releasing to github (not really, just dry run) ***********************************************************************"
     exec { mvn -B org.nzbhydra:github-release-plugin:3.0.0:release `-DdryRun }
 
 } else {
     Write-Host "Releasing to github ***********************************************************************"
-    exec { mvn -B org.nzbhydra:github-release-plugin:3.0.0:release `-DdryRun }
-
+#    exec { mvn -B org.nzbhydra:github-release-plugin:3.0.0:release }
 }
 if (-not $?) {
     Write-Error "Releasing to github failed"
     exit 1
 }
 
-if ($dryRun) {
+if ($dryRun -or -not $doRelease) {
     Write-Host "Publishing to discord (not really, just dry run) ***********************************************************************"
     exec { mvn -B org.nzbhydra:github-release-plugin:3.0.0:publish-on-discord `-DdryRun }
 
 } else {
     Write-Host "Publishing to discord  ***********************************************************************"
-    exec { mvn -B org.nzbhydra:github-release-plugin:3.0.0:publish-on-discord }
+#    exec { mvn -B org.nzbhydra:github-release-plugin:3.0.0:publish-on-discord }
 }
 if (-not $?) {
     Write-Error "Publishing to discord failed"
