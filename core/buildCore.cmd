@@ -7,9 +7,6 @@ call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary
 set path=c:\Programme\graalvm-ce-java17-22.2.0\bin\;%PATH%;c:\Programme\graalvm-ce-java17-22.2.0\bin\
 set java_home=c:\Programme\graalvm-ce-java17-22.2.0\
 set HYDRA_NATIVE_BUILD=true
-cd ..\shared
-call mvn -DskipTests clean install -T 1C
-cd ..\core
 call mvn -Pnative clean native:compile -DskipTests
 
 endlocal
