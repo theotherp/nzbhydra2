@@ -2,6 +2,7 @@
 import random
 import string
 import sys
+import webbrowser
 
 CURRENT_PYTHON = sys.version_info[:2]
 REQUIRED_PYTHON = (3, 5)
@@ -473,6 +474,12 @@ def startup():
                 global uri
                 uri = nextlineString[nextlineString.find(markerLine) + len(markerLine):1000].strip()
                 logger.info("Determined process URI to be " + uri)
+            markerLine = "Unable to open browser. Go to"
+            if markerLine in nextlineString:
+                try:
+                    webbrowser.open(nextlineString[nextlineString.find(markerLine) + len(markerLine):1000].strip())
+                except:
+                    logger.exception("Unable to open browser")
         process.wait()
 
         return process
