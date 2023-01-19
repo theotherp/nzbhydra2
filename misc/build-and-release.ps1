@@ -159,7 +159,7 @@ if ($dryRun) {
     Write-Host "Pushing (not really, just dry run) ***********************************************************************"
 } else {
     Write-Host "Pushing ***********************************************************************"
-    git push origin master
+    git push
     if (-not $?) {
         Write-Error "Tagging failed"
         git reset --hard
@@ -179,7 +179,7 @@ if (-not $?) {
 
 Write-Host "Building windows executable"
 cd core
-buildCore.cmd
+.\buildCore.cmd
 
 cd ..
 Read-Host -Prompt "Wait for build to finish on pipeline. Copy linux executable to include folder. Press enter to continue"
@@ -211,7 +211,7 @@ if ($dryRun -or -not $doRelease) {
 
 } else {
     Write-Host "Releasing to github ***********************************************************************"
-#    exec { mvn -B org.nzbhydra:github-release-plugin:3.0.0:release }
+    exec { mvn -B org.nzbhydra:github-release-plugin:3.0.0:release }
 }
 if (-not $?) {
     Write-Error "Releasing to github failed"
@@ -224,7 +224,7 @@ if ($dryRun -or -not $doRelease) {
 
 } else {
     Write-Host "Publishing to discord  ***********************************************************************"
-#    exec { mvn -B org.nzbhydra:github-release-plugin:3.0.0:publish-on-discord }
+    exec { mvn -B org.nzbhydra:github-release-plugin:3.0.0:publish-on-discord }
 }
 if (-not $?) {
     Write-Error "Publishing to discord failed"
@@ -265,7 +265,7 @@ if ($dryRun) {
     Write-Host "Pushing to master (not really, dry run) ***********************************************************************"
 } else {
     Write-Host "Pushing to master ***********************************************************************"
-    git push origin master
+    git push
 }
 if (-not $?) {
     Write-Error "Pushing to master failed"
