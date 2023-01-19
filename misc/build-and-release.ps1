@@ -80,7 +80,7 @@ else {
 }
 
 Write-Host "Setting release version"
-exec { mvn -q -B versions:set `-DnewVersion="$version"` }
+exec { mvn -q -B versions:set `-DnewVersion="$version" }
 
 if (-not $?) {
     Write-Error "Setting release version failed"
@@ -159,7 +159,7 @@ if ($dryRun) {
 
 
 Write-Host "Building core jar"
-exec { mvn -q -pl org.nzbhydra:mapping,org.nzbhydra:assertions,org.nzbhydra:core clean install -B -T 1C `-DskipTests=true` }
+exec { mvn -q -pl org.nzbhydra:mapping,org.nzbhydra:assertions,org.nzbhydra:core clean install -B -T 1C `-DskipTests=true}
 
 if (-not $?) {
     Write-Error "Clean install of core failed"
@@ -196,11 +196,11 @@ Write-Host "All required files exist and versions match"
 
 if ($dryRun) {
     Write-Host "Releasing to github (not really, just dry run) ***********************************************************************"
-    exec { mvn -B org.nzbhydra:github-release-plugin:3.0.0:release `-DdryRun` }
+    exec { mvn -B org.nzbhydra:github-release-plugin:3.0.0:release `-DdryRun }
 
 } else {
     Write-Host "Releasing to github ***********************************************************************"
-    exec { mvn -B org.nzbhydra:github-release-plugin:3.0.0:release `-DdryRun` }
+    exec { mvn -B org.nzbhydra:github-release-plugin:3.0.0:release `-DdryRun }
 
 }
 if (-not $?) {
@@ -210,7 +210,7 @@ if (-not $?) {
 
 if ($dryRun) {
     Write-Host "Publishing to discord (not really, just dry run) ***********************************************************************"
-    exec { mvn -B org.nzbhydra:github-release-plugin:3.0.0:publish-on-discord `-DdryRun` }
+    exec { mvn -B org.nzbhydra:github-release-plugin:3.0.0:publish-on-discord `-DdryRun }
 
 } else {
     Write-Host "Publishing to discord  ***********************************************************************"
@@ -224,7 +224,7 @@ if (-not $?) {
 
 Write-Host "Setting new snapshot version"
 
-exec { mvn -B versions:set `-DnewVersion="$nextVersion"-SNAPSHOT` }
+exec { mvn -B versions:set `-DnewVersion="$nextVersion"-SNAPSHOT }
 
 if (-not $?) {
     Write-Error "Setting new snapshot version failed"
