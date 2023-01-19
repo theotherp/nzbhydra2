@@ -6,17 +6,13 @@ on:
 
 jobs:
     build:
-#        strategy:
-        #            matrix:
-        #                runson: [ {os: linux, type: self-hosted},{os: linux, type: self-hosted} ]
-        #            fail-fast: false
-
-
+        strategy:
+            matrix:
+                os: [ ubuntu-20.04 ]
+            fail-fast: false
         env:
             HYDRA_NATIVE_BUILD: true
-            ACTIONS_RUNNER_DEBUG: true
-            ACTIONS_STEP_DEBUG: true
-        runs-on: [ self-hosted ]
+        runs-on: ${{ matrix.os }}
         steps:
             -   uses: actions/checkout@v3
                 with:
@@ -30,26 +26,26 @@ jobs:
                     distribution: 'adopt'
                     cache: 'maven'
 
-#            -   name: "Get changed files in core module"
-#                id: changed-files-specific
-#                uses: tj-actions/changed-files@v35
-#                with:
-#                    since_last_remote_commit: true
-#                    files: |
-#                        core/**
+            -   name: "Get changed files in core module"
+                id: changed-files-specific
+                uses: tj-actions/changed-files@v35
+                with:
+                    since_last_remote_commit: true
+                    files: |
+                        core/**
 
-#            -   if: steps.changed-files-specific.outputs.any_changed == 'true'
-#                run: |
-#                    echo "::notice::Will build new native image / docker container. Changed files in core since last push:"
-#                    echo "${{ steps.changed-files-specific.outputs.all_changed_files }}"
-#
-#            -   if: steps.changed-files-specific.outputs.any_changed == 'false'
-#                run: |
-#                    echo "::notice::Will skip build of native image / docker container. No changed files in core since last push."
-#
+            -   if: steps.changed-files-specific.outputs.any_changed == 'true'
+                run: |
+                    echo "::notice::Will build new native image / docker container. Changed files in core since last push:"
+                    echo "${{ steps.changed-files-specific.outputs.all_changed_files }}"
+
+            -   if: steps.changed-files-specific.outputs.any_changed == 'false'
+                run: |
+                    echo "::notice::Will skip build of native image / docker container. No changed files in core since last push."
+
             -   name: NativeImage
                 uses: graalvm/setup-graalvm@v1
-                #                if: steps.changed-files-specific.outputs.any_changed == 'true'
+                if: steps.changed-files-specific.outputs.any_changed == 'true'
                 with:
                     java-version: '17'
                     version: 'latest'
@@ -58,8 +54,8 @@ jobs:
                     github-token: ${{ secrets.GITHUB_TOKEN }}
 
             -   name: "Install all with Maven"
-                run: mvn --batch-mode clean install -DskipTests -T 1C
 
+                run: mvn --batch-mode clean install -DskipTests -T 1C
             -   name: "Run unit tests"
                 run: mvn --batch-mode test -T 1C -pl !org.nzbhydra:tests,!org.nzbhydra.tests:system --fail-at-end
 
@@ -73,44 +69,44 @@ jobs:
                     reporter: java-junit
 
             -   name: "Build native image"
-#                if: steps.changed-files-specific.outputs.any_changed == 'true'
+                if: steps.changed-files-specific.outputs.any_changed == 'true'
                 working-directory: ./core
                 run: |
                     mvn --batch-mode -Pnative clean native:compile -DskipTests
 
-#            -   name: "UPX linux artifact"
-#                if: steps.changed-files-specific.outputs.any_changed == 'true'
-#                uses: crazy-max/ghaction-upx@v2
-#                with:
-#                    files: core/target/core
-#                    args: -q
-#
-#            -   name: "Upload linux artifact"
-#                if: steps.changed-files-specific.outputs.any_changed == 'true'
-#                uses: actions/upload-artifact@v3
-#                with:
-#                    name: coreLinux
-#                    path: core/target/core
-#
-#            -   name: "Copy artifact to include folder"
-#                if: steps.changed-files-specific.outputs.any_changed == 'true'
-#                run: |
-#                    mv core/target/core ./docker/nativeTest/
-#                    chmod +x ./docker/nativeTest/core
-#
-#            -   name: "Login to GitHub Container Registry"
-#                if: steps.changed-files-specific.outputs.any_changed == 'true'
-#                uses: docker/login-action@v2
-#                with:
-#                    registry: ghcr.io
-#                    username: ${{ github.actor }}
-#                    password: ${{ secrets.GITHUB_TOKEN }}
-#
-#            -   name: "Build core and push container"
-#                if: steps.changed-files-specific.outputs.any_changed == 'true'
-#                run: |
-#                    cp other/wrapper/nzbhydra2wrapperPy3.py ./docker/nativeTest/
-#                    cd ./docker/nativeTest/
-#                    docker build -t hydradocker .
-#                    docker tag hydradocker:latest ghcr.io/theotherp/hydradocker:latest
-#                    docker push ghcr.io/theotherp/hydradocker:latest
+            -   name: "UPX linux artifact"
+                if: steps.changed-files-specific.outputs.any_changed == 'true'
+                uses: crazy-max/ghaction-upx@v2
+                with:
+                    files: core/target/core
+                    args: -q
+
+            -   name: "Upload linux artifact"
+                if: steps.changed-files-specific.outputs.any_changed == 'true'
+                uses: actions/upload-artifact@v3
+                with:
+                    name: coreLinux
+                    path: core/target/core
+
+            -   name: "Copy artifact to include folder"
+                if: steps.changed-files-specific.outputs.any_changed == 'true'
+                run: |
+                    mv core/target/core ./docker/nativeTest/
+                    chmod +x ./docker/nativeTest/core
+
+            -   name: "Login to GitHub Container Registry"
+                if: steps.changed-files-specific.outputs.any_changed == 'true'
+                uses: docker/login-action@v2
+                with:
+                    registry: ghcr.io
+                    username: ${{ github.actor }}
+                    password: ${{ secrets.GITHUB_TOKEN }}
+
+            -   name: "Build core and push container"
+                if: steps.changed-files-specific.outputs.any_changed == 'true'
+                run: |
+                    cp other/wrapper/nzbhydra2wrapperPy3.py ./docker/nativeTest/
+                    cd ./docker/nativeTest/
+                    docker build -t hydradocker .
+                    docker tag hydradocker:latest ghcr.io/theotherp/hydradocker:latest
+                    docker push ghcr.io/theotherp/hydradocker:latest

@@ -23,8 +23,6 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel target="17">
-      <module name="discordbot" target="17" />
-      <module name="loadtest" target="17" />
       <module name="ui" target="1.5" />
     </bytecodeTargetLevel>
   </component>
@@ -35,10 +33,8 @@
     <option name="ADDITIONAL_OPTIONS_STRING" value="-parameters" />
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="core" options="-parameters" />
-      <module name="discordbot" options="" />
       <module name="github-release-plugin" options="" />
       <module name="linux-release" options="-parameters" />
-      <module name="loadtest" options="" />
       <module name="mapping" options="-parameters" />
       <module name="mockserver" options="" />
       <module name="nzbhydra2" options="-parameters" />

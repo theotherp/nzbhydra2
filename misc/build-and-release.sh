@@ -75,45 +75,6 @@ if [[ ! -f readme.md ]] ; then
 fi
 
 echo ""
-info "Checking if all needed files exist"
-if [[ ! -f releases/linux-release/include/nzbhydra2 ]] ; then
-    error "releases/linux-release/include/nzbhydra2 does not exist"
-    exit 1
-fi
-if [[ ! -f releases/windows-release/include/NZBHydra2.exe ]] ; then
-    error "releases/windows-release/include/NZBHydra2.exe does not exist"
-    exit 1
-fi
-if [[ ! -f releases/windows-release/include/NZBHydra2\ Console.exe ]] ; then
-    error "releases/windows-release/include/NZBHydra2 Console.exe does not exist"
-    exit 1
-fi
-
-if [[ ! -f releases/linux-release/include/core ]] ; then
-    error "releases/linux-release/include/core does not exist"
-    exit 1
-fi
-
-linuxVersion=$(releases/linux-release/include/core -version | grep -o  "[0-9]\.[0-9]\.[0-9]")
-if [ "$linuxVersion" != "$1" ]; then
-  error "Release version is $1 but linux executable version is $linuxVersion"
-  exit 1
-fi
-
-if [[ ! -f releases/windows-release/include/core.exe ]] ; then
-    error "releases/windows-release/include/core.exe does not exist"
-    exit 1
-fi
-
-winVersion=$(releases/windows-release/include/core.exe -version | grep -o  "[0-9]\.[0-9]\.[0-9]")
-if [ "$winVersion" != "$1" ]; then
-  error "Release version is $1 but windows executable version is $winVersion"
-  exit 1
-fi
-
-success "All required files exist and are up to date"
-
-echo ""
 info "Checking for untracked files or uncommitted changes"
 if [[ -n "$(git status --porcelain)" ]]; then
     error "Untracked files or uncommitted changes found"
@@ -173,22 +134,6 @@ if [[ "$?" -ne 0 ]] ; then
     exit 1
 fi
 
-#Running this on WSL is extremely slow
-echo ""
-info "Running install for main modules"
-info "Please run this in windows:"
-info "mvn -B -T 1C -pl 'org.nzbhydra:mapping,org.nzbhydra:core,org.nzbhydra:generic-release,org.nzbhydra:linux-release,org.nzbhydra:windows-release' \
-          install -Dmaven.test.skip=true -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
-read -p "Press any key to continue... " -n1 -s
-
-#mvn -B -T 1C -pl 'org.nzbhydra:mapping,org.nzbhydra:core,org.nzbhydra:generic-release,org.nzbhydra:linux-release,org.nzbhydra:windows-release' \
-#    install -Dmaven.test.skip=true -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
-#if [[ "$?" -ne 0 ]] ; then
-#    error "Error during install"
-#    git reset --hard
-#    exit 1
-#fi
-
 echo ""
 info "Making version effective ***********************************************************************"
 mvn -B versions:commit
@@ -196,6 +141,7 @@ if [[ "$?" -ne 0 ]] ; then
     error "Error setting version effective"
     exit 1
 fi
+
 
 echo ""
 if [ "$3" = "true" ]; then
@@ -233,6 +179,68 @@ else
     fi
 fi
 
+info "Now build the windows executable and the core JAR. Copy the executables to the include folders. Then continue."
+
+read -p "Press any key to continue... " -n1 -s
+
+echo ""
+info "Checking if all needed files exist"
+if [[ ! -f releases/linux-release/include/nzbhydra2 ]] ; then
+    error "releases/linux-release/include/nzbhydra2 does not exist"
+    exit 1
+fi
+if [[ ! -f releases/windows-release/include/NZBHydra2.exe ]] ; then
+    error "releases/windows-release/include/NZBHydra2.exe does not exist"
+    exit 1
+fi
+if [[ ! -f releases/windows-release/include/NZBHydra2\ Console.exe ]] ; then
+    error "releases/windows-release/include/NZBHydra2 Console.exe does not exist"
+    exit 1
+fi
+
+if [[ ! -f releases/linux-release/include/core ]] ; then
+    error "releases/linux-release/include/core does not exist"
+    exit 1
+fi
+
+linuxVersion=$(releases/linux-release/include/core -version | grep -o  "[0-9]\.[0-9]\.[0-9](-\w*)?")
+if [ "$linuxVersion" != "$1" ]; then
+  error "Release version is $1 but linux executable version is $linuxVersion"
+  exit 1
+fi
+
+if [[ ! -f releases/windows-release/include/core.exe ]] ; then
+    error "releases/windows-release/include/core.exe does not exist"
+    exit 1
+fi
+
+winVersion=$(releases/windows-release/include/core.exe -version | grep -o  "[0-9]\.[0-9]\.[0-9](-\w*)?")
+if [ "$winVersion" != "$1" ]; then
+  error "Release version is $1 but windows executable version is $winVersion"
+  exit 1
+fi
+
+success "All required files exist and are up to date"
+
+
+
+#Running this on WSL is extremely slow
+echo ""
+info "Running install for main modules"
+info "Please run this in windows:"
+info "mvn -B -T 1C -pl 'org.nzbhydra:mapping,org.nzbhydra:core,org.nzbhydra:generic-release,org.nzbhydra:linux-release,org.nzbhydra:windows-release' \
+          install -Dmaven.test.skip=true -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
+read -p "Press any key to continue... " -n1 -s
+
+#mvn -B -T 1C -pl 'org.nzbhydra:mapping,org.nzbhydra:core,org.nzbhydra:generic-release,org.nzbhydra:linux-release,org.nzbhydra:windows-release' \
+#    install -Dmaven.test.skip=true -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+#if [[ "$?" -ne 0 ]] ; then
+#    error "Error during install"
+#    git reset --hard
+#    exit 1
+#fi
+
+
 echo ""
 info "Releasing to GitHub ***********************************************************************"
 if [ "$3" = "true" ]; then
@@ -253,7 +261,7 @@ else
     mvn -B org.nzbhydra:github-release-plugin:3.0.0:publish-on-discord
 fi
 if [[ "$?" -ne 0 ]] ; then
-    error "Error publishing on github. Not quitting"
+    error "Error publishing on discord. Not quitting"
 fi
 
 echo ""
