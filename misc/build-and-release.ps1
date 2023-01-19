@@ -182,24 +182,24 @@ cd core
 .\buildCore.cmd
 
 cd ..
-Read-Host -Prompt "Wait for build to finish on pipeline. Copy linux executable to include folder. Press enter to continue"
 
 $windowsVersion = releases/windows-release/include/core.exe -version
-$linuxVersion = wsl -d Ubuntu releases/linux-release/include/core -version
-$genericVersion = java -jar core/target/core-$version.jar
-
 if ($windowsVersion -ne $version) {
     Write-Error "Windows version $version expected but is $windowsVersion"
     exit 1
 }
 
-if ($linuxVersion -ne $version) {
-    Write-Error "Linux version $version expected but is $linuxVersion"
+$genericVersion = java -jar core/target/core-$version.jar
+if ($genericVersion -ne $version) {
+    Write-Error "Generic version $version expected but is $genericVersion"
     exit 1
 }
 
-if ($genericVersion -ne $version) {
-    Write-Error "Generic version $version expected but is $genericVersion"
+Read-Host -Prompt "Wait for build to finish on pipeline. Copy linux executable to include folder. Press enter to continue"
+
+$linuxVersion = wsl -d Ubuntu releases/linux-release/include/core -version
+if ($linuxVersion -ne $version) {
+    Write-Error "Linux version $version expected but is $linuxVersion"
     exit 1
 }
 
