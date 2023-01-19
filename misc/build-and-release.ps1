@@ -1,3 +1,14 @@
+#@formatter:off
+
+function Exec([scriptblock]$cmd, [string]$errorMessage = "Error executing command: " + $cmd) {
+    & $cmd
+    if ($LastExitCode -ne 0) {
+        git reset --hard
+        throw $errorMessage
+    }
+}
+$ErrorActionPreference = 'Stop'
+
 $version = $args[0]
 $nextVersion = $args[1]
 $dryRun = $args[2]
@@ -45,7 +56,6 @@ if (Test-Path "githubtoken.txt") {
     Write-Host "Github token is set"
 }
 
-#if $discordToken is null write error and exit
 if ($discordToken -eq $null) {
     Write-Error "Discord token is required"
     exit 1
@@ -69,40 +79,34 @@ else {
     Write-Host "Git is clean"
 }
 
-Write-Host "Running clean"
-mvn -q -B -T 1C clean `-DskipTests = true`
-if ($LASTEXITCODE -ne 0) {
-    Write-Error "Clean failed"
-    exit 1
-}
-
 Write-Host "Setting release version"
-mvn -q -B versions:set -DnewVersion="$version"
-if ($LASTEXITCODE -ne 0) {
+exec { mvn -q -B versions:set `-DnewVersion="$version"` }
+
+if (-not $?) {
     Write-Error "Setting release version failed"
     git reset --hard
     exit 1
 }
 
 Write-Host "Checking preconditions"
-mvn -q -B org.nzbhydra:github-release-plugin:3.0.0:precheck
-if ($LASTEXITCODE -ne 0) {
+exec { mvn -q -B org.nzbhydra:github-release-plugin:3.0.0:precheck }
+if (-not $?) {
     Write-Error "Preconditions failed"
     git reset --hard
     exit 1
 }
 
 Write-Host "Generating changelog"
-mvn -q -B org.nzbhydra:github-release-plugin:3.0.0:generate-changelog
-if ($LASTEXITCODE -ne 0) {
+exec { mvn -q -B org.nzbhydra:github-release-plugin:3.0.0:generate-changelog }
+if (-not $?) {
     Write-Error "Changing log generation failed"
     git reset --hard
     exit 1
 }
 
 Write-Host "Generating wrapper hashes"
-mvn -q -B org.nzbhydra:github-release-plugin:3.0.0:generate-wrapper-hashes
-if ($LASTEXITCODE -ne 0) {
+exec { mvn -q -B org.nzbhydra:github-release-plugin:3.0.0:generate-wrapper-hashes }
+if (-not $?) {
     Write-Error "Wrapper hash generation failed"
     git reset --hard
     exit 1
@@ -110,8 +114,8 @@ if ($LASTEXITCODE -ne 0) {
 
 
 Write-Host "Making versions effective"
-mvn -q -B versions:commit
-if ($LASTEXITCODE -ne 0) {
+exec { mvn -q -B versions:commit }
+if (-not $?) {
     Write-Error "Making versions effective failed"
     git reset --hard
     exit 1
@@ -122,7 +126,7 @@ if ($dryRun) {
 } else {
     Write-Host "Committing ***********************************************************************"
     git commit -am "Update to $version"
-    if ($LASTEXITCODE -ne 0) {
+    if (-not $?) {
         Write-Error "Commit failed"
         git reset --hard
         exit 1
@@ -134,7 +138,7 @@ if ($dryRun) {
 } else {
     Write-Host "Tagging ***********************************************************************"
     git tag -a v"$version" -m "v$nextVersion"
-    if ($LASTEXITCODE -ne 0) {
+    if (-not $?) {
         Write-Error "Tagging failed"
         git reset --hard
         exit 1
@@ -146,29 +150,18 @@ if ($dryRun) {
 } else {
     Write-Host "Pushing ***********************************************************************"
     git push origin master
-    if ($LASTEXITCODE -ne 0) {
+    if (-not $?) {
         Write-Error "Tagging failed"
         git reset --hard
         exit 1
     }
 }
 
-Write-Host "Building shared"
-#@formatter:off
-mvn -q -f shared/pom.xml clean install -B -T 1C `-Dmaven.test.skip=true`
-#@formatter:on
-if ($LASTEXITCODE -ne 0) {
-    Write-Error "Clean install of shared failed"
-    git reset --hard
-    exit 1
-}
-cd ..
 
 Write-Host "Building core jar"
-#@formatter:off
-mvn -q -f core/pom.xml clean package -B -T 1C `-Dmaven.test.skip=true`
-#@formatter:on
-if ($LASTEXITCODE -ne 0) {
+exec { mvn -q -pl org.nzbhydra:mapping,org.nzbhydra:assertions,org.nzbhydra:core clean install -B -T 1C `-DskipTests=true` }
+
+if (-not $?) {
     Write-Error "Clean install of core failed"
     git reset --hard
     exit 1
@@ -203,43 +196,45 @@ Write-Host "All required files exist and versions match"
 
 if ($dryRun) {
     Write-Host "Releasing to github (not really, just dry run) ***********************************************************************"
-    mvn -B org.nzbhydra:github-release-plugin:3.0.0:release `-DdryRun`
+    exec { mvn -B org.nzbhydra:github-release-plugin:3.0.0:release `-DdryRun` }
 
 } else {
     Write-Host "Releasing to github ***********************************************************************"
-    mvn -B org.nzbhydra:github-release-plugin:3.0.0:release `-DdryRun`
+    exec { mvn -B org.nzbhydra:github-release-plugin:3.0.0:release `-DdryRun` }
 
 }
-if ($LASTEXITCODE -ne 0) {
+if (-not $?) {
     Write-Error "Releasing to github failed"
     exit 1
 }
 
 if ($dryRun) {
     Write-Host "Publishing to discord (not really, just dry run) ***********************************************************************"
-    mvn -B org.nzbhydra:github-release-plugin:3.0.0:publish-on-discord `-DdryRun`
+    exec { mvn -B org.nzbhydra:github-release-plugin:3.0.0:publish-on-discord `-DdryRun` }
 
 } else {
     Write-Host "Publishing to discord  ***********************************************************************"
-    mvn -B org.nzbhydra:github-release-plugin:3.0.0:publish-on-discord
+    exec { mvn -B org.nzbhydra:github-release-plugin:3.0.0:publish-on-discord }
 }
-if ($LASTEXITCODE -ne 0) {
+if (-not $?) {
     Write-Error "Publishing to discord failed"
     Read-Host -Prompt "Press enter to continue"
     exit 1
 }
 
 Write-Host "Setting new snapshot version"
-mvn -B versions:set `-DnewVersion = "$nextVersion"-SNAPSHOT`
-if ($LASTEXITCODE -ne 0) {
+
+exec { mvn -B versions:set `-DnewVersion="$nextVersion"-SNAPSHOT` }
+
+if (-not $?) {
     Write-Error "Setting new snapshot version failed"
     git reset --hard
     exit 1
 }
 
 Write-Host "Making snapshot version effective"
-mvn -B versions:commit
-if ($LASTEXITCODE -ne 0) {
+exec { mvn -B versions:commit }
+if (-not $?) {
     Write-Error "Making snapshot version effective failed"
     git reset --hard
     exit 1
@@ -251,7 +246,7 @@ if ($dryRun) {
     Write-Host "Committing snapshot code ***********************************************************************"
     git commit -am "Set snapshot to $nextVersion"
 }
-if ($LASTEXITCODE -ne 0) {
+if (-not $?) {
     Write-Error "Committing snapshot code failed"
     exit 1
 }
@@ -262,7 +257,7 @@ if ($dryRun) {
     Write-Host "Pushing to master ***********************************************************************"
     git push origin master
 }
-if ($LASTEXITCODE -ne 0) {
+if (-not $?) {
     Write-Error "Pushing to master failed"
     exit 1
 }
