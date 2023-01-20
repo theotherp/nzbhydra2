@@ -213,12 +213,16 @@ if ($dryRun) {
 
 } else {
     Write-Host "Publishing to discord  ***********************************************************************"
-    exec { mvn -B org.nzbhydra:github-release-plugin:3.0.0:publish-on-discord }
+    try {
+        exec { mvn -B org.nzbhydra:github-release-plugin:3.0.0:publish-on-discord }
+    } catch {
+        Write-Error "Publishing to discord failed"
+        Read-Host -Prompt "Press enter to continue"
+    }
 }
 if (-not $?) {
     Write-Error "Publishing to discord failed"
     Read-Host -Prompt "Press enter to continue"
-    exit 1
 }
 
 Write-Host "Setting new snapshot version"
