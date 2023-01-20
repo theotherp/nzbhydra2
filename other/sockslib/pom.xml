@@ -21,7 +21,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jdk.version>1.8</jdk.version>
-        <guava.version>22.0</guava.version>
+        <guava.version>31.1-jre</guava.version>
         <slf4j-api.version>1.7.12</slf4j-api.version>
         <log4j.version>2.4</log4j.version>
         <jsr305.version>3.0.0</jsr305.version>

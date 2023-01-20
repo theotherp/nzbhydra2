@@ -1,0 +1,5 @@
+ignore:
+  SNYK-JAVA-ORGYAML-3152153:
+    - '*':
+      reason: 'No exploit'
+      expires: '2030-04-04T17:33:45.004Z'
