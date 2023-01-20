@@ -20,7 +20,7 @@
           "pattern": ".*migration.*$"
       },
       {
-          "pattern": "\\Qstatic/.*\\E"
+          "pattern": "\\Qstatic/*\\E"
       },
       {
           "pattern": "\\Qbanner.txt\\E"
@@ -2441,7 +2441,19 @@
           "pattern": "\\Qorg/thymeleaf/thymeleaf.properties\\E"
       },
       {
-          "pattern": "\\Qstatic/.*\\E"
+          "pattern": "\\Qstatic/css/alllibs.css\\E"
+      },
+      {
+          "pattern": "\\Qstatic/css/bright.css\\E"
+      },
+      {
+          "pattern": "\\Qstatic/css/grey.css\\E"
+      },
+      {
+          "pattern": "\\Qstatic/css/dark.css\\E"
+      },
+      {
+          "pattern": "\\Q*/static/*\\E"
       },
       {
           "pattern": "\\Qstatic/fonts/fontawesome-webfont.woff2\\E"

@@ -55,7 +55,7 @@ public class NativeHints implements RuntimeHintsRegistrar {
                 hints.reflection().registerMethod(method, ExecutableMode.INVOKE);
             }
         }
-
+        hints.resources().registerPattern("*/static/*");
     }
 
     private static Set<Class<?>> getClassesToRegister() {
