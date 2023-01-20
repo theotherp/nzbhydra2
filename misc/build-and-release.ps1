@@ -13,7 +13,6 @@ $version = $args[0]
 $nextVersion = $args[1]
 $dryRun = $args[2]
 $doRelease = $args[3]
-$githubReleaseUrl = $args[4]
 
 if (!$version) {
     Write-Error "Version is required"
@@ -25,11 +24,7 @@ if (!$nextVersion) {
     exit 1
 }
 
-if ($githubReleaseUrl -eq $null) {
-    Write-Error "Github release url is required"
-    exit 1
-}
-$env:githubReleasesUrl = $githubReleaseUrl
+$env:githubReleasesUrl = "https://api.github.com/repos/theotherp/nzbhydra2/releases"
 
 if ($dryRun -ne "true" -and $dryRun -ne "false") {
     Write-Error "Dry run must be true or false"
