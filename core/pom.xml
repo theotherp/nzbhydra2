@@ -8,6 +8,7 @@
         <version>5.0.1-SNAPSHOT</version>
     </parent>
 
+    <version>5.0.1</version>
     <artifactId>core</artifactId>
 
     <properties>
