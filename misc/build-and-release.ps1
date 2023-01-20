@@ -12,7 +12,6 @@ $ErrorActionPreference = 'Stop'
 $version = $args[0]
 $nextVersion = $args[1]
 $dryRun = $args[2]
-$doRelease = $args[3]
 
 if (!$version) {
     Write-Error "Version is required"
@@ -30,23 +29,14 @@ if ($dryRun -ne "true" -and $dryRun -ne "false") {
     Write-Error "Dry run must be true or false"
     exit 1
 }
-if ($doRelease -ne "true" -and $doRelease -ne "false") {
-    Write-Error "doRelease must be true or false"
-    exit 1
-}
+
 
 $dryRun = [System.Convert]::ToBoolean($dryRun)
-$doRelease = [System.Convert]::ToBoolean($doRelease)
 
 if ($dryRun) {
     Write-Host "Dry run is enabled"
 } else {
     Write-Host "Dry run is disabled"
-}
-if ($doRelease) {
-    Write-Host "Release is enabled"
-} else {
-    Write-Host "Release is disabled"
 }
 
 if (Test-Path "discordtoken.txt") {
@@ -203,7 +193,7 @@ if ($linuxVersion -ne $version) {
 
 Write-Host "All required files exist and versions match"
 
-if ($dryRun -or -not $doRelease) {
+if ($dryRun) {
     Write-Host "Releasing to github (not really, just dry run) ***********************************************************************"
     exec { mvn -B org.nzbhydra:github-release-plugin:3.0.0:release `-DdryRun }
 
@@ -216,7 +206,7 @@ if (-not $?) {
     exit 1
 }
 
-if ($dryRun -or -not $doRelease) {
+if ($dryRun) {
     Write-Host "Publishing to discord (not really, just dry run) ***********************************************************************"
     exec { mvn -B org.nzbhydra:github-release-plugin:3.0.0:publish-on-discord `-DdryRun }
 
