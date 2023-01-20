@@ -2456,19 +2456,127 @@
           "pattern": "\\Q*/static/*\\E"
       },
       {
+          "pattern": "\\Qstatic/fonts/FontAwesome.otf\\E"
+      },
+      {
+          "pattern": "\\Qstatic/fonts/fontawesome-webfont.eot\\E"
+      },
+      {
+          "pattern": "\\Qstatic/fonts/fontawesome-webfont.svg\\E"
+      },
+      {
+          "pattern": "\\Qstatic/fonts/fontawesome-webfont.ttf\\E"
+      },
+      {
+          "pattern": "\\Qstatic/fonts/fontawesome-webfont.woff\\E"
+      },
+      {
           "pattern": "\\Qstatic/fonts/fontawesome-webfont.woff2\\E"
+      },
+      {
+          "pattern": "\\Qstatic/fonts/glyphicons-halflings-regular.eot\\E"
+      },
+      {
+          "pattern": "\\Qstatic/fonts/glyphicons-halflings-regular.svg\\E"
+      },
+      {
+          "pattern": "\\Qstatic/fonts/glyphicons-halflings-regular.ttf\\E"
+      },
+      {
+          "pattern": "\\Qstatic/fonts/glyphicons-halflings-regular.woff\\E"
       },
       {
           "pattern": "\\Qstatic/fonts/glyphicons-halflings-regular.woff2\\E"
       },
       {
+          "pattern": "\\Qstatic/img/banner.png\\E"
+      },
+      {
+          "pattern": "\\Qstatic/img/banner-bright.png\\E"
+      },
+      {
+          "pattern": "\\Qstatic/img/banner-dark.png\\E"
+      },
+      {
+          "pattern": "\\Qstatic/img/banner-grey.png\\E"
+      },
+      {
           "pattern": "\\Qstatic/img/banner-grey-dark.png\\E"
+      },
+      {
+          "pattern": "\\Qstatic/img/botlogo.png\\E"
       },
       {
           "pattern": "\\Qstatic/img/favicon.ico\\E"
       },
       {
           "pattern": "\\Qstatic/img/favicon180.png\\E"
+      },
+      {
+          "pattern": "\\Qstatic/img/favicon32.png\\E"
+      },
+      {
+          "pattern": "\\Qstatic/img/favicon48.png\\E"
+      },
+      {
+          "pattern": "\\Qstatic/img/favicon96.png\\E"
+      },
+      {
+          "pattern": "\\Qstatic/img/logo.png\\E"
+      },
+      {
+          "pattern": "\\Qstatic/img/logo-more-margin.png\\E"
+      },
+      {
+          "pattern": "\\Qstatic/img/newsdemon.jpg\\E"
+      },
+      {
+          "pattern": "\\Qstatic/img/ninja.png\\E"
+      },
+      {
+          "pattern": "\\Qstatic/img/nzb.png\\E"
+      },
+      {
+          "pattern": "\\Qstatic/img/nzbdown.png\\E"
+      },
+      {
+          "pattern": "\\Qstatic/img/nzberror.png\\E"
+      },
+      {
+          "pattern": "\\Qstatic/img/nzbget.png\\E"
+      },
+      {
+          "pattern": "\\Qstatic/img/nzbgeterror.png\\E"
+      },
+      {
+          "pattern": "\\Qstatic/img/nzbget-favicon.png\\E"
+      },
+      {
+          "pattern": "\\Qstatic/img/nzbgetlogo.png\\E"
+      },
+      {
+          "pattern": "\\Qstatic/img/nzbgetsuccess.png\\E"
+      },
+      {
+          "pattern": "\\Qstatic/img/nzbgetup.png\\E"
+      },
+      {
+          "pattern": "\\Qstatic/img/nzbsuccess.png\\E"
+      },
+      {
+          "pattern": "\\Qstatic/img/nzbup.png\\E"
+      },
+      {
+          "pattern": "\\Qstatic/img/sab.png\\E"
+      },
+      {
+          "pattern": "\\Qstatic/img/saberror.png\\E"
+      },
+      {
+          "pattern": "\\Qstatic/img/sabnzbdlogo.png\\E"
+      },
+      {
+          "pattern": "\\Qstatic/img/sabsuccess.png\\E"
       },
       {
           "pattern": "\\Qstatic/img/spinner.gif\\E"

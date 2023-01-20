@@ -1,12 +1,18 @@
 ---
+- version: "v5.0.3"
+  date: "2023-01-21"
+  changes:
+    - type: "fix"
+      text: "Downloader icons were not shown"
+  final: true
 - version: "v5.0.2"
   date: "2023-01-20"
   changes:
-  - type: "fix"
-    text: "Autocomplete pictures and alternative themes were not loaded when using\
+    - type: "fix"
+      text: "Autocomplete pictures and alternative themes were not loaded when using\
       \ an URL base"
-  - type: "fix"
-    text: "Outdated wrapper file warning was shown by mistake"
+    - type: "fix"
+      text: "Outdated wrapper file warning was shown by mistake"
   final: true
 - version: "v5.0.1"
   date: "2023-01-20"

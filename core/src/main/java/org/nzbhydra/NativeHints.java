@@ -27,8 +27,14 @@ import org.springframework.aot.hint.ExecutableMode;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.RuntimeHintsRegistrar;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Method;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -49,13 +55,22 @@ public class NativeHints implements RuntimeHintsRegistrar {
         classes.add(HashSet.class);
         classes.add(ArrayList.class);
         classes.add(HtmlRenderer.class);
+        logger.info("Registering {} classes", classes.size());
         for (Class<?> clazz : classes) {
             hints.reflection().registerType(clazz, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS);
             for (Method method : clazz.getDeclaredMethods()) {
                 hints.reflection().registerMethod(method, ExecutableMode.INVOKE);
             }
         }
-        hints.resources().registerPattern("*/static/*");
+        final Set<String> staticResources = getStaticResources();
+        logger.info("Loading {} static resources", staticResources.size());
+        for (String staticResource : staticResources) {
+            //Just load so it can be registered
+            try (InputStream resourceAsStream = getClass().getResourceAsStream(staticResource)) {
+            } catch (IOException e) {
+                logger.error("Error loading resource " + staticResource, e);
+            }
+        }
     }
 
     private static Set<Class<?>> getClassesToRegister() {
@@ -63,6 +78,33 @@ public class NativeHints implements RuntimeHintsRegistrar {
         final Set<Class<?>> classes = reflections.getTypesAnnotatedWith(ReflectionMarker.class);
         classes.addAll(reflections.getSubTypesOf(ConfigMigrationStep.class));
         return classes;
+    }
+
+    private static Set<String> getStaticResources() {
+        final Set<String> staticResources = new HashSet<>();
+        try {
+            final Path path = new PathMatchingResourcePatternResolver().getResource("/").getFile().toPath();
+            for (Resource staticResource : new PathMatchingResourcePatternResolver().getResources("static/**")) {
+                final File staticResourceFile = staticResource.getFile();
+                final String relativePath = path.relativize(staticResourceFile.toPath()).toString();
+                staticResources.add(relativePath);
+            }
+        } catch (IOException e) {
+            logger.error("Error getting static resources", e);
+        }
+        return staticResources;
+    }
+
+    public static void main(String[] args) throws Exception {
+        final Resource[] staticResources = new PathMatchingResourcePatternResolver().getResources("static/**");
+        final Path path = new PathMatchingResourcePatternResolver().getResource("/").getFile().toPath();
+        for (Resource staticResource : staticResources) {
+            final File staticResourceFile = staticResource.getFile();
+            final String relativePath = path.relativize(staticResourceFile.toPath()).toString();
+
+            System.out.println();
+
+        }
     }
 
 }
