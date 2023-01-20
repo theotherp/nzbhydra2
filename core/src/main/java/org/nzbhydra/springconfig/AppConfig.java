@@ -9,7 +9,7 @@ import org.springframework.web.client.RestTemplate;
 
 
 @EnableAsync
-@Configuration
+@Configuration(proxyBeanMethods = false)
 public class AppConfig {
 
     @Autowired

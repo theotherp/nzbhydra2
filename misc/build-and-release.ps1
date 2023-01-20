@@ -12,6 +12,7 @@ $ErrorActionPreference = 'Stop'
 $version = $args[0]
 $nextVersion = $args[1]
 $dryRun = $args[2]
+$doRelease = $args[3]
 
 if (!$version) {
     Write-Error "Version is required"
@@ -29,14 +30,23 @@ if ($dryRun -ne "true" -and $dryRun -ne "false") {
     Write-Error "Dry run must be true or false"
     exit 1
 }
-
+if ($doRelease -ne "true" -and $doRelease -ne "false") {
+    Write-Error "doRelease must be true or false"
+    exit 1
+}
 
 $dryRun = [System.Convert]::ToBoolean($dryRun)
+$doRelease = [System.Convert]::ToBoolean($doRelease)
 
 if ($dryRun) {
     Write-Host "Dry run is enabled"
 } else {
     Write-Host "Dry run is disabled"
+}
+if ($doRelease) {
+    Write-Host "Release is enabled"
+} else {
+    Write-Host "Release is disabled"
 }
 
 if (Test-Path "discordtoken.txt") {
@@ -74,14 +84,14 @@ else {
     Write-Host "Git is clean"
 }
 
-Write-Host "Setting release version"
-exec { mvn -q -B versions:set `-DnewVersion="$version" }
-
-if (-not $?) {
-    Write-Error "Setting release version failed"
-    git reset --hard
-    exit 1
-}
+#Write-Host "Setting release version"
+#exec { mvn -q -B versions:set `-DnewVersion="$version" }
+#
+#if (-not $?) {
+#    Write-Error "Setting release version failed"
+#    git reset --hard
+#    exit 1
+#}
 
 Write-Host "Checking preconditions"
 exec { mvn -q -B org.nzbhydra:github-release-plugin:3.0.0:precheck }
@@ -90,6 +100,8 @@ if (-not $?) {
     git reset --hard
     exit 1
 }
+
+Read-Host -Prompt "nzbhydra.exe didn't work before. Have you made sure it works?"
 
 Write-Host "Generating changelog"
 exec { mvn -q -B org.nzbhydra:github-release-plugin:3.0.0:generate-changelog }
@@ -107,69 +119,69 @@ if (-not $?) {
     exit 1
 }
 
+#
+#Write-Host "Making versions effective"
+#exec { mvn -q -B versions:commit }
+#if (-not $?) {
+#    Write-Error "Making versions effective failed"
+#    git reset --hard
+#    exit 1
+#}
+#
+#if ($dryRun) {
+#    Write-Host "Committing (not really, just dry run) ***********************************************************************"
+#} else {
+#    Write-Host "Committing ***********************************************************************"
+#    git commit -am "Update to $version"
+#    if (-not $?) {
+#        Write-Error "Commit failed"
+#        git reset --hard
+#        exit 1
+#    }
+#}
+#
+#if ($dryRun) {
+#    Write-Host "Tagging (not really, just dry run) ***********************************************************************"
+#} else {
+#    Write-Host "Tagging ***********************************************************************"
+#    git tag -a v"$version" -m "v$nextVersion"
+#    if (-not $?) {
+#        Write-Error "Tagging failed"
+#        git reset --hard
+#        exit 1
+#    }
+#}
+#
+#if ($dryRun) {
+#    Write-Host "Pushing (not really, just dry run) ***********************************************************************"
+#} else {
+#    Write-Host "Pushing ***********************************************************************"
+#    git push
+#    if (-not $?) {
+#        Write-Error "Tagging failed"
+#        git reset --hard
+#        exit 1
+#    }
+#}
 
-Write-Host "Making versions effective"
-exec { mvn -q -B versions:commit }
-if (-not $?) {
-    Write-Error "Making versions effective failed"
-    git reset --hard
-    exit 1
-}
 
-if ($dryRun) {
-    Write-Host "Committing (not really, just dry run) ***********************************************************************"
-} else {
-    Write-Host "Committing ***********************************************************************"
-    git commit -am "Update to $version"
-    if (-not $?) {
-        Write-Error "Commit failed"
-        git reset --hard
-        exit 1
-    }
-}
-
-if ($dryRun) {
-    Write-Host "Tagging (not really, just dry run) ***********************************************************************"
-} else {
-    Write-Host "Tagging ***********************************************************************"
-    git tag -a v"$version" -m "v$nextVersion"
-    if (-not $?) {
-        Write-Error "Tagging failed"
-        git reset --hard
-        exit 1
-    }
-}
-
-if ($dryRun) {
-    Write-Host "Pushing (not really, just dry run) ***********************************************************************"
-} else {
-    Write-Host "Pushing ***********************************************************************"
-    git push
-    if (-not $?) {
-        Write-Error "Tagging failed"
-        git reset --hard
-        exit 1
-    }
-}
-
-
-Write-Host "Building core jar"
-exec { mvn -q -pl org.nzbhydra:nzbhydra2,org.nzbhydra:mapping,org.nzbhydra:assertions,org.nzbhydra:core clean install -B -T 1C `-DskipTests=true}
-copy .\core\target\*-exec.jar .\releases\generic-release\include\
-if (-not $?) {
-    Write-Error "Clean install of core failed"
-    git reset --hard
-    exit 1
-}
-
-Write-Host "Building windows executable"
-try {
-    .\buildCore.cmd
-    copy .\core\target\core.exe .\releases\windows-release\include\
-    copy .\core\target\*.dll .\releases\windows-release\include\
-} catch {
-    exit 1
-}
+#Write-Host "Building core jar"
+#exec { mvn -q -pl org.nzbhydra:nzbhydra2,org.nzbhydra:mapping,org.nzbhydra:assertions,org.nzbhydra:core clean install -B -T 1C `-DskipTests=true}
+#copy .\core\target\*-exec.jar .\releases\generic-release\include\
+#if (-not $?) {
+#    Write-Error "Clean install of core failed"
+#    git reset --hard
+#    exit 1
+#}
+#
+#Write-Host "Building windows executable"
+#try {
+#    .\buildCore.cmd
+#    copy .\core\target\core.exe .\releases\windows-release\include\
+#    copy .\core\target\*.dll .\releases\windows-release\include\
+#} catch {
+#    exit 1
+#}
 
 $windowsVersion = releases/windows-release/include/core.exe -version
 if ($windowsVersion -ne $version) {
@@ -193,10 +205,7 @@ if ($linuxVersion -ne $version) {
 
 Write-Host "All required files exist and versions match"
 
-Write-Host "Building releases"
-exec { mvn -q -pl org.nzbhydra:generic-release,org.nzbhydra:windows-release,org.nzbhydra:linux-release clean install -B -T 1C `-DskipTests=true}
-
-if ($dryRun) {
+if ($dryRun -or -not $doRelease) {
     Write-Host "Releasing to github (not really, just dry run) ***********************************************************************"
     exec { mvn -B org.nzbhydra:github-release-plugin:3.0.0:release `-DdryRun }
 
@@ -209,7 +218,7 @@ if (-not $?) {
     exit 1
 }
 
-if ($dryRun) {
+if ($dryRun -or -not $doRelease) {
     Write-Host "Publishing to discord (not really, just dry run) ***********************************************************************"
     exec { mvn -B org.nzbhydra:github-release-plugin:3.0.0:publish-on-discord `-DdryRun }
 
@@ -223,44 +232,44 @@ if (-not $?) {
     exit 1
 }
 
-Write-Host "Setting new snapshot version"
-
-exec { mvn -B versions:set `-DnewVersion="$nextVersion"-SNAPSHOT }
-
-if (-not $?) {
-    Write-Error "Setting new snapshot version failed"
-    git reset --hard
-    exit 1
-}
-
-Write-Host "Making snapshot version effective"
-exec { mvn -B versions:commit }
-if (-not $?) {
-    Write-Error "Making snapshot version effective failed"
-    git reset --hard
-    exit 1
-}
-
-if ($dryRun) {
-    Write-Host "Committing snapshot code (not really, dry run) ***********************************************************************"
-} else {
-    Write-Host "Committing snapshot code ***********************************************************************"
-    git commit -am "Set snapshot to $nextVersion"
-}
-if (-not $?) {
-    Write-Error "Committing snapshot code failed"
-    exit 1
-}
-
-if ($dryRun) {
-    Write-Host "Pushing to master (not really, dry run) ***********************************************************************"
-} else {
-    Write-Host "Pushing to master ***********************************************************************"
-    git push
-}
-if (-not $?) {
-    Write-Error "Pushing to master failed"
-    exit 1
-}
+#Write-Host "Setting new snapshot version"
+#
+#exec { mvn -B versions:set `-DnewVersion="$nextVersion"-SNAPSHOT }
+#
+#if (-not $?) {
+#    Write-Error "Setting new snapshot version failed"
+#    git reset --hard
+#    exit 1
+#}
+#
+#Write-Host "Making snapshot version effective"
+#exec { mvn -B versions:commit }
+#if (-not $?) {
+#    Write-Error "Making snapshot version effective failed"
+#    git reset --hard
+#    exit 1
+#}
+#
+#if ($dryRun) {
+#    Write-Host "Committing snapshot code (not really, dry run) ***********************************************************************"
+#} else {
+#    Write-Host "Committing snapshot code ***********************************************************************"
+#    git commit -am "Set snapshot to $nextVersion"
+#}
+#if (-not $?) {
+#    Write-Error "Committing snapshot code failed"
+#    exit 1
+#}
+#
+#if ($dryRun) {
+#    Write-Host "Pushing to master (not really, dry run) ***********************************************************************"
+#} else {
+#    Write-Host "Pushing to master ***********************************************************************"
+#    git push
+#}
+#if (-not $?) {
+#    Write-Error "Pushing to master failed"
+#    exit 1
+#}
 
 Write-Host "Done"

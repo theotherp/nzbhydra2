@@ -1,6 +1,11 @@
-### v5.0.0 BETA (2023-01-20)
+### v5.0.1 (2023-01-20)
 
-**Feature** Massive upgrade of the underlying framework and used libraries. Java is not needed anymore in most cases. Highly increased startup and memory performance (on my machine using docker and as a fresh install it starts in 0.9 seconds and uses 180MB memory now versus 9 seconds and 332MB memory before). This is the result of weeks of work and testing. I hope everything goes as smooth as possible.
+**Fix** Such a big release and it all went to hell. Due to a last minute change my tests with auth enabled hydra wouldn't start. Sorry for that.
+
+### v5.0.0 BETA
+
+**Feature** Massive upgrade of the underlying framework and used libraries. Java is not needed anymore in most cases. Highly increased startup and memory performance (on my machine using docker and as a fresh install it starts in 0.9
+seconds and uses 180MB memory now versus 9 seconds and 332MB memory before). This is the result of weeks of work and testing. I hope everything goes as smooth as possible.
 
 **Feature** Update of database to a newer version. This requires a recreation of the whole database which hopefully will be executed automatically and without errors ;-)
 
@@ -14,13 +19,9 @@
 
 **Fix** Prevent some misleading error messages that were shown when shutting down.
 
-
-
 ### v4.7.5
 
 **Fix** Configure separate indexers in lidarr using categories. See <a href="https://github.com/theotherp/nzbhydra2/issues/802">#802</a>
-
-
 
 ### v4.7.4 (2022-12-14)
 
@@ -62,7 +63,9 @@
 
 **Feature** Use custom mappings to transform indexer result titles. Use this to clean up titles, add season or episode to it or whatever. See <a href="https://github.com/theotherp/nzbhydra2/issues/794">#794</a>
 
-**Fix** Some of you have an instance running which is exposed to the internet, without any authentication method. I previously tried to recognize this by some heuristic which was a bit naive and caused a lot of false positives. NZBHydra will now periodically try to determine your public IP and actually check if the used port is open. This might still not always work (e.g. in when you're running it using a VPN in which case I guess you know what're doing. Ultimately it's up to you to get your shit together.
+**Fix** Some of you have an instance running which is exposed to the internet, without any authentication method. I previously tried to recognize this by some heuristic which was a bit naive and caused a lot of false positives. NZBHydra
+will now periodically try to determine your public IP and actually check if the used port is open. This might still not always work (e.g. in when you're running it using a VPN in which case I guess you know what're doing. Ultimately it's up
+to you to get your shit together.
 
 **Fix** Only warn about settings violating indexers' rules if the indexers are actually enabled.
 
@@ -326,7 +329,8 @@
 
 ### v3.14.0 (2021-04-11)
 
-**Feature** Custom mapping for queries and titles. This allows you to customize / change the values used by external tools or returned by metadata providers like TVDB. See <a href="https://github.com/theotherp/nzbhydra2/issues/700">#700</a>.
+**Feature** Custom mapping for queries and titles. This allows you to customize / change the values used by external tools or returned by metadata providers like TVDB. See <a href="https://github.com/theotherp/nzbhydra2/issues/700">
+#700</a>.
 
 
 
@@ -1378,9 +1382,8 @@
 
 ### v2.9.5 (2019-11-23)
 
-**Feature** I realised the indexer score is too complex to show in a chart and replaced it with a table, that shows more information. It will now contain the average uniqueness score, the number of unique downloads and the number of searches which resulted in a download and where an indexer was involved. 
-
-
+**Feature** I realised the indexer score is too complex to show in a chart and replaced it with a table, that shows more information. It will now contain the average uniqueness score, the number of unique downloads and the number of
+searches which resulted in a download and where an indexer was involved.
 
 ### v2.9.4 (2019-11-21)
 

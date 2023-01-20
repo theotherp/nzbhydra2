@@ -16,7 +16,6 @@
 
 package org.nzbhydra;
 
-import jakarta.annotation.PostConstruct;
 import org.springframework.boot.SpringApplicationAotProcessor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.aot.AbstractAotProcessor;
@@ -27,7 +26,7 @@ import org.springframework.util.StringUtils;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 public class NzbHydraNativeEntrypoint {
 
     public static void main(String[] args) throws Exception {

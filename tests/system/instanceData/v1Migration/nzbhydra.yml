@@ -11,13 +11,7 @@ auth:
     restrictSearch: false
     restrictStats: false
     allowApiStats: true
-    users:
-        -   maySeeAdmin: true
-            maySeeDetailsDl: true
-            maySeeStats: true
-            showIndexerSelection: true
-            username: "test"
-            password: "{noop}test"
+    users: [ ]
 categoriesConfig:
     enableCategorySizes: true
     categories:

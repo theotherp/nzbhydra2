@@ -16,26 +16,14 @@
 
 package org.nzbhydra.web;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
-
-import java.time.Instant;
-
-@RestControllerAdvice
+// TODO sist 20.01.2023: Causes error for some reason, unable to login, perhaps because it also handles invalidauthexception?
+//@RestControllerAdvice
 public class HydraRestControllerAdvice {
 
-    private static final Logger logger = LoggerFactory.getLogger(HydraRestControllerAdvice.class);
-
-    @ExceptionHandler(Exception.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    @ResponseBody
-    public ApiError handleCustomException(Exception ce) {
-        logger.error("Rest exception", ce);
-        return new ApiError(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(), Instant.now(), ce.getMessage());
-    }
+//    @ExceptionHandler(Exception.class)
+//    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+//    @ResponseBody
+//    public ApiError handleCustomException(Exception ce) {
+//        return new ApiError(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(), Instant.now(), ce.getMessage());
+//    }
 }

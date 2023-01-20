@@ -1,6 +1,7 @@
 package org.nzbhydra.auth;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.nzbhydra.NzbHydra;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigChangedEvent;
 import org.nzbhydra.config.ConfigProvider;
@@ -21,13 +22,14 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.channel.ChannelProcessingFilter;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.firewall.DefaultHttpFirewall;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.filter.ForwardedHeaderFilter;
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @Order
 @EnableWebSecurity
 public class SecurityConfig {
@@ -70,42 +72,42 @@ public class SecurityConfig {
             .httpStrictTransportSecurity().disable()
             .frameOptions().disable();
 
-        if (baseConfig.getAuth().getAuthType() == AuthType.BASIC) {
+        if (baseConfig.getAuth().getAuthType() == AuthType.BASIC || NzbHydra.isNativeBuild()) {
             http = http
-                .httpBasic()
-                .authenticationDetailsSource(new WebAuthenticationDetailsSource() {
-                    @Override
-                    public WebAuthenticationDetails buildDetails(HttpServletRequest context) {
-                        return new HydraWebAuthenticationDetails(context);
-                    }
-                })
-                .and();
+                    .httpBasic()
+                    .authenticationDetailsSource(new WebAuthenticationDetailsSource() {
+                        @Override
+                        public WebAuthenticationDetails buildDetails(HttpServletRequest context) {
+                            return new HydraWebAuthenticationDetails(context);
+                        }
+                    })
+                    .and();
         } else if (baseConfig.getAuth().getAuthType() == AuthType.FORM) {
             http = http
                 .formLogin()
                 .loginPage("/login")
                 .loginProcessingUrl("/login")
-                .defaultSuccessUrl("/")
-                .permitAll()
-                .authenticationDetailsSource(new WebAuthenticationDetailsSource() {
-                    @Override
-                    public WebAuthenticationDetails buildDetails(HttpServletRequest context) {
-                        return new HydraWebAuthenticationDetails(context);
-                    }
-                })
-                .and();
+                    .defaultSuccessUrl("/")
+                    .permitAll()
+                    .authenticationDetailsSource(new WebAuthenticationDetailsSource() {
+                        @Override
+                        public WebAuthenticationDetails buildDetails(HttpServletRequest context) {
+                            return new HydraWebAuthenticationDetails(context);
+                        }
+                    })
+                    .and();
         }
-        if (baseConfig.getAuth().isAuthConfigured()) {
+        if (baseConfig.getAuth().isAuthConfigured() || NzbHydra.isNativeBuild()) {
             http = http
-                .authorizeHttpRequests()
-                .requestMatchers("/internalapi/")
-                .authenticated()
-                .requestMatchers("/websocket/")
-                .authenticated()
-                .requestMatchers("/actuator/**")
-                .hasRole("ADMIN")
-                .requestMatchers(new AntPathRequestMatcher("/static/**"))
-                .permitAll()
+                    .authorizeHttpRequests()
+                    .requestMatchers("/internalapi/")
+                    .authenticated()
+                    .requestMatchers("/websocket/")
+                    .authenticated()
+                    .requestMatchers("/actuator/**")
+                    .hasRole("ADMIN")
+                    .requestMatchers(new AntPathRequestMatcher("/static/**"))
+                    .permitAll()
                 .anyRequest()
 //                .authenticated() //Does not include anonymous
                 .hasAnyRole("ADMIN", "ANONYMOUS", "USER")
@@ -135,8 +137,8 @@ public class SecurityConfig {
             }
 
             headerAuthenticationFilter = new HeaderAuthenticationFilter(authenticationManager, hydraUserDetailsManager, configProvider.getBaseConfig().getAuth());
-            http.addFilterAfter(headerAuthenticationFilter, HeaderAuthenticationFilter.class);
-            http.addFilterAfter(asyncSupportFilter, HeaderAuthenticationFilter.class);
+            http.addFilterAfter(headerAuthenticationFilter, BasicAuthenticationFilter.class);
+            http.addFilterAfter(asyncSupportFilter, BasicAuthenticationFilter.class);
 
         } else {
             http.authorizeHttpRequests().anyRequest().permitAll();
