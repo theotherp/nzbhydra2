@@ -1,13 +1,12 @@
 ---
--   version: "v1.0.0"
-    date: "2019-11-16"
+-   version: v1.0.0
+    date: '2019-11-16'
     changes:
-        -   type: "note"
-            text: "First major release"
+        -   type: note
+            text: First major release
     final: false
--   version: "v0.0.1"
-    date: null
+-   version: v0.0.1
+    date:
     changes:
-        -   type: "note"
-            text: "First version. See #123"
-    final: true
+        -   type: note
+            text: 'First version. See #123'
