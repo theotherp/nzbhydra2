@@ -2441,10 +2441,7 @@
           "pattern": "\\Qorg/thymeleaf/thymeleaf.properties\\E"
       },
       {
-          "pattern": "\\Qstatic/css/alllibs.css\\E"
-      },
-      {
-          "pattern": "\\Qstatic/css/grey.css\\E"
+          "pattern": "\\Qstatic/*\\E"
       },
       {
           "pattern": "\\Qstatic/fonts/fontawesome-webfont.woff2\\E"
