@@ -4,11 +4,9 @@ import jakarta.servlet.http.HttpSession;
 import org.nzbhydra.ExceptionInfo;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.Markdown;
-import org.nzbhydra.auth.UserInfosProvider;
 import org.nzbhydra.mapping.SemanticVersion;
 import org.nzbhydra.news.NewsProvider.NewsEntry;
 import org.nzbhydra.update.UpdateManager;
-import org.nzbhydra.web.BootstrappedDataTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +22,6 @@ import org.springframework.web.context.request.WebRequest;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -33,8 +30,6 @@ public class NewsWeb {
     private static final Logger logger = LoggerFactory.getLogger(NewsWeb.class);
 
     @Autowired
-    private UserInfosProvider userInfosProvider;
-    @Autowired
     private NewsProvider newsProvider;
     @Autowired
     private UpdateManager updateManager;
@@ -42,21 +37,13 @@ public class NewsWeb {
     @RequestMapping(value = "/internalapi/news", method = RequestMethod.GET)
     @Secured({"ROLE_USER"})
     public List<NewsEntryForWeb> getAllNews(HttpSession session, Principal principal) throws IOException {
-        BootstrappedDataTO userInfos = userInfosProvider.getUserInfos(principal);
-        if (userInfos.getMaySeeAdmin()) {
             logger.debug("Getting all news ");
             return transform(newsProvider.getNews());
-        }
-        return Collections.emptyList();
     }
 
     @RequestMapping(value = "/internalapi/news/forcurrentversion", method = RequestMethod.GET)
     @Secured({"ROLE_USER"})
     public List<NewsEntryForWeb> getNewsForCurrentVersionAndAfter(Principal principal) throws IOException {
-        BootstrappedDataTO userInfos = userInfosProvider.getUserInfos(principal);
-        if (!userInfos.getMaySeeAdmin()) {
-            return Collections.emptyList();
-        }
         return transform(newsProvider.getNewsForCurrentVersionAndAfter());
     }
 
