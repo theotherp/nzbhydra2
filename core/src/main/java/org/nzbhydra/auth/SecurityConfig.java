@@ -21,7 +21,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.channel.ChannelProcessingFilter;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
-import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.firewall.DefaultHttpFirewall;
@@ -136,8 +135,8 @@ public class SecurityConfig {
             }
 
             headerAuthenticationFilter = new HeaderAuthenticationFilter(authenticationManager, hydraUserDetailsManager, configProvider.getBaseConfig().getAuth());
-            http.addFilterAfter(headerAuthenticationFilter, BasicAuthenticationFilter.class);
-            http.addFilterAfter(asyncSupportFilter, BasicAuthenticationFilter.class);
+            http.addFilterAfter(headerAuthenticationFilter, HeaderAuthenticationFilter.class);
+            http.addFilterAfter(asyncSupportFilter, HeaderAuthenticationFilter.class);
 
         } else {
             http.authorizeHttpRequests().anyRequest().permitAll();
