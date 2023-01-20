@@ -39,162 +39,162 @@ if ($dryRun) {
     Write-Host "Dry run is disabled"
 }
 
-#if (Test-Path "discordtoken.txt") {
-#    $discordToken = Get-Content "discordtoken.txt"
-#    $env:DISCORD_TOKEN = $discordToken
-#    Write-Host "Discord token is set"
-#}
-#
-#if (Test-Path "githubtoken.txt") {
-#    $githubToken = Get-Content "githubtoken.txt"
-#    $env:GITHUB_TOKEN = $githubToken
-#    Write-Host "Github token is set"
-#}
-#
-#if ($discordToken -eq $null) {
-#    Write-Error "Discord token is required"
-#    exit 1
-#}
-#
-#if ($githubToken -eq $null) {
-#    Write-Error "Github token is required"
-#    exit 1
-#}
-#
-#if (!(Test-Path "readme.md")) {
-#    Write-Error "Readme.md is required"
-#    exit 1
-#}
-#
-#if ((git status --porcelain) -ne $null) {
-#    Write-Error "Git has untracked or changed files"
-#    exit 1
-#}
-#else {
-#    Write-Host "Git is clean"
-#}
-#
-#Write-Host "Setting release version"
-#exec { mvn -q -B versions:set `-DnewVersion="$version" }
-#
-#if (-not $?) {
-#    Write-Error "Setting release version failed"
-#    git reset --hard
-#    exit 1
-#}
-#
-#Write-Host "Checking preconditions"
-#exec { mvn -q -B org.nzbhydra:github-release-plugin:3.0.0:precheck }
-#if (-not $?) {
-#    Write-Error "Preconditions failed"
-#    git reset --hard
-#    exit 1
-#}
-#
-#Write-Host "Generating changelog"
-#exec { mvn -q -B org.nzbhydra:github-release-plugin:3.0.0:generate-changelog }
-#if (-not $?) {
-#    Write-Error "Changing log generation failed"
-#    git reset --hard
-#    exit 1
-#}
-#
-#Write-Host "Generating wrapper hashes"
-#exec { mvn -q -B org.nzbhydra:github-release-plugin:3.0.0:generate-wrapper-hashes }
-#if (-not $?) {
-#    Write-Error "Wrapper hash generation failed"
-#    git reset --hard
-#    exit 1
-#}
-#
-#
-#Write-Host "Making versions effective"
-#exec { mvn -q -B versions:commit }
-#if (-not $?) {
-#    Write-Error "Making versions effective failed"
-#    git reset --hard
-#    exit 1
-#}
-#
-#if ($dryRun) {
-#    Write-Host "Committing (not really, just dry run) ***********************************************************************"
-#} else {
-#    Write-Host "Committing ***********************************************************************"
-#    git commit -am "Update to $version"
-#    if (-not $?) {
-#        Write-Error "Commit failed"
-#        git reset --hard
-#        exit 1
-#    }
-#}
-#
-#if ($dryRun) {
-#    Write-Host "Tagging (not really, just dry run) ***********************************************************************"
-#} else {
-#    Write-Host "Tagging ***********************************************************************"
-#    git tag -a v"$version" -m "v$nextVersion"
-#    if (-not $?) {
-#        Write-Error "Tagging failed"
-#        git reset --hard
-#        exit 1
-#    }
-#}
-#
-#if ($dryRun) {
-#    Write-Host "Pushing (not really, just dry run) ***********************************************************************"
-#} else {
-#    Write-Host "Pushing ***********************************************************************"
-#    git push
-#    if (-not $?) {
-#        Write-Error "Tagging failed"
-#        git reset --hard
-#        exit 1
-#    }
-#}
-#
-#
-#Write-Host "Building core jar"
-#exec { mvn -q -pl org.nzbhydra:nzbhydra2,org.nzbhydra:mapping,org.nzbhydra:assertions,org.nzbhydra:core clean install -B -T 1C `-DskipTests=true}
-#copy .\core\target\*-exec.jar .\releases\generic-release\include\
-#if (-not $?) {
-#    Write-Error "Clean install of core failed"
-#    git reset --hard
-#    exit 1
-#}
-#
-#Write-Host "Building windows executable"
-#try {
-#    .\buildCore.cmd
-#    copy .\core\target\core.exe .\releases\windows-release\include\
-#    copy .\core\target\*.dll .\releases\windows-release\include\
-#} catch {
-#    exit 1
-#}
-#
-#$windowsVersion = releases/windows-release/include/core.exe -version
-#if ($windowsVersion -ne $version) {
-#    Write-Error "Windows version $version expected but is $windowsVersion"
-#    exit 1
-#}
-#
-#$genericVersion = java -jar releases/generic-release/include/core-$version-exec.jar -version
-#if ($genericVersion -ne $version) {
-#    Write-Error "Generic version $version expected but is $genericVersion"
-#    exit 1
-#}
-#
-#Read-Host -Prompt "Wait for build to finish on pipeline. Copy linux executable to include folder. Press enter to continue"
-#
-#$linuxVersion = wsl -d Ubuntu releases/linux-release/include/core -version
-#if ($linuxVersion -ne $version) {
-#    Write-Error "Linux version $version expected but is $linuxVersion"
-#    exit 1
-#}
-#
-#Write-Host "All required files exist and versions match"
+if (Test-Path "discordtoken.txt") {
+    $discordToken = Get-Content "discordtoken.txt"
+    $env:DISCORD_TOKEN = $discordToken
+    Write-Host "Discord token is set"
+}
 
-#Write-Host "Building releases"
-#exec { mvn -q -pl org.nzbhydra:generic-release,org.nzbhydra:windows-release,org.nzbhydra:linux-release clean install -B -T 1C `-DskipTests=true}
+if (Test-Path "githubtoken.txt") {
+    $githubToken = Get-Content "githubtoken.txt"
+    $env:GITHUB_TOKEN = $githubToken
+    Write-Host "Github token is set"
+}
+
+if ($discordToken -eq $null) {
+    Write-Error "Discord token is required"
+    exit 1
+}
+
+if ($githubToken -eq $null) {
+    Write-Error "Github token is required"
+    exit 1
+}
+
+if (!(Test-Path "readme.md")) {
+    Write-Error "Readme.md is required"
+    exit 1
+}
+
+if ((git status --porcelain) -ne $null) {
+    Write-Error "Git has untracked or changed files"
+    exit 1
+}
+else {
+    Write-Host "Git is clean"
+}
+
+Write-Host "Setting release version"
+exec { mvn -q -B versions:set `-DnewVersion="$version" }
+
+if (-not $?) {
+    Write-Error "Setting release version failed"
+    git reset --hard
+    exit 1
+}
+
+Write-Host "Checking preconditions"
+exec { mvn -q -B org.nzbhydra:github-release-plugin:3.0.0:precheck }
+if (-not $?) {
+    Write-Error "Preconditions failed"
+    git reset --hard
+    exit 1
+}
+
+Write-Host "Generating changelog"
+exec { mvn -q -B org.nzbhydra:github-release-plugin:3.0.0:generate-changelog }
+if (-not $?) {
+    Write-Error "Changing log generation failed"
+    git reset --hard
+    exit 1
+}
+
+Write-Host "Generating wrapper hashes"
+exec { mvn -q -B org.nzbhydra:github-release-plugin:3.0.0:generate-wrapper-hashes }
+if (-not $?) {
+    Write-Error "Wrapper hash generation failed"
+    git reset --hard
+    exit 1
+}
+
+
+Write-Host "Making versions effective"
+exec { mvn -q -B versions:commit }
+if (-not $?) {
+    Write-Error "Making versions effective failed"
+    git reset --hard
+    exit 1
+}
+
+if ($dryRun) {
+    Write-Host "Committing (not really, just dry run) ***********************************************************************"
+} else {
+    Write-Host "Committing ***********************************************************************"
+    git commit -am "Update to $version"
+    if (-not $?) {
+        Write-Error "Commit failed"
+        git reset --hard
+        exit 1
+    }
+}
+
+if ($dryRun) {
+    Write-Host "Tagging (not really, just dry run) ***********************************************************************"
+} else {
+    Write-Host "Tagging ***********************************************************************"
+    git tag -a v"$version" -m "v$nextVersion"
+    if (-not $?) {
+        Write-Error "Tagging failed"
+        git reset --hard
+        exit 1
+    }
+}
+
+if ($dryRun) {
+    Write-Host "Pushing (not really, just dry run) ***********************************************************************"
+} else {
+    Write-Host "Pushing ***********************************************************************"
+    git push
+    if (-not $?) {
+        Write-Error "Tagging failed"
+        git reset --hard
+        exit 1
+    }
+}
+
+
+Write-Host "Building core jar"
+exec { mvn -q -pl org.nzbhydra:nzbhydra2,org.nzbhydra:mapping,org.nzbhydra:assertions,org.nzbhydra:core clean install -B -T 1C `-DskipTests=true}
+copy .\core\target\*-exec.jar .\releases\generic-release\include\
+if (-not $?) {
+    Write-Error "Clean install of core failed"
+    git reset --hard
+    exit 1
+}
+
+Write-Host "Building windows executable"
+try {
+    .\buildCore.cmd
+    copy .\core\target\core.exe .\releases\windows-release\include\
+    copy .\core\target\*.dll .\releases\windows-release\include\
+} catch {
+    exit 1
+}
+
+$windowsVersion = releases/windows-release/include/core.exe -version
+if ($windowsVersion -ne $version) {
+    Write-Error "Windows version $version expected but is $windowsVersion"
+    exit 1
+}
+
+$genericVersion = java -jar releases/generic-release/include/core-$version-exec.jar -version
+if ($genericVersion -ne $version) {
+    Write-Error "Generic version $version expected but is $genericVersion"
+    exit 1
+}
+
+Read-Host -Prompt "Wait for build to finish on pipeline. Copy linux executable to include folder. Press enter to continue"
+
+$linuxVersion = wsl -d Ubuntu releases/linux-release/include/core -version
+if ($linuxVersion -ne $version) {
+    Write-Error "Linux version $version expected but is $linuxVersion"
+    exit 1
+}
+
+Write-Host "All required files exist and versions match"
+
+Write-Host "Building releases"
+exec { mvn -q -pl org.nzbhydra:generic-release,org.nzbhydra:windows-release,org.nzbhydra:linux-release clean install -B -T 1C `-DskipTests=true}
 
 if ($dryRun) {
     Write-Host "Releasing to github (not really, just dry run) ***********************************************************************"
