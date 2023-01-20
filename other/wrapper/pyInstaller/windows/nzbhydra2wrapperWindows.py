@@ -22,5 +22,6 @@ import systemTray
 
 if __name__ == '__main__':
     thread = systemTray.start()
+    nzbhydra2wrapperPy3.quiet = True
     nzbhydra2wrapperPy3.main(sys.argv[1:])
     systemTray.stop()
