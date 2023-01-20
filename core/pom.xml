@@ -463,7 +463,7 @@
                     <!--https://stackoverflow.com/a/47412779-->
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-devtools</artifactId>
-                    <version>${spring.boot.version}</version>
+                    <version>${spring.boot.devtools.version}</version>
                     <optional>true</optional>
                 </dependency>
             </dependencies>

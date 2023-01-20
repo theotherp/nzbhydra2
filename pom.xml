@@ -98,10 +98,14 @@
     </profiles>
 
     <properties>
+        <maven.javadoc.skip>true</maven.javadoc.skip>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+
         <spring.boot.version>3.0.2</spring.boot.version>
+        <spring.boot.devtools.version>3.0.1</spring.boot.devtools.version>
         <spring.boot.maven.version>3.0.2</spring.boot.maven.version>
         <spring.oxm.version>6.0.4</spring.oxm.version>
-        <spring-data-jpa.version>3.0.0</spring-data-jpa.version>
         <spring.oxm.version>6.0.4</spring.oxm.version>
         <spring-data-commons.version>3.0.0</spring-data-commons.version>
         <jakarta.persistence-api.version>3.1.0</jakarta.persistence-api.version>
@@ -119,9 +123,6 @@
         <jaxb.sun.impl.version>3.0.1</jaxb.sun.impl.version>
         <maven.compiler.plugin.version>3.6.2</maven.compiler.plugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.javadoc.skip>true</maven.javadoc.skip>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
         <uri-scheme-handler.version>2.0.0</uri-scheme-handler.version>
         <javers-core.version>6.8.1</javers-core.version>
     </properties>
