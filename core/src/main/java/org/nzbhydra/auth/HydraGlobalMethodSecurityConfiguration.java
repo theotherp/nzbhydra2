@@ -16,6 +16,7 @@
 
 package org.nzbhydra.auth;
 
+import org.nzbhydra.NzbHydra;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.auth.AuthType;
 import org.slf4j.Logger;
@@ -34,7 +35,7 @@ import java.util.List;
 
 
 @EnableGlobalMethodSecurity
-@Configuration
+@Configuration(proxyBeanMethods = false)
 public class HydraGlobalMethodSecurityConfiguration extends GlobalMethodSecurityConfiguration {
 
     private static final Logger hydraLogger = LoggerFactory.getLogger(HydraGlobalMethodSecurityConfiguration.class);
@@ -46,7 +47,7 @@ public class HydraGlobalMethodSecurityConfiguration extends GlobalMethodSecurity
     public MethodSecurityMetadataSource methodSecurityMetadataSource() {
         List<MethodSecurityMetadataSource> sources = new ArrayList<>();
 
-        if (configProvider.getBaseConfig().getAuth().getAuthType() != AuthType.NONE) {
+        if (configProvider.getBaseConfig().getAuth().getAuthType() != AuthType.NONE || NzbHydra.isNativeBuild()) {
             hydraLogger.info("Enabling auth type " + configProvider.getBaseConfig().getAuth().getAuthType());
             sources.add(new SecuredAnnotationSecurityMetadataSource());
         }

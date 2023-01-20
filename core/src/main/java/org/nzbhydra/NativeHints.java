@@ -52,7 +52,6 @@ public class NativeHints implements RuntimeHintsRegistrar {
         for (Class<?> clazz : classes) {
             hints.reflection().registerType(clazz, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS);
             for (Method method : clazz.getDeclaredMethods()) {
-                logger.info("Registering " + method + " for reflection");
                 hints.reflection().registerMethod(method, ExecutableMode.INVOKE);
             }
         }
