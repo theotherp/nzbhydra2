@@ -17,9 +17,10 @@
 package org.nzbhydra.downloading;
 
 import com.google.common.collect.Sets;
+import jakarta.persistence.EntityManagerFactory;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Captor;
@@ -28,6 +29,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.SearchSource;
 import org.nzbhydra.config.downloading.FileDownloadAccessType;
 import org.nzbhydra.indexers.IndexerEntity;
 import org.nzbhydra.indexers.IndexerSearchEntity;
@@ -35,17 +37,17 @@ import org.nzbhydra.indexers.IndexerSearchRepository;
 import org.nzbhydra.searching.db.SearchEntity;
 import org.nzbhydra.searching.db.SearchResultEntity;
 import org.nzbhydra.searching.db.SearchResultRepository;
-import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.searching.uniqueness.IndexerUniquenessScoreEntity;
 import org.nzbhydra.searching.uniqueness.IndexerUniquenessScoreEntityRepository;
 
-import javax.persistence.EntityManagerFactory;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
@@ -76,7 +78,7 @@ public class IndexerUniquenessScoreSaverTest {
     @InjectMocks
     private IndexerUniquenessScoreSaver testee = new IndexerUniquenessScoreSaver();
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         final BaseConfig value = new BaseConfig();
@@ -104,25 +106,28 @@ public class IndexerUniquenessScoreSaverTest {
         indexerHasNot.setName("indexerHasNot");
         indexerHasNot.setId(3);
 
-        IndexerSearchEntity indexerSearchEntityHasDownloaded = new IndexerSearchEntity(indexerHasDownloaded, searchEntity);
+        IndexerSearchEntity indexerSearchEntityHasDownloaded = new IndexerSearchEntity(indexerHasDownloaded, searchEntity, new Random().nextInt());
         indexerSearchEntityHasDownloaded.setSuccessful(true);
-        IndexerSearchEntity indexerSearchEntityhasToo = new IndexerSearchEntity(indexerhasToo, searchEntity);
+        IndexerSearchEntity indexerSearchEntityhasToo = new IndexerSearchEntity(indexerhasToo, searchEntity, new Random().nextInt());
         indexerSearchEntityhasToo.setSuccessful(true);
-        IndexerSearchEntity indexerSearchEntityHasNot = new IndexerSearchEntity(indexerHasNot, searchEntity);
+        IndexerSearchEntity indexerSearchEntityHasNot = new IndexerSearchEntity(indexerHasNot, searchEntity, new Random().nextInt());
         indexerSearchEntityHasNot.setSuccessful(true);
 
         SearchResultEntity searchResultEntityHasDownloaded = new SearchResultEntity(indexerHasDownloaded, Instant.now(), "Some.result-with_different.Characters", "", "", "", null, Instant.now());
-        searchResultEntityHasDownloaded.setIndexerSearchEntity(indexerSearchEntityHasDownloaded);
+        searchResultEntityHasDownloaded.setIndexerSearchEntityId(indexerSearchEntityHasDownloaded.getId());
         SearchResultEntity searchResultEntityhasToo = new SearchResultEntity(indexerhasToo, Instant.now(), "", "", "", "", null, null);
-        searchResultEntityhasToo.setIndexerSearchEntity(indexerSearchEntityhasToo);
+        searchResultEntityhasToo.setIndexerSearchEntityId(indexerSearchEntityhasToo.getId());
         SearchResultEntity searchResultEntityhasNot = new SearchResultEntity(indexerHasNot, Instant.now(), "", "", "", "", null, null);
-        searchResultEntityhasNot.setIndexerSearchEntity(indexerSearchEntityHasNot);
+        searchResultEntityhasNot.setIndexerSearchEntityId(indexerSearchEntityHasNot.getId());
 
-        FileDownloadEntity fileDownloadEntity = new FileDownloadEntity(searchResultEntityHasDownloaded, FileDownloadAccessType.REDIRECT, SearchRequest.SearchSource.API, FileDownloadStatus.NONE, null);
+        FileDownloadEntity fileDownloadEntity = new FileDownloadEntity(searchResultEntityHasDownloaded, FileDownloadAccessType.REDIRECT, SearchSource.API, FileDownloadStatus.NONE, null);
         FileDownloadEvent downloadEvent = new FileDownloadEvent(fileDownloadEntity, searchResultEntityHasDownloaded);
 
         when(searchResultRepository.findAllByTitleLikeIgnoreCase(anyString())).thenReturn(Sets.newHashSet(searchResultEntityHasDownloaded, searchResultEntityhasToo));
         when(indexerSearchRepository.findBySearchEntity(searchEntity)).thenReturn(Sets.newHashSet(indexerSearchEntityHasDownloaded, indexerSearchEntityhasToo, indexerSearchEntityHasNot));
+        when(indexerSearchRepository.getReferenceById(indexerSearchEntityHasDownloaded.getId())).thenReturn(indexerSearchEntityHasDownloaded);
+        when(indexerSearchRepository.getReferenceById(indexerSearchEntityhasToo.getId())).thenReturn(indexerSearchEntityhasToo);
+        when(indexerSearchRepository.getReferenceById(indexerSearchEntityHasNot.getId())).thenReturn(indexerSearchEntityHasNot);
 
         testee.onNzbDownloadEvent(downloadEvent);
         when(sessionMock.load(ArgumentMatchers.eq(SearchResultEntity.class), any())).thenReturn(new SearchResultEntity());
@@ -134,13 +139,13 @@ public class IndexerUniquenessScoreSaverTest {
         assertThat(score1.getIndexer()).isEqualTo(indexerHasDownloaded);
         assertThat(score1.getInvolved()).isEqualTo(3);
         assertThat(score1.getHave()).isEqualTo(2);
-        assertThat(score1.isHasResult()).isTrue();
+        assertTrue(score1.isHasResult());
 
         IndexerUniquenessScoreEntity score2 = scoreCaptor.getValue().get(1);
         assertThat(score2.getIndexer()).isEqualTo(indexerhasToo);
         assertThat(score2.getInvolved()).isEqualTo(3);
         assertThat(score2.getHave()).isEqualTo(2);
-        assertThat(score2.isHasResult()).isTrue();
+        assertTrue(score2.isHasResult());
 
         IndexerUniquenessScoreEntity score3 = scoreCaptor.getValue().get(2);
         assertThat(score3.getIndexer()).isEqualTo(indexerHasNot);
@@ -163,24 +168,28 @@ public class IndexerUniquenessScoreSaverTest {
         IndexerEntity indexerHasNot2 = new IndexerEntity("indexerHasNot2");
         indexerHasNot2.setId(3);
 
-        IndexerSearchEntity indexerSearchEntityHasDownloaded = new IndexerSearchEntity(indexerHasDownloaded, searchEntity);
+        IndexerSearchEntity indexerSearchEntityHasDownloaded = new IndexerSearchEntity(indexerHasDownloaded, searchEntity, new Random().nextInt());
         indexerSearchEntityHasDownloaded.setSuccessful(true);
         indexerSearchEntityHasDownloaded.setId(1);
-        IndexerSearchEntity indexerSearchEntityhasNot2 = new IndexerSearchEntity(indexerHasNot2, searchEntity);
+        IndexerSearchEntity indexerSearchEntityhasNot2 = new IndexerSearchEntity(indexerHasNot2, searchEntity, new Random().nextInt());
         indexerSearchEntityhasNot2.setSuccessful(true);
         indexerSearchEntityhasNot2.setId(2);
-        IndexerSearchEntity indexerSearchEntityHasNot = new IndexerSearchEntity(indexerHasNot, searchEntity);
+        IndexerSearchEntity indexerSearchEntityHasNot = new IndexerSearchEntity(indexerHasNot, searchEntity, new Random().nextInt());
         indexerSearchEntityHasNot.setSuccessful(true);
         indexerSearchEntityHasNot.setId(3);
+        when(indexerSearchRepository.getReferenceById(indexerSearchEntityHasDownloaded.getId())).thenReturn(indexerSearchEntityHasDownloaded);
+        when(indexerSearchRepository.getReferenceById(indexerSearchEntityHasNot.getId())).thenReturn(indexerSearchEntityHasNot);
+        when(indexerSearchRepository.getReferenceById(indexerSearchEntityhasNot2.getId())).thenReturn(indexerSearchEntityhasNot2);
 
         SearchResultEntity searchResultEntityHasDownloaded = new SearchResultEntity(indexerHasDownloaded, Instant.now(), "", "", "", "", null, Instant.now());
-        searchResultEntityHasDownloaded.setIndexerSearchEntity(indexerSearchEntityHasDownloaded);
+        searchResultEntityHasDownloaded.setIndexerSearchEntityId(indexerSearchEntityHasDownloaded.getId());
         SearchResultEntity searchResultEntityhasNot2 = new SearchResultEntity(indexerHasNot2, Instant.now(), "", "", "", "", null, null);
-        searchResultEntityhasNot2.setIndexerSearchEntity(indexerSearchEntityhasNot2);
+        searchResultEntityhasNot2.setIndexerSearchEntityId(indexerSearchEntityhasNot2.getId());
         SearchResultEntity searchResultEntityhasNot = new SearchResultEntity(indexerHasNot, Instant.now(), "", "", "", "", null, null);
-        searchResultEntityhasNot.setIndexerSearchEntity(indexerSearchEntityHasNot);
+        searchResultEntityhasNot.setIndexerSearchEntityId(indexerSearchEntityHasNot.getId());
 
-        FileDownloadEntity fileDownloadEntity = new FileDownloadEntity(searchResultEntityHasDownloaded, FileDownloadAccessType.REDIRECT, SearchRequest.SearchSource.API, FileDownloadStatus.NONE, null);
+
+        FileDownloadEntity fileDownloadEntity = new FileDownloadEntity(searchResultEntityHasDownloaded, FileDownloadAccessType.REDIRECT, SearchSource.API, FileDownloadStatus.NONE, null);
         FileDownloadEvent downloadEvent = new FileDownloadEvent(fileDownloadEntity, searchResultEntityHasDownloaded);
 
         when(searchResultRepository.findAllByTitleLikeIgnoreCase(anyString())).thenReturn(Sets.newHashSet(searchResultEntityHasDownloaded));
@@ -198,7 +207,7 @@ public class IndexerUniquenessScoreSaverTest {
         assertThat(score1.getIndexer()).isEqualTo(indexerHasDownloaded);
         assertThat(score1.getInvolved()).isEqualTo(3);
         assertThat(score1.getHave()).isEqualTo(1);
-        assertThat(score1.isHasResult()).isTrue();
+        assertTrue(score1.isHasResult());
 
         IndexerUniquenessScoreEntity score2 = scores.get(1);
         assertThat(score2.getIndexer()).isEqualTo(indexerHasNot);

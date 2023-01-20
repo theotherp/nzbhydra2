@@ -1,0 +1,14 @@
+---
+version: "2.1"
+services:
+    radarr:
+        image: lscr.io/linuxserver/radarr:latest
+        container_name: radarr
+        environment:
+            - PUID=1000
+            - PGID=1000
+            - TZ=Europe/London
+        volumes:
+            - ./data:/config
+        ports:
+            - 7878:7878

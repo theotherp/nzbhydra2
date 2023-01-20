@@ -13,8 +13,10 @@
 nzbhydra.pid
 #Ignore wrapper files copied to folders for pyinstaller to find
 /pyInstaller/**/*.py
+!/pyInstaller/windows/nzbhydra2wrapperWindows.py
+!/pyInstaller/windows/systemTray.py
 /pyInstaller/**/*.ico
 /pyInstaller/**/VersionInfo*.txt
-/pyInstaller/**/*.spec
 /**/dist/
 /venv
+/venv_py3

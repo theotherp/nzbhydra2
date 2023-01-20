@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Data;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.util.List;
 
@@ -33,6 +34,7 @@ import java.util.List;
         "userAgent"
 })
 @Data
+@ReflectionMarker
 public class Searching {
 
     @JsonProperty("applyRestrictions")

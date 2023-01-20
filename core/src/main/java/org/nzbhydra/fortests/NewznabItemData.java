@@ -2,11 +2,13 @@ package org.nzbhydra.fortests;
 
 import lombok.Builder;
 import lombok.Data;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.time.Instant;
 import java.util.List;
 
 @Data
+@ReflectionMarker
 @Builder
 public class NewznabItemData {
 

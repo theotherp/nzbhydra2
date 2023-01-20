@@ -2,7 +2,9 @@ package org.nzbhydra.indexers;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Stopwatch;
+import jakarta.persistence.EntityExistsException;
 import joptsimple.internal.Strings;
+import org.nzbhydra.config.BaseConfigHandler;
 import org.nzbhydra.config.ConfigChangedEvent;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.indexer.IndexerConfig;
@@ -19,7 +21,7 @@ import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.notifications.IndexerDisabledNotificationEvent;
 import org.nzbhydra.notifications.IndexerReenabledNotificationEvent;
 import org.nzbhydra.searching.CategoryProvider;
-import org.nzbhydra.searching.CustomQueryAndTitleMapping;
+import org.nzbhydra.searching.CustomQueryAndTitleMappingHandler;
 import org.nzbhydra.searching.SearchResultAcceptor;
 import org.nzbhydra.searching.SearchResultAcceptor.AcceptorResult;
 import org.nzbhydra.searching.SearchResultIdCalculator;
@@ -35,14 +37,13 @@ import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.aot.hint.annotation.Reflective;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.persistence.EntityExistsException;
 import java.net.URI;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
@@ -61,14 +62,9 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("TypeParameterHidesVisibleType")
+@Reflective
 @Component
 public abstract class Indexer<T> {
-
-    public enum BackendType {
-        NZEDB,
-        NNTMUX,
-        NEWZNAB
-    }
 
     protected static final List<Integer> DISABLE_PERIODS = Arrays.asList(0, 5, 15, 30, 60, 3 * 60);
     private static final Logger logger = LoggerFactory.getLogger(Indexer.class);
@@ -81,37 +77,60 @@ public abstract class Indexer<T> {
     protected IndexerConfig config;
     private Pattern cleanupPattern;
 
-    @Autowired
-    protected ConfigProvider configProvider;
-    @Autowired
-    protected IndexerRepository indexerRepository;
-    @Autowired
-    protected SearchResultRepository searchResultRepository;
-    @Autowired
-    protected IndexerApiAccessRepository indexerApiAccessRepository;
-    @Autowired
-    protected IndexerApiAccessEntityShortRepository indexerApiAccessShortRepository;
-    @Autowired
-    private IndexerLimitRepository indexerStatusRepository;
-    @Autowired
-    protected IndexerWebAccess indexerWebAccess;
-    @Autowired
-    protected SearchResultAcceptor resultAcceptor;
-    @Autowired
-    protected CategoryProvider categoryProvider;
-    @Autowired
-    protected InfoProvider infoProvider;
-    @Autowired
-    private ApplicationEventPublisher eventPublisher;
-    @Autowired
-    private QueryGenerator queryGenerator;
-    @Autowired
-    private CustomQueryAndTitleMapping titleMapping;
 
+    protected ConfigProvider configProvider;
+
+    protected IndexerRepository indexerRepository;
+
+    protected SearchResultRepository searchResultRepository;
+
+    protected IndexerApiAccessRepository indexerApiAccessRepository;
+
+    protected IndexerApiAccessEntityShortRepository indexerApiAccessShortRepository;
+
+
+    protected IndexerWebAccess indexerWebAccess;
+
+    protected SearchResultAcceptor resultAcceptor;
+
+    protected CategoryProvider categoryProvider;
+
+    protected InfoProvider infoProvider;
+
+    private ApplicationEventPublisher eventPublisher;
+
+    private QueryGenerator queryGenerator;
+
+    private CustomQueryAndTitleMappingHandler titleMapping;
+
+    private BaseConfigHandler baseConfigHandler;
+
+
+    protected Indexer() {
+    }
+
+    public Indexer(ConfigProvider configProvider, IndexerRepository indexerRepository, SearchResultRepository searchResultRepository, IndexerApiAccessRepository indexerApiAccessRepository, IndexerApiAccessEntityShortRepository indexerApiAccessShortRepository, IndexerLimitRepository indexerStatusRepository, IndexerWebAccess indexerWebAccess, SearchResultAcceptor resultAcceptor, CategoryProvider categoryProvider, InfoProvider infoProvider, ApplicationEventPublisher eventPublisher, QueryGenerator queryGenerator, CustomQueryAndTitleMappingHandler titleMapping, BaseConfigHandler baseConfigHandler) {
+        this.configProvider = configProvider;
+        this.indexerRepository = indexerRepository;
+        this.searchResultRepository = searchResultRepository;
+        this.indexerApiAccessRepository = indexerApiAccessRepository;
+        this.indexerApiAccessShortRepository = indexerApiAccessShortRepository;
+        this.indexerWebAccess = indexerWebAccess;
+        this.resultAcceptor = resultAcceptor;
+        this.categoryProvider = categoryProvider;
+        this.infoProvider = infoProvider;
+        this.eventPublisher = eventPublisher;
+        this.queryGenerator = queryGenerator;
+        this.titleMapping = titleMapping;
+        this.baseConfigHandler = baseConfigHandler;
+    }
 
     public void initialize(IndexerConfig config, IndexerEntity indexer) {
         this.indexer = indexer;
         this.config = config;
+        if (queryGenerator == null) {
+            logger.error("Indexer {} not properly initialized. No beans autowired.", config.getName());
+        }
     }
 
     @EventListener
@@ -174,7 +193,10 @@ public abstract class Indexer<T> {
 
     private boolean isFallbackRequired(SearchRequest searchRequest, IndexerSearchResult indexerSearchResult) {
         final FallbackState fallbackStateByIndexer = searchRequest.getInternalData().getFallbackStateByIndexer(getName());
-        return indexerSearchResult.getTotalResults() == 0 && !searchRequest.getIdentifiers().isEmpty() && fallbackStateByIndexer != FallbackState.USED && configProvider.getBaseConfig().getSearching().getIdFallbackToQueryGeneration().meets(searchRequest);
+        if (indexerSearchResult.getTotalResults() != 0 || searchRequest.getIdentifiers().isEmpty() || fallbackStateByIndexer == FallbackState.USED) {
+            return false;
+        }
+        return searchRequest.meets(configProvider.getBaseConfig().getSearching().getIdFallbackToQueryGeneration());
     }
 
     protected IndexerSearchResult searchInternal(SearchRequest searchRequest, int offset, Integer limit) throws IndexerSearchAbortedException, IndexerAccessException {
@@ -299,7 +321,7 @@ public abstract class Indexer<T> {
         getConfig().setDisabledUntil(null);
         getConfig().setDisabledLevel(0);
         getConfig().setDisabledAt(null);
-        configProvider.getBaseConfig().save(false);
+        baseConfigHandler.save(false);
         saveApiAccess(accessType, responseTime, IndexerAccessResult.SUCCESSFUL, true);
     }
 
@@ -317,7 +339,7 @@ public abstract class Indexer<T> {
         }
         getConfig().setLastError(reason);
         getConfig().setDisabledAt(Instant.now());
-        configProvider.getBaseConfig().save(false);
+        baseConfigHandler.save(false);
         eventPublisher.publishEvent(new IndexerDisabledNotificationEvent(indexer.getName(), getConfig().getState(), reason));
 
         saveApiAccess(accessType, responseTime, accessResult, false);
@@ -415,7 +437,7 @@ public abstract class Indexer<T> {
         }
         title = title.trim().replace("&", "");
 
-        List<String> removeTrailing = configProvider.getBaseConfig().getSearching().getRemoveTrailing().stream().map(x -> x.toLowerCase().trim()).collect(Collectors.toList());
+        List<String> removeTrailing = configProvider.getBaseConfig().getSearching().getRemoveTrailing().stream().map(x -> x.toLowerCase().trim()).toList();
         if (removeTrailing.isEmpty()) {
             return title;
         }
@@ -463,7 +485,7 @@ public abstract class Indexer<T> {
 
     @Override
     public int hashCode() {
-        return (config == null || config.getName() == null) ? 0 : config.getName().hashCode();
+        return (getConfig() == null || getConfig().getName() == null) ? 0 : config.getName().hashCode();
     }
 
     @Override

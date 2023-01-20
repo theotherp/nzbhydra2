@@ -25,7 +25,6 @@ import org.springframework.stereotype.Component;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Component
 public class DownloaderStatusRetrieval {
@@ -41,8 +40,8 @@ public class DownloaderStatusRetrieval {
     public DownloaderStatus getStatus() {
         Collection<Downloader> allDownloaders = downloaderProvider.getAllDownloaders();
         List<Downloader> enabledDownloaders = allDownloaders.stream()
-                .filter(Downloader::isEnabled)
-                .collect(Collectors.toList());
+            .filter(Downloader::isEnabled)
+            .toList();
         if (enabledDownloaders.isEmpty()) {
             return new DownloaderStatus();
         }
@@ -50,7 +49,7 @@ public class DownloaderStatusRetrieval {
                 .filter(x -> enabledDownloaders.size() == 1 || x.getName().equals(configProvider.getBaseConfig().getDownloading().getPrimaryDownloader()))
                 .findFirst();
 
-        if (!downloader.isPresent()) {
+        if (downloader.isEmpty()) {
             logger.error("Unable to determine to choose downloader for which to retrieve status.");
             return new DownloaderStatus();
         }

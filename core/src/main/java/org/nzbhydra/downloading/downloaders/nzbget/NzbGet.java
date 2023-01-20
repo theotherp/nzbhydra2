@@ -23,17 +23,19 @@ import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.downloading.DownloaderConfig;
 import org.nzbhydra.downloading.FileDownloadStatus;
+import org.nzbhydra.downloading.FileHandler;
+import org.nzbhydra.downloading.IndexerSpecificDownloadExceptions;
 import org.nzbhydra.downloading.downloaders.Converters;
 import org.nzbhydra.downloading.downloaders.Downloader;
 import org.nzbhydra.downloading.downloaders.DownloaderEntry;
 import org.nzbhydra.downloading.downloaders.DownloaderStatus;
 import org.nzbhydra.downloading.exceptions.DownloaderException;
 import org.nzbhydra.logging.LoggingMarkers;
+import org.nzbhydra.searching.db.SearchResultRepository;
 import org.nzbhydra.webaccess.Ssl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.MalformedURLException;
@@ -48,7 +50,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @SuppressWarnings({"unchecked", "RedundantCast"})
-@Component
 public class NzbGet extends Downloader {
 
     private static final Map<String, FileDownloadStatus> NZBGET_STATUS_TO_HYDRA_STATUS = new HashMap<>();
@@ -80,10 +81,12 @@ public class NzbGet extends Downloader {
 
     }
 
-    @Autowired
-    private ConfigProvider configProvider;
-    @Autowired
-    private Ssl ssl;
+    private final Ssl ssl;
+
+    public NzbGet(FileHandler nzbHandler, SearchResultRepository searchResultRepository, ApplicationEventPublisher applicationEventPublisher, IndexerSpecificDownloadExceptions indexerSpecificDownloadExceptions, ConfigProvider configProvider, Ssl ssl) {
+        super(nzbHandler, searchResultRepository, applicationEventPublisher, indexerSpecificDownloadExceptions, configProvider);
+        this.ssl = ssl;
+    }
 
     private static final Logger logger = LoggerFactory.getLogger(NzbGet.class);
     private JsonRpcHttpClient client;
@@ -103,7 +106,8 @@ public class NzbGet extends Downloader {
                 headers.put("Authorization", "Basic " + BaseEncoding.base64().encode((downloaderConfig.getUsername().get() + ":" + downloaderConfig.getPassword().get()).getBytes()));
             }
             client = new JsonRpcHttpClient(builder.build().toUri().toURL(), headers);
-            final Ssl.SslVerificationState verificationState = ssl.getVerificationStateForHost(builder.build().getHost());
+            final String host = builder.build().getHost();
+            final Ssl.SslVerificationState verificationState = ssl.getVerificationStateForHost(host);
             if (verificationState == Ssl.SslVerificationState.ENABLED) {
                 client.setSslContext(ssl.getCaCertsContext());
             } else {
@@ -199,7 +203,7 @@ public class NzbGet extends Downloader {
 
     protected void fillStatusFromQueue(DownloaderStatus status) throws DownloaderException {
         ArrayList<LinkedHashMap<String, Object>> queue = callNzbget("listgroups", new Object[]{0});
-        List<LinkedHashMap<String, Object>> nzbs = queue.stream().filter(x -> "NZB".equals(x.get("Kind"))).collect(Collectors.toList());
+        List<LinkedHashMap<String, Object>> nzbs = queue.stream().filter(x -> "NZB".equals(x.get("Kind"))).toList();
         if (!nzbs.isEmpty()) {
 
             status.setElementsInQueue(queue.size());

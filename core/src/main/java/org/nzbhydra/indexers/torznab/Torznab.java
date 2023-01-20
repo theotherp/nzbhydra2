@@ -19,27 +19,41 @@ package org.nzbhydra.indexers.torznab;
 import lombok.Getter;
 import lombok.Setter;
 import org.nzbhydra.NzbHydraException;
+import org.nzbhydra.config.BaseConfigHandler;
+import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
-import org.nzbhydra.indexers.Indexer;
+import org.nzbhydra.indexers.IndexerApiAccessEntityShortRepository;
+import org.nzbhydra.indexers.IndexerApiAccessRepository;
 import org.nzbhydra.indexers.IndexerHandlingStrategy;
+import org.nzbhydra.indexers.IndexerRepository;
+import org.nzbhydra.indexers.IndexerWebAccess;
 import org.nzbhydra.indexers.Newznab;
+import org.nzbhydra.indexers.QueryGenerator;
 import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
+import org.nzbhydra.indexers.status.IndexerLimitRepository;
 import org.nzbhydra.mapping.newznab.xml.NewznabAttribute;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlChannel;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.nzbhydra.mapping.newznab.xml.Xml;
+import org.nzbhydra.mediainfo.InfoProvider;
+import org.nzbhydra.searching.CategoryProvider;
+import org.nzbhydra.searching.CustomQueryAndTitleMappingHandler;
+import org.nzbhydra.searching.SearchResultAcceptor;
 import org.nzbhydra.searching.SearchResultAcceptor.AcceptorResult;
 import org.nzbhydra.searching.SearchResultIdCalculator;
+import org.nzbhydra.searching.db.SearchResultRepository;
 import org.nzbhydra.searching.dtoseventsenums.IndexerSearchResult;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
-import org.nzbhydra.searching.dtoseventsenums.SearchResultItem.DownloadType;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem.HasNfo;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.annotation.Order;
+import org.springframework.oxm.Unmarshaller;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -47,14 +61,16 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Getter
 @Setter
-@Component
 public class Torznab extends Newznab {
 
     private static final Logger logger = LoggerFactory.getLogger(Torznab.class);
+
+    public Torznab(ConfigProvider configProvider, IndexerRepository indexerRepository, SearchResultRepository searchResultRepository, IndexerApiAccessRepository indexerApiAccessRepository, IndexerApiAccessEntityShortRepository indexerApiAccessShortRepository, IndexerLimitRepository indexerStatusRepository, IndexerWebAccess indexerWebAccess, SearchResultAcceptor resultAcceptor, CategoryProvider categoryProvider, InfoProvider infoProvider, ApplicationEventPublisher eventPublisher, QueryGenerator queryGenerator, CustomQueryAndTitleMappingHandler titleMapping, Unmarshaller unmarshaller, BaseConfigHandler baseConfigHandler) {
+        super(configProvider, indexerRepository, searchResultRepository, indexerApiAccessRepository, indexerApiAccessShortRepository, indexerStatusRepository, indexerWebAccess, resultAcceptor, categoryProvider, infoProvider, eventPublisher, queryGenerator, titleMapping, unmarshaller, baseConfigHandler);
+    }
 
     protected SearchResultItem createSearchResultItem(NewznabXmlItem item) throws NzbHydraException {
         item.getRssGuid().setPermaLink(true); //Not set in RSS but actually always true
@@ -64,18 +80,10 @@ public class Torznab extends Newznab {
         for (NewznabAttribute attribute : item.getTorznabAttributes()) {
             searchResultItem.getAttributes().put(attribute.getName(), attribute.getValue());
             switch (attribute.getName()) {
-                case "grabs":
-                    searchResultItem.setGrabs(Integer.valueOf(attribute.getValue()));
-                    break;
-                case "guid":
-                    searchResultItem.setIndexerGuid(attribute.getValue());
-                    break;
-                case "seeders":
-                    searchResultItem.setSeeders(Integer.valueOf(attribute.getValue()));
-                    break;
-                case "peers":
-                    searchResultItem.setPeers(Integer.valueOf(attribute.getValue()));
-                    break;
+                case "grabs" -> searchResultItem.setGrabs(Integer.valueOf(attribute.getValue()));
+                case "guid" -> searchResultItem.setIndexerGuid(attribute.getValue());
+                case "seeders" -> searchResultItem.setSeeders(Integer.valueOf(attribute.getValue()));
+                case "peers" -> searchResultItem.setPeers(Integer.valueOf(attribute.getValue()));
             }
         }
         if (item.getSize() != null) {
@@ -108,8 +116,8 @@ public class Torznab extends Newznab {
             }
         }
 
-        foundCategories.addAll(item.getNewznabAttributes().stream().filter(x -> x.getName().equals("category")).map(x -> Integer.valueOf(x.getValue())).collect(Collectors.toList()));
-        foundCategories.addAll(item.getTorznabAttributes().stream().filter(x -> x.getName().equals("category")).map(x -> Integer.valueOf(x.getValue())).collect(Collectors.toList()));
+        foundCategories.addAll(item.getNewznabAttributes().stream().filter(x -> x.getName().equals("category")).map(x -> Integer.valueOf(x.getValue())).toList());
+        foundCategories.addAll(item.getTorznabAttributes().stream().filter(x -> x.getName().equals("category")).map(x -> Integer.valueOf(x.getValue())).toList());
         return new ArrayList<>(foundCategories);
     }
 
@@ -155,7 +163,7 @@ public class Torznab extends Newznab {
 
     @Component
     @Order(2000)
-    public static class NewznabHandlingStrategy implements IndexerHandlingStrategy {
+    public static class NewznabHandlingStrategy implements IndexerHandlingStrategy<Torznab> {
 
         @Override
         public boolean handlesIndexerConfig(IndexerConfig config) {
@@ -163,9 +171,10 @@ public class Torznab extends Newznab {
         }
 
         @Override
-        public Class<? extends Indexer> getIndexerClass() {
-            return Torznab.class;
+        public String getName() {
+            return "TORZNAB";
         }
+
     }
 
 

@@ -16,7 +16,7 @@
 
 package org.nzbhydra.externaltools;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.nzbhydra.Jackson;
 
 import java.util.Comparator;
@@ -24,17 +24,17 @@ import java.util.Comparator;
 public class ExternalToolsTest {
 
     @Test
-    public void bla() throws Exception {
+    void bla() throws Exception {
         String json = "{\n" +
-                "  \"enableRss\" : true,\n" +
-                "  \"enableAutomaticSearch\" : true,\n" +
-                "  \"enableInteractiveSearch\" : true,\n" +
-                "  \"supportsRss\" : true,\n" +
-                "  \"supportsSearch\" : true,\n" +
-                "  \"protocol\" : \"torrent\",\n" +
-                "  \"name\" : \"NZBHydra2 (mocktorz1)\",\n" +
-                "  \"fields\" : [ {\n" +
-                "    \"name\" : \"apiKey\",\n" +
+            "  \"enableRss\" : true,\n" +
+            "  \"enableAutomaticSearch\" : true,\n" +
+            "  \"enableInteractiveSearch\" : true,\n" +
+            "  \"supportsRss\" : true,\n" +
+            "  \"supportsSearch\" : true,\n" +
+            "  \"protocol\" : \"torrent\",\n" +
+            "  \"name\" : \"NZBHydra2 (mocktorz1)\",\n" +
+            "  \"fields\" : [ {\n" +
+            "    \"name\" : \"apiKey\",\n" +
                 "    \"value\" : \"apikey\"\n" +
                 "  }, {\n" +
                 "    \"name\" : \"categories\",\n" +

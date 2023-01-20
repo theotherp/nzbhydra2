@@ -1,8 +1,6 @@
 package org.nzbhydra.news;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.servlet.http.HttpSession;
 import org.nzbhydra.ExceptionInfo;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.Markdown;
@@ -23,7 +21,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
 
-import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.ArrayList;
@@ -83,19 +80,11 @@ public class NewsWeb {
         for (NewsEntry entry : entries) {
             boolean isForCurrentVersion = entry.getShowForVersion().equals(new SemanticVersion(updateManager.getCurrentVersionString()));
             boolean isForNewerVersion = entry.getShowForVersion().isUpdateFor(new SemanticVersion(updateManager.getCurrentVersionString()));
-            transformedEntries.add(new NewsEntryForWeb(entry.getShowForVersion().getAsString(), Markdown.renderMarkdownAsHtml(entry.getNewsAsMarkdown()), isForCurrentVersion, isForNewerVersion));
+            final String newsAsMarkdown = entry.getNewsAsMarkdown();
+            transformedEntries.add(new NewsEntryForWeb(entry.getShowForVersion().getAsString(), Markdown.renderMarkdownAsHtml(newsAsMarkdown), isForCurrentVersion, isForNewerVersion));
         }
         return transformedEntries;
     }
 
 
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class NewsEntryForWeb {
-        private String version;
-        private String news;
-        private boolean forCurrentVersion;
-        private boolean forNewerVersion;
-    }
 }

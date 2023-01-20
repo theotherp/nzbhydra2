@@ -1,7 +1,12 @@
 package org.nzbhydra.auth;
 
-import org.nzbhydra.config.BaseConfig;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import org.nzbhydra.config.ConfigChangedEvent;
+import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.auth.AuthConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,11 +23,6 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,9 +43,9 @@ public class HydraAnonymousAuthenticationFilter extends AnonymousAuthenticationF
     //Disabled by default because just by existing it will be used for static resource accesses where spring security is disabled
     private boolean enabled = false;
 
-    public HydraAnonymousAuthenticationFilter(@Autowired BaseConfig baseConfig) {
+    public HydraAnonymousAuthenticationFilter(@Autowired ConfigProvider configProvider) {
         super("anonymous", "anonymousUser", AuthorityUtils.createAuthorityList("ROLE_ANONYMOUS"));
-        updateAuthorities(baseConfig.getAuth());
+        updateAuthorities(configProvider.getBaseConfig().getAuth());
     }
 
     public void enable() {

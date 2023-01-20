@@ -3,7 +3,8 @@ package org.nzbhydra.mockserver;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
 import com.google.common.io.Resources;
-import org.apache.catalina.servlet4preview.http.HttpServletRequest;
+import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.HttpServletRequest;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mapping.newznab.NewznabParameters;
 import org.nzbhydra.mapping.newznab.builder.RssItemBuilder;
@@ -17,6 +18,7 @@ import org.nzbhydra.mapping.newznab.xml.NewznabXmlResponse;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -43,6 +45,11 @@ public class MockNewznab {
     private static HashMap<Integer, NewznabXmlRoot> responsesPerApikey = new HashMap<>();
     private Random random = new Random();
 
+    @Value("${main.host:127.0.0.1}")
+    private String host;
+    @Value("${server.port:5080}")
+    private int port;
+
     private static final int API_MAX = 300;
 
     static {
@@ -56,16 +63,22 @@ public class MockNewznab {
         apikeyToResultCount.put(API_MAX, 30);
     }
 
+    @PostConstruct
+    public void init() {
+        NewznabMockBuilder.host = this.host;
+        NewznabMockBuilder.port = this.port;
+    }
+
 
     @RequestMapping(value = "/nzb/{nzbId}", produces = MediaType.TEXT_HTML_VALUE)
     public ResponseEntity<String> nzbDownload(@PathVariable String nzbId) throws Exception {
-        if (nzbId.endsWith("11")) {
+        if (nzbId.endsWith("91")) {
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
         }
-        if (nzbId.endsWith("12")) {
+        if (nzbId.endsWith("92")) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-        if (nzbId.endsWith("13")) {
+        if (nzbId.endsWith("93")) {
             return ResponseEntity.status(429).body("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                 "<error code=\"429\" description=\"Request limit reached\"/>");
         }

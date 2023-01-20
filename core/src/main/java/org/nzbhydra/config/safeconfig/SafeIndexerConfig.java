@@ -3,10 +3,12 @@ package org.nzbhydra.config.safeconfig;
 import lombok.Data;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.indexer.IndexerConfig;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.util.List;
 
 @Data
+@ReflectionMarker
 public class SafeIndexerConfig {
 
     private String name;

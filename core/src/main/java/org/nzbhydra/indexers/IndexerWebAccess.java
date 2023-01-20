@@ -4,12 +4,14 @@ import com.google.common.base.Throwables;
 import com.google.common.io.BaseEncoding;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.exceptions.IndexerProgramErrorException;
 import org.nzbhydra.indexers.exceptions.IndexerUnreachableException;
 import org.nzbhydra.logging.MdcThreadPoolExecutor;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.nzbhydra.web.WebConfiguration;
 import org.nzbhydra.webaccess.WebAccess;
 import org.slf4j.Logger;
@@ -47,7 +49,6 @@ public class IndexerWebAccess {
     protected Unmarshaller unmarshaller = new WebConfiguration().marshaller();
 
 
-    @SuppressWarnings("unchecked")
     public <T> T get(URI uri, IndexerConfig indexerConfig) throws IndexerAccessException {
         return get(uri, indexerConfig, null);
     }
@@ -73,8 +74,11 @@ public class IndexerWebAccess {
                     return (T) response;
                 }
                 try {
-                    T unmarshalled = (T) unmarshaller.unmarshal(new StreamSource(new StringReader(response)));
-                    return unmarshalled;
+                    try (StringReader reader = new StringReader(response)) {
+                        final StreamSource source = new StreamSource(reader);
+                        T unmarshalled = (T) unmarshaller.unmarshal(source);
+                        return unmarshalled;
+                    }
                 } catch (UnmarshallingFailureException e) {
                     if (!response.toLowerCase().contains("function not available")) {
                         //Some indexers like Animetosho don't return a proper error code. This error may happen during caps check and we don't want to log it
@@ -98,7 +102,7 @@ public class IndexerWebAccess {
             if (e.getCause() instanceof HydraUnmarshallingFailureException) {
                 throw new IndexerAccessException("Unable to parse indexer output", e.getCause());
             }
-
+            logger.debug("Indexer communication error", e.getCause());
             throw new IndexerUnreachableException("Error while communicating with indexer " + indexerConfig.getName() + ". Server returned: " + e.getMessage(), e.getCause());
         } catch (TimeoutException e) {
             throw new IndexerUnreachableException("Indexer did not complete request within " + timeout + " seconds");
@@ -118,10 +122,14 @@ public class IndexerWebAccess {
             int to = Math.min(lines.length, lineNumber + 5);
             String excerpt = String.join("\r\n", Arrays.asList(lines).subList(from, to));
             logger.error("Unable to parse indexer output at line {} and column {} with error message: {}. Excerpt:\r\n{}", lineNumber, columnNumber, message, excerpt);
+        } else {
+            logger.debug("Unable to parse indexer output:\n {}", response, e);
         }
     }
 
+    @EqualsAndHashCode(callSuper = true)
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     public static class HydraUnmarshallingFailureException extends Exception {
         private org.springframework.oxm.UnmarshallingFailureException unmarshallingFailureException;

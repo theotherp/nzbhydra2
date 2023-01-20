@@ -8,14 +8,6 @@
 
     <fileSets>
         <fileSet>
-            <!--Would prefer to use a moduleset here or otherwise reference the -exec.jar but didn't get it to work-->
-            <directory>../../core/target</directory>
-            <outputDirectory>./lib/</outputDirectory>
-            <includes>
-                <include>*exec.jar</include>
-            </includes>
-        </fileSet>
-        <fileSet>
             <directory>include</directory>
             <outputDirectory>./</outputDirectory>
             <lineEnding>keep</lineEnding>

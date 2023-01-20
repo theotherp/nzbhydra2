@@ -20,7 +20,6 @@ if [ -d "linux/dist/linux/" ]; then rm linux/dist/linux/*; fi
 cp ../nzbhydra2wrapperPy3.py linux/
 cp VersionInfo.txt linux/
 cp nzbhydra.ico linux/
-cp NzbHydra2.spec linux/
 
 echo "Running linux build"
 cd linux || exit
@@ -28,25 +27,27 @@ docker run -v "$(pwd):/src/" cdrx/pyinstaller-linux
 cp dist/linux/NZBHydra2 ../../../../releases/linux-release/include/nzbhydra2
 cd ../
 
+
+
 echo "Preparing windows build"
 if [ -d "windows/dist/windows/" ]; then rm windows/dist/windows/*; fi
-cp ../nzbhydra2wrapperPy3.py windows/
 cp VersionInfo.txt windows/
 cp nzbhydra.ico windows/
-cp NzbHydra2.spec windows/
+cp ../nzbhydra2wrapperPy3.py windows/
 
 echo "Running windows build"
 cd windows || exit
-docker run -v "$(pwd):/src/" cdrx/pyinstaller-windows
+docker run -v "$(pwd):/src/" --entrypoint /bin/sh cdrx/pyinstaller-windows -c "pip install requests pystray Pillow && /entrypoint.sh"
 cp dist/windows/NZBHydra2.exe ../../../../releases/windows-release/include
 cd ../
+
+
 
 echo "Preparing windows console build"
 if [ -d "windows_console/dist/windows/" ]; then rm windows_console/dist/windows/*; fi
 cp ../nzbhydra2wrapperPy3.py windows_console/
 cp VersionInfoConsole.txt windows_console/
 cp nzbhydra.ico windows_console/
-cp NZBHydra2\ Console.spec windows_console/
 
 echo "Running windows_console build"
 cd windows_console || exit

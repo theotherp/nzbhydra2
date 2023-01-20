@@ -1,9 +1,8 @@
 package org.nzbhydra.auth;
 
 import com.google.common.base.Objects;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
-
-import javax.servlet.http.HttpServletRequest;
 
 public class HydraWebAuthenticationDetails extends WebAuthenticationDetails {
 
@@ -39,10 +38,9 @@ public class HydraWebAuthenticationDetails extends WebAuthenticationDetails {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof HydraWebAuthenticationDetails)) {
+        if (!(o instanceof HydraWebAuthenticationDetails that)) {
             return false;
         }
-        HydraWebAuthenticationDetails that = (HydraWebAuthenticationDetails) o;
         return Objects.equal(filteredIp, that.filteredIp);
     }
 

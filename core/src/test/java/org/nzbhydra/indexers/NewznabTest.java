@@ -1,9 +1,10 @@
 package org.nzbhydra.indexers;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Lists;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -11,16 +12,22 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.nzbhydra.NzbHydraException;
 import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.BaseConfigHandler;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.SearchSource;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.SearchingConfig;
 import org.nzbhydra.config.category.Category;
 import org.nzbhydra.config.category.Category.Subtype;
+import org.nzbhydra.config.downloading.DownloadType;
+import org.nzbhydra.config.indexer.BackendType;
 import org.nzbhydra.config.indexer.IndexerCategoryConfig.MainCategory;
 import org.nzbhydra.config.indexer.IndexerCategoryConfig.SubCategory;
 import org.nzbhydra.config.indexer.IndexerConfig;
-import org.nzbhydra.indexers.Indexer.BackendType;
+import org.nzbhydra.config.mediainfo.MediaIdType;
+import org.nzbhydra.config.searching.SearchType;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.exceptions.IndexerAuthException;
 import org.nzbhydra.indexers.exceptions.IndexerErrorCodeException;
@@ -40,7 +47,6 @@ import org.nzbhydra.mapping.newznab.xml.NewznabXmlResponse;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.nzbhydra.mapping.newznab.xml.Xml;
 import org.nzbhydra.mediainfo.InfoProvider;
-import org.nzbhydra.mediainfo.MediaIdType;
 import org.nzbhydra.mediainfo.MediaInfo;
 import org.nzbhydra.searching.CategoryProvider;
 import org.nzbhydra.searching.SearchResultAcceptor;
@@ -48,12 +54,9 @@ import org.nzbhydra.searching.SearchResultAcceptor.AcceptorResult;
 import org.nzbhydra.searching.db.SearchResultRepository;
 import org.nzbhydra.searching.dtoseventsenums.IndexerSearchResult;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
-import org.nzbhydra.searching.dtoseventsenums.SearchResultItem.DownloadType;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem.HasNfo;
-import org.nzbhydra.searching.dtoseventsenums.SearchType;
 import org.nzbhydra.searching.searchrequests.InternalData.FallbackState;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
-import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.springframework.oxm.Unmarshaller;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -65,11 +68,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.eq;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @SuppressWarnings("ALL")
@@ -80,8 +80,8 @@ public class NewznabTest {
     private InfoProvider infoProviderMock;
     @Mock
     private IndexerWebAccess indexerWebAccessMock;
-    @Mock
-    private IndexerEntity indexerEntityMock;
+
+    private IndexerEntity indexerEntityMock = new IndexerEntity("indexer");
     @Mock
     private CategoryProvider categoryProviderMock;
     @Mock
@@ -109,6 +109,8 @@ public class NewznabTest {
     @Mock
     BaseConfig baseConfigMock;
     @Mock
+    private BaseConfigHandler baseConfigHandler;
+    @Mock
     SearchingConfig searchingConfigMock;
     @Mock
     private QueryGenerator queryGeneratorMock;
@@ -119,10 +121,11 @@ public class NewznabTest {
     private ConfigProvider configProviderMock;
 
     @InjectMocks
-    private Newznab testee = new Newznab();
+    private Newznab testee = new Newznab(configProviderMock, indexerRepositoryMock, searchResultRepositoryMock, indexerApiAccessRepositoryMock, shortRepositoryMock, null, indexerWebAccessMock, resultAcceptorMock,
+        categoryProviderMock, infoProviderMock, null, queryGeneratorMock, null, unmarshallerMock, null);
 
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         testee = spy(testee);
@@ -142,6 +145,7 @@ public class NewznabTest {
         testee.config = new IndexerConfig();
         testee.config.setSupportedSearchIds(Lists.newArrayList(MediaIdType.TMDB, MediaIdType.TVRAGE));
         testee.config.setHost("http://127.0.0.1:1234");
+        testee.indexer = indexerEntityMock;
 
         baseConfig = new BaseConfig();
         when(configProviderMock.getBaseConfig()).thenReturn(baseConfig);
@@ -174,26 +178,26 @@ public class NewznabTest {
     }
 
     @Test
-    public void shouldReturnCorrectSearchResults() throws Exception {
+    void shouldReturnCorrectSearchResults() throws Exception {
         NewznabXmlRoot root = RssBuilder.builder().items(Arrays.asList(RssItemBuilder.builder("title").build())).newznabResponse(0, 1).build();
         when(indexerWebAccessMock.get(any(), eq(testee.config), any())).thenReturn(root);
 
         IndexerSearchResult indexerSearchResult = testee.searchInternal(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
 
-        assertThat(indexerSearchResult.getSearchResultItems().size(), is(1));
-        assertThat(indexerSearchResult.getTotalResults(), is(1));
-        assertThat(indexerSearchResult.isHasMoreResults(), is(false));
-        assertThat(indexerSearchResult.isTotalResultsKnown(), is(true));
+        assertThat(indexerSearchResult.getSearchResultItems().size()).isEqualTo(1);
+        assertThat(indexerSearchResult.getTotalResults()).isEqualTo(1);
+        assertThat(indexerSearchResult.isHasMoreResults()).isEqualTo(false);
+        assertThat(indexerSearchResult.isTotalResultsKnown()).isEqualTo(true);
     }
 
     @Test
-    public void shouldAccountForRejectedResults() throws Exception {
+    void shouldAccountForRejectedResults() throws Exception {
         List<NewznabXmlItem> items = Arrays.asList(
-                RssItemBuilder.builder("title1").build(),
-                RssItemBuilder.builder("title2").build(),
-                RssItemBuilder.builder("title3").build(),
-                RssItemBuilder.builder("title4").build(),
-                RssItemBuilder.builder("title5").build()
+            RssItemBuilder.builder("title1").build(),
+            RssItemBuilder.builder("title2").build(),
+            RssItemBuilder.builder("title3").build(),
+            RssItemBuilder.builder("title4").build(),
+            RssItemBuilder.builder("title5").build()
         );
         NewznabXmlRoot root = RssBuilder.builder().items(items).newznabResponse(100, 105).build();
         when(indexerWebAccessMock.get(any(), eq(testee.config), any())).thenReturn(root);
@@ -211,14 +215,14 @@ public class NewznabTest {
 
         IndexerSearchResult indexerSearchResult = testee.searchInternal(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
 
-        assertThat(indexerSearchResult.getSearchResultItems().size(), is(3));
-        assertThat(indexerSearchResult.getTotalResults(), is(105));
-        assertThat(indexerSearchResult.isHasMoreResults(), is(false));
-        assertThat(indexerSearchResult.isTotalResultsKnown(), is(true));
+        assertThat(indexerSearchResult.getSearchResultItems().size()).isEqualTo(3);
+        assertThat(indexerSearchResult.getTotalResults()).isEqualTo(105);
+        assertThat(indexerSearchResult.isHasMoreResults()).isEqualTo(false);
+        assertThat(indexerSearchResult.isTotalResultsKnown()).isEqualTo(true);
     }
 
     @Test
-    public void shouldGetIdsIfNoneOfTheProvidedAreSupported() throws Exception {
+    void shouldGetIdsIfNoneOfTheProvidedAreSupported() throws Exception {
         when(infoProviderMock.canConvertAny(anySet(), anySet())).thenReturn(true);
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
 
@@ -230,14 +234,14 @@ public class NewznabTest {
         builder = testee.extendQueryUrlWithSearchIds(searchRequest, builder);
 
         MultiValueMap<String, String> params = builder.build().getQueryParams();
-        assertFalse(params.containsKey("imdbid"));
-        assertFalse(params.containsKey("tmdbid"));
-        assertFalse(params.containsKey("rid"));
+        assertThat(params.containsKey("imdbid")).isFalse();
+        assertThat(params.containsKey("tmdbid")).isFalse();
+        assertThat(params.containsKey("rid")).isFalse();
         assertTrue(params.containsKey("tvmazeid"));
     }
 
     @Test
-    public void shouldNotGetInfosIfAtLeastOneProvidedIsSupported() throws Exception {
+    void shouldNotGetInfosIfAtLeastOneProvidedIsSupported() throws Exception {
         testee.config = new IndexerConfig();
         testee.config.setSupportedSearchIds(Lists.newArrayList(MediaIdType.IMDB));
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
@@ -247,12 +251,12 @@ public class NewznabTest {
         builder = testee.extendQueryUrlWithSearchIds(searchRequest, builder);
         MultiValueMap<String, String> params = builder.build().getQueryParams();
         assertTrue(params.containsKey("imdbid"));
-        assertEquals(1, params.size());
+        assertThat(params).hasSize(1);
         verify(infoProviderMock, never()).convert(anyString(), any(MediaIdType.class));
     }
 
     @Test
-    public void shouldRemoveTrailingTtFromImdbId() throws Exception {
+    void shouldRemoveTrailingTtFromImdbId() throws Exception {
         testee.config = new IndexerConfig();
         testee.config.setSupportedSearchIds(Lists.newArrayList(MediaIdType.IMDB));
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
@@ -262,8 +266,8 @@ public class NewznabTest {
         builder = testee.extendQueryUrlWithSearchIds(searchRequest, builder);
         MultiValueMap<String, String> params = builder.build().getQueryParams();
         assertTrue(params.containsKey("imdbid"));
-        assertEquals(1, params.size());
-        assertEquals("12345", params.get("imdbid").get(0));
+        assertThat(params).hasSize(1);
+        assertThat(params.get("imdbid").get(0)).isEqualTo("12345");
         verify(infoProviderMock, never()).convert(anyString(), any(MediaIdType.class));
     }
 
@@ -301,13 +305,13 @@ public class NewznabTest {
         mediaInfo.setTitle("someShow");
         when(infoProviderMock.convert("tvdbId", MediaIdType.TVDB)).thenReturn(mediaInfo);
 
-        assertEquals("someShow", testee.generateQueryIfApplicable(searchRequest, ""));
+        assertThat(testee.generateQueryIfApplicable(searchRequest, "")).isEqualTo("someShow");
 
         //Don't add season/episode for fallback queries
         searchRequest.getInternalData().setFallbackStateByIndexer("indexer", FallbackState.REQUESTED);
         searchRequest.setSeason(1);
         searchRequest.setEpisode("1");
-        assertEquals("someShow", testee.generateQueryIfApplicable(searchRequest, ""));
+        assertThat(testee.generateQueryIfApplicable(searchRequest, "")).isEqualTo("someShow");
     }
 
     // TODO Move to QueryGeneratorTest
@@ -326,7 +330,7 @@ public class NewznabTest {
     }
 
     @Test
-    public void shouldUseAuthorAndTitleIfBookSearchSupported() throws Exception {
+    void shouldUseAuthorAndTitleIfBookSearchSupported() throws Exception {
         testee.config = new IndexerConfig();
         baseConfig.getSearching().setGenerateQueries(SearchSourceRestriction.BOTH);
         testee.config.setHost("http://www.indexer.com");
@@ -335,48 +339,56 @@ public class NewznabTest {
         searchRequest.setAuthor("author");
         searchRequest.setTitle("title");
 
-        assertEquals(UriComponentsBuilder.fromHttpUrl("http://www.indexer.com/api?t=book&extended=1&title=title&author=author").build(), buildCleanedSearchUrl(searchRequest, null, null).build());
+        assertEquals(UriComponentsBuilder.fromHttpUrl("http://www.indexer.com/api?t=book&extended=1&title=title&author=author&limit=1000").build(), buildCleanedSearchUrl(searchRequest, null, null).build());
     }
 
     private UriComponentsBuilder buildCleanedSearchUrl(SearchRequest searchRequest, Integer offset, Integer limit) throws IndexerSearchAbortedException {
         return testee.buildSearchUrl(searchRequest, offset, limit).replaceQueryParam("password").replaceQueryParam("pw");
     }
 
-    @Test(expected = IndexerAuthException.class)
-    public void shouldThrowAuthException() throws Exception {
-        doReturn(new NewznabXmlError("101", "Wrong API key")).when(testee).getAndStoreResultToDatabase(any(), eq(Xml.class), eq(IndexerApiAccessType.SEARCH));
-        doNothing().when(testee).handleFailure(errorMessageCaptor.capture(), disabledPermanentlyCaptor.capture(), any(IndexerApiAccessType.class), any(), indexerApiAccessResultCaptor.capture());
+    @Test
+    void shouldThrowAuthException() throws Exception {
+        assertThrows(IndexerAuthException.class, () -> {
+            doReturn(new NewznabXmlError("101", "Wrong API key")).when(testee).getAndStoreResultToDatabase(any(), eq(Xml.class), eq(IndexerApiAccessType.SEARCH));
+            doNothing().when(testee).handleFailure(errorMessageCaptor.capture(), disabledPermanentlyCaptor.capture(), any(IndexerApiAccessType.class), any(), indexerApiAccessResultCaptor.capture());
 
-        testee.searchInternal(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
-    }
-
-    @Test(expected = IndexerErrorCodeException.class)
-    public void shouldThrowErrorCodeWhen100ApiHitLimits() throws Exception {
-        doReturn(new NewznabXmlError("100", "Daily Hits Limit Reached\"")).when(testee).getAndStoreResultToDatabase(any(), eq(Xml.class), eq(IndexerApiAccessType.SEARCH));
-        doNothing().when(testee).handleFailure(errorMessageCaptor.capture(), disabledPermanentlyCaptor.capture(), any(IndexerApiAccessType.class), any(), indexerApiAccessResultCaptor.capture());
-
-        testee.searchInternal(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
-    }
-
-
-    @Test(expected = IndexerProgramErrorException.class)
-    public void shouldThrowProgramErrorCodeException() throws Exception {
-        doReturn(new NewznabXmlError("200", "Whatever")).when(testee).getAndStoreResultToDatabase(any(), eq(Xml.class), eq(IndexerApiAccessType.SEARCH));
-        doNothing().when(testee).handleFailure(errorMessageCaptor.capture(), disabledPermanentlyCaptor.capture(), any(IndexerApiAccessType.class), any(), indexerApiAccessResultCaptor.capture());
-
-        testee.searchInternal(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
-    }
-
-    @Test(expected = IndexerErrorCodeException.class)
-    public void shouldThrowErrorCodeThatsNotMyFaultException() throws Exception {
-        doReturn(new NewznabXmlError("123", "Whatever")).when(testee).getAndStoreResultToDatabase(any(), eq(Xml.class), eq(IndexerApiAccessType.SEARCH));
-        doNothing().when(testee).handleFailure(errorMessageCaptor.capture(), disabledPermanentlyCaptor.capture(), any(IndexerApiAccessType.class), any(), indexerApiAccessResultCaptor.capture());
-
-        testee.searchInternal(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
+            testee.searchInternal(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
+        });
     }
 
     @Test
-    public void shouldConvertIdIfNecessary() throws Exception {
+    void shouldThrowErrorCodeWhen100ApiHitLimits() throws Exception {
+        assertThrows(IndexerErrorCodeException.class, () -> {
+            doReturn(new NewznabXmlError("100", "Daily Hits Limit Reached\"")).when(testee).getAndStoreResultToDatabase(any(), eq(Xml.class), eq(IndexerApiAccessType.SEARCH));
+            doNothing().when(testee).handleFailure(errorMessageCaptor.capture(), disabledPermanentlyCaptor.capture(), any(IndexerApiAccessType.class), any(), indexerApiAccessResultCaptor.capture());
+
+            testee.searchInternal(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
+        });
+    }
+
+
+    @Test
+    void shouldThrowProgramErrorCodeException() throws Exception {
+        assertThrows(IndexerProgramErrorException.class, () -> {
+            doReturn(new NewznabXmlError("200", "Whatever")).when(testee).getAndStoreResultToDatabase(any(), eq(Xml.class), eq(IndexerApiAccessType.SEARCH));
+            doNothing().when(testee).handleFailure(errorMessageCaptor.capture(), disabledPermanentlyCaptor.capture(), any(IndexerApiAccessType.class), any(), indexerApiAccessResultCaptor.capture());
+
+            testee.searchInternal(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
+        });
+    }
+
+    @Test
+    void shouldThrowErrorCodeThatsNotMyFaultException() throws Exception {
+        assertThrows(IndexerErrorCodeException.class, () -> {
+            doReturn(new NewznabXmlError("123", "Whatever")).when(testee).getAndStoreResultToDatabase(any(), eq(Xml.class), eq(IndexerApiAccessType.SEARCH));
+            doNothing().when(testee).handleFailure(errorMessageCaptor.capture(), disabledPermanentlyCaptor.capture(), any(IndexerApiAccessType.class), any(), indexerApiAccessResultCaptor.capture());
+
+            testee.searchInternal(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
+        });
+    }
+
+    @Test
+    void shouldConvertIdIfNecessary() throws Exception {
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         searchRequest.getIdentifiers().put(MediaIdType.IMDB, "imdbId");
         testee.config.getSupportedSearchIds().add(MediaIdType.TMDB);
@@ -388,7 +400,7 @@ public class NewznabTest {
     }
 
     @Test
-    public void shouldNotConvertIdIfNotNecessary() throws Exception {
+    void shouldNotConvertIdIfNotNecessary() throws Exception {
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         searchRequest.getIdentifiers().put(MediaIdType.TMDB, "tmdbId");
 
@@ -398,73 +410,73 @@ public class NewznabTest {
     }
 
     @Test
-    public void shouldAddExcludedAndRequiredWordsToQuery() throws Exception {
+    void shouldAddExcludedAndRequiredWordsToQuery() throws Exception {
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         searchRequest.setQuery("q");
         searchRequest.getInternalData().setForbiddenWords(Lists.newArrayList("a", "b", "c"));
-        assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?t=search&extended=1&q=q --a --b --c").build(), buildCleanedSearchUrl(searchRequest, null, null).build());
+        assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?t=search&extended=1&q=q --a --b --c&limit=1000").build(), buildCleanedSearchUrl(searchRequest, null, null).build());
 
         searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         searchRequest.setQuery("aquery");
         searchRequest.getInternalData().setForbiddenWords(Lists.newArrayList("a", "b", "c"));
-        assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?t=search&extended=1&q=aquery --a --b --c").build(), buildCleanedSearchUrl(searchRequest, null, null).build());
+        assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?t=search&extended=1&q=aquery --a --b --c&limit=1000").build(), buildCleanedSearchUrl(searchRequest, null, null).build());
 
         searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         searchRequest.setQuery("q");
         searchRequest.getInternalData().setForbiddenWords(Lists.newArrayList("a", "b", "c"));
         searchRequest.getInternalData().setRequiredWords(Lists.newArrayList("x", "y", "z"));
-        assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?t=search&extended=1&q=q x y z --a --b --c").build(), buildCleanedSearchUrl(searchRequest, null, null).build());
+        assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?t=search&extended=1&q=q x y z --a --b --c&limit=1000").build(), buildCleanedSearchUrl(searchRequest, null, null).build());
 
         searchRequest.getCategory().getForbiddenWords().add("catforbidden");
         searchRequest.getCategory().getRequiredWords().add("catrequired");
         baseConfig.getSearching().setForbiddenWords(Lists.newArrayList("globalforbidden"));
         baseConfig.getSearching().setRequiredWords(Lists.newArrayList("globalrequired"));
-        assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?t=search&extended=1&q=q x y z globalrequired catrequired --a --b --c --globalforbidden --catforbidden").build(), buildCleanedSearchUrl(searchRequest, null, null).build());
+        assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?t=search&extended=1&q=q x y z globalrequired catrequired --a --b --c --globalforbidden --catforbidden&limit=1000").build(), buildCleanedSearchUrl(searchRequest, null, null).build());
     }
 
     @Test
-    public void shoulNotdAddExcludedAndRequiredWordsWithSomeCharacters() throws Exception {
+    void shoulNotdAddExcludedAndRequiredWordsWithSomeCharacters() throws Exception {
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         searchRequest.setQuery("q");
         searchRequest.getInternalData().setForbiddenWords(Lists.newArrayList("a", "b b", "-c", "d.d"));
-        assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?t=search&extended=1&q=q --a").build(), buildCleanedSearchUrl(searchRequest, null, null).build());
+        assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?t=search&extended=1&q=q --a&limit=1000").build(), buildCleanedSearchUrl(searchRequest, null, null).build());
     }
 
     @Test
-    public void shouldUseDifferentExclusionFormatForNzedbAndOmgWtf() throws Exception {
+    void shouldUseDifferentExclusionFormatForNzedbAndOmgWtf() throws Exception {
         testee.config.setBackend(BackendType.NZEDB);
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         searchRequest.setQuery("q");
         searchRequest.getInternalData().setForbiddenWords(Lists.newArrayList("a", "b", "c"));
-        assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?t=search&extended=1&q=q !a,!b,!c").build(), buildCleanedSearchUrl(searchRequest, null, null).build());
+        assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?t=search&extended=1&q=q !a,!b,!c&limit=1000").build(), buildCleanedSearchUrl(searchRequest, null, null).build());
 
         searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         searchRequest.setQuery("aquery");
         searchRequest.getInternalData().setForbiddenWords(Lists.newArrayList("a", "b", "c"));
-        assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?t=search&extended=1&q=aquery !a,!b,!c").build(), buildCleanedSearchUrl(searchRequest, null, null).build());
+        assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?t=search&extended=1&q=aquery !a,!b,!c&limit=1000").build(), buildCleanedSearchUrl(searchRequest, null, null).build());
 
         testee.config.setBackend(BackendType.NEWZNAB);
         testee.config.setHost("http://www.OMGwtfnzbs.com");
         searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         searchRequest.setQuery("q");
         searchRequest.getInternalData().setForbiddenWords(Lists.newArrayList("a", "b", "c"));
-        assertEquals(UriComponentsBuilder.fromHttpUrl("http://www.OMGwtfnzbs.com/api?t=search&extended=1&q=q !a,!b,!c").build(), buildCleanedSearchUrl(searchRequest, null, null).build());
+        assertEquals(UriComponentsBuilder.fromHttpUrl("http://www.OMGwtfnzbs.com/api?t=search&extended=1&q=q !a,!b,!c&limit=1000").build(), buildCleanedSearchUrl(searchRequest, null, null).build());
 
         searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         searchRequest.setQuery("aquery");
         searchRequest.getInternalData().setForbiddenWords(Lists.newArrayList("a", "b", "c"));
-        assertEquals(UriComponentsBuilder.fromHttpUrl("http://www.OMGwtfnzbs.com/api?t=search&extended=1&q=aquery !a,!b,!c").build(), buildCleanedSearchUrl(searchRequest, null, null).build());
+        assertEquals(UriComponentsBuilder.fromHttpUrl("http://www.OMGwtfnzbs.com/api?t=search&extended=1&q=aquery !a,!b,!c&limit=1000").build(), buildCleanedSearchUrl(searchRequest, null, null).build());
     }
 
     @Test
-    public void shouldNotAddForbiddenWordsToEmptyQuery() throws Exception {
+    void shouldNotAddForbiddenWordsToEmptyQuery() throws Exception {
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         searchRequest.getInternalData().setForbiddenWords(Lists.newArrayList("a", "b", "c"));
-        assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?t=search&extended=1").build(), buildCleanedSearchUrl(searchRequest, null, null).build());
+        assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?t=search&extended=1&limit=1000").build(), buildCleanedSearchUrl(searchRequest, null, null).build());
     }
 
     @Test
-    public void shouldCreateSearchResultItem() throws Exception {
+    void shouldCreateSearchResultItem() throws Exception {
         NewznabXmlItem rssItem = buildBasicRssItem();
         rssItem.getNewznabAttributes().add(new NewznabAttribute("password", "0"));
         rssItem.getNewznabAttributes().add(new NewznabAttribute("group", "group"));
@@ -477,23 +489,23 @@ public class NewznabTest {
         rssItem.getNewznabAttributes().add(new NewznabAttribute("category", "5050"));
 
         SearchResultItem item = testee.createSearchResultItem(rssItem);
-        assertThat(item.getLink(), is("http://indexer.com/nzb/123"));
-        assertThat(item.getIndexerGuid(), is("123"));
-        assertThat(item.getSize(), is(456L));
-        assertThat(item.getDescription(), is("description"));
-        assertThat(item.getPubDate(), is(Instant.ofEpochSecond(5555555)));
-        assertThat(item.getCommentsLink(), is("http://indexer.com/details/123x#comments"));
-        assertThat(item.getDetails(), is("http://indexer.com/details/123"));
-        assertThat(item.isAgePrecise(), is(true));
-        assertThat(item.getUsenetDate().get(), is(Instant.ofEpochSecond(6666666)));
-        assertThat(item.getDownloadType(), is(DownloadType.NZB));
+        assertThat(item.getLink()).isEqualTo("http://indexer.com/nzb/123");
+        assertThat(item.getIndexerGuid()).isEqualTo("123");
+        assertThat(item.getSize()).isEqualTo(456L);
+        assertThat(item.getDescription()).isEqualTo("description");
+        assertThat(item.getPubDate()).isEqualTo(Instant.ofEpochSecond(5555555));
+        assertThat(item.getCommentsLink()).isEqualTo("http://indexer.com/details/123x#comments");
+        assertThat(item.getDetails()).isEqualTo("http://indexer.com/details/123");
+        assertThat(item.isAgePrecise()).isEqualTo(true);
+        assertThat(item.getUsenetDate().get()).isEqualTo(Instant.ofEpochSecond(6666666));
+        assertThat(item.getDownloadType()).isEqualTo(DownloadType.NZB);
 
-        assertThat(item.isPassworded(), is(false));
-        assertThat(item.getGroup().get(), is("group"));
-        assertThat(item.getPoster().get(), is("poster"));
-        assertThat(item.getFiles(), is(10));
-        assertThat(item.getGrabs(), is(20));
-        assertThat(item.getCommentsCount(), is(30));
+        assertThat(item.isPassworded()).isEqualTo(false);
+        assertThat(item.getGroup().get()).isEqualTo("group");
+        assertThat(item.getPoster().get()).isEqualTo("poster");
+        assertThat(item.getFiles()).isEqualTo(10);
+        assertThat(item.getGrabs()).isEqualTo(20);
+        assertThat(item.getCommentsCount()).isEqualTo(30);
         verify(categoryProviderMock, times(1)).fromResultNewznabCategories(Arrays.asList(5000, 5050));
 
         rssItem.setRssGuid(new NewznabXmlGuid("123", false));
@@ -501,13 +513,88 @@ public class NewznabTest {
         rssItem.getNewznabAttributes().add(new NewznabAttribute("password", "1"));
         rssItem.getNewznabAttributes().add(new NewznabAttribute("nfo", "1"));
         item = testee.createSearchResultItem(rssItem);
-        assertThat(item.getIndexerGuid(), is("123"));
-        assertThat(item.isPassworded(), is(true));
-        assertThat(item.getHasNfo(), is(HasNfo.YES));
+        assertThat(item.getIndexerGuid()).isEqualTo("123");
+        assertThat(item.isPassworded()).isEqualTo(true);
+        assertThat(item.getHasNfo()).isEqualTo(HasNfo.YES);
     }
 
     @Test
-    public void shouldUseIndexersCategoryMappingToBuildOriginalCategoryName() throws Exception {
+    public void shouldParseGuid() throws Exception {
+        NewznabXmlItem rssItem = buildBasicRssItem();
+        rssItem.getRssGuid().setPermaLink(false);
+        rssItem.getRssGuid().setGuid("123abc");
+        SearchResultItem item = testee.createSearchResultItem(rssItem);
+        assertThat(item.getIndexerGuid()).isEqualTo("123abc");
+
+        rssItem.getRssGuid().setPermaLink(true);
+        rssItem.getRssGuid().setGuid("https://hello.com/details?id=123abc");
+        item = testee.createSearchResultItem(rssItem);
+        assertThat(item.getIndexerGuid()).isEqualTo("123abc");
+
+        rssItem.getRssGuid().setGuid("https://newztown.co.za/details/123abc");
+        item = testee.createSearchResultItem(rssItem);
+        assertThat(item.getIndexerGuid()).isEqualTo("123abc");
+
+        rssItem.getRssGuid().setGuid("https://newztown.co.za/details/123abc#details");
+        item = testee.createSearchResultItem(rssItem);
+        assertThat(item.getIndexerGuid()).isEqualTo("123abc");
+
+        rssItem.getRssGuid().setGuid("https://nzbfinder.ws/details/1db2ba7c-0605-4a98-9c56-71da12cbd18c");
+        item = testee.createSearchResultItem(rssItem);
+        assertThat(item.getIndexerGuid()).isEqualTo("1db2ba7c-0605-4a98-9c56-71da12cbd18c");
+
+        rssItem.getRssGuid().setGuid("https://nzbgeek.info/geekseek.php?guid=66a34818a38ae8aea3dd77e828dae05b");
+        item = testee.createSearchResultItem(rssItem);
+        assertThat(item.getIndexerGuid()).isEqualTo("66a34818a38ae8aea3dd77e828dae05b");
+
+        rssItem.getRssGuid().setGuid("https://www.tabula-rasa.pw/details/552aeb3c-6617-4741-9218-f15012b7d21c");
+        item = testee.createSearchResultItem(rssItem);
+        assertThat(item.getIndexerGuid()).isEqualTo("552aeb3c-6617-4741-9218-f15012b7d21c");
+    }
+
+    @Test
+    public void shouldPerformance() throws Exception {
+
+        for (int i = 0; i < 1000; i++) {
+            parse();
+        }
+        final Stopwatch stopwatch = Stopwatch.createStarted();
+        for (int i = 0; i < 5000; i++) {
+            parse();
+        }
+        System.out.println(stopwatch.elapsed());
+
+    }
+
+    private void parse() throws NzbHydraException {
+        NewznabXmlItem rssItem = buildBasicRssItem();
+        rssItem.getRssGuid().setPermaLink(false);
+        rssItem.getRssGuid().setGuid("123abc");
+        SearchResultItem item = testee.createSearchResultItem(rssItem);
+
+
+        rssItem.getRssGuid().setPermaLink(true);
+        rssItem.getRssGuid().setGuid("https://hello.com/details?id=123abc");
+        item = testee.createSearchResultItem(rssItem);
+
+        rssItem.getRssGuid().setGuid("https://newztown.co.za/details/123abc");
+        item = testee.createSearchResultItem(rssItem);
+
+        rssItem.getRssGuid().setGuid("https://newztown.co.za/details/123abc#details");
+        item = testee.createSearchResultItem(rssItem);
+
+        rssItem.getRssGuid().setGuid("https://nzbfinder.ws/details/1db2ba7c-0605-4a98-9c56-71da12cbd18c");
+        item = testee.createSearchResultItem(rssItem);
+
+        rssItem.getRssGuid().setGuid("https://nzbgeek.info/geekseek.php?guid=66a34818a38ae8aea3dd77e828dae05b");
+        item = testee.createSearchResultItem(rssItem);
+
+        rssItem.getRssGuid().setGuid("https://www.tabula-rasa.pw/details/552aeb3c-6617-4741-9218-f15012b7d21c");
+        item = testee.createSearchResultItem(rssItem);
+    }
+
+    @Test
+    void shouldUseIndexersCategoryMappingToBuildOriginalCategoryName() throws Exception {
         testee.config.getCategoryMapping().setCategories(Arrays.asList(new MainCategory(5000, "TV", Arrays.asList(new SubCategory(5040, "HD")))));
         NewznabXmlItem rssItem = buildBasicRssItem();
         rssItem.getNewznabAttributes().add(new NewznabAttribute("category", "5040"));
@@ -518,12 +605,12 @@ public class NewznabTest {
         searchResultItem.setCategory(category);
 
         testee.parseAttributes(rssItem, searchResultItem);
-        assertThat(searchResultItem.getOriginalCategory(), is("TV HD"));
+        assertThat(searchResultItem.getOriginalCategory()).isEqualTo("TV HD");
 
         rssItem.getNewznabAttributes().clear();
         rssItem.getNewznabAttributes().add(new NewznabAttribute("category", "1234"));
         testee.parseAttributes(rssItem, searchResultItem);
-        assertThat(searchResultItem.getOriginalCategory(), is("N/A"));
+        assertThat(searchResultItem.getOriginalCategory()).isEqualTo("N/A");
 
     }
 
@@ -541,29 +628,29 @@ public class NewznabTest {
     }
 
     @Test
-    public void shouldGetDetailsLinkFromRssGuidIfPermalink() throws Exception {
+    void shouldGetDetailsLinkFromRssGuidIfPermalink() throws Exception {
         NewznabXmlItem rssItem = buildBasicRssItem();
         rssItem.setRssGuid(new NewznabXmlGuid("detailsLink", true));
         rssItem.setComments("http://indexer.com/123/detailsfromcomments#comments");
 
         SearchResultItem item = testee.createSearchResultItem(rssItem);
 
-        assertThat(item.getDetails(), is("detailsLink"));
+        assertThat(item.getDetails()).isEqualTo("detailsLink");
     }
 
     @Test
-    public void shouldGetDetailsLinkFromCommentsIfNotSetFromRssGuid() throws Exception {
+    void shouldGetDetailsLinkFromCommentsIfNotSetFromRssGuid() throws Exception {
         NewznabXmlItem rssItem = buildBasicRssItem();
         rssItem.setRssGuid(new NewznabXmlGuid("someguid", false));
         rssItem.setComments("http://indexer.com/123/detailsfromcomments#comments");
 
         SearchResultItem item = testee.createSearchResultItem(rssItem);
 
-        assertThat(item.getDetails(), is("http://indexer.com/123/detailsfromcomments"));
+        assertThat(item.getDetails()).isEqualTo("http://indexer.com/123/detailsfromcomments");
     }
 
     @Test
-    public void shouldNotSetGroupOrPosterIfNotAvailable() throws Exception {
+    void shouldNotSetGroupOrPosterIfNotAvailable() throws Exception {
         NewznabXmlItem rssItem = buildBasicRssItem();
         rssItem.getNewznabAttributes().clear();
         rssItem.getNewznabAttributes().add(new NewznabAttribute("group", "not available"));
@@ -571,47 +658,47 @@ public class NewznabTest {
 
         SearchResultItem item = testee.createSearchResultItem(rssItem);
 
-        assertThat(item.getGroup().isPresent(), is(false));
-        assertThat(item.getPoster().isPresent(), is(false));
+        assertThat(item.getGroup().isPresent()).isEqualTo(false);
+        assertThat(item.getPoster().isPresent()).isEqualTo(false);
     }
 
     @Test
-    public void shouldReadGroupFromDescription() throws Exception {
+    void shouldReadGroupFromDescription() throws Exception {
         NewznabXmlItem rssItem = buildBasicRssItem();
         rssItem.setDescription("<b>Group:</b> alt.binaries.tun<br />");
 
-        assertThat(testee.createSearchResultItem(rssItem).getGroup().get(), is("alt.binaries.tun"));
+        assertThat(testee.createSearchResultItem(rssItem).getGroup().get()).isEqualTo("alt.binaries.tun");
     }
 
     @Test
-    public void shouldRemoveTrailingWords() throws Exception {
+    void shouldRemoveTrailingWords() throws Exception {
         baseConfig.getSearching().setRemoveTrailing(Arrays.asList("English", "-Obfuscated", " spanish"));
         NewznabXmlItem rssItem = buildBasicRssItem();
 
         rssItem.setTitle("Some title English");
-        assertThat(testee.createSearchResultItem(rssItem).getTitle(), is("Some title"));
+        assertThat(testee.createSearchResultItem(rssItem).getTitle()).isEqualTo("Some title");
 
         rssItem.setTitle("Some title-Obfuscated");
-        assertThat(testee.createSearchResultItem(rssItem).getTitle(), is("Some title"));
+        assertThat(testee.createSearchResultItem(rssItem).getTitle()).isEqualTo("Some title");
 
         rssItem.setTitle("Some title Spanish");
-        assertThat(testee.createSearchResultItem(rssItem).getTitle(), is("Some title"));
+        assertThat(testee.createSearchResultItem(rssItem).getTitle()).isEqualTo("Some title");
     }
 
 
     @Test
-    public void shouldReturnNfoFromRaw() throws Exception {
+    void shouldReturnNfoFromRaw() throws Exception {
         doReturn("rawnfo").when(testee).getAndStoreResultToDatabase(any(), eq(String.class), eq(IndexerApiAccessType.NFO));
 
         NfoResult nfo = testee.getNfo("guid");
 
-        assertThat(nfo.getContent(), is("rawnfo"));
-        assertThat(nfo.isSuccessful(), is(true));
-        assertThat(nfo.isHasNfo(), is(true));
+        assertThat(nfo.getContent()).isEqualTo("rawnfo");
+        assertThat(nfo.isSuccessful()).isEqualTo(true);
+        assertThat(nfo.isHasNfo()).isEqualTo(true);
     }
 
     @Test
-    public void shouldParseXml() throws Exception {
+    void shouldParseXml() throws Exception {
         doReturn("<?xml foobar").when(testee).getAndStoreResultToDatabase(any(), eq(String.class), eq(IndexerApiAccessType.NFO));
         NewznabXmlItem nfoItem = new NewznabXmlItem();
         nfoItem.setDescription("nfoInXml");
@@ -624,84 +711,84 @@ public class NewznabTest {
 
         NfoResult nfo = testee.getNfo("guid");
 
-        assertThat(nfo.getContent(), is("nfoInXml"));
-        assertThat(nfo.isSuccessful(), is(true));
-        assertThat(nfo.isHasNfo(), is(true));
+        assertThat(nfo.getContent()).isEqualTo("nfoInXml");
+        assertThat(nfo.isSuccessful()).isEqualTo(true);
+        assertThat(nfo.isHasNfo()).isEqualTo(true);
 
         rssChannel.setNewznabResponse(new NewznabXmlResponse(0, 0));
         nfo = testee.getNfo("guid");
-        assertThat(nfo.isHasNfo(), is(false));
-        assertThat(nfo.isSuccessful(), is(true));
+        assertThat(nfo.isHasNfo()).isEqualTo(false);
+        assertThat(nfo.isSuccessful()).isEqualTo(true);
     }
 
     @Test
-    public void shouldCatchException() throws Exception {
+    void shouldCatchException() throws Exception {
         doReturn("rawnfo").when(testee).getAndStoreResultToDatabase(any(), eq(String.class), eq(IndexerApiAccessType.NFO));
         doThrow(new IndexerAccessException("message")).when(testee).getAndStoreResultToDatabase(any(), eq(String.class), eq(IndexerApiAccessType.NFO));
 
         NfoResult nfo = testee.getNfo("guid");
 
-        assertThat(nfo.getContent(), is("message"));
-        assertThat(nfo.isSuccessful(), is(false));
-        assertThat(nfo.isHasNfo(), is(false));
+        assertThat(nfo.getContent()).isEqualTo("message");
+        assertThat(nfo.isSuccessful()).isEqualTo(false);
+        assertThat(nfo.isHasNfo()).isEqualTo(false);
     }
 
     @Test
-    public void shouldComputeCategory() throws Exception {
+    void shouldComputeCategory() throws Exception {
         when(categoryProviderMock.fromResultNewznabCategories(any())).thenReturn(otherCategory);
         testee.config.getCategoryMapping().setAnime(1010);
         SearchResultItem item = new SearchResultItem();
 
         //Found a specific mapping
         testee.computeCategory(item, Arrays.asList(1000, 1010));
-        assertThat(item.getCategory(), is(animeCategory));
+        assertThat(item.getCategory()).isEqualTo(animeCategory);
 
         //Didn't find a specific mapping, use the general one from the categories
         testee.computeCategory(item, Arrays.asList(3030));
-        assertThat(item.getCategory(), is(otherCategory));
+        assertThat(item.getCategory()).isEqualTo(otherCategory);
     }
 
     @Test
-    public void shouldBuildCorrectSearchUrl() throws Exception {
+    void shouldBuildCorrectSearchUrl() throws Exception {
         SearchRequest request = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         String uri = buildCleanedSearchUrl(request, 0, 100).toUriString();
-        assertThat(uri, is("http://127.0.0.1:1234/api?t=search&extended=1&limit=100&offset=0"));
+        assertThat(uri).isEqualTo("http://127.0.0.1:1234/api?t=search&extended=1&limit=1000&offset=0");
 
         otherCategory.setNewznabCategories(Collections.singletonList(Arrays.asList(2000)));
         request.setCategory(otherCategory);
         uri = buildCleanedSearchUrl(request, 0, 100).toUriString();
-        assertThat(uri, is("http://127.0.0.1:1234/api?t=search&extended=1&cat=2000&limit=100&offset=0"));
+        assertThat(uri).isEqualTo("http://127.0.0.1:1234/api?t=search&extended=1&cat=2000&limit=1000&offset=0");
 
         otherCategory.setNewznabCategories(Arrays.asList(Collections.singletonList(2030), Collections.singletonList(2040)));
         request.setCategory(otherCategory);
         uri = buildCleanedSearchUrl(request, 0, 100).toUriString();
-        assertThat(uri, is("http://127.0.0.1:1234/api?t=search&extended=1&cat=2030,2040&limit=100&offset=0"));
+        assertThat(uri).isEqualTo("http://127.0.0.1:1234/api?t=search&extended=1&cat=2030,2040&limit=1000&offset=0");
 
         otherCategory.setNewznabCategories(Arrays.asList(Arrays.asList(2030, 10_000), Collections.singletonList(2040)));
         request.setCategory(otherCategory);
         uri = buildCleanedSearchUrl(request, 0, 100).toUriString();
-        assertThat(uri, is("http://127.0.0.1:1234/api?t=search&extended=1&cat=2030,2040,10000&limit=100&offset=0"));
+        assertThat(uri).isEqualTo("http://127.0.0.1:1234/api?t=search&extended=1&cat=2030,2040,10000&limit=1000&offset=0");
 
         animeCategory.setSubtype(Subtype.ANIME);
         request.setCategory(animeCategory);
         testee.getConfig().getCategoryMapping().setAnime(9090);
         uri = buildCleanedSearchUrl(request, 0, 100).toUriString();
-        assertThat(uri, is("http://127.0.0.1:1234/api?t=search&extended=1&cat=9090&limit=100&offset=0"));
+        assertThat(uri).isEqualTo("http://127.0.0.1:1234/api?t=search&extended=1&cat=9090&limit=1000&offset=0");
     }
 
     @Test
-    public void shouldNotUseMovieWithoutIdentifiers() throws Exception {
+    void shouldNotUseMovieWithoutIdentifiers() throws Exception {
         SearchRequest request = new SearchRequest(SearchSource.INTERNAL, SearchType.MOVIE, 0, 100);
         String uri = buildCleanedSearchUrl(request, null, null).toUriString();
-        assertThat(uri, containsString("t=search"));
+        assertThat(uri).contains("t=search");
 
         request = new SearchRequest(SearchSource.INTERNAL, SearchType.MOVIE, 0, 100);
         request.getIdentifiers().put(MediaIdType.IMDB, "123");
         testee.config.getSupportedSearchIds().add(MediaIdType.IMDB);
         testee.config.getSupportedSearchTypes().add(ActionAttribute.MOVIE);
         uri = buildCleanedSearchUrl(request, null, null).toUriString();
-        assertThat(uri, containsString("t=movie"));
-        assertThat(uri, containsString("imdbid=123"));
+        assertThat(uri).contains("t=movie");
+        assertThat(uri).contains("imdbid=123");
     }
 
 }

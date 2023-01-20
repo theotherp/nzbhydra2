@@ -1,11 +1,14 @@
 package org.nzbhydra.mapping;
 
+import org.nzbhydra.springnative.ReflectionMarker;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Objects;
 
 //Taken from http://blog.onyxbits.de/a-fast-java-parser-for-semantic-versioning-with-correct-precedence-ordering-380/ and adapted
 
+@ReflectionMarker
 public final class SemanticVersion implements Comparable<SemanticVersion>, Serializable {
 
 

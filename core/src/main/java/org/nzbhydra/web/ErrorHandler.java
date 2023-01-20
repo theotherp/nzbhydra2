@@ -18,10 +18,12 @@ package org.nzbhydra.web;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Sets;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.ConversionNotSupportedException;
@@ -49,7 +51,6 @@ import org.springframework.web.context.request.async.AsyncRequestTimeoutExceptio
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -195,6 +196,7 @@ public class ErrorHandler {
     }
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     public static class JsonExceptionResponse {

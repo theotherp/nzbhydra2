@@ -81,16 +81,16 @@ public class LogAnonymizer {
     private String removeIpsFromLog(String log) {
         logger.debug("Removing IPs and hostnames from log");
         log = log.replaceAll("Host: .*\\..*\\]", "Host: <hidden>]");
-        log = log.replaceAll("127\\.0\\.0\\.1", "<localhost>");
+        log = log.replace("127.0.0.1", "<localhost>");
         log = replaceWithHashedValues(log, IPV4_PATTERN, "IP4");
-        log = replaceWithHashedValues(log, IPV6_PATTERN, "IP6");
+//        log = replaceWithHashedValues(log, IPV6_PATTERN, "IP6");
         return log;
     }
 
     private String replaceWithHashedValues(String log, String regex, final String tag) {
         Pattern ipPattern = Pattern.compile(regex);
         Matcher matcher = ipPattern.matcher(log);
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         while (matcher.find()) {
             if (matcher.group(0).equals("127.0.0.1") || matcher.group(0).startsWith("192.168") || matcher.group(0).startsWith("10.")) {
                 continue;

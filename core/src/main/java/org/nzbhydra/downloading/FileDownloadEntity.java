@@ -1,27 +1,43 @@
 package org.nzbhydra.downloading;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
 import lombok.Data;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.nzbhydra.config.SearchSource;
 import org.nzbhydra.config.downloading.FileDownloadAccessType;
 import org.nzbhydra.searching.db.SearchResultEntity;
-import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.nzbhydra.web.SessionStorage;
 
-import javax.persistence.*;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 @Data
+@ReflectionMarker
 @Entity
 @Table(name = "indexernzbdownload", indexes = {@Index(name = "NZB_DOWNLOAD_EXT_ID", columnList = "EXTERNAL_ID")})
-public class FileDownloadEntity {
+public final class FileDownloadEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    protected int id;
+    @SequenceGenerator(allocationSize = 1, name = "INDEXERNZBDOWNLOAD_SEQ")
+    private int id;
     @ManyToOne
+    @JsonIgnoreProperties(value = {"handler", "hibernateLazyInitializer"})
     @OnDelete(action = OnDeleteAction.CASCADE)
     private SearchResultEntity searchResult;
     @Enumerated(EnumType.STRING)

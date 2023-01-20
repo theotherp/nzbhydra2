@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
 import net.jodah.expiringmap.ExpirationPolicy;
 import net.jodah.expiringmap.ExpiringMap;
+import org.nzbhydra.config.mediainfo.MediaIdType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +20,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static org.nzbhydra.mediainfo.MediaIdType.*;
+import static org.nzbhydra.config.mediainfo.MediaIdType.*;
 
 @Component
 public class InfoProvider {
@@ -181,7 +182,7 @@ public class InfoProvider {
             List<MediaInfo> infos;
             //Always do a search and don't rely on the database, otherwise results might be outdated
             switch (titleType) {
-                case TVTITLE: {
+                case TVTITLE -> {
                     List<TvMazeSearchResult> results = tvMazeHandler.search(title);
                     infos = results.stream().map(MediaInfo::new).collect(Collectors.toList());
                     for (MediaInfo mediaInfo : infos) {
@@ -190,16 +191,13 @@ public class InfoProvider {
                             tvInfoRepository.save(tvInfo);
                         }
                     }
-                    break;
                 }
-                case MOVIETITLE: {
+                case MOVIETITLE -> {
                     List<TmdbSearchResult> results = tmdbHandler.search(title, null);
                     infos = results.stream().map(MediaInfo::new).collect(Collectors.toList());
                     //Do not save these infos to database because TMDB only returns basic info. IMDB ID might be missing and when the repository is queried for conversion it returns an empty IMDB ID
-                    break;
                 }
-                default:
-                    throw new IllegalArgumentException("Wrong IdType");
+                default -> throw new IllegalArgumentException("Wrong IdType");
             }
 
 

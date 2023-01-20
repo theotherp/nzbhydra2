@@ -16,6 +16,7 @@
 
 package org.nzbhydra.auth;
 
+import jakarta.servlet.ServletException;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.valves.ValveBase;
@@ -27,7 +28,6 @@ import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.boot.web.servlet.server.ConfigurableServletWebServerFactory;
 import org.springframework.stereotype.Component;
 
-import javax.servlet.ServletException;
 import java.io.IOException;
 
 /**
@@ -41,10 +41,9 @@ public class HydraEmbeddedServletContainer implements WebServerFactoryCustomizer
 
     @Override
     public void customize(ConfigurableServletWebServerFactory factory) {
-        if (!(factory instanceof TomcatServletWebServerFactory)) {
+        if (!(factory instanceof TomcatServletWebServerFactory containerFactory)) {
             return; //Is the case in tests
         }
-        TomcatServletWebServerFactory containerFactory = (TomcatServletWebServerFactory) factory;
         containerFactory.addContextValves(new ValveBase() {
             @Override
             public void invoke(Request request, Response response) throws IOException, ServletException {

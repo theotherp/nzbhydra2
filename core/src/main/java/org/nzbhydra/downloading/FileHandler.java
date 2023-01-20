@@ -2,6 +2,7 @@ package org.nzbhydra.downloading;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Sets;
+import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
@@ -9,6 +10,8 @@ import org.jetbrains.annotations.NotNull;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.MainConfig;
+import org.nzbhydra.config.SearchSource;
+import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.config.downloading.FileDownloadAccessType;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.indexers.Indexer;
@@ -21,8 +24,6 @@ import org.nzbhydra.notifications.DownloadNotificationEvent;
 import org.nzbhydra.searching.SearchModuleProvider;
 import org.nzbhydra.searching.db.SearchResultEntity;
 import org.nzbhydra.searching.db.SearchResultRepository;
-import org.nzbhydra.searching.dtoseventsenums.SearchResultItem.DownloadType;
-import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.nzbhydra.web.UrlCalculator;
 import org.nzbhydra.webaccess.HydraOkHttp3ClientHttpRequestFactory;
 import org.slf4j.Logger;
@@ -103,7 +104,7 @@ public class FileHandler {
     @NotNull
     private SearchResultEntity getResultFromGuid(long guid, SearchSource accessSource) throws InvalidSearchResultIdException {
         Optional<SearchResultEntity> optionalResult = searchResultRepository.findById(guid);
-        if (!optionalResult.isPresent()) {
+        if (optionalResult.isEmpty()) {
             logger.error("Download request with invalid/outdated GUID {}", guid);
             throw new InvalidSearchResultIdException(guid, accessSource == SearchSource.INTERNAL);
         }
@@ -126,7 +127,7 @@ public class FileHandler {
                 if (downloadResult.isSuccessful()) {
                     return downloadResult;
                 }
-                if (!configProvider.getBaseConfig().getDownloading().getFallbackForFailed().meets(accessSource)) {
+                if (!accessSource.meets(configProvider.getBaseConfig().getDownloading().getFallbackForFailed())) {
                     return downloadResult;
                 }
 
@@ -351,7 +352,7 @@ public class FileHandler {
 
     public NfoResult getNfo(Long searchResultId) {
         Optional<SearchResultEntity> optionalResult = searchResultRepository.findById(searchResultId);
-        if (!optionalResult.isPresent()) {
+        if (optionalResult.isEmpty()) {
             logger.error("Download request with invalid/outdated search result ID " + searchResultId);
             throw new RuntimeException("Download request with invalid/outdated search result ID " + searchResultId);
         }
@@ -372,7 +373,8 @@ public class FileHandler {
         Request request = new Request.Builder().url(result.getLink()).build();
         Indexer indexerByName = searchModuleProvider.getIndexerByName(result.getIndexer().getName());
         Integer timeout = indexerByName.getConfig().getTimeout().orElse(configProvider.getBaseConfig().getSearching().getTimeout());
-        try (Response response = clientHttpRequestFactory.getOkHttpClientBuilder(request.url().uri()).readTimeout(timeout, TimeUnit.SECONDS).connectTimeout(timeout, TimeUnit.SECONDS).followRedirects(true).build().newCall(request).execute()) {
+        final OkHttpClient build = clientHttpRequestFactory.getOkHttpClient(request.url().uri().getHost(), timeout);
+        try (Response response = build.newCall(request).execute()) {
             if (response.isRedirect()) {
                 return handleRedirect(result, response);
             }
@@ -406,7 +408,7 @@ public class FileHandler {
     }
 
     public GenericResponse saveNzbToBlackhole(Long searchResultId) {
-        if (!configProvider.getBaseConfig().getDownloading().getSaveNzbsTo().isPresent()) {
+        if (configProvider.getBaseConfig().getDownloading().getSaveNzbsTo().isEmpty()) {
             //Shouldn't happen
             return GenericResponse.notOk("NZBs black hole not set");
         }

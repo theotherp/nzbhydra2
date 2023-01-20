@@ -16,9 +16,8 @@
 
 package org.nzbhydra.web;
 
-import org.nzbhydra.ShutdownEvent;
+import jakarta.annotation.PreDestroy;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -40,7 +39,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/websocket/**")
+        registry.addEndpoint("/websocket")
                 .setAllowedOriginPatterns("*")
                 .withSockJS()
                 .setClientLibraryUrl("//cdn.jsdelivr.net/sockjs/1.0.3/sockjs.min.js");
@@ -63,8 +62,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registration.taskExecutor(taskExecutor);
     }
 
-    @EventListener
-    public void onShutdown(ShutdownEvent event) {
+    @PreDestroy
+    public void onShutdown() {
         taskExecutor.shutdown();
     }
 

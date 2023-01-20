@@ -16,179 +16,223 @@
 
 package org.nzbhydra.database;
 
-import com.google.common.collect.Sets;
+import com.google.common.base.Joiner;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.apache.commons.io.IOUtils;
-import org.flywaydb.core.internal.resource.StringResource;
+import org.apache.commons.io.filefilter.WildcardFileFilter;
+import org.flywaydb.core.Flyway;
 import org.nzbhydra.NzbHydra;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.client.ClientHttpRequest;
+import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.http.client.OkHttp3ClientHttpRequestFactory;
 
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileReader;
+import java.io.FilenameFilter;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.io.InputStream;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.HashSet;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
+@SuppressWarnings("ResultOfMethodCallIgnored")
 public class DatabaseRecreation {
 
     private static final Logger logger = LoggerFactory.getLogger(DatabaseRecreation.class);
 
     private static final Map<String, String> SCHEMA_VERSION_CHANGES = new LinkedHashMap<>();
 
-    static {
-        SCHEMA_VERSION_CHANGES.put("'V1.11__REMOVE_INDEXERSTATUSES.sql', \\-?\\d+", "'V1.11__REMOVE_INDEXERSTATUSES.sql', 898390205");
-        SCHEMA_VERSION_CHANGES.put("'V1.17__SHORTACCESS_AGAIN.sql', \\-?\\d+", "'V1.17__SHORTACCESS_AGAIN.sql', 177884391");
-    }
 
-    public static void runDatabaseScript() throws ClassNotFoundException, SQLException {
-        if (!Thread.currentThread().getName().equals("main")) {
-            //During development this class is called twice (because of the Spring developer tools)
-            logger.debug("Skipping database script check for thread {}", Thread.currentThread().getName());
-            return;
-        }
+    public static void runDatabaseScript() throws Exception {
         File databaseFile = new File(NzbHydra.getDataFolder(), "database/nzbhydra.mv.db");
         File databaseScriptFile = new File(NzbHydra.getDataFolder(), "databaseScript.sql");
         File databaseScriptFileNew = new File(NzbHydra.getDataFolder(), "databaseScriptNew.sql");
+        File restoreScriptFile = new File(NzbHydra.getDataFolder(), "database/script.sql");
+        String dbConnectionUrl = "jdbc:h2:file:" + databaseFile.getAbsolutePath().replace(".mv.db", "");
+        Class.forName("org.h2.Driver");
+        migrateToH2v2IfNeeded(databaseFile, dbConnectionUrl);
+        if (restoreScriptFile.exists() && !databaseScriptFile.exists()) {
+            DatabaseRecreation.logger.info("No database file found but script.sql - restoring database");
+            try (Connection connection = DriverManager.getConnection(dbConnectionUrl, "sa", "sa")) {
+                connection.createStatement().executeUpdate("runscript from '%s';".formatted(restoreScriptFile.getCanonicalPath().replace("\\", "/")));
+                restoreScriptFile.delete();
+            }
+        }
 
+
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    private static void migrateToH2v2IfNeeded(File databaseFile, String dbConnectionUrl) throws Exception {
         if (!databaseFile.exists()) {
             logger.debug("No database file found - no recreation needed");
             return;
         }
-
-        Class.forName("org.h2.Driver");
-        String dbConnectionUrl = "jdbc:h2:file:" + databaseFile.getAbsolutePath().replace(".mv.db", "");
-
-        if (isDatabaseRecreationNotNeeded(dbConnectionUrl)) {
-            return;
-        }
-
-        createDatabaseScript(databaseScriptFile, dbConnectionUrl);
-
-        deleteExistingDatabase(databaseFile);
-
-        replaceSchemaVersionChanges(databaseScriptFile, databaseScriptFileNew);
-
-        runDatabaseScript(databaseScriptFile, dbConnectionUrl);
-    }
-
-    private static boolean isDatabaseRecreationNotNeeded(String dbConnectionUrl) throws SQLException {
-        logger.debug("Determining if database recreation is needed");
-        Set<ExecutedScript> executedScripts = new HashSet<>();
-        try (Connection conn = DriverManager.getConnection(dbConnectionUrl, "SA", "")) {
-            ResultSet resultSet = conn.createStatement().executeQuery("select \"script\", \"checksum\" from \"schema_version\";");
-            while (resultSet.next()) {
-                executedScripts.add(new ExecutedScript(resultSet.getString(1), resultSet.getInt((2))));
-            }
-        }
-        PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
         try {
-            HashSet<Resource> resources = Sets.newHashSet(resolver.getResources("classpath:/migration/*"));
-            if (resources.stream().allMatch(x -> {
-                try {
-                    StringResource stringResource = new StringResource(IOUtils.toString(x.getInputStream(), Charset.defaultCharset()));
-                    ExecutedScript executedScript = new ExecutedScript(x.getFilename(), stringResource.checksum());
-                    boolean scriptExecuted = executedScripts.contains(executedScript);
-                    if (!scriptExecuted) {
-                        logger.info("Database recreation needed because {} was not yet executed or its checksum has changed", executedScript);
-                    }
-                    return scriptExecuted;
-                } catch (IOException e) {
-                    throw new RuntimeException("Unable to determine checksum for " + x.getFilename());
-                }
-            })) {
-                logger.debug("No migration scripts found to run. Skipping database recreation");
-                return true;
+            char[] buffer;
+            try (FileReader fileReader = new FileReader(databaseFile)) {
+                buffer = new char[1024];
+                final int read = fileReader.read(buffer);
             }
-        } catch (IOException e) {
-            throw new RuntimeException("Unable to find migration scripts", e);
+            final String header = new String(buffer).trim();
+            if (header.contains("format:1")) {
+                logger.info("Determined existing database to be version 1.4. Migration needed.");
+            } else if (header.contains("format:2")) {
+                logger.info("Determined existing database to be version 2. No migration needed.");
+                return;
+            } else {
+                logger.error("Unable to determine database version from header {}", header);
+                throw new RuntimeException("Invalid database file header");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to open database file " + databaseFile, e);
         }
-        return false;
-    }
+        boolean isUpgrade14To210 = true;
+        if (isUpgrade14To210) {
 
-    private static void runDatabaseScript(File databaseScriptFile, String dbConnectionUrl) throws SQLException {
-        try (Connection conn = DriverManager.getConnection(dbConnectionUrl, "SA", "")) {
-            logger.info("Running database script {} for reimport of old database", databaseScriptFile.getAbsolutePath());
             try {
-                conn.createStatement().execute("runscript from '" + databaseScriptFile.getAbsolutePath() + "'");
-            } catch (SQLException e) {
-                throw new RuntimeException("Unable to import database script", e);
+                final File[] traceFiles = databaseFile.getParentFile().listFiles((FilenameFilter) new WildcardFileFilter("*.trace.db"));
+                if (traceFiles != null) {
+                    for (File traceFile : traceFiles) {
+                        traceFile.delete();
+                    }
+                }
+            } catch (Exception e) {
+                logger.error("Unable to delete trace files", e);
             }
-            logger.info("Successfully recreated database");
-        }
-        boolean deleted = databaseScriptFile.delete();
-        if (!deleted) {
-            throw new RuntimeException("Unable to delete database script file at " + databaseScriptFile.getAbsolutePath() + ". Please delete it manually.");
+
+            File backupDatabaseFile = null;
+            String javaExecutable;
+            final File h2OldJar;
+            final File h2NewJar;
+            final String scriptFilePath;
+            try {
+                javaExecutable = getJavaExecutable();
+                h2OldJar = downloadJarFile("https://repo1.maven.org/maven2/com/h2database/h2/1.4.200/h2-1.4.200.jar");
+                h2NewJar = downloadJarFile("https://repo1.maven.org/maven2/com/h2database/h2/2.1.214/h2-2.1.214.jar");
+            } catch (Exception e) {
+                logger.error("Error migrating old database. Unable to download h2 jars");
+                throw e;
+            }
+            try {
+                final File scriptFile = Files.createTempFile("nzbhydra", ".sql").toFile();
+                scriptFile.deleteOnExit();
+                scriptFilePath = scriptFile.getCanonicalPath();
+
+                logger.info("Running database migration from 1.4 to 2");
+
+                backupDatabaseFile = new File(databaseFile.getParent(), databaseFile.getName() + ".old.bak." + System.currentTimeMillis());
+                logger.info("Copying old database file {} to backup {} which will be automatically deleted after 14 days", databaseFile, backupDatabaseFile);
+                Files.copy(databaseFile.toPath(), backupDatabaseFile.toPath());
+
+                final String updatePasswordQuery = "alter user sa set password 'sa'";
+                updatePassword(dbConnectionUrl, javaExecutable, h2OldJar, updatePasswordQuery);
+
+                runH2Command(Arrays.asList(javaExecutable, "-cp", h2OldJar.toString(), "org.h2.tools.Script", "-url", dbConnectionUrl, "-user", "sa", "-password", "sa", "-script", scriptFilePath), "Database export failed.");
+            } catch (Exception e) {
+                logger.error("Error migrating old database file to new one");
+                if (backupDatabaseFile != null && backupDatabaseFile.exists()) {
+                    if (backupDatabaseFile != null && backupDatabaseFile.exists()) {
+                        backupDatabaseFile.delete();
+                    }
+                }
+
+                throw e;
+            }
+            try {
+                final boolean deleted = databaseFile.delete();
+                if (!deleted) {
+                    throw new RuntimeException("Unable to delete old database file " + databaseFile);
+                }
+
+                runH2Command(Arrays.asList(javaExecutable, "-cp", h2NewJar.toString(), "org.h2.tools.RunScript", "-url", dbConnectionUrl, "-user", "sa", "-password", "sa", "-script", scriptFilePath, "-options", "FROM_1X"), "Database import failed.");
+
+                final Flyway flyway = Flyway.configure()
+                    .dataSource(dbConnectionUrl, "sa", "sa")
+                    .baselineDescription("INITIAL")
+                    .baselineVersion("1")
+                    .load();
+                flyway.baseline();
+            } catch (Exception e) {
+                logger.error("Error while trying to migrate database to 2.0");
+                if (backupDatabaseFile != null && backupDatabaseFile.exists()) {
+                    logger.info("Restoring database file {} from backup {}", databaseFile, backupDatabaseFile);
+                    Files.move(backupDatabaseFile.toPath(), databaseFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                }
+                throw new RuntimeException(e);
+            }
         }
     }
 
-    private static void replaceSchemaVersionChanges(File databaseScriptFile, File databaseScriptFileNew) {
+    private static void updatePassword(String dbConnectionUrl, String javaExecutable, File h2OldJar, String updatePasswordQuery) throws IOException, InterruptedException {
         try {
-            try (FileWriter fileWriter = new FileWriter(databaseScriptFileNew)) {
-                Files.lines(databaseScriptFile.toPath()).forEach(line -> {
-                    String sql = line;
-                    for (Map.Entry<String, String> entry : SCHEMA_VERSION_CHANGES.entrySet()) {
-                        sql = sql.replaceAll(entry.getKey(), entry.getValue());
-                    }
-                    try {
-                        fileWriter.write(sql);
-                        fileWriter.write(System.getProperty("line.separator"));
-                    } catch (IOException e) {
-                        throw new RuntimeException("Unable to write to temp file " + databaseScriptFileNew, e);
-                    }
-                });
-            }
-            if (!databaseScriptFile.delete()) {
-                throw new RuntimeException("Unable to delete existing database script file " + databaseScriptFile);
-            }
-            Files.move(databaseScriptFileNew.toPath(), databaseScriptFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException e) {
-            throw new RuntimeException("Unable to update database migration versions", e);
+            runH2Command(Arrays.asList(javaExecutable, "-cp", h2OldJar.toString(), "org.h2.tools.Shell", "-url", dbConnectionUrl, "-user", "sa", "-sql", NzbHydra.isOsWindows() ? ("\"" + updatePasswordQuery + "\"") : updatePasswordQuery), "Password update failed.");
+        } catch (Exception e) {
+            runH2Command(Arrays.asList(javaExecutable, "-cp", h2OldJar.toString(), "org.h2.tools.Shell", "-url", dbConnectionUrl, "-user", "sa", "-password", "sa", "-sql", NzbHydra.isOsWindows() ? ("\"" + updatePasswordQuery + "\"") : updatePasswordQuery), "Password update failed.");
         }
     }
 
-    private static void deleteExistingDatabase(File databaseFile) {
-        if (!databaseFile.exists()) {
-            throw new RuntimeException("Unable to find database file at " + databaseFile.getAbsolutePath());
-        }
-        boolean deleted = databaseFile.delete();
-        if (!deleted) {
-            throw new RuntimeException("Unable to delete database file at " + databaseFile.getAbsolutePath() + ". Please move it somewhere else (just to be sure) and restart NZBHYdra.");
+    private static void runH2Command(List<String> updatePassCommand, String errorMessage) throws IOException, InterruptedException {
+        logger.info("Running command: " + Joiner.on(" ").join(updatePassCommand));
+        final Process process = new ProcessBuilder(updatePassCommand)
+            .redirectErrorStream(true)
+            .inheritIO()
+            .start();
+        final int result = process.waitFor();
+        if (result != 0) {
+            throw new RuntimeException(errorMessage + ". Code: " + result);
         }
     }
 
-    private static void createDatabaseScript(File databaseScriptFile, String url) throws SQLException {
-        if (databaseScriptFile.exists()) {
-            boolean deleted = databaseScriptFile.delete();
-            if (!deleted) {
-                throw new RuntimeException("Unable to delete database script file at " + databaseScriptFile.getAbsolutePath() + ". Please delete it manually and restart NZBHYdra.");
+    private static File downloadJarFile(String url) throws IOException {
+        final ClientHttpRequest request = new OkHttp3ClientHttpRequestFactory().createRequest(URI.create(url), HttpMethod.GET);
+        final File jarFile;
+        try (ClientHttpResponse response = request.execute()) {
+            jarFile = Files.createTempFile("nzbhydra", ".jar").toFile();
+            logger.debug("Downloaded file from {} to {}. Will be deleted on exit", url, jarFile);
+            jarFile.deleteOnExit();
+            try (InputStream body = response.getBody()) {
+                com.google.common.io.Files.asByteSink(jarFile).writeFrom(body);
+            }
+            if (response.getStatusCode() != HttpStatus.OK) {
+                throw new RuntimeException("Unable to download database library. Response: " + response.getStatusCode());
             }
         }
-        logger.info("Recreating database to ensure successful migration. This may take a couple of minutes...");
+        return jarFile;
 
-        try (Connection conn = DriverManager.getConnection(url, "SA", "")) {
-            logger.info("Creating database script {} from database", databaseScriptFile.getAbsolutePath());
-            conn.createStatement().execute(String.format("script to '%s'", databaseScriptFile));
-            if (!databaseScriptFile.exists()) {
-                throw new RuntimeException("Database script file was not created at " + databaseScriptFile.getAbsolutePath());
-            }
-        }
     }
+
+    private static String getJavaExecutable() {
+        String javaExecutable;
+        if (System.getProperty("os.name").startsWith("Win")) {
+            javaExecutable = System.getProperties().getProperty("java.home") + File.separator + "bin" + File.separator + "java.exe";
+        } else {
+            javaExecutable = System.getProperties().getProperty("java.home") + File.separator + "bin" + File.separator + "java";
+        }
+        if (new File(javaExecutable).exists()) {
+            logger.debug("Determined java executable: {}", javaExecutable);
+        } else {
+            logger.debug("Java executable not found. Trying just java and hope it's in path");
+            javaExecutable = "java";
+        }
+        return javaExecutable;
+    }
+
 
     @Data
+    @ReflectionMarker
     @AllArgsConstructor
     @EqualsAndHashCode
     private static class ExecutedScript {

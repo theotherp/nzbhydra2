@@ -16,16 +16,17 @@
 
 package org.nzbhydra.misc;
 
+import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
+import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 
 @Component
@@ -37,8 +38,9 @@ public class OpenPortChecker {
         if (ip == null) {
             ip = getPublicIp();
         }
-        try (final WebClient webClient = new WebClient()) {
+        try (final WebClient webClient = new WebClient(BrowserVersion.getDefault(), false, null,-1)) {
             webClient.getOptions().setThrowExceptionOnScriptError(false);
+            webClient.getOptions().setCssEnabled(false);
 
             final HtmlPage page1 = webClient.getPage("https://portchecker.co/check");
 

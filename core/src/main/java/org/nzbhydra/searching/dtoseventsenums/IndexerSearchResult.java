@@ -23,6 +23,7 @@ import com.google.common.collect.Multiset;
 import lombok.Data;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.searching.db.SearchResultEntity;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -33,6 +34,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Data
+@ReflectionMarker
 public class IndexerSearchResult {
 
     private Indexer indexer;

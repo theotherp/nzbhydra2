@@ -1,13 +1,14 @@
 package org.nzbhydra.searching;
 
 import com.google.common.collect.HashMultiset;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.SearchSource;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.SearchingConfig;
 import org.nzbhydra.config.category.Category;
@@ -18,7 +19,6 @@ import org.nzbhydra.indexers.Newznab;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.nzbhydra.searching.searchrequests.InternalData;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
-import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -26,8 +26,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
 
-import static junit.framework.TestCase.assertFalse;
-import static junit.framework.TestCase.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 public class SearchResultAcceptorTest {
@@ -49,7 +50,7 @@ public class SearchResultAcceptorTest {
     @InjectMocks
     private SearchResultAcceptor testee = new SearchResultAcceptor();
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         when(configProvider.getBaseConfig()).thenReturn(baseConfig);
@@ -60,10 +61,11 @@ public class SearchResultAcceptorTest {
         when(searchRequest.getCategory()).thenReturn(category);
         item = new SearchResultItem();
         item.setCategory(category);
+        when(searchRequest.meets(any())).thenCallRealMethod();
     }
 
     @Test
-    public void shouldCheckForRequiredWords() throws Exception {
+    void shouldCheckForRequiredWords() throws Exception {
         internalData.getRequiredWords().clear();
         internalData.getRequiredWords().add("abc.def");
         item.setTitle("abc.def ghi");
@@ -73,9 +75,9 @@ public class SearchResultAcceptorTest {
         item.setTitle("abc.dEF ghi");
         assertTrue(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item, null));
         item.setTitle("abcdef ghi");
-        assertFalse(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item, null));
+        assertThat(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item, null)).isFalse();
         item.setTitle("abc def ghi");
-        assertFalse(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item, null));
+        assertThat(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item, null)).isFalse();
 
         internalData.getRequiredWords().clear();
         internalData.getRequiredWords().add("abc");
@@ -84,15 +86,15 @@ public class SearchResultAcceptorTest {
         item.setTitle("abc.def ghi");
         assertTrue(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item, null));
         item.setTitle("abcdef ghi");
-        assertFalse(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item, null));
+        assertThat(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item, null)).isFalse();
         item.setTitle("def ghi");
-        assertFalse(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item, null));
+        assertThat(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item, null)).isFalse();
 
         internalData.getRequiredWords().add("def");
         item.setTitle("abc def ghi");
         assertTrue(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item, null));
         item.setTitle("abc de");
-        assertFalse(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item, null));
+        assertThat(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item, null)).isFalse();
 
         internalData.getRequiredWords().add("def");
         item.setTitle("abc def ghi");
@@ -105,15 +107,15 @@ public class SearchResultAcceptorTest {
 
 
     @Test
-    public void shouldCheckForForbiddenWords() throws Exception {
+    void shouldCheckForForbiddenWords() throws Exception {
         internalData.getForbiddenWords().clear();
         internalData.getForbiddenWords().add("abc.def");
         item.setTitle("abc.def ghi");
-        assertFalse(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item, null));
+        assertThat(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item, null)).isFalse();
         item.setTitle("abc.DEF ghi");
-        assertFalse(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item, null));
+        assertThat(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item, null)).isFalse();
         item.setTitle("abc.dEF ghi");
-        assertFalse(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item, null));
+        assertThat(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item, null)).isFalse();
 
         item.setTitle("abcdef ghi");
         assertTrue(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item, null));
@@ -124,11 +126,11 @@ public class SearchResultAcceptorTest {
         internalData.getForbiddenWords().clear();
         internalData.getForbiddenWords().add("abc");
         item.setTitle("abc def ghi");
-        assertFalse(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item, null));
+        assertThat(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item, null)).isFalse();
         item.setTitle("ABC def ghi");
-        assertFalse(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item, null));
+        assertThat(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item, null)).isFalse();
         item.setTitle("aBC def ghi");
-        assertFalse(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item, null));
+        assertThat(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item, null)).isFalse();
         item.setTitle("abcdef ghi");
         assertTrue(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item, null));
         item.setTitle("def ghi");
@@ -136,7 +138,7 @@ public class SearchResultAcceptorTest {
     }
 
     @Test
-    public void shouldCheckForPassword() throws Exception {
+    void shouldCheckForPassword() throws Exception {
         when(searchingConfig.isIgnorePassworded()).thenReturn(false);
         SearchResultItem item = new SearchResultItem();
 
@@ -151,11 +153,11 @@ public class SearchResultAcceptorTest {
         assertTrue(testee.checkForPassword(HashMultiset.create(), item));
 
         item.setPassworded(true);
-        assertFalse(testee.checkForPassword(HashMultiset.create(), item));
+        assertThat(testee.checkForPassword(HashMultiset.create(), item)).isFalse();
     }
 
     @Test
-    public void shouldCheckForAge() {
+    void shouldCheckForAge() {
         when(searchRequest.getMinage()).thenReturn(Optional.of(10));
         when(searchRequest.getMaxage()).thenReturn(Optional.of(100));
         SearchResultItem item = new SearchResultItem();
@@ -164,14 +166,14 @@ public class SearchResultAcceptorTest {
         assertTrue(testee.checkForAge(searchRequest, HashMultiset.create(), item));
 
         item.setPubDate(Instant.now().minus(5, ChronoUnit.DAYS));
-        assertFalse(testee.checkForAge(searchRequest, HashMultiset.create(), item));
+        assertThat(testee.checkForAge(searchRequest, HashMultiset.create(), item)).isFalse();
 
         item.setPubDate(Instant.now().plus(105, ChronoUnit.DAYS));
-        assertFalse(testee.checkForAge(searchRequest, HashMultiset.create(), item));
+        assertThat(testee.checkForAge(searchRequest, HashMultiset.create(), item)).isFalse();
     }
 
     @Test
-    public void shouldCheckForSize() {
+    void shouldCheckForSize() {
         when(searchRequest.getMinsize()).thenReturn(Optional.of(10));
         when(searchRequest.getMaxsize()).thenReturn(Optional.of(100));
         SearchResultItem item = new SearchResultItem();
@@ -181,10 +183,10 @@ public class SearchResultAcceptorTest {
         assertTrue(testee.checkForSize(searchRequest, HashMultiset.create(), item));
 
         item.setSize(5 * 1024 * 1024L);
-        assertFalse(testee.checkForSize(searchRequest, HashMultiset.create(), item));
+        assertThat(testee.checkForSize(searchRequest, HashMultiset.create(), item)).isFalse();
 
         item.setSize(105 * 1024 * 1024L);
-        assertFalse(testee.checkForSize(searchRequest, HashMultiset.create(), item));
+        assertThat(testee.checkForSize(searchRequest, HashMultiset.create(), item)).isFalse();
 
         //Apply limits for API searches
         when(searchRequest.getMinsize()).thenReturn(Optional.empty());
@@ -193,7 +195,7 @@ public class SearchResultAcceptorTest {
         category.setMaxSizePreset(1);
         category.setApplySizeLimitsToApi(true);
         when(searchRequest.getSource()).thenReturn(SearchSource.API);
-        assertFalse(testee.checkForSize(searchRequest, HashMultiset.create(), item));
+        assertThat(testee.checkForSize(searchRequest, HashMultiset.create(), item)).isFalse();
         when(searchRequest.getSource()).thenReturn(SearchSource.INTERNAL);
         assertTrue(testee.checkForSize(searchRequest, HashMultiset.create(), item));
 
@@ -201,13 +203,13 @@ public class SearchResultAcceptorTest {
         category.setMinSizePreset(200);
         category.setApplySizeLimitsToApi(true);
         when(searchRequest.getSource()).thenReturn(SearchSource.API);
-        assertFalse(testee.checkForSize(searchRequest, HashMultiset.create(), item));
+        assertThat(testee.checkForSize(searchRequest, HashMultiset.create(), item)).isFalse();
         when(searchRequest.getSource()).thenReturn(SearchSource.INTERNAL);
         assertTrue(testee.checkForSize(searchRequest, HashMultiset.create(), item));
     }
 
     @Test
-    public void shouldCheckForForbiddenPoster() {
+    void shouldCheckForForbiddenPoster() {
         when(searchingConfig.getForbiddenPosters()).thenReturn(Arrays.asList("spammer"));
 
         item.setPoster("niceGuy");
@@ -217,14 +219,14 @@ public class SearchResultAcceptorTest {
         assertTrue(testee.checkForForbiddenPoster(HashMultiset.create(), item));
 
         item.setPoster("spammer");
-        assertFalse(testee.checkForForbiddenPoster(HashMultiset.create(), item));
+        assertThat(testee.checkForForbiddenPoster(HashMultiset.create(), item)).isFalse();
 
         when(searchingConfig.getForbiddenPosters()).thenReturn(Arrays.asList());
         assertTrue(testee.checkForForbiddenPoster(HashMultiset.create(), item));
     }
 
     @Test
-    public void shouldCheckForForbiddenGroup() {
+    void shouldCheckForForbiddenGroup() {
         when(searchingConfig.getForbiddenGroups()).thenReturn(Arrays.asList("spammergroup"));
 
         item.setGroup("niceGroup");
@@ -234,39 +236,39 @@ public class SearchResultAcceptorTest {
         assertTrue(testee.checkForForbiddenGroup(HashMultiset.create(), item));
 
         item.setGroup("spammergroup");
-        assertFalse(testee.checkForForbiddenGroup(HashMultiset.create(), item));
+        assertThat(testee.checkForForbiddenGroup(HashMultiset.create(), item)).isFalse();
 
         when(searchingConfig.getForbiddenGroups()).thenReturn(Collections.emptyList());
         assertTrue(testee.checkForForbiddenGroup(HashMultiset.create(), item));
     }
 
     @Test
-    public void shouldCheckForForbiddenCategory() {
+    void shouldCheckForForbiddenCategory() {
         category.setIgnoreResultsFrom(SearchSourceRestriction.BOTH);
 
         when(searchRequest.getSource()).thenReturn(SearchSource.INTERNAL);
-        assertFalse(testee.checkForCategoryShouldBeIgnored(searchRequest, HashMultiset.create(), item));
+        assertThat(testee.checkForCategoryShouldBeIgnored(searchRequest, HashMultiset.create(), item)).isFalse();
         when(searchRequest.getSource()).thenReturn(SearchSource.API);
-        assertFalse(testee.checkForCategoryShouldBeIgnored(searchRequest, HashMultiset.create(), item));
+        assertThat(testee.checkForCategoryShouldBeIgnored(searchRequest, HashMultiset.create(), item)).isFalse();
 
         category.setIgnoreResultsFrom(SearchSourceRestriction.API);
 
         when(searchRequest.getSource()).thenReturn(SearchSource.INTERNAL);
         assertTrue(testee.checkForCategoryShouldBeIgnored(searchRequest, HashMultiset.create(), item));
         when(searchRequest.getSource()).thenReturn(SearchSource.API);
-        assertFalse(testee.checkForCategoryShouldBeIgnored(searchRequest, HashMultiset.create(), item));
+        assertThat(testee.checkForCategoryShouldBeIgnored(searchRequest, HashMultiset.create(), item)).isFalse();
 
         category.setIgnoreResultsFrom(SearchSourceRestriction.INTERNAL);
 
         when(searchRequest.getSource()).thenReturn(SearchSource.INTERNAL);
-        assertFalse(testee.checkForCategoryShouldBeIgnored(searchRequest, HashMultiset.create(), item));
+        assertThat(testee.checkForCategoryShouldBeIgnored(searchRequest, HashMultiset.create(), item)).isFalse();
         when(searchRequest.getSource()).thenReturn(SearchSource.API);
         assertTrue(testee.checkForCategoryShouldBeIgnored(searchRequest, HashMultiset.create(), item));
     }
 
     @Test
-    public void shouldCheckForCategoryDisabledForIndexer() {
-        Indexer indexer = new Newznab();
+    void shouldCheckForCategoryDisabledForIndexer() {
+        Indexer indexer = new Newznab(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
         indexer.initialize(indexerConfig, new IndexerEntity());
         item.setIndexer(indexer);
 
@@ -280,31 +282,31 @@ public class SearchResultAcceptorTest {
 
         //Only other category enabled
         when(indexerConfig.getEnabledCategories()).thenReturn(Arrays.asList("Other"));
-        assertFalse(testee.checkForCategoryDisabledForIndexer(searchRequest, HashMultiset.create(), item));
+        assertThat(testee.checkForCategoryDisabledForIndexer(searchRequest, HashMultiset.create(), item)).isFalse();
     }
 
     @Test
-    public void shouldCheckRegexes() {
+    void shouldCheckRegexes() {
         item.setTitle("aabccd");
         assertTrue(testee.checkRegexes(item, HashMultiset.create(), "", ""));
         assertTrue(testee.checkRegexes(item, HashMultiset.create(), "a+b", ""));
         assertTrue(testee.checkRegexes(item, HashMultiset.create(), "", ""));
-        assertFalse(testee.checkRegexes(item, HashMultiset.create(), "a+b", "c+d"));
-        assertFalse(testee.checkRegexes(item, HashMultiset.create(), "", "c+d"));
+        assertThat(testee.checkRegexes(item, HashMultiset.create(), "a+b", "c+d")).isFalse();
+        assertThat(testee.checkRegexes(item, HashMultiset.create(), "", "c+d")).isFalse();
 
         item.setTitle("My.favorite.Show.s01e03.720p.HDTV.mkv");
         assertTrue(testee.checkRegexes(item, HashMultiset.create(), "720p.HDTV", ""));
         assertTrue(testee.checkRegexes(item, HashMultiset.create(), "", "SDTV"));
-        assertFalse(testee.checkRegexes(item, HashMultiset.create(), "", "720p.HDTV"));
-        assertFalse(testee.checkRegexes(item, HashMultiset.create(), "Show", "720p.HDTV"));
+        assertThat(testee.checkRegexes(item, HashMultiset.create(), "", "720p.HDTV")).isFalse();
+        assertThat(testee.checkRegexes(item, HashMultiset.create(), "Show", "720p.HDTV")).isFalse();
 
         item.setTitle("My.favorite.camera.Show.s01e03.720p.HDTV.mkv");
         assertTrue(testee.checkRegexes(item, HashMultiset.create(), "", "\\.(SDTV|CAM)\\."));
         assertTrue(testee.checkRegexes(item, HashMultiset.create(), "(720p|1080p).*.mkv$", ""));
         item.setTitle("My.favorite.camera.Show.s01e03.720p.HDTV.avi");
-        assertFalse(testee.checkRegexes(item, HashMultiset.create(), "(720p|1080p).*.mkv$", ""));
+        assertThat(testee.checkRegexes(item, HashMultiset.create(), "(720p|1080p).*.mkv$", "")).isFalse();
         item.setTitle("My.movie.about.mkv.avi");
-        assertFalse(testee.checkRegexes(item, HashMultiset.create(), "\\.mkv$", ""));
+        assertThat(testee.checkRegexes(item, HashMultiset.create(), "\\.mkv$", "")).isFalse();
 
 
     }

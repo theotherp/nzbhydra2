@@ -13,8 +13,11 @@ import org.joda.time.format.PeriodFormatter;
 import org.joda.time.format.PeriodFormatterBuilder;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.Jackson;
-import org.nzbhydra.config.downloading.DownloaderType;
+import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.downloading.DownloaderType;
 import org.nzbhydra.downloading.FileDownloadStatus;
+import org.nzbhydra.downloading.FileHandler;
+import org.nzbhydra.downloading.IndexerSpecificDownloadExceptions;
 import org.nzbhydra.downloading.downloaders.Converters;
 import org.nzbhydra.downloading.downloaders.Downloader;
 import org.nzbhydra.downloading.downloaders.DownloaderEntry;
@@ -30,14 +33,14 @@ import org.nzbhydra.downloading.exceptions.DownloaderException;
 import org.nzbhydra.downloading.exceptions.DownloaderUnreachableException;
 import org.nzbhydra.downloading.exceptions.DuplicateNzbException;
 import org.nzbhydra.logging.LoggingMarkers;
+import org.nzbhydra.searching.db.SearchResultRepository;
 import org.nzbhydra.webaccess.HydraOkHttp3ClientHttpRequestFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.client.UnknownContentTypeException;
@@ -53,7 +56,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Component
 public class Sabnzbd extends Downloader {
 
     private static final Logger logger = LoggerFactory.getLogger(Sabnzbd.class);
@@ -82,10 +84,14 @@ public class Sabnzbd extends Downloader {
 
     private Instant lastErrorLogged;
 
-    @Autowired
-    private RestTemplate restTemplate;
-    @Autowired
-    private HydraOkHttp3ClientHttpRequestFactory requestFactory;
+    private final RestTemplate restTemplate;
+    private final HydraOkHttp3ClientHttpRequestFactory requestFactory;
+
+    public Sabnzbd(FileHandler nzbHandler, SearchResultRepository searchResultRepository, ApplicationEventPublisher applicationEventPublisher, IndexerSpecificDownloadExceptions indexerSpecificDownloadExceptions, ConfigProvider configProvider, RestTemplate restTemplate, HydraOkHttp3ClientHttpRequestFactory requestFactory) {
+        super(nzbHandler, searchResultRepository, applicationEventPublisher, indexerSpecificDownloadExceptions, configProvider);
+        this.restTemplate = restTemplate;
+        this.requestFactory = requestFactory;
+    }
 
     private UriComponentsBuilder getBaseUrl() {
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(downloaderConfig.getUrl()).pathSegment("api");
@@ -151,7 +157,7 @@ public class Sabnzbd extends Downloader {
                 .url(urlBuilder.toUriString())
                 .post(formBody)
                 .build();
-        OkHttpClient client = requestFactory.getOkHttpClientBuilder(urlBuilder.build().encode().toUri()).build();
+        OkHttpClient client = requestFactory.getOkHttpClient(urlBuilder.build().encode().toUri().getHost());
         try (Response response = client.newCall(request).execute(); ResponseBody body = response.body()) {
             if (!response.isSuccessful()) {
                 throw new DownloaderException("Downloader returned status code " + response.code() + " and message " + response.message());
@@ -307,7 +313,7 @@ public class Sabnzbd extends Downloader {
             final ResponseEntity<QueueResponse> exchange = restTemplate.exchange(baseUrl.queryParam("mode", "queue").build().toUri().toString(), HttpMethod.GET, null, QueueResponse.class);
             if (!exchange.getStatusCode().is2xxSuccessful()) {
                 logger.info("Connection check with sabNZBd using URL {}\n failed: Response body: {}", baseUrl.toUriString(), exchange.getBody().toString());
-                return new GenericResponse(false, "Connection check with sabnzbd failed. Response message: " + exchange.getStatusCode().getReasonPhrase() + ".The log may contain more infos.");
+                return new GenericResponse(false, "Connection check with sabnzbd failed. Status code: " + exchange.getStatusCode() + ".The log may contain more infos.");
             }
             if (exchange.getBody() == null || exchange.getBody().getQueue() == null) {
                 logger.info("Connection check with sabNZBd using URL {} failed. Unable to parse response.", baseUrl.toUriString());

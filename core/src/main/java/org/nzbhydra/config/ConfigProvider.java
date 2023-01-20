@@ -2,9 +2,12 @@ package org.nzbhydra.config;
 
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+//BaseConfig must be initialized before we can provide it
+@DependsOn("baseConfigHandler")
 @Component
 public class ConfigProvider {
 

@@ -2,19 +2,21 @@ package org.nzbhydra;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import joptsimple.OptionException;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
+import org.apache.commons.lang3.tuple.Pair;
 import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.BaseConfigHandler;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.ConfigReaderWriter;
 import org.nzbhydra.config.migration.ConfigMigration;
-import org.nzbhydra.database.DatabaseRecreation;
 import org.nzbhydra.debuginfos.DebugInfosProvider;
 import org.nzbhydra.genericstorage.GenericStorage;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.misc.BrowserOpener;
-import org.nzbhydra.update.UpdateManager;
 import org.nzbhydra.web.UrlCalculator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,31 +35,26 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.ImportRuntimeHints;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.bind.annotation.RestController;
 import org.yaml.snakeyaml.error.YAMLException;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.swing.*;
-import java.awt.GraphicsEnvironment;
-import java.awt.HeadlessException;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URI;
+import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
+@ImportRuntimeHints(NativeHints.class)
 @Configuration(proxyBeanMethods = false)
 @EnableAutoConfiguration(exclude = {
-        AopAutoConfiguration.class, org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration.class})
+    AopAutoConfiguration.class, org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration.class})
 @ComponentScan
 @RestController
 @EnableCaching
@@ -73,7 +70,7 @@ public class NzbHydra {
     private static String dataFolder = null;
     private static boolean wasRestarted = false;
     private static boolean anySettingsOverwritten = false;
-    private static ConfigReaderWriter configReaderWriter = new ConfigReaderWriter();
+    private static final ConfigReaderWriter CONFIG_READER_WRITER = new ConfigReaderWriter();
 
     @Autowired
     private ConfigProvider configProvider;
@@ -85,12 +82,29 @@ public class NzbHydra {
     private GenericStorage genericStorage;
     @Autowired
     private ApplicationEventPublisher applicationEventPublisher;
+    @Autowired
+    private BaseConfigHandler baseConfigHandler;
+
+    @Autowired
+    private DebugInfosProvider debugInfosProvider;
+
 
     public static void main(String[] args) throws Exception {
-        LoggerFactory.getILoggerFactory();
+        if (isNativeBuild()) {
+            logger.warn("Running for native build");
 
+            String dataFolder = "./data";
+            NzbHydra.setDataFolder(dataFolder);
+            System.setProperty("nzbhydra.dataFolder", dataFolder);
+            System.setProperty("spring.datasource.url", "jdbc:h2:mem:testdb;NON_KEYWORDS=YEAR,DATA,KEY");
 
-        checkJavaVersion();
+            setApplicationPropertiesFromConfig();
+
+            SpringApplication hydraApplication = new SpringApplication(NzbHydra.class);
+            applicationContext = hydraApplication.run(args);
+            logger.info("Native application returned");
+            return;
+        }
 
         OptionParser parser = new OptionParser();
         parser.accepts("datafolder", "Define path to main data folder. Must start with ./ for relative paths").withRequiredArg().defaultsTo("./data");
@@ -108,46 +122,22 @@ public class NzbHydra {
             logger.error("Invalid startup options detected: {}", e.getMessage());
             System.exit(1);
         }
-        if (System.getProperty("fromWrapper") == null && Arrays.stream(args).noneMatch(x -> x.equals("directstart"))) {
-            logger.info("NZBHydra 2 must be started using the wrapper for restart and updates to work. If for some reason you need to start it from the JAR directly provide the command line argument \"directstart\"");
-        } else if (options.has("help")) {
+
+        setDataFolder(options);
+
+        if (options.has("help")) {
             parser.printHelpOn(System.out);
         } else if (options.has("version")) {
-            String version = new UpdateManager().getAllVersionChangesUpToCurrentVersion().get(0).getVersion();
-            logger.info("NZBHydra 2 version: " + version);
+            System.out.println(DebugInfosProvider.getVersionAndBuildTimestamp().getLeft());
+        } else if (System.getProperty("fromWrapper") == null && Arrays.stream(args).noneMatch(x -> x.equals("directstart"))) {
+            logger.info("NZBHydra 2 must be started using the wrapper for restart and updates to work. If for some reason you need to start it from the JAR directly provide the command line argument \"directstart\"");
         } else {
             startup(args, options);
         }
     }
 
-    private static void checkJavaVersion() {
-        final String javaVersionString;
-        int javaMajor = 0;
-        try {
-            javaVersionString = System.getProperty("java.version");
 
-            final Matcher matcher = Pattern.compile("(?<major>\\d+)(\\.(?<minor>\\d+)\\.(?<patch>\\d)+[\\-_\\w]*)?.*").matcher(javaVersionString);
-            if (!matcher.find()) {
-                logger.error("Unable to determine JAVA version from {}", javaVersionString);
-                return;
-            }
-
-            javaMajor = Integer.parseInt(matcher.group("major"));
-            int javaMinor = Integer.parseInt(matcher.group("minor"));
-            int javaVersion = 0;
-            if ((javaMajor == 1 && javaMinor == 8)) {
-                return;
-            }
-        } catch (Exception e) {
-            logger.error("Unable to determine java version", e);
-            return;
-        }
-        if (javaMajor > 17) {
-            throw new RuntimeException("Deteted Java version " + javaVersionString + ". Please use Java 8, 11, 15 or 17. Java 18 and above are not supported");
-        }
-    }
-
-    protected static void startup(String[] args, OptionSet options) throws Exception {
+    private static void setDataFolder(OptionSet options) throws IOException {
         if (options.has("datafolder")) {
             dataFolder = (String) options.valueOf("datafolder");
         } else {
@@ -155,6 +145,10 @@ public class NzbHydra {
         }
         File dataFolderFile = new File(dataFolder);
         dataFolder = dataFolderFile.getCanonicalPath();
+    }
+
+    protected static void startup(String[] args, OptionSet options) throws Exception {
+        File dataFolderFile = new File(dataFolder);
         //Check if we can write in the data folder. If not we can just quit now
         if (!dataFolderFile.exists() && !dataFolderFile.mkdirs()) {
             logger.error("Unable to read or write data folder {}", dataFolder);
@@ -185,17 +179,13 @@ public class NzbHydra {
             SpringApplication hydraApplication = new SpringApplication(NzbHydra.class);
             NzbHydra.originalArgs = args;
             wasRestarted = Arrays.asList(args).contains("restarted");
-            if (NzbHydra.isOsWindows() && !options.has("quiet") && !options.has("nobrowser")) {
-                hydraApplication.setHeadless(false);
-            } else {
-                hydraApplication.setHeadless(true);
-            }
-
-            DatabaseRecreation.runDatabaseScript();
-
+            hydraApplication.setHeadless(true);
             applicationContext = hydraApplication.run(args);
         } catch (Exception e) {
-            handleException(e);
+            //Is thrown by SpringApplicationAotProcessor
+            if (!(e instanceof SpringApplication.AbandonedRunException)) {
+                handleException(e);
+            }
         }
     }
 
@@ -204,7 +194,7 @@ public class NzbHydra {
      * Sets all properties referenced in application.properties so that they can be resolved
      */
     private static void setApplicationPropertiesFromConfig() throws IOException {
-        BaseConfig baseConfig = configReaderWriter.loadSavedConfig();
+        BaseConfig baseConfig = CONFIG_READER_WRITER.loadSavedConfig();
         setApplicationProperty("main.host", "MAIN_HOST", baseConfig.getMain().getHost());
         setApplicationProperty("main.port", "MAIN_PORT", String.valueOf(baseConfig.getMain().getPort()));
         setApplicationProperty("main.urlBase", "MAIN_URL_BASE", baseConfig.getMain().getUrlBase().orElse("/"));
@@ -230,9 +220,9 @@ public class NzbHydra {
                 File systemErrLogFile = new File(NzbHydra.getDataFolder(), "logs/system.err.log");
                 File systemOutLogFile = new File(NzbHydra.getDataFolder(), "logs/system.out.log");
                 logger.info("Enabling SSL debugging. Will write to {}", systemErrLogFile);
-                System.setErr(new PrintStream(new FileOutputStream(systemErrLogFile)));
+                System.setErr(new PrintStream(Files.newOutputStream(systemErrLogFile.toPath())));
                 logger.info("Redirecting console output to system.out.log. You will not see any more log output in the console until you disable the HTTPS marker and restart NZBHydra");
-                System.setOut(new PrintStream(new FileOutputStream(systemOutLogFile)));
+                System.setOut(new PrintStream(Files.newOutputStream(systemOutLogFile.toPath())));
             }
         }
     }
@@ -245,11 +235,14 @@ public class NzbHydra {
     }
 
     private static void initializeAndValidateAndMigrateYamlFile(File yamlFile) throws IOException {
-        configReaderWriter.initializeIfNeeded(yamlFile);
-        configReaderWriter.validateExistingConfig();
-        Map<String, Object> map = configReaderWriter.loadSavedConfigAsMap();
+        if (NzbHydra.isNativeBuild()) {
+            return;
+        }
+        CONFIG_READER_WRITER.initializeIfNeeded(yamlFile);
+        CONFIG_READER_WRITER.validateExistingConfig();
+        Map<String, Object> map = CONFIG_READER_WRITER.loadSavedConfigAsMap();
         Map<String, Object> migrated = new ConfigMigration().migrate(map);
-        configReaderWriter.save(migrated, yamlFile);
+        CONFIG_READER_WRITER.save(migrated, yamlFile);
     }
 
     private static void handleException(Exception e) throws Exception {
@@ -272,30 +265,10 @@ public class NzbHydra {
             msg = "An unexpected error occurred during startup:\n" + e;
             logger.error("An unexpected error occurred during startup", e);
         }
-        try {
-            if (!GraphicsEnvironment.isHeadless() && isOsWindows()) {
-                final String htmlMessage = "<html>" + msg.replace("\n", "<br>") + "</html>";
-                JOptionPane.showMessageDialog(null, htmlMessage, "NZBHydra 2 error", JOptionPane.ERROR_MESSAGE);
-            }
-        } catch (HeadlessException e1) {
-            logger.warn("Unable to show exception in message dialog: {}", e1.getMessage());
-        }
+        logger.error("FATAL: " + msg, e);
+
         //Rethrow so that spring exception handlers can handle this
         throw e;
-    }
-
-
-    @PostConstruct
-    private void addTrayIconIfApplicable() {
-        boolean isOsWindows = isOsWindows();
-        if (isOsWindows) {
-            logger.info("Adding windows system tray icon");
-            try {
-                new WindowsTrayIcon();
-            } catch (Throwable e) {
-                logger.error("Can't add a windows tray icon because running headless");
-            }
-        }
     }
 
     public static boolean isOsWindows() {
@@ -304,7 +277,7 @@ public class NzbHydra {
     }
 
     @PostConstruct
-    private void warnIfSettingsOverwritten() {
+    public void warnIfSettingsOverwritten() {
         if (anySettingsOverwritten) {
             logger.warn("Overwritten settings will be displayed with their original value in the config section of the GUI");
         }
@@ -338,21 +311,26 @@ public class NzbHydra {
             //I don't know why I have to do this but otherwise genericStorage is always empty
             configProvider.getBaseConfig().setGenericStorage(new ConfigReaderWriter().loadSavedConfig().getGenericStorage());
 
-            if (!genericStorage.get("FirstStart", LocalDateTime.class).isPresent()) {
+            final Pair<String, String> versionAndBuildTimestamp = DebugInfosProvider.getVersionAndBuildTimestamp();
+            logger.info("Version: {}", versionAndBuildTimestamp.getLeft());
+            logger.info("Build timestamp: {}", versionAndBuildTimestamp.getRight());
+            if (genericStorage.get("FirstStart", LocalDateTime.class).isEmpty()) {
                 logger.info("First start of NZBHydra detected");
                 genericStorage.save("FirstStart", LocalDateTime.now());
-                configProvider.getBaseConfig().save(false);
+                baseConfigHandler.save(false);
             }
+
 
             if (DebugInfosProvider.isRunInDocker()) {
                 logger.info("You seem to be running NZBHydra 2 in docker. You can access Hydra using your local address and the IP you provided");
-            } else if (configProvider.getBaseConfig().getMain().isStartupBrowser() && !"true".equals(System.getProperty(BROWSER_DISABLED))) {
-                if (wasRestarted) {
-                    logger.info("Not opening browser after restart");
-                    return;
-                }
-                browserOpener.openBrowser();
             } else {
+                if (configProvider.getBaseConfig().getMain().isStartupBrowser() && !"true".equals(System.getProperty(BROWSER_DISABLED))) {
+                    if (wasRestarted) {
+                        logger.info("Not opening browser after restart");
+                        return;
+                    }
+                    browserOpener.openBrowser();
+                }
                 URI uri = urlCalculator.getLocalBaseUriBuilder().build().toUri();
                 logger.info("You can access NZBHydra 2 in your browser via {}", uri);
             }
@@ -363,16 +341,6 @@ public class NzbHydra {
 
     @PreDestroy
     public void destroy() {
-        boolean isOsWindows = isOsWindows();
-        if (isOsWindows) {
-            logger.debug("Initiating removal of windows tray icon (if it exists)");
-            try {
-                WindowsTrayIcon.remove();
-            } catch (Throwable e) {
-                //An exception might be thrown while shutting down, ignore this
-            }
-        }
-        applicationEventPublisher.publishEvent(new ShutdownEvent());
         logger.info("Shutting down and using up to {}ms to compact database", configProvider.getBaseConfig().getMain().getDatabaseCompactTime());
     }
 
@@ -382,5 +350,11 @@ public class NzbHydra {
         return new CaffeineCacheManager("infos", "titles", "updates", "dev");
     }
 
+    static void setDataFolder(String dataFolder) {
+        NzbHydra.dataFolder = dataFolder;
+    }
 
+    public static boolean isNativeBuild() {
+        return System.getenv("HYDRA_NATIVE_BUILD") != null;
+    }
 }

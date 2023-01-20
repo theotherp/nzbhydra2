@@ -1,7 +1,7 @@
 package org.nzbhydra.api;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -10,7 +10,9 @@ import org.mockito.stubbing.Answer;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.MainConfig;
+import org.nzbhydra.config.SearchSource;
 import org.nzbhydra.config.indexer.IndexerConfig;
+import org.nzbhydra.config.searching.SearchType;
 import org.nzbhydra.downloading.FileHandler;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
@@ -20,11 +22,10 @@ import org.nzbhydra.mapping.newznab.json.NewznabJsonRoot;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.nzbhydra.misc.UserAgentMapper;
 import org.nzbhydra.searching.CategoryProvider;
+import org.nzbhydra.searching.CustomQueryAndTitleMappingHandler;
 import org.nzbhydra.searching.SearchResult;
 import org.nzbhydra.searching.Searcher;
-import org.nzbhydra.searching.dtoseventsenums.SearchType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
-import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.nzbhydra.searching.searchrequests.SearchRequestFactory;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -36,7 +37,6 @@ import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 
@@ -69,10 +69,12 @@ public class ExternalApiTest {
     private NewznabJsonTransformer newznabJsonTransformerMock;
     @Mock
     private Jaxb2Marshaller jaxb2MarshallerMock;
+    @Mock
+    private CustomQueryAndTitleMappingHandler customQueryAndTitleMappingHandler;
     IndexerConfig indexerConfig = new IndexerConfig();
 
 
-    @Before
+    @BeforeEach
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         when(configProvider.getBaseConfig()).thenReturn(baseConfig);
@@ -97,11 +99,12 @@ public class ExternalApiTest {
         }).when(jaxb2MarshallerMock).marshal(any(), any());
         when(indexerMock.getConfig()).thenReturn(indexerConfig);
 
-        when(newznabXmlTransformerMock.getRssRoot(any(), anyInt(), anyInt(), any())).thenReturn(new NewznabXmlRoot());
+        when(newznabXmlTransformerMock.getRssRoot(any(), anyInt(), anyInt(), any(Boolean.class))).thenReturn(new NewznabXmlRoot());
+        when(customQueryAndTitleMappingHandler.mapSearchRequest(any())).thenAnswer((Answer<SearchRequest>) invocation -> invocation.getArgument(0));
     }
 
     @Test
-    public void shouldCache() throws Exception {
+    void shouldCache() throws Exception {
         NewznabParameters parameters = new NewznabParameters();
         parameters.setQ("q");
         parameters.setApikey("apikey");
@@ -116,7 +119,7 @@ public class ExternalApiTest {
     }
 
     @Test
-    public void shouldRepeatSearchWhenCacheTimeIsOver() throws Exception {
+    void shouldRepeatSearchWhenCacheTimeIsOver() throws Exception {
         NewznabParameters parameters = new NewznabParameters();
         parameters.setQ("q");
         parameters.setApikey("apikey");
@@ -135,7 +138,7 @@ public class ExternalApiTest {
     }
 
     @Test
-    public void shouldCacheRemoveEntriesWhenLimitReached() throws Exception {
+    void shouldCacheRemoveEntriesWhenLimitReached() throws Exception {
         NewznabParameters parameters = getNewznabParameters("q1");
 
         testee.api(parameters, null, null);
@@ -170,9 +173,9 @@ public class ExternalApiTest {
     }
 
     @Test
-    public void shouldUseCorrectHeaders() throws Exception {
+    void shouldUseCorrectHeaders() throws Exception {
         NewznabJsonRoot jsonRoot = new NewznabJsonRoot();
-        when(newznabJsonTransformerMock.transformToRoot(any(), any(), anyInt(), any())).thenReturn(jsonRoot);
+        when(newznabJsonTransformerMock.transformToRoot(any(), any(), anyInt(), any(Boolean.class))).thenReturn(jsonRoot);
         NewznabParameters parameters = new NewznabParameters();
         parameters.setQ("q1");
         parameters.setApikey("apikey");
@@ -183,7 +186,7 @@ public class ExternalApiTest {
         assertThat(responseEntity.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON_UTF8);
 
         NewznabXmlRoot xmlRoot = new NewznabXmlRoot();
-        when(newznabXmlTransformerMock.getRssRoot(any(), any(), anyInt(), any())).thenReturn(xmlRoot);
+        when(newznabXmlTransformerMock.getRssRoot(any(), any(), anyInt(), any(Boolean.class))).thenReturn(xmlRoot);
 
         parameters.setO(OutputType.XML);
         responseEntity = testee.api(parameters, null, null);

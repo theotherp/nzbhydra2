@@ -1,38 +1,36 @@
 package org.nzbhydra.notifications;
 
+import jakarta.persistence.Convert;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
 import lombok.Data;
+import org.nzbhydra.config.notification.NotificationEventType;
+import org.nzbhydra.springnative.ReflectionMarker;
 
-import javax.persistence.Convert;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
 import java.time.Instant;
 
 @Data
+@ReflectionMarker
 @Entity
 @Table(name = "notification")
-public class NotificationEntity {
-
-    public enum MessageType {
-        INFO,
-        SUCCESS,
-        WARNING,
-        FAILURE
-    }
+public final class NotificationEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @SequenceGenerator(allocationSize = 1, name = "NOTIFICATION_SEQ")
     protected int id;
 
     @Enumerated(EnumType.STRING)
     private NotificationEventType notificationEventType;
 
     @Enumerated(EnumType.STRING)
-    private MessageType messageType;
+    private NotificationMessageType messageType;
 
     private String title;
     private String body;
@@ -46,7 +44,7 @@ public class NotificationEntity {
     public NotificationEntity() {
     }
 
-    public NotificationEntity(NotificationEventType notificationEventType, MessageType messageType, String title, String body, String urls, Instant time) {
+    public NotificationEntity(NotificationEventType notificationEventType, NotificationMessageType messageType, String title, String body, String urls, Instant time) {
         this.notificationEventType = notificationEventType;
         this.title = title;
         this.body = body;

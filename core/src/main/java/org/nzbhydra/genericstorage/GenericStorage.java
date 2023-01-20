@@ -2,6 +2,7 @@ package org.nzbhydra.genericstorage;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.nzbhydra.Jackson;
+import org.nzbhydra.config.BaseConfigHandler;
 import org.nzbhydra.config.ConfigProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -15,12 +16,14 @@ public class GenericStorage {
 
     @Autowired
     private ConfigProvider configProvider;
+    @Autowired
+    private BaseConfigHandler baseConfigHandler;
 
     public <T extends Serializable> void save(String key, T value) {
         Map<String, String> genericStorage = configProvider.getBaseConfig().getGenericStorage();
         try {
             genericStorage.put(key, Jackson.JSON_MAPPER.writeValueAsString(value));
-            configProvider.getBaseConfig().save(true);
+            baseConfigHandler.save(true);
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Error writing data as JSON", e);
         }
@@ -36,7 +39,7 @@ public class GenericStorage {
 
     public <T extends Serializable> void remove(String key) {
         configProvider.getBaseConfig().getGenericStorage().remove(key);
-        configProvider.getBaseConfig().save(true);
+        baseConfigHandler.save(true);
     }
 
 

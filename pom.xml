@@ -4,7 +4,7 @@
     <groupId>org.nzbhydra</groupId>
     <artifactId>nzbhydra2</artifactId>
     <packaging>pom</packaging>
-    <version>4.7.7-SNAPSHOT</version>
+    <version>5.0.0-SNAPSHOT</version>
 
     <modules>
         <module>shared</module>
@@ -32,22 +32,29 @@
             <plugin>
                 <groupId>org.nzbhydra</groupId>
                 <artifactId>github-release-plugin</artifactId>
-                <version>1.0.0</version>
+                <version>3.0.0</version>
                 <configuration>
                     <commitish>master</commitish>
-                    <githubReleasesUrl>https://api.github.com/repos/theotherp/nzbhydra2/releases</githubReleasesUrl>
-                    <githubTokenFile>${basedir}/core/token.txt</githubTokenFile>
+                    <githubToken>${env.GITHUB_TOKEN}</githubToken>
+                    <discordToken>${env.DISCORD_TOKEN}</discordToken>
                     <linuxAsset>${basedir}/releases/linux-release/target/nzbhydra2-${project.version}-linux.zip</linuxAsset>
                     <windowsAsset>${basedir}/releases/windows-release/target/nzbhydra2-${project.version}-windows.zip</windowsAsset>
-                    <changelogJsonFile>${basedir}/core/src/main/resources/changelog.json</changelogJsonFile>
+                    <genericAsset>${basedir}/releases/windows-release/target/nzbhydra2-${project.version}-generic.zip</genericAsset>
+                    <changelogYamlFile>${basedir}/core/src/main/resources/changelog.yaml</changelogYamlFile>
                     <changelogMdFile>${basedir}/changelog.md</changelogMdFile>
+
+                    <linuxExecutable>${basedir}/releases/linux-release/include/nzbhydra2</linuxExecutable>
+                    <windowsExecutable>${basedir}/releases/windows-release/include/NZBHydra2.exe</windowsExecutable>
+                    <windowsConsoleExecutable>${basedir}/releases/windows-release/include/NZBHydra2 Console.exe</windowsConsoleExecutable>
+                    <py3>${basedir}/other/wrapper/nzbhydra2wrapperPy3.py</py3>
+                    <windowsPy>${basedir}/other/wrapper/pyInstaller/windows/nzbhydra2wrapperWindows.py</windowsPy>
 
                     <wrapperFile1>${basedir}/releases/linux-release/include/nzbhydra2</wrapperFile1>
                     <wrapperFile2>${basedir}/releases/windows-release/include/NZBHydra2 Console.exe</wrapperFile2>
                     <wrapperFile3>${basedir}/releases/windows-release/include/NZBHydra2.exe</wrapperFile3>
                     <wrapperFile4>${basedir}/other/wrapper/nzbhydra2wrapper.py</wrapperFile4>
                     <wrapperFile5>${basedir}/other/wrapper/nzbhydra2wrapperPy3.py</wrapperFile5>
-                    <wrapperHashesJsonFile>${basedir}/core/src/main/resources/wrapperHashes.json</wrapperHashesJsonFile>
+                    <wrapperHashesJsonFile>${basedir}/core/src/main/resources/wrapperHashes2.json</wrapperHashesJsonFile>
 
                     <tagName>v${project.version}</tagName>
                 </configuration>
@@ -62,8 +69,21 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.0.0-M2</version>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.10.1</version>
+                <configuration>
+                    <compilerArgs>
+                        <arg>-parameters</arg>
+                    </compilerArgs>
+                    <source>17</source>
+                    <target>17</target>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
+
 
     <profiles>
         <profile>
@@ -78,28 +98,33 @@
     </profiles>
 
     <properties>
-        <spring.boot.version>2.6.1</spring.boot.version>
-        <spring.oxm.version>5.3.14</spring.oxm.version>
-        <spring.test.version>5.3.14</spring.test.version>
-        <spring.security.test.version>5.6.0</spring.security.test.version>
-        <jackson.version>2.13.0</jackson.version>
-        <lombok.version>1.18.2</lombok.version>
-        <logback.version>1.2.11</logback.version>
+        <maven.javadoc.skip>true</maven.javadoc.skip>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+
+        <spring.boot.version>3.0.2</spring.boot.version>
+        <spring.boot.devtools.version>3.0.1</spring.boot.devtools.version>
+        <spring.boot.maven.version>3.0.2</spring.boot.maven.version>
+        <spring.oxm.version>6.0.4</spring.oxm.version>
+        <spring.oxm.version>6.0.4</spring.oxm.version>
+        <spring-data-commons.version>3.0.0</spring-data-commons.version>
+        <jakarta.persistence-api.version>3.1.0</jakarta.persistence-api.version>
+        <jackson.version>2.14.0</jackson.version>
+        <lombok.version>1.18.24</lombok.version>
+        <logback.version>1.4.5</logback.version>
         <guava.version>23.0</guava.version>
         <junit.version>4.13.2</junit.version>
-        <okhttp.version>4.9.3</okhttp.version>
-        <logstash-logback-encoder.version>7.1.1</logstash-logback-encoder.version>
+        <okhttp.version>4.10.0</okhttp.version>
+        <logstash-logback-encoder.version>7.2</logstash-logback-encoder.version>
         <commons-lang3.version>3.12.0</commons-lang3.version>
         <commons-io.version>2.11.0</commons-io.version>
-        <flyway-core.version>6.2.0</flyway-core.version>
+        <flyway-core.version>9.10.2</flyway-core.version>
         <jaxb.sun.core.version>2.3.0.1</jaxb.sun.core.version>
         <jaxb.sun.impl.version>3.0.1</jaxb.sun.impl.version>
         <maven.compiler.plugin.version>3.6.2</maven.compiler.plugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.javadoc.skip>true</maven.javadoc.skip>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
         <uri-scheme-handler.version>2.0.0</uri-scheme-handler.version>
+        <javers-core.version>6.8.1</javers-core.version>
     </properties>
 
 

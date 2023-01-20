@@ -1,0 +1,57 @@
+name: Release
+
+on:
+    workflow_dispatch:
+        inputs:
+            releaseVersion:
+                required: true
+                type: string
+                description: "Version to be released, like 1.2.3"
+            nextVersion:
+                required: true
+                type: string
+                description: "Version to be set afterwards, like 1.2.4-SNAPSHOT"
+            dryRun:
+                required: true
+                default: true
+                type: boolean
+                description: "Uncheck to actually execute the release"
+            selfHostedRunner:
+                required: true
+                default: false
+                type: boolean
+                description: "Has no effect, just as a reminder that the self-hosted windows runner must be running"
+
+jobs:
+    build:
+        uses: ./.github/workflows/buildNative.yml
+    release:
+        needs: [build]
+        runs-on: ubuntu-latest
+        env:
+            githubReleasesUrl: https://api.github.com/repos/{{github.repository}}/releases
+        steps:
+            -   uses: actions/checkout@v3
+                name: "Check out source"
+            -   name: "Display structure of working directory"
+                run: ls .
+            -   uses: actions/download-artifact@v3
+                name: "Download native artifacts"
+                with:
+                    path: ~/artifacts
+            -   name: "Display structure of artifacts folder"
+                run: ls -R ~/artifacts
+            -   name: "Copy artifacts to include folders"
+                run: |
+                    mv ~/artifacts/coreLinux/* ./releases/linux-release/include/
+                    chmod +x ./releases/linux-release/include/nzbhydra2
+                    mv ~/artifacts/coreWindows/* ./releases/windows-release/include/
+            -   name: Set up JDK 17
+                uses: actions/setup-java@v3
+                with:
+                    java-version: '17'
+                    distribution: 'adopt'
+                    cache: 'maven'
+            -   name: "Run release script"
+                run: |
+                    misc/build-and-release.sh ${{ github.event.inputs.releaseVersion }} ${{ github.event.inputs.nextVersion }} ${{ github.event.inputs.dryRun }}

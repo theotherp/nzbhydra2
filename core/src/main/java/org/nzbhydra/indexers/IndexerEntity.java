@@ -1,20 +1,29 @@
 package org.nzbhydra.indexers;
 
 import com.google.common.base.MoreObjects;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
 import lombok.Data;
+import org.nzbhydra.springnative.ReflectionMarker;
 
-import javax.persistence.*;
 import java.util.Objects;
 
 
 @Data
+@ReflectionMarker
 @Entity
 @Table(name = "indexer")
-public class IndexerEntity {
+public final class IndexerEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    protected int id;
+    @SequenceGenerator(allocationSize = 1, name = "INDEXER_SEQ")
+    private int id;
 
     @Column(unique = true)
     private String name;

@@ -16,7 +16,7 @@
 
 package org.nzbhydra.downloading.downloaders;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 
 import java.util.ArrayList;
@@ -32,7 +32,7 @@ public class DownloaderStatusTest {
 
 
     @Test
-    public void getDownloadingRatesInKilobytes() {
+    void getDownloadingRatesInKilobytes() {
         List<Long> list = new ArrayList<>(Arrays.asList(100L, 100L, 100L, 100L, 100L, 100L, 100L));
         testee.setDownloadingRatesInKilobytes(list);
         assertThat(testee.getDownloadingRatesInKilobytes()).containsExactlyElementsOf(list);

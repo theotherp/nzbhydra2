@@ -5,16 +5,16 @@ import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import net.jodah.expiringmap.ExpirationPolicy;
 import net.jodah.expiringmap.ExpiringMap;
+import org.nzbhydra.config.SearchSource;
 import org.nzbhydra.config.category.Category;
-import org.nzbhydra.mediainfo.MediaIdType;
+import org.nzbhydra.config.mediainfo.MediaIdType;
+import org.nzbhydra.config.searching.SearchType;
 import org.nzbhydra.searching.dtoseventsenums.FallbackSearchInitiatedEvent;
 import org.nzbhydra.searching.dtoseventsenums.IndexerSearchFinishedEvent;
 import org.nzbhydra.searching.dtoseventsenums.IndexerSelectionEvent;
 import org.nzbhydra.searching.dtoseventsenums.SearchMessageEvent;
 import org.nzbhydra.searching.dtoseventsenums.SearchRequestParameters;
-import org.nzbhydra.searching.dtoseventsenums.SearchType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
-import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.nzbhydra.searching.searchrequests.SearchRequestFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,7 +51,7 @@ public class SearchWeb {
     @Autowired
     private SimpMessageSendingOperations messagingTemplate;
     @Autowired
-    private CustomQueryAndTitleMapping customQueryAndTitleMapping;
+    private CustomQueryAndTitleMappingHandler customQueryAndTitleMappingHandler;
 
     private final Lock lock = new ReentrantLock();
 
@@ -143,7 +143,7 @@ public class SearchWeb {
         }
 
         searchRequest = searchRequestFactory.extendWithSavedIdentifiers(searchRequest);
-        searchRequest = customQueryAndTitleMapping.mapSearchRequest(searchRequest);
+        searchRequest = customQueryAndTitleMappingHandler.mapSearchRequest(searchRequest);
 
         //Initialize messages for this search request
         final SearchState searchState = new SearchState(searchRequest.getSearchRequestId());

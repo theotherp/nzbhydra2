@@ -16,6 +16,8 @@
 
 package org.nzbhydra.indexers.status;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -24,13 +26,12 @@ import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.indexers.IndexerEntity;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.searching.SearchModuleProvider;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
 import java.sql.Timestamp;
 import java.time.Clock;
 import java.time.Instant;
@@ -147,7 +148,7 @@ public class IndexerStatusesAndLimits {
 
 
     private Instant getResetTime(IndexerConfig indexerConfig) {
-        if (!indexerConfig.getHitLimitResetTime().isPresent()) {
+        if (indexerConfig.getHitLimitResetTime().isEmpty()) {
             return null;
         }
         LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
@@ -159,6 +160,7 @@ public class IndexerStatusesAndLimits {
     }
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     public static class IndexerStatus {

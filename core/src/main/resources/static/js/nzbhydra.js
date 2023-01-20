@@ -1037,8 +1037,8 @@ function selectionButton() {
 }
 
 
-
-NfoModalInstanceCtrl.$inject = ["$scope", "$uibModalInstance", "nfo"];angular
+NfoModalInstanceCtrl.$inject = ["$scope", "$uibModalInstance", "nfo"];
+angular
     .module('nzbhydraApp')
     .directive('searchResult', searchResult);
 
@@ -1376,6 +1376,7 @@ function onFinishRender($timeout) {
         link: linkFunction
     }
 }
+
 //Fork of https://github.com/dotansimha/angularjs-dropdown-multiselect to make it compatible with formly
 angular
     .module('nzbhydraApp')
@@ -1510,6 +1511,7 @@ function dropdownMultiselectDirective() {
 
     }
 }
+
 angular
     .module('nzbhydraApp').directive("keepFocus", ['$timeout', function ($timeout) {
     /*
@@ -1593,6 +1595,7 @@ function indexerStateSwitch() {
         }
     }
 }
+
 /*
  *  (C) Copyright 2017 TheOtherP (theotherp@posteo.net)
  *
@@ -1805,9 +1808,9 @@ function hydraNews() {
 }
 
 
-
 LogModalInstanceCtrl.$inject = ["$scope", "$uibModalInstance", "entry"];
-escapeHtml.$inject = ["$sanitize"];angular
+escapeHtml.$inject = ["$sanitize"];
+angular
     .module('nzbhydraApp')
     .directive('hydralog', hydralog);
 
@@ -1997,6 +2000,7 @@ function formatClassname() {
 
     }
 }
+
 /*
  *  (C) Copyright 2017 TheOtherP (theotherp@posteo.net)
  *
@@ -2067,6 +2071,7 @@ function hydraChecksFooter() {
             });
         }
 
+        console.log("Checking for below Java 17.");
 
         function checkForJavaBelow17() {
             GenericStorageService.get("belowJava17", false).then(function (response) {
@@ -2083,18 +2088,19 @@ function hydraChecksFooter() {
             });
         }
 
-        function checkForManualUpdateTo5x() {
-            GenericStorageService.get("MANUAL_UPDATE_5x", false).then(function (response) {
-                if (response.data !== "" && response.data) {
-                    console.log("Manual update to 5.x necessary");
+        console.log("Checking for failed backup.");
+
+        function checkForFailedBackup() {
+            GenericStorageService.get("FAILED_BACKUP", false).then(function (response) {
+                if (response.data !== "" && response.data && !response.data) {
+                    console.log("Failed backup detected");
                     //headline, message, params, size, textAlign
-                    ModalService.open("Manual update necessary", 'A new version of NZBHydra is available. Unfortunately due to some massive changes an automatic update is not possible (or advisable). Please see ' +
-                        '<a href="https://github.com/theotherp/nzbhydra2/wiki/Updating-from-4.x-to-5.x" target="_blank">the wiki</a> for update instructions.', {
+                    ModalService.open("Failed backup", 'The creation of a backup file has failed. Error message: \"' + response.data.message + '."<br> For details please check the log around ' + response.data.time + '.', {
                         yes: {
                             text: "OK"
                         }
                     }, undefined, "left");
-                    GenericStorageService.put("MANUAL_UPDATE_5x", false, false);
+                    GenericStorageService.put("FAILED_BACKUP", false, null);
                 }
             });
         }
@@ -2137,7 +2143,7 @@ function hydraChecksFooter() {
             checkForOutdatedWrapper();
             checkForOpenToInternet();
             checkForJavaBelow17();
-            checkForManualUpdateTo5x();
+            checkForFailedBackup();
         }
 
         function retrieveUpdateInfos() {
@@ -2253,8 +2259,10 @@ function hydraChecksFooter() {
                             welcomeIsBeingShown = false;
                         });
                     } else {
-                        _.defer(checkAndShowNews);
-                        _.defer(checkExpiredIndexers);
+                        if (HydraAuthService.getUserInfos().maySeeAdmin) {
+                            _.defer(checkAndShowNews);
+                            _.defer(checkExpiredIndexers);
+                        }
                     }
                 }, function () {
                     console.log("Error while checking for welcome")
@@ -2301,7 +2309,7 @@ function hydraChecksFooter() {
             }
         }
 
-        if (ConfigService.getSafe().notificationConfig.displayNotifications) {
+        if (ConfigService.getSafe().notificationConfig.displayNotifications && HydraAuthService.getUserInfos().maySeeAdmin) {
             var socket = new SockJS(bootstrapped.baseUrl + 'websocket');
             var stompClient = Stomp.over(socket);
             stompClient.debug = null;
@@ -2483,7 +2491,7 @@ function downloaderStatusFooter() {
 
         var downloaderStatus;
         var updateInterval = null;
-
+        console.log("websocket");
         var socket = new SockJS(bootstrapped.baseUrl + 'websocket');
         var stompClient = Stomp.over(socket);
         stompClient.debug = null;
@@ -2792,9 +2800,9 @@ function downloadNzbsButton() {
 }
 
 
-
 freetextFilter.$inject = ["DebugService"];
-booleanFilter.$inject = ["DebugService"];angular
+booleanFilter.$inject = ["DebugService"];
+angular
     .module('nzbhydraApp').directive("columnFilterWrapper", columnFilterWrapper);
 
 function columnFilterWrapper() {
@@ -3167,6 +3175,7 @@ function columnSortable() {
 
     }
 }
+
 angular
     .module('nzbhydraApp')
     .directive('connectionTest', connectionTest);
@@ -3255,6 +3264,7 @@ function connectionTest() {
 //Taken from https://github.com/IamAdamJowett/angular-click-outside
 
 clickOutside.$inject = ["$document", "$parse", "$timeout"];
+
 function childOf(/*child node*/c, /*parent node*/p) { //returns boolean
     while ((c = c.parentNode) && c !== p) ;
     return !!c;
@@ -3398,6 +3408,7 @@ function cfgFormEntry() {
         }]
     };
 }
+
 angular
     .module('nzbhydraApp')
     .directive('hydrabackup', hydrabackup);
@@ -3477,8 +3488,8 @@ function hydrabackup() {
 }
 
 
-
-addableNzbs.$inject = ["DebugService"];angular
+addableNzbs.$inject = ["DebugService"];
+angular
     .module('nzbhydraApp')
     .directive('addableNzbs', addableNzbs);
 
@@ -3506,7 +3517,8 @@ function addableNzbs(DebugService) {
 }
 
 
-addableNzb.$inject = ["DebugService"];angular
+addableNzb.$inject = ["DebugService"];
+angular
     .module('nzbhydraApp')
     .directive('addableNzb', addableNzb);
 
@@ -3554,6 +3566,7 @@ function addableNzb(DebugService) {
         };
     }
 }
+
 /*
  *  (C) Copyright 2017 TheOtherP (theotherp@posteo.net)
  *
@@ -3573,6 +3586,7 @@ function addableNzb(DebugService) {
 CheckCapsModalInstanceCtrl.$inject = ["$scope", "$interval", "$http", "$timeout", "growl", "capsCheckRequest"];
 IndexerConfigBoxService.$inject = ["$http", "$q", "$uibModal"];
 IndexerCheckBeforeCloseService.$inject = ["$q", "ModalService", "IndexerConfigBoxService", "growl", "blockUI"];
+
 function regexValidator(regex, message, prefixViewValue, preventEmpty) {
     return {
         expression: function ($viewValue, $modelValue) {
@@ -8646,10 +8660,9 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
 }
 
 
-
-
 UpdateService.$inject = ["$http", "growl", "blockUI", "RestartService", "RequestsErrorHandler", "$uibModal", "$timeout"];
-UpdateModalInstanceCtrl.$inject = ["$scope", "$http", "$interval", "RequestsErrorHandler"];angular
+UpdateModalInstanceCtrl.$inject = ["$scope", "$http", "$interval", "RequestsErrorHandler"];
+angular
     .module('nzbhydraApp')
     .factory('UpdateService', UpdateService);
 
@@ -10902,6 +10915,16 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
             }
 
             pair = _.find(request.identifiers, function (pair) {
+                return pair.identifierKey === "TVMAZE"
+            });
+            if (angular.isDefined(pair)) {
+                key = "TVMAZE ID";
+                href = "https://www.tvmaze.com/shows/" + pair.identifierValue;
+                href = $filter("dereferer")(href);
+                value = pair.identifierValue;
+            }
+
+            pair = _.find(request.identifiers, function (pair) {
                 return pair.identifierKey === "TVRAGE"
             });
             if (angular.isDefined(pair)) {
@@ -11088,12 +11111,12 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         }
 
         if ($scope.category.searchType === "MOVIE") {
-            return $http.get('internalapi/autocomplete/MOVIE/', {params: {input: val}}).then(function (response) {
+            return $http.get('internalapi/autocomplete/MOVIE', {params: {input: val}}).then(function (response) {
                 $scope.autocompleteLoading = false;
                 return response.data;
             });
         } else if ($scope.category.searchType === "TVSEARCH") {
-            return $http.get('internalapi/autocomplete/TV/', {params: {input: val}}).then(function (response) {
+            return $http.get('internalapi/autocomplete/TV', {params: {input: val}}).then(function (response) {
                 $scope.autocompleteLoading = false;
                 return response.data;
             });
@@ -12487,11 +12510,18 @@ nzbhydraapp.factory('RequestsErrorHandler', ["$q", "growl", "blockUI", "GeneralM
         // --- Response interceptor for handling errors generically ---
         responseError: function (rejection) {
             blockUI.reset();
+            if (rejection.data instanceof ArrayBuffer) {
+                //The case when the response was specifically requested as that, e.g. for debug infos
+                rejection.data = JSON.parse(new TextDecoder().decode(rejection.data));
+            }
             var shouldHandle = (rejection && rejection.config && rejection.status !== 403 && rejection.config.headers && rejection.config.headers[HEADER_NAME] && !rejection.config.url.contains("logerror") && !rejection.config.url.contains("/ping") && !rejection.config.alreadyHandled);
             if (shouldHandle) {
                 if (rejection.data) {
 
-                    var message = "An error occurred:<br>" + rejection.data.status + ": " + rejection.data.error;
+                    var message = "An error occurred:<br>" + rejection.data.status;
+                    if (rejection.data.error) {
+                        message += ": " + rejection.data.error
+                    }
                     if (rejection.data.path) {
                         message += "<br><br>Path: " + rejection.data.path;
                     }
@@ -12575,6 +12605,7 @@ nzbhydraapp.config(['$provide', '$httpProvider', function ($provide, $httpProvid
         return newHttp;
     }]);
 }]);
+
 var filters = angular.module('filters', []);
 
 filters.filter('bytes', function () {

@@ -7,11 +7,11 @@ import okhttp3.Request.Builder;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.nzbhydra.Jackson;
+import org.nzbhydra.config.SearchSource;
 import org.nzbhydra.downloading.FileDownloadEntity;
 import org.nzbhydra.downloading.FileDownloadEvent;
 import org.nzbhydra.downloading.FileDownloadRepository;
 import org.nzbhydra.searching.Searcher.SearchEvent;
-import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.nzbhydra.webaccess.HydraOkHttp3ClientHttpRequestFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +41,7 @@ public class WebHooks {
         if (!Strings.isNullOrEmpty(searchHook)) {
             if (searchEvent.getSearchRequest().getSource() == SearchSource.INTERNAL) {
                 try {
-                    OkHttpClient client = requestFactory.getOkHttpClientBuilder(URI.create(searchHook)).build();
+                    OkHttpClient client = requestFactory.getOkHttpClient(URI.create(searchHook).getHost());
                     String content = Jackson.JSON_MAPPER.writeValueAsString(searchEvent.getSearchRequest());
                     Response response = client.newCall(new Builder().url(searchHook).method("PUT", RequestBody.create(MediaType.parse(org.springframework.http.MediaType.APPLICATION_JSON_VALUE), content)).build()).execute();
                     response.close();
@@ -63,7 +63,7 @@ public class WebHooks {
             FileDownloadEntity downloadEntity = downloadEvent.getFileDownloadEntity();
             if (downloadEntity.getAccessSource() == SearchSource.INTERNAL) {
                 try {
-                    OkHttpClient client = requestFactory.getOkHttpClientBuilder(URI.create(downloadHook)).build();
+                    OkHttpClient client = requestFactory.getOkHttpClient(URI.create(downloadHook).getHost());
                     String content = Jackson.JSON_MAPPER.writeValueAsString(downloadEntity);
                     Response response = client.newCall(new Builder().url(downloadHook).method("PUT", RequestBody.create(MediaType.parse(org.springframework.http.MediaType.APPLICATION_JSON_VALUE), content)).build()).execute();
                     response.close();

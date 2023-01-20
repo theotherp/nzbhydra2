@@ -3,6 +3,7 @@ package org.nzbhydra.mediainfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.MoreObjects;
 import lombok.Setter;
+import org.nzbhydra.config.mediainfo.MediaIdType;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -53,23 +54,15 @@ public class MediaInfo {
 
     @JsonIgnore
     public Optional<String> getByIdType(MediaIdType idType) {
-        switch (idType) {
-            case IMDB:
-            case TVIMDB:
-                return getImdbId();
-            case TMDB:
-                return getTmdbId();
-            case TVMAZE:
-                return getTvMazeId();
-            case TVRAGE:
-                return getTvRageId();
-            case TVDB:
-                return getTvDbId();
-            case TVTITLE:
-            case MOVIETITLE:
-                return getTitle();
-        }
-        return Optional.empty();
+        return switch (idType) {
+            case IMDB, TVIMDB -> getImdbId();
+            case TMDB -> getTmdbId();
+            case TVMAZE -> getTvMazeId();
+            case TVRAGE -> getTvRageId();
+            case TVDB -> getTvDbId();
+            case TVTITLE, MOVIETITLE -> getTitle();
+            default -> Optional.empty();
+        };
     }
 
     @JsonIgnore

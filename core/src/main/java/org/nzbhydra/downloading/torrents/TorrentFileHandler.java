@@ -20,6 +20,7 @@ import com.google.common.io.Files;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.SearchSource;
 import org.nzbhydra.config.downloading.FileDownloadAccessType;
 import org.nzbhydra.downloading.DownloadResult;
 import org.nzbhydra.downloading.FileHandler;
@@ -27,7 +28,6 @@ import org.nzbhydra.downloading.InvalidSearchResultIdException;
 import org.nzbhydra.downloading.MagnetLinkRedirectException;
 import org.nzbhydra.searching.db.SearchResultEntity;
 import org.nzbhydra.searching.db.SearchResultRepository;
-import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,12 +58,12 @@ public class TorrentFileHandler {
     private SearchResultRepository searchResultRepository;
 
     @Transactional
-    public DownloadResult getTorrentByGuid(long guid, FileDownloadAccessType accessType, SearchRequest.SearchSource accessSource) throws InvalidSearchResultIdException {
+    public DownloadResult getTorrentByGuid(long guid, FileDownloadAccessType accessType, SearchSource accessSource) throws InvalidSearchResultIdException {
         //Get result. if link contains magnet: return redirect to magnet URI. otherwise return file
         Optional<SearchResultEntity> optionalResult = searchResultRepository.findById(guid);
-        if (!optionalResult.isPresent()) {
+        if (optionalResult.isEmpty()) {
             logger.error("Download request with invalid/outdated GUID {}", guid);
-            throw new InvalidSearchResultIdException(guid, accessSource == SearchRequest.SearchSource.INTERNAL);
+            throw new InvalidSearchResultIdException(guid, accessSource == SearchSource.INTERNAL);
         }
         SearchResultEntity result = optionalResult.get();
         logger.info("Download request for \"{}\" from indexer {}", result.getTitle(), result.getIndexer().getName());
@@ -85,7 +85,7 @@ public class TorrentFileHandler {
             DownloadResult result;
             boolean successful = false;
             try {
-                result = getTorrentByGuid(guid, FileDownloadAccessType.PROXY, SearchRequest.SearchSource.INTERNAL);
+                result = getTorrentByGuid(guid, FileDownloadAccessType.PROXY, SearchSource.INTERNAL);
             } catch (InvalidSearchResultIdException e) {
                 logger.error("Unable to find result with ID {}", guid);
                 failedIds.add(guid);
@@ -140,7 +140,7 @@ public class TorrentFileHandler {
     }
 
     private boolean saveToBlackHole(DownloadResult result, URI magnetLinkUri) {
-        if (!configProvider.getBaseConfig().getDownloading().getSaveTorrentsTo().isPresent()) {
+        if (configProvider.getBaseConfig().getDownloading().getSaveTorrentsTo().isEmpty()) {
             logger.error("Torrent black hole folder not set");
             return false;
         }

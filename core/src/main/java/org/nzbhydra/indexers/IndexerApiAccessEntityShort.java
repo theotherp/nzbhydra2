@@ -1,9 +1,19 @@
 package org.nzbhydra.indexers;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.nzbhydra.springnative.ReflectionMarker;
 
-import javax.persistence.*;
 import java.time.Instant;
 
 
@@ -12,13 +22,15 @@ import java.time.Instant;
  * checking for API hit limits much faster
  */
 @Data
+@ReflectionMarker
 @Entity
 @NoArgsConstructor
 @Table(name = "indexerapiaccess_short")
-public class IndexerApiAccessEntityShort {
+public final class IndexerApiAccessEntityShort {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @SequenceGenerator(allocationSize = 1, name = "INDEXERAPIACCESS_SHORT_SEQ")
     protected int id;
 
     @Column(name = "INDEXER_ID")

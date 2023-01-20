@@ -7,9 +7,11 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.NzbHydra;
+import org.nzbhydra.config.BaseConfigHandler;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.logging.LogContentProvider;
 import org.nzbhydra.logging.LogContentProvider.JsonLogResponse;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +54,8 @@ public class DebugInfosWeb {
     private MappingsEndpoint mappingsEndpoint;
     @Autowired
     private ConfigProvider configProvider;
+    @Autowired
+    private BaseConfigHandler baseConfigHandler;
 
     private static final Logger logger = LoggerFactory.getLogger(DebugInfosWeb.class);
 
@@ -178,8 +182,8 @@ public class DebugInfosWeb {
     public ResponseEntity<List<PrefixAndEndpoint>> getEndpoints() {
 
         final List<RequestMappingConditionsDescription> conditionsDescriptions = ((Map<String, List<DispatcherServletMappingDescription>>) mappingsEndpoint.mappings().getContexts().get("NZBHydra2").getMappings().get("dispatcherServlets")).get("dispatcherServlet")
-                .stream().filter(x1 -> x1.getHandler().contains("nzbhydra"))
-                .map(x -> x.getDetails().getRequestMappingConditions()).collect(Collectors.toList());
+            .stream().filter(x1 -> x1.getHandler().contains("nzbhydra"))
+            .map(x -> x.getDetails().getRequestMappingConditions()).toList();
 
         final List<PrefixAndEndpoint> prefixAndEndpoints = new ArrayList<>();
         final Multimap<String, Endpoint> endpoints = HashMultimap.create();
@@ -212,12 +216,13 @@ public class DebugInfosWeb {
         final String msg = "Set log file level to debug and enabled the following logging markers: " + markersToEnable;
         logger.info(msg);
 
-        configProvider.getBaseConfig().save(true);
+        baseConfigHandler.save(true);
 
         return ResponseEntity.ok(msg);
     }
 
     @Data
+@ReflectionMarker
     public static class ThreadCpuUsageChartData {
         private final String key;
         private final List<TimeAndValue> values;
@@ -234,6 +239,7 @@ public class DebugInfosWeb {
     }
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     public static class TimeAndValue {
         private final Instant time;
@@ -241,6 +247,7 @@ public class DebugInfosWeb {
     }
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     public static class PrefixAndEndpoint {
         private final String prefix;
@@ -249,6 +256,7 @@ public class DebugInfosWeb {
     }
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     public static class Endpoint {
         private final String endpoint;

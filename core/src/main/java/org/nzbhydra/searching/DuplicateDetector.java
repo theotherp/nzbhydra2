@@ -4,6 +4,7 @@ import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multiset;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.searching.dtoseventsenums.DuplicateDetectionResult;
@@ -51,7 +52,7 @@ public class DuplicateDetector {
                 boolean foundBucket = false;
                 //Iterate over already existing buckets
                 for (LinkedHashSet<SearchResultItem> bucket : listOfBuckets) {
-                    if (bucket.stream().map(SearchResultItem::getIndexer).collect(Collectors.toList()).contains(searchResultItem.getIndexer())) {
+                    if (bucket.stream().map(SearchResultItem::getIndexer).toList().contains(searchResultItem.getIndexer())) {
                         continue;
                     }
                     //And all searchResults in those buckets
@@ -102,7 +103,7 @@ public class DuplicateDetector {
             return false;
         }
 
-        if (result1.getDownloadType() == SearchResultItem.DownloadType.TORRENT || result2.getDownloadType() == SearchResultItem.DownloadType.TORRENT) {
+        if (result1.getDownloadType() == DownloadType.TORRENT || result2.getDownloadType() == DownloadType.TORRENT) {
             logger.debug(LoggingMarkers.DUPLICATES, "Torrent download type(s). Type 1: {}. Type 2: {}", result1.getDownloadType(), result2.getDownloadType());
             return false;
         }

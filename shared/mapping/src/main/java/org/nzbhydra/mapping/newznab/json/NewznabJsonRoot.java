@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.nzbhydra.mapping.newznab.NewznabResponse;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
@@ -16,6 +17,7 @@ import org.nzbhydra.mapping.newznab.NewznabResponse;
         "channel"
 })
 @Data
+@ReflectionMarker
 @AllArgsConstructor
 @NoArgsConstructor
 public class NewznabJsonRoot extends NewznabResponse {

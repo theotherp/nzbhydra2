@@ -31,11 +31,19 @@ An error occurred. Check the logs.
 <table>
     <tr>
         <td>Path</td>
-        <td th:text="${#vars.getVariable('path')}"></td>
+        <td th:text="${#vars.getVariable('jakarta.servlet.forward.servlet_path')}"></td>
     </tr>
     <tr>
         <td>Query parameters</td>
-        <td th:text="${#vars.getVariable('javax.servlet.forward.query_string')}"></td>
+        <td th:text="${#vars.getVariable('jakarta.servlet.forward.query_string')}"></td>
+    </tr>
+    <tr>
+        <td>Status</td>
+        <td th:text="${#vars.getVariable('status')}"></td>
+    </tr>
+    <tr>
+        <td>Timestamp</td>
+        <td th:text="${#vars.getVariable('timestamp')}"></td>
     </tr>
     <tr>
         <td>Error</td>
@@ -44,10 +52,6 @@ An error occurred. Check the logs.
     <tr>
         <td>Exception</td>
         <td th:text="${#vars.getVariable('exception')}"></td>
-    </tr>
-    <tr>
-        <td>Timestamp</td>
-        <td th:text="${#vars.getVariable('timestamp')}"></td>
     </tr>
 </table>
 

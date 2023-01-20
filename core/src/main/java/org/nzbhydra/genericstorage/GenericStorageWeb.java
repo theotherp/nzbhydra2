@@ -16,6 +16,7 @@
 
 package org.nzbhydra.genericstorage;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,8 +25,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
-
 @RestController
 public class GenericStorageWeb {
 
@@ -33,7 +32,7 @@ public class GenericStorageWeb {
     private GenericStorage genericStorage;
 
     @RequestMapping(value = "/internalapi/genericstorage/{key}", method = RequestMethod.GET)
-    public Object get(@PathVariable String key, @RequestParam boolean forUser, HttpServletRequest request) {
+    public Object get(@PathVariable String key, @RequestParam(required = false) boolean forUser, HttpServletRequest request) {
         String keyToUse = key;
         if (forUser && request.getRemoteUser() != null) {
             keyToUse = key + "-" + request.getRemoteUser();
@@ -42,7 +41,7 @@ public class GenericStorageWeb {
     }
 
     @RequestMapping(value = "/internalapi/genericstorage/{key}", method = RequestMethod.PUT)
-    public void put(@PathVariable String key, @RequestParam boolean forUser, @RequestBody String data, HttpServletRequest request) {
+    public void put(@PathVariable String key, @RequestParam(required = false) boolean forUser, @RequestBody String data, HttpServletRequest request) {
         String keyToUse = key;
         if (forUser && request.getRemoteUser() != null) {
             keyToUse = key + "-" + request.getRemoteUser();

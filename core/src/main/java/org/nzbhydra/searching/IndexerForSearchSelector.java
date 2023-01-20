@@ -4,25 +4,28 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
-import lombok.AllArgsConstructor;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.SearchSource;
 import org.nzbhydra.config.category.Category.Subtype;
+import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
+import org.nzbhydra.config.searching.SearchType;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.indexers.IndexerApiAccessType;
 import org.nzbhydra.indexers.status.IndexerLimit;
 import org.nzbhydra.indexers.status.IndexerLimitRepository;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.mediainfo.InfoProvider;
-import org.nzbhydra.searching.dtoseventsenums.DownloadType;
 import org.nzbhydra.searching.dtoseventsenums.IndexerSelectionEvent;
 import org.nzbhydra.searching.dtoseventsenums.SearchMessageEvent;
-import org.nzbhydra.searching.dtoseventsenums.SearchType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
-import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,9 +33,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.annotation.RequestScope;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 import java.sql.Timestamp;
 import java.time.Clock;
 import java.time.DayOfWeek;
@@ -85,7 +85,7 @@ public class IndexerForSearchSelector {
     public IndexerForSearchSelection pickIndexers(SearchRequest searchRequest) {
         this.searchRequest = searchRequest;
         //Check any indexer that's not disabled by the user. If it's disabled by the system it will be deselected with a proper message later
-        List<Indexer> eligibleIndexers = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().getState() != IndexerConfig.State.DISABLED_USER).collect(Collectors.toList());
+        List<Indexer> eligibleIndexers = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().getState() != IndexerConfig.State.DISABLED_USER).toList();
         if (eligibleIndexers.isEmpty()) {
             logger.warn("You don't have any enabled indexers");
             return new IndexerForSearchSelection();
@@ -159,11 +159,11 @@ public class IndexerForSearchSelector {
     }
 
     protected boolean checkSearchId(Indexer indexer) {
-        boolean needToSearchById = !searchRequest.getIdentifiers().isEmpty() && !searchRequest.getQuery().isPresent();
+        boolean needToSearchById = !searchRequest.getIdentifiers().isEmpty() && searchRequest.getQuery().isEmpty();
         if (needToSearchById) {
             boolean canUseAnyProvidedId = !Collections.disjoint(searchRequest.getIdentifiers().keySet(), indexer.getConfig().getSupportedSearchIds());
             boolean cannotSearchProvidedOrConvertableId = !canUseAnyProvidedId && !infoProvider.canConvertAny(searchRequest.getIdentifiers().keySet(), Sets.newHashSet(indexer.getConfig().getSupportedSearchIds()));
-            boolean queryGenerationEnabled = configProvider.getBaseConfig().getSearching().getGenerateQueries().meets(searchRequest);
+            boolean queryGenerationEnabled = searchRequest.meets(configProvider.getBaseConfig().getSearching().getGenerateQueries());
             if (cannotSearchProvidedOrConvertableId && !queryGenerationEnabled) {
                 String message = String.format("Not using %s because the search did not provide any ID that the indexer can handle and query generation is disabled", indexer.getName());
                 return handleIndexerNotSelected(indexer, message, "No usable ID");
@@ -175,7 +175,7 @@ public class IndexerForSearchSelector {
     protected boolean checkSearchType(Indexer indexer) {
         boolean audioOrBookSearch = searchRequest.getSearchType() == SearchType.BOOK || searchRequest.getSearchType() == SearchType.MUSIC;
         if (audioOrBookSearch) {
-            boolean queryGenerationEnabled = configProvider.getBaseConfig().getSearching().getGenerateQueries().meets(searchRequest);
+            boolean queryGenerationEnabled = searchRequest.meets(configProvider.getBaseConfig().getSearching().getGenerateQueries());
             boolean indexerSupportsType = indexer.getConfig().getSupportedSearchTypes().stream().anyMatch(x -> searchRequest.getSearchType().matches(x));
             if (!indexerSupportsType && !queryGenerationEnabled) {
                 String message = String.format("Not using %s because the search uses type %s which the indexer can't handle and query generation is disabled", searchRequest.getSearchType(), indexer.getName());
@@ -227,7 +227,7 @@ public class IndexerForSearchSelector {
     }
 
     protected boolean checkIndexerSelected(Indexer indexer) {
-        if (!searchRequest.getIndexers().isPresent()) {
+        if (searchRequest.getIndexers().isEmpty()) {
             return true;
         }
         if (searchRequest.getIndexers().get().isEmpty()) {
@@ -258,7 +258,7 @@ public class IndexerForSearchSelector {
     protected boolean checkIndexerHitLimit(Indexer indexer) {
         Stopwatch stopwatch = Stopwatch.createStarted();
         IndexerConfig indexerConfig = indexer.getConfig();
-        if (!indexerConfig.getHitLimit().isPresent() && !indexerConfig.getDownloadLimit().isPresent()) {
+        if (indexerConfig.getHitLimit().isEmpty() && indexerConfig.getDownloadLimit().isEmpty()) {
             return true;
         }
         LocalDateTime comparisonTime;
@@ -457,7 +457,7 @@ public class IndexerForSearchSelector {
     }
 
     protected boolean checkSearchSource(Indexer indexer) {
-        boolean wrongSearchSource = !indexer.getConfig().getEnabledForSearchSource().meets(searchRequest);
+        boolean wrongSearchSource = !searchRequest.meets(indexer.getConfig().getEnabledForSearchSource());
         if (wrongSearchSource) {
             String message = String.format("Not using %s because the search source is %s but the indexer is only enabled for %s searches", indexer.getName(), searchRequest.getSource(), indexer.getConfig().getEnabledForSearchSource());
             return handleIndexerNotSelected(indexer, message, "Not enabled for this search context");
@@ -552,11 +552,16 @@ public class IndexerForSearchSelector {
 
 
     @Data
-    @AllArgsConstructor
+@ReflectionMarker
     @NoArgsConstructor
     public static class IndexerForSearchSelection {
         private Map<Indexer, String> notPickedIndexersWithReason = new HashMap<>();
         private List<Indexer> selectedIndexers = new ArrayList<>();
+
+        public IndexerForSearchSelection(Map<Indexer, String> notPickedIndexersWithReason, List<Indexer> selectedIndexers) {
+            this.notPickedIndexersWithReason = notPickedIndexersWithReason;
+            this.selectedIndexers = selectedIndexers;
+        }
     }
 
 

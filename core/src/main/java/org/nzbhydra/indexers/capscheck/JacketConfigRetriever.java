@@ -19,6 +19,7 @@ package org.nzbhydra.indexers.capscheck;
 import org.nzbhydra.Jackson;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
+import org.nzbhydra.config.mediainfo.MediaIdType;
 import org.nzbhydra.indexers.IndexerWebAccess;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
@@ -26,7 +27,6 @@ import org.nzbhydra.mapping.newznab.xml.NewznabXmlError;
 import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlSearching;
 import org.nzbhydra.mapping.newznab.xml.caps.jackett.JacketCapsXmlIndexer;
 import org.nzbhydra.mapping.newznab.xml.caps.jackett.JacketCapsXmlRoot;
-import org.nzbhydra.mediainfo.MediaIdType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,14 +59,12 @@ public class JacketConfigRetriever {
                 .build().toUri();
         logger.info("Getting configured jackett trackers from {}", uri);
         final Object response = indexerWebAccess.get(uri, jackettConfig);
-        if (response instanceof NewznabXmlError) {
-            NewznabXmlError error = (NewznabXmlError) response;
+        if (response instanceof NewznabXmlError error) {
             throw new IndexerAccessException("Jackett report error " + error.getCode() + ": " + error.getDescription());
         }
-        if (!(response instanceof JacketCapsXmlRoot)) {
+        if (!(response instanceof JacketCapsXmlRoot root)) {
             throw new IOException("Unable to parse response from jackett");
         }
-        JacketCapsXmlRoot root = (JacketCapsXmlRoot) response;
 
         List<IndexerConfig> configs = new ArrayList<>();
         for (JacketCapsXmlIndexer indexer : root.getIndexers()) {

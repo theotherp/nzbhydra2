@@ -2,8 +2,10 @@ package org.nzbhydra.web;
 
 import lombok.Data;
 import org.nzbhydra.config.safeconfig.SafeConfig;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 @Data
+@ReflectionMarker
 public class BootstrappedDataTO {
 
     private String username;

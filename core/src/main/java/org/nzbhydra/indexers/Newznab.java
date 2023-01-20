@@ -5,12 +5,18 @@ import com.google.common.base.Strings;
 import lombok.Getter;
 import lombok.Setter;
 import org.nzbhydra.NzbHydraException;
+import org.nzbhydra.config.BaseConfigHandler;
+import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.category.CategoriesConfig;
 import org.nzbhydra.config.category.Category;
 import org.nzbhydra.config.category.Category.Subtype;
+import org.nzbhydra.config.downloading.DownloadType;
+import org.nzbhydra.config.indexer.BackendType;
 import org.nzbhydra.config.indexer.IndexerCategoryConfig;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
+import org.nzbhydra.config.mediainfo.MediaIdType;
+import org.nzbhydra.config.searching.SearchType;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.exceptions.IndexerAuthException;
 import org.nzbhydra.indexers.exceptions.IndexerErrorCodeException;
@@ -30,22 +36,25 @@ import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlResponse;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.nzbhydra.mapping.newznab.xml.Xml;
+import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.mediainfo.InfoProviderException;
-import org.nzbhydra.mediainfo.MediaIdType;
 import org.nzbhydra.mediainfo.MediaInfo;
+import org.nzbhydra.searching.CategoryProvider;
+import org.nzbhydra.searching.CustomQueryAndTitleMappingHandler;
+import org.nzbhydra.searching.SearchResultAcceptor;
 import org.nzbhydra.searching.SearchResultAcceptor.AcceptorResult;
 import org.nzbhydra.searching.SearchResultIdCalculator;
 import org.nzbhydra.searching.UnknownResponseException;
+import org.nzbhydra.searching.db.SearchResultRepository;
 import org.nzbhydra.searching.dtoseventsenums.IndexerSearchResult;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
-import org.nzbhydra.searching.dtoseventsenums.SearchResultItem.DownloadType;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem.HasNfo;
-import org.nzbhydra.searching.dtoseventsenums.SearchType;
 import org.nzbhydra.searching.searchrequests.InternalData;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.annotation.Order;
 import org.springframework.oxm.Unmarshaller;
 import org.springframework.stereotype.Component;
@@ -74,7 +83,6 @@ import java.util.stream.Stream;
 
 @Getter
 @Setter
-@Component
 public class Newznab extends Indexer<Xml> {
 
     private static final Logger logger = LoggerFactory.getLogger(Newznab.class);
@@ -83,8 +91,6 @@ public class Newznab extends Indexer<Xml> {
 
     private static final List<String> LANGUAGES = Arrays.asList(" English", " Korean", " Spanish", " French", " German", " Italian", " Danish", " Dutch", " Japanese", " Cantonese", " Mandarin", " Russian", " Polish", " Vietnamese", " Swedish", " Norwegian", " Finnish", " Turkish", " Portuguese", " Flemish", " Greek", " Hungarian");
     private static Pattern GROUP_PATTERN = Pattern.compile(".*Group:<\\/b> ?([\\w\\.]+)<br ?\\/>.*");
-    private static Pattern GUID_PATTERN = Pattern.compile("(.*\\/)?([a-zA-Z0-9@\\.]+)(#\\w+)?");
-
     private static final List<String> HOSTS_NOT_SUPPORTING_EMPTY_TYPE_SEARCH = Arrays.asList("nzbgeek", "6box");
     private static final List<String> HOSTS_NOT_SUPPORTING_SPECIAL_TYPE_Q_SEARCH = Arrays.asList("dognzb", "nzbplanet", "nzbgeek", "6box");
 
@@ -105,8 +111,14 @@ public class Newznab extends Indexer<Xml> {
     private Unmarshaller unmarshaller;
     @Autowired
     private IndexerLimitRepository indexerStatusRepository;
-    private ConcurrentHashMap<Integer, Category> idToCategory = new ConcurrentHashMap<>();
 
+    private final ConcurrentHashMap<Integer, Category> idToCategory = new ConcurrentHashMap<>();
+
+    public Newznab(ConfigProvider configProvider, IndexerRepository indexerRepository, SearchResultRepository searchResultRepository, IndexerApiAccessRepository indexerApiAccessRepository, IndexerApiAccessEntityShortRepository indexerApiAccessShortRepository, IndexerLimitRepository indexerStatusRepository, IndexerWebAccess indexerWebAccess, SearchResultAcceptor resultAcceptor, CategoryProvider categoryProvider, InfoProvider infoProvider, ApplicationEventPublisher eventPublisher, QueryGenerator queryGenerator, CustomQueryAndTitleMappingHandler titleMapping, Unmarshaller unmarshaller, BaseConfigHandler baseConfigHandler) {
+        super(configProvider, indexerRepository, searchResultRepository, indexerApiAccessRepository, indexerApiAccessShortRepository, indexerStatusRepository, indexerWebAccess, resultAcceptor, categoryProvider, infoProvider, eventPublisher, queryGenerator, titleMapping, baseConfigHandler);
+        this.unmarshaller = unmarshaller;
+        this.indexerStatusRepository = indexerStatusRepository;
+    }
 
     protected UriComponentsBuilder getBaseUri() {
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(config.getHost()).path(config.getApiPath().orElse("/api"));
@@ -125,7 +137,7 @@ public class Newznab extends Indexer<Xml> {
         }
         boolean searchTypeTvOrMovie = searchRequest.getSearchType() == SearchType.MOVIE || searchRequest.getSearchType() == SearchType.TVSEARCH;
         if (searchTypeTvOrMovie && searchRequest.getIdentifiers().isEmpty()) {
-            if (!searchRequest.getQuery().isPresent() && isIndexerNotSupportingEmptyTypeSearch()) {
+            if (searchRequest.getQuery().isEmpty() && isIndexerNotSupportingEmptyTypeSearch()) {
                 debug("Switching search type to SEARCH because this indexer doesn't allow using search type MOVIE/TVSEARCH without identifiers and without query");
                 searchType = SearchType.SEARCH;
             } else if (searchRequest.getQuery().isPresent() && isIndexerNotSupportingSpecialTypeQSearch()) {
@@ -370,7 +382,7 @@ public class Newznab extends Indexer<Xml> {
             debug("Indexer doesn't support any of the provided search IDs: {}", Joiner.on(", ").join(searchRequest.getIdentifiers().keySet()));
             return true;
         }
-        if (configProvider.getBaseConfig().getSearching().getAlwaysConvertIds().meets(searchRequest.getSource())) {
+        if (searchRequest.getSource().meets(configProvider.getBaseConfig().getSearching().getAlwaysConvertIds())) {
             debug("Will convert IDs as ID conversion is to be always done for {}", configProvider.getBaseConfig().getSearching().getAlwaysConvertIds());
             return true;
         }
@@ -538,16 +550,23 @@ public class Newznab extends Indexer<Xml> {
         String link = getEnclosureUrl(item);
         searchResultItem.setLink(link);
 
+        String guid = item.getRssGuid().getGuid();
         if (item.getRssGuid().isPermaLink()) {
-            searchResultItem.setDetails(item.getRssGuid().getGuid());
-            Matcher matcher = GUID_PATTERN.matcher(item.getRssGuid().getGuid());
-            if (matcher.matches()) {
-                searchResultItem.setIndexerGuid(matcher.group(2));
+            searchResultItem.setDetails(guid);
+            int index = guid.lastIndexOf("id=");
+            if (index > -1) {
+                guid = guid.substring(index + 3);
             } else {
-                searchResultItem.setIndexerGuid(item.getRssGuid().getGuid());
+                index = guid.lastIndexOf("/");
+                guid = guid.substring(index + 1);
+                index = guid.indexOf("#");
+                if (index > -1) {
+                    guid = guid.substring(0, index);
+                }
             }
+            searchResultItem.setIndexerGuid(guid);
         } else {
-            searchResultItem.setIndexerGuid(item.getRssGuid().getGuid());
+            searchResultItem.setIndexerGuid(guid);
         }
 
         if (!Strings.isNullOrEmpty(item.getComments()) && Strings.isNullOrEmpty(searchResultItem.getDetails())) {
@@ -580,7 +599,7 @@ public class Newznab extends Indexer<Xml> {
             link = item.getEnclosures().get(0).getUrl();
         } else {
             Optional<NewznabXmlEnclosure> nzbEnclosure = item.getEnclosures().stream().filter(x -> getEnclosureType().equals(x.getType())).findAny();
-            if (!nzbEnclosure.isPresent()) {
+            if (nzbEnclosure.isEmpty()) {
                 warn("Unable to find URL for result " + item.getTitle() + ". Will skip it.");
                 throw new NzbHydraException();
             }
@@ -654,7 +673,7 @@ public class Newznab extends Indexer<Xml> {
             //For these backends if not specified it doesn't exist
             searchResultItem.setHasNfo(HasNfo.NO);
         }
-        if (!searchResultItem.getGroup().isPresent() && !Strings.isNullOrEmpty(item.getDescription()) && item.getDescription().contains("Group:")) {
+        if (searchResultItem.getGroup().isEmpty() && !Strings.isNullOrEmpty(item.getDescription()) && item.getDescription().contains("Group:")) {
             //Dog has the group in the description, perhaps others too
             Matcher matcher = GROUP_PATTERN.matcher(item.getDescription());
             if (matcher.matches() && !Objects.equals(matcher.group(1), "not available")) {
@@ -763,7 +782,7 @@ public class Newznab extends Indexer<Xml> {
 
     @Component
     @Order(500)
-    public static class NewznabHandlingStrategy implements IndexerHandlingStrategy {
+    public static class NewznabHandlingStrategy implements IndexerHandlingStrategy<Newznab> {
 
         @Override
         public boolean handlesIndexerConfig(IndexerConfig config) {
@@ -771,9 +790,11 @@ public class Newznab extends Indexer<Xml> {
         }
 
         @Override
-        public Class<? extends Indexer> getIndexerClass() {
-            return Newznab.class;
+        public String getName() {
+            return "NEWZNAB";
         }
+
+
     }
 
 

@@ -1,24 +1,28 @@
 package org.nzbhydra.indexers.status;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
 import lombok.Data;
 import org.nzbhydra.indexers.IndexerEntity;
+import org.nzbhydra.springnative.ReflectionMarker;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
 import java.time.Instant;
 
 @Data
+@ReflectionMarker
 @Entity
 @Table(name = "indexerlimit")
 
-public class IndexerLimit {
+public final class IndexerLimit {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @SequenceGenerator(allocationSize = 1, name = "INDEXERLIMIT_SEQ")
     protected int id;
 
     @OneToOne

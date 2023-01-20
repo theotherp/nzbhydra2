@@ -23,14 +23,17 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.indexer.BackendType;
+import org.nzbhydra.config.indexer.CapsCheckRequest;
+import org.nzbhydra.config.indexer.CapsCheckRequest.CheckType;
+import org.nzbhydra.config.indexer.CheckCapsResponse;
 import org.nzbhydra.config.indexer.IndexerCategoryConfig;
 import org.nzbhydra.config.indexer.IndexerCategoryConfig.MainCategory;
 import org.nzbhydra.config.indexer.IndexerCategoryConfig.SubCategory;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
-import org.nzbhydra.indexers.Indexer.BackendType;
+import org.nzbhydra.config.mediainfo.MediaIdType;
 import org.nzbhydra.indexers.IndexerWebAccess;
-import org.nzbhydra.indexers.capscheck.CapsCheckRequest.CheckType;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.logging.MdcThreadPoolExecutor;
@@ -41,8 +44,8 @@ import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.nzbhydra.mapping.newznab.xml.Xml;
 import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlCategory;
 import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlRoot;
-import org.nzbhydra.mediainfo.MediaIdType;
 import org.nzbhydra.searching.SearchModuleProvider;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -219,10 +222,10 @@ public class IndexerChecker {
             Optional<SingleCheckCapsResponse> responseWithLimits = responses.stream().filter(x -> x.getApiMax() != null).findFirst();
             if (responseWithLimits.isPresent()) {
                 logger.info("Determined an api hit limit of {} and a download limit of {}", responseWithLimits.get().apiMax, responseWithLimits.get().downloadsMax);
-                if (!indexerConfig.getHitLimit().isPresent() && responseWithLimits.get().apiMax > -1) {
+                if (indexerConfig.getHitLimit().isEmpty() && responseWithLimits.get().apiMax > -1) {
                     indexerConfig.setHitLimit(responseWithLimits.get().apiMax);
                 }
-                if (!indexerConfig.getDownloadLimit().isPresent() && responseWithLimits.get().downloadsMax > -1) {
+                if (indexerConfig.getDownloadLimit().isEmpty() && responseWithLimits.get().downloadsMax > -1) {
                     indexerConfig.setDownloadLimit(responseWithLimits.get().downloadsMax);
                 }
             }
@@ -280,7 +283,7 @@ public class IndexerChecker {
                 && (checkType == CheckType.ALL || !x.isAllCapsChecked());
         List<IndexerConfig> configsToCheck = configProvider.getBaseConfig().getIndexers().stream()
             .filter(isToBeCheckedPredicate)
-            .collect(Collectors.toList());
+            .toList();
         if (configsToCheck.isEmpty()) {
             logger.info("No indexers to check");
             return Collections.emptyList();
@@ -442,6 +445,7 @@ public class IndexerChecker {
     }
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     public static class CheckerEvent {
@@ -450,6 +454,7 @@ public class IndexerChecker {
     }
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     public static class ConnectionCheckResponse {
@@ -459,6 +464,7 @@ public class IndexerChecker {
 
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     private static class CheckCapsRequest {
@@ -471,6 +477,7 @@ public class IndexerChecker {
     }
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     private static class SingleCheckCapsResponse {

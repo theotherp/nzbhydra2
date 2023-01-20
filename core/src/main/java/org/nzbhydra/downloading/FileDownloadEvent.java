@@ -22,8 +22,6 @@ import org.nzbhydra.searching.db.SearchResultEntity;
 @Getter
 public class FileDownloadEvent {
 
-    private final long searchResultEntityId;
-    private final int downloadEntityId;
 
     private final FileDownloadEntity fileDownloadEntity;
 
@@ -31,8 +29,6 @@ public class FileDownloadEvent {
 
 
     public FileDownloadEvent(FileDownloadEntity fileDownloadEntity, SearchResultEntity searchResultEntityHasDownloaded) {
-        this.downloadEntityId = fileDownloadEntity.getId();
-        this.searchResultEntityId = searchResultEntityHasDownloaded.getId();
         this.fileDownloadEntity = fileDownloadEntity;
         this.searchResultEntity = searchResultEntityHasDownloaded;
     }

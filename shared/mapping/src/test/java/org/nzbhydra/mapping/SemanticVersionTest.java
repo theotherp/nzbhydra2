@@ -1,14 +1,14 @@
 package org.nzbhydra.mapping;
 
-import org.junit.Test;
+
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.text.ParseException;
 import java.util.Arrays;
 
-import static junit.framework.TestCase.assertFalse;
-import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SemanticVersionTest {
 
@@ -16,35 +16,38 @@ public class SemanticVersionTest {
     public void testEquality() throws ParseException {
         SemanticVersion v1 = new SemanticVersion("1.2.3-alpha.1+build.2");
         SemanticVersion v2 = new SemanticVersion("1.2.3-alpha.1+build.2");
-        assertEquals(v1, v2);
+        assertThat(v2).isEqualTo(v1);
     }
 
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testOutOfBounds() {
-        new SemanticVersion(-1, 0, 0);
+
+        Assertions.assertThatThrownBy(() -> {
+            new SemanticVersion(-1, 0, 0);
+        }).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     public void testParsePlain() throws ParseException {
         SemanticVersion v = new SemanticVersion("1.2.3");
-        assertEquals(1, v.major);
-        assertEquals(2, v.minor);
-        assertEquals(3, v.patch);
-        assertEquals("1.2.3", v.toString());
+        assertThat(v.major).isEqualTo(1);
+        assertThat(v.minor).isEqualTo(2);
+        assertThat(v.patch).isEqualTo(3);
+        assertThat(v.toString()).isEqualTo("1.2.3");
 
         v = new SemanticVersion("11.22.33");
-        assertEquals(11, v.major);
-        assertEquals(22, v.minor);
-        assertEquals(33, v.patch);
-        assertEquals("11.22.33", v.toString());
+        assertThat(v.major).isEqualTo(11);
+        assertThat(v.minor).isEqualTo(22);
+        assertThat(v.patch).isEqualTo(33);
+        assertThat(v.toString()).isEqualTo("11.22.33");
 
         v = new SemanticVersion("11.22.33-SNAPSHOT");
-        assertEquals(11, v.major);
-        assertEquals(22, v.minor);
-        assertEquals(33, v.patch);
-        assertEquals("SNAPSHOT", v.qualifier);
-        assertEquals("11.22.33-SNAPSHOT", v.toString());
+        assertThat(v.major).isEqualTo(11);
+        assertThat(v.minor).isEqualTo(22);
+        assertThat(v.patch).isEqualTo(33);
+        assertThat(v.qualifier).isEqualTo("SNAPSHOT");
+        assertThat(v.toString()).isEqualTo("11.22.33-SNAPSHOT");
     }
 
 
@@ -60,24 +63,24 @@ public class SemanticVersionTest {
         };
 
         Arrays.sort(wrongorder);
-        assertArrayEquals(inorder, wrongorder);
+        assertThat(wrongorder).isEqualTo(inorder);
     }
 
     @Test
     public void testUpdate() {
         assertTrue(new SemanticVersion(1, 1, 1).isUpdateFor(new SemanticVersion(1, 1, 0)));
-        assertFalse(new SemanticVersion(1, 1, 1).isUpdateFor(new SemanticVersion(1, 1, 2)));
-        assertFalse(new SemanticVersion(1, 1, 1).isUpdateFor(new SemanticVersion(1, 1, 1)));
+        assertThat(new SemanticVersion(1, 1, 1).isUpdateFor(new SemanticVersion(1, 1, 2))).isFalse();
+        assertThat(new SemanticVersion(1, 1, 1).isUpdateFor(new SemanticVersion(1, 1, 1))).isFalse();
 
         assertTrue(new SemanticVersion(1, 0, 0).isUpdateFor(new SemanticVersion(1, 0, 0, "SNAPSHOT")));
         assertTrue(new SemanticVersion(1, 0, 0).isUpdateFor(new SemanticVersion(1, 0, 0, "beta")));
 
-        assertFalse(new SemanticVersion(1, 0, 0, "SNAPSHOT").isUpdateFor(new SemanticVersion(1, 0, 0, "SNAPSHOT")));
-        assertFalse(new SemanticVersion(1, 0, 0, "SNAPSHOT").isUpdateFor(new SemanticVersion(1, 0, 0)));
+        assertThat(new SemanticVersion(1, 0, 0, "SNAPSHOT").isUpdateFor(new SemanticVersion(1, 0, 0, "SNAPSHOT"))).isFalse();
+        assertThat(new SemanticVersion(1, 0, 0, "SNAPSHOT").isUpdateFor(new SemanticVersion(1, 0, 0))).isFalse();
         assertTrue(new SemanticVersion(1, 0, 0, "SNAPSHOT").isSameOrNewer(new SemanticVersion(1, 0, 0, "SNAPSHOT")));
 
         assertTrue(new SemanticVersion(1, 1, 2).isCompatibleUpdateFor(new SemanticVersion(1, 1, 1)));
-        assertFalse(new SemanticVersion(2, 1, 1).isCompatibleUpdateFor(new SemanticVersion(1, 1, 0)));
+        assertThat(new SemanticVersion(2, 1, 1).isCompatibleUpdateFor(new SemanticVersion(1, 1, 0))).isFalse();
     }
 
 }

@@ -1,22 +1,36 @@
 package org.nzbhydra.indexers;
 
+import org.nzbhydra.config.BaseConfigHandler;
+import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
+import org.nzbhydra.indexers.status.IndexerLimitRepository;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlResponse;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.nzbhydra.mapping.newznab.xml.Xml;
+import org.nzbhydra.mediainfo.InfoProvider;
+import org.nzbhydra.searching.CategoryProvider;
+import org.nzbhydra.searching.CustomQueryAndTitleMappingHandler;
+import org.nzbhydra.searching.SearchResultAcceptor;
 import org.nzbhydra.searching.SearchResultAcceptor.AcceptorResult;
+import org.nzbhydra.searching.db.SearchResultRepository;
 import org.nzbhydra.searching.dtoseventsenums.IndexerSearchResult;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.annotation.Order;
+import org.springframework.oxm.Unmarshaller;
 import org.springframework.stereotype.Component;
 
 @Component
 public class DogNzb extends Newznab {
 
     private static final Logger logger = LoggerFactory.getLogger(DogNzb.class);
+
+    public DogNzb(ConfigProvider configProvider, IndexerRepository indexerRepository, SearchResultRepository searchResultRepository, IndexerApiAccessRepository indexerApiAccessRepository, IndexerApiAccessEntityShortRepository indexerApiAccessShortRepository, IndexerLimitRepository indexerStatusRepository, IndexerWebAccess indexerWebAccess, SearchResultAcceptor resultAcceptor, CategoryProvider categoryProvider, InfoProvider infoProvider, ApplicationEventPublisher eventPublisher, QueryGenerator queryGenerator, CustomQueryAndTitleMappingHandler titleMapping, Unmarshaller unmarshaller, BaseConfigHandler baseConfigHandler) {
+        super(configProvider, indexerRepository, searchResultRepository, indexerApiAccessRepository, indexerApiAccessShortRepository, indexerStatusRepository, indexerWebAccess, resultAcceptor, categoryProvider, infoProvider, eventPublisher, queryGenerator, titleMapping, unmarshaller, baseConfigHandler);
+    }
 
     protected void completeIndexerSearchResult(Xml response, IndexerSearchResult indexerSearchResult, AcceptorResult acceptorResult, SearchRequest searchRequest, int offset, Integer limit) {
         NewznabXmlResponse newznabResponse = ((NewznabXmlRoot) response).getRssChannel().getNewznabResponse();
@@ -46,7 +60,7 @@ public class DogNzb extends Newznab {
 
     @Component
     @Order(100)
-    public static class NewznabHandlingStrategy implements IndexerHandlingStrategy {
+    public static class NewznabHandlingStrategy implements IndexerHandlingStrategy<DogNzb> {
 
         @Override
         public boolean handlesIndexerConfig(IndexerConfig config) {
@@ -58,9 +72,11 @@ public class DogNzb extends Newznab {
         }
 
         @Override
-        public Class<? extends Indexer> getIndexerClass() {
-            return DogNzb.class;
+        public String getName() {
+            return "DOGNZB";
         }
+
+
     }
 
 }

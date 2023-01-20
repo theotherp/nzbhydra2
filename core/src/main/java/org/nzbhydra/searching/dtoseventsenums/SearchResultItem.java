@@ -18,12 +18,14 @@ package org.nzbhydra.searching.dtoseventsenums;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.nzbhydra.config.category.Category;
+import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.indexers.Indexer;
+import org.nzbhydra.springnative.ReflectionMarker;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
@@ -32,6 +34,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @Data
+@ReflectionMarker
 public class SearchResultItem  {
 
     public enum HasNfo {
@@ -40,10 +43,6 @@ public class SearchResultItem  {
         MAYBE
     }
 
-    public enum DownloadType {
-        NZB,
-        TORRENT
-    }
     //Note: Validation annotations relate to the needed state after the item was created by an indexer
     private boolean agePrecise;
     private Map<String, String> attributes = new HashMap<>();
@@ -134,10 +133,9 @@ public class SearchResultItem  {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof SearchResultItem)) {
+        if (!(o instanceof SearchResultItem item)) {
             return false;
         }
-        SearchResultItem item = (SearchResultItem) o;
         return Objects.equal(indexer, item.indexer) &&
                 Objects.equal(indexerGuid, item.indexerGuid) &&
                 Objects.equal(link, item.link) &&

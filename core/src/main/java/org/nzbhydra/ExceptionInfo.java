@@ -1,10 +1,12 @@
 package org.nzbhydra;
 
 import lombok.Data;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.time.Instant;
 
 @Data
+@ReflectionMarker
 public class ExceptionInfo {
     private long timestamp;
     private int status;

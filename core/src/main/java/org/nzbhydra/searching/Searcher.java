@@ -3,11 +3,12 @@ package org.nzbhydra.searching;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multiset;
+import jakarta.annotation.PreDestroy;
 import lombok.Getter;
 import net.jodah.expiringmap.ExpirationPolicy;
 import net.jodah.expiringmap.ExpiringMap;
-import org.nzbhydra.ShutdownEvent;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.SearchSource;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.indexers.IndexerSearchEntity;
 import org.nzbhydra.indexers.IndexerSearchRepository;
@@ -23,13 +24,12 @@ import org.nzbhydra.searching.dtoseventsenums.DuplicateDetectionResult;
 import org.nzbhydra.searching.dtoseventsenums.IndexerSearchResult;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
-import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -83,6 +83,7 @@ public class Searcher {
             .expirationListener((k, v) -> logger.debug("Removing expired search cache entry {}", ((SearchCacheEntry) v).getSearchRequest()))
             .build();
 
+    @Transactional
     public SearchResult search(SearchRequest searchRequest) {
         Stopwatch stopwatch = Stopwatch.createStarted();
         eventPublisher.publishEvent(new SearchEvent(searchRequest));
@@ -118,10 +119,10 @@ public class Searcher {
 
             indexersWithCachedResults = getIndexersWithCachedResults(searchCacheEntry);
             while (!indexersWithCachedResults.isEmpty()) {
-                List<SearchResultItem> newestItemsFromIndexers = indexersWithCachedResults.stream().map(IndexerSearchCacheEntry::peek).sorted(Comparator.comparingLong(x -> ((SearchResultItem) x).getBestDate().getEpochSecond()).reversed()).collect(Collectors.toList());
+                List<SearchResultItem> newestItemsFromIndexers = indexersWithCachedResults.stream().map(IndexerSearchCacheEntry::peek).sorted(Comparator.comparingLong(x -> ((SearchResultItem) x).getBestDate().getEpochSecond()).reversed()).toList();
                 SearchResultItem newestResult = newestItemsFromIndexers.get(0);
                 Indexer newestResultIndexer = newestResult.getIndexer();
-                IndexerSearchCacheEntry newestIndexerSearchCacheEntry = searchCacheEntry.getIndexerCacheEntries().get(newestResultIndexer);
+                IndexerSearchCacheEntry newestIndexerSearchCacheEntry = searchCacheEntry.getIndexerCacheEntries().get(newestResultIndexer.getName());
                 searchResultItems.add(newestIndexerSearchCacheEntry.pop());
 
                 indexersWithCachedResults = getIndexersWithCachedResults(searchCacheEntry);
@@ -164,9 +165,9 @@ public class Searcher {
         }
         searchResult.setNumberOfTotalAvailableResults(searchCacheEntry.getNumberOfTotalAvailableResults());
         searchResult.setIndexerSearchResults(searchCacheEntry.getIndexerCacheEntries().values().stream()
-                .filter(x -> !x.getIndexerSearchResults().isEmpty())
-                .map(x -> Iterables.getLast(x.getIndexerSearchResults()))
-                .collect(Collectors.toList()));
+            .filter(x -> !x.getIndexerSearchResults().isEmpty())
+            .map(x -> Iterables.getLast(x.getIndexerSearchResults()))
+            .collect(Collectors.toList()));
         searchResult.setReasonsForRejection(searchCacheEntry.getReasonsForRejection());
         searchCacheEntry.setNumberOfRemovedDuplicates(searchResult.getNumberOfRemovedDuplicates());
 
@@ -265,11 +266,11 @@ public class Searcher {
                 if (configProvider.getBaseConfig().getMain().isKeepHistory()) {
                     entity = indexerSearchRepository.save(entity);
                     for (SearchResultEntity x : indexerSearchResult.getSearchResultEntities()) {
-                        x.setIndexerSearchEntity(entity);
+                        x.setIndexerSearchEntityId(entity.getId());
                     }
                 }
                 searchResultRepository.saveAll(indexerSearchResult.getSearchResultEntities());
-                searchCacheEntry.getIndexerCacheEntries().get(indexerSearchResult.getIndexer()).setIndexerSearchEntity(entity);
+                searchCacheEntry.getIndexerCacheEntries().get(indexerSearchResult.getIndexer().getName()).setIndexerSearchEntity(entity);
                 countEntities++;
             }
         }
@@ -313,7 +314,7 @@ public class Searcher {
     protected List<IndexerSearchCacheEntry> getIndexersToSearch(SearchCacheEntry searchCacheEntry) {
         List<IndexerSearchCacheEntry> indexerSearchCacheEntries = new ArrayList<>();
         for (Indexer selectedIndexer : searchCacheEntry.getIndexerSelectionResult().getSelectedIndexers()) {
-            searchCacheEntry.getIndexerCacheEntries().putIfAbsent(selectedIndexer, new IndexerSearchCacheEntry(selectedIndexer));
+            searchCacheEntry.getIndexerCacheEntries().putIfAbsent(selectedIndexer.getName(), new IndexerSearchCacheEntry(selectedIndexer));
         }
 
         for (IndexerSearchCacheEntry indexerSearchCacheEntry : searchCacheEntry.getIndexerCacheEntries().values()) {
@@ -361,8 +362,8 @@ public class Searcher {
             for (Future<IndexerSearchResult> future : futures) {
                 try {
                     IndexerSearchResult indexerSearchResult = future.get();
-                    searchCacheEntry.getIndexerCacheEntries().get(indexerSearchResult.getIndexer()).addIndexerSearchResult(indexerSearchResult);
-                    indexerSearchResults.put(indexerSearchResult.getIndexer(), searchCacheEntry.getIndexerCacheEntries().get(indexerSearchResult.getIndexer()).getIndexerSearchResults());
+                    searchCacheEntry.getIndexerCacheEntries().get(indexerSearchResult.getIndexer().getName()).addIndexerSearchResult(indexerSearchResult);
+                    indexerSearchResults.put(indexerSearchResult.getIndexer(), searchCacheEntry.getIndexerCacheEntries().get(indexerSearchResult.getIndexer().getName()).getIndexerSearchResults());
                 } catch (ExecutionException e) {
                     logger.error("Unexpected error while searching", e);
                 }
@@ -415,8 +416,8 @@ public class Searcher {
     }
 
     @SuppressWarnings("unused")
-    @EventListener
-    public void onShutdown(ShutdownEvent event) {
+    @PreDestroy
+    public void onShutdown() {
         shutdownRequested = true;
         synchronized (executors) {
             if (executors.size() > 0) {

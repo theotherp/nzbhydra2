@@ -1,13 +1,19 @@
 package org.nzbhydra.historystats;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.Hibernate;
+import org.nzbhydra.downloading.FileDownloadEntity;
 import org.nzbhydra.historystats.stats.HistoryRequest;
 import org.nzbhydra.indexers.IndexerSearchEntity;
 import org.nzbhydra.indexers.IndexerSearchRepository;
 import org.nzbhydra.searching.db.SearchEntity;
 import org.nzbhydra.searching.db.SearchRepository;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.nzbhydra.web.SessionStorage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -16,11 +22,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -35,9 +38,9 @@ import java.util.Set;
 @Component
 public class History {
 
-    public static final String DOWNLOAD_TABLE = "INDEXERNZBDOWNLOAD left join SEARCHRESULT on INDEXERNZBDOWNLOAD.SEARCH_RESULT_ID = SEARCHRESULT.ID LEFT JOIN INDEXER ON SEARCHRESULT.INDEXER_ID = INDEXER.ID";
-    public static final String SEARCH_TABLE = "SEARCH";
-    public static final String NOTIFICATION_TABLE = "NOTIFICATION";
+    public static final String DOWNLOAD_TABLE = "INDEXERNZBDOWNLOAD x left join SEARCHRESULT s on x.SEARCH_RESULT_ID = s.ID LEFT JOIN INDEXER i ON s.INDEXER_ID = i.ID";
+    public static final String SEARCH_TABLE = "SEARCH x";
+    public static final String NOTIFICATION_TABLE = "NOTIFICATION x";
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -46,6 +49,7 @@ public class History {
     @Autowired
     private IndexerSearchRepository indexerSearchRepository;
 
+    @Transactional
     public <T> Page<T> getHistory(HistoryRequest requestData, String tableName, Class<T> resultClass) {
         Map<String, Object> parameters = new HashMap<>();
 
@@ -108,11 +112,12 @@ public class History {
         String paging = String.format(" LIMIT %d OFFSET %d", requestData.getLimit(), (requestData.getPage() - 1) * requestData.getLimit());
 
 
-        String selectQuerySql = "SELECT * FROM " + tableName + whereConditions + sort + paging;
-        String countQuerySql = "SELECT COUNT(*) FROM " + tableName + whereConditions;
+        String selectQuerySql = "SELECT x.* FROM " + tableName + whereConditions + sort + paging;
+        String countQuerySql = "SELECT COUNT(x.*) FROM " + tableName + whereConditions;
 
         Query selectQuery = entityManager.createNativeQuery(selectQuerySql, resultClass);
         Query countQuery = entityManager.createNativeQuery(countQuerySql);
+
         for (Entry<String, Object> entry : parameters.entrySet()) {
             selectQuery.setParameter(entry.getKey(), entry.getValue());
             countQuery.setParameter(entry.getKey(), entry.getValue());
@@ -126,8 +131,15 @@ public class History {
             pageable = PageRequest.of(requestData.getPage() - 1, requestData.getLimit(), sortModel.getSortMode() == 1 ? Sort.Direction.ASC : Sort.Direction.DESC, sortModel.getColumn());
         }
 
-        BigInteger count = (BigInteger) countQuery.getSingleResult();
-        return new PageImpl<>(resultList, pageable, count.longValue());
+        Long count = (Long) countQuery.getSingleResult();
+        if (resultClass == SearchEntity.class) {
+            resultList.forEach(x -> Hibernate.initialize(((SearchEntity) x).getIdentifiers()));
+        } else if (resultClass == FileDownloadEntity.class) {
+            Hibernate.initialize(resultList);
+            resultList.forEach(x -> Hibernate.initialize(((FileDownloadEntity) x).getSearchResult()));
+
+        }
+        return new PageImpl<>(resultList, pageable, count);
     }
 
     public List<SearchEntity> getHistoryForSearching() {
@@ -162,6 +174,7 @@ public class History {
     }
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     public static class SearchDetails {
@@ -173,6 +186,7 @@ public class History {
     }
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     public static class IndexerSearchTO {

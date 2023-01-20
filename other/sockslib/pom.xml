@@ -6,22 +6,22 @@
     <parent>
         <groupId>org.nzbhydra</groupId>
         <artifactId>other</artifactId>
-        <version>1.0.0</version>
+        <version>3.0.0</version>
     </parent>
 
 
     <artifactId>sockslib</artifactId>
-    <version>1.0.0</version>
+    <version>3.0.0</version>
     <packaging>jar</packaging>
 
-    <name>sockslibs</name>
+    <name>sockslib</name>
     <description>A Java library for SOCKS5 client and SOCKS5 server</description>
     <url>http://fengyouchao.github.io/sockslib/</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jdk.version>1.8</jdk.version>
-        <guava.version>22.0</guava.version>
+        <guava.version>31.1-jre</guava.version>
         <slf4j-api.version>1.7.12</slf4j-api.version>
         <log4j.version>2.4</log4j.version>
         <jsr305.version>3.0.0</jsr305.version>
@@ -94,6 +94,13 @@
             <artifactId>junit</artifactId>
             <version>${junit.version}</version>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.annotation</groupId>
+            <artifactId>javax.annotation-api</artifactId>
+            <version>1.3.2</version>
+            <scope>provided</scope>
         </dependency>
 
     </dependencies>

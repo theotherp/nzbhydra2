@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,6 +27,7 @@ import java.util.Map;
     "item"
 })
 @Data
+@ReflectionMarker
 @AllArgsConstructor
 @NoArgsConstructor
 public class NewznabJsonChannel {

@@ -2,9 +2,6 @@ package org.nzbhydra.update;
 
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.google.common.base.Charsets;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -14,6 +11,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.io.FileUtils;
+import org.nzbhydra.Jackson;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.backup.BackupAndRestore;
 import org.nzbhydra.config.BaseConfig;
@@ -25,6 +23,7 @@ import org.nzbhydra.mapping.changelog.ChangelogVersionEntry;
 import org.nzbhydra.mapping.github.Asset;
 import org.nzbhydra.mapping.github.Release;
 import org.nzbhydra.notifications.UpdateNotificationEvent;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.nzbhydra.systemcontrol.SystemControl;
 import org.nzbhydra.webaccess.WebAccess;
 import org.slf4j.Logger;
@@ -95,16 +94,9 @@ public class UpdateManager implements InitializingBean {
 
     private PackageInfo packageInfo;
 
-    private final ObjectMapper objectMapper;
     protected Supplier<List<Release>> releasesCache = Suppliers.memoizeWithExpiration(getReleasesSupplier(), CACHE_DURATION_MINUTES, TimeUnit.MINUTES);
-    protected TypeReference<List<ChangelogVersionEntry>> changelogEntryListTypeReference = new TypeReference<List<ChangelogVersionEntry>>() {
+    protected TypeReference<List<ChangelogVersionEntry>> changelogEntryListTypeReference = new TypeReference<>() {
     };
-
-    public UpdateManager() {
-        objectMapper = new ObjectMapper();
-        objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    }
 
     private void loadPackageInfo() {
         File packageFile = new File("/app/nzbhydra2/package_info");
@@ -168,16 +160,6 @@ public class UpdateManager implements InitializingBean {
                 updateInfo.setBetaUpdateAvailable(latestWithBetaIsUpdateAndViable);
                 updateInfo.setBetaVersion(latestVersionWithBeta.getAsString());
             }
-        }
-        if (currentVersion.major == 4 && latestVersion.major == 5 && !DebugInfosProvider.isRunInDocker()) {
-            if (!genericStorage.get("MANUAL_UPDATE_5x", Boolean.class).orElse(false)) {
-                logger.info("An automatic update from 4.x to 5.x is not possible. Please update as explained here: https://github.com/theotherp/nzbhydra2/wiki/Updating-from-4.x-to-5.x");
-            }
-            updateInfo.setUpdateAvailable(false);
-            updateInfo.setBetaUpdateAvailable(false);
-            genericStorage.save("MANUAL_UPDATE_5x", true);
-        } else {
-            genericStorage.save("MANUAL_UPDATE_5x", false);
         }
         updateInfo.setPackageInfo(getPackageInfo());
 
@@ -245,7 +227,7 @@ public class UpdateManager implements InitializingBean {
         List<ChangelogVersionEntry> allChanges;
         try {
             String response = webAccess.callUrl(changelogUrl);
-            allChanges = objectMapper.readValue(response, new TypeReference<List<ChangelogVersionEntry>>() {
+            allChanges = Jackson.YAML_MAPPER.readValue(response, new TypeReference<>() {
             });
         } catch (IOException e) {
             throw new UpdateException("Error while getting changelog: " + e.getMessage());
@@ -256,7 +238,7 @@ public class UpdateManager implements InitializingBean {
 
                     return upToVersion.isSameOrNewer(changeVersion) && changeVersion.isUpdateFor(currentVersion);
                 }
-        ).sorted(Comparator.reverseOrder()).collect(Collectors.toList());
+        ).sorted(Comparator.reverseOrder()).toList();
 
         return collectedVersionChanges.stream()
                 .sorted(Comparator.reverseOrder())
@@ -269,8 +251,8 @@ public class UpdateManager implements InitializingBean {
     public List<ChangelogVersionEntry> getAllVersionChangesUpToCurrentVersion() throws UpdateException {
         List<ChangelogVersionEntry> changelogVersionEntries;
         try {
-            String changelogJsonString = Resources.toString(Resources.getResource(UpdateManager.class, "/changelog.json"), Charsets.UTF_8);
-            changelogVersionEntries = objectMapper.readValue(changelogJsonString, changelogEntryListTypeReference);
+            String changelogYamlString = Resources.toString(Resources.getResource(UpdateManager.class, "/changelog.yaml"), Charsets.UTF_8);
+            changelogVersionEntries = Jackson.YAML_MAPPER.readValue(changelogYamlString, changelogEntryListTypeReference);
         } catch (IOException e) {
             throw new UpdateException("Error while getting changelog: " + e.getMessage());
         }
@@ -302,15 +284,15 @@ public class UpdateManager implements InitializingBean {
      */
     public List<ChangelogVersionEntry> getAutomaticUpdateVersionHistory() throws UpdateException {
         Optional<String> previousVersion = genericStorage.get(AutomaticUpdater.TO_NOTICE_KEY, String.class);
-        if (!previousVersion.isPresent()) {
+        if (previousVersion.isEmpty()) {
             logger.error("Unable to find the version from which the automatic update was installed");
             return Collections.emptyList();
         }
 
         List<ChangelogVersionEntry> changelogVersionEntries;
         try {
-            String changelogJsonString = Resources.toString(Resources.getResource(UpdateManager.class, "/changelog.json"), Charsets.UTF_8);
-            changelogVersionEntries = objectMapper.readValue(changelogJsonString, changelogEntryListTypeReference);
+            String changelogJsonString = Resources.toString(Resources.getResource(UpdateManager.class, "/changelog.yaml"), Charsets.UTF_8);
+            changelogVersionEntries = Jackson.YAML_MAPPER.readValue(changelogJsonString, changelogEntryListTypeReference);
         } catch (IOException e) {
             throw new UpdateException("Error while getting changelog: " + e.getMessage());
         }
@@ -363,14 +345,10 @@ public class UpdateManager implements InitializingBean {
             try {
                 logger.info("Creating backup before shutting down");
                 applicationEventPublisher.publishEvent(new UpdateEvent(UpdateEvent.State.CREATING_BACKUP, "Creating backup before update."));
-                backupAndRestore.backup();
+                backupAndRestore.backup(false);
             } catch (Exception e) {
                 throw new UpdateException("Unable to create backup before update", e);
             }
-        }
-
-        if (release.getTagName().equals("v2.7.6")) {
-            applicationEventPublisher.publishEvent(new UpdateEvent(UpdateEvent.State.MIGRATION_NEEDED, "NZBHydra's restart after the update will take longer than usual because the database needs to be migrated."));
         }
 
         if (isAutomaticUpdate) {
@@ -394,7 +372,7 @@ public class UpdateManager implements InitializingBean {
         boolean isOsWindows = osName.toLowerCase().contains("windows");
         String assetToContain = isOsWindows ? "windows" : "linux"; //LATER What about OSX?
         Optional<Asset> optionalAsset = assets.stream().filter(x -> x.getName().toLowerCase().contains(assetToContain)).findFirst();
-        if (!optionalAsset.isPresent()) {
+        if (optionalAsset.isEmpty()) {
             logger.error("Unable to find asset for platform {} in these assets: {}", assetToContain, assets.stream().map(Asset::getName).collect(Collectors.joining(", ")));
             throw new UpdateException("Unable to find asset for current platform " + assetToContain);
         }
@@ -406,7 +384,7 @@ public class UpdateManager implements InitializingBean {
         try {
             String url = repositoryBaseUrl + "/releases";
             logger.debug("Retrieving latest release from GitHub using URL {}", url);
-            List<Release> releases = webAccess.callUrl(url, new TypeReference<List<Release>>() {
+            List<Release> releases = webAccess.callUrl(url, new TypeReference<>() {
             });
             return releases;
         } catch (IOException e) {
@@ -431,7 +409,7 @@ public class UpdateManager implements InitializingBean {
         List<BlockedVersion> blockedVersions;
         try {
             String response = webAccess.callUrl(blockedVersionsUrl);
-            blockedVersions = objectMapper.readValue(response, new TypeReference<List<BlockedVersion>>() {
+            blockedVersions = Jackson.YAML_MAPPER.readValue(response, new TypeReference<>() {
             });
         } catch (IOException e) {
             throw new UpdateException("Error while getting blocked versions: " + e.getMessage());
@@ -460,6 +438,7 @@ public class UpdateManager implements InitializingBean {
     }
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     public static class UpdateEvent {
@@ -476,6 +455,7 @@ public class UpdateManager implements InitializingBean {
     }
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     public static class BlockedVersion {
@@ -484,6 +464,7 @@ public class UpdateManager implements InitializingBean {
     }
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     public static class PackageInfo {
@@ -493,6 +474,7 @@ public class UpdateManager implements InitializingBean {
     }
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     public static class UpdateInfo {

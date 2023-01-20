@@ -27,6 +27,9 @@ public class NewznabMockBuilder {
     static Random random = new Random();
     private static final List<Integer> newznabCategories = Arrays.asList(1000, 7020, 7020);
 
+    public static String host;
+    public static int port;
+
     public static CapsXmlRoot getCaps() {
         CapsXmlRoot capsRoot = new CapsXmlRoot();
         capsRoot.setLimits(new CapsXmlLimits(100, 100));
@@ -73,9 +76,9 @@ public class NewznabMockBuilder {
             item.setDescription("indexer " + request.getTitleBase() + "-" + i + " offset " + request.getOffset());
             item.setTitle(title);
             item.setPubDate(pubDate);
-            String guid = "http://127.0.0.1:5080/nzb/" + request.getTitleBase() + i;
+            String guid = getHostUrl() + "/nzb/" + request.getTitleBase() + i;
             item.setEnclosure(new NewznabXmlEnclosure(guid, Long.valueOf(size), request.isTorznab() ? "application/x-bittorrent" : "application/x-nzb"));
-            item.setComments("http://127.0.0.1:5080/comments/" + request.getTitleBase() + i);
+            item.setComments(getHostUrl() + "/comments/" + request.getTitleBase() + i);
             item.setLink(guid);
             item.setCategory("TV > HD");
             item.setRssGuid(new NewznabXmlGuid(guid, true));
@@ -110,6 +113,10 @@ public class NewznabMockBuilder {
         return rssRoot;
     }
 
+    private static String getHostUrl() {
+        return "http://" + host + ":" + port;
+    }
+
     public static NewznabXmlRoot getRssRoot(List<NewznabXmlItem> items, int offset, int total) {
         NewznabXmlRoot rssRoot = new NewznabXmlRoot();
         rssRoot.setVersion("2.0");
@@ -118,7 +125,7 @@ public class NewznabMockBuilder {
         channel.setDescription("channelDescription");
         channel.setLanguage("en-gb");
         channel.setWebMaster("webmaster@master.com");
-        channel.setLink("http://127.0.0.1:5080");
+        channel.setLink(getHostUrl());
         channel.setNewznabResponse(new NewznabXmlResponse(offset, total));
         channel.setItems(items);
         rssRoot.setRssChannel(channel);

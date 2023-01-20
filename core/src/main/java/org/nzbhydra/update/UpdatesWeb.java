@@ -12,6 +12,7 @@ import org.nzbhydra.genericstorage.GenericStorage;
 import org.nzbhydra.mapping.SemanticVersion;
 import org.nzbhydra.mapping.changelog.ChangelogVersionEntry;
 import org.nzbhydra.problemdetection.OutdatedWrapperDetector;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.nzbhydra.update.UpdateManager.UpdateEvent;
 import org.nzbhydra.web.SessionStorage;
 import org.slf4j.Logger;
@@ -182,6 +183,7 @@ public class UpdatesWeb {
     }
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     public static class VersionsInfo {

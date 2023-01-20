@@ -2,6 +2,8 @@ package org.nzbhydra.mediainfo;
 
 import com.google.common.base.MoreObjects;
 import lombok.Data;
+import org.nzbhydra.config.mediainfo.MediaIdType;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,24 +33,15 @@ public class TvMazeHandler {
             return fromTitle(id);
         }
         logger.info("Searching TVMaze for show with {} {}", idType, id);
+
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("https://api.tvmaze.com/");
-        switch (idType) {
-            case TVRAGE:
-                builder = builder.pathSegment("lookup", "shows").queryParam("tvrage", id);
-                break;
-            case TVDB:
-                builder = builder.pathSegment("lookup", "shows").queryParam("thetvdb", id);
-                break;
-            case TVIMDB:
-            case IMDB:
-                builder = builder.pathSegment("lookup", "shows").queryParam("imdb", id.startsWith("tt") ? id : "tt" + id);
-                break;
-            case TVMAZE:
-                builder = builder.pathSegment("shows", id);
-                break;
-            default:
-                throw new InfoProviderException("Unable to handle " + idType);
-        }
+        builder = switch (idType) {
+            case TVRAGE -> builder.pathSegment("lookup", "shows").queryParam("tvrage", id);
+            case TVDB -> builder.pathSegment("lookup", "shows").queryParam("thetvdb", id);
+            case TVIMDB, IMDB -> builder.pathSegment("lookup", "shows").queryParam("imdb", id.startsWith("tt") ? id : "tt" + id);
+            case TVMAZE -> builder.pathSegment("shows", id);
+            default -> throw new InfoProviderException("Unable to handle " + idType);
+        };
 
         ResponseEntity<TvmazeShow> showLookupResponse;
         try {
@@ -89,7 +82,7 @@ public class TvMazeHandler {
 
     private List<TvmazeShowSearch> searchByTitle(String title) throws InfoProviderException {
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("https://api.tvmaze.com/search/shows").queryParam("q", title);
-        ParameterizedTypeReference<List<TvmazeShowSearch>> typeRef = new ParameterizedTypeReference<List<TvmazeShowSearch>>() {
+        ParameterizedTypeReference<List<TvmazeShowSearch>> typeRef = new ParameterizedTypeReference<>() {
         };
         ResponseEntity<List<TvmazeShowSearch>> lookupResponse = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, null, typeRef);
         if (!lookupResponse.getStatusCode().is2xxSuccessful()) {
@@ -118,12 +111,14 @@ public class TvMazeHandler {
 
 
     @Data
+@ReflectionMarker
     private static class TvmazeShowSearch { //Without static deserialization fails
         private Integer score;
         private TvmazeShow show;
     }
 
     @Data
+@ReflectionMarker
     private static class TvmazeShow { //Without static deserialization fails
         private Integer id;
         private String name;
@@ -147,6 +142,7 @@ public class TvMazeHandler {
     }
 
     @Data
+@ReflectionMarker
     private static class TvmazeExternals { //Without static deserialization fails
         private String tvrage;
         private String thetvdb;
@@ -163,6 +159,7 @@ public class TvMazeHandler {
     }
 
     @Data
+@ReflectionMarker
     private static class TvmazeImage { //Without static deserialization fails
         private String medium;
         private String original;

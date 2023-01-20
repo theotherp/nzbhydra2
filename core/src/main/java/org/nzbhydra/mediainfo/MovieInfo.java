@@ -1,19 +1,27 @@
 package org.nzbhydra.mediainfo;
 
 import com.google.common.base.Strings;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
 import lombok.Data;
+import org.nzbhydra.springnative.ReflectionMarker;
 
-import javax.persistence.*;
 import java.util.Optional;
 
 @Data
+@ReflectionMarker
 @Entity
 @Table(name = "movieinfo")
 
-public class MovieInfo implements Comparable<MovieInfo> {
+public final class MovieInfo implements Comparable<MovieInfo> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @SequenceGenerator(allocationSize = 1, name = "MOVIEINFO_SEQ")
     protected int id;
 
     private String imdbId;

@@ -14,9 +14,8 @@
                 <artifactId>github-release-plugin</artifactId>
                 <version>1.0-SNAPSHOT</version>
                 <configuration>
-                    <githubReleasesUrl>releasesUrl</githubReleasesUrl>
                     <githubToken>token</githubToken>
-                    <changelogJsonFile>${basedir}/src/test/resources/org/nzbhydra/github/mavenreleaseplugin/changelog.json</changelogJsonFile>
+                    <changelogYamlFile>${basedir}/src/test/resources/org/nzbhydra/github/mavenreleaseplugin/changelog.yaml</changelogYamlFile>
                 </configuration>
             </plugin>
         </plugins>

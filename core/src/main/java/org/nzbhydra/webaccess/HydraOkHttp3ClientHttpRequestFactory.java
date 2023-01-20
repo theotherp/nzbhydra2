@@ -17,6 +17,7 @@
 package org.nzbhydra.webaccess;
 
 import com.google.common.net.InetAddresses;
+import jakarta.annotation.PostConstruct;
 import joptsimple.internal.Strings;
 import okhttp3.ConnectionPool;
 import okhttp3.Credentials;
@@ -27,10 +28,11 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.Route;
 import okhttp3.logging.HttpLoggingInterceptor;
+import org.apache.commons.lang3.tuple.Pair;
 import org.nzbhydra.config.ConfigChangedEvent;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.MainConfig;
-import org.nzbhydra.config.downloading.ProxyType;
+import org.nzbhydra.config.ProxyType;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,8 +42,6 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.client.AsyncClientHttpRequest;
-import org.springframework.http.client.AsyncClientHttpRequestFactory;
 import org.springframework.http.client.ClientHttpRequest;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
@@ -50,7 +50,6 @@ import sockslib.client.Socks5;
 import sockslib.client.SocksProxy;
 import sockslib.client.SocksSocket;
 
-import javax.annotation.PostConstruct;
 import javax.net.SocketFactory;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.X509TrustManager;
@@ -63,6 +62,7 @@ import java.net.Proxy.Type;
 import java.net.Socket;
 import java.net.URI;
 import java.net.UnknownHostException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -71,7 +71,7 @@ import static org.nzbhydra.webaccess.Ssl.isSameHost;
 
 @Component
 @Primary
-public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFactory, AsyncClientHttpRequestFactory {
+public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFactory {
 
     @Value("${nzbhydra.connectionTimeout:10}")
     private int timeout;
@@ -85,6 +85,8 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
     private final ConnectionPool connectionPool = new ConnectionPool(10, 5, TimeUnit.MINUTES);
     private HttpLoggingInterceptor httpLoggingInterceptor;
     private SocketFactory sockProxySocketFactory;
+
+    private Map<Pair<String, Integer>, OkHttpClient> clientCache = new HashMap<>();
 
     @PostConstruct
     public void init() {
@@ -101,12 +103,7 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
 
     @Override
     public ClientHttpRequest createRequest(URI uri, HttpMethod httpMethod) {
-        return new OkHttp3ClientHttpRequest(getOkHttpClientBuilder(uri).build(), uri, httpMethod);
-    }
-
-    @Override
-    public AsyncClientHttpRequest createAsyncRequest(URI uri, HttpMethod httpMethod) {
-        return new OkHttp3AsyncClientHttpRequest(getOkHttpClientBuilder(uri).build(), uri, httpMethod);
+        return new OkHttp3ClientHttpRequest(getOkHttpClient(uri.getHost()), uri, httpMethod);
     }
 
 
@@ -133,18 +130,18 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
         return (StringUtils.hasText(rawContentType) ? okhttp3.MediaType.parse(rawContentType) : null);
     }
 
-    public Builder getOkHttpClientBuilder(URI requestUri) {
+    protected Builder getOkHttpClientBuilder(String host) {
         Builder builder = getBaseBuilder();
 
-        configureBuilderForSsl(requestUri, builder);
+        configureBuilderForSsl(builder, host);
 
         MainConfig main = configProvider.getBaseConfig().getMain();
         if (main.getProxyType() == ProxyType.NONE) {
             return builder;
         }
 
-        if (isUriToBeIgnoredByProxy(requestUri.getHost())) {
-            logger.debug("Not using proxy for request to {}", requestUri.getHost());
+        if (isUriToBeIgnoredByProxy(host)) {
+            logger.debug("Not using proxy for request to {}", host);
             return builder;
         }
 
@@ -162,15 +159,31 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
 
                     String credential = Credentials.basic(main.getProxyUsername(), main.getProxyPassword());
                     return response.request().newBuilder()
-                        .header("Proxy-Authorization", credential).build();
+                            .header("Proxy-Authorization", credential).build();
                 });
             }
         }
         return builder;
     }
 
-    void configureBuilderForSsl(URI requestUri, Builder builder) {
-        String host = requestUri.getHost();
+    public OkHttpClient getOkHttpClient(String host) {
+        return getOkHttpClient(host, null);
+    }
+
+    public OkHttpClient getOkHttpClient(String host, Integer timeout) {
+        return clientCache.computeIfAbsent(Pair.of(host, timeout), pair -> {
+            final Builder clientBuilder = getOkHttpClientBuilder(host);
+            if (timeout == null) {
+                return clientBuilder.build();
+            }
+            return clientBuilder
+                    .readTimeout(timeout, TimeUnit.SECONDS)
+                    .connectTimeout(timeout, TimeUnit.SECONDS)
+                    .writeTimeout(timeout, TimeUnit.SECONDS).build();
+        });
+    }
+
+    void configureBuilderForSsl(Builder builder, String host) {
         final Ssl.SslVerificationState verificationState = ssl.getVerificationStateForHost(host);
         SSLSocketFactory allTrustingSslSocketFactory = ssl.getAllTrustingSslSocketFactory();
         X509TrustManager allTrustingDefaultTrustManager = ssl.getAllTrustingDefaultTrustManager();
@@ -178,10 +191,10 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
             builder.sslSocketFactory(ssl.getDefaultSslSocketFactory(), ssl.getDefaultTrustManager());
         } else if (verificationState == Ssl.SslVerificationState.DISABLED_HOST) {
             builder.sslSocketFactory(allTrustingSslSocketFactory, allTrustingDefaultTrustManager)
-                .hostnameVerifier((hostname, session) -> {
-                    logger.debug(LoggingMarkers.HTTPS, "Not verifying host name {}", hostname);
-                    return true;
-                });
+                    .hostnameVerifier((hostname, session) -> {
+                        logger.debug(LoggingMarkers.HTTPS, "Not verifying host name {}", hostname);
+                        return true;
+                    });
         } else {
             builder.sslSocketFactory(allTrustingSslSocketFactory, allTrustingDefaultTrustManager);
         }

@@ -78,6 +78,7 @@ class OkHttp3ClientHttpResponse extends AbstractClientHttpResponse {
     @Override
     public void close() {
         this.response.body().close();
+        this.response.close();
     }
 
 }

@@ -16,11 +16,18 @@ nzbhydraapp.factory('RequestsErrorHandler', function ($q, growl, blockUI, Genera
         // --- Response interceptor for handling errors generically ---
         responseError: function (rejection) {
             blockUI.reset();
+            if (rejection.data instanceof ArrayBuffer) {
+                //The case when the response was specifically requested as that, e.g. for debug infos
+                rejection.data = JSON.parse(new TextDecoder().decode(rejection.data));
+            }
             var shouldHandle = (rejection && rejection.config && rejection.status !== 403 && rejection.config.headers && rejection.config.headers[HEADER_NAME] && !rejection.config.url.contains("logerror") && !rejection.config.url.contains("/ping") && !rejection.config.alreadyHandled);
             if (shouldHandle) {
                 if (rejection.data) {
 
-                    var message = "An error occurred:<br>" + rejection.data.status + ": " + rejection.data.error;
+                    var message = "An error occurred:<br>" + rejection.data.status;
+                    if (rejection.data.error) {
+                        message += ": " + rejection.data.error
+                    }
                     if (rejection.data.path) {
                         message += "<br><br>Path: " + rejection.data.path;
                     }

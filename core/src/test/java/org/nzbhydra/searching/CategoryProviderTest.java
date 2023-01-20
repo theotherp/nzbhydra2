@@ -1,22 +1,25 @@
 package org.nzbhydra.searching;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.category.CategoriesConfig;
 import org.nzbhydra.config.category.Category;
 import org.nzbhydra.config.category.Category.Subtype;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class CategoryProviderTest {
 
     CategoryProvider testee = new CategoryProvider();
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         List<Category> categories = new ArrayList<>();
         Category category = new Category();
@@ -85,89 +88,89 @@ public class CategoryProviderTest {
     }
 
     @Test
-    public void shouldConvertSearchNewznabCategoriesToInternalCategory() throws Exception {
-        assertThat(testee.fromSearchNewznabCategories(Arrays.asList(3000), CategoriesConfig.allCategory).getName(), is("3000,3030"));
-        assertThat(testee.fromSearchNewznabCategories(Arrays.asList(3030), CategoriesConfig.allCategory).getName(), is("3000,3030"));
-        assertThat(testee.fromSearchNewznabCategories(Arrays.asList(7020), CategoriesConfig.allCategory).getName(), is("7020,8010"));
-        assertThat(testee.fromSearchNewznabCategories(Arrays.asList(7000, 7020), CategoriesConfig.allCategory).getName(), is("7020,8010"));
+    void shouldConvertSearchNewznabCategoriesToInternalCategory() throws Exception {
+        assertThat(testee.fromSearchNewznabCategories(Arrays.asList(3000), CategoriesConfig.allCategory).getName()).isEqualTo("3000,3030");
+        assertThat(testee.fromSearchNewznabCategories(Arrays.asList(3030), CategoriesConfig.allCategory).getName()).isEqualTo("3000,3030");
+        assertThat(testee.fromSearchNewznabCategories(Arrays.asList(7020), CategoriesConfig.allCategory).getName()).isEqualTo("7020,8010");
+        assertThat(testee.fromSearchNewznabCategories(Arrays.asList(7000, 7020), CategoriesConfig.allCategory).getName()).isEqualTo("7020,8010");
 
         //Different order
-        assertThat(testee.fromSearchNewznabCategories(Arrays.asList(7020, 8010), CategoriesConfig.allCategory).getName(), is("7020,8010"));
+        assertThat(testee.fromSearchNewznabCategories(Arrays.asList(7020, 8010), CategoriesConfig.allCategory).getName()).isEqualTo("7020,8010");
 
         //One general category
-        assertThat(testee.fromSearchNewznabCategories(Arrays.asList(4000), CategoriesConfig.allCategory).getName(), is("4000"));
+        assertThat(testee.fromSearchNewznabCategories(Arrays.asList(4000), CategoriesConfig.allCategory).getName()).isEqualTo("4000");
 
         //Generalized (4020 matches 4000)
-        assertThat(testee.fromSearchNewznabCategories(Arrays.asList(4020), CategoriesConfig.allCategory).getName(), is("4000"));
+        assertThat(testee.fromSearchNewznabCategories(Arrays.asList(4020), CategoriesConfig.allCategory).getName()).isEqualTo("4000");
 
         //Specific trumps general
-        assertThat(testee.fromSearchNewznabCategories(Arrays.asList(4090), CategoriesConfig.allCategory).getName(), is("4090"));
+        assertThat(testee.fromSearchNewznabCategories(Arrays.asList(4090), CategoriesConfig.allCategory).getName()).isEqualTo("4090");
 
         //If a main category and a subcategory are supplied use the main category
-        assertThat(testee.fromSearchNewznabCategories(Arrays.asList(4000, 4090), CategoriesConfig.allCategory).getName(), is("4000"));
+        assertThat(testee.fromSearchNewznabCategories(Arrays.asList(4000, 4090), CategoriesConfig.allCategory).getName()).isEqualTo("4000");
 
         //No matching found, use all
-        assertThat(testee.fromSearchNewznabCategories(Arrays.asList(7090), CategoriesConfig.allCategory).getName(), is("All"));
+        assertThat(testee.fromSearchNewznabCategories(Arrays.asList(7090), CategoriesConfig.allCategory).getName()).isEqualTo("All");
 
         //String input
-        assertThat(testee.fromSearchNewznabCategories("4000").getName(), is("4000"));
-        assertThat(testee.fromSearchNewznabCategories("7020,8010").getName(), is("7020,8010"));
+        assertThat(testee.fromSearchNewznabCategories("4000").getName()).isEqualTo("4000");
+        assertThat(testee.fromSearchNewznabCategories("7020,8010").getName()).isEqualTo("7020,8010");
 
         //No cats
-        assertThat(testee.fromSearchNewznabCategories(Collections.emptyList(), CategoriesConfig.allCategory).getName(), is("All"));
-        assertThat(testee.fromSearchNewznabCategories("").getName(), is("N/A"));
+        assertThat(testee.fromSearchNewznabCategories(Collections.emptyList(), CategoriesConfig.allCategory).getName()).isEqualTo("All");
+        assertThat(testee.fromSearchNewznabCategories("").getName()).isEqualTo("N/A");
 
         //Two subcategories, both of which have a match -> Use the general one
-        assertThat(testee.fromSearchNewznabCategories(Arrays.asList(4030, 4090), CategoriesConfig.allCategory).getName(), is("4000"));
+        assertThat(testee.fromSearchNewznabCategories(Arrays.asList(4030, 4090), CategoriesConfig.allCategory).getName()).isEqualTo("4000");
 
         //Two main categories -> Use the higher one (doesn't really matter, one needs to be used)
-        assertThat(testee.fromSearchNewznabCategories(Arrays.asList(3000, 4000), CategoriesConfig.allCategory).getName(), is("4000"));
+        assertThat(testee.fromSearchNewznabCategories(Arrays.asList(3000, 4000), CategoriesConfig.allCategory).getName()).isEqualTo("4000");
     }
 
     @Test
-    public void shouldConvertIndexerNewznabCategoriesToInternalCategory() throws Exception {
+    void shouldConvertIndexerNewznabCategoriesToInternalCategory() throws Exception {
         //Should return N/A on empty list
-        assertThat(testee.fromResultNewznabCategories(Collections.emptyList()).getName(), is("N/A"));
+        assertThat(testee.fromResultNewznabCategories(Collections.emptyList()).getName()).isEqualTo("N/A");
 
         //Should return more specific matching category
-        assertThat(testee.fromResultNewznabCategories(Arrays.asList(4000, 4090)).getName(), is("4090"));
+        assertThat(testee.fromResultNewznabCategories(Arrays.asList(4000, 4090)).getName()).isEqualTo("4090");
 
         //Should ignore numbers from custom range if not specified in category
-        assertThat(testee.fromResultNewznabCategories(Arrays.asList(4000, 4090, 10_000)).getName(), is("4090"));
-        assertThat(testee.fromResultNewznabCategories(Arrays.asList(4000, 10_000)).getName(), is("4000"));
+        assertThat(testee.fromResultNewznabCategories(Arrays.asList(4000, 4090, 10_000)).getName()).isEqualTo("4090");
+        assertThat(testee.fromResultNewznabCategories(Arrays.asList(4000, 10_000)).getName()).isEqualTo("4000");
 
         //Should use category that matches custom range if specified
         //Matches both and is more specific than only 4090
-        assertThat(testee.fromResultNewznabCategories(Arrays.asList(4090, 11_000)).getName(), is("4090&11_000"));
+        assertThat(testee.fromResultNewznabCategories(Arrays.asList(4090, 11_000)).getName()).isEqualTo("4090&11_000");
         //Doesn't use custom range but category with combined is still found
-        assertThat(testee.fromResultNewznabCategories(Arrays.asList(6060)).getName(), is("6060+9090&99_000"));
+        assertThat(testee.fromResultNewznabCategories(Arrays.asList(6060)).getName()).isEqualTo("6060+9090&99_000");
         //Uses combined range and is found
-        assertThat(testee.fromResultNewznabCategories(Arrays.asList(6060, 99_000)).getName(), is("6060+9090&99_000"));
+        assertThat(testee.fromResultNewznabCategories(Arrays.asList(6060, 99_000)).getName()).isEqualTo("6060+9090&99_000");
         //Does not match both numbers in either combination
-        assertThat(testee.fromResultNewznabCategories(Arrays.asList(7070, 88_000)).getName(), is("N/A"));
+        assertThat(testee.fromResultNewznabCategories(Arrays.asList(7070, 88_000)).getName()).isEqualTo("N/A");
         //Uses combination of three
-        assertThat(testee.fromResultNewznabCategories(Arrays.asList(10_000, 20_000, 30_000)).getName(), is("10_000&20_000&30_000"));
-        assertThat(testee.fromResultNewznabCategories(Arrays.asList(10_000, 20_000)).getName(), is("N/A"));
+        assertThat(testee.fromResultNewznabCategories(Arrays.asList(10_000, 20_000, 30_000)).getName()).isEqualTo("10_000&20_000&30_000");
+        assertThat(testee.fromResultNewznabCategories(Arrays.asList(10_000, 20_000)).getName()).isEqualTo("N/A");
 
         //Should return matching main category if subcat not found
-        assertThat(testee.fromResultNewznabCategories(Arrays.asList(4020)).getName(), is("4000"));
+        assertThat(testee.fromResultNewznabCategories(Arrays.asList(4020)).getName()).isEqualTo("4000");
 
         //Should return N/A if no matching found
-        assertThat(testee.fromResultNewznabCategories(Arrays.asList(9999)).getName(), is("N/A"));
+        assertThat(testee.fromResultNewznabCategories(Arrays.asList(9999)).getName()).isEqualTo("N/A");
     }
 
 
     @Test
-    public void testcheckCategoryMatchingMainCategory() {
-        assertThat(testee.checkCategoryMatchingMainCategory(5030, 5000), is(true));
-        assertThat(testee.checkCategoryMatchingMainCategory(5000, 5000), is(true));
-        assertThat(testee.checkCategoryMatchingMainCategory(4030, 5000), is(false));
-        assertThat(testee.checkCategoryMatchingMainCategory(4000, 5000), is(false));
-        assertThat(testee.checkCategoryMatchingMainCategory(4030, 4030), is(false));
+    void testcheckCategoryMatchingMainCategory() {
+        assertThat(testee.checkCategoryMatchingMainCategory(5030, 5000)).isEqualTo(true);
+        assertThat(testee.checkCategoryMatchingMainCategory(5000, 5000)).isEqualTo(true);
+        assertThat(testee.checkCategoryMatchingMainCategory(4030, 5000)).isEqualTo(false);
+        assertThat(testee.checkCategoryMatchingMainCategory(4000, 5000)).isEqualTo(false);
+        assertThat(testee.checkCategoryMatchingMainCategory(4030, 4030)).isEqualTo(false);
     }
 
     @Test
-    public void testThatWorksWithSameNewznabCategoriesAsCategory() {
+    void testThatWorksWithSameNewznabCategoriesAsCategory() {
         testee.baseConfig.getCategoriesConfig().getCategories().clear();
         Category category = new Category();
         category.setName("TV HD");
@@ -183,17 +186,17 @@ public class CategoryProviderTest {
 
         Category foundCategory = testee.getCategory(Arrays.asList(5010, 5040), null);
 
-        assertThat(foundCategory.getName(), is(category.getName()));
+        assertThat(foundCategory.getName()).isEqualTo(category.getName());
     }
 
     @Test
-    public void shouldFindBySubtype() {
+    void shouldFindBySubtype() {
         Optional<Category> animeOptional = testee.fromSubtype(Subtype.ANIME);
-        assertThat(animeOptional.isPresent(), is(true));
-        assertThat(animeOptional.get().getName(), is("7020,8010"));
+        assertThat(animeOptional.isPresent()).isEqualTo(true);
+        assertThat(animeOptional.get().getName()).isEqualTo("7020,8010");
 
         Optional<Category> magazineOptional = testee.fromSubtype(Subtype.MAGAZINE);
-        assertThat(magazineOptional.isPresent(), is(false));
+        assertThat(magazineOptional.isPresent()).isEqualTo(false);
     }
 
 }

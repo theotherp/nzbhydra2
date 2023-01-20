@@ -3,6 +3,7 @@ package org.nzbhydra.config;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -47,6 +48,7 @@ public class FileSystemBrowser {
     }
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     public static class DirectoryListingRequest {
@@ -56,6 +58,7 @@ public class FileSystemBrowser {
     }
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     public static class FileSystemEntry {
@@ -104,6 +107,7 @@ public class FileSystemBrowser {
     }
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     public static class FileSystemSubEntry {

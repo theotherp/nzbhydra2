@@ -17,11 +17,12 @@
 package org.nzbhydra.tasks;
 
 import com.google.common.reflect.Invokable;
+import jakarta.annotation.PreDestroy;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.time.DurationFormatUtils;
-import org.nzbhydra.ShutdownEvent;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.support.AopUtils;
@@ -29,7 +30,6 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanPostProcessor;
-import org.springframework.context.event.EventListener;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.scheduling.Trigger;
 import org.springframework.scheduling.TriggerContext;
@@ -40,10 +40,7 @@ import org.springframework.stereotype.Component;
 import java.lang.reflect.Method;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Comparator;
-import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,10 +63,11 @@ public class HydraTaskScheduler implements BeanPostProcessor, SmartInitializingS
     private final Map<String, ScheduledFuture> taskSchedules = new HashMap<>();
     private boolean shutdownRequested;
 
-    @EventListener
-    public void onShutdown(ShutdownEvent event) {
+    @PreDestroy
+    public void onShutdown() {
         taskSchedules.values().forEach(x -> x.cancel(false));
         shutdownRequested = true;
+        scheduler.shutdown();
     }
 
     @Override
@@ -80,7 +78,7 @@ public class HydraTaskScheduler implements BeanPostProcessor, SmartInitializingS
 
     private void scheduleTasks() {
         for (TaskRuntimeInformation runtimeInformation : runtimeInformationMap.values()) {
-            scheduleTask(runtimeInformation, false);
+            scheduleTask(runtimeInformation, true);
         }
     }
 
@@ -102,13 +100,12 @@ public class HydraTaskScheduler implements BeanPostProcessor, SmartInitializingS
         }
         ScheduledFuture scheduledTask = scheduler.schedule(runnable, new Trigger() {
             @Override
-            public Date nextExecutionTime(TriggerContext triggerContext) {
-                Calendar nextExecutionTime = new GregorianCalendar();
-                Date lastCompletionTime = runNow ? new Date() : triggerContext.lastCompletionTime();
-                nextExecutionTime.setTime(lastCompletionTime != null ? lastCompletionTime : new Date());
-                nextExecutionTime.add(Calendar.MILLISECOND, (int) getIntervalForTask(task));
-                taskInformations.put(task, new TaskInformation(task.name(), lastCompletionTime != null ? lastCompletionTime.toInstant() : null, nextExecutionTime.toInstant()));
-                return nextExecutionTime.getTime();
+            public Instant nextExecution(TriggerContext triggerContext) {
+                Instant lastCompletionTime = runNow ? Instant.now() : triggerContext.lastCompletion();
+                Instant nextExecutionTime = lastCompletionTime != null ? lastCompletionTime : Instant.now();
+                nextExecutionTime = nextExecutionTime.plusMillis((int) getIntervalForTask(task));
+                taskInformations.put(task, new TaskInformation(task.name(), lastCompletionTime, nextExecutionTime));
+                return nextExecutionTime;
             }
         });
         taskSchedules.put(task.name(), scheduledTask);
@@ -155,6 +152,7 @@ public class HydraTaskScheduler implements BeanPostProcessor, SmartInitializingS
     }
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     public static class TaskInformation {
@@ -164,6 +162,7 @@ public class HydraTaskScheduler implements BeanPostProcessor, SmartInitializingS
     }
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     public static class TaskRuntimeInformation {

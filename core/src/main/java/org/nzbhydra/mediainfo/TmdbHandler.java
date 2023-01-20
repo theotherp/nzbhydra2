@@ -1,33 +1,32 @@
 package org.nzbhydra.mediainfo;
 
-import com.uwetrottmann.tmdb2.entities.FindResults;
-import com.uwetrottmann.tmdb2.entities.Movie;
-import com.uwetrottmann.tmdb2.entities.MovieResultsPage;
-import com.uwetrottmann.tmdb2.enumerations.ExternalSource;
+import org.nzbhydra.Jackson;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.mediainfo.MediaIdType;
+import org.nzbhydra.webaccess.WebAccess;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import retrofit2.Call;
-import retrofit2.Response;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.temporal.ChronoField;
-import java.util.Collections;
+import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
+@SuppressWarnings("unchecked")
 @Component
 public class TmdbHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(TmdbHandler.class);
-    @Autowired
-    protected CustomTmdb tmdb;
+
+    @Value("${nzbhydra.tmdb.apikey:}")
+    protected String tmdbApiKey;
     @Autowired
     private ConfigProvider configProvider;
+    @Autowired
+    private WebAccess webAccess;
 
 
     public TmdbSearchResult getInfos(String value, MediaIdType idType) throws InfoProviderException {
@@ -35,99 +34,90 @@ public class TmdbHandler {
             return fromTitle(value, null);
         }
         if (idType == MediaIdType.IMDB) {
-            return fromImdb(value);
+            return getMovieByImdbId(value);
         }
         if (idType == MediaIdType.TMDB) {
-            return fromTmdb(value);
+            return getMovieByTmdbId(value);
         }
         throw new IllegalArgumentException("Unable to get infos from " + idType);
     }
 
-    private TmdbSearchResult fromImdb(String imdbId) throws InfoProviderException {
-        Movie movie = getMovieByImdbId(imdbId);
-        TmdbSearchResult result = getSearchResultFromMovie(movie);
-        return result;
-    }
-
-    private TmdbSearchResult fromTmdb(String tmdbId) throws InfoProviderException {
-        Movie movie = getMovieByTmdbId(tmdbId);
-        TmdbSearchResult result = getSearchResultFromMovie(movie);
-        return result;
-    }
-
     TmdbSearchResult fromTitle(String title, Integer year) throws InfoProviderException {
-        Movie movie = getMovieByTitle(title, year);
-        TmdbSearchResult result = getSearchResultFromMovie(movie);
-        return result;
-    }
-
-    private TmdbSearchResult getSearchResultFromMovie(Movie movie) {
-        String fullPosterUrl = movie.poster_path != null ? ("https://image.tmdb.org/t/p/w500/" + movie.poster_path) : null;
-        Integer year = movie.release_date != null ? LocalDateTime.ofInstant(movie.release_date.toInstant(), ZoneId.systemDefault()).get(ChronoField.YEAR) : null;
-        return new TmdbSearchResult(String.valueOf(movie.id), movie.imdb_id, movie.title, fullPosterUrl, year);
-    }
-
-    private Movie getMovieByTitle(String title, Integer year) throws InfoProviderException {
-        List<TmdbSearchResult> movies = search(title, year);
-        TmdbSearchResult movie = movies.get(0);
-        //Unfortunately IMDB ID is not filled here, so we need to make a new query using the TMDB ID
-        return getMovieByTmdbId(String.valueOf(movie.getTmdbId()));
+        final List<TmdbSearchResult> list = search(title, year);
+        return list.isEmpty() ? null : list.get(0);
     }
 
     public List<TmdbSearchResult> search(String title, Integer year) throws InfoProviderException {
-        List<Movie> movies;
-        Call<MovieResultsPage> movieSearch = tmdb.searchService().movie(title, null, configProvider.getBaseConfig().getSearching().getLanguage().orElse("en"), null, year, null, null);
+        String url = "https://api.themoviedb.org/3/search/movie?query=%s&year=%s&api_key=%s".formatted(title, year == null ? "null" : year, tmdbApiKey);
         try {
-            Response<MovieResultsPage> response = movieSearch.execute();
-            if (!response.isSuccessful()) {
-                throw new InfoProviderException("Error while contacting TMDB: " + response.errorBody().string());
-            }
-            if (response.body().total_results == 0) {
-                logger.info("TMDB query for title '{}' returned no searchResults", title);
-                return Collections.emptyList();
-            }
-            movies = response.body().results;
-        } catch (IOException e) {
-            logger.error("Error while contacting TMDB", e);
-            return Collections.emptyList();
-        }
+            final String json = webAccess.callUrl(url);
+            final Map map = Jackson.JSON_MAPPER.readValue(json, Map.class);
+            List<Map> list = (List<Map>) map.get("results");
+            return list.stream()
+                .limit(10)
+                .map(x -> {
+                    TmdbSearchResult result = new TmdbSearchResult();
+                    fillFromMap(x, result);
+                    return result;
+                }).toList();
 
-        return movies.stream().map(this::getSearchResultFromMovie).collect(Collectors.toList());
+        } catch (IOException e) {
+            throw new InfoProviderException("Error loading details for movie with title " + title, e);
+        }
     }
 
-    private Movie getMovieByImdbId(String imdbId) throws InfoProviderException {
-        Movie movie;
-        Call<FindResults> resultsCall = tmdb.findService().find(imdbId, ExternalSource.IMDB_ID, configProvider.getBaseConfig().getSearching().getLanguage().orElse("en"));
+    private TmdbSearchResult getMovieByImdbId(String imdbId) throws InfoProviderException {
+        final String correctImdbId = imdbId.startsWith("tt") ? imdbId : "tt" + imdbId;
+        String url = "https://api.themoviedb.org/3/find/%s?external_source=imdb_id&api_key=%s".formatted(correctImdbId, tmdbApiKey);
         try {
-            Response<FindResults> response = resultsCall.execute();
-            if (!response.isSuccessful()) {
-                throw new InfoProviderException("Error while contacting TMDB: " + response.errorBody().string());
-            }
-            if (response.body().movie_results.size() == 0) {
+            final String json = webAccess.callUrl(url);
+            final Map map = Jackson.JSON_MAPPER.readValue(json, Map.class);
+            final List<Map> list = (List<Map>) map.get("movie_results");
+            TmdbSearchResult result = new TmdbSearchResult();
+            if (list.isEmpty()) {
                 throw new InfoProviderException(String.format("TMDB query for IMDB ID %s returned no searchResults", imdbId));
             }
-            movie = response.body().movie_results.get(0);
+            fillFromMap(list.get(0), result);
+            result.setImdbId(correctImdbId);
+            return result;
         } catch (IOException e) {
-            throw new InfoProviderException("Error while contacting TMDB", e);
+            throw new InfoProviderException("Error loading details for movie with IMDB ID " + imdbId, e);
         }
-        return movie;
     }
 
 
-    private Movie getMovieByTmdbId(String tmdbId) throws InfoProviderException {
-        Movie movie;
-        Call<Movie> movieCall = tmdb.moviesService().summary(Integer.valueOf(tmdbId), configProvider.getBaseConfig().getSearching().getLanguage().orElse("en"), null);
+    private TmdbSearchResult getMovieByTmdbId(String tmdbId) throws InfoProviderException {
+        String url = "https://api.themoviedb.org/3/movie/%s?api_key=%s".formatted(tmdbId, tmdbApiKey);
         try {
-            Response<Movie> response = movieCall.execute();
-            if (!response.isSuccessful()) {
-                throw new InfoProviderException("Error while contacting TMDB: " + response.errorBody().string());
-            }
-
-            movie = response.body();
+            final String json = webAccess.callUrl(url);
+            final Map map = Jackson.JSON_MAPPER.readValue(json, Map.class);
+            TmdbSearchResult result = new TmdbSearchResult();
+            fillFromMap(map, result);
+            result.setImdbId(getImdbId(tmdbId));
+            return result;
         } catch (IOException e) {
-            throw new InfoProviderException("Error while contacting TMDB", e);
+            throw new InfoProviderException("Error loading details for movie with TMDB ID " + tmdbId, e);
         }
-        return movie;
+
     }
+
+    private static void fillFromMap(Map map, TmdbSearchResult result) {
+        result.setTmdbId(String.valueOf(map.get("id")));
+        result.setYear(map.get("release_date") != null ? LocalDate.parse(map.get("release_date").toString()).getYear() : null);
+        result.setTitle(String.valueOf(map.get("title")));
+        result.setPosterUrl(map.get("poster_path") != null ? ("https://image.tmdb.org/t/p/w500/" + map.get("poster_path")) : null);
+    }
+
+    private String getImdbId(String tmdbId) throws InfoProviderException {
+        String url = "https://api.themoviedb.org/3/movie/%s/external_ids?api_key=%s".formatted(tmdbId, tmdbApiKey);
+        try {
+            final String json = webAccess.callUrl(url);
+            final Map map = Jackson.JSON_MAPPER.readValue(json, Map.class);
+            return String.valueOf(map.get("imdb_id"));
+        } catch (IOException e) {
+            throw new InfoProviderException("Error loading details for movie with ID " + tmdbId, e);
+        }
+    }
+
 
 }

@@ -17,7 +17,8 @@
 package org.nzbhydra.notifications;
 
 import com.google.common.collect.Sets;
-import org.nzbhydra.ShutdownEvent;
+import jakarta.annotation.PreDestroy;
+import org.nzbhydra.config.notification.NotificationEventType;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,7 +84,7 @@ public class NotificationsWeb {
     @MessageMapping("/markNotificationRead")
     public void markRead(int id) {
         final Optional<NotificationEntity> byId = notificationRepository.findById(id);
-        if (!byId.isPresent()) {
+        if (byId.isEmpty()) {
             logger.error("Unable to mark notification with ID {} as read because no notification with that ID was found", id);
             return;
         }
@@ -101,7 +102,7 @@ public class NotificationsWeb {
             .stream()
             .filter(x -> x != null && x.getEventType() == notificationEventType)
             .findFirst();
-        if (!notificationEvent.isPresent()) {
+        if (notificationEvent.isEmpty()) {
             throw new RuntimeException("Unable to create test notification for event type " + eventType);
         }
         logger.info("Sending test notification for type {}", eventType);
@@ -145,8 +146,8 @@ public class NotificationsWeb {
         }
     }
 
-    @EventListener
-    public void onShutdown(ShutdownEvent event) {
+    @PreDestroy
+    public void onShutdown() {
         if (scheduledFuture != null) {
             scheduledFuture.cancel(true);
             scheduledFuture = null;

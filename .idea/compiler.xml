@@ -22,7 +22,9 @@
         <module name="mockserver" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel target="8" />
+    <bytecodeTargetLevel target="17">
+      <module name="ui" target="1.5" />
+    </bytecodeTargetLevel>
   </component>
   <component name="EclipseCompilerSettings">
     <option name="GENERATE_NO_WARNINGS" value="true" />
@@ -31,7 +33,6 @@
     <option name="ADDITIONAL_OPTIONS_STRING" value="-parameters" />
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="core" options="-parameters" />
-      <module name="discordbot" options="" />
       <module name="github-release-plugin" options="" />
       <module name="linux-release" options="-parameters" />
       <module name="mapping" options="-parameters" />

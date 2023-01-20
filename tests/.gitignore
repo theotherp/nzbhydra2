@@ -22,8 +22,7 @@ nbbuild/
 dist/
 nbdist/
 .nb-gradle/
-*.db.*
 *.log
-nzbhydra.yml
+/data
 logs/
 cacerts

@@ -2,10 +2,10 @@ package org.nzbhydra.indexers;
 
 import org.nzbhydra.config.indexer.IndexerConfig;
 
-public interface IndexerHandlingStrategy {
+public interface IndexerHandlingStrategy<T extends Indexer> {
 
     boolean handlesIndexerConfig(IndexerConfig config);
 
-    Class<? extends Indexer> getIndexerClass();
+    String getName();
 
 }

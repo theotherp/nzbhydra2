@@ -1,26 +1,28 @@
 package org.nzbhydra.backup;
 
 import com.google.common.base.Stopwatch;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.google.common.base.Throwables;
+import jakarta.annotation.PostConstruct;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 import org.apache.commons.io.FileUtils;
+import org.h2.message.DbException;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.ConfigReaderWriter;
+import org.nzbhydra.genericstorage.GenericStorage;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.systemcontrol.SystemControl;
 import org.nzbhydra.webaccess.HydraOkHttp3ClientHttpRequestFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.aot.hint.annotation.Reflective;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.PostConstruct;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,7 +38,6 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.spi.FileSystemProvider;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -64,6 +65,9 @@ public class BackupAndRestore {
     private HydraOkHttp3ClientHttpRequestFactory requestFactory;
     @Autowired
     private SystemControl systemControl;
+
+    @Autowired
+    private GenericStorage genericStorage;
     private final ConfigReaderWriter configReaderWriter = new ConfigReaderWriter();
 
     @PostConstruct
@@ -77,7 +81,7 @@ public class BackupAndRestore {
     }
 
     @Transactional
-    public File backup() throws Exception {
+    public File backup(boolean triggeredByUsed) throws Exception {
         Stopwatch stopwatch = Stopwatch.createStarted();
         File backupFolder = getBackupFolder();
         if (!backupFolder.exists()) {
@@ -92,7 +96,10 @@ public class BackupAndRestore {
         logger.info("Creating backup");
 
         File backupZip = new File(backupFolder, "nzbhydra-" + LocalDateTime.now().format(DATE_PATTERN) + ".zip");
-        backupDatabase(backupZip);
+        backupDatabase(backupZip, triggeredByUsed);
+        if (!backupZip.exists()) {
+            throw new RuntimeException("Export to file " + backupZip + " was not executed by database");
+        }
         Map<String, String> env = new HashMap<>();
         env.put("create", "true");
         //We use the jar filesystem so we can add files to the existing ZIP
@@ -117,8 +124,8 @@ public class BackupAndRestore {
             logger.info("Deleting old backups if any exist");
             Integer backupMaxAgeInWeeks = configProvider.getBaseConfig().getMain().getDeleteBackupsAfterWeeks().get();
             File[] zips = backupFolder.listFiles((dir, name) -> name != null && name.startsWith("nzbhydra") && name.endsWith(".zip"));
-
             if (zips != null) {
+                Map<File, LocalDateTime> fileToBackupTime = new HashMap<>();
                 for (File zip : zips) {
                     Matcher matcher = FILE_PATTERN.matcher(zip.getName());
                     if (!matcher.matches()) {
@@ -126,8 +133,20 @@ public class BackupAndRestore {
                         continue;
                     }
                     LocalDateTime backupDate = LocalDateTime.from(DATE_PATTERN.parse(matcher.group(1)));
-                    if (backupDate.isBefore(LocalDateTime.now().minusSeconds(60 * 60 * 24 * 7 * backupMaxAgeInWeeks))) {
-                        logger.info("Deleting backup file {} because it's older than {} weeks", zip, backupMaxAgeInWeeks);
+                    fileToBackupTime.put(zip, backupDate);
+                }
+                for (File zip : zips) {
+                    if (!fileToBackupTime.containsKey(zip)) {
+                        continue;
+                    }
+                    LocalDateTime backupDate = fileToBackupTime.get(zip);
+                    if (backupDate.isBefore(LocalDateTime.now().minusSeconds(60L * 60 * 24 * 7 * backupMaxAgeInWeeks))) {
+                        final boolean successfulNewerBackup = fileToBackupTime.entrySet().stream().anyMatch(x -> x.getKey() != zip && x.getValue().isAfter(backupDate));
+                        if (!successfulNewerBackup) {
+                            logger.warn("No successful backup was made after the creation of {}. Will not delete it.", zip.getAbsolutePath());
+                            continue;
+                        }
+                        logger.info("Deleting backup file {} because it's older than {} weeks and a newer successful backup exists", zip, backupMaxAgeInWeeks);
                         boolean deleted = zip.delete();
                         if (!deleted) {
                             logger.warn("Unable to delete old backup file {}", zip.getName());
@@ -138,6 +157,7 @@ public class BackupAndRestore {
         }
     }
 
+    @Reflective
     protected File getBackupFolder() {
         final String backupFolder = configProvider.getBaseConfig().getMain().getBackupFolder();
         if (backupFolder.contains(File.separator)) {
@@ -164,11 +184,31 @@ public class BackupAndRestore {
     }
 
 
-    private void backupDatabase(File targetFile) {
-        String formattedFilepath = targetFile.getAbsolutePath().replace("\\", "/");
-        logger.info("Backing up database to " + formattedFilepath);
-        entityManager.createNativeQuery("BACKUP TO '" + formattedFilepath + "';").executeUpdate();
-        logger.debug("Wrote database backup files to {}", targetFile.getAbsolutePath());
+    private void backupDatabase(File targetFile, boolean triggeredByUsed) {
+        final String tempPath;
+        try {
+            tempPath = Files.createTempFile("nzbhydra", "zip").toFile().getAbsolutePath().replace("\\", "/");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            String formattedFilepath = targetFile.getAbsolutePath().replace("\\", "/");
+            logger.info("Backing up database to " + formattedFilepath);
+            //Write a script to ensure that the backed up database is actually valid
+            final Query nativeQuery = entityManager.createNativeQuery("SCRIPT TO '%s';".formatted(tempPath));
+            //If the database is corrupted this command will back it up without exception
+            entityManager.createNativeQuery("BACKUP TO '" + formattedFilepath + "';").executeUpdate();
+            final List resultList = nativeQuery.getResultList();
+            logger.debug("Wrote database backup data to {}", targetFile.getAbsolutePath());
+        } catch (Exception e) {
+            logger.info("Deleting invalid backup file {}", targetFile);
+            targetFile.delete();
+            if (!triggeredByUsed) {
+                final String dbExceptionMessage = Throwables.getCausalChain(e).stream().filter(x -> x instanceof DbException).findFirst().map(Throwable::getMessage).orElse(null);
+                genericStorage.save("FAILED_BACKUP", new FailedBackupData(dbExceptionMessage));
+            }
+            throw e;
+        }
     }
 
     private void backupCertificates(FileSystem fileSystem) throws IOException {
@@ -205,8 +245,8 @@ public class BackupAndRestore {
         try {
             File tempFile = File.createTempFile("nzbhydra-restore", ".zip");
             FileUtils.copyInputStreamToFile(inputStream, tempFile);
-            restoreFromFile(tempFile);
             tempFile.deleteOnExit();
+            restoreFromFile(tempFile);
             return GenericResponse.ok();
         } catch (Exception e) {
             logger.error("Error while restoring", e);
@@ -265,12 +305,5 @@ public class BackupAndRestore {
         }
     }
 
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class BackupEntry {
-        private String filename;
-        private Instant creationDate;
-    }
 
 }

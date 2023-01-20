@@ -21,7 +21,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
-@SuppressWarnings("unchecked")
 public class ConfigMigrationStep013to014 implements ConfigMigrationStep {
 
     private static final Logger logger = LoggerFactory.getLogger(ConfigMigration.class);

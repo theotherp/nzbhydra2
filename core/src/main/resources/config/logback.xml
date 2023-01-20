@@ -34,16 +34,18 @@
               org.springframework.security.web.csrf.CsrfFilter,
               org.springframework.security.web.header.HeaderWriterFilter,
               org.springframework.security.web.servletapi,
-              org.springframework.security.web.context.SecurityContextPersistenceFilter
+              org.springframework.security.web.context.SecurityContextPersistenceFilter,
+              org.springframework.security.web.context.SecurityContextHolderFilter,
               org.springframework.security.web.savedrequest,
               org.springframework.security.web.authentication.AnonymousAuthenticationFilter,
+              org.springframework.security.web.ObservationFilterChainDecorator,
               org.springframework.web.filter,
               org.springframework.cglib,
               org.springframework.aop,
               org.springframework.web.servlet,
               org.springframework.web.method,
               java.lang.reflect.Method,
-              javax.servlet,
+              jakarta.servlet,
               sun.reflect
               }}}"/>
     <property name="FILE_LOG_PATTERN"
@@ -56,16 +58,18 @@
               org.springframework.security.web.csrf.CsrfFilter,
               org.springframework.security.web.header.HeaderWriterFilter,
               org.springframework.security.web.servletapi,
-              org.springframework.security.web.context.SecurityContextPersistenceFilter
+              org.springframework.security.web.context.SecurityContextPersistenceFilter,
+              org.springframework.security.web.context.SecurityContextHolderFilter,
               org.springframework.security.web.savedrequest,
               org.springframework.security.web.authentication.AnonymousAuthenticationFilter,
+              org.springframework.security.web.ObservationFilterChainDecorator,
               org.springframework.web.filter,
               org.springframework.cglib,
               org.springframework.aop,
               org.springframework.web.servlet,
               org.springframework.web.method,
               java.lang.reflect.Method,
-              javax.servlet,
+              jakarta.servlet,
               sun.reflect
               }}}"/>
 
@@ -113,10 +117,10 @@
     <logger name="org.nzbhydra" level="DEBUG">
         <appender-ref ref="STASH"/>
     </logger>
-    <logger name="org.spring" level="WARN"/>
+    <logger name="org.spring" level="INFO"/>
     <logger name="org.hibernate" level="WARN"/>
     <logger name="org.apache" level="WARN"/>
-    <logger name="org.springframework" level="WARN"/>
+    <logger name="org.springframework" level="INFO"/>
     <logger name="org.thymeleaf" level="WARN"/>
     <logger name="org.eclipse" level="WARN"/>
     <logger name="okhttp3.OkHttpClient" level="DEBUG"/>

@@ -1,10 +1,12 @@
 package org.nzbhydra.indexers;
 
 import lombok.Data;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.io.Serializable;
 
 @Data
+@ReflectionMarker
 public class NfoResult implements Serializable {
 
     private boolean successful;

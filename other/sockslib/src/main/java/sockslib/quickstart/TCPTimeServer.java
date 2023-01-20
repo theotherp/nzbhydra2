@@ -6,8 +6,7 @@ import sockslib.client.SocksProxy;
 import sockslib.utils.Arguments;
 import sockslib.utils.Timer;
 
-import javax.annotation.Nullable;
-import java.io.ByteArrayOutputStream;
+import javax.annotation.Nullable;import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;

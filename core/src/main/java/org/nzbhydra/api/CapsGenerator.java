@@ -18,10 +18,12 @@ package org.nzbhydra.api;
 
 import com.google.common.collect.Sets;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.SearchSource;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.category.Category;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
+import org.nzbhydra.config.mediainfo.MediaIdType;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mapping.newznab.NewznabResponse;
 import org.nzbhydra.mapping.newznab.OutputType;
@@ -47,8 +49,6 @@ import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlSearch;
 import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlSearching;
 import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlServer;
 import org.nzbhydra.mediainfo.InfoProvider;
-import org.nzbhydra.mediainfo.MediaIdType;
-import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.update.UpdateManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -66,7 +66,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Component
 public class CapsGenerator {
@@ -174,7 +173,7 @@ public class CapsGenerator {
             if (x.getState() != IndexerConfig.State.ENABLED && x.getState() != IndexerConfig.State.DISABLED_SYSTEM_TEMPORARY) {
                 return false;
             }
-            if (!x.getEnabledForSearchSource().meets(SearchRequest.SearchSource.API)) {
+            if (!SearchSource.API.meets(x.getEnabledForSearchSource())) {
                 //Indexer will not be picked for API searches
                 return false;
             }
@@ -217,9 +216,9 @@ public class CapsGenerator {
             }
             for (Category category : configProvider.getBaseConfig().getCategoriesConfig().getCategories()) {
                 List<Integer> subCategories = category.getNewznabCategories().stream().flatMap(Collection::stream).filter(x -> x % 1000 != 0)
-                        //Lower numbers first so that predefined category numbers take precedence over custom ones
-                        .sorted(Comparator.naturalOrder())
-                        .collect(Collectors.toList());
+                    //Lower numbers first so that predefined category numbers take precedence over custom ones
+                    .sorted(Comparator.naturalOrder())
+                    .toList();
                 //Use lowest category first
                 for (Integer subCategory : subCategories) {
                     if (alreadyAdded.contains(category.getName())) {

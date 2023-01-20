@@ -1,15 +1,15 @@
 package org.nzbhydra.searching.searchrequests;
 
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.SearchSource;
 import org.nzbhydra.config.SearchingConfig;
 import org.nzbhydra.config.category.Category;
+import org.nzbhydra.config.mediainfo.MediaIdType;
+import org.nzbhydra.config.searching.SearchType;
 import org.nzbhydra.mediainfo.Imdb;
 import org.nzbhydra.mediainfo.InfoProvider;
-import org.nzbhydra.mediainfo.MediaIdType;
 import org.nzbhydra.mediainfo.MovieInfo;
 import org.nzbhydra.mediainfo.TvInfo;
-import org.nzbhydra.searching.dtoseventsenums.SearchType;
-import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -36,7 +36,7 @@ public class SearchRequestFactory {
         searchRequest.setCategory(category);
         searchRequest.setSearchRequestId(searchRequestId);
         MDC.put("SEARCH", String.valueOf(searchRequestId));
-        if (!searchRequest.getMaxage().isPresent() && searchingConfig.getMaxAge().isPresent()) {
+        if (searchRequest.getMaxage().isEmpty() && searchingConfig.getMaxAge().isPresent()) {
             searchRequest.setMaxage(searchingConfig.getMaxAge().get());
         }
 

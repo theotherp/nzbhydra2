@@ -1,27 +1,40 @@
 package org.nzbhydra.indexers;
 
 import com.google.common.base.MoreObjects;
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.nzbhydra.springnative.ReflectionMarker;
 
-import javax.persistence.*;
 import java.time.Instant;
 import java.util.Objects;
 
 
 @Data
+@ReflectionMarker
 @Entity
 @NoArgsConstructor
 @Table(name = "indexerapiaccess")
-public class IndexerApiAccessEntity {
+public final class IndexerApiAccessEntity {
 
     @Id
+    @SequenceGenerator(allocationSize = 1, name = "INDEXERAPIACCESS_SEQ")
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     protected int id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @OnDelete(action = OnDeleteAction.CASCADE)
     private IndexerEntity indexer;
 

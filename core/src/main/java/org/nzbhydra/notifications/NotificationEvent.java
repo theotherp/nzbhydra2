@@ -16,6 +16,8 @@
 
 package org.nzbhydra.notifications;
 
+import org.nzbhydra.config.notification.NotificationEventType;
+
 import java.util.Map;
 
 public interface NotificationEvent {

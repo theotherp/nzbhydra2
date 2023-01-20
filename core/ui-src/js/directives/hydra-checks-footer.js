@@ -65,6 +65,7 @@ function hydraChecksFooter() {
             });
         }
 
+        console.log("Checking for below Java 17.");
 
         function checkForJavaBelow17() {
             GenericStorageService.get("belowJava17", false).then(function (response) {
@@ -81,18 +82,19 @@ function hydraChecksFooter() {
             });
         }
 
-        function checkForManualUpdateTo5x() {
-            GenericStorageService.get("MANUAL_UPDATE_5x", false).then(function (response) {
-                if (response.data !== "" && response.data) {
-                    console.log("Manual update to 5.x necessary");
+        console.log("Checking for failed backup.");
+
+        function checkForFailedBackup() {
+            GenericStorageService.get("FAILED_BACKUP", false).then(function (response) {
+                if (response.data !== "" && response.data && !response.data) {
+                    console.log("Failed backup detected");
                     //headline, message, params, size, textAlign
-                    ModalService.open("Manual update necessary", 'A new version of NZBHydra is available. Unfortunately due to some massive changes an automatic update is not possible (or advisable). Please see ' +
-                        '<a href="https://github.com/theotherp/nzbhydra2/wiki/Updating-from-4.x-to-5.x" target="_blank">the wiki</a> for update instructions.', {
+                    ModalService.open("Failed backup", 'The creation of a backup file has failed. Error message: \"' + response.data.message + '."<br> For details please check the log around ' + response.data.time + '.', {
                         yes: {
                             text: "OK"
                         }
                     }, undefined, "left");
-                    GenericStorageService.put("MANUAL_UPDATE_5x", false, false);
+                    GenericStorageService.put("FAILED_BACKUP", false, null);
                 }
             });
         }
@@ -135,7 +137,7 @@ function hydraChecksFooter() {
             checkForOutdatedWrapper();
             checkForOpenToInternet();
             checkForJavaBelow17();
-            checkForManualUpdateTo5x();
+            checkForFailedBackup();
         }
 
         function retrieveUpdateInfos() {
@@ -251,8 +253,10 @@ function hydraChecksFooter() {
                             welcomeIsBeingShown = false;
                         });
                     } else {
-                        _.defer(checkAndShowNews);
-                        _.defer(checkExpiredIndexers);
+                        if (HydraAuthService.getUserInfos().maySeeAdmin) {
+                            _.defer(checkAndShowNews);
+                            _.defer(checkExpiredIndexers);
+                        }
                     }
                 }, function () {
                     console.log("Error while checking for welcome")
@@ -299,7 +303,7 @@ function hydraChecksFooter() {
             }
         }
 
-        if (ConfigService.getSafe().notificationConfig.displayNotifications) {
+        if (ConfigService.getSafe().notificationConfig.displayNotifications && HydraAuthService.getUserInfos().maySeeAdmin) {
             var socket = new SockJS(bootstrapped.baseUrl + 'websocket');
             var stompClient = Stomp.over(socket);
             stompClient.debug = null;

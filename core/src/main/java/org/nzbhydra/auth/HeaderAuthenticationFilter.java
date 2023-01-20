@@ -17,24 +17,27 @@
 package org.nzbhydra.auth;
 
 import com.google.common.net.InetAddresses;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.nzbhydra.config.auth.AuthConfig;
 import org.nzbhydra.web.SessionStorage;
 import org.nzbhydra.webaccess.HydraOkHttp3ClientHttpRequestFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Objects;
 
 public class HeaderAuthenticationFilter extends BasicAuthenticationFilter {
 
@@ -43,14 +46,36 @@ public class HeaderAuthenticationFilter extends BasicAuthenticationFilter {
     private final HydraUserDetailsManager userDetailsManager;
     private AuthConfig authConfig;
 
+    private final String internalApiKey;
+
     public HeaderAuthenticationFilter(AuthenticationManager authenticationManager, HydraUserDetailsManager userDetailsManager, AuthConfig authConfig) {
         super(authenticationManager);
         this.userDetailsManager = userDetailsManager;
         this.authConfig = authConfig;
+        //Must be provided by wrapper
+        internalApiKey = System.getProperty("internalApiKey");
+        if (internalApiKey != null) {
+            logger.info("Using internal API key");
+        }
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
+        final String sentInternalApiKey = request.getParameterValues("internalApiKey") == null ? null : request.getParameterValues("internalApiKey")[0];
+        if (sentInternalApiKey != null) {
+            if (Objects.equals(sentInternalApiKey, internalApiKey)) {
+
+                final AnonymousAuthenticationToken token = new AnonymousAuthenticationToken("key", "internalApi", AuthorityUtils.createAuthorityList("ROLE_ADMIN"));
+                token.setDetails(new HydraWebAuthenticationDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(token);
+                onSuccessfulAuthentication(request, response, token);
+                logger.debug("Authorized access to {} via internal API key", request.getRequestURI());
+                chain.doFilter(request, response);
+                return;
+            } else {
+                logger.warn("Invalid internal API key provided");
+            }
+        }
         if (authConfig.getAuthHeader() == null || authConfig.getAuthHeaderIpRanges().isEmpty()) {
             chain.doFilter(request, response);
             return;

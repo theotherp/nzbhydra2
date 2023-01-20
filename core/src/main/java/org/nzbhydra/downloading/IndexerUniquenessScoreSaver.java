@@ -16,8 +16,7 @@
 
 package org.nzbhydra.downloading;
 
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
+import jakarta.annotation.PostConstruct;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.indexers.IndexerEntity;
 import org.nzbhydra.indexers.IndexerSearchEntity;
@@ -31,9 +30,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
 
-import javax.persistence.EntityManagerFactory;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -51,10 +52,18 @@ public class IndexerUniquenessScoreSaver {
     private SearchResultRepository searchResultRepository;
     @Autowired
     private IndexerSearchRepository indexerSearchRepository;
+
     @Autowired
     private IndexerUniquenessScoreEntityRepository indexerUniquenessScoreEntityRepository;
     @Autowired
-    private EntityManagerFactory entityManagerFactory;
+    private PlatformTransactionManager transactionManager;
+    private TransactionTemplate transactionTemplate;
+
+    @PostConstruct
+    public void init() {
+        transactionTemplate = new TransactionTemplate(transactionManager);
+    }
+
 
     @EventListener
     public void onNzbDownloadEvent(FileDownloadEvent downloadEvent) {
@@ -63,26 +72,31 @@ public class IndexerUniquenessScoreSaver {
             return;
         }
 
-        handleDownloadEvent(downloadEvent);
+        transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus status) {
+                handleDownloadEvent(downloadEvent);
+            }
+        });
+
     }
 
-    @Transactional
-    public void handleDownloadEvent(FileDownloadEvent downloadEvent) {
-        try (Session session = entityManagerFactory.unwrap(SessionFactory.class).openSession()) {
-            //For some reason the IndexerSearchEntity is not readable (LazyInitializationException) if the result is not loaded again
-            SearchResultEntity searchResultEntity = session.load(SearchResultEntity.class, downloadEvent.getSearchResultEntity().getId());
+    private void handleDownloadEvent(FileDownloadEvent downloadEvent) {
+        try {
+            SearchResultEntity searchResultEntity = downloadEvent.getSearchResultEntity();
 
-            if (searchResultEntity.getIndexerSearchEntity() == null) {
+            if (searchResultEntity.getIndexerSearchEntityId() == null) {
                 logger.debug("Unable to determine indexer uniqueness score for result {} because no indexer search is saved", searchResultEntity.getTitle());
                 return;
             }
 
-            Set<IndexerSearchEntity> allIndexerSearchesInvolved = getIndexersInvolved(searchResultEntity);
+            final IndexerSearchEntity indexerSearchEntity = indexerSearchRepository.getReferenceById(searchResultEntity.getIndexerSearchEntityId());
+            Set<IndexerSearchEntity> allIndexerSearchesInvolved = getIndexersInvolved(indexerSearchEntity);
 
-            Set<IndexerEntity> indexersContainingSameResult = getIndexersFoundSameResult(searchResultEntity);
+            Set<IndexerEntity> indexersContainingSameResult = getIndexersFoundSameResult(searchResultEntity, indexerSearchEntity);
 
             Set<IndexerSearchEntity> involvedIndexersWithoutResult = allIndexerSearchesInvolved.stream().filter(x -> !indexersContainingSameResult.contains(x.getIndexerEntity()) && !x.getIndexerEntity().equals(searchResultEntity.getIndexer()))
-                    .collect(Collectors.toSet());
+                .collect(Collectors.toSet());
 
             saveScoresToDatabase(searchResultEntity.getIndexer(), indexersContainingSameResult, allIndexerSearchesInvolved, involvedIndexersWithoutResult);
 
@@ -108,25 +122,24 @@ public class IndexerUniquenessScoreSaver {
         int involved = allIndexerSearchesInvolved.size();
         int haveResult = indexersContainingSameResult.size() + 1;
         scoreEntities.add(new IndexerUniquenessScoreEntity(indexerDownloadedFrom, involved, haveResult, true));
-        scoreEntities.addAll(indexersContainingSameResult.stream().map(x -> new IndexerUniquenessScoreEntity(x, involved, haveResult, true)).collect(Collectors.toList()));
-        scoreEntities.addAll(involvedIndexersWithoutResult.stream().map(x -> new IndexerUniquenessScoreEntity(x.getIndexerEntity(), involved, haveResult, false)).collect(Collectors.toList()));
+        scoreEntities.addAll(indexersContainingSameResult.stream().map(x -> new IndexerUniquenessScoreEntity(x, involved, haveResult, true)).toList());
+        scoreEntities.addAll(involvedIndexersWithoutResult.stream().map(x -> new IndexerUniquenessScoreEntity(x.getIndexerEntity(), involved, haveResult, false)).toList());
         indexerUniquenessScoreEntityRepository.saveAll(scoreEntities);
     }
 
 
-    private Set<IndexerSearchEntity> getIndexersInvolved(SearchResultEntity searchResultEntity) {
-        IndexerSearchEntity indexerSearchEntity = searchResultEntity.getIndexerSearchEntity();
+    private Set<IndexerSearchEntity> getIndexersInvolved(IndexerSearchEntity indexerSearchEntity) {
         return new HashSet<>(indexerSearchRepository.findBySearchEntity(indexerSearchEntity.getSearchEntity())).stream().filter(IndexerSearchEntity::getSuccessful).collect(Collectors.toSet());
     }
 
-    private Set<IndexerEntity> getIndexersFoundSameResult(SearchResultEntity searchResultEntity) {
+    private Set<IndexerEntity> getIndexersFoundSameResult(SearchResultEntity searchResultEntity, IndexerSearchEntity indexerSearchEntity) {
         Set<SearchResultEntity> resultsWithSameTitle = searchResultRepository.findAllByTitleLikeIgnoreCase(searchResultEntity.getTitle().replaceAll("[ .\\-_]", "_"));
         Set<IndexerEntity> indexersContainingSameResult = new HashSet<>();
         for (SearchResultEntity searchResult : resultsWithSameTitle) {
             if (searchResult.getIndexer().equals(searchResultEntity.getIndexer())) {
                 continue;
             }
-            if (searchResult.getIndexerSearchEntity() != null && !searchResult.getIndexerSearchEntity().getSuccessful()) {
+            if (indexerSearchEntity != null && !indexerSearchEntity.getSuccessful()) {
                 continue;
             }
             indexersContainingSameResult.add(searchResult.getIndexer());

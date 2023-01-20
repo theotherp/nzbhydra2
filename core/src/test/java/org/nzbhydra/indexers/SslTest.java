@@ -1,22 +1,22 @@
 package org.nzbhydra.indexers;
 
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureDataJpa;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.net.URI;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = NzbHydra.class)
-@DataJpaTest
-@Ignore //Only run when needed, we don't want any access to internet from build
+@AutoConfigureDataJpa
+@Disabled //Only run when needed, we don't want any access to internet from build
 public class SslTest {
 
     //Just test that some sites can be visited that used to cause troubles because of SNI
@@ -31,7 +31,7 @@ public class SslTest {
     private ConfigProvider configProvider;
 
     @Test
-    public void shouldBeAbleToAccessSSL() throws Exception {
+    void shouldBeAbleToAccessSSL() throws Exception {
         configProvider.getBaseConfig().getMain().setVerifySsl(false);
 
         IndexerConfig config = new IndexerConfig();

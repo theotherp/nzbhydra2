@@ -1,10 +1,28 @@
 package org.nzbhydra.historystats;
 
 import com.google.common.base.Stopwatch;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
-import org.nzbhydra.historystats.stats.*;
-import org.nzbhydra.indexers.*;
+import org.nzbhydra.historystats.stats.AverageResponseTime;
+import org.nzbhydra.historystats.stats.CountPerDayOfWeek;
+import org.nzbhydra.historystats.stats.CountPerHourOfDay;
+import org.nzbhydra.historystats.stats.DownloadOrSearchSharePerUserOrIp;
+import org.nzbhydra.historystats.stats.DownloadPerAge;
+import org.nzbhydra.historystats.stats.DownloadPerAgeStats;
+import org.nzbhydra.historystats.stats.IndexerApiAccessStatsEntry;
+import org.nzbhydra.historystats.stats.IndexerDownloadShare;
+import org.nzbhydra.historystats.stats.IndexerScore;
+import org.nzbhydra.historystats.stats.StatsRequest;
+import org.nzbhydra.historystats.stats.SuccessfulDownloadsPerIndexer;
+import org.nzbhydra.historystats.stats.UserAgentShare;
+import org.nzbhydra.indexers.Indexer;
+import org.nzbhydra.indexers.IndexerAccessResult;
+import org.nzbhydra.indexers.IndexerApiAccessEntityShortRepository;
+import org.nzbhydra.indexers.IndexerEntity;
+import org.nzbhydra.indexers.IndexerRepository;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.searching.SearchModuleProvider;
 import org.nzbhydra.searching.db.SearchResultRepository;
@@ -16,13 +34,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import java.math.BigInteger;
-import java.util.*;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.*;
+import java.util.OptionalDouble;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("OptionalGetWithoutIsPresent")
@@ -106,26 +133,26 @@ public class Stats {
 
 
         if (statsRequest.isSearchSharesPerUser()) {
-            BigInteger countSearchesWithData = (BigInteger) entityManager.createNativeQuery("SELECT count(*) FROM SEARCH t WHERE t.USERNAME IS NOT NULL").getSingleResult();
+            Long countSearchesWithData = (Long) entityManager.createNativeQuery("SELECT count(*) FROM SEARCH t WHERE t.USERNAME IS NOT NULL").getSingleResult();
             if (countSearchesWithData.intValue() > 0) {
                 futures.add(executor.submit(() -> statsResponse.setSearchSharesPerUser(downloadsOrSearchesPerUserOrIp(statsRequest, "SEARCH", "USERNAME"))));
             }
         }
         if (statsRequest.isDownloadSharesPerUser()) {
-            BigInteger countDownloadsWithData = (BigInteger) entityManager.createNativeQuery("SELECT count(*) FROM INDEXERNZBDOWNLOAD t WHERE t.USERNAME IS NOT NULL").getSingleResult();
-            if (countDownloadsWithData.intValue() > 0) {
+            Long countDownloadsWithData = (Long) entityManager.createNativeQuery("SELECT count(*) FROM INDEXERNZBDOWNLOAD t WHERE t.USERNAME IS NOT NULL").getSingleResult();
+            if (countDownloadsWithData > 0) {
                 futures.add(executor.submit(() -> statsResponse.setDownloadSharesPerUser(downloadsOrSearchesPerUserOrIp(statsRequest, "INDEXERNZBDOWNLOAD", "USERNAME"))));
             }
         }
         if (statsRequest.isSearchSharesPerIp()) {
-            BigInteger countSearchesWithData = (BigInteger) entityManager.createNativeQuery("SELECT count(*) FROM SEARCH t WHERE t.IP IS NOT NULL").getSingleResult();
-            if (countSearchesWithData.intValue() > 0) {
+            Long countSearchesWithData = (Long) entityManager.createNativeQuery("SELECT count(*) FROM SEARCH t WHERE t.IP IS NOT NULL").getSingleResult();
+            if (countSearchesWithData > 0) {
                 futures.add(executor.submit(() -> statsResponse.setSearchSharesPerIp(downloadsOrSearchesPerUserOrIp(statsRequest, "SEARCH", "IP"))));
             }
         }
         if (statsRequest.isDownloadSharesPerIp()) {
-            BigInteger countDownloadsWithData = (BigInteger) entityManager.createNativeQuery("SELECT count(*) FROM INDEXERNZBDOWNLOAD t WHERE t.IP IS NOT NULL").getSingleResult();
-            if (countDownloadsWithData.intValue() > 0) {
+            Long countDownloadsWithData = (Long) entityManager.createNativeQuery("SELECT count(*) FROM INDEXERNZBDOWNLOAD t WHERE t.IP IS NOT NULL").getSingleResult();
+            if (countDownloadsWithData > 0) {
                 futures.add(executor.submit(() -> statsResponse.setDownloadSharesPerIp(downloadsOrSearchesPerUserOrIp(statsRequest, "INDEXERNZBDOWNLOAD", "IP"))));
             }
         }
@@ -193,8 +220,8 @@ public class Stats {
             if (!indexerNamesToInclude.contains(indexerName)) {
                 continue;
             }
-            long total = ((BigInteger) resultSet[1]).longValue();
-            long countAll = ((BigInteger) resultSet[2]).longValue();
+            long total = ((Long) resultSet[1]).longValue();
+            long countAll = ((Long) resultSet[2]).longValue();
             float share = total > 0 ? (100F / ((float) countAll / total)) : 0F;
             indexerDownloadShares.add(new IndexerDownloadShare(indexerName, total, share));
         }
@@ -219,7 +246,7 @@ public class Stats {
         Query query = entityManager.createNativeQuery(sql);
         List resultList = query.getResultList();
         Set<String> indexerNamesToInclude = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().getState() == IndexerConfig.State.ENABLED || statsRequest.isIncludeDisabled()).map(Indexer::getName).collect(Collectors.toSet());
-        OptionalDouble overallAverage = resultList.stream().filter(x -> ((Object[]) x)[1] != null).mapToLong(x -> ((BigInteger) ((Object[]) x)[1]).longValue()).average();
+        OptionalDouble overallAverage = resultList.stream().filter(x -> ((Object[]) x)[1] != null).mapToLong(x -> ((BigDecimal) ((Object[]) x)[1]).longValue()).average();
 
         for (Object result : resultList) {
             Object[] resultSet = (Object[]) result;
@@ -228,7 +255,7 @@ public class Stats {
             if (resultSet[0] == null || resultSet[1] == null || !indexerNamesToInclude.contains(indexerName)) {
                 continue;
             }
-            long averageResponseTime = ((BigInteger) resultSet[1]).longValue();
+            long averageResponseTime = ((BigDecimal) resultSet[1]).longValue();
             averageResponseTimes.add(new AverageResponseTime(indexerName, averageResponseTime, averageResponseTime - overallAverage.orElse(0D)));
         }
         logger.debug(LoggingMarkers.PERFORMANCE, "Calculated average response times for indexers. Took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
@@ -244,7 +271,7 @@ public class Stats {
         logger.debug("Calculating indexer result uniqueness scores");
 
         List<SearchModuleType> typesToUse = Arrays.asList(SearchModuleType.NEWZNAB, SearchModuleType.TORZNAB, SearchModuleType.ANIZB);
-        final Set<String> indexersToInclude = (statsRequest.isIncludeDisabled() ? searchModuleProvider.getIndexers() : searchModuleProvider.getEnabledIndexers().stream().filter(x -> typesToUse.contains(x.getConfig().getSearchModuleType())).collect(Collectors.toList())).stream().map(Indexer::getName).collect(Collectors.toSet());
+        final Set<String> indexersToInclude = (statsRequest.isIncludeDisabled() ? searchModuleProvider.getIndexers() : searchModuleProvider.getEnabledIndexers().stream().filter(x -> typesToUse.contains(x.getConfig().getSearchModuleType())).toList()).stream().map(Indexer::getName).collect(Collectors.toSet());
 
         List<IndexerScore> indexerUniquenessScores = calculateIndexerScores(indexersToInclude, uniquenessScoreEntityRepository.findAll());
         logger.debug(LoggingMarkers.PERFORMANCE, "Calculated indexer result uniqueness scores. Took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
@@ -306,7 +333,7 @@ public class Stats {
             if (!indexerIdsToInclude.contains(indexerId)) {
                 continue;
             }
-            Double avg = (Double) array[1];
+            Double avg = ((BigDecimal) array[1]).doubleValue();
             accessesPerDayCountMap.put(indexerId, avg);
         }
         logger.debug(LoggingMarkers.PERFORMANCE, "Calculating accesses per day took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
@@ -335,7 +362,7 @@ public class Stats {
                 continue;
             }
             String result = (String) array[1];
-            int count = ((BigInteger) array[2]).intValue();
+            int count = ((Long) array[2]).intValue();
             if (result.equals(IndexerAccessResult.SUCCESSFUL.name())) {
                 successCountMap.put(indexerId, count);
             } else if (result.equals(IndexerAccessResult.CONNECTION_ERROR.name())) {
@@ -402,7 +429,7 @@ public class Stats {
 
             //want      6   0   1   2   3   4   5
             //          S   M   T   W   T   F   S
-            BigInteger counter = (BigInteger) resultSet[1];
+            Long counter = (Long) resultSet[1];
             int indexInList = (index + 5) % 7;
             dayOfWeekCounts.get(indexInList).setCount(counter.intValue());
         }
@@ -430,7 +457,7 @@ public class Stats {
         for (Object o : resultList) {
             Object[] o2 = (Object[]) o;
             Integer index = (Integer) o2[0];
-            BigInteger counter = (BigInteger) o2[1];
+            Long counter = (Long) o2[1];
             hourOfDayCounts.get(index).setCount(counter.intValue());
         }
 
@@ -486,17 +513,17 @@ public class Stats {
             if (!indexerNamesToInclude.contains(indexerName)) {
                 continue;
             }
-            BigInteger countAll = (BigInteger) o2[1];
-            BigInteger countSuccess = (BigInteger) o2[2];
-            BigInteger countError = (BigInteger) o2[3];
+            Long countAll = (Long) o2[1];
+            Long countSuccess = (Long) o2[2];
+            Long countError = (Long) o2[3];
             if (countAll == null) {
-                countAll = BigInteger.ZERO;
+                countAll = 0L;
             }
             if (countSuccess == null) {
-                countSuccess = BigInteger.ZERO;
+                countSuccess = 0L;
             }
             if (countError == null) {
-                countError = BigInteger.ZERO;
+                countError = 0L;
             }
 
             Float percentSuccessful;
@@ -536,8 +563,8 @@ public class Stats {
         for (Object o : resultList) {
             Object[] o2 = (Object[]) o;
             String usernameOrIp = (String) o2[0];
-            int countForUser = ((BigInteger) o2[1]).intValue();
-            float percentSuccessful = 100F / (((BigInteger) o2[2]).floatValue() / ((BigInteger) o2[1]).floatValue());
+            int countForUser = ((Long) o2[1]).intValue();
+            float percentSuccessful = 100F / (((Long) o2[2]).floatValue() / ((Long) o2[1]).floatValue());
             result.add(new DownloadOrSearchSharePerUserOrIp(usernameOrIp, countForUser, percentSuccessful));
         }
         result.sort(Comparator.comparingDouble(DownloadOrSearchSharePerUserOrIp::getPercentage).reversed());
@@ -563,7 +590,7 @@ public class Stats {
         for (Object o : resultList) {
             Object[] o2 = (Object[]) o;
             String userAgent = (String) o2[0];
-            int countForUserAgent = ((BigInteger) o2[1]).intValue();
+            int countForUserAgent = ((Long) o2[1]).intValue();
             countAll += countForUserAgent;
             result.add(new UserAgentShare(userAgent, countForUserAgent));
         }
@@ -594,7 +621,7 @@ public class Stats {
         for (Object o : resultList) {
             Object[] o2 = (Object[]) o;
             String userAgent = (String) o2[0];
-            int countForUserAgent = ((BigInteger) o2[1]).intValue();
+            int countForUserAgent = ((Long) o2[1]).intValue();
             countAll += countForUserAgent;
             result.add(new UserAgentShare(userAgent, countForUserAgent));
         }
@@ -610,15 +637,16 @@ public class Stats {
     List<DownloadPerAge> downloadsPerAge() {
         Stopwatch stopwatch = Stopwatch.createStarted();
         logger.debug("Calculating downloads per age");
-        String sql = "SELECT\n" +
-            "  steps,\n" +
-            "  count(*)\n" +
-            "FROM\n" +
-            "  (SELECT age / 100 AS steps\n" +
-            "   FROM INDEXERNZBDOWNLOAD\n" +
-            "   WHERE age IS NOT NULL)\n" +
-            "GROUP BY steps\n" +
-            "ORDER BY steps ASC";
+        String sql = """
+            SELECT
+              steps,
+              count(*)
+            FROM
+              (SELECT age / 100 AS steps
+               FROM INDEXERNZBDOWNLOAD
+               WHERE age IS NOT NULL)
+            GROUP BY steps
+            ORDER BY steps ASC""";
         Query query = entityManager.createNativeQuery(sql);
         List resultList = query.getResultList();
         List<DownloadPerAge> results = new ArrayList<>();
@@ -626,7 +654,7 @@ public class Stats {
         for (Object o : resultList) {
             Object[] o2 = (Object[]) o;
             int ageStep = (Integer) o2[0];
-            int count = ((BigInteger) o2[1]).intValue();
+            int count = ((Long) o2[1]).intValue();
             agesAndCountsMap.put(ageStep, count);
         }
         for (int i = 0; i <= 34; i += 1) {
@@ -647,20 +675,22 @@ public class Stats {
         Stopwatch stopwatch = Stopwatch.createStarted();
         logger.debug("Calculating downloads per age percentages");
         DownloadPerAgeStats result = new DownloadPerAgeStats();
-        String percentage = "SELECT CASE\n" +
-            "       WHEN (SELECT CAST(COUNT(*) AS FLOAT) AS COUNT\n" +
-            "             FROM INDEXERNZBDOWNLOAD\n" +
-            "             WHERE AGE > %d) > 0\n" +
-            "         THEN SELECT CAST(100 AS FLOAT) / (CAST(COUNT(i.*) AS FLOAT)/ x.COUNT)\n" +
-            "FROM INDEXERNZBDOWNLOAD i,\n" +
-            "( SELECT COUNT(*) AS COUNT\n" +
-            "FROM INDEXERNZBDOWNLOAD\n" +
-            "WHERE AGE > %d) AS x\n" +
-            "ELSE 0 END";
-        result.setPercentOlder1000(((Double) entityManager.createNativeQuery(String.format(percentage, 1000, 1000)).getResultList().get(0)).intValue());
-        result.setPercentOlder2000(((Double) entityManager.createNativeQuery(String.format(percentage, 2000, 2000)).getResultList().get(0)).intValue());
-        result.setPercentOlder3000(((Double) entityManager.createNativeQuery(String.format(percentage, 3000, 3000)).getResultList().get(0)).intValue());
-        result.setAverageAge((Integer) entityManager.createNativeQuery("SELECT AVG(AGE) FROM INDEXERNZBDOWNLOAD").getResultList().get(0));
+        String percentage = """
+            SELECT CASE
+                   WHEN (SELECT CAST(COUNT(*) AS FLOAT) AS COUNT
+                         FROM INDEXERNZBDOWNLOAD
+                         WHERE AGE > %d) > 0
+                     THEN SELECT CAST(100 AS FLOAT) / (CAST(COUNT(i.*) AS FLOAT)/ x.COUNT)
+            FROM INDEXERNZBDOWNLOAD i,
+            ( SELECT COUNT(*) AS COUNT
+            FROM INDEXERNZBDOWNLOAD
+            WHERE AGE > %d) AS x
+            ELSE 0 END""";
+        result.setPercentOlder1000(((BigDecimal) entityManager.createNativeQuery(String.format(percentage, 1000, 1000)).getResultList().get(0)).intValue());
+        result.setPercentOlder2000(((BigDecimal) entityManager.createNativeQuery(String.format(percentage, 2000, 2000)).getResultList().get(0)).intValue());
+        result.setPercentOlder3000(((BigDecimal) entityManager.createNativeQuery(String.format(percentage, 3000, 3000)).getResultList().get(0)).intValue());
+        final Double averageAge = (Double) entityManager.createNativeQuery("SELECT AVG(AGE) FROM INDEXERNZBDOWNLOAD").getResultList().get(0);
+        result.setAverageAge(averageAge == null ? 0 : averageAge.intValue());
         logger.debug(LoggingMarkers.PERFORMANCE, "Calculated downloads per age percentages . Took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
         result.setDownloadsPerAge(downloadsPerAge());

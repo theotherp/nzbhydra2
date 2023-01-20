@@ -20,10 +20,13 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
+import jakarta.persistence.EntityNotFoundException;
 import net.jodah.expiringmap.ExpirationPolicy;
 import net.jodah.expiringmap.ExpiringMap;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.SearchSource;
+import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.config.downloading.DownloaderConfig;
 import org.nzbhydra.config.downloading.FileDownloadAccessType;
 import org.nzbhydra.config.downloading.NzbAddingType;
@@ -41,16 +44,12 @@ import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.notifications.DownloadCompletionNotificationEvent;
 import org.nzbhydra.searching.db.SearchResultEntity;
 import org.nzbhydra.searching.db.SearchResultRepository;
-import org.nzbhydra.searching.dtoseventsenums.SearchResultItem.DownloadType;
-import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityNotFoundException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -78,19 +77,22 @@ public abstract class Downloader {
     }
 
 
-    @Autowired
     protected FileHandler nzbHandler;
-    @Autowired
     protected SearchResultRepository searchResultRepository;
-    @Autowired
-    private ApplicationEventPublisher applicationEventPublisher;
-    @Autowired
-    private IndexerSpecificDownloadExceptions indexerSpecificDownloadExceptions;
-    @Autowired
-    private ConfigProvider configProvider;
+    private final ApplicationEventPublisher applicationEventPublisher;
+    private final IndexerSpecificDownloadExceptions indexerSpecificDownloadExceptions;
+    protected final ConfigProvider configProvider;
 
     protected DownloaderConfig downloaderConfig;
     protected List<Long> downloadRates = new ArrayList<>();
+
+    public Downloader(FileHandler nzbHandler, SearchResultRepository searchResultRepository, ApplicationEventPublisher applicationEventPublisher, IndexerSpecificDownloadExceptions indexerSpecificDownloadExceptions, ConfigProvider configProvider) {
+        this.nzbHandler = nzbHandler;
+        this.searchResultRepository = searchResultRepository;
+        this.applicationEventPublisher = applicationEventPublisher;
+        this.indexerSpecificDownloadExceptions = indexerSpecificDownloadExceptions;
+        this.configProvider = configProvider;
+    }
 
     public void initialize(DownloaderConfig downloaderConfig) {
         this.downloaderConfig = downloaderConfig;
@@ -129,18 +131,18 @@ public abstract class Downloader {
                     categoryToSend = category;
                 }
 
-                SearchResultEntity searchResult = null;
                 Optional<SearchResultEntity> optionalResult = searchResultRepository.findById(guid);
-                if (!optionalResult.isPresent()) {
+                if (optionalResult.isEmpty()) {
                     logger.error("Download request with invalid/outdated GUID {}", guid);
                     throw new InvalidSearchResultIdException(guid, true);
                 }
+                final SearchResultEntity searchResult = optionalResult.get();
+                final String searchResultTitle = optionalResult.get().getTitle();
                 final IndexerConfig indexerConfig = configProvider.getIndexerByName(optionalResult.get().getIndexer().getName());
                 try {
                     final FileDownloadAccessType accessTypeForIndexer = indexerSpecificDownloadExceptions.getAccessTypeForIndexer(indexerConfig, configProvider.getBaseConfig().getDownloading().getNzbAccessType());
                     if (addingType == NzbAddingType.UPLOAD && accessTypeForIndexer == FileDownloadAccessType.PROXY) {
                         DownloadResult result = nzbHandler.getFileByResult(FileDownloadAccessType.PROXY, SearchSource.INTERNAL, optionalResult.get()); //Uploading NZBs can only be done via proxying
-                        searchResult = result.getDownloadEntity().getSearchResult();
                         if (result.isSuccessful()) {
                             String externalId = addNzb(result.getContent(), result.getTitle(), categoryToSend);
                             result.getDownloadEntity().setExternalId(externalId);
@@ -150,8 +152,7 @@ public abstract class Downloader {
                             missedNzbs.add(searchResult);
                         }
                     } else {
-                        searchResult = searchResultRepository.getById(guid);
-                        String externalId = addLink(nzbHandler.getDownloadLinkForSendingToDownloader(guid, false, DownloadType.NZB), searchResult.getTitle(), categoryToSend);
+                        String externalId = addLink(nzbHandler.getDownloadLinkForSendingToDownloader(guid, false, DownloadType.NZB), searchResultTitle, categoryToSend);
                         guidExternalIds.put(guid, externalId);
                         addedNzbs.add(guid);
                     }

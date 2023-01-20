@@ -18,6 +18,7 @@ package org.nzbhydra.web;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Strings;
+import jakarta.servlet.http.HttpServletRequest;
 import net.jodah.expiringmap.ExpirationPolicy;
 import net.jodah.expiringmap.ExpiringMap;
 import org.nzbhydra.debuginfos.DebugInfosProvider;
@@ -32,7 +33,6 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.servlet.http.HttpServletRequest;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -42,7 +42,6 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Component
@@ -179,10 +178,10 @@ public class UrlCalculator {
         try {
             InetAddress candidateAddress = null;
             final List<NetworkInterface> networkInterfaces = Collections.list(NetworkInterface.getNetworkInterfaces()).stream()
-                    .filter(i -> Stream.of("VirtualBox", "Hyper-V", "Bluetooth", "Miniport").noneMatch(name -> i.getDisplayName() != null && i.getDisplayName().contains(name)))
-                    .filter(i -> i.getInetAddresses().hasMoreElements())
-                    .filter(i -> !(i.getInetAddresses().nextElement() instanceof Inet6Address))
-                    .collect(Collectors.toList());
+                .filter(i -> Stream.of("VirtualBox", "Hyper-V", "Bluetooth", "Miniport").noneMatch(name -> i.getDisplayName() != null && i.getDisplayName().contains(name)))
+                .filter(i -> i.getInetAddresses().hasMoreElements())
+                .filter(i -> !(i.getInetAddresses().nextElement() instanceof Inet6Address))
+                .toList();
             for (NetworkInterface iface : networkInterfaces) {
 
                 for (Enumeration inetAddrs = iface.getInetAddresses(); inetAddrs.hasMoreElements(); ) {

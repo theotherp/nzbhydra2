@@ -2,33 +2,44 @@ package org.nzbhydra.indexers;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Throwables;
+import dev.failsafe.Failsafe;
+import dev.failsafe.RetryPolicy;
+import dev.failsafe.function.CheckedSupplier;
 import joptsimple.internal.Strings;
-import net.jodah.failsafe.Failsafe;
-import net.jodah.failsafe.RetryPolicy;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.nzbhydra.config.BaseConfigHandler;
+import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.exceptions.IndexerParsingException;
 import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
+import org.nzbhydra.indexers.status.IndexerLimitRepository;
+import org.nzbhydra.mediainfo.InfoProvider;
+import org.nzbhydra.searching.CategoryProvider;
+import org.nzbhydra.searching.CustomQueryAndTitleMappingHandler;
+import org.nzbhydra.searching.SearchResultAcceptor;
 import org.nzbhydra.searching.SearchResultAcceptor.AcceptorResult;
+import org.nzbhydra.searching.db.SearchResultRepository;
 import org.nzbhydra.searching.dtoseventsenums.IndexerSearchResult;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
-import org.nzbhydra.searching.dtoseventsenums.SearchResultItem.DownloadType;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem.HasNfo;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -38,11 +49,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-@Component
 public class Binsearch extends Indexer<String> {
 
     private static final Logger logger = LoggerFactory.getLogger(Binsearch.class);
@@ -56,7 +65,14 @@ public class Binsearch extends Indexer<String> {
     private static final DateTimeFormatter DATE_TIME_FORMATTER = new DateTimeFormatterBuilder().appendPattern("dd-MMM-yyyy").parseDefaulting(ChronoField.NANO_OF_DAY, 0).toFormatter().withZone(ZoneId.of("UTC")).withLocale(Locale.ENGLISH);
     private static final Pattern NFO_PATTERN = Pattern.compile("<pre>(?<nfo>.*)<\\/pre>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
-    private final RetryPolicy retry503policy = new RetryPolicy().retryOn(x -> x instanceof IndexerAccessException && Throwables.getStackTraceAsString(x).contains("503")).withDelay(500, TimeUnit.MILLISECONDS).withMaxRetries(2);
+    private final RetryPolicy<Object> retry503policy = RetryPolicy.builder()
+        .handleIf(x -> x instanceof IndexerAccessException && Throwables.getStackTraceAsString(x).contains("503"))
+        .withDelay(Duration.ofMillis(500))
+        .withMaxRetries(2).build();
+
+    public Binsearch(ConfigProvider configProvider, IndexerRepository indexerRepository, SearchResultRepository searchResultRepository, IndexerApiAccessRepository indexerApiAccessRepository, IndexerApiAccessEntityShortRepository indexerApiAccessShortRepository, IndexerLimitRepository indexerStatusRepository, IndexerWebAccess indexerWebAccess, SearchResultAcceptor resultAcceptor, CategoryProvider categoryProvider, InfoProvider infoProvider, ApplicationEventPublisher eventPublisher, QueryGenerator queryGenerator, CustomQueryAndTitleMappingHandler titleMapping, BaseConfigHandler baseConfigHandler) {
+        super(configProvider, indexerRepository, searchResultRepository, indexerApiAccessRepository, indexerApiAccessShortRepository, indexerStatusRepository, indexerWebAccess, resultAcceptor, categoryProvider, infoProvider, eventPublisher, queryGenerator, titleMapping, baseConfigHandler);
+    }
 
 
     //LATER It's not ideal that currently the web response needs to be parsed twice, once for the search results and once for the completion of the indexer search result. Will need to check how much that impacts performance
@@ -88,7 +104,6 @@ public class Binsearch extends Indexer<String> {
     }
 
 
-    @SuppressWarnings("ConstantConditions")
     @Override
     protected List<SearchResultItem> getSearchResultItems(String searchRequestResponse, SearchRequest searchRequest) throws IndexerParsingException {
         List<SearchResultItem> items = new ArrayList<>();
@@ -154,28 +169,18 @@ public class Binsearch extends Indexer<String> {
         Matcher posterMatcher = POSTER_PATTERN.matcher(collectionLink); //e.g. Ramer%40marmer.com+%28Clown_nez%29
         if (posterMatcher.find()) {
             String poster = posterMatcher.group(1).trim();
-            try {
-                poster = URLDecoder.decode(poster, "UTF-8").replace("+", " ");
-                item.setPoster(poster);
-            } catch (UnsupportedEncodingException e) {
-                debug("Unable to decode poster {}", poster);
-            }
+            poster = URLDecoder.decode(poster, StandardCharsets.UTF_8).replace("+", " ");
+            item.setPoster(poster);
         }
 
         Matcher sizeMatcher = SIZE_PATTERN.matcher(infoElement.ownText());
         if (sizeMatcher.find()) {
-            Float size = Float.valueOf(sizeMatcher.group("size"));
+            Float size = Float.parseFloat(sizeMatcher.group("size"));
             String unit = sizeMatcher.group("unit");
             switch (unit) {
-                case "GB":
-                    size = size * 1000 * 1000 * 1000;
-                    break;
-                case "MB":
-                    size = size * 1000 * 1000;
-                    break;
-                case "KB":
-                    size = size * 1000;
-                    break;
+                case "GB" -> size = size * 1000 * 1000 * 1000;
+                case "MB" -> size = size * 1000 * 1000;
+                case "KB" -> size = size * 1000;
             }
             item.setSize(size.longValue());
         } else {
@@ -250,8 +255,13 @@ public class Binsearch extends Indexer<String> {
     @Override
     protected String getAndStoreResultToDatabase(URI uri, IndexerApiAccessType apiAccessType) throws IndexerAccessException {
         return Failsafe.with(retry503policy)
-                .onFailedAttempt(throwable -> logger.warn("Encountered 503 error. Will retry"))
-                .get(() -> getAndStoreResultToDatabase(uri, String.class, apiAccessType));
+            .onFailure(throwable -> logger.warn("Encountered 503 error. Will retry"))
+            .get(new CheckedSupplier<>() {
+                @Override
+                public String get() throws Throwable {
+                    return getAndStoreResultToDatabase(uri, String.class, apiAccessType);
+                }
+            });
     }
 
     @Override
@@ -261,7 +271,7 @@ public class Binsearch extends Indexer<String> {
 
     @Component
     @Order(2000)
-    public static class NewznabHandlingStrategy implements IndexerHandlingStrategy {
+    public static class NewznabHandlingStrategy implements IndexerHandlingStrategy<Binsearch> {
 
         @Override
         public boolean handlesIndexerConfig(IndexerConfig config) {
@@ -269,8 +279,8 @@ public class Binsearch extends Indexer<String> {
         }
 
         @Override
-        public Class<? extends Indexer> getIndexerClass() {
-            return Binsearch.class;
+        public String getName() {
+            return "BINSEARCH";
         }
     }
 }

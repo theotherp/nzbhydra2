@@ -1,5 +1,6 @@
 package org.nzbhydra.web;
 
+import org.nzbhydra.config.BaseConfigHandler;
 import org.nzbhydra.config.ConfigProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +18,8 @@ public class WelcomeWeb {
 
     @Autowired
     private ConfigProvider configProvider;
+    @Autowired
+    private BaseConfigHandler baseConfigHandler;
 
     private static final Logger logger = LoggerFactory.getLogger(WelcomeWeb.class);
 
@@ -31,7 +34,7 @@ public class WelcomeWeb {
     public void setWelcomeShown() throws IOException {
         logger.debug("Welcome screen was shown");
         configProvider.getBaseConfig().getMain().setWelcomeShown(true);
-        configProvider.getBaseConfig().save(true);
+        baseConfigHandler.save(true);
     }
 
 }

@@ -1,16 +1,19 @@
 package org.nzbhydra.config;
 
+import jakarta.servlet.http.HttpSession;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.FileSystemBrowser.DirectoryListingRequest;
 import org.nzbhydra.config.FileSystemBrowser.FileSystemEntry;
-import org.nzbhydra.config.ValidatingConfig.ConfigValidationResult;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.safeconfig.SafeConfig;
+import org.nzbhydra.config.validation.BaseConfigValidator;
+import org.nzbhydra.config.validation.ConfigValidationResult;
 import org.nzbhydra.indexers.IndexerEntity;
 import org.nzbhydra.indexers.IndexerRepository;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.nzbhydra.web.UrlCalculator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +28,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -48,18 +50,22 @@ public class ConfigWeb {
     private UrlCalculator urlCalculator;
     @Autowired
     private IndexerRepository indexerRepository;
+    @Autowired
+    private BaseConfigValidator baseConfigValidator;
+    @Autowired
+    private BaseConfigHandler baseConfigHandler;
     private final ConfigReaderWriter configReaderWriter = new ConfigReaderWriter();
 
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/config", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public BaseConfig getConfig(HttpSession session) throws IOException {
-        return configReaderWriter.loadSavedConfig().updateAfterLoading();
+        final BaseConfig baseConfig = configReaderWriter.loadSavedConfig();
+        return baseConfigValidator.updateAfterLoading(baseConfig);
     }
 
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/config", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ConfigValidationResult setConfig(@RequestBody BaseConfig newConfig) throws IOException {
-
         for (PropertySource<?> source : environment.getPropertySources()) {
             Set propertyNames = new HashSet();
             if (source.getSource() instanceof Properties) {
@@ -74,13 +80,13 @@ public class ConfigWeb {
         }
 
         logger.info("Received new config");
-        newConfig = newConfig.prepareForSaving(configProvider.getBaseConfig());
-        ConfigValidationResult result = newConfig.validateConfig(configProvider.getBaseConfig(), newConfig, newConfig);
+        newConfig = baseConfigValidator.prepareForSaving(configProvider.getBaseConfig(), newConfig);
+        ConfigValidationResult result = baseConfigValidator.validateConfig(configProvider.getBaseConfig(), newConfig, newConfig);
         if (result.isOk()) {
             handleRenamedIndexers(newConfig);
 
-            configProvider.getBaseConfig().replace(newConfig);
-            configProvider.getBaseConfig().save(true);
+            baseConfigHandler.replace(newConfig);
+            baseConfigHandler.save(true);
             result.setNewConfig(configProvider.getBaseConfig());
         }
         return result;
@@ -120,7 +126,7 @@ public class ConfigWeb {
     public GenericResponse reloadConfig() throws IOException {
         logger.info("Reloading config from file");
         try {
-            configProvider.getBaseConfig().load();
+            baseConfigHandler.load();
         } catch (IOException e) {
             return new GenericResponse(false, e.getMessage());
         }
@@ -150,6 +156,7 @@ public class ConfigWeb {
     }
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     private static class ApiHelpResponse {

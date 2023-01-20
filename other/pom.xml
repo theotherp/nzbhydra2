@@ -6,34 +6,19 @@
 
     <groupId>org.nzbhydra</groupId>
     <artifactId>other</artifactId>
-    <version>1.0.0</version>
+    <version>3.0.0</version>
     <packaging>pom</packaging>
 
     <modules>
         <module>mockserver</module>
         <module>sockslib</module>
         <module>github-release-plugin</module>
-        <module>discordbot</module>
     </modules>
 
     <properties>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
     </properties>
 
-    <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <configuration>
-                        <source>1.8</source>
-                        <target>1.8</target>
-                    </configuration>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-    </build>
 
 </project>

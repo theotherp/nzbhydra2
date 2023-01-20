@@ -1,5 +1,5 @@
 /*
- *  (C) Copyright 2017 TheOtherP (theotherp@posteo.net)
+ *  (C) Copyright 2023 TheOtherP (theotherp@posteo.net)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,22 +16,28 @@
 
 package org.nzbhydra.searching.db;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.SequenceGenerator;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.nzbhydra.springnative.ReflectionMarker;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import java.util.Objects;
 
 
 @Data
+@ReflectionMarker
 @Entity
 @NoArgsConstructor
-public class IdentifierKeyValuePair {
+public final class IdentifierKeyValuePair {
 
     @Id
     @GeneratedValue
+    @JsonIgnore
+    @SequenceGenerator(allocationSize = 1, name = "IDENTIFIER_KEY_VALUE_PAIR_SEQ")
     private Integer id;
 
     public IdentifierKeyValuePair(String identifierKey, String identifierValue) {

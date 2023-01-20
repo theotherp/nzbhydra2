@@ -18,7 +18,6 @@ package org.nzbhydra.config.migration;
 
 import java.util.Map;
 
-@SuppressWarnings("unchecked")
 public class ConfigMigrationStep010to011 implements ConfigMigrationStep {
 
     @Override

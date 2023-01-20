@@ -16,21 +16,23 @@
 
 package org.nzbhydra.mapping.newznab.xml.caps;
 
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlAttribute;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.nzbhydra.springnative.ReflectionMarker;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
 import java.util.ArrayList;
 import java.util.List;
 
 @XmlRootElement(name = "category")
 @XmlAccessorType(XmlAccessType.FIELD)
 @Data
+@ReflectionMarker
 @AllArgsConstructor
 @NoArgsConstructor
 public class CapsXmlCategory {

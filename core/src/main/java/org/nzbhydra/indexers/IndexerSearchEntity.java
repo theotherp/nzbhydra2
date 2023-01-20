@@ -1,22 +1,31 @@
 package org.nzbhydra.indexers;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
 import lombok.Data;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.nzbhydra.searching.db.SearchEntity;
+import org.nzbhydra.springnative.ReflectionMarker;
 
-import javax.persistence.*;
 import java.util.Objects;
-import java.util.Random;
 
 
 @Data
+@ReflectionMarker
 @Entity
 @Table(name = "indexersearch", indexes = {@Index(name = "ISINDEX1", columnList = "INDEXER_ENTITY_ID"), @Index(name = "ISINDEX2", columnList = "SEARCH_ENTITY_ID")})
-public class IndexerSearchEntity {
+public final class IndexerSearchEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @SequenceGenerator(allocationSize = 1, name = "INDEXERSEARCH_SEQ")
     private int id;
 
     @ManyToOne
@@ -36,10 +45,10 @@ public class IndexerSearchEntity {
     public IndexerSearchEntity() {
     }
 
-    public IndexerSearchEntity(IndexerEntity indexerEntity, SearchEntity searchEntity) {
+    public IndexerSearchEntity(IndexerEntity indexerEntity, SearchEntity searchEntity, int id) {
         this.indexerEntity = indexerEntity;
         this.searchEntity = searchEntity;
-        this.id = new Random().nextInt();
+        this.id = id;
     }
 
     @Override

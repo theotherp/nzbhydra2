@@ -1,28 +1,28 @@
 package org.nzbhydra.searching.searchrequests;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.nzbhydra.searching.dtoseventsenums.SearchType;
-import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.nzbhydra.config.SearchSource;
+import org.nzbhydra.config.searching.SearchType;
 
-import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SearchRequestTest {
 
     private SearchRequest testee;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         testee = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
     }
 
     @Test
-    public void shouldFindAndRemoveExclusions() {
+    void shouldFindAndRemoveExclusions() {
         testee.setQuery("one two --three --four");
         testee = testee.extractForbiddenWords();
-        assertEquals(2, testee.getInternalData().getForbiddenWords().size());
-        assertEquals("one two", testee.getQuery().get());
+        assertThat(testee.getInternalData().getForbiddenWords()).hasSize(2);
+        assertThat(testee.getQuery().get()).isEqualTo("one two");
         assertTrue(testee.getInternalData().getForbiddenWords().contains("three"));
     }
 

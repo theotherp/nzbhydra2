@@ -1,6 +1,6 @@
 package org.nzbhydra.searching;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 
 import java.time.Instant;
@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class SearchResultItemTest {
 
     @Test
-    public void compareTo() throws Exception {
+    void compareTo() throws Exception {
         Comparator<SearchResultItem> comparator = SearchResultItem.comparator();
         SearchResultItem item1 = new SearchResultItem();
         item1.setPubDate(Instant.now());

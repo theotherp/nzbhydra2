@@ -1,6 +1,7 @@
 package org.nzbhydra.web;
 
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import jakarta.xml.bind.Marshaller;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.api.stats.HistoryRequestConverter;
 import org.nzbhydra.api.stats.StatsRequestConverter;
@@ -34,7 +35,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupp
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 import org.springframework.web.servlet.resource.ResourceUrlProvider;
 
-import javax.xml.bind.Marshaller;
 import javax.xml.transform.stream.StreamResult;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -137,8 +137,7 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
     @Override
     protected void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
         for (HttpMessageConverter<?> converter : converters) {
-            if (converter instanceof MappingJackson2HttpMessageConverter) {
-                MappingJackson2HttpMessageConverter jacksonConverter = (MappingJackson2HttpMessageConverter) converter;
+            if (converter instanceof MappingJackson2HttpMessageConverter jacksonConverter) {
                 jacksonConverter.setPrettyPrint(true);
                 SimpleModule simpleModule = new SimpleModule();
                 simpleModule.addDeserializer(String.class, new EmptyStringToNullDeserializer());

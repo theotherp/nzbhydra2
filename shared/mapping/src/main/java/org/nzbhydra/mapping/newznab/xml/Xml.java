@@ -16,20 +16,21 @@
 
 package org.nzbhydra.mapping.newznab.xml;
 
+import jakarta.xml.bind.JAXB;
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlSeeAlso;
+import jakarta.xml.bind.annotation.XmlTransient;
 import org.nzbhydra.mapping.newznab.NewznabResponse;
+import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlRoot;
 
-import javax.xml.bind.JAXB;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlSeeAlso;
-import javax.xml.bind.annotation.XmlTransient;
 import java.io.IOException;
 import java.io.StringWriter;
 
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlSeeAlso({NewznabXmlError.class, NewznabXmlRoot.class})
+@XmlSeeAlso({NewznabXmlError.class, NewznabXmlRoot.class, CapsXmlRoot.class})
 public abstract class Xml extends NewznabResponse {
 
     @XmlTransient

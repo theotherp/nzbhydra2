@@ -3,11 +3,13 @@ package org.nzbhydra.config.safeconfig;
 import lombok.Data;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.auth.AuthType;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Data
+@ReflectionMarker
 public class SafeConfig {
 
     private SafeCategoriesConfig categoriesConfig;

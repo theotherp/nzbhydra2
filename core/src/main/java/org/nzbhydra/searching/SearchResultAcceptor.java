@@ -6,27 +6,28 @@ import com.google.common.base.Strings;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multiset.Entry;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.SearchSource;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
-import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -39,7 +40,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 @Component
 public class SearchResultAcceptor {
@@ -159,9 +159,9 @@ public class SearchResultAcceptor {
 
             Set<String> messages = new HashSet<>(constraintViolations.size());
             messages.addAll(constraintViolations.stream()
-                    .map(constraintViolation -> String.format("%s value '%s' %s", constraintViolation.getPropertyPath(),
-                            constraintViolation.getInvalidValue(), constraintViolation.getMessage()))
-                    .collect(Collectors.toList()));
+                .map(constraintViolation -> String.format("%s value '%s' %s", constraintViolation.getPropertyPath(),
+                    constraintViolation.getInvalidValue(), constraintViolation.getMessage()))
+                .toList());
             logger.error("Coding error: SearchResultItem validation messages: {}", Joiner.on(" ").join(messages));
             reasonsForRejection.add("Important data could not be mapped from the indexers returned response");
             return false;
@@ -179,7 +179,7 @@ public class SearchResultAcceptor {
     }
 
     protected boolean checkForCategoryShouldBeIgnored(SearchRequest searchRequest, Multiset<String> reasonsForRejection, SearchResultItem item) {
-        if (item.getCategory().getIgnoreResultsFrom().meets(searchRequest)) {
+        if (searchRequest.meets(item.getCategory().getIgnoreResultsFrom())) {
             logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "{} is in forbidden category {}", item.getTitle(), item.getCategory().getName());
             reasonsForRejection.add("In forbidden category");
             return false;
@@ -397,6 +397,7 @@ public class SearchResultAcceptor {
     }
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     public static class AcceptorResult {

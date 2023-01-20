@@ -21,8 +21,7 @@ public class ListOrStringToStringDeserializer extends JsonDeserializer<List<Stri
         if (value instanceof String && Strings.isNullOrEmpty((String) value)) {
             return new ArrayList<>();
         }
-        if (value instanceof String && !Strings.isNullOrEmpty((String) value)) {
-            String string = (String) value;
+        if (value instanceof String string && !Strings.isNullOrEmpty((String) value)) {
             List<String> result = new ArrayList<>();
             if (!string.contains(",")) {
                 result.add(string);

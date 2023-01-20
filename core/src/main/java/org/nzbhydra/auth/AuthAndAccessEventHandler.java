@@ -1,5 +1,8 @@
 package org.nzbhydra.auth;
 
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.nzbhydra.notifications.AuthFailureNotificationEvent;
 import org.nzbhydra.web.SessionStorage;
 import org.slf4j.Logger;
@@ -17,9 +20,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Controller
@@ -69,7 +69,7 @@ public class AuthAndAccessEventHandler extends AccessDeniedHandlerImpl {
 
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException, ServletException {
-        logger.warn("Access denied to IP {}: {}", SessionStorage.IP.get(), accessDeniedException.getMessage());
+        logger.warn("Access denied to IP {}: {}. Request path: {}. Parameters: {}", SessionStorage.IP.get(), accessDeniedException.getMessage(), request.getContextPath(), request.getParameterMap());
         attemptService.accessFailed(SessionStorage.IP.get());
         super.handle(request, response, accessDeniedException);
     }

@@ -16,22 +16,21 @@
 
 package org.nzbhydra.web;
 
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import jakarta.servlet.http.HttpServletRequest;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.servlet.http.HttpServletRequest;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 //Doesn't work anymore after moving to spring boot 2.2 (See #506)
-@Ignore
+@Disabled
 public class UrlCalculatorTest {
 
     @Mock
@@ -42,13 +41,13 @@ public class UrlCalculatorTest {
     private UrlCalculator testee = new UrlCalculator();
 
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
     }
 
     @Test
-    public void shouldReturnNewBuilderEachTime() {
+    void shouldReturnNewBuilderEachTime() {
         prepareConfig(false, false, "/");
         prepareHeaders("127.0.0.1:5076", null, null, null);
         prepareServlet("http://127.0.0.1:5076", "127.0.0.1", 5076, "http", "/");
@@ -64,7 +63,7 @@ public class UrlCalculatorTest {
 
 
     @Test
-    public void shouldBuildCorrectlyForLocalAccessWithHttp() {
+    void shouldBuildCorrectlyForLocalAccessWithHttp() {
         prepareConfig(false, false, "/");
         prepareHeaders("127.0.0.1:5076", null, null, null);
         prepareServlet("http://127.0.0.1:5076", "127.0.0.1", 5076, "http", "/");
@@ -77,7 +76,7 @@ public class UrlCalculatorTest {
     }
 
     @Test
-    public void shouldBuildCorrectlyForLocalAccessWithContextPath() {
+    void shouldBuildCorrectlyForLocalAccessWithContextPath() {
         prepareConfig(false, false, "/nzbhydra2");
         prepareHeaders("127.0.0.1:5076", null, null, null);
         prepareServlet("http://127.0.0.1:5076", "127.0.0.1", 5076, "http", "/nzbhydra2");
@@ -91,7 +90,7 @@ public class UrlCalculatorTest {
 
 
     @Test
-    public void shouldBuildCorrectlyForLocalAccessWithBindAllAccessedViaLocalhost() {
+    void shouldBuildCorrectlyForLocalAccessWithBindAllAccessedViaLocalhost() {
         prepareConfig(false, true, "/");
         prepareHeaders("127.0.0.1:5076", null, null, null);
         prepareServlet("http://127.0.0.1:5076", "127.0.0.1", 5076, "http", "/");
@@ -104,7 +103,7 @@ public class UrlCalculatorTest {
     }
 
     @Test
-    public void shouldBuildCorrectlyForLocalAccessWithBindAllAccessedViaNetworkAddress() {
+    void shouldBuildCorrectlyForLocalAccessWithBindAllAccessedViaNetworkAddress() {
         prepareConfig(false, true, "/");
         prepareHeaders("192.168.1.111:5076", null, null, null);
         prepareServlet("http://192.168.1.111:5076", "192.168.1.111", 5076, "http", "/");
@@ -117,7 +116,7 @@ public class UrlCalculatorTest {
     }
 
     @Test
-    public void shouldBuildCorrectlyForReverseProxyWithHttpAccessedViaLocalhost() {
+    void shouldBuildCorrectlyForReverseProxyWithHttpAccessedViaLocalhost() {
         prepareConfig(false, false, "/nzbhydra2");
         prepareHeaders("127.0.0.1", "127.0.0.1:4001", null, null); //nginx doesn't include the port in the "host" header
         prepareServlet("http://127.0.0.1:4001", "127.0.0.1", 80, "http", "/nzbhydra2"); //nginx reports port 80 in the servlet
@@ -130,7 +129,7 @@ public class UrlCalculatorTest {
     }
 
     @Test
-    public void shouldBuildCorrectlyForReverseProxyWithHttpAccessedViaNetworkAddress() {
+    void shouldBuildCorrectlyForReverseProxyWithHttpAccessedViaNetworkAddress() {
         prepareConfig(false, false, "/nzbhydra2");
         prepareHeaders("192.168.1.111", "192.168.1.111:4001", null, null); //nginx doesn't include the port in the "host" header
         prepareServlet("192.168.1.111:4001", "192.168.1.111", 80, "http", "/nzbhydra2"); //nginx reports port 80 in the servlet
@@ -143,7 +142,7 @@ public class UrlCalculatorTest {
     }
 
     @Test
-    public void shouldBuildCorrectlyForReverseProxySendingForwardedPort() {
+    void shouldBuildCorrectlyForReverseProxySendingForwardedPort() {
         prepareConfig(false, false, "/nzbhydra2");
         prepareHeaders("192.168.1.111", "192.168.1.111", null, "4001"); //x-forwarded-host may not contain the port
         prepareServlet("192.168.1.111:4001", "192.168.1.111", 80, "http", "/nzbhydra2"); //nginx reports port 80 in the servlet
@@ -156,7 +155,7 @@ public class UrlCalculatorTest {
     }
 
     @Test
-    public void shouldBuildCorrectlyForReverseProxyWithHttpsAccessedViaLocalhost() {
+    void shouldBuildCorrectlyForReverseProxyWithHttpsAccessedViaLocalhost() {
         prepareConfig(false, false, "/nzbhydra2");
         prepareHeaders("127.0.0.1:4001", "127.0.0.1:4001", "https", null);
         prepareServlet("http://127.0.0.1:4001", "127.0.0.1", 80, "http", "/nzbhydra2"); //nginx reports port 80 and scheme http in the servlet
@@ -169,7 +168,7 @@ public class UrlCalculatorTest {
     }
 
     @Test
-    public void shouldBuildCorrectlyForReverseProxyWithHttpsAccessedViaNetworkAddress() {
+    void shouldBuildCorrectlyForReverseProxyWithHttpsAccessedViaNetworkAddress() {
         prepareConfig(false, false, "/nzbhydra2");
         prepareHeaders("192.168.1.111:4001", "192.168.1.111:4001", "https", null);
         prepareServlet("192.168.1.111:4001", "192.168.1.111", 80, "http", "/nzbhydra2"); //nginx reports port 80 and scheme in the servlet
@@ -182,7 +181,7 @@ public class UrlCalculatorTest {
     }
 
     @Test
-    public void shouldBuildCorrectlyForReverseProxyWithHttpsOnPort443() {
+    void shouldBuildCorrectlyForReverseProxyWithHttpsOnPort443() {
         prepareConfig(false, false, "/nzbhydra2");
         prepareHeaders("localhost", "localhost", "https", null);
         prepareServlet("localhost", "localhost", 443, "http", "/nzbhydra2"); //nginx reports port 80 and scheme in the servlet
@@ -195,7 +194,7 @@ public class UrlCalculatorTest {
     }
 
     @Test
-    public void shouldBuildCorrectlyForReverseProxyWithHttpOnPort80AndNoPath() {
+    void shouldBuildCorrectlyForReverseProxyWithHttpOnPort80AndNoPath() {
         prepareConfig(false, false, "/");
         prepareHeaders("localhost", "localhost", "http", null);
         prepareServlet("localhost", "localhost", 80, "http", "/"); //nginx reports port 80 and scheme in the servlet

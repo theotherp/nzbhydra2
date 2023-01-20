@@ -16,8 +16,8 @@
 
 package org.nzbhydra.problemdetection;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -48,9 +48,9 @@ public class OutOfMemoryDetectorTest {
     private OutOfMemoryDetector testee = new OutOfMemoryDetector();
 
 
-    @Ignore //Fails on Pipeline
+    @Disabled //Fails on Pipeline
     @Test
-    public void executeCheck() throws Exception {
+    void executeCheck() throws Exception {
         MockitoAnnotations.initMocks(this);
 
         final Path tempFile = Files.createTempFile("nzbhydra", ".log");

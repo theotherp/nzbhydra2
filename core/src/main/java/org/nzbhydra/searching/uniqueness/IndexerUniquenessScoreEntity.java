@@ -16,27 +16,30 @@
 
 package org.nzbhydra.searching.uniqueness;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
 import lombok.Data;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.nzbhydra.indexers.IndexerEntity;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 
 @Entity
 @Data
+@ReflectionMarker
 @Table(name = "indexeruniquenessscore")
-public class IndexerUniquenessScoreEntity {
+public final class IndexerUniquenessScoreEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @SequenceGenerator(allocationSize = 1, name = "INDEXERUNIQUENESSSCORE_SEQ")
     private int id;
 
     @ManyToOne

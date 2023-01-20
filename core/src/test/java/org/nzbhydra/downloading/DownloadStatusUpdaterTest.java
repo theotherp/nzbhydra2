@@ -16,8 +16,8 @@
 
 package org.nzbhydra.downloading;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -33,6 +33,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -51,7 +52,7 @@ public class DownloadStatusUpdaterTest {
     @InjectMocks
     private DownloadStatusUpdater testee;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         when(downloaderProvider.getAllDownloaders()).thenReturn(Collections.singletonList(downloaderMock));
@@ -60,7 +61,7 @@ public class DownloadStatusUpdaterTest {
     }
 
     @Test
-    public void shouldNotRunWhenNotEnabled() {
+    void shouldNotRunWhenNotEnabled() {
         testee.queueCheckEnabled = false;
         testee.lastDownload = Instant.now();
         testee.checkStatus(Collections.singletonList(FileDownloadStatus.REQUESTED), 10000, StatusCheckType.QUEUE);
@@ -68,7 +69,7 @@ public class DownloadStatusUpdaterTest {
     }
 
     @Test
-    public void shouldNotRunWhenLastDownloadTooLongGone() {
+    void shouldNotRunWhenLastDownloadTooLongGone() {
         testee.queueCheckEnabled = true;
         testee.lastDownload = Instant.ofEpochSecond(1L);
         testee.checkStatus(Collections.singletonList(FileDownloadStatus.REQUESTED), 10000, StatusCheckType.HISTORY);
@@ -76,7 +77,7 @@ public class DownloadStatusUpdaterTest {
     }
 
     @Test
-    public void shouldSetDisabledAndNotRunIfNoDownloadsInDatabase() {
+    void shouldSetDisabledAndNotRunIfNoDownloadsInDatabase() {
         testee.historyCheckEnabled = true;
         testee.lastDownload = Instant.now();
         List<FileDownloadStatus> statuses = Collections.singletonList(FileDownloadStatus.REQUESTED);
@@ -87,14 +88,14 @@ public class DownloadStatusUpdaterTest {
     }
 
     @Test
-    public void shouldCallDownloader() {
+    void shouldCallDownloader() {
         testee.historyCheckEnabled = true;
         testee.lastDownload = Instant.now();
         List<FileDownloadStatus> statuses = Collections.singletonList(FileDownloadStatus.REQUESTED);
         List<FileDownloadEntity> downloadsWaitingForUpdate = Collections.singletonList(new FileDownloadEntity());
         when(downloadRepository.findByStatusInAndTimeAfterOrderByTimeDesc(eq(statuses), any())).thenReturn(downloadsWaitingForUpdate);
         List<FileDownloadEntity> downloadsReturnedFromDownloader = Collections.singletonList(new FileDownloadEntity());
-        when(downloaderMock.checkForStatusUpdates(any(),eq(StatusCheckType.HISTORY))).thenReturn(downloadsReturnedFromDownloader);
+        when(downloaderMock.checkForStatusUpdates(any(), eq(StatusCheckType.HISTORY))).thenReturn(downloadsReturnedFromDownloader);
 
         testee.checkStatus(statuses, 10000, StatusCheckType.HISTORY);
 
@@ -103,13 +104,13 @@ public class DownloadStatusUpdaterTest {
     }
 
     @Test
-    public void shouldSetEnabledOnDownloadEvent() {
+    void shouldSetEnabledOnDownloadEvent() {
         testee.queueCheckEnabled = false;
         testee.lastDownload = null;
 
         testee.onNzbDownloadEvent(new FileDownloadEvent(new FileDownloadEntity(), new SearchResultEntity()));
 
-        assertThat(testee.queueCheckEnabled).isTrue();
+        assertTrue(testee.queueCheckEnabled);
         assertThat(testee.lastDownload).isNotNull();
     }
 

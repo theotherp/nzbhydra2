@@ -21,8 +21,10 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Charsets;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
-import net.jodah.failsafe.Failsafe;
-import net.jodah.failsafe.RetryPolicy;
+import dev.failsafe.Failsafe;
+import dev.failsafe.RetryPolicy;
+import dev.failsafe.event.EventListener;
+import dev.failsafe.event.ExecutionCompletedEvent;
 import org.apache.commons.io.IOUtils;
 import org.nzbhydra.Jackson;
 import org.nzbhydra.NzbHydra;
@@ -38,6 +40,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -47,9 +50,9 @@ public class ConfigReaderWriter {
 
     private static final Logger logger = LoggerFactory.getLogger(ConfigReaderWriter.class);
 
-    public static final TypeReference<HashMap<String, Object>> MAP_TYPE_REFERENCE = new TypeReference<HashMap<String, Object>>() {
+    public static final TypeReference<HashMap<String, Object>> MAP_TYPE_REFERENCE = new TypeReference<>() {
     };
-    private final RetryPolicy saveRetryPolicy = new RetryPolicy().retryOn(IOException.class).withDelay(1000, TimeUnit.MILLISECONDS).withMaxRetries(3);
+    private final RetryPolicy saveRetryPolicy = RetryPolicy.builder().withDelay(Duration.ofMillis(1000)).withMaxRetries(3).handle(IOException.class).build();
 
 
     public void save(BaseConfig baseConfig) {
@@ -81,11 +84,20 @@ public class ConfigReaderWriter {
         save(converted, buildConfigFileFile());
     }
 
+    @SuppressWarnings({"Convert2Lambda", "Convert2Diamond"}) // Will not work with diamond
     protected void save(File targetFile, String configAsYamlString) {
+        if (NzbHydra.isNativeBuild()) {
+            return;
+        }
         synchronized (Jackson.YAML_MAPPER) {
             Failsafe.with(saveRetryPolicy)
-                    .onFailure(throwable -> logger.error("Unable to save config", throwable))
-                    .run(() -> doWrite(targetFile, configAsYamlString))
+                .onFailure(new EventListener<ExecutionCompletedEvent<Object>>() {
+                    @Override
+                    public void accept(ExecutionCompletedEvent<Object> event) throws Throwable {
+                        logger.error("Unable to save config", event.getException());
+                    }
+                })
+                .run(() -> doWrite(targetFile, configAsYamlString))
             ;
         }
     }
@@ -117,14 +129,17 @@ public class ConfigReaderWriter {
      *
      * @param yamlFile The path of the file to be created
      * @return true if initialization was needed
-     * @throws IOException
      */
     public boolean initializeIfNeeded(File yamlFile) throws IOException {
+        if (NzbHydra.isNativeBuild()) {
+            return false;
+        }
         if (!yamlFile.exists()) {
             logger.info("No config file found at {}. Initializing with base config", yamlFile);
             try {
                 try (InputStream stream = BaseConfig.class.getResource("/config/baseConfig.yml").openStream()) {
                     logger.debug(LoggingMarkers.CONFIG_READ_WRITE, "Copying YAML to {}", yamlFile);
+                    yamlFile.getParentFile().mkdirs();
                     Files.copy(stream, yamlFile.toPath());
                     return true;
                 }
@@ -137,6 +152,9 @@ public class ConfigReaderWriter {
     }
 
     public void validateExistingConfig() {
+        if (NzbHydra.isNativeBuild()) {
+            return;
+        }
         File configFile = buildConfigFileFile();
         if (!configFile.exists()) {
             logger.debug(LoggingMarkers.CONFIG_READ_WRITE, "Config file {} doesn't exist. Nothing to validate", configFile);

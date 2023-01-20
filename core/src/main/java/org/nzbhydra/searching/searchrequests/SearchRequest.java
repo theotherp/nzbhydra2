@@ -5,10 +5,13 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.nzbhydra.config.SearchSource;
+import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.category.Category;
-import org.nzbhydra.mediainfo.MediaIdType;
-import org.nzbhydra.searching.dtoseventsenums.DownloadType;
-import org.nzbhydra.searching.dtoseventsenums.SearchType;
+import org.nzbhydra.config.downloading.DownloadType;
+import org.nzbhydra.config.mediainfo.MediaIdType;
+import org.nzbhydra.config.searching.SearchType;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,13 +25,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Data
+@ReflectionMarker
 @NoArgsConstructor
 public class SearchRequest {
-
-    public enum SearchSource {
-        INTERNAL,
-        API
-    }
 
     private static final Logger logger = LoggerFactory.getLogger(SearchRequest.class);
 
@@ -138,15 +137,25 @@ public class SearchRequest {
         return this;
     }
 
+    public boolean meets(SearchSourceRestriction restriction) {
+        if (restriction == SearchSourceRestriction.ALL_BUT_RSS && getSource() == SearchSource.API) {
+            return getQuery().isPresent() || !getIdentifiers().isEmpty();
+        }
+        if (restriction == SearchSourceRestriction.ONLY_RSS && getSource() == SearchSource.API) {
+            return getQuery().isEmpty() && getIdentifiers().isEmpty();
+        }
+        return getSource().meets(restriction);
+    }
+
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)
-                .add("source", source)
-                .add("indexers", indexers)
-                .add("searchType", searchType)
-                .add("category", category.getName())
-                .add("offset", offset)
-                .add("limit", limit)
+            .add("source", source)
+            .add("indexers", indexers)
+            .add("searchType", searchType)
+            .add("category", category.getName())
+            .add("offset", offset)
+            .add("limit", limit)
                 .add("minsize", minsize)
                 .add("maxsize", maxsize)
                 .add("minage", minage)

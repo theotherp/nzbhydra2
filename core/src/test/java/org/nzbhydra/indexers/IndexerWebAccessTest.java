@@ -1,7 +1,7 @@
 package org.nzbhydra.indexers;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -44,7 +44,7 @@ public class IndexerWebAccessTest {
     @InjectMocks
     private IndexerWebAccess testee = new IndexerWebAccess();
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         String xml = "<?xml version=\"1.0\" ?>\n" +
@@ -62,14 +62,14 @@ public class IndexerWebAccessTest {
     }
 
     @Test
-    public void shouldUseIndexerUserAgent() throws Exception{
+    void shouldUseIndexerUserAgent() throws Exception {
         testee.get(new URI("http://127.0.0.1"), indexerConfig);
         Map<String, String> headers = headersCaptor.getValue();
         assertThat(headers).contains(entry("User-Agent", "indexerUa"));
     }
 
     @Test
-    public void shouldUseGlobalUserAgentIfNoIndexerUaIsSet() throws Exception{
+    void shouldUseGlobalUserAgentIfNoIndexerUaIsSet() throws Exception {
         indexerConfig.setUserAgent(null);
 
         testee.get(new URI("http://127.0.0.1"), indexerConfig);
@@ -79,13 +79,13 @@ public class IndexerWebAccessTest {
     }
 
     @Test
-    public void shouldUseIndexerTimeout() throws Exception{
+    void shouldUseIndexerTimeout() throws Exception {
         testee.get(new URI("http://127.0.0.1"), indexerConfig);
         assertThat(timeoutCaptor.getValue()).isEqualTo(10);
     }
 
     @Test
-    public void shouldUseGlobalTimeoutNoIndexerTimeoutIsSet() throws Exception{
+    void shouldUseGlobalTimeoutNoIndexerTimeoutIsSet() throws Exception {
         indexerConfig.setTimeout(null);
 
         testee.get(new URI("http://127.0.0.1"), indexerConfig);

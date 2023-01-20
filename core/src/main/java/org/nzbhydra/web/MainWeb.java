@@ -1,5 +1,8 @@
 package org.nzbhydra.web;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import org.nzbhydra.auth.UserInfosProvider;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.safeconfig.SafeConfig;
@@ -10,9 +13,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.security.Principal;
 import java.util.Arrays;
 
@@ -30,7 +30,6 @@ public class MainWeb {
         return new SafeConfig(configProvider.getBaseConfig());
     }
 
-
     @RequestMapping(value = "/", method = RequestMethod.GET)
     @Secured({"ROLE_USER"})
     public String index(HttpSession session, Principal principal, HttpServletResponse response) {
@@ -40,7 +39,7 @@ public class MainWeb {
     }
 
     //Must exist and not be protected so that redirects to "/login" have a target
-    @RequestMapping(value = "/login", method = RequestMethod.GET)
+    @RequestMapping(value = "/login", method = {RequestMethod.GET, RequestMethod.PUT})
     public String index2(HttpSession session, Principal principal) {
         setSessionAttributes(session, principal);
         return "login";

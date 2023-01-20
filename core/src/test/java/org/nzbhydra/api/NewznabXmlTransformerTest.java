@@ -16,25 +16,25 @@
 
 package org.nzbhydra.api;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.MainConfig;
+import org.nzbhydra.config.SearchSource;
 import org.nzbhydra.config.category.Category;
+import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.config.indexer.IndexerConfig;
+import org.nzbhydra.config.searching.SearchType;
 import org.nzbhydra.downloading.FileHandler;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
 import org.nzbhydra.searching.SearchResult;
-import org.nzbhydra.searching.dtoseventsenums.DownloadType;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
-import org.nzbhydra.searching.dtoseventsenums.SearchType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
-import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -54,7 +54,7 @@ public class NewznabXmlTransformerTest {
     IndexerConfig indexerConfig = new IndexerConfig();
 
 
-    @Before
+    @BeforeEach
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         when(configProvider.getBaseConfig()).thenReturn(baseConfig);
@@ -76,7 +76,7 @@ public class NewznabXmlTransformerTest {
 
 
     @Test
-    public void shouldUseCorrectApplicationType() {
+    void shouldUseCorrectApplicationType() {
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         SearchResultItem searchResultItem = new SearchResultItem();
         searchResultItem.setIndexer(indexerMock);

@@ -16,87 +16,81 @@
 
 package org.nzbhydra.searching.db;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.indexers.IndexerEntity;
-import org.nzbhydra.indexers.IndexerSearchEntity;
-import org.nzbhydra.searching.dtoseventsenums.SearchResultItem.DownloadType;
 
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
 import java.time.Instant;
 
 
 @Entity
 @Getter
 @Table(name = "searchresult"
-        , indexes = {
-        @Index(columnList = "indexer_id,indexerguid", unique = true)}
+    , indexes = {
+    @Index(columnList = "indexer_id,indexerguid", unique = true)}
 )
-public class SearchResultEntity {
+public final class SearchResultEntity {
 
 
     @GenericGenerator(
-            name = "search-result-sequence",
-            strategy = "org.nzbhydra.searching.db.SearchResultSequenceGenerator",
-            parameters = @org.hibernate.annotations.Parameter(
-                    name = "sequence_name",
-                    value = "hibernate_sequence"
-            )
+        name = "search-result-sequence",
+        strategy = "org.nzbhydra.searching.db.SearchResultSequenceGenerator",
+        parameters = {@org.hibernate.annotations.Parameter(
+            name = "sequence_name",
+            value = "HIBERNATE_SEQUENCE"
+        ),
+            @org.hibernate.annotations.Parameter(
+                name = "increment_size",
+                value = "1"
+            )}
     )
     @Id
     @GeneratedValue(generator = "search-result-sequence", strategy = GenerationType.SEQUENCE)
-    @JsonSerialize(using = ToStringSerializer.class) //JS cannot handle long. We don't need to calculate with this so string is fine to not lose any digits
-    protected long id;
+    private long id;
 
     @ManyToOne
     @NotNull
     @OnDelete(action = OnDeleteAction.CASCADE)
-    protected IndexerEntity indexer;
+    private IndexerEntity indexer;
 
     @Convert(converter = org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters.InstantConverter.class)
-    protected Instant firstFound;
+    private Instant firstFound;
 
     @NotNull
     @Column(length = 4000)
-    protected String title;
+    private String title;
 
     @Column(name = "indexerguid")
     @NotNull
-    protected String indexerGuid;
+    private String indexerGuid;
     @Column(length = 4000)
-    protected String link;
+    private String link;
     @Column(length = 4000)
-    protected String details;
+    private String details;
     @Enumerated(EnumType.STRING)
-    protected DownloadType downloadType;
+    private DownloadType downloadType;
     @Convert(converter = org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters.InstantConverter.class)
-    protected Instant pubDate;
+    private Instant pubDate;
 
-    @JsonIgnore
-    @OneToOne(fetch = FetchType.LAZY) //Only needed for the uniqueness saver, may be deleted later and then not needed anymore
-    @JoinColumn(name = "indexersearchentity")
-    private IndexerSearchEntity indexerSearchEntity;
+    @Column(name = "INDEXERSEARCHENTITY")
+    private Integer indexerSearchEntityId;
 
     public SearchResultEntity() {
     }
@@ -148,12 +142,12 @@ public class SearchResultEntity {
         this.pubDate = pubDate;
     }
 
-    public IndexerSearchEntity getIndexerSearchEntity() {
-        return indexerSearchEntity;
+    public Integer getIndexerSearchEntityId() {
+        return indexerSearchEntityId;
     }
 
-    public void setIndexerSearchEntity(IndexerSearchEntity indexerSearchEntity) {
-        this.indexerSearchEntity = indexerSearchEntity;
+    public void setIndexerSearchEntityId(Integer indexerSearchEntityId) {
+        this.indexerSearchEntityId = indexerSearchEntityId;
     }
 
     @Override

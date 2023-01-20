@@ -39,13 +39,12 @@ public class MdcThreadPoolExecutor extends ThreadPoolExecutor {
      */
     public static MdcThreadPoolExecutor newWithInheritedMdc(int corePoolSize) {
         return new MdcThreadPoolExecutor(null, corePoolSize, corePoolSize, 0L, TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<Runnable>());
+                new LinkedBlockingQueue<>());
     }
 
     /**
      * Pool where task threads take fixed MDC from the thread that creates the pool.
      */
-    @SuppressWarnings("unchecked")
     public static MdcThreadPoolExecutor newWithCurrentMdc(int corePoolSize, int maximumPoolSize, long keepAliveTime,
                                                           TimeUnit unit, BlockingQueue<Runnable> workQueue) {
         return new MdcThreadPoolExecutor(MDC.getCopyOfContextMap(), corePoolSize, maximumPoolSize, keepAliveTime, unit,
@@ -69,7 +68,6 @@ public class MdcThreadPoolExecutor extends ThreadPoolExecutor {
         this.instantiationTime = Instant.now();
     }
 
-    @SuppressWarnings("unchecked")
     private Map<String, String> getContextForTask() {
         return useFixedContext ? fixedContext : MDC.getCopyOfContextMap();
     }
@@ -88,10 +86,9 @@ public class MdcThreadPoolExecutor extends ThreadPoolExecutor {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof MdcThreadPoolExecutor)) {
+        if (!(o instanceof MdcThreadPoolExecutor that)) {
             return false;
         }
-        MdcThreadPoolExecutor that = (MdcThreadPoolExecutor) o;
         return Objects.equal(instantiationTime, that.instantiationTime);
     }
 

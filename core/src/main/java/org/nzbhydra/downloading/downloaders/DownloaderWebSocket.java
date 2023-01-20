@@ -16,7 +16,7 @@
 
 package org.nzbhydra.downloading.downloaders;
 
-import org.nzbhydra.ShutdownEvent;
+import jakarta.annotation.PreDestroy;
 import org.nzbhydra.config.ConfigChangedEvent;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.logging.LoggingMarkers;
@@ -138,8 +138,8 @@ public class DownloaderWebSocket {
         }
     }
 
-    @EventListener
-    public void onShutdown(ShutdownEvent event) {
+    @PreDestroy
+    public void onShutdown() {
         if (scheduledFuture != null) {
             scheduledFuture.cancel(true);
             scheduledFuture = null;

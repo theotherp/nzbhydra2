@@ -1,5 +1,5 @@
 /*
- *  (C) Copyright 2017 TheOtherP (theotherp@posteo.net)
+ *  (C) Copyright 2023 TheOtherP (theotherp@posteo.net)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,23 +16,26 @@
 
 package org.nzbhydra.searching.db;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
 import lombok.Data;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
-import org.nzbhydra.searching.dtoseventsenums.SearchType;
-import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
+import org.nzbhydra.config.SearchSource;
+import org.nzbhydra.config.searching.SearchType;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.nzbhydra.web.SessionStorage;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Convert;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Objects;
@@ -40,12 +43,14 @@ import java.util.Set;
 
 
 @Data
+@ReflectionMarker
 @Entity
 @Table(name = "search")
-public class SearchEntity {
+public final class SearchEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @SequenceGenerator(allocationSize = 1, name = "SEARCH_SEQ")
     private int id;
 
     @Enumerated(EnumType.STRING)
@@ -77,7 +82,7 @@ public class SearchEntity {
         this.ip = SessionStorage.IP.get();
     }
 
-
+    @JsonIgnore
     public boolean equalsSearchEntity(SearchEntity that) {
         return Objects.equals(categoryName, that.categoryName) &&
                 Objects.equals(query, that.query) &&
@@ -88,6 +93,7 @@ public class SearchEntity {
                 Objects.equals(author, that.author);
     }
 
+    @JsonIgnore
     public int getComparingHash() {
         return Objects.hash(getQuery(), getCategoryName(), getSeason(), getEpisode(), getTitle(), identifiers);
     }

@@ -20,13 +20,13 @@ import net.jodah.expiringmap.ExpirationPolicy;
 import net.jodah.expiringmap.ExpiringMap;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.indexer.IndexerConfig;
+import org.nzbhydra.config.mediainfo.MediaIdType;
+import org.nzbhydra.config.searching.SearchType;
 import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.mediainfo.InfoProviderException;
-import org.nzbhydra.mediainfo.MediaIdType;
 import org.nzbhydra.mediainfo.MediaInfo;
-import org.nzbhydra.searching.dtoseventsenums.SearchType;
 import org.nzbhydra.searching.searchrequests.InternalData;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
@@ -40,12 +40,6 @@ import java.util.concurrent.TimeUnit;
 
 @Component
 public class QueryGenerator {
-
-    public enum QueryFormat {
-        TITLE,
-        TITLE_YEAR,
-        TITLE_YEAR_LANGUAGE
-    }
 
     private static final Logger logger = LoggerFactory.getLogger(QueryGenerator.class);
 
@@ -70,7 +64,7 @@ public class QueryGenerator {
         boolean anyIdsAvailable = !searchRequest.getIdentifiers().isEmpty();
         boolean indexerDoesntSupportAnyOfTheProvidedIds = anyIdsAvailable && searchRequest.getIdentifiers().keySet().stream().noneMatch(x -> config.getSupportedSearchIds().contains(x));
         boolean queryGenerationPossible = !searchRequest.getIdentifiers().isEmpty() || searchRequest.getTitle().isPresent();
-        boolean queryGenerationEnabled = configProvider.getBaseConfig().getSearching().getGenerateQueries().meets(searchRequest);
+        boolean queryGenerationEnabled = searchRequest.meets(configProvider.getBaseConfig().getSearching().getGenerateQueries());
         final InternalData.FallbackState fallbackState = searchRequest.getInternalData().getFallbackStateByIndexer(config.getName());
         boolean fallbackRequested = fallbackState == InternalData.FallbackState.REQUESTED;
 
@@ -93,12 +87,12 @@ public class QueryGenerator {
             logger.debug("Using internally provided title {}", query);
         } else {
             Optional<Map.Entry<MediaIdType, String>> firstIdentifierEntry = searchRequest.getIdentifiers().entrySet().stream().filter(java.util.Objects::nonNull).findFirst();
-            if (!firstIdentifierEntry.isPresent()) {
+            if (firstIdentifierEntry.isEmpty()) {
                 throw new IndexerSearchAbortedException("Unable to generate query because no identifier is known");
             }
             try {
                 MediaInfo mediaInfo = infoProvider.convert(firstIdentifierEntry.get().getValue(), firstIdentifierEntry.get().getKey());
-                if (!mediaInfo.getTitle().isPresent()) {
+                if (mediaInfo.getTitle().isEmpty()) {
                     throw new IndexerSearchAbortedException("Unable to generate query because no title is known");
                 }
                 query = sanitizeTitleForQuery(mediaInfo.getTitle().get());

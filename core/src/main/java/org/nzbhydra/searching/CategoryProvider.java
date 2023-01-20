@@ -80,7 +80,7 @@ public class CategoryProvider implements InitializingBean {
             categoryMap = categories.stream().collect(Collectors.toMap(Category::getName, Function.identity()));
             categoryMapByNumber.clear();
             for (Category category : categories) {
-                for (Integer integer : category.getNewznabCategories().stream().filter(x -> x.size() == 1).map(x -> x.get(0)).collect(Collectors.toList())) {
+                for (Integer integer : category.getNewznabCategories().stream().filter(x -> x.size() == 1).map(x -> x.get(0)).toList()) {
                     categoryMapByNumber.put(integer, category);
                 }
                 category.getNewznabCategories().stream().filter(x -> x.size() > 1).forEach(x -> categoryMapByMultipleNumber.put(x, category));
@@ -191,7 +191,7 @@ public class CategoryProvider implements InitializingBean {
         String catsString = Joiner.on(",").join(cats);
 
         //If the list contains a main category always use that one
-        List<Integer> foundMainCategories = cats.stream().filter(x -> x % 1000 == 0).collect(Collectors.toList());
+        List<Integer> foundMainCategories = cats.stream().filter(x -> x % 1000 == 0).toList();
         if (!foundMainCategories.isEmpty()) {
             Category category = categoryMapByNumber.get(foundMainCategories.get(0));
             if (category != null) {
@@ -209,7 +209,7 @@ public class CategoryProvider implements InitializingBean {
             //No main categories found, specific subcategory must've been supplied
             result = getMatchingCategoryOrMatchingMainCategory(cats, defaultCategory);
         } else {
-            List<Integer> matchingSubcategories = cats.stream().filter(cat -> categoryMapByNumber.containsKey(cat)).collect(Collectors.toList());
+            List<Integer> matchingSubcategories = cats.stream().filter(cat -> categoryMapByNumber.containsKey(cat)).toList();
             if (matchingSubcategories.size() == 1) {
                 result = categoryMapByNumber.get(matchingSubcategories.get(0));
             } else if (matchingSubcategories.size() == 0) {
@@ -264,7 +264,7 @@ public class CategoryProvider implements InitializingBean {
         //Let's try to find a more general one
         Optional<Category> found = Optional.empty();
         for (Category category : categories) {
-            List<Integer> categorySingleNewznabNumbers = category.getNewznabCategories().stream().filter(x -> x.size() == 1).map(x -> x.get(0)).collect(Collectors.toList());
+            List<Integer> categorySingleNewznabNumbers = category.getNewznabCategories().stream().filter(x -> x.size() == 1).map(x -> x.get(0)).toList();
             for (Integer cat : cats) {
                 if (categorySingleNewznabNumbers.contains(cat / 1000 * 1000)) {
                     logger.debug(LoggingMarkers.CATEGORY_MAPPING, "Determined {} matching generally {}", cat, category);

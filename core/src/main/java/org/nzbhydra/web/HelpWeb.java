@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class HelpWeb {
 
-    @RequestMapping(value = "internalapi/help/{section}", method = RequestMethod.GET, produces = MediaType.TEXT_HTML_VALUE)
+    @RequestMapping(value = "/internalapi/help/{section}", method = RequestMethod.GET, produces = MediaType.TEXT_HTML_VALUE)
     @Secured({"ROLE_ADMIN"})
     public String askForAdmin(@PathVariable String section) throws Exception {
         String markdown = Resources.toString(Resources.getResource(HelpWeb.class, ("/help/" + section + ".md").toLowerCase()), Charsets.UTF_8);

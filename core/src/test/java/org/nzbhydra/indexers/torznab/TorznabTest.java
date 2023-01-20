@@ -17,8 +17,8 @@
 package org.nzbhydra.indexers.torznab;
 
 import com.google.common.collect.Lists;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Captor;
@@ -29,10 +29,14 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.SearchSource;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.SearchingConfig;
 import org.nzbhydra.config.category.Category;
+import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.config.indexer.IndexerConfig;
+import org.nzbhydra.config.mediainfo.MediaIdType;
+import org.nzbhydra.config.searching.SearchType;
 import org.nzbhydra.indexers.IndexerAccessResult;
 import org.nzbhydra.indexers.IndexerApiAccessRepository;
 import org.nzbhydra.indexers.IndexerEntity;
@@ -46,13 +50,9 @@ import org.nzbhydra.mapping.newznab.xml.NewznabXmlEnclosure;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlGuid;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
 import org.nzbhydra.mediainfo.InfoProvider;
-import org.nzbhydra.mediainfo.MediaIdType;
 import org.nzbhydra.searching.CategoryProvider;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
-import org.nzbhydra.searching.dtoseventsenums.SearchResultItem.DownloadType;
-import org.nzbhydra.searching.dtoseventsenums.SearchType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
-import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.Instant;
@@ -62,8 +62,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -76,8 +75,8 @@ public class TorznabTest {
     private InfoProvider infoProviderMock;
     @Mock
     private IndexerWebAccess indexerWebAccessMock;
-    @Mock
-    private IndexerEntity indexerEntityMock;
+
+    private IndexerEntity indexerEntityMock = new IndexerEntity("indexer");
     @Mock
     private CategoryProvider categoryProviderMock;
     @Mock
@@ -104,10 +103,10 @@ public class TorznabTest {
     private QueryGenerator queryGeneratorMock;
 
     @InjectMocks
-    private Torznab testee = new Torznab();
+    private Torznab testee = new Torznab(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
 
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         testee = spy(testee);
@@ -137,7 +136,7 @@ public class TorznabTest {
 
 
     @Test
-    public void shouldCreateSearchResultItem() throws Exception {
+    void shouldCreateSearchResultItem() throws Exception {
         NewznabXmlItem rssItem = buildBasicRssItem();
         rssItem.setSize(456L);
         rssItem.getTorznabAttributes().add(new NewznabAttribute("password", "0"));
@@ -152,31 +151,31 @@ public class TorznabTest {
         rssItem.setCategory("4000");
 
         SearchResultItem item = testee.createSearchResultItem(rssItem);
-        assertThat(item.getLink(), is("http://indexer.com/abc"));
-        assertThat(item.getIndexerGuid(), is("http://indexer.com/123RssGuid"));
-        assertThat(item.getSize(), is(456L));
-        assertThat(item.getCommentsLink(), is("http://indexer.com/123/details#comments"));
-        assertThat(item.getDetails(), is("http://indexer.com/123/details#comments"));
-        assertThat(item.isAgePrecise(), is(true));
-        assertThat(item.getGrabs(), is(20));
-        assertThat(item.getDownloadType(), is(DownloadType.TORRENT));
+        assertThat(item.getLink()).isEqualTo("http://indexer.com/abc");
+        assertThat(item.getIndexerGuid()).isEqualTo("http://indexer.com/123RssGuid");
+        assertThat(item.getSize()).isEqualTo(456L);
+        assertThat(item.getCommentsLink()).isEqualTo("http://indexer.com/123/details#comments");
+        assertThat(item.getDetails()).isEqualTo("http://indexer.com/123/details#comments");
+        assertThat(item.isAgePrecise()).isEqualTo(true);
+        assertThat(item.getGrabs()).isEqualTo(20);
+        assertThat(item.getDownloadType()).isEqualTo(DownloadType.TORRENT);
     }
 
 
     @Test
-    public void shouldComputeCategory() throws Exception {
+    void shouldComputeCategory() throws Exception {
         when(categoryProviderMock.fromResultNewznabCategories(ArgumentMatchers.any())).thenReturn(categoryMock);
         NewznabXmlItem rssItem = buildBasicRssItem();
         rssItem.getTorznabAttributes().add(new NewznabAttribute("category", "5070"));
         rssItem.getEnclosures().add(new NewznabXmlEnclosure("url", 1L, "application/x-bittorrent"));
 
         SearchResultItem item = testee.createSearchResultItem(rssItem);
-        assertThat(item.getCategory(), is(categoryMock));
+        assertThat(item.getCategory()).isEqualTo(categoryMock);
 
         rssItem.getTorznabAttributes().clear();
         rssItem.setCategory("5070");
         item = testee.createSearchResultItem(rssItem);
-        assertThat(item.getCategory(), is(categoryMock));
+        assertThat(item.getCategory()).isEqualTo(categoryMock);
     }
 
     private NewznabXmlItem buildBasicRssItem() {
@@ -193,48 +192,48 @@ public class TorznabTest {
     }
 
     @Test
-    public void shouldNotAddExcludedWordsToQuery() throws Exception {
+    void shouldNotAddExcludedWordsToQuery() throws Exception {
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         searchRequest.getInternalData().setForbiddenWords(Arrays.asList("notthis", "alsonotthis"));
         searchRequest.setQuery("query");
         UriComponentsBuilder builder = testee.buildSearchUrl(searchRequest, 0, 100);
-        assertThat(builder.toUriString(), not(containsString("notthis")));
+        assertThat(builder.toUriString()).doesNotContain("notthis");
     }
 
     @Test
-    public void shouldGetCorrectCategoryNumber() {
+    void shouldGetCorrectCategoryNumber() {
         NewznabXmlItem item = buildBasicRssItem();
 
         item.setTorznabAttributes(Collections.singletonList(new NewznabAttribute("category", "2000")));
         List<Integer> integers = testee.tryAndGetCategoryAsNumber(item);
-        assertThat(integers.size(), is(1));
-        assertThat(integers.get(0), is(2000));
+        assertThat(integers.size()).isEqualTo(1);
+        assertThat(integers.get(0)).isEqualTo(2000);
 
         item.setTorznabAttributes(Collections.singletonList(new NewznabAttribute("category", "10000")));
         integers = testee.tryAndGetCategoryAsNumber(item);
-        assertThat(integers.size(), is(1));
-        assertThat(integers.get(0), is(10000));
+        assertThat(integers.size()).isEqualTo(1);
+        assertThat(integers.get(0)).isEqualTo(10000);
 
         item.setTorznabAttributes(Arrays.asList(new NewznabAttribute("category", "2000"), new NewznabAttribute("category", "10000")));
         integers = testee.tryAndGetCategoryAsNumber(item);
         integers.sort(Comparator.naturalOrder());
-        assertThat(integers.size(), is(2));
-        assertThat(integers.get(0), is(2000));
-        assertThat(integers.get(1), is(10000));
+        assertThat(integers.size()).isEqualTo(2);
+        assertThat(integers.get(0)).isEqualTo(2000);
+        assertThat(integers.get(1)).isEqualTo(10000);
 
         item.setTorznabAttributes(Arrays.asList(new NewznabAttribute("category", "2000"), new NewznabAttribute("category", "2040")));
         integers = testee.tryAndGetCategoryAsNumber(item);
         integers.sort(Comparator.naturalOrder());
-        assertThat(integers.size(), is(2));
-        assertThat(integers.get(0), is(2000));
-        assertThat(integers.get(1), is(2040));
+        assertThat(integers.size()).isEqualTo(2);
+        assertThat(integers.get(0)).isEqualTo(2000);
+        assertThat(integers.get(1)).isEqualTo(2040);
 
         item.setTorznabAttributes(Arrays.asList(new NewznabAttribute("category", "2000"), new NewznabAttribute("category", "2040"), new NewznabAttribute("category", "10000")));
         integers = testee.tryAndGetCategoryAsNumber(item);
         integers.sort(Comparator.naturalOrder());
-        assertThat(integers.size(), is(3));
-        assertThat(integers.get(0), is(2000));
-        assertThat(integers.get(1), is(2040));
+        assertThat(integers.size()).isEqualTo(3);
+        assertThat(integers.get(0)).isEqualTo(2000);
+        assertThat(integers.get(1)).isEqualTo(2040);
     }
 
 

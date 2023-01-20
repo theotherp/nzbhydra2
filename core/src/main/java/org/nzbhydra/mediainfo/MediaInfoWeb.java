@@ -5,10 +5,13 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.net.UrlEscapers;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.mediainfo.MediaIdType;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +22,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -38,29 +40,29 @@ public class MediaInfoWeb {
     @Autowired
     private ConfigProvider configProvider;
 
-    private LoadingCache<CacheKey, List<MediaInfoTO>> autocompleteCache = CacheBuilder.newBuilder()
-            .maximumSize(100)
-            .expireAfterWrite(7, TimeUnit.DAYS)
+    private final LoadingCache<CacheKey, List<MediaInfoTO>> autocompleteCache = CacheBuilder.newBuilder()
+        .maximumSize(100)
+        .expireAfterWrite(7, TimeUnit.DAYS)
 
-            .build(
-                    new CacheLoader<CacheKey, List<MediaInfoTO>>() {
-                        @Override
-                        public List<MediaInfoTO> load(CacheKey key) throws Exception {
-                            try {
-                                List<MediaInfo> infos;
-                                if (key.getType() == AutocompleteType.TV) {
-                                    infos = infoProvider.search(key.getInput(), MediaIdType.TVTITLE);
-                                } else {
-                                    infos = infoProvider.search(key.getInput(), MediaIdType.MOVIETITLE);
-                                }
-
-                                return infos.stream().map(MediaInfoTO::new).collect(Collectors.toList());
-                            } catch (InfoProviderException e) {
-                                logger.error("Error while finding autocomplete data for input {} and type {}", key.getInput(), key.getType(), e);
-                                return Collections.emptyList();
+        .build(
+                new CacheLoader<>() {
+                    @Override
+                    public List<MediaInfoTO> load(CacheKey key) throws Exception {
+                        try {
+                            List<MediaInfo> infos;
+                            if (key.getType() == AutocompleteType.TV) {
+                                infos = infoProvider.search(key.getInput(), MediaIdType.TVTITLE);
+                            } else {
+                                infos = infoProvider.search(key.getInput(), MediaIdType.MOVIETITLE);
                             }
+
+                            return infos.stream().map(MediaInfoWeb::from).collect(Collectors.toList());
+                        } catch (InfoProviderException e) {
+                            logger.warn("Error while finding autocomplete data for input {} and type {}", key.getInput(), key.getType(), e);
+                            return Collections.emptyList();
                         }
-                    });
+                    }
+                });
 
     @RequestMapping(value = "/internalapi/autocomplete/{type}", produces = "application/json")
     public List<MediaInfoTO> autocomplete(@PathVariable("type") AutocompleteType type, @RequestParam("input") String input) throws ExecutionException {
@@ -102,7 +104,21 @@ public class MediaInfoWeb {
 
     }
 
+    private static MediaInfoTO from(MediaInfo info) {
+        MediaInfoTO to = new MediaInfoTO();
+        to.setImdbId(info.getImdbId().orElse(null));
+        to.setTmdbId(info.getTmdbId().orElse(null));
+        to.setTvmazeId(info.getTvMazeId().orElse(null));
+        to.setTvrageId(info.getTvRageId().orElse(null));
+        to.setTvdbId(info.getTvDbId().orElse(null));
+        to.setTitle(info.getTitle().orElse(null));
+        to.setYear(info.getYear().orElse(null));
+        to.setPosterUrl(info.getPosterUrl().orElse(null));
+        return to;
+    }
+
     @Data
+    @ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     private static class CacheKey {
@@ -110,32 +126,4 @@ public class MediaInfoWeb {
         private String input;
     }
 
-    private enum AutocompleteType {
-        TV,
-        MOVIE
-    }
-
-    @Data
-    public static class MediaInfoTO {
-        private String imdbId;
-        private String tmdbId;
-        private String tvmazeId;
-        private String tvrageId;
-        private String tvdbId;
-        private String title;
-        private Integer year;
-        private String posterUrl;
-
-        public MediaInfoTO(MediaInfo info) {
-            this.imdbId = info.getImdbId().orElse(null);
-            this.tmdbId = info.getTmdbId().orElse(null);
-            this.tvmazeId = info.getTvMazeId().orElse(null);
-            this.tvrageId = info.getTvRageId().orElse(null);
-            this.tvdbId = info.getTvDbId().orElse(null);
-            this.title = info.getTitle().orElse(null);
-            this.year = info.getYear().orElse(null);
-            this.posterUrl = info.getPosterUrl().orElse(null);
-        }
-
-    }
 }

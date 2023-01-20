@@ -10,8 +10,7 @@ import sockslib.common.net.NetworkMonitor;
 import sockslib.utils.Arguments;
 import sockslib.utils.Timer;
 
-import javax.annotation.Nullable;
-import java.io.IOException;
+import javax.annotation.Nullable;import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;

@@ -21,9 +21,12 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import lombok.Data;
 import org.nzbhydra.GenericResponse;
+import org.nzbhydra.config.indexer.CapsCheckRequest;
+import org.nzbhydra.config.indexer.CheckCapsResponse;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.indexers.capscheck.IndexerChecker.CheckerEvent;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -143,12 +146,14 @@ public class IndexerWeb {
     }
 
     @Data
+@ReflectionMarker
     private static class JacketConfigReadRequest {
         private List<IndexerConfig> existingIndexers;
         private IndexerConfig jackettConfig;
     }
 
     @Data
+@ReflectionMarker
     private static class JacketConfigReadResponse {
         private List<IndexerConfig> newIndexersConfig;
         private int addedTrackers;

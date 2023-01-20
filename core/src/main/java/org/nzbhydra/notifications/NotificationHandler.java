@@ -28,6 +28,7 @@ import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.NotificationConfig;
 import org.nzbhydra.config.NotificationConfigEntry;
 import org.nzbhydra.logging.LoggingMarkers;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.nzbhydra.webaccess.WebAccess;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +45,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 @Component
 public class NotificationHandler {
@@ -65,8 +65,8 @@ public class NotificationHandler {
         final NotificationConfig notificationConfig = configProvider.getBaseConfig().getNotificationConfig();
 
         final List<NotificationConfigEntry> configEntries = notificationConfig.getEntries().stream()
-                .filter(x -> x.getEventType() == event.getEventType())
-                .collect(Collectors.toList());
+            .filter(x -> x.getEventType() == event.getEventType())
+            .toList();
 
         if (configEntries.isEmpty()) {
             logger.debug(LoggingMarkers.NOTIFICATIONS, "No matching config entries found");
@@ -111,7 +111,7 @@ public class NotificationHandler {
                 throw new RuntimeException("Unable to generate notification body", e);
             }
 
-            notificationRepository.save(new NotificationEntity(event.getEventType(), NotificationEntity.MessageType.valueOf(configEntry.getMessageType().name()), notificationTitle, notificationBody, configEntry.getAppriseUrls(), Instant.now()));
+            notificationRepository.save(new NotificationEntity(event.getEventType(), NotificationMessageType.valueOf(configEntry.getMessageType().name()), notificationTitle, notificationBody, configEntry.getAppriseUrls(), Instant.now()));
 
             if (notificationConfig.getAppriseType() == NotificationConfig.AppriseType.NONE) {
                 logger.debug(LoggingMarkers.NOTIFICATIONS, "Apprise type set to None");
@@ -176,6 +176,7 @@ public class NotificationHandler {
     }
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     private static class AppriseMessage {
 

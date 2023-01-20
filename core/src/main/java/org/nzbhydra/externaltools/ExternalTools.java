@@ -29,10 +29,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.nzbhydra.Jackson;
 import org.nzbhydra.api.ExternalApi;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.SearchSource;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.logging.LoggingMarkers;
-import org.nzbhydra.searching.searchrequests.SearchRequest;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.nzbhydra.web.UrlCalculator;
 import org.nzbhydra.webaccess.WebAccess;
 import org.nzbhydra.webaccess.WebAccessException;
@@ -58,7 +59,7 @@ import java.util.stream.Stream;
 @Component
 public class ExternalTools {
 
-    private static final TypeReference<List<Map>> LIST_TYPE_REFERENCE = new TypeReference<List<Map>>() {
+    private static final TypeReference<List<Map>> LIST_TYPE_REFERENCE = new TypeReference<>() {
     };
 
     private enum BackendType {
@@ -91,7 +92,7 @@ public class ExternalTools {
 
             if (addRequest.isConfigureForUsenet()) {
                 final boolean anyUsenetIndexerEnabled = configProvider.getBaseConfig().getIndexers().stream()
-                        .filter(x -> x.getEnabledForSearchSource().meets(SearchRequest.SearchSource.API))
+                    .filter(x -> SearchSource.API.meets(x.getEnabledForSearchSource()))
                         .filter(x -> x.getState() == IndexerConfig.State.ENABLED)
                         .anyMatch(x -> x.getSearchModuleType() != SearchModuleType.TORZNAB);
                 if (!anyUsenetIndexerEnabled) {
@@ -109,9 +110,9 @@ public class ExternalTools {
 
             logger.info("Received request to configure {} at URL {} with add type {} for usenet: {} and torrents: {}", addRequest.getExternalTool(), addRequest.getXdarrHost(), addRequest.getAddType(), addRequest.isConfigureForUsenet(), addRequest.isConfigureForTorrents());
             final List<IndexerConfig> availableIndexers = configProvider.getBaseConfig().getIndexers().stream()
-                    .filter(x -> (x.getState() == IndexerConfig.State.ENABLED || addRequest.isAddDisabledIndexers()) && x.isConfigComplete() && x.isAllCapsChecked())
-                    .filter(x -> x.getEnabledForSearchSource().meets(SearchRequest.SearchSource.API))
-                    .collect(Collectors.toList());
+                .filter(x -> (x.getState() == IndexerConfig.State.ENABLED || addRequest.isAddDisabledIndexers()) && x.isConfigComplete() && x.isAllCapsChecked())
+                .filter(x -> SearchSource.API.meets(x.getEnabledForSearchSource()))
+                .toList();
 
             final Optional<Integer> maxPriority = availableIndexers.stream().map(IndexerConfig::getScore).max(Comparator.naturalOrder());
             if (addRequest.getAddType() == AddRequest.AddType.PER_INDEXER && addRequest.isUseHydraPriorities() && maxPriority.isPresent() && maxPriority.get() > 51) {
@@ -130,7 +131,7 @@ public class ExternalTools {
                 if (addRequest.getAddType() == AddRequest.AddType.SINGLE) {
                     executeConfigurationRequest(addRequest, BackendType.Newznab, null);
                 } else {
-                    final List<IndexerConfig> availableTorznabIndexers = availableIndexers.stream().filter(x -> x.getSearchModuleType() != SearchModuleType.TORZNAB).collect(Collectors.toList());
+                    final List<IndexerConfig> availableTorznabIndexers = availableIndexers.stream().filter(x -> x.getSearchModuleType() != SearchModuleType.TORZNAB).toList();
                     for (IndexerConfig indexer : availableTorznabIndexers) {
                         executeConfigurationRequest(addRequest, BackendType.Newznab, indexer);
                     }
@@ -140,7 +141,7 @@ public class ExternalTools {
                 if (addRequest.getAddType() == AddRequest.AddType.SINGLE) {
                     executeConfigurationRequest(addRequest, BackendType.Torznab, null);
                 } else {
-                    final List<IndexerConfig> availableUsenetIndexers = availableIndexers.stream().filter(x -> x.getSearchModuleType() == SearchModuleType.TORZNAB).collect(Collectors.toList());
+                    final List<IndexerConfig> availableUsenetIndexers = availableIndexers.stream().filter(x -> x.getSearchModuleType() == SearchModuleType.TORZNAB).toList();
                     for (IndexerConfig indexer : availableUsenetIndexers) {
                         executeConfigurationRequest(addRequest, BackendType.Torznab, indexer);
                     }
@@ -401,7 +402,7 @@ public class ExternalTools {
         response = webAccess.callUrl(url, getAuthHeaders(addRequest));
         logger.debug(LoggingMarkers.EXTERNAL_TOOLS, "Received response body: {}", response);
 
-        final List<XdarrIndexer> requestResponse = Jackson.JSON_MAPPER.readValue(response, new TypeReference<List<XdarrIndexer>>() {
+        final List<XdarrIndexer> requestResponse = Jackson.JSON_MAPPER.readValue(response, new TypeReference<>() {
         });
 
         final List<XdarrIndexer> nzbhydraIndexers = requestResponse.stream().filter(x -> x.getName().contains(addRequest.getNzbhydraName())).collect(Collectors.toList());
@@ -477,6 +478,7 @@ public class ExternalTools {
     }
 
     @Data
+@ReflectionMarker
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class XdarrIndexer {
 
@@ -501,6 +503,7 @@ public class ExternalTools {
     }
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -511,6 +514,7 @@ public class ExternalTools {
     }
 
     @Data
+@ReflectionMarker
     public static class XdarrAddRequestResponse {
         private boolean isWarning;
         private String propertyName;

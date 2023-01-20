@@ -1,9 +1,14 @@
 package org.nzbhydra.debuginfos;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import jakarta.annotation.PostConstruct;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.javers.core.JaversBuilder;
 import org.javers.core.diff.Diff;
 import org.nzbhydra.Jackson;
@@ -17,6 +22,7 @@ import org.nzbhydra.logging.LogAnonymizer;
 import org.nzbhydra.logging.LogContentProvider;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.problemdetection.OutdatedWrapperDetector;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.nzbhydra.update.UpdateManager;
 import org.nzbhydra.webaccess.HydraOkHttp3ClientHttpRequestFactory;
 import org.nzbhydra.webaccess.Ssl;
@@ -26,12 +32,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.management.ThreadDumpEndpoint;
 import org.springframework.boot.actuate.metrics.MetricsEndpoint;
+import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.PostConstruct;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -47,6 +51,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -82,6 +87,9 @@ public class DebugInfosProvider {
     private EntityManager entityManager;
     @Autowired
     private OutdatedWrapperDetector wrapperDetector;
+
+    @Autowired
+    private ConfigurableEnvironment environment;
     @Autowired
     private Ssl ssl;
 
@@ -170,6 +178,20 @@ public class DebugInfosProvider {
         return timeAndThreadCpuUsagesList;
     }
 
+    public static Pair<String, String> getVersionAndBuildTimestamp() {
+        final Properties properties = new Properties();
+        try {
+            properties.load(DebugInfosProvider.class.getResourceAsStream("/config/application.properties"));
+        } catch (Exception e) {
+            try {
+                properties.load(DebugInfosProvider.class.getResourceAsStream("/application.properties"));
+            } catch (Exception ex) {
+                throw new RuntimeException("Unable to load application properties", ex);
+            }
+        }
+        return Pair.of(properties.getProperty("build.version"), properties.getProperty("build.timestamp"));
+    }
+
     private double getUpTimeInMiliseconds() {
         return metricsEndpoint.metric("process.uptime", null).getMeasurements().get(0).getValue() * 1000;
     }
@@ -213,7 +235,7 @@ public class DebugInfosProvider {
         logger.info("Metrics:");
         final Set<String> metricsNames = metricsEndpoint.listNames().getNames();
         for (String metric : metricsNames) {
-            final MetricsEndpoint.MetricResponse response = metricsEndpoint.metric(metric, null);
+            final MetricsEndpoint.MetricDescriptor response = metricsEndpoint.metric(metric, null);
             logger.info(metric + ": " + response.getMeasurements().stream()
                     .map(x -> x.getStatistic().name() + ": " + formatSample(metric, x.getValue()))
                     .collect(Collectors.joining(", ")));
@@ -265,7 +287,12 @@ public class DebugInfosProvider {
     }
 
     public void logThreadDump() {
-        logger.debug(threadDumpEndpoint.textThreadDump());
+        try {
+            //Fails on native image
+            logger.debug(threadDumpEndpoint.textThreadDump());
+        } catch (Exception e) {
+            logger.error("Unable to create thread dump : {}", e.getMessage());
+        }
     }
 
     private String formatSample(String name, Double value) {
@@ -362,6 +389,7 @@ public class DebugInfosProvider {
     }
 
     @Data
+@ReflectionMarker
     public static class TimeAndThreadCpuUsages {
         private final Instant time;
         private final List<ThreadCpuUsage> threadCpuUsages = new ArrayList<>();
@@ -372,15 +400,21 @@ public class DebugInfosProvider {
     }
 
     @Data
+@ReflectionMarker
     @AllArgsConstructor
     public static class ThreadCpuUsage {
         private final String threadName;
         private final long cpuUsage;
     }
 
+    @EqualsAndHashCode(callSuper = true)
     @Data
+    @ReflectionMarker
     public static class DiffableCategoriesConfig extends CategoriesConfig {
         private Map<String, Category> categoriesMap = new HashMap<>();
+
+        public DiffableCategoriesConfig() {
+        }
 
         public DiffableCategoriesConfig(CategoriesConfig categoriesConfig) {
             categoriesConfig.getCategories().forEach(x -> {

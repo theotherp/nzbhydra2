@@ -17,7 +17,8 @@
 package org.nzbhydra.downloading;
 
 import lombok.Data;
-import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
+import org.nzbhydra.config.downloading.DownloadType;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -30,6 +31,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Data
+@ReflectionMarker
 public class DownloadResult {
 
     private static final Logger logger = LoggerFactory.getLogger(DownloadResult.class);
@@ -65,7 +67,7 @@ public class DownloadResult {
 
     protected String getFileName() {
         String filename = title;
-        if (downloadEntity.getSearchResult().getDownloadType() == SearchResultItem.DownloadType.NZB) {
+        if (downloadEntity.getSearchResult().getDownloadType() == DownloadType.NZB) {
             filename += ".nzb";
         } else {
             filename += ".torrent";

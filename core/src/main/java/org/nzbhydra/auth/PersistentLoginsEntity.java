@@ -1,12 +1,13 @@
 package org.nzbhydra.auth;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import org.nzbhydra.springnative.ReflectionMarker;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
 import java.sql.Timestamp;
 
 /**
@@ -16,7 +17,8 @@ import java.sql.Timestamp;
 @Entity
 @Table(name = "persistent_logins")
 @Data
-public class PersistentLoginsEntity {
+@ReflectionMarker
+public final class PersistentLoginsEntity {
 
     @Id
     @NotNull

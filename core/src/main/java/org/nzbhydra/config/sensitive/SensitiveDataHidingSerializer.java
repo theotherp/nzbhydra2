@@ -16,8 +16,7 @@ public class SensitiveDataHidingSerializer extends JsonSerializer<Object> {
     @Override
     public void serialize(Object value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
         String toWrite = "<REMOVED>";
-        if (value instanceof Optional) {
-            Optional optional = (Optional) value;
+        if (value instanceof Optional optional) {
             toWrite = optional.isPresent() ? "<REMOVED>" : "<NOTSET>";
         }
         logger.debug("Hiding sensitive data in config setting \"{}\"", gen.getOutputContext().getCurrentName());

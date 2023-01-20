@@ -139,7 +139,7 @@ public class HistoryCleanupTask {
     public void deleteOldIndexerApiAccesses(Instant deleteOlderThan, Connection connection) {
         logger.debug(LoggingMarkers.HISTORY_CLEANUP, "Deleting old indexer API accesses");
         Optional<Integer> optionalId = getIdBefore(deleteOlderThan, "INDEXERAPIACCESS", ASC_DESC.DESC, connection);
-        if (!optionalId.isPresent()) {
+        if (optionalId.isEmpty()) {
             logger.debug(LoggingMarkers.HISTORY_CLEANUP, "No older indexer API accesses to delete");
             return;
         }

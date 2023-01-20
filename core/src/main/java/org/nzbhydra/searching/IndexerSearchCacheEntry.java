@@ -22,6 +22,7 @@ import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.indexers.IndexerSearchEntity;
 import org.nzbhydra.searching.dtoseventsenums.IndexerSearchResult;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,6 +30,7 @@ import java.util.Comparator;
 import java.util.List;
 
 @Data
+@ReflectionMarker
 public class IndexerSearchCacheEntry {
 
     private Indexer indexer;

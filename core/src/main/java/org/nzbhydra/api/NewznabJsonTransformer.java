@@ -17,6 +17,7 @@
 package org.nzbhydra.api;
 
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.downloading.FileHandler;
 import org.nzbhydra.mapping.newznab.NewznabResponse;
 import org.nzbhydra.mapping.newznab.json.NewznabJsonChannel;
@@ -29,7 +30,6 @@ import org.nzbhydra.mapping.newznab.json.NewznabJsonItemAttributes;
 import org.nzbhydra.mapping.newznab.json.NewznabJsonResponseAttributes;
 import org.nzbhydra.mapping.newznab.json.NewznabJsonRoot;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
-import org.nzbhydra.searching.dtoseventsenums.SearchResultItem.DownloadType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

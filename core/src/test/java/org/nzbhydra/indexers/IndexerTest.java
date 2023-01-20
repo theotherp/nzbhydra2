@@ -3,8 +3,8 @@ package org.nzbhydra.indexers;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Sets;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -13,9 +13,14 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.BaseConfigHandler;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.SearchSource;
 import org.nzbhydra.config.SearchSourceRestriction;
+import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.config.indexer.IndexerConfig;
+import org.nzbhydra.config.mediainfo.MediaIdType;
+import org.nzbhydra.config.searching.SearchType;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.exceptions.IndexerAuthException;
 import org.nzbhydra.indexers.exceptions.IndexerErrorCodeException;
@@ -23,7 +28,6 @@ import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
 import org.nzbhydra.indexers.exceptions.IndexerUnreachableException;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlError;
 import org.nzbhydra.mediainfo.InfoProvider;
-import org.nzbhydra.mediainfo.MediaIdType;
 import org.nzbhydra.mediainfo.MediaInfo;
 import org.nzbhydra.mediainfo.TvInfo;
 import org.nzbhydra.searching.SearchResultAcceptor;
@@ -32,9 +36,7 @@ import org.nzbhydra.searching.db.SearchResultEntity;
 import org.nzbhydra.searching.db.SearchResultRepository;
 import org.nzbhydra.searching.dtoseventsenums.IndexerSearchResult;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
-import org.nzbhydra.searching.dtoseventsenums.SearchType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
-import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -52,22 +54,19 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
-import static org.mockito.ArgumentMatchers.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 public class IndexerTest {
 
     private BaseConfig baseConfig;
-    @Mock
-    private IndexerEntity indexerEntityMock;
+    private IndexerEntity indexerEntityMock = new IndexerEntity("indexerName");
     private IndexerConfig indexerConfig = new IndexerConfig();
     @Mock
     private Indexer indexerMock;
-    @Mock
-    private SearchResultEntity searchResultEntityMock;
+
+    private SearchResultEntity searchResultEntityMock = new SearchResultEntity(indexerEntityMock, Instant.now(), "title", "guid", "link", "details", DownloadType.NZB, Instant.now());
     @Mock
     private IndexerRepository indexerRepositoryMock;
     @Mock
@@ -98,6 +97,8 @@ public class IndexerTest {
     private InfoProvider infoProviderMock;
     @Mock
     private QueryGenerator queryGeneratorMock;
+    @Mock
+    private BaseConfigHandler baseConfigHandler;
 
     private List<SearchResultItem> searchResultItemsToReturn = Collections.emptyList();
 
@@ -140,13 +141,13 @@ public class IndexerTest {
         };
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
 
         MockitoAnnotations.initMocks(this);
         when(indexerMock.getIndexerEntity()).thenReturn(indexerEntityMock);
         when(indexerMock.getConfig()).thenReturn(indexerConfig);
-        when(indexerEntityMock.getName()).thenReturn("indexerName");
+
         when(indexerMock.getName()).thenReturn("indexerName");
 
         testee.indexer = indexerEntityMock;
@@ -177,7 +178,7 @@ public class IndexerTest {
     }
 
     @Test
-    public void shouldCreateNewSearchResultEntityWhenNoneIsFound() throws Exception {
+    void shouldCreateNewSearchResultEntityWhenNoneIsFound() throws Exception {
         SearchResultItem item = new SearchResultItem();
         item.setIndexer(indexerMock);
         item.setTitle("title");
@@ -189,18 +190,18 @@ public class IndexerTest {
         verify(searchResultRepositoryMock).saveAll(searchResultEntitiesCaptor.capture());
 
         List<SearchResultEntity> persistedEntities = searchResultEntitiesCaptor.getValue();
-        assertThat(persistedEntities.size(), is(1));
-        assertThat(persistedEntities.get(0).getTitle(), is("title"));
-        assertThat(persistedEntities.get(0).getDetails(), is("details"));
-        assertThat(persistedEntities.get(0).getIndexerGuid(), is("guid"));
+        assertThat(persistedEntities.size()).isEqualTo(1);
+        assertThat(persistedEntities.get(0).getTitle()).isEqualTo("title");
+        assertThat(persistedEntities.get(0).getDetails()).isEqualTo("details");
+        assertThat(persistedEntities.get(0).getIndexerGuid()).isEqualTo("guid");
     }
 
     @Test
-    public void shouldNotCreateNewSearchResultEntityWhenOneExists() throws Exception {
+    void shouldNotCreateNewSearchResultEntityWhenOneExists() throws Exception {
         SearchResultItem item = new SearchResultItem();
         item.setIndexerGuid("guid");
         item.setIndexer(indexerMock);
-        when(searchResultEntityMock.getIndexerGuid()).thenReturn("guid");
+        searchResultEntityMock.setIndexerGuid("guid");
         when(searchResultRepositoryMock.findAllIdsByIdIn(anyList())).thenReturn(Sets.newHashSet(299225959498991027L));
 
         testee.persistSearchResults(Collections.singletonList(item), new IndexerSearchResult());
@@ -208,33 +209,33 @@ public class IndexerTest {
         verify(searchResultRepositoryMock).saveAll(searchResultEntitiesCaptor.capture());
 
         List<SearchResultEntity> persistedEntities = searchResultEntitiesCaptor.getValue();
-        assertThat(persistedEntities.size(), is(0));
+        assertThat(persistedEntities.size()).isEqualTo(0);
     }
 
 
     @Test
-    public void handleSuccess() throws Exception {
+    void handleSuccess() throws Exception {
         indexerConfig.setState(IndexerConfig.State.DISABLED_SYSTEM_TEMPORARY);
         indexerConfig.setDisabledLevel(1);
         indexerConfig.setDisabledUntil(Instant.now().toEpochMilli());
 
         testee.handleSuccess(IndexerApiAccessType.SEARCH, 0L);
 
-        assertThat(indexerConfig.getState(), is(IndexerConfig.State.ENABLED));
-        assertThat(indexerConfig.getDisabledLevel(), is(0));
-        assertThat(indexerConfig.getDisabledUntil(), is(nullValue()));
+        assertThat(indexerConfig.getState()).isEqualTo(IndexerConfig.State.ENABLED);
+        assertThat(indexerConfig.getDisabledLevel()).isEqualTo(0);
+        assertThat(indexerConfig.getDisabledUntil()).isNull();
     }
 
     @Test
-    public void handleFailure() throws Exception {
+    void handleFailure() throws Exception {
         indexerConfig.setState(IndexerConfig.State.ENABLED);
         indexerConfig.setDisabledLevel(0);
         indexerConfig.setDisabledUntil(null);
 
         testee.handleFailure("reason", false, null, null, null);
 
-        assertThat(indexerConfig.getState(), is(IndexerConfig.State.DISABLED_SYSTEM_TEMPORARY));
-        assertThat(indexerConfig.getDisabledLevel(), is(1));
+        assertThat(indexerConfig.getState()).isEqualTo(IndexerConfig.State.DISABLED_SYSTEM_TEMPORARY);
+        assertThat(indexerConfig.getDisabledLevel()).isEqualTo(1);
         long disabledPeriod = Math.abs(Instant.ofEpochMilli(indexerConfig.getDisabledUntil()).getEpochSecond() - Instant.now().getEpochSecond());
         long delta = Math.abs(Indexer.DISABLE_PERIODS.get(1) * 60 - disabledPeriod);
         org.assertj.core.api.Assertions.assertThat(delta).isLessThan(5);
@@ -245,31 +246,33 @@ public class IndexerTest {
 
         testee.handleFailure("reason", true, null, null, null);
 
-        assertThat(indexerConfig.getState(), is(IndexerConfig.State.DISABLED_SYSTEM));
+        assertThat(indexerConfig.getState()).isEqualTo(IndexerConfig.State.DISABLED_SYSTEM);
     }
 
     @Test
-    public void shouldGetAndStoreResultToDatabaseWithSuccess() throws Exception {
+    void shouldGetAndStoreResultToDatabaseWithSuccess() throws Exception {
         when(indexerWebAccessMock.get(any(), eq(testee.config), any())).thenReturn("result");
 
         String result = (String) testee.getAndStoreResultToDatabase(new URI("http://127.0.0.1"), String.class, IndexerApiAccessType.SEARCH);
 
-        assertThat(result, is("result"));
+        assertThat(result).isEqualTo("result");
         verify(testee).handleSuccess(eq(IndexerApiAccessType.SEARCH), anyLong());
     }
 
-    @Test(expected = IndexerAccessException.class)
-    public void shouldGetAndStoreResultToDatabaseWithError() throws Exception {
-        IndexerAccessException exception = new IndexerAccessException("error");
-        when(indexerWebAccessMock.get(any(), eq(testee.config), any())).thenThrow(exception);
+    @Test
+    void shouldGetAndStoreResultToDatabaseWithError() throws Exception {
+        assertThrows(IndexerAccessException.class, () -> {
+            IndexerAccessException exception = new IndexerAccessException("error");
+            when(indexerWebAccessMock.get(any(), eq(testee.config), any())).thenThrow(exception);
 
-        testee.getAndStoreResultToDatabase(new URI("http://127.0.0.1"), String.class, IndexerApiAccessType.SEARCH);
+            testee.getAndStoreResultToDatabase(new URI("http://127.0.0.1"), String.class, IndexerApiAccessType.SEARCH);
 
-        verify(testee).handleIndexerAccessException(exception, IndexerApiAccessType.SEARCH);
+            verify(testee).handleIndexerAccessException(exception, IndexerApiAccessType.SEARCH);
+        });
     }
 
     @Test
-    public void shouldHandleIndexerAccessException() throws Exception {
+    void shouldHandleIndexerAccessException() throws Exception {
         IndexerAccessException exception = new IndexerAuthException("error");
         testee.handleIndexerAccessException(exception, IndexerApiAccessType.SEARCH);
         verify(testee).handleFailure("error", true, IndexerApiAccessType.SEARCH, null, IndexerAccessResult.AUTH_ERROR);
@@ -284,7 +287,7 @@ public class IndexerTest {
     }
 
     @Test
-    public void shouldUseFallback() throws Exception {
+    void shouldUseFallback() throws Exception {
 
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         Map<MediaIdType, String> identifiers = new HashMap<>();
@@ -301,52 +304,52 @@ public class IndexerTest {
 
 
     @Test
-    public void shouldRemoveTrailing() throws Exception {
+    void shouldRemoveTrailing() throws Exception {
         baseConfig.getSearching().setRemoveTrailing(Arrays.asList("trailing1", "trailing2"));
         String result = testee.cleanUpTitle("abc trailing1 trailing2");
-        assertThat(result, is("abc"));
+        assertThat(result).isEqualTo("abc");
 
         testee.handleNewConfig(null);
         result = testee.cleanUpTitle("abc trailing1 trailing2 def");
-        assertThat(result, is("abc trailing1 trailing2 def"));
+        assertThat(result).isEqualTo("abc trailing1 trailing2 def");
 
         testee.handleNewConfig(null);
         result = testee.cleanUpTitle("abc");
-        assertThat(result, is("abc"));
+        assertThat(result).isEqualTo("abc");
 
         testee.handleNewConfig(null);
         baseConfig.getSearching().setRemoveTrailing(Collections.emptyList());
         result = testee.cleanUpTitle("abc");
-        assertThat(result, is("abc"));
+        assertThat(result).isEqualTo("abc");
 
         testee.handleNewConfig(null);
         baseConfig.getSearching().setRemoveTrailing(Arrays.asList("trailing*"));
         result = testee.cleanUpTitle("abc trailing1 trailing2");
-        assertThat(result, is("abc"));
+        assertThat(result).isEqualTo("abc");
 
         testee.handleNewConfig(null);
         baseConfig.getSearching().setRemoveTrailing(Arrays.asList("-obfuscated"));
         result = testee.cleanUpTitle("abc-obfuscated");
-        assertThat(result, is("abc"));
+        assertThat(result).isEqualTo("abc");
 
         testee.handleNewConfig(null);
         baseConfig.getSearching().setRemoveTrailing(Arrays.asList("-obfuscated******"));
         result = testee.cleanUpTitle("abc-obfuscated");
-        assertThat(result, is("abc"));
+        assertThat(result).isEqualTo("abc");
 
         testee.handleNewConfig(null);
         baseConfig.getSearching().setRemoveTrailing(Arrays.asList("[*]"));
         result = testee.cleanUpTitle("abc [obfuscated]");
-        assertThat(result, is("abc"));
+        assertThat(result).isEqualTo("abc");
 
         testee.handleNewConfig(null);
         baseConfig.getSearching().setRemoveTrailing(Arrays.asList("[*]"));
         result = testee.cleanUpTitle("abc [obfuscated] def");
-        assertThat(result, is("abc [obfuscated] def"));
+        assertThat(result).isEqualTo("abc [obfuscated] def");
     }
 
     @Test
-    public void shouldRemoveTrailing2() {
+    void shouldRemoveTrailing2() {
         List<String> collect = IntStream.range(1, 100).mapToObj(x -> "trailing" + x + "*********").collect(Collectors.toList());
         List<String> all = new ArrayList<>();
         all.addAll(collect);

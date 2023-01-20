@@ -1,16 +1,28 @@
 package org.nzbhydra.historystats;
 
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.downloading.FileDownloadEntity;
 import org.nzbhydra.downloading.FileDownloadRepository;
-import org.nzbhydra.historystats.stats.*;
-import org.nzbhydra.indexers.*;
+import org.nzbhydra.historystats.stats.AverageResponseTime;
+import org.nzbhydra.historystats.stats.CountPerDayOfWeek;
+import org.nzbhydra.historystats.stats.CountPerHourOfDay;
+import org.nzbhydra.historystats.stats.DownloadPerAge;
+import org.nzbhydra.historystats.stats.DownloadPerAgeStats;
+import org.nzbhydra.historystats.stats.IndexerApiAccessStatsEntry;
+import org.nzbhydra.historystats.stats.IndexerDownloadShare;
+import org.nzbhydra.historystats.stats.StatsRequest;
+import org.nzbhydra.indexers.IndexerAccessResult;
+import org.nzbhydra.indexers.IndexerApiAccessEntity;
+import org.nzbhydra.indexers.IndexerApiAccessRepository;
+import org.nzbhydra.indexers.IndexerEntity;
+import org.nzbhydra.indexers.IndexerRepository;
+import org.nzbhydra.indexers.IndexerSearchRepository;
 import org.nzbhydra.searching.SearchModuleConfigProvider;
 import org.nzbhydra.searching.SearchModuleProvider;
 import org.nzbhydra.searching.db.SearchEntity;
@@ -19,21 +31,21 @@ import org.nzbhydra.searching.db.SearchResultEntity;
 import org.nzbhydra.searching.db.SearchResultRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
 
 @SuppressWarnings("SpringJavaAutowiringInspection")
-@RunWith(SpringRunner.class)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = NzbHydra.class)
-@Ignore // Doesn't run since upgrade to Spring Boot 2.1
 public class StatsComponentTest {
 
     private IndexerEntity indexer1;
@@ -61,10 +73,10 @@ public class StatsComponentTest {
     @Autowired
     private Stats stats;
 
-    @Before
+    @BeforeEach
     public void setUp() {
-        indexerRepository.deleteAll();
-        apiAccessRepository.deleteAll();
+//        indexerRepository.deleteAll();
+//        apiAccessRepository.deleteAll();
         indexerConfig1 = new IndexerConfig();
         indexerConfig1.setName("indexer1");
         indexerConfig1.setSearchModuleType(SearchModuleType.NEWZNAB);
@@ -82,8 +94,8 @@ public class StatsComponentTest {
     }
 
     @Test
-    public void shouldCalculateAverageResponseTimes() throws Exception {
-        assertEquals(2, indexerRepository.count());
+    void shouldCalculateAverageResponseTimes() throws Exception {
+        assertThat(indexerRepository.count()).isEqualTo(2);
 
         IndexerApiAccessEntity apiAccess1 = new IndexerApiAccessEntity(indexer1);
         apiAccess1.setResponseTime(1000L);
@@ -102,17 +114,17 @@ public class StatsComponentTest {
 
         //Access #3 is not included
         List<AverageResponseTime> averageResponseTimes = stats.averageResponseTimes(new StatsRequest(Instant.now().minus(10, ChronoUnit.DAYS), Instant.now(), true));
-        assertEquals(1, averageResponseTimes.size());
-        assertEquals(1500D, averageResponseTimes.get(0).getAvgResponseTime(), 0D);
+        assertThat(averageResponseTimes).hasSize(1);
+        assertThat(averageResponseTimes.get(0).getAvgResponseTime()).isCloseTo(1500D, within(0D));
 
         //Access #3 is included
         averageResponseTimes = stats.averageResponseTimes(new StatsRequest(Instant.now().minus(101, ChronoUnit.DAYS), Instant.now(), true));
-        assertEquals(1, averageResponseTimes.size());
-        assertEquals(2333D, averageResponseTimes.get(0).getAvgResponseTime(), 0D);
+        assertThat(averageResponseTimes).hasSize(1);
+        assertThat(averageResponseTimes.get(0).getAvgResponseTime()).isCloseTo(2333D, within(0D));
     }
 
     @Test
-    public void shouldCalculateSearchesPerDayOfWeek() throws Exception {
+    void shouldCalculateSearchesPerDayOfWeek() throws Exception {
         SearchEntity searchFriday = new SearchEntity();
         searchFriday.setTime(Instant.ofEpochSecond(1490945310L)); //Friday
         SearchEntity searchThursday1 = new SearchEntity();
@@ -126,20 +138,20 @@ public class StatsComponentTest {
 
         StatsRequest statsRequest = new StatsRequest(searchFriday.getTime().minus(10, ChronoUnit.DAYS), searchFriday.getTime().plus(10, ChronoUnit.DAYS), true);
         List<CountPerDayOfWeek> result = stats.countPerDayOfWeek("SEARCH", statsRequest);
-        assertEquals(7, result.size());
+        assertThat(result).hasSize(7);
 
-        assertEquals("Thu", result.get(3).getDay());
-        assertEquals(Integer.valueOf(2), result.get(3).getCount());
+        assertThat(result.get(3).getDay()).isEqualTo("Thu");
+        assertThat(result.get(3).getCount()).isEqualTo(Integer.valueOf(2));
 
-        assertEquals("Fri", result.get(4).getDay());
-        assertEquals(Integer.valueOf(1), result.get(4).getCount());
+        assertThat(result.get(4).getDay()).isEqualTo("Fri");
+        assertThat(result.get(4).getCount()).isEqualTo(Integer.valueOf(1));
 
-        assertEquals("Sun", result.get(6).getDay());
-        assertEquals(Integer.valueOf(1), result.get(6).getCount());
+        assertThat(result.get(6).getDay()).isEqualTo("Sun");
+        assertThat(result.get(6).getCount()).isEqualTo(Integer.valueOf(1));
     }
 
     @Test
-    public void shouldCalculateDownloadsPerDayOfWeek() throws Exception {
+    void shouldCalculateDownloadsPerDayOfWeek() throws Exception {
 
         FileDownloadEntity downloadFriday = new FileDownloadEntity();
         downloadFriday.setTime(Instant.ofEpochSecond(1490945310L)); //Friday
@@ -158,20 +170,20 @@ public class StatsComponentTest {
 
 
         List<CountPerDayOfWeek> result = stats.countPerDayOfWeek("INDEXERNZBDOWNLOAD", new StatsRequest(downloadFriday.getTime().minus(10, ChronoUnit.DAYS), downloadFriday.getTime().plus(10, ChronoUnit.DAYS), true));
-        assertEquals(7, result.size());
+        assertThat(result).hasSize(7);
 
-        assertEquals("Thu", result.get(3).getDay());
-        assertEquals(Integer.valueOf(2), result.get(3).getCount());
+        assertThat(result.get(3).getDay()).isEqualTo("Thu");
+        assertThat(result.get(3).getCount()).isEqualTo(Integer.valueOf(2));
 
-        assertEquals("Fri", result.get(4).getDay());
-        assertEquals(Integer.valueOf(1), result.get(4).getCount());
+        assertThat(result.get(4).getDay()).isEqualTo("Fri");
+        assertThat(result.get(4).getCount()).isEqualTo(Integer.valueOf(1));
 
-        assertEquals("Sun", result.get(6).getDay());
-        assertEquals(Integer.valueOf(1), result.get(6).getCount());
+        assertThat(result.get(6).getDay()).isEqualTo("Sun");
+        assertThat(result.get(6).getCount()).isEqualTo(Integer.valueOf(1));
     }
 
     @Test
-    public void shouldCalculateDownloadsAges() throws Exception {
+    void shouldCalculateDownloadsAges() throws Exception {
 
         FileDownloadEntity download1 = new FileDownloadEntity();
         download1.setAge(10);
@@ -189,18 +201,18 @@ public class StatsComponentTest {
         downloadRepository.saveAll(Arrays.asList(download1, download2, download3, download4, download5, download6));
 
         List<DownloadPerAge> downloadPerAges = stats.downloadsPerAge();
-        assertThat(downloadPerAges.get(34).getAge(), is(3400));
-        assertThat(downloadPerAges.get(34).getCount(), is(2));
+        assertThat(downloadPerAges.get(34).getAge()).isEqualTo(3400);
+        assertThat(downloadPerAges.get(34).getCount()).isEqualTo(2);
 
         DownloadPerAgeStats downloadPerAgeStats = stats.downloadsPerAgeStats();
-        assertThat(downloadPerAgeStats.getAverageAge(), is(1901));
-        assertThat(downloadPerAgeStats.getPercentOlder1000(), is(66));
-        assertThat(downloadPerAgeStats.getPercentOlder2000(), is(50));
-        assertThat(downloadPerAgeStats.getPercentOlder3000(), is(33));
+        assertThat(downloadPerAgeStats.getAverageAge()).isEqualTo(1901);
+        assertThat(downloadPerAgeStats.getPercentOlder1000()).isEqualTo(66);
+        assertThat(downloadPerAgeStats.getPercentOlder2000()).isEqualTo(50);
+        assertThat(downloadPerAgeStats.getPercentOlder3000()).isEqualTo(33);
     }
 
     @Test
-    public void shouldCalculateIndexerDownloadShares() throws Exception {
+    void shouldCalculateIndexerDownloadShares() throws Exception {
         FileDownloadEntity download1 = new FileDownloadEntity();
         SearchResultEntity searchResultEntity1 = getSearchResultEntity(indexer1, "1");
         download1.setSearchResult(searchResultEntity1);
@@ -229,9 +241,9 @@ public class StatsComponentTest {
         downloadRepository.saveAll(Arrays.asList(download1, download2, download3, download4, download5, download6));
 
         List<IndexerDownloadShare> shares = stats.indexerDownloadShares(new StatsRequest(Instant.now().minus(100, ChronoUnit.DAYS), Instant.now().plus(1, ChronoUnit.DAYS), true));
-        assertThat(shares.get(0).getIndexerName(), is("indexer1"));
-        assertThat((int) shares.get(0).getShare(), is(66));
-        assertThat((int) shares.get(1).getShare(), is(33));
+        assertThat(shares.get(0).getIndexerName()).isEqualTo("indexer1");
+        assertThat((int) shares.get(0).getShare()).isEqualTo(66);
+        assertThat((int) shares.get(1).getShare()).isEqualTo(33);
     }
 
     protected SearchResultEntity getSearchResultEntity(IndexerEntity indexer1, String title) {
@@ -242,9 +254,10 @@ public class StatsComponentTest {
         return searchResultEntity1;
     }
 
+    //Doesn't run on CircleCI for some reason
     @Test
-    @Ignore //Doesn't run on CircleCI for some reason
-    public void shouldCalculateSearchesPerHourOfDay() throws Exception {
+    @Disabled
+    void shouldCalculateSearchesPerHourOfDay() throws Exception {
         SearchEntity search12 = new SearchEntity();
         search12.setTime(Instant.ofEpochSecond(1490955803L));
         SearchEntity search16a = new SearchEntity();
@@ -256,14 +269,14 @@ public class StatsComponentTest {
         searchRepository.saveAll(Arrays.asList(search12, search16a, search16b, search23));
 
         List<CountPerHourOfDay> result = stats.countPerHourOfDay("SEARCH", new StatsRequest(search12.getTime().minus(10, ChronoUnit.DAYS), search12.getTime().plus(10, ChronoUnit.DAYS), true));
-        assertEquals(24, result.size());
-        assertEquals(Integer.valueOf(1), result.get(12).getCount());
-        assertEquals(Integer.valueOf(2), result.get(16).getCount());
-        assertEquals(Integer.valueOf(1), result.get(23).getCount());
+        assertThat(result).hasSize(24);
+        assertThat(result.get(12).getCount()).isEqualTo(Integer.valueOf(1));
+        assertThat(result.get(16).getCount()).isEqualTo(Integer.valueOf(2));
+        assertThat(result.get(23).getCount()).isEqualTo(Integer.valueOf(1));
     }
 
     @Test
-    public void shouldCalculateIndexerApiAccessStats() throws Exception {
+    void shouldCalculateIndexerApiAccessStats() throws Exception {
         IndexerApiAccessEntity apiAccess1 = new IndexerApiAccessEntity(indexer1);
         apiAccess1.setResult(IndexerAccessResult.CONNECTION_ERROR); //Counted as failed
         apiAccess1.setTime(Instant.now().minus(24, ChronoUnit.HOURS));
@@ -284,22 +297,22 @@ public class StatsComponentTest {
         apiAccessRepository.save(apiAccess4);
 
         List<IndexerApiAccessStatsEntry> result = stats.indexerApiAccesses(new StatsRequest(Instant.now().minus(10, ChronoUnit.DAYS), Instant.now().plus(10, ChronoUnit.DAYS), false));
-        assertEquals(1, result.size());
+        assertThat(result).hasSize(1);
         //One yesterday, two today: 1.5 on average
-        assertEquals(1.5D, result.get(0).getAverageAccessesPerDay(), 0D);
+        assertThat(result.get(0).getAverageAccessesPerDay()).isCloseTo(1.5D, within(0D));
         //One with connection error, one with another error, one successful
-        assertEquals(33D, result.get(0).getPercentSuccessful(), 1D);
+        assertThat(result.get(0).getPercentSuccessful()).isCloseTo(33D, within(1D));
 
         result = stats.indexerApiAccesses(new StatsRequest(Instant.now().minus(20, ChronoUnit.DAYS), Instant.now().plus(10, ChronoUnit.DAYS), false));
-        assertEquals(1, result.size());
+        assertThat(result).hasSize(1);
         //One yesterday, two today, one 14 days ago: 4/3=1.33 on average
-        assertEquals(1.33D, result.get(0).getAverageAccessesPerDay(), 0.01D);
+        assertThat(result.get(0).getAverageAccessesPerDay()).isCloseTo(1.33D, within(0.01D));
         //One with connection error, one with another error, two successful
-        assertEquals(50D, result.get(0).getPercentSuccessful(), 0D);
+        assertThat(result.get(0).getPercentSuccessful()).isCloseTo(50D, within(0D));
 
         //Now include diabled
         result = stats.indexerApiAccesses(new StatsRequest(Instant.now().minus(10, ChronoUnit.DAYS), Instant.now().plus(10, ChronoUnit.DAYS), true));
-        assertEquals(2, result.size());
+        assertThat(result).hasSize(2);
     }
 
 

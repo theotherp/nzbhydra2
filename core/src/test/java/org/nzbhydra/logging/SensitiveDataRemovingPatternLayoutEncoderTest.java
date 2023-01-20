@@ -16,14 +16,14 @@
 
 package org.nzbhydra.logging;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class SensitiveDataRemovingPatternLayoutEncoderTest {
 
     @Test
-    public void shouldRemoveSensitiveData() {
+    void shouldRemoveSensitiveData() {
         SensitiveDataRemovingPatternLayoutEncoder encoder = new SensitiveDataRemovingPatternLayoutEncoder();
         String result = encoder.removeSensitiveData("https://www.indexer.com/api?apikey=12345678&raw=0&t=search&q=abc");
         assertThat(result).isEqualTo("https://www.indexer.com/api?apikey=<apikey>&raw=0&t=search&q=abc");

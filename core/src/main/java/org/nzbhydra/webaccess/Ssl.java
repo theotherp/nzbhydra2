@@ -16,6 +16,7 @@
 
 package org.nzbhydra.webaccess;
 
+import jakarta.annotation.PostConstruct;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.config.ConfigChangedEvent;
 import org.nzbhydra.config.ConfigProvider;
@@ -28,7 +29,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLParameters;
@@ -219,7 +219,7 @@ public class Ssl {
             return false;
         }
 
-        return aMatcher.group(3).toLowerCase().equals(bMatcher.group(3).toLowerCase());
+        return aMatcher.group(3).equalsIgnoreCase(bMatcher.group(3));
     }
 
     //https://stackoverflow.com/a/2406819/184264
