@@ -29,7 +29,7 @@ import org.springframework.security.web.firewall.DefaultHttpFirewall;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.filter.ForwardedHeaderFilter;
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @Order
 @EnableWebSecurity
 public class SecurityConfig {

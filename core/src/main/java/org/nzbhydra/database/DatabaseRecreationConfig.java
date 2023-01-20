@@ -23,7 +23,7 @@ import org.springframework.context.annotation.Configuration;
 
 import java.util.Set;
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 public class DatabaseRecreationConfig extends AbstractBeansOfTypeDatabaseInitializerDetector {
 
     @Bean

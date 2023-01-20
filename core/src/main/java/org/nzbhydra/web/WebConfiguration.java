@@ -47,7 +47,7 @@ import java.util.List;
 import java.util.Map;
 
 @SuppressWarnings("unchecked")
-@Configuration
+@Configuration(proxyBeanMethods = false)
 public class WebConfiguration extends WebMvcConfigurationSupport {
 
     @Autowired
