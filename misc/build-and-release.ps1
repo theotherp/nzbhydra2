@@ -7,6 +7,7 @@ function Exec([scriptblock]$cmd, [string]$errorMessage = "Error executing comman
         throw $errorMessage
     }
 }
+
 $ErrorActionPreference = 'Stop'
 
 $version = $args[0]
