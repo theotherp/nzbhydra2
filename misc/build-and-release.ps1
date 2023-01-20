@@ -198,7 +198,7 @@ if ($linuxVersion -ne $version) {
 Write-Host "All required files exist and versions match"
 
 Write-Host "Building releases ***********************************************************************"
-exec { mvn -q -pl org.nzbhydra:windows-release,org.nzbhydra:generic-release,org.nzbhydra:linux-release clean install -B -T 1C `-DskipTests=true}
+exec { mvn -q -pl org.nzbhydra:windows-release,org.nzbhydra:generic-release,org.nzbhydra:linux-release clean install -T 1C `-DskipTests=true}
 
 
 if ($dryRun) {
@@ -247,28 +247,6 @@ exec { mvn -B versions:commit }
 if (-not $?) {
     Write-Error "Making snapshot version effective failed"
     git reset --hard
-    exit 1
-}
-
-if ($dryRun) {
-    Write-Host "Committing snapshot code (not really, dry run) ***********************************************************************"
-} else {
-    Write-Host "Committing snapshot code ***********************************************************************"
-    git commit -am "Set snapshot to $nextVersion"
-}
-if (-not $?) {
-    Write-Error "Committing snapshot code failed"
-    exit 1
-}
-
-if ($dryRun) {
-    Write-Host "Pushing to master (not really, dry run) ***********************************************************************"
-} else {
-    Write-Host "Pushing to master ***********************************************************************"
-    git push
-}
-if (-not $?) {
-    Write-Error "Pushing to master failed"
     exit 1
 }
 
