@@ -133,7 +133,7 @@ if ($dryRun) {
     Write-Host "Tagging (not really, just dry run) ***********************************************************************"
 } else {
     Write-Host "Tagging ***********************************************************************"
-    git tag -a v"$version" -m "v$nextVersion"
+    git tag -a v"$version" -m "v$version"
     if (-not $?) {
         Write-Error "Tagging failed"
         git reset --hard
@@ -155,7 +155,7 @@ if ($dryRun) {
 
 
 Write-Host "Building core jar"
-exec { mvn -q -pl org.nzbhydra:nzbhydra2,org.nzbhydra:mapping,org.nzbhydra:assertions,org.nzbhydra:core clean install -B -T 1C `-DskipTests=true}
+exec { mvn -q -pl org.nzbhydra:nzbhydra2,org.nzbhydra:shared,org.nzbhydra:mapping,org.nzbhydra:assertions,org.nzbhydra:core clean install -B -T 1C `-DskipTests=true}
 copy .\core\target\*-exec.jar .\releases\generic-release\include\
 if (-not $?) {
     Write-Error "Clean install of core failed"
