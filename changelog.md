@@ -1,3 +1,9 @@
+### v5.0.3 (2023-01-21)
+
+**Fix** Downloader icons were not shown
+
+
+
 ### v5.0.2 (2023-01-20)
 
 **Fix** Autocomplete pictures and alternative themes were not loaded when using an URL base
