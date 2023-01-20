@@ -158,6 +158,7 @@ if ($dryRun) {
 
 Write-Host "Building core jar"
 exec { mvn -q -pl org.nzbhydra:nzbhydra2,org.nzbhydra:shared,org.nzbhydra:mapping,org.nzbhydra:assertions,org.nzbhydra:core clean install -B -T 1C `-DskipTests=true}
+erase .\core\target\*.jar
 copy .\core\target\*-exec.jar .\releases\generic-release\include\
 if (-not $?) {
     Write-Error "Clean install of core failed"
@@ -195,6 +196,10 @@ if ($linuxVersion -ne $version) {
 }
 
 Write-Host "All required files exist and versions match"
+
+Write-Host "Building releases ***********************************************************************"
+exec { mvn -q -pl org.nzbhydra:windows-release,org.nzbhydra:generic-release,org.nzbhydra:linux-release clean install -B -T 1C `-DskipTests=true}
+
 
 if ($dryRun) {
     Write-Host "Releasing to github (not really, just dry run) ***********************************************************************"
