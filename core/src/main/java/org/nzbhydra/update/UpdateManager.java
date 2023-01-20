@@ -11,8 +11,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.JavaVersion;
-import org.apache.commons.lang3.SystemUtils;
 import org.nzbhydra.Jackson;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.backup.BackupAndRestore;
@@ -163,11 +161,6 @@ public class UpdateManager implements InitializingBean {
                 updateInfo.setBetaVersion(latestVersionWithBeta.getAsString());
             }
         }
-        if (currentVersion.major == 4 && latestVersion.major == 5 && !SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_17)) {
-            logger.info("Update from 4.x to 5.x not supported without Java 17");
-            updateInfo.setUpdateAvailable(false);
-            updateInfo.setBetaUpdateAvailable(false);
-        }
         updateInfo.setPackageInfo(getPackageInfo());
 
         return updateInfo;
@@ -185,7 +178,6 @@ public class UpdateManager implements InitializingBean {
     public boolean isUpdatedExternally() {
         return DebugInfosProvider.isRunInDocker() || Boolean.parseBoolean(System.getProperty(DISABLE_UPDATE_PROPERTY)) || Boolean.parseBoolean(System.getenv(DISABLE_UPDATE_PROPERTY));
     }
-
 
     private boolean isVersionIgnored(SemanticVersion version) throws UpdateException {
         Optional<UpdateData> updateData = genericStorage.get(KEY, UpdateData.class);

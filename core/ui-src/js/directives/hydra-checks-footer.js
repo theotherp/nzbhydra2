@@ -72,7 +72,7 @@ function hydraChecksFooter() {
                 if (response.data !== "" && response.data) {
                     console.log("Java below 17");
                     //headline, message, params, size, textAlign
-                    ModalService.open("Java version below 17", 'You\'re currently running NZBHydra2 with an older java version. A future update will require Java 17. Please update your system accordingly.', {
+                    ModalService.open("Java version below 17", 'You\'re currently running NZBHydra2 with an older java version. A future update will require Java 17. Please install <a href="https://adoptium.net/" target="_blank">Java 17</a> (not higher) from here.', {
                         yes: {
                             text: "OK"
                         }
