@@ -134,7 +134,7 @@ if ($dryRun) {
     Write-Host "Tagging (not really, just dry run) ***********************************************************************"
 } else {
     Write-Host "Tagging ***********************************************************************"
-    git tag -a v"$version" -m "v$version"
+    git tag -a v$version -m v$version
     if (-not $?) {
         Write-Error "Tagging failed"
         git reset --hard
@@ -147,8 +147,9 @@ if ($dryRun) {
 } else {
     Write-Host "Pushing ***********************************************************************"
     git push
+    git push origin v$version
     if (-not $?) {
-        Write-Error "Tagging failed"
+        Write-Error "Pushing failed"
         git reset --hard
         exit 1
     }
