@@ -98,16 +98,13 @@
     </profiles>
 
     <properties>
-        <spring.boot.version>3.0.1</spring.boot.version>
-        <spring.boot.maven.version>3.0.1</spring.boot.maven.version>
-        <spring.oxm.version>6.0.3</spring.oxm.version>
-        <spring.test.version>6.0.3</spring.test.version>
+        <spring.boot.version>3.0.2</spring.boot.version>
+        <spring.boot.maven.version>3.0.2</spring.boot.maven.version>
+        <spring.oxm.version>6.0.4</spring.oxm.version>
         <spring-data-jpa.version>3.0.0</spring-data-jpa.version>
-        <spring.oxm.version>6.0.3</spring.oxm.version>
+        <spring.oxm.version>6.0.4</spring.oxm.version>
         <spring-data-commons.version>3.0.0</spring-data-commons.version>
-        <hibernate-core.version>6.1.6.Final</hibernate-core.version>
         <jakarta.persistence-api.version>3.1.0</jakarta.persistence-api.version>
-        <spring.security.test.version>6.0.0</spring.security.test.version>
         <jackson.version>2.14.0</jackson.version>
         <lombok.version>1.18.24</lombok.version>
         <logback.version>1.4.5</logback.version>
