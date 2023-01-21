@@ -5,11 +5,11 @@ auth:
     rememberMeValidityDays: 14
     authHeader: null
     authHeaderIpRanges: [ ]
-    restrictAdmin: false
-    restrictDetailsDl: false
-    restrictIndexerSelection: false
-    restrictSearch: false
-    restrictStats: false
+    restrictAdmin: true
+    restrictDetailsDl: true
+    restrictIndexerSelection: true
+    restrictSearch: true
+    restrictStats: true
     allowApiStats: true
     users:
         - maySeeAdmin: true

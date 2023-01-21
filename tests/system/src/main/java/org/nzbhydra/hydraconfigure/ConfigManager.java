@@ -16,7 +16,6 @@
 
 package org.nzbhydra.hydraconfigure;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.nzbhydra.HydraClient;
 import org.nzbhydra.Jackson;
 import org.nzbhydra.config.BaseConfig;
@@ -32,15 +31,15 @@ public class ConfigManager {
     public BaseConfig getCurrentConfig() {
         try {
             return Jackson.JSON_MAPPER.readValue(hydraClient.get("/internalapi/config").body(), BaseConfig.class);
-        } catch (JsonProcessingException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
     public void setConfig(BaseConfig baseConfig) {
         try {
-            hydraClient.put("internalapi/config", Jackson.JSON_MAPPER.writeValueAsString(baseConfig));
-        } catch (JsonProcessingException e) {
+            hydraClient.put("/internalapi/config", Jackson.JSON_MAPPER.writeValueAsString(baseConfig));
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }

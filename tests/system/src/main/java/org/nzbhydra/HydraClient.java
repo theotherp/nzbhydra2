@@ -100,11 +100,13 @@ public class HydraClient {
             }
         }
         final RequestBody body = createRequestBody(requestBody);
-        try (Response response = getClient().newCall(new Request.Builder()
+        final Request request = new Request.Builder()
                 .headers(Headers.of(headers))
                 .method(method, body)
                 .url(urlBuilder.build())
-                .build()).execute()) {
+                .build();
+        logger.debug("Making request {}", request);
+        try (Response response = getClient().newCall(request).execute()) {
             try (ResponseBody responseBody = response.body()) {
                 return new HydraResponse(responseBody.string(), response.code());
             }

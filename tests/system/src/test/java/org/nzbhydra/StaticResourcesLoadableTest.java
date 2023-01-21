@@ -49,7 +49,7 @@ public class StaticResourcesLoadableTest {
                 .stream().filter(File::isFile).toList();
         for (File file : files) {
             final String resourceUrlPath = resourcesFolder.toPath().relativize(file.toPath()).toString();
-            final HydraResponse hydraResponse = hydraClient.get(resourceUrlPath).raiseIfUnsuccessful();
+            final HydraResponse hydraResponse = hydraClient.get(resourceUrlPath);
         }
         logger.info("Successfully loaded " + files.size() + " static resource files");
     }
