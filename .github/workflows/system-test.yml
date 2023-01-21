@@ -2,6 +2,8 @@ name: system-test
 
 on:
     push:
+        tags-ignore:
+            - '*'
     workflow_dispatch:
 
 jobs:

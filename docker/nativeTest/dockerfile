@@ -1,5 +1,6 @@
 # alpine doesn't work because we need libgc for the native image
 FROM ubuntu:22.04
+LABEL org.opencontainers.image.description="Image to test NZBHydra2 in a pipeline build. *NOT* intended for end users."
 # See https://octopus.com/blog/using-ubuntu-docker-image
 RUN echo 'APT::Install-Suggests "0";' >> /etc/apt/apt.conf.d/00-docker
 RUN echo 'APT::Install-Recommends "0";' >> /etc/apt/apt.conf.d/00-docker
