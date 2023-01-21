@@ -1,3 +1,11 @@
+### v5.0.6 (2023-01-21)
+
+**Fix** NZBHydra wouldn't start with performance logging enabled. So many corner cases...
+
+**Fix** Starting NZBHydra on linux via the nzbhydra executable didn't work and you'd get an error mentioning zlib. For some wild reason I don't understand this was not caused by the actual main binary but by the compiled wrapper. So running NZBHydra via python wrapper worked. I've compiled the wrapper on another machine and it worked. Why? I don't know. Do I give a fuck by now? Nope.
+
+
+
 ### v5.0.5 (2023-01-21)
 
 **Feature** Include service scripts for windows and linux in generic release
