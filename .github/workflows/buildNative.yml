@@ -45,28 +45,29 @@ jobs:
                 run: |
                     echo "::notice::Will skip build of native image / docker container. No changed files in core since last push."
 
-            -   name: NativeImage
-                uses: graalvm/setup-graalvm@v1
-                if: steps.changed-files-specific.outputs.any_changed == 'true'
-                with:
-                    java-version: '17'
-                    version: 'latest'
-                    components: 'native-image'
-                    cache: 'maven'
-                    github-token: ${{ secrets.GITHUB_TOKEN }}
+            - name: NativeImage
+              uses: graalvm/setup-graalvm@v1
+              if: steps.changed-files-specific.outputs.any_changed == 'true'
+              with:
+                  java-version: '17'
+                  version: 'latest'
+                  components: 'native-image'
+                  cache: 'maven'
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
 
             - name: "Install all with Maven"
+              if: steps.changed-files-specific.outputs.any_changed == 'true'
               run: mvn --batch-mode clean install -pl !org.nzbhydra:linux-release,!org.nzbhydra:windows-release,!org.nzbhydra:generic-release -DskipTests -T 1C
 
-            -   name: "Run unit tests"
-                run: mvn --batch-mode test -T 1C -pl !org.nzbhydra:tests,!org.nzbhydra.tests:system --fail-at-end
+            - name: "Run unit tests"
+              run: mvn --batch-mode test -T 1C -pl !org.nzbhydra:tests,!org.nzbhydra.tests:system --fail-at-end
 
-            -   name: "Create test Report"
-                uses: dorny/test-reporter@v1
-                if: always()
-                continue-on-error: true
-                with:
-                    name: Unit test report
+            - name: "Create test Report"
+              uses: dorny/test-reporter@v1
+              if: always()
+              continue-on-error: true
+              with:
+                  name: Unit test report
                     path: "**/surefire-reports/*.xml"
                     reporter: java-junit
 
