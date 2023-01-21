@@ -118,43 +118,6 @@ if (-not $?) {
     exit 1
 }
 
-if ($dryRun) {
-    Write-Host "Committing (not really, just dry run) ***********************************************************************"
-} else {
-    Write-Host "Committing ***********************************************************************"
-    git commit -am "Update to $version"
-    if (-not $?) {
-        Write-Error "Commit failed"
-        git reset --hard
-        exit 1
-    }
-}
-
-if ($dryRun) {
-    Write-Host "Tagging (not really, just dry run) ***********************************************************************"
-} else {
-    Write-Host "Tagging ***********************************************************************"
-    git tag -a v$version -m v$version
-    if (-not $?) {
-        Write-Error "Tagging failed"
-        git reset --hard
-        exit 1
-    }
-}
-
-if ($dryRun) {
-    Write-Host "Pushing (not really, just dry run) ***********************************************************************"
-} else {
-    Write-Host "Pushing ***********************************************************************"
-    git push
-    git push origin v$version
-    if (-not $?) {
-        Write-Error "Pushing failed"
-        git reset --hard
-        exit 1
-    }
-}
-
 
 Write-Host "Building core jar"
 exec { mvn -q -pl org.nzbhydra:nzbhydra2,org.nzbhydra:shared,org.nzbhydra:mapping,org.nzbhydra:assertions,org.nzbhydra:core clean install -B -T 1C `-DskipTests=true}
@@ -200,6 +163,43 @@ Write-Host "All required files exist and versions match"
 Write-Host "Building releases ***********************************************************************"
 exec { mvn -q -pl org.nzbhydra:windows-release,org.nzbhydra:generic-release,org.nzbhydra:linux-release clean install -T 1C `-DskipTests=true}
 
+
+if ($dryRun) {
+    Write-Host "Committing (not really, just dry run) ***********************************************************************"
+} else {
+    Write-Host "Committing ***********************************************************************"
+    git commit -am "Update to $version"
+    if (-not $?) {
+        Write-Error "Commit failed"
+        git reset --hard
+        exit 1
+    }
+}
+
+if ($dryRun) {
+    Write-Host "Tagging (not really, just dry run) ***********************************************************************"
+} else {
+    Write-Host "Tagging ***********************************************************************"
+    git tag -a v$version -m v$version
+    if (-not $?) {
+        Write-Error "Tagging failed"
+        git reset --hard
+        exit 1
+    }
+}
+
+if ($dryRun) {
+    Write-Host "Pushing (not really, just dry run) ***********************************************************************"
+} else {
+    Write-Host "Pushing commits and tags ***********************************************************************"
+    git push
+    git push origin v$version
+    if (-not $?) {
+        Write-Error "Pushing failed"
+        git reset --hard
+        exit 1
+    }
+}
 
 if ($dryRun) {
     Write-Host "Releasing to github (not really, just dry run) ***********************************************************************"
