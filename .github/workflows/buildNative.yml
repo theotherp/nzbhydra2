@@ -107,6 +107,5 @@ jobs:
                 run: |
                     cp other/wrapper/nzbhydra2wrapperPy3.py ./docker/nativeTest/
                     cd ./docker/nativeTest/
-                    docker build -t hydradocker .
-                    docker tag hydradocker:latest ghcr.io/theotherp/hydradocker:latest
+                    docker build -t hydradocker -t ghcr.io/theotherp/hydradocker:latest -t ghcr.io/theotherp/hydradocker:${{ github.ref_name}} .
                     docker push ghcr.io/theotherp/hydradocker:latest

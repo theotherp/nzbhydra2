@@ -148,6 +148,9 @@ public class NzbHydra {
     }
 
     protected static void startup(String[] args, OptionSet options) throws Exception {
+        final Pair<String, String> versionAndBuildTimestamp = DebugInfosProvider.getVersionAndBuildTimestamp();
+        logger.info("Version: {}", versionAndBuildTimestamp.getLeft());
+        logger.info("Build timestamp: {}", versionAndBuildTimestamp.getRight());
         File dataFolderFile = new File(dataFolder);
         //Check if we can write in the data folder. If not we can just quit now
         if (!dataFolderFile.exists() && !dataFolderFile.mkdirs()) {
@@ -311,9 +314,6 @@ public class NzbHydra {
             //I don't know why I have to do this but otherwise genericStorage is always empty
             configProvider.getBaseConfig().setGenericStorage(new ConfigReaderWriter().loadSavedConfig().getGenericStorage());
 
-            final Pair<String, String> versionAndBuildTimestamp = DebugInfosProvider.getVersionAndBuildTimestamp();
-            logger.info("Version: {}", versionAndBuildTimestamp.getLeft());
-            logger.info("Build timestamp: {}", versionAndBuildTimestamp.getRight());
             if (genericStorage.get("FirstStart", LocalDateTime.class).isEmpty()) {
                 logger.info("First start of NZBHydra detected");
                 genericStorage.save("FirstStart", LocalDateTime.now());
