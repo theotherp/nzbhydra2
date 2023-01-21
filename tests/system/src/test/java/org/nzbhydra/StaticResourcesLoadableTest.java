@@ -40,7 +40,7 @@ public class StaticResourcesLoadableTest {
     private HydraClient hydraClient;
 
     @Test
-    public void shouldLoadAllNews() throws Exception {
+    public void shouldLoadAllStaticResources() throws Exception {
         final File coreFolder = DirectoryTreeUpTraversal.walkUpDirectoryTreeUntilFound(new NameFileFilter("core"), new File(""));
         Assertions.assertThat(coreFolder).isNotNull().exists();
         final File resourcesFolder = new File(coreFolder, "src/main/resources");

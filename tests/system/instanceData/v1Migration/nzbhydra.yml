@@ -1,6 +1,6 @@
 ---
 auth:
-    authType: "NONE"
+    authType: "BASIC"
     rememberUsers: true
     rememberMeValidityDays: 14
     authHeader: null
@@ -11,7 +11,13 @@ auth:
     restrictSearch: false
     restrictStats: false
     allowApiStats: true
-    users: [ ]
+    users:
+        - maySeeAdmin: true
+          maySeeDetailsDl: true
+          maySeeStats: true
+          showIndexerSelection: true
+          username: "test"
+          password: "{noop}test"
 categoriesConfig:
     enableCategorySizes: true
     categories:
@@ -308,7 +314,7 @@ main:
     configVersion: 19
     host: "0.0.0.0"
     port: 5076
-    urlBase: "/"
+    urlBase: "/nzbhydra2"
     proxyType: "NONE"
     proxyHost: null
     proxyPort: 1080

@@ -65,7 +65,7 @@ jobs:
             matrix:
                 test: [ { port: 5076, name: core }, { port: 5077, name: v1Migration } ]
         env:
-            spring_profiles_active: build,systemtest
+            spring_profiles_active: build,systemtest,${{ matrix.test.name }}
             nzbhydra_port: ${{ matrix.test.port }}
             nzbhydra_name: ${{ matrix.test.name }}
             nzbhydra_host_external: http://${{ matrix.test.name }}:5076

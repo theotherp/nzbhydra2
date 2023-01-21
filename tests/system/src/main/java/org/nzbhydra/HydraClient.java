@@ -17,6 +17,7 @@
 package org.nzbhydra;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.collect.Sets;
 import jakarta.annotation.PostConstruct;
 import okhttp3.Headers;
 import okhttp3.HttpUrl;
@@ -30,7 +31,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -42,12 +45,17 @@ import java.util.concurrent.TimeUnit;
 public class HydraClient {
 
     private static final Logger logger = LoggerFactory.getLogger(HydraClient.class);
+    public static final String DISABLE_INTERNAL_APIKEY = "DISABLE_INTERNAL_APIKEY";
 
 
     @Value("${nzbhydra.host}")
     private String nzbhydraHost;
     @Value("${nzbhydra.port}")
     private int nzbhydraPort;
+
+
+    @Autowired
+    private Environment environment;
 
     @PostConstruct
     public void logData() {
@@ -60,10 +68,17 @@ public class HydraClient {
 
     public HydraResponse call(String method, String endpoint, Map<String, String> headers, Object requestBody, String... parameters) {
 
+        if (Sets.newHashSet(environment.getActiveProfiles()).contains("v1Migration")) {
+            //Use URL base
+            endpoint = "nzbhydra2/" + endpoint;
+        }
+
+
         final HttpUrl.Builder urlBuilder = new HttpUrl.Builder().scheme("http")
-            .host(nzbhydraHost)
-            .port(nzbhydraPort)
-            .addPathSegments(StringUtils.removeStart(endpoint, "/"));
+                .host(nzbhydraHost)
+                .port(nzbhydraPort)
+                .addPathSegments(StringUtils.removeStart(endpoint, "/"));
+
 
         for (String parameter : parameters) {
             final String[] split = parameter.split("=");
@@ -71,7 +86,11 @@ public class HydraClient {
         }
         if (endpoint.contains("internalapi") && Arrays.stream(parameters).noneMatch(x -> x.startsWith("internalApiKey"))) {
             //Must be provided to instance in docker container
-            urlBuilder.addQueryParameter("internalApiKey", "internalApiKey");
+            if (!headers.containsKey(DISABLE_INTERNAL_APIKEY)) {
+                urlBuilder.addQueryParameter("internalApiKey", "internalApiKey");
+            } else {
+                headers.remove(DISABLE_INTERNAL_APIKEY);
+            }
         }
         final RequestBody body = createRequestBody(requestBody);
         try (Response response = getClient().newCall(new Request.Builder()
