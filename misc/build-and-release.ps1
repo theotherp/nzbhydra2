@@ -91,8 +91,6 @@ if (-not $?) {
     exit 1
 }
 
-Read-Host -Prompt "nzbhydra.exe didn't work before. Have you made sure it works?"
-
 Write-Host "Generating changelog"
 exec { mvn -q -B org.nzbhydra:github-release-plugin:3.0.0:generate-changelog }
 if (-not $?) {
@@ -166,6 +164,12 @@ if (-not $?) {
     exit 1
 }
 
+$genericVersion = java -jar releases/generic-release/include/core-$version-exec.jar -version
+if ($genericVersion -ne $version) {
+    Write-Error "Generic version $version expected but is $genericVersion"
+    exit 1
+}
+
 Write-Host "Building windows executable"
 try {
     .\buildCore.cmd
@@ -181,13 +185,8 @@ if ($windowsVersion -ne $version) {
     exit 1
 }
 
-$genericVersion = java -jar releases/generic-release/include/core-$version-exec.jar -version
-if ($genericVersion -ne $version) {
-    Write-Error "Generic version $version expected but is $genericVersion"
-    exit 1
-}
-
-Read-Host -Prompt "Wait for build to finish on pipeline. Copy linux executable to include folder. Press enter to continue"
+Write-Host "Building linux executable"
+wsl -d Ubuntu -- sh -c ./misc/buildLinuxCore/buildLinuxCore.sh
 
 $linuxVersion = wsl -d Ubuntu releases/linux-release/include/core -version
 if ($linuxVersion -ne $version) {

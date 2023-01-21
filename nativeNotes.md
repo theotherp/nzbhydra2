@@ -125,3 +125,17 @@ If anything fails you can always switch back to the old folder or docker image u
 
 
 
+apt update
+apt install -y zip unzip wget curl libfreetype6 libfreetype6-dev apt-get install build-essential
+wget https://dlcdn.apache.org/maven/maven-3/3.8.7/binaries/apache-maven-3.8.7-bin.tar.gz -P /tmp
+tar xf /tmp/apache-maven-*.tar.gz -C /opt
+ln -s /opt/apache-maven-3.8.7 /opt/maven
+export M2_HOME=/opt/maven
+export MAVEN_HOME=/opt/maven
+export PATH=${M2_HOME}/bin:${PATH}
+curl -s "https://get.sdkman.io" | bash
+source "/root/.sdkman/bin/sdkman-init.sh"
+sdk install java 22.3.r17-grl
+mvn --batch-mode clean install -DskipTests -T 1C
+export HYDRA_NATIVE_BUILD=true
+mvn -pl org.nzbhydra:core -Pnative clean native:compile -DskipTests

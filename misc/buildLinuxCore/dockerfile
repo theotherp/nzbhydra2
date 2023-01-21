@@ -1,0 +1,31 @@
+# alpine doesn't work because we need libgc for the native image
+FROM ubuntu:16.04
+# See https://octopus.com/blog/using-ubuntu-docker-image
+RUN echo 'APT::Install-Suggests "0";' >> /etc/apt/apt.conf.d/00-docker
+RUN echo 'APT::Install-Recommends "0";' >> /etc/apt/apt.conf.d/00-docker
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y zip unzip wget curl libfreetype6 libfreetype6-dev build-essential ca-certificates
+RUN wget -nv --no-check-certificate https://dlcdn.apache.org/maven/maven-3/3.8.7/binaries/apache-maven-3.8.7-bin.tar.gz -P /tmp
+
+RUN tar xf /tmp/apache-maven-*.tar.gz -C /opt
+RUN ln -s /opt/apache-maven-3.8.7 /opt/maven
+ENV M2_HOME=/opt/maven
+ENV MAVEN_HOME=/opt/maven
+ENV PATH=${M2_HOME}/bin:${PATH}
+
+RUN wget -nv --no-check-certificate https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-22.3.0/graalvm-ce-java17-linux-amd64-22.3.0.tar.gz
+RUN tar xzf graalvm-ce-java17-linux-amd64-22.3.0.tar.gz -C /
+ENV PATH=/graalvm-ce-java17-22.3.0/bin/:$PATH
+ENV JAVA_HOME=/graalvm-ce-java17-22.3.0
+
+RUN wget -nv --no-check-certificate https://github.com/upx/upx/releases/download/v4.0.1/upx-4.0.1-amd64_linux.tar.xz
+RUN tar -xf upx-4.0.1-amd64_linux.tar.xz
+ENV PATH=/tmp/upx-4.0.1-amd64_linux/:$PATH
+
+ENV HYDRA_NATIVE_BUILD=true
+
+COPY buildInContainer.sh /
+
+ENTRYPOINT /buildInContainer.sh
+
+# To debug docker run --rm -it --entrypoint bash hydrabuild
+# or for a running container docker exec -it <container-name-or-id> bash

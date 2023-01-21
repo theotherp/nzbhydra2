@@ -53,9 +53,9 @@ jobs:
                     cache: 'maven'
                     github-token: ${{ secrets.GITHUB_TOKEN }}
 
-            -   name: "Install all with Maven"
+            - name: "Install all with Maven"
 
-                run: mvn --batch-mode clean install -DskipTests -T 1C
+                run: mvn --batch-mode clean install -pl !org.nzbhydra:linux-release,!org.nzbhydra:windows-release,!org.nzbhydra:generic-release -DskipTests -T 1C
             -   name: "Run unit tests"
                 run: mvn --batch-mode test -T 1C -pl !org.nzbhydra:tests,!org.nzbhydra.tests:system --fail-at-end
 
