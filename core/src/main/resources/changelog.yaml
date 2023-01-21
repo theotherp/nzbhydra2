@@ -3,6 +3,8 @@
   changes:
     - type: "fix"
       text: "NZBHydra wouldn't start with performance logging enabled. So many corner cases..."
+    - type: "fix"
+      text: "Starting NZBHydra on linux via the nzbhydra executable didn't work and you'd get an error mentioning zlib. For some wild reason I don't understand this was not caused by the actual main binary but by the compiled wrapper. So running NZBHydra via python wrapper worked. I've compiled the wrapper on another machine and it worked. Why? I don't know. Do I give a fuck by now? Nope."
   final: true
 - version: "v5.0.5"
   date: "2023-01-21"

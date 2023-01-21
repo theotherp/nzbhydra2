@@ -506,6 +506,7 @@
                                     <buildArg>-H:-DeadlockWatchdogExitOnTimeout</buildArg>
                                     <buildArg>-H:DeadlockWatchdogInterval=0</buildArg>
                                     <buildArg>--initialize-at-build-time=org.apache.commons.logging.LogFactoryService</buildArg>
+                                    <buildArg>-H:+StaticExecutableWithDynamicLibC</buildArg>
                             </buildArgs>
                                 <classesDirectory>${project.build.outputDirectory}</classesDirectory>
                                 <metadataRepository>
