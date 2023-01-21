@@ -33,6 +33,8 @@ jobs:
                     since_last_remote_commit: true
                     files: |
                         core/**
+                        docker/nativeTest/**
+                        .github/workflows/buildNative.yml
 
             -   if: steps.changed-files-specific.outputs.any_changed == 'true'
                 run: |
