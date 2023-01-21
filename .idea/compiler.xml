@@ -14,7 +14,6 @@
         <module name="mapping" />
         <module name="sockslib" />
         <module name="system" />
-        <module name="ui" />
         <module name="classloader" />
         <module name="github-release-plugin" />
         <module name="assertions" />

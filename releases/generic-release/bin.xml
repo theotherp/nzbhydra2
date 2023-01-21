@@ -34,5 +34,24 @@
             </includes>
             <lineEnding>unix</lineEnding>
         </fileSet>
+        <fileSet>
+            <!-- Include service scripts -->
+            <directory>../linux-release/include</directory>
+            <outputDirectory>./</outputDirectory>
+            <excludes>
+                <exclude>core</exclude>
+                <exclude>nzbhydra</exclude>
+            </excludes>
+        </fileSet>
+        <fileSet>
+            <!-- Include service scripts -->
+            <directory>../windows-release/include</directory>
+            <outputDirectory>./</outputDirectory>
+            <includes>
+                <include>WindowsService</include>
+                <include>NZBHydra2.exe</include>
+                <include>NZBHydra2 Console.exe</include>
+            </includes>
+        </fileSet>
     </fileSets>
 </assembly>

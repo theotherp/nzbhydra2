@@ -1,4 +1,9 @@
 ---
+- version: "v5.0.5"
+  changes:
+    - type: "feature"
+      text: "Include service scripts for windows and linux in generic release"
+  final: true
 - version: "v5.0.4"
   date: "2023-01-22"
   changes:
