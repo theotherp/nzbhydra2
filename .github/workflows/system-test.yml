@@ -67,7 +67,9 @@ jobs:
         env:
             spring_profiles_active: build,systemtest,${{ matrix.test.name }}
             nzbhydra_port: ${{ matrix.test.port }}
+            nzbhydra.port: ${{ matrix.test.port }}
             nzbhydra_name: ${{ matrix.test.name }}
+            nzbhydra.name: ${{ matrix.test.name }}
             nzbhydra_host_external: http://${{ matrix.test.name }}:5076
             nzbhydra.host.external: http://${{ matrix.test.name }}:5076
         steps:
