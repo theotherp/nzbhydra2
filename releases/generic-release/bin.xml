@@ -8,10 +8,10 @@
 
     <fileSets>
         <fileSet>
-            <directory>../../core/target</directory>
+            <directory>include</directory>
             <outputDirectory>./lib/</outputDirectory>
             <includes>
-                <include>*exec.jar</include>
+                <include>*.jar</include>
             </includes>
         </fileSet>
         <fileSet>
