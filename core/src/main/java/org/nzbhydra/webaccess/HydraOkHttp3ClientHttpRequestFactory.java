@@ -62,6 +62,7 @@ import java.net.Proxy.Type;
 import java.net.Socket;
 import java.net.URI;
 import java.net.UnknownHostException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -86,7 +87,7 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
     private HttpLoggingInterceptor httpLoggingInterceptor;
     private SocketFactory sockProxySocketFactory;
 
-    private Map<Pair<String, Integer>, OkHttpClient> clientCache = new HashMap<>();
+    private final Map<Pair<String, Integer>, OkHttpClient> clientCache = Collections.synchronizedMap(new HashMap<>());
 
     @PostConstruct
     public void init() {

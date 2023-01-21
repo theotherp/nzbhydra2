@@ -1,9 +1,15 @@
 ---
+- version: "v5.0.4"
+  date: "2023-01-22"
+  changes:
+    - type: "fix"
+      text: "With many indexers searching at the same time some accesses would not complete"
+  final: true
 - version: "v5.0.3"
   date: "2023-01-21"
   changes:
-  - type: "fix"
-    text: "Downloader icons were not shown"
+    - type: "fix"
+      text: "Downloader icons were not shown"
   final: true
 - version: "v5.0.2"
   date: "2023-01-20"
