@@ -38,7 +38,7 @@ public class NewsTest {
     public void shouldLoadAllNews() throws Exception {
         CapsCheckRequest capsCheckRequest = new CapsCheckRequest();
 
-        List<NewsEntryForWeb> newsEntries = hydraClient.get("internalapi/news").as(new TypeReference<>() {
+        List<NewsEntryForWeb> newsEntries = hydraClient.get("/internalapi/news").as(new TypeReference<>() {
         });
         Assertions.assertThat(newsEntries)
             .hasSize(4)

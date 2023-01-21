@@ -1,0 +1,14 @@
+<component name="ProjectRunConfigurationManager">
+    <configuration default="false" name="All system tests v1Migration profile" type="JUnit" factoryName="JUnit">
+        <module name="system"/>
+        <option name="MAIN_CLASS_NAME" value=""/>
+        <option name="METHOD_NAME" value=""/>
+        <option name="TEST_OBJECT" value="directory"/>
+        <option name="VM_PARAMETERS" value="-Djunit.jupiter.extensions.autodetection.enabled=true -Dspring.profiles.active=systemtest,v1Migration"/>
+        <option name="WORKING_DIRECTORY" value="$MODULE_DIR$"/>
+        <dir value="$PROJECT_DIR$/tests/system/src/test/java/org/nzbhydra"/>
+        <method v="2">
+            <option name="Make" enabled="true"/>
+        </method>
+    </configuration>
+</component>

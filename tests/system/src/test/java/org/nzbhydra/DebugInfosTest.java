@@ -35,19 +35,19 @@ public class DebugInfosTest {
 
     @Test
     public void shouldDownloadCurrentLog() throws Exception {
-        final HydraResponse response = hydraClient.get("internalapi/debuginfos/currentlogfile");
+        final HydraResponse response = hydraClient.get("/internalapi/debuginfos/currentlogfile");
         final String body = response.body();
         assertThat(body).contains("Started NzbHydra in");
     }
 
     @Test
     public void shouldListAndDownloadLog() throws Exception {
-        HydraResponse response = hydraClient.get("internalapi/debuginfos/logfilenames");
+        HydraResponse response = hydraClient.get("/internalapi/debuginfos/logfilenames");
         String body = response.body();
         final List<String> names = Jackson.JSON_MAPPER.readValue(body, new TypeReference<>() {
         });
         assertThat(names).isNotEmpty();
-        response = hydraClient.get("internalapi/debuginfos/downloadlog", "logfilename=" + names.get(0));
+        response = hydraClient.get("/internalapi/debuginfos/downloadlog", "logfilename=" + names.get(0));
         body = response.body();
         assertThat(body)
             .contains("Started NzbHydra in");
@@ -55,7 +55,7 @@ public class DebugInfosTest {
 
     @Test
     public void shouldDownloadDebugInfosAsBytes() throws Exception {
-        final HydraResponse response = hydraClient.get("internalapi/debuginfos/createAndProvideZipAsBytes");
+        final HydraResponse response = hydraClient.get("/internalapi/debuginfos/createAndProvideZipAsBytes");
         final String body = response.body();
         //Good enough that it was created
         assertThat(body).startsWith("PK");

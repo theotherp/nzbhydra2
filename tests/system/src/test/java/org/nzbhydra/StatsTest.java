@@ -63,7 +63,7 @@ public class StatsTest {
         downloader.searchSomethingAndTriggerDownload("statsTestDownload");
         Thread.sleep(500);
 
-        final StatsResponse response = hydraClient.post("internalapi/stats", request).as(StatsResponse.class);
+        final StatsResponse response = hydraClient.post("/internalapi/stats", request).as(StatsResponse.class);
         assertThat(response.getAfter()).isEqualTo(request.getAfter());
 
         assertThat(response.getIndexerApiAccessStats()).isNotEmpty();

@@ -56,9 +56,9 @@ public class HistoryTest {
         //Sort by time descending
         historyRequest.setSortModel(new SortModel("time", 0));
 
-        HydraPage<SearchEntityTO> page = hydraClient.post("internalapi/history/searches", historyRequest)
-            .as(new TypeReference<>() {
-            });
+        HydraPage<SearchEntityTO> page = hydraClient.post("/internalapi/history/searches", historyRequest)
+                .as(new TypeReference<>() {
+                });
 
         assertThat(page.isEmpty()).isFalse();
 
@@ -83,9 +83,9 @@ public class HistoryTest {
         //Sort by time ascending
         historyRequest.setSortModel(new SortModel("time", 1));
 
-        page = hydraClient.post("internalapi/history/searches", historyRequest)
-            .as(new TypeReference<>() {
-            });
+        page = hydraClient.post("/internalapi/history/searches", historyRequest)
+                .as(new TypeReference<>() {
+                });
         assertThat(page.getContent().get(0).getTime()).isBefore(page.getContent().get(1).getTime());
     }
 
@@ -97,9 +97,9 @@ public class HistoryTest {
         //Sort by time descending
         historyRequest.setSortModel(new SortModel("time", 0));
 
-        List<SearchEntityTO> list = hydraClient.post("internalapi/history/searches/forsearching", historyRequest)
-            .as(new TypeReference<>() {
-            });
+        List<SearchEntityTO> list = hydraClient.post("/internalapi/history/searches/forsearching", historyRequest)
+                .as(new TypeReference<>() {
+                });
         assertThat(list).isNotEmpty();
         assertThat(list.get(0).getQuery()).isEqualTo("internalQueryForHistoryTest");
     }
@@ -111,9 +111,9 @@ public class HistoryTest {
         HistoryRequest historyRequest = new HistoryRequest();
         //Sort by time descending
         historyRequest.setSortModel(new SortModel("time", 0));
-        HydraPage<FileDownloadEntityTO> page = hydraClient.post("internalapi/history/downloads", historyRequest)
-            .as(new TypeReference<>() {
-            });
+        HydraPage<FileDownloadEntityTO> page = hydraClient.post("/internalapi/history/downloads", historyRequest)
+                .as(new TypeReference<>() {
+                });
 
         assertThat(page.isEmpty()).isFalse();
         assertThat(page.getContent().get(0).getSearchResult().getTitle()).isEqualTo(downloadedItem.getTitle());

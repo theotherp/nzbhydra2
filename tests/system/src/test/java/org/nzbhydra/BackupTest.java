@@ -36,19 +36,19 @@ public class BackupTest {
 
     @Test
     public void shouldBackupAndDownload() throws Exception {
-        final HydraResponse response = hydraClient.get("internalapi/backup/backup");
+        final HydraResponse response = hydraClient.get("/internalapi/backup/backup");
         final String body = response.body();
         assertThat(body).startsWith("PK");
     }
 
     @Test
     public void shouldBackupAndShowInListAndBeDownloadable() throws Exception {
-        GenericResponse backupResponse = hydraClient.get("internalapi/backup/backuponly").as(GenericResponse.class);
+        GenericResponse backupResponse = hydraClient.get("/internalapi/backup/backuponly").as(GenericResponse.class);
         assertThat(backupResponse.isSuccessful()).isTrue();
-        List<BackupEntry> backupEntries = hydraClient.get("internalapi/backup/list").as(new TypeReference<>() {
+        List<BackupEntry> backupEntries = hydraClient.get("/internalapi/backup/list").as(new TypeReference<>() {
         });
         assertThat(backupEntries).isNotEmpty();
-        final HydraResponse downloadResponse = hydraClient.get("internalapi/backup/download", "filename=" + backupEntries.get(0).getFilename());
+        final HydraResponse downloadResponse = hydraClient.get("/internalapi/backup/download", "filename=" + backupEntries.get(0).getFilename());
         assertThat(downloadResponse.body()).startsWith("PK");
 
 

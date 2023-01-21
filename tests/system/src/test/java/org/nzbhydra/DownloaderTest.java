@@ -52,7 +52,7 @@ public class DownloaderTest {
     public void shouldCheckConnection() throws Exception {
         DownloaderConfig config = getDownloaderConfig();
         final String json = Jackson.JSON_MAPPER.writeValueAsString(config);
-        final GenericResponse response = hydraClient.post("internalapi/downloader/checkConnection", json).as(GenericResponse.class);
+        final GenericResponse response = hydraClient.post("/internalapi/downloader/checkConnection", json).as(GenericResponse.class);
         assertThat(response.isSuccessful()).isTrue();
     }
 
@@ -65,7 +65,7 @@ public class DownloaderTest {
 
     @Test
     public void shouldGetStatus() throws Exception {
-        final HydraResponse response = hydraClient.get("internalapi/downloader/getStatus");
+        final HydraResponse response = hydraClient.get("/internalapi/downloader/getStatus");
         final DownloaderStatus status = response.as(DownloaderStatus.class);
         assertThat(status.getState()).isEqualTo(DownloaderStatus.State.DOWNLOADING);
     }
@@ -80,7 +80,7 @@ public class DownloaderTest {
         addFilesRequest.setCategory("TV HD");
         addFilesRequest.setSearchResults(Collections.singletonList(new AddFilesRequest.SearchResult(guid, "original", "TV HD")));
         final String addFilesRequestJson = Jackson.JSON_MAPPER.writeValueAsString(addFilesRequest);
-        final HydraResponse response = hydraClient.put("internalapi/downloader/addNzbs", addFilesRequestJson);
+        final HydraResponse response = hydraClient.put("/internalapi/downloader/addNzbs", addFilesRequestJson);
         final AddNzbsResponse status = response.as(AddNzbsResponse.class);
         assertThat(status.isSuccessful()).isTrue();
     }

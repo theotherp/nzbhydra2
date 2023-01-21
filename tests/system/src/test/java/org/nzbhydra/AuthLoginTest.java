@@ -48,7 +48,7 @@ public class AuthLoginTest {
         if (configManager.getCurrentConfig().getAuth().getAuthType() == AuthType.NONE) {
             return;
         }
-        HydraResponse hydraResponse = hydraClient.get("/config/main");
+        HydraResponse hydraResponse = hydraClient.get("/config/main", Collections.singletonMap("Authorization", "Basic " + new String(Base64Utils.encode("wrong:password".getBytes(StandardCharsets.UTF_8)))));
         assertThat(hydraResponse.getStatus()).isEqualTo(401);
         hydraResponse = hydraClient.get("/config/main", Collections.singletonMap("Authorization", "Basic " + new String(Base64Utils.encode("test:test".getBytes(StandardCharsets.UTF_8)))));
         assertThat(hydraResponse.getStatus()).isEqualTo(200);

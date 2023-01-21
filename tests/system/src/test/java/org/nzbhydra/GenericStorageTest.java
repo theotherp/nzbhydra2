@@ -28,7 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ContextConfiguration(classes = {TestConfig.class})
 public class GenericStorageTest {
 
-    private static final String ENDPOINT = "internalapi/genericstorage/";
+    private static final String ENDPOINT = "/internalapi/genericstorage/";
     @Autowired
     private HydraClient hydraClient;
 

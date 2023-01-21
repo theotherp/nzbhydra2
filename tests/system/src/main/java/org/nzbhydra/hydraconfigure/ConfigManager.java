@@ -31,7 +31,7 @@ public class ConfigManager {
 
     public BaseConfig getCurrentConfig() {
         try {
-            return Jackson.JSON_MAPPER.readValue(hydraClient.get("internalapi/config").body(), BaseConfig.class);
+            return Jackson.JSON_MAPPER.readValue(hydraClient.get("/internalapi/config").body(), BaseConfig.class);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }

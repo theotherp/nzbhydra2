@@ -58,10 +58,10 @@ public class NotificationsTest {
         notificationConfig.setEntries(Collections.singletonList(configEntry));
         configManager.setConfig(baseConfig);
 
-        hydraClient.get("internalapi/notifications/test/" + NotificationEventType.VIP_RENEWAL_REQUIRED.name());
+        hydraClient.get("/internalapi/notifications/test/" + NotificationEventType.VIP_RENEWAL_REQUIRED.name());
         HistoryRequest request = new HistoryRequest();
         request.setSortModel(new SortModel("time", 0));
-        HydraPage<NotificationEntityTO> page = hydraClient.post("internalapi/history/notifications", request).as(new TypeReference<>() {
+        HydraPage<NotificationEntityTO> page = hydraClient.post("/internalapi/history/notifications", request).as(new TypeReference<>() {
         });
         org.assertj.core.api.Assertions.assertThat(page.getContent()).isNotEmpty();
         org.assertj.core.api.Assertions.assertThat(page.getContent().get(0).getMessageType().name()).isEqualTo(configEntry.getMessageType().name());

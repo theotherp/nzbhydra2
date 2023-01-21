@@ -38,7 +38,7 @@ public class MediaInfoTest {
     public void shouldAutocompleteTV() throws Exception {
         CapsCheckRequest capsCheckRequest = new CapsCheckRequest();
 
-        List<MediaInfoTO> checkCapsResponses = hydraClient.get("internalapi/autocomplete/TV", "input=Lost").as(new TypeReference<>() {
+        List<MediaInfoTO> checkCapsResponses = hydraClient.get("/internalapi/autocomplete/TV", "input=Lost").as(new TypeReference<>() {
         });
         Assertions.assertThat(checkCapsResponses)
             .isNotEmpty()
@@ -52,7 +52,7 @@ public class MediaInfoTest {
     public void shouldAutocompleteMovie() throws Exception {
         CapsCheckRequest capsCheckRequest = new CapsCheckRequest();
 
-        List<MediaInfoTO> checkCapsResponses = hydraClient.get("internalapi/autocomplete/MOVIE", "input=Gladiator").as(new TypeReference<>() {
+        List<MediaInfoTO> checkCapsResponses = hydraClient.get("/internalapi/autocomplete/MOVIE", "input=Gladiator").as(new TypeReference<>() {
         });
         Assertions.assertThat(checkCapsResponses).isNotEmpty()
             .first(AssertFactories.MediaInfoTO)

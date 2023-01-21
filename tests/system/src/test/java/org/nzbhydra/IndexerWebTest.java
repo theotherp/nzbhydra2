@@ -59,9 +59,9 @@ public class IndexerWebTest {
         final IndexerConfig indexerConfig = indexerConfigurer.getIndexerConfig("indexerWebCapsCheckTest", "apikey");
         capsCheckRequest.setIndexerConfig(indexerConfig);
 
-        List<CheckCapsResponse> checkCapsResponses = hydraClient.post("internalapi/indexer/checkCaps", capsCheckRequest).as(new TypeReference<>() {
+        List<CheckCapsResponse> checkCapsResponses = hydraClient.post("/internalapi/indexer/checkCaps", capsCheckRequest).as(new TypeReference<>() {
         });
-        List<String> checkerMessages = hydraClient.get("internalapi/indexer/checkCapsMessages/" + indexerConfig.getName()).as(new TypeReference<>() {
+        List<String> checkerMessages = hydraClient.get("/internalapi/indexer/checkCapsMessages/" + indexerConfig.getName()).as(new TypeReference<>() {
         });
         assertThat(checkCapsResponses).isNotEmpty();
 

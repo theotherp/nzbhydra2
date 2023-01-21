@@ -79,7 +79,7 @@ public class ExternalToolsTest {
         addRequest.setCategories(getIdFromConfiguredIndexer());
         addRequest.setAddType(AddRequest.AddType.SINGLE);
 
-        final Boolean response = hydraClient.post("internalapi/externalTools/configure", Jackson.JSON_MAPPER.writeValueAsString(addRequest)).as(Boolean.class);
+        final Boolean response = hydraClient.post("/internalapi/externalTools/configure", Jackson.JSON_MAPPER.writeValueAsString(addRequest)).as(Boolean.class);
         assertThat(response).isTrue();
     }
 
@@ -98,7 +98,7 @@ public class ExternalToolsTest {
         addRequest.setCategories(getIdFromConfiguredIndexer());
         addRequest.setAddType(AddRequest.AddType.SINGLE);
 
-        final Boolean response = hydraClient.post("internalapi/externalTools/configure", Jackson.JSON_MAPPER.writeValueAsString(addRequest)).as(Boolean.class);
+        final Boolean response = hydraClient.post("/internalapi/externalTools/configure", Jackson.JSON_MAPPER.writeValueAsString(addRequest)).as(Boolean.class);
         assertThat(response).isTrue();
     }
 
@@ -109,12 +109,12 @@ public class ExternalToolsTest {
 
     @Test
     public void shouldBackupAndShowInListAndBeDownloadable() throws Exception {
-        GenericResponse backupResponse = hydraClient.get("internalapi/backup/backuponly").as(GenericResponse.class);
+        GenericResponse backupResponse = hydraClient.get("/internalapi/backup/backuponly").as(GenericResponse.class);
         assertThat(backupResponse.isSuccessful()).isTrue();
-        List<BackupEntry> backupEntries = hydraClient.get("internalapi/backup/list").as(new TypeReference<>() {
+        List<BackupEntry> backupEntries = hydraClient.get("/internalapi/backup/list").as(new TypeReference<>() {
         });
         assertThat(backupEntries).isNotEmpty();
-        final HydraResponse downloadResponse = hydraClient.get("internalapi/backup/download", "filename=" + backupEntries.get(0).getFilename());
+        final HydraResponse downloadResponse = hydraClient.get("/internalapi/backup/download", "filename=" + backupEntries.get(0).getFilename());
         assertThat(downloadResponse.body()).startsWith("PK");
     }
 

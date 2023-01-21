@@ -35,9 +35,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
+import org.springframework.util.Base64Utils;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -68,9 +71,10 @@ public class HydraClient {
 
     public HydraResponse call(String method, String endpoint, Map<String, String> headers, Object requestBody, String... parameters) {
 
-        if (Sets.newHashSet(environment.getActiveProfiles()).contains("v1Migration")) {
+        final boolean v1Migration = Sets.newHashSet(environment.getActiveProfiles()).contains("v1Migration");
+        if (v1Migration) {
             //Use URL base
-            endpoint = "nzbhydra2/" + endpoint;
+            endpoint = "/nzbhydra2" + endpoint;
         }
 
 
@@ -84,7 +88,10 @@ public class HydraClient {
             final String[] split = parameter.split("=");
             urlBuilder.addQueryParameter(split[0], split[1]);
         }
-        if (endpoint.contains("internalapi") && Arrays.stream(parameters).noneMatch(x -> x.startsWith("internalApiKey"))) {
+        if (v1Migration && !headers.containsKey("Authorization")) {
+            headers = new HashMap<>(headers);
+            headers.put("Authorization", "Basic " + new String(Base64Utils.encode("test:test".getBytes(StandardCharsets.UTF_8))));
+        } else if (endpoint.contains("internalapi") && Arrays.stream(parameters).noneMatch(x -> x.startsWith("internalApiKey"))) {
             //Must be provided to instance in docker container
             if (!headers.containsKey(DISABLE_INTERNAL_APIKEY)) {
                 urlBuilder.addQueryParameter("internalApiKey", "internalApiKey");
@@ -94,10 +101,10 @@ public class HydraClient {
         }
         final RequestBody body = createRequestBody(requestBody);
         try (Response response = getClient().newCall(new Request.Builder()
-            .headers(Headers.of(headers))
-            .method(method, body)
-            .url(urlBuilder.build())
-            .build()).execute()) {
+                .headers(Headers.of(headers))
+                .method(method, body)
+                .url(urlBuilder.build())
+                .build()).execute()) {
             try (ResponseBody responseBody = response.body()) {
                 return new HydraResponse(responseBody.string(), response.code());
             }
