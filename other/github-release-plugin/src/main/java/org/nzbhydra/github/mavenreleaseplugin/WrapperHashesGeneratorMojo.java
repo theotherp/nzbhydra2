@@ -27,8 +27,8 @@ import org.apache.maven.plugins.annotations.Parameter;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 
 
 @SuppressWarnings("unchecked")
@@ -48,6 +48,8 @@ public class WrapperHashesGeneratorMojo extends AbstractMojo {
     protected File wrapperFile4;
     @Parameter(property = "wrapperFile5", required = true)
     protected File wrapperFile5;
+    @Parameter(property = "wrapperFile6", required = false)
+    protected File wrapperFile6;
     @Parameter(property = "wrapperHashesJsonFile", required = true)
     protected File wrapperHashesJsonFile;
 
@@ -62,29 +64,33 @@ public class WrapperHashesGeneratorMojo extends AbstractMojo {
         checkWrapperFilesExist(wrapperFile3);
         checkWrapperFilesExist(wrapperFile4);
         checkWrapperFilesExist(wrapperFile5);
+        checkWrapperFilesExist(wrapperFile6);
         getLog().info("Will write hashes to " + wrapperHashesJsonFile.getAbsolutePath());
 
-        Map<String, String> filenamesToHashCodes = new HashMap<>();
+        Set<String> hashes = new HashSet<>();
         try {
-            hashFile(filenamesToHashCodes, wrapperFile1);
-            hashFile(filenamesToHashCodes, wrapperFile2);
-            hashFile(filenamesToHashCodes, wrapperFile3);
-            hashFile(filenamesToHashCodes, wrapperFile4);
-            hashFile(filenamesToHashCodes, wrapperFile5);
-            Files.write(objectMapper.writeValueAsBytes(filenamesToHashCodes), wrapperHashesJsonFile);
+            hashFile(hashes, wrapperFile1);
+            hashFile(hashes, wrapperFile2);
+            hashFile(hashes, wrapperFile3);
+            hashFile(hashes, wrapperFile4);
+            hashFile(hashes, wrapperFile5);
+            hashFile(hashes, wrapperFile6);
+            Files.write(objectMapper.writeValueAsBytes(hashes), wrapperHashesJsonFile);
         } catch (IOException e) {
             throw new MojoExecutionException("Error while hashing wrapper file", e);
         }
-
     }
 
-    private void hashFile(Map<String, String> filenamesToHashCodes, File file) throws IOException {
+    private void hashFile(Set<String> filenamesToHashCodes, File file) throws IOException {
+        if (file == null || !file.exists()) {
+            return;
+        }
         HashCode hash = Files.hash(file, Hashing.sha1());
-        filenamesToHashCodes.put(file.getName(), hash.toString());
+        filenamesToHashCodes.add(hash.toString());
     }
 
     private void checkWrapperFilesExist(File wrapperFile1) throws MojoExecutionException {
-        if (!wrapperFile1.exists()) {
+        if (wrapperFile1 != null && !wrapperFile1.exists()) {
             throw new MojoExecutionException("Wrapper file does not exist: " + wrapperFile1.getAbsolutePath());
         }
     }

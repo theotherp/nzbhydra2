@@ -1,0 +1,114 @@
+#!/bin/sh
+#
+### BEGIN INIT INFO
+# Provides:          nzbhydra2
+# Required-Start:    $local_fs $network $remote_fs
+# Required-Stop:     $local_fs $network $remote_fs
+# Should-Start:      $NetworkManager
+# Should-Stop:       $NetworkManager
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: starts instance of nzbhydra2
+# Description:       starts instance of nzbhydra using start-stop-daemon
+### END INIT INFO
+
+#to debug run like this: env -i NH_USER="ubuntu" NH_HOME="/home/ubuntu/upstart" NH_PIDFILE="/home/ubuntu/upstart/nzbhydra2.pid" init.ubuntu start
+
+NAME=nzbhydra2
+DESC=nzbhydra2
+CONFIG=/etc/default/nzbhydra2
+
+# don't accept config vars from the shell environment
+unset NH_USER NH_HOME NH_DATA NH_HOST NH_PORT NH_PIDFILE NH_OPTS JAVA_BIN SSD_OPTS
+
+# source lsb init functions
+. /lib/lsb/init-functions
+
+# try loading the configuration file
+[ -r "$CONFIG" ] && . "$CONFIG" || log_action_msg "$DESC: $CONFIG unreadable, falling back to default settings"
+
+## Don't edit this file
+## Edit user configuation in /etc/default/nzbhydra2 to change
+##
+## NH_USER=         # username to run nzbhydra2 under, the default is nzbhydra
+## NH_HOME=         # the path of the folder containing the nzbhydra2 binary, the default is /opt/nzbhydra2
+## NH_DATA=         # the path to the data directory, the default is $NH_HOME/data
+## NH_HOST=         # bind host, default is 0.0.0.0
+## NH_PORT=         # bind port, default is 5076
+## NH_PIDFILE=      # the location of nzbhydra.pid, the default is /var/run/nzbhydra2/nzbhydra2.pid
+## NH_OPTS=         # extra command line options
+## JAVA_BIN=        # the location of the java binary, the default is /usr/bin/java
+## SSD_OPTS=        # extra start-stop-daemon option like " --group=users"
+##
+
+: "${NH_USER:=nzbhydra}"
+: "${NH_HOME:=/opt/nzbhydra2/}"
+: "${NH_DATA:=$NH_HOME/data/}"
+: "${NH_HOST:=0.0.0.0}"
+: "${NH_PORT:=5076}"
+: "${NH_PIDFILE:=/var/run/nzbhydra2/nzbhydra2.pid}"
+: "${NH_EXTRA_OPTS:=}"
+: "${JAVA_BIN:=/usr/bin/java}"
+: "${EXTRA_SSD_OPTS:=}"
+
+
+# basic sanity checks
+#([ -x "$JAVA_BIN" ] && [ -f "$NH_HOME/nzbhydra2" ]) || {
+#    log_failure_msg "$DESC: init script bad home path or java bin";
+#    exit 0;
+#}
+
+PID_PATH=`dirname $NH_PIDFILE`
+DAEMON="$NH_HOME/nzbhydra2"
+DAEMON_OPTS=" --java $JAVA_BIN --daemon --nobrowser --pidfile ${NH_PIDFILE} --host ${NH_HOST} --port ${NH_PORT} --datafolder ${NH_DATA} ${NH_EXTRA_OPTS} > /dev/null"
+
+
+start_nzbhydra() {
+    log_daemon_msg "Starting $DESC"
+    
+    # create pid directory
+    [ ! -d $PID_PATH ] && {
+        install --directory --owner="$NH_USER" --group=root --mode=0700 $PID_PATH || exit 1;
+    }
+
+    # start 
+    start-stop-daemon --start -q --pidfile "$NH_PIDFILE" --chdir "$NH_HOME" --chuid "$NH_USER" --oknodo --exec $DAEMON $SSD_OPTS -- $DAEMON_OPTS
+
+
+    log_end_msg $? || exit $?
+}
+
+stop_nzbhydra() {
+    log_daemon_msg "Stopping $DESC"
+    start-stop-daemon --stop --pidfile $NH_PIDFILE --retry 15
+    if [ $? -eq 0 ]; then
+        log_end_msg 0
+        exit 0
+    fi
+    log_end_msg $? || exit $?
+}
+
+case "$1" in
+    start)
+        start_nzbhydra
+        ;;
+    stop)
+        stop_nzbhydra
+        ;;
+    restart|force-reload)
+        stop_nzbhydra
+        sleep 2
+        start_nzbhydra
+        ;;
+    status)
+        status_of_proc -p "$PID_FILE" "nzbhydra2" "$DESC"
+        ;;
+    *)
+        N=/etc/init.d/$NAME
+        echo "Usage: $N {start|stop|restart|force-reload|status}" >&2
+        exit 1
+        ;;
+esac
+
+exit 0
+

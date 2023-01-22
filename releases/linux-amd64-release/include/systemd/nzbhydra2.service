@@ -1,0 +1,20 @@
+[Unit]
+Description=NZBHydra2 Daemon
+Documentation=https://github.com/theotherp/nzbhydra2
+After=network.target
+
+[Service]
+# Create this user by running: adduser --system --group nzbhydra
+User=nzbhydra2
+Group=nzbhydra2
+Type=simple
+# Set to the folder where you extracted the ZIP
+WorkingDirectory=/opt/nzbhydra2
+# NZBHydra stores its data in a "data" subfolder of its installation path
+# To change that set the --datafolder parameter:
+# --datafolder /var/local/lib/nzbhydra
+ExecStart=/opt/nzbhydra2/nzbhydra2 --nobrowser
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

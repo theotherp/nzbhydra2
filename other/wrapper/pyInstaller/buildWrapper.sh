@@ -15,44 +15,48 @@
 #
 
 
-echo "Preparing linux build"
-if [ -d "linux/dist/linux/" ]; then rm linux/dist/linux/*; fi
-cp ../nzbhydra2wrapperPy3.py linux/
-cp VersionInfo.txt linux/
-cp nzbhydra.ico linux/
+echo "Make sure to also build the wrapper for arm"
 
-echo "Running linux build"
-cd linux || exit
-mkdir -p dist/linux
-docker run -v "$(pwd):/src/" cdrx/pyinstaller-linux
-staticx -l /lib/x86_64-linux-gnu/libm.so.6 dist/linux/NZBHydra2 dist/linux/NZBHydra2-static
-cp dist/linux/NZBHydra2-static ../../../../releases/linux-release/include/nzbhydra2
-cd ../
+echo "todo windows build returns unusable exe"
 
-#todo Currently builds an unusable exe
-#echo "Preparing windows build"
-#if [ -d "windows/dist/windows/" ]; then rm windows/dist/windows/*; fi
-#cp VersionInfo.txt windows/
-#cp nzbhydra.ico windows/
-#cp ../nzbhydra2wrapperPy3.py windows/
+#echo "Preparing linux build"
+#if [ -d "linux/dist/linux/" ]; then rm linux/dist/linux/*; fi
+#cp ../nzbhydra2wrapperPy3.py linux/
+#cp VersionInfo.txt linux/
+#cp nzbhydra.ico linux/
 #
-#echo "Running windows build"
-#cd windows || exit
-#mkdir -p dist/windows
-#docker run -v "$(pwd):/src/" --entrypoint /bin/sh cdrx/pyinstaller-windows -c "pip install requests pystray Pillow && /entrypoint.sh"
-#cp dist/windows/NZBHydra2.exe ../../../../releases/windows-release/include
+#echo "Running linux build"
+#cd linux || exit
+#mkdir -p dist/linux
+#docker run -v "$(pwd):/src/" cdrx/pyinstaller-linux
+#staticx -l /lib/x86_64-linux-gnu/libm.so.6 dist/linux/NZBHydra2 dist/linux/NZBHydra2-static
+#cp dist/linux/NZBHydra2-static ../../../../releases/linux-amd64-release/include/nzbhydra2
 #cd ../
 #
+##todo Currently builds an unusable exe
+##echo "Preparing windows build"
+##if [ -d "windows/dist/windows/" ]; then rm windows/dist/windows/*; fi
+##cp VersionInfo.txt windows/
+##cp nzbhydra.ico windows/
+##cp ../nzbhydra2wrapperPy3.py windows/
+##
+##echo "Running windows build"
+##cd windows || exit
+##mkdir -p dist/windows
+##docker run -v "$(pwd):/src/" --entrypoint /bin/sh cdrx/pyinstaller-windows -c "pip install requests pystray Pillow && /entrypoint.sh"
+##cp dist/windows/NZBHydra2.exe ../../../../releases/windows-release/include
+##cd ../
+##
+##
+##
+#echo "Preparing windows console build"
+#if [ -d "windows_console/dist/windows/" ]; then rm windows_console/dist/windows/*; fi
+#cp ../nzbhydra2wrapperPy3.py windows_console/
+#cp VersionInfoConsole.txt windows_console/
+#cp nzbhydra.ico windows_console/
 #
-#
-echo "Preparing windows console build"
-if [ -d "windows_console/dist/windows/" ]; then rm windows_console/dist/windows/*; fi
-cp ../nzbhydra2wrapperPy3.py windows_console/
-cp VersionInfoConsole.txt windows_console/
-cp nzbhydra.ico windows_console/
-
-echo "Running windows_console build"
-cd windows_console || exit
-docker run -v "$(pwd):/src/" cdrx/pyinstaller-windows
-cp dist/windows/NZBHydra2\ Console.exe ../../../../releases/windows-release/include
-cd ../
+#echo "Running windows_console build"
+#cd windows_console || exit
+#docker run -v "$(pwd):/src/" cdrx/pyinstaller-windows
+#cp dist/windows/NZBHydra2\ Console.exe ../../../../releases/windows-release/include
+#cd ../

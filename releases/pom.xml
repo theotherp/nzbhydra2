@@ -13,7 +13,8 @@
 
     <modules>
         <module>generic-release</module>
-        <module>linux-release</module>
+        <module>linux-amd64-release</module>
+        <module>linux-arm64-release</module>
         <module>windows-release</module>
     </modules>
 

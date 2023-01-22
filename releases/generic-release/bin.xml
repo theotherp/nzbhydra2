@@ -35,8 +35,8 @@
             <lineEnding>unix</lineEnding>
         </fileSet>
         <fileSet>
-            <!-- Include service scripts -->
-            <directory>../linux-release/include</directory>
+            <!-- Include service scripts and wrapper -->
+            <directory>../linux-amd64-release/include</directory>
             <outputDirectory>./</outputDirectory>
             <excludes>
                 <exclude>core</exclude>

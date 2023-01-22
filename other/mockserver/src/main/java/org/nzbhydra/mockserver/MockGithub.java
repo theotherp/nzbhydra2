@@ -40,11 +40,11 @@ public class MockGithub {
         releasev4pre.setTagName("v5.0.0");
         releasev4pre.setPrerelease(true);
 
-        Asset linuxAsset = new Asset();
-        linuxAsset.setBrowserDownloadUrl("http://127.0.0.1.111:5080/static/nzbhyra2-2.0.0-SNAPSHOT-linux.zip");
-        linuxAsset.setName("nzbhyra2-3.1.0-SNAPSHOT-linux.zip");
-        linuxAsset.setSize(163L);
-        releasev376.setAssets(Arrays.asList(windowsAsset, linuxAsset));
+        Asset linuxAmd64Asset = new Asset();
+        linuxAmd64Asset.setBrowserDownloadUrl("http://127.0.0.1.111:5080/static/nzbhyra2-2.0.0-SNAPSHOT-linux.zip");
+        linuxAmd64Asset.setName("nzbhyra2-3.1.0-SNAPSHOT-linux.zip");
+        linuxAmd64Asset.setSize(163L);
+        releasev376.setAssets(Arrays.asList(windowsAsset, linuxAmd64Asset));
 
         Release releasev1current = new Release();
         releasev1current.setBody("Changes in version 10.0");

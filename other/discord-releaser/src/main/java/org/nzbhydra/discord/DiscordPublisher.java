@@ -48,7 +48,7 @@ public class DiscordPublisher {
 
         File changelogYamlFile = new File(args[0]);
         String tagName = args[1];
-        String discordToken = Files.readString(Paths.get(args[2]));
+        String discordToken = Files.readString(Paths.get(args[2])).replaceAll("\n", "").replace(" ", "").strip();
         boolean dryRun = Boolean.parseBoolean(args[3]);
 
         if (!changelogYamlFile.exists()) {

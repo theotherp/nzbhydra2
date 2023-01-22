@@ -37,23 +37,26 @@
                     <commitish>master</commitish>
                     <githubToken>${env.GITHUB_TOKEN}</githubToken>
                     <discordToken>${env.DISCORD_TOKEN}</discordToken>
-                    <linuxAsset>${basedir}/releases/linux-release/target/nzbhydra2-${project.version}-linux.zip</linuxAsset>
+                    <linuxAmd64Asset>${basedir}/releases/linux-amd64-release/target/nzbhydra2-${project.version}-amd64-linux.zip</linuxAmd64Asset>
+                    <linuxArm64Asset>${basedir}/releases/linux-arm64-release/target/nzbhydra2-${project.version}-arm64-linux.zip</linuxArm64Asset>
                     <windowsAsset>${basedir}/releases/windows-release/target/nzbhydra2-${project.version}-windows.zip</windowsAsset>
                     <genericAsset>${basedir}/releases/generic-release/target/nzbhydra2-${project.version}-generic.zip</genericAsset>
                     <changelogYamlFile>${basedir}/core/src/main/resources/changelog.yaml</changelogYamlFile>
                     <changelogMdFile>${basedir}/changelog.md</changelogMdFile>
 
-                    <linuxExecutable>${basedir}/releases/linux-release/include/nzbhydra2</linuxExecutable>
+                    <linuxAmd64Executable>${basedir}/releases/linux-amd64-release/include/nzbhydra2</linuxAmd64Executable>
+                    <!--                    <linuxArm64Executable>${basedir}/releases/linux-arm64-release/include/nzbhydra2</linuxArm64Executable>-->
                     <windowsExecutable>${basedir}/releases/windows-release/include/NZBHydra2.exe</windowsExecutable>
                     <windowsConsoleExecutable>${basedir}/releases/windows-release/include/NZBHydra2 Console.exe</windowsConsoleExecutable>
                     <py3>${basedir}/other/wrapper/nzbhydra2wrapperPy3.py</py3>
                     <windowsPy>${basedir}/other/wrapper/pyInstaller/windows/nzbhydra2wrapperWindows.py</windowsPy>
 
-                    <wrapperFile1>${basedir}/releases/linux-release/include/nzbhydra2</wrapperFile1>
+                    <wrapperFile1>${basedir}/releases/linux-amd64-release/include/nzbhydra2</wrapperFile1>
                     <wrapperFile2>${basedir}/releases/windows-release/include/NZBHydra2 Console.exe</wrapperFile2>
                     <wrapperFile3>${basedir}/releases/windows-release/include/NZBHydra2.exe</wrapperFile3>
                     <wrapperFile4>${basedir}/other/wrapper/nzbhydra2wrapper.py</wrapperFile4>
                     <wrapperFile5>${basedir}/other/wrapper/nzbhydra2wrapperPy3.py</wrapperFile5>
+                    <!--                    <wrapperFile6>${basedir}/releases/linux-arm64-release/include/nzbhydra2</wrapperFile6>-->
                     <wrapperHashesJsonFile>${basedir}/core/src/main/resources/wrapperHashes2.json</wrapperHashesJsonFile>
 
                     <tagName>v${project.version}</tagName>

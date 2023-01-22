@@ -29,14 +29,15 @@ Honest recommendation: If you don't understand what any or most of that means th
 Download the [latest release of NZBHydra 2](https://github.com/theotherp/nzbhydra2/releases/latest) for your platform. Extract it anywhere (the zip does not include a base directory) and start using the
 appropriate way:
 * On Windows (x64) you can either start `NZBHydra2.exe` which will add a tray icon (give it some time) or `NZBHydra2 Console.exe` which will open a console window.
-    * Note: Do *not* use the folders `C:\Program Files` or `C:\Program Files (x86)`.
-* On Linux (x64) start `nzbhydra2`.
-    * You may need to `chmod +x` it first.
-    * If you get an error about missing libraries, install libfreetype6.
+  * Note: Do *not* use the folders `C:\Program Files` or `C:\Program Files (x86)`.
+* On Linux:
+  * On amd64 start `nzbhydra2`.
+  * On arm64 you'll need to run the included python wrapper file.
+  * If you get an error about missing libraries, install libfreetype6.
 * On any other OS or architecture or as a fallback:
-    * You need to install [Java 17](https://adoptium.net/) (not lower, not higher).
-    * Download the generic asset. This contains python scripts and java libraries. Run either wrapper file (Python 2.7 / 3.x respectively). This should work basically everwhere.
-    * The Java executable is expected to be in the PATH. If it's not and you can't/won't put it there then you need to provide the full path using the `--java` paramater.
+  * You need to install [Java 17](https://adoptium.net/) (not lower, not higher).
+  * Download the generic asset. This contains python scripts and java libraries. Run either wrapper file (Python 2.7 / 3.x respectively). This should work basically everwhere.
+  * The Java executable is expected to be in the PATH. If it's not and you can't/won't put it there then you need to provide the full path using the `--java` paramater.
 * Docker: You can choose between images by [LinuxServer.io](https://github.com/linuxserver/docker-nzbhydra2), [hotio](https://hotio.dev/containers/nzbhydra2/) and [binhex's](https://hub.docker.com/r/binhex/arch-nzbhydra2/) or the one
   by [LinuxServer.io](https://github.com/linuxserver/docker-nzbhydra2).
 

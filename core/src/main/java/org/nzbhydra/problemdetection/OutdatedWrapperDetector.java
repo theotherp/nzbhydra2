@@ -31,9 +31,9 @@ import org.springframework.stereotype.Component;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 @Component
 public class OutdatedWrapperDetector implements ProblemDetector {
@@ -64,9 +64,9 @@ public class OutdatedWrapperDetector implements ProblemDetector {
 
     private void detectOutdatedWrapper() {
         List<String> wrapperFilenames = Arrays.asList("NZBHydra2.exe", "NZBHydra2 Console.exe", "nzbhydra2", "nzbhydra2wrapper.py", "nzbhydra2wrapperPy3.py");
-        Map<String, String> filenamesToExpectedHashes;
+        Set<String> expectedHashes;
         try {
-            filenamesToExpectedHashes = Jackson.JSON_MAPPER.readValue(OutdatedWrapperDetector.class.getResource("/wrapperHashes2.json"), new TypeReference<>() {
+            expectedHashes = Jackson.JSON_MAPPER.readValue(OutdatedWrapperDetector.class.getResource("/wrapperHashes2.json"), new TypeReference<>() {
             });
         } catch (IOException e) {
             logger.error("Error while trying to read wrapper hashes", e);
@@ -83,11 +83,10 @@ public class OutdatedWrapperDetector implements ProblemDetector {
             boolean outdatedWrapperFound = false;
             if (wrapperFile.exists()) {
                 try {
-                    HashCode hash = Files.asByteSource(wrapperFile).hash( Hashing.sha1());
-                    final String expectedHash = filenamesToExpectedHashes.get(filename);
+                    HashCode hash = Files.asByteSource(wrapperFile).hash(Hashing.sha1());
                     final String actualHash = hash.toString();
-                    if (!expectedHash.equals(actualHash)) {
-                        logger.warn("Outdated file: {}. Expected hash: {}. Actual hash: {}", wrapperFile, expectedHash, actualHash);
+                    if (!expectedHashes.contains(actualHash)) {
+                        logger.warn("Outdated file: {}. Hash: {}", wrapperFile, actualHash);
                         outdatedWrapperFound = true;
 
                     }
@@ -108,13 +107,14 @@ public class OutdatedWrapperDetector implements ProblemDetector {
 
     public static void main(String[] args) throws Exception {
         final List<File> files = Arrays.asList(new File("releases/windows-release/include/NZBHydra2.exe"),
-            new File("releases/windows-release/include/NZBHydra2 Console.exe"),
-            new File("releases/linux-release/include/nzbhydra2"),
-            new File("other/wrapper/nzbhydra2wrapper.py"),
-            new File("other/wrapper/nzbhydra2wrapperPy3.py"));
-        final Map<String, String> hashes = new HashMap<>();
+                new File("releases/windows-release/include/NZBHydra2 Console.exe"),
+                new File("releases/linux-amd64-release/include/nzbhydra2"),
+//            new File("releases/linux-arm64-release/include/nzbhydra2"),
+                new File("other/wrapper/nzbhydra2wrapper.py"),
+                new File("other/wrapper/nzbhydra2wrapperPy3.py"));
+        final Set<String> hashes = new HashSet<>();
         for (File file : files) {
-            hashes.put(file.getName(), Files.asByteSource(file).hash(Hashing.sha1()).toString());
+            hashes.add(Files.asByteSource(file).hash(Hashing.sha1()).toString());
         }
         System.out.println(Jackson.JSON_MAPPER.writeValueAsString(hashes));
 

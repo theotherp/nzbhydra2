@@ -46,8 +46,8 @@ public class PrecheckMojoTest extends AbstractMojoTestCase {
         IOUtils.write("windowsExecutable", new FileWriter(precheckMojo.windowsExecutable));
         Thread.sleep(10);
 
-        precheckMojo.linuxExecutable = Files.createTempFile("hydra", "executable").toFile();
-        IOUtils.write("linuxExecutable", new FileWriter(precheckMojo.linuxExecutable));
+        precheckMojo.linuxAmd64Executable = Files.createTempFile("hydra", "executable").toFile();
+        IOUtils.write("linuxAmd64Executable", new FileWriter(precheckMojo.linuxAmd64Executable));
         Thread.sleep(10);
 
         precheckMojo.windowsConsoleExecutable = Files.createTempFile("hydra", "executable").toFile();

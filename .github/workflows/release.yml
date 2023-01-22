@@ -43,8 +43,8 @@ jobs:
                 run: ls -R ~/artifacts
             -   name: "Copy artifacts to include folders"
                 run: |
-                    mv ~/artifacts/coreLinux/* ./releases/linux-release/include/
-                    chmod +x ./releases/linux-release/include/nzbhydra2
+                    mv ~/artifacts/coreLinux/* ./releases/linux-amd64-release/include/
+                    chmod +x ./releases/linux-amd64-release/include/nzbhydra2
                     mv ~/artifacts/coreWindows/* ./releases/windows-release/include/
             -   name: Set up JDK 17
                 uses: actions/setup-java@v3

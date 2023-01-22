@@ -1,3 +1,4 @@
-linux-release/include/nzbhydra2 filter=lfs diff=lfs
+linux-amd64-release/include/nzbhydra2 filter=lfs diff=lfs
+linux-arm64-release/include/nzbhydra2 filter=lfs diff=lfs
 windows-release/include/NZBHydra2.exe filter=lfs diff=lfs
 windows-release/include/NZBHydra2[[:space:]]Console.exe filter=lfs

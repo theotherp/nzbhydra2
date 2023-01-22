@@ -153,19 +153,26 @@ if ($windowsVersion -ne $version) {
     exit 1
 }
 
-Write-Host "Building linux executable"
-wsl -d Ubuntu -- sh -c ./misc/buildLinuxCore/buildLinuxCore.sh
+Write-Host "Building linux amd64 executables"
+wsl -d Ubuntu -- sh -c ./misc/buildLinuxCore/buildBoth.sh
 
-$linuxVersion = wsl -d Ubuntu releases/linux-release/include/core -version
-if ($linuxVersion -ne $version) {
-    Write-Error "Linux version $version expected but is $linuxVersion"
+
+$linuxAmd64Version = wsl -d Ubuntu releases/linux-amd64-release/include/core -version
+if ($linuxAmd64Version -ne $version) {
+    Write-Error "Linux am64 version $version expected but is $linuxAmd64Version"
+    exit 1
+}
+
+$linuxArm64Version = wsl -d Ubuntu -- sh -c "ssh build@141.147.54.141 /home/build/nzbhydra2/core/target/core --version"
+if ($linuxArm64Version -ne $version) {
+    Write-Error "Linux arm64 version $version expected but is $linuxArm64Version"
     exit 1
 }
 
 Write-Host "All required files exist and versions match"
 
 Write-Host "Building releases ***********************************************************************"
-exec { mvn -q -pl org.nzbhydra:windows-release,org.nzbhydra:generic-release,org.nzbhydra:linux-release clean install -T 1C `-DskipTests=true}
+exec { mvn -q -pl org.nzbhydra:windows-release,org.nzbhydra:generic-release,org.nzbhydra:linux-amd64-release,org.nzbhydra:linux-arm64-release clean install -T 1C `-DskipTests=true}
 
 
 #We need to commit and push the source code now so that it's packaged in the release

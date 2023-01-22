@@ -53,8 +53,11 @@ public class ReleaseMojo extends AbstractMojo {
     @Parameter(property = "windowsAsset", required = true)
     protected File windowsAsset;
 
-    @Parameter(property = "linuxAsset", required = true)
-    protected File linuxAsset;
+    @Parameter(property = "linuxAmd64Asset", required = true)
+    protected File linuxAmd64Asset;
+
+    @Parameter(property = "linuxArm64Asset", required = true)
+    protected File linuxArm64Asset;
 
     @Parameter(property = "genericAsset", required = true)
     protected File genericAsset;
@@ -62,8 +65,10 @@ public class ReleaseMojo extends AbstractMojo {
     @Parameter(property = "changelogYamlFile", required = true)
     protected File changelogYamlFile;
 
-    @Parameter(property = "linuxExecutable", required = false)
-    protected File linuxExecutable;
+    @Parameter(property = "linuxAmd64Executable", required = false)
+    protected File linuxAmd64Executable;
+    //    @Parameter(property = "linuxArm64Executable", required = false)
+//    protected File linuxArm64Executable;
     @Parameter(property = "windowsExecutable", required = false)
     protected File windowsExecutable;
     @Parameter(property = "windowsConsoleExecutable", required = false)
@@ -109,9 +114,13 @@ public class ReleaseMojo extends AbstractMojo {
             throw new MojoExecutionException("Unable to find windows asset at " + windowsAsset.getAbsolutePath());
         }
 
-        if (!linuxAsset.exists()) {
-            throw new MojoExecutionException("Unable to find linux asset at " + linuxAsset.getAbsolutePath());
+        if (!linuxAmd64Asset.exists()) {
+            throw new MojoExecutionException("Unable to find linux amd64 asset at " + linuxAmd64Asset.getAbsolutePath());
         }
+
+//        if (!linuxArm64Asset.exists()) {
+//            throw new MojoExecutionException("Unable to find linux arm64 asset at " + linuxArm64Asset.getAbsolutePath());
+//        }
 
         if (!genericAsset.exists()) {
             throw new MojoExecutionException("Unable to find generic asset at " + genericAsset.getAbsolutePath());
@@ -126,7 +135,8 @@ public class ReleaseMojo extends AbstractMojo {
         }
 
         getLog().info("Will use windows asset " + windowsAsset.getAbsolutePath());
-        getLog().info("Will use linux asset " + linuxAsset.getAbsolutePath());
+        getLog().info("Will use linux amd64 asset " + linuxAmd64Asset.getAbsolutePath());
+//        getLog().info("Will use linux arm64 asset " + linuxArm64Asset.getAbsolutePath());
         getLog().info("Will use generic asset " + genericAsset.getAbsolutePath());
         getLog().info("Will use changelog entry from " + changelogYamlFile.getAbsolutePath());
 
@@ -166,12 +176,14 @@ public class ReleaseMojo extends AbstractMojo {
             return;
         }
         try {
-            final Instant linuxExecutableCreationTime = Files.readAttributes(linuxExecutable.toPath(), BasicFileAttributes.class).creationTime().toInstant();
+            final Instant linuxAmd64ExecutableCreationTime = Files.readAttributes(linuxAmd64Executable.toPath(), BasicFileAttributes.class).creationTime().toInstant();
+//            final Instant linuxArm64ExecutableCreationTime = Files.readAttributes(linuxArm64Executable.toPath(), BasicFileAttributes.class).creationTime().toInstant();
             final Instant windowsExecutableCreationTime = Files.readAttributes(windowsExecutable.toPath(), BasicFileAttributes.class).creationTime().toInstant();
             final Instant windowsConsoleExecutableCreationTime = Files.readAttributes(windowsConsoleExecutable.toPath(), BasicFileAttributes.class).creationTime().toInstant();
             final Instant py3CreationTime = Files.readAttributes(py3.toPath(), BasicFileAttributes.class).creationTime().toInstant();
             final Instant windowsPyCreationTime = Files.readAttributes(windowsPy.toPath(), BasicFileAttributes.class).creationTime().toInstant();
-            verifyIsYounger(linuxExecutable, py3);
+            verifyIsYounger(linuxAmd64Executable, py3);
+//            verifyIsYounger(linuxArm64Executable, py3);
             verifyIsYounger(windowsExecutable, py3);
             verifyIsYounger(windowsExecutable, windowsPy);
             verifyIsYounger(windowsConsoleExecutable, py3);
@@ -271,28 +283,51 @@ public class ReleaseMojo extends AbstractMojo {
         }
 
 
-        getLog().info("Uploading linux asset to " + uploadUrl);
-        name = linuxAsset.getName();
+        getLog().info("Uploading linux amd64 asset to " + uploadUrl);
+        name = linuxAmd64Asset.getName();
         if (!dryRun) {
 
             try {
-                Builder callBuilder = new Builder().header("Content-Length", String.valueOf(linuxAsset.length())).url(uploadUrl + "?name=" + name);
+                Builder callBuilder = new Builder().header("Content-Length", String.valueOf(linuxAmd64Asset.length())).url(uploadUrl + "?name=" + name);
                 callBuilder.header("Authorization", "token " + githubToken);
                 response = client.newCall(callBuilder
-                    .post(
-                        RequestBody.create(MediaType.parse("application/gzip"), linuxAsset))
-                    .build()).execute();
+                        .post(
+                                RequestBody.create(MediaType.parse("application/gzip"), linuxAmd64Asset))
+                        .build()).execute();
                 if (!response.isSuccessful()) {
-                    throw new MojoExecutionException("When trying to upload linux asset Github returned code " + response.code() + " and message: " + response.message());
+                    throw new MojoExecutionException("When trying to upload linux amd64 asset Github returned code " + response.code() + " and message: " + response.message());
                 }
-                getLog().info("Successfully uploaded linux asset");
+                getLog().info("Successfully uploaded linux amd64 asset");
             } catch (IOException e) {
-                getLog().error("Error while uploading linux asset", e);
-                throw new MojoExecutionException("When trying to upload linux asset the following error occurred: " + e.getMessage());
+                getLog().error("Error while uploading linux amd64 asset", e);
+                throw new MojoExecutionException("When trying to upload linux amd64 asset the following error occurred: " + e.getMessage());
             }
         } else {
-            getLog().info("Skipping upload of linux assed because of dry run");
+            getLog().info("Skipping upload of linux amd64 asset because of dry run");
         }
+
+//        getLog().info("Uploading linux arm64 asset to " + uploadUrl);
+//        name = linuxArm64Asset.getName();
+//        if (!dryRun) {
+//
+//            try {
+//                Builder callBuilder = new Builder().header("Content-Length", String.valueOf(linuxArm64Asset.length())).url(uploadUrl + "?name=" + name);
+//                callBuilder.header("Authorization", "token " + githubToken);
+//                response = client.newCall(callBuilder
+//                        .post(
+//                                RequestBody.create(MediaType.parse("application/gzip"), linuxArm64Asset))
+//                        .build()).execute();
+//                if (!response.isSuccessful()) {
+//                    throw new MojoExecutionException("When trying to upload linux arm64 asset Github returned code " + response.code() + " and message: " + response.message());
+//                }
+//                getLog().info("Successfully uploaded linux asset");
+//            } catch (IOException e) {
+//                getLog().error("Error while uploading linux asset", e);
+//                throw new MojoExecutionException("When trying to upload linux arm64 asset the following error occurred: " + e.getMessage());
+//            }
+//        } else {
+//            getLog().info("Skipping upload of linux arm64 asset because of dry run");
+//        }
 
         getLog().info("Uploading generic asset to " + uploadUrl);
         if (!dryRun) {
@@ -301,8 +336,8 @@ public class ReleaseMojo extends AbstractMojo {
                 Builder callBuilder = new Builder().header("Content-Length", String.valueOf(genericAsset.length())).url(uploadUrl + "?name=" + name);
                 callBuilder.header("Authorization", "token " + githubToken);
                 response = client.newCall(callBuilder
-                    .post(
-                        RequestBody.create(MediaType.parse("application/gzip"), genericAsset))
+                        .post(
+                                RequestBody.create(MediaType.parse("application/gzip"), genericAsset))
                     .build()).execute();
                 if (!response.isSuccessful()) {
                     throw new MojoExecutionException("When trying to upload generic asset Github returned code " + response.code() + " and message: " + response.message());
