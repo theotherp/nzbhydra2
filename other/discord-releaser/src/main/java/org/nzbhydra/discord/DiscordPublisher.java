@@ -78,7 +78,11 @@ public class DiscordPublisher {
         JDA jda = JDABuilder.createDefault(discordToken).build().awaitReady();
         final List<TextChannel> channels = jda.getTextChannels().stream().filter(x -> x.getName().equals("releases")).toList();
         for (TextChannel channel : channels) {
-            channel.sendMessage(message).queue();
+            try {
+                channel.sendMessage(message).queue();
+            } catch (Exception e) {
+                throw new RuntimeException("If permissions are missing even though the bot should have them set the permissions in the channel manually for the bot", e);
+            }
         }
         jda.shutdown();
     }
