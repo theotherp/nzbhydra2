@@ -14,7 +14,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -53,15 +52,6 @@ public class ChangelogGeneratorMojo extends AbstractMojo {
         }
         Collections.sort(entries);
         Collections.reverse(entries);
-
-        if (entries.get(0).getDate() == null) {
-            entries.get(0).setDate(LocalDate.now().toString());
-        }
-        try {
-            objectMapper.writerWithDefaultPrettyPrinter().writeValue(changelogYamlFile, entries);
-        } catch (IOException e) {
-            throw new MojoExecutionException("Unable to update json file " + changelogYamlFile.getAbsolutePath(), e);
-        }
 
         List<String> lines = new ArrayList<>();
         for (ChangelogVersionEntry entry : entries) {
