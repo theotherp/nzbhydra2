@@ -1,12 +1,17 @@
 ---
+- version: "v5.0.7"
+  changes:
+    - type: "fix"
+      text: "Alright, so the binary fix from 5.0.6 didn't fix anything but made it worse. But now I've found a way to make the binary run for everybody (I hope, who knows by know)."
+  final: true
 - version: "v5.0.6"
   date: "2023-01-21"
   changes:
-  - type: "fix"
-    text: "NZBHydra wouldn't start with performance logging enabled. So many corner\
+    - type: "fix"
+      text: "NZBHydra wouldn't start with performance logging enabled. So many corner\
       \ cases..."
-  - type: "fix"
-    text: "Starting NZBHydra on linux via the nzbhydra executable didn't work and\
+    - type: "fix"
+      text: "Starting NZBHydra on linux via the nzbhydra executable didn't work and\
       \ you'd get an error mentioning zlib. For some wild reason I don't understand\
       \ this was not caused by the actual main binary but by the compiled wrapper.\
       \ So running NZBHydra via python wrapper worked. I've compiled the wrapper on\
