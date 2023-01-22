@@ -216,6 +216,8 @@ public class DebugInfosProvider {
     public File createDebugInfosZipFile() throws IOException {
         logger.info("Creating debug infos");
         logger.info("NZBHydra2 version: {}", updateManager.getCurrentVersionString());
+        final Pair<String, String> pair = DebugInfosProvider.getVersionAndBuildTimestamp();
+        logger.info("NZBHydra2 build: {} ({})", pair.getLeft(), pair.getRight());
         logger.info("Java command line: {}", System.getProperty("sun.java.command"));
         logger.info("Java runtime name: {}", System.getProperty("java.runtime.name"));
         logger.info("Java runtime version: {}", System.getProperty("java.runtime.version"));

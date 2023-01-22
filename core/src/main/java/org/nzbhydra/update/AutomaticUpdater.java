@@ -17,7 +17,6 @@
 package org.nzbhydra.update;
 
 import org.nzbhydra.config.ConfigProvider;
-import org.nzbhydra.debuginfos.DebugInfosProvider;
 import org.nzbhydra.genericstorage.GenericStorage;
 import org.nzbhydra.tasks.HydraTask;
 import org.slf4j.Logger;
@@ -46,7 +45,7 @@ public class AutomaticUpdater {
     @Transactional
     public void checkAndInstall() {
         try {
-            if (DebugInfosProvider.isRunInDocker()) {
+            if (updateManager.isUpdatedExternally()) {
                 return;
             }
             final UpdateManager.UpdateInfo updateInfo = updateManager.getUpdateInfo();

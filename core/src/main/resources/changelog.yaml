@@ -1,4 +1,5 @@
 ---
+#@formatter:off
 -   version: "v5.0.8"
     date: "2023-01-22"
     changes:
@@ -7,7 +8,7 @@
         -   type: "fix"
             text: "Never try to update automatically when running docker."
         -   type: "fix"
-            text: "Parsing sabnzbd remaing time was broken."
+            text: "Parsing sabnzbd remaining time was broken."
     final: true
 -   version: "v5.0.7"
     date: "2023-01-22"
