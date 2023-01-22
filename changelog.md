@@ -1,3 +1,9 @@
+### v5.1.0 (2023-01-22)
+
+**Feature** I thought I couldn't provide an ARM binary but thanks to a hint by thespad I can now build them. So now you'll be able to run NZBHydra without Java on ARM64 machines. You still will need python to run the wrapper because I was unable to compile the wrapper but that should be a minor problem because you couldn't execute it before either...
+
+
+
 ### v5.0.8 (2023-01-22)
 
 **Fix** Fixed performance logging. In 5.0.6 I disabled it, now it actually works.
