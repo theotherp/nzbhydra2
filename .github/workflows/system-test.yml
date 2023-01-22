@@ -98,6 +98,7 @@ jobs:
                 run: |
                     cd docker
                     docker-compose up -d
+                    cd ..
 
             -   name: "Wait for healthy containers"
                 run: |
@@ -111,28 +112,41 @@ jobs:
                     echo "v1Migration container mounts:"
                     docker container inspect -f '{{ .Mounts}}' v1Migration
 
-            - name: "Run tests"
-              run: mvn --batch-mode test -pl org.nzbhydra.tests:system -DtrimStackTrace=false
+            -   name: "Run tests"
+                run: mvn --batch-mode test -pl org.nzbhydra.tests:system -DtrimStackTrace=false
 
-            - name: "Upload data folder artifact"
-              uses: actions/upload-artifact@v3
-              if: always()
-              with:
-                  name: data
-                  path: /tmp/hydra
+            -   name: "Write docker-compose logs"
+                run: |
+                    cd docker
+                    docker-compose logs --no-color > docker-compose.log
+                    cd ..
 
-            - name: "Upload test logs artifact"
-              uses: actions/upload-artifact@v3
-              if: always()
-              with:
-                  name: ${{ matrix.test.name }}-test-logs
-                  path: tests/**/*.log
+            -   name: "Upload data folder artifact"
+                uses: actions/upload-artifact@v3
+                if: always()
+                with:
+                    name: data
+                    path: /tmp/hydra
 
-            - name: "Create test Report"
-              uses: dorny/test-reporter@v1
-              if: always()
-              continue-on-error: true
-              with:
-                  name: System test report ${{ matrix.test.name }}
-                  path: "**/surefire-reports/*.xml"
-                  reporter: java-junit
+            -   name: "Upload test logs artifact"
+                uses: actions/upload-artifact@v3
+                if: always()
+                with:
+                    name: ${{ matrix.test.name }}-test-logs
+                    path: tests/**/*.log
+
+            -   name: "Upload docker logs artifact"
+                uses: actions/upload-artifact@v3
+                if: always()
+                with:
+                    name: ${{ matrix.test.name }}-docker-logs
+                    path: docker/*.log
+
+            -   name: "Create test Report"
+                uses: dorny/test-reporter@v1
+                if: always()
+                continue-on-error: true
+                with:
+                    name: System test report ${{ matrix.test.name }}
+                    path: "**/surefire-reports/*.xml"
+                    reporter: java-junit
