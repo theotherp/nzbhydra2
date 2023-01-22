@@ -9,8 +9,6 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import org.apache.commons.lang3.StringUtils;
-import org.joda.time.format.PeriodFormatter;
-import org.joda.time.format.PeriodFormatterBuilder;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.Jackson;
 import org.nzbhydra.config.ConfigProvider;
@@ -61,8 +59,6 @@ public class Sabnzbd extends Downloader {
     private static final Logger logger = LoggerFactory.getLogger(Sabnzbd.class);
 
     private static final Map<String, FileDownloadStatus> SABNZBD_STATUS_TO_HYDRA_STATUS = new HashMap<>();
-    private static final PeriodFormatter PERIOD_FORMATTER_HOURS = new PeriodFormatterBuilder().appendHours().appendSeparator(":").appendMinutes().appendSeparator(":").appendSeconds().toFormatter();
-    private static final PeriodFormatter PERIOD_FORMATTER_DAYS = new PeriodFormatterBuilder().appendDays().appendSeparator(":").appendHours().appendSeparator(":").appendMinutes().appendSeparator(":").appendSeconds().toFormatter();
 
     static {
         //TODO Get feedback from Safihre how well mapping would work and how/if any NZBs would be reported which were rejected
@@ -245,12 +241,26 @@ public class Sabnzbd extends Downloader {
         }
         try {
             if (StringUtils.countMatches(timeleft, ":") == 3) {
-                return Converters.formatTime(PERIOD_FORMATTER_DAYS.parsePeriod(timeleft).toStandardSeconds().getSeconds());
+                return Converters.formatTime(durationStringToSeconds(timeleft));
             }
-            return Converters.formatTime(PERIOD_FORMATTER_HOURS.parsePeriod(timeleft).toStandardSeconds().getSeconds());
+            return Converters.formatTime(durationStringToSeconds(timeleft));
         } catch (Exception e) {
             logger.error("Unable to parse time left from value '{}'", timeleft);
             return null;
+        }
+    }
+
+    static int durationStringToSeconds(String duration) {
+        String[] tokens = duration.split(":");
+        if (tokens.length == 2) {
+            int minutes = Integer.parseInt(tokens[0]);
+            int seconds = Integer.parseInt(tokens[1]);
+            return 60 * minutes + seconds;
+        } else {
+            int hours = Integer.parseInt(tokens[0]);
+            int minutes = Integer.parseInt(tokens[1]);
+            int seconds = Integer.parseInt(tokens[2]);
+            return 3600 * hours + 60 * minutes + seconds;
         }
     }
 

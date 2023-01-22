@@ -6,6 +6,8 @@
             text: "Fixed performance logging. In 5.0.6 I disabled it, now it actually works."
         -   type: "fix"
             text: "Never try to update automatically when running docker."
+        -   type: "fix"
+            text: "Parsing sabnzbd remaing time was broken."
     final: true
 -   version: "v5.0.7"
     date: "2023-01-22"
