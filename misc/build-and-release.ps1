@@ -168,19 +168,7 @@ Write-Host "Building releases **************************************************
 exec { mvn -q -pl org.nzbhydra:windows-release,org.nzbhydra:generic-release,org.nzbhydra:linux-release clean install -T 1C `-DskipTests=true}
 
 
-if ($dryRun) {
-    Write-Host "Releasing to github (not really, just dry run) ***********************************************************************"
-    exec { mvn -B org.nzbhydra:github-release-plugin:3.0.0:release `-DdryRun }
-
-} else {
-    Write-Host "Releasing to github ***********************************************************************"
-    exec { mvn -B org.nzbhydra:github-release-plugin:3.0.0:release }
-}
-if (-not $?) {
-    Write-Error "Releasing to github failed"
-    exit 1
-}
-
+#We need to commit and push the source code now so that it's packaged in the release
 if ($dryRun) {
     Write-Host "Committing (not really, just dry run) ***********************************************************************"
 } else {
@@ -217,6 +205,20 @@ if ($dryRun) {
         exit 1
     }
 }
+
+if ($dryRun) {
+    Write-Host "Releasing to github (not really, just dry run) ***********************************************************************"
+    exec { mvn -B org.nzbhydra:github-release-plugin:3.0.0:release `-DdryRun }
+
+} else {
+    Write-Host "Releasing to github ***********************************************************************"
+    exec { mvn -B org.nzbhydra:github-release-plugin:3.0.0:release }
+}
+if (-not $?) {
+    Write-Error "Releasing to github failed"
+    exit 1
+}
+
 
 if ($dryRun) {
     Write-Host "Publishing to discord (not really, just dry run) ***********************************************************************"
