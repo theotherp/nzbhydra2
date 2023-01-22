@@ -1,3 +1,13 @@
+### v5.0.8 (2023-01-22)
+
+**Fix** Fixed performance logging. In 5.0.6 I disabled it, now it actually works.
+
+**Fix** Never try to update automatically when running docker.
+
+**Fix** Parsing sabnzbd remaining time was broken.
+
+
+
 ### v5.0.7 (2023-01-22)
 
 **Fix** Alright, so the binary fix from 5.0.6 didn't fix anything but made it worse. But now I've found a way to make the binary run for everybody (I hope, who knows by know).

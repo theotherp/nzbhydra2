@@ -7,12 +7,8 @@ if [[ ! -d "${PWD}/core" ]] ; then
   return
 fi
 
-#rsync -rvu --exclude "target" --exclude "bower_components" --exclude "node_modules" --exclude ".git" --exclude ".idea" --exclude "results" --exclude "*.db" --exclude "*.zip" --exclude "venv*" ${PWD}/ build@141.147.54.141:~/nzbhydra2/ --delete
+echo Syncing with remote server
+rsync -rvu --exclude "target" --exclude "bower_components" --exclude "node_modules" --exclude ".git" --exclude ".idea" --exclude "results" --exclude "*.db" --exclude "*.zip" --exclude "*.jar" --exclude "venv*" ${PWD}/ build@141.147.54.141:~/nzbhydra2/ --delete
 
-docker run -v ~/nzbhydra2/:/nzbhydra2:rw -v ~/.m2/repository:/root/.m2/repository:rw --rm hydrabuild:latest
-if [[ ! -f ~/nzbhydra2/core/target/core ]] ; then
-  echo "core executable does not exist"
-else
-  cp ~/nzbhydra2/core/target/core ${PWD}/core/target/
-  cp ~/nzbhydra2/core/target/core ${PWD}/releases/linux-release/include/
-fi
+echo Running build script on remote server
+ssh build@141.147.54.141:~/nzbhydra2/misc/buildLinuxCore/arm64/buildLinuxCore.sh
