@@ -54,7 +54,6 @@ public class NativeHints implements RuntimeHintsRegistrar {
 
         hints.resources().registerResourceBundle("joptsimple.ExceptionMessages");
 
-
         final Set<Class<?>> classes = getClassesToRegister();
         classes.add(HashSet.class);
         classes.add(ArrayList.class);
