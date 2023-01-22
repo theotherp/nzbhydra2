@@ -48,6 +48,7 @@ import java.nio.file.Files;
 import java.text.DecimalFormat;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -99,79 +100,86 @@ public class DebugInfosProvider {
     private final List<TimeAndThreadCpuUsages> timeAndThreadCpuUsagesList = new ArrayList<>();
     private final Map<String, Long> lastThreadCpuTimes = new HashMap<>();
 
+
     @PostConstruct
     public void logMetrics() {
         try {
             if (!configProvider.getBaseConfig().getMain().getLogging().getMarkersToLog().contains(LoggingMarkers.PERFORMANCE.getName())) {
                 return;
             }
-            logger.debug(LoggingMarkers.PERFORMANCE, "Will log performance metrics every {} seconds", LOG_METRICS_EVERY_SECONDS);
-            ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-            executor.scheduleAtFixedRate(() -> {
-                try {
-                    final String cpuMetric = "process.cpu.usage";
-                    String message = "Process CPU usage: " + formatSample(cpuMetric, metricsEndpoint.metric(cpuMetric, null).getMeasurements().get(0).getValue());
-                    logger.debug(LoggingMarkers.PERFORMANCE, message);
-                } catch (Exception e) {
-                    logger.debug(LoggingMarkers.PERFORMANCE, "Error while logging CPU usage", e);
-                }
-                try {
-                    final String memoryMetric = "jvm.memory.used";
-                    String message = "Process memory usage: " + formatSample(memoryMetric, metricsEndpoint.metric(memoryMetric, null).getMeasurements().get(0).getValue());
-                    logger.debug(LoggingMarkers.PERFORMANCE, message);
-                } catch (Exception e) {
-                    logger.debug(LoggingMarkers.PERFORMANCE, "Error while logging memory usage", e);
-                }
-                ThreadMXBean threadMxBean = ManagementFactory.getThreadMXBean();
-                final ThreadInfo[] threadInfos = threadMxBean.dumpAllThreads(true, true);
+            final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
 
-            }, 0, LOG_METRICS_EVERY_SECONDS, TimeUnit.SECONDS);
-
-            int cpuCount = metricsEndpoint.metric("system.cpu.count", null).getMeasurements().get(0).getValue().intValue();
-            ThreadMXBean threadMxBean = ManagementFactory.getThreadMXBean();
-            final double[] previousUptime = {getUpTimeInMiliseconds()};
-            ScheduledExecutorService executor2 = Executors.newScheduledThreadPool(1);
-
-            executor2.scheduleAtFixedRate(new Runnable() {
-                @Override
-                public void run() {
-                    final double upTime = getUpTimeInMiliseconds();
-                    double elapsedTime = upTime - previousUptime[0];
-
+            //The metrics endpoint is not available immediately after startup
+            scheduledExecutorService.schedule(() -> {
+                logger.debug(LoggingMarkers.PERFORMANCE, "Will log performance metrics every {} seconds", LOG_METRICS_EVERY_SECONDS);
+                ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+                executor.scheduleAtFixedRate(() -> {
+                    try {
+                        final String cpuMetric = "process.cpu.usage";
+                        String message = "Process CPU usage: " + formatSample(cpuMetric, metricsEndpoint.metric(cpuMetric, Collections.emptyList()).getMeasurements().get(0).getValue());
+                        logger.debug(LoggingMarkers.PERFORMANCE, message);
+                    } catch (Exception e) {
+                        logger.debug(LoggingMarkers.PERFORMANCE, "Error while logging CPU usage", e);
+                    }
+                    try {
+                        final String memoryMetric = "jvm.memory.used";
+                        String message = "Process memory usage: " + formatSample(memoryMetric, metricsEndpoint.metric(memoryMetric, null).getMeasurements().get(0).getValue());
+                        logger.debug(LoggingMarkers.PERFORMANCE, message);
+                    } catch (Exception e) {
+                        logger.debug(LoggingMarkers.PERFORMANCE, "Error while logging memory usage", e);
+                    }
+                    ThreadMXBean threadMxBean = ManagementFactory.getThreadMXBean();
                     final ThreadInfo[] threadInfos = threadMxBean.dumpAllThreads(true, true);
-                    TimeAndThreadCpuUsages timeAndThreadCpuUsages = new TimeAndThreadCpuUsages(Instant.now());
-                    for (ThreadInfo threadInfo : threadInfos) {
-                        final String threadName = threadInfo.getThreadName();
-                        final long threadCpuTime = threadMxBean.getThreadCpuTime(threadInfo.getThreadId());
-                        if (!lastThreadCpuTimes.containsKey(threadName)) {
+
+                }, 0, LOG_METRICS_EVERY_SECONDS, TimeUnit.SECONDS);
+
+                int cpuCount = metricsEndpoint.metric("system.cpu.count", null).getMeasurements().get(0).getValue().intValue();
+                ThreadMXBean threadMxBean = ManagementFactory.getThreadMXBean();
+                final double[] previousUptime = {getUpTimeInMiliseconds()};
+                ScheduledExecutorService executor2 = Executors.newScheduledThreadPool(1);
+
+                executor2.scheduleAtFixedRate(new Runnable() {
+                    @Override
+                    public void run() {
+                        final double upTime = getUpTimeInMiliseconds();
+                        double elapsedTime = upTime - previousUptime[0];
+
+                        final ThreadInfo[] threadInfos = threadMxBean.dumpAllThreads(true, true);
+                        TimeAndThreadCpuUsages timeAndThreadCpuUsages = new TimeAndThreadCpuUsages(Instant.now());
+                        for (ThreadInfo threadInfo : threadInfos) {
+                            final String threadName = threadInfo.getThreadName();
+                            final long threadCpuTime = threadMxBean.getThreadCpuTime(threadInfo.getThreadId());
+                            if (!lastThreadCpuTimes.containsKey(threadName)) {
+                                lastThreadCpuTimes.put(threadName, threadCpuTime);
+                                continue;
+                            }
+                            final Long lastThreadCpuTime = lastThreadCpuTimes.get(threadName);
+                            long elapsedThreadCpuTime = threadCpuTime - lastThreadCpuTime;
+                            if (elapsedThreadCpuTime < 0) {
+                                //Not sure why but this happens with some threads
+                                continue;
+                            }
+                            float cpuUsage = Math.min(99F, elapsedThreadCpuTime / (float) (elapsedTime * 1000 * cpuCount));
+                            if (cpuUsage < 0) {
+                                cpuUsage = 0;
+                            }
+                            if (cpuUsage > 5F) {
+                                logger.debug(LoggingMarkers.PERFORMANCE, "CPU usage of thread {}: {}", threadName, cpuUsage);
+                            }
+                            timeAndThreadCpuUsages.getThreadCpuUsages().add(new ThreadCpuUsage(threadName, (long) cpuUsage));
+
                             lastThreadCpuTimes.put(threadName, threadCpuTime);
-                            continue;
                         }
-                        final Long lastThreadCpuTime = lastThreadCpuTimes.get(threadName);
-                        long elapsedThreadCpuTime = threadCpuTime - lastThreadCpuTime;
-                        if (elapsedThreadCpuTime < 0) {
-                            //Not sure why but this happens with some threads
-                            continue;
+                        timeAndThreadCpuUsagesList.add(timeAndThreadCpuUsages);
+                        previousUptime[0] = upTime;
+                        if (timeAndThreadCpuUsagesList.size() == 50) {
+                            timeAndThreadCpuUsagesList.remove(0);
                         }
-                        float cpuUsage = Math.min(99F, elapsedThreadCpuTime / (float) (elapsedTime * 1000 * cpuCount));
-                        if (cpuUsage < 0) {
-                            cpuUsage = 0;
-                        }
-                        if (cpuUsage > 5F) {
-                            logger.debug(LoggingMarkers.PERFORMANCE, "CPU usage of thread {}: {}", threadName, cpuUsage);
-                        }
-                        timeAndThreadCpuUsages.getThreadCpuUsages().add(new ThreadCpuUsage(threadName, (long) cpuUsage));
-
-                        lastThreadCpuTimes.put(threadName, threadCpuTime);
                     }
-                    timeAndThreadCpuUsagesList.add(timeAndThreadCpuUsages);
-                    previousUptime[0] = upTime;
-                    if (timeAndThreadCpuUsagesList.size() == 50) {
-                        timeAndThreadCpuUsagesList.remove(0);
-                    }
-                }
 
-            }, 0, LOG_METRICS_EVERY_SECONDS, TimeUnit.SECONDS);
+                }, 0, LOG_METRICS_EVERY_SECONDS, TimeUnit.SECONDS);
+            }, 5, TimeUnit.SECONDS);
+
         } catch (Exception e) {
             logger.error("Error initializing performance metrics reading", e);
         }
