@@ -17,6 +17,7 @@
         <module name="classloader" />
         <module name="github-release-plugin" />
         <module name="assertions" />
+        <module name="discordreleaser" />
         <module name="updater" />
         <module name="mockserver" />
       </profile>
@@ -32,6 +33,7 @@
     <option name="ADDITIONAL_OPTIONS_STRING" value="-parameters" />
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="core" options="-parameters" />
+      <module name="discordreleaser" options="" />
       <module name="github-release-plugin" options="" />
       <module name="linux-release" options="-parameters" />
       <module name="mapping" options="-parameters" />

@@ -222,16 +222,10 @@ if (-not $?) {
 
 if ($dryRun) {
     Write-Host "Publishing to discord (not really, just dry run) ***********************************************************************"
-    exec { mvn -B org.nzbhydra:github-release-plugin:3.0.0:publish-on-discord `-DdryRun }
-
+    exec { java -jar other/discord-releaser/discordreleaser.jar core/src/main/resources/changelog.yaml $version discordtoken.txt true }
 } else {
     Write-Host "Publishing to discord  ***********************************************************************"
-    try {
-        exec { mvn -B org.nzbhydra:github-release-plugin:3.0.0:publish-on-discord }
-    } catch {
-        Write-Error "Publishing to discord failed"
-        Read-Host -Prompt "Press enter to continue"
-    }
+    exec { java -jar other/discord-releaser/discordreleaser.jar core/src/main/resources/changelog.yaml $version discordtoken.txt false }
 }
 if (-not $?) {
     Write-Error "Publishing to discord failed"
