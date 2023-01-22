@@ -164,19 +164,6 @@ exec { mvn -q -pl org.nzbhydra:windows-release,org.nzbhydra:generic-release,org.
 
 
 if ($dryRun) {
-    Write-Host "Releasing to github (not really, just dry run) ***********************************************************************"
-    exec { mvn -B org.nzbhydra:github-release-plugin:3.0.0:release `-DdryRun }
-
-} else {
-    Write-Host "Releasing to github ***********************************************************************"
-    exec { mvn -B org.nzbhydra:github-release-plugin:3.0.0:release }
-}
-if (-not $?) {
-    Write-Error "Releasing to github failed"
-    exit 1
-}
-
-if ($dryRun) {
     Write-Host "Committing (not really, just dry run) ***********************************************************************"
 } else {
     Write-Host "Committing ***********************************************************************"
@@ -200,6 +187,7 @@ if ($dryRun) {
     }
 }
 
+# We must tag and push before releasing before otherwise github creates the tag
 if ($dryRun) {
     Write-Host "Pushing (not really, just dry run) ***********************************************************************"
 } else {
@@ -211,6 +199,19 @@ if ($dryRun) {
         git reset --hard
         exit 1
     }
+}
+
+if ($dryRun) {
+    Write-Host "Releasing to github (not really, just dry run) ***********************************************************************"
+    exec { mvn -B org.nzbhydra:github-release-plugin:3.0.0:release `-DdryRun }
+
+} else {
+    Write-Host "Releasing to github ***********************************************************************"
+    exec { mvn -B org.nzbhydra:github-release-plugin:3.0.0:release }
+}
+if (-not $?) {
+    Write-Error "Releasing to github failed"
+    exit 1
 }
 
 if ($dryRun) {
