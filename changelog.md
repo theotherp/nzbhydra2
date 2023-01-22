@@ -1,3 +1,9 @@
+### v5.0.7 (2023-01-22)
+
+**Fix** Alright, so the binary fix from 5.0.6 didn't fix anything but made it worse. But now I've found a way to make the binary run for everybody (I hope, who knows by know).
+
+
+
 ### v5.0.6 (2023-01-21)
 
 **Fix** NZBHydra wouldn't start with performance logging enabled. So many corner cases...
