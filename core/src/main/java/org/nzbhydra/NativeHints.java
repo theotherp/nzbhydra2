@@ -27,6 +27,8 @@ import org.springframework.aot.hint.ExecutableMode;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.RuntimeHintsRegistrar;
+import org.springframework.boot.actuate.management.ThreadDumpEndpoint;
+import org.springframework.boot.actuate.metrics.MetricsEndpoint;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
@@ -37,6 +39,7 @@ import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class NativeHints implements RuntimeHintsRegistrar {
@@ -44,6 +47,7 @@ public class NativeHints implements RuntimeHintsRegistrar {
     private static final Logger logger = LoggerFactory.getLogger(NativeHints.class);
 
 
+    @SuppressWarnings("EmptyTryBlock")
     @Override
     public void registerHints(RuntimeHints hints, ClassLoader classLoader) {
         logger.info("Registering native hints");
@@ -70,6 +74,12 @@ public class NativeHints implements RuntimeHintsRegistrar {
             } catch (IOException e) {
                 logger.error("Error loading resource " + staticResource, e);
             }
+        }
+        try {
+            hints.reflection().registerMethod(MetricsEndpoint.class.getMethod("metric", String.class, List.class), ExecutableMode.INVOKE);
+            hints.reflection().registerMethod(ThreadDumpEndpoint.class.getMethod("textThreadDump"), ExecutableMode.INVOKE);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
         }
     }
 
