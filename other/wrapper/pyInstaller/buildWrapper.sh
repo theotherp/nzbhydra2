@@ -30,7 +30,7 @@ echo "todo windows build returns unusable exe"
 #mkdir -p dist/linux
 #docker run -v "$(pwd):/src/" cdrx/pyinstaller-linux
 #staticx -l /lib/x86_64-linux-gnu/libm.so.6 dist/linux/NZBHydra2 dist/linux/NZBHydra2-static
-#cp dist/linux/NZBHydra2-static ../../../../releases/linux-amd64-release/include/nzbhydra2
+#cp dist/linux/NZBHydra2-static ../../../../releases/linux-amd64-release/include/executables/nzbhydra2
 #cd ../
 #
 ##todo Currently builds an unusable exe

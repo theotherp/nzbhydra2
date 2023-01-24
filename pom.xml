@@ -44,19 +44,19 @@
                     <changelogYamlFile>${basedir}/core/src/main/resources/changelog.yaml</changelogYamlFile>
                     <changelogMdFile>${basedir}/changelog.md</changelogMdFile>
 
-                    <linuxAmd64Executable>${basedir}/releases/linux-amd64-release/include/nzbhydra2</linuxAmd64Executable>
-                    <!--                    <linuxArm64Executable>${basedir}/releases/linux-arm64-release/include/nzbhydra2</linuxArm64Executable>-->
+                    <linuxAmd64Executable>${basedir}/releases/linux-amd64-release/include/executables/nzbhydra2</linuxAmd64Executable>
+                    <!--                    <linuxArm64Executable>${basedir}/releases/linux-arm64-release/include/executables/nzbhydra2</linuxArm64Executable>-->
                     <windowsExecutable>${basedir}/releases/windows-release/include/NZBHydra2.exe</windowsExecutable>
                     <windowsConsoleExecutable>${basedir}/releases/windows-release/include/NZBHydra2 Console.exe</windowsConsoleExecutable>
                     <py3>${basedir}/other/wrapper/nzbhydra2wrapperPy3.py</py3>
                     <windowsPy>${basedir}/other/wrapper/pyInstaller/windows/nzbhydra2wrapperWindows.py</windowsPy>
 
-                    <wrapperFile1>${basedir}/releases/linux-amd64-release/include/nzbhydra2</wrapperFile1>
+                    <wrapperFile1>${basedir}/releases/linux-amd64-release/include/executables/nzbhydra2</wrapperFile1>
                     <wrapperFile2>${basedir}/releases/windows-release/include/NZBHydra2 Console.exe</wrapperFile2>
                     <wrapperFile3>${basedir}/releases/windows-release/include/NZBHydra2.exe</wrapperFile3>
                     <wrapperFile4>${basedir}/other/wrapper/nzbhydra2wrapper.py</wrapperFile4>
                     <wrapperFile5>${basedir}/other/wrapper/nzbhydra2wrapperPy3.py</wrapperFile5>
-                    <!--                    <wrapperFile6>${basedir}/releases/linux-arm64-release/include/nzbhydra2</wrapperFile6>-->
+                    <!--                    <wrapperFile6>${basedir}/releases/linux-arm64-release/include/executables/nzbhydra2</wrapperFile6>-->
                     <wrapperHashesJsonFile>${basedir}/core/src/main/resources/wrapperHashes2.json</wrapperHashesJsonFile>
 
                     <tagName>v${project.version}</tagName>

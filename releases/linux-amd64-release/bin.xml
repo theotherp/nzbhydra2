@@ -7,11 +7,18 @@
     <includeBaseDirectory>false</includeBaseDirectory>
 
     <fileSets>
+        <!--  fileMode doesn't work when used with include/exclude -->
         <fileSet>
-            <directory>include</directory>
+            <directory>include/other</directory>
             <outputDirectory>./</outputDirectory>
             <lineEnding>keep</lineEnding>
         </fileSet>
+        <fileSet>
+            <directory>include/executables</directory>
+            <outputDirectory>./</outputDirectory>
+            <fileMode>0755</fileMode>
+        </fileSet>
+
         <fileSet>
             <directory>../../</directory>
             <outputDirectory>./</outputDirectory>

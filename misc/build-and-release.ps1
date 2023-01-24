@@ -79,6 +79,13 @@ else {
     Write-Host "Git is clean"
 }
 
+$dockerInfo = wsl -d Ubuntu -- sh -c "docker info"
+if (!$dockerInfo -contains "Docker Root Dir") {
+    Write-Error "Docker is not running in WSL"
+    exit 1
+}
+
+
 Write-Host "Setting release version"
 exec { mvn -q -B versions:set `-DnewVersion="$version" }
 
@@ -156,13 +163,13 @@ if ($windowsVersion -ne $version) {
 Write-Host "Building linux amd64 executables"
 wsl -d Ubuntu -- sh -c ./misc/buildLinuxCore/buildBoth.sh
 
-
-$linuxAmd64Version = wsl -d Ubuntu releases/linux-amd64-release/include/core -version
+$linuxAmd64Version = wsl -d Ubuntu releases/linux-amd64-release/include/executables/core -version
 if ($linuxAmd64Version -ne $version) {
     Write-Error "Linux am64 version $version expected but is $linuxAmd64Version"
     exit 1
 }
 
+#We must ask the build machine because we can't run the binary locally
 $linuxArm64Version = wsl -d Ubuntu -- sh -c "ssh build@141.147.54.141 /home/build/nzbhydra2/core/target/core --version"
 if ($linuxArm64Version -ne $version) {
     Write-Error "Linux arm64 version $version expected but is $linuxArm64Version"
@@ -229,10 +236,10 @@ if (-not $?) {
 
 if ($dryRun) {
     Write-Host "Publishing to discord (not really, just dry run) ***********************************************************************"
-    exec { java -jar other/discord-releaser/discordreleaser.jar core/src/main/resources/changelog.yaml $version discordtoken.txt true }
+    exec { java -jar other/discord-releaser/discordreleaser-jar-with-dependencies.jar core/src/main/resources/changelog.yaml $version discordtoken.txt true }
 } else {
     Write-Host "Publishing to discord  ***********************************************************************"
-    exec { java -jar other/discord-releaser/discordreleaser.jar core/src/main/resources/changelog.yaml $version discordtoken.txt false }
+    exec { java -jar other/discord-releaser/discordreleaser-jar-with-dependencies.jar core/src/main/resources/changelog.yaml $version discordtoken.txt false }
 }
 if (-not $?) {
     Write-Error "Publishing to discord failed"

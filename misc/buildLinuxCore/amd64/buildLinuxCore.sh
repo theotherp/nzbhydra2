@@ -24,13 +24,13 @@ if [[ ! -d "${PWD}/core" ]] ; then
 fi
 
 rsync -rvu --exclude "target" --exclude "bower_components" --exclude "node_modules" --exclude ".git" --exclude ".idea" --exclude "results" --exclude "*.db" --exclude "venv*" ${PWD}/ ~/nzbhydra2/
+#Manually clean so that if the build fails we won't use the old results
+rm -rf ~/nzbhydra2/core/target
 
 docker run -v ~/nzbhydra2/:/nzbhydra2:rw -v ~/.m2/repository:/root/.m2/repository:rw --rm hydrabuild:latest
 if [[ ! -f ~/nzbhydra2/core/target/core ]] ; then
   echo "core executable does not exist"
 else
   cp ~/nzbhydra2/core/target/core ${PWD}/core/target/
-  cp ~/nzbhydra2/core/target/core ${PWD}/releases/linux-amd64-release/include/
-  chmod +x ${PWD}/releases/linux-amd64-release/include/core
-  chmod +x ${PWD}/releases/linux-amd64-release/include/nzbhydra2
+  cp ~/nzbhydra2/core/target/core ${PWD}/releases/linux-amd64-release/include/executables/
 fi
