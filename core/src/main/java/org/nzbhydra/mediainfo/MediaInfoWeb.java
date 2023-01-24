@@ -74,6 +74,11 @@ public class MediaInfoWeb {
         }
     }
 
+    @RequestMapping(value = "/internalapi/autocomplete/{type}/", produces = "application/json")
+    public List<MediaInfoTO> autocompleteTrailingSlash(@PathVariable("type") AutocompleteType type, @RequestParam("input") String input) throws ExecutionException {
+        return autocomplete(type, input);
+    }
+
 
     @RequestMapping(value = "/internalapi/redirectRid/{rid}", method = RequestMethod.GET, consumes = MediaType.ALL_VALUE)
     public String redirectTvRageId(@PathVariable("rid") String tvRageId, HttpServletResponse response) throws IOException {

@@ -23,6 +23,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel target="17">
+      <module name="linux-release" target="17" />
       <module name="ui" target="1.5" />
     </bytecodeTargetLevel>
   </component>
