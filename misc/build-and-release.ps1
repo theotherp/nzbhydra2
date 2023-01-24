@@ -236,10 +236,10 @@ if (-not $?) {
 
 if ($dryRun) {
     Write-Host "Publishing to discord (not really, just dry run) ***********************************************************************"
-    exec { java -jar other/discord-releaser/discordreleaser-jar-with-dependencies.jar core/src/main/resources/changelog.yaml $version discordtoken.txt true }
+    exec { java -jar other/discord-releaser/target/discordreleaser-jar-with-dependencies.jar core/src/main/resources/changelog.yaml $version discordtoken.txt true }
 } else {
     Write-Host "Publishing to discord  ***********************************************************************"
-    exec { java -jar other/discord-releaser/discordreleaser-jar-with-dependencies.jar core/src/main/resources/changelog.yaml $version discordtoken.txt false }
+    exec { java -jar other/discord-releaser/target/discordreleaser-jar-with-dependencies.jar core/src/main/resources/changelog.yaml $version discordtoken.txt false }
 }
 if (-not $?) {
     Write-Error "Publishing to discord failed"
