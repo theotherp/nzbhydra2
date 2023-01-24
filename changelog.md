@@ -1,3 +1,13 @@
+### v5.1.1 (2023-01-23)
+
+**Fix** Due to a change in the framework for some users autocomplete for media searches would show an error and not return results. Even though the fix is easy (reset the website's cache in the browser) I added a fix on my side as it seems to affect more users than I initially thought.
+
+**Fix** For big databases the initial migration may fail because of not enough memory.
+
+**Fix** The linux executables lost their permissions flags when packed so you had to chmod +x them. Now they should be executable by default.
+
+
+
 ### v5.1.0 (2023-01-22)
 
 **Feature** I thought I couldn't provide an ARM binary but thanks to a hint by thespad I can now build them. So now you'll be able to run NZBHydra without Java on ARM64 machines. You still will need python to run the wrapper because I was unable to compile the wrapper but that should be a minor problem because you couldn't execute it before either...

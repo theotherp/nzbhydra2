@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.nzbhydra</groupId>
         <artifactId>releases</artifactId>
-        <version>5.1.0</version>
+        <version>5.1.1</version>
     </parent>
 
     <artifactId>linux-amd64-release</artifactId>
@@ -15,7 +15,7 @@
         <dependency>
             <groupId>org.nzbhydra</groupId>
             <artifactId>core</artifactId>
-            <version>5.1.0</version>
+            <version>5.1.1</version>
         </dependency>
     </dependencies>
 
