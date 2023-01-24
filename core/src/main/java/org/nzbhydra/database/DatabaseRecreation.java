@@ -140,7 +140,7 @@ public class DatabaseRecreation {
                 final String updatePasswordQuery = "alter user sa set password 'sa'";
                 updatePassword(dbConnectionUrl, javaExecutable, h2OldJar, updatePasswordQuery);
 
-                runH2Command(Arrays.asList(javaExecutable, "-cp", h2OldJar.toString(), "org.h2.tools.Script", "-url", dbConnectionUrl, "-user", "sa", "-password", "sa", "-script", scriptFilePath), "Database export failed.");
+                runH2Command(Arrays.asList(javaExecutable, "-Xmx700M", "-cp", h2OldJar.toString(), "org.h2.tools.Script", "-url", dbConnectionUrl, "-user", "sa", "-password", "sa", "-script", scriptFilePath), "Database export failed.");
             } catch (Exception e) {
                 logger.error("Error migrating old database file to new one");
                 if (backupDatabaseFile != null && backupDatabaseFile.exists()) {
@@ -157,7 +157,7 @@ public class DatabaseRecreation {
                     throw new RuntimeException("Unable to delete old database file " + databaseFile);
                 }
 
-                runH2Command(Arrays.asList(javaExecutable, "-cp", h2NewJar.toString(), "org.h2.tools.RunScript", "-url", dbConnectionUrl, "-user", "sa", "-password", "sa", "-script", scriptFilePath, "-options", "FROM_1X"), "Database import failed.");
+                runH2Command(Arrays.asList(javaExecutable, "-Xmx700M", "-cp", h2NewJar.toString(), "org.h2.tools.RunScript", "-url", dbConnectionUrl, "-user", "sa", "-password", "sa", "-script", scriptFilePath, "-options", "FROM_1X"), "Database import failed.");
 
                 final Flyway flyway = Flyway.configure()
                     .dataSource(dbConnectionUrl, "sa", "sa")

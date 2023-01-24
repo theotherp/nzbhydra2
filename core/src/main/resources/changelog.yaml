@@ -5,6 +5,8 @@
     changes:
         -   type: "fix"
             text: "Due to a change in the framework for some users autocomplete for media searches would show an error and not return results. Even though the fix is easy (reset the website's cache in the browser) I added a fix on my side as it seems to affect more users than I initially thought."
+        -   type: "fix"
+            text: "For big databases the initial migration may fail because of not enough memory."
     final: true
 -   version: "v5.1.0"
     date: "2023-01-22"
