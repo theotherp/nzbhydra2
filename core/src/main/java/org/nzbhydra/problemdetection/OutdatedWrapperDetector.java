@@ -42,11 +42,17 @@ public class OutdatedWrapperDetector implements ProblemDetector {
     public static final String KEY_OUTDATED_WRAPPER_DETECTED = "outdatedWrapperDetected";
     private static final String KEY_OUTDATED_WRAPPER_DETECTED_WARNING_DISPLAYED = "outdatedWrapperDetectedWarningDisplayed";
 
+    private static final String DISABLE_ENVIRONMENT_KEY = "NZBHYDRA_DISABLE_WRAPPER_CHECK";
+
     @Autowired
     private GenericStorage genericStorage;
 
     @Override
     public void executeCheck() {
+        if (System.getenv("NZBHYDRA_DISABLE_WRAPPER_CHECK") != null) {
+            logger.debug("Wrapper check disabled by environment variable");
+            return;
+        }
         detectOutdatedWrapper();
     }
 
