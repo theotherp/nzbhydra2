@@ -97,6 +97,7 @@ public class SecurityConfig {
                     })
                     .and();
         }
+        http.authorizeHttpRequests().requestMatchers("/actuator/health/ping").permitAll();
         if (baseConfig.getAuth().isAuthConfigured() || NzbHydra.isNativeBuild()) {
             http = http
                     .authorizeHttpRequests()
