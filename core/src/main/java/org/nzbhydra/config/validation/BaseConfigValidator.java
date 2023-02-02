@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -150,6 +151,7 @@ public class BaseConfigValidator implements ConfigValidator<BaseConfig> {
         searchingConfigValidator.prepareForSaving(oldBaseConfig, newConfig.getSearching());
         mainConfigValidator.prepareForSaving(oldBaseConfig, newConfig.getMain());
         authConfigValidator.prepareForSaving(oldBaseConfig, newConfig.getAuth());
+        newConfig.getIndexers().removeIf(Objects::isNull);
         newConfig.getIndexers().forEach(x -> indexerConfigValidator.prepareForSaving(oldBaseConfig, x));
         return newConfig;
     }

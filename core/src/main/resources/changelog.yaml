@@ -7,6 +7,8 @@
             text: "Package / docker image maintainers which make changes to the wrapper files can disable them by setting the environment variable NZBHYDRA_DISABLE_WRAPPER_CHECK. See #839"
         -   type: "feature"
             text: "You can call the endpoint /actuator/health/ping to check if NZBHydra2 is up. Authentication will not be required. See #837"
+        -   type: "fix"
+            text: "After importing trackers from jackett saving the resulting config would sometimes fail. See #832"
     final: true
 -   version: "v5.1.1"
     date: "2023-01-23"
