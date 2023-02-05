@@ -1,7 +1,7 @@
 ---
 #@formatter:off
 -   version: "v5.1.2"
-    date: "2023-02-22"
+    date: "2023-02-05"
     changes:
         -   type: "feature"
             text: "Package / docker image maintainers which make changes to the wrapper files can disable them by setting the environment variable NZBHYDRA_DISABLE_WRAPPER_CHECK. See #839"
