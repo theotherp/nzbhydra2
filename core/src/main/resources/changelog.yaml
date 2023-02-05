@@ -10,6 +10,8 @@
             text: "After importing trackers from jackett saving the resulting config would sometimes fail. See #832"
         -   type: "fix"
             text: "Don't show a notification was disabled when it actually wasn't because temporary errors are ignored. See #840"
+        -   type: "fix"
+            text: "Previously some indexers did not support TV search without IDs. This seems to have been fixed so now TV / movie search will be used even with keyword based queries. See #842"
     final: true
 -   version: "v5.1.1"
     date: "2023-01-23"

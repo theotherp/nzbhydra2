@@ -97,14 +97,6 @@ public class QueryGenerator {
                 }
                 query = sanitizeTitleForQuery(mediaInfo.getTitle().get());
 
-                //Only add year for movies
-//                if (searchRequest.getSearchType() == SearchType.MOVIE &&
-//                        configProvider.getBaseConfig().getSearching().getGenerateQueriesFormat() != QueryFormat.TITLE) {
-//                    if (mediaInfo.getYear().isPresent()) {
-//                        query += " " + mediaInfo.getYear().get()
-//                    }
-//                }
-
                 //Add language for shows and movies
                 logger.debug("Determined title to be {}. Using that as query base.", query);
 
@@ -137,7 +129,7 @@ public class QueryGenerator {
             }
         }
 
-        logger.debug("Indexer does not support any of the supplied IDs or the requested search type. The following query was generated: " + query);
+        logger.debug("{} does not support any of the supplied IDs or the requested search type. The following query was generated{} ", indexer.getName(), query);
 
         generatedQueries.put(searchRequest, query);
         searchRequest.getInternalData().setQueryGenerated(true);
