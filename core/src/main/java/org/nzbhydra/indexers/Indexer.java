@@ -329,7 +329,10 @@ public abstract class Indexer<T> {
         if (disablePermanently) {
             getLogger().warn("Because an unrecoverable error occurred {} will be permanently disabled until reenabled by the user", indexer.getName());
             getConfig().setState(IndexerConfig.State.DISABLED_SYSTEM);
-        } else if (!configProvider.getBaseConfig().getSearching().isIgnoreTemporarilyDisabled()) {
+        } else {
+            if (configProvider.getBaseConfig().getSearching().isIgnoreTemporarilyDisabled()) {
+                return;
+            }
             getConfig().setState(IndexerConfig.State.DISABLED_SYSTEM_TEMPORARY);
             getConfig().setDisabledLevel(getConfig().getDisabledLevel() + 1);
             long minutesToAdd = DISABLE_PERIODS.get(Math.min(DISABLE_PERIODS.size() - 1, getConfig().getDisabledLevel()));
