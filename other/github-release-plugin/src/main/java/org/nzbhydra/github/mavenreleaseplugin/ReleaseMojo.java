@@ -118,9 +118,9 @@ public class ReleaseMojo extends AbstractMojo {
             throw new MojoExecutionException("Unable to find linux amd64 asset at " + linuxAmd64Asset.getAbsolutePath());
         }
 
-//        if (!linuxArm64Asset.exists()) {
-//            throw new MojoExecutionException("Unable to find linux arm64 asset at " + linuxArm64Asset.getAbsolutePath());
-//        }
+        if (!linuxArm64Asset.exists()) {
+            throw new MojoExecutionException("Unable to find linux arm64 asset at " + linuxArm64Asset.getAbsolutePath());
+        }
 
         if (!genericAsset.exists()) {
             throw new MojoExecutionException("Unable to find generic asset at " + genericAsset.getAbsolutePath());
@@ -136,7 +136,7 @@ public class ReleaseMojo extends AbstractMojo {
 
         getLog().info("Will use windows asset " + windowsAsset.getAbsolutePath());
         getLog().info("Will use linux amd64 asset " + linuxAmd64Asset.getAbsolutePath());
-//        getLog().info("Will use linux arm64 asset " + linuxArm64Asset.getAbsolutePath());
+        getLog().info("Will use linux arm64 asset " + linuxArm64Asset.getAbsolutePath());
         getLog().info("Will use generic asset " + genericAsset.getAbsolutePath());
         getLog().info("Will use changelog entry from " + changelogYamlFile.getAbsolutePath());
 
@@ -306,28 +306,28 @@ public class ReleaseMojo extends AbstractMojo {
             getLog().info("Skipping upload of linux amd64 asset because of dry run");
         }
 
-//        getLog().info("Uploading linux arm64 asset to " + uploadUrl);
-//        name = linuxArm64Asset.getName();
-//        if (!dryRun) {
-//
-//            try {
-//                Builder callBuilder = new Builder().header("Content-Length", String.valueOf(linuxArm64Asset.length())).url(uploadUrl + "?name=" + name);
-//                callBuilder.header("Authorization", "token " + githubToken);
-//                response = client.newCall(callBuilder
-//                        .post(
-//                                RequestBody.create(MediaType.parse("application/gzip"), linuxArm64Asset))
-//                        .build()).execute();
-//                if (!response.isSuccessful()) {
-//                    throw new MojoExecutionException("When trying to upload linux arm64 asset Github returned code " + response.code() + " and message: " + response.message());
-//                }
-//                getLog().info("Successfully uploaded linux asset");
-//            } catch (IOException e) {
-//                getLog().error("Error while uploading linux asset", e);
-//                throw new MojoExecutionException("When trying to upload linux arm64 asset the following error occurred: " + e.getMessage());
-//            }
-//        } else {
-//            getLog().info("Skipping upload of linux arm64 asset because of dry run");
-//        }
+        getLog().info("Uploading linux arm64 asset to " + uploadUrl);
+        name = linuxArm64Asset.getName();
+        if (!dryRun) {
+
+            try {
+                Builder callBuilder = new Builder().header("Content-Length", String.valueOf(linuxArm64Asset.length())).url(uploadUrl + "?name=" + name);
+                callBuilder.header("Authorization", "token " + githubToken);
+                response = client.newCall(callBuilder
+                    .post(
+                        RequestBody.create(MediaType.parse("application/gzip"), linuxArm64Asset))
+                    .build()).execute();
+                if (!response.isSuccessful()) {
+                    throw new MojoExecutionException("When trying to upload linux arm64 asset Github returned code " + response.code() + " and message: " + response.message());
+                }
+                getLog().info("Successfully uploaded linux asset");
+            } catch (IOException e) {
+                getLog().error("Error while uploading linux asset", e);
+                throw new MojoExecutionException("When trying to upload linux arm64 asset the following error occurred: " + e.getMessage());
+            }
+        } else {
+            getLog().info("Skipping upload of linux arm64 asset because of dry run");
+        }
 
         getLog().info("Uploading generic asset to " + uploadUrl);
         if (!dryRun) {
@@ -336,8 +336,8 @@ public class ReleaseMojo extends AbstractMojo {
                 Builder callBuilder = new Builder().header("Content-Length", String.valueOf(genericAsset.length())).url(uploadUrl + "?name=" + name);
                 callBuilder.header("Authorization", "token " + githubToken);
                 response = client.newCall(callBuilder
-                        .post(
-                                RequestBody.create(MediaType.parse("application/gzip"), genericAsset))
+                    .post(
+                        RequestBody.create(MediaType.parse("application/gzip"), genericAsset))
                     .build()).execute();
                 if (!response.isSuccessful()) {
                     throw new MojoExecutionException("When trying to upload generic asset Github returned code " + response.code() + " and message: " + response.message());
