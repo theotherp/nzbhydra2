@@ -5,6 +5,7 @@ import com.google.common.io.BaseEncoding;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.apache.commons.lang3.StringUtils;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
@@ -60,6 +61,7 @@ public class IndexerWebAccess {
 
         Map<String, String> headers = new HashMap<>();
         headers.put("User-Agent", userAgent);
+
 
         if (indexerConfig.getUsername().isPresent() && indexerConfig.getPassword().isPresent()) {
             headers.put("Authorization", "Basic " + BaseEncoding.base64().encode((indexerConfig.getUsername().get() + ":" + indexerConfig.getPassword().get()).getBytes()));
@@ -129,11 +131,19 @@ public class IndexerWebAccess {
 
     @EqualsAndHashCode(callSuper = true)
     @Data
-@ReflectionMarker
+    @ReflectionMarker
     @AllArgsConstructor
     public static class HydraUnmarshallingFailureException extends Exception {
         private org.springframework.oxm.UnmarshallingFailureException unmarshallingFailureException;
         private String response;
+
+        @Override
+        public String getMessage() {
+            if (response == null) {
+                return "Response null";
+            }
+            return "Unable to parse response. First 500 characters: " + StringUtils.abbreviate(response, 500);
+        }
     }
 
 

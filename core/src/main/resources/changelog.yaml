@@ -1,4 +1,12 @@
 #@formatter:off
+-   version: "v5.1.3"
+    date: "2023-02-07"
+    changes:
+        -   type: "feature"
+            text: "Show better error message when results from indexers could not be parsed. Hopefully helps find out why some users can't load their sonarr config remotely."
+        -   type: "fix"
+            text: "The fix I added in 5.1.2? It only works for TV search. I tested the indexers with query based TV searches and it worked and I assumed it would work with movies as well. But that would be too easy, wouldn't it?"
+    final: true
 -   version: "v5.1.2"
     date: "2023-02-05"
     changes:

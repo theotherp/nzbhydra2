@@ -1376,7 +1376,6 @@ function onFinishRender($timeout) {
         link: linkFunction
     }
 }
-
 //Fork of https://github.com/dotansimha/angularjs-dropdown-multiselect to make it compatible with formly
 angular
     .module('nzbhydraApp')
@@ -1511,7 +1510,6 @@ function dropdownMultiselectDirective() {
 
     }
 }
-
 angular
     .module('nzbhydraApp').directive("keepFocus", ['$timeout', function ($timeout) {
     /*
@@ -1595,7 +1593,6 @@ function indexerStateSwitch() {
         }
     }
 }
-
 /*
  *  (C) Copyright 2017 TheOtherP (theotherp@posteo.net)
  *
@@ -2000,7 +1997,6 @@ function formatClassname() {
 
     }
 }
-
 /*
  *  (C) Copyright 2017 TheOtherP (theotherp@posteo.net)
  *
@@ -3175,7 +3171,6 @@ function columnSortable() {
 
     }
 }
-
 angular
     .module('nzbhydraApp')
     .directive('connectionTest', connectionTest);
@@ -3264,7 +3259,6 @@ function connectionTest() {
 //Taken from https://github.com/IamAdamJowett/angular-click-outside
 
 clickOutside.$inject = ["$document", "$parse", "$timeout"];
-
 function childOf(/*child node*/c, /*parent node*/p) { //returns boolean
     while ((c = c.parentNode) && c !== p) ;
     return !!c;
@@ -3408,7 +3402,6 @@ function cfgFormEntry() {
         }]
     };
 }
-
 angular
     .module('nzbhydraApp')
     .directive('hydrabackup', hydrabackup);
@@ -3566,7 +3559,6 @@ function addableNzb(DebugService) {
         };
     }
 }
-
 /*
  *  (C) Copyright 2017 TheOtherP (theotherp@posteo.net)
  *
@@ -3586,7 +3578,6 @@ function addableNzb(DebugService) {
 CheckCapsModalInstanceCtrl.$inject = ["$scope", "$interval", "$http", "$timeout", "growl", "capsCheckRequest"];
 IndexerConfigBoxService.$inject = ["$http", "$q", "$uibModal"];
 IndexerCheckBeforeCloseService.$inject = ["$q", "ModalService", "IndexerConfigBoxService", "growl", "blockUI"];
-
 function regexValidator(regex, message, prefixViewValue, preventEmpty) {
     return {
         expression: function ($viewValue, $modelValue) {
@@ -4197,7 +4188,7 @@ angular
     }]);
 
 
-angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceController', ["$scope", "$q", "$uibModalInstance", "$uibModal", "$http", "model", "form", "growl", "CategoriesService", "$timeout", function ($scope, $q, $uibModalInstance, $uibModal, $http, model, form, growl, CategoriesService, $timeout) {
+angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceController', ["$scope", "$q", "$uibModalInstance", "$uibModal", "$http", "model", "form", "growl", "CategoriesService", "$timeout", "ModalService", "RequestsErrorHandler", function ($scope, $q, $uibModalInstance, $uibModal, $http, model, form, growl, CategoriesService, $timeout, ModalService, RequestsErrorHandler) {
 
     $scope.showBox = showBox;
     $scope.isInitial = false;
@@ -4212,7 +4203,6 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
     };
 
     $scope.readJackettConfig = function () {
-
         var indexerModel = createIndexerModel();
         indexerModel.searchModuleType = "JACKETT_CONFIG";
         indexerModel.isInitial = false;
@@ -4221,22 +4211,24 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
         _showBox(indexerModel, model, true, $uibModal, CategoriesService, "jackettConfig", form, function (isSubmitted, returnedModel) {
             if (isSubmitted) {
                 //User pushed button, now we read the config
-                $http.post("internalapi/indexer/readJackettConfig", {existingIndexers: model, jackettConfig: returnedModel}, {
-                    headers: {
-                        "Accept": "application/json;charset=utf-8",
-                        "Accept-Charset": "charset=utf-8"
-                    }
-                }).then(function (response) {
-                    //Replace model with new result
-                    model.splice(0, model.length);
-                    _.each(response.data.newIndexersConfig, function (x) {
-                        model.push(x);
-                    });
-                    growl.info("Added " + response.data.addedTrackers + " new trackers from Jackett");
-                    growl.info("Updated " + response.data.updatedTrackers + " trackers from Jackett");
+                RequestsErrorHandler.specificallyHandled(function () {
+                    $http.post("internalapi/indexer/readJackettConfig", {existingIndexers: model, jackettConfig: returnedModel}, {
+                        headers: {
+                            "Accept": "application/json;charset=utf-8",
+                            "Accept-Charset": "charset=utf-8"
+                        }
+                    }).then(function (response) {
+                        //Replace model with new result
+                        model.splice(0, model.length);
+                        _.each(response.data.newIndexersConfig, function (x) {
+                            model.push(x);
+                        });
+                        growl.info("Added " + response.data.addedTrackers + " new trackers from Jackett");
+                        growl.info("Updated " + response.data.updatedTrackers + " trackers from Jackett");
 
-                }, function (response) {
-                    ModalService.open("Error reading jackett config", response.data, {}, "md", "left");
+                    }, function (response) {
+                        ModalService.open("Error reading jackett config", response.data, {}, "md", "left");
+                    });
                 });
             }
         });

@@ -16,9 +16,9 @@
 
 package org.nzbhydra.web;
 
-import com.google.common.base.Throwables;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.nzbhydra.misc.StackTraceFilter;
 import org.springframework.boot.autoconfigure.web.servlet.error.AbstractErrorController;
 import org.springframework.boot.web.servlet.error.ErrorAttributes;
 import org.springframework.boot.web.servlet.error.ErrorController;
@@ -38,7 +38,7 @@ public class HydraErrorController extends AbstractErrorController implements Err
     public ModelAndView handleError(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
         //do something like logging
         ModelAndView errorPage = new ModelAndView("error");
-        errorPage.addObject("exception", Throwables.getStackTraceAsString(ex));
+        errorPage.addObject("exception", StackTraceFilter.getFilteredStackTrace(ex));
         errorPage.addObject("error", ex.getMessage());
         errorPage.addObject("status", response.getStatus());
         errorPage.addObject("timestamp", Instant.now().toString());

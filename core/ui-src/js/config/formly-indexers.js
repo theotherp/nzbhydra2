@@ -624,7 +624,7 @@ angular
     });
 
 
-angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceController', function ($scope, $q, $uibModalInstance, $uibModal, $http, model, form, growl, CategoriesService, $timeout) {
+angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceController', function ($scope, $q, $uibModalInstance, $uibModal, $http, model, form, growl, CategoriesService, $timeout, ModalService, RequestsErrorHandler) {
 
     $scope.showBox = showBox;
     $scope.isInitial = false;
@@ -639,7 +639,6 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
     };
 
     $scope.readJackettConfig = function () {
-
         var indexerModel = createIndexerModel();
         indexerModel.searchModuleType = "JACKETT_CONFIG";
         indexerModel.isInitial = false;
@@ -648,22 +647,24 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
         _showBox(indexerModel, model, true, $uibModal, CategoriesService, "jackettConfig", form, function (isSubmitted, returnedModel) {
             if (isSubmitted) {
                 //User pushed button, now we read the config
-                $http.post("internalapi/indexer/readJackettConfig", {existingIndexers: model, jackettConfig: returnedModel}, {
-                    headers: {
-                        "Accept": "application/json;charset=utf-8",
-                        "Accept-Charset": "charset=utf-8"
-                    }
-                }).then(function (response) {
-                    //Replace model with new result
-                    model.splice(0, model.length);
-                    _.each(response.data.newIndexersConfig, function (x) {
-                        model.push(x);
-                    });
-                    growl.info("Added " + response.data.addedTrackers + " new trackers from Jackett");
-                    growl.info("Updated " + response.data.updatedTrackers + " trackers from Jackett");
+                RequestsErrorHandler.specificallyHandled(function () {
+                    $http.post("internalapi/indexer/readJackettConfig", {existingIndexers: model, jackettConfig: returnedModel}, {
+                        headers: {
+                            "Accept": "application/json;charset=utf-8",
+                            "Accept-Charset": "charset=utf-8"
+                        }
+                    }).then(function (response) {
+                        //Replace model with new result
+                        model.splice(0, model.length);
+                        _.each(response.data.newIndexersConfig, function (x) {
+                            model.push(x);
+                        });
+                        growl.info("Added " + response.data.addedTrackers + " new trackers from Jackett");
+                        growl.info("Updated " + response.data.updatedTrackers + " trackers from Jackett");
 
-                }, function (response) {
-                    ModalService.open("Error reading jackett config", response.data, {}, "md", "left");
+                    }, function (response) {
+                        ModalService.open("Error reading jackett config", response.data, {}, "md", "left");
+                    });
                 });
             }
         });
