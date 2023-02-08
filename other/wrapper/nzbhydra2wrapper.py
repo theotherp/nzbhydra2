@@ -9,7 +9,8 @@ REQUIRED_PYTHON = (2, 7)
 
 # This check and everything above must remain compatible with Python 2.7 and above.
 if CURRENT_PYTHON > REQUIRED_PYTHON:
-    sys.stderr.write("This script requires Python {}.{}, but you're trying to run it on Python {}.{}.".format(*(REQUIRED_PYTHON + CURRENT_PYTHON)))
+    sys.stderr.write("This script requires Python {}.{}, but you're trying to run it on Python {}.{}.".format(
+        *(REQUIRED_PYTHON + CURRENT_PYTHON)))
     sys.exit(1)
 
 import argparse
@@ -51,7 +52,8 @@ def getBasePath():
     import sys
     if sys.executable:
         basepath = os.path.dirname(sys.executable)
-        if os.path.exists(os.path.join(basepath, "readme.md")) and os.path.exists(os.path.join(basepath, "changelog.md")):
+        if os.path.exists(os.path.join(basepath, "readme.md")) and os.path.exists(
+            os.path.join(basepath, "changelog.md")):
             return basepath
     basepath = os.path.dirname(os.path.abspath(sys.argv[0]))
     if os.path.exists(os.path.join(basepath, "readme.md")) and os.path.exists(os.path.join(basepath, "changelog.md")):
@@ -115,7 +117,8 @@ def daemonize(pidfile, nopidfile):
         try:
             file(pidfile, 'w').write("%s\n" % pid)
         except IOError as e:
-            sys.stderr.write(u"Unable to write PID file: " + pidfile + ". Error: " + str(e.strerror) + " [" + str(e.errno) + "]")
+            sys.stderr.write(
+                u"Unable to write PID file: " + pidfile + ". Error: " + str(e.strerror) + " [" + str(e.errno) + "]")
             sys.exit(1)
     else:
         print("no pid file")
@@ -181,7 +184,8 @@ def update():
                         sys.exit(-2)
         logger.info("Removing update ZIP %s", updateZip)
         os.remove(updateZip)
-        filesInLibFolder = [f for f in os.listdir(libFolder) if os.path.isfile(os.path.join(libFolder, f)) and f.endswith(".jar")]
+        filesInLibFolder = [f for f in os.listdir(libFolder) if
+                            os.path.isfile(os.path.join(libFolder, f)) and f.endswith(".jar")]
         logger.info("Found %d JAR files in lib folder", len(filesInLibFolder))
         for file in filesInLibFolder:
             logger.info("Found file: %s", file)
@@ -190,9 +194,12 @@ def update():
             os.remove(jarFile)
         elif len(filesInLibFolder) == 1:
             if filesInLibFolder[0] == os.path.basename(jarFile):
-                logger.warning("New JAR file in lib folder is the same as the old one. The update may not have found a newer version or failed for some reason")
+                logger.warning(
+                    "New JAR file in lib folder is the same as the old one. The update may not have found a newer version or failed for some reason")
         else:
-            logger.warning("Expected the number of JAR files in folder %s to be 2 but it's %d. This will be fixed with the next start", libFolder, len(filesInLibFolder))
+            logger.warning(
+                "Expected the number of JAR files in folder %s to be 2 but it's %d. This will be fixed with the next start",
+                libFolder, len(filesInLibFolder))
 
     except zipfile.BadZipfile:
         logger.critical("File is not a ZIP")
@@ -288,7 +295,8 @@ def startup():
 
     readme = os.path.join(basePath, "readme.md")
     if not os.path.exists(readme):
-        logger.critical("Unable to determine base path correctly. Please make sure to run NZBHydra in the folder where its binary is located. Current base path: " + basePath)
+        logger.critical(
+            "Unable to determine base path correctly. Please make sure to run NZBHydra in the folder where its binary is located. Current base path: " + basePath)
         sys.exit(-1)
 
     releaseType = determineReleaseType()
@@ -316,18 +324,25 @@ def startup():
     libFolder = os.path.join(basePath, "lib")
     if releaseType == "generic":
         if not os.path.exists(libFolder):
-            logger.critical("Error: Lib folder %s not found. An update might've failed or the installation folder is corrupt", libFolder)
+            logger.critical(
+                "Error: Lib folder %s not found. An update might've failed or the installation folder is corrupt",
+                libFolder)
             sys.exit(-1)
 
-        jarFiles = [os.path.join(libFolder, f) for f in os.listdir(libFolder) if os.path.isfile(os.path.join(libFolder, f)) and f.endswith(".jar")]
+        jarFiles = [os.path.join(libFolder, f) for f in os.listdir(libFolder) if
+                    os.path.isfile(os.path.join(libFolder, f)) and f.endswith(".jar")]
         if len(jarFiles) == 0:
-            logger.critical("Error: No JAR files found in folder %s. An update might've failed or the installation folder is corrupt", libFolder)
+            logger.critical(
+                "Error: No JAR files found in folder %s. An update might've failed or the installation folder is corrupt",
+                libFolder)
             sys.exit(-1)
         if len(jarFiles) == 1:
             jarFile = jarFiles[0]
         else:
             latestFile = max(jarFiles, key=os.path.getmtime)
-            logger.warning("Expected the number of JAR files in folder %s to be 1 but it's %d. Will remove all JARs except the one last changed: %s", libFolder, len(jarFiles), latestFile)
+            logger.warning(
+                "Expected the number of JAR files in folder %s to be 1 but it's %d. Will remove all JARs except the one last changed: %s",
+                libFolder, len(jarFiles), latestFile)
             for file in jarFiles:
                 if file is not latestFile:
                     logger.info("Deleting file %s", file)
@@ -388,7 +403,8 @@ def startup():
             logger.critical("Error: Java 17 (not older, not newer) is required")
             sys.exit(-1)
 
-    gcLogFilename = (os.path.join(args.datafolder, "logs") + "/gclog-" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".log").replace("\\", "/")
+    gcLogFilename = (os.path.join(args.datafolder, "logs") + "/gclog-" + datetime.datetime.now().strftime(
+        "%Y-%m-%d_%H-%M-%S") + ".log").replace("\\", "/")
     gcLogFilename = os.path.relpath(gcLogFilename, basePath)
 
     gcArguments = [
@@ -465,7 +481,8 @@ def determineReleaseType():
     if os.path.exists("lib"):
         releaseType = "generic"
         if os.path.exists("core") or os.path.exists("core.exe"):
-            logger.warning("lib folder and core(.exe) found. Either delete the executable to use the generic release type (using java and ignoring the executable) or delete the lib folder to use the executable and not require java")
+            logger.warning(
+                "lib folder and core(.exe) found. Either delete the executable to use the generic release type (using java and ignoring the executable) or delete the lib folder to use the executable and not require java")
     elif os.path.exists("core") or os.path.exists("core.exe"):
         releaseType = "native"
     else:
@@ -531,7 +548,8 @@ def getJavaVersion(javaExecutable):
         if len(lines) == 0:
             raise Exception("Unable to get output from call to java -version")
         versionLine = lines[0].replace("\n", "").replace("\r", "")
-        match = re.match('(java|openjdk) (version )?"?(?P<major>\d+)((\.(?P<minor>\d+)\.(?P<patch>\d)+)?[\-_\w]*)?"?.*', versionLine)
+        match = re.match('(java|openjdk) (version )?"?(?P<major>\d+)((\.(?P<minor>\d+)\.(?P<patch>\d)+)?[\-_\w]*)?"?.*',
+                         versionLine)
         if match is None:
             raise Exception("Unable to determine java version from string " + lines[0])
         javaMajor = int(match.group("major"))
@@ -547,33 +565,44 @@ def getJavaVersion(javaExecutable):
         logger.info("Determined java version as '%d' from version string '%s'", javaVersion, versionLine)
         return javaVersion
     except Exception as e:
-        logger.error("Unable to determine java version; make sure Java is installed and callable. Error message: " + str(e))
+        logger.error(
+            "Unable to determine java version; make sure Java is installed and callable. Error message: " + str(e))
         sys.exit(-1)
 
 
-if __name__ == '__main__':
+def main(arguments):
+    global args, unknownArgs
     GracefulKiller()
     parser = argparse.ArgumentParser(description='NZBHydra 2')
     parser.add_argument('--java', action='store', help='Full path to java executable', default="java")
-    parser.add_argument('--javaversion', action='store', help='Force version of java for which parameters java will be created', default=None)
+    parser.add_argument('--javaversion', action='store',
+                        help='Force version of java for which parameters java will be created', default=None)
     parser.add_argument('--debugport', action='store', help='Set debug port to enable remote debugging', default=None)
     parser.add_argument('--daemon', '-D', action='store_true', help='Run as daemon. *nix only', default=False)
-    parser.add_argument('--pidfile', action='store', help='Path to PID file. Only relevant with daemon argument', default="nzbhydra2.pid")
-    parser.add_argument('--nopidfile', action='store_true', help='Disable writing of PID file. Only relevant with daemon argument', default=False)
-    parser.add_argument('--nocolors', action='store_true', help='Disable color coded console output (disabled on Windows by default)', default=False)
-    parser.add_argument('--listfiles', action='store', help='Lists all files in given folder and quits. For debugging docker', default=None)
+    parser.add_argument('--pidfile', action='store', help='Path to PID file. Only relevant with daemon argument',
+                        default="nzbhydra2.pid")
+    parser.add_argument('--nopidfile', action='store_true',
+                        help='Disable writing of PID file. Only relevant with daemon argument', default=False)
+    parser.add_argument('--nocolors', action='store_true',
+                        help='Disable color coded console output (disabled on Windows by default)', default=False)
+    parser.add_argument('--listfiles', action='store',
+                        help='Lists all files in given folder and quits. For debugging docker', default=None)
 
     # Pass to main process
-    parser.add_argument('--datafolder', action='store', help='Set the main data folder containing config, database, etc using an absolute path', default=os.path.join(getBasePath(), "data"))
+    parser.add_argument('--datafolder', action='store',
+                        help='Set the main data folder containing config, database, etc using an absolute path',
+                        default=os.path.join(getBasePath(), "data"))
     parser.add_argument('--xmx', action='store', help='Java Xmx setting in MB (e.g. 256)', default=None)
     parser.add_argument('--quiet', action='store_true', help='Set to disable all console output', default=False)
     parser.add_argument('--host', action='store', help='Set the host')
     parser.add_argument('--port', action='store', help='Set the port')
     parser.add_argument('--baseurl', action='store', help='Set the base URL (e.g. /nzbhydra)')
-    parser.add_argument('--nobrowser', action='store_true', help='Set to disable opening of browser at startup', default=False)
+    parser.add_argument('--nobrowser', action='store_true', help='Set to disable opening of browser at startup',
+                        default=False)
     parser.add_argument('--debug', action='store_true', help='Start with more debugging output', default=False)
     # Main process actions
-    parser.add_argument('--repairdb', action='store', help='Attempt to repair the database. Provide path to database file as parameter')
+    parser.add_argument('--repairdb', action='store',
+                        help='Attempt to repair the database. Provide path to database file as parameter')
     parser.add_argument('--version', action='store_true', help='Print version')
 
     # Internal logic
@@ -583,7 +612,8 @@ if __name__ == '__main__':
     setupLogger()
 
     # Delete old files from last backup
-    oldFiles = [f for f in os.listdir(getBasePath()) if os.path.isfile(os.path.join(getBasePath(), f)) and f.endswith(".old")]
+    oldFiles = [f for f in os.listdir(getBasePath()) if
+                os.path.isfile(os.path.join(getBasePath(), f)) and f.endswith(".old")]
     if len(oldFiles) > 0:
         logger.info("Deleting .old files from last update")
         for f in oldFiles:
@@ -643,7 +673,8 @@ if __name__ == '__main__':
             except Exception as e:
                 controlCode = process.returncode
                 if not (args.version or args.repairdb):
-                    logger.warn("Unable to read control ID from %s: %s. Falling back to process return code %d", controlIdFilePath, e, controlCode)
+                    logger.warn("Unable to read control ID from %s: %s. Falling back to process return code %d",
+                                controlIdFilePath, e, controlCode)
             if os.path.exists(controlIdFilePath):
                 try:
                     logger.debug("Deleting old control ID file %s", controlIdFilePath)
@@ -669,3 +700,7 @@ if __name__ == '__main__':
             else:
                 logger.info("NZBHydra main process has terminated for shutdown")
                 doStart = False
+
+
+if __name__ == '__main__':
+    main(sys.argv[1:])
