@@ -4,7 +4,9 @@
         -   type: "fix"
             text: "The python2 wrapper didn't work."
         -   type: "fix"
-            text: "FIx 'undefined' error when trying to access various functions like sending URLs to your downloader. This was caused by a change in the framework where URLs with trailing slashes would not be matched anymore. See #844"
+            text: "Fix 'undefined' error when trying to access various functions like sending URLs to your downloader. This was caused by a change in the framework where URLs with trailing slashes would not be matched anymore. See #844"
+        -   type: "fix"
+            text: "Provide better error messages when UI functions failed. Hopefully this time without fucking up authentication..."
         -   type: "fix"
             text: "The ID search fix I added in 5.1.2? It only works for TV search. I had tested the indexers with query based TV searches and it worked and I had assumed it would work with movies as well.
             But that would be too easy, wouldn't it? NZBGeek does supporty any keyword in the TV search, but not for movies. Dog and NZBGeek do support keywords in movies, but they keywords are only applied
