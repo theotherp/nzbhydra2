@@ -73,12 +73,16 @@ public class NzbIndex extends Indexer<NewznabXmlRoot> {
             if (rssItem.getCategory() != null) {
                 item.setGroup(rssItem.getCategory().replace("a.b", "alt.binaries"));
             }
+            if (rssItem.getEnclosure() == null || rssItem.getEnclosure().getUrl() == null) {
+                logger.error("Unable to parse '{}' result for link - missing URL. Skipping it", nzbIndexLink);
+                continue;
+            }
             item.setLink(rssItem.getEnclosure().getUrl());
             item.setSize(rssItem.getEnclosure().getLength());
             Matcher matcher = GUID_PATTERN.matcher(nzbIndexLink);
             boolean found = matcher.find();
             if (!found) {
-                logger.error("Unable to parse '{}' result for link. Skipping it", nzbIndexLink);
+                logger.error("Unable to parse '{}' result for link - missing GUID. Skipping it", nzbIndexLink);
                 continue;
             }
             item.setIndexerGuid(matcher.group(1));
