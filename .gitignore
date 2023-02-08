@@ -20,6 +20,7 @@ javacore*
 heapdump*
 /ui
 *token*
+*.env
 
 !/.idea/compiler.xml
 !/.idea/vcs.xml

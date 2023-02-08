@@ -91,7 +91,7 @@ public class Newznab extends Indexer<Xml> {
 
     private static final List<String> LANGUAGES = Arrays.asList(" English", " Korean", " Spanish", " French", " German", " Italian", " Danish", " Dutch", " Japanese", " Cantonese", " Mandarin", " Russian", " Polish", " Vietnamese", " Swedish", " Norwegian", " Finnish", " Turkish", " Portuguese", " Flemish", " Greek", " Hungarian");
     private static Pattern GROUP_PATTERN = Pattern.compile(".*Group:<\\/b> ?([\\w\\.]+)<br ?\\/>.*");
-    private static final List<String> HOSTS_NOT_SUPPORTING_EMPTY_TYPE_SEARCH = Arrays.asList("nzbgeek", "6box");
+    private static final List<String> HOSTS_NOT_SUPPORTING_MOVIE_Q_SEARCH = Arrays.asList("dognzb", "nzbplanet", "nzbgeek", "6box");
 
     private static final Pattern TV_PATTERN = Pattern.compile("(?<showtitle>[\\w\\.\\-_]+)S(?<season>\\d+)e(?<episode>\\d+)|(?<season2>\\d{1,2})x(?<episode2>\\d{1,2})", Pattern.CASE_INSENSITIVE);
 
@@ -134,10 +134,9 @@ public class Newznab extends Indexer<Xml> {
         if (config.getSupportedSearchTypes().stream().noneMatch(x -> searchRequest.getSearchType().matches(x))) {
             searchType = SearchType.SEARCH;
         }
-        boolean searchTypeTvOrMovie = searchRequest.getSearchType() == SearchType.MOVIE || searchRequest.getSearchType() == SearchType.TVSEARCH;
-        if (searchTypeTvOrMovie && searchRequest.getIdentifiers().isEmpty()) {
-            if (searchRequest.getQuery().isEmpty() && isIndexerNotSupportingEmptyTypeSearch()) {
-                debug("Switching search type to SEARCH because this indexer doesn't allow using search type MOVIE/TVSEARCH without identifiers and without query");
+        if (searchRequest.getSearchType() == SearchType.MOVIE && searchRequest.getQuery().isPresent()) {
+            if (searchRequest.getQuery().isPresent() && isIndexerNotSupportingMovieQSearch()) {
+                debug("Switching search type to SEARCH because this indexer doesn't allow using search type MOVIE/TVSEARCH with a query");
                 searchType = SearchType.SEARCH;
             }
         }
@@ -237,14 +236,6 @@ public class Newznab extends Indexer<Xml> {
                 categoryIds = Arrays.asList(config.getCategoryMapping().getMagazine().get());
             } else if (!searchRequest.getCategory().getNewznabCategories().isEmpty()) {
                 categoryIds = searchRequest.getCategory().getNewznabCategories().stream().flatMap(Collection::stream).collect(Collectors.toList());
-            } else if (searchRequest.getIdentifiers().isEmpty() && isIndexerNotSupportingEmptyTypeSearch()) {
-                if (searchRequest.getSearchType() == SearchType.MOVIE) {
-                    debug("Adding newznab category 2000 because this indexer doesn't allow using search type MOVIE without identifiers or category");
-                    categoryIds = Arrays.asList(2000);
-                } else if (searchRequest.getSearchType() == SearchType.TVSEARCH) {
-                    debug("Adding newznab category 5000 because this indexer doesn't allow using search type TVSEARCH without identifiers or category");
-                    categoryIds = Arrays.asList(5000);
-                }
             }
             categoryIds = new ArrayList<>(categoryIds); //Arrays.asList() returns an unmodifiable list which will not be sortable
         } else {
@@ -261,8 +252,12 @@ public class Newznab extends Indexer<Xml> {
 
     }
 
-    private boolean isIndexerNotSupportingEmptyTypeSearch() {
-        return HOSTS_NOT_SUPPORTING_EMPTY_TYPE_SEARCH.stream().anyMatch(x -> getConfig().getHost().toLowerCase().contains(x));
+    private boolean isIndexerNotSupportingMovieQSearch() {
+        return HOSTS_NOT_SUPPORTING_MOVIE_Q_SEARCH.stream().anyMatch(x -> getConfig().getHost().toLowerCase().contains(x));
+    }
+
+    protected boolean isSwitchToTSearchNeeded(SearchRequest request) {
+        return false;
     }
 
     protected String addRequiredAndforbiddenWordsToQuery(SearchRequest searchRequest, String query) {

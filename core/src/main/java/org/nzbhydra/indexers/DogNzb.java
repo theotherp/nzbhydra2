@@ -4,6 +4,7 @@ import org.nzbhydra.config.BaseConfigHandler;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
+import org.nzbhydra.config.searching.SearchType;
 import org.nzbhydra.indexers.status.IndexerLimitRepository;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlResponse;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
@@ -57,6 +58,16 @@ public class DogNzb extends Newznab {
         }
     }
 
+    @Override
+    protected boolean isSwitchToTSearchNeeded(SearchRequest request) {
+        if (request.getSearchType() == SearchType.MOVIE || request.getSearchType() == SearchType.TVSEARCH) {
+            if (request.getQuery().isPresent()) {
+                return true;
+            }
+        }
+
+        return super.isSwitchToTSearchNeeded(request);
+    }
 
     @Component
     @Order(100)

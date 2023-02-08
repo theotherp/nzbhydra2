@@ -5,9 +5,9 @@
             text: "The python2 wrapper didn't work."
         -   type: "fix"
             text: "The ID search fix I added in 5.1.2? It only works for TV search. I had tested the indexers with query based TV searches and it worked and I had assumed it would work with movies as well.
-            But that would be too easy, wouldn't it? Actually, nzbgeek and dog support any query in a tvsearch but with a movie search the keywords are matched only against the title. So searching for 1080p releases from 2023 doesn't work,
-            but searching by the title of a movie instead of its ID will. As I can't properly determine if the keyword is a title or not I will for these indexers switch movie searches to keyword based searches when keywords are present.
-            I will make some more tests when I have time to properly determine for the indexers I have access to what they actually support and keep track of it."
+            But that would be too easy, wouldn't it? NZBGeek does supporty any keyword in the TV search, but not for movies. Dog and NZBGeek do support keywords in movies, but they keywords are only applied
+            to the title, so you can't provide the quality, i.e. you can's search for a movie by ID and filter it by quality (e.g. 1080p). As I can't properly determine if a query is to be part of the title
+            or of the rest I will switch to regular searches whenever TV or movie searches are used for these indexers with queries present."
     final: true
 -   version: "v5.1.3"
     date: "2023-02-07"
