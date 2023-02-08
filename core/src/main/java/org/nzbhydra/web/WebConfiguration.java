@@ -30,6 +30,7 @@ import org.springframework.web.accept.ContentNegotiationManager;
 import org.springframework.web.filter.CharacterEncodingFilter;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
@@ -82,6 +83,10 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
         registry.setOrder(0);
     }
 
+    @Override
+    protected void configurePathMatch(PathMatchConfigurer configurer) {
+        configurer.setUseTrailingSlashMatch(true);
+    }
 
     @Override
     protected void addCorsMappings(CorsRegistry registry) {
