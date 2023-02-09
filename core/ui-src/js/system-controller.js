@@ -106,13 +106,14 @@ function SystemController($scope, $state, activeTab, simpleInfos, $http, growl, 
         });
     };
 
+
     $scope.uploadDebuggingInfos = function () {
         $scope.isBackupCreationAction = true;
         $http({
             method: 'GET',
             url: 'internalapi/debuginfos/createAndUploadDebugInfos'
         }).then(function (response) {
-            $scope.debugInfosUrl = 'URL with debug infos: <a href="' + response.data + '" target="_blank">' + response.data + '</a>';
+            $scope.debugInfosUrl = 'URL with debug infos (will auto-delete on first download=: <a href="' + response.data + '" target="_blank">' + response.data + '</a>';
             $scope.isBackupCreationAction = false;
         }, function (response) {
             $scope.debugInfosUrl = response.data;

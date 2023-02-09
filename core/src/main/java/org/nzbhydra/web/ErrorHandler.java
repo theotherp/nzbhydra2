@@ -51,6 +51,7 @@ import org.springframework.web.context.request.async.AsyncRequestTimeoutExceptio
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -84,21 +85,22 @@ public class ErrorHandler {
             AsyncRequestTimeoutException.class
     );
 
-    @ExceptionHandler(value = { HttpRequestMethodNotSupportedException.class,
-            HttpMediaTypeNotSupportedException.class,
-            HttpMediaTypeNotAcceptableException.class,
-            MissingPathVariableException.class,
-            MissingServletRequestParameterException.class,
-            ServletRequestBindingException.class,
-            ConversionNotSupportedException.class,
-            TypeMismatchException.class,
-            HttpMessageNotReadableException.class,
-            HttpMessageNotWritableException.class,
-            MethodArgumentNotValidException.class,
-            MissingServletRequestPartException.class,
-            BindException.class,
-            NoHandlerFoundException.class,
-            AsyncRequestTimeoutException.class})
+    @ExceptionHandler(value = {HttpRequestMethodNotSupportedException.class,
+        HttpMediaTypeNotSupportedException.class,
+        HttpMediaTypeNotAcceptableException.class,
+        MissingPathVariableException.class,
+        MissingServletRequestParameterException.class,
+        ServletRequestBindingException.class,
+        IOException.class,
+        ConversionNotSupportedException.class,
+        TypeMismatchException.class,
+        HttpMessageNotReadableException.class,
+        HttpMessageNotWritableException.class,
+        MethodArgumentNotValidException.class,
+        MissingServletRequestPartException.class,
+        BindException.class,
+        NoHandlerFoundException.class,
+        AsyncRequestTimeoutException.class})
     @ResponseBody
     public ResponseEntity<Object> handleConflict(Exception ex, HttpServletRequest request) {
         String fullParametersString = "";

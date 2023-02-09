@@ -32,7 +32,7 @@ nzbhydraapp.factory('RequestsErrorHandler', function ($q, growl, blockUI, Genera
                         message += "<br><br>Path: " + rejection.data.path;
                     }
                     if (message !== "No message available") {
-                        message += "<br><br>Message: " + rejection.data.message;
+                        message += "<br><br>Message: " + _.escape(rejection.data.message);
                     } else {
                         message += "<br><br>Exception: " + rejection.data.exception;
                     }
@@ -44,7 +44,6 @@ nzbhydraapp.factory('RequestsErrorHandler', function ($q, growl, blockUI, Genera
             } else if (rejection && rejection.config && rejection.config.headers && rejection.config.headers[HEADER_NAME] && rejection.config.url.contains("logerror")) {
                 console.log("Not handling connection error while sending exception to server");
             }
-
             return $q.reject(rejection);
         }
     };

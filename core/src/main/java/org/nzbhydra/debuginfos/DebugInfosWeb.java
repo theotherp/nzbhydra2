@@ -116,8 +116,8 @@ public class DebugInfosWeb {
             throw e;
         }
         try {
-            return UfileUploader.upload(debugInfosZipFile);
-        } catch (IOException e) {
+            return FileIoUploader.upload(debugInfosZipFile);
+        } catch (Exception e) {
             logger.error("Error while creating or uploading debug infos", e);
             throw e;
         } finally {

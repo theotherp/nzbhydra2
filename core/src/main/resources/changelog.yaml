@@ -5,6 +5,8 @@
             text: "Links in the discord releases channel were malformatted."
         -   type: "fix"
             text: "Import from jackett didn't work. See #832"
+        -   type: "fix"
+            text: "Uploading debug infos works again (with a different hoster)."
     final: true
 -   version: "v5.1.4"
     changes:
