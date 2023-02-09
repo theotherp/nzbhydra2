@@ -1,6 +1,8 @@
 #@formatter:off
 -   version: "v5.1.5"
     changes:
+        -   type: "feature"
+            text: "Improve UI error messages even more."
         -   type: "fix"
             text: "Links in the discord releases channel were malformatted."
         -   type: "fix"
