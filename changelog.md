@@ -1,3 +1,17 @@
+### v5.1.5
+
+**Feature** Improve UI error messages even more.
+
+**Fix** Windows exe (no console) was bugged. So much stuff that can go wrong..
+
+**Fix** Links in the discord releases channel were malformatted.
+
+**Fix** Import from jackett didn't work. See <a href="https://github.com/theotherp/nzbhydra2/issues/832">#832</a>
+
+**Fix** Uploading debug infos works again (with a different hoster).
+
+
+
 ### v5.1.4
 
 **Feature** Added flags to enable some checks in the wrapper to make it easier for package maintainer. See <a href="https://github.com/theotherp/nzbhydra2/issues/847">#847</a>
