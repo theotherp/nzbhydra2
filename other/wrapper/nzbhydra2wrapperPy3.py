@@ -2,6 +2,7 @@
 import random
 import string
 import sys
+import traceback
 import webbrowser
 
 CURRENT_PYTHON = sys.version_info[:2]
@@ -135,8 +136,10 @@ def daemonize(pidfile, nopidfile):
         print("no pid file")
 
     # Redirect all output
-    sys.stdout.flush()
-    sys.stderr.flush()
+    if sys.stdout is not None:
+        sys.stdout.flush()
+    if sys.stderr is not None:
+        sys.stderr.flush()
 
     devnull = getattr(os, 'devnull', '/dev/null')
     stdin = open(devnull, 'r')
@@ -474,7 +477,7 @@ def startup():
 
             if len(consoleLines) > 100:
                 consoleLines = consoleLines[-100:]
-            if not args.quiet:
+            if not args.quiet and sys.stdout is not None:
                 sys.stdout.write(nextlineString)
                 sys.stdout.flush()
             markerLine = "You can access NZBHydra 2 in your browser via "
@@ -493,10 +496,9 @@ def startup():
         return process
     except Exception as e:
         if releaseType == ReleaseType.GENERIC:
-            logger.error("Unable to start process; make sure Java is installed and callable. Error message: " + str(e))
+            logger.error("Unable to start process; make sure Java is installed and callable. Error message:\n" + str(traceback.format_exc()))
         else:
-            logger.error("Unable to start process; make sure \"core\" exists and is executable. Error message: " + str(e))
-
+            logger.error("Unable to start process; make sure \"core\" exists and is executable. Error message:\n" + str(traceback.format_exc()))
 
 def determineReleaseType():
     if os.path.exists("lib"):

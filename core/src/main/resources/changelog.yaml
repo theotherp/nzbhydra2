@@ -4,6 +4,8 @@
         -   type: "feature"
             text: "Improve UI error messages even more."
         -   type: "fix"
+            text: "Windows exe (no console) was bugged. So much stuff that can go wrong.."
+        -   type: "fix"
             text: "Links in the discord releases channel were malformatted."
         -   type: "fix"
             text: "Import from jackett didn't work. See #832"
