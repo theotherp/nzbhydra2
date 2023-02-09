@@ -304,10 +304,12 @@ def startup():
     global jarFile, process, args, unknownArgs, consoleLines
     basePath = getBasePath()
 
-    readme = os.path.join(basePath, "readme.md")
-    if not os.path.exists(readme):
-        logger.critical("Unable to determine base path correctly. Please make sure to run NZBHydra in the folder where its binary is located. Current base path: " + basePath)
-        sys.exit(-1)
+    if os.environ.get('NZBHYDRA_SKIP_BASE_PATH_CHECK') is None:
+        readme = os.path.join(basePath, "readme.md")
+        if not os.path.exists(readme):
+            logger.critical(
+                "Unable to determine base path correctly. Please make sure to run NZBHydra in the folder where its binary is located. Current base path: " + basePath)
+            sys.exit(-1)
 
     releaseType = determineReleaseType()
     isWindows = platform.system().lower() == "windows"
@@ -332,11 +334,17 @@ def startup():
         console_logger.setLevel("DEBUG")
         logger.info("Setting wrapper log level to DEBUG")
 
-    libFolder = os.path.join(basePath, "lib")
+    if os.environ.get('NZBHYDRA_USE_BASE_PATH_FOR_LIBS') is not None:
+        logger.debug("Using base path " + basePath + " as forced by environment variable")
+        libFolder = basePath
+    else:
+        libFolder = os.path.join(basePath, "lib")
     if releaseType == ReleaseType.GENERIC:
-        if not os.path.exists(libFolder):
-            logger.critical("Error: Lib folder %s not found. An update might've failed or the installation folder is corrupt", libFolder)
-            sys.exit(-1)
+        if os.environ.get('NZBHYDRA_USE_BASE_PATH_FOR_LIBS') is None:
+            if not os.path.exists(libFolder):
+                logger.critical(
+                    "Error: Lib folder %s not found. An update might've failed or the installation folder is corrupt", libFolder)
+                sys.exit(-1)
 
         jarFiles = [os.path.join(libFolder, f) for f in os.listdir(libFolder) if os.path.isfile(os.path.join(libFolder, f)) and f.endswith(".jar")]
         if len(jarFiles) == 0:
@@ -583,7 +591,7 @@ def getJavaVersion(javaExecutable):
 
 
 def main(arguments):
-    global args, unknownArgs, args
+    global args, unknownArgs
     GracefulKiller()
     parser = argparse.ArgumentParser(description='NZBHydra 2')
     parser.add_argument('--java', action='store', help='Full path to java executable', default="java")
@@ -693,7 +701,10 @@ def main(arguments):
 
             if controlCode == 11:
                 logger.info("NZBHydra main process has terminated for updating")
-                update()
+                if os.environ.get('NZBHYDRA_DISABLE_UPDATE_ON_SHUTDOWN') is None:
+                    update()
+                else:
+                    logger.warning("Updating is not supported. Restarting...")
                 doStart = True
             elif controlCode == 22:
                 logger.info("NZBHydra main process has terminated for restart")
