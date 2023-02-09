@@ -1,3 +1,27 @@
+### v5.1.4
+
+**Feature** Added flags to enable some checks in the wrapper to make it easier for package maintainer. See <a href="https://github.com/theotherp/nzbhydra2/issues/847">#847</a>
+
+**Fix** The python2 wrapper didn't work. See <a href="https://github.com/theotherp/nzbhydra2/issues/845">#845</a>
+
+**Fix** Improved handling of shutdown and unexpected errors in the windows wrapper executable.
+
+**Fix** Fix 'undefined' error when trying to access various functions like sending URLs to your downloader. This was caused by a change in the framework where URLs with trailing slashes would not be matched anymore. See <a href="https://github.com/theotherp/nzbhydra2/issues/844">#844</a>
+
+**Fix** Provide better error messages when UI functions failed. Hopefully this time without fucking up authentication...
+
+**Fix** The ID search fix I added in 5.1.2? It only works for TV search. I had tested the indexers with query based TV searches and it worked and I had assumed it would work with movies as well. But that would be too easy, wouldn't it? NZBGeek does supporty any keyword in the TV search, but not for movies. Dog and NZBGeek do support keywords in movies, but they keywords are only applied to the title, so you can't provide the quality, i.e. you can's search for a movie by ID and filter it by quality (e.g. 1080p). As I can't properly determine if a query is to be part of the title or of the rest I will switch to regular searches whenever TV or movie searches are used for these indexers with queries present. See <a href="https://github.com/theotherp/nzbhydra2/issues/842">#842</a>
+
+
+
+### v5.1.3 (2023-02-07)
+
+**Feature** Show better error message when results from indexers could not be parsed. Hopefully helps find out why some users can't load their sonarr config remotely.
+
+**Fix** The ID search fix I added in 5.1.2? It only works for TV search. I had tested the indexers with query based TV searches and it worked and I had assumed it would work with movies as well. But that would be too easy, wouldn't it? Actually, nzbgeek and dog support any query in a tvsearch but with a movie search the keywords are matched only against the title. So searching for 1080p releases from 2023 doesn't work, but searching by the title of a movie instead of its ID will. As I can't properly determine if the keyword is a title or not I will for these indexers switch movie searches to keyword based searches when keywords are present. I will make some more tests when I have time to properly determine for the indexers I have access to what they actually support and keep track of it.
+
+
+
 ### v5.1.2 (2023-02-05)
 
 **Feature** Package / docker image maintainers which make changes to the wrapper files can disable them by setting the environment variable NZBHYDRA_DISABLE_WRAPPER_CHECK. See <a href="https://github.com/theotherp/nzbhydra2/issues/839">#839</a>
