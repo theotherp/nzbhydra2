@@ -121,6 +121,11 @@ jobs:
                     docker-compose logs --no-color > docker-compose.log
                     cd ..
 
+            -   name: "Truncate large log files"
+                # If the logs are larger than 1MB there's probably something wrong
+                run: |
+                    for d in ./**/*.log ; do (truncate --size=1M $d); done
+
             -   name: "Upload data folder artifact"
                 uses: actions/upload-artifact@v3
                 if: always()
