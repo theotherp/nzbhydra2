@@ -26,13 +26,21 @@ def openBrowser():
 
 
 def shutdown():
-    requests.get(nzbhydra2wrapperPy3.uri + "internalapi/control/shutdown",
-                 params={'internalApiKey': nzbhydra2wrapperPy3.internalApiKey})
+    if nzbhydra2wrapperPy3.uri is not None:
+        shutdownUrl = (nzbhydra2wrapperPy3.uri + "/internalapi/control/shutdown").replace("//internalapi", "/internalapi")
+        result = requests.get(shutdownUrl, params={'internalApiKey': nzbhydra2wrapperPy3.internalApiKey})
+        if result.status_code != 200:
+            nzbhydra2wrapperPy3.process.terminate()
+        stop()
+    elif nzbhydra2wrapperPy3.process is not None:
+        nzbhydra2wrapperPy3.process.terminate()
+        stop()
+    else:
+        stop()
 
 
 def restart():
-    requests.get(nzbhydra2wrapperPy3.uri + "internalapi/control/restart",
-                 params={'internalApiKey': nzbhydra2wrapperPy3.internalApiKey})
+    requests.get(nzbhydra2wrapperPy3.uri + "internalapi/control/restart", params={'internalApiKey': nzbhydra2wrapperPy3.internalApiKey})
 
 
 bundleDir = os.path.abspath(os.path.dirname(__file__))

@@ -6,6 +6,8 @@
         -   type: "fix"
             text: "The python2 wrapper didn't work. See #845"
         -   type: "fix"
+            text: "Improved handling of shutdown and unexpected errors in the windows wrapper executable."
+        -   type: "fix"
             text: "Fix 'undefined' error when trying to access various functions like sending URLs to your downloader. This was caused by a change in the framework where URLs with trailing slashes would not be matched anymore. See #844"
         -   type: "fix"
             text: "Provide better error messages when UI functions failed. Hopefully this time without fucking up authentication..."
