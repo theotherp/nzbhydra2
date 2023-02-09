@@ -2,7 +2,6 @@ package org.nzbhydra.indexers;
 
 import com.google.common.base.Throwables;
 import com.google.common.io.BaseEncoding;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.apache.commons.lang3.StringUtils;
@@ -75,6 +74,7 @@ public class IndexerWebAccess {
                 if (responseType == String.class) {
                     return (T) response;
                 }
+
                 try {
                     try (StringReader reader = new StringReader(response)) {
                         final StreamSource source = new StreamSource(reader);
@@ -86,7 +86,7 @@ public class IndexerWebAccess {
                         //Some indexers like Animetosho don't return a proper error code. This error may happen during caps check and we don't want to log it
                         logParseException(response, e);
                     }
-                    throw new HydraUnmarshallingFailureException(e, response);
+                    throw new HydraUnmarshallingFailureException(e.getMessage(), e, response);
                 }
             });
         } catch (RejectedExecutionException e) {
@@ -102,7 +102,7 @@ public class IndexerWebAccess {
                 throw new IndexerUnreachableException("Connection with indexer timed out with a time out of " + timeout + " seconds: " + e.getCause().getMessage());
             }
             if (e.getCause() instanceof HydraUnmarshallingFailureException) {
-                throw new IndexerAccessException("Unable to parse indexer output", e.getCause());
+                throw new IndexerAccessException("Unable to parse indexer output: " + e.getCause().getMessage(), e.getCause());
             }
             logger.debug("Indexer communication error", e.getCause());
             throw new IndexerUnreachableException("Error while communicating with indexer " + indexerConfig.getName() + ". Server returned: " + e.getMessage(), e.getCause());
@@ -132,17 +132,24 @@ public class IndexerWebAccess {
     @EqualsAndHashCode(callSuper = true)
     @Data
     @ReflectionMarker
-    @AllArgsConstructor
     public static class HydraUnmarshallingFailureException extends Exception {
         private org.springframework.oxm.UnmarshallingFailureException unmarshallingFailureException;
         private String response;
+
+        public HydraUnmarshallingFailureException(String message, UnmarshallingFailureException unmarshallingFailureException, String response) {
+            super(message, unmarshallingFailureException);
+            this.unmarshallingFailureException = unmarshallingFailureException;
+            this.response = response;
+        }
 
         @Override
         public String getMessage() {
             if (response == null) {
                 return "Response null";
             }
-            return "Unable to parse response. First 500 characters: " + StringUtils.abbreviate(response, 500);
+            String message = "Message: " + unmarshallingFailureException.getMessage();
+            message += "\nFirst 1000 characters: " + StringUtils.abbreviate(response, 1000);
+            return message;
         }
     }
 

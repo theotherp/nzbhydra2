@@ -1,4 +1,11 @@
 #@formatter:off
+-   version: "v5.1.5"
+    changes:
+        -   type: "fix"
+            text: "Links in the discord releases channel were malformatted."
+        -   type: "fix"
+            text: "Import from jackett didn't work. See #832"
+    final: true
 -   version: "v5.1.4"
     changes:
         -   type: "feature"
