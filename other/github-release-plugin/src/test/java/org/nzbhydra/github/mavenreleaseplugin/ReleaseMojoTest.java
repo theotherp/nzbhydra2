@@ -41,6 +41,7 @@ public class ReleaseMojoTest extends AbstractMojoTestCase {
         releaseMojo.githubReleasesUrl = url.toString();
         releaseMojo.windowsAsset = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/windowsAsset.txt");
         releaseMojo.linuxAmd64Asset = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/linuxAmd64Asset.txt");
+        releaseMojo.linuxArm64Asset = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/linuxArm64Asset.txt");
         releaseMojo.genericAsset = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/genericAsset.txt");
 
         releaseMojo.execute();
@@ -57,6 +58,7 @@ public class ReleaseMojoTest extends AbstractMojoTestCase {
         releaseMojo.githubReleasesUrl = "notUsed";
         releaseMojo.windowsAsset = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/windowsAsset.txt");
         releaseMojo.linuxAmd64Asset = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/linuxAmd64Asset.txt");
+        releaseMojo.linuxArm64Asset = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/linuxArm64Asset.txt");
         releaseMojo.genericAsset = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/genericAsset.txt");
 
         try {
@@ -76,6 +78,7 @@ public class ReleaseMojoTest extends AbstractMojoTestCase {
         releaseMojo.githubReleasesUrl = "http://127.0.0.1";
         releaseMojo.windowsAsset = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/windowsAsset.txt");
         releaseMojo.linuxAmd64Asset = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/linuxAmd64Asset.txt");
+        releaseMojo.linuxArm64Asset = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/linuxArm64Asset.txt");
         releaseMojo.genericAsset = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/genericAsset.txt");
 
         try {
@@ -98,6 +101,7 @@ public class ReleaseMojoTest extends AbstractMojoTestCase {
         releaseMojo.githubReleasesUrl = url.toString();
         releaseMojo.windowsAsset = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/windowsAsset.txt");
         releaseMojo.linuxAmd64Asset = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/linuxAmd64Asset.txt");
+        releaseMojo.linuxArm64Asset = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/linuxArm64Asset.txt");
         releaseMojo.genericAsset = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/genericAsset.txt");
 
         releaseMojo.execute();
@@ -119,6 +123,7 @@ public class ReleaseMojoTest extends AbstractMojoTestCase {
         releaseMojo.githubReleasesUrl = url.toString();
         releaseMojo.windowsAsset = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/windowsAsset.txt");
         releaseMojo.linuxAmd64Asset = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/linuxAmd64Asset.txt");
+        releaseMojo.linuxArm64Asset = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/linuxArm64Asset.txt");
         releaseMojo.genericAsset = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/genericAsset.txt");
 
         releaseMojo.execute();
@@ -134,9 +139,15 @@ public class ReleaseMojoTest extends AbstractMojoTestCase {
         RecordedRequest windowsAssetUploadRequest = server.takeRequest(2, TimeUnit.SECONDS);
         assertTrue(windowsAssetUploadRequest.getPath(), windowsAssetUploadRequest.getPath().contains("releases/1/assets?name=windowsAsset.txt"));
         assertThat("token token").isEqualTo(windowsAssetUploadRequest.getHeader("Authorization"));
+
         RecordedRequest linuxAmd64AssetUploadRequest = server.takeRequest(2, TimeUnit.SECONDS);
         assertTrue(linuxAmd64AssetUploadRequest.getPath(), linuxAmd64AssetUploadRequest.getPath().contains("releases/1/assets?name=linuxAmd64Asset.txt"));
         assertThat("token token").isEqualTo(linuxAmd64AssetUploadRequest.getHeader("Authorization"));
+
+        RecordedRequest linuxArm64AssetUploadRequest = server.takeRequest(2, TimeUnit.SECONDS);
+        assertTrue(linuxArm64AssetUploadRequest.getPath(), linuxArm64AssetUploadRequest.getPath().contains("releases/1/assets?name=linuxArm64Asset.txt"));
+        assertThat("token token").isEqualTo(linuxArm64AssetUploadRequest.getHeader("Authorization"));
+
         RecordedRequest genericAssetUploadRequest = server.takeRequest(2, TimeUnit.SECONDS);
         assertTrue(genericAssetUploadRequest.getPath(), genericAssetUploadRequest.getPath().contains("releases/1/assets?name=genericAsset.txt"));
         assertThat("token token").isEqualTo(genericAssetUploadRequest.getHeader("Authorization"));
@@ -166,12 +177,13 @@ public class ReleaseMojoTest extends AbstractMojoTestCase {
 
         effectiveReleaseResponse.setDraft(false);
         MockResponse releaseMockResponse = new MockResponse()
-                .setResponseCode(200)
-                .setBody(objectMapper.writeValueAsString(draftReleaseResponse));
+            .setResponseCode(200)
+            .setBody(objectMapper.writeValueAsString(draftReleaseResponse));
         server.enqueue(releaseMockResponse);
         server.enqueue(new MockResponse().setResponseCode(200)); //Windows asset upload
         server.enqueue(new MockResponse().setResponseCode(200)); //generic asset upload
-        server.enqueue(new MockResponse().setResponseCode(200)); //Linux asset upload
+        server.enqueue(new MockResponse().setResponseCode(200)); //Linux asset 1 upload
+        server.enqueue(new MockResponse().setResponseCode(200)); //Linux asset 2 upload
         server.enqueue(new MockResponse().setResponseCode(200).setBody(objectMapper.writeValueAsString(effectiveReleaseResponse))); //Setting the release effective
         return server;
     }
