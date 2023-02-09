@@ -101,7 +101,7 @@ public class DiscordPublisher {
 
         for (ChangelogChangeEntry changeEntry : entry.getChanges()) {
             final String text = changeEntry.getText()
-                    .replaceAll("#(\\d{3,})", "<a href=\"https://github.com/theotherp/nzbhydra2/issues/$1\">#$1</a>");
+                .replaceAll("#(\\d{3,})", "https://github.com/theotherp/nzbhydra2/issues/$1");
             lines.add("**" + StringUtils.capitalize(changeEntry.getType()) + "** " + text);
         }
         lines.add("");
