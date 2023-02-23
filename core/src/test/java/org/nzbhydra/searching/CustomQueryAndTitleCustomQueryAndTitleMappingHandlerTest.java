@@ -19,6 +19,7 @@ package org.nzbhydra.searching;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.searching.AffectedValue;
 import org.nzbhydra.config.searching.CustomQueryAndTitleMapping;
 import org.nzbhydra.config.searching.SearchType;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
@@ -140,6 +141,21 @@ public class CustomQueryAndTitleCustomQueryAndTitleMappingHandlerTest {
         final CustomQueryAndTitleMapping customQueryAndTitleMapping = new CustomQueryAndTitleMapping("null;RESULT_TITLE;{title:.*};{title} {season:0} {episode:00}");
         final SearchResultItem newItem = testee.mapSearchResult(item, Collections.singletonList(customQueryAndTitleMapping));
         assertThat(newItem.getTitle()).isEqualTo("Fairy Tail 1 02");
+    }
+
+    @Test
+    public void shouldTest() {
+        CustomQueryAndTitleMappingHandler.TestRequest testRequest = new CustomQueryAndTitleMappingHandler.TestRequest();
+        final CustomQueryAndTitleMapping mapping = new CustomQueryAndTitleMapping();
+        mapping.setAffectedValue(AffectedValue.RESULT_TITLE);
+        mapping.setSearchType(SearchType.SEARCH);
+        mapping.setFrom("www\\.\\w*\\.\\w{2,5} \\- {title:.*}");
+        mapping.setTo("{title}");
+        testRequest.setMapping(mapping);
+        testRequest.setExampleInput("www.tamilblasters.de - hello");
+        final CustomQueryAndTitleMappingHandler.TestResponse response = testee.testMapping(testRequest);
+        assertThat(response.isMatch()).isTrue();
+        assertThat(response.getOutput()).isEqualTo("hello");
     }
 
 }

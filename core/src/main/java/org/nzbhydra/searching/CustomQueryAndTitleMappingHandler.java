@@ -147,28 +147,21 @@ public class CustomQueryAndTitleMappingHandler {
     public TestResponse testMapping(@RequestBody TestRequest testRequest) {
         MetaData metaData = new MetaData();
         final String exampleInput = testRequest.exampleInput;
-        if (!testRequest.customQueryAndTitleMapping.getFromPattern().matcher(exampleInput).matches()) {
+        if (!testRequest.mapping.getFromPattern().matcher(exampleInput).matches()) {
             return new TestResponse(null, null, false);
         }
-        if (testRequest.customQueryAndTitleMapping.getAffectedValue() == AffectedValue.QUERY) {
-            metaData.setQuery(exampleInput);
-        } else {
-            metaData.setTitle(exampleInput);
-        }
-        metaData.setSearchType(testRequest.customQueryAndTitleMapping.getSearchType());
+        //For the test it doesn't matter which is affected
+        testRequest.getMapping().setAffectedValue(AffectedValue.QUERY);
+        metaData.setQuery(exampleInput);
+        metaData.setSearchType(testRequest.mapping.getSearchType());
         metaData.setSeason(1);
         metaData.setEpisode(2);
         try {
-            mapMetaData(metaData, testRequest.customQueryAndTitleMapping);
-            if (testRequest.customQueryAndTitleMapping.getAffectedValue() == AffectedValue.QUERY) {
-                return new TestResponse(metaData.getQuery().get(), null, true);
-            } else {
-                return new TestResponse(metaData.getTitle().get(), null, true);
-            }
+            mapMetaData(metaData, testRequest.mapping);
+            return new TestResponse(metaData.getQuery().get(), null, true);
         } catch (Exception e) {
             return new TestResponse(null, e.getMessage(), false);
         }
-
     }
 
 
@@ -208,7 +201,7 @@ public class CustomQueryAndTitleMappingHandler {
         }
         replacementRegex = replacementRegex.replaceAll("\\{(?<groupName>[^\\}]*)\\}", "\\$\\{hydra${groupName}\\}");
         logger.debug(LoggingMarkers.CUSTOM_MAPPING, "CustomQueryAndTitleMapping input \"{}\" using replacement regex \"{}\"", value, replacementRegex);
-        mappedValue = customQueryAndTitleMapping.getFromPattern().matcher(mappedValue).replaceFirst(replacementRegex);
+        mappedValue = customQueryAndTitleMapping.getFromPattern().matcher(mappedValue).replaceAll(replacementRegex);
         logger.debug(LoggingMarkers.CUSTOM_MAPPING, "Mapped input \"{}\" to \"{}\"", value, mappedValue);
         return mappedValue;
     }
@@ -229,9 +222,9 @@ public class CustomQueryAndTitleMappingHandler {
     }
 
     @Data
-@ReflectionMarker
+    @ReflectionMarker
     static class TestRequest {
-        private CustomQueryAndTitleMapping customQueryAndTitleMapping;
+        private CustomQueryAndTitleMapping mapping;
         private String exampleInput;
     }
 

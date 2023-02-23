@@ -51,7 +51,7 @@ public class CustomQueryAndTitleMapping {
     @JsonIgnore
     public Pattern getFromPattern() {
         if (fromPattern == null) {
-            String regex = from.replaceAll("\\{(?<groupName>[^:]*):(?<hydraContent>[^\\{\\}]*)\\}", "(?<hydra${groupName}>${hydraContent})");
+            String regex = from.replaceAll("\\{(?<groupName>[^:\\d]*):(?<hydraContent>[^\\{\\}]*)\\}", "(?<hydra${groupName}>${hydraContent})");
             fromPattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
         }
         return fromPattern;

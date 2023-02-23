@@ -221,9 +221,9 @@ angular
                 '</div>'
             ].join(' '),
             controller: function ($scope, $uibModal, $http) {
-                var model = $scope.model;
-                var modelCopy = Object.assign({}, model);
                 $scope.open = function () {
+                    var model = $scope.model;
+                    var modelCopy = structuredClone(model);
                     $uibModal.open({
                         templateUrl: 'static/html/custom-mapping-help.html',
                         controller: function ($scope, $uibModalInstance, $http) {
@@ -234,6 +234,7 @@ angular
                             $scope.submit = function () {
                                 Object.assign(model, $scope.model)
                                 $uibModalInstance.close();
+
                             }
 
                             $scope.test = function () {
@@ -242,7 +243,8 @@ angular
                                     return;
 
                                 }
-                                $http.post('internalapi/customMapping/test', {mapping: model, exampleInput: $scope.exampleInput}).then(function (response) {
+                                console.log("custom mapping test");
+                                $http.post('internalapi/customMapping/test', {mapping: $scope.model, exampleInput: $scope.exampleInput}).then(function (response) {
                                     console.log(response.data);
                                     console.log(response.data.output);
                                     if (response.data.error) {
