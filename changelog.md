@@ -1,8 +1,16 @@
+### v5.1.6
+
+**Fix** Custom regex groups in custom query mapping didn't work. I also improved the handling of the test dialog.
+
+**Fix** Animetosho (newznab) didn't work when added as a new indexer and searching in the anime category. See <a href="https://github.com/theotherp/nzbhydra2/issues/854">#854</a>
+
+
+
 ### v5.1.5
 
 **Feature** Improve UI error messages even more.
 
-**Fix** Windows exe (no console) was bugged. So much stuff that can go wrong..
+**Fix** Windows exe (no console) was bugged. So much stuff that can go wrong...
 
 **Fix** Links in the discord releases channel were malformatted.
 
