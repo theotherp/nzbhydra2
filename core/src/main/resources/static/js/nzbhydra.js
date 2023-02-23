@@ -1376,7 +1376,6 @@ function onFinishRender($timeout) {
         link: linkFunction
     }
 }
-
 //Fork of https://github.com/dotansimha/angularjs-dropdown-multiselect to make it compatible with formly
 angular
     .module('nzbhydraApp')
@@ -1511,7 +1510,6 @@ function dropdownMultiselectDirective() {
 
     }
 }
-
 angular
     .module('nzbhydraApp').directive("keepFocus", ['$timeout', function ($timeout) {
     /*
@@ -1595,7 +1593,6 @@ function indexerStateSwitch() {
         }
     }
 }
-
 /*
  *  (C) Copyright 2017 TheOtherP (theotherp@posteo.net)
  *
@@ -2000,7 +1997,6 @@ function formatClassname() {
 
     }
 }
-
 /*
  *  (C) Copyright 2017 TheOtherP (theotherp@posteo.net)
  *
@@ -3175,7 +3171,6 @@ function columnSortable() {
 
     }
 }
-
 angular
     .module('nzbhydraApp')
     .directive('connectionTest', connectionTest);
@@ -3264,7 +3259,6 @@ function connectionTest() {
 //Taken from https://github.com/IamAdamJowett/angular-click-outside
 
 clickOutside.$inject = ["$document", "$parse", "$timeout"];
-
 function childOf(/*child node*/c, /*parent node*/p) { //returns boolean
     while ((c = c.parentNode) && c !== p) ;
     return !!c;
@@ -3408,7 +3402,6 @@ function cfgFormEntry() {
         }]
     };
 }
-
 angular
     .module('nzbhydraApp')
     .directive('hydrabackup', hydrabackup);
@@ -3566,7 +3559,6 @@ function addableNzb(DebugService) {
         };
     }
 }
-
 /*
  *  (C) Copyright 2017 TheOtherP (theotherp@posteo.net)
  *
@@ -3586,7 +3578,6 @@ function addableNzb(DebugService) {
 CheckCapsModalInstanceCtrl.$inject = ["$scope", "$interval", "$http", "$timeout", "growl", "capsCheckRequest"];
 IndexerConfigBoxService.$inject = ["$http", "$q", "$uibModal"];
 IndexerCheckBeforeCloseService.$inject = ["$q", "ModalService", "IndexerConfigBoxService", "growl", "blockUI"];
-
 function regexValidator(regex, message, prefixViewValue, preventEmpty) {
     return {
         expression: function ($viewValue, $modelValue) {
@@ -4328,7 +4319,21 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
             supportedSearchIds: [],
             supportedSearchTypes: ["SEARCH"],
             allCapsChecked: true,
-            configComplete: true
+            configComplete: true,
+            categoryMapping: {
+                anime: 5070,
+                audiobook: null,
+                comic: null,
+                ebook: null,
+                magazine: null,
+                categories: [
+                    {
+                        id: 5070,
+                        name: "Anime",
+                        subCategories: []
+                    }
+                ]
+            }
         },
         {
             name: "DogNZB",

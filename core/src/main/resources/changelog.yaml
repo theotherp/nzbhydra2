@@ -3,6 +3,8 @@
     changes:
         -   type: "fix"
             text: "Custom regex groups in custom query mapping didn't work. I also improved the handling of the test dialog."
+        -   type: "fix"
+            text: "Animetosho (newznab) didn't work when added as a new indexer and searching in the anime category. See #854"
     final: true
 -   version: "v5.1.5"
     changes:

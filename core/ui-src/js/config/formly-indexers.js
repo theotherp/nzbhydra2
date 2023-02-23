@@ -755,7 +755,21 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
             supportedSearchIds: [],
             supportedSearchTypes: ["SEARCH"],
             allCapsChecked: true,
-            configComplete: true
+            configComplete: true,
+            categoryMapping: {
+                anime: 5070,
+                audiobook: null,
+                comic: null,
+                ebook: null,
+                magazine: null,
+                categories: [
+                    {
+                        id: 5070,
+                        name: "Anime",
+                        subCategories: []
+                    }
+                ]
+            }
         },
         {
             name: "DogNZB",
