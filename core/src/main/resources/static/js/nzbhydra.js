@@ -1037,8 +1037,8 @@ function selectionButton() {
 }
 
 
-NfoModalInstanceCtrl.$inject = ["$scope", "$uibModalInstance", "nfo"];
-angular
+
+NfoModalInstanceCtrl.$inject = ["$scope", "$uibModalInstance", "nfo"];angular
     .module('nzbhydraApp')
     .directive('searchResult', searchResult);
 
@@ -1805,9 +1805,9 @@ function hydraNews() {
 }
 
 
+
 LogModalInstanceCtrl.$inject = ["$scope", "$uibModalInstance", "entry"];
-escapeHtml.$inject = ["$sanitize"];
-angular
+escapeHtml.$inject = ["$sanitize"];angular
     .module('nzbhydraApp')
     .directive('hydralog', hydralog);
 
@@ -2796,9 +2796,9 @@ function downloadNzbsButton() {
 }
 
 
+
 freetextFilter.$inject = ["DebugService"];
-booleanFilter.$inject = ["DebugService"];
-angular
+booleanFilter.$inject = ["DebugService"];angular
     .module('nzbhydraApp').directive("columnFilterWrapper", columnFilterWrapper);
 
 function columnFilterWrapper() {
@@ -3481,8 +3481,8 @@ function hydrabackup() {
 }
 
 
-addableNzbs.$inject = ["DebugService"];
-angular
+
+addableNzbs.$inject = ["DebugService"];angular
     .module('nzbhydraApp')
     .directive('addableNzbs', addableNzbs);
 
@@ -3510,8 +3510,7 @@ function addableNzbs(DebugService) {
 }
 
 
-addableNzb.$inject = ["DebugService"];
-angular
+addableNzb.$inject = ["DebugService"];angular
     .module('nzbhydraApp')
     .directive('addableNzb', addableNzb);
 
@@ -8668,9 +8667,10 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
 }
 
 
+
+
 UpdateService.$inject = ["$http", "growl", "blockUI", "RestartService", "RequestsErrorHandler", "$uibModal", "$timeout"];
-UpdateModalInstanceCtrl.$inject = ["$scope", "$http", "$interval", "RequestsErrorHandler"];
-angular
+UpdateModalInstanceCtrl.$inject = ["$scope", "$http", "$interval", "RequestsErrorHandler"];angular
     .module('nzbhydraApp')
     .factory('UpdateService', UpdateService);
 

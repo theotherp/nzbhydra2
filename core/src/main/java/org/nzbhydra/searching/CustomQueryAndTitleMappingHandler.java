@@ -201,7 +201,7 @@ public class CustomQueryAndTitleMappingHandler {
         }
         replacementRegex = replacementRegex.replaceAll("\\{(?<groupName>[^\\}]*)\\}", "\\$\\{hydra${groupName}\\}");
         logger.debug(LoggingMarkers.CUSTOM_MAPPING, "CustomQueryAndTitleMapping input \"{}\" using replacement regex \"{}\"", value, replacementRegex);
-        mappedValue = customQueryAndTitleMapping.getFromPattern().matcher(mappedValue).replaceAll(replacementRegex);
+        mappedValue = customQueryAndTitleMapping.getFromPattern().matcher(mappedValue).replaceFirst(replacementRegex);
         logger.debug(LoggingMarkers.CUSTOM_MAPPING, "Mapped input \"{}\" to \"{}\"", value, mappedValue);
         return mappedValue;
     }

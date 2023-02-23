@@ -8,7 +8,8 @@
           The input must completely match the title or query for the customQueryAndTitleMapping to be effective. The matching is case insensitive.
       </li>
       <li>
-        You may use regular expressions anywhere (e.g. <code>[a-z]</code> or <code>.*</code>). You may use named groups to reference them in the output pattern (e.g. <code>{title:.*}</code> can be referenced using <code>{title}</code>.
+        You may use regular expressions anywhere (e.g. <code>[a-z]</code> or <code>.*</code>). You may use named groups to reference them in the output pattern (e.g. <code>{title:.*}</code> can be referenced using <code>{title}</code>) but
+        they must not start with digits.
         Brackets ("{}") may not be used in regexes.
       </li>
       <li>
