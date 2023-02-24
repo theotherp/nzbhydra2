@@ -270,12 +270,9 @@ def subprocess_args(include_stdout=True):
             si.dwFlags |= _subprocess.STARTF_USESHOWWINDOW
         except:
             si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-        # Windows doesn't search the path by default. Pass it an environment so
-        # it will.
-        env = os.environ.copy()
     else:
         si = None
-        env = None
+    env = os.environ.copy()
 
     # ``subprocess.check_output`` doesn't allow specifying ``stdout``::
     #
@@ -500,7 +497,12 @@ def startup():
         else:
             logger.error("Unable to start process; make sure \"core\" exists and is executable. Error message:\n" + str(traceback.format_exc()))
 
+
 def determineReleaseType():
+    forcedReleaseType = os.environ.get('NZBHYDRA_FORCE_GENERIC')
+    if forcedReleaseType is not None:
+        logger.info("Release type " + forcedReleaseType + " forced by environment variable ")
+        return forcedReleaseType
     if os.path.exists("lib"):
         releaseType = ReleaseType.GENERIC
         if os.path.exists("core") or os.path.exists("core.exe"):
