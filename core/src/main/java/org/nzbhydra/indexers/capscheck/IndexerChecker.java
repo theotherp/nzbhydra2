@@ -46,6 +46,7 @@ import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlCategory;
 import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlRoot;
 import org.nzbhydra.searching.SearchModuleProvider;
 import org.nzbhydra.springnative.ReflectionMarker;
+import org.nzbhydra.webaccess.WebAccessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -390,11 +391,17 @@ public class IndexerChecker {
         try {
             response = indexerWebAccess.get(uri, indexerConfig);
         } catch (IndexerAccessException e) {
+            boolean notSupported = false;
             if (e.getCause() instanceof IndexerWebAccess.HydraUnmarshallingFailureException) {
                 String indexerResponse = ((IndexerWebAccess.HydraUnmarshallingFailureException) e.getCause()).getResponse();
                 if (indexerResponse != null && indexerResponse.toLowerCase().contains("function not available")) {
-                    return new SingleCheckCapsResponse(request.getKey(), request.getIdType(), false, null, null, null);
+                    notSupported = true;
                 }
+            } else if (e.getCause() instanceof final WebAccessException webAccessException) {
+                notSupported = webAccessException.getBody() != null && webAccessException.getBody().toLowerCase().contains("function not available");
+            }
+            if (notSupported) {
+                return new SingleCheckCapsResponse(request.getKey(), request.getIdType(), false, null, null, null);
             }
             throw e;
         }
