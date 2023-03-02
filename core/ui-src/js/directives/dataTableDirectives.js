@@ -265,7 +265,8 @@ function numberRangeFilter() {
             column: "@",
             min: "<",
             max: "<",
-            addon: "@"
+            addon: "@",
+            tooltip: "@"
         },
         controller: controller
     };

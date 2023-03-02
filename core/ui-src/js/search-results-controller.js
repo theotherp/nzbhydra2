@@ -483,16 +483,44 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
 
             if ("epoch" in $scope.filterModel) {
                 var filterValue = $scope.filterModel.epoch.filterValue;
-                var ageDays = moment.utc().diff(moment.unix(item.epoch), "days");
-                if (angular.isDefined(filterValue.min) && ageDays < filterValue.min) {
-                    filterReasons["tooYoung"] = filterReasons["tooYoung"] + 1;
-                    return false;
+
+                if (angular.isDefined(filterValue.min)) {
+                    var min = filterValue.min;
+                    if (min.endsWith("h")) {
+                        min = min.replace("h", "");
+                        var age = moment.utc().diff(moment.unix(item.epoch), "hours");
+                    } else if (min.endsWith("m")) {
+                        min = min.replace("m", "");
+                        var age = moment.utc().diff(moment.unix(item.epoch), "minutes");
+                    } else {
+                        var age = moment.utc().diff(moment.unix(item.epoch), "days");
+                    }
+                    min = Number(min);
+                    if (age < min) {
+                        filterReasons["tooYoung"] = filterReasons["tooYoung"] + 1;
+                        return false;
+                    }
                 }
-                if (angular.isDefined(filterValue.max) && ageDays > filterValue.max) {
-                    filterReasons["tooOld"] = filterReasons["tooOld"] + 1;
-                    return false;
+
+                if (angular.isDefined(filterValue.max)) {
+                    var max = filterValue.max;
+                    if (max.endsWith("h")) {
+                        max = max.replace("h", "");
+                        var age = moment.utc().diff(moment.unix(item.epoch), "hours");
+                    } else if (max.endsWith("m")) {
+                        max = max.replace("m", "");
+                        var age = moment.utc().diff(moment.unix(item.epoch), "minutes");
+                    } else {
+                        var age = moment.utc().diff(moment.unix(item.epoch), "days");
+                    }
+                    max = Number(max);
+                    if (age > max) {
+                        filterReasons["tooOld"] = filterReasons["tooOld"] + 1;
+                        return false;
+                    }
                 }
             }
+
 
             if ("grabs" in $scope.filterModel) {
                 var filterValue = $scope.filterModel.grabs.filterValue;

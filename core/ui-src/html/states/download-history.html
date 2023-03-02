@@ -50,7 +50,7 @@
         <th class="col-md-1" style="width: {{columnSizes.age}}%;">
             <column-sortable column="age">Age</column-sortable>
             <column-filter-wrapper>
-                <freetext-filter column="age"/>
+                <number-range-filter column="age"/>
             </column-filter-wrapper>
         </th>
         <th class="col-md-2" style="width: {{columnSizes.username}}%;" ng-if="columnSizes.username > 0">

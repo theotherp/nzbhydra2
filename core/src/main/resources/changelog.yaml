@@ -1,6 +1,10 @@
 #@formatter:off
 -   version: "v5.1.7"
     changes:
+        -   type: "feature"
+            text: "Allow filtering results by age in hours or minutes. See #790"
+        -   type: "fix"
+            text: "Make download history age filter a numeric filter."
         -   type: "fix"
             text: "Better handle indexer not supporting a certain function. See #856"
     final: true

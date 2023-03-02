@@ -72,14 +72,22 @@ public class History {
             } else if (filterType.equals("boolean") && !"all".equals(filterValue)) {
                 wheres.add(String.format("%s = :%s", columnName, columnName));
                 parameters.put(columnName, filterValue);
+            } else if (filterType.equals("numberRange")) {
+                Map<String, String> map = (Map<String, String>) filterValue;
+                if (map.containsKey("min")) {
+                    wheres.add(String.format("%s > %s", columnName, map.get("min")));
+                }
+                if (map.containsKey("max")) {
+                    wheres.add(String.format("%s < %s", columnName, map.get("max")));
+                }
             } else if (filterType.equals("time")) {
                 Map<String, String> beforeAndAfter = (Map<String, String>) columnAndFilterDefinition.getValue().getFilterValue();
                 if (beforeAndAfter.get("before") != null) {
-                    wheres.add(String.format("%s < :%s", columnName, columnName));
+                    wheres.add(String.format("%s <= :%s", columnName, columnName));
                     parameters.put(columnName, filterValue);
                 }
                 if (beforeAndAfter.get("after") != null) {
-                    wheres.add(String.format("%s > :%s", columnName, columnName));
+                    wheres.add(String.format("%s >= :%s", columnName, columnName));
                     parameters.put(columnName, filterValue);
                 }
             }
