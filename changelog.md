@@ -1,4 +1,20 @@
-### v5.1.6
+### v5.1.7 (2023-03-04)
+
+**Feature** Allow filtering results by age in hours or minutes. See <a href="https://github.com/theotherp/nzbhydra2/issues/790">#790</a>
+
+**Fix** Make download history age filter a numeric filter.
+
+**Fix** Better handle indexer not supporting a certain function. See <a href="https://github.com/theotherp/nzbhydra2/issues/856">#856</a>
+
+**Fix** The built-in update did not download the correct assets for generic runtimes. See <a href="https://github.com/theotherp/nzbhydra2/issues/857">#857</a>
+
+**Fix** The wrapper script could not properly detect the installation type when not run from the project's base folder.
+
+**Fix** Debug info creation failed with custom mappings configure.
+
+
+
+### v5.1.6 (2023-02-23)
 
 **Fix** Custom regex groups in custom query mapping didn't work. I also improved the handling of the test dialog.
 
@@ -6,7 +22,7 @@
 
 
 
-### v5.1.5
+### v5.1.5 (2023-02-09)
 
 **Feature** Improve UI error messages even more.
 
@@ -20,7 +36,7 @@
 
 
 
-### v5.1.4
+### v5.1.4 (2023-02-09)
 
 **Feature** Added flags to enable some checks in the wrapper to make it easier for package maintainer. See <a href="https://github.com/theotherp/nzbhydra2/issues/847">#847</a>
 
