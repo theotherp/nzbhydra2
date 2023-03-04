@@ -1,5 +1,6 @@
 #@formatter:off
 -   version: "v5.1.7"
+    date: "2023-03-04"
     changes:
         -   type: "feature"
             text: "Allow filtering results by age in hours or minutes. See #790"
@@ -15,6 +16,7 @@
             text: "Debug info creation failed with custom mappings configure."
     final: true
 -   version: "v5.1.6"
+    date: "2023-02-23"
     changes:
         -   type: "fix"
             text: "Custom regex groups in custom query mapping didn't work. I also improved the handling of the test dialog."
@@ -22,6 +24,7 @@
             text: "Animetosho (newznab) didn't work when added as a new indexer and searching in the anime category. See #854"
     final: true
 -   version: "v5.1.5"
+    date: "2023-02-09"
     changes:
         -   type: "feature"
             text: "Improve UI error messages even more."
@@ -35,6 +38,7 @@
             text: "Uploading debug infos works again (with a different hoster)."
     final: true
 -   version: "v5.1.4"
+    date: "2023-02-09"
     changes:
         -   type: "feature"
             text: "Added flags to enable some checks in the wrapper to make it easier for package maintainer. See #847"
