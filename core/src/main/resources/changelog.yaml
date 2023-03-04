@@ -11,6 +11,8 @@
             text: "The built-in update did not download the correct assets for generic runtimes. See #857"
         -   type: "fix"
             text: "The wrapper script could not properly detect the installation type when not run from the project's base folder."
+        -   type: "fix"
+            text: "Debug info creation failed with custom mappings configure."
     final: true
 -   version: "v5.1.6"
     changes:

@@ -301,6 +301,7 @@ public class DebugInfosProvider {
         try {
             final Diff configDiff = JaversBuilder.javers()
                     .build()
+
                     .compare(originalConfig, userConfig);
             logger.info("Difference in config:\n{}", configDiff.prettyPrint());
         } catch (Exception e) {

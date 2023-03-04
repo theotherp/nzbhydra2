@@ -18,6 +18,7 @@ package org.nzbhydra.config.searching;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
+import org.javers.core.metamodel.annotation.DiffIgnore;
 import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.util.StringJoiner;
@@ -32,6 +33,7 @@ public class CustomQueryAndTitleMapping {
     private String from;
     private String to;
     @JsonIgnore
+    @DiffIgnore
     private Pattern fromPattern;
 
     public CustomQueryAndTitleMapping() {
