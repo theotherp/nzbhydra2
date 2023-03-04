@@ -8,6 +8,8 @@
         -   type: "fix"
             text: "Better handle indexer not supporting a certain function. See #856"
         -   type: "fix"
+            text: "The built-in update did not download the correct assets for generic runtimes. See #857"
+        -   type: "fix"
             text: "The wrapper script could not properly detect the installation type when not run from the project's base folder."
     final: true
 -   version: "v5.1.6"

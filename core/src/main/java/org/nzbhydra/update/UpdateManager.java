@@ -369,8 +369,22 @@ public class UpdateManager implements InitializingBean {
             throw new UpdateException("No assets found for release " + latestRelease.getTagName());
         }
         String osName = System.getProperty("os.name");
-        boolean isOsWindows = osName.toLowerCase().contains("windows");
-        String assetToContain = isOsWindows ? "windows" : "linux"; //LATER What about OSX?
+        final String arch = System.getProperty("os.arch");
+        String assetToContain;
+        final String sourceCodeLocation = getClass().getProtectionDomain().getCodeSource().getLocation().toString();
+        boolean isCompiled = sourceCodeLocation.endsWith("core") || sourceCodeLocation.endsWith("core.exe");
+        if (!isCompiled) {
+            assetToContain = "generic";
+        } else if (osName.toLowerCase().contains("windows")) {
+            assetToContain = "windows";
+        } else if (arch.equals("amd64")) {
+            assetToContain = "amd64";
+        } else {
+            assetToContain = "arm64";
+        }
+
+        logger.debug("Looking for asset that contains {}", assetToContain);
+
         Optional<Asset> optionalAsset = assets.stream().filter(x -> x.getName().toLowerCase().contains(assetToContain)).findFirst();
         if (optionalAsset.isEmpty()) {
             logger.error("Unable to find asset for platform {} in these assets: {}", assetToContain, assets.stream().map(Asset::getName).collect(Collectors.joining(", ")));

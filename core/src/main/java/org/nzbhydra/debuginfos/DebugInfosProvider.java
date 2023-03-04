@@ -221,12 +221,16 @@ public class DebugInfosProvider {
         logger.info("Java command line: {}", System.getProperty("sun.java.command"));
         logger.info("Java runtime name: {}", System.getProperty("java.runtime.name"));
         logger.info("Java runtime version: {}", System.getProperty("java.runtime.version"));
+        logger.info("Java vm name: {}", System.getProperty("java.vm.name"));
+        logger.info("Java vendor: {}", System.getProperty("java.vendor"));
+        logger.info("Source location: {}", getClass().getProtectionDomain().getCodeSource().getLocation());
         logger.info("OS name: {}", System.getProperty("os.name"));
         logger.info("OS architecture: {}", System.getProperty("os.arch"));
         logger.info("User country: {}", System.getProperty("user.country"));
         logger.info("File encoding: {}", System.getProperty("file.encoding"));
         logger.info("Datasource URL: {}", datasourceUrl);
         logger.info("Ciphers:");
+
         logger.info(ssl.getSupportedCiphers());
         outdatedWrapperDetector.executeCheck();
         logNumberOfTableRows("SEARCH");
@@ -294,10 +298,14 @@ public class DebugInfosProvider {
         final BaseConfig userConfig = Jackson.YAML_MAPPER.readValue(anonymizedConfig, BaseConfig.class);
         userConfig.setCategoriesConfig(new DiffableCategoriesConfig(userConfig.getCategoriesConfig()));
 
-        final Diff configDiff = JaversBuilder.javers()
-                .build()
-                .compare(originalConfig, userConfig);
-        logger.info("Difference in config:\n{}", configDiff.prettyPrint());
+        try {
+            final Diff configDiff = JaversBuilder.javers()
+                    .build()
+                    .compare(originalConfig, userConfig);
+            logger.info("Difference in config:\n{}", configDiff.prettyPrint());
+        } catch (Exception e) {
+            logger.error("Error building config diff", e);
+        }
     }
 
     public void logThreadDump() {
