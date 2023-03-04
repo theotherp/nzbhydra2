@@ -1,5 +1,5 @@
 # alpine doesn't work because we need libgc for the native image
-FROM ubuntu:16.04
+FROM ubuntu:18.04
 # See https://octopus.com/blog/using-ubuntu-docker-image
 RUN echo 'APT::Install-Suggests "0";' >> /etc/apt/apt.conf.d/00-docker
 RUN echo 'APT::Install-Recommends "0";' >> /etc/apt/apt.conf.d/00-docker
