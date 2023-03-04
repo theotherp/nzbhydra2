@@ -19,19 +19,19 @@ echo "Make sure to also build the wrapper for arm"
 
 echo "todo windows build returns unusable exe"
 
-#echo "Preparing linux build"
-#if [ -d "linux/dist/linux/" ]; then rm linux/dist/linux/*; fi
-#cp ../nzbhydra2wrapperPy3.py linux/
-#cp VersionInfo.txt linux/
-#cp nzbhydra.ico linux/
-#
-#echo "Running linux build"
-#cd linux || exit
-#mkdir -p dist/linux
-#docker run -v "$(pwd):/src/" cdrx/pyinstaller-linux
-#staticx -l /lib/x86_64-linux-gnu/libm.so.6 dist/linux/NZBHydra2 dist/linux/NZBHydra2-static
-#cp dist/linux/NZBHydra2-static ../../../../releases/linux-amd64-release/include/executables/nzbhydra2
-#cd ../
+echo "Preparing linux build"
+if [ -d "linux/dist/linuxAmd64/" ]; then rm linux/dist/linuxAmd64/*; fi
+cp ../nzbhydra2wrapperPy3.py linuxAmd64/
+cp VersionInfo.txt linuxAmd64/
+cp nzbhydra.ico linuxAmd64/
+
+echo "Running linux build"
+cd linuxAmd64 || exit
+mkdir -p dist/linux
+docker run -v "$(pwd):/src/" cdrx/pyinstaller-linux
+staticx -l /lib/x86_64-linux-gnu/libm.so.6 dist/linux/NZBHydra2 dist/linux/NZBHydra2-static
+cp dist/linux/NZBHydra2-static ../../../../releases/linux-amd64-release/include/executables/nzbhydra2
+cd ../
 #
 ##todo Currently builds an unusable exe
 ##echo "Preparing windows build"
