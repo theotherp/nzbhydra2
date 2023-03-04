@@ -503,11 +503,11 @@ def determineReleaseType():
     if forcedReleaseType is not None:
         logger.info("Release type " + forcedReleaseType + " forced by environment variable ")
         return forcedReleaseType
-    if os.path.exists("lib"):
+    if os.path.exists(os.path.join(getBasePath(), "lib")):
         releaseType = ReleaseType.GENERIC
-        if os.path.exists("core") or os.path.exists("core.exe"):
+        if os.path.exists(os.path.join(getBasePath(), "core")) or os.path.exists(os.path.join(getBasePath(), "core.exe")):
             logger.warning("lib folder and core(.exe) found. Either delete the executable to use the generic release type (using java and ignoring the executable) or delete the lib folder to use the executable and not require java")
-    elif os.path.exists("core") or os.path.exists("core.exe"):
+    elif os.path.exists(os.path.join(getBasePath(), "core")) or os.path.exists(os.path.join(getBasePath(), "core.exe")):
         releaseType = ReleaseType.NATIVE
     else:
         logger.critical(

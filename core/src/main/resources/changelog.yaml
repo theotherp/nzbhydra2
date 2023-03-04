@@ -7,6 +7,8 @@
             text: "Make download history age filter a numeric filter."
         -   type: "fix"
             text: "Better handle indexer not supporting a certain function. See #856"
+        -   type: "fix"
+            text: "The wrapper script could not properly detect the installation type when not run from the project's base folder."
     final: true
 -   version: "v5.1.6"
     changes:
