@@ -1,3 +1,9 @@
+### v5.1.8
+
+**Fix** When making changes in the config that required a restart to be effective you wouldn't be asked to restart. This means that when enabling auth and not restarting, the UI would think auth was required but the backend wouldn't be able to process form logins, resulting in misleading error messages.
+
+
+
 ### v5.1.7 (2023-03-04)
 
 **Feature** Allow filtering results by age in hours or minutes. See <a href="https://github.com/theotherp/nzbhydra2/issues/790">#790</a>
