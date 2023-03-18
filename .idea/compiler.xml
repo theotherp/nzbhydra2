@@ -15,6 +15,7 @@
         <module name="sockslib" />
         <module name="system" />
         <module name="classloader" />
+        <module name="loadtest" />
         <module name="github-release-plugin" />
         <module name="assertions" />
         <module name="discordreleaser" />

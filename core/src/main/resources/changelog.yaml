@@ -1,4 +1,9 @@
 #@formatter:off
+-   version: "v5.1.8"
+    changes:
+        -   type: "fix"
+            text: "When making changes in the config that required a restart to be effective you wouldn't be asked to restart. This means that when enabling auth and not restarting, the UI would think auth was required but the backend wouldn't be able to process form logins, resulting in misleading error messages."
+    final: true
 -   version: "v5.1.7"
     date: "2023-03-04"
     changes:

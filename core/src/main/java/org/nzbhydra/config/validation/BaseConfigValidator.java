@@ -75,6 +75,7 @@ public class BaseConfigValidator implements ConfigValidator<BaseConfig> {
             final ConfigValidationResult result = validator.validateConfig(oldBaseConfig, newBaseConfig, config);
             configValidationResult.getErrorMessages().addAll(result.getErrorMessages());
             configValidationResult.getWarningMessages().addAll(result.getWarningMessages());
+            configValidationResult.setRestartNeeded(configValidationResult.isRestartNeeded() || result.isRestartNeeded());
         }
         validateIndexers(newConfig, configValidationResult);
 
