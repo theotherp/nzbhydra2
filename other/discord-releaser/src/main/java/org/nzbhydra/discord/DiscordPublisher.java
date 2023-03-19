@@ -38,7 +38,7 @@ public class DiscordPublisher {
     private static final String TEMPLATE = """
             %s
 
-            Link: https://github.com/theotherp/nzbhydra2/releases/tag/%s
+            Link: https://github.com/theotherp/nzbhydra2/releases/tag/v%s
             """;
 
 
