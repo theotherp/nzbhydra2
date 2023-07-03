@@ -70,7 +70,7 @@ public class MockNewznab {
     }
 
 
-    @RequestMapping(value = "/nzb/{nzbId}", produces = MediaType.TEXT_HTML_VALUE)
+    @RequestMapping(value = "/nzb/{nzbId}", produces = MediaType.APPLICATION_XML_VALUE)
     public ResponseEntity<String> nzbDownload(@PathVariable String nzbId) throws Exception {
         if (nzbId.endsWith("91")) {
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
@@ -86,17 +86,17 @@ public class MockNewznab {
         return ResponseEntity.ok("Would download NZB with ID" + nzbId);
     }
 
-    @RequestMapping(value = "/details/{nzbId}", produces = MediaType.TEXT_HTML_VALUE)
+    @RequestMapping(value = "/details/{nzbId}", produces = MediaType.APPLICATION_XML_VALUE)
     public String nzbDetails(@PathVariable String nzbId) throws Exception {
         return "Would show details for NZB with ID" + nzbId;
     }
 
-    @RequestMapping(value = "/comments/{nzbId}", produces = MediaType.TEXT_HTML_VALUE)
+    @RequestMapping(value = "/comments/{nzbId}", produces = MediaType.APPLICATION_XML_VALUE)
     public String nzbComments(@PathVariable String nzbId) throws Exception {
         return "Would show comments for NZB with ID" + nzbId;
     }
 
-    @RequestMapping(value = {"/api", "/dognzb/api"}, produces = MediaType.TEXT_XML_VALUE)
+    @RequestMapping(value = {"/api", "/dognzb/api"}, produces = MediaType.APPLICATION_XML_VALUE)
     public ResponseEntity<? extends Object> api(NewznabParameters params, HttpServletRequest request) throws Exception {
 
         if (params.getT() == ActionAttribute.CAPS) {

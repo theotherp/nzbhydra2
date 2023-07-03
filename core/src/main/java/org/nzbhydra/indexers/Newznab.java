@@ -279,7 +279,7 @@ public class Newznab extends Indexer<Xml> {
             logger.debug("Not using some forbidden words in query because characters forbidden by newznab are contained");
         }
         if (!allPossibleForbiddenWords.isEmpty()) {
-            if (config.getBackend().equals(BackendType.NZEDB) || config.getBackend().equals(BackendType.NNTMUX) || config.getHost().toLowerCase().contains("omgwtf")) {
+            if (config.getBackend().equals(BackendType.NZEDB) || config.getBackend().equals(BackendType.NNTMUX) || config.getHost().toLowerCase().contains("omgwtf") || config.getHost().toLowerCase().contains("nzbfinder")) {
                 query += (query.isEmpty() ? "" : " ") + "!" + Joiner.on(",!").join(allPossibleForbiddenWords);
             } else {
                 query += (query.isEmpty() ? "" : " ") + "--" + Joiner.on(" --").join(allPossibleForbiddenWords);

@@ -5420,6 +5420,7 @@ angular
             model.hitLimit = indexerConfig.hitLimit;
             model.downloadLimit = indexerConfig.downloadLimit;
             model.state = indexerConfig.state;
+            model.backend = indexerConfig.backend;
         }
 
         formlyConfigProvider.setType({

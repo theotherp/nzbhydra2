@@ -60,6 +60,8 @@ public class IndexerWebAccess {
 
         Map<String, String> headers = new HashMap<>();
         headers.put("User-Agent", userAgent);
+        headers.put("Content-Type", "application/xml");
+        headers.put("Accept", "application/xml");
 
 
         if (indexerConfig.getUsername().isPresent() && indexerConfig.getPassword().isPresent()) {
