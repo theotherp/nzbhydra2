@@ -1,6 +1,6 @@
 #@formatter:off
 -   version: "v5.1.9"
-    date: "2023-07-03"
+    date: "2023-07-04"
     changes:
         -   type: "fix"
             text: "Forbidden words were not correctly built for NZB Finder. See #872"
