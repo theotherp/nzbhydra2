@@ -1,3 +1,9 @@
+### v5.1.9 (2023-07-04)
+
+**Fix** Forbidden words were not correctly built for NZB Finder. See <a href="https://github.com/theotherp/nzbhydra2/issues/872">#872</a>
+
+
+
 ### v5.1.8
 
 **Fix** When making changes in the config that required a restart to be effective you wouldn't be asked to restart. This means that when enabling auth and not restarting, the UI would think auth was required but the backend wouldn't be able to process form logins, resulting in misleading error messages.
