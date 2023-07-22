@@ -1,8 +1,11 @@
 #@formatter:off
 -   version: "v5.1.10"
+    date: "2023-07-21"
     changes:
         -   type: "feature"
             text: "You can now ask Binsearch to search in all usenet groups instead of just the most popular ones. See #875"
+        -   type: "feature"
+            text: "Custom mappings can now be configured to only match parts of a string. For example you can use them to remove all dots in a query with a space or just remove all numbers or whatever. See #879"
         -   type: "fix"
             text: "Filter out \"no-cover.jpg\" covers returned by NZB Finder. See #872"
 

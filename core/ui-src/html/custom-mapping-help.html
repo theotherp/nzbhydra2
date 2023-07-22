@@ -36,9 +36,9 @@
     <div class="col-md-15">
       <input type="text" class="form-control" ng-model="model.to">
     </div>
-  </div>
-
-    <div class="form-group row">
+    </div>
+  
+  <div class="form-group row">
     <div class="col-md-5" style="text-align: right">
       <label>Example query/title</label>
     </div>
@@ -46,16 +46,26 @@
       <input type="text" class="form-control" ng-model="exampleInput">
     </div>
   </div>
-
-    <div class="form-group row">
+  
+  <div class="form-group row">
     <div class="col-md-5" style="text-align: right">
+      <label>Match whole string</label>
     </div>
     <div class="col-md-15">
-      <button class="btn btn-default" ng-click="test()">Test</button>
-    </div>
+      <input bs-switch type="checkbox" ng-model="model.matchAll" class="ng-untouched ng-valid ng-not-empty ng-dirty" aria-invalid="false"></div>
   </div>
+</div>
+</div>
 
-    <div class="form-group row">
+<div class="form-group row">
+  <div class="col-md-5" style="text-align: right">
+  </div>
+  <div class="col-md-15">
+    <button class="btn btn-default" ng-click="test()">Test</button>
+  </div>
+</div>
+
+<div class="form-group row">
     <div class="col-md-5" style="text-align: right">
       <label>Result</label>
     </div>

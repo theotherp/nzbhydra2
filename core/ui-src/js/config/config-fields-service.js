@@ -1291,12 +1291,21 @@ function ConfigFields($injector) {
                                 }
                             },
                             {
+                                key: 'matchAll',
+                                type: 'horizontalSwitch',
+                                templateOptions: {
+                                    type: 'switch',
+                                    label: 'Match whole string',
+                                    help: 'If true then the input pattern must match the whole affected value. If false then any match will be replaced, even if it\'s only part of the affected value.'
+                                }
+                            },
+                            {
                                 key: 'from',
                                 type: 'horizontalInput',
                                 templateOptions: {
                                     type: 'text',
                                     label: 'Input pattern',
-                                    help: 'Pattern which must match the query or title of a search request. You may use regexes in groups which can be referenced in the output puttern by using {group:regex}. Case insensitive.',
+                                    help: 'Pattern which must match the query or title of a search request (completely or in part, depending on the previous setting). You may use regexes in groups which can be referenced in the output puttern by using <code>{group:regex}</code>. Case insensitive.',
                                     required: true
                                 }
                             },
@@ -1306,8 +1315,8 @@ function ConfigFields($injector) {
                                 templateOptions: {
                                     type: 'text',
                                     label: 'Output pattern',
-                                    help: 'If a query or title matches the input pattern it will be replaced using this. You may reference groups from the input pattern by using {group}. Additionally you may use {season:0} or {season:00} or {episode:0} or {episode:00} (with and without leading zeroes).',
-                                    required: true
+                                    required: true,
+                                    help: 'If a query or title matches the input pattern it will be replaced using this. You may reference groups from the input pattern by using {group}. Additionally you may use <code>{season:0}</code> or <code>{season:00}</code> or <code>{episode:0}</code> or <code>{episode:00}</code> (with and without leading zeroes). Use <code>&lt;remove&gt;</code> to remove the match.'
                                 }
                             },
                             {
@@ -1317,6 +1326,7 @@ function ConfigFields($injector) {
                         defaultModel: {
                             searchType: null,
                             affectedValue: null,
+                            matchAll: true,
                             from: null,
                             to: null
                         }
@@ -1402,11 +1412,10 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'text',
                                 label: 'Custom quick filters',
-                                help: 'Enter in the format "DisplayName=Required1,Required2". Apply values with enter key.',
-                                tooltip: 'E.g. use "WEB=webdl,web-dl." for a quick filter with the name "WEB" to be displayed that searches for "webdl" and "web-dl" in lowercase search results.',
+                                help: 'Enter in the format <code>DisplayName=Required1,Required2</code>. Apply values with enter key.',
+                                tooltip: 'E.g. use <code>WEB=webdl,web-dl.</code> for a quick filter with the name "WEB" to be displayed that searches for "webdl" and "web-dl" in lowercase search results.',
                                 advanced: true
                             }
-
                         },
                         {
                             key: 'preselectQuickFilterButtons',

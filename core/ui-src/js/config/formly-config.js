@@ -244,7 +244,7 @@ angular
 
                                 }
                                 console.log("custom mapping test");
-                                $http.post('internalapi/customMapping/test', {mapping: $scope.model, exampleInput: $scope.exampleInput}).then(function (response) {
+                                $http.post('internalapi/customMapping/test', {mapping: $scope.model, exampleInput: $scope.exampleInput, matchAll: $scope.matchAll}).then(function (response) {
                                     console.log(response.data);
                                     console.log(response.data.output);
                                     if (response.data.error) {

@@ -30,6 +30,7 @@ public class CustomQueryAndTitleMapping {
 
     private SearchType searchType;
     private AffectedValue affectedValue;
+    private boolean matchAll;
     private String from;
     private String to;
     @JsonIgnore
@@ -41,13 +42,14 @@ public class CustomQueryAndTitleMapping {
 
     public CustomQueryAndTitleMapping(String configValue) {
         final String[] split = configValue.split(";");
-        if (split.length != 4) {
+        if (split.length < 4 || split.length > 5) {
             throw new IllegalArgumentException("Unable to parse value: " + configValue);
         }
         this.searchType = split[0].equals("null") ? SearchType.SEARCH : SearchType.valueOf(split[0].toUpperCase());
         this.affectedValue = AffectedValue.valueOf(split[1].toUpperCase());
         this.from = split[2];
         this.to = split[3];
+        this.matchAll = split.length == 4 || Boolean.parseBoolean(split[4]);
     }
 
     @JsonIgnore

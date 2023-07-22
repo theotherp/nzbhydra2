@@ -25,6 +25,7 @@ import org.nzbhydra.config.searching.SearchType;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -80,6 +81,17 @@ public class CustomQueryAndTitleCustomQueryAndTitleMappingHandlerTest {
         CustomQueryAndTitleMapping customQueryAndTitleMapping = new CustomQueryAndTitleMapping("SEARCH;QUERY;my show name.*;some other title I want");
         testee.mapSearchRequest(searchRequest, Collections.singletonList(customQueryAndTitleMapping));
         assertThat(searchRequest.getQuery()).isPresent().get().isEqualTo("some other title I want");
+    }
+
+    @Test
+    public void shouldReplaceValueIfNotMatchingAll() {
+        final SearchRequest searchRequest = new SearchRequest();
+        searchRequest.setQuery("1my.show.name1");
+
+        CustomQueryAndTitleMapping removeDots = new CustomQueryAndTitleMapping("SEARCH;QUERY;\\.; ;false");
+        CustomQueryAndTitleMapping removeDigits = new CustomQueryAndTitleMapping("SEARCH;QUERY;\\d;;false");
+        testee.mapSearchRequest(searchRequest, Arrays.asList(removeDots, removeDigits));
+        assertThat(searchRequest.getQuery()).isPresent().get().isEqualTo("my show name");
     }
 
     @Test
