@@ -1,10 +1,20 @@
+### v5.1.10 (2023-07-21)
+
+**Feature** You can now ask Binsearch to search in all usenet groups instead of just the most popular ones. See <a href="https://github.com/theotherp/nzbhydra2/issues/875">#875</a>
+
+**Feature** Custom mappings can now be configured to only match parts of a string. For example you can use them to remove all dots in a query with a space or just remove all numbers or whatever. See <a href="https://github.com/theotherp/nzbhydra2/issues/879">#879</a>
+
+**Fix** Filter out "no-cover.jpg" covers returned by NZB Finder. See <a href="https://github.com/theotherp/nzbhydra2/issues/872">#872</a>
+
+
+
 ### v5.1.9 (2023-07-04)
 
 **Fix** Forbidden words were not correctly built for NZB Finder. See <a href="https://github.com/theotherp/nzbhydra2/issues/872">#872</a>
 
 
 
-### v5.1.8
+### v5.1.8 (2023-03-18)
 
 **Fix** When making changes in the config that required a restart to be effective you wouldn't be asked to restart. This means that when enabling auth and not restarting, the UI would think auth was required but the backend wouldn't be able to process form logins, resulting in misleading error messages.
 

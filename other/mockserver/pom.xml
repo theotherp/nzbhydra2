@@ -60,7 +60,7 @@
         <dependency>
             <groupId>org.nzbhydra</groupId>
             <artifactId>mapping</artifactId>
-            <version>5.1.10-SNAPSHOT</version>
+            <version>5.1.10</version>
             <exclusions>
                 <exclusion>
                     <artifactId>jaxb-impl</artifactId>
