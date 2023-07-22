@@ -223,7 +223,14 @@ public class Binsearch extends Indexer<String> {
             throw new IndexerSearchAbortedException("Binsearch cannot search without a query");
         }
         query = cleanupQuery(query);
-        return UriComponentsBuilder.fromHttpUrl("https://www.binsearch.info/?adv_col=on&postdate=date&adv_sort=date").queryParam("min", offset).queryParam("max", limit).queryParam("q", query);
+        UriComponentsBuilder queryBuilder = UriComponentsBuilder.fromHttpUrl("https://www.binsearch.info/?adv_col=on&postdate=date&adv_sort=date")
+                .queryParam("min", offset)
+                .queryParam("max", limit)
+                .queryParam("q", query);
+        if (getConfig().isBinsearchOtherGroups()) {
+            queryBuilder = queryBuilder.queryParam("server", "2");
+        }
+        return queryBuilder;
     }
 
     private String addRequiredWordsToQuery(SearchRequest searchRequest, String query) {

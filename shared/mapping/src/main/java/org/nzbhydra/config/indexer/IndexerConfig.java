@@ -65,6 +65,7 @@ public class IndexerConfig {
     private String apiPath;
     @JsonFormat(shape = Shape.STRING)
     private BackendType backend = BackendType.NEWZNAB;
+    private boolean binsearchOtherGroups;
     private IndexerCategoryConfig categoryMapping = new IndexerCategoryConfig();
     private String color;
     private boolean configComplete = true;

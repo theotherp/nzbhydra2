@@ -530,7 +530,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
         )
     }
 
-    if (indexerModel.searchModuleType === 'nzbindex') {
+    if (indexerModel.searchModuleType === 'NZBINDEX') {
         fieldset.push(
             {
                 key: 'generalMinSize',
@@ -544,9 +544,20 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
         );
     }
 
+    if (indexerModel.searchModuleType === 'BINSEARCH') {
+        fieldset.push({
+            key: 'binsearchOtherGroups',
+            type: 'horizontalSwitch',
+            templateOptions: {
+                type: 'switch',
+                label: 'Search in other groups',
+                help: 'If disabled binsearch will only search in the most popular usenet groups'
+            }
+        })
+    }
+
     return fieldset;
 }
-
 
 function _showBox(indexerModel, parentModel, isInitial, $uibModal, CategoriesService, mode, form, callback) {
     var modalInstance = $uibModal.open({
