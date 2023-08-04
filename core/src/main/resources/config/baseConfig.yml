@@ -147,6 +147,7 @@ categoriesConfig:
       applySizeLimitsToApi: false
       newznabCategories:
         - "2040"
+        - "2045"
         - "2050"
         - "2060"
         - "2070"
@@ -224,6 +225,7 @@ categoriesConfig:
       applySizeLimitsToApi: false
       newznabCategories:
         - "5040"
+        - "5045"
       requiredRegex: null
       requiredWords: []
       preselect: true
