@@ -1,4 +1,10 @@
 #@formatter:off
+-   version: "v5.1.11"
+    date: "2023-09-1"
+    changes:
+        -   type: "fix"
+            text: "Allow to configure Radarr v5 automatically. See #889"
+    final: true
 -   version: "v5.1.10"
     date: "2023-07-21"
     changes:

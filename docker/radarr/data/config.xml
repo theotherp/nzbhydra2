@@ -1,16 +1,17 @@
 <Config>
-    <LogLevel>info</LogLevel>
-    <UrlBase></UrlBase>
-    <UpdateMechanism>Docker</UpdateMechanism>
-    <BindAddress>*</BindAddress>
-    <Port>7878</Port>
-    <SslPort>9898</SslPort>
-    <EnableSsl>False</EnableSsl>
-    <LaunchBrowser>True</LaunchBrowser>
-    <ApiKey>apikey</ApiKey>
-    <AuthenticationMethod>None</AuthenticationMethod>
-    <Branch>master</Branch>
-    <SslCertPath></SslCertPath>
-    <SslCertPassword></SslCertPassword>
-    <InstanceName>Radarr</InstanceName>
+  <LogLevel>info</LogLevel>
+  <UrlBase></UrlBase>
+  <UpdateMechanism>Docker</UpdateMechanism>
+  <BindAddress>*</BindAddress>
+  <Port>7878</Port>
+  <SslPort>9898</SslPort>
+  <EnableSsl>False</EnableSsl>
+  <LaunchBrowser>True</LaunchBrowser>
+  <ApiKey>apikey</ApiKey>
+  <AuthenticationMethod>Basic</AuthenticationMethod>
+  <Branch>nightly</Branch>
+  <SslCertPath></SslCertPath>
+  <SslCertPassword></SslCertPassword>
+  <InstanceName>Radarr</InstanceName>
+  <AuthenticationRequired>DisabledForLocalAddresses</AuthenticationRequired>
 </Config>

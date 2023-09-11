@@ -2,7 +2,7 @@
 version: "2.1"
 services:
     radarr:
-        image: lscr.io/linuxserver/radarr:latest
+        image: lscr.io/linuxserver/radarr:5.0.2-nightly
         container_name: radarr
         environment:
             - PUID=1000
@@ -10,5 +10,7 @@ services:
             - TZ=Europe/London
         volumes:
             - ./data:/config
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
         ports:
             - 7878:7878

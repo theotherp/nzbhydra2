@@ -216,7 +216,7 @@ public class ExternalTools {
             }
         } else if (addRequest.getExternalTool() == AddRequest.ExternalTool.Radarrv3) {
             //For some reason some radarr v3 builds return 10.xxx instead of 3.xxx
-            if (version == null || (!version.startsWith("3") && !version.startsWith("4") && !version.startsWith("10"))) {
+            if (version == null || (!version.startsWith("3") && !version.startsWith("4") && !version.startsWith("5") && !version.startsWith("10"))) {
                 messages.add("Error: configuration for v3 but returned version is " + version);
                 throw new IOException("Error: configuration for v3 but returned version is " + version);
             }
