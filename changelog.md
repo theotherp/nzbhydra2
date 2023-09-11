@@ -1,3 +1,9 @@
+### v5.1.11 (2023-09-1)
+
+**Fix** Allow to configure Radarr v5 automatically. See <a href="https://github.com/theotherp/nzbhydra2/issues/889">#889</a>
+
+
+
 ### v5.1.10 (2023-07-21)
 
 **Feature** You can now ask Binsearch to search in all usenet groups instead of just the most popular ones. See <a href="https://github.com/theotherp/nzbhydra2/issues/875">#875</a>
