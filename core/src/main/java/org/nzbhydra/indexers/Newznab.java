@@ -222,6 +222,9 @@ public class Newznab extends Indexer<Xml> {
     }
 
     protected void calculateAndAddCategories(SearchRequest searchRequest, UriComponentsBuilder componentsBuilder) {
+        if (config.getCategoryMapping() == null) {
+            error("Category mapping unknown - caps check incomplete?");
+        }
         List<Integer> categoryIds = new ArrayList<>();
         if (searchRequest.getInternalData().getNewznabCategories().isEmpty() || configProvider.getBaseConfig().getSearching().isTransformNewznabCategories()) {
             if (searchRequest.getCategory().getSubtype() == Subtype.ANIME && config.getCategoryMapping().getAnime().isPresent()) {
@@ -276,7 +279,7 @@ public class Newznab extends Indexer<Xml> {
         allForbiddenWords.addAll(searchRequest.getCategory().getForbiddenWords());
         List<String> allPossibleForbiddenWords = allForbiddenWords.stream().filter(x -> !(x.contains(" ") || x.contains("-") || x.contains("."))).collect(Collectors.toList());
         if (allForbiddenWords.size() > allPossibleForbiddenWords.size()) {
-            logger.debug("Not using some forbidden words in query because characters forbidden by newznab are contained");
+            debug("Not using some forbidden words in query because characters forbidden by newznab are contained");
         }
         if (!allPossibleForbiddenWords.isEmpty()) {
             if (config.getBackend().equals(BackendType.NZEDB) || config.getBackend().equals(BackendType.NNTMUX) || config.getHost().toLowerCase().contains("omgwtf") || config.getHost().toLowerCase().contains("nzbfinder")) {
@@ -294,7 +297,7 @@ public class Newznab extends Indexer<Xml> {
         allRequiredWords.addAll(searchRequest.getCategory().getRequiredWords());
         List<String> allPossibleRequiredWords = allRequiredWords.stream().filter(x -> !(x.contains(" ") || x.contains("-") || x.contains("."))).collect(Collectors.toList());
         if (allRequiredWords.size() > allPossibleRequiredWords.size()) {
-            logger.debug("Not using some forbidden words in query because characters forbidden by newznab are contained");
+            debug("Not using some forbidden words in query because characters forbidden by newznab are contained");
         }
         if (!allPossibleRequiredWords.isEmpty()) {
             query += (query.isEmpty() ? "" : " ") + Joiner.on(" ").join(allPossibleRequiredWords);
@@ -508,10 +511,10 @@ public class Newznab extends Indexer<Xml> {
             indexerStatus.setOldestDownload(apiLimits.getGrabOldestTime());
 
             indexerStatusRepository.save(indexerStatus);
-            logger.debug(LoggingMarkers.LIMITS, "Indexer {}. Saving IndexerStatus data: {}", indexer.getName(), indexerStatus);
+            debug(LoggingMarkers.LIMITS, "Indexer {}. Saving IndexerStatus data: {}", indexer.getName(), indexerStatus);
 
         } else {
-            logger.debug(LoggingMarkers.LIMITS, "Indexer {}. No limits provided in response.", indexer.getName());
+            debug(LoggingMarkers.LIMITS, "Indexer {}. No limits provided in response.", indexer.getName());
         }
 
     }
@@ -723,14 +726,14 @@ public class Newznab extends Indexer<Xml> {
 
     protected void computeCategory(SearchResultItem searchResultItem, List<Integer> newznabCategories) {
         if (!newznabCategories.isEmpty()) {
-            logger.debug(LoggingMarkers.CATEGORY_MAPPING, "Result {} has newznab categories {} and self-reported category {}", searchResultItem.getTitle(), newznabCategories, searchResultItem.getCategory());
+            debug(LoggingMarkers.CATEGORY_MAPPING, "Result {} has newznab categories {} and self-reported category {}", searchResultItem.getTitle(), newznabCategories, searchResultItem.getCategory());
             Integer mostSpecific = newznabCategories.stream().max(Integer::compareTo).get();
             IndexerCategoryConfig mapping = config.getCategoryMapping();
             Category category;
             if (mapping == null) { //May be the case in some corner cases
                 category = categoryProvider.fromSearchNewznabCategories(newznabCategories, categoryProvider.getNotAvailable());
                 searchResultItem.setOriginalCategory(categoryProvider.getNotAvailable().getName());
-                logger.debug(LoggingMarkers.CATEGORY_MAPPING, "No mapping available. Using original category N/A and new category {} for result {}", category, searchResultItem.getTitle());
+                debug(LoggingMarkers.CATEGORY_MAPPING, "No mapping available. Using original category N/A and new category {} for result {}", category, searchResultItem.getTitle());
             } else {
                 category = idToCategory.computeIfAbsent(mostSpecific, x -> {
                     Optional<Category> categoryOptional = Optional.empty();
@@ -751,14 +754,14 @@ public class Newznab extends Indexer<Xml> {
                 searchResultItem.setOriginalCategory(mapping.getNameFromId(mostSpecific));
             }
             if (category == null) {
-                logger.debug(LoggingMarkers.CATEGORY_MAPPING, "No category found for {}. Using N/A", searchResultItem.getTitle());
+                debug(LoggingMarkers.CATEGORY_MAPPING, "No category found for {}. Using N/A", searchResultItem.getTitle());
                 searchResultItem.setCategory(categoryProvider.getNotAvailable());
             } else {
-                logger.debug(LoggingMarkers.CATEGORY_MAPPING, "Determined category {} for {}", category, searchResultItem.getTitle());
+                debug(LoggingMarkers.CATEGORY_MAPPING, "Determined category {} for {}", category, searchResultItem.getTitle());
                 searchResultItem.setCategory(category);
             }
         } else {
-            logger.debug(LoggingMarkers.CATEGORY_MAPPING, "No newznab categories exist for {}. Using N/A", searchResultItem.getTitle());
+            debug(LoggingMarkers.CATEGORY_MAPPING, "No newznab categories exist for {}. Using N/A", searchResultItem.getTitle());
             searchResultItem.setCategory(categoryProvider.getNotAvailable());
         }
     }

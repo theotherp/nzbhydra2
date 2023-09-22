@@ -1,6 +1,16 @@
 #@formatter:off
+-   version: "v5.2.0"
+    date: "2023-09-22"
+    changes:
+        -   type: "feature"
+            text: "In case of hard crashes of the main process it will automatically be restarted unless the last automatic restart was less than 15 seconds ago (to prevent loops)"
+        -   type: "note"
+            text: "Windows releases now only contain three exe files (and documents) and no more DLL files"
+        -   type: "fix"
+            text: "Hard crashes of the main process will now be logged properly. See #892"
+    final: true
 -   version: "v5.1.11"
-    date: "2023-09-1"
+    date: "2023-09-01"
     changes:
         -   type: "fix"
             text: "Allow to configure Radarr v5 automatically. See #889"

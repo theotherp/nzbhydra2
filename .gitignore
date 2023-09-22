@@ -28,3 +28,5 @@ heapdump*
 misc/rsyncToServers.sh
 /nzbhydra.yml
 /results
+other/wrapper/pyInstaller/windows/build
+other/wrapper/pyInstaller/windows_console/build

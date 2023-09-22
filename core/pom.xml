@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.nzbhydra</groupId>
         <artifactId>nzbhydra2</artifactId>
-        <version>5.1.11</version>
+        <version>5.1.12-SNAPSHOT</version>
     </parent>
 
     <artifactId>core</artifactId>
@@ -39,7 +39,7 @@
                 <plugin>
                     <groupId>org.graalvm.buildtools</groupId>
                     <artifactId>native-maven-plugin</artifactId>
-                    <version>0.9.19</version>
+                    <version>0.9.26</version>
                     <extensions>true</extensions>
                 </plugin>
             </plugins>
@@ -99,7 +99,7 @@
         <dependency>
             <groupId>org.nzbhydra</groupId>
             <artifactId>mapping</artifactId>
-            <version>5.1.11</version>
+            <version>5.1.12-SNAPSHOT</version>
         </dependency>
 
         <!-- spring (boot) -->
@@ -499,6 +499,8 @@
                         </plugin>
                         <plugin>
                             <groupId>org.graalvm.buildtools</groupId>
+                            <!-- Fix Illegal char error on windows -->
+                            <version>0.9.27</version>
                             <artifactId>native-maven-plugin</artifactId>
                             <configuration>
                                 <buildArgs>

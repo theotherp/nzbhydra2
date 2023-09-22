@@ -2840,6 +2840,13 @@
           "locales": [
               "en"
           ]
+      },
+    {
+      "name": "org.apache.xerces.impl.msg.XMLMessages",
+      "locales": [
+        "en",
+        "en_US"
+      ]
       }
   ]
 }

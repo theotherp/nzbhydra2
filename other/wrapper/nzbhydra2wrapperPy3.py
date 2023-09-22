@@ -2,6 +2,7 @@
 import random
 import string
 import sys
+import time
 import traceback
 import webbrowser
 
@@ -55,6 +56,7 @@ logger.addHandler(console_logger)
 file_logger = None
 logger.setLevel(LOGGER_DEFAULT_LEVEL)
 consoleLines = []
+lastRestart = 0
 
 
 def getBasePath():
@@ -354,7 +356,8 @@ def startup():
             jarFile = jarFiles[0]
         else:
             latestFile = max(jarFiles, key=os.path.getmtime)
-            logger.warning("Expected the number of JAR files in folder %s to be 1 but it's %d. Will remove all JARs except the one last changed: %s", libFolder, len(jarFiles), latestFile)
+            logger.warning("Expected the number of JAR files in folder %s to be 1 but it's %d. Will remove all JARs except the one last changed: %s", libFolder, len(jarFiles),
+                           latestFile)
             for file in jarFiles:
                 if file is not latestFile:
                     logger.info("Deleting file %s", file)
@@ -472,7 +475,7 @@ def startup():
             if nextlineString != "":
                 consoleLines.append(nextlineString)
 
-            if len(consoleLines) > 100:
+            if len(consoleLines) > 1000:
                 consoleLines = consoleLines[-100:]
             if not args.quiet and sys.stdout is not None:
                 sys.stdout.write(nextlineString)
@@ -506,7 +509,8 @@ def determineReleaseType():
     if os.path.exists(os.path.join(getBasePath(), "lib")):
         releaseType = ReleaseType.GENERIC
         if os.path.exists(os.path.join(getBasePath(), "core")) or os.path.exists(os.path.join(getBasePath(), "core.exe")):
-            logger.warning("lib folder and core(.exe) found. Either delete the executable to use the generic release type (using java and ignoring the executable) or delete the lib folder to use the executable and not require java")
+            logger.warning(
+                "lib folder and core(.exe) found. Either delete the executable to use the generic release type (using java and ignoring the executable) or delete the lib folder to use the executable and not require java")
     elif os.path.exists(os.path.join(getBasePath(), "core")) or os.path.exists(os.path.join(getBasePath(), "core.exe")):
         releaseType = ReleaseType.NATIVE
     else:
@@ -540,8 +544,8 @@ def handleUnexpectedExit():
             message = "You seem to be trying to run NZBHydra with a wrong Java version. Please make sure to use at least Java 9"
         elif "java.lang.OutOfMemoryError" in x:
             message = "The main process has exited because it didn't have enough memory. Please increase the XMX value in the main config"
-    logger.error(message)
-    sys.exit(-1)
+    logger.error(message + "\nThe last 1000 lines from output:")
+    logger.error("".join(consoleLines).replace("\n\n", ""))
 
 
 def getJavaVersion(javaExecutable):
@@ -681,7 +685,7 @@ def main(arguments):
                 logger.debug("Shutting down because child process was terminated by us after getting signal")
                 sys.exit(0)
 
-            if process.returncode == 1:
+            if process.returncode in (1, 99):
                 handleUnexpectedExit()
             args.restarted = True
 
@@ -713,6 +717,16 @@ def main(arguments):
             elif controlCode == 22:
                 logger.info("NZBHydra main process has terminated for restart")
                 doStart = True
+            elif controlCode in (1, 99):
+                global lastRestart
+                difference = time.time() - lastRestart
+                if difference < 15:
+                    logger.warning("Last automatic restart was less than 15 seconds ago - quitting to prevent loop")
+                    doStart = False
+                else:
+                    logger.info("Restarting NZBHydra after hard crash")
+                    lastRestart = time.time()
+                    doStart = True
             elif controlCode == 33:
                 logger.info("NZBHydra main process has terminated for restoration")
                 doStart = restore()

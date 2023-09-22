@@ -12,14 +12,14 @@ ENV M2_HOME=/opt/maven
 ENV MAVEN_HOME=/opt/maven
 ENV PATH=${M2_HOME}/bin:${PATH}
 
-RUN wget -nv --no-check-certificate https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-22.3.0/graalvm-ce-java17-linux-amd64-22.3.0.tar.gz
-RUN tar xzf graalvm-ce-java17-linux-amd64-22.3.0.tar.gz -C /
+RUN wget -nv --no-check-certificate https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-22.3.3/graalvm-ce-java17-linux-amd64-22.3.3.tar.gz
+RUN tar xzf graalvm-ce-java17-linux-amd64-22.3.3.tar.gz -C /
 ENV PATH=/graalvm-ce-java17-22.3.0/bin/:$PATH
 ENV JAVA_HOME=/graalvm-ce-java17-22.3.0
 
-RUN wget -nv --no-check-certificate https://github.com/upx/upx/releases/download/v4.0.1/upx-4.0.1-amd64_linux.tar.xz
-RUN tar -xf upx-4.0.1-amd64_linux.tar.xz
-ENV PATH=/tmp/upx-4.0.1-amd64_linux/:$PATH
+RUN wget -nv --no-check-certificate https://github.com/upx/upx/releases/download/v4.1.0/upx-4.1.0-amd64_linux.tar.xz
+RUN tar -xf upx-4.1.0-amd64_linux.tar.xz
+ENV PATH=/tmp/upx-4.1.0-amd64_linux/:$PATH
 
 ENV HYDRA_NATIVE_BUILD=true
 
