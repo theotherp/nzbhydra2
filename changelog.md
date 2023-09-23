@@ -1,4 +1,18 @@
-### v5.1.11 (2023-09-1)
+### v5.2.0 BETA (2023-09-22)
+
+**Feature** In case of hard crashes of the main process it will automatically be restarted unless the last automatic restart was less than 15 seconds ago (to prevent loops)
+
+**Note** Windows releases now only contain three exe files (and documents) and no more DLL files
+
+**Fix** Hard crashes of the main process will now be logged properly. See <a href="https://github.com/theotherp/nzbhydra2/issues/892">#892</a>
+
+**Note** All these changes require the wrapper files to be updated.
+
+**Note** I also updated a lot of libraries - hopefully no bugs ;-)
+
+
+
+### v5.1.11 (2023-09-01)
 
 **Fix** Allow to configure Radarr v5 automatically. See <a href="https://github.com/theotherp/nzbhydra2/issues/889">#889</a>
 
