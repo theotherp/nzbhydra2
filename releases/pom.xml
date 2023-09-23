@@ -19,7 +19,6 @@
     </modules>
 
     <properties>
-        <maven.compiler.plugin.version>3.6.2</maven.compiler.plugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 

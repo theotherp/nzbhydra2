@@ -24,7 +24,6 @@
         <logback.version>1.2.3</logback.version>
         <guava.version>31.1-jre</guava.version>
         <junit.version>4.12</junit.version>
-        <maven.compiler.plugin.version>3.6.2</maven.compiler.plugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.javadoc.skip>true</maven.javadoc.skip>
         <spring.boot.maven.version>3.0.1</spring.boot.maven.version>

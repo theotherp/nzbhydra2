@@ -24,9 +24,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.util.Base64Utils;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -48,9 +48,10 @@ public class AuthLoginTest {
         if (configManager.getCurrentConfig().getAuth().getAuthType() == AuthType.NONE) {
             return;
         }
-        HydraResponse hydraResponse = hydraClient.get("/config/main", Collections.singletonMap("Authorization", "Basic " + new String(Base64Utils.encode("wrong:password".getBytes(StandardCharsets.UTF_8))))).dontRaiseIfUnsuccessful();
+
+        HydraResponse hydraResponse = hydraClient.get("/config/main", Collections.singletonMap("Authorization", "Basic " + new String(Base64.getEncoder().encode("wrong:password".getBytes(StandardCharsets.UTF_8))))).dontRaiseIfUnsuccessful();
         assertThat(hydraResponse.getStatus()).isEqualTo(401);
-        hydraResponse = hydraClient.get("/config/main", Collections.singletonMap("Authorization", "Basic " + new String(Base64Utils.encode("test:test".getBytes(StandardCharsets.UTF_8)))));
+        hydraResponse = hydraClient.get("/config/main", Collections.singletonMap("Authorization", "Basic " + new String(Base64.getEncoder().encode("test:test".getBytes(StandardCharsets.UTF_8)))));
         assertThat(hydraResponse.getStatus()).isEqualTo(200);
     }
 

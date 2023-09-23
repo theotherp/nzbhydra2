@@ -36,7 +36,6 @@
                 <configuration>
                     <commitish>master</commitish>
                     <githubToken>${env.GITHUB_TOKEN}</githubToken>
-                    <discordToken>${env.DISCORD_TOKEN}</discordToken>
                     <linuxAmd64Asset>${basedir}/releases/linux-amd64-release/target/nzbhydra2-${project.version}-amd64-linux.zip</linuxAmd64Asset>
                     <linuxArm64Asset>${basedir}/releases/linux-arm64-release/target/nzbhydra2-${project.version}-arm64-linux.zip</linuxArm64Asset>
                     <windowsAsset>${basedir}/releases/windows-release/target/nzbhydra2-${project.version}-windows.zip</windowsAsset>
@@ -105,25 +104,24 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
 
-        <spring.boot.version>3.0.4</spring.boot.version>
-        <spring.boot.devtools.version>3.0.4</spring.boot.devtools.version>
-        <spring.boot.maven.version>3.0.4</spring.boot.maven.version>
-        <spring.oxm.version>6.0.6</spring.oxm.version>
-        <spring-data-commons.version>3.0.3</spring-data-commons.version>
+        <spring.boot.version>3.1.4</spring.boot.version>
+        <spring.boot.devtools.version>3.1.4</spring.boot.devtools.version>
+        <spring.boot.maven.version>3.1.4</spring.boot.maven.version>
+        <spring.oxm.version>6.0.12</spring.oxm.version>
+        <spring-data-commons.version>3.1.4</spring-data-commons.version>
         <jakarta.persistence-api.version>3.1.0</jakarta.persistence-api.version>
-        <jackson.version>2.14.0</jackson.version>
+        <jackson.version>2.15.0</jackson.version>
         <lombok.version>1.18.30</lombok.version>
-        <logback.version>1.4.5</logback.version>
+        <logback.version>1.4.11</logback.version>
         <guava.version>23.0</guava.version>
         <junit.version>4.13.2</junit.version>
-        <okhttp.version>4.10.0</okhttp.version>
+        <okhttp.version>4.11.0</okhttp.version>
         <logstash-logback-encoder.version>7.2</logstash-logback-encoder.version>
         <commons-lang3.version>3.12.0</commons-lang3.version>
         <commons-io.version>2.11.0</commons-io.version>
         <flyway-core.version>9.10.2</flyway-core.version>
         <jaxb.sun.core.version>2.3.0.1</jaxb.sun.core.version>
         <jaxb.sun.impl.version>3.0.1</jaxb.sun.impl.version>
-        <maven.compiler.plugin.version>3.6.2</maven.compiler.plugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <uri-scheme-handler.version>2.0.0</uri-scheme-handler.version>
         <javers-core.version>6.8.1</javers-core.version>
