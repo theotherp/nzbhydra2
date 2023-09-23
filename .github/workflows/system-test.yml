@@ -116,12 +116,21 @@ jobs:
                 run: mvn --batch-mode test -pl org.nzbhydra.tests:system -DtrimStackTrace=false
 
             -   name: "Write docker-compose logs"
+                if: always()
                 run: |
                     cd docker
-                    docker-compose logs --no-color > docker-compose.log
+                    echo "Writing docker compose logs to files"
+                    docker-compose logs --no-color radarr > docker-compose-radarr.log
+                    docker-compose logs --no-color sonarr > docker-compose-sonarr.log
+                    docker-compose logs --no-color mockserver > docker-compose-mockserver.log
+                    docker-compose logs --no-color core > docker-compose-core.log
+                    docker-compose logs --no-color v1Migration > docker-compose-v1Migration.log
+                    echo "Found log files:"
+                    find . -name "*.log"
                     cd ..
 
             -   name: "Truncate large log files"
+                if: always()
                 # If the logs are larger than 1MB there's probably something wrong
                 run: |
                     for d in ./**/*.log ; do (truncate --size=1M $d); done

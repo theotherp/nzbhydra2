@@ -73,16 +73,21 @@ public class MockNewznab {
     @RequestMapping(value = "/nzb/{nzbId}", produces = MediaType.APPLICATION_XML_VALUE)
     public ResponseEntity<String> nzbDownload(@PathVariable String nzbId) throws Exception {
         if (nzbId.endsWith("91")) {
+            logger.info("Returning 91 - too many requests");
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
         }
         if (nzbId.endsWith("92")) {
+            logger.info("Returning 92 - not found");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
         if (nzbId.endsWith("93")) {
+
+            logger.info("Returning 429 - request limit reached");
             return ResponseEntity.status(429).body("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                 "<error code=\"429\" description=\"Request limit reached\"/>");
         }
 
+        logger.info("Returning NZB with ID {}", nzbId);
         return ResponseEntity.ok("Would download NZB with ID" + nzbId);
     }
 
@@ -98,7 +103,7 @@ public class MockNewznab {
 
     @RequestMapping(value = {"/api", "/dognzb/api"}, produces = MediaType.APPLICATION_XML_VALUE)
     public ResponseEntity<? extends Object> api(NewznabParameters params, HttpServletRequest request) throws Exception {
-
+        logger.info("Received API request {}", params);
         if (params.getT() == ActionAttribute.CAPS) {
             //throw new RuntimeException("test");
             return new ResponseEntity<Object>(NewznabMockBuilder.getCaps(), HttpStatus.OK);

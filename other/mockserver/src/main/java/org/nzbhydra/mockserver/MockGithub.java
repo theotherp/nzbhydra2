@@ -87,6 +87,7 @@ public class MockGithub {
 
     @RequestMapping(value = "/changelog", method = RequestMethod.GET)
     public List<ChangelogVersionEntry> changelog() throws Exception {
+        logger.info("Returning changelog");
         return Arrays.asList(
             new ChangelogVersionEntry("11.0.0", null, false, Arrays.asList(new ChangelogChangeEntry("note", "a note for beta release 11.0.0"), new ChangelogChangeEntry("note", "another note"), new ChangelogChangeEntry("note", "yet another note"))),
             new ChangelogVersionEntry("4.0.0", null, true, Arrays.asList(new ChangelogChangeEntry("note", "a note"), new ChangelogChangeEntry("note", "another note"), new ChangelogChangeEntry("note", "yet another note"))),
@@ -97,11 +98,13 @@ public class MockGithub {
 
     @RequestMapping(value = "/theotherp/nzbhydra/master/news.json", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public String news() throws Exception {
+        logger.info("Returning news");
         return new String(Files.readAllBytes(new File("news.json").toPath()));
     }
 
     @RequestMapping(value = "/theotherp/nzbhydra/master/blockedVersions.json", method = RequestMethod.GET)
     public String blockedVersions() throws Exception {
+        logger.info("Returning blocked versions");
         return "[{\"version\":\"3.2.1\",\"comment\":\"some comment\"}]";
     }
 

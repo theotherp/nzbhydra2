@@ -4,7 +4,7 @@ networks:
         external: true
 services:
     mockserver:
-        image: ghcr.io/theotherp/mockserver:3.0.0
+        image: ghcr.io/theotherp/mockserver:3.1.0
         container_name: mockserver
         ports:
             - "5080:5080"
