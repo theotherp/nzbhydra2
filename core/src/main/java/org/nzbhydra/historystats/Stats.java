@@ -266,7 +266,7 @@ public class Stats {
      * Calculates how unique a downloaded result was, i.e. how many other indexers could've (or not could've) provided the same result.
      */
     @Transactional(readOnly = true)
-    List<IndexerScore> indexerScores(final StatsRequest statsRequest) {
+    public List<IndexerScore> indexerScores(final StatsRequest statsRequest) {
         Stopwatch stopwatch = Stopwatch.createStarted();
         logger.debug("Calculating indexer result uniqueness scores");
 

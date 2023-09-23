@@ -46,7 +46,7 @@ public class StatsTest {
         StatsRequest request = new StatsRequest();
         request.setAfter(Instant.now().minusSeconds(60 * 60));
         //Something fucky going on, I don't care right now
-        request.setBefore(Instant.now().plusSeconds(60 * 60));
+        request.setBefore(Instant.now().plusSeconds(60 * 60 * 24));
         request.setIndexerApiAccessStats(true);
         request.setAvgIndexerUniquenessScore(true);
         request.setAvgResponseTimes(true);
