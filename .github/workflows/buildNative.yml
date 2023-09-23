@@ -53,7 +53,7 @@ jobs:
                 if: steps.changed-files-specific.outputs.any_changed == 'true'
                 with:
                     java-version: '17'
-                    version: 'latest'
+                    distribution: 'graalvm-community'
                     components: 'native-image'
                     cache: 'maven'
                     github-token: ${{ secrets.GITHUB_TOKEN }}
