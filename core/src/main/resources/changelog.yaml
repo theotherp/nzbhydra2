@@ -12,7 +12,7 @@
             text: "All these changes require the wrapper files to be updated."
         -   type: "note"
             text: "I also updated a lot of libraries - hopefully no bugs ;-)"
-    final: true
+    final: false
 -   version: "v5.1.11"
     date: "2023-09-01"
     changes:
