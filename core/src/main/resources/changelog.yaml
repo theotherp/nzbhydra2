@@ -8,6 +8,8 @@
             text: "Windows releases now only contain three exe files (and documents) and no more DLL files"
         -   type: "fix"
             text: "Hard crashes of the main process will now be logged properly. See #892"
+        -   type: "note"
+            text: "All these changes require the wrapper files to be updated."
     final: true
 -   version: "v5.1.11"
     date: "2023-09-01"
