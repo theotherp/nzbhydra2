@@ -142,11 +142,12 @@ categoriesConfig:
       forbiddenRegex: null
       forbiddenWords: []
       ignoreResultsFrom: NONE
-      maxSizePreset: 20000
+      maxSizePreset: 90000
       minSizePreset: 3000
       applySizeLimitsToApi: false
       newznabCategories:
         - "2040"
+        - "2045"
         - "2050"
         - "2060"
         - "2070"
@@ -219,11 +220,12 @@ categoriesConfig:
       forbiddenRegex: null
       forbiddenWords: []
       ignoreResultsFrom: NONE
-      maxSizePreset: 4500
+      maxSizePreset: 12000
       minSizePreset: 300
       applySizeLimitsToApi: false
       newznabCategories:
         - "5040"
+        - "5045"
       requiredRegex: null
       requiredWords: []
       preselect: true
