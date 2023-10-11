@@ -4401,7 +4401,7 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
         },
         {
             name: "omgwtfnzbs",
-            host: "https://api.omgwtfnzbs.me"
+            host: "https://api.omgwtfnzbs.org"
         },
         {
             name: "spotweb.com",
@@ -10234,22 +10234,51 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
                 }
             }
             if ($scope.filterButtonsModel.custom !== null && !_.isEmpty($scope.filterButtonsModel.custom)) {
-                var requiresAnyOf = _.keys(_.pick($scope.filterButtonsModel.custom, function (value, key) {
-                    return value
-                }));
-                if (requiresAnyOf.length === 0) {
-                    return true;
-                }
-                var containsAtLeastOne = _.any(requiresAnyOf, function (required) {
-                    if (item.title.toLowerCase().indexOf(required.toLowerCase()) > -1) {
-                        return true;
+                var quickFilterWords = [];
+                _.each($scope.filterButtonsModel.custom, function (value, key) { //key is something like 'camts', value is true or false
+                    if (value) {
+
+                        _.each($scope.filterButtonsModelMap[key], function (string) {
+                            Array.prototype.push.apply(quickFilterWords, string.split(" "));
+
+                        });
                     }
-                })
-                if (!containsAtLeastOne) {
-                    console.debug(item.title + " does not contain any of the custom values' " + JSON.stringify(requiresAnyOf));
-                    filterReasons["quickFilter"] = filterReasons["quickFilter"] + 1;
-                    return false;
+                });
+                if (quickFilterWords.length !== 0) {
+                    var allMatch = _.all(quickFilterWords, function (word) {
+                        if (word.startsWith("!")) {
+                            if (word.length === 1) {
+                                return true;
+                            }
+                            return item.title.toLowerCase().indexOf(word.substring(1)) === -1;
+                        }
+                        return item.title.toLowerCase().indexOf(word) > -1;
+                    })
+
+                    if (!allMatch) {
+                        console.debug(item.title + " does not match all the terms of " + JSON.stringify(quickFilterWords));
+                        filterReasons["quickFilter"] = filterReasons["quickFilter"] + 1;
+                        return false;
+                    }
                 }
+
+
+                // var requiresAnyOf = _.keys(_.pick($scope.filterButtonsModel.custom, function (value, key) {
+                //     return value
+                // }));
+                // if (requiresAnyOf.length === 0) {
+                //     return true;
+                // }
+                // var containsAtLeastOne = _.any(requiresAnyOf, function (required) {
+                //     if (item.title.toLowerCase().indexOf(required.toLowerCase()) > -1) {
+                //         return true;
+                //     }
+                // })
+                // if (!containsAtLeastOne) {
+                //     console.debug(item.title + " does not contain any of the custom values' " + JSON.stringify(requiresAnyOf));
+                //     filterReasons["quickFilter"] = filterReasons["quickFilter"] + 1;
+                //     return false;
+                // }
             }
 
             if ($scope.foo.hideAlreadyDownloadedResults && item.downloadedAt !== null) {
