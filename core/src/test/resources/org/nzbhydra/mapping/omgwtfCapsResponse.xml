@@ -1,5 +1,5 @@
 <caps>
-    <server version="1.0" title="omgwtfnzbs.me" strapline="omgwtfnzbs" email="omgstaff@omgwtfnzbs.me" url="https://omgwtfnzbs.me" image="https://omgwtfnzbs.me/favicon.ico"/>
+    <server version="1.0" title="omgwtfnzbs.org" strapline="omgwtfnzbs" email="omgstaff@omgwtfnzbs.org" url="https://omgwtfnzbs.org" image="https://omgwtfnzbs.org/favicon.ico"/>
     <limits max="500" default="500"/>
 
     <retention days="2000"/>

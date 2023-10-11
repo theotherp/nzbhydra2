@@ -292,7 +292,7 @@ public class IndexerForSearchSelector {
      * @return true if more than x hits where made in the last x seconds, false if everything is OK or the indexer isn't know to have such a limit
      */
     private boolean checkTooManyFrequentHits(Indexer indexer) {
-        if (!indexer.getConfig().getHost().equalsIgnoreCase("omgwtfnzbs.me")) {
+        if (!indexer.getConfig().getHost().equalsIgnoreCase("omgwtfnzbs.org")) {
             return true;
         }
         final int limitHits = 300;
