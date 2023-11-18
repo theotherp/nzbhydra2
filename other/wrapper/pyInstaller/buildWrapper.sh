@@ -15,7 +15,6 @@
 #
 
 
-echo "Make sure to also build the wrapper for arm"
 
 echo "todo windows build returns unusable exe"
 
