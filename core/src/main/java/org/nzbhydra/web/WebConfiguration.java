@@ -196,7 +196,7 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
                 marshaller.marshal(newznabResponse, new StreamResult(bos));
                 String result;
-                String originalXml = bos.toString();
+                String originalXml = bos.toString(StandardCharsets.UTF_8);
                 if (newznabResponse.getSearchType() == NewznabResponse.SearchType.TORZNAB) {
                     result = originalXml.replace("xmlns:newznab=\"http://www.newznab.com/DTD/2010/feeds/attributes/\"", "");
                 } else {

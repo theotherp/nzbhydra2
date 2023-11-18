@@ -1,4 +1,10 @@
 #@formatter:off
+-   version: "v5.3.1"
+    date: "2023-11-18"
+    changes:
+        -   type: "fix"
+            text: "Use UTF-8 encoding when writing XML regardless of system encoding. This should ensure properly encoded results for japanese characters etc. See #841"
+    final: true
 -   version: "v5.3.0"
     date: "2023-10-11"
     changes:
