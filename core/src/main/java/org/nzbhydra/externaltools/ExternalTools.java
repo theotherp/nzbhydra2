@@ -96,7 +96,7 @@ public class ExternalTools {
                         .filter(x -> x.getState() == IndexerConfig.State.ENABLED)
                         .anyMatch(x -> x.getSearchModuleType() != SearchModuleType.TORZNAB);
                 if (!anyUsenetIndexerEnabled) {
-                    messages.add("You selected to add NZBHydra as a usenet indexer but no usened indexers are enabled (for API access)");
+                    messages.add("You selected to add NZBHydra as a usenet indexer but no usenet indexers are enabled (for API access)");
                     return false;
                 }
             }
