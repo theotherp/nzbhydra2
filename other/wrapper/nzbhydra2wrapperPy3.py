@@ -320,9 +320,7 @@ def startup():
         logger.info("Running for windows with tray icon - using generic run type which requires java")
         releaseType = ReleaseType.GENERIC
 
-    if releaseType == ReleaseType.GENERIC:
-        args.java = "java"
-    else:
+    if releaseType != ReleaseType.GENERIC:
         if isWindows:
             args.java = "core.exe"
         else:
@@ -427,7 +425,7 @@ def startup():
     global internalApiKey
     if internalApiKey is None or internalApiKey is False:
         internalApiKey = ''.join(random.choice(string.ascii_lowercase) for i in range(20))
-    java_arguments = ["-Xmx" + xmx + "M", "-DfromWrapper=true", "-DinternalApiKey=" + internalApiKey, "-Dsun.security.pkcs11.enable-solaris=false"]
+    java_arguments = ["-Xmx" + xmx + "M", "-DfromWrapper=true", "-DinternalApiKey=" + internalApiKey, "-Dsun.security.pkcs11.enable-solaris=false", "-Dfile.encoding=UTF8"]
 
     if releaseType == ReleaseType.GENERIC:
         java_arguments.append("-XX:+HeapDumpOnOutOfMemoryError")
