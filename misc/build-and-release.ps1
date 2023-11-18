@@ -165,12 +165,12 @@ wsl -d Ubuntu -- sh -c ./misc/buildLinuxCore/buildBoth.sh
 
 $linuxAmd64Version = wsl -d Ubuntu releases/linux-amd64-release/include/executables/core -version
 if ($linuxAmd64Version -ne $version) {
-    Write-Error "Linux am64 version $version expected but is $linuxAmd64Version"
+    Write-Error "Linux amd64 version $version expected but is $linuxAmd64Version"
     exit 1
 }
 
 #We must ask the build machine because we can't run the binary locally
-$linuxArm64Version = wsl -d Ubuntu -- sh -c "ssh build@141.147.54.141 /home/build/nzbhydra2/core/target/core --version"
+$linuxArm64Version = wsl -d Ubuntu -- sh -c "ssh -i ~/.ssh/oraclecloud.key build@141.147.54.141 /home/build/nzbhydra2/core/target/core -version"
 if ($linuxArm64Version -ne $version) {
     Write-Error "Linux arm64 version $version expected but is $linuxArm64Version"
     exit 1
