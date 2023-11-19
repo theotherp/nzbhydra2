@@ -263,5 +263,17 @@ if (-not $?) {
     git reset --hard
     exit 1
 }
+if ($dryRun) {
+    Write-Host "Committing update to $version (not really, just dry run) ***********************************************************************"
+} else {
+    Write-Host "Committing ***********************************************************************"
+    git commit -am "Update to $version"
+    if (-not $?) {
+        Write-Error "Commit failed"
+        git reset --hard
+        exit 1
+    }
+}
+
 
 Write-Host "Done"
