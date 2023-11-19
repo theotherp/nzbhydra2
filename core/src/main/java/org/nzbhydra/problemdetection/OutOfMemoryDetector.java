@@ -54,6 +54,9 @@ public class OutOfMemoryDetector implements ProblemDetector {
             AtomicReference<String> lastTimeStampLine = new AtomicReference<>();
 
             File currentLogfile = logContentProvider.getCurrentLogfile(false);
+            if (!currentLogfile.exists()) {
+                return;
+            }
             try (Stream<String> lines = Files.lines(currentLogfile.toPath(), StandardCharsets.ISO_8859_1)) {
                 lines.forEach(line -> {
                     if (line.matches("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}.*")) {

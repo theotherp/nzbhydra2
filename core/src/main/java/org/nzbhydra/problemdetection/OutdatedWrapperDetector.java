@@ -86,7 +86,7 @@ public class OutdatedWrapperDetector implements ProblemDetector {
         for (String filename : wrapperFilenames) {
             File wrapperFile = new File(filename);
             boolean outdatedWrapperFound = false;
-            if (wrapperFile.exists()) {
+            if (wrapperFile.exists() && wrapperFile.isFile()) {
                 try {
                     HashCode hash = Files.asByteSource(wrapperFile).hash(Hashing.sha1());
                     final String actualHash = hash.toString();

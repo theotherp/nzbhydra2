@@ -1,5 +1,6 @@
 @echo off
 call venv_py3\scripts\activate.bat
+venv_py3\scripts\pip install pystray requests pyinstaller
 rem Make sure this is python 3.8, after that Windows 7 support is ended
 copy ..\nzbhydra2wrapperPy3.py windows
 cd windows
