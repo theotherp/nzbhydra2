@@ -104,11 +104,11 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
 
-        <spring.boot.version>3.1.4</spring.boot.version>
-        <spring.boot.devtools.version>3.1.4</spring.boot.devtools.version>
-        <spring.boot.maven.version>3.1.4</spring.boot.maven.version>
+        <spring.boot.version>3.1.5</spring.boot.version>
+        <spring.boot.devtools.version>3.1.5</spring.boot.devtools.version>
+        <spring.boot.maven.version>3.1.5</spring.boot.maven.version>
         <spring.oxm.version>6.0.12</spring.oxm.version>
-        <spring-data-commons.version>3.1.4</spring-data-commons.version>
+        <spring-data-commons.version>3.1.5</spring-data-commons.version>
         <jakarta.persistence-api.version>3.1.0</jakarta.persistence-api.version>
         <jackson.version>2.15.0</jackson.version>
         <lombok.version>1.18.30</lombok.version>
