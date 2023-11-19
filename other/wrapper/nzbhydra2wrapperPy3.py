@@ -18,6 +18,7 @@ import argparse
 import datetime
 import logging
 import os
+import glob
 import platform
 import re
 import shutil
@@ -323,6 +324,10 @@ def startup():
     if releaseType != ReleaseType.GENERIC:
         if isWindows:
             args.java = "core.exe"
+            logger.info("Deleting old DLL files")
+            files = glob.glob('*.dll')
+            for file in files:
+                os.remove(os.path.join(basePath, file))
         else:
             args.java = "./core"
 
