@@ -1,4 +1,10 @@
 #@formatter:off
+-   version: "v5.3.3"
+    date: "2023-11-18"
+    changes:
+        -   type: "fix"
+            text: "Revert UTF-8 fix because 5.3.1 crashed on start. Oops, sorry."
+    final: true
 -   version: "v5.3.1"
     date: "2023-11-18"
     changes:
