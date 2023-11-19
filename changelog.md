@@ -1,3 +1,17 @@
+### v5.3.1 (2023-11-18)
+
+**Fix** Use UTF-8 encoding when writing XML regardless of system encoding. This should ensure properly encoded results for japanese characters etc. See <a href="https://github.com/theotherp/nzbhydra2/issues/841">#841</a>
+
+**Fix** Do not overwrite java executable provided as runtime parameter.
+
+
+
+### v5.3.0 (2023-10-11)
+
+**Feature** Custom quickfilters may also contain exclamation marks (!) to filter out words.
+
+
+
 ### v5.2.0 BETA (2023-09-22)
 
 **Feature** In case of hard crashes of the main process it will automatically be restarted unless the last automatic restart was less than 15 seconds ago (to prevent loops)
