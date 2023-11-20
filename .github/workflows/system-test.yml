@@ -173,7 +173,7 @@ jobs:
         needs: [ waitForNative, buildMockserver ]
         runs-on: windows-latest
         env:
-            spring_profiles_active: systemtest,core
+            spring_profiles_active: build,systemtest,core
             nzbhydra_port: 5076
             nzbhydra.port: 5076
             nzbhydra_name: windows
@@ -224,6 +224,13 @@ jobs:
             - name: "List files in folder"
               run: ls
 
+            - name: "Add mockserver to /etc/hosts"
+              run: |
+                $file = "C:\Windows\System32\drivers\etc\hosts"
+                $hostfile = Get-Content $file
+                $hostfile += "127.0.0.1 mockserver"
+                Set-Content -Path $file -Value $hostfile -Force
+
             - name: "Start mock server and hydra, run tests"
               uses: BerniWittmann/background-server-action@v1
               with:
@@ -232,12 +239,16 @@ jobs:
 
             - name: "Shutdown hydra"
               uses: fjogeleit/http-request-action@v1
+              if: always()
+              continue-on-error: true
               with:
                   method: "GET"
                   url: "http://127.0.0.1:5076/internalapi/control/shutdown"
 
             - name: "Shutdown mockserver"
               uses: fjogeleit/http-request-action@v1
+              if: always()
+              continue-on-error: true
               with:
                   method: "POST"
                   url: "http://127.0.0.1:5080/actuator/shutdown"
