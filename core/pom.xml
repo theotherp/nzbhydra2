@@ -505,6 +505,7 @@
                                     <builder>paketobuildpacks/builder:tiny</builder>
                                     <env>
                                         <BP_NATIVE_IMAGE>true</BP_NATIVE_IMAGE>
+                                        <BP_NATIVE_IMAGE_BUILD_ARGUMENTS>-march=compatibility</BP_NATIVE_IMAGE_BUILD_ARGUMENTS>
                                     </env>
                                 </image>
                             </configuration>
@@ -529,6 +530,7 @@
                                     <buildArg>-H:DeadlockWatchdogInterval=0</buildArg>
                                     <buildArg>--initialize-at-build-time=org.apache.commons.logging.LogFactoryService</buildArg>
                                     <buildArg>-H:+StaticExecutableWithDynamicLibC</buildArg>
+                                    <buildArg>-march=compatibility</buildArg>
                                     <buildArg>--no-fallback -J-Xmx7g</buildArg>
                             </buildArgs>
                                 <classesDirectory>${project.build.outputDirectory}</classesDirectory>
