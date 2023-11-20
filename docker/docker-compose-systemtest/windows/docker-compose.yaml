@@ -1,7 +1,4 @@
 version: '3'
-networks:
-    systemtest:
-        external: true
 services:
     mockserver:
         image: ghcr.io/theotherp/mockserver:3.1.0
@@ -10,7 +7,7 @@ services:
             - "5080:5080"
         environment:
             - spring_profiles_active=build,systemtest
-        networks: [ "host" ]
+        network_mode: "host"
         restart: unless-stopped
     sonarr:
         image: lscr.io/linuxserver/sonarr:latest
@@ -23,7 +20,7 @@ services:
             - ../../sonarr/data:/config
         ports:
             - "8989:8989"
-        networks: [ "host" ]
+        network_mode: "host"
         restart: unless-stopped
     radarr:
         image: lscr.io/linuxserver/radarr:latest
@@ -36,5 +33,5 @@ services:
             - ../../radarr/data:/config
         ports:
             - "7878:7878"
-        networks: [ "host" ]
+        network_mode: "host"
         restart: unless-stopped

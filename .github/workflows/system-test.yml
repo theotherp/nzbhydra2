@@ -194,7 +194,10 @@ jobs:
 
             - name: "Start NZBHydra"
               run: |
-                  Start-Process .\NZBHydra2.exe
+                # Produces "The specified executable is not a valid application for this OS platform." on GH runner.
+                #                  Start-Process .\NZBHydra2.exe
+                       $Env:SPRING_PROFILES_ACTIVE= "build,systemtest,core"
+                       Start-Process .\core.exe directstart
 
             - name: Set up JDK 17
               uses: actions/setup-java@v3

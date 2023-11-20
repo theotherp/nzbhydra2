@@ -32,7 +32,7 @@ def shutdown():
         if result.status_code != 200:
             nzbhydra2wrapperPy3.process.terminate()
         stop()
-    elif nzbhydra2wrapperPy3.process is not None:
+    elif hasattr(nzbhydra2wrapperPy3, "process") and nzbhydra2wrapperPy3.process is not None:
         nzbhydra2wrapperPy3.process.terminate()
         stop()
     else:
