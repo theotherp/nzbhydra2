@@ -189,7 +189,7 @@ jobs:
               uses: actions/download-artifact@master
               with:
                   name: coreWindows
-                  path: core.exe
+                  path: ./
 
             - name: "Check if core.exe was downloaded"
               id: checkCoreExe
