@@ -65,7 +65,7 @@ jobs:
             matrix:
                 test: [ { port: 5076, name: core }, { port: 5077, name: v1Migration } ]
         env:
-            spring_profiles_active: build,systemtest,${{ matrix.test.name }}
+            spring_profiles_active: build,systemtest,testdocker,${{ matrix.test.name }}
             nzbhydra_port: ${{ matrix.test.port }}
             nzbhydra.port: ${{ matrix.test.port }}
             nzbhydra_name: ${{ matrix.test.name }}
@@ -173,7 +173,7 @@ jobs:
         needs: [ waitForNative, buildMockserver ]
         runs-on: windows-latest
         env:
-            spring_profiles_active: build,systemtest,core
+            spring_profiles_active: build,systemtest,core,testwindows
             nzbhydra_port: 5076
             nzbhydra.port: 5076
             nzbhydra_name: windows

@@ -78,7 +78,9 @@ public class NzbHandlingTest {
         final String guid = searchResultProvider.findOneGuid();
         hydraClient.put("/internalapi/saveNzbToBlackhole", guid);
         final File[] files = new File(blackholeFolderTestAccess).listFiles();
-        assertThat(files).isNotEmpty();
+        assertThat(files)
+                .as("Expected files to exist in " + blackholeFolderTestAccess)
+                .isNotNull().isNotEmpty();
         assertThat(files[0].getName()).endsWith(".nzb");
     }
 
