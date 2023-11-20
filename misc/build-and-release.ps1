@@ -154,6 +154,11 @@ try {
     exit 1
 }
 
+2
+
+Write-Host "Replace core.exe and pr any key to continue..."
+$Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+
 $windowsVersion = releases/windows-release/include/core.exe -version
 if ($windowsVersion -ne $version) {
     Write-Error "Windows version $version expected but is $windowsVersion"

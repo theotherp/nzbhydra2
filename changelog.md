@@ -1,3 +1,7 @@
+### v5.3.3 (2023-11-20)
+
+**Fix** Windows releases didn't run on intel CPUs (see what I wrote below about this being hard?). See <a href="https://github.com/theotherp/nzbhydra2/issues/899">#899</a>
+
 ### v5.3.2 (2023-11-18)
 
 **Feature** Slightly changed the search results layout: Increased table width, increased title space, reduced row height. Let me know what you think.
