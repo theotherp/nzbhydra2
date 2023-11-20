@@ -196,12 +196,12 @@ jobs:
               with:
                   name: coreWindows
 
-            - name: "Start NZBHydra"
-                # Produces "The specified executable is not a valid application for this OS platform." on GH runner.
-                # Start-Process .\NZBHydra2.exe
-              run: |
-                  $Env:SPRING_PROFILES_ACTIVE= "build,systemtest,core"
-                  Start-Process .\core.exe directstart
+            #            - name: "Start NZBHydra"
+            #                # Produces "The specified executable is not a valid application for this OS platform." on GH runner.
+            #                # Start-Process .\NZBHydra2.exe
+            #              run: |
+            #                  $Env:SPRING_PROFILES_ACTIVE= "build,systemtest,core"
+            #                  Start-Process .\core.exe directstart
 
             - name: Set up JDK 17
               uses: actions/setup-java@v3
@@ -213,14 +213,21 @@ jobs:
             - name: "Install maven"
               run: mvn --batch-mode clean install -DskipTests -pl org.nzbhydra:nzbhydra2,org.nzbhydra:shared,org.nzbhydra:mapping,org.nzbhydra:assertions,org.nzbhydra:mockserver
 
-            - name: "Start Mockserver"
-              run: |
-                  $Env:SPRING_PROFILES_ACTIVE= "build,systemtest"
-                  copy other/mockserver/target/*-exec.jar other/mockserver/target/exec.jar
-                  Start-Process java -ArgumentList "-jar other/mockserver/target/exec.jar"
+            #            - name: "Start Mockserver"
+            #              run: |
+            #                  $Env:SPRING_PROFILES_ACTIVE= "build,systemtest"
+            #                  copy other/mockserver/target/*-exec.jar other/mockserver/target/exec.jar
+            #                  Start-Process java -ArgumentList "-jar other/mockserver/target/exec.jar"
 
-            - name: "Run tests"
-              run: mvn --batch-mode test -pl org.nzbhydra.tests:system -DtrimStackTrace=false
+            #            - name: "Run tests"
+            #              run: mvn --batch-mode test -pl org.nzbhydra.tests:system -DtrimStackTrace=false
+
+            - name: "Start mock server and hydra, run tests"
+              uses: BerniWittmann/background-server-action@v1
+              with:
+                  start: core.exe directstart, java -jar other/mockserver/target/exec.jar
+                  wait-on: 'http://localhost:5076, http://localhost:5080'
+                  command: mvn --batch-mode test -pl org.nzbhydra.tests:system -DtrimStackTrace=false
 
             - name: "Upload data folder artifact"
               uses: actions/upload-artifact@v3
