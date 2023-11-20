@@ -8,7 +8,7 @@ if [[ ! -d "${PWD}/core" ]] ; then
 fi
 
 echo Syncing with remote server
-rsync -e "ssh -i ~/.ssh/oraclecloud.key" -rvu --exclude "target" --exclude "windows-release" --exclude "generic-release" --exclude "bower_components" --exclude "node_modules" --exclude ".git" --exclude ".idea" --exclude "results" --exclude "*.db" --exclude "*.zip" --exclude "*.jar" --exclude "venv*" ${PWD}/ build@141.147.54.141:~/nzbhydra2/ --delete
+rsync -e "ssh -i ~/.ssh/oraclecloud.key" -rvu --exclude "target" --exclude "executables/core" --exclude "windows-release" --exclude "generic-release" --exclude "bower_components" --exclude "node_modules" --exclude ".git" --exclude ".idea" --exclude "results" --exclude "*.db" --exclude "*.zip" --exclude "*.jar" --exclude "venv*" ${PWD}/ build@141.147.54.141:~/nzbhydra2/ --delete
 
 echo Running build script on remote server
 ssh -i ~/.ssh/oraclecloud.key build@141.147.54.141 /home/build/nzbhydra2/misc/buildLinuxCore/arm64/runOnRemoteMachine.sh

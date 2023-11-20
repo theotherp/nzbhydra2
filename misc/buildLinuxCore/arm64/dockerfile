@@ -18,9 +18,10 @@ ENV PATH=/graalvm-community-openjdk-17.0.9+9.1/bin/:$PATH
 ENV JAVA_HOME=/graalvm-community-openjdk-17.0.9+9.1
 
 # When you update this also change the directory in buildInContainer.sh
-RUN wget -nv --no-check-certificate https://github.com/upx/upx/releases/download/v4.2.1/upx-4.2.1-arm64_linux.tar.xz
-RUN tar -xf upx-4.2.1-arm64_linux.tar.xz
-ENV PATH=/tmp/upx-4.2.1-arm64_linux/:$PATH
+#Newer versions crash with segmentation fault: https://github.com/upx/upx/issues/737
+RUN wget -nv --no-check-certificate https://github.com/upx/upx/releases/download/v4.0.1/upx-4.0.1-arm64_linux.tar.xz
+RUN tar -xf upx-4.0.1-arm64_linux.tar.xz
+ENV PATH=/tmp/upx-4.0.1-arm64_linux/:$PATH
 
 ENV HYDRA_NATIVE_BUILD=true
 
