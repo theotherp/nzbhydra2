@@ -202,6 +202,9 @@ jobs:
               uses: dawidd6/action-download-artifact@v2
               with:
                   name: coreWindows
+                  #Search for matching artifact in any of the last completed workflows
+                  search_artifacts: true
+                  workflow_conclusion: 'completed'
 
             #            - name: "Start NZBHydra"
             #                # Produces "The specified executable is not a valid application for this OS platform." on GH runner.
