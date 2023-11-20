@@ -264,10 +264,10 @@ if (-not $?) {
     exit 1
 }
 if ($dryRun) {
-    Write-Host "Committing update to $nextVersion (not really, just dry run) ***********************************************************************"
+    Write-Host "Committing update to $nextVersion-SNAPSHOT (not really, just dry run) ***********************************************************************"
 } else {
     Write-Host "Committing ***********************************************************************"
-    git commit -am "Update to $nextVersion"
+    git commit -am "Update to $nextVersion-SNAPSHOT"
     if (-not $?) {
         Write-Error "Commit failed"
         git reset --hard
