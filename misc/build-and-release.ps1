@@ -154,11 +154,6 @@ try {
     exit 1
 }
 
-2
-
-Write-Host "Replace core.exe and pr any key to continue..."
-$Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
-
 $windowsVersion = releases/windows-release/include/core.exe -version
 if ($windowsVersion -ne $version) {
     Write-Error "Windows version $version expected but is $windowsVersion"
@@ -269,10 +264,10 @@ if (-not $?) {
     exit 1
 }
 if ($dryRun) {
-    Write-Host "Committing update to $version (not really, just dry run) ***********************************************************************"
+    Write-Host "Committing update to $nextVersion (not really, just dry run) ***********************************************************************"
 } else {
     Write-Host "Committing ***********************************************************************"
-    git commit -am "Update to $version"
+    git commit -am "Update to $nextVersion"
     if (-not $?) {
         Write-Error "Commit failed"
         git reset --hard
