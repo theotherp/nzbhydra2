@@ -228,12 +228,24 @@ jobs:
               uses: BerniWittmann/background-server-action@v1
               with:
                   start: ./core.exe directstart, java -jar ./exec.jar
-                  #                  wait-on: 'http://localhost:5076, http://localhost:5080'
                   command: mvn --batch-mode test -pl org.nzbhydra.tests:system -DtrimStackTrace=false
+
+            - name: "Shutdown hydra"
+              uses: fjogeleit/http-request-action@v1
+              with:
+                  method: "GET"
+                  url: "http://127.0.0.1:5076/internalapi/control/shutdown"
+
+            - name: "Shutdown mockserver"
+              uses: fjogeleit/http-request-action@v1
+              with:
+                  method: "POST"
+                  url: "http://127.0.0.1:5080/actuator/shutdown"
 
             - name: "Upload data folder artifact"
               uses: actions/upload-artifact@v3
               if: always()
+              continue-on-error: true
               with:
                   name: dataWindows
                   path: data
