@@ -227,7 +227,7 @@ jobs:
             - name: "Start mock server and hydra, run tests"
               uses: BerniWittmann/background-server-action@v1
               with:
-                  start: core.exe directstart, java -jar exec.jar
+                  start: ./core.exe directstart, java -jar ./exec.jar
                   wait-on: 'http://localhost:5076, http://localhost:5080'
                   command: mvn --batch-mode test -pl org.nzbhydra.tests:system -DtrimStackTrace=false
 
