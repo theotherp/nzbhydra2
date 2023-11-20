@@ -185,6 +185,7 @@ jobs:
 
             - name: "Download windows artifact from current workflow"
               id: "downloadArtifactThisBuild"
+              continue-on-error: true
               uses: actions/download-artifact@master
               with:
                   name: coreWindows
