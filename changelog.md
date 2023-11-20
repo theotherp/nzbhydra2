@@ -1,3 +1,15 @@
+### v5.3.2 (2023-11-18)
+
+**Feature** Slightly changed the search results layout: Increased table width, increased title space, reduced row height. Let me know what you think.
+
+**Fix** Windows release of 5.3.1 crashed on startup. I didn't catch that because my build pipeline only runs the linux executable and *usually* they behave the same. See <a href="https://github.com/theotherp/nzbhydra2/issues/889">#889</a>
+
+**Fix** Windows wrappers didn't run on Windows 7. As you can see getting everything to work properly on windows is a pain in the ass. See <a href="https://github.com/theotherp/nzbhydra2/issues/889">#889</a>
+
+**Note** If you're on windows you will probably get some errors on startup related to DLLs that could not be loaded. You can ignore these. They should be gone after you've updated the wrapper exes.
+
+
+
 ### v5.3.1 (2023-11-18)
 
 **Fix** Use UTF-8 encoding when writing XML regardless of system encoding. This should ensure properly encoded results for japanese characters etc. See <a href="https://github.com/theotherp/nzbhydra2/issues/841">#841</a>
