@@ -180,8 +180,13 @@ jobs:
             NZBHYDRANAME: windows
             nzbhydra.name: windows
         steps:
-            - uses: actions/checkout@v3
-              name: "Check out source"
+            - name: "Check out source"
+              uses: actions/checkout@v3
+
+            - name: "Prepare folders"
+              run: |
+                  mkdir ${{ runner.temp }}/core
+                  mkdir ${{ runner.temp }}/mockserver
 
             - name: "Download windows artifact from current workflow"
               id: "downloadArtifactThisBuild"
@@ -189,13 +194,13 @@ jobs:
               uses: actions/download-artifact@master
               with:
                   name: coreWindows
-                  path: core.exe
+                  path: ${{ runner.temp }}/core/core.exe
 
-            - name: Check if core.exe was downloaded
+            - name: "Check if core.exe was downloaded"
               id: checkCoreExe
               uses: andstor/file-existence-action@v1
               with:
-                  files: "core.exe"
+                  files: ${{ runner.temp }}/core/core.exe
 
             - name: "Download windows artifact from previous workflow if no native build was executed"
               if: ${{steps.checkCoreExe.outputs.files_exists == 'false'}}
@@ -205,15 +210,9 @@ jobs:
                   #Search for matching artifact in any of the last completed workflows
                   search_artifacts: true
                   workflow_conclusion: 'completed'
+                  path: ${{ runner.temp }}/core/
 
-            #            - name: "Start NZBHydra"
-            #                # Produces "The specified executable is not a valid application for this OS platform." on GH runner.
-            #                # Start-Process .\NZBHydra2.exe
-            #              run: |
-            #                  $Env:SPRING_PROFILES_ACTIVE= "build,systemtest,core"
-            #                  Start-Process .\core.exe directstart
-
-            - name: Set up JDK 17
+            - name: "Set up JDK 17"
               uses: actions/setup-java@v3
               with:
                   java-version: '17'
@@ -223,19 +222,14 @@ jobs:
             - name: "Install maven"
               run: mvn --batch-mode clean install -DskipTests -pl org.nzbhydra:nzbhydra2,org.nzbhydra:shared,org.nzbhydra:mapping,org.nzbhydra:assertions,org.nzbhydra:mockserver
 
-            #            - name: "Start Mockserver"
-            #              run: |
-            #                  $Env:SPRING_PROFILES_ACTIVE= "build,systemtest"
-            #                  copy other/mockserver/target/*-exec.jar other/mockserver/target/exec.jar
-            #                  Start-Process java -ArgumentList "-jar other/mockserver/target/exec.jar"
-
-            #            - name: "Run tests"
-            #              run: mvn --batch-mode test -pl org.nzbhydra.tests:system -DtrimStackTrace=false
+            - name: "Copy mockserver"
+              run: |
+                  copy other/mockserver/target/*-exec.jar ${{ runner.temp }}/mockserver/exec.jar
 
             - name: "Start mock server and hydra, run tests"
               uses: BerniWittmann/background-server-action@v1
               with:
-                  start: core.exe directstart, java -jar other/mockserver/target/exec.jar
+                  start: ${{ runner.temp }}/core/core.exe directstart, java -jar ${{ runner.temp }}/mockserver/exec.jar
                   wait-on: 'http://localhost:5076, http://localhost:5080'
                   command: mvn --batch-mode test -pl org.nzbhydra.tests:system -DtrimStackTrace=false
 
