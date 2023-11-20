@@ -179,6 +179,8 @@ jobs:
             nzbhydra_name: windows
             NZBHYDRANAME: windows
             nzbhydra.name: windows
+            nzbhydra.mockUrl: "http://localhost:5080"
+            nzbhydra_mock_url: "http://localhost:5080"
         steps:
             - name: "Check out source"
               uses: actions/checkout@v3
@@ -228,7 +230,7 @@ jobs:
               uses: BerniWittmann/background-server-action@v1
               with:
                   start: ./core.exe directstart, java -jar ./exec.jar
-                  wait-on: 'http://localhost:5076, http://localhost:5080'
+                  #                  wait-on: 'http://localhost:5076, http://localhost:5080'
                   command: mvn --batch-mode test -pl org.nzbhydra.tests:system -DtrimStackTrace=false
 
             - name: "Upload data folder artifact"
