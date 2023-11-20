@@ -150,7 +150,7 @@ public class MockNewznab {
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }
 
-        boolean doGenerateDuplicates = "duplicates".equals(params.getQ());
+        boolean doGenerateDuplicates = params.getQ() != null && params.getQ().startsWith("duplicates");
         if (params.getQ() != null && params.getQ().equals("offsettest")) {
             NewznabXmlRoot rssRoot = new NewznabXmlRoot();
             rssRoot.getRssChannel().setNewznabResponse(new NewznabXmlResponse(0, 0));

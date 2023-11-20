@@ -1,6 +1,6 @@
 <tr ng-class="{'duplicate' : result.duplicateGroupIndex > 0, 'title-group-expanded': result.titleGroupIndex > 0} "
     style="margin:0; border-width: 0; padding: 0" ng-if="resultDisplayed" class="search-result-row">
-  <td class="col-md-12 search-results-cell result-title" style="margin:0;">
+  <td class="col-md-13 search-results-cell result-title" style="margin:0;">
     <input type="checkbox"
            ng-model="foo.selected"
            ng-click="clickCheckbox($event, result)" data-checkbox-index="0" class="result-checkbox"/>
@@ -60,7 +60,7 @@
           tooltip-placement="top"
           tooltip-trigger="mouseenter">{{ ::result.age }}</span>
   </td>
-  <td class="col-md-3 search-results-cell result-links">
+  <td class="col-md-2 search-results-cell result-links">
     <a href ng-click="showNfo(result)" ng-class="::{'no-nfo': result.hasNfo === 'NO'}"
        class="no-underline result-show-nfo-link"
        uib-tooltip="{{ ::getNfoTooltip() }}"

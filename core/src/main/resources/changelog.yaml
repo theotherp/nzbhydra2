@@ -2,6 +2,8 @@
 -   version: "v5.3.2"
     date: "2023-11-18"
     changes:
+        -   type: "feature"
+            text: "Slightly changed the search results layout: Increased table width, increased title space, reduced row height. Let me know what you think."
         -   type: "fix"
             text: "Windows release of 5.3.1 crashed on startup. I didn't catch that because my build pipeline only runs the linux executable and *usually* they behave the same. See #889"
         -   type: "fix"
