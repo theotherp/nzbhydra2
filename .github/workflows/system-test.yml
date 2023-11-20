@@ -191,8 +191,14 @@ jobs:
                   name: coreWindows
                   path: core.exe
 
+            - name: Check if core.exe was downloaded
+              id: checkCoreExe
+              uses: andstor/file-existence-action@v1
+              with:
+                  files: "core.exe"
+
             - name: "Download windows artifact from previous workflow if no native build was executed"
-              if: ${{steps.downloadArtifactThisBuild.conclusion == 'failure'}}
+              if: ${{steps.checkCoreExe.outputs.files_exists == 'false'}}
               uses: dawidd6/action-download-artifact@v2
               with:
                   name: coreWindows
