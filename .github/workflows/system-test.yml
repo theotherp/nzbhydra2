@@ -173,14 +173,12 @@ jobs:
         needs: [ waitForNative, buildMockserver ]
         runs-on: windows-latest
         env:
-            spring_profiles_active: build,systemtest,core
+            spring_profiles_active: systemtest,core
             nzbhydra_port: 5076
             nzbhydra.port: 5076
             nzbhydra_name: windows
             NZBHYDRANAME: windows
             nzbhydra.name: windows
-            nzbhydra.mockUrl: "http://localhost:5080"
-            nzbhydra_mock_url: "http://localhost:5080"
         steps:
             - name: "Check out source"
               uses: actions/checkout@v3
