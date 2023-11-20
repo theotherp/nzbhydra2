@@ -6,6 +6,8 @@
             text: "Windows release of 5.3.1 crashed on startup. I didn't catch that because my build pipeline only runs the linux executable and *usually* they behave the same. See #889"
         -   type: "fix"
             text: "Windows wrappers didn't run on Windows 7. As you can see getting everything to work properly on windows is a pain in the ass. See #889"
+        -   type: "note"
+            text: "If you're on windows you will probably get some errors on startup related to DLLs that could not be loaded. You can ignore these. They should be gone after you've updated the wrapper exes."
     final: true
 -   version: "v5.3.1"
     date: "2023-11-18"
