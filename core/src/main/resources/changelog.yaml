@@ -1,4 +1,10 @@
 #@formatter:off
+-   version: "v5.3.4"
+    date: "2023-11-20"
+    changes:
+      -   type: "fix"
+          text: "Remove leading whitespaces in titles in search results. See #900"
+    final: true
 -   version: "v5.3.3"
     date: "2023-11-20"
     changes:

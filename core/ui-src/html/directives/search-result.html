@@ -3,38 +3,30 @@
   <td class="col-md-13 search-results-cell result-title" style="margin:0;">
     <input type="checkbox"
            ng-model="foo.selected"
-           ng-click="clickCheckbox($event, result)" data-checkbox-index="0" class="result-checkbox"/>
-    <a href="" ng-click="toggleTitleExpansion()"
+           ng-click="clickCheckbox($event, result)" data-checkbox-index="0" class="result-checkbox"/><a href="" ng-click="toggleTitleExpansion()"
        ng-class="{'visibility-hidden': (result.titlesLength === 1 || result.titleGroupIndex > 0 || result.duplicateGroupIndex > 0)}"
        class="title-expand-toggle"
        uib-tooltip="Click to see or hide all results with the same title"
        tooltip-placement="top"
        tooltip-trigger="mouseenter"
-       style="text-decoration: none">
-                <span class="glyphicon"
-                      ng-class="{'glyphicon-minus': titlesExpanded, 'glyphicon-plus': !titlesExpanded}"></span></a>
-    
-    <a ng-if="foo.duplicatesDisplayed" href="" ng-click="toggleDuplicateExpansion()"
+                                                                                                        style="text-decoration: none"><span class="glyphicon"
+                                                                                                                                            ng-class="{'glyphicon-minus': titlesExpanded, 'glyphicon-plus': !titlesExpanded}"></span></a><a
+    ng-if="foo.duplicatesDisplayed" href="" ng-click="toggleDuplicateExpansion()"
        ng-class="{'visibility-hidden': (result.duplicatesLength == 1 || result.duplicateGroupIndex > 0)}"
        class="duplicate-expand-toggle"
        uib-tooltip="Click to see or hide all duplicates of this result"
        tooltip-placement="right"
        tooltip-trigger="mouseenter" style="text-decoration: none"
-    ><span class="glyphicon"
-           ng-class="{'glyphicon-minus': duplicatesExpanded, 'glyphicon-plus': !duplicatesExpanded}"></span>
-    </a>
-    <span class="title">
-      {{result.alwaysShowTitles}}
-                <span ng-if="(result.titleGroupIndex === 0 && result.duplicateGroupIndex === 0) || searchResultsControllerShared.isGroupEpisodes || foo.alwaysShowTitles">
-                    <img ng-if="result.cover && foo.showCovers" ng-src="{{::result.cover}}" width="{{::coverSize}}px" style="margin-right: 5px" ng-click="showCover(result.cover)"/>
-                    <span ng-if="result.downloadedAt && searchResultsControllerShared.showDownloadedIndicator" class="fa fa-check" uib-tooltip="Already downloaded at {{::result.downloadedAt}}"
-                          tooltip-placement="top"
-                          tooltip-trigger="mouseenter"></span>
-                    {{ ::result.title }}
-                </span>
-            </span>
+  >
+    <!-- Formatting must be so weird because otherwise we'll have leading whitespaces in the titles   -->
+    <span class="glyphicon" ng-class="{'glyphicon-minus': duplicatesExpanded, 'glyphicon-plus': !duplicatesExpanded}"></span></a><span class="title">{{result.alwaysShowTitles}}<span
+    ng-if="(result.titleGroupIndex === 0 && result.duplicateGroupIndex === 0) || searchResultsControllerShared.isGroupEpisodes || foo.alwaysShowTitles"><img
+    ng-if="result.cover && foo.showCovers" ng-src="{{::result.cover}}" width="{{::coverSize}}px" style="margin-right: 5px" ng-click="showCover(result.cover)"/><span
+    ng-if="result.downloadedAt && searchResultsControllerShared.showDownloadedIndicator" class="fa fa-check" uib-tooltip="Already downloaded at {{::result.downloadedAt}}"
+    tooltip-placement="top" tooltip-trigger="mouseenter"></span>{{ ::result.title }}</span></span>
     <span class="badge" ng-if="result.torrentDownloadFactor">{{::result.torrentDownloadFactor}}</span>
   </td>
+  
   <td class="col-md-1 search-results-cell result-indexer" style="text-align: right">
     {{ ::result.indexer }}
   </td>
