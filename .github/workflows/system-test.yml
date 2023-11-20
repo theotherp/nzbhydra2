@@ -83,7 +83,7 @@ jobs:
                     distribution: 'adopt'
                     cache: 'maven'
 
-            -   name: "Install"
+            - name: "Install maven"
                 run: mvn --batch-mode clean install -DskipTests -pl org.nzbhydra:nzbhydra2,org.nzbhydra:shared,org.nzbhydra:mapping,org.nzbhydra:assertions
 
             -   name: "Create docker network"
@@ -133,6 +133,7 @@ jobs:
                 if: always()
                 # If the logs are larger than 1MB there's probably something wrong
                 run: |
+                    shopt -s globstar
                     for d in ./**/*.log ; do (truncate --size=1M $d); done
 
             -   name: "Upload data folder artifact"
@@ -182,22 +183,17 @@ jobs:
             - uses: actions/checkout@v3
               name: "Check out source"
 
-            - name: "Copy wrapper exe"
-              run: |
-                  copy releases/windows-release/include/NZBHydra2.exe ./
-
-            - name: "Download windows artifact"
-              uses: actions/download-artifact@master
+            - name: "Download windows artifact (from this or previous workflow)"
+              uses: dawidd6/action-download-artifact@v2
               with:
-                  name: core-windows
-                  path: core.exe
+                  name: coreWindows
 
             - name: "Start NZBHydra"
-              run: |
                 # Produces "The specified executable is not a valid application for this OS platform." on GH runner.
-                #                  Start-Process .\NZBHydra2.exe
-                       $Env:SPRING_PROFILES_ACTIVE= "build,systemtest,core"
-                       Start-Process .\core.exe directstart
+                # Start-Process .\NZBHydra2.exe
+              run: |
+                  $Env:SPRING_PROFILES_ACTIVE= "build,systemtest,core"
+                  Start-Process .\core.exe directstart
 
             - name: Set up JDK 17
               uses: actions/setup-java@v3
@@ -206,36 +202,17 @@ jobs:
                   distribution: 'adopt'
                   cache: 'maven'
 
-            - name: "Install"
-              run: mvn --batch-mode clean install -DskipTests -pl org.nzbhydra:nzbhydra2,org.nzbhydra:shared,org.nzbhydra:mapping,org.nzbhydra:assertions
+            - name: "Install maven"
+              run: mvn --batch-mode clean install -DskipTests -pl org.nzbhydra:nzbhydra2,org.nzbhydra:shared,org.nzbhydra:mapping,org.nzbhydra:assertions,org.nzbhydra:mockserver
 
-            - name: "Run docker compose"
+            - name: "Start Mockserver"
               run: |
-                  cd docker/docker-compose-systemtest/windows
-                  docker-compose up -d
-                  cd ../../..
-
-            - name: "Wait for healthy containers"
-              run: |
-                  docker ps
-                  sleep 10
-                  docker ps
-                  sleep 10
+                  $Env:SPRING_PROFILES_ACTIVE= "build,systemtest"
+                  copy other/mockserver/target/*-exec.jar other/mockserver/target/exec.jar
+                  Start-Process java -ArgumentList "-jar other/mockserver/target/exec.jar"
 
             - name: "Run tests"
               run: mvn --batch-mode test -pl org.nzbhydra.tests:system -DtrimStackTrace=false
-
-            - name: "Write docker-compose logs"
-              if: always()
-              run: |
-                  cd docker/docker-compose-systemtest/windows
-                  echo "Writing docker compose logs to files"
-                  docker-compose logs --no-color radarr > docker-compose-radarr.log
-                  docker-compose logs --no-color sonarr > docker-compose-sonarr.log
-                  docker-compose logs --no-color mockserver > docker-compose-mockserver.log
-                  echo "Found log files:"
-                  find . -name "*.log"
-                  cd ../../..
 
             - name: "Upload data folder artifact"
               uses: actions/upload-artifact@v3
