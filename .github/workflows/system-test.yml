@@ -183,7 +183,15 @@ jobs:
             - uses: actions/checkout@v3
               name: "Check out source"
 
-            - name: "Download windows artifact (from this or previous workflow)"
+            - name: "Download windows artifact from current workflow"
+              id: "downloadArtifactThisBuild"
+              uses: actions/download-artifact@master
+              with:
+                  name: coreWindows
+                  path: core.exe
+
+            - name: "Download windows artifact from previous workflow if no native build was executed"
+              if: ${{steps.downloadArtifactThisBuild.conclusion == 'failure'}}
               uses: dawidd6/action-download-artifact@v2
               with:
                   name: coreWindows
