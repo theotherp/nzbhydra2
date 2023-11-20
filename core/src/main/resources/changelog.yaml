@@ -1,4 +1,10 @@
 #@formatter:off
+-   version: "v5.3.3"
+    date: "2023-11-20"
+    changes:
+      -   type: "fix"
+          text: "Windows releases didn't run on intel CPUs (see what I wrote below about this being hard?). See #899"
+    final: true
 -   version: "v5.3.2"
     date: "2023-11-18"
     changes:
