@@ -86,6 +86,12 @@ jobs:
                 with:
                     name: coreLinux
                     path: core/target/core
+            -   name: "Upload windows artifact"
+                if: steps.changed-files-specific.outputs.any_changed == 'true' && startsWith(matrix.os,'windows')
+                uses: actions/upload-artifact@v3
+                with:
+                    name: coreWindows
+                    path: core/target/core
 
             -   name: "Copy artifact to include folder"
                 if: steps.changed-files-specific.outputs.any_changed == 'true' && startsWith(matrix.os,'ubuntu')
@@ -101,10 +107,16 @@ jobs:
                     username: ${{ github.actor }}
                     password: ${{ secrets.GITHUB_TOKEN }}
 
-            -   name: "Build core and push container"
+            -   name: "Build and push core container"
                 if: steps.changed-files-specific.outputs.any_changed == 'true' && startsWith(matrix.os,'ubuntu')
                 run: |
                     cp other/wrapper/nzbhydra2wrapperPy3.py ./docker/nativeTest/
                     cd ./docker/nativeTest/
                     docker build -t hydradocker -t ghcr.io/theotherp/hydradocker:latest -t ghcr.io/theotherp/hydradocker:${{ github.ref_name}} . --label "version=${{ github.ref_name}}" --label "sha=${{ github.sha }}"
                     docker push ghcr.io/theotherp/hydradocker:latest
+            -   name: "Upload windows artifact"
+                if: steps.changed-files-specific.outputs.any_changed == 'true' && startsWith(matrix.os,'windows')
+                uses: actions/upload-artifact@master
+                with:
+                    name: core-windows
+                    path: core/target/core.exe

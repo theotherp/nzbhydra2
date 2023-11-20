@@ -20,7 +20,7 @@ services:
             - PGID=1000
             - TZ=Europe/London
         volumes:
-            - ./sonarr/data:/config
+            - ../../sonarr/data:/config
         ports:
             - "8989:8989"
         networks: [ "systemtest" ]
@@ -33,7 +33,7 @@ services:
             - PGID=1000
             - TZ=Europe/London
         volumes:
-            - ./radarr/data:/config
+            - ../../radarr/data:/config
         ports:
             - "7878:7878"
         networks: [ "systemtest" ]

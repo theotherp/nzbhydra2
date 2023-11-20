@@ -1,0 +1,40 @@
+version: '3'
+networks:
+    systemtest:
+        external: true
+services:
+    mockserver:
+        image: ghcr.io/theotherp/mockserver:3.1.0
+        container_name: mockserver
+        ports:
+            - "5080:5080"
+        environment:
+            - spring_profiles_active=build,systemtest
+        networks: [ "host" ]
+        restart: unless-stopped
+    sonarr:
+        image: lscr.io/linuxserver/sonarr:latest
+        container_name: sonarr
+        environment:
+            - PUID=1000
+            - PGID=1000
+            - TZ=Europe/London
+        volumes:
+            - ../../sonarr/data:/config
+        ports:
+            - "8989:8989"
+        networks: [ "host" ]
+        restart: unless-stopped
+    radarr:
+        image: lscr.io/linuxserver/radarr:latest
+        container_name: radarr
+        environment:
+            - PUID=1000
+            - PGID=1000
+            - TZ=Europe/London
+        volumes:
+            - ../../radarr/data:/config
+        ports:
+            - "7878:7878"
+        networks: [ "host" ]
+        restart: unless-stopped

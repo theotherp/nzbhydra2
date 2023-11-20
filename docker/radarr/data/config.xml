@@ -9,9 +9,8 @@
   <LaunchBrowser>True</LaunchBrowser>
   <ApiKey>apikey</ApiKey>
   <AuthenticationMethod>Basic</AuthenticationMethod>
-  <Branch>nightly</Branch>
+    <Branch>master</Branch>
   <SslCertPath></SslCertPath>
   <SslCertPassword></SslCertPassword>
   <InstanceName>Radarr</InstanceName>
-  <AuthenticationRequired>DisabledForLocalAddresses</AuthenticationRequired>
 </Config>
