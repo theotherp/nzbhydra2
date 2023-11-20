@@ -15,7 +15,8 @@ jobs:
             HYDRA_NATIVE_BUILD: true
         runs-on: ${{ matrix.os }}
         steps:
-            -   name: Log free memory
+            -   if: startsWith(matrix.os,'ubuntu')
+                name: Log free memory
                 run: free -s 1 -h -c 3
             -   uses: actions/checkout@v3
                 with:
@@ -59,6 +60,7 @@ jobs:
                     github-token: ${{ secrets.GITHUB_TOKEN }}
 
             -   name: "Install all with Maven"
+                if: steps.changed-files-specific.outputs.any_changed == 'true'
                 run: mvn --batch-mode clean install -pl !org.nzbhydra:linux-amd64-release,!org.nzbhydra:linux-arm64-release,!org.nzbhydra:windows-release,!org.nzbhydra:generic-release -DskipTests -T 1C
 
             -   name: "Run unit tests"
@@ -80,28 +82,35 @@ jobs:
                     mvn --batch-mode -Pnative clean native:compile -DskipTests
 
             -   name: "Upload linux artifact"
-                if: steps.changed-files-specific.outputs.any_changed == 'true'
+                if: steps.changed-files-specific.outputs.any_changed == 'true' && startsWith(matrix.os,'ubuntu')
                 uses: actions/upload-artifact@v3
                 with:
                     name: coreLinux
                     path: core/target/core
 
+            -   name: "Upload windows artifact"
+                if: steps.changed-files-specific.outputs.any_changed == 'true' && startsWith(matrix.os,'windows')
+                uses: actions/upload-artifact@v3
+                with:
+                    name: coreWindows
+                    path: core/target/core.exe
+
             -   name: "Copy artifact to include folder"
-                if: steps.changed-files-specific.outputs.any_changed == 'true'
+                if: steps.changed-files-specific.outputs.any_changed == 'true' && startsWith(matrix.os,'ubuntu')
                 run: |
                     mv core/target/core ./docker/nativeTest/
                     chmod +x ./docker/nativeTest/core
 
             -   name: "Login to GitHub Container Registry"
-                if: steps.changed-files-specific.outputs.any_changed == 'true'
+                if: steps.changed-files-specific.outputs.any_changed == 'true' && startsWith(matrix.os,'ubuntu')
                 uses: docker/login-action@v2
                 with:
                     registry: ghcr.io
                     username: ${{ github.actor }}
                     password: ${{ secrets.GITHUB_TOKEN }}
 
-            -   name: "Build core and push container"
-                if: steps.changed-files-specific.outputs.any_changed == 'true'
+            -   name: "Build and push core container"
+                if: steps.changed-files-specific.outputs.any_changed == 'true' && startsWith(matrix.os,'ubuntu')
                 run: |
                     cp other/wrapper/nzbhydra2wrapperPy3.py ./docker/nativeTest/
                     cd ./docker/nativeTest/

@@ -30,6 +30,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -72,13 +73,15 @@ public class NzbHandlingTest {
     @Test
     public void shouldSaveToBlackhole() throws Exception {
         final BaseConfig config = configManager.getCurrentConfig();
-        config.getDownloading().setSaveNzbsTo(blackholeFolderNnzbhydra);
+        config.getDownloading().setSaveNzbsTo(Paths.get(blackholeFolderNnzbhydra).toAbsolutePath().toString());
         configManager.setConfig(config);
 
         final String guid = searchResultProvider.findOneGuid();
         hydraClient.put("/internalapi/saveNzbToBlackhole", guid);
         final File[] files = new File(blackholeFolderTestAccess).listFiles();
-        assertThat(files).isNotEmpty();
+        assertThat(files)
+                .as("Expected files to exist in " + blackholeFolderTestAccess)
+                .isNotNull().isNotEmpty();
         assertThat(files[0].getName()).endsWith(".nzb");
     }
 

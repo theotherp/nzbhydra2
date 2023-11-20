@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+import logging
 #   (C) Copyright 2023 TheOtherP (theotherp@posteo.net)
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,6 +16,7 @@
 # Just for pyinstaller
 
 import sys
+import time
 
 import nzbhydra2wrapperPy3
 import systemTray
@@ -23,5 +24,12 @@ import systemTray
 if __name__ == '__main__':
     thread = systemTray.start()
     nzbhydra2wrapperPy3.quiet = True
-    nzbhydra2wrapperPy3.main(sys.argv[1:])
-    systemTray.stop()
+    try:
+        nzbhydra2wrapperPy3.main(sys.argv[1:])
+        systemTray.stop()
+    except SystemExit as e:
+        logging.getLogger('root').info("Wrapper main thread quit")
+        # For some reason thread / process is kept alive without sleeping
+        time.sleep(1)
+        systemTray.stop()
+        sys.exit(e.code)
