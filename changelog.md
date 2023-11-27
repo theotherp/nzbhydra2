@@ -1,3 +1,15 @@
+### v5.3.5 (2023-11-27)
+
+**Fix** The compiled python wrapper exes were unfortunately flagged as a virus / malware by some antivirus engines (wrongly, of course). Unfortunately I've been unable to find a solution that results in a flawless scan. The best I can achieve right now is getting the big ones to not flag it. I'll try to report the files as false positives. Sorry for the inconvenience. See <a href="https://github.com/theotherp/nzbhydra2/issues/901">#901</a>
+
+
+
+### v5.3.4 (2023-11-20)
+
+**Fix** Remove leading whitespaces in titles in search results. See <a href="https://github.com/theotherp/nzbhydra2/issues/900">#900</a>
+
+
+
 ### v5.3.3 (2023-11-20)
 
 **Fix** Windows releases didn't run on intel CPUs (see what I wrote below about this being hard?). See <a href="https://github.com/theotherp/nzbhydra2/issues/899">#899</a>
