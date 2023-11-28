@@ -7,6 +7,8 @@
           text: "Negative quick filters are not case insensitive."
       -   type: "fix"
           text: "Add quick filter word exclusion via ! to tooltip."
+      -   type: "note"
+          text: "Removed the link to the subreddit."
     final: true
 -   version: "v5.3.5"
     date: "2023-11-27"
