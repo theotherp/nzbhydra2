@@ -548,11 +548,12 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
                             if (word.length === 1) {
                                 return true;
                             }
-                            return item.title.toLowerCase().indexOf(word.substring(1)) === -1;
+                            return item.title.toLowerCase().indexOf(word.substring(1).toLowerCase()) === -1;
                         }
-                        return item.title.toLowerCase().indexOf(word) > -1;
+                        return item.title.toLowerCase().indexOf(word.toLowerCase()) > -1;
                     });
                 }
+
                 if (!ok) {
                     filterReasons["title"] = filterReasons["title"] + 1;
                     return false;
@@ -644,9 +645,9 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
                             if (word.length === 1) {
                                 return true;
                             }
-                            return item.title.toLowerCase().indexOf(word.substring(1)) === -1;
+                            return item.title.toLowerCase().indexOf(word.substring(1).toLowerCase()) === -1;
                         }
-                        return item.title.toLowerCase().indexOf(word) > -1;
+                        return item.title.toLowerCase().indexOf(word.toLowerCase()) > -1;
                     })
 
                     if (!allMatch) {

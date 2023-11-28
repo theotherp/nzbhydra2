@@ -3,6 +3,10 @@
     changes:
       -   type: "fix"
           text: "Add validation to quick filter buttons to ensure only valid values are saved."
+      -   type: "fix"
+          text: "Negative quick filters are not case insensitive."
+      -   type: "fix"
+          text: "Add quick filter word exclusion via ! to tooltip."
     final: true
 -   version: "v5.3.5"
     date: "2023-11-27"

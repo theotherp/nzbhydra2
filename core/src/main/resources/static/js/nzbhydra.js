@@ -7437,7 +7437,7 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'text',
                                 label: 'Custom quick filters',
-                                help: 'Enter in the format <code>DisplayName=Required1,Required2</code>. Apply values with enter key.',
+                                help: 'Enter in the format <code>DisplayName=Required1,Required2</code>. Prefix words with ! to exclude them. Apply values with enter key.',
                                 tooltip: 'E.g. use <code>WEB=webdl,web-dl.</code> for a quick filter with the name "WEB" to be displayed that searches for "webdl" and "web-dl" in lowercase search results.',
                                 advanced: true
                             }
@@ -10154,11 +10154,12 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
                             if (word.length === 1) {
                                 return true;
                             }
-                            return item.title.toLowerCase().indexOf(word.substring(1)) === -1;
+                            return item.title.toLowerCase().indexOf(word.substring(1).toLowerCase()) === -1;
                         }
-                        return item.title.toLowerCase().indexOf(word) > -1;
+                        return item.title.toLowerCase().indexOf(word.toLowerCase()) > -1;
                     });
                 }
+
                 if (!ok) {
                     filterReasons["title"] = filterReasons["title"] + 1;
                     return false;
@@ -10250,9 +10251,9 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
                             if (word.length === 1) {
                                 return true;
                             }
-                            return item.title.toLowerCase().indexOf(word.substring(1)) === -1;
+                            return item.title.toLowerCase().indexOf(word.substring(1).toLowerCase()) === -1;
                         }
-                        return item.title.toLowerCase().indexOf(word) > -1;
+                        return item.title.toLowerCase().indexOf(word.toLowerCase()) > -1;
                     })
 
                     if (!allMatch) {
