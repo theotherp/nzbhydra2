@@ -82,6 +82,15 @@ public class SearchingConfigValidator implements ConfigValidator<SearchingConfig
         if (!emptyTrailing.isEmpty()) {
             errors.add("Trailing values to remove contains empty values");
         }
+        for (String quickFilterButton : newConfig.getCustomQuickFilterButtons()) {
+            if (quickFilterButton == null) {
+                errors.add("Empty quick filter button entry");
+                continue;
+            }
+            if (!quickFilterButton.matches("[^=]+=[^=]+")) {
+                errors.add("Quick filter button \"" + quickFilterButton + "\" does not match the format \"DisplayName=Required1,Required2\"");
+            }
+        }
 
         return new ConfigValidationResult(errors.isEmpty(), false, errors, warnings);
     }

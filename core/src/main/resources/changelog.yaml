@@ -1,4 +1,9 @@
 #@formatter:off
+-   version: "v5.3.6"
+    changes:
+      -   type: "fix"
+          text: "Add validation to quick filter buttons to ensure only valid values are saved."
+    final: true
 -   version: "v5.3.5"
     date: "2023-11-27"
     changes:
