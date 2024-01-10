@@ -83,12 +83,11 @@ public class History {
             } else if (filterType.equals("time")) {
                 Map<String, String> beforeAndAfter = (Map<String, String>) columnAndFilterDefinition.getValue().getFilterValue();
                 if (beforeAndAfter.get("before") != null) {
-                    wheres.add(String.format("%s <= :%s", columnName, columnName));
-                    parameters.put(columnName, filterValue);
+                    //yyyy-MM-dd'T'HH:mm:ssZ
+                    wheres.add(String.format("%s <= PARSEDATETIME('%s', 'yyyy-MM-ddHH:mm:ss.SSS')", columnName, beforeAndAfter.get("before").replace("T", "").replace("Z", "")));
                 }
                 if (beforeAndAfter.get("after") != null) {
-                    wheres.add(String.format("%s >= :%s", columnName, columnName));
-                    parameters.put(columnName, filterValue);
+                    wheres.add(String.format("%s >= PARSEDATETIME('%s', 'yyyy-MM-ddHH:mm:ss.SSS')", columnName, beforeAndAfter.get("after").replace("T", "").replace("Z", "")));
                 }
             }
         }

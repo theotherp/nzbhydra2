@@ -1,4 +1,9 @@
 #@formatter:off
+-   version: "v5.3.7"
+    changes:
+      -   type: "fix"
+          text: "Fix filtering of history by time. See #913"
+    final: true
 -   version: "v5.3.6"
     changes:
       -   type: "fix"

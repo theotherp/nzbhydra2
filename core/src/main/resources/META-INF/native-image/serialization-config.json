@@ -3,6 +3,9 @@
     {
       "name":"org.nzbhydra.searching.IndexerForSearchSelector$$SpringCGLIB$$0",
       "customTargetConstructorClass":"java.lang.Object"
+    },
+    {
+      "name": "java.util.LinkedHashMap"
     }
   ],
   "lambdaCapturingTypes":[
