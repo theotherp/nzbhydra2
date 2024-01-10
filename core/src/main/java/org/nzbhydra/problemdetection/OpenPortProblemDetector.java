@@ -48,6 +48,10 @@ public class OpenPortProblemDetector implements ProblemDetector {
     public void executeCheck() {
         try {
             final AuthType authType = configProvider.getBaseConfig().getAuth().getAuthType();
+            if (!configProvider.getBaseConfig().getMain().isCheckOpenPort()) {
+                logger.debug("Not checking for open port because check is disabled");
+                return;
+            }
             if (authType != AuthType.NONE) {
                 logger.debug("Not checking for open port because auth method is {}", authType);
                 return;

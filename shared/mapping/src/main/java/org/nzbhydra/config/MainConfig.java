@@ -105,6 +105,7 @@ public class MainConfig {
     //Startup / GUI settings
     private boolean showNews = true;
     private boolean startupBrowser = true;
+    private boolean checkOpenPort = true;
     private boolean welcomeShown = false;
     protected String theme;
 

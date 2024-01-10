@@ -6693,6 +6693,16 @@ function ConfigFields($injector) {
                             }
                         },
                         {
+                            key: 'checkOpenPort',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Check for open port',
+                                help: "Check if NZBHydra is reachable from the internet and not protected",
+                                advanced: true
+                            }
+                        },
+                        {
                             key: 'xmx',
                             type: 'horizontalInput',
                             templateOptions: {

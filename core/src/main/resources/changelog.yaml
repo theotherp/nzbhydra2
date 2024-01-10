@@ -1,6 +1,8 @@
 #@formatter:off
 -   version: "v5.3.7"
     changes:
+      -   type: "feature"
+          text: "Add option to disable open port check. See #912"
       -   type: "fix"
           text: "Fix filtering of history by time. See #913"
     final: true
