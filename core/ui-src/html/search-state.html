@@ -1,11 +1,11 @@
 <div class="modal-header">
   <h3 style="display: inline-block" class="modal-title">Searching... please wait</h3>
-  <button class="btn btn-danger" type="button" ng-click="cancelSearch()"
-          uib-tooltip="Will not actually cancel the search but just go back to the search page. Any remaining indexer calls will be continued in the background"
+  <button class="btn {{btnType}}" type="button" ng-click="shortcutSearch()"
+          uib-tooltip="Show results that have already been loaded"
           tooltip-placement="top"
           tooltip-trigger="mouseenter"
           style="position: absolute; right: 18px"
-  >Cancel
+  >{{buttonText}}
   </button>
 </div>
 <div class="modal-body" style="text-align: left;">

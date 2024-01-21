@@ -23,6 +23,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -80,6 +81,13 @@ public class SearchWeb {
 
         logger.info("Web search took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return searchResponse;
+    }
+
+    @Secured({"ROLE_USER"})
+    @RequestMapping(value = "/internalapi/shortcutSearch/{searchRequestId}", method = RequestMethod.POST)
+    public void shortcutSearch(@PathVariable Long searchRequestId) {
+        logger.info("Requested shortcut of search with ID {}", searchRequestId);
+        searcher.shortcutSearch(searchRequestId);
     }
 
 

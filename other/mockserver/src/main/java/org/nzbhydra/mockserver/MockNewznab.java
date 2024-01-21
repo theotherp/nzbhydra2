@@ -270,8 +270,12 @@ public class MockNewznab {
         if (params.getQ() != null && params.getQ().startsWith("sleep20")) {
             Thread.sleep(20000);
         }
-        if (params.getQ() != null && params.getQ().startsWith("sleepforever")) {
+        if (params.getQ() != null && params.getQ().equals("sleeplong1") && params.getApikey().equals("1")) {
+            logger.info("Sleeping long for indexer 1");
             Thread.sleep(10000 * 10000);
+        }
+        if (params.getQ() != null && params.getQ().equals("sleeplong")) {
+            Thread.sleep(10000 * 60);
         }
 
 

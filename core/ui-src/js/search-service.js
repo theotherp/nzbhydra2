@@ -15,6 +15,7 @@ function SearchService($http) {
         search: search,
         getLastResults: getLastResults,
         loadMore: loadMore,
+        shortcutSearch: shortcutSearch,
         getModalInstance: getModalInstance,
         setModalInstance: setModalInstance,
     };
@@ -70,6 +71,9 @@ function SearchService($http) {
         return $http.post(lastExecutedQuery.toString(), lastExecutedSearchRequestParameters).then(processData);
     }
 
+    function shortcutSearch(searchRequestId) {
+        return $http.post("internalapi/shortcutSearch/" + searchRequestId);
+    }
 
     function processData(response) {
         var searchResults = response.data.searchResults;

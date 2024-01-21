@@ -42,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -71,6 +72,11 @@ public class Searcher {
     @Autowired
     private ConfigProvider configProvider;
     private final Set<ExecutorService> executors = Collections.synchronizedSet(new HashSet<>());
+    private final Map<Long, List<Future<IndexerSearchResult>>> searchCallables = ExpiringMap.builder()
+            .maxSize(10)
+            .expiration(5, TimeUnit.MINUTES) //This should be more than enough... Nobody will wait that long
+            .expirationPolicy(ExpirationPolicy.ACCESSED)
+            .build();
     private boolean shutdownRequested = false;
 
     /**
@@ -97,7 +103,7 @@ public class Searcher {
         List<IndexerSearchCacheEntry> indexersToSearch = getIndexersToSearch(searchCacheEntry);
         List<IndexerSearchCacheEntry> indexersWithCachedResults = getIndexersWithCachedResults(searchCacheEntry);
         List<SearchResultItem> searchResultItems = searchCacheEntry.getSearchResultItems();
-        while ((!indexersToSearch.isEmpty() || !indexersWithCachedResults.isEmpty()) && (searchResultItems.size() < numberOfWantedResults || searchRequest.isLoadAll())) {
+        while ((!indexersToSearch.isEmpty() || !indexersWithCachedResults.isEmpty()) && (searchResultItems.size() < numberOfWantedResults || searchRequest.isLoadAll()) && !searchRequest.isShortcut()) {
             if (shutdownRequested) {
                 break;
             }
@@ -355,10 +361,17 @@ public class Searcher {
         ExecutorService executor = MdcThreadPoolExecutor.newWithInheritedMdc(indexersToSearch.size());
         executors.add(executor);
 
-        List<Callable<IndexerSearchResult>> callables = getCallables(searchRequest, indexersToSearch);
+        List<IndexerCallable> callables = getRegisteredCallables(searchRequest, indexersToSearch);
 
         try {
-            List<Future<IndexerSearchResult>> futures = executor.invokeAll(callables);
+            List<Future<IndexerSearchResult>> futures = new ArrayList<>();
+            for (IndexerCallable callable : callables) {
+                Future<IndexerSearchResult> future = executor.submit(callable.callable());
+//                searchCallables.put(new SearchFutureEntry(searchRequest.getSearchRequestId(), callable.indexerName()), future);
+                futures.add(future);
+            }
+            searchCallables.put(searchRequest.getSearchRequestId(), futures);
+
             for (Future<IndexerSearchResult> future : futures) {
                 try {
                     IndexerSearchResult indexerSearchResult = future.get();
@@ -366,6 +379,9 @@ public class Searcher {
                     indexerSearchResults.put(indexerSearchResult.getIndexer(), searchCacheEntry.getIndexerCacheEntries().get(indexerSearchResult.getIndexer().getName()).getIndexerSearchResults());
                 } catch (ExecutionException e) {
                     logger.error("Unexpected error while searching", e);
+                } catch (CancellationException e) {
+                    logger.debug("Cancellation of call expected");
+                    searchRequest.setShortcut(true);
                 }
             }
         } catch (InterruptedException e) {
@@ -375,6 +391,12 @@ public class Searcher {
             executors.remove(executor);
         }
         handleIndexersWithFailedFutureExecutions(indexersToSearch, indexerSearchResults);
+    }
+
+    public void shortcutSearch(Long searchRequestId) {
+        for (Future<IndexerSearchResult> x : searchCallables.get(searchRequestId)) {
+            x.cancel(true);
+        }
     }
 
 
@@ -392,18 +414,18 @@ public class Searcher {
         }
     }
 
-    private List<Callable<IndexerSearchResult>> getCallables(SearchRequest searchRequest, List<IndexerSearchCacheEntry> indexersToSearch) {
-        List<Callable<IndexerSearchResult>> callables = new ArrayList<>();
+    private List<IndexerCallable> getRegisteredCallables(SearchRequest searchRequest, List<IndexerSearchCacheEntry> indexersToSearch) {
+        List<IndexerCallable> callables = new ArrayList<>();
 
         for (IndexerSearchCacheEntry toSearch : indexersToSearch) {
-            Callable<IndexerSearchResult> callable = getIndexerCallable(searchRequest, toSearch);
+            IndexerCallable callable = getIndexerCallable(searchRequest, toSearch);
             callables.add(callable);
         }
 
         return callables;
     }
 
-    private Callable<IndexerSearchResult> getIndexerCallable(SearchRequest searchRequest, IndexerSearchCacheEntry indexerSearchCacheEntry) {
+    private IndexerCallable getIndexerCallable(SearchRequest searchRequest, IndexerSearchCacheEntry indexerSearchCacheEntry) {
         int offset;
         if (indexerSearchCacheEntry.getIndexerSearchResults().isEmpty()) {
             offset = 0;
@@ -412,7 +434,7 @@ public class Searcher {
             offset = indexerToSearch.getOffset() + indexerToSearch.getPageSize();
         }
         int limit = LOAD_LIMIT_API;
-        return () -> indexerSearchCacheEntry.getIndexer().search(searchRequest, offset, limit);
+        return new IndexerCallable(() -> indexerSearchCacheEntry.getIndexer().search(searchRequest, offset, limit), indexerSearchCacheEntry.getIndexer().getName());
     }
 
     @SuppressWarnings("unused")
@@ -443,6 +465,13 @@ public class Searcher {
         public SearchEvent(SearchRequest searchRequest) {
             this.searchRequest = searchRequest;
         }
+
+    }
+
+    private record SearchFutureEntry(Long searchRequestId, String indexerName) {
+    }
+
+    private record IndexerCallable(Callable<IndexerSearchResult> callable, String indexerName) {
 
     }
 

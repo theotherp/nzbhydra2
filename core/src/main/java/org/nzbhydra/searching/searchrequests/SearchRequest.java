@@ -56,6 +56,8 @@ public class SearchRequest {
 
     private InternalData internalData = new InternalData();
 
+    protected boolean shortcut = false;
+
 
     public SearchRequest(SearchSource source, SearchType searchType, Integer offset, Integer limit) {
         this.source = source;

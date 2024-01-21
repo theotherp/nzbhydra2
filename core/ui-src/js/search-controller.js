@@ -424,6 +424,8 @@ function SearchUpdateModalInstanceCtrl($scope, $interval, SearchService, $uibMod
     $scope.indexerSelectionFinished = false;
     $scope.indexersSelected = 0;
     $scope.indexersFinished = 0;
+    $scope.buttonText = "Cancel";
+    $scope.btnType = "btn-danger";
 
     var socket = new SockJS(bootstrapped.baseUrl + 'websocket');
     var stompClient = Stomp.over(socket);
@@ -441,6 +443,10 @@ function SearchUpdateModalInstanceCtrl($scope, $interval, SearchService, $uibMod
             if ($scope.progressMax > data.indexersSelected) {
                 $scope.progressMax = ">=" + data.indexersSelected;
             }
+            if ($scope.indexersFinished > 0) {
+                $scope.buttonText = "Show results";
+                $scope.btnType = "btn-warning";
+            }
             if (data.messages) {
                 $scope.messages = data.messages;
             }
@@ -451,9 +457,10 @@ function SearchUpdateModalInstanceCtrl($scope, $interval, SearchService, $uibMod
         });
     });
 
-    $scope.cancelSearch = function () {
-        onCancel();
-        $uibModalInstance.dismiss();
+    $scope.shortcutSearch = function () {
+        SearchService.shortcutSearch(searchRequestId);
+        // onCancel();
+        // $uibModalInstance.dismiss();
     };
 
     $scope.hasResults = function (message) {

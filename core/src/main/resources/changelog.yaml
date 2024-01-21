@@ -2,6 +2,8 @@
 -   version: "v5.3.7"
     changes:
       -   type: "feature"
+          text: "When you're making a search in the UI you can now choose to show the already received results. Until now you had to either wait, possibly until an indexer ran into a timeout or cancel without seeing any results at all. See #914"
+      -   type: "feature"
           text: "Add option to disable open port check. See #912"
       -   type: "fix"
           text: "Fix filtering of history by time. See #913"
