@@ -425,6 +425,7 @@ function SearchUpdateModalInstanceCtrl($scope, $interval, SearchService, $uibMod
     $scope.indexersSelected = 0;
     $scope.indexersFinished = 0;
     $scope.buttonText = "Cancel";
+    $scope.buttonTooltip = "Cancel search and return to search mask";
     $scope.btnType = "btn-danger";
 
     var socket = new SockJS(bootstrapped.baseUrl + 'websocket');
@@ -445,6 +446,7 @@ function SearchUpdateModalInstanceCtrl($scope, $interval, SearchService, $uibMod
             }
             if ($scope.indexersFinished > 0) {
                 $scope.buttonText = "Show results";
+                $scope.buttonTooltip = "Show results that have already been loaded";
                 $scope.btnType = "btn-warning";
             }
             if (data.messages) {

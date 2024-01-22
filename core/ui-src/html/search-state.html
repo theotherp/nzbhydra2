@@ -1,13 +1,14 @@
 <div class="modal-header">
   <h3 style="display: inline-block" class="modal-title">Searching... please wait</h3>
   <button class="btn {{btnType}}" type="button" ng-click="shortcutSearch()"
-          uib-tooltip="Show results that have already been loaded"
+          uib-tooltip="{{buttonTooltip}}"
           tooltip-placement="top"
           tooltip-trigger="mouseenter"
           style="position: absolute; right: 18px"
   >{{buttonText}}
   </button>
 </div>
+
 <div class="modal-body" style="text-align: left;">
   <img src="static/img/spinner.gif" ng-if="!messages && !indexerSelectionFinished"/>
   
