@@ -1,3 +1,25 @@
+### v5.3.7 (2024-01-22)
+
+**Feature** When you're making a search in the UI you can now choose to show the already received results. Until now you had to either wait, possibly until an indexer ran into a timeout or cancel without seeing any results at all. See <a href="https://github.com/theotherp/nzbhydra2/issues/914">#914</a>
+
+**Feature** Add option to disable open port check. See <a href="https://github.com/theotherp/nzbhydra2/issues/912">#912</a>
+
+**Fix** Fix filtering of history by time. See <a href="https://github.com/theotherp/nzbhydra2/issues/913">#913</a>
+
+
+
+### v5.3.6
+
+**Fix** Add validation to quick filter buttons to ensure only valid values are saved.
+
+**Fix** Negative quick filters are not case insensitive.
+
+**Fix** Add quick filter word exclusion via ! to tooltip.
+
+**Note** Removed the link to the subreddit.
+
+
+
 ### v5.3.5 (2023-11-27)
 
 **Fix** The compiled python wrapper exes were unfortunately flagged as a virus / malware by some antivirus engines (wrongly, of course). Unfortunately I've been unable to find a solution that results in a flawless scan. The best I can achieve right now is getting the big ones to not flag it. I'll try to report the files as false positives. Sorry for the inconvenience. See <a href="https://github.com/theotherp/nzbhydra2/issues/901">#901</a>
