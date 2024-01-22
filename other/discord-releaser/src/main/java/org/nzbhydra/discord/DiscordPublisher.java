@@ -65,7 +65,7 @@ public class DiscordPublisher {
         Collections.sort(entries);
         Collections.reverse(entries);
 
-        final ChangelogVersionEntry entry = entries.get(0);
+        final ChangelogVersionEntry entry = entries.stream().filter(x -> x.getVersion().equals("v" + tagName)).findFirst().orElseThrow();
         final String joined = String.join("\n", getMarkdownLinesFromEntry(entry));
         final String message = String.format(TEMPLATE, joined, tagName)
                 .replaceAll("### (.*)\n", "**$1**\n");
