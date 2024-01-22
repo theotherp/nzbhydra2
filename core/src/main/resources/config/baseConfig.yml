@@ -279,6 +279,7 @@ main:
   backupFolder: "backup"
   backupEveryXDays: 7
   backupBeforeUpdate: true
+  checkOpenPort: true
   configVersion: 19
   databaseCompactTime: 15000
   databaseRetentionTime: 1000
