@@ -54,6 +54,15 @@ if (Test-Path "githubtoken.txt") {
     $githubToken = Get-Content "githubtoken.txt"
     $env:GITHUB_TOKEN = $githubToken
     Write-Host "Github token is set"
+
+    $response = Invoke-WebRequest -Uri https://api.github.com -Method Head -Headers @{"Authorization" = "token $githubToken"}
+
+    if ($response.StatusCode -eq 200) {
+        Write-Host "GitHub token seems to be valid - HTTP status code is 200 OK"
+    } else {
+        Write-Error "GitHub token seems to be invalid - HTTP status code is $($response.StatusCode)"
+        exit 1
+    }
 }
 
 if ($discordToken -eq $null) {
