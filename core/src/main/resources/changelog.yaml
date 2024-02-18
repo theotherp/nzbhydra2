@@ -1,4 +1,12 @@
 #@formatter:off
+-   version: "v5.3.8"
+    date: "2024-02-18"
+    changes:
+      -   type: "fix"
+          text: "When configuring external tools a trailing slash in the host value (e.g. http://localhost:1234/) would result in an error."
+      -   type: "note"
+          text: "With the release of Sonarr v4 I've renamed the entry for Sonarr from v3 to v3+."
+    final: true
 -   version: "v5.3.7"
     date: "2024-01-22"
     changes:
