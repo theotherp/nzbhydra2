@@ -1,3 +1,11 @@
+### v5.3.8 (2024-02-18)
+
+**Fix** When configuring external tools a trailing slash in the host value (e.g. http://localhost:1234/) would result in an error.
+
+**Note** With the release of Sonarr v4 I've renamed the entry for Sonarr from v3 to v3+.
+
+
+
 ### v5.3.7 (2024-01-22)
 
 **Feature** When you're making a search in the UI you can now choose to show the already received results. Until now you had to either wait, possibly until an indexer ran into a timeout or cancel without seeing any results at all. See <a href="https://github.com/theotherp/nzbhydra2/issues/914">#914</a>
