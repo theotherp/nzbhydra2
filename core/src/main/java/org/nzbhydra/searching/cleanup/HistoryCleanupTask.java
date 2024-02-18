@@ -70,8 +70,9 @@ public class HistoryCleanupTask {
             Optional<Integer> optionalHighestId;
             Instant deleteOlderThanHistory;
             if (keepHistory) {
-                logger.info("Starting deletion of old history entries");
-                deleteOlderThanHistory = Instant.now().minus(keepSearchResultsForWeeks * 7, ChronoUnit.DAYS);
+                int keepDays = keepSearchResultsForWeeks * 7;
+                logger.info("Starting deletion of old history entries older than {} days", keepDays);
+                deleteOlderThanHistory = Instant.now().minus(keepDays, ChronoUnit.DAYS);
                 optionalHighestId = getIdBefore(deleteOlderThanHistory, "SEARCH", ASC_DESC.DESC, connection);
             } else {
                 optionalHighestId = Optional.of(Integer.MAX_VALUE);

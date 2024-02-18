@@ -5901,6 +5901,7 @@ function ConfigService($http, $q, $cacheFactory, $uibModal, bootstrapped, Reques
             growl.error("No usenet or torrent indexers configured");
         }
 
+
         $scope.nzbhydraName = "NZBHydra2";
         $scope.xdarrHost = "http://localhost:"
         $scope.addType = "SINGLE";
@@ -5916,7 +5917,7 @@ function ConfigService($http, $q, $cacheFactory, $uibModal, bootstrapped, Reques
             $scope.xdarrHost += "8989";
             $scope.categories = "5030,5040";
             if (externalTool === "Sonarrv3") {
-                $scope.externalToolDisplayName = "Sonarr v3";
+                $scope.externalToolDisplayName = "Sonarr v3+";
             }
         } else if (externalTool === "Radarr" || externalTool === "Radarrv3") {
             $scope.xdarrHost += "7878";

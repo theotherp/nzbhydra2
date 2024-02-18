@@ -18,6 +18,7 @@ package org.nzbhydra.externaltools;
 
 import lombok.Data;
 import org.nzbhydra.springnative.ReflectionMarker;
+import org.springframework.util.StringUtils;
 
 @Data
 @ReflectionMarker
@@ -82,4 +83,8 @@ public class AddRequest {
     private Integer priority;
     private boolean useHydraPriorities;
 
+    public String getXdarrHost() {
+        return
+                StringUtils.trimTrailingCharacter(xdarrHost, '/');
+    }
 }
