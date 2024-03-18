@@ -1,3 +1,9 @@
+### v5.3.10 (2024-03-18)
+
+**Fix** 5.3.9 didn't start properly. Sorry...
+
+
+
 ### v5.3.9 (2024-03-18)
 
 **Fix** Secure dev endpoints that could be used to crash open NZBHydra instances. See <a href="https://github.com/theotherp/nzbhydra2/issues/923">#923</a>
