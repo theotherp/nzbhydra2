@@ -1,3 +1,9 @@
+### v5.3.9 (2024-03-18)
+
+**Fix** Secure dev endpoints that could be used to crash open NZBHydra instances. See <a href="https://github.com/theotherp/nzbhydra2/issues/923">#923</a>
+
+
+
 ### v5.3.8 (2024-02-18)
 
 **Fix** When configuring external tools a trailing slash in the host value (e.g. http://localhost:1234/) would result in an error.
