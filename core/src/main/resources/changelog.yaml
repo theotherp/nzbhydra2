@@ -1,4 +1,10 @@
 #@formatter:off
+-   version: "v5.3.10"
+    date: "2024-03-18"
+    changes:
+      -   type: "fix"
+          text: "5.3.9 didn't start properly. Sorry..."
+    final: true
 -   version: "v5.3.9"
     date: "2024-03-18"
     changes:
