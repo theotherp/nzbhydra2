@@ -13,7 +13,7 @@ import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.exceptions.IndexerProgramErrorException;
 import org.nzbhydra.indexers.exceptions.IndexerUnreachableException;
 import org.nzbhydra.logging.MdcThreadPoolExecutor;
-import org.nzbhydra.mapping.IndexerResponseTypeHolder;
+import org.nzbhydra.mapping.nzbindex.NzbIndexRoot;
 import org.nzbhydra.springnative.ReflectionMarker;
 import org.nzbhydra.web.WebConfiguration;
 import org.nzbhydra.webaccess.WebAccess;
@@ -80,16 +80,10 @@ public class IndexerWebAccess {
                 if (responseType == String.class) {
                     return (T) response;
                 }
-                if (responseType != null && IndexerResponseTypeHolder.class.isAssignableFrom(responseType)) {
-                    IndexerResponseTypeHolder responseTypeHolder = (IndexerResponseTypeHolder) responseType.getDeclaredConstructor().newInstance();
-                    if (responseTypeHolder.getType() == IndexerResponseTypeHolder.ResponseType.JSON) {
-                        return (T) Jackson.JSON_MAPPER.readValue(response, responseType);
-                    } else if (responseTypeHolder.getType() == IndexerResponseTypeHolder.ResponseType.XML) {
-                        return unmarshalXml(response);
+                if (responseType == NzbIndexRoot.class) {
+                    // TODO sist 23.03.2024: Make more generic
+                    return (T) Jackson.JSON_MAPPER.readValue(response, responseType);
 
-                    } else {
-                        throw new RuntimeException("Unexpected responseTypeHolder type " + responseTypeHolder.getType());
-                    }
                 }
                 //Fall back to XML
                 return unmarshalXml(response);
