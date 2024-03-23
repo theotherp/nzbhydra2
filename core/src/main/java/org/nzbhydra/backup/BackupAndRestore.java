@@ -176,7 +176,7 @@ public class BackupAndRestore {
             try {
                 entries.add(new BackupEntry(file.getName(), Files.readAttributes(file.toPath(), BasicFileAttributes.class).creationTime().toInstant()));
             } catch (IOException e) {
-                logger.error("Unable to read creation date of file " + file, e);
+                logger.error("Unable to read creation date of file {}", file, e);
             }
         }
         entries.sort((o1, o2) -> o2.getCreationDate().compareTo(o1.getCreationDate()));
@@ -186,14 +186,16 @@ public class BackupAndRestore {
 
     private void backupDatabase(File targetFile, boolean triggeredByUsed) {
         final String tempPath;
+        File tempFile;
         try {
-            tempPath = Files.createTempFile("nzbhydra", "zip").toFile().getAbsolutePath().replace("\\", "/");
+            tempFile = Files.createTempFile("nzbhydra", ".zip").toFile();
+            tempPath = tempFile.getAbsolutePath().replace("\\", "/");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         try {
             String formattedFilepath = targetFile.getAbsolutePath().replace("\\", "/");
-            logger.info("Backing up database to " + formattedFilepath);
+            logger.info("Backing up database to {}", formattedFilepath);
             //Write a script to ensure that the backed up database is actually valid
             final Query nativeQuery = entityManager.createNativeQuery("SCRIPT TO '%s';".formatted(tempPath));
             //If the database is corrupted this command will back it up without exception
@@ -203,11 +205,14 @@ public class BackupAndRestore {
         } catch (Exception e) {
             logger.info("Deleting invalid backup file {}", targetFile);
             targetFile.delete();
+            tempFile.delete();
             if (!triggeredByUsed) {
                 final String dbExceptionMessage = Throwables.getCausalChain(e).stream().filter(x -> x instanceof DbException).findFirst().map(Throwable::getMessage).orElse(null);
                 genericStorage.save("FAILED_BACKUP", new FailedBackupData(dbExceptionMessage));
             }
             throw e;
+        } finally {
+            tempFile.delete();
         }
     }
 
