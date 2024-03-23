@@ -18,11 +18,13 @@ package org.nzbhydra.mapping.nzbindex;
 
 import lombok.Data;
 import org.nzbhydra.mapping.IndexerResponseTypeHolder;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.util.List;
 import java.util.Map;
 
 @Data
+@ReflectionMarker
 public class NzbIndexRoot implements IndexerResponseTypeHolder {
 
     @Override
@@ -35,6 +37,7 @@ public class NzbIndexRoot implements IndexerResponseTypeHolder {
 
 
     @Data
+    @ReflectionMarker
     public static class Stats {
         private String query;
         private boolean query_poster;
@@ -51,6 +54,7 @@ public class NzbIndexRoot implements IndexerResponseTypeHolder {
     }
 
     @Data
+    @ReflectionMarker
     public static class Result {
         private long id;
         private String name;
