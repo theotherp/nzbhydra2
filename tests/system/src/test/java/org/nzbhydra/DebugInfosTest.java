@@ -41,6 +41,13 @@ public class DebugInfosTest {
     }
 
     @Test
+    public void shouldLogThreadDump() throws Exception {
+        final HydraResponse response = hydraClient.get("/internalapi/debuginfos/logThreadDump");
+        final String body = response.body();
+        assertThat(body).contains("Thread name:");
+    }
+
+    @Test
     public void shouldListAndDownloadLog() throws Exception {
         HydraResponse response = hydraClient.get("/internalapi/debuginfos/logfilenames");
         String body = response.body();

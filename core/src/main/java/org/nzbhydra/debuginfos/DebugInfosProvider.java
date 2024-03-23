@@ -309,12 +309,23 @@ public class DebugInfosProvider {
         }
     }
 
-    public void logThreadDump() {
+    public String logThreadDump() {
         try {
-            //Fails on native image
-            logger.debug(threadDumpEndpoint.textThreadDump());
+            StringBuilder sb = new StringBuilder();
+            Map<Thread, StackTraceElement[]> allStackTraces = Thread.getAllStackTraces();
+            for (Map.Entry<Thread, StackTraceElement[]> entry : allStackTraces.entrySet()) {
+                sb.append("Thread name: ").append(entry.getKey().getName()).append("\n");
+                for (StackTraceElement element : entry.getValue()) {
+                    sb.append("\tat ").append(element.toString()).append("\n");
+                }
+                sb.append("\n");
+            }
+            String threadDump = sb.toString();
+            logger.debug(threadDump);
+            return threadDump;
         } catch (Exception e) {
             logger.error("Unable to create thread dump : {}", e.getMessage());
+            return "Unable to create thread dump";
         }
     }
 

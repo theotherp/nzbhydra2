@@ -150,8 +150,8 @@ public class DebugInfosWeb {
 
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/debuginfos/logThreadDump")
-    public void logThreadDump() {
-        debugInfos.logThreadDump();
+    public String logThreadDump() {
+        return debugInfos.logThreadDump();
     }
 
     @Secured({"ROLE_ADMIN"})

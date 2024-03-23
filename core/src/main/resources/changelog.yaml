@@ -6,6 +6,8 @@
           text: "Support NZBIndex API. I'm honestly not sure if there's a difference in the results but you'll be able to get more than 250 results. See #930"
       -   type: "fix"
           text: "Delete temporary file created during backup. See #931"
+      -   type: "fix"
+          text: "Fix logging of thread dump when running the compiled binary release"
     final: true
 -   version: "v5.3.10"
     date: "2024-03-18"
