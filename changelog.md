@@ -1,3 +1,11 @@
+### v5.3.11 (2024-03-23)
+
+**Feature** Support NZBIndex API. I'm honestly not sure if there's a difference in the results but you'll be able to get more than 250 results. See <a href="https://github.com/theotherp/nzbhydra2/issues/930">#930</a>
+
+**Fix** Delete temporary file created during backup. See <a href="https://github.com/theotherp/nzbhydra2/issues/931">#931</a>
+
+
+
 ### v5.3.10 (2024-03-18)
 
 **Fix** 5.3.9 didn't start properly. Sorry...
