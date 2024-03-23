@@ -531,7 +531,7 @@
                                     <buildArg>--initialize-at-build-time=org.apache.commons.logging.LogFactoryService</buildArg>
                                     <buildArg>-H:+StaticExecutableWithDynamicLibC</buildArg>
                                     <buildArg>-march=compatibility</buildArg>
-                                    <buildArg>--no-fallback -J-Xmx7g</buildArg>
+                                    <buildArg>--no-fallback -J-Xmx13g</buildArg>
                             </buildArgs>
                                 <classesDirectory>${project.build.outputDirectory}</classesDirectory>
                                 <metadataRepository>

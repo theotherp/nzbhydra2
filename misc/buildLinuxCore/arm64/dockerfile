@@ -4,18 +4,18 @@ FROM arm64v8/ubuntu:16.04
 RUN echo 'APT::Install-Suggests "0";' >> /etc/apt/apt.conf.d/00-docker
 RUN echo 'APT::Install-Recommends "0";' >> /etc/apt/apt.conf.d/00-docker
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y zip unzip wget curl libfreetype6 libfreetype6-dev build-essential ca-certificates
-RUN wget -nv --no-check-certificate https://dlcdn.apache.org/maven/maven-3/3.9.5/binaries/apache-maven-3.9.5-bin.tar.gz -P /tmp
+RUN wget -nv --no-check-certificate https://dlcdn.apache.org/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz -P /tmp
 
 RUN tar xf /tmp/apache-maven-*.tar.gz -C /opt
-RUN ln -s /opt/apache-maven-3.9.5 /opt/maven
+RUN ln -s /opt/apache-maven-3.9.6 /opt/maven
 ENV M2_HOME=/opt/maven
 ENV MAVEN_HOME=/opt/maven
 ENV PATH=${M2_HOME}/bin:${PATH}
 
-RUN wget -nv --no-check-certificate https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-17.0.9/graalvm-community-jdk-17.0.9_linux-aarch64_bin.tar.gz
-RUN tar xzf graalvm-community-jdk-17.0.9_linux-aarch64_bin.tar.gz -C /
-ENV PATH=/graalvm-community-openjdk-17.0.9+9.1/bin/:$PATH
-ENV JAVA_HOME=/graalvm-community-openjdk-17.0.9+9.1
+RUN wget -nv --no-check-certificate https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-22.0.0/graalvm-community-jdk-22.0.0_linux-x64_bin.tar.gz
+RUN tar xzf graalvm-community-jdk-22.0.0_linux-x64_bin.tar.gz -C /
+ENV PATH=/graalvm-community-openjdk-22+36.1/bin/:$PATH
+ENV JAVA_HOME=/graalvm-community-openjdk-22+36.1
 
 # When you update this also change the directory in buildInContainer.sh
 #Newer versions crash with segmentation fault: https://github.com/upx/upx/issues/737

@@ -13,10 +13,10 @@ ENV M2_HOME=/opt/maven
 ENV MAVEN_HOME=/opt/maven
 ENV PATH=${M2_HOME}/bin:${PATH}
 
-RUN wget -nv --no-check-certificate https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-17.0.9/graalvm-community-jdk-17.0.9_linux-x64_bin.tar.gz
-RUN tar xzf graalvm-community-jdk-17.0.9_linux-x64_bin.tar.gz -C /
-ENV PATH=/graalvm-community-openjdk-17.0.9+9.1/bin/:$PATH
-ENV JAVA_HOME=/graalvm-community-openjdk-17.0.9+9.1
+RUN wget -nv --no-check-certificate https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-22.0.0/graalvm-community-jdk-22.0.0_linux-x64_bin.tar.gz
+RUN tar xzf graalvm-community-jdk-22.0.0_linux-x64_bin.tar.gz -C /
+ENV PATH=/graalvm-community-openjdk-22+36.1/bin/:$PATH
+ENV JAVA_HOME=/graalvm-community-openjdk-22+36.1
 
 # When you update this also change the directory in buildInContainer.sh
 RUN wget -nv --no-check-certificate https://github.com/upx/upx/releases/download/v4.2.2/upx-4.2.2-amd64_linux.tar.xz
