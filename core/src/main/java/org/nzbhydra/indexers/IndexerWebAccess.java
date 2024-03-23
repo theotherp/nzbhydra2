@@ -81,7 +81,7 @@ public class IndexerWebAccess {
                     return (T) response;
                 }
                 if (responseType == NzbIndexRoot.class) {
-                    // TODO sist 23.03.2024: Make more generic
+                    // TODO 23.03.2024: Make more generic
                     return (T) Jackson.JSON_MAPPER.readValue(response, responseType);
 
                 }
