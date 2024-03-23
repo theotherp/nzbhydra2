@@ -1,0 +1,6093 @@
+{
+  "stats": {
+    "query": "full metal",
+    "query_poster": false,
+    "total": 591,
+    "count": 591,
+    "per_page": "250",
+    "current_page": 0,
+    "max_page": 2,
+    "has_previous_page": false,
+    "has_next_page": true,
+    "time": 205,
+    "page_start": 1,
+    "page_end": 250
+  },
+  "results": [
+    {
+      "id": 1735086226,
+      "name": "[Moozzi2] Fullmetal Panic! Invisible Victory - TV + Tokuten DVD [123\/132] - \"[Moozzi2] Fullmetal Panic! Invisible Victory - TV + Tokuten DVD.par2\" yEnc  83644",
+      "poster": "8te1RNU <8te1RNU@ytEtrMC.local>",
+      "posted": 1708818762000,
+      "spam": false,
+      "password": false,
+      "file_count": 12,
+      "group_count": 1,
+      "size": 6700083941,
+      "total_parts": 9126,
+      "available_parts": 9126,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.anime"
+      ],
+      "group_ids": [
+        16
+      ],
+      "file_types": {
+        "par2": 10
+      },
+      "files": []
+    },
+    {
+      "id": 1735086221,
+      "name": "[Moozzi2] Fullmetal Panic! Invisible Victory - TV + Tokuten DVD [112\/132] - \"[Moozzi2] Fullmetal Panic! Invisible Victory - 12 END (BD 1920x1080 x.264 4Audio).par2\" yEnc  40660",
+      "poster": "8te1RNU <8te1RNU@ytEtrMC.local>",
+      "posted": 1708818707000,
+      "spam": false,
+      "password": false,
+      "file_count": 10,
+      "group_count": 1,
+      "size": 3247104433,
+      "total_parts": 4427,
+      "available_parts": 4427,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.anime"
+      ],
+      "group_ids": [
+        16
+      ],
+      "file_types": {
+        "par2": 9,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1735086220,
+      "name": "[Moozzi2] Fullmetal Panic! Invisible Victory - TV + Tokuten DVD [102\/132] - \"[Moozzi2] Fullmetal Panic! Invisible Victory - 11 (BD 1920x1080 x.264 4Audio).par2\" yEnc  41776",
+      "poster": "8te1RNU <8te1RNU@ytEtrMC.local>",
+      "posted": 1708818649000,
+      "spam": false,
+      "password": false,
+      "file_count": 10,
+      "group_count": 1,
+      "size": 3337425127,
+      "total_parts": 4550,
+      "available_parts": 4550,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.anime"
+      ],
+      "group_ids": [
+        16
+      ],
+      "file_types": {
+        "par2": 9,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1735086219,
+      "name": "[Moozzi2] Fullmetal Panic! Invisible Victory - TV + Tokuten DVD [092\/132] - \"[Moozzi2] Fullmetal Panic! Invisible Victory - 10 (BD 1920x1080 x.264 4Audio).par2\" yEnc  39256",
+      "poster": "8te1RNU <8te1RNU@ytEtrMC.local>",
+      "posted": 1708818595000,
+      "spam": false,
+      "password": false,
+      "file_count": 10,
+      "group_count": 1,
+      "size": 3133230910,
+      "total_parts": 4272,
+      "available_parts": 4272,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.anime"
+      ],
+      "group_ids": [
+        16
+      ],
+      "file_types": {
+        "par2": 9,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1735086203,
+      "name": "[Moozzi2] Fullmetal Panic! Invisible Victory - TV + Tokuten DVD [082\/132] - \"[Moozzi2] Fullmetal Panic! Invisible Victory - 09 (BD 1920x1080 x.264 4Audio).par2\" yEnc  39256",
+      "poster": "8te1RNU <8te1RNU@ytEtrMC.local>",
+      "posted": 1708818541000,
+      "spam": false,
+      "password": false,
+      "file_count": 10,
+      "group_count": 1,
+      "size": 3133757314,
+      "total_parts": 4273,
+      "available_parts": 4273,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.anime"
+      ],
+      "group_ids": [
+        16
+      ],
+      "file_types": {
+        "par2": 9,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1735086201,
+      "name": "[Moozzi2] Fullmetal Panic! Invisible Victory - TV + Tokuten DVD [072\/132] - \"[Moozzi2] Fullmetal Panic! Invisible Victory - 08 (BD 1920x1080 x.264 4Audio).par2\" yEnc  40436",
+      "poster": "8te1RNU <8te1RNU@ytEtrMC.local>",
+      "posted": 1708818487000,
+      "spam": false,
+      "password": false,
+      "file_count": 10,
+      "group_count": 1,
+      "size": 3229213282,
+      "total_parts": 4403,
+      "available_parts": 4403,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.anime"
+      ],
+      "group_ids": [
+        16
+      ],
+      "file_types": {
+        "par2": 9,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1735086208,
+      "name": "[Moozzi2] Fullmetal Panic! Invisible Victory - TV + Tokuten DVD [062\/132] - \"[Moozzi2] Fullmetal Panic! Invisible Victory - 07 (BD 1920x1080 x.264 4Audio).par2\" yEnc  41616",
+      "poster": "8te1RNU <8te1RNU@ytEtrMC.local>",
+      "posted": 1708818430000,
+      "spam": false,
+      "password": false,
+      "file_count": 10,
+      "group_count": 1,
+      "size": 3324725133,
+      "total_parts": 4533,
+      "available_parts": 4533,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.anime"
+      ],
+      "group_ids": [
+        16
+      ],
+      "file_types": {
+        "par2": 9,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1735086205,
+      "name": "[Moozzi2] Fullmetal Panic! Invisible Victory - TV + Tokuten DVD [052\/132] - \"[Moozzi2] Fullmetal Panic! Invisible Victory - 06 (BD 1920x1080 x.264 4Audio).par2\" yEnc  39116",
+      "poster": "8te1RNU <8te1RNU@ytEtrMC.local>",
+      "posted": 1708818377000,
+      "spam": false,
+      "password": false,
+      "file_count": 10,
+      "group_count": 1,
+      "size": 3123379955,
+      "total_parts": 4259,
+      "available_parts": 4259,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.anime"
+      ],
+      "group_ids": [
+        16
+      ],
+      "file_types": {
+        "par2": 9,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1735086204,
+      "name": "[Moozzi2] Fullmetal Panic! Invisible Victory - TV + Tokuten DVD [042\/132] - \"[Moozzi2] Fullmetal Panic! Invisible Victory - 05 (BD 1920x1080 x.264 4Audio).par2\" yEnc  40016",
+      "poster": "8te1RNU <8te1RNU@ytEtrMC.local>",
+      "posted": 1708818323000,
+      "spam": false,
+      "password": false,
+      "file_count": 10,
+      "group_count": 1,
+      "size": 3195017194,
+      "total_parts": 4356,
+      "available_parts": 4356,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.anime"
+      ],
+      "group_ids": [
+        16
+      ],
+      "file_types": {
+        "par2": 9,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1735086207,
+      "name": "[Moozzi2] Fullmetal Panic! Invisible Victory - TV + Tokuten DVD [032\/132] - \"[Moozzi2] Fullmetal Panic! Invisible Victory - 04 (BD 1920x1080 x.264 4Audio).par2\" yEnc  40136",
+      "poster": "8te1RNU <8te1RNU@ytEtrMC.local>",
+      "posted": 1708818269000,
+      "spam": false,
+      "password": false,
+      "file_count": 10,
+      "group_count": 1,
+      "size": 3205142839,
+      "total_parts": 4370,
+      "available_parts": 4370,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.anime"
+      ],
+      "group_ids": [
+        16
+      ],
+      "file_types": {
+        "par2": 9,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1735086186,
+      "name": "[Moozzi2] Fullmetal Panic! Invisible Victory - TV + Tokuten DVD [022\/132] - \"[Moozzi2] Fullmetal Panic! Invisible Victory - 03 (BD 1920x1080 x.264 4Audio).par2\" yEnc  46576",
+      "poster": "8te1RNU <8te1RNU@ytEtrMC.local>",
+      "posted": 1708818207000,
+      "spam": false,
+      "password": false,
+      "file_count": 10,
+      "group_count": 1,
+      "size": 3725811776,
+      "total_parts": 5078,
+      "available_parts": 5078,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.anime"
+      ],
+      "group_ids": [
+        16
+      ],
+      "file_types": {
+        "par2": 9,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1735086187,
+      "name": "[Moozzi2] Fullmetal Panic! Invisible Victory - TV + Tokuten DVD [012\/132] - \"[Moozzi2] Fullmetal Panic! Invisible Victory - 02 (BD 1920x1080 x.264 4Audio).par2\" yEnc  44896",
+      "poster": "8te1RNU <8te1RNU@ytEtrMC.local>",
+      "posted": 1708818148000,
+      "spam": false,
+      "password": false,
+      "file_count": 10,
+      "group_count": 1,
+      "size": 3588658541,
+      "total_parts": 4892,
+      "available_parts": 4892,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.anime"
+      ],
+      "group_ids": [
+        16
+      ],
+      "file_types": {
+        "par2": 9,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1735086185,
+      "name": "[Moozzi2] Fullmetal Panic! Invisible Victory - TV + Tokuten DVD [002\/132] - \"[Moozzi2] Fullmetal Panic! Invisible Victory - 01 (BD 1920x1080 x.264 4Audio).par2\" yEnc  38236",
+      "poster": "8te1RNU <8te1RNU@ytEtrMC.local>",
+      "posted": 1708818097000,
+      "spam": false,
+      "password": false,
+      "file_count": 10,
+      "group_count": 1,
+      "size": 3051211391,
+      "total_parts": 4161,
+      "available_parts": 4161,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.anime"
+      ],
+      "group_ids": [
+        16
+      ],
+      "file_types": {
+        "par2": 9,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1732360410,
+      "name": "[01\/11] \"Special D - Reckless - 07 - Full Metal Jackass.par2\"",
+      "poster": "Cybertronics@ngPost.com",
+      "posted": 1708086320000,
+      "spam": false,
+      "password": false,
+      "file_count": 11,
+      "group_count": 1,
+      "size": 7547841,
+      "total_parts": 17,
+      "available_parts": 17,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia"
+      ],
+      "group_ids": [
+        382
+      ],
+      "file_types": {
+        "par2": 10,
+        "archive": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1732357538,
+      "name": "[01\/11] \"07 Full Metal Jackass.par2\"",
+      "poster": "Cybertronics@ngPost.com",
+      "posted": 1708085981000,
+      "spam": false,
+      "password": false,
+      "file_count": 11,
+      "group_count": 1,
+      "size": 7549581,
+      "total_parts": 17,
+      "available_parts": 17,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia"
+      ],
+      "group_ids": [
+        382
+      ],
+      "file_types": {
+        "par2": 10,
+        "archive": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1586096420,
+      "name": "Full Metal Jacket [00\/21] - \"Full Metal Jacket.nzb\" yEnc",
+      "poster": "Harpyie@amazonas.com (Harpyie)",
+      "posted": 1700866288000,
+      "spam": false,
+      "password": false,
+      "file_count": 22,
+      "group_count": 1,
+      "size": 2249121761,
+      "total_parts": 3410,
+      "available_parts": 3410,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.bloaf"
+      ],
+      "group_ids": [
+        34
+      ],
+      "file_types": {
+        "par2": 2,
+        "nzb": 1,
+        "archive": 19
+      },
+      "files": []
+    },
+    {
+      "id": 1387776766,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[Spoon] Fullmetal Alchemist 51 END.par2\" yEnc  1372",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526526000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 75084981,
+      "total_parts": 106,
+      "available_parts": 106,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776800,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[Spoon] Fullmetal Alchemist 50.par2\" yEnc  1288",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526524000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 69463273,
+      "total_parts": 98,
+      "available_parts": 98,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776808,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[Spoon] Fullmetal Alchemist 49.par2\" yEnc  1388",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526520000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 75800009,
+      "total_parts": 107,
+      "available_parts": 107,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776804,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[Spoon] Fullmetal Alchemist 48.par2\" yEnc  1308",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526515000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 70115140,
+      "total_parts": 99,
+      "available_parts": 99,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776788,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[Spoon] Fullmetal Alchemist 47.par2\" yEnc  1308",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526513000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 70134144,
+      "total_parts": 99,
+      "available_parts": 99,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776814,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[Spoon] Fullmetal Alchemist 46.par2\" yEnc  1308",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526510000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 70120703,
+      "total_parts": 99,
+      "available_parts": 99,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776767,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[Spoon] Fullmetal Alchemist 45.par2\" yEnc  1308",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526507000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 70130875,
+      "total_parts": 99,
+      "available_parts": 99,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776764,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[Spoon] Fullmetal Alchemist 44.par2\" yEnc  1388",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526502000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 75758337,
+      "total_parts": 107,
+      "available_parts": 107,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776815,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[Spoon] Fullmetal Alchemist 43.par2\" yEnc  1308",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526499000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 70129531,
+      "total_parts": 99,
+      "available_parts": 99,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776799,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[Spoon] Fullmetal Alchemist 42.par2\" yEnc  1388",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526495000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 75777150,
+      "total_parts": 107,
+      "available_parts": 107,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776789,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[Spoon] Fullmetal Alchemist 41.par2\" yEnc  1308",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526491000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 70352163,
+      "total_parts": 100,
+      "available_parts": 100,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776820,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[Spoon] Fullmetal Alchemist 40.par2\" yEnc  1308",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526487000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 70110135,
+      "total_parts": 99,
+      "available_parts": 99,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776794,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[Spoon] Fullmetal Alchemist 39.par2\" yEnc  1308",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526484000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 70151187,
+      "total_parts": 99,
+      "available_parts": 99,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776810,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[Spoon] Fullmetal Alchemist 38.par2\" yEnc  1308",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526482000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 70181853,
+      "total_parts": 99,
+      "available_parts": 99,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776769,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[Spoon] Fullmetal Alchemist 37.par2\" yEnc  1308",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526478000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 70146560,
+      "total_parts": 99,
+      "available_parts": 99,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776761,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[Spoon] Fullmetal Alchemist 36.par2\" yEnc  1308",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526475000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 70160199,
+      "total_parts": 99,
+      "available_parts": 99,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776813,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[Spoon] Fullmetal Alchemist 35.par2\" yEnc  1628",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526472000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 94962421,
+      "total_parts": 133,
+      "available_parts": 133,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776776,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[Spoon] Fullmetal Alchemist 34.par2\" yEnc  1308",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526468000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 70138769,
+      "total_parts": 99,
+      "available_parts": 99,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776787,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[Spoon] Fullmetal Alchemist 33.par2\" yEnc  1308",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526465000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 70621207,
+      "total_parts": 100,
+      "available_parts": 100,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776818,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[Spoon] Fullmetal Alchemist 32.par2\" yEnc  1308",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526462000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 70129104,
+      "total_parts": 99,
+      "available_parts": 99,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776772,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[AKeep-ANBU] Fullmetal Alchemist 31.par2\" yEnc  1312",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526460000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 70131104,
+      "total_parts": 99,
+      "available_parts": 99,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776755,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[AKeep-ANBU] Fullmetal Alchemist 30.par2\" yEnc  1312",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526457000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 70151131,
+      "total_parts": 99,
+      "available_parts": 99,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776807,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[AKeep-ANBU] Fullmetal Alchemist 29.par2\" yEnc  1312",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526453000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 70109961,
+      "total_parts": 99,
+      "available_parts": 99,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776783,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[AKeep-ANBU] Fullmetal Alchemist 28.par2\" yEnc  1292",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526449000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 69490556,
+      "total_parts": 98,
+      "available_parts": 98,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776760,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[AKeep-ANBU] Fullmetal Alchemist 27.par2\" yEnc  1312",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526446000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 70264288,
+      "total_parts": 99,
+      "available_parts": 99,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776805,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[AKeep-ANBU] Fullmetal Alchemist 26.par2\" yEnc  1312",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526442000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 70124210,
+      "total_parts": 99,
+      "available_parts": 99,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776791,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[AKeep-ANBU] Fullmetal Alchemist 25.par2\" yEnc  1312",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526440000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 70133678,
+      "total_parts": 99,
+      "available_parts": 99,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776812,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[AKeep-ANBU] Fullmetal Alchemist 24.par2\" yEnc  1312",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526437000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 70148181,
+      "total_parts": 99,
+      "available_parts": 99,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776771,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[AKeep-ANBU] Fullmetal Alchemist 23.par2\" yEnc  1312",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526433000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 70163193,
+      "total_parts": 99,
+      "available_parts": 99,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776759,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[AKeep-ANBU] Fullmetal Alchemist 22.par2\" yEnc  1312",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526429000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 70128930,
+      "total_parts": 99,
+      "available_parts": 99,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776811,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[AKeep-ANBU] Fullmetal Alchemist 21.par2\" yEnc  1312",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526426000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 70124223,
+      "total_parts": 99,
+      "available_parts": 99,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776775,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[AKeep-ANBU] Fullmetal Alchemist 20.par2\" yEnc  1312",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526422000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 70114139,
+      "total_parts": 99,
+      "available_parts": 99,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776763,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[AKeep-ANBU] Fullmetal Alchemist 19.par2\" yEnc  1312",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526418000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 70149418,
+      "total_parts": 99,
+      "available_parts": 99,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776770,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[AKeep-ANBU] Fullmetal Alchemist 18.par2\" yEnc  1312",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526414000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 70154424,
+      "total_parts": 99,
+      "available_parts": 99,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776782,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[AKeep-ANBU] Fullmetal Alchemist 17.par2\" yEnc  1312",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526412000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 70101527,
+      "total_parts": 99,
+      "available_parts": 99,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776792,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[AKeep-ANBU] Fullmetal Alchemist 16.par2\" yEnc  1312",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526408000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 70156435,
+      "total_parts": 99,
+      "available_parts": 99,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776803,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[AKeep-ANBU] Fullmetal Alchemist 15.par2\" yEnc  1312",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526404000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 70190001,
+      "total_parts": 99,
+      "available_parts": 99,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776762,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[AKeep-ANBU] Fullmetal Alchemist 14.par2\" yEnc  1312",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526401000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 70218765,
+      "total_parts": 99,
+      "available_parts": 99,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776816,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[AKeep-ANBU] Fullmetal Alchemist 13.par2\" yEnc  1312",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526397000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 70144262,
+      "total_parts": 99,
+      "available_parts": 99,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776773,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[AKeep-ANBU] Fullmetal Alchemist 12.par2\" yEnc  1312",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526393000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 70199224,
+      "total_parts": 99,
+      "available_parts": 99,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776795,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[AKeep-ANBU] Fullmetal Alchemist 11.par2\" yEnc  1312",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526391000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 70110121,
+      "total_parts": 99,
+      "available_parts": 99,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776819,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[AKeep-ANBU] Fullmetal Alchemist 10.par2\" yEnc  1312",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526388000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 70110873,
+      "total_parts": 99,
+      "available_parts": 99,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776781,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[AKeep-ANBU] Fullmetal Alchemist 09.par2\" yEnc  1312",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526384000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 70116601,
+      "total_parts": 99,
+      "available_parts": 99,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776786,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[AKeep-ANBU] Fullmetal Alchemist 08.par2\" yEnc  1312",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526380000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 70111305,
+      "total_parts": 99,
+      "available_parts": 99,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776802,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[AKeep-ANBU] Fullmetal Alchemist 07.par2\" yEnc  1312",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526378000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 70113728,
+      "total_parts": 99,
+      "available_parts": 99,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776779,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[AKeep-ANBU] Fullmetal Alchemist 06.par2\" yEnc  1312",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526376000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 70117444,
+      "total_parts": 99,
+      "available_parts": 99,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776756,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[AKeep-ANBU] Fullmetal Alchemist 05.par2\" yEnc  1312",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526372000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 70825054,
+      "total_parts": 100,
+      "available_parts": 100,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776768,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[AKeep-ANBU] Fullmetal Alchemist 04.par2\" yEnc  1312",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526368000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 70118083,
+      "total_parts": 99,
+      "available_parts": 99,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776797,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[AKeep-ANBU] Fullmetal Alchemist 03.par2\" yEnc  1312",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526365000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 70166791,
+      "total_parts": 99,
+      "available_parts": 99,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776817,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[AKeep-ANBU] Fullmetal Alchemist 02.par2\" yEnc  1312",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526363000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 70146579,
+      "total_parts": 99,
+      "available_parts": 99,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1387776778,
+      "name": "[AKeep-Anbu-Spoon] Fullmetal Alchemist [2\/5] - \"[AKeep-ANBU] Fullmetal Alchemist 01.par2\" yEnc  1312",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691526362000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 70153497,
+      "total_parts": 99,
+      "available_parts": 99,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 4,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374136436,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"51. Laws and Promises.par2\" yEnc  4840",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691270339000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 357675016,
+      "total_parts": 490,
+      "available_parts": 490,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374137041,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"50. Death.par2\" yEnc  4408",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691270317000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 323102830,
+      "total_parts": 443,
+      "available_parts": 443,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374137534,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"49. The Other Side of the Gate.par2\" yEnc  4728",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691270296000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 348727797,
+      "total_parts": 477,
+      "available_parts": 477,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374136509,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"48. Goo ye.par2\" yEnc  4368",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691270276000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 320997354,
+      "total_parts": 440,
+      "available_parts": 440,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374134245,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"47. Sealing the Homunculus.par2\" yEnc  4804",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691270255000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 355112240,
+      "total_parts": 486,
+      "available_parts": 486,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374137086,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"46. Human Transmutation.par2\" yEnc  4340",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691270234000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 317276510,
+      "total_parts": 435,
+      "available_parts": 435,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374136267,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"45. A Rotted Heart.par2\" yEnc  4756",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691270211000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 351963100,
+      "total_parts": 482,
+      "available_parts": 482,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374137148,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"44. Hohenheim of Light.par2\" yEnc  4680",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691270190000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 345088058,
+      "total_parts": 473,
+      "available_parts": 473,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374135908,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"43. The Stray Dog.par2\" yEnc  4916",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691270167000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 364897068,
+      "total_parts": 499,
+      "available_parts": 499,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374133913,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"42. His Name is Unknown.par2\" yEnc  4800",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691270145000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 355104510,
+      "total_parts": 486,
+      "available_parts": 486,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374133988,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"41. Holy Mother.par2\" yEnc  4792",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691270122000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 354041463,
+      "total_parts": 485,
+      "available_parts": 485,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374137360,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"40. The Scar.par2\" yEnc  5108",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691270098000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 380633262,
+      "total_parts": 521,
+      "available_parts": 521,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374133799,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"39. Secret of Ishbal.par2\" yEnc  4656",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691270077000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 344022330,
+      "total_parts": 471,
+      "available_parts": 471,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374136630,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"38. With the River_s Flow.par2\" yEnc  4524",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691270058000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 332402237,
+      "total_parts": 455,
+      "available_parts": 455,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374134170,
+      "name": "FullMetal alchemist Dual Audio 1080p [3\/7] - \"37. The Flame Alchemist, The Bachelor Lieutenant, And The Mystery of Warehouse...vol00+01.par2\" yEnc  1438644",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691270055000,
+      "spam": false,
+      "password": false,
+      "file_count": 5,
+      "group_count": 1,
+      "size": 34123999,
+      "total_parts": 51,
+      "available_parts": 51,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 5
+      },
+      "files": []
+    },
+    {
+      "id": 1374136481,
+      "name": "FullMetal alchemist Dual Audio 1080p [1\/7] - \"37. The Flame Alchemist, The Bachelor Lieutenant, And The Mystery of Warehouse...mkv\" yEnc  319798918",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691270042000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 330350266,
+      "total_parts": 447,
+      "available_parts": 447,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {},
+      "files": []
+    },
+    {
+      "id": 1374134979,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"36. The Sinner Within.par2\" yEnc  4660",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691270021000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 344887445,
+      "total_parts": 472,
+      "available_parts": 472,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374135997,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"35. Reunion of the Fallen.par2\" yEnc  5344",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691269996000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 399673464,
+      "total_parts": 546,
+      "available_parts": 546,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374137878,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"34. Theory of Avarice.par2\" yEnc  4600",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691269975000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 338091095,
+      "total_parts": 463,
+      "available_parts": 463,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374137181,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"33. Al, Captured.par2\" yEnc  4712",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691269953000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 349165299,
+      "total_parts": 478,
+      "available_parts": 478,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374137960,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"32. Dante of the Deep Forest.par2\" yEnc  4724",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691269930000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 349179480,
+      "total_parts": 478,
+      "available_parts": 478,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374136670,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"31. Sin.par2\" yEnc  5064",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691269906000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 378034995,
+      "total_parts": 517,
+      "available_parts": 517,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374135744,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"30. AAnimeTv4uult on South Headquarters.par2\" yEnc  4856",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691269886000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 357853378,
+      "total_parts": 490,
+      "available_parts": 490,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374136863,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"29. The Untainted Child.par2\" yEnc  5260",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691269861000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 392993560,
+      "total_parts": 537,
+      "available_parts": 537,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374136003,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"28. All is One, One is All.par2\" yEnc  5864",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691269835000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 442360625,
+      "total_parts": 604,
+      "available_parts": 604,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374134966,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"27. Teacher.par2\" yEnc  4948",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691269813000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 367351626,
+      "total_parts": 503,
+      "available_parts": 503,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374136867,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"26. Her Reason.par2\" yEnc  4272",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691269794000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 312930287,
+      "total_parts": 429,
+      "available_parts": 429,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374137165,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"25. Words of Farewell.par2\" yEnc  4160",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691269778000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 303364612,
+      "total_parts": 416,
+      "available_parts": 416,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374135118,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"24. Bonding Memories.par2\" yEnc  5536",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691269752000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 415769488,
+      "total_parts": 568,
+      "available_parts": 568,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374137006,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"23. Fullmetal Heart.par2\" yEnc  4576",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691269734000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 336523761,
+      "total_parts": 461,
+      "available_parts": 461,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374136578,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"22. Created Human.par2\" yEnc  4836",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691269713000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 357638099,
+      "total_parts": 489,
+      "available_parts": 489,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374136880,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"21. The Red Glow.par2\" yEnc  4472",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691269695000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 328875605,
+      "total_parts": 451,
+      "available_parts": 451,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374136785,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"20. Soul of the Guardian.par2\" yEnc  4560",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691269677000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 335705722,
+      "total_parts": 460,
+      "available_parts": 460,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374135000,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"19. The Truth Behind Truths.par2\" yEnc  4604",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691269662000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 337984158,
+      "total_parts": 463,
+      "available_parts": 463,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374136350,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"18. Marcoh_s Notes.par2\" yEnc  4656",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691269642000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 343831024,
+      "total_parts": 471,
+      "available_parts": 471,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374134682,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"17. House of the Waiting Family.par2\" yEnc  5128",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691269625000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 382047683,
+      "total_parts": 522,
+      "available_parts": 522,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374134715,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"16. That Which is Lost.par2\" yEnc  4380",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691269604000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 320412912,
+      "total_parts": 439,
+      "available_parts": 439,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374135258,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"15. The Ishbal MaAnimeTv4ucre.par2\" yEnc  5148",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691269585000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 383448526,
+      "total_parts": 524,
+      "available_parts": 524,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374135722,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"14. Destruction_s Right Hand.par2\" yEnc  4604",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691269564000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 337866423,
+      "total_parts": 463,
+      "available_parts": 463,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374138091,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"13. Fullmetal vs. Flame.par2\" yEnc  4820",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691269547000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 356632733,
+      "total_parts": 488,
+      "available_parts": 488,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374135051,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"12. The Other Brothers Elric (2).par2\" yEnc  4828",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691269526000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 356006736,
+      "total_parts": 487,
+      "available_parts": 487,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374136391,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"11. The Other Brothers Elric (1).par2\" yEnc  4088",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691269508000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 297613516,
+      "total_parts": 408,
+      "available_parts": 408,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374136011,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"10. The Phantom Thief.par2\" yEnc  4500",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691269490000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 330281249,
+      "total_parts": 453,
+      "available_parts": 453,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374135545,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"09. Be Thou for the People.par2\" yEnc  4384",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691269471000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 320391296,
+      "total_parts": 439,
+      "available_parts": 439,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374137321,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"08. The Philosopher_s Stone.par2\" yEnc  3824",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691269460000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 274743456,
+      "total_parts": 378,
+      "available_parts": 378,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374137984,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"07. Night of the Chimera_s Cry.par2\" yEnc  4168",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691269441000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 302397692,
+      "total_parts": 415,
+      "available_parts": 415,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374137582,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"06. The Alchemy Exam.par2\" yEnc  4596",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691269422000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 338030002,
+      "total_parts": 463,
+      "available_parts": 463,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374134726,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"05. The Man with the Mechanical Arm.par2\" yEnc  5312",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691269398000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 395644306,
+      "total_parts": 541,
+      "available_parts": 541,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374135347,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"04. A Forger_s Love.par2\" yEnc  4176",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691269381000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 303595176,
+      "total_parts": 417,
+      "available_parts": 417,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374136399,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"03. Mother.par2\" yEnc  4748",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691269360000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 351766676,
+      "total_parts": 482,
+      "available_parts": 482,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374134684,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"02. Body of the Sanctioned.par2\" yEnc  3984",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691269342000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 287594101,
+      "total_parts": 395,
+      "available_parts": 395,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1374137464,
+      "name": "FullMetal alchemist Dual Audio 1080p [2\/7] - \"01. Those Who Challenge the Sun.par2\" yEnc  4588",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1691269323000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 337135560,
+      "total_parts": 462,
+      "available_parts": 462,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1341074074,
+      "name": "Man.with.a.Plan.S04E10.Full.Metal.Teddy.1080p.NF.WEB-DL.DDP5.1.H.264-NFM - [00\/66] - \"Man.with.a.Plan.S04E10.Full.Metal.Teddy.1080p.NF.WEB-DL.DDP5.1.H.264-NFM.nzb\" yEnc",
+      "poster": "yEncBin@Poster.com (yEncBin)",
+      "posted": 1690616396000,
+      "spam": false,
+      "password": false,
+      "file_count": 67,
+      "group_count": 2,
+      "size": 1286998264,
+      "total_parts": 3257,
+      "available_parts": 3257,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.boneless",
+        "alt.binaries.tv"
+      ],
+      "group_ids": [
+        40,
+        731
+      ],
+      "file_types": {
+        "par2": 12,
+        "nzb": 1,
+        "archive": 54
+      },
+      "files": []
+    },
+    {
+      "id": 1283993992,
+      "name": "[Kosaka] Spy x Family (Season 1) (Part 1 + 2) (1080p AV1 10Bit OPUS) [Dual-Audio] [2\/6] - \"[Kosaka] Spy x Family - 17 - Carry Out the Griffin Plan -- Fullmetal Lady -- Omelet Rice \u00e2\u2122\u00a1 (1080p AV1 10Bit OPUS) [84A539D3].par2\" yEnc  3300",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1689645439000,
+      "spam": false,
+      "password": false,
+      "file_count": 6,
+      "group_count": 1,
+      "size": 197118128,
+      "total_parts": 272,
+      "available_parts": 272,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 5,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1248470326,
+      "name": "[12\/24] - \"08-shottie-full_metal_kubrick-e23697c4.mp3\" yEnc  9299131",
+      "poster": "Meow <eager-beaver@komputer>",
+      "posted": 1688973149000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 9595320,
+      "total_parts": 13,
+      "available_parts": 13,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia"
+      ],
+      "group_ids": [
+        382
+      ],
+      "file_types": {
+        "audio": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1204257486,
+      "name": "[EMBER] Spy x Family (2022) (Season 1 | Part 02 [EP: 13-25]) [1080p] [Dual Audio HEVC WEBRip DDP] (Spy x Family Part 2) (Batch) [2\/8] - \"S01E17-Carry Out the Griffin Plan Fullmetal Lady Omelet Rice\u00e2\u2122\u00a1 [49D46C2A].par2\" yEnc  7284",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1688299118000,
+      "spam": false,
+      "password": false,
+      "file_count": 8,
+      "group_count": 1,
+      "size": 533894985,
+      "total_parts": 728,
+      "available_parts": 728,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 7,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1189731608,
+      "name": "[05\/12] - \"enei-full_metal-(crit209)-single-web-2023-ptc.par2\" yEnc  40420",
+      "poster": "Meow <eager-beaver@komputer>",
+      "posted": 1688059326000,
+      "spam": false,
+      "password": false,
+      "file_count": 8,
+      "group_count": 1,
+      "size": 1829684,
+      "total_parts": 8,
+      "available_parts": 8,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.ftn"
+      ],
+      "group_ids": [
+        223
+      ],
+      "file_types": {
+        "par2": 8
+      },
+      "files": []
+    },
+    {
+      "id": 1189731406,
+      "name": "[04\/12] - \"01-enei-full_metal.mp3\" yEnc  12583948",
+      "poster": "Meow <eager-beaver@komputer>",
+      "posted": 1688059325000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 12983879,
+      "total_parts": 18,
+      "available_parts": 18,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.ftn"
+      ],
+      "group_ids": [
+        223
+      ],
+      "file_types": {
+        "audio": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1154542584,
+      "name": "[05\/21] - \"01-jb_glazer-full_metal_alchemist-7f40947a.mp3\" yEnc  11303925",
+      "poster": "Meow <eager-beaver@komputer>",
+      "posted": 1687515900000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 11667653,
+      "total_parts": 16,
+      "available_parts": 16,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.mom"
+      ],
+      "group_ids": [
+        319
+      ],
+      "file_types": {
+        "audio": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1138457847,
+      "name": "[1\/10] \"[Arid] Fullmetal Alchemist - The Sacred Star of Milos (JPBD Remux) [D69F11ED].mkv\"",
+      "poster": "DPmOuVCWIBnrb@ngPost.com",
+      "posted": 1687215897000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 32683115064,
+      "total_parts": 44163,
+      "available_parts": 44163,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.misc"
+      ],
+      "group_ids": [
+        315
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1100024791,
+      "name": "[NotShadyCrab] Fullmetal Alchemist Brotherhood (Ep. 01-14) [BD 1080p Hi10 FLAC] [Dual Audio] [2\/9] - \"[NotShadyCrab] Fullmetal Alchemist Brotherhood - S01E14 [BD][1080p][Hi10][Dual][B5F03B29].par2\" yEnc  22948",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1686355300000,
+      "spam": false,
+      "password": false,
+      "file_count": 9,
+      "group_count": 1,
+      "size": 1828711466,
+      "total_parts": 2478,
+      "available_parts": 2478,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 8,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1100024794,
+      "name": "[NotShadyCrab] Fullmetal Alchemist Brotherhood (Ep. 01-14) [BD 1080p Hi10 FLAC] [Dual Audio] [2\/9] - \"[NotShadyCrab] Fullmetal Alchemist Brotherhood - S01E13 [BD][1080p][Hi10][Dual][EFA51F42].par2\" yEnc  23908",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1686355172000,
+      "spam": false,
+      "password": false,
+      "file_count": 9,
+      "group_count": 1,
+      "size": 1906101397,
+      "total_parts": 2582,
+      "available_parts": 2582,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 8,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1100024795,
+      "name": "[NotShadyCrab] Fullmetal Alchemist Brotherhood (Ep. 01-14) [BD 1080p Hi10 FLAC] [Dual Audio] [2\/9] - \"[NotShadyCrab] Fullmetal Alchemist Brotherhood - S01E12 [BD][1080p][Hi10][Dual][75274EAC].par2\" yEnc  23288",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1686355064000,
+      "spam": false,
+      "password": false,
+      "file_count": 9,
+      "group_count": 1,
+      "size": 1855793339,
+      "total_parts": 2514,
+      "available_parts": 2514,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 8,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1100024780,
+      "name": "[NotShadyCrab] Fullmetal Alchemist Brotherhood (Ep. 01-14) [BD 1080p Hi10 FLAC] [Dual Audio] [2\/9] - \"[NotShadyCrab] Fullmetal Alchemist Brotherhood - S01E11 [BD][1080p][Hi10][Dual][B34A4EC2].par2\" yEnc  20848",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1686354963000,
+      "spam": false,
+      "password": false,
+      "file_count": 9,
+      "group_count": 1,
+      "size": 1656966890,
+      "total_parts": 2246,
+      "available_parts": 2246,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 8,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1100024786,
+      "name": "[NotShadyCrab] Fullmetal Alchemist Brotherhood (Ep. 01-14) [BD 1080p Hi10 FLAC] [Dual Audio] [2\/9] - \"[NotShadyCrab] Fullmetal Alchemist Brotherhood - S01E10 [BD][1080p][Hi10][Dual][2D5DEEB0].par2\" yEnc  19888",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1686354866000,
+      "spam": false,
+      "password": false,
+      "file_count": 9,
+      "group_count": 1,
+      "size": 1577591297,
+      "total_parts": 2139,
+      "available_parts": 2139,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 8,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1100024784,
+      "name": "[NotShadyCrab] Fullmetal Alchemist Brotherhood (Ep. 01-14) [BD 1080p Hi10 FLAC] [Dual Audio] [2\/9] - \"[NotShadyCrab] Fullmetal Alchemist Brotherhood - S01E09 [BD][1080p][Hi10][Dual][AE46B110].par2\" yEnc  18788",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1686354769000,
+      "spam": false,
+      "password": false,
+      "file_count": 9,
+      "group_count": 1,
+      "size": 1488839198,
+      "total_parts": 2019,
+      "available_parts": 2019,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 8,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1100024790,
+      "name": "[NotShadyCrab] Fullmetal Alchemist Brotherhood (Ep. 01-14) [BD 1080p Hi10 FLAC] [Dual Audio] [2\/9] - \"[NotShadyCrab] Fullmetal Alchemist Brotherhood - S01E08 [BD][1080p][Hi10][Dual][3CACF46E].par2\" yEnc  21748",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1686354660000,
+      "spam": false,
+      "password": false,
+      "file_count": 9,
+      "group_count": 1,
+      "size": 1730113531,
+      "total_parts": 2345,
+      "available_parts": 2345,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 8,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1100024781,
+      "name": "[NotShadyCrab] Fullmetal Alchemist Brotherhood (Ep. 01-14) [BD 1080p Hi10 FLAC] [Dual Audio] [2\/9] - \"[NotShadyCrab] Fullmetal Alchemist Brotherhood - S01E07 [BD][1080p][Hi10][Dual][E1DE72D0].par2\" yEnc  20468",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1686354544000,
+      "spam": false,
+      "password": false,
+      "file_count": 9,
+      "group_count": 1,
+      "size": 1625617480,
+      "total_parts": 2204,
+      "available_parts": 2204,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 8,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1100024778,
+      "name": "[NotShadyCrab] Fullmetal Alchemist Brotherhood (Ep. 01-14) [BD 1080p Hi10 FLAC] [Dual Audio] [2\/9] - \"[NotShadyCrab] Fullmetal Alchemist Brotherhood - S01E06 [BD][1080p][Hi10][Dual][D5F2C6AF].par2\" yEnc  19608",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1686354433000,
+      "spam": false,
+      "password": false,
+      "file_count": 9,
+      "group_count": 1,
+      "size": 1555677471,
+      "total_parts": 2110,
+      "available_parts": 2110,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 8,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1100024776,
+      "name": "[NotShadyCrab] Fullmetal Alchemist Brotherhood (Ep. 01-14) [BD 1080p Hi10 FLAC] [Dual Audio] [2\/9] - \"[NotShadyCrab] Fullmetal Alchemist Brotherhood - S01E05 [BD][1080p][Hi10][Dual][1A0FCC98].par2\" yEnc  24068",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1686354310000,
+      "spam": false,
+      "password": false,
+      "file_count": 9,
+      "group_count": 1,
+      "size": 1918903807,
+      "total_parts": 2600,
+      "available_parts": 2600,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 8,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1100024782,
+      "name": "[NotShadyCrab] Fullmetal Alchemist Brotherhood (Ep. 01-14) [BD 1080p Hi10 FLAC] [Dual Audio] [2\/9] - \"[NotShadyCrab] Fullmetal Alchemist Brotherhood - S01E04 [BD][1080p][Hi10][Dual][7B8D205C].par2\" yEnc  22408",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1686354204000,
+      "spam": false,
+      "password": false,
+      "file_count": 9,
+      "group_count": 1,
+      "size": 1783185836,
+      "total_parts": 2417,
+      "available_parts": 2417,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 8,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1100024785,
+      "name": "[NotShadyCrab] Fullmetal Alchemist Brotherhood (Ep. 01-14) [BD 1080p Hi10 FLAC] [Dual Audio] [2\/9] - \"[NotShadyCrab] Fullmetal Alchemist Brotherhood - S01E03 [BD][1080p][Hi10][Dual][13C879C0].par2\" yEnc  22988",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1686354094000,
+      "spam": false,
+      "password": false,
+      "file_count": 9,
+      "group_count": 1,
+      "size": 1831081893,
+      "total_parts": 2481,
+      "available_parts": 2481,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 8,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1100024793,
+      "name": "[NotShadyCrab] Fullmetal Alchemist Brotherhood (Ep. 01-14) [BD 1080p Hi10 FLAC] [Dual Audio] [2\/9] - \"[NotShadyCrab] Fullmetal Alchemist Brotherhood - S01E02 [BD][1080p][Hi10][Dual][1DC3EF13].par2\" yEnc  21348",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1686353986000,
+      "spam": false,
+      "password": false,
+      "file_count": 9,
+      "group_count": 1,
+      "size": 1697472260,
+      "total_parts": 2301,
+      "available_parts": 2301,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 8,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1100024777,
+      "name": "[NotShadyCrab] Fullmetal Alchemist Brotherhood (Ep. 01-14) [BD 1080p Hi10 FLAC] [Dual Audio] [2\/9] - \"[NotShadyCrab] Fullmetal Alchemist Brotherhood - S01E01 [BD][1080p][Hi10][Dual][3A307DBC].par2\" yEnc  24288",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1686353869000,
+      "spam": false,
+      "password": false,
+      "file_count": 9,
+      "group_count": 1,
+      "size": 1937005776,
+      "total_parts": 2624,
+      "available_parts": 2624,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 8,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1100024779,
+      "name": "[NotShadyCrab] Fullmetal Alchemist Brotherhood (Ep. 01-14) [BD 1080p Hi10 FLAC] [Dual Audio] [2\/9] - \"[NotShadyCrab] Fullmetal Alchemist Brotherhood (Ep. 01-14) [BD 1080p Hi10 FLAC] [Dual Audio].par2\" yEnc  20468",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1686353762000,
+      "spam": false,
+      "password": false,
+      "file_count": 9,
+      "group_count": 1,
+      "size": 1625598370,
+      "total_parts": 2203,
+      "available_parts": 2203,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 8
+      },
+      "files": []
+    },
+    {
+      "id": 1087563296,
+      "name": "[5268\/7781] - \"Fullmetal Alchemist - Vol.01.cbr\" yEnc  31464970",
+      "poster": "Anderson Eduardo <AndersonEduardo@O.localdomain>",
+      "posted": 1686078825000,
+      "spam": false,
+      "password": false,
+      "file_count": 12,
+      "group_count": 1,
+      "size": 440036122,
+      "total_parts": 209,
+      "available_parts": 209,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {},
+      "files": []
+    },
+    {
+      "id": 1081463134,
+      "name": "[05\/16] - \"01-zycotio_tonymusikaddict-full_metal_gear-ebm.mp3\" yEnc  17221470",
+      "poster": "Meow <eager-beaver@komputer>",
+      "posted": 1685958097000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 17771779,
+      "total_parts": 25,
+      "available_parts": 25,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia"
+      ],
+      "group_ids": [
+        382
+      ],
+      "file_types": {
+        "audio": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1054965983,
+      "name": "[LastOrder] Full Metal Panic TSR + OVA (BD 720p)(HEVC OPUS) [2\/8] - \"[LastOrder] Full Metal Panic TSR - 13 (BD 720p)(HEVC OPUS) [AE3427D3].par2\" yEnc  7328",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1685302809000,
+      "spam": false,
+      "password": false,
+      "file_count": 8,
+      "group_count": 1,
+      "size": 557467736,
+      "total_parts": 760,
+      "available_parts": 760,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 7,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1054957407,
+      "name": "[LastOrder] Full Metal Panic TSR + OVA (BD 720p)(HEVC OPUS) [2\/7] - \"[LastOrder] Full Metal Panic TSR - 12 (BD 720p)(HEVC OPUS) [4E7DFE65].par2\" yEnc  5288",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1685302783000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 389675054,
+      "total_parts": 533,
+      "available_parts": 533,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1054965955,
+      "name": "[LastOrder] Full Metal Panic TSR + OVA (BD 720p)(HEVC OPUS) [2\/7] - \"[LastOrder] Full Metal Panic TSR - 11 (BD 720p)(HEVC OPUS) [DC3CC5CB].par2\" yEnc  4748",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1685302760000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 347764139,
+      "total_parts": 476,
+      "available_parts": 476,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1054957882,
+      "name": "[LastOrder] Full Metal Panic TSR + OVA (BD 720p)(HEVC OPUS) [2\/7] - \"[LastOrder] Full Metal Panic TSR - 10 (BD 720p)(HEVC OPUS) [F15E632F].par2\" yEnc  5348",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1685302736000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 395889855,
+      "total_parts": 541,
+      "available_parts": 541,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1054958800,
+      "name": "[LastOrder] Full Metal Panic TSR + OVA (BD 720p)(HEVC OPUS) [2\/7] - \"[LastOrder] Full Metal Panic TSR - 09 (BD 720p)(HEVC OPUS) [57383564].par2\" yEnc  5988",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1685302710000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 447597090,
+      "total_parts": 611,
+      "available_parts": 611,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1054960798,
+      "name": "[LastOrder] Full Metal Panic TSR + OVA (BD 720p)(HEVC OPUS) [2\/7] - \"[LastOrder] Full Metal Panic TSR - 08 (BD 720p)(HEVC OPUS) [BFB482BC].par2\" yEnc  4948",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1685302689000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 364431111,
+      "total_parts": 498,
+      "available_parts": 498,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1054959927,
+      "name": "[LastOrder] Full Metal Panic TSR + OVA (BD 720p)(HEVC OPUS) [2\/7] - \"[LastOrder] Full Metal Panic TSR - 07 (BD 720p)(HEVC OPUS) [C1ABBB64].par2\" yEnc  6508",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1685302660000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 491691131,
+      "total_parts": 670,
+      "available_parts": 670,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1054965121,
+      "name": "[LastOrder] Full Metal Panic TSR + OVA (BD 720p)(HEVC OPUS) [2\/7] - \"[LastOrder] Full Metal Panic TSR - 06 (BD 720p)(HEVC OPUS) [D46B3647].par2\" yEnc  5248",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1685302636000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 387832679,
+      "total_parts": 530,
+      "available_parts": 530,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1054962517,
+      "name": "[LastOrder] Full Metal Panic TSR + OVA (BD 720p)(HEVC OPUS) [2\/7] - \"[LastOrder] Full Metal Panic TSR - 05 (BD 720p)(HEVC OPUS) [9C7CCBCE].par2\" yEnc  6388",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1685302607000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 480639826,
+      "total_parts": 655,
+      "available_parts": 655,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1054963136,
+      "name": "[LastOrder] Full Metal Panic TSR + OVA (BD 720p)(HEVC OPUS) [2\/7] - \"[LastOrder] Full Metal Panic TSR - 04 (BD 720p)(HEVC OPUS) [8D8FCCD1].par2\" yEnc  6528",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1685302575000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 493025146,
+      "total_parts": 672,
+      "available_parts": 672,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1054966015,
+      "name": "[LastOrder] Full Metal Panic TSR + OVA (BD 720p)(HEVC OPUS) [2\/7] - \"[LastOrder] Full Metal Panic TSR - 03 (BD 720p)(HEVC OPUS) [FA7EEA63].par2\" yEnc  6328",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1685302541000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 476774040,
+      "total_parts": 650,
+      "available_parts": 650,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1054962047,
+      "name": "[LastOrder] Full Metal Panic TSR + OVA (BD 720p)(HEVC OPUS) [2\/7] - \"[LastOrder] Full Metal Panic TSR - 02 (BD 720p)(HEVC OPUS) [BBAF9278].par2\" yEnc  6488",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1685302508000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 488165037,
+      "total_parts": 666,
+      "available_parts": 666,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1054962301,
+      "name": "[LastOrder] Full Metal Panic TSR + OVA (BD 720p)(HEVC OPUS) [2\/8] - \"[LastOrder] Full Metal Panic TSR - 01 (BD 720p)(HEVC OPUS) [E503A7DB].par2\" yEnc  7268",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1685302465000,
+      "spam": false,
+      "password": false,
+      "file_count": 8,
+      "group_count": 1,
+      "size": 552003549,
+      "total_parts": 753,
+      "available_parts": 753,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 7,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 1054958226,
+      "name": "[LastOrder] Full Metal Panic TSR + OVA (BD 720p)(HEVC OPUS) [2\/7] - \"[LastOrder] Full Metal Panic OVA (BD 720p)(HEVC OPUS) [E2AEB7BC].par2\" yEnc  5540",
+      "poster": "Anime Tosho <usenet.bot@animetosho.org>",
+      "posted": 1685302443000,
+      "spam": false,
+      "password": false,
+      "file_count": 7,
+      "group_count": 1,
+      "size": 412871497,
+      "total_parts": 564,
+      "available_parts": 564,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.multimedia.anime.highspeed"
+      ],
+      "group_ids": [
+        386
+      ],
+      "file_types": {
+        "par2": 6,
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 997063716,
+      "name": "[26\/42] - \"23-dmf-full_metal_(original_mix).mp3\" yEnc  16489670",
+      "poster": "Meow <eager-beaver@komputer>",
+      "posted": 1684303568000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 17005447,
+      "total_parts": 24,
+      "available_parts": 24,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.ftn"
+      ],
+      "group_ids": [
+        223
+      ],
+      "file_types": {
+        "audio": 1
+      },
+      "files": []
+    },
+    {
+      "id": 989751639,
+      "name": "[1261\/4678] - \"Fullmetal Alchemist - Volume 01 - The Land of Sand [VIZ][Kobo].epub\" yEnc  1812405",
+      "poster": "Victor&Jessica <Victor&Jessica@P.localdomain>",
+      "posted": 1684162791000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 1870137,
+      "total_parts": 1,
+      "available_parts": 1,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {},
+      "files": []
+    },
+    {
+      "id": 989751442,
+      "name": "[1264\/4678] - \"Fullmetal Alchemist - Volume 03 - The Valley of White Petals [VIZ][OCR].pdf\" yEnc  8486356",
+      "poster": "Victor&Jessica <Victor&Jessica@P.localdomain>",
+      "posted": 1684162791000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 8750008,
+      "total_parts": 5,
+      "available_parts": 5,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {},
+      "files": []
+    },
+    {
+      "id": 989751948,
+      "name": "[1266\/4678] - \"Fullmetal Alchemist - Volume 06 - A New Beginning [VIZ][Kobo_LNWNCentral].pdf\" yEnc  2030614",
+      "poster": "Victor&Jessica <Victor&Jessica@P.localdomain>",
+      "posted": 1684162791000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 2095943,
+      "total_parts": 1,
+      "available_parts": 1,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {},
+      "files": []
+    },
+    {
+      "id": 989751337,
+      "name": "[1265\/4678] - \"Fullmetal Alchemist - Volume 06 - A New Beginning [VIZ][Kobo].epub\" yEnc  1615143",
+      "poster": "Victor&Jessica <Victor&Jessica@P.localdomain>",
+      "posted": 1684162791000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 1666627,
+      "total_parts": 1,
+      "available_parts": 1,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {},
+      "files": []
+    },
+    {
+      "id": 989751743,
+      "name": "[1262\/4678] - \"Fullmetal Alchemist - Volume 01 - The Land of Sand [VIZ][Kobo_LNWNCentral].pdf\" yEnc  2114695",
+      "poster": "Victor&Jessica <Victor&Jessica@P.localdomain>",
+      "posted": 1684162791000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 2184777,
+      "total_parts": 2,
+      "available_parts": 2,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {},
+      "files": []
+    },
+    {
+      "id": 989750630,
+      "name": "[1263\/4678] - \"Fullmetal Alchemist - Volume 02 - The Abducted Alchemist [VIZ][OCR].pdf\" yEnc  7848565",
+      "poster": "Victor&Jessica <Victor&Jessica@P.localdomain>",
+      "posted": 1684162791000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 8092280,
+      "total_parts": 4,
+      "available_parts": 4,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {},
+      "files": []
+    },
+    {
+      "id": 989750604,
+      "name": "[1260\/4678] - \"Full Metal Panic - Volume 12 [J-Novel Club][Premium_LNWNCentral].pdf\" yEnc  27612379",
+      "poster": "Victor&Jessica <Victor&Jessica@P.localdomain>",
+      "posted": 1684162790000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 28551061,
+      "total_parts": 14,
+      "available_parts": 14,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {},
+      "files": []
+    },
+    {
+      "id": 989751845,
+      "name": "[1259\/4678] - \"Full Metal Panic - Volume 12 [J-Novel Club][Premium].epub\" yEnc  37878714",
+      "poster": "Victor&Jessica <Victor&Jessica@P.localdomain>",
+      "posted": 1684162789000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 39083265,
+      "total_parts": 19,
+      "available_parts": 19,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {},
+      "files": []
+    },
+    {
+      "id": 989751105,
+      "name": "[1258\/4678] - \"Full Metal Panic - Volume 11 [J-Novel Club][Premium_LNWNCentral].pdf\" yEnc  24128132",
+      "poster": "Victor&Jessica <Victor&Jessica@P.localdomain>",
+      "posted": 1684162788000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 24951941,
+      "total_parts": 12,
+      "available_parts": 12,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {},
+      "files": []
+    },
+    {
+      "id": 989751428,
+      "name": "[1257\/4678] - \"Full Metal Panic - Volume 11 [J-Novel Club][Premium].epub\" yEnc  33051074",
+      "poster": "Victor&Jessica <Victor&Jessica@P.localdomain>",
+      "posted": 1684162787000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 34105901,
+      "total_parts": 16,
+      "available_parts": 16,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {},
+      "files": []
+    },
+    {
+      "id": 989751523,
+      "name": "[1255\/4678] - \"Full Metal Panic - Volume 10 [J-Novel Club][Premium].epub\" yEnc  33560235",
+      "poster": "Victor&Jessica <Victor&Jessica@P.localdomain>",
+      "posted": 1684162786000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 34629509,
+      "total_parts": 17,
+      "available_parts": 17,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {},
+      "files": []
+    },
+    {
+      "id": 989750938,
+      "name": "[1256\/4678] - \"Full Metal Panic - Volume 10 [J-Novel Club][Premium_LNWNCentral].pdf\" yEnc  23737415",
+      "poster": "Victor&Jessica <Victor&Jessica@P.localdomain>",
+      "posted": 1684162786000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 24551449,
+      "total_parts": 12,
+      "available_parts": 12,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {},
+      "files": []
+    },
+    {
+      "id": 989751658,
+      "name": "[1254\/4678] - \"Full Metal Panic - Volume 09 [J-Novel Club][Premium_LNWNCentral].pdf\" yEnc  47679760",
+      "poster": "Victor&Jessica <Victor&Jessica@P.localdomain>",
+      "posted": 1684162784000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 49302600,
+      "total_parts": 23,
+      "available_parts": 23,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {},
+      "files": []
+    },
+    {
+      "id": 989751429,
+      "name": "[1253\/4678] - \"Full Metal Panic - Volume 09 [J-Novel Club][Premium].epub\" yEnc  62262276",
+      "poster": "Victor&Jessica <Victor&Jessica@P.localdomain>",
+      "posted": 1684162782000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 64244614,
+      "total_parts": 30,
+      "available_parts": 30,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {},
+      "files": []
+    },
+    {
+      "id": 989751956,
+      "name": "[1252\/4678] - \"Full Metal Panic - Volume 08 [J-Novel Club][Premium_LNWNCentral].pdf\" yEnc  34407869",
+      "poster": "Victor&Jessica <Victor&Jessica@P.localdomain>",
+      "posted": 1684162781000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 35588703,
+      "total_parts": 17,
+      "available_parts": 17,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {},
+      "files": []
+    },
+    {
+      "id": 989751187,
+      "name": "[1251\/4678] - \"Full Metal Panic - Volume 08 [J-Novel Club][Premium].epub\" yEnc  46390650",
+      "poster": "Victor&Jessica <Victor&Jessica@P.localdomain>",
+      "posted": 1684162780000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 47872113,
+      "total_parts": 23,
+      "available_parts": 23,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {},
+      "files": []
+    },
+    {
+      "id": 989751270,
+      "name": "[1250\/4678] - \"Full Metal Panic - Volume 07 [J-Novel Club][Premium_LNWNCentral].pdf\" yEnc  30120786",
+      "poster": "Victor&Jessica <Victor&Jessica@P.localdomain>",
+      "posted": 1684162780000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 31147665,
+      "total_parts": 15,
+      "available_parts": 15,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {},
+      "files": []
+    },
+    {
+      "id": 989750790,
+      "name": "[1248\/4678] - \"Full Metal Panic - Volume 06 [J-Novel Club][Premium_LNWNCentral].pdf\" yEnc  23275687",
+      "poster": "Victor&Jessica <Victor&Jessica@P.localdomain>",
+      "posted": 1684162778000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 24077787,
+      "total_parts": 12,
+      "available_parts": 12,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {},
+      "files": []
+    },
+    {
+      "id": 989751849,
+      "name": "[1249\/4678] - \"Full Metal Panic - Volume 07 [J-Novel Club][Premium].epub\" yEnc  40348080",
+      "poster": "Victor&Jessica <Victor&Jessica@P.localdomain>",
+      "posted": 1684162778000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 41637511,
+      "total_parts": 20,
+      "available_parts": 20,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {},
+      "files": []
+    },
+    {
+      "id": 989750924,
+      "name": "[1247\/4678] - \"Full Metal Panic - Volume 06 [J-Novel Club][Premium].epub\" yEnc  34545615",
+      "poster": "Victor&Jessica <Victor&Jessica@P.localdomain>",
+      "posted": 1684162777000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 35648134,
+      "total_parts": 17,
+      "available_parts": 17,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {},
+      "files": []
+    },
+    {
+      "id": 989750980,
+      "name": "[1246\/4678] - \"Full Metal Panic - Volume 05 [J-Novel Club][Premium_LNWNCentral].pdf\" yEnc  14485942",
+      "poster": "Victor&Jessica <Victor&Jessica@P.localdomain>",
+      "posted": 1684162777000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 14978949,
+      "total_parts": 7,
+      "available_parts": 7,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {},
+      "files": []
+    },
+    {
+      "id": 989750823,
+      "name": "[1245\/4678] - \"Full Metal Panic - Volume 05 [J-Novel Club][Premium].epub\" yEnc  23178332",
+      "poster": "Victor&Jessica <Victor&Jessica@P.localdomain>",
+      "posted": 1684162776000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 23930767,
+      "total_parts": 12,
+      "available_parts": 12,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {},
+      "files": []
+    },
+    {
+      "id": 989751136,
+      "name": "[1244\/4678] - \"Full Metal Panic - Volume 04 [J-Novel Club][Premium_LNWNCentral].pdf\" yEnc  16525284",
+      "poster": "Victor&Jessica <Victor&Jessica@P.localdomain>",
+      "posted": 1684162776000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 17085192,
+      "total_parts": 8,
+      "available_parts": 8,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {},
+      "files": []
+    },
+    {
+      "id": 989751807,
+      "name": "[1242\/4678] - \"Full Metal Panic - Volume 03 [Tokyopop][OCR_Compressed].pdf\" yEnc  8001452",
+      "poster": "Victor&Jessica <Victor&Jessica@P.localdomain>",
+      "posted": 1684162775000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 8253422,
+      "total_parts": 4,
+      "available_parts": 4,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {},
+      "files": []
+    },
+    {
+      "id": 989750891,
+      "name": "[1243\/4678] - \"Full Metal Panic - Volume 04 [J-Novel Club][Premium].epub\" yEnc  25465137",
+      "poster": "Victor&Jessica <Victor&Jessica@P.localdomain>",
+      "posted": 1684162775000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 26295837,
+      "total_parts": 13,
+      "available_parts": 13,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {},
+      "files": []
+    },
+    {
+      "id": 989751729,
+      "name": "[1241\/4678] - \"Full Metal Panic - Volume 03 [Tokyopop][OCR].pdf\" yEnc  151664632",
+      "poster": "Victor&Jessica <Victor&Jessica@P.localdomain>",
+      "posted": 1684162771000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 156500671,
+      "total_parts": 73,
+      "available_parts": 73,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {},
+      "files": []
+    },
+    {
+      "id": 989750649,
+      "name": "[1240\/4678] - \"Full Metal Panic - Volume 03 [J-Novel Club][Premium_LNWNCentral].pdf\" yEnc  23857069",
+      "poster": "Victor&Jessica <Victor&Jessica@P.localdomain>",
+      "posted": 1684162770000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 24669909,
+      "total_parts": 12,
+      "available_parts": 12,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {},
+      "files": []
+    },
+    {
+      "id": 989750705,
+      "name": "[1238\/4678] - \"Full Metal Panic - Volume 02 [Tokyopop][OCR_Compressed].pdf\" yEnc  6655989",
+      "poster": "Victor&Jessica <Victor&Jessica@P.localdomain>",
+      "posted": 1684162769000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 6865282,
+      "total_parts": 4,
+      "available_parts": 4,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {},
+      "files": []
+    },
+    {
+      "id": 989750636,
+      "name": "[1239\/4678] - \"Full Metal Panic - Volume 03 [J-Novel Club][Premium].epub\" yEnc  35480517",
+      "poster": "Victor&Jessica <Victor&Jessica@P.localdomain>",
+      "posted": 1684162769000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 36626438,
+      "total_parts": 17,
+      "available_parts": 17,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {},
+      "files": []
+    },
+    {
+      "id": 989751038,
+      "name": "[1236\/4678] - \"Full Metal Panic - Volume 02 [J-Novel Club][Premium_LNWNCentral].pdf\" yEnc  17125897",
+      "poster": "Victor&Jessica <Victor&Jessica@P.localdomain>",
+      "posted": 1684162766000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 17709422,
+      "total_parts": 9,
+      "available_parts": 9,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {},
+      "files": []
+    },
+    {
+      "id": 989751448,
+      "name": "[1237\/4678] - \"Full Metal Panic - Volume 02 [Tokyopop][OCR].pdf\" yEnc  120220039",
+      "poster": "Victor&Jessica <Victor&Jessica@P.localdomain>",
+      "posted": 1684162766000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 124032086,
+      "total_parts": 58,
+      "available_parts": 58,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {},
+      "files": []
+    },
+    {
+      "id": 989751866,
+      "name": "[1235\/4678] - \"Full Metal Panic - Volume 02 [J-Novel Club][Premium].epub\" yEnc  30699403",
+      "poster": "Victor&Jessica <Victor&Jessica@P.localdomain>",
+      "posted": 1684162765000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 31679544,
+      "total_parts": 15,
+      "available_parts": 15,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {},
+      "files": []
+    },
+    {
+      "id": 989751544,
+      "name": "[1232\/4678] - \"Full Metal Panic - Volume 01 [J-Novel Club][Premium_LNWNCentral].pdf\" yEnc  14562435",
+      "poster": "Victor&Jessica <Victor&Jessica@P.localdomain>",
+      "posted": 1684162764000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 15057357,
+      "total_parts": 7,
+      "available_parts": 7,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {},
+      "files": []
+    },
+    {
+      "id": 989751505,
+      "name": "[1234\/4678] - \"Full Metal Panic - Volume 01 [Tokyopop][Scans].pdf\" yEnc  20183377",
+      "poster": "Victor&Jessica <Victor&Jessica@P.localdomain>",
+      "posted": 1684162764000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 20802437,
+      "total_parts": 10,
+      "available_parts": 10,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {},
+      "files": []
+    },
+    {
+      "id": 989750710,
+      "name": "[1233\/4678] - \"Full Metal Panic - Volume 01 [Tokyopop][OCR].pdf\" yEnc  14927710",
+      "poster": "Victor&Jessica <Victor&Jessica@P.localdomain>",
+      "posted": 1684162764000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 15405682,
+      "total_parts": 8,
+      "available_parts": 8,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {},
+      "files": []
+    },
+    {
+      "id": 989751260,
+      "name": "[1231\/4678] - \"Full Metal Panic - Volume 01 [J-Novel Club][Premium].epub\" yEnc  23694653",
+      "poster": "Victor&Jessica <Victor&Jessica@P.localdomain>",
+      "posted": 1684162763000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 24459530,
+      "total_parts": 12,
+      "available_parts": 12,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {},
+      "files": []
+    },
+    {
+      "id": 952866664,
+      "name": "[139\/139] - \"Fullmetal Alchemist - Brotherhood - OVA - 04 [rlee_BD_1080p_Dual \u00c3\ufffdudio].mkv\" yEnc  630770926",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559930000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 650898572,
+      "total_parts": 301,
+      "available_parts": 301,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866688,
+      "name": "[138\/139] - \"Fullmetal Alchemist - Brotherhood - OVA - 03 [rlee_BD_1080p_Dual \u00c3\ufffdudio].mkv\" yEnc  698924716",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559924000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 721240119,
+      "total_parts": 334,
+      "available_parts": 334,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866653,
+      "name": "[137\/139] - \"Fullmetal Alchemist - Brotherhood - OVA - 02 [rlee_BD_1080p_Dual \u00c3\ufffdudio].mkv\" yEnc  545178714",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559921000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 562578136,
+      "total_parts": 260,
+      "available_parts": 260,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866668,
+      "name": "[136\/139] - \"Fullmetal Alchemist - Brotherhood - OVA - 01 [rlee_BD_1080_Dual \u00c3\ufffdudio].mkv\" yEnc  576527917",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559916000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 594932863,
+      "total_parts": 275,
+      "available_parts": 275,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866579,
+      "name": "[135\/139] - \"Fullmetal Alchemist Brotherhood - 64 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  679950612",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559911000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 701551517,
+      "total_parts": 325,
+      "available_parts": 325,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866694,
+      "name": "[134\/139] - \"Fullmetal Alchemist Brotherhood - 63 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  1099692682",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559904000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 1134764416,
+      "total_parts": 525,
+      "available_parts": 525,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866559,
+      "name": "[133\/139] - \"Fullmetal Alchemist Brotherhood - 62 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  1157465121",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559895000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 1194367075,
+      "total_parts": 552,
+      "available_parts": 552,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866626,
+      "name": "[132\/139] - \"Fullmetal Alchemist Brotherhood - 61 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  1118657112",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559887000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 1154309082,
+      "total_parts": 534,
+      "available_parts": 534,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866556,
+      "name": "[131\/139] - \"Fullmetal Alchemist Brotherhood - 60 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  978954148",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559880000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 1010131868,
+      "total_parts": 467,
+      "available_parts": 467,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866671,
+      "name": "[130\/139] - \"Fullmetal Alchemist Brotherhood - 59 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  820422940",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559874000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 846543430,
+      "total_parts": 392,
+      "available_parts": 392,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866598,
+      "name": "[129\/139] - \"Fullmetal Alchemist Brotherhood - 58 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  884968138",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559868000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 913137931,
+      "total_parts": 422,
+      "available_parts": 422,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866557,
+      "name": "[128\/139] - \"Fullmetal Alchemist Brotherhood - 57 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  1055380607",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559860000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 1089003724,
+      "total_parts": 504,
+      "available_parts": 504,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866629,
+      "name": "[127\/139] - \"Fullmetal Alchemist Brotherhood - 56 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  1060335061",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559853000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 1094126948,
+      "total_parts": 506,
+      "available_parts": 506,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866565,
+      "name": "[126\/139] - \"Fullmetal Alchemist Brotherhood - 55 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  1012035246",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559845000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 1044277926,
+      "total_parts": 483,
+      "available_parts": 483,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866676,
+      "name": "[125\/139] - \"Fullmetal Alchemist Brotherhood - 54 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  972851286",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559838000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 1003843137,
+      "total_parts": 464,
+      "available_parts": 464,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866584,
+      "name": "[124\/139] - \"Fullmetal Alchemist Brotherhood - 53 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  879097627",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559832000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 907085536,
+      "total_parts": 420,
+      "available_parts": 420,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866691,
+      "name": "[123\/139] - \"Fullmetal Alchemist Brotherhood - 52 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  1072378870",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559824000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 1106550358,
+      "total_parts": 512,
+      "available_parts": 512,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866637,
+      "name": "[122\/139] - \"Fullmetal Alchemist Brotherhood - 51 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  1001257102",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559817000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 1033149919,
+      "total_parts": 478,
+      "available_parts": 478,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866577,
+      "name": "[121\/139] - \"Fullmetal Alchemist Brotherhood - 50 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  864020391",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559811000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 891539229,
+      "total_parts": 412,
+      "available_parts": 412,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866587,
+      "name": "[120\/139] - \"Fullmetal Alchemist Brotherhood - 49 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  816390719",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559805000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 842377457,
+      "total_parts": 390,
+      "available_parts": 390,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866670,
+      "name": "[119\/139] - \"Fullmetal Alchemist Brotherhood - 48 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  997947796",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559798000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 1029733562,
+      "total_parts": 476,
+      "available_parts": 476,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866616,
+      "name": "[118\/139] - \"Fullmetal Alchemist Brotherhood - 47 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  853617940",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559792000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 880778971,
+      "total_parts": 408,
+      "available_parts": 408,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866640,
+      "name": "[117\/139] - \"Fullmetal Alchemist Brotherhood - 46 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  819104667",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559786000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 845174733,
+      "total_parts": 391,
+      "available_parts": 391,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866572,
+      "name": "[116\/139] - \"Fullmetal Alchemist Brotherhood - 45 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  869259535",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559780000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 896923577,
+      "total_parts": 415,
+      "available_parts": 415,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866642,
+      "name": "[115\/139] - \"Fullmetal Alchemist Brotherhood - 44 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  951629585",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559773000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 981912768,
+      "total_parts": 454,
+      "available_parts": 454,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866674,
+      "name": "[114\/139] - \"Fullmetal Alchemist Brotherhood - 43 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  1003253095",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559766000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 1035196107,
+      "total_parts": 479,
+      "available_parts": 479,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866615,
+      "name": "[113\/139] - \"Fullmetal Alchemist Brotherhood - 42 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  1056904559",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559758000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 1090566272,
+      "total_parts": 504,
+      "available_parts": 504,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866678,
+      "name": "[112\/139] - \"Fullmetal Alchemist Brotherhood - 41 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  910231014",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559751000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 939181979,
+      "total_parts": 435,
+      "available_parts": 435,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866554,
+      "name": "[111\/139] - \"Fullmetal Alchemist Brotherhood - 40 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  883384800",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559745000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 911480053,
+      "total_parts": 422,
+      "available_parts": 422,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866655,
+      "name": "[110\/139] - \"Fullmetal Alchemist Brotherhood - 39 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  871342041",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559739000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 899065517,
+      "total_parts": 416,
+      "available_parts": 416,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866583,
+      "name": "[109\/139] - \"Fullmetal Alchemist Brotherhood - 38 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  1126402210",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559731000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 1162298948,
+      "total_parts": 538,
+      "available_parts": 538,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866690,
+      "name": "[108\/139] - \"Fullmetal Alchemist Brotherhood - 37 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  871661362",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559724000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 899374744,
+      "total_parts": 416,
+      "available_parts": 416,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866610,
+      "name": "[107\/139] - \"Fullmetal Alchemist Brotherhood - 36 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  850180511",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559718000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 877211035,
+      "total_parts": 406,
+      "available_parts": 406,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866562,
+      "name": "[106\/139] - \"Fullmetal Alchemist Brotherhood - 35 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  950787611",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559711000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 981049824,
+      "total_parts": 454,
+      "available_parts": 454,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866650,
+      "name": "[105\/139] - \"Fullmetal Alchemist Brotherhood - 34 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  921421946",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559705000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 950751955,
+      "total_parts": 440,
+      "available_parts": 440,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866570,
+      "name": "[104\/139] - \"Fullmetal Alchemist Brotherhood - 33 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  1254341499",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559696000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 1294335118,
+      "total_parts": 599,
+      "available_parts": 599,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866663,
+      "name": "[103\/139] - \"Fullmetal Alchemist Brotherhood - 32 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  937588375",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559689000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 967416790,
+      "total_parts": 448,
+      "available_parts": 448,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866617,
+      "name": "[102\/139] - \"Fullmetal Alchemist Brotherhood - 31 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  866362765",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559683000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 893902250,
+      "total_parts": 414,
+      "available_parts": 414,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866681,
+      "name": "[101\/139] - \"Fullmetal Alchemist Brotherhood - 30 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  970751752",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559676000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 1001642750,
+      "total_parts": 463,
+      "available_parts": 463,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866641,
+      "name": "[100\/139] - \"Fullmetal Alchemist Brotherhood - 29 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  855717863",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559669000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 882911627,
+      "total_parts": 409,
+      "available_parts": 409,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866571,
+      "name": "[099\/139] - \"Fullmetal Alchemist Brotherhood - 28 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  1158071631",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559661000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 1194975564,
+      "total_parts": 553,
+      "available_parts": 553,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866593,
+      "name": "[098\/139] - \"Fullmetal Alchemist Brotherhood - 27 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  1100875684",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559653000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 1135950704,
+      "total_parts": 525,
+      "available_parts": 525,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866685,
+      "name": "[097\/139] - \"Fullmetal Alchemist Brotherhood - 26 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  1162531119",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559645000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 1199563034,
+      "total_parts": 555,
+      "available_parts": 555,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866606,
+      "name": "[096\/139] - \"Fullmetal Alchemist Brotherhood - 25 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  858062917",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559639000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 885321571,
+      "total_parts": 410,
+      "available_parts": 410,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866623,
+      "name": "[095\/139] - \"Fullmetal Alchemist Brotherhood - 24 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  872831040",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559633000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 900569835,
+      "total_parts": 417,
+      "available_parts": 417,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866576,
+      "name": "[094\/139] - \"Fullmetal Alchemist Brotherhood - 23 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  967842019",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559626000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 998620799,
+      "total_parts": 462,
+      "available_parts": 462,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866646,
+      "name": "[093\/139] - \"Fullmetal Alchemist Brotherhood - 22 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  976514467",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559619000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 1007589758,
+      "total_parts": 466,
+      "available_parts": 466,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866659,
+      "name": "[092\/139] - \"Fullmetal Alchemist Brotherhood - 21 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  928245943",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559612000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 957739505,
+      "total_parts": 443,
+      "available_parts": 443,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866605,
+      "name": "[091\/139] - \"Fullmetal Alchemist Brotherhood - 20 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  871633389",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559606000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 899311432,
+      "total_parts": 416,
+      "available_parts": 416,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866636,
+      "name": "[090\/139] - \"Fullmetal Alchemist Brotherhood - 19 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  968736602",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559599000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 999550050,
+      "total_parts": 462,
+      "available_parts": 462,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866569,
+      "name": "[089\/139] - \"Fullmetal Alchemist Brotherhood - 18 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  825305198",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559593000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 851533358,
+      "total_parts": 394,
+      "available_parts": 394,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866649,
+      "name": "[088\/139] - \"Fullmetal Alchemist Brotherhood - 17 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  729444802",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559588000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 752571745,
+      "total_parts": 348,
+      "available_parts": 348,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866596,
+      "name": "[087\/139] - \"Fullmetal Alchemist Brotherhood - 16 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  782033841",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559582000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 806846815,
+      "total_parts": 373,
+      "available_parts": 373,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866680,
+      "name": "[086\/139] - \"Fullmetal Alchemist Brotherhood - 15 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  957945509",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559575000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 988408216,
+      "total_parts": 457,
+      "available_parts": 457,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    },
+    {
+      "id": 952866632,
+      "name": "[085\/139] - \"Fullmetal Alchemist Brotherhood - 14 (BD 1920x1080 x.264 AC3 FLAC) [Moozzi2]-rlee-j0ey-Yatogam1.mkv\" yEnc  902151237",
+      "poster": "anitsublog <anitsublog@nectarine.whatbox.ca>",
+      "posted": 1683559569000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 930841965,
+      "total_parts": 431,
+      "available_parts": 431,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {
+        "video": 1
+      },
+      "files": []
+    }
+  ]
+}

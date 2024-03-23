@@ -1,0 +1,552 @@
+{
+  "stats": {
+    "query": "foo | bar -something",
+    "query_poster": false,
+    "total": 10000,
+    "count": 2500,
+    "per_page": 25,
+    "current_page": 0,
+    "max_page": 99,
+    "has_previous_page": false,
+    "has_next_page": true,
+    "time": 449,
+    "page_start": 1,
+    "page_end": 25
+  },
+  "results": [
+    {
+      "id": 1778967688,
+      "name": "[31\/53] - \"5MgQ7APblAVbfiK13pkIlS-oVtFmzSaixmlyOETTKQHNIwKpqpUYA3LTztfoOtZ0cGPZubb.x8W\" yEnc  68383293",
+      "poster": "qcyK PRCpS5me93e7z2 <0V8vS-1QUOi@5a.xjlCPsGp>",
+      "posted": 1711176862000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 734579,
+      "total_parts": 60,
+      "available_parts": 1,
+      "complete": false,
+      "group_names": [
+        "alt.binaries.coolkidweb"
+      ],
+      "group_ids": [
+        91
+      ],
+      "file_types": {}
+    },
+    {
+      "id": 1778960334,
+      "name": "EQF5XX-Npxs7EOZ5ea4dTbi [16\/21] \"9ou9KrITRI9z5jqJEYfoofi.part05.rar\" yEnc",
+      "poster": "os0K-2YPhvsy0E9_AKjrS@-oSqvugO1g.Y_Z",
+      "posted": 1711176417000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 786727,
+      "total_parts": 84,
+      "available_parts": 1,
+      "complete": false,
+      "group_names": [
+        "alt.binaries.etc"
+      ],
+      "group_ids": [
+        207
+      ],
+      "file_types": {
+        "archive": 1
+      }
+    },
+    {
+      "id": 1778868331,
+      "name": "[1\/10] JDZWXUJrGUudxtSwB4IyygbEfzmqffKBOr8HKgbarhZL1.par2",
+      "poster": "xtcjewmbsc@nlksofcopo.waq",
+      "posted": 1711175826000,
+      "spam": false,
+      "password": false,
+      "file_count": 10,
+      "group_count": 1,
+      "size": 116998265,
+      "total_parts": 153,
+      "available_parts": 153,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.a51"
+      ],
+      "group_ids": [
+        10
+      ],
+      "file_types": {
+        "par2": 5,
+        "archive": 5
+      }
+    },
+    {
+      "id": 1778899523,
+      "name": "aunwwKgSVra9DWqRblAMhcUh5 [7\/8] \"LF6NTxme5x32ZD2mahgofooiI.par2\" yEnc",
+      "poster": "9RIpS38gUJtMalq_FKwGWX0@cWi4OaDnL-m.pLh",
+      "posted": 1711175668000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 786826,
+      "total_parts": 85,
+      "available_parts": 1,
+      "complete": false,
+      "group_names": [
+        "alt.binaries.bloaf"
+      ],
+      "group_ids": [
+        34
+      ],
+      "file_types": {
+        "par2": 1
+      }
+    },
+    {
+      "id": 1778899386,
+      "name": "[40\/42] - \"hh8Nu6QdPksVpAS46zg3olfm53UcQjarjLZ1cbaRoAq38pAVAmVyzhsE.MK1LY\" yEnc  54758907",
+      "poster": "VMjlucfxtJZo5 DGvtmZocbN3 <szurTUVrgpSb@taFg.CRpKis>",
+      "posted": 1711175663000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 734763,
+      "total_parts": 68,
+      "available_parts": 1,
+      "complete": false,
+      "group_names": [
+        "alt.binaries.bloaf"
+      ],
+      "group_ids": [
+        34
+      ],
+      "file_types": {}
+    },
+    {
+      "id": 1778901628,
+      "name": "[15\/42] - \"Hgzdx1mNGQ7Rb27lDJOu5943MFOOII1OBhULLPC5ouijkxEYGeFkr65-wLVrduTfoQFi7c38.jwxE4\" yEnc  72114688",
+      "poster": "yVkPu Be h9vA3tk4k <C0nWNYlRK@2l5NkNG9CuouA.agj>",
+      "posted": 1711175642000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 734790,
+      "total_parts": 85,
+      "available_parts": 1,
+      "complete": false,
+      "group_names": [
+        "alt.binaries.usenet2day"
+      ],
+      "group_ids": [
+        755
+      ],
+      "file_types": {}
+    },
+    {
+      "id": 1778899969,
+      "name": "eeraFXxvhq6JdJIV8hhCVUXq4N9 [2\/12] \"w4vt5m7U0WTVJ3I2FoO4_vHneHZ.rar\" yEnc",
+      "poster": "OG6WDMV0tohfmvMY9XzoMCFsDC@cGsvyUQ1PswHH.siw",
+      "posted": 1711175592000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 786936,
+      "total_parts": 162,
+      "available_parts": 1,
+      "complete": false,
+      "group_names": [
+        "alt.binaries.bloaf"
+      ],
+      "group_ids": [
+        34
+      ],
+      "file_types": {
+        "archive": 1
+      }
+    },
+    {
+      "id": 1778867370,
+      "name": "[25\/47] - \"fbdVbaRvlxSynw.xPTmiK\" yEnc  184576102",
+      "poster": "aOT-O7YhZHFyCIlCbTvuwL <xxiTbRmkXN@vbM35kBeNtjX.mElCa>",
+      "posted": 1711174828000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 734743,
+      "total_parts": 51,
+      "available_parts": 1,
+      "complete": false,
+      "group_names": [
+        "alt.binaries.mom"
+      ],
+      "group_ids": [
+        319
+      ],
+      "file_types": {}
+    },
+    {
+      "id": 1778933565,
+      "name": "[24\/47] - \"1QwB3eGwxc0OFoOpfywxSXmhK57QwS40qC8q.ZC9BBNK\" yEnc  209369907",
+      "poster": "9W6pQD4-TvblVs-h7pd zWittw <L2zWcn5UAxa@xxptwtT.ztQjTTld>",
+      "posted": 1711174827000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 734707,
+      "total_parts": 79,
+      "available_parts": 1,
+      "complete": false,
+      "group_names": [
+        "alt.binaries.multimedia.alias"
+      ],
+      "group_ids": [
+        384
+      ],
+      "file_types": {}
+    },
+    {
+      "id": 1778781644,
+      "name": "[17\/47] - \"luaqXXoNVJibbaRtIdjdmqQZFGJR-cZNXAq1RzmpH495c.h8RTh\" yEnc  263089818",
+      "poster": "nddA2qEF-OE4u3E <CdcXojNeao@wkjfnAY0my-ZVJB.UcX-ht>",
+      "posted": 1711174813000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 734903,
+      "total_parts": 77,
+      "available_parts": 1,
+      "complete": false,
+      "group_names": [
+        "alt.binaries.pwp"
+      ],
+      "group_ids": [
+        540
+      ],
+      "file_types": {}
+    },
+    {
+      "id": 1778967435,
+      "name": "[14\/47] - \"rfLrBTOZZzxIvIi6HRYb7q2TbpV-mEIS5pp71o2yyY8uNAr1bfoOq6IFxKRKfRGo3k.hE1Z5x\" yEnc  157027430",
+      "poster": "h0XjkKKkk77zH02KN <8X-RiKpCfwTh@V6fXy.J3iX5HLl>",
+      "posted": 1711174808000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 734692,
+      "total_parts": 65,
+      "available_parts": 1,
+      "complete": false,
+      "group_names": [
+        "alt.binaries.coolkidweb"
+      ],
+      "group_ids": [
+        91
+      ],
+      "file_types": {}
+    },
+    {
+      "id": 1778968209,
+      "name": "[13\/47] - \"R7Hk79KLs5wKsTxAcwE834fOovMQfmu.N3TZDnV\" yEnc  179066368",
+      "poster": "QhA3y4-4YCtwaHWCxDiHrI2BlCc-a4 FYA0cpv <dQS8xzwqEvCY@EGWkKIyCPO.",
+      "posted": 1711174807000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 734835,
+      "total_parts": 64,
+      "available_parts": 1,
+      "complete": false,
+      "group_names": [
+        "alt.binaries.coolkidweb"
+      ],
+      "group_ids": [
+        91
+      ],
+      "file_types": {}
+    },
+    {
+      "id": 1778717645,
+      "name": "[46\/47] - \"CibZkUiELO3o5JqtRMwfOoBS6ddH3bnGi8a5Pew2P74iEjW0hfjEfQMDcUKpcVhmO.4nU\" yEnc  100409785",
+      "poster": "zyLS5Hd1FAoMvTSkn9ahd <zVLZ5QlZYkWTMg@obzRVNibeG.mv-yXA>",
+      "posted": 1711174506000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 734658,
+      "total_parts": 89,
+      "available_parts": 1,
+      "complete": false,
+      "group_names": [
+        "alt.binaries.cores"
+      ],
+      "group_ids": [
+        92
+      ],
+      "file_types": {}
+    },
+    {
+      "id": 1778900816,
+      "name": "[39\/47] - \"mjItlbArwhBSQN8kth12o2i7.xlC\" yEnc  71782257",
+      "poster": "OJxPiAkz <kqKUMcKTn@lUTElr5i9uZp.PmQriW>",
+      "posted": 1711174500000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 734718,
+      "total_parts": 65,
+      "available_parts": 1,
+      "complete": false,
+      "group_names": [
+        "alt.binaries.test"
+      ],
+      "group_ids": [
+        721
+      ],
+      "file_types": {}
+    },
+    {
+      "id": 1778780165,
+      "name": "[34\/47] - \"IBBaRDLMCQlIhqFaW9h6uxAazPvgBhjE04FwLykuyfKNPwMkjRC.o1t\" yEnc  86346772",
+      "poster": "ZbeeVgz6Z8PADWqly5Sf hB0mVoDbsra <I90qqSdp-AqNOMfwya@Sh.Uni>",
+      "posted": 1711174497000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 734772,
+      "total_parts": 74,
+      "available_parts": 1,
+      "complete": false,
+      "group_names": [
+        "alt.binaries.faded-glory"
+      ],
+      "group_ids": [
+        914
+      ],
+      "file_types": {}
+    },
+    {
+      "id": 1778743891,
+      "name": "[27\/47] - \"CT6f6o-3331Xij3W2JTjxoZuGVAmFrmYTevhY6pAoMERpUOxgfOOURhPfMBNzZFuH9Y.MYuDkdp\" yEnc  59818547",
+      "poster": "PaBCjJr Msi4SkJhwRQhp <PB4e0QaBXQGaM@r0Tsu-iY.4AV6xo>",
+      "posted": 1711174490000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 734829,
+      "total_parts": 72,
+      "available_parts": 1,
+      "complete": false,
+      "group_names": [
+        "alt.binaries.brg"
+      ],
+      "group_ids": [
+        951
+      ],
+      "file_types": {}
+    },
+    {
+      "id": 1778743495,
+      "name": "[8\/47] - \"FEdTfYKNNroDaBAR9VB.SkCKOO\" yEnc  66580644",
+      "poster": "SFy-IZbFtuvg <F4stji3TamVAYPaE@HzyazAvd.RQzBa>",
+      "posted": 1711174477000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 734703,
+      "total_parts": 64,
+      "available_parts": 1,
+      "complete": false,
+      "group_names": [
+        "alt.binaries.brg"
+      ],
+      "group_ids": [
+        951
+      ],
+      "file_types": {}
+    },
+    {
+      "id": 1778928225,
+      "name": "[25\/29] \"XAe4ErlpOMfTjHqxL56kCl0xFfOo1J.7z.025\"",
+      "poster": "VcewalLQa7WEL@hidden_files.com",
+      "posted": 1711174340000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 183770763,
+      "total_parts": 229,
+      "available_parts": 229,
+      "complete": true,
+      "group_names": [
+        "alt.binaries.boneless"
+      ],
+      "group_ids": [
+        40
+      ],
+      "file_types": {}
+    },
+    {
+      "id": 1778781619,
+      "name": "[37\/42] - \"pu2LCfzLkD0v4Fvy5lYLyuQMM8wGz4s8ombgvGKnT3LyjkKEfOOF9v.aKUxwh\" yEnc  7350722",
+      "poster": "c7EnS7Z8c0hsjG0KL9naofjHimrML3 <1Xn7-jnRvYaKpL@C5ucMaT.P1xVE>",
+      "posted": 1711174317000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 734875,
+      "total_parts": 80,
+      "available_parts": 1,
+      "complete": false,
+      "group_names": [
+        "alt.binaries.kenpsx"
+      ],
+      "group_ids": [
+        297
+      ],
+      "file_types": {}
+    },
+    {
+      "id": 1778830388,
+      "name": "[31\/42] - \"fgbUBURNsSn1-ZG9AvcpdvkjJTWWIIb8aFoojCVO8XpFLFamURWturcHInaeh1-g-9kXAOqw9UN.GB\" yEnc  48355308",
+      "poster": "jrvx1R5regiHrFS977oh7rzKnaj3m <R93vglmlsp@8OvoLLP.APXlnK4zsr>",
+      "posted": 1711174310000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 734714,
+      "total_parts": 56,
+      "available_parts": 1,
+      "complete": false,
+      "group_names": [
+        "alt.binaries.etc"
+      ],
+      "group_ids": [
+        207
+      ],
+      "file_types": {}
+    },
+    {
+      "id": 1778867800,
+      "name": "[23\/42] - \"SXIHXiRcelB26wmKNKRfwFOo.wWPi\" yEnc  116548690",
+      "poster": "ZXITylC-4zDnfz <p1MPKFvJGePEPuaFx@31wCX8mV.QvE>",
+      "posted": 1711174303000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 734719,
+      "total_parts": 79,
+      "available_parts": 1,
+      "complete": false,
+      "group_names": [
+        "alt.binaries.frogs"
+      ],
+      "group_ids": [
+        870
+      ],
+      "file_types": {}
+    },
+    {
+      "id": 1778711817,
+      "name": "[10\/42] - \"H6F4LejbKBARj.Xr\" yEnc  117168630",
+      "poster": "301HkwkFPZhX0BvzVCbUtZY <hJbEUBaIFvCFOavTWbx@hWdE8rmB.aIiTAUjw>",
+      "posted": 1711174289000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 734761,
+      "total_parts": 79,
+      "available_parts": 1,
+      "complete": false,
+      "group_names": [
+        "alt.binaries.nordic.password.protected"
+      ],
+      "group_ids": [
+        479
+      ],
+      "file_types": {}
+    },
+    {
+      "id": 1778967736,
+      "name": "[50\/53] - \"9fvaluJSaTgEj-TG4B4YDFaZFoOzKhp0.lXx9\" yEnc  179026126",
+      "poster": "qhL6F <niKygPcGkb@Eds.3m7Ffzp>",
+      "posted": 1711174045000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 734559,
+      "total_parts": 58,
+      "available_parts": 1,
+      "complete": false,
+      "group_names": [
+        "alt.binaries.coolkidweb"
+      ],
+      "group_ids": [
+        91
+      ],
+      "file_types": {}
+    },
+    {
+      "id": 1778853834,
+      "name": "[33\/53] - \"kSBArg30XRLYVQNGd1I79xr1.MUz6\" yEnc  130393334",
+      "poster": "q3RXo8S0VFWVU2 5SqUU Z4Ca1gqE <kgcTvwV@jqOq.ziKGhmq>",
+      "posted": 1711173997000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 734665,
+      "total_parts": 56,
+      "available_parts": 1,
+      "complete": false,
+      "group_names": [
+        "alt.binaries.boneless"
+      ],
+      "group_ids": [
+        40
+      ],
+      "file_types": {}
+    },
+    {
+      "id": 1778742788,
+      "name": "[31\/53] - \"8dqJH5RwG1mH8vvmpqyAw3M7ztNFoOUT-zFh2qt-vBem2wJhkMNIG3-n8tprGMEZ9n8.gzG\" yEnc  279659387",
+      "poster": "yBASbjecD <LWM2-zAov6kXnDPs@eiVv.2m>",
+      "posted": 1711173991000,
+      "spam": false,
+      "password": false,
+      "file_count": 1,
+      "group_count": 1,
+      "size": 734518,
+      "total_parts": 81,
+      "available_parts": 1,
+      "complete": false,
+      "group_names": [
+        "alt.binaries.rar.pw-required"
+      ],
+      "group_ids": [
+        541
+      ],
+      "file_types": {}
+    }
+  ]
+}

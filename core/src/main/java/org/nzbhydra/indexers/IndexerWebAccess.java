@@ -5,12 +5,14 @@ import com.google.common.io.BaseEncoding;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.apache.commons.lang3.StringUtils;
+import org.nzbhydra.Jackson;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.exceptions.IndexerProgramErrorException;
 import org.nzbhydra.indexers.exceptions.IndexerUnreachableException;
 import org.nzbhydra.logging.MdcThreadPoolExecutor;
+import org.nzbhydra.mapping.IndexerResponseTypeHolder;
 import org.nzbhydra.springnative.ReflectionMarker;
 import org.nzbhydra.web.WebConfiguration;
 import org.nzbhydra.webaccess.WebAccess;
@@ -76,20 +78,30 @@ public class IndexerWebAccess {
                 if (responseType == String.class) {
                     return (T) response;
                 }
+                if (IndexerResponseTypeHolder.class.isAssignableFrom(responseType)) {
+                    IndexerResponseTypeHolder responseTypeHolder = (IndexerResponseTypeHolder) responseType.getDeclaredConstructor().newInstance();
+                    if (responseTypeHolder.getType() == IndexerResponseTypeHolder.ResponseType.JSON) {
+                        return (T) Jackson.JSON_MAPPER.readValue(response, responseType);
+                    } else if (responseTypeHolder.getType() == IndexerResponseTypeHolder.ResponseType.XML) {
+                        try {
+                            try (StringReader reader = new StringReader(response)) {
+                                final StreamSource source = new StreamSource(reader);
+                                T unmarshalled = (T) unmarshaller.unmarshal(source);
+                                return unmarshalled;
+                            }
+                        } catch (UnmarshallingFailureException e) {
+                            if (!response.toLowerCase().contains("function not available")) {
+                                //Some indexers like Animetosho don't return a proper error code. This error may happen during caps check and we don't want to log it
+                                logParseException(response, e);
+                            }
+                            throw new HydraUnmarshallingFailureException(e.getMessage(), e, response);
+                        }
 
-                try {
-                    try (StringReader reader = new StringReader(response)) {
-                        final StreamSource source = new StreamSource(reader);
-                        T unmarshalled = (T) unmarshaller.unmarshal(source);
-                        return unmarshalled;
+                    } else {
+                        throw new RuntimeException("Unexpected responseTypeHolder type " + responseTypeHolder.getType());
                     }
-                } catch (UnmarshallingFailureException e) {
-                    if (!response.toLowerCase().contains("function not available")) {
-                        //Some indexers like Animetosho don't return a proper error code. This error may happen during caps check and we don't want to log it
-                        logParseException(response, e);
-                    }
-                    throw new HydraUnmarshallingFailureException(e.getMessage(), e, response);
                 }
+                throw new RuntimeException("Unexpected responseType " + responseType);
             });
         } catch (RejectedExecutionException e) {
             logger.error("Unexpected execution exception while executing call for indexer " + indexerConfig.getName() + ". This will hopefully be fixed soon", e);

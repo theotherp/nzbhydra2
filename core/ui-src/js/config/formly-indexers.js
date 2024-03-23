@@ -150,7 +150,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
         );
     }
 
-    if ((indexerModel.searchModuleType === 'NEWZNAB' || indexerModel.searchModuleType === 'TORZNAB' || indexerModel.searchModuleType === 'JACKETT_CONFIG') && indexerModel.host !== 'https://feed.animetosho.org') {
+    if ((indexerModel.searchModuleType === 'NEWZNAB' || indexerModel.searchModuleType === 'TORZNAB' || indexerModel.searchModuleType === 'JACKETT_CONFIG' || indexerModel.searchModuleType === 'NZBINDEX_API') && indexerModel.host !== 'https://feed.animetosho.org') {
         fieldset.push(
             {
                 key: 'apiKey',
@@ -890,8 +890,32 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
             timeout: null,
             searchModuleType: "NZBINDEX",
             username: null
+        },
+        {
+            allCapsChecked: true,
+            enabledForSearchSource: "INTERNAL",
+            categories: [],
+            configComplete: true,
+            downloadLimit: null,
+            generalMinSize: 1,
+            hitLimit: null,
+            hitLimitResetTime: null,
+            host: "https://api.nzbindex.com",
+            loadLimitOnRandom: null,
+            name: "NZBIndex API",
+            password: null,
+            preselect: true,
+            score: 0,
+            showOnSearch: true,
+            state: "ENABLED",
+            supportedSearchIds: [],
+            supportedSearchTypes: [],
+            timeout: null,
+            searchModuleType: "NZBINDEX_API",
+            username: null
         }
     ];
+
     $scope.newznabPresets = _.sortBy($scope.newznabPresets, function (entry) {
         return entry.name.toLowerCase()
     });

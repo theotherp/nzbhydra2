@@ -22,6 +22,7 @@ import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlSeeAlso;
 import jakarta.xml.bind.annotation.XmlTransient;
+import org.nzbhydra.mapping.IndexerResponseTypeHolder;
 import org.nzbhydra.mapping.newznab.NewznabResponse;
 import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlRoot;
 import org.nzbhydra.mapping.newznab.xml.caps.jackett.JacketCapsXmlRoot;
@@ -32,10 +33,15 @@ import java.io.StringWriter;
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlSeeAlso({NewznabXmlError.class, NewznabXmlRoot.class, CapsXmlRoot.class, JacketCapsXmlRoot.class})
-public abstract class Xml extends NewznabResponse {
+public abstract class Xml extends NewznabResponse implements IndexerResponseTypeHolder {
 
     @XmlTransient
     private NewznabResponse.SearchType searchType;
+
+    @Override
+    public ResponseType getType() {
+        return ResponseType.XML;
+    }
 
     @Override
     public String getContentHeader() {

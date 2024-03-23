@@ -106,7 +106,7 @@ public class IndexerTest {
     private Indexer testee = getTestee();
 
     private Indexer<String> getTestee() {
-        return new Indexer<String>() {
+        return new Indexer<>() {
             @Override
             protected Logger getLogger() {
                 return LoggerFactory.getLogger("test");

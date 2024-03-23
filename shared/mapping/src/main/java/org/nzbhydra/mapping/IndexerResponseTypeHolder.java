@@ -1,5 +1,5 @@
 /*
- *  (C) Copyright 2017 TheOtherP (theotherp@posteo.net)
+ *  (C) Copyright 2024 TheOtherP (theotherp@posteo.net)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,15 +14,16 @@
  *  limitations under the License.
  */
 
-package org.nzbhydra.config.indexer;
+package org.nzbhydra.mapping;
 
-public enum SearchModuleType {
-    ANIZB,
-    BINSEARCH,
-    NEWZNAB,
-    NZBINDEX,
-    NZBINDEX_API,
-    TORZNAB,
-    DEVONLY,
-    JACKETT_CONFIG
+public interface IndexerResponseTypeHolder {
+
+    enum ResponseType {
+        XML,
+        JSON
+    }
+
+    ResponseType getType();
+
+
 }
