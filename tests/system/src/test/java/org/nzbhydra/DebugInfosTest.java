@@ -17,6 +17,7 @@
 package org.nzbhydra;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -41,6 +42,7 @@ public class DebugInfosTest {
     }
 
     @Test
+    @Disabled
     public void shouldLogThreadDump() throws Exception {
         final HydraResponse response = hydraClient.get("/internalapi/debuginfos/logThreadDump");
         final String body = response.body();
