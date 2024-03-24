@@ -16,6 +16,7 @@
 
 package org.nzbhydra;
 
+import org.apache.coyote.AbstractProtocol;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.nzbhydra.config.migration.ConfigMigrationStep;
 import org.nzbhydra.springnative.ReflectionMarker;
@@ -80,6 +81,7 @@ public class NativeHints implements RuntimeHintsRegistrar {
             hints.reflection().registerMethod(MetricsEndpoint.class.getMethod("metric", String.class, List.class), ExecutableMode.INVOKE);
             hints.reflection().registerMethod(MetricsEndpoint.MetricDescriptor.class.getMethod("getMeasurements"), ExecutableMode.INVOKE);
             hints.reflection().registerMethod(ThreadDumpEndpoint.class.getMethod("textThreadDump"), ExecutableMode.INVOKE);
+            hints.reflection().registerMethod(AbstractProtocol.class.getMethod("getName"), ExecutableMode.INVOKE);
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);
         }
