@@ -1,0 +1,14 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="wrapper restore native" type="GoApplicationRunConfiguration" factoryName="Go Application">
+    <module name="gowrapper" />
+    <working_directory value="d:/NZBHydra/nzbhydra2/gowrappertest/restore_native" />
+    <envs>
+      <env name="NZBHYDRA_FORCE_RESTORE" value="true" />
+    </envs>
+    <kind value="PACKAGE" />
+    <package value="theotherp/console" />
+    <directory value="$PROJECT_DIR$" />
+    <filePath value="$PROJECT_DIR$/main.go" />
+    <method v="2" />
+  </configuration>
+</component>
