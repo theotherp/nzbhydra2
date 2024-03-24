@@ -36,6 +36,7 @@ var lastRestart = time.Now()
 var internalApiKey = randstr.Hex(20)
 var hideWindow = false
 var uri = ""
+var consoleLines []string
 
 var (
 	argsJavaExecutable = flag.String("java", "java", "Full path to java executable")
@@ -330,10 +331,23 @@ func determineXmxAndLogGc() (string, bool) {
 	return xmx, logGc
 }
 
+func handleUnexpectedExit() {
+	message := "Main process shut down unexpectedly."
+	for _, x := range consoleLines {
+		if strings.Contains(x, "Unrecognized option: -Xlog") {
+			message = "You seem to be trying to run NZBHydra with a wrong Java version. Please make sure to use at least Java 9"
+		} else if strings.Contains(x, "java.lang.OutOfMemoryError") {
+			message = "The main process has exited because it didn't have enough memory. Please increase the XMX value in the main config"
+		}
+	}
+	LogFile(logrus.ErrorLevel, message)
+	LogFile(logrus.ErrorLevel, "The last 250 lines from output:")
+	for _, line := range consoleLines {
+		LogFile(logrus.ErrorLevel, line)
+	}
+}
+
 func startupLoop() {
-	//todo system tray if wanted, create two files and compile themp or perhaps move main code to a library
-	//and call from each program
-	//todo use internalApiKey to authorize shutdown or restart via REST API
 	releaseType := determineReleaseType()
 	if releaseType == GENERIC {
 		*argsJavaExecutable = "java"
@@ -378,6 +392,7 @@ func startupLoop() {
 			Log(logrus.InfoLevel, "NZBHydra main process has stopped for restoration")
 			doStart = restore()
 		} else if exitCode != 0 {
+			handleUnexpectedExit()
 			if lastRestart.Add(20 * time.Second).After(time.Now()) {
 				Fatal("Last restart was less than 20 seconds ago - quitting to prevent endless restart loop")
 			}
@@ -493,8 +508,10 @@ func runMainProcess(executable string, arguments []string) int {
 				println(line)
 			}
 			handleProcessUriInLogLine(line)
-
-			//todo Handle unexpected error, save the latest 100 or so lines to a variable
+			consoleLines = append(consoleLines, line)
+			if len(consoleLines) > 250 {
+				consoleLines = consoleLines[1:]
+			}
 		}
 
 		close(done)
@@ -622,7 +639,6 @@ func _main() {
 		dataFolder = filepath.Join(workingDir, dataFolder)
 		Logf(logrus.InfoLevel, "Data folder path is not absolute. Will assume %s was meant", dataFolder)
 	}
-	//todo if --help or --version just startup without restar
 	doStart = true
 
 	startupLoop()

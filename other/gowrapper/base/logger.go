@@ -33,8 +33,8 @@ func Fatalf(format string, args ...interface{}) {
 	fileLogger.Exit(1)
 }
 
-func LogConsole(logLevel logrus.Level, args ...interface{}) {
-	consoleLogger.Log(logLevel, args...)
+func LogFile(logLevel logrus.Level, args ...interface{}) {
+	fileLogger.Log(logLevel, args...)
 }
 
 func LogFatalIfError(err error) {
