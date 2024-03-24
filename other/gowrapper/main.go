@@ -7,7 +7,6 @@ import (
 	"github.com/thanhpk/randstr"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -40,19 +39,16 @@ var internalApiKey = randstr.Hex(20)
 var (
 	argsJavaExecutable = flag.String("java", "java", "Full path to java executable")
 	debugPort          = flag.String("debugport", "", "Set debug port to enable remote debugging")
-	//daemon            = flag.Bool("daemon", false, "Run as daemon. *nix only")
-	noColors = flag.Bool("nocolors", false, "Disable color coded console output (disabled on Windows by default)")
-	//listFiles         = flag.String("listfiles", "", "Lists all files in given folder and quits. For debugging docker")
-	dataFolderOptions = flag.String("datafolder", filepath.Join(basePath, "data"), "Set the main data folder containing config, database, etc using an absolute path")
-	argsXmx           = flag.String("xmx", "", "Java Xmx setting in MB (e.g. 256)")
-	argsQuiet         = flag.Bool("quiet", false, "Set to disable all console output but fatal errors")
-	host              = flag.String("host", "", "Set the host")
-	port              = flag.String("port", "", "Set the port")
-	baseURL           = flag.String("baseurl", "", "Set the base URL (e.g. /nzbhydra)")
-	noBrowser         = flag.Bool("nobrowser", false, "Set to disable opening of browser at startup")
-	argsDebug         = flag.Bool("debug", false, "Start with more debugging output")
-	repairDB          = flag.String("repairdb", "", "Attempt to repair the database. Provide path to database file as parameter")
-	version           = flag.Bool("version", false, "Print version")
+	dataFolderOptions  = flag.String("datafolder", filepath.Join(basePath, "data"), "Set the main data folder containing config, database, etc using an absolute path")
+	argsXmx            = flag.String("xmx", "", "Java Xmx setting in MB (e.g. 256)")
+	argsQuiet          = flag.Bool("quiet", false, "Set to disable all console output but fatal errors")
+	host               = flag.String("host", "", "Set the host")
+	port               = flag.String("port", "", "Set the port")
+	baseURL            = flag.String("baseurl", "", "Set the base URL (e.g. /nzbhydra)")
+	noBrowser          = flag.Bool("nobrowser", false, "Set to disable opening of browser at startup")
+	argsDebug          = flag.Bool("debug", false, "Start with more debugging output")
+	repairDB           = flag.String("repairdb", "", "Attempt to repair the database. Provide path to database file as parameter")
+	version            = flag.Bool("version", false, "Print version")
 )
 
 func logFatalIfError(err error) {
@@ -103,7 +99,7 @@ func setupLogger() {
 	//todo use logrus or similar, setup logging levels and file logging
 	logsFolder := filepath.Join(dataFolder, "logs")
 	if _, err := os.Stat(logsFolder); os.IsNotExist(err) {
-		os.MkdirAll(logsFolder, os.ModePerm)
+		logFatalIfError(os.MkdirAll(logsFolder, os.ModePerm))
 	}
 	logfilename := filepath.Join(logsFolder, "wrapper.log")
 
@@ -226,7 +222,7 @@ func doUpdate() {
 			logFatalIfError(rc.Close())
 		}
 	}
-	_ = r.Close()
+	logFatalIfError(r.Close())
 
 	err = os.Remove(updateZip)
 	logFatalIfError(err)
@@ -281,7 +277,7 @@ func restore() bool {
 		log.Fatalf("Error while deleting old data folder: %v", err)
 	}
 
-	files, err := ioutil.ReadDir(restoreFolder)
+	files, err := os.ReadDir(restoreFolder)
 	logFatalMsgIfError(err, "Error reading restore folder: ")
 
 	for _, f := range files {
@@ -309,7 +305,7 @@ func restore() bool {
 
 func cleanUpOldFiles() {
 	basePath := getBasePath()
-	files, err := ioutil.ReadDir(basePath)
+	files, err := os.ReadDir(basePath)
 	logFatalIfError(err)
 
 	var oldFiles []string
@@ -557,7 +553,7 @@ func findJarFile(libFolder string) string {
 		log.Fatalf("Error: Lib folder %s not found. An update might've failed or the installation folder is corrupt", libFolder)
 	}
 
-	files, err := ioutil.ReadDir(libFolder)
+	files, err := os.ReadDir(libFolder)
 	logFatalIfError(err)
 
 	var jarFiles []string
@@ -624,14 +620,10 @@ func _main() {
 	setupLogger()
 	dataFolder = *dataFolderOptions
 	cleanUpOldFiles()
-	controlIdFilePath := filepath.Join(dataFolder, "control.id")
 	if !filepath.IsAbs(dataFolder) {
 		workingDir, _ := os.Getwd()
 		dataFolder = filepath.Join(workingDir, dataFolder)
 		log.Printf("Data folder path is not absolute. Will assume %s was meant\n", dataFolder)
-	}
-	if _, err := os.Stat(controlIdFilePath); err == nil {
-		os.Remove(controlIdFilePath)
 	}
 	//todo if --help or --version just startup without restar
 	doStart = true
