@@ -4,10 +4,9 @@ import (
 	"archive/zip"
 	"bufio"
 	"flag"
+	"github.com/sirupsen/logrus"
 	"github.com/thanhpk/randstr"
-	"gopkg.in/natefinch/lumberjack.v2"
 	"io"
-	"log"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -53,17 +52,6 @@ var (
 	version            = flag.Bool("version", false, "Print version")
 )
 
-func LogFatalIfError(err error) {
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-func logFatalMsgIfError(err error, message string) {
-	if err != nil {
-		log.Fatalf("%s %s", message, err)
-	}
-}
-
 func getBasePath() string {
 	if basePath != "" {
 		return basePath
@@ -97,39 +85,14 @@ func fileExists(filename string) bool {
 	return !info.IsDir()
 }
 
-func setupLogger() {
-	//todo use logrus or similar, setup logging levels and file logging
-	logsFolder := filepath.Join(dataFolder, "logs")
-	if _, err := os.Stat(logsFolder); os.IsNotExist(err) {
-		LogFatalIfError(os.MkdirAll(logsFolder, os.ModePerm))
-	}
-	logfilename := filepath.Join(logsFolder, "wrapper.log")
-
-	if !*argsQuiet {
-		log.Println("Logging wrapper output to " + logfilename)
-	}
-
-	logger := log.New(&lumberjack.Logger{
-		Filename:   logfilename,
-		MaxSize:    100, // megabytes
-		MaxBackups: 1,
-	}, "", log.LstdFlags)
-
-	if *argsQuiet {
-		logger.SetOutput(os.Stdout)
-	} else {
-		logger.SetOutput(os.Stderr)
-	}
-}
-
 func getJavaVersion(javaExecutable string) int {
 	mainProcess = exec.Command(javaExecutable, "-version")
 	output, err := mainProcess.CombinedOutput()
-	logFatalMsgIfError(err, "Error running java command to determine version: ")
+	LogFatalMsgIfError(err, "Error running java command to determine version: ")
 
 	lines := strings.Split(string(output), "\n")
 	if len(lines) == 0 {
-		log.Fatal("unable to get output from call to java -version")
+		Fatal("unable to get output from call to java -version")
 	}
 
 	versionLine := lines[0]
@@ -137,7 +100,7 @@ func getJavaVersion(javaExecutable string) int {
 	match := re.FindStringSubmatch(versionLine)
 
 	if match == nil {
-		log.Fatal("Unable to determine java version from string " + lines[0])
+		Fatal("Unable to determine java version from string " + lines[0])
 	}
 
 	javaMajor, _ := strconv.Atoi(match[3])
@@ -145,7 +108,7 @@ func getJavaVersion(javaExecutable string) int {
 
 	javaVersion := 0
 	if (javaMajor == 1 && javaMinor < 8) || (1 < javaMajor && javaMajor < 8) {
-		log.Fatal("Found incompatible java version '" + versionLine + "'")
+		Fatal("Found incompatible java version '" + versionLine + "'")
 	}
 	if javaMajor == 1 && javaMinor == 8 {
 		javaVersion = 8
@@ -153,7 +116,7 @@ func getJavaVersion(javaExecutable string) int {
 		javaVersion = javaMajor
 	}
 
-	log.Printf("Determined java version as '%d' from version string '%s'", javaVersion, versionLine)
+	Logf(logrus.DebugLevel, "Determined java version as '%d' from version string '%s'", javaVersion, versionLine)
 	mainProcess = nil
 	return javaVersion
 }
@@ -161,19 +124,19 @@ func getJavaVersion(javaExecutable string) int {
 func determineReleaseType() ReleaseType {
 	forcedReleaseType := os.Getenv("NZBHYDRA_FORCE_GENERIC")
 	if forcedReleaseType != "" {
-		log.Printf("Release type %s forced by environment variable", forcedReleaseType)
+		Logf(logrus.InfoLevel, "Release type %s forced by environment variable", forcedReleaseType)
 		return ReleaseType(forcedReleaseType)
 	}
 	basePath := getBasePath()
 	if _, err := os.Stat(filepath.Join(basePath, "lib")); err == nil {
 		if _, err := os.Stat(filepath.Join(basePath, "core.exe")); err == nil {
-			log.Println("lib folder and core found. Either delete the executable to use the generic release type (using java and ignoring the executable) or delete the lib folder to use the executable and not require java")
+			Fatal("lib folder and core found. Either delete the executable to use the generic release type (using java and ignoring the executable) or delete the lib folder to use the executable and not require java")
 		}
 		return GENERIC
 	} else if _, err := os.Stat(filepath.Join(basePath, "core.exe")); err == nil {
 		return NATIVE
 	} else {
-		log.Fatal("Unable to determine the release type. Neither lib folder nor core found")
+		Fatal("Unable to determine the release type. Neither lib folder nor core found")
 	}
 	return ""
 }
@@ -185,7 +148,7 @@ func doUpdate() {
 	libFolder := filepath.Join(basePath, "lib")
 
 	if _, err := os.Stat(updateFolder); os.IsNotExist(err) {
-		log.Fatalf("Error: Update folder %s does not exist", updateFolder)
+		Fatalf("Error: Update folder %s does not exist", updateFolder)
 	}
 
 	files, err := os.ReadDir(updateFolder)
@@ -200,8 +163,9 @@ func doUpdate() {
 	}
 
 	if updateZip == "" {
-		log.Fatal("Error: Unable to identify update ZIP")
+		Fatal("Error: Unable to identify update ZIP")
 	}
+	Logf(logrus.DebugLevel, "updateZip: %s", updateZip)
 
 	r, err := zip.OpenReader(updateZip)
 	LogFatalIfError(err)
@@ -217,7 +181,7 @@ func doUpdate() {
 			path := filepath.Join(basePath, f.Name)
 			outFile, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
 			LogFatalIfError(err)
-
+			Logf(logrus.DebugLevel, "Extracting to %s", path)
 			_, err = io.Copy(outFile, rc)
 			LogFatalIfError(err)
 			LogFatalIfError(outFile.Close())
@@ -245,42 +209,42 @@ func doUpdate() {
 			LogFatalIfError(err)
 		} else if len(jarFiles) == 1 {
 			if jarFiles[0] == filepath.Base(jarFile) {
-				log.Println("New JAR file in lib folder is the same as the old one. The update may not have found a newer version or failed for some reason")
+				Log(logrus.InfoLevel, "New JAR file in lib folder is the same as the old one. The update may not have found a newer version or failed for some reason")
 			}
 		} else {
-			log.Printf("Expected the number of JAR files in folder %s to be 2 but it's %d. This will be fixed with the next start", libFolder, len(jarFiles))
+			Logf(logrus.InfoLevel, "Expected the number of JAR files in folder %s to be 2 but it's %d. This will be fixed with the next start", libFolder, len(jarFiles))
 		}
 	}
-
+	Log(logrus.DebugLevel, "Removing update folder ", updateFolder)
 	err = os.RemoveAll(updateFolder)
 	LogFatalIfError(err)
 
-	log.Println("Update successful, restarting Hydra main process")
+	Log(logrus.InfoLevel, "Update successful, restarting Hydra main process")
 }
 
 func restore() bool {
 	restoreFolder := filepath.Join(dataFolder, "restore")
 	if _, err := os.Stat(dataFolder); os.IsNotExist(err) {
-		log.Fatalf("Data folder %s does not exist", dataFolder)
+		Fatalf("Data folder %s does not exist", dataFolder)
 	}
 	if _, err := os.Stat(restoreFolder); os.IsNotExist(err) {
-		log.Fatalf("Restore folder %s does not exist", restoreFolder)
+		Fatalf("Restore folder %s does not exist", restoreFolder)
 	}
 
 	oldSettingsFile := filepath.Join(dataFolder, "nzbhydra.yml")
-	log.Printf("Deleting old settings file %s", oldSettingsFile)
+	Logf(logrus.DebugLevel, "Deleting old settings file %s", oldSettingsFile)
 	if err := os.Remove(oldSettingsFile); err != nil {
-		log.Fatalf("Error while deleting old data folder: %v", err)
+		Fatalf("Error while deleting old data folder: %v", err)
 	}
 
 	oldDatabaseFile := filepath.Join(dataFolder, "database", "nzbhydra.mv.db")
-	log.Printf("Deleting old database file %s", oldDatabaseFile)
+	Logf(logrus.DebugLevel, "Deleting old database file %s", oldDatabaseFile)
 	if err := os.Remove(oldDatabaseFile); err != nil {
-		log.Fatalf("Error while deleting old data folder: %v", err)
+		Fatalf("Error while deleting old data folder: %v", err)
 	}
 
 	files, err := os.ReadDir(restoreFolder)
-	logFatalMsgIfError(err, "Error reading restore folder: ")
+	LogFatalMsgIfError(err, "Error reading restore folder: ")
 
 	for _, f := range files {
 		source := filepath.Join(restoreFolder, f.Name())
@@ -290,18 +254,18 @@ func restore() bool {
 		} else {
 			dest = filepath.Join(dataFolder, f.Name())
 		}
-		log.Printf("Moving %s to %s", source, dest)
+		Logf(logrus.DebugLevel, "Moving %s to %s", source, dest)
 		if err := os.Rename(source, dest); err != nil {
-			log.Fatalf("Error moving %s to %s: %s", source, dest, err)
+			Fatalf("Error moving %s to %s: %s", source, dest, err)
 		}
 	}
 
-	log.Printf("Deleting folder %s", restoreFolder)
+	Logf(logrus.DebugLevel, "Deleting folder %s", restoreFolder)
 	if err := os.RemoveAll(restoreFolder); err != nil {
-		log.Fatalf("Error removing restore folder %s: %s", restoreFolder, err)
+		Fatalf("Error removing restore folder %s: %s", restoreFolder, err)
 	}
 
-	log.Println("Moved all files from restore folder to data folder")
+	Log(logrus.InfoLevel, "Moved all files from restore folder to data folder")
 	return true
 }
 
@@ -318,9 +282,9 @@ func cleanUpOldFiles() {
 	}
 
 	if len(oldFiles) > 0 {
-		log.Println("Deleting .old files from last update")
+		Log(logrus.InfoLevel, "Deleting .old files from last update")
 		for _, oldFile := range oldFiles {
-			log.Printf("Deleting file %s\n", oldFile)
+			Logf(logrus.DebugLevel, "Deleting file %s", oldFile)
 			err := os.Remove(filepath.Join(basePath, oldFile))
 			LogFatalIfError(err)
 		}
@@ -352,7 +316,7 @@ func determineXmxAndLogGc() (string, bool) {
 		err = file.Close()
 		LogFatalIfError(err)
 		if err := scanner.Err(); err != nil {
-			log.Fatal(err)
+			Fatal(err)
 		}
 	}
 	if xmx == "" {
@@ -360,7 +324,7 @@ func determineXmxAndLogGc() (string, bool) {
 	}
 	xmx = strings.ToLower(xmx)
 	if strings.HasSuffix(xmx, "m") {
-		log.Println("Removing superfluous M from XMX value " + xmx)
+		Log(logrus.InfoLevel, "Removing superfluous M from XMX value "+xmx)
 		xmx = xmx[:len(xmx)-1]
 	}
 	return xmx, logGc
@@ -386,7 +350,7 @@ func startupLoop() {
 		libFolder := filepath.Join(basePath, "lib")
 		jarFile := findJarFile(libFolder)
 		jarFile = filepath.Join(libFolder, jarFile)
-		log.Printf("Using JAR file %s\n", jarFile)
+		Logf(logrus.DebugLevel, "Using JAR file %s", jarFile)
 		arguments = slices.Concat(javaArguments, []string{"-jar", jarFile}, arguments)
 	}
 
@@ -395,33 +359,33 @@ func startupLoop() {
 		doStart = false
 		exitCode := runMainProcess(*argsJavaExecutable, arguments)
 		if terminatedByWrapper {
-			log.Println("NZBHydra main process was terminated by wrapper")
+			Log(logrus.InfoLevel, "NZBHydra main process was terminated by wrapper")
 			os.Exit(0)
 		}
 		if exitCode == 11 || os.Getenv("NZBHYDRA_FORCE_UPDATE") != "" {
-			log.Println("NZBHydra main process has stopped for updating")
+			Log(logrus.InfoLevel, "NZBHydra main process has stopped for updating")
 			if os.Getenv("NZBHYDRA_DISABLE_UPDATE_ON_SHUTDOWN") != "" {
-				log.Println("Update on shutdown disabled. Restarting main process without update")
+				Log(logrus.InfoLevel, "Update on shutdown disabled. Restarting main process without update")
 			} else {
 				doUpdate()
 			}
 			doStart = true
 		} else if exitCode == 22 {
-			log.Println("NZBHydra main process has stopped for restart")
+			Log(logrus.InfoLevel, "NZBHydra main process has stopped for restart")
 			restarted = true
 			doStart = true
 		} else if exitCode == 33 || os.Getenv("NZBHYDRA_FORCE_RESTORE") != "" {
-			log.Println("NZBHydra main process has stopped for restoration")
+			Log(logrus.InfoLevel, "NZBHydra main process has stopped for restoration")
 			doStart = restore()
 		} else if exitCode != 0 {
 			if lastRestart.Add(20 * time.Second).After(time.Now()) {
-				log.Fatal("Last restart was less than 20 seconds ago - quitting to prevent endless restart loop")
+				Fatal("Last restart was less than 20 seconds ago - quitting to prevent endless restart loop")
 			}
-			log.Printf("NZBHydra main process has stopped with exit code %d. Restarting main process\n", exitCode)
+			Logf(logrus.InfoLevel, "NZBHydra main process has stopped with exit code %d. Restarting main process", exitCode)
 			lastRestart = time.Now()
 			doStart = true
 		} else {
-			log.Println("NZBHydra main process has stopped for shutdown")
+			Log(logrus.InfoLevel, "NZBHydra main process has stopped for shutdown")
 		}
 	}
 	if !doStart {
@@ -434,7 +398,7 @@ func buildJavaArguments(releaseType ReleaseType) []string {
 	if releaseType == "generic" {
 		javaVersion := getJavaVersion(*argsJavaExecutable)
 		if javaVersion < 17 {
-			log.Fatalf("Error: Java 17 (not older, not newer) is required")
+			Fatalf("Error: Java 17 (not older, not newer) is required")
 		}
 	}
 
@@ -459,7 +423,7 @@ func buildJavaArguments(releaseType ReleaseType) []string {
 		if releaseType == GENERIC {
 			javaArguments = append(javaArguments, gcArguments...)
 		} else {
-			log.Println("GC logging not available with native image. Using -XX:+PrintGC -XX:+VerboseGC")
+			Log(logrus.InfoLevel, "GC logging not available with native image. Using -XX:+PrintGC -XX:+VerboseGC")
 			javaArguments = append(javaArguments, "-XX:+PrintGC", "-XX:+VerboseGC")
 		}
 	}
@@ -508,7 +472,8 @@ func buildMainProcessArgs() []string {
 
 func runMainProcess(executable string, arguments []string) int {
 	terminatedByWrapper = false
-	log.Printf("Starting NZBHydra main process with command line: %s in folder %s", executable+" "+strings.Join(arguments, " "), basePath)
+	commandLine := executable + " " + strings.Join(arguments, " ")
+	Logf(logrus.InfoLevel, "Starting NZBHydra main process with command line: %s in folder %s", commandLine, basePath)
 	if determineReleaseType() == NATIVE {
 		executable = filepath.Join(basePath, executable)
 	}
@@ -525,7 +490,7 @@ func runMainProcess(executable string, arguments []string) int {
 			line := scanner.Text()
 
 			if !*argsQuiet {
-				log.Println(line)
+				println(line)
 			}
 			handleProcessUriInLogLine(line)
 
@@ -538,7 +503,7 @@ func runMainProcess(executable string, arguments []string) int {
 	exit := mainProcess.Start()
 
 	if exit != nil {
-		log.Fatalf("unable to start main process. Exit code: %s", exit)
+		Fatalf("unable to start main process. Exit code: %s", exit)
 	}
 
 	<-done
@@ -556,7 +521,7 @@ func handleProcessUriInLogLine(line string) {
 	markerLine := "You can access NZBHydra 2 in your browser via "
 	if strings.Contains(line, markerLine) {
 		uri = strings.TrimSpace(line[strings.Index(line, markerLine)+len(markerLine):])
-		log.Println("Determined process URI to be " + uri)
+		Log(logrus.InfoLevel, "Determined process URI to be "+uri)
 	}
 	markerLine = "Unable to open browser. Go to"
 	if strings.Contains(line, markerLine) {
@@ -568,13 +533,13 @@ func handleProcessUriInLogLine(line string) {
 func OpenBrowser(urlToOpen string) {
 	err := exec.Command("rundll32", "url.dll,FileProtocolHandler", urlToOpen).Start()
 	if err != nil {
-		log.Println("Unable to open browser", err)
+		Log(logrus.ErrorLevel, "Unable to open browser", err)
 	}
 }
 
 func findJarFile(libFolder string) string {
 	if _, err := os.Stat(libFolder); os.IsNotExist(err) {
-		log.Fatalf("Error: Lib folder %s not found. An update might've failed or the installation folder is corrupt", libFolder)
+		Fatalf("Error: Lib folder %s not found. An update might've failed or the installation folder is corrupt", libFolder)
 	}
 
 	files, err := os.ReadDir(libFolder)
@@ -588,7 +553,7 @@ func findJarFile(libFolder string) string {
 	}
 
 	if len(jarFiles) == 0 {
-		log.Fatalf("Error: No JAR files found in folder %s. An update might've failed or the installation folder is corrupt", libFolder)
+		Fatalf("Error: No JAR files found in folder %s. An update might've failed or the installation folder is corrupt", libFolder)
 	}
 
 	if len(jarFiles) == 1 {
@@ -604,7 +569,7 @@ func findJarFile(libFolder string) string {
 		}
 		for _, file := range jarFiles {
 			if file != latestFile.Name() {
-				log.Printf("Deleting old JAR file %s\n", file)
+				Logf(logrus.DebugLevel, "Deleting old JAR file %s", file)
 				err := os.Remove(filepath.Join(libFolder, file))
 				LogFatalIfError(err)
 			}
@@ -624,7 +589,7 @@ func executeWaitingForSignal(function Function) {
 
 	go func() {
 		sig := <-sigs
-		log.Printf("Wrapper received signal: %s\n", sig.String())
+		Logf(logrus.InfoLevel, "Wrapper received signal: %s", sig.String())
 		terminatedByWrapper = true
 		done <- true
 	}()
@@ -649,13 +614,13 @@ func GetInternalApiKey() string {
 func _main() {
 	basePath = getBasePath()
 	flag.Parse()
-	setupLogger()
 	dataFolder = *dataFolderOptions
+	setupLogger()
 	cleanUpOldFiles()
 	if !filepath.IsAbs(dataFolder) {
 		workingDir, _ := os.Getwd()
 		dataFolder = filepath.Join(workingDir, dataFolder)
-		log.Printf("Data folder path is not absolute. Will assume %s was meant\n", dataFolder)
+		Logf(logrus.InfoLevel, "Data folder path is not absolute. Will assume %s was meant", dataFolder)
 	}
 	//todo if --help or --version just startup without restar
 	doStart = true
