@@ -152,6 +152,7 @@ func getJavaVersion(javaExecutable string) int {
 	}
 
 	log.Printf("Determined java version as '%d' from version string '%s'", javaVersion, versionLine)
+	mainProcess = nil
 	return javaVersion
 }
 
@@ -414,11 +415,11 @@ func startupLoop() {
 		doStart = false
 		exitCode := runMainProcess(*argsJavaExecutable, arguments)
 		if terminatedByWrapper {
-			log.Println("NZBHydra main process has terminated by wrapper")
+			log.Println("NZBHydra main process was terminated by wrapper")
 			os.Exit(0)
 		}
 		if exitCode == 11 {
-			log.Println("NZBHydra main process has terminated for updating")
+			log.Println("NZBHydra main process has stopped for updating")
 			if os.Getenv("NZBHYDRA_DISABLE_UPDATE_ON_SHUTDOWN") != "" {
 				log.Println("Update on shutdown disabled. Restarting main process without update")
 			} else {
@@ -426,23 +427,25 @@ func startupLoop() {
 			}
 			doStart = true
 		} else if exitCode == 22 {
-			log.Println("NZBHydra main process has terminated for restart")
+			log.Println("NZBHydra main process has stopped for restart")
 			restarted = true
 			doStart = true
 		} else if exitCode == 33 {
-			log.Println("NZBHydra main process has terminated for restoration")
+			log.Println("NZBHydra main process has stopped for restoration")
 			doStart = restore()
 		} else if exitCode != 0 {
 			if lastRestart.Add(15 * time.Second).After(time.Now()) {
 				log.Fatal("Last automatic restart was less than 15 seconds ago - quitting to prevent endless restart loop")
 			}
-			log.Printf("NZBHydra main process has terminated with exit code %d. Restarting main process\n", exitCode)
+			log.Printf("NZBHydra main process has stopped with exit code %d. Restarting main process\n", exitCode)
 			lastRestart = time.Now()
 			doStart = true
 		} else {
-			log.Println("NZBHydra main process has for shutdown")
+			log.Println("NZBHydra main process has stopped for shutdown")
 		}
-
+	}
+	if !doStart {
+		os.Exit(0)
 	}
 }
 
@@ -526,9 +529,9 @@ func buildMainProcessArgs() []string {
 func runMainProcess(executable string, arguments []string) int {
 	terminatedByWrapper = false
 	log.Printf("Starting NZBHydra main process with command line: %s in folder %s", executable+" "+strings.Join(arguments, " "), basePath)
-	cmd := exec.Command(filepath.Join(basePath, executable), arguments...)
-	stdout, _ := cmd.StdoutPipe()
-	cmd.Stderr = cmd.Stdout
+	mainProcess = exec.Command(filepath.Join(basePath, executable), arguments...)
+	stdout, _ := mainProcess.StdoutPipe()
+	mainProcess.Stderr = mainProcess.Stdout
 	done := make(chan struct{})
 	scanner := bufio.NewScanner(stdout)
 	go func() {
@@ -547,7 +550,7 @@ func runMainProcess(executable string, arguments []string) int {
 		close(done)
 	}()
 
-	exit := cmd.Start()
+	exit := mainProcess.Start()
 
 	if exit != nil {
 		log.Fatalf("unable to start main process. Exit code: %s", exit)
@@ -555,8 +558,8 @@ func runMainProcess(executable string, arguments []string) int {
 
 	<-done
 
-	exit = cmd.Wait()
-
+	exit = mainProcess.Wait()
+	mainProcess = nil
 	if exit != nil {
 		exitCode := exit.(*exec.ExitError).ExitCode()
 		return exitCode
@@ -610,7 +613,9 @@ func findJarFile(libFolder string) string {
 	}
 }
 
-func registerShutdownHook() {
+type Function func()
+
+func executeWaitingForSignal(function Function) {
 	sigs := make(chan os.Signal, 1)
 
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
@@ -619,24 +624,21 @@ func registerShutdownHook() {
 
 	go func() {
 		sig := <-sigs
-		log.Printf("Terminated by signal %s\n", sig.String())
-		if mainProcess != nil {
-			log.Println("Trying to kill main process")
-			terminatedByWrapper = true
-			err := mainProcess.Process.Kill()
-			if err != nil {
-				log.Fatalf("Error killing main process: %v", err)
-			}
-
-		}
+		log.Printf("Wrapper received signal: %s\n", sig.String())
+		terminatedByWrapper = true
 		done <- true
 	}()
+	function()
 
 	<-done
 }
 
 func main() {
-	registerShutdownHook()
+	executeWaitingForSignal(_main)
+
+}
+
+func _main() {
 	basePath = getBasePath()
 	flag.Parse()
 	setupLogger()
@@ -655,5 +657,4 @@ func main() {
 	doStart = true
 
 	startupLoop()
-
 }

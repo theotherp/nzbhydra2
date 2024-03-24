@@ -96,7 +96,7 @@ public class OutdatedWrapperDetector implements ProblemDetector {
 
                     }
                 } catch (IOException e) {
-                    logger.error("Unable to hash file " + wrapperFile, e);
+                    logger.error("Unable to hash file {}", wrapperFile, e);
                 }
                 if (outdatedWrapperFound) {
                     genericStorage.save(KEY_OUTDATED_WRAPPER_DETECTED_WARNING_DISPLAYED, false);
