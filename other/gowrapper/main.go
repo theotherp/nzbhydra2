@@ -3,7 +3,6 @@ package main
 import (
 	"archive/zip"
 	"bufio"
-	"bytes"
 	"flag"
 	"github.com/thanhpk/randstr"
 	"gopkg.in/natefinch/lumberjack.v2"
@@ -56,6 +55,17 @@ var (
 	version           = flag.Bool("version", false, "Print version")
 )
 
+func logFatalIfError(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+func logFatalMsgIfError(err error, message string) {
+	if err != nil {
+		log.Fatalf("%s %s", message, err)
+	}
+}
+
 func getBasePath() string {
 	if basePath != "" {
 		return basePath
@@ -69,9 +79,7 @@ func getBasePath() string {
 		return basePath
 	}
 	executable, err := os.Executable()
-	if err != nil {
-		panic(err)
-	}
+	logFatalIfError(err)
 	basePath = filepath.Dir(executable)
 	if fileExists(filepath.Join(basePath, "readme.md")) && fileExists(filepath.Join(basePath, "changelog.md")) {
 		return basePath
@@ -118,14 +126,10 @@ func setupLogger() {
 
 func getJavaVersion(javaExecutable string) int {
 	mainProcess = exec.Command(javaExecutable, "-version")
-	var out bytes.Buffer
-	mainProcess.Stdout = &out
-	err := mainProcess.Run()
-	if err != nil {
-		log.Fatal(err)
-	}
+	output, err := mainProcess.CombinedOutput()
+	logFatalMsgIfError(err, "Error running java command to determine version: ")
 
-	lines := strings.Split(out.String(), "\n")
+	lines := strings.Split(string(output), "\n")
 	if len(lines) == 0 {
 		log.Fatal("unable to get output from call to java -version")
 	}
@@ -187,9 +191,7 @@ func doUpdate() {
 	}
 
 	files, err := os.ReadDir(updateFolder)
-	if err != nil {
-		log.Fatal(err)
-	}
+	logFatalIfError(err)
 
 	var updateZip string
 	for _, f := range files {
@@ -204,44 +206,34 @@ func doUpdate() {
 	}
 
 	r, err := zip.OpenReader(updateZip)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer r.Close()
+	logFatalIfError(err)
 
 	for _, f := range r.File {
 		if strings.ToLower(f.Name) != "nzbhydra2" && !strings.HasSuffix(strings.ToLower(f.Name), ".exe") && strings.ToLower(f.Name) != "core.exe" {
-			rc, err := f.Open()
-			if err != nil {
-				log.Fatal(err)
+			if f.FileInfo().IsDir() {
+				continue
 			}
-			defer rc.Close()
+			rc, err := f.Open()
+			logFatalIfError(err)
 
 			path := filepath.Join(basePath, f.Name)
 			outFile, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
-			if err != nil {
-				log.Fatal(err)
-			}
+			logFatalIfError(err)
 
 			_, err = io.Copy(outFile, rc)
-			outFile.Close()
-
-			if err != nil {
-				log.Fatal(err)
-			}
+			logFatalIfError(err)
+			logFatalIfError(outFile.Close())
+			logFatalIfError(rc.Close())
 		}
 	}
+	_ = r.Close()
 
 	err = os.Remove(updateZip)
-	if err != nil {
-		log.Fatal(err)
-	}
+	logFatalIfError(err)
 
 	if releaseType == GENERIC {
 		files, err := os.ReadDir(libFolder)
-		if err != nil {
-			log.Fatal(err)
-		}
+		logFatalIfError(err)
 
 		var jarFiles []string
 		for _, f := range files {
@@ -252,9 +244,7 @@ func doUpdate() {
 		jarFile := findJarFile(libFolder)
 		if len(jarFiles) == 2 {
 			err = os.Remove(jarFile)
-			if err != nil {
-				log.Fatal(err)
-			}
+			logFatalIfError(err)
 		} else if len(jarFiles) == 1 {
 			if jarFiles[0] == filepath.Base(jarFile) {
 				log.Println("New JAR file in lib folder is the same as the old one. The update may not have found a newer version or failed for some reason")
@@ -265,9 +255,7 @@ func doUpdate() {
 	}
 
 	err = os.RemoveAll(updateFolder)
-	if err != nil {
-		log.Fatal(err)
-	}
+	logFatalIfError(err)
 
 	log.Println("Update successful, restarting Hydra main process")
 }
@@ -294,9 +282,7 @@ func restore() bool {
 	}
 
 	files, err := ioutil.ReadDir(restoreFolder)
-	if err != nil {
-		log.Fatalf("Error reading restore folder: %s", err)
-	}
+	logFatalMsgIfError(err, "Error reading restore folder: ")
 
 	for _, f := range files {
 		source := filepath.Join(restoreFolder, f.Name())
@@ -314,7 +300,7 @@ func restore() bool {
 
 	log.Printf("Deleting folder %s", restoreFolder)
 	if err := os.RemoveAll(restoreFolder); err != nil {
-		log.Fatal("Error removing restore folder %s: %s", restoreFolder, err)
+		log.Fatalf("Error removing restore folder %s: %s", restoreFolder, err)
 	}
 
 	log.Println("Moved all files from restore folder to data folder")
@@ -324,9 +310,7 @@ func restore() bool {
 func cleanUpOldFiles() {
 	basePath := getBasePath()
 	files, err := ioutil.ReadDir(basePath)
-	if err != nil {
-		log.Fatal(err)
-	}
+	logFatalIfError(err)
 
 	var oldFiles []string
 	for _, file := range files {
@@ -340,9 +324,7 @@ func cleanUpOldFiles() {
 		for _, oldFile := range oldFiles {
 			log.Printf("Deleting file %s\n", oldFile)
 			err := os.Remove(filepath.Join(basePath, oldFile))
-			if err != nil {
-				log.Fatal(err)
-			}
+			logFatalIfError(err)
 		}
 	}
 }
@@ -356,10 +338,7 @@ func determineXmxAndLogGc() (string, bool) {
 	}
 	if _, err := os.Stat(yamlPath); err == nil {
 		file, err := os.Open(yamlPath)
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer file.Close()
+		logFatalIfError(err)
 
 		scanner := bufio.NewScanner(file)
 		for scanner.Scan() {
@@ -372,6 +351,8 @@ func determineXmxAndLogGc() (string, bool) {
 			}
 		}
 
+		err = file.Close()
+		logFatalIfError(err)
 		if err := scanner.Err(); err != nil {
 			log.Fatal(err)
 		}
@@ -406,6 +387,7 @@ func startupLoop() {
 	} else {
 		libFolder := filepath.Join(basePath, "lib")
 		jarFile := findJarFile(libFolder)
+		jarFile = filepath.Join(libFolder, jarFile)
 		log.Printf("Using JAR file %s\n", jarFile)
 		arguments = slices.Concat(javaArguments, []string{"-jar", jarFile}, arguments)
 	}
@@ -418,7 +400,7 @@ func startupLoop() {
 			log.Println("NZBHydra main process was terminated by wrapper")
 			os.Exit(0)
 		}
-		if exitCode == 11 {
+		if exitCode == 11 || os.Getenv("NZBHYDRA_FORCE_UPDATE") != "" {
 			log.Println("NZBHydra main process has stopped for updating")
 			if os.Getenv("NZBHYDRA_DISABLE_UPDATE_ON_SHUTDOWN") != "" {
 				log.Println("Update on shutdown disabled. Restarting main process without update")
@@ -430,12 +412,12 @@ func startupLoop() {
 			log.Println("NZBHydra main process has stopped for restart")
 			restarted = true
 			doStart = true
-		} else if exitCode == 33 {
+		} else if exitCode == 33 || os.Getenv("NZBHYDRA_FORCE_RESTORE") != "" {
 			log.Println("NZBHydra main process has stopped for restoration")
 			doStart = restore()
 		} else if exitCode != 0 {
-			if lastRestart.Add(15 * time.Second).After(time.Now()) {
-				log.Fatal("Last automatic restart was less than 15 seconds ago - quitting to prevent endless restart loop")
+			if lastRestart.Add(20 * time.Second).After(time.Now()) {
+				log.Fatal("Last restart was less than 20 seconds ago - quitting to prevent endless restart loop")
 			}
 			log.Printf("NZBHydra main process has stopped with exit code %d. Restarting main process\n", exitCode)
 			lastRestart = time.Now()
@@ -529,7 +511,10 @@ func buildMainProcessArgs() []string {
 func runMainProcess(executable string, arguments []string) int {
 	terminatedByWrapper = false
 	log.Printf("Starting NZBHydra main process with command line: %s in folder %s", executable+" "+strings.Join(arguments, " "), basePath)
-	mainProcess = exec.Command(filepath.Join(basePath, executable), arguments...)
+	if determineReleaseType() == NATIVE {
+		executable = filepath.Join(basePath, executable)
+	}
+	mainProcess = exec.Command(executable, arguments...)
 	stdout, _ := mainProcess.StdoutPipe()
 	mainProcess.Stderr = mainProcess.Stdout
 	done := make(chan struct{})
@@ -573,9 +558,7 @@ func findJarFile(libFolder string) string {
 	}
 
 	files, err := ioutil.ReadDir(libFolder)
-	if err != nil {
-		log.Fatal(err)
-	}
+	logFatalIfError(err)
 
 	var jarFiles []string
 	for _, file := range files {
@@ -594,19 +577,16 @@ func findJarFile(libFolder string) string {
 		var latestFile os.FileInfo
 		for _, file := range jarFiles {
 			info, err := os.Stat(filepath.Join(libFolder, file))
-			if err != nil {
-				log.Fatal(err)
-			}
+			logFatalIfError(err)
 			if latestFile == nil || info.ModTime().After(latestFile.ModTime()) {
 				latestFile = info
 			}
 		}
 		for _, file := range jarFiles {
 			if file != latestFile.Name() {
+				log.Printf("Deleting old JAR file %s\n", file)
 				err := os.Remove(filepath.Join(libFolder, file))
-				if err != nil {
-					log.Fatal(err)
-				}
+				logFatalIfError(err)
 			}
 		}
 		return latestFile.Name()
