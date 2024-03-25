@@ -135,8 +135,10 @@ func determineReleaseType() ReleaseType {
 		if _, err := os.Stat(filepath.Join(basePath, "core.exe")); err == nil {
 			Fatal("lib folder and core found. Either delete the executable to use the generic release type (using java and ignoring the executable) or delete the lib folder to use the executable and not require java")
 		}
+		Logf(logrus.InfoLevel, "Release type GENERIC detected")
 		return GENERIC
 	} else if _, err := os.Stat(filepath.Join(basePath, "core.exe")); err == nil {
+		Logf(logrus.InfoLevel, "Release type NATIVE detected")
 		return NATIVE
 	} else {
 		Fatal("Unable to determine the release type. Neither lib folder nor core found")
@@ -509,7 +511,7 @@ func runMainProcess(executable string, arguments []string) int {
 			if !*argsQuiet {
 				println(line)
 			}
-			handleProcessUriInLogLine(line)
+			checkLogLine(line)
 			consoleLines = append(consoleLines, line)
 			if len(consoleLines) > 250 {
 				consoleLines = consoleLines[1:]
@@ -536,7 +538,7 @@ func runMainProcess(executable string, arguments []string) int {
 	return 0
 }
 
-func handleProcessUriInLogLine(line string) {
+func checkLogLine(line string) {
 	markerLine := "You can access NZBHydra 2 in your browser via "
 	if strings.Contains(line, markerLine) {
 		Uri = strings.TrimSpace(line[strings.Index(line, markerLine)+len(markerLine):])
@@ -546,6 +548,9 @@ func handleProcessUriInLogLine(line string) {
 	if strings.Contains(line, markerLine) {
 		urlToOpen := strings.TrimSpace(line[strings.Index(line, markerLine)+len(markerLine):])
 		OpenBrowser(urlToOpen)
+	}
+	if strings.Contains(line, "Started NzbHydra in") {
+		Log(logrus.InfoLevel, "Main process has started successfully")
 	}
 }
 

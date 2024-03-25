@@ -46,8 +46,8 @@ public class SystemControl {
     @Autowired
     private ApplicationEventPublisher applicationEventPublisher;
 
-    public void exitWithReturnCode(final int returnCode) {
-        if (Boolean.parseBoolean(environment.getProperty("hydradontshutdown", "false"))) {
+    public void exitWithReturnCode(final int returnCode, boolean forceShutdown) {
+        if (Boolean.parseBoolean(environment.getProperty("hydradontshutdown", "false")) && !forceShutdown) {
             logger.warn("Not shutting down because property hydradontshutdown is set");
             return;
         }
@@ -69,5 +69,9 @@ public class SystemControl {
                 logger.error("Error while waiting to exit", e); //Doesn't ever happen anyway
             }
         }).start();
+    }
+
+    public void exitWithReturnCode(final int returnCode) {
+        exitWithReturnCode(returnCode, false);
     }
 }

@@ -26,6 +26,7 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -40,17 +41,11 @@ public class SystemControlWeb {
 
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/control/shutdown", method = RequestMethod.GET)
-    public GenericResponse shutdown() throws Exception {
-        return doShutdown();
-    }
-
-    @NotNull
-    private GenericResponse doShutdown() {
+    public GenericResponse shutdown(@RequestParam(required = false) Integer returnCode, @RequestParam(required = false) Boolean forceShutdown) throws Exception {
         logger.info("Shutting down due to external request");
-        systemControl.exitWithReturnCode(SystemControl.SHUTDOWN_RETURN_CODE);
+        systemControl.exitWithReturnCode(returnCode == null ? SystemControl.SHUTDOWN_RETURN_CODE : returnCode, forceShutdown != null && forceShutdown);
         return GenericResponse.ok();
     }
-
 
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/control/restart", method = RequestMethod.GET)
