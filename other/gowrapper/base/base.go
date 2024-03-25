@@ -33,6 +33,7 @@ var doStart bool
 var mainProcess *exec.Cmd
 var terminatedByWrapper = false
 var restarted = false
+var releaseType ReleaseType = ""
 var lastRestart = time.Now()
 var internalApiKey = randstr.Hex(20)
 var hideWindow = false
@@ -125,10 +126,14 @@ func getJavaVersion(javaExecutable string) int {
 }
 
 func determineReleaseType() ReleaseType {
+	if releaseType != "" {
+		return releaseType
+	}
 	forcedReleaseType := os.Getenv("NZBHYDRA_FORCE_GENERIC")
 	if forcedReleaseType != "" {
 		Logf(logrus.InfoLevel, "Release type %s forced by environment variable", forcedReleaseType)
-		return ReleaseType(forcedReleaseType)
+		releaseType = ReleaseType(forcedReleaseType)
+		return releaseType
 	}
 	basePath := getBasePath()
 	if _, err := os.Stat(filepath.Join(basePath, "lib")); err == nil {
@@ -136,10 +141,12 @@ func determineReleaseType() ReleaseType {
 			Fatal("lib folder and core found. Either delete the executable to use the generic release type (using java and ignoring the executable) or delete the lib folder to use the executable and not require java")
 		}
 		Logf(logrus.InfoLevel, "Release type GENERIC detected")
-		return GENERIC
+		releaseType = GENERIC
+		return releaseType
 	} else if _, err := os.Stat(filepath.Join(basePath, "core.exe")); err == nil {
 		Logf(logrus.InfoLevel, "Release type NATIVE detected")
-		return NATIVE
+		releaseType = NATIVE
+		return releaseType
 	} else {
 		Fatal("Unable to determine the release type. Neither lib folder nor core found")
 	}

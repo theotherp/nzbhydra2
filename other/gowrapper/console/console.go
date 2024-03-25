@@ -1,9 +1,9 @@
 package main
 
 import (
-	"theotherp/base"
+    "theotherp/base"
 )
 
 func main() {
-	base.Entrypoint(false, false)
+    base.Entrypoint(false, true)
 }
