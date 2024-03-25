@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/base64"
 	"github.com/getlantern/systray"
-	"net/http"
 	"os"
 	"tawesoft.co.uk/go/dialog"
 	"theotherp/base"
@@ -36,14 +35,14 @@ func onReady() {
 			dialog.Alert("NZBHydra2 URI could not be determined")
 			return
 		}
-		executeGetRequest(base.GetUri() + "internalapi/control/restart?internalApiKey=" + base.GetInternalApiKey())
+		base.ExecuteGetRequest(base.GetUri() + "internalapi/control/restart?internalApiKey=" + base.GetInternalApiKey())
 	}()
 
 	menuItemShutdown := systray.AddMenuItem("Shutdown", "")
 	go func() {
 		<-menuItemShutdown.ClickedCh
 		if base.GetUri() != "" {
-			statusCode := executeGetRequest(base.GetUri() + "internalapi/control/shutdown?internalApiKey=" + base.GetInternalApiKey())
+			statusCode := base.ExecuteGetRequest(base.GetUri() + "internalapi/control/shutdown?internalApiKey=" + base.GetInternalApiKey())
 			if statusCode != 200 {
 				//Try shutting down wrapper, child process is hopefully killed gracefully
 				os.Exit(0)
@@ -54,18 +53,10 @@ func onReady() {
 
 	}()
 
-	base.Entrypoint(true)
+	base.Entrypoint(true, false)
 }
 
 func onExit() {
-}
-
-func executeGetRequest(url string) int {
-	resp, err := http.Get(url)
-	base.LogFatalIfError(err)
-	err = resp.Body.Close()
-	base.LogFatalIfError(err)
-	return resp.StatusCode
 }
 
 func getIcon() []byte {

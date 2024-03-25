@@ -20,6 +20,7 @@ import (
 )
 
 type ReleaseType string
+type ExitFunction func(code int)
 
 const (
 	NATIVE  ReleaseType = "native"
@@ -37,6 +38,7 @@ var internalApiKey = randstr.Hex(20)
 var hideWindow = false
 var uri = ""
 var consoleLines []string
+var Exit = os.Exit
 
 var (
 	argsJavaExecutable = flag.String("java", "java", "Full path to java executable")
@@ -374,7 +376,7 @@ func startupLoop() {
 		exitCode := runMainProcess(*argsJavaExecutable, arguments)
 		if terminatedByWrapper {
 			Log(logrus.InfoLevel, "NZBHydra main process was terminated by wrapper")
-			os.Exit(0)
+			Exit(0)
 		}
 		if exitCode == 11 || os.Getenv("NZBHYDRA_FORCE_UPDATE") != "" {
 			Log(logrus.InfoLevel, "NZBHydra main process has stopped for updating")
@@ -404,7 +406,7 @@ func startupLoop() {
 		}
 	}
 	if !doStart {
-		os.Exit(0)
+		Exit(0)
 	}
 }
 
@@ -615,9 +617,13 @@ func executeWaitingForSignal(function Function) {
 	<-done
 }
 
-func Entrypoint(_hideWindow bool) {
+func Entrypoint(_hideWindow bool, waitForSignal bool) {
 	hideWindow = _hideWindow
-	executeWaitingForSignal(_main)
+	if waitForSignal {
+		executeWaitingForSignal(_main)
+	} else {
+		_main()
+	}
 }
 
 func GetUri() string {

@@ -10,7 +10,6 @@ import (
 
 var fileLogger = logrus.New()
 var consoleLogger = logrus.New()
-var logfile *os.File
 
 func Log(logLevel logrus.Level, args ...interface{}) {
 	fileLogger.Log(logLevel, args...)
@@ -64,5 +63,7 @@ func setupLogger() {
 		MaxSize:    10, // megabytes
 		MaxBackups: 1,
 	}
+	fileLogger.ExitFunc = Exit
+	consoleLogger.ExitFunc = Exit
 
 }

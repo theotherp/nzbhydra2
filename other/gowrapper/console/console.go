@@ -5,5 +5,5 @@ import (
 )
 
 func main() {
-	base.Entrypoint(false)
+	base.Entrypoint(false, false)
 }
