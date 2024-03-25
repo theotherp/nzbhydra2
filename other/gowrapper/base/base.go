@@ -36,7 +36,7 @@ var restarted = false
 var lastRestart = time.Now()
 var internalApiKey = randstr.Hex(20)
 var hideWindow = false
-var uri = ""
+var Uri = ""
 var consoleLines []string
 var Exit = os.Exit
 
@@ -539,8 +539,8 @@ func runMainProcess(executable string, arguments []string) int {
 func handleProcessUriInLogLine(line string) {
 	markerLine := "You can access NZBHydra 2 in your browser via "
 	if strings.Contains(line, markerLine) {
-		uri = strings.TrimSpace(line[strings.Index(line, markerLine)+len(markerLine):])
-		Log(logrus.InfoLevel, "Determined process URI to be "+uri)
+		Uri = strings.TrimSpace(line[strings.Index(line, markerLine)+len(markerLine):])
+		Log(logrus.InfoLevel, "Determined process URI to be "+Uri)
 	}
 	markerLine = "Unable to open browser. Go to"
 	if strings.Contains(line, markerLine) {
@@ -627,7 +627,7 @@ func Entrypoint(_hideWindow bool, waitForSignal bool) {
 }
 
 func GetUri() string {
-	return uri
+	return Uri
 }
 
 func GetInternalApiKey() string {

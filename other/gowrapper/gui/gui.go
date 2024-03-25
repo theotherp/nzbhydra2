@@ -21,29 +21,29 @@ func onReady() {
 	menuItemOpenWebUI := systray.AddMenuItem("Open web UI", "")
 	go func() {
 		<-menuItemOpenWebUI.ClickedCh
-		if base.GetUri() == "" {
+		if base.Uri == "" {
 			dialog.Alert("NZBHydra2 URI could not be determined")
 			return
 		}
-		base.OpenBrowser(base.GetUri())
+		base.OpenBrowser(base.Uri)
 	}()
 
 	menuItemRestart := systray.AddMenuItem("Restart", "")
 	go func() {
 		<-menuItemRestart.ClickedCh
-		if base.GetUri() == "" {
+		if base.Uri == "" {
 			dialog.Alert("NZBHydra2 URI could not be determined")
 			return
 		}
-		base.ExecuteGetRequest(base.GetUri() + "internalapi/control/restart?internalApiKey=" + base.GetInternalApiKey())
+		_, _ = base.ExecuteGetRequest(base.Uri + "internalapi/control/restart?internalApiKey=" + base.GetInternalApiKey())
 	}()
 
 	menuItemShutdown := systray.AddMenuItem("Shutdown", "")
 	go func() {
 		<-menuItemShutdown.ClickedCh
-		if base.GetUri() != "" {
-			statusCode := base.ExecuteGetRequest(base.GetUri() + "internalapi/control/shutdown?internalApiKey=" + base.GetInternalApiKey())
-			if statusCode != 200 {
+		if base.Uri != "" {
+			resp, _ := base.ExecuteGetRequest(base.Uri + "internalapi/control/shutdown?internalApiKey=" + base.GetInternalApiKey())
+			if resp.StatusCode != 200 {
 				//Try shutting down wrapper, child process is hopefully killed gracefully
 				os.Exit(0)
 			}
