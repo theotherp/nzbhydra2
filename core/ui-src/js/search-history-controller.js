@@ -34,7 +34,7 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
 
     var anyUsername = false;
     var anyIp = false;
-    for (var request in $scope.searchRequests) {
+    for (var request of $scope.searchRequests) {
         if (request.username) {
             anyUsername = true;
         }
@@ -45,6 +45,7 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
             break;
         }
     }
+
     $scope.columnSizes = {
         time: 10,
         query: 30,
