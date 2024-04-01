@@ -38,8 +38,8 @@ public class PrecheckMojoTest extends AbstractMojoTestCase {
         IOUtils.write("py3", new FileWriter(precheckMojo.py3));
         Thread.sleep(10);
 
-        precheckMojo.windowsPy = Files.createTempFile("hydra", "executable").toFile();
-        IOUtils.write("windowsPy", new FileWriter(precheckMojo.windowsPy));
+        precheckMojo.goWrapper = Files.createTempFile("hydra", "executable").toFile();
+        IOUtils.write("goWrapper", new FileWriter(precheckMojo.goWrapper));
         Thread.sleep(10);
 
         precheckMojo.windowsExecutable = Files.createTempFile("hydra", "executable").toFile();

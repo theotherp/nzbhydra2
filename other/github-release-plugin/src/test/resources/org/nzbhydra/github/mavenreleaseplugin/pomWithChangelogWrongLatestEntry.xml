@@ -24,7 +24,7 @@
                     <windowsExecutable>${basedir}/releases/windows-release/include/NZBHydra2.exe</windowsExecutable>
                     <windowsConsoleExecutable>${basedir}/releases/windows-release/include/NZBHydra2 Console.exe</windowsConsoleExecutable>
                     <py3>${basedir}/other/wrapper/nzbhydra2wrapperPy3.py</py3>
-                    <windowsPy>${basedir}/other/wrapper/pyInstaller/windows/nzbhydra2wrapperWindows.py</windowsPy>
+                    <goWrapper>${basedir}/other/wrapper/pyInstaller/windows/nzbhydra2wrapperWindows.py</goWrapper>
                     <skipExecutablesCheck>true</skipExecutablesCheck>
                 </configuration>
             </plugin>

@@ -48,7 +48,7 @@
                     <windowsExecutable>${basedir}/releases/windows-release/include/NZBHydra2.exe</windowsExecutable>
                     <windowsConsoleExecutable>${basedir}/releases/windows-release/include/NZBHydra2 Console.exe</windowsConsoleExecutable>
                     <py3>${basedir}/other/wrapper/nzbhydra2wrapperPy3.py</py3>
-                    <windowsPy>${basedir}/other/wrapper/pyInstaller/windows/nzbhydra2wrapperWindows.py</windowsPy>
+                    <goWrapper>${basedir}/other/gowrapper/base/base.go</goWrapper>
 
                     <wrapperFile1>${basedir}/releases/linux-amd64-release/include/executables/nzbhydra2</wrapperFile1>
                     <wrapperFile2>${basedir}/releases/windows-release/include/NZBHydra2 Console.exe</wrapperFile2>

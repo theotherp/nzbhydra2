@@ -75,8 +75,8 @@ public class ReleaseMojo extends AbstractMojo {
     protected File windowsConsoleExecutable;
     @Parameter(property = "py3", required = false)
     protected File py3;
-    @Parameter(property = "windowsPy", required = false)
-    protected File windowsPy;
+    @Parameter(property = "goWrapper", required = false)
+    protected File goWrapper;
     @Parameter(property = "skipExecutablesCheck", required = false)
     protected boolean skipExecutablesCheck;
 
@@ -181,11 +181,11 @@ public class ReleaseMojo extends AbstractMojo {
             final Instant windowsExecutableCreationTime = Files.readAttributes(windowsExecutable.toPath(), BasicFileAttributes.class).creationTime().toInstant();
             final Instant windowsConsoleExecutableCreationTime = Files.readAttributes(windowsConsoleExecutable.toPath(), BasicFileAttributes.class).creationTime().toInstant();
             final Instant py3CreationTime = Files.readAttributes(py3.toPath(), BasicFileAttributes.class).creationTime().toInstant();
-            final Instant windowsPyCreationTime = Files.readAttributes(windowsPy.toPath(), BasicFileAttributes.class).creationTime().toInstant();
+            final Instant goWrapperCreationTime = Files.readAttributes(goWrapper.toPath(), BasicFileAttributes.class).creationTime().toInstant();
             verifyIsYounger(linuxAmd64Executable, py3);
 //            verifyIsYounger(linuxArm64Executable, py3);
             verifyIsYounger(windowsExecutable, py3);
-            verifyIsYounger(windowsExecutable, windowsPy);
+            verifyIsYounger(windowsExecutable, goWrapper);
             verifyIsYounger(windowsConsoleExecutable, py3);
         } catch (IOException e) {
             throw new RuntimeException(e);
