@@ -83,9 +83,9 @@ public class OutdatedWrapperDetector implements ProblemDetector {
             logger.error("Didn't find any of the expected wrapper files ({}) in folder {}", new File("").getAbsolutePath(), Joiner.on(", ").join(wrapperFilenames));
             return;
         }
+        boolean outdatedWrapperFound = false;
         for (String filename : wrapperFilenames) {
             File wrapperFile = new File(filename);
-            boolean outdatedWrapperFound = false;
             if (wrapperFile.exists() && wrapperFile.isFile()) {
                 try {
                     HashCode hash = Files.asByteSource(wrapperFile).hash(Hashing.sha1());
@@ -98,25 +98,26 @@ public class OutdatedWrapperDetector implements ProblemDetector {
                 } catch (IOException e) {
                     logger.error("Unable to hash file {}", wrapperFile, e);
                 }
-                if (outdatedWrapperFound) {
-                    genericStorage.save(KEY_OUTDATED_WRAPPER_DETECTED_WARNING_DISPLAYED, false);
-                    genericStorage.save(KEY_OUTDATED_WRAPPER_DETECTED, true);
-                    logger.warn("The NZBHydra wrappers (i.e. the executables or python scripts you use to run NZBHydra) seem to be outdated. Please update them:\n" +
-                        "Shut down NZBHydra, download the latest version and extract *all files* into your main NZBHydra folder (overwriting all). Start NZBHydra again.");
-                } else {
-                    genericStorage.save(KEY_OUTDATED_WRAPPER_DETECTED, false);
-                }
             }
         }
+        if (outdatedWrapperFound) {
+            genericStorage.save(KEY_OUTDATED_WRAPPER_DETECTED_WARNING_DISPLAYED, false);
+            genericStorage.save(KEY_OUTDATED_WRAPPER_DETECTED, true);
+            logger.warn("The NZBHydra wrappers (i.e. the executables or python scripts you use to run NZBHydra) seem to be outdated. Please update them:\n" +
+                    "Shut down NZBHydra, download the latest version and extract *all files* into your main NZBHydra folder (overwriting all). Start NZBHydra again.");
+        } else {
+            genericStorage.save(KEY_OUTDATED_WRAPPER_DETECTED, false);
+        }
+
     }
 
     public static void main(String[] args) throws Exception {
         final List<File> files = Arrays.asList(new File("releases/windows-release/include/NZBHydra2.exe"),
-            new File("releases/windows-release/include/NZBHydra2 Console.exe"),
-            new File("releases/linux-amd64-release/include/executables/nzbhydra2"),
+                new File("releases/windows-release/include/NZBHydra2 Console.exe"),
+                new File("releases/linux-amd64-release/include/executables/nzbhydra2"),
 //            new File("releases/linux-arm64-release/include/nzbhydra2"),
-            new File("other/wrapper/nzbhydra2wrapper.py"),
-            new File("other/wrapper/nzbhydra2wrapperPy3.py"));
+                new File("other/wrapper/nzbhydra2wrapper.py"),
+                new File("other/wrapper/nzbhydra2wrapperPy3.py"));
         final Set<String> hashes = new HashSet<>();
         for (File file : files) {
             hashes.add(Files.asByteSource(file).hash(Hashing.sha1()).toString());

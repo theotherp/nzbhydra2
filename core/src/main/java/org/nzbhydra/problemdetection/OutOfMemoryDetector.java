@@ -85,7 +85,7 @@ public class OutOfMemoryDetector implements ProblemDetector {
             }
 
         } catch (IOException e) {
-            logger.warn("Unable to read log file: " + e.getMessage());
+            logger.warn("Unable to read log file", e);
         } catch (Exception e) {
             logger.warn("Unable to detect problems in log file", e);
         }
