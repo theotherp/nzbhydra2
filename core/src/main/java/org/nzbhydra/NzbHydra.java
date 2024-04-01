@@ -329,6 +329,7 @@ public class NzbHydra {
                         logger.info("Not opening browser after restart");
                         return;
                     }
+                    logger.debug("Opening browser");
                     browserOpener.openBrowser();
                 }
                 URI uri = urlCalculator.getLocalBaseUriBuilder().build().toUri();

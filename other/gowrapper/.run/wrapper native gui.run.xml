@@ -2,6 +2,10 @@
   <configuration default="false" name="wrapper native gui" type="GoApplicationRunConfiguration" factoryName="Go Application">
     <module name="gowrapper" />
     <working_directory value="d:/NZBHydra/nzbhydra2/gowrappertest/native" />
+      <envs>
+          <env name="nzbhydra.devMode" value="true"/>
+          <env name="nzbhydra_devMode" value="true"/>
+      </envs>
     <kind value="PACKAGE" />
     <package value="theotherp/gui" />
     <directory value="$PROJECT_DIR$" />

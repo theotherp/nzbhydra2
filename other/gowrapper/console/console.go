@@ -1,9 +1,14 @@
 package main
 
 import (
-    "theotherp/base"
+	"github.com/sirupsen/logrus"
+	"theotherp/base"
 )
 
+func StartupErrorHandler(message string) {
+	base.Logf(logrus.ErrorLevel, message)
+}
+
 func main() {
-    base.Entrypoint(false, true)
+	base.Entrypoint(false, true, StartupErrorHandler)
 }

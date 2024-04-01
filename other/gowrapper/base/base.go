@@ -21,6 +21,7 @@ import (
 
 type ReleaseType string
 type ExitFunction func(code int)
+type StartupErrorHandler func(message string)
 
 const (
 	NATIVE  ReleaseType = "native"
@@ -40,6 +41,7 @@ var hideWindow = false
 var Uri = ""
 var consoleLines []string
 var Exit = os.Exit
+var startupErrorHandler StartupErrorHandler
 
 var (
 	argsJavaExecutable = flag.String("java", "java", "Full path to java executable")
@@ -343,15 +345,15 @@ func determineXmxAndLogGc() (string, bool) {
 }
 
 func handleUnexpectedExit() {
-	message := "Main process shut down unexpectedly."
+	message := "NZBHydra main process shut down unexpectedly."
 	for _, x := range consoleLines {
 		if strings.Contains(x, "Unrecognized option: -Xlog") {
-			message = "You seem to be trying to run NZBHydra with a wrong Java version. Please make sure to use at least Java 9"
+			message = "You seem to be trying to run NZBHydra with a wrong Java version. Please make sure to use at least Java 17."
 		} else if strings.Contains(x, "java.lang.OutOfMemoryError") {
-			message = "The main process has exited because it didn't have enough memory. Please increase the XMX value in the main config"
+			message = "The NZBHydra main process has exited because it didn't have enough memory. Please increase the XMX value in the main config."
 		}
 	}
-	LogFile(logrus.ErrorLevel, message)
+	startupErrorHandler(message)
 	LogFile(logrus.ErrorLevel, "The last 250 lines from output:")
 	for _, line := range consoleLines {
 		LogFile(logrus.ErrorLevel, line)
@@ -554,7 +556,12 @@ func checkLogLine(line string) {
 	markerLine = "Unable to open browser. Go to"
 	if strings.Contains(line, markerLine) {
 		urlToOpen := strings.TrimSpace(line[strings.Index(line, markerLine)+len(markerLine):])
+		Log(logrus.InfoLevel, "Main process was unable to open browser. Will try here to open "+urlToOpen)
 		OpenBrowser(urlToOpen)
+	}
+	markerLine = "PortInUseException"
+	if strings.Contains(line, markerLine) {
+		startupErrorHandler("The port configured for NZBHydra is already in use. Please check the port configuration in the settings.")
 	}
 	if strings.Contains(line, "Started NzbHydra in") {
 		Log(logrus.InfoLevel, "Main process has started successfully")
@@ -562,6 +569,7 @@ func checkLogLine(line string) {
 }
 
 func OpenBrowser(urlToOpen string) {
+	Logf(logrus.InfoLevel, "Opening URL %s", urlToOpen)
 	err := exec.Command("rundll32", "url.dll,FileProtocolHandler", urlToOpen).Start()
 	if err != nil {
 		Log(logrus.ErrorLevel, "Unable to open browser", err)
@@ -629,8 +637,9 @@ func executeWaitingForSignal(function Function) {
 	<-done
 }
 
-func Entrypoint(_hideWindow bool, waitForSignal bool) {
+func Entrypoint(_hideWindow bool, waitForSignal bool, _errorHandler StartupErrorHandler) {
 	hideWindow = _hideWindow
+	startupErrorHandler = _errorHandler
 	if waitForSignal {
 		executeWaitingForSignal(_main)
 	} else {

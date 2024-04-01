@@ -532,6 +532,7 @@
                                     <buildArg>-H:+StaticExecutableWithDynamicLibC</buildArg>
                                     <buildArg>-march=compatibility</buildArg>
                                     <buildArg>--no-fallback -J-Xmx13g</buildArg>
+                                    <buildArg>--native-image-info</buildArg>
                             </buildArgs>
                                 <classesDirectory>${project.build.outputDirectory}</classesDirectory>
                                 <metadataRepository>
