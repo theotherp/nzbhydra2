@@ -1,3 +1,20 @@
+### v6.0.0
+
+**Feature** I've completely rewritten the wrapper for windows. It's not a packaged python script anymore but an actually compiled binary. This has a couple of benefits: No more false positives from virus scanners (VirusTotal shows 5/72). No more temporary files not being cleaned up after a crash. The files are (a bit) smaller.
+I don't plan to compile the wrapper for anything but windows as it makes more sense and is easier to run the python wrapper instead.
+
+**Feature** The temp folder can be set using the environment variable NZBHYDRA_TEMP_FOLDER. See <a href="https://github.com/theotherp/nzbhydra2/issues/984">#984</a>
+
+**Fix** IPs or usernames were not shown in the history. See <a href="https://github.com/theotherp/nzbhydra2/issues/932">#932</a>
+
+**Fix** Removed annoying and misleading warning regarding memory leaks when shutting down process.
+
+**Fix** Improved logging of outdated wrappers.
+
+**Fix** Properly remove system tray icon after shutdown
+
+
+
 ### v5.3.11 (2024-03-23)
 
 **Feature** Support NZBIndex API. I'm honestly not sure if there's a difference in the results but you'll be able to get more than 250 results. See <a href="https://github.com/theotherp/nzbhydra2/issues/930">#930</a>
