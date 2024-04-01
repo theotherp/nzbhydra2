@@ -3,6 +3,7 @@ package base
 import (
 	"bufio"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"os"
@@ -155,6 +156,7 @@ func waitForServerUp() bool {
 	return getWaiting(Uri, func(error error, response *http.Response) bool { return response != nil && response.StatusCode == 200 })
 }
 
+//goland:noinspection GoUnhandledErrorResult
 func prepareAndRun(wg *sync.WaitGroup, testType string) {
 	reachedLineNumber = 0
 	dir := "d:\\NZBHydra\\nzbhydra2\\gowrappertest\\automated\\mainfolder\\"
@@ -189,7 +191,10 @@ func runCode(wg *sync.WaitGroup, exitCode *int) {
 		*exitCode = code
 		return
 	}
-	Entrypoint(false, false)
+	var log = func(message string) {
+		Log(logrus.InfoLevel, message)
+	}
+	Entrypoint(false, false, log)
 }
 
 func wrapperLogContainsString(searchString string) (bool, error) {
