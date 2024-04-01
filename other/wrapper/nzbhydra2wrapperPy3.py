@@ -339,16 +339,17 @@ def startup():
         console_logger.setLevel("DEBUG")
         logger.info("Setting wrapper log level to DEBUG")
 
-#     if os.environ.get('NZBHYDRA_USE_BASE_PATH_FOR_LIBS') is not None:
-#         logger.debug("Using base path " + basePath + " as forced by environment variable")
-#         libFolder = basePath
-#     else:
-    libFolder = os.path.join(basePath, "lib")
+    if os.environ.get('NZBHYDRA_USE_BASE_PATH_FOR_LIBS') is not None:
+        logger.debug("Using base path " + basePath + " as forced by environment variable")
+        libFolder = basePath
+    else:
+        libFolder = os.path.join(basePath, "lib")
     if releaseType == ReleaseType.GENERIC:
-        if not os.path.exists(libFolder):
-            logger.critical(
-                "Error: Lib folder %s not found. An update might've failed or the installation folder is corrupt", libFolder)
-            sys.exit(-1)
+        if os.environ.get('NZBHYDRA_USE_BASE_PATH_FOR_LIBS') is None:
+            if not os.path.exists(libFolder):
+                logger.critical(
+                    "Error: Lib folder %s not found. An update might've failed or the installation folder is corrupt", libFolder)
+                sys.exit(-1)
 
         jarFiles = [os.path.join(libFolder, f) for f in os.listdir(libFolder) if os.path.isfile(os.path.join(libFolder, f)) and f.endswith(".jar")]
         if len(jarFiles) == 0:
@@ -391,8 +392,8 @@ def startup():
         if args.baseurl and "--baseurl" not in arguments:
             arguments.append("--baseurl")
             arguments.append(args.baseurl)
-
     yamlPath = os.path.join(args.datafolder, "nzbhydra.yml")
+
     xmx = None
     logGc = False
     if args.xmx:
@@ -450,7 +451,7 @@ def startup():
     if releaseType == ReleaseType.NATIVE:
         arguments = [args.java] + java_arguments + arguments
     else:
-        arguments = [args.java] + java_arguments + ["-jar", jarFile] + arguments
+        arguments = [args.java] + java_arguments + ["-jar", escape_parameter(isWindows, jarFile)] + arguments
     commandLine = " ".join(arguments)
     logger.info("Starting NZBHydra main process with command line: %s in folder %s", commandLine, basePath)
     if hasattr(subprocess, 'STARTUPINFO'):
@@ -639,7 +640,14 @@ def main(arguments):
     parser.add_argument('--internalApiKey', action='store', default=False, help=argparse.SUPPRESS)
     args, unknownArgs = parser.parse_known_args(arguments)
     setupLogger()
-    clean_up_old_files()
+    # Delete old files from last backup
+    oldFiles = [f for f in os.listdir(getBasePath()) if
+                os.path.isfile(os.path.join(getBasePath(), f)) and f.endswith(".old")]
+    if len(oldFiles) > 0:
+        logger.info("Deleting .old files from last update")
+        for f in oldFiles:
+            logger.debug("Deleting file %s", f)
+            os.remove(f)
     if not (os.path.isabs(args.datafolder)):
         args.datafolder = os.path.join(os.getcwd(), args.datafolder)
         logger.info("Data folder path is not absolute. Will assume " + args.datafolder + " was meant")
@@ -693,7 +701,7 @@ def main(arguments):
             except Exception as e:
                 controlCode = process.returncode
                 if not (args.version or args.repairdb):
-                    logger.info("Unable to read control ID from %s: %s. Falling back to process return code %d",
+                    logger.warning("Unable to read control ID from %s: %s. Falling back to process return code %d",
                                    controlIdFilePath, e, controlCode)
             if os.path.exists(controlIdFilePath):
                 try:
@@ -732,17 +740,6 @@ def main(arguments):
             else:
                 logger.info("NZBHydra main process has terminated for shutdown")
                 doStart = False
-
-
-def clean_up_old_files():
-    # Delete old files from last backup
-    oldFiles = [f for f in os.listdir(getBasePath()) if
-                os.path.isfile(os.path.join(getBasePath(), f)) and f.endswith(".old")]
-    if len(oldFiles) > 0:
-        logger.info("Deleting .old files from last update")
-        for f in oldFiles:
-            logger.debug("Deleting file %s", f)
-            os.remove(f)
 
 
 if __name__ == '__main__':
