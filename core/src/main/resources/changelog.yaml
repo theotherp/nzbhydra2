@@ -3,6 +3,8 @@
     changes:
       -   type: "feature"
           text: "I've completely rewritten the wrapper for windows. It's not a packaged python script anymore but an actually compiled binary. This has a couple of benefits: No more false positives from virus scanners (VirusTotal shows 5/72). No more temporary files not being cleaned up after a crash. The files are (a bit) smaller.\nI don't plan to compile the wrapper for anything but windows as it makes more sense and is easier to run the python wrapper instead."
+      -   type: "feature"
+          text: "The temp folder can be set using the environment variable NZBHYDRA_TEMP_FOLDER. See #984"
       -   type: "fix"
           text: "IPs or usernames were not shown in the history. See #932"
       -   type: "fix"

@@ -21,6 +21,7 @@ import org.nzbhydra.config.category.Category;
 import org.nzbhydra.logging.LogAnonymizer;
 import org.nzbhydra.logging.LogContentProvider;
 import org.nzbhydra.logging.LoggingMarkers;
+import org.nzbhydra.misc.TempFileProvider;
 import org.nzbhydra.problemdetection.OutdatedWrapperDetector;
 import org.nzbhydra.springnative.ReflectionMarker;
 import org.nzbhydra.update.UpdateManager;
@@ -99,6 +100,8 @@ public class DebugInfosProvider {
 
     private final List<TimeAndThreadCpuUsages> timeAndThreadCpuUsagesList = new ArrayList<>();
     private final Map<String, Long> lastThreadCpuTimes = new HashMap<>();
+    @Autowired
+    private TempFileProvider tempFileProvider;
 
 
     @PostConstruct
@@ -261,7 +264,7 @@ public class DebugInfosProvider {
 
 
         String anonymizedLog = logAnonymizer.getAnonymizedLog(logContentProvider.getLog());
-        File tempFile = File.createTempFile("nzbhydradebuginfos", "zip");
+        File tempFile = tempFileProvider.getTempFile("debuginfos", ".zip");
         try (FileOutputStream fos = new FileOutputStream(tempFile)) {
             try (ZipOutputStream zos = new ZipOutputStream(fos)) {
                 writeStringToZip(zos, "nzbhydra2.log", anonymizedLog.getBytes(StandardCharsets.UTF_8));
@@ -390,7 +393,7 @@ public class DebugInfosProvider {
     @Transactional
     public String executeSqlQuery(String sql) throws IOException {
         logger.info("Executing SQL query \"{}\" and returning as CSV", sql);
-        File tempFile = File.createTempFile("nzbhydra", "csv");
+        File tempFile = tempFileProvider.getTempFile("dbquery", "csv");
         String path = tempFile.getAbsolutePath().replace("\\", "/");
         entityManager.createNativeQuery(String.format("CALL CSVWRITE('%s', '%s')", path, sql.replace("'", "''"))).executeUpdate();
         return new String(Files.readAllBytes(tempFile.toPath()));

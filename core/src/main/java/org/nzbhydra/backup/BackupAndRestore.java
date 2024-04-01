@@ -14,6 +14,7 @@ import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.ConfigReaderWriter;
 import org.nzbhydra.genericstorage.GenericStorage;
 import org.nzbhydra.logging.LoggingMarkers;
+import org.nzbhydra.misc.TempFileProvider;
 import org.nzbhydra.systemcontrol.SystemControl;
 import org.nzbhydra.webaccess.HydraOkHttp3ClientHttpRequestFactory;
 import org.slf4j.Logger;
@@ -65,6 +66,8 @@ public class BackupAndRestore {
     private HydraOkHttp3ClientHttpRequestFactory requestFactory;
     @Autowired
     private SystemControl systemControl;
+    @Autowired
+    private TempFileProvider tempFileProvider;
 
     @Autowired
     private GenericStorage genericStorage;
@@ -186,9 +189,10 @@ public class BackupAndRestore {
 
     private void backupDatabase(File targetFile, boolean triggeredByUsed) {
         final String tempPath;
+
         File tempFile;
         try {
-            tempFile = Files.createTempFile("nzbhydra", ".zip").toFile();
+            tempFile = tempFileProvider.getTempFile("databaseTest", ".zip");
             tempPath = tempFile.getAbsolutePath().replace("\\", "/");
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -248,7 +252,7 @@ public class BackupAndRestore {
 
     public GenericResponse restoreFromFile(InputStream inputStream) {
         try {
-            File tempFile = File.createTempFile("nzbhydra-restore", ".zip");
+            File tempFile = tempFileProvider.getTempFile("restore", ".zip");
             FileUtils.copyInputStreamToFile(inputStream, tempFile);
             tempFile.deleteOnExit();
             restoreFromFile(tempFile);

@@ -20,6 +20,7 @@ import org.nzbhydra.indexers.IndexerApiAccessEntityShortRepository;
 import org.nzbhydra.indexers.IndexerApiAccessType;
 import org.nzbhydra.indexers.NfoResult;
 import org.nzbhydra.logging.LoggingMarkers;
+import org.nzbhydra.misc.TempFileProvider;
 import org.nzbhydra.notifications.DownloadNotificationEvent;
 import org.nzbhydra.searching.SearchModuleProvider;
 import org.nzbhydra.searching.db.SearchResultEntity;
@@ -82,6 +83,8 @@ public class FileHandler {
     private IndexerSpecificDownloadExceptions indexerSpecificDownloadExceptions;
 
     private final Set<File> temporaryZipFiles = new HashSet<>();
+    @Autowired
+    private TempFileProvider tempFileProvider;
 
     public DownloadResult getFileByGuid(long guid, SearchSource accessSource) throws InvalidSearchResultIdException {
         final SearchResultEntity searchResult = getResultFromGuid(guid, accessSource);
@@ -282,7 +285,7 @@ public class FileHandler {
     public File createZip(List<File> nzbFiles) throws Exception {
         logger.info("Creating ZIP with files");
 
-        File tempFile = File.createTempFile("nzbhydra", ".zip");
+        File tempFile = tempFileProvider.getTempFile("nzbs", ".zip");
         temporaryZipFiles.add(tempFile);
         tempFile.deleteOnExit();
         logger.debug("Using temp file {}", tempFile.getAbsolutePath());
