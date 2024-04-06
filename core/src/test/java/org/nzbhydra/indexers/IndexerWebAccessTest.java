@@ -33,7 +33,7 @@ public class IndexerWebAccessTest {
     private ConfigProvider configProviderMock;
     @Mock
     private WebAccess webAccessMock;
-    private IndexerConfig indexerConfig = new IndexerConfig();
+    private final IndexerConfig indexerConfig = new IndexerConfig();
     @Mock
     private Unmarshaller unmarshallerMock;
     @Captor
@@ -46,10 +46,11 @@ public class IndexerWebAccessTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
-        String xml = "<?xml version=\"1.0\" ?>\n" +
-                "<metadata>\n" +
-                "</metadata>";
+        MockitoAnnotations.openMocks(this);
+        String xml = """
+                <?xml version="1.0" encoding="UTF-8"?>\
+                <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:newznab="http://www.newznab.com/DTD/2010/feeds/attributes/" encoding="utf-8">
+                    <channel/></rss>""";
         when(webAccessMock.callUrl(anyString(), headersCaptor.capture(), timeoutCaptor.capture())).thenReturn(xml);
         BaseConfig baseConfig = new BaseConfig();
         baseConfig.setSearching(searchingConfigMock);
