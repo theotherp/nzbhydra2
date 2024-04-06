@@ -27,19 +27,17 @@ import org.nzbhydra.webaccess.HydraOkHttp3ClientHttpRequestFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Objects;
 
-public class HeaderAuthenticationFilter extends BasicAuthenticationFilter {
+public class HeaderAuthenticationFilter extends OncePerRequestFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(HeaderAuthenticationFilter.class);
 
@@ -48,8 +46,7 @@ public class HeaderAuthenticationFilter extends BasicAuthenticationFilter {
 
     private final String internalApiKey;
 
-    public HeaderAuthenticationFilter(AuthenticationManager authenticationManager, HydraUserDetailsManager userDetailsManager, AuthConfig authConfig) {
-        super(authenticationManager);
+    public HeaderAuthenticationFilter(HydraUserDetailsManager userDetailsManager, AuthConfig authConfig) {
         this.userDetailsManager = userDetailsManager;
         this.authConfig = authConfig;
         //Must be provided by wrapper
@@ -68,7 +65,6 @@ public class HeaderAuthenticationFilter extends BasicAuthenticationFilter {
                 final AnonymousAuthenticationToken token = new AnonymousAuthenticationToken("key", "internalApi", AuthorityUtils.createAuthorityList("ROLE_ADMIN"));
                 token.setDetails(new HydraWebAuthenticationDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(token);
-                onSuccessfulAuthentication(request, response, token);
                 logger.debug("Authorized access to {} via internal API key", request.getRequestURI());
                 chain.doFilter(request, response);
                 return;
@@ -109,7 +105,6 @@ public class HeaderAuthenticationFilter extends BasicAuthenticationFilter {
             UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
             auth.setDetails(new HydraWebAuthenticationDetails(request));
             SecurityContextHolder.getContext().setAuthentication(auth);
-            onSuccessfulAuthentication(request, response, auth);
         } catch (UsernameNotFoundException e) {
             handleInvalidAuth(request, response, "Invalid username provided with auth header");
             return;
@@ -124,8 +119,6 @@ public class HeaderAuthenticationFilter extends BasicAuthenticationFilter {
 
     private void handleInvalidAuth(HttpServletRequest request, HttpServletResponse response, String msg) throws IOException {
         SecurityContextHolder.clearContext();
-        BadCredentialsException badCredentialsException = new BadCredentialsException(msg);
-        onUnsuccessfulAuthentication(request, response, badCredentialsException);
         response.sendError(HttpServletResponse.SC_UNAUTHORIZED, msg);
         logger.warn(msg);
     }
