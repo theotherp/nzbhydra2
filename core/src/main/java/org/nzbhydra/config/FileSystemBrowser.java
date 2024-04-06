@@ -115,7 +115,7 @@ public class FileSystemBrowser {
         private String fullPath;
 
         public FileSystemSubEntry(File file) {
-            name = file.getName().equals("") ? file.getPath() : file.getName(); //Roots don't contain a name
+            name = file.getName().isEmpty() ? file.getPath() : file.getName(); //Roots don't contain a name
             fullPath = file.getAbsolutePath();
         }
     }

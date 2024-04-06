@@ -209,7 +209,7 @@ public class IndexerChecker {
                     responses.add(response);
                 } catch (ExecutionException e) {
                     if (e.getCause() instanceof IndexerAccessException) {
-                        logger.error("Error while communicating with indexer: " + e.getMessage());
+                        logger.error("Error while communicating with indexer: {}", e.getMessage());
                     } else {
                         logger.error("Unexpected error while checking caps", e);
                     }
@@ -252,7 +252,7 @@ public class IndexerChecker {
                 logger.info("Indexer {} supports the following search types: {}", indexerConfig.getName(), indexerConfig.getSupportedSearchTypes().stream().map(Enum::name).collect(Collectors.joining(", ")));
             }
         } catch (IndexerAccessException e) {
-            logger.error("Error while accessing indexer: " + e.getMessage());
+            logger.error("Error while accessing indexer: {}", e.getMessage());
             configComplete = false;
         }
 
@@ -387,7 +387,7 @@ public class IndexerChecker {
     private SingleCheckCapsResponse singleCheckCaps(CheckCapsRequest request, IndexerConfig indexerConfig) throws IndexerAccessException {
         URI uri = getBaseUri(request.getIndexerConfig()).queryParam("t", request.getTMode()).queryParam(request.getKey(), request.getValue()).build().toUri();
         logger.debug("Calling URL {}", uri);
-        Xml response = null;
+        Xml response;
         try {
             response = indexerWebAccess.get(uri, indexerConfig);
         } catch (IndexerAccessException e) {

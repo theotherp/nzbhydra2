@@ -49,7 +49,7 @@ public class NewsProvider {
         return newsEntries;
     }
 
-    public void saveShownForCurrentVersion() throws IOException {
+    public void saveShownForCurrentVersion() {
         shownNewsRepository.deleteAll(shownNewsRepository.findAll());
         shownNewsRepository.save(new ShownNews(updateManager.getCurrentVersionString()));
         logger.debug("Saved that news for version {} and before were shown", updateManager.getCurrentVersionString());

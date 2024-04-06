@@ -16,26 +16,15 @@
 
 package org.nzbhydra.api.stats;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.nzbhydra.historystats.stats.HistoryRequest;
 
+@Setter
+@Getter
 public class ApiHistoryRequest {
 
     private String apikey;
     private HistoryRequest request = new HistoryRequest();
 
-    public String getApikey() {
-        return apikey;
-    }
-
-    public void setApikey(String apikey) {
-        this.apikey = apikey;
-    }
-
-    public HistoryRequest getRequest() {
-        return request;
-    }
-
-    public void setRequest(HistoryRequest request) {
-        this.request = request;
-    }
 }

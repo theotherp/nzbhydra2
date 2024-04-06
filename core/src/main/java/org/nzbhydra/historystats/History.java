@@ -131,12 +131,7 @@ public class History {
         }
 
         List resultList = selectQuery.getResultList();
-        Pageable pageable;
-        if (sortModel == null) {
-            pageable = PageRequest.of(requestData.getPage() - 1, requestData.getLimit());
-        } else {
-            pageable = PageRequest.of(requestData.getPage() - 1, requestData.getLimit(), sortModel.getSortMode() == 1 ? Sort.Direction.ASC : Sort.Direction.DESC, sortModel.getColumn());
-        }
+        Pageable pageable = PageRequest.of(requestData.getPage() - 1, requestData.getLimit(), sortModel.getSortMode() == 1 ? Sort.Direction.ASC : Sort.Direction.DESC, sortModel.getColumn());
 
         Long count = (Long) countQuery.getSingleResult();
         if (resultClass == SearchEntity.class) {
@@ -181,7 +176,7 @@ public class History {
     }
 
     @Data
-@ReflectionMarker
+    @ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     public static class SearchDetails {
@@ -193,7 +188,7 @@ public class History {
     }
 
     @Data
-@ReflectionMarker
+    @ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     public static class IndexerSearchTO {

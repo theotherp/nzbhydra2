@@ -25,9 +25,9 @@ import static org.nzbhydra.config.mediainfo.MediaIdType.*;
 @Component
 public class InfoProvider {
 
-    public static Set<MediaIdType> TV_ID_TYPES = Sets.newHashSet(TVDB, TVRAGE, TVMAZE, TVIMDB);
-    public static Set<MediaIdType> MOVIE_ID_TYPES = Sets.newHashSet(TMDB, IMDB);
-    public static Set<MediaIdType> REAL_ID_TYPES = Sets.union(TV_ID_TYPES, MOVIE_ID_TYPES);
+    public static final Set<MediaIdType> TV_ID_TYPES = Sets.newHashSet(TVDB, TVRAGE, TVMAZE, TVIMDB);
+    public static final Set<MediaIdType> MOVIE_ID_TYPES = Sets.newHashSet(TMDB, IMDB);
+    public static final Set<MediaIdType> REAL_ID_TYPES = Sets.union(TV_ID_TYPES, MOVIE_ID_TYPES);
 
     private static final Map<MediaIdType, Set<MediaIdType>> canConvertMap = new HashMap<>();
 
@@ -156,11 +156,11 @@ public class InfoProvider {
                 default:
                     throw new IllegalArgumentException("Wrong IdType");
             }
-            logger.debug("Conversion successful: " + info);
+            logger.debug("Conversion successful: {}", info);
             mediaInfoMap.put(hash, info);
             return info;
         } catch (Exception e) {
-            logger.error("Error while converting " + fromType + " " + value, e);
+            logger.error("Error while converting {} {}", fromType, value, e);
             Throwables.throwIfInstanceOf(e, InfoProviderException.class);
             throw new InfoProviderException("Unexpected error while converting infos", e);
         }
@@ -203,7 +203,7 @@ public class InfoProvider {
 
             return infos;
         } catch (Exception e) {
-            logger.error("Error while searching for " + titleType + " " + title, e);
+            logger.error("Error while searching for {} {}", titleType, title, e);
             Throwables.throwIfInstanceOf(e, InfoProviderException.class);
             throw new InfoProviderException("Unexpected error while converting infos", e);
         }

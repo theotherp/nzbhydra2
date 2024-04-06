@@ -50,7 +50,7 @@ public class IndexerWebAccess {
     protected ConfigProvider configProvider;
     @Autowired
     protected WebAccess webAccess;
-    protected Unmarshaller unmarshaller = new WebConfiguration().marshaller();
+    protected final Unmarshaller unmarshaller = new WebConfiguration().marshaller();
 
 
     public <T> T get(URI uri, IndexerConfig indexerConfig) throws IndexerAccessException {
@@ -89,7 +89,7 @@ public class IndexerWebAccess {
                 return unmarshalXml(response);
             });
         } catch (RejectedExecutionException e) {
-            logger.error("Unexpected execution exception while executing call for indexer " + indexerConfig.getName() + ". This will hopefully be fixed soon", e);
+            logger.error("Unexpected execution exception while executing call for indexer {}. This will hopefully be fixed soon", indexerConfig.getName(), e);
             throw new IndexerProgramErrorException("Unexpected error in hydra code. Sorry...");
         } finally {
             executorService.shutdown();

@@ -15,7 +15,7 @@ public class ConfigProvider {
     private BaseConfig baseConfig;
 
     @EventListener
-    public void handleNewConfig(ConfigChangedEvent configChangedEvent) throws Exception {
+    public void handleNewConfig(ConfigChangedEvent configChangedEvent) {
         baseConfig = configChangedEvent.getNewConfig();
     }
 

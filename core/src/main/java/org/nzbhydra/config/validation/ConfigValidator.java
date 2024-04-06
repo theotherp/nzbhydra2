@@ -49,7 +49,6 @@ public interface ConfigValidator<T> {
     /**
      * Called for a new config to initialize itself
      */
-    default T initializeNewConfig(T newConfig) {
-        return newConfig;
+    default void initializeNewConfig(T newConfig) {
     }
 }

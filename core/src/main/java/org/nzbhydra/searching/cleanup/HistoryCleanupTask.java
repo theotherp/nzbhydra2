@@ -89,7 +89,7 @@ public class HistoryCleanupTask {
 
             Instant deleteOlderThanStats;
             if (keepStatsForWeeks != null) {
-                deleteOlderThanStats = Instant.now().minus(keepStatsForWeeks * 7, ChronoUnit.DAYS);
+                deleteOlderThanStats = Instant.now().minus(keepStatsForWeeks * 7L, ChronoUnit.DAYS);
             } else {
                 deleteOlderThanStats = deleteOlderThanHistory;
             }

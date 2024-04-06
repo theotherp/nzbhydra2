@@ -82,7 +82,7 @@ public class DelegatingSSLSocketFactory extends SSLSocketFactory {
         return configureSocket(sslSocket);
     }
 
-    protected SSLSocket configureSocket(SSLSocket sslSocket) throws IOException {
+    protected SSLSocket configureSocket(SSLSocket sslSocket) {
         // No-op by default.
         return sslSocket;
     }

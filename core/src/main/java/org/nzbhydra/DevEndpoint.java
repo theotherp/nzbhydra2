@@ -60,20 +60,20 @@ public class DevEndpoint {
 
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/dev/countDanglingIndexersearches", method = RequestMethod.GET)
-    public BigInteger countDanglingIndexersearches() throws Exception {
+    public BigInteger countDanglingIndexersearches() {
         final List<BigInteger> resultList = entityManager.createNativeQuery("select count(*) from SEARCHRESULT x where x.INDEXERSEARCHENTITY not in (select y.id from INDEXERSEARCH y)").getResultList();
         return resultList.get(0);
     }
 
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/dev/throwException", method = RequestMethod.GET)
-    public BigInteger throwException() throws Exception {
+    public BigInteger throwException() {
         throw new RuntimeException("test");
     }
 
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/dev/throwAccessDeniedException", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public BigInteger throwAccessDeniedException() throws Exception {
+    public BigInteger throwAccessDeniedException() {
         throw new AccessDeniedException("test");
     }
 
@@ -81,7 +81,7 @@ public class DevEndpoint {
     @Secured({"ROLE_ADMIN"})
     @Transactional
     @RequestMapping(value = "/dev/deleteDanglingIndexersearches", method = RequestMethod.GET)
-    public String deleteDanglingIndexersearches() throws Exception {
+    public String deleteDanglingIndexersearches() {
         return "Deleted " + entityManager.createNativeQuery("delete from SEARCHRESULT where INDEXERSEARCHENTITY not in (select y.id from INDEXERSEARCH y)").executeUpdate() + " entries";
     }
 

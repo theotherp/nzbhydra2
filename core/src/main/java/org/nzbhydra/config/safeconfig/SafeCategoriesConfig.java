@@ -11,9 +11,9 @@ import java.util.stream.Collectors;
 public class SafeCategoriesConfig {
 
 
-    private boolean enableCategorySizes = true;
-    private List<SafeCategory> categories;
-    private String defaultCategory = "All";
+    private boolean enableCategorySizes;
+    private final List<SafeCategory> categories;
+    private String defaultCategory;
 
     public SafeCategoriesConfig(CategoriesConfig categoriesConfig) {
         categories = categoriesConfig.getCategories().stream().map(SafeCategory::new).collect(Collectors.toList());

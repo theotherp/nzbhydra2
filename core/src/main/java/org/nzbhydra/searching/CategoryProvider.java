@@ -50,7 +50,7 @@ public class CategoryProvider implements InitializingBean {
      * Map of categories by their newznab numbers. Values may appear multiple times
      */
     protected Map<Integer, Category> categoryMapByNumber = new HashMap<>();
-    protected Map<List<Integer>, Category> categoryMapByMultipleNumber = new HashMap<>();
+    protected final Map<List<Integer>, Category> categoryMapByMultipleNumber = new HashMap<>();
 
     @Autowired
     protected BaseConfig baseConfig;
@@ -150,7 +150,7 @@ public class CategoryProvider implements InitializingBean {
      * @return The matching configured category or "All" if none is found
      */
     public Category fromSearchNewznabCategories(List<Integer> cats, Category defaultCategory) {
-        if (cats == null || cats.size() == 0) {
+        if (cats == null || cats.isEmpty()) {
             return defaultCategory;
         }
 
@@ -169,7 +169,7 @@ public class CategoryProvider implements InitializingBean {
      * @return The matching configured category or "All" if none is found
      */
     public Category fromResultNewznabCategories(List<Integer> cats) {
-        if (cats == null || cats.size() == 0) {
+        if (cats == null || cats.isEmpty()) {
             logger.debug(LoggingMarkers.CATEGORY_MAPPING, "Empty newznab categories -> N/A");
             return naCategory;
         }
@@ -212,7 +212,7 @@ public class CategoryProvider implements InitializingBean {
             List<Integer> matchingSubcategories = cats.stream().filter(cat -> categoryMapByNumber.containsKey(cat)).toList();
             if (matchingSubcategories.size() == 1) {
                 result = categoryMapByNumber.get(matchingSubcategories.get(0));
-            } else if (matchingSubcategories.size() == 0) {
+            } else if (matchingSubcategories.isEmpty()) {
                 result = getMatchingCategoryOrMatchingMainCategory(cats, defaultCategory);
             } else if (matchingSubcategories.stream().map(x -> categoryMapByNumber.get(x)).distinct().count() == 1) {
                 //All match the sub category

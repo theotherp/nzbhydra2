@@ -74,7 +74,7 @@ public class NativeHints implements RuntimeHintsRegistrar {
             //Just load so it can be registered
             try (InputStream resourceAsStream = getClass().getResourceAsStream(staticResource)) {
             } catch (IOException e) {
-                logger.error("Error loading resource " + staticResource, e);
+                logger.error("Error loading resource {}", staticResource, e);
             }
         }
         try {

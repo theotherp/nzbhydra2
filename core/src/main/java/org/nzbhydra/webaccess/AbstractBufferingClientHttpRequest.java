@@ -38,7 +38,7 @@ abstract class AbstractBufferingClientHttpRequest extends AbstractClientHttpRequ
 
 
     @Override
-    protected OutputStream getBodyInternal(HttpHeaders headers) throws IOException {
+    protected OutputStream getBodyInternal(HttpHeaders headers) {
         return this.bufferedOutput;
     }
 

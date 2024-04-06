@@ -56,7 +56,7 @@ public class InstanceCounter {
                     configProvider.getBaseConfig().getMain().setInstanceCounterDownloaded(true);
                     baseConfigHandler.save(false);
                 } else {
-                    logger.error("Unable to count instance. Response: " + response.getStatusText());
+                    logger.error("Unable to count instance. Response: {}", response.getStatusText());
                 }
             } catch (IOException e) {
                 logger.error("Unable to count instance", e);

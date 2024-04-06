@@ -84,7 +84,7 @@ public abstract class Downloader {
     protected final ConfigProvider configProvider;
 
     protected DownloaderConfig downloaderConfig;
-    protected List<Long> downloadRates = new ArrayList<>();
+    protected final List<Long> downloadRates = new ArrayList<>();
 
     public Downloader(FileHandler nzbHandler, SearchResultRepository searchResultRepository, ApplicationEventPublisher applicationEventPublisher, IndexerSpecificDownloadExceptions indexerSpecificDownloadExceptions, ConfigProvider configProvider) {
         this.nzbHandler = nzbHandler;

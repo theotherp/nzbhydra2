@@ -20,7 +20,7 @@ import java.io.IOException;
 
 public class WebAccessException extends IOException {
 
-    private String message;
+    private final String message;
     private String body;
     private int code;
 

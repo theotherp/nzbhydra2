@@ -268,7 +268,7 @@ public class NzbHydra {
             msg = "An unexpected error occurred during startup:\n" + e;
             logger.error("An unexpected error occurred during startup", e);
         }
-        logger.error("FATAL: " + msg, e);
+        logger.error("FATAL: {}", msg, e);
 
         //Rethrow so that spring exception handlers can handle this
         throw e;

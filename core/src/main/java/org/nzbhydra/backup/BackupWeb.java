@@ -30,7 +30,7 @@ public class BackupWeb {
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/backup/backup", method = RequestMethod.GET, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     @Transactional
-    public Object backupAndDownload() throws Exception {
+    public Object backupAndDownload() {
         try {
             File backupFile = backup.backup(true);
 
@@ -49,7 +49,7 @@ public class BackupWeb {
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/backup/backuponly", method = RequestMethod.GET)
     @Transactional
-    public GenericResponse backupOnly() throws Exception {
+    public GenericResponse backupOnly() {
         try {
             backup.backup(true);
             return GenericResponse.ok();
@@ -61,13 +61,13 @@ public class BackupWeb {
 
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/backup/list", method = RequestMethod.GET)
-    public List<BackupEntry> listBackups() throws Exception {
+    public List<BackupEntry> listBackups() {
         return backup.getExistingBackups();
     }
 
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/backup/restore", method = RequestMethod.GET)
-    public GenericResponse restore(@RequestParam String filename) throws Exception {
+    public GenericResponse restore(@RequestParam String filename) {
         return backup.restore(filename);
     }
 
@@ -79,7 +79,7 @@ public class BackupWeb {
 
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/backup/download", method = RequestMethod.GET, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public FileSystemResource getFile(@RequestParam("filename") String filename) throws Exception {
+    public FileSystemResource getFile(@RequestParam("filename") String filename) {
         final FileSystemResource resource = new FileSystemResource(new File(backup.getBackupFolder(), filename));
         return resource;
     }

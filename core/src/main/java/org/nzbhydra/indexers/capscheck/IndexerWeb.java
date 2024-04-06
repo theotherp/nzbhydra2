@@ -61,7 +61,7 @@ public class IndexerWeb {
     @Autowired
     private JacketConfigRetriever jacketConfigRetriever;
 
-    Multimap<String, String> multimap = Multimaps.synchronizedMultimap(
+    final Multimap<String, String> multimap = Multimaps.synchronizedMultimap(
             HashMultimap.create());
 
     @Secured({"ROLE_ADMIN"})

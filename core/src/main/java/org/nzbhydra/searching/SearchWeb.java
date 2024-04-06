@@ -68,7 +68,7 @@ public class SearchWeb {
     public SearchResponse search(@RequestBody SearchRequestParameters parameters) {
         SearchRequest searchRequest = createSearchRequest(parameters);
         Stopwatch stopwatch = Stopwatch.createStarted();
-        logger.info("New search request: " + searchRequest);
+        logger.info("New search request: {}", searchRequest);
         org.nzbhydra.searching.SearchResult searchResult = searcher.search(searchRequest);
 
         SearchResponse searchResponse = searchResultProcessor.createSearchResponse(searchResult);

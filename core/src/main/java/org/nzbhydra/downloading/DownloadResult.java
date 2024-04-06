@@ -27,6 +27,7 @@ import org.springframework.http.ResponseEntity;
 
 import java.net.URI;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -114,7 +115,7 @@ public class DownloadResult {
             return url;
         }
         String dn = matcher.group(1);
-        url = url.replace("dn=" + dn, "dn=" + URLEncoder.encode(dn)).replace(" ", "%20");
+        url = url.replace("dn=" + dn, "dn=" + URLEncoder.encode(dn, StandardCharsets.UTF_8)).replace(" ", "%20");
         return url;
     }
 

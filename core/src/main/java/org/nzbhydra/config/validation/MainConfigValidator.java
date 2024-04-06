@@ -122,7 +122,7 @@ public class MainConfigValidator implements ConfigValidator<MainConfig> {
             if (urlBase.endsWith("/")) {
                 newConfig.setUrlBase(urlBase.substring(0, urlBase.length() - 1));
             }
-            if ("/".equals(urlBase) || "".equals(urlBase)) {
+            if ("/".equals(urlBase) || urlBase.isEmpty()) {
                 newConfig.setUrlBase("/");
             }
             newConfig.setUrlBase(urlBase);
@@ -131,9 +131,8 @@ public class MainConfigValidator implements ConfigValidator<MainConfig> {
     }
 
     @Override
-    public MainConfig initializeNewConfig(MainConfig newConfig) {
+    public void initializeNewConfig(MainConfig newConfig) {
         Random random = new Random();
         newConfig.setApiKey(new BigInteger(130, random).toString(32).toUpperCase());
-        return newConfig;
     }
 }

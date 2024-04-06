@@ -95,7 +95,7 @@ public class UpdateManager implements InitializingBean {
     private PackageInfo packageInfo;
 
     protected Supplier<List<Release>> releasesCache = Suppliers.memoizeWithExpiration(getReleasesSupplier(), CACHE_DURATION_MINUTES, TimeUnit.MINUTES);
-    protected TypeReference<List<ChangelogVersionEntry>> changelogEntryListTypeReference = new TypeReference<>() {
+    protected final TypeReference<List<ChangelogVersionEntry>> changelogEntryListTypeReference = new TypeReference<>() {
     };
 
     private void loadPackageInfo() {
@@ -123,7 +123,7 @@ public class UpdateManager implements InitializingBean {
         }
     }
 
-    private SemanticVersion getLatestVersion(boolean includePrerelease) throws UpdateException {
+    private SemanticVersion getLatestVersion(boolean includePrerelease) {
         Release latestRelease = getLatestRelease(includePrerelease);
         latestVersion = new SemanticVersion(latestRelease.getTagName());
         return latestVersion;
@@ -179,7 +179,7 @@ public class UpdateManager implements InitializingBean {
         return DebugInfosProvider.isRunInDocker() || Boolean.parseBoolean(System.getProperty(DISABLE_UPDATE_PROPERTY)) || Boolean.parseBoolean(System.getenv(DISABLE_UPDATE_PROPERTY));
     }
 
-    private boolean isVersionIgnored(SemanticVersion version) throws UpdateException {
+    private boolean isVersionIgnored(SemanticVersion version) {
         Optional<UpdateData> updateData = genericStorage.get(KEY, UpdateData.class);
         if (updateData.isPresent() && updateData.get().getIgnoreVersions().contains(version)) {
             logger.debug("Version {} is in the list of ignored updates", version);
@@ -437,7 +437,7 @@ public class UpdateManager implements InitializingBean {
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         if (Objects.equals(currentVersionString, "@project.version@")) {
             currentVersionString = "1.0.0";
             logger.warn("Version string not found. Using 1.0.0");

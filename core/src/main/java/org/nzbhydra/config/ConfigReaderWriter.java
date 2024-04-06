@@ -93,7 +93,7 @@ public class ConfigReaderWriter {
             Failsafe.with(saveRetryPolicy)
                 .onFailure(new EventListener<ExecutionCompletedEvent<Object>>() {
                     @Override
-                    public void accept(ExecutionCompletedEvent<Object> event) throws Throwable {
+                    public void accept(ExecutionCompletedEvent<Object> event) {
                         logger.error("Unable to save config", event.getException());
                     }
                 })
@@ -128,11 +128,10 @@ public class ConfigReaderWriter {
      * Initializes the given YAML file with an initial config if needed.
      *
      * @param yamlFile The path of the file to be created
-     * @return true if initialization was needed
      */
-    public boolean initializeIfNeeded(File yamlFile) throws IOException {
+    public void initializeIfNeeded(File yamlFile) throws IOException {
         if (NzbHydra.isNativeBuild()) {
-            return false;
+            return;
         }
         if (!yamlFile.exists()) {
             logger.info("No config file found at {}. Initializing with base config", yamlFile);
@@ -141,14 +140,12 @@ public class ConfigReaderWriter {
                     logger.debug(LoggingMarkers.CONFIG_READ_WRITE, "Copying YAML to {}", yamlFile);
                     yamlFile.getParentFile().mkdirs();
                     Files.copy(stream, yamlFile.toPath());
-                    return true;
                 }
             } catch (IOException e) {
                 logger.error("Unable to initialize config file", e);
                 throw e;
             }
         }
-        return false;
     }
 
     public void validateExistingConfig() {

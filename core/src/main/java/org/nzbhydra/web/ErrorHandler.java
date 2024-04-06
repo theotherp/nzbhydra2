@@ -36,6 +36,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.stereotype.Component;
+import org.springframework.util.MimeTypeUtils;
 import org.springframework.validation.BindException;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
@@ -115,7 +116,7 @@ public class ErrorHandler {
         if (EXCEPTIONS_LOG_WITHOUT_STACKTRACE.contains(ex.getClass())) {
             logger.warn(message);
         } else {
-            logger.warn("Unexpected error when client tried to access path " + requestURI + fullParametersString, ex);
+            logger.warn("Unexpected error when client tried to access path {}{}", requestURI, fullParametersString, ex);
         }
         Object bodyOfResponse;
         List<MediaType> mediaTypes = new ArrayList<>();
@@ -188,7 +189,7 @@ public class ErrorHandler {
         List<String> headerValues = Collections.list(headerValueArray);
         try {
             List<MediaType> mediaTypes = MediaType.parseMediaTypes(headerValues);
-            MediaType.sortBySpecificityAndQuality(mediaTypes);
+            MimeTypeUtils.sortBySpecificity(mediaTypes);
             return mediaTypes;
         }
         catch (InvalidMediaTypeException ex) {

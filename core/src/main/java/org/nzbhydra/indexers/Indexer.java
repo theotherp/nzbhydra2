@@ -61,7 +61,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-@SuppressWarnings("TypeParameterHidesVisibleType")
+@SuppressWarnings({"TypeParameterHidesVisibleType", "StringConcatenationArgumentToLogCall"})
 @Reflective
 @Component
 public abstract class Indexer<T> {

@@ -18,9 +18,9 @@ import java.util.Random;
 public class NewznabResponseBuilder {
 
 
-    private static int numberOfDifferentTitles = 10;
-    private static int numberOfDuplicatesPerTitle = 2;
-    Random random = new Random();
+    private static final int numberOfDifferentTitles = 10;
+    private static final int numberOfDuplicatesPerTitle = 2;
+    final Random random = new Random();
 
     public NewznabXmlRoot getTestResult(int startCount, int endCount, String itemTitleBase, Integer offset, Integer total) {
 
@@ -40,7 +40,7 @@ public class NewznabResponseBuilder {
             NewznabXmlItem item = new NewznabXmlItem();
             item.setDescription("Some longer itemDescription that whatever" + i);
             item.setTitle(itemTitleBase + i);
-            item.setPubDate(Instant.now().minus(i * 1000, ChronoUnit.HOURS));
+            item.setPubDate(Instant.now().minus(i * 1000L, ChronoUnit.HOURS));
             item.setEnclosure(new NewznabXmlEnclosure("enclosureUrl", 5L, "application/x-nzb"));
             item.setComments("http://www.comments.com/" + i);
             item.setLink("http://www.link.com/" + i);

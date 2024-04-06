@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 
 public class SensitiveDataAnnotationIntrospector extends JacksonAnnotationIntrospector {
 
-    private SensitiveDataHidingSerializer sensitiveDataHidingSerializer = new SensitiveDataHidingSerializer();
+    private final SensitiveDataHidingSerializer sensitiveDataHidingSerializer = new SensitiveDataHidingSerializer();
 
     @Override
     public Object findSerializer(Annotated a) {

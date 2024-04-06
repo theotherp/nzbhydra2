@@ -86,7 +86,7 @@ public class ConfigMigration {
                 ConfigMigrationStep instance = (ConfigMigrationStep) Class.forName(beanDefinition.getBeanClassName()).getConstructor().newInstance();
                 steps.add(instance);
             } catch (Exception e) {
-                logger.error("Unable to instantiate migration step from class " + beanDefinition.getBeanClassName(), e);
+                logger.error("Unable to instantiate migration step from class {}", beanDefinition.getBeanClassName(), e);
             }
         }
 

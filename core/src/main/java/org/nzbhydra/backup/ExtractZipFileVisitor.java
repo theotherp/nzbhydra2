@@ -1,14 +1,19 @@
 package org.nzbhydra.backup;
 
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.FileVisitResult;
+import java.nio.file.FileVisitor;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 
 /**
  * @author hms
  */
 public class ExtractZipFileVisitor implements FileVisitor<Path> {
-    private Path destRoot;
+    private final Path destRoot;
 
     public ExtractZipFileVisitor(Path destRoot) {
         this.destRoot = destRoot;
@@ -31,12 +36,12 @@ public class ExtractZipFileVisitor implements FileVisitor<Path> {
     }
 
     @Override
-    public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+    public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
         return FileVisitResult.CONTINUE;
     }
 
     @Override
-    public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+    public FileVisitResult visitFileFailed(Path file, IOException exc) {
         return FileVisitResult.CONTINUE;
     }
 }

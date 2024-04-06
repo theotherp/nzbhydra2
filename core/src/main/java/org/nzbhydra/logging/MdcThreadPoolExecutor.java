@@ -98,23 +98,20 @@ public class MdcThreadPoolExecutor extends ThreadPoolExecutor {
     }
 
     public static Runnable wrap(final Runnable runnable, final Map<String, String> context) {
-        return new Runnable() {
-            @Override
-            public void run() {
-                Map previous = MDC.getCopyOfContextMap();
-                if (context == null) {
+        return () -> {
+            Map previous = MDC.getCopyOfContextMap();
+            if (context == null) {
+                MDC.clear();
+            } else {
+                MDC.setContextMap(context);
+            }
+            try {
+                runnable.run();
+            } finally {
+                if (previous == null) {
                     MDC.clear();
                 } else {
-                    MDC.setContextMap(context);
-                }
-                try {
-                    runnable.run();
-                } finally {
-                    if (previous == null) {
-                        MDC.clear();
-                    } else {
-                        MDC.setContextMap(previous);
-                    }
+                    MDC.setContextMap(previous);
                 }
             }
         };

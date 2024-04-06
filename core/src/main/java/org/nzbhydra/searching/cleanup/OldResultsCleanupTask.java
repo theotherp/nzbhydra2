@@ -81,7 +81,7 @@ public class OldResultsCleanupTask {
                     logger.warn("Unable to delete old GC log {}", x);
                 }
             } catch (Exception e) {
-                logger.warn("Unable to delete old GC log " + x + ": " + e.getMessage());
+                logger.warn("Unable to delete old GC log {}: {}", x, e.getMessage());
             }
         });
     }

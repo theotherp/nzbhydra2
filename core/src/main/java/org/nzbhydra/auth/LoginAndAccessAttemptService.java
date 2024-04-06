@@ -21,7 +21,7 @@ public class LoginAndAccessAttemptService {
     public LoginAndAccessAttemptService() {
         attemptsCache = CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.DAYS).build(new CacheLoader<>() {
             @Override
-            public Integer load(String key) throws Exception {
+            public Integer load(String key) {
                 return 0;
             }
         });

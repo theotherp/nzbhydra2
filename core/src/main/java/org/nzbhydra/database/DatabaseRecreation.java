@@ -30,7 +30,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpRequest;
 import org.springframework.http.client.ClientHttpResponse;
-import org.springframework.http.client.OkHttp3ClientHttpRequestFactory;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 
 import java.io.File;
 import java.io.FileReader;
@@ -160,10 +160,10 @@ public class DatabaseRecreation {
                 runH2Command(Arrays.asList(javaExecutable, "-Xmx700M", "-cp", h2NewJar.toString(), "org.h2.tools.RunScript", "-url", dbConnectionUrl, "-user", "sa", "-password", "sa", "-script", scriptFilePath, "-options", "FROM_1X"), "Database import failed.");
 
                 final Flyway flyway = Flyway.configure()
-                    .dataSource(dbConnectionUrl, "sa", "sa")
-                    .baselineDescription("INITIAL")
-                    .baselineVersion("1")
-                    .load();
+                        .dataSource(dbConnectionUrl, "sa", "sa")
+                        .baselineDescription("INITIAL")
+                        .baselineVersion("1")
+                        .load();
                 flyway.baseline();
             } catch (Exception e) {
                 logger.error("Error while trying to migrate database to 2.0");
@@ -185,11 +185,11 @@ public class DatabaseRecreation {
     }
 
     private static void runH2Command(List<String> updatePassCommand, String errorMessage) throws IOException, InterruptedException {
-        logger.info("Running command: " + Joiner.on(" ").join(updatePassCommand));
+        logger.info("Running command: {}", Joiner.on(" ").join(updatePassCommand));
         final Process process = new ProcessBuilder(updatePassCommand)
-            .redirectErrorStream(true)
-            .inheritIO()
-            .start();
+                .redirectErrorStream(true)
+                .inheritIO()
+                .start();
         final int result = process.waitFor();
         if (result != 0) {
             throw new RuntimeException(errorMessage + ". Code: " + result);
@@ -197,7 +197,7 @@ public class DatabaseRecreation {
     }
 
     private static File downloadJarFile(String url) throws IOException {
-        final ClientHttpRequest request = new OkHttp3ClientHttpRequestFactory().createRequest(URI.create(url), HttpMethod.GET);
+        final ClientHttpRequest request = new SimpleClientHttpRequestFactory().createRequest(URI.create(url), HttpMethod.GET);
         final File jarFile;
         try (ClientHttpResponse response = request.execute()) {
             jarFile = Files.createTempFile("nzbhydra", ".jar").toFile();

@@ -65,7 +65,7 @@ public class ConfigWeb {
 
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/config", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ConfigValidationResult setConfig(@RequestBody BaseConfig newConfig) throws IOException {
+    public ConfigValidationResult setConfig(@RequestBody BaseConfig newConfig) {
         for (PropertySource<?> source : environment.getPropertySources()) {
             Set propertyNames = new HashSet();
             if (source.getSource() instanceof Properties) {
@@ -123,7 +123,7 @@ public class ConfigWeb {
 
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/config/reload", method = RequestMethod.GET)
-    public GenericResponse reloadConfig() throws IOException {
+    public GenericResponse reloadConfig() {
         logger.info("Reloading config from file");
         try {
             baseConfigHandler.load();
@@ -147,7 +147,7 @@ public class ConfigWeb {
 
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/config/apiHelp", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ApiHelpResponse getApiHelp(HttpSession session) throws IOException {
+    public ApiHelpResponse getApiHelp(HttpSession session) {
         UriComponentsBuilder requestBasedUriBuilder = urlCalculator.getRequestBasedUriBuilder();
         String newznabApi = requestBasedUriBuilder.cloneBuilder().toUriString();
         String torznabApi = requestBasedUriBuilder.cloneBuilder().path("/torznab").toUriString();

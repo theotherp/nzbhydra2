@@ -38,7 +38,6 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
@@ -152,9 +151,9 @@ public class IndexerStatusesAndLimits {
             return null;
         }
         LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
-        LocalDateTime nextPossibleHit = now.truncatedTo(ChronoUnit.DAYS).with(ChronoField.HOUR_OF_DAY, indexerConfig.getHitLimitResetTime().get());
+        LocalDateTime nextPossibleHit = now.truncatedTo(ChronoUnit.DAYS).withHour(indexerConfig.getHitLimitResetTime().get());
         if (nextPossibleHit.isBefore(now)) {
-            nextPossibleHit = nextPossibleHit.plus(1, ChronoUnit.DAYS);
+            nextPossibleHit = nextPossibleHit.plusDays(1);
         }
         return nextPossibleHit.toInstant(ZoneOffset.UTC);
     }
@@ -212,9 +211,9 @@ public class IndexerStatusesAndLimits {
             String sqlString = "SELECT * FROM INDEXERAPIACCESS_SHORT x WHERE x.INDEXER_ID = :indexerId";
             if (indexerConfig.getHitLimitResetTime().isPresent()) {
                 //Fixed point in time where API resets
-                LocalDateTime lastResetTime = LocalDateTime.now(Clock.systemUTC()).truncatedTo(ChronoUnit.HOURS).with(ChronoField.HOUR_OF_DAY, indexerConfig.getHitLimitResetTime().get());
+                LocalDateTime lastResetTime = LocalDateTime.now(Clock.systemUTC()).truncatedTo(ChronoUnit.HOURS).withHour(indexerConfig.getHitLimitResetTime().get());
                 if (lastResetTime.isAfter(LocalDateTime.now(Clock.systemUTC()))) {
-                    lastResetTime = lastResetTime.minus(1, ChronoUnit.DAYS);
+                    lastResetTime = lastResetTime.minusDays(1);
                 }
                 sqlString += " AND x.time > PARSEDATETIME('" + DATE_PATTERN.format(lastResetTime) + "', 'dd.MM.yyyy-HH:mm:ss:SSS')";
             } else {

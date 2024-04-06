@@ -80,7 +80,7 @@ public class ExternalTools {
     private final Map<IndexerConfig, Integer> indexerPrioritiesMapped = new HashMap<>();
 
 
-    public boolean addNzbhydraAsIndexer(AddRequest addRequest) throws IOException {
+    public boolean addNzbhydraAsIndexer(AddRequest addRequest) {
         try {
             logger.debug(LoggingMarkers.EXTERNAL_TOOLS, "Received request: {}", addRequest);
             messages.clear();
@@ -152,7 +152,7 @@ public class ExternalTools {
             return true;
         } catch (Exception e) {
             messages.add("Unexpected error: " + e.getMessage());
-            logger.error("Unexpected error during configuration of " + addRequest.getExternalTool().name(), e);
+            logger.error("Unexpected error during configuration of {}", addRequest.getExternalTool().name(), e);
             return false;
         } finally {
             logger.info("Disabling mocking mode");
@@ -346,9 +346,7 @@ public class ExternalTools {
 
         if (externalTool.isV2()) {
             //non-v3 versions require that all field keys / names start with an uppercase letter
-            xdarrAddRequest.getFields().forEach(x -> {
-                x.setName(StringUtils.capitalize(x.getName()));
-            });
+            xdarrAddRequest.getFields().forEach(x -> x.setName(StringUtils.capitalize(x.getName())));
         }
 
         final String body;
@@ -414,7 +412,7 @@ public class ExternalTools {
 
         if (e.getBody() != null && e.getBody().trim().startsWith("[")) {
             final List<Map> requestResponse = Jackson.JSON_MAPPER.readValue(e.getBody(), LIST_TYPE_REFERENCE);
-            if (requestResponse.size() > 0 && requestResponse.get(0).containsKey("errorMessage")) {
+            if (!requestResponse.isEmpty() && requestResponse.get(0).containsKey("errorMessage")) {
                 final String errorMessage = (String) requestResponse.get(0).get("errorMessage");
                 messages.add("Error: " + errorMessage);
                 throw new IOException(addRequest.getExternalTool().name() + " returned error message: " + errorMessage);

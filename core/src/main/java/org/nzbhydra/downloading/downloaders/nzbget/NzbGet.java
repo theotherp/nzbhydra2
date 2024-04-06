@@ -207,7 +207,7 @@ public class NzbGet extends Downloader {
         if (!nzbs.isEmpty()) {
 
             status.setElementsInQueue(queue.size());
-            if (queue.size() > 0) {
+            if (!queue.isEmpty()) {
                 final Optional<LinkedHashMap<String, Object>> downloadingEntry = queue.stream().filter(x -> ((String) x.get("Status")).equals("DOWNLOADING")).findFirst();
                 if (downloadingEntry.isPresent()) {
                     LinkedHashMap<String, Object> map = downloadingEntry.get();

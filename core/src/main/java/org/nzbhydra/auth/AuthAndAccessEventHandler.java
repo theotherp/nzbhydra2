@@ -76,7 +76,7 @@ public class AuthAndAccessEventHandler extends AccessDeniedHandlerImpl {
 
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     @RequestMapping("unauthorised")
-    public String unAuthorised(HttpServletRequest request) throws Exception {
+    public String unAuthorised(HttpServletRequest request) {
         return "hallo";
     }
 }

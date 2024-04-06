@@ -81,10 +81,10 @@ public class BaseConfigValidator implements ConfigValidator<BaseConfig> {
 
 
         if (!configValidationResult.getErrorMessages().isEmpty()) {
-            logger.warn("Config validation returned errors:\n" + Joiner.on("\n").join(configValidationResult.getErrorMessages()));
+            logger.warn("Config validation returned errors:\n{}", Joiner.on("\n").join(configValidationResult.getErrorMessages()));
         }
         if (!configValidationResult.getWarningMessages().isEmpty()) {
-            logger.warn("Config validation returned warnings:\n" + Joiner.on("\n").join(configValidationResult.getWarningMessages()));
+            logger.warn("Config validation returned warnings:\n{}", Joiner.on("\n").join(configValidationResult.getWarningMessages()));
         }
 
         if (configValidationResult.isRestartNeeded()) {
@@ -164,12 +164,11 @@ public class BaseConfigValidator implements ConfigValidator<BaseConfig> {
     }
 
     @Override
-    public BaseConfig initializeNewConfig(BaseConfig newConfig) {
+    public void initializeNewConfig(BaseConfig newConfig) {
         categoriesConfigValidator.initializeNewConfig(newConfig.getCategoriesConfig());
         downloadingConfigValidator.initializeNewConfig(newConfig.getDownloading());
         searchingConfigValidator.initializeNewConfig(newConfig.getSearching());
         mainConfigValidator.initializeNewConfig(newConfig.getMain());
         authConfigValidator.initializeNewConfig(newConfig.getAuth());
-        return newConfig;
     }
 }

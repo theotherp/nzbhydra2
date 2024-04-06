@@ -40,7 +40,6 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.TextStyle;
-import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -79,7 +78,7 @@ public class IndexerForSearchSelector {
     protected Clock clock = Clock.systemUTC();
 
     private SearchRequest searchRequest;
-    protected Map<Indexer, String> notSelectedIndersWithReason = new HashMap<>();
+    protected final Map<Indexer, String> notSelectedIndersWithReason = new HashMap<>();
 
 
     public IndexerForSearchSelection pickIndexers(SearchRequest searchRequest) {
@@ -92,7 +91,7 @@ public class IndexerForSearchSelector {
         }
 
         List<Indexer> selectedIndexers = new ArrayList<>();
-        logger.debug("Picking indexers out of " + eligibleIndexers.size());
+        logger.debug("Picking indexers out of {}", eligibleIndexers.size());
 
         Stopwatch stopwatch = Stopwatch.createStarted();
         for (Indexer indexer : eligibleIndexers) {
@@ -264,12 +263,12 @@ public class IndexerForSearchSelector {
         LocalDateTime comparisonTime;
         LocalDateTime now = LocalDateTime.now(clock);
         if (indexerConfig.getHitLimitResetTime().isPresent()) {
-            comparisonTime = now.with(ChronoField.HOUR_OF_DAY, indexerConfig.getHitLimitResetTime().get());
+            comparisonTime = now.withHour(indexerConfig.getHitLimitResetTime().get());
             if (comparisonTime.isAfter(now)) {
-                comparisonTime = comparisonTime.minus(1, ChronoUnit.DAYS);
+                comparisonTime = comparisonTime.minusDays(1);
             }
         } else {
-            comparisonTime = now.minus(1, ChronoUnit.DAYS);
+            comparisonTime = now.minusDays(1);
         }
         if (indexerConfig.getHitLimit().isPresent()) {
             boolean limitExceeded = checkIfHitLimitIsExceeded(indexer, indexerConfig, comparisonTime, IndexerApiAccessType.SEARCH, indexerConfig.getHitLimit().get(), "API hit");
@@ -358,7 +357,7 @@ public class IndexerForSearchSelector {
 
                 Instant nextAccess = oldestAccess.plus(24, ChronoUnit.HOURS);
                 String message = String.format("Not using %s because all %d allowed " + type + "s were already made. The next " + type + " should be possible at %s", indexerConfig.getName(), limit, nextAccess);
-                logger.debug(LoggingMarkers.PERFORMANCE, "Detection that " + type + " limit has been reached for indexer {} took {}ms", indexerConfig.getName(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+                logger.debug(LoggingMarkers.PERFORMANCE, "Detection that {} limit has been reached for indexer {} took {}ms", type, indexerConfig.getName(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
                 return !handleIndexerNotSelected(indexer, message, type + " limit reached");
             }
 
@@ -445,13 +444,13 @@ public class IndexerForSearchSelector {
         if (indexerConfig.getHitLimitResetTime().isPresent()) {
             //Next possible hit is at the hour of day defined by the reset time. If that is already in the past it will be the next day at that time
             LocalDateTime now = LocalDateTime.now(clock);
-            nextPossibleHit = now.with(ChronoField.HOUR_OF_DAY, indexerConfig.getHitLimitResetTime().get()).with(ChronoField.MINUTE_OF_HOUR, 0);
+            nextPossibleHit = now.withHour(indexerConfig.getHitLimitResetTime().get()).withMinute(0);
             if (nextPossibleHit.isBefore(now)) {
-                nextPossibleHit = nextPossibleHit.plus(1, ChronoUnit.DAYS);
+                nextPossibleHit = nextPossibleHit.plusDays(1);
             }
         } else {
             //Next possible hit is at the earlierst 24 hours after the first hit in the hit limit time window (5 hits are limit, the first was made now, then the next hit is available tomorrow at this time)
-            nextPossibleHit = LocalDateTime.ofInstant(firstInWindowAccessTime, ZoneOffset.UTC).plus(1, ChronoUnit.DAYS);
+            nextPossibleHit = LocalDateTime.ofInstant(firstInWindowAccessTime, ZoneOffset.UTC).plusDays(1);
         }
         return nextPossibleHit;
     }

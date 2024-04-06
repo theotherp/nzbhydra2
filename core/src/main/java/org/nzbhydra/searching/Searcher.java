@@ -53,7 +53,7 @@ import java.util.stream.Collectors;
 public class Searcher {
 
     private static final int MAX_QUERIES_UNTIL_BREAK = 15;
-    public static int LOAD_LIMIT_API = 500;
+    public static final int LOAD_LIMIT_API = 500;
 
     private static final Logger logger = LoggerFactory.getLogger(Searcher.class);
 
@@ -233,7 +233,7 @@ public class Searcher {
             if (searchRequest.getSource() == SearchSource.API) {
                 andRemoved = " and " + searchResult.getNumberOfRemovedDuplicates() + " were removed as duplicates";
             }
-            logger.info("Returning results {}-{} from {} results in cache. A total of {} results is available from indexers of which {} were already rejected" + andRemoved, offset + 1, offset + limit, searchResultItems.size(), searchResult.getNumberOfTotalAvailableResults(), searchResult.getNumberOfRejectedResults());
+            logger.info("Returning results {}-{} from {} results in cache. A total of {} results is available from indexers of which {} were already rejected{}", offset + 1, offset + limit, searchResultItems.size(), searchResult.getNumberOfTotalAvailableResults(), searchResult.getNumberOfRejectedResults(), andRemoved);
             searchResult.setSearchResultItems(searchResultItems.subList(offset, offset + limit));
         }
     }
@@ -442,7 +442,7 @@ public class Searcher {
     public void onShutdown() {
         shutdownRequested = true;
         synchronized (executors) {
-            if (executors.size() > 0) {
+            if (!executors.isEmpty()) {
                 logger.debug("Waiting up to 10 seconds for {} background tasks to finish", executors.size());
             }
             for (ExecutorService executorService : executors) {
@@ -460,7 +460,7 @@ public class Searcher {
     @Getter
     public static class SearchEvent {
 
-        private SearchRequest searchRequest;
+        private final SearchRequest searchRequest;
 
         public SearchEvent(SearchRequest searchRequest) {
             this.searchRequest = searchRequest;

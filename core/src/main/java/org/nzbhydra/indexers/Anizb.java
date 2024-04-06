@@ -8,7 +8,6 @@ import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
-import org.nzbhydra.indexers.exceptions.IndexerParsingException;
 import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
 import org.nzbhydra.indexers.status.IndexerLimitRepository;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
@@ -53,7 +52,7 @@ public class Anizb extends Indexer<NewznabXmlRoot> {
     }
 
     @Override
-    protected List<SearchResultItem> getSearchResultItems(NewznabXmlRoot rssRoot, SearchRequest searchRequest) throws IndexerParsingException {
+    protected List<SearchResultItem> getSearchResultItems(NewznabXmlRoot rssRoot, SearchRequest searchRequest) {
         List<SearchResultItem> items = new ArrayList<>();
         for (NewznabXmlItem rssItem : rssRoot.getRssChannel().getItems()) {
             SearchResultItem item = new SearchResultItem();

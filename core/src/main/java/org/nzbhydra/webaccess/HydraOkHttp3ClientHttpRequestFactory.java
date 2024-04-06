@@ -114,7 +114,7 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
         okhttp3.MediaType contentType = getContentType(headers);
         RequestBody body = (content.length > 0 ||
             okhttp3.internal.http.HttpMethod.requiresRequestBody(method.name()) ?
-            RequestBody.create(contentType, content) : null);
+                RequestBody.create(content, contentType) : null);
 
         Request.Builder builder = new Request.Builder().url(uri.toURL()).method(method.name(), body);
         for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
@@ -251,7 +251,7 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
                     (ipToLong >= ipToLong(InetAddress.getByName("192.168.0.0")) && ipToLong <= ipToLong(InetAddress.getByName("192.168.255.255")))
                     ;
             } catch (UnknownHostException e) {
-                logger.error("Unable to parse host " + host, e);
+                logger.error("Unable to parse host {}", host, e);
                 return false;
             }
         }
@@ -274,10 +274,10 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
 
     public static class SockProxySocketFactory extends SocketFactory {
 
-        protected String host;
-        protected int port;
-        protected String username;
-        protected String password;
+        protected final String host;
+        protected final int port;
+        protected final String username;
+        protected final String password;
 
         public SockProxySocketFactory(String host, int port, String username, String password) {
             this.host = host;

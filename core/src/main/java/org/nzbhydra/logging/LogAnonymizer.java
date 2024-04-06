@@ -95,7 +95,7 @@ public class LogAnonymizer {
             if (matcher.group(0).equals("127.0.0.1") || matcher.group(0).startsWith("192.168") || matcher.group(0).startsWith("10.")) {
                 continue;
             }
-            matcher.appendReplacement(sb, "<" + tag + ":" + hashFunction.hashString(matcher.group(0), Charset.defaultCharset()).toString() + ">");
+            matcher.appendReplacement(sb, "<" + tag + ":" + hashFunction.hashString(matcher.group(0), Charset.defaultCharset()) + ">");
         }
         matcher.appendTail(sb);
         return sb.toString();

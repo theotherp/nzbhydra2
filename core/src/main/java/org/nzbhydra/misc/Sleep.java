@@ -6,7 +6,7 @@ public class Sleep {
         try {
             Thread.sleep(ms);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            throw new RuntimeException();
         }
     }
 

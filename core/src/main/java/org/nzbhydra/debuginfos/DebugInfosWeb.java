@@ -127,7 +127,7 @@ public class DebugInfosWeb {
 
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/debuginfos/threadCpuUsage", produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
-    public List<ThreadCpuUsageChartData> getThreadCpuUsageChartData() throws IOException {
+    public List<ThreadCpuUsageChartData> getThreadCpuUsageChartData() {
         Map<String, List<TimeAndValue>> map = new HashMap<>();
         List<ThreadCpuUsageChartData> list = new ArrayList<>();
         final List<DebugInfosProvider.TimeAndThreadCpuUsages> chartData = debugInfos.getThreadCpuUsageChartData();
@@ -156,7 +156,7 @@ public class DebugInfosWeb {
 
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/debuginfos/executesqlquery", method = RequestMethod.POST)
-    public GenericResponse executeSqlQuery(@RequestBody String sql) throws IOException {
+    public GenericResponse executeSqlQuery(@RequestBody String sql) {
         try {
             return GenericResponse.ok(debugInfos.executeSqlQuery(sql));
         } catch (IOException e) {
@@ -167,7 +167,7 @@ public class DebugInfosWeb {
 
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/debuginfos/executesqlupdate", method = RequestMethod.POST)
-    public GenericResponse executeSqlUpdate(@RequestBody String sql) throws IOException {
+    public GenericResponse executeSqlUpdate(@RequestBody String sql) {
         try {
             return GenericResponse.ok(debugInfos.executeSqlUpdate(sql));
         } catch (Exception e) {

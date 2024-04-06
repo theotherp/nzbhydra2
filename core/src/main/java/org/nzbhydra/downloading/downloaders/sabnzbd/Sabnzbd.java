@@ -148,7 +148,7 @@ public class Sabnzbd extends Downloader {
         if (!Strings.isNullOrEmpty(category)) {
             urlBuilder.queryParam("cat", category);
         }
-        RequestBody formBody = new MultipartBody.Builder().addFormDataPart("name", title, RequestBody.create(MediaType.parse(org.springframework.http.MediaType.APPLICATION_XML_VALUE), fileContent)).build();
+        RequestBody formBody = new MultipartBody.Builder().addFormDataPart("name", title, RequestBody.create(fileContent, MediaType.parse(org.springframework.http.MediaType.APPLICATION_XML_VALUE))).build();
         Request request = new Request.Builder()
                 .url(urlBuilder.toUriString())
                 .post(formBody)
@@ -184,7 +184,7 @@ public class Sabnzbd extends Downloader {
     @Override
     public DownloaderStatus getStatus() throws DownloaderException {
         UriComponentsBuilder uriBuilder = getBaseUrl().queryParam("mode", "queue");
-        QueueResponse queueResponse = null;
+        QueueResponse queueResponse;
         try {
             queueResponse = callSabnzb(uriBuilder.build().toUri(), QueueResponse.class);
             lastErrorLogged = null;

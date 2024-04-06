@@ -45,7 +45,12 @@ public final class FileDownloadEntity {
     @Enumerated(EnumType.STRING)
     private SearchSource accessSource;
     @Convert(converter = org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters.InstantConverter.class)
-    private Instant time = Instant.now();
+    private Instant time;
+
+    {
+        Instant.now();
+    }
+
     @Enumerated(EnumType.STRING)
     private FileDownloadStatus status;
     private String error;

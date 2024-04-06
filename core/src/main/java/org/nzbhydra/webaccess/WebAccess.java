@@ -55,7 +55,7 @@ public class WebAccess {
     public String postToUrl(String url, MediaType mediaContent, String content, Map<String, String> headers, int timeout) throws IOException {
         Builder builder = new Builder()
             .url(url)
-            .post(RequestBody.create(mediaContent, content));
+                .post(RequestBody.create(content, mediaContent));
 
         return callUrl(url, headers, timeout, builder);
     }
@@ -63,17 +63,17 @@ public class WebAccess {
     public String putToUrl(String url, MediaType mediaContent, String content, Map<String, String> headers, int timeout) throws IOException {
         Builder builder = new Builder()
             .url(url)
-            .put(RequestBody.create(mediaContent, content));
+                .put(RequestBody.create(content, mediaContent));
 
         return callUrl(url, headers, timeout, builder);
     }
 
-    public String deleteToUrl(String url, Map<String, String> headers, int timeout) throws IOException {
+    public void deleteToUrl(String url, Map<String, String> headers, int timeout) throws IOException {
         Builder builder = new Builder()
             .url(url)
             .delete();
 
-        return callUrl(url, headers, timeout, builder);
+        callUrl(url, headers, timeout, builder);
     }
 
     private String callUrl(String url, Map<String, String> headers, int timeout, Builder builder) throws IOException {
@@ -97,7 +97,7 @@ public class WebAccess {
                 String error = String.format("URL call to %s returned %d: %s", url, response.code(), response.message());
                 if (response.code() != 429) {
                     //No reason to log 429 errors, they all look more or less the same
-                    logger.error(error + "\n" + bodyAsString);
+                    logger.error("{}\n{}", error, bodyAsString);
                 }
                 throw new WebAccessException(response.message(), bodyAsString, response.code());
             }

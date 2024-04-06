@@ -7,7 +7,6 @@ import org.nzbhydra.config.BaseConfigHandler;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
-import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.status.IndexerLimitRepository;
 import org.nzbhydra.mapping.newznab.mock.NewznabMockBuilder;
 import org.nzbhydra.mapping.newznab.mock.NewznabMockRequest;
@@ -39,10 +38,11 @@ public class DevIndexer extends Newznab {
         super(configProvider, indexerRepository, searchResultRepository, indexerApiAccessRepository, indexerApiAccessShortRepository, indexerStatusRepository, indexerWebAccess, resultAcceptor, categoryProvider, infoProvider, eventPublisher, queryGenerator, titleMapping, unmarshaller, baseConfigHandler);
     }
 
-    protected Xml getAndStoreResultToDatabase(URI uri, IndexerApiAccessType apiAccessType) throws IndexerAccessException {
+    protected Xml getAndStoreResultToDatabase(URI uri, IndexerApiAccessType apiAccessType) {
 
 
-        NewznabXmlRoot rssRoot = new NewznabXmlRoot();
+        new NewznabXmlRoot();
+        NewznabXmlRoot rssRoot;
         if (uri.toString().contains("oneduplicate")) {
             NewznabMockRequest mockRequest = NewznabMockRequest.builder().numberOfResults(1).titleBase("oneresult").titleWords(Collections.emptyList()).total(1).build();
             rssRoot = NewznabMockBuilder.generateResponse(mockRequest);

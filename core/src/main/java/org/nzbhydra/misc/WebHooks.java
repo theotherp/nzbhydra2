@@ -36,14 +36,14 @@ public class WebHooks {
 
     @Async
     @EventListener
-    public void onSearchEvent(SearchEvent searchEvent) throws IOException {
+    public void onSearchEvent(SearchEvent searchEvent) {
         String searchHook = System.getProperty("nzbhydra.hooks.search");
         if (!Strings.isNullOrEmpty(searchHook)) {
             if (searchEvent.getSearchRequest().getSource() == SearchSource.INTERNAL) {
                 try {
                     OkHttpClient client = requestFactory.getOkHttpClient(URI.create(searchHook).getHost());
                     String content = Jackson.JSON_MAPPER.writeValueAsString(searchEvent.getSearchRequest());
-                    Response response = client.newCall(new Builder().url(searchHook).method("PUT", RequestBody.create(MediaType.parse(org.springframework.http.MediaType.APPLICATION_JSON_VALUE), content)).build()).execute();
+                    Response response = client.newCall(new Builder().url(searchHook).method("PUT", RequestBody.create(content, MediaType.parse(org.springframework.http.MediaType.APPLICATION_JSON_VALUE))).build()).execute();
                     response.close();
 
                     logger.debug("Called search web hook with response {}", response);
@@ -57,7 +57,7 @@ public class WebHooks {
     @Async
     @EventListener
     @Transactional
-    public void onNzbDownloadEvent(FileDownloadEvent downloadEvent) throws IOException {
+    public void onNzbDownloadEvent(FileDownloadEvent downloadEvent) {
         String downloadHook = System.getProperty("nzbhydra.hooks.download");
         if (!Strings.isNullOrEmpty(downloadHook)) {
             FileDownloadEntity downloadEntity = downloadEvent.getFileDownloadEntity();
@@ -65,7 +65,7 @@ public class WebHooks {
                 try {
                     OkHttpClient client = requestFactory.getOkHttpClient(URI.create(downloadHook).getHost());
                     String content = Jackson.JSON_MAPPER.writeValueAsString(downloadEntity);
-                    Response response = client.newCall(new Builder().url(downloadHook).method("PUT", RequestBody.create(MediaType.parse(org.springframework.http.MediaType.APPLICATION_JSON_VALUE), content)).build()).execute();
+                    Response response = client.newCall(new Builder().url(downloadHook).method("PUT", RequestBody.create(content, MediaType.parse(org.springframework.http.MediaType.APPLICATION_JSON_VALUE))).build()).execute();
                     response.close();
 
                     logger.debug("Called download web hook with response {}", response);

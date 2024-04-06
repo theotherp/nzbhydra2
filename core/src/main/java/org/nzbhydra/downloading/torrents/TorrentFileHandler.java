@@ -100,7 +100,7 @@ public class TorrentFileHandler {
                     }
                 }
             } catch (Exception e) {
-                logger.error("Error while handling " + result, e);
+                logger.error("Error while handling {}", result, e);
                 failedIds.add(guid);
             }
             if (successful) {

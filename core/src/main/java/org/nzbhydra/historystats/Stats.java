@@ -185,7 +185,7 @@ public class Stats {
     List<IndexerDownloadShare> indexerDownloadShares(final StatsRequest statsRequest) {
         Stopwatch stopwatch = Stopwatch.createStarted();
         logger.debug("Calculating indexer download shares");
-        if (searchModuleProvider.getEnabledIndexers().size() == 0 && !statsRequest.isIncludeDisabled()) {
+        if (searchModuleProvider.getEnabledIndexers().isEmpty() && !statsRequest.isIncludeDisabled()) {
             logger.warn("Unable to generate any stats without any enabled indexers");
             return Collections.emptyList();
         }
@@ -308,7 +308,7 @@ public class Stats {
     List<IndexerApiAccessStatsEntry> indexerApiAccesses(final StatsRequest statsRequest) {
         Stopwatch stopwatch = Stopwatch.createStarted();
         logger.debug("Calculating indexer API stats");
-        Set<Integer> indexerIdsToInclude = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().getState() == IndexerConfig.State.ENABLED || statsRequest.isIncludeDisabled()).map(x -> x.getIndexerEntity().getId()).filter(id -> indexerRepository.findById(id) != null).collect(Collectors.toSet());
+        Set<Integer> indexerIdsToInclude = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().getState() == IndexerConfig.State.ENABLED || statsRequest.isIncludeDisabled()).map(x -> x.getIndexerEntity().getId()).filter(id -> indexerRepository.findById(id).isPresent()).collect(Collectors.toSet());
 
         String averageIndexerAccessesPerDay = "SELECT\n" +
             "  indexer_id,\n" +
@@ -544,8 +544,7 @@ public class Stats {
     List<DownloadOrSearchSharePerUserOrIp> downloadsOrSearchesPerUserOrIp(final StatsRequest statsRequest, String tablename, final String column) {
         Stopwatch stopwatch = Stopwatch.createStarted();
         logger.debug("Calculating download or search shares for table {} and column {}", tablename, column);
-        String sql = "" +
-            "SELECT\n" +
+        String sql = "SELECT\n" +
             "  " + column + ",\n" +
             "  count(*) AS peruser,\n" +
             "  (SELECT count(*)\n" +

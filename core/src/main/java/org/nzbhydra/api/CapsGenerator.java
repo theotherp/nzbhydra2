@@ -17,6 +17,7 @@
 package org.nzbhydra.api;
 
 import com.google.common.collect.Sets;
+import org.jetbrains.annotations.NotNull;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.SearchSource;
 import org.nzbhydra.config.SearchSourceRestriction;
@@ -88,13 +89,7 @@ public class CapsGenerator {
         CapsJsonRoot capsRoot = new CapsJsonRoot();
         capsRoot.setLimits(new CapsJsonLimits(new CapsJsonLimitsAttributes(String.valueOf(xmlCapsRoot.getLimits().getMax()), String.valueOf(xmlCapsRoot.getLimits().getDefaultValue()))));
         capsRoot.setRegistration(new CapsJsonRegistration(new CapsJsonRegistrationAttributes("no", "no")));
-        CapsJsonServerAttributes serverAttributes = new CapsJsonServerAttributes();
-        serverAttributes.setAppversion(updateManager.getCurrentVersionString());
-        serverAttributes.setVersion(updateManager.getCurrentVersionString());
-        serverAttributes.setEmail(xmlCapsRoot.getServer().getEmail());
-        serverAttributes.setTitle(xmlCapsRoot.getServer().getTitle());
-        serverAttributes.setUrl(xmlCapsRoot.getServer().getUrl());
-        serverAttributes.setImage(xmlCapsRoot.getServer().getImage());
+        CapsJsonServerAttributes serverAttributes = getCapsJsonServerAttributes(xmlCapsRoot);
         capsRoot.setServer(new CapsJsonServer(serverAttributes));
         CapsJsonSearchIdAttributesHolder searchAttributes = new CapsJsonSearchIdAttributesHolder(new CapsJsonIdAttributes(xmlCapsRoot.getSearching().getSearch().getAvailable(), xmlCapsRoot.getSearching().getSearch().getSupportedParams()));
         CapsJsonSearchIdAttributesHolder tvSearchAttributes = new CapsJsonSearchIdAttributesHolder(new CapsJsonIdAttributes(xmlCapsRoot.getSearching().getTvSearch().getAvailable(), xmlCapsRoot.getSearching().getTvSearch().getSupportedParams()));
@@ -117,6 +112,17 @@ public class CapsGenerator {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         return new ResponseEntity<>(capsRoot, headers, HttpStatus.OK);
+    }
+
+    private @NotNull CapsJsonServerAttributes getCapsJsonServerAttributes(CapsXmlRoot xmlCapsRoot) {
+        CapsJsonServerAttributes serverAttributes = new CapsJsonServerAttributes();
+        serverAttributes.setAppversion(updateManager.getCurrentVersionString());
+        serverAttributes.setVersion(updateManager.getCurrentVersionString());
+        serverAttributes.setEmail(xmlCapsRoot.getServer().getEmail());
+        serverAttributes.setTitle(xmlCapsRoot.getServer().getTitle());
+        serverAttributes.setUrl(xmlCapsRoot.getServer().getUrl());
+        serverAttributes.setImage(xmlCapsRoot.getServer().getImage());
+        return serverAttributes;
     }
 
     private ResponseEntity<?> getXmlCaps(boolean torznabCall) {

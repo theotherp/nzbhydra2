@@ -28,7 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 public class AutomaticUpdater {
 
-    public static String TO_NOTICE_KEY = "automaticUpdateToNotice";
+    public static final String TO_NOTICE_KEY = "automaticUpdateToNotice";
 
     @Autowired
     private ConfigProvider configProvider;

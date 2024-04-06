@@ -10,7 +10,7 @@ public class SafeDownloaderConfig {
 
     private String defaultCategory;
     private String downloadType;
-    private boolean enabled = true;
+    private boolean enabled;
     private String iconCssClass;
     private String name;
     private String downloaderType;

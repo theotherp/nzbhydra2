@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 @Component
@@ -27,7 +28,7 @@ public class LoggingMarkerFilter extends Filter<ILoggingEvent> {
     @Autowired
     private ConfigProvider configProvider;
 
-    private static Set<String> enabledMarkers = new HashSet<>();
+    private static final Set<String> enabledMarkers = new HashSet<>();
 
     @PostConstruct
     public void updateMarkersFilter() {
@@ -57,18 +58,18 @@ public class LoggingMarkerFilter extends Filter<ILoggingEvent> {
         configureMarkers(event.getNewConfig());
     }
 
-    public static boolean isEnabled(Marker marker) {
-        return enabledMarkers.contains(marker.getName());
+    public static boolean isEnabled(List<Marker> markers) {
+        return enabledMarkers.stream().anyMatch(enabledMarker -> markers.stream().anyMatch(marker -> marker.getName().equals(enabledMarker)));
     }
 
     @Override
     public FilterReply decide(ILoggingEvent event) {
-        if (event.getMarker() == null || configProvider == null) {
+        if (event.getMarkerList() == null || configProvider == null) {
             return FilterReply.NEUTRAL;
         }
         if (event.getLevel() != Level.DEBUG) { //Log messages with markers only ever on level debug
             return FilterReply.DENY;
         }
-        return isEnabled(event.getMarker()) ? FilterReply.ACCEPT : FilterReply.DENY;
+        return isEnabled(event.getMarkerList()) ? FilterReply.ACCEPT : FilterReply.DENY;
     }
 }

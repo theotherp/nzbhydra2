@@ -11,8 +11,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.IOException;
-
 @RestController
 public class WelcomeWeb {
 
@@ -31,7 +29,7 @@ public class WelcomeWeb {
 
     @Secured({"ROLE_USER"})
     @RequestMapping(value = "/internalapi/welcomeshown", method = RequestMethod.PUT, consumes = MediaType.ALL_VALUE)
-    public void setWelcomeShown() throws IOException {
+    public void setWelcomeShown() {
         logger.debug("Welcome screen was shown");
         configProvider.getBaseConfig().getMain().setWelcomeShown(true);
         baseConfigHandler.save(true);

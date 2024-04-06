@@ -78,10 +78,9 @@ public class LogContentProvider {
         int count = 0;
         String line;
         try (ReversedLinesFileReader reversedLinesFileReader = new ReversedLinesFileReader(logfile, Charset.defaultCharset())) {
-            line = reversedLinesFileReader.readLine();
-            while (offset > 0 && count++ < offset && line != null) {
+            do {
                 line = reversedLinesFileReader.readLine();
-            }
+            } while (offset > 0 && count++ < offset && line != null);
             if (count > 0 && line == null) {
                 return new JsonLogResponse(Collections.emptyList(), false, offset, 0);
             }

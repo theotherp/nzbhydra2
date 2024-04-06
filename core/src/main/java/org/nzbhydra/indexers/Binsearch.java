@@ -4,7 +4,6 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Throwables;
 import dev.failsafe.Failsafe;
 import dev.failsafe.RetryPolicy;
-import dev.failsafe.function.CheckedSupplier;
 import joptsimple.internal.Strings;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -66,9 +65,9 @@ public class Binsearch extends Indexer<String> {
     private static final Pattern NFO_PATTERN = Pattern.compile("<pre>(?<nfo>.*)<\\/pre>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
     private final RetryPolicy<Object> retry503policy = RetryPolicy.builder()
-        .handleIf(x -> x instanceof IndexerAccessException && Throwables.getStackTraceAsString(x).contains("503"))
-        .withDelay(Duration.ofMillis(500))
-        .withMaxRetries(2).build();
+            .handleIf(x -> x instanceof IndexerAccessException && Throwables.getStackTraceAsString(x).contains("503"))
+            .withDelay(Duration.ofMillis(500))
+            .withMaxRetries(2).build();
 
     public Binsearch(ConfigProvider configProvider, IndexerRepository indexerRepository, SearchResultRepository searchResultRepository, IndexerApiAccessRepository indexerApiAccessRepository, IndexerApiAccessEntityShortRepository indexerApiAccessShortRepository, IndexerLimitRepository indexerStatusRepository, IndexerWebAccess indexerWebAccess, SearchResultAcceptor resultAcceptor, CategoryProvider categoryProvider, InfoProvider infoProvider, ApplicationEventPublisher eventPublisher, QueryGenerator queryGenerator, CustomQueryAndTitleMappingHandler titleMapping, BaseConfigHandler baseConfigHandler) {
         super(configProvider, indexerRepository, searchResultRepository, indexerApiAccessRepository, indexerApiAccessShortRepository, indexerStatusRepository, indexerWebAccess, resultAcceptor, categoryProvider, infoProvider, eventPublisher, queryGenerator, titleMapping, baseConfigHandler);
@@ -80,7 +79,7 @@ public class Binsearch extends Indexer<String> {
     @Override
     protected void completeIndexerSearchResult(String response, IndexerSearchResult indexerSearchResult, AcceptorResult acceptorResult, SearchRequest searchRequest, int offset, Integer limit) {
         Document doc = Jsoup.parse(response);
-        if (doc.select("table.xMenuT").size() > 0) {
+        if (!doc.select("table.xMenuT").isEmpty()) {
             Element navigationTable = doc.select("table.xMenuT").get(1);
             Elements pageLinks = navigationTable.select("a");
             boolean hasMore = !pageLinks.isEmpty() && pageLinks.last().text().equals(">");
@@ -114,7 +113,7 @@ public class Binsearch extends Indexer<String> {
         }
 
         Elements mainTables = doc.select("table#r2");
-        if (mainTables.size() == 0) {
+        if (mainTables.isEmpty()) {
             throw new IndexerParsingException("Unable to find main table in binsearch page. This happens sometimes ;-)");
         }
         Element mainTable = mainTables.get(0);
@@ -211,7 +210,7 @@ public class Binsearch extends Indexer<String> {
 
     private Element getElementOrNone(Element parent, String selector) {
         Elements selectionResult = parent.select(selector);
-        return selectionResult.size() == 0 ? null : selectionResult.get(0);
+        return selectionResult.isEmpty() ? null : selectionResult.get(0);
     }
 
     @Override
@@ -262,13 +261,8 @@ public class Binsearch extends Indexer<String> {
     @Override
     protected String getAndStoreResultToDatabase(URI uri, IndexerApiAccessType apiAccessType) throws IndexerAccessException {
         return Failsafe.with(retry503policy)
-            .onFailure(throwable -> logger.warn("Encountered 503 error. Will retry"))
-            .get(new CheckedSupplier<>() {
-                @Override
-                public String get() throws Throwable {
-                    return getAndStoreResultToDatabase(uri, String.class, apiAccessType);
-                }
-            });
+                .onFailure(throwable -> logger.warn("Encountered 503 error. Will retry"))
+                .get(() -> getAndStoreResultToDatabase(uri, String.class, apiAccessType));
     }
 
     @Override

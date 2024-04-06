@@ -21,9 +21,6 @@ import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigChangedEvent;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.downloading.DownloaderConfig;
-import org.nzbhydra.downloading.DownloaderType;
-import org.nzbhydra.downloading.downloaders.nzbget.NzbGet;
-import org.nzbhydra.downloading.downloaders.sabnzbd.Sabnzbd;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -34,19 +31,11 @@ import org.springframework.stereotype.Component;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Component
 public class DownloaderProvider implements InitializingBean {
 
     private static final Logger logger = LoggerFactory.getLogger(DownloaderProvider.class);
-
-    private static final Map<DownloaderType, Class<? extends Downloader>> downloaderClasses = new HashMap<>();
-
-    static {
-        downloaderClasses.put(DownloaderType.SABNZBD, Sabnzbd.class);
-        downloaderClasses.put(DownloaderType.NZBGET, NzbGet.class);
-    }
 
     @Autowired
     private ConfigProvider configProvider;
@@ -62,7 +51,7 @@ public class DownloaderProvider implements InitializingBean {
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         final BaseConfig baseConfig = configProvider.getBaseConfig();
         if (baseConfig.getDownloading().getDownloaders() != null) {
             List<DownloaderConfig> downloaderConfigs = baseConfig.getDownloading().getDownloaders();

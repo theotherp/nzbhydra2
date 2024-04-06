@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+@SuppressWarnings("Java9CollectionFactory")
 public class ColorConverter extends org.springframework.boot.logging.logback.ColorConverter {
 
     private static final Map<String, AnsiElement> ELEMENTS;
@@ -20,7 +21,6 @@ public class ColorConverter extends org.springframework.boot.logging.logback.Col
         elements.put("red", AnsiColor.RED);
         elements.put("green", AnsiColor.GREEN);
         elements.put("yellow", AnsiColor.YELLOW);
-        elements.put("blue", AnsiColor.BLUE);
         elements.put("magenta", AnsiColor.MAGENTA);
         elements.put("cyan", AnsiColor.CYAN);
         elements.put("blue", AnsiColor.BLUE);

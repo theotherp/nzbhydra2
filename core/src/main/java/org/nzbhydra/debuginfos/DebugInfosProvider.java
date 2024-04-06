@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.text.DecimalFormat;
@@ -141,45 +142,41 @@ public class DebugInfosProvider {
                 final double[] previousUptime = {getUpTimeInMiliseconds()};
                 ScheduledExecutorService executor2 = Executors.newScheduledThreadPool(1);
 
-                executor2.scheduleAtFixedRate(new Runnable() {
-                    @Override
-                    public void run() {
-                        final double upTime = getUpTimeInMiliseconds();
-                        double elapsedTime = upTime - previousUptime[0];
+                executor2.scheduleAtFixedRate(() -> {
+                    final double upTime = getUpTimeInMiliseconds();
+                    double elapsedTime = upTime - previousUptime[0];
 
-                        final ThreadInfo[] threadInfos = threadMxBean.dumpAllThreads(true, true);
-                        TimeAndThreadCpuUsages timeAndThreadCpuUsages = new TimeAndThreadCpuUsages(Instant.now());
-                        for (ThreadInfo threadInfo : threadInfos) {
-                            final String threadName = threadInfo.getThreadName();
-                            final long threadCpuTime = threadMxBean.getThreadCpuTime(threadInfo.getThreadId());
-                            if (!lastThreadCpuTimes.containsKey(threadName)) {
-                                lastThreadCpuTimes.put(threadName, threadCpuTime);
-                                continue;
-                            }
-                            final Long lastThreadCpuTime = lastThreadCpuTimes.get(threadName);
-                            long elapsedThreadCpuTime = threadCpuTime - lastThreadCpuTime;
-                            if (elapsedThreadCpuTime < 0) {
-                                //Not sure why but this happens with some threads
-                                continue;
-                            }
-                            float cpuUsage = Math.min(99F, elapsedThreadCpuTime / (float) (elapsedTime * 1000 * cpuCount));
-                            if (cpuUsage < 0) {
-                                cpuUsage = 0;
-                            }
-                            if (cpuUsage > 5F) {
-                                logger.debug(LoggingMarkers.PERFORMANCE, "CPU usage of thread {}: {}", threadName, cpuUsage);
-                            }
-                            timeAndThreadCpuUsages.getThreadCpuUsages().add(new ThreadCpuUsage(threadName, (long) cpuUsage));
-
+                    final ThreadInfo[] threadInfos = threadMxBean.dumpAllThreads(true, true);
+                    TimeAndThreadCpuUsages timeAndThreadCpuUsages = new TimeAndThreadCpuUsages(Instant.now());
+                    for (ThreadInfo threadInfo : threadInfos) {
+                        final String threadName = threadInfo.getThreadName();
+                        final long threadCpuTime = threadMxBean.getThreadCpuTime(threadInfo.getThreadId());
+                        if (!lastThreadCpuTimes.containsKey(threadName)) {
                             lastThreadCpuTimes.put(threadName, threadCpuTime);
+                            continue;
                         }
-                        timeAndThreadCpuUsagesList.add(timeAndThreadCpuUsages);
-                        previousUptime[0] = upTime;
-                        if (timeAndThreadCpuUsagesList.size() == 50) {
-                            timeAndThreadCpuUsagesList.remove(0);
+                        final Long lastThreadCpuTime = lastThreadCpuTimes.get(threadName);
+                        long elapsedThreadCpuTime = threadCpuTime - lastThreadCpuTime;
+                        if (elapsedThreadCpuTime < 0) {
+                            //Not sure why but this happens with some threads
+                            continue;
                         }
-                    }
+                        float cpuUsage = Math.min(99F, elapsedThreadCpuTime / (float) (elapsedTime * 1000 * cpuCount));
+                        if (cpuUsage < 0) {
+                            cpuUsage = 0;
+                        }
+                        if (cpuUsage > 5F) {
+                            logger.debug(LoggingMarkers.PERFORMANCE, "CPU usage of thread {}: {}", threadName, cpuUsage);
+                        }
+                        timeAndThreadCpuUsages.getThreadCpuUsages().add(new ThreadCpuUsage(threadName, (long) cpuUsage));
 
+                        lastThreadCpuTimes.put(threadName, threadCpuTime);
+                    }
+                    timeAndThreadCpuUsagesList.add(timeAndThreadCpuUsages);
+                    previousUptime[0] = upTime;
+                    if (timeAndThreadCpuUsagesList.size() == 50) {
+                        timeAndThreadCpuUsagesList.remove(0);
+                    }
                 }, 0, LOG_METRICS_EVERY_SECONDS, TimeUnit.SECONDS);
             }, 5, TimeUnit.SECONDS);
 
@@ -230,7 +227,7 @@ public class DebugInfosProvider {
         logger.info("OS name: {}", System.getProperty("os.name"));
         logger.info("OS architecture: {}", System.getProperty("os.arch"));
         logger.info("User country: {}", System.getProperty("user.country"));
-        logger.info("File encoding: {}", System.getProperty("file.encoding"));
+        logger.info("File encoding: {}", Charset.defaultCharset().displayName());
         logger.info("Datasource URL: {}", datasourceUrl);
         logger.info("Ciphers:");
 
@@ -257,7 +254,7 @@ public class DebugInfosProvider {
         final Set<String> metricsNames = metricsEndpoint.listNames().getNames();
         for (String metric : metricsNames) {
             final MetricsEndpoint.MetricDescriptor response = metricsEndpoint.metric(metric, null);
-            logger.info(metric + ": " + response.getMeasurements().stream()
+            logger.info("{}: {}", metric, response.getMeasurements().stream()
                     .map(x -> x.getStatistic().name() + ": " + formatSample(metric, x.getValue()))
                     .collect(Collectors.joining(", ")));
         }
@@ -380,9 +377,9 @@ public class DebugInfosProvider {
 
     protected void logNumberOfTableRows(final String tableName) {
         try {
-            logger.info("Number of rows in table " + tableName + ": " + entityManager.createNativeQuery("select count(*) from " + tableName).getSingleResult());
+            logger.info("Number of rows in table {}: {}", tableName, entityManager.createNativeQuery("select count(*) from " + tableName).getSingleResult());
         } catch (Exception e) {
-            logger.error("Unable to get number of rows in table " + tableName, e);
+            logger.error("Unable to get number of rows in table {}", tableName, e);
         }
     }
 
@@ -454,9 +451,7 @@ public class DebugInfosProvider {
         }
 
         public DiffableCategoriesConfig(CategoriesConfig categoriesConfig) {
-            categoriesConfig.getCategories().forEach(x -> {
-                categoriesMap.put(x.getName(), x);
-            });
+            categoriesConfig.getCategories().forEach(x -> categoriesMap.put(x.getName(), x));
         }
 
 

@@ -31,8 +31,6 @@ import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.core.env.ConfigurableEnvironment;
-import org.springframework.scheduling.Trigger;
-import org.springframework.scheduling.TriggerContext;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.support.ScheduledMethodRunnable;
 import org.springframework.stereotype.Component;
@@ -98,15 +96,12 @@ public class HydraTaskScheduler implements BeanPostProcessor, SmartInitializingS
             scheduler.execute(runnable);
             scheduler.setRemoveOnCancelPolicy(true);
         }
-        ScheduledFuture scheduledTask = scheduler.schedule(runnable, new Trigger() {
-            @Override
-            public Instant nextExecution(TriggerContext triggerContext) {
-                Instant lastCompletionTime = runNow ? Instant.now() : triggerContext.lastCompletion();
-                Instant nextExecutionTime = lastCompletionTime != null ? lastCompletionTime : Instant.now();
-                nextExecutionTime = nextExecutionTime.plusMillis((int) getIntervalForTask(task));
-                taskInformations.put(task, new TaskInformation(task.name(), lastCompletionTime, nextExecutionTime));
-                return nextExecutionTime;
-            }
+        ScheduledFuture scheduledTask = scheduler.schedule(runnable, triggerContext -> {
+            Instant lastCompletionTime = runNow ? Instant.now() : triggerContext.lastCompletion();
+            Instant nextExecutionTime = lastCompletionTime != null ? lastCompletionTime : Instant.now();
+            nextExecutionTime = nextExecutionTime.plusMillis((int) getIntervalForTask(task));
+            taskInformations.put(task, new TaskInformation(task.name(), lastCompletionTime, nextExecutionTime));
+            return nextExecutionTime;
         });
         taskSchedules.put(task.name(), scheduledTask);
     }

@@ -37,8 +37,8 @@ public class HydraAnonymousAuthenticationFilter extends AnonymousAuthenticationF
     private static final Logger logger = LoggerFactory.getLogger(HydraAnonymousAuthenticationFilter.class);
 
     private AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource = new WebAuthenticationDetailsSource();
-    private String key = "anonymous";
-    private Object principal = "AnonymousUser";
+    private final String key = "anonymous";
+    private final Object principal = "AnonymousUser";
     private List<GrantedAuthority> authorities = new ArrayList<>();
     //Disabled by default because just by existing it will be used for static resource accesses where spring security is disabled
     private boolean enabled = false;

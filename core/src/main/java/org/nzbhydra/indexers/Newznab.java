@@ -586,7 +586,7 @@ public class Newznab extends Indexer<Xml> {
 
     protected String getEnclosureUrl(NewznabXmlItem item) throws NzbHydraException {
         String link;
-        if (item.getEnclosures().size() == 0) {
+        if (item.getEnclosures().isEmpty()) {
             link = item.getEnclosures().get(0).getUrl();
         } else {
             Optional<NewznabXmlEnclosure> nzbEnclosure = item.getEnclosures().stream().filter(x -> getEnclosureType().equals(x.getType())).findAny();

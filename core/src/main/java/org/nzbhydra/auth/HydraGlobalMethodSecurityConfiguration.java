@@ -48,7 +48,7 @@ public class HydraGlobalMethodSecurityConfiguration extends GlobalMethodSecurity
         List<MethodSecurityMetadataSource> sources = new ArrayList<>();
 
         if (configProvider.getBaseConfig().getAuth().getAuthType() != AuthType.NONE || NzbHydra.isNativeBuild()) {
-            hydraLogger.info("Enabling auth type " + configProvider.getBaseConfig().getAuth().getAuthType());
+            hydraLogger.info("Enabling auth type {}", configProvider.getBaseConfig().getAuth().getAuthType());
             sources.add(new SecuredAnnotationSecurityMetadataSource());
         }
 

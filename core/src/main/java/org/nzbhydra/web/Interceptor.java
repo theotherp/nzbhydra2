@@ -25,7 +25,7 @@ public class Interceptor implements HandlerInterceptor {
     private UserAgentMapper userAgentMapper;
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         String ip = request.getHeader("X-Forwarded-For");
         if (ip == null) {
             ip = request.getHeader("X-Real-IP");

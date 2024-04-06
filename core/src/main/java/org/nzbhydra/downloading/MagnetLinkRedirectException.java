@@ -21,7 +21,7 @@ package org.nzbhydra.downloading;
  */
 public class MagnetLinkRedirectException extends Exception {
 
-    private String magnetLink;
+    private final String magnetLink;
 
     public MagnetLinkRedirectException(String magnetLink) {
         this.magnetLink = magnetLink;

@@ -265,9 +265,8 @@ public class ReversedLinesFileReader implements Closeable {
          * Reads a line.
          *
          * @return the line or null
-         * @throws IOException if there is an error reading from the file
          */
-        private String readLine() throws IOException {
+        private String readLine() {
 
             String line = null;
             int newLineMatchByteCount;

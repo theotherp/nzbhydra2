@@ -47,7 +47,7 @@ public class MediaInfoWeb {
         .build(
                 new CacheLoader<>() {
                     @Override
-                    public List<MediaInfoTO> load(CacheKey key) throws Exception {
+                    public List<MediaInfoTO> load(CacheKey key) {
                         try {
                             List<MediaInfo> infos;
                             if (key.getType() == AutocompleteType.TV) {
@@ -65,7 +65,7 @@ public class MediaInfoWeb {
                 });
 
     @RequestMapping(value = "/internalapi/autocomplete/{type}", produces = "application/json")
-    public List<MediaInfoTO> autocomplete(@PathVariable("type") AutocompleteType type, @RequestParam("input") String input) throws ExecutionException {
+    public List<MediaInfoTO> autocomplete(@PathVariable("type") AutocompleteType type, @RequestParam("input") String input) {
         try {
             return autocompleteCache.get(new CacheKey(type, input));
         } catch (ExecutionException e) {

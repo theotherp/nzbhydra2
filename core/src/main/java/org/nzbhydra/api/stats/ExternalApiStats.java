@@ -42,7 +42,7 @@ public class ExternalApiStats {
     private static final Logger logger = LoggerFactory.getLogger(ExternalApiStats.class);
 
     @Value("${nzbhydra.dev.noApiKey:false}")
-    private boolean noApiKeyNeeded = false;
+    private final boolean noApiKeyNeeded = false;
 
     @Autowired
     protected ConfigProvider configProvider;

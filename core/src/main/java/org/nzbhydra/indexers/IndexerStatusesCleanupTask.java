@@ -34,9 +34,9 @@ public class IndexerStatusesCleanupTask {
 
     private static final long MINUTE = 1000 * 60;
 
-    private ConfigProvider configProvider;
+    private final ConfigProvider configProvider;
     ConfigReaderWriter configReaderWriter = new ConfigReaderWriter();
-    private BaseConfigHandler baseConfigHandler;
+    private final BaseConfigHandler baseConfigHandler;
 
     @Autowired
     public IndexerStatusesCleanupTask(ConfigProvider configProvider, BaseConfigHandler baseConfigHandler) {

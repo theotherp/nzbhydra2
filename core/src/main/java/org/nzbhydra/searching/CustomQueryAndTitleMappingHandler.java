@@ -201,7 +201,7 @@ public class CustomQueryAndTitleMappingHandler {
             }
             replacementRegex = replacementRegex.replace("{episode}", String.valueOf(metaData.getEpisode().get()));
         }
-        replacementRegex = replacementRegex.replaceAll("\\{(?<groupName>[^\\}]*)\\}", "\\$\\{hydra${groupName}\\}");
+        replacementRegex = replacementRegex.replaceAll("\\{(?<groupName>[^\\}]*)\\}", "\\${hydra${groupName}}");
         logger.debug(LoggingMarkers.CUSTOM_MAPPING, "CustomQueryAndTitleMapping input \"{}\" using replacement regex \"{}\"", value, replacementRegex);
         if (customQueryAndTitleMapping.isMatchAll()) {
             mappedValue = customQueryAndTitleMapping.getFromPattern().matcher(mappedValue).replaceFirst(replacementRegex);

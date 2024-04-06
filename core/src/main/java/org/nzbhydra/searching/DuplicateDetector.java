@@ -140,7 +140,7 @@ public class DuplicateDetector {
             logger.debug(LoggingMarkers.DUPLICATES, "At least one result has no usenet date and no pub date");
             return false;
         }
-        boolean isSameAge = Math.abs(date1.getEpochSecond() - date2.getEpochSecond()) / (60 * 60) <= duplicateAgeThreshold;
+        boolean isSameAge = (float) Math.abs(date1.getEpochSecond() - date2.getEpochSecond()) / (60 * 60) <= duplicateAgeThreshold;
         logger.debug(LoggingMarkers.DUPLICATES, "Same age: {}", isSameAge);
         return isSameAge;
     }

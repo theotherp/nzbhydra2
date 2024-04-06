@@ -194,7 +194,7 @@ public class FileHandler {
 
     @Transactional
     public DownloadResult handleRedirect(SearchSource accessSource, SearchResultEntity result, String actualUrl) {
-        logger.debug("Redirecting to " + result.getLink());
+        logger.debug("Redirecting to {}", result.getLink());
         FileDownloadEntity downloadEntity = new FileDownloadEntity(result, FileDownloadAccessType.REDIRECT, accessSource, FileDownloadStatus.REQUESTED, null);
         if (configProvider.getBaseConfig().getMain().isKeepHistory()) {
             downloadRepository.save(downloadEntity);
@@ -274,7 +274,7 @@ public class FileHandler {
                 files.add(tempFile);
                 successfulIds.add(guid);
             } catch (IOException e) {
-                logger.error("Unable to write file content to temporary file: " + e.getMessage());
+                logger.error("Unable to write file content to temporary file: {}", e.getMessage());
                 failedIds.add(guid);
             }
         }
@@ -356,7 +356,7 @@ public class FileHandler {
     public NfoResult getNfo(Long searchResultId) {
         Optional<SearchResultEntity> optionalResult = searchResultRepository.findById(searchResultId);
         if (optionalResult.isEmpty()) {
-            logger.error("Download request with invalid/outdated search result ID " + searchResultId);
+            logger.error("Download request with invalid/outdated search result ID {}", searchResultId);
             throw new RuntimeException("Download request with invalid/outdated search result ID " + searchResultId);
         }
         SearchResultEntity result = optionalResult.get();

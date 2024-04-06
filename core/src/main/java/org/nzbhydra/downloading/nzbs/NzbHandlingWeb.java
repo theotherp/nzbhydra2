@@ -25,7 +25,6 @@ import org.nzbhydra.downloading.FileHandler;
 import org.nzbhydra.downloading.FileZipResponse;
 import org.nzbhydra.downloading.InvalidSearchResultIdException;
 import org.nzbhydra.indexers.NfoResult;
-import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,7 +51,7 @@ public class NzbHandlingWeb {
     private static final Logger logger = LoggerFactory.getLogger(NzbHandlingWeb.class);
 
     @Value("${nzbhydra.dev.noApiKey:false}")
-    private boolean noApiKeyNeeded = false;
+    private final boolean noApiKeyNeeded = false;
 
     @Autowired
     private FileHandler fileHandler;
@@ -107,7 +106,7 @@ public class NzbHandlingWeb {
 
     @RequestMapping(value = "/internalapi/nfo/{guid}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Secured({"ROLE_USER"})
-    public NfoResult getNfo(@PathVariable("guid") long guid) throws IndexerAccessException {
+    public NfoResult getNfo(@PathVariable("guid") long guid) {
         return fileHandler.getNfo(guid);
     }
 

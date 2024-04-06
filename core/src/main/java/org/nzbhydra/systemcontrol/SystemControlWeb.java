@@ -41,7 +41,7 @@ public class SystemControlWeb {
 
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/control/shutdown", method = RequestMethod.GET)
-    public GenericResponse shutdown(@RequestParam(required = false) Integer returnCode, @RequestParam(required = false) Boolean forceShutdown) throws Exception {
+    public GenericResponse shutdown(@RequestParam(required = false) Integer returnCode, @RequestParam(required = false) Boolean forceShutdown) {
         logger.info("Shutting down due to external request");
         systemControl.exitWithReturnCode(returnCode == null ? SystemControl.SHUTDOWN_RETURN_CODE : returnCode, forceShutdown != null && forceShutdown);
         return GenericResponse.ok();
@@ -49,7 +49,7 @@ public class SystemControlWeb {
 
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/control/restart", method = RequestMethod.GET)
-    public GenericResponse restart() throws Exception {
+    public GenericResponse restart() {
         return doRestart();
     }
 
@@ -66,7 +66,7 @@ public class SystemControlWeb {
     @CrossOrigin //Allow pinging when base URL has changed
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/control/ping", method = RequestMethod.GET)
-    public GenericResponse ping() throws Exception {
+    public GenericResponse ping() {
         return GenericResponse.ok();
     }
 
