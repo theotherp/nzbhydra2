@@ -82,6 +82,7 @@ public class NativeHints implements RuntimeHintsRegistrar {
             hints.reflection().registerMethod(MetricsEndpoint.MetricDescriptor.class.getMethod("getMeasurements"), ExecutableMode.INVOKE);
             hints.reflection().registerMethod(ThreadDumpEndpoint.class.getMethod("textThreadDump"), ExecutableMode.INVOKE);
             hints.reflection().registerMethod(AbstractProtocol.class.getMethod("getName"), ExecutableMode.INVOKE);
+            hints.reflection().registerMethod(AbstractProtocol.class.getMethod("getProperty", String.class), ExecutableMode.INVOKE);
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);
         }

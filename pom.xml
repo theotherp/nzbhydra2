@@ -101,7 +101,7 @@
         <maven.javadoc.skip>true</maven.javadoc.skip>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-
+        <!-- Use https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-dependencies/3.2.4 (with appropriate version) to compare with SB dependencies used       -->
         <spring.boot.version>3.2.4</spring.boot.version>
         <spring.boot.devtools.version>3.2.4</spring.boot.devtools.version>
         <spring.boot.maven.version>3.2.4</spring.boot.maven.version>
@@ -118,7 +118,7 @@
         <logstash-logback-encoder.version>7.2</logstash-logback-encoder.version>
         <commons-lang3.version>3.12.0</commons-lang3.version>
         <commons-io.version>2.11.0</commons-io.version>
-        <flyway-core.version>10.11.0</flyway-core.version>
+        <flyway-core.version>9.22.3</flyway-core.version>
         <jaxb.sun.core.version>2.3.0.1</jaxb.sun.core.version>
         <jaxb.sun.impl.version>3.0.1</jaxb.sun.impl.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
