@@ -68,7 +68,7 @@ public class OutdatedWrapperDetector implements ProblemDetector {
     }
 
     private void detectOutdatedWrapper() {
-        List<String> wrapperFilenames = Arrays.asList("NZBHydra2.exe", "NZBHydra2 Console.exe", "nzbhydra2", "nzbhydra2wrapper.py", "nzbhydra2wrapperPy3.py");
+        List<String> wrapperFilenames = Arrays.asList("NZBHydra2.exe", "NZBHydra2 Console.exe", "nzbhydra2wrapper.py", "nzbhydra2wrapperPy3.py");
         Set<String> expectedHashes;
         try {
             expectedHashes = Jackson.JSON_MAPPER.readValue(OutdatedWrapperDetector.class.getResource("/wrapperHashes2.json"), new TypeReference<>() {

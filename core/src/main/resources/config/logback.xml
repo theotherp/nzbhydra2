@@ -128,6 +128,7 @@
     <logger name="org.springframework.web.filter.CommonsRequestLoggingFilter" level="DEBUG"/>
     <logger name="org.reflections" level="WARN"/>
     <logger name="com.gargoylesoftware.htmlunit" level="off"/>
+    <logger name="org.apache.catalina.loader.WebappClassLoaderBase" level="ERROR"/>
 
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>

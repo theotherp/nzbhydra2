@@ -20,7 +20,6 @@
                     <tagName>v1.0.0</tagName>
                     <githubTokenFile>${basedir}/src/test/resources/org/nzbhydra/github/mavenreleaseplugin/tokenFile.txt</githubTokenFile>
                     <changelogYamlFile>${basedir}/src/test/resources/org/nzbhydra/github/mavenreleaseplugin/changelog.yaml</changelogYamlFile>
-                    <linuxAmd64Executable>${basedir}/releases/linux-amd64-release/include/executables/nzbhydra2</linuxAmd64Executable>
                     <windowsExecutable>${basedir}/releases/windows-release/include/NZBHydra2.exe</windowsExecutable>
                     <windowsConsoleExecutable>${basedir}/releases/windows-release/include/NZBHydra2 Console.exe</windowsConsoleExecutable>
                     <py3>${basedir}/other/wrapper/nzbhydra2wrapperPy3.py</py3>

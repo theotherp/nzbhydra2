@@ -65,10 +65,6 @@ public class ReleaseMojo extends AbstractMojo {
     @Parameter(property = "changelogYamlFile", required = true)
     protected File changelogYamlFile;
 
-    @Parameter(property = "linuxAmd64Executable", required = false)
-    protected File linuxAmd64Executable;
-    //    @Parameter(property = "linuxArm64Executable", required = false)
-//    protected File linuxArm64Executable;
     @Parameter(property = "windowsExecutable", required = false)
     protected File windowsExecutable;
     @Parameter(property = "windowsConsoleExecutable", required = false)
@@ -176,17 +172,8 @@ public class ReleaseMojo extends AbstractMojo {
             return;
         }
         try {
-            final Instant linuxAmd64ExecutableCreationTime = Files.readAttributes(linuxAmd64Executable.toPath(), BasicFileAttributes.class).creationTime().toInstant();
-//            final Instant linuxArm64ExecutableCreationTime = Files.readAttributes(linuxArm64Executable.toPath(), BasicFileAttributes.class).creationTime().toInstant();
-            final Instant windowsExecutableCreationTime = Files.readAttributes(windowsExecutable.toPath(), BasicFileAttributes.class).creationTime().toInstant();
-            final Instant windowsConsoleExecutableCreationTime = Files.readAttributes(windowsConsoleExecutable.toPath(), BasicFileAttributes.class).creationTime().toInstant();
-            final Instant py3CreationTime = Files.readAttributes(py3.toPath(), BasicFileAttributes.class).creationTime().toInstant();
-            final Instant goWrapperCreationTime = Files.readAttributes(goWrapper.toPath(), BasicFileAttributes.class).creationTime().toInstant();
-            verifyIsYounger(linuxAmd64Executable, py3);
-//            verifyIsYounger(linuxArm64Executable, py3);
-            verifyIsYounger(windowsExecutable, py3);
             verifyIsYounger(windowsExecutable, goWrapper);
-            verifyIsYounger(windowsConsoleExecutable, py3);
+            verifyIsYounger(windowsConsoleExecutable, goWrapper);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

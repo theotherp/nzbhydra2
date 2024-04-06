@@ -6,7 +6,9 @@ import org.apache.maven.plugin.testing.AbstractMojoTestCase;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class PrecheckMojoTest extends AbstractMojoTestCase {
 
@@ -34,40 +36,38 @@ public class PrecheckMojoTest extends AbstractMojoTestCase {
         precheckMojo = (PrecheckMojo) configureMojo(precheckMojo, extractPluginConfiguration("github-release-plugin", pom
         ));
 
-        precheckMojo.py3 = Files.createTempFile("hydra", "executable").toFile();
+        precheckMojo.py3 = getTempFile().toFile();
         IOUtils.write("py3", new FileWriter(precheckMojo.py3));
         Thread.sleep(10);
 
-        precheckMojo.goWrapper = Files.createTempFile("hydra", "executable").toFile();
+        precheckMojo.goWrapper = getTempFile().toFile();
         IOUtils.write("goWrapper", new FileWriter(precheckMojo.goWrapper));
         Thread.sleep(10);
 
-        precheckMojo.windowsExecutable = Files.createTempFile("hydra", "executable").toFile();
+        precheckMojo.windowsExecutable = getTempFile().toFile();
         IOUtils.write("windowsExecutable", new FileWriter(precheckMojo.windowsExecutable));
         Thread.sleep(10);
 
-        precheckMojo.linuxAmd64Executable = Files.createTempFile("hydra", "executable").toFile();
-        IOUtils.write("linuxAmd64Executable", new FileWriter(precheckMojo.linuxAmd64Executable));
-        Thread.sleep(10);
-
-        precheckMojo.windowsConsoleExecutable = Files.createTempFile("hydra", "executable").toFile();
+        precheckMojo.windowsConsoleExecutable = getTempFile().toFile();
         IOUtils.write("windowsConsoleExecutable", new FileWriter(precheckMojo.windowsConsoleExecutable));
-
 
         precheckMojo.execute();
 
-
-        precheckMojo.py3 = Files.createTempFile("hydra", "executable").toFile();
-        IOUtils.write("py3", new FileWriter(precheckMojo.py3));
+        precheckMojo.goWrapper = getTempFile().toFile();
+        IOUtils.write("goWrapper", new FileWriter(precheckMojo.goWrapper));
 
         try {
             precheckMojo.execute();
-            fail("Expected exception because py3 was changed after executables");
+            fail("Expected exception because goWrapper was changed after executables");
         } catch (MojoExecutionException e) {
             //
         }
+    }
 
-
+    private static Path getTempFile() throws IOException {
+        Path tempFile = Files.createTempFile("hydra", "executable");
+        tempFile.toFile().deleteOnExit();
+        return tempFile;
     }
 
 

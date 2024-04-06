@@ -193,7 +193,7 @@ def update():
         with zipfile.ZipFile(updateZip, "r") as zf:
             logger.info("Extracting updated files to %s", basePath)
             for member in zf.namelist():
-                if (not member.lower() == "nzbhydra2" and not member.lower().endswith(".exe")) or member.lower() == "core.exe":
+                if not member.lower().endswith(".exe") or member.lower() == "core.exe":
                     logger.debug("Extracting %s to %s", member, basePath)
                     try:
                         zf.extract(member, basePath)
@@ -688,8 +688,6 @@ def main(arguments):
                 logger.debug("Shutting down because child process was terminated by us after getting signal")
                 sys.exit(0)
 
-            if process.returncode in (1, 99):
-                handleUnexpectedExit()
             args.restarted = True
 
             # Try to read control code from file because under linux when started from the wrapper the return code is always 0
@@ -709,8 +707,10 @@ def main(arguments):
                     os.remove(controlIdFilePath)
                 except Exception as e:
                     logger.error("Unable to delete control ID file %s: %s", controlIdFilePath, e)
-
-            if controlCode == 11:
+            if controlCode == 0:
+                logger.info("NZBHydra main process has terminated for shutdown")
+                doStart = False
+            elif controlCode == 11:
                 logger.info("NZBHydra main process has terminated for updating")
                 if os.environ.get('NZBHYDRA_DISABLE_UPDATE_ON_SHUTDOWN') is None:
                     update()
@@ -720,7 +720,15 @@ def main(arguments):
             elif controlCode == 22:
                 logger.info("NZBHydra main process has terminated for restart")
                 doStart = True
-            elif controlCode in (1, 99):
+            elif controlCode == 33:
+                logger.info("NZBHydra main process has terminated for restoration")
+                doStart = restore()
+                logger.info("Restoration successful")
+            elif args.version or args.repairdb:
+                # Just quit without further ado, help was printed by main process
+                doStart = False
+            else:
+                handleUnexpectedExit()
                 global lastRestart
                 difference = time.time() - lastRestart
                 if difference < 15:
@@ -730,16 +738,6 @@ def main(arguments):
                     logger.info("Restarting NZBHydra after hard crash")
                     lastRestart = time.time()
                     doStart = True
-            elif controlCode == 33:
-                logger.info("NZBHydra main process has terminated for restoration")
-                doStart = restore()
-                logger.info("Restoration successful")
-            elif args.version or args.repairdb:
-                # Just quit without further ado, help was printed by main process
-                doStart = False
-            else:
-                logger.info("NZBHydra main process has terminated for shutdown")
-                doStart = False
 
 
 if __name__ == '__main__':

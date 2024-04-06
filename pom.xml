@@ -43,8 +43,6 @@
                     <changelogYamlFile>${basedir}/core/src/main/resources/changelog.yaml</changelogYamlFile>
                     <changelogMdFile>${basedir}/changelog.md</changelogMdFile>
 
-                    <linuxAmd64Executable>${basedir}/releases/linux-amd64-release/include/executables/nzbhydra2</linuxAmd64Executable>
-                    <!--                    <linuxArm64Executable>${basedir}/releases/linux-arm64-release/include/executables/nzbhydra2</linuxArm64Executable>-->
                     <windowsExecutable>${basedir}/releases/windows-release/include/NZBHydra2.exe</windowsExecutable>
                     <windowsConsoleExecutable>${basedir}/releases/windows-release/include/NZBHydra2 Console.exe</windowsConsoleExecutable>
                     <py3>${basedir}/other/wrapper/nzbhydra2wrapperPy3.py</py3>
