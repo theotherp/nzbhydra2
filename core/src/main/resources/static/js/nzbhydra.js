@@ -13035,7 +13035,7 @@ function DownloadHistoryController($scope, StatsService, downloads, ConfigServic
     };
     var anyUsername = false;
     var anyIp = false;
-    for (var download in $scope.nzbDownloads) {
+    for (var download of $scope.nzbDownloads) {
         if (download.username) {
             anyUsername = true;
         }
@@ -13058,7 +13058,6 @@ function DownloadHistoryController($scope, StatsService, downloads, ConfigServic
         $scope.columnSizes.ip = 0;
         $scope.columnSizes.title += 10;
     }
-
 
     $scope.update = function () {
         StatsService.getDownloadHistory($scope.pagination.current, $scope.limit, $scope.filterModel, sortModel).then(function (downloads) {

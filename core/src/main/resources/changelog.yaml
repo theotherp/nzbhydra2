@@ -1,8 +1,10 @@
 #@formatter:off
--   version: "v6.0.1"
+-   version: "v6.1.0"
     changes:
       -   type: "fix"
           text: "Exit codes < 0 are now correctly handled in the python wrapper."
+      -   type: "fix"
+          text: "Show username in download history. See #932"
       -   type: "note"
           text: "The linux binary nzbhydra2 is now deprecated. Please switch to directly running nzbhydra2wrapperPy3.py. "
 -   version: "v6.0.0"
