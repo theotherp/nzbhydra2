@@ -86,21 +86,21 @@ public class ErrorHandler {
     );
 
     @ExceptionHandler(value = {HttpRequestMethodNotSupportedException.class,
-        HttpMediaTypeNotSupportedException.class,
-        HttpMediaTypeNotAcceptableException.class,
-        MissingPathVariableException.class,
-        MissingServletRequestParameterException.class,
-        ServletRequestBindingException.class,
-        IOException.class,
-        ConversionNotSupportedException.class,
-        TypeMismatchException.class,
-        HttpMessageNotReadableException.class,
-        HttpMessageNotWritableException.class,
-        MethodArgumentNotValidException.class,
-        MissingServletRequestPartException.class,
-        BindException.class,
-        NoHandlerFoundException.class,
-        AsyncRequestTimeoutException.class})
+            HttpMediaTypeNotSupportedException.class,
+            HttpMediaTypeNotAcceptableException.class,
+            MissingPathVariableException.class,
+            MissingServletRequestParameterException.class,
+            ServletRequestBindingException.class,
+            IOException.class,
+            ConversionNotSupportedException.class,
+            TypeMismatchException.class,
+            HttpMessageNotReadableException.class,
+            HttpMessageNotWritableException.class,
+            MethodArgumentNotValidException.class,
+            MissingServletRequestPartException.class,
+            BindException.class,
+            NoHandlerFoundException.class,
+            AsyncRequestTimeoutException.class})
     @ResponseBody
     public ResponseEntity<Object> handleConflict(Exception ex, HttpServletRequest request) {
         String fullParametersString = "";
@@ -111,11 +111,14 @@ public class ErrorHandler {
         }
         String requestURI = request.getRequestURI();
         HttpStatus status = getStatusForException(ex);
-            String message = "Unexpected error when client tried to access path " + requestURI + fullParametersString + ". Error message: " + ex.getMessage();
+        String message = "Unexpected error when client tried to access path " + requestURI + fullParametersString + ". Error message: " + ex.getMessage();
         if (EXCEPTIONS_LOG_WITHOUT_STACKTRACE.contains(ex.getClass())) {
             logger.warn(message);
         } else {
-            logger.warn("Unexpected error when client tried to access path " + requestURI + fullParametersString, ex);
+            //Sometimes favicons are not requested properly by the browser
+            if (!requestURI.contains("favicon")) {
+                logger.warn("Unexpected error when client tried to access path " + requestURI + fullParametersString, ex);
+            }
         }
         Object bodyOfResponse;
         List<MediaType> mediaTypes = new ArrayList<>();
@@ -190,15 +193,14 @@ public class ErrorHandler {
             List<MediaType> mediaTypes = MediaType.parseMediaTypes(headerValues);
             MediaType.sortBySpecificityAndQuality(mediaTypes);
             return mediaTypes;
-        }
-        catch (InvalidMediaTypeException ex) {
+        } catch (InvalidMediaTypeException ex) {
             throw new HttpMediaTypeNotAcceptableException(
                     "Could not parse 'Accept' header " + headerValues + ": " + ex.getMessage());
         }
     }
 
     @Data
-@ReflectionMarker
+    @ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     public static class JsonExceptionResponse {

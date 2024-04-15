@@ -91,13 +91,13 @@ public class ConfigReaderWriter {
         }
         synchronized (Jackson.YAML_MAPPER) {
             Failsafe.with(saveRetryPolicy)
-                .onFailure(new EventListener<ExecutionCompletedEvent<Object>>() {
-                    @Override
-                    public void accept(ExecutionCompletedEvent<Object> event) throws Throwable {
-                        logger.error("Unable to save config", event.getException());
-                    }
-                })
-                .run(() -> doWrite(targetFile, configAsYamlString))
+                    .onFailure(new EventListener<ExecutionCompletedEvent<Object>>() {
+                        @Override
+                        public void accept(ExecutionCompletedEvent<Object> event) throws Throwable {
+                            logger.error("Unable to save config", event.getException());
+                        }
+                    })
+                    .run(() -> doWrite(targetFile, configAsYamlString))
             ;
         }
     }
@@ -108,18 +108,31 @@ public class ConfigReaderWriter {
             throw new IOException("Empty YAML");
         }
 
-
-        logger.debug(LoggingMarkers.CONFIG_READ_WRITE, "Writing to file {}", targetFile);
-        try (final FileOutputStream fos = new FileOutputStream(targetFile)) {
+        File tempFile = new File(targetFile.getParentFile(), targetFile.getName() + ".tmp");
+        if (tempFile.exists()) {
+            boolean deleted = tempFile.delete();
+            if (!deleted) {
+                logger.error("Error deleting previous temp file {}", tempFile);
+                throw new RuntimeException("Error deleting previous temp file");
+            }
+        }
+        logger.debug(LoggingMarkers.CONFIG_READ_WRITE, "Writing to file {}", tempFile);
+        try (final FileOutputStream fos = new FileOutputStream(tempFile)) {
             IOUtils.write(configAsYamlString.getBytes(Charsets.UTF_8), fos);
             fos.flush();
             fos.getFD().sync();
         }
 
         try {
-            BaseConfig baseConfig = Jackson.YAML_MAPPER.readValue(targetFile, BaseConfig.class);
+            BaseConfig baseConfig = Jackson.YAML_MAPPER.readValue(tempFile, BaseConfig.class);
         } catch (IOException e) {
             logger.warn("Written target config file corrupted", e);
+            throw e;
+        }
+        try {
+            Files.move(tempFile.toPath(), targetFile.toPath(), StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            logger.warn("Error moving temp file {} to target file {}", tempFile, targetFile, e);
             throw e;
         }
     }

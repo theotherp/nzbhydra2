@@ -4,13 +4,24 @@
     <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
     <option name="MAIN_CLASS_NAME" value="org.nzbhydra.NzbHydraNativeEntrypoint" />
     <module name="core" />
-    <option name="PROGRAM_PARAMETERS" value="org.nzbhydra.NzbHydraNative c:\Users\strat\IdeaProjects\nzbhydra2\core\target\spring-aot\main\sources c:\Users\strat\IdeaProjects\nzbhydra2\core\target\spring-aot\main\resources c:\Users\strat\IdeaProjects\nzbhydra2\core\target\spring-aot\main\classes\ org.nzbhydra nzbhydra2" />
+      <option name="PROGRAM_PARAMETERS"
+              value="org.nzbhydra.NzbHydra c:\Users\strat\IdeaProjects\nzbhydra2\core\target\spring-aot\main\sources c:\Users\strat\IdeaProjects\nzbhydra2\core\target\spring-aot\main\resources c:\Users\strat\IdeaProjects\nzbhydra2\core\target\spring-aot\main\classes\ org.nzbhydra nzbhydra2"/>
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/core" />
     <extension name="coverage">
       <pattern>
         <option name="PATTERN" value="org.springframework.boot.*" />
         <option name="ENABLED" value="true" />
       </pattern>
+    </extension>
+      <extension name="net.ashald.envfile">
+          <option name="IS_ENABLED" value="false"/>
+          <option name="IS_SUBST" value="false"/>
+          <option name="IS_PATH_MACRO_SUPPORTED" value="false"/>
+          <option name="IS_IGNORE_MISSING_FILES" value="false"/>
+          <option name="IS_ENABLE_EXPERIMENTAL_INTEGRATIONS" value="false"/>
+          <ENTRIES>
+              <ENTRY IS_ENABLED="true" PARSER="runconfig" IS_EXECUTABLE="false"/>
+          </ENTRIES>
     </extension>
     <method v="2">
       <option name="Make" enabled="true" />

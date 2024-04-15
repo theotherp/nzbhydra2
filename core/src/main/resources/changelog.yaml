@@ -1,4 +1,8 @@
 #@formatter:off
+-   version: "v6.1.1"
+    changes:
+      -   type: "fix"
+          text: "Make sure settings yml file can be written to prevent file corruption"
 -   version: "v6.1.0"
     changes:
       -   type: "fix"
