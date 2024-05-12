@@ -44,7 +44,7 @@ public class WrapperHashesGeneratorMojo extends AbstractMojo {
     protected File wrapperFile2;
     @Parameter(property = "wrapperFile3", required = true)
     protected File wrapperFile3;
-    @Parameter(property = "wrapperFile4", required = true)
+    @Parameter(property = "wrapperFile4")
     protected File wrapperFile4;
     @Parameter(property = "wrapperFile5")
     protected File wrapperFile5;
