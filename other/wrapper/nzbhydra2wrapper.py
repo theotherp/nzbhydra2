@@ -1,53 +1,37 @@
-#!/usr/bin/env python3
-import random
-import string
+#!/usr/bin/env python
+
+from __future__ import print_function
+
 import sys
-import time
-import traceback
-import webbrowser
 
 CURRENT_PYTHON = sys.version_info[:2]
-REQUIRED_PYTHON = (3, 5)
+REQUIRED_PYTHON = (2, 7)
 
-# This check and everything above must remain compatible with Python  and above.
-if CURRENT_PYTHON < REQUIRED_PYTHON:
-    sys.stderr.write("This script requires Python {}.{}, but you're trying to run it on Python {}.{}.".format(*(REQUIRED_PYTHON + CURRENT_PYTHON)))
+# This check and everything above must remain compatible with Python 2.7 and above.
+if CURRENT_PYTHON > REQUIRED_PYTHON:
+    sys.stderr.write("This script requires Python {}.{}, but you're trying to run it on Python {}.{}.".format(
+        *(REQUIRED_PYTHON + CURRENT_PYTHON)))
     sys.exit(1)
 
 import argparse
 import datetime
 import logging
 import os
-import glob
 import platform
 import re
 import shutil
 import subprocess
 import zipfile
+from __builtin__ import file
 from logging.handlers import RotatingFileHandler
-from enum import Enum
-
-
-class ReleaseType(str, Enum):
-    NATIVE = "native"
-    GENERIC = "generic"
-
-
-class OsType(str, Enum):
-    WINDOWS = "windows"
-    LINUX = "linux"
-    GENERIC = "generic"
-
 
 jarFile = None
 basepath = None
 args = []
 unknownArgs = []
 terminatedByWrapper = False
-uri = None
-internalApiKey = None
 
-LOGGER_DEFAULT_FORMAT = '%(asctime)s  %(levelname)s - %(message)s'
+LOGGER_DEFAULT_FORMAT = u'%(asctime)s  %(levelname)s - %(message)s'
 LOGGER_DEFAULT_LEVEL = 'INFO'
 logger = logging.getLogger('root')
 console_logger = logging.StreamHandler(sys.stdout)
@@ -57,19 +41,19 @@ logger.addHandler(console_logger)
 file_logger = None
 logger.setLevel(LOGGER_DEFAULT_LEVEL)
 consoleLines = []
-lastRestart = 0
 
 
 def getBasePath():
     global basepath
     if basepath is not None:
         return basepath
-    if "HYDRAWORKINGFOLDER" in list(os.environ.keys()):
+    if "HYDRAWORKINGFOLDER" in os.environ.keys():
         return os.environ["HYDRAWORKINGFOLDER"]
     import sys
     if sys.executable:
         basepath = os.path.dirname(sys.executable)
-        if os.path.exists(os.path.join(basepath, "readme.md")) and os.path.exists(os.path.join(basepath, "changelog.md")):
+        if os.path.exists(os.path.join(basepath, "readme.md")) and os.path.exists(
+            os.path.join(basepath, "changelog.md")):
             return basepath
     basepath = os.path.dirname(os.path.abspath(sys.argv[0]))
     if os.path.exists(os.path.join(basepath, "readme.md")) and os.path.exists(os.path.join(basepath, "changelog.md")):
@@ -131,23 +115,22 @@ def daemonize(pidfile, nopidfile):
     if not nopidfile:
         pid = str(os.getpid())
         try:
-            open(pidfile, 'w').write("%s\n" % pid)
+            file(pidfile, 'w').write("%s\n" % pid)
         except IOError as e:
-            sys.stderr.write("Unable to write PID file: " + pidfile + ". Error: " + str(e.strerror) + " [" + str(e.errno) + "]")
+            sys.stderr.write(
+                u"Unable to write PID file: " + pidfile + ". Error: " + str(e.strerror) + " [" + str(e.errno) + "]")
             sys.exit(1)
     else:
         print("no pid file")
 
     # Redirect all output
-    if sys.stdout is not None:
-        sys.stdout.flush()
-    if sys.stderr is not None:
-        sys.stderr.flush()
+    sys.stdout.flush()
+    sys.stderr.flush()
 
     devnull = getattr(os, 'devnull', '/dev/null')
-    stdin = open(devnull, 'r')
-    stdout = open(devnull, 'a+')
-    stderr = open(devnull, 'a+')
+    stdin = file(devnull, 'r')
+    stdout = file(devnull, 'a+')
+    stderr = file(devnull, 'a+')
     os.dup2(stdin.fileno(), sys.stdin.fileno())
     os.dup2(stdout.fileno(), sys.stdout.fileno())
     os.dup2(stderr.fileno(), sys.stderr.fileno())
@@ -176,9 +159,8 @@ def update():
     global jarFile
     basePath = getBasePath()
     updateFolder = os.path.join(args.datafolder, "update")
-    releaseType = determineReleaseType()
     libFolder = os.path.join(basePath, "lib")
-    isWindows = platform.system().lower() == "windows"
+    isWindows = any([x for x in os.listdir(basePath) if x.lower().endswith(".exe")])
     logger.debug("Is Windows installation: %r", isWindows)
     if not os.path.exists(updateFolder):
         logger.critical("Error: Update folder %s does not exist", updateFolder)
@@ -193,7 +175,7 @@ def update():
         with zipfile.ZipFile(updateZip, "r") as zf:
             logger.info("Extracting updated files to %s", basePath)
             for member in zf.namelist():
-                if not member.lower().endswith(".exe") or member.lower() == "core.exe":
+                if not member.lower().endswith(".exe"):
                     logger.debug("Extracting %s to %s", member, basePath)
                     try:
                         zf.extract(member, basePath)
@@ -202,22 +184,23 @@ def update():
                         sys.exit(-2)
         logger.info("Removing update ZIP %s", updateZip)
         os.remove(updateZip)
-        if releaseType == ReleaseType.GENERIC:
-            logger.info("Updating lib folder for generic release type")
-            filesInLibFolder = [f for f in os.listdir(libFolder) if os.path.isfile(os.path.join(libFolder, f)) and f.endswith(".jar")]
-            logger.info("Found %d JAR files in lib folder", len(filesInLibFolder))
-            for file in filesInLibFolder:
-                logger.info("Found file: %s", file)
-            if len(filesInLibFolder) == 2:
-                logger.info("Deleting old JAR %s", jarFile)
-                os.remove(jarFile)
-            elif len(filesInLibFolder) == 1:
-                if filesInLibFolder[0] == os.path.basename(jarFile):
-                    logger.warning("New JAR file in lib folder is the same as the old one. The update may not have found a newer version or failed for some reason")
-            else:
-                logger.warning("Expected the number of JAR files in folder %s to be 2 but it's %d. This will be fixed with the next start", libFolder, len(filesInLibFolder))
+        filesInLibFolder = [f for f in os.listdir(libFolder) if
+                            os.path.isfile(os.path.join(libFolder, f)) and f.endswith(".jar")]
+        logger.info("Found %d JAR files in lib folder", len(filesInLibFolder))
+        for file in filesInLibFolder:
+            logger.info("Found file: %s", file)
+        if len(filesInLibFolder) == 2:
+            logger.info("Deleting old JAR %s", jarFile)
+            os.remove(jarFile)
+        elif len(filesInLibFolder) == 1:
+            if filesInLibFolder[0] == os.path.basename(jarFile):
+                logger.warning(
+                    "New JAR file in lib folder is the same as the old one. The update may not have found a newer version or failed for some reason")
         else:
-            logger.info("Skipping lib folder for native release type")
+            logger.warning(
+                "Expected the number of JAR files in folder %s to be 2 but it's %d. This will be fixed with the next start",
+                libFolder, len(filesInLibFolder))
+
     except zipfile.BadZipfile:
         logger.critical("File is not a ZIP")
         sys.exit(-2)
@@ -243,8 +226,8 @@ def restore():
         oldDatabaseFile = os.path.join(dataFolder, "database", "nzbhydra.mv.db")
         logger.info("Deleting old database file " + oldDatabaseFile)
         os.remove(oldDatabaseFile)
-    except Exception as ex:
-        logger.critical("Error while deleting old data folder: %r", ex)
+    except Exception as e:
+        logger.critical("Error while deleting old data folder: %r", e)
         sys.exit(-1)
     for f in os.listdir(restoreFolder):
         source = os.path.join(restoreFolder, f)
@@ -273,9 +256,12 @@ def subprocess_args(include_stdout=True):
             si.dwFlags |= _subprocess.STARTF_USESHOWWINDOW
         except:
             si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        # Windows doesn't search the path by default. Pass it an environment so
+        # it will.
+        env = os.environ.copy()
     else:
         si = None
-    env = os.environ.copy()
+        env = None
 
     # ``subprocess.check_output`` doesn't allow specifying ``stdout``::
     #
@@ -307,29 +293,25 @@ def startup():
     global jarFile, process, args, unknownArgs, consoleLines
     basePath = getBasePath()
 
-    if os.environ.get('NZBHYDRA_SKIP_BASE_PATH_CHECK') is None:
-        readme = os.path.join(basePath, "readme.md")
-        if not os.path.exists(readme):
-            logger.critical(
-                "Unable to determine base path correctly. Please make sure to run NZBHydra in the folder where its binary is located. Current base path: " + basePath)
-            sys.exit(-1)
+    readme = os.path.join(basePath, "readme.md")
+    if not os.path.exists(readme):
+        logger.critical(
+            "Unable to determine base path correctly. Please make sure to run NZBHydra in the folder where its binary is located. Current base path: " + basePath)
+        sys.exit(-1)
 
     releaseType = determineReleaseType()
     isWindows = platform.system().lower() == "windows"
-    isWithTrayIcon = os.path.exists("isWindowsTrayMarkerFile")
-    if isWithTrayIcon:
-        logger.info("Running for windows with tray icon - using generic run type which requires java")
-        releaseType = ReleaseType.GENERIC
 
-    if releaseType != ReleaseType.GENERIC:
+    if releaseType == "generic":
+        args.java = "java"
+    else:
         if isWindows:
             args.java = "core.exe"
-            logger.info("Deleting old DLL files")
-            files = glob.glob('*.dll')
-            for file in files:
-                os.remove(os.path.join(basePath, file))
         else:
             args.java = "./core"
+        if not os.path.exists(args.java):
+            logger.critical("Error: executable " + args.java + " does not exist")
+            sys.exit(-1)
 
     debugSwitchFile = os.path.join(args.datafolder, "DEBUG")
     if os.path.exists(debugSwitchFile):
@@ -339,28 +321,28 @@ def startup():
         console_logger.setLevel("DEBUG")
         logger.info("Setting wrapper log level to DEBUG")
 
-    if os.environ.get('NZBHYDRA_USE_BASE_PATH_FOR_LIBS') is not None:
-        logger.debug("Using base path " + basePath + " as forced by environment variable")
-        libFolder = basePath
-    else:
-        libFolder = os.path.join(basePath, "lib")
-    if releaseType == ReleaseType.GENERIC:
-        if os.environ.get('NZBHYDRA_USE_BASE_PATH_FOR_LIBS') is None:
-            if not os.path.exists(libFolder):
-                logger.critical(
-                    "Error: Lib folder %s not found. An update might've failed or the installation folder is corrupt", libFolder)
-                sys.exit(-1)
+    libFolder = os.path.join(basePath, "lib")
+    if releaseType == "generic":
+        if not os.path.exists(libFolder):
+            logger.critical(
+                "Error: Lib folder %s not found. An update might've failed or the installation folder is corrupt",
+                libFolder)
+            sys.exit(-1)
 
-        jarFiles = [os.path.join(libFolder, f) for f in os.listdir(libFolder) if os.path.isfile(os.path.join(libFolder, f)) and f.endswith(".jar")]
+        jarFiles = [os.path.join(libFolder, f) for f in os.listdir(libFolder) if
+                    os.path.isfile(os.path.join(libFolder, f)) and f.endswith(".jar")]
         if len(jarFiles) == 0:
-            logger.critical("Error: No JAR files found in folder %s. An update might've failed or the installation folder is corrupt", libFolder)
+            logger.critical(
+                "Error: No JAR files found in folder %s. An update might've failed or the installation folder is corrupt",
+                libFolder)
             sys.exit(-1)
         if len(jarFiles) == 1:
             jarFile = jarFiles[0]
         else:
             latestFile = max(jarFiles, key=os.path.getmtime)
-            logger.warning("Expected the number of JAR files in folder %s to be 1 but it's %d. Will remove all JARs except the one last changed: %s", libFolder, len(jarFiles),
-                           latestFile)
+            logger.warning(
+                "Expected the number of JAR files in folder %s to be 1 but it's %d. Will remove all JARs except the one last changed: %s",
+                libFolder, len(jarFiles), latestFile)
             for file in jarFiles:
                 if file is not latestFile:
                     logger.info("Deleting file %s", file)
@@ -399,9 +381,8 @@ def startup():
     if args.xmx:
         xmx = args.xmx
     if os.path.exists(yamlPath):
-        with open(yamlPath, "rb") as f:
+        with open(yamlPath, "r") as f:
             for line in f.readlines():
-                line = line.decode("UTF-8")
                 index = line.find("xmx:")
                 if index > -1:
                     xmx = line[index + 5:].rstrip("\n\r ")
@@ -416,27 +397,25 @@ def startup():
         logger.info("Removing superfluous M from XMX value " + xmx)
         xmx = xmx[:-1]
 
-    if releaseType == ReleaseType.GENERIC:
+    if releaseType == "generic":
         javaVersion = getJavaVersion(args.java)
         if javaVersion < 17:
             logger.critical("Error: Java 17 (not older, not newer) is required")
             sys.exit(-1)
 
-    gcLogFilename = (os.path.join(args.datafolder, "logs") + "/gclog-" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".log").replace("\\", "/")
+    gcLogFilename = (os.path.join(args.datafolder, "logs") + "/gclog-" + datetime.datetime.now().strftime(
+        "%Y-%m-%d_%H-%M-%S") + ".log").replace("\\", "/")
     gcLogFilename = os.path.relpath(gcLogFilename, basePath)
 
     gcArguments = [
         "-Xlog:gc*:file=" + gcLogFilename + "::filecount=10,filesize=5000"]
-    global internalApiKey
-    if internalApiKey is None or internalApiKey is False:
-        internalApiKey = ''.join(random.choice(string.ascii_lowercase) for i in range(20))
-    java_arguments = ["-Xmx" + xmx + "M", "-DfromWrapper=true", "-DinternalApiKey=" + internalApiKey, "-Dsun.security.pkcs11.enable-solaris=false", "-Dfile.encoding=UTF8"]
+    java_arguments = ["-Xmx" + xmx + "M", "-DfromWrapper=true"]
 
-    if releaseType == ReleaseType.GENERIC:
+    if releaseType == "generic":
         java_arguments.append("-XX:+HeapDumpOnOutOfMemoryError")
         java_arguments.append("-XX:HeapDumpPath=" + os.path.join(args.datafolder, "logs"))
     if logGc:
-        if releaseType == ReleaseType.GENERIC:
+        if releaseType == "generic":
             java_arguments.extend(gcArguments)
         else:
             logging.warning("GC logging not available with native image. Using -XX:+PrintGC -XX:+VerboseGC")
@@ -448,7 +427,7 @@ def startup():
     if args.debug:
         java_arguments.append("-Ddebug=true")
 
-    if releaseType == ReleaseType.NATIVE:
+    if releaseType == "native":
         arguments = [args.java] + java_arguments + arguments
     else:
         arguments = [args.java] + java_arguments + ["-jar", escape_parameter(isWindows, jarFile)] + arguments
@@ -472,50 +451,40 @@ def startup():
         while True:
             # Handle error first in case startup of main process returned only an error (on stderror)
             nextline = process.stdout.readline()
-            nextlineString = nextline.decode("utf-8")
-            if nextlineString == '' and process.poll() is not None:
+            if nextline == '' and process.poll() is not None:
                 break
-            if nextlineString != "":
-                consoleLines.append(nextlineString)
+            if nextline != "":
+                consoleLines.append(nextline)
 
-            if len(consoleLines) > 1000:
+            if len(consoleLines) > 100:
                 consoleLines = consoleLines[-100:]
-            if not args.quiet and sys.stdout is not None:
-                sys.stdout.write(nextlineString)
+            if not args.quiet:
+                sys.stdout.write(nextline)
                 sys.stdout.flush()
             markerLine = "You can access NZBHydra 2 in your browser via "
-            if markerLine in nextlineString:
+            if markerLine in nextline:
                 global uri
-                uri = nextlineString[nextlineString.find(markerLine) + len(markerLine):1000].strip()
+                uri = nextline[nextline.find(markerLine) + len(markerLine):1000].strip()
                 logger.info("Determined process URI to be " + uri)
-            markerLine = "Unable to open browser. Go to"
-            if markerLine in nextlineString:
-                try:
-                    webbrowser.open(nextlineString[nextlineString.find(markerLine) + len(markerLine):1000].strip())
-                except:
-                    logger.exception("Unable to open browser")
         process.wait()
 
         return process
     except Exception as e:
-        if releaseType == ReleaseType.GENERIC:
-            logger.error("Unable to start process; make sure Java is installed and callable. Error message:\n" + str(traceback.format_exc()))
+        if releaseType == "generic":
+            logger.error("Unable to start process; make sure Java is installed and callable. Error message: " + str(e))
         else:
-            logger.error("Unable to start process; make sure \"core\" exists and is executable. Error message:\n" + str(traceback.format_exc()))
+            logger.error(
+                "Unable to start process; make sure \"core\" exists and is executable. Error message: " + str(e))
 
 
 def determineReleaseType():
-    forcedReleaseType = os.environ.get('NZBHYDRA_FORCE_GENERIC')
-    if forcedReleaseType is not None:
-        logger.info("Release type " + forcedReleaseType + " forced by environment variable ")
-        return forcedReleaseType
-    if os.path.exists(os.path.join(getBasePath(), "lib")):
-        releaseType = ReleaseType.GENERIC
-        if os.path.exists(os.path.join(getBasePath(), "core")) or os.path.exists(os.path.join(getBasePath(), "core.exe")):
+    if os.path.exists("lib"):
+        releaseType = "generic"
+        if os.path.exists("core") or os.path.exists("core.exe"):
             logger.warning(
                 "lib folder and core(.exe) found. Either delete the executable to use the generic release type (using java and ignoring the executable) or delete the lib folder to use the executable and not require java")
-    elif os.path.exists(os.path.join(getBasePath(), "core")) or os.path.exists(os.path.join(getBasePath(), "core.exe")):
-        releaseType = ReleaseType.NATIVE
+    elif os.path.exists("core") or os.path.exists("core.exe"):
+        releaseType = "native"
     else:
         logger.critical(
             "Unable to determine the release type. Neither lib folder nor core(.exe) found")
@@ -532,7 +501,7 @@ def escape_parameter(is_windows, parameter):
 def list_files(startpath):
     for root, dirs, files in os.walk(startpath):
         level = root.replace(startpath, '').count(os.sep)
-        indent = ' ' * 4 * level
+        indent = ' ' * 4 * (level)
         logger.info('{}{}/'.format(indent, os.path.basename(root)))
         subindent = ' ' * 4 * (level + 1)
         for f in files:
@@ -547,8 +516,8 @@ def handleUnexpectedExit():
             message = "You seem to be trying to run NZBHydra with a wrong Java version. Please make sure to use at least Java 9"
         elif "java.lang.OutOfMemoryError" in x:
             message = "The main process has exited because it didn't have enough memory. Please increase the XMX value in the main config"
-    logger.error(message + "\nThe last 1000 lines from output:")
-    logger.error("".join(consoleLines).replace("\n\n", ""))
+    logger.error(message)
+    sys.exit(-1)
 
 
 def getJavaVersion(javaExecutable):
@@ -565,29 +534,28 @@ def getJavaVersion(javaExecutable):
     # shell=true: pass string, shell=false: pass arguments
     try:
         lines = []
-        javaProcess = subprocess.Popen([javaExecutable, "-version"], shell=False, bufsize=-1, **subprocess_args())
+        process = subprocess.Popen([javaExecutable, "-version"], shell=False, bufsize=-1, **subprocess_args())
 
         # atexit.register(killProcess)
         while True:
             # Handle error first in case startup of main process returned only an error (on stderror)
-            nextline = javaProcess.stdout.readline().decode("ascii")
-            if nextline == '' and javaProcess.poll() is not None:
+            nextline = process.stdout.readline()
+            if nextline == '' and process.poll() is not None:
                 break
-            if nextline != "" and nextline != b'':
+            if nextline != "":
                 lines.append(nextline)
-            else:
-                break
-        javaProcess.wait()
+        process.wait()
         if len(lines) == 0:
             raise Exception("Unable to get output from call to java -version")
         versionLine = lines[0].replace("\n", "").replace("\r", "")
-        match = re.match('(java|openjdk) (version )?"?(?P<major>\d+)((\.(?P<minor>\d+)\.(?P<patch>\d)+)?[\-_\w]*)?"?.*', versionLine)
+        match = re.match('(java|openjdk) (version )?"?(?P<major>\d+)((\.(?P<minor>\d+)\.(?P<patch>\d)+)?[\-_\w]*)?"?.*',
+                         versionLine)
         if match is None:
             raise Exception("Unable to determine java version from string " + lines[0])
         javaMajor = int(match.group("major"))
         javaMinor = int(match.group("minor")) if match.group("minor") is not None else 0
         javaVersion = 0
-        if (javaMajor == 1 and javaMinor < 8) or (1 < javaMajor < 8):
+        if (javaMajor == 1 and javaMinor < 8) or (javaMajor > 1 and javaMajor < 8):
             logger.error("Found incompatible java version '" + versionLine + "'")
             sys.exit(-1)
         if javaMajor == 1 and javaMinor == 8:
@@ -596,8 +564,9 @@ def getJavaVersion(javaExecutable):
             javaVersion = javaMajor
         logger.info("Determined java version as '%d' from version string '%s'", javaVersion, versionLine)
         return javaVersion
-    except Exception as ex:
-        logger.error("Unable to determine java version; make sure Java is installed and callable. Error message: " + str(ex))
+    except Exception as e:
+        logger.error(
+            "Unable to determine java version; make sure Java is installed and callable. Error message: " + str(e))
         sys.exit(-1)
 
 
@@ -618,6 +587,7 @@ def main(arguments):
                         help='Disable color coded console output (disabled on Windows by default)', default=False)
     parser.add_argument('--listfiles', action='store',
                         help='Lists all files in given folder and quits. For debugging docker', default=None)
+
     # Pass to main process
     parser.add_argument('--datafolder', action='store',
                         help='Set the main data folder containing config, database, etc using an absolute path',
@@ -634,12 +604,13 @@ def main(arguments):
     parser.add_argument('--repairdb', action='store',
                         help='Attempt to repair the database. Provide path to database file as parameter')
     parser.add_argument('--version', action='store_true', help='Print version')
+
     # Internal logic
     parser.add_argument('--restarted', action='store_true', default=False, help=argparse.SUPPRESS)
     parser.add_argument('--update', action='store_true', default=False, help=argparse.SUPPRESS)
-    parser.add_argument('--internalApiKey', action='store', default=False, help=argparse.SUPPRESS)
     args, unknownArgs = parser.parse_known_args(arguments)
     setupLogger()
+
     # Delete old files from last backup
     oldFiles = [f for f in os.listdir(getBasePath()) if
                 os.path.isfile(os.path.join(getBasePath(), f)) and f.endswith(".old")]
@@ -648,20 +619,21 @@ def main(arguments):
         for f in oldFiles:
             logger.debug("Deleting file %s", f)
             os.remove(f)
+
     if not (os.path.isabs(args.datafolder)):
         args.datafolder = os.path.join(os.getcwd(), args.datafolder)
         logger.info("Data folder path is not absolute. Will assume " + args.datafolder + " was meant")
+
     # Delete old control id file if it exists. Shouldn't ever exist or if it does it should be overwritten by main process, but who knows
     controlIdFilePath = os.path.join(args.datafolder, "control.id")
     if os.path.exists(controlIdFilePath):
         os.remove(controlIdFilePath)
     doStart = True
-    global internalApiKey
-    internalApiKey = args.internalApiKey
     if args.update:
         logger.info("Executing update")
         update()
         sys.exit(0)
+
     if "--version" in unknownArgs or "--help" in unknownArgs:
         # no fancy shit, just start the file
         startup()
@@ -701,8 +673,8 @@ def main(arguments):
             except Exception as e:
                 controlCode = process.returncode
                 if not (args.version or args.repairdb):
-                    logger.warning("Unable to read control ID from %s: %s. Falling back to process return code %d",
-                                   controlIdFilePath, e, controlCode)
+                    logger.warn("Unable to read control ID from %s: %s. Falling back to process return code %d",
+                                controlIdFilePath, e, controlCode)
             if os.path.exists(controlIdFilePath):
                 try:
                     logger.debug("Deleting old control ID file %s", controlIdFilePath)
@@ -710,35 +682,26 @@ def main(arguments):
                 except Exception as e:
                     logger.error("Unable to delete control ID file %s: %s", controlIdFilePath, e)
 
-            if controlCode == 11:
+            if controlCode == 0:
+                logger.info("NZBHydra main process has terminated for shutdown")
+                doStart = False
+            elif controlCode == 11:
                 logger.info("NZBHydra main process has terminated for updating")
-                if os.environ.get('NZBHYDRA_DISABLE_UPDATE_ON_SHUTDOWN') is None:
-                    update()
-                else:
-                    logger.warning("Updating is not supported. Restarting...")
+                update()
                 doStart = True
             elif controlCode == 22:
                 logger.info("NZBHydra main process has terminated for restart")
                 doStart = True
-            elif controlCode in (1, 99):
-                global lastRestart
-                difference = time.time() - lastRestart
-                if difference < 15:
-                    logger.warning("Last automatic restart was less than 15 seconds ago - quitting to prevent loop")
-                    doStart = False
-                else:
-                    logger.info("Restarting NZBHydra after hard crash")
-                    lastRestart = time.time()
-                    doStart = True
             elif controlCode == 33:
                 logger.info("NZBHydra main process has terminated for restoration")
                 doStart = restore()
                 logger.info("Restoration successful")
+                doStart = True
             elif args.version or args.repairdb:
                 # Just quit without further ado, help was printed by main process
                 doStart = False
             else:
-                logger.info("NZBHydra main process has terminated for shutdown")
+                handleUnexpectedExit()
                 doStart = False
 
 
