@@ -65,5 +65,7 @@ func setupLogger() {
 	}
 	fileLogger.ExitFunc = Exit
 	consoleLogger.ExitFunc = Exit
+	fileLogger.Level = logrus.DebugLevel
+	consoleLogger.Level = logrus.InfoLevel
 
 }

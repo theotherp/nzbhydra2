@@ -185,7 +185,8 @@ func doUpdate() {
 	LogFatalIfError(err)
 
 	for _, f := range r.File {
-		if strings.ToLower(f.Name) != "nzbhydra2" && !strings.HasSuffix(strings.ToLower(f.Name), ".exe") && strings.ToLower(f.Name) != "core.exe" {
+		//Do not update the wrapper executables
+		if !strings.HasSuffix(strings.ToLower(f.Name), ".exe") || strings.ToLower(f.Name) == "core.exe" {
 			if f.FileInfo().IsDir() {
 				continue
 			}
