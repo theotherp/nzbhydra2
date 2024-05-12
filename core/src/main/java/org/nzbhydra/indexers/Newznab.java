@@ -425,6 +425,26 @@ public class Newznab extends Indexer<Xml> {
         }
     }
 
+    @Override
+    public DetailsResult getDetails(String guid) throws IndexerAccessException {
+        UriComponentsBuilder baseUri = getBaseUri().queryParam("t", "details").queryParam("id", guid);
+        Xml xml = null;
+        try {
+            xml = getAndStoreResultToDatabase(baseUri.build().toUri(), IndexerApiAccessType.DETAILS);
+        } catch (IndexerAccessException e) {
+            return DetailsResult.unsuccessful(e.getMessage());
+        }
+        if (xml instanceof NewznabXmlError) {
+            handleRssError((NewznabXmlError) xml, baseUri.toUriString());
+        }
+        NewznabXmlRoot rssRoot = (NewznabXmlRoot) xml;
+        List<SearchResultItem> searchResultItems = getSearchResultItems(rssRoot, new SearchRequest());
+        if (searchResultItems.size() != 1) {
+            return DetailsResult.unsuccessful("Didn't find exactly one result for ID");
+        }
+        return DetailsResult.withItem(searchResultItems.get(0));
+    }
+
     protected void handleRssError(NewznabXmlError response, String url) throws IndexerAccessException {
         if (Stream.of("100", "101", "102").anyMatch(x -> x.equals(response.getCode())) && !(response.getDescription() != null && response.getDescription().contains("Hits Limit Reached"))) {
             throw new IndexerAuthException(String.format("Indexer refused authentication. Error code: %s. Description: %s", response.getCode(), response.getDescription()));

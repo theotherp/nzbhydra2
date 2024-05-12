@@ -169,7 +169,7 @@ public class CategoryProvider implements InitializingBean {
      * @return The matching configured category or "All" if none is found
      */
     public Category fromResultNewznabCategories(List<Integer> cats) {
-        if (cats == null || cats.size() == 0) {
+        if (cats == null || cats.isEmpty()) {
             logger.debug(LoggingMarkers.CATEGORY_MAPPING, "Empty newznab categories -> N/A");
             return naCategory;
         }

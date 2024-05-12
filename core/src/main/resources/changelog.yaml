@@ -1,4 +1,8 @@
 #@formatter:off
+-   version: "v6.2.0"
+    changes:
+      -   type: "feature"
+          text: "Support DETAILS function from Newznab API spec. See #942"
 -   version: "v6.1.1"
     changes:
       -   type: "fix"

@@ -16,17 +16,21 @@ import org.nzbhydra.config.searching.SearchType;
 import org.nzbhydra.downloading.DownloadResult;
 import org.nzbhydra.downloading.FileHandler;
 import org.nzbhydra.downloading.InvalidSearchResultIdException;
+import org.nzbhydra.indexers.DetailsResult;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mapping.newznab.NewznabParameters;
 import org.nzbhydra.mapping.newznab.NewznabResponse;
 import org.nzbhydra.mapping.newznab.OutputType;
+import org.nzbhydra.mapping.newznab.json.NewznabJsonError;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlError;
 import org.nzbhydra.mediainfo.Imdb;
 import org.nzbhydra.searching.CategoryProvider;
 import org.nzbhydra.searching.CustomQueryAndTitleMappingHandler;
+import org.nzbhydra.searching.DetailsProvider;
 import org.nzbhydra.searching.SearchResult;
 import org.nzbhydra.searching.Searcher;
+import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.searching.searchrequests.SearchRequestFactory;
 import org.nzbhydra.springnative.ReflectionMarker;
@@ -52,6 +56,7 @@ import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
@@ -99,6 +104,8 @@ public class ExternalApi {
 
     //When enabled search results will be mocked instead of indexers actually being searched. Only for configuration of external tools
     private static boolean inMockingMode;
+    @Autowired
+    private DetailsProvider detailsProvider;
 
     /**
      * External API call.
@@ -138,6 +145,27 @@ public class ExternalApi {
 
         if (params.getT() == ActionAttribute.CAPS) {
             return capsGenerator.getCaps(params.getO(), searchType);
+        }
+        if (params.getT() == ActionAttribute.DETAILS) {
+            DetailsResult details = detailsProvider.getDetails(params.getId());
+            NewznabResponse response;
+
+            List<SearchResultItem> searchResultItems = Collections.singletonList(details.getSearchResultItem());
+            if (details.isSuccessful()) {
+                boolean isNzb = details.getSearchResultItem().getDownloadType() == DownloadType.NZB;
+                if (params.getO() == OutputType.JSON) {
+                    response = newznabJsonTransformer.transformToRoot(searchResultItems, 0, 0, isNzb);
+                } else {
+                    response = newznabXmlTransformer.getRssRoot(searchResultItems, 0, 0, isNzb);
+                }
+            } else {
+                if (params.getO() == OutputType.JSON) {
+                    response = new NewznabJsonError("100", details.getErrorMessage());
+                } else {
+                    response = new NewznabXmlError("100", details.getErrorMessage());
+                }
+            }
+            return new ResponseEntity<>(response, null, HttpStatus.OK);
         }
 
         if (Stream.of(ActionAttribute.SEARCH, ActionAttribute.BOOK, ActionAttribute.TVSEARCH, ActionAttribute.MOVIE).anyMatch(x -> x == params.getT())) {
@@ -344,7 +372,7 @@ public class ExternalApi {
 
 
     @Data
-@ReflectionMarker
+    @ReflectionMarker
     @AllArgsConstructor
     private static class CacheEntryValue {
         private final NewznabParameters params;
@@ -361,8 +389,8 @@ public class ExternalApi {
             }
             CacheEntryValue that = (CacheEntryValue) o;
             return com.google.common.base.Objects.equal(params, that.params) &&
-                com.google.common.base.Objects.equal(lastUpdate, that.lastUpdate) &&
-                com.google.common.base.Objects.equal(searchResult, that.searchResult);
+                   com.google.common.base.Objects.equal(lastUpdate, that.lastUpdate) &&
+                   com.google.common.base.Objects.equal(searchResult, that.searchResult);
         }
 
         @Override
