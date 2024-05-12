@@ -1,9 +1,35 @@
+### v6.2.0
+
+**Feature** Support DETAILS function from Newznab API spec. See <a href="https://github.com/theotherp/nzbhydra2/issues/942">#942</a>
+
+**Feature** Option to show user agent in search history. See <a href="https://github.com/theotherp/nzbhydra2/issues/940">#940</a>
+
+**Note** I've removed the old binary of the linux wrapper. It was always a bit hard to get it running and it's easier to just run the python wrapper file directly.
+
+
+
+### v6.1.1
+
+**Fix** Make sure settings yml file can be written to prevent file corruption
+
+
+
+### v6.1.0
+
+**Fix** Exit codes < 0 are now correctly handled in the python wrapper.
+
+**Fix** Show username in download history. See <a href="https://github.com/theotherp/nzbhydra2/issues/932">#932</a>
+
+**Note** The linux binary nzbhydra2 is now deprecated. Please switch to directly running nzbhydra2wrapperPy3.py. 
+
+
+
 ### v6.0.0
 
 **Feature** I've completely rewritten the wrapper for windows. It's not a packaged python script anymore but an actually compiled binary. This has a couple of benefits: No more false positives from virus scanners (VirusTotal shows 5/72). No more temporary files not being cleaned up after a crash. The files are (a bit) smaller.
 I don't plan to compile the wrapper for anything but windows as it makes more sense and is easier to run the python wrapper instead.
 
-**Feature** The temp folder can be set using the environment variable NZBHYDRA_TEMP_FOLDER. See <a href="https://github.com/theotherp/nzbhydra2/issues/984">#984</a>
+**Feature** The temp folder can be set using the environment variable NZBHYDRA_TEMP_FOLDER. See <a href="https://github.com/theotherp/nzbhydra2/issues/894">#894</a>
 
 **Fix** IPs or usernames were not shown in the history. See <a href="https://github.com/theotherp/nzbhydra2/issues/932">#932</a>
 
