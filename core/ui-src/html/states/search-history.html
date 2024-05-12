@@ -5,6 +5,10 @@
       <dir-pagination-controls on-page-change="update()" pagination-id="searches"></dir-pagination-controls>
     </div>
     <div class="col-md-5" style="text-align: right">
+      <label>
+        <input type="checkbox" ng-model="foo.showUserAgentInHistory" ng-change="toggleShowUserAgentInHistory(foo.showUserAgentInHistory)">
+        Show user agents
+      </label>
       <button class="btn btn-default" ng-click="update()"><span class="glyphicon glyphicon-refresh"></span></button>
     </div>
   </div>
@@ -23,6 +27,13 @@
         </column-sortable>
         <column-filter-wrapper>
           <freetext-filter column="query"/>
+        </column-filter-wrapper>
+      </th>
+      <th class="col-md-8" style="width: {{columnSizes.userAgent}}%" ng-if="foo.showUserAgentInHistory">
+        <column-sortable column="user_agent" reversed="false" start-mode="1">User agent
+        </column-sortable>
+        <column-filter-wrapper>
+          <freetext-filter column="user_agent"/>
         </column-filter-wrapper>
       </th>
       <th style="width: {{columnSizes.category}}%">
@@ -71,6 +82,7 @@
                     {{ formatQuery(request) }}
                 </span>
       </td>
+      <td class="narrow-row" ng-if="foo.showUserAgentInHistory">{{ ::request.userAgent }}</td>
       <td class="narrow-row">{{ ::request.categoryName }}</td>
       <td class="narrow-row" ng-bind-html="formatAdditional(request)"></td>
       <td class="narrow-row">{{ ::request.source === "INTERNAL" ? "Internal" : "API"}}</td>

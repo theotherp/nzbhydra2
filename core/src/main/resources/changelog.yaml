@@ -3,6 +3,8 @@
     changes:
       -   type: "feature"
           text: "Support DETAILS function from Newznab API spec. See #942"
+      -   type: "feature"
+          text: "Option to show user agent in search history. See #940"
 -   version: "v6.1.1"
     changes:
       -   type: "fix"

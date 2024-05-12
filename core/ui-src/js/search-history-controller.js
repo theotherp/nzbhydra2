@@ -3,7 +3,7 @@ angular
     .controller('SearchHistoryController', SearchHistoryController);
 
 
-function SearchHistoryController($scope, $state, SearchHistoryService, ConfigService, history, $sce, $filter, $timeout, $http, $uibModal) {
+function SearchHistoryController($scope, $state, SearchHistoryService, ConfigService, localStorageService, history, $sce, $filter, $timeout, $http, $uibModal) {
     $scope.limit = 100;
     $scope.pagination = {
         current: 1
@@ -46,29 +46,54 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
         }
     }
 
-    $scope.columnSizes = {
-        time: 10,
-        query: 30,
-        category: 10,
-        additionalParameters: 22,
-        source: 8,
-        username: 10,
-        ip: 10
+    $scope.foo = {
+        showUserAgentInHistory: localStorageService.get("showUserAgentInHistory") !== null ? localStorageService.get("showUserAgentInHistory") : false
     };
-    if (ConfigService.getSafe().logging.historyUserInfoType === "NONE" || (!anyUsername && !anyIp)) {
-        $scope.columnSizes.username = 0;
-        $scope.columnSizes.ip = 0;
-        $scope.columnSizes.query += 10;
-        $scope.columnSizes.additionalParameters += 10;
-    } else if (ConfigService.getSafe().logging.historyUserInfoType === "IP") {
-        $scope.columnSizes.username = 0;
-        $scope.columnSizes.query += 5;
-        $scope.columnSizes.additionalParameters += 5;
-    } else if (ConfigService.getSafe().logging.historyUserInfoType === "USERNAME") {
-        $scope.columnSizes.ip = 0;
-        $scope.columnSizes.query += 5;
-        $scope.columnSizes.additionalParameters += 5;
+
+
+    $scope.toggleShowUserAgentInHistory = function (value) {
+        let doUpdateColumnSizes = value !== localStorageService.get("showUserAgentInHistory");
+        localStorageService.set("showUserAgentInHistory", value);
+        $scope.foo.showUserAgentInHistory = value;
+        if (doUpdateColumnSizes) {
+            setColumnSizes();
+        }
     }
+
+    function setColumnSizes() {
+        $scope.columnSizes = {
+            time: 10,
+            query: 30,
+            userAgent: 0,
+            category: 10,
+            additionalParameters: 22,
+            source: 8,
+            username: 10,
+            ip: 10
+        };
+        if (ConfigService.getSafe().logging.historyUserInfoType === "NONE" || (!anyUsername && !anyIp)) {
+            $scope.columnSizes.username = 0;
+            $scope.columnSizes.ip = 0;
+            $scope.columnSizes.query += 10;
+            $scope.columnSizes.additionalParameters += 10;
+        } else if (ConfigService.getSafe().logging.historyUserInfoType === "IP") {
+            $scope.columnSizes.username = 0;
+            $scope.columnSizes.query += 5;
+            $scope.columnSizes.additionalParameters += 5;
+        } else if (ConfigService.getSafe().logging.historyUserInfoType === "USERNAME") {
+            $scope.columnSizes.ip = 0;
+            $scope.columnSizes.query += 5;
+            $scope.columnSizes.additionalParameters += 5;
+        }
+        if ($scope.foo.showUserAgentInHistory) {
+            $scope.columnSizes.query -= 5;
+            $scope.columnSizes.additionalParameters -= 5;
+            $scope.columnSizes.userAgent = 10;
+        }
+    }
+
+    setColumnSizes();
+
 
     $scope.update = function () {
         SearchHistoryService.getSearchHistory($scope.pagination.current, $scope.limit, $scope.filterModel, sortModel).then(function (history) {
