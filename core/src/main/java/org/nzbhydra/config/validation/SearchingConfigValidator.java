@@ -101,7 +101,7 @@ public class SearchingConfigValidator implements ConfigValidator<SearchingConfig
         for (Iterator<String> iterator = newConfig.getPreselectQuickFilterButtons().iterator(); iterator.hasNext(); ) {
             String preselectQuickFilterButton = iterator.next();
             final String[] split = preselectQuickFilterButton.split("\\|");
-            if ("custom".equals(split[0]) && !customQuickfilterNames.contains(split[0])) {
+            if ("custom".equals(split[0]) && !customQuickfilterNames.contains(split[1])) {
                 logger.info("Custom quickfilter {} doesn't exist anymore, removing it from list of filters to preselect.", preselectQuickFilterButton);
                 iterator.remove();
             }
