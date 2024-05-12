@@ -1,3 +1,13 @@
+### v6.2.1
+
+**Fix** Unfortunately the automatic update is broken with the new wrappers introduced in 6.0.0. And I tested it so thoroughly (I thought). NZBHydra would shut down for an update but not actually update, with automatic updates resulting in a loop :-(
+
+**Fix** Days without a buggy release: 0. Fix invalid link returned from DETAILS function. See <a href="https://github.com/theotherp/nzbhydra2/issues/943">#943</a>
+
+**Fix** Fix custom quick filter preselect validation. Thanks, OothecaPickle!
+
+
+
 ### v6.2.0
 
 **Feature** Support DETAILS function from Newznab API spec. See <a href="https://github.com/theotherp/nzbhydra2/issues/942">#942</a>
