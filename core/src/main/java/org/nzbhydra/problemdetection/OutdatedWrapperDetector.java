@@ -114,8 +114,6 @@ public class OutdatedWrapperDetector implements ProblemDetector {
     public static void main(String[] args) throws Exception {
         final List<File> files = Arrays.asList(new File("releases/windows-release/include/NZBHydra2.exe"),
                 new File("releases/windows-release/include/NZBHydra2 Console.exe"),
-                new File("releases/linux-amd64-release/include/executables/nzbhydra2"),
-//            new File("releases/linux-arm64-release/include/nzbhydra2"),
                 new File("other/wrapper/nzbhydra2wrapper.py"),
                 new File("other/wrapper/nzbhydra2wrapperPy3.py"));
         final Set<String> hashes = new HashSet<>();

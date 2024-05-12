@@ -5,6 +5,8 @@
           text: "Support DETAILS function from Newznab API spec. See #942"
       -   type: "feature"
           text: "Option to show user agent in search history. See #940"
+      -   type: note
+          text: "I've removed the old binary of the linux wrapper. It was always a bit hard to get it running and it's easier to just run the python wrapper file directly."
 -   version: "v6.1.1"
     changes:
       -   type: "fix"

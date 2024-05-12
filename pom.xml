@@ -48,11 +48,10 @@
                     <py3>${basedir}/other/wrapper/nzbhydra2wrapperPy3.py</py3>
                     <goWrapper>${basedir}/other/gowrapper/base/base.go</goWrapper>
 
-                    <wrapperFile1>${basedir}/releases/linux-amd64-release/include/executables/nzbhydra2</wrapperFile1>
-                    <wrapperFile2>${basedir}/releases/windows-release/include/NZBHydra2 Console.exe</wrapperFile2>
-                    <wrapperFile3>${basedir}/releases/windows-release/include/NZBHydra2.exe</wrapperFile3>
-                    <wrapperFile4>${basedir}/other/wrapper/nzbhydra2wrapper.py</wrapperFile4>
-                    <wrapperFile5>${basedir}/other/wrapper/nzbhydra2wrapperPy3.py</wrapperFile5>
+                    <wrapperFile1>${basedir}/releases/windows-release/include/NZBHydra2 Console.exe</wrapperFile1>
+                    <wrapperFile2>${basedir}/releases/windows-release/include/NZBHydra2.exe</wrapperFile2>
+                    <wrapperFile3>${basedir}/other/wrapper/nzbhydra2wrapper.py</wrapperFile3>
+                    <wrapperFile4>${basedir}/other/wrapper/nzbhydra2wrapperPy3.py</wrapperFile4>
                     <!--                    <wrapperFile6>${basedir}/releases/linux-arm64-release/include/executables/nzbhydra2</wrapperFile6>-->
                     <wrapperHashesJsonFile>${basedir}/core/src/main/resources/wrapperHashes2.json</wrapperHashesJsonFile>
 

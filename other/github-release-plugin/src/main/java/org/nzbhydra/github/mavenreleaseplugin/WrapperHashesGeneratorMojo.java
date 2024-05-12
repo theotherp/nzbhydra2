@@ -46,9 +46,9 @@ public class WrapperHashesGeneratorMojo extends AbstractMojo {
     protected File wrapperFile3;
     @Parameter(property = "wrapperFile4", required = true)
     protected File wrapperFile4;
-    @Parameter(property = "wrapperFile5", required = true)
+    @Parameter(property = "wrapperFile5")
     protected File wrapperFile5;
-    @Parameter(property = "wrapperFile6", required = false)
+    @Parameter(property = "wrapperFile6")
     protected File wrapperFile6;
     @Parameter(property = "wrapperHashesJsonFile", required = true)
     protected File wrapperHashesJsonFile;
@@ -58,7 +58,6 @@ public class WrapperHashesGeneratorMojo extends AbstractMojo {
 
     @Override
     public void execute() throws MojoExecutionException {
-
         checkWrapperFilesExist(wrapperFile1);
         checkWrapperFilesExist(wrapperFile2);
         checkWrapperFilesExist(wrapperFile3);
