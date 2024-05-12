@@ -147,7 +147,7 @@ public class ExternalApi {
             return capsGenerator.getCaps(params.getO(), searchType);
         }
         if (params.getT() == ActionAttribute.DETAILS) {
-            DetailsResult details = detailsProvider.getDetails(params.getId());
+            DetailsResult details = detailsProvider.getDetails(Long.valueOf(params.getId()));
             NewznabResponse response;
 
             List<SearchResultItem> searchResultItems = Collections.singletonList(details.getSearchResultItem());

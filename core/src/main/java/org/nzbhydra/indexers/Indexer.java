@@ -267,7 +267,7 @@ public abstract class Indexer<T> {
 
     public abstract NfoResult getNfo(String guid);
 
-    public DetailsResult getDetails(String guid) throws IndexerAccessException {
+    public DetailsResult getDetails(String guid, long searchResultId) throws IndexerAccessException {
         return DetailsResult.unsuccessful("Unsupported");
     }
 

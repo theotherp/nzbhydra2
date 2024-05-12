@@ -36,14 +36,14 @@ public class DetailsProvider {
         this.searchModuleProvider = searchModuleProvider;
     }
 
-    public DetailsResult getDetails(String resultId) {
-        Optional<SearchResultEntity> searchResult = searchResultRepository.findById(Long.parseLong(resultId));
+    public DetailsResult getDetails(long resultId) {
+        Optional<SearchResultEntity> searchResult = searchResultRepository.findById(resultId);
         if (searchResult.isEmpty()) {
             return null;
         }
         Indexer indexer = searchModuleProvider.getIndexerByName(searchResult.get().getIndexer().getName());
         try {
-            return indexer.getDetails(searchResult.get().getIndexerGuid());
+            return indexer.getDetails(searchResult.get().getIndexerGuid(), resultId);
         } catch (IndexerAccessException e) {
             return DetailsResult.unsuccessful(e.getMessage());
         }

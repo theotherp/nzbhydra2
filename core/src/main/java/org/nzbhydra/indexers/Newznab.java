@@ -426,9 +426,9 @@ public class Newznab extends Indexer<Xml> {
     }
 
     @Override
-    public DetailsResult getDetails(String guid) throws IndexerAccessException {
+    public DetailsResult getDetails(String guid, long searchResultId) throws IndexerAccessException {
         UriComponentsBuilder baseUri = getBaseUri().queryParam("t", "details").queryParam("id", guid);
-        Xml xml = null;
+        Xml xml;
         try {
             xml = getAndStoreResultToDatabase(baseUri.build().toUri(), IndexerApiAccessType.DETAILS);
         } catch (IndexerAccessException e) {
@@ -442,7 +442,9 @@ public class Newznab extends Indexer<Xml> {
         if (searchResultItems.size() != 1) {
             return DetailsResult.unsuccessful("Didn't find exactly one result for ID");
         }
-        return DetailsResult.withItem(searchResultItems.get(0));
+        SearchResultItem item = searchResultItems.get(0);
+        item.setSearchResultId(searchResultId);
+        return DetailsResult.withItem(item);
     }
 
     protected void handleRssError(NewznabXmlError response, String url) throws IndexerAccessException {
