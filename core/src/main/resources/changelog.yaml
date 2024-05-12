@@ -3,6 +3,8 @@
     changes:
       -   type: "fix"
           text: "Days without a buggy release: 0. Fix invalid link returned from DETAILS function. See #943"
+      -   type: "fix"
+          text: "Fix custom quick filter preselect validation. Thanks, OothecaPickle!"
 -   version: "v6.2.0"
     changes:
       -   type: "feature"
