@@ -30,6 +30,6 @@
 # Set bind port 
 # NH_PORT=8084
 
-# Use an alternate Python 
+# Use an alternate java
 # JAVA_BIN=/usr/local/bin/java
 

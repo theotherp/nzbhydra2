@@ -13,7 +13,7 @@ WorkingDirectory=/opt/nzbhydra2
 # NZBHydra stores its data in a "data" subfolder of its installation path
 # To change that set the --datafolder parameter:
 # --datafolder /var/local/lib/nzbhydra
-ExecStart=/opt/nzbhydra2/nzbhydra2 --nobrowser
+ExecStart=python3 /opt/nzbhydra2/nzbhydra2wrapperPy3.py --nobrowser
 Restart=always
 
 [Install]

@@ -12,6 +12,8 @@
 # Description:       starts instance of nzbhydra using start-stop-daemon
 ### END INIT INFO
 
+# NOTE: Needs to be adapted to run nzbhydra2wrapperPy3.py as the binary file "nzbhydra2" does not exist anymore
+
 #to debug run like this: env -i NH_USER="ubuntu" NH_HOME="/home/ubuntu/upstart" NH_PIDFILE="/home/ubuntu/upstart/nzbhydra2.pid" init.ubuntu start
 
 NAME=nzbhydra2
