@@ -40,14 +40,15 @@ import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.spi.FileSystemProvider;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -57,6 +58,7 @@ public class BackupAndRestore {
     private static final Logger logger = LoggerFactory.getLogger(BackupAndRestore.class);
     private static final Pattern FILE_PATTERN = Pattern.compile("nzbhydra-(\\d{4}-\\d{2}-\\d{2} \\d{2}-\\d{2}-\\d{2})\\.zip");
     private static final DateTimeFormatter DATE_PATTERN = DateTimeFormatter.ofPattern("yyyy-MM-dd HH-mm-ss");
+    public static final int MIN_AGE_MINUES_LAST_AUTOMATIC_BACKUP = 30;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -84,7 +86,7 @@ public class BackupAndRestore {
     }
 
     @Transactional
-    public File backup(boolean triggeredByUsed) throws Exception {
+    public File backup(boolean triggeredByUser) throws Exception {
         Stopwatch stopwatch = Stopwatch.createStarted();
         File backupFolder = getBackupFolder();
         if (!backupFolder.exists()) {
@@ -93,13 +95,18 @@ public class BackupAndRestore {
                 throw new IOException("Unable to create backup target folder " + backupFolder.getAbsolutePath());
             }
         }
+        Optional<Map.Entry<File, LocalDateTime>> latest = getBackupFilesToDate().entrySet().stream().max(Map.Entry.comparingByValue());
+        if (!triggeredByUser && latest.isPresent() && latest.get().getValue().isAfter(LocalDateTime.now().minusMinutes(MIN_AGE_MINUES_LAST_AUTOMATIC_BACKUP))) {
+            logger.info("Not creating a new automatic backup because the last one ({}) was just created", latest.get().getKey().getName());
+            return latest.get().getKey();
+        }
 
         deleteOldBackupFiles(backupFolder);
 
         logger.info("Creating backup");
 
         File backupZip = new File(backupFolder, "nzbhydra-" + LocalDateTime.now().format(DATE_PATTERN) + ".zip");
-        backupDatabase(backupZip, triggeredByUsed);
+        backupDatabase(backupZip, triggeredByUser);
         if (!backupZip.exists()) {
             throw new RuntimeException("Export to file " + backupZip + " was not executed by database");
         }
@@ -126,38 +133,34 @@ public class BackupAndRestore {
         if (configProvider.getBaseConfig().getMain().getDeleteBackupsAfterWeeks().isPresent()) {
             logger.info("Deleting old backups if any exist");
             Integer backupMaxAgeInWeeks = configProvider.getBaseConfig().getMain().getDeleteBackupsAfterWeeks().get();
-            File[] zips = backupFolder.listFiles((dir, name) -> name != null && name.startsWith("nzbhydra") && name.endsWith(".zip"));
-            if (zips != null) {
-                Map<File, LocalDateTime> fileToBackupTime = new HashMap<>();
-                for (File zip : zips) {
-                    Matcher matcher = FILE_PATTERN.matcher(zip.getName());
-                    if (!matcher.matches()) {
-                        logger.warn("Backup ZIP file name {} does not match expected pattern", zip.getName());
+            Map<File, LocalDateTime> fileToBackupTime = getBackupFilesToDate();
+
+            for (Map.Entry<File, LocalDateTime> entry : fileToBackupTime.entrySet()) {
+                File zip = entry.getKey();
+                LocalDateTime backupDate = entry.getValue();
+                if (backupDate.isBefore(LocalDateTime.now().minusSeconds(60L * 60 * 24 * 7 * backupMaxAgeInWeeks))) {
+                    final boolean successfulNewerBackup = fileToBackupTime.entrySet().stream().anyMatch(x -> x.getKey() != zip && x.getValue().isAfter(backupDate));
+                    if (!successfulNewerBackup) {
+                        logger.warn("No successful backup was made after the creation of {}. Will not delete it.", zip.getAbsolutePath());
                         continue;
                     }
-                    LocalDateTime backupDate = LocalDateTime.from(DATE_PATTERN.parse(matcher.group(1)));
-                    fileToBackupTime.put(zip, backupDate);
-                }
-                for (File zip : zips) {
-                    if (!fileToBackupTime.containsKey(zip)) {
-                        continue;
-                    }
-                    LocalDateTime backupDate = fileToBackupTime.get(zip);
-                    if (backupDate.isBefore(LocalDateTime.now().minusSeconds(60L * 60 * 24 * 7 * backupMaxAgeInWeeks))) {
-                        final boolean successfulNewerBackup = fileToBackupTime.entrySet().stream().anyMatch(x -> x.getKey() != zip && x.getValue().isAfter(backupDate));
-                        if (!successfulNewerBackup) {
-                            logger.warn("No successful backup was made after the creation of {}. Will not delete it.", zip.getAbsolutePath());
-                            continue;
-                        }
-                        logger.info("Deleting backup file {} because it's older than {} weeks and a newer successful backup exists", zip, backupMaxAgeInWeeks);
-                        boolean deleted = zip.delete();
-                        if (!deleted) {
-                            logger.warn("Unable to delete old backup file {}", zip.getName());
-                        }
+                    logger.info("Deleting backup file {} because it's older than {} weeks and a newer successful backup exists", zip, backupMaxAgeInWeeks);
+                    boolean deleted = zip.delete();
+                    if (!deleted) {
+                        logger.warn("Unable to delete old backup file {}", zip.getName());
                     }
                 }
             }
         }
+
+    }
+
+    private Map<File, LocalDateTime> getBackupFilesToDate() {
+        Map<File, LocalDateTime> fileToBackupTime = new HashMap<>();
+        for (BackupEntry existingBackup : getExistingBackups()) {
+            fileToBackupTime.put(new File(getBackupFolder(), existingBackup.getFilename()), LocalDateTime.ofInstant(existingBackup.getCreationDate(), ZoneId.systemDefault()));
+        }
+        return fileToBackupTime;
     }
 
     @Reflective
@@ -251,8 +254,9 @@ public class BackupAndRestore {
     }
 
     public GenericResponse restoreFromFile(InputStream inputStream) {
+        File tempFile = null;
         try {
-            File tempFile = tempFileProvider.getTempFile("restore", ".zip");
+            tempFile = tempFileProvider.get TempFile("restore", ".zip");
             FileUtils.copyInputStreamToFile(inputStream, tempFile);
             tempFile.deleteOnExit();
             restoreFromFile(tempFile);
@@ -260,6 +264,10 @@ public class BackupAndRestore {
         } catch (Exception e) {
             logger.error("Error while restoring", e);
             return GenericResponse.notOk("Error while restoring: " + e.getMessage());
+        } finally {
+            if (tempFile != null) {
+                tempFile.delete();
+            }
         }
     }
 

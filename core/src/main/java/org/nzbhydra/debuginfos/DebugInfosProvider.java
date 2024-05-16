@@ -213,7 +213,9 @@ public class DebugInfosProvider {
 
     public byte[] getDebugInfosAsZip() throws IOException {
         File tempFile = createDebugInfosZipFile();
-        return Files.readAllBytes(tempFile.toPath());
+        byte[] bytes = Files.readAllBytes(tempFile.toPath());
+        tempFile.delete();
+        return bytes;
     }
 
     public File createDebugInfosZipFile() throws IOException {
@@ -396,7 +398,9 @@ public class DebugInfosProvider {
         File tempFile = tempFileProvider.getTempFile("dbquery", "csv");
         String path = tempFile.getAbsolutePath().replace("\\", "/");
         entityManager.createNativeQuery(String.format("CALL CSVWRITE('%s', '%s')", path, sql.replace("'", "''"))).executeUpdate();
-        return new String(Files.readAllBytes(tempFile.toPath()));
+        String content = new String(Files.readAllBytes(tempFile.toPath()));
+        tempFile.delete();
+        return content;
     }
 
     @Transactional

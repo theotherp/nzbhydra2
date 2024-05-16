@@ -229,6 +229,7 @@ public class FileHandler {
             return new FileZipResponse(false, null, "No files could be retrieved", Collections.emptyList(), guids);
         }
         File zip = createZip(nzbsDownload.files);
+        zip.deleteOnExit();
         logger.info("Successfully added {}/{} files to ZIP", nzbsDownload.files.size(), guids.size());
         if (nzbsDownload.tempDirectory != null) {
             nzbsDownload.tempDirectory.toFile().delete();

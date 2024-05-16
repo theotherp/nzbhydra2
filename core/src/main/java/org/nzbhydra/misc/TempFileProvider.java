@@ -35,6 +35,8 @@ public class TempFileProvider {
     @Autowired
     private ConfigurableEnvironment environment;
 
+    // TODO sist 16.05.2024: Make autoclosable, delete file when closed
+
     public File getTempFile(String postFix, String extension) throws IOException {
         String nzbhydraTempFolder = environment.getProperty("NZBHYDRA_TEMP_FOLDER", String.class);
         if (nzbhydraTempFolder != null) {

@@ -1,4 +1,8 @@
 #@formatter:off
+-   version: "v6.2.2"
+    changes:
+      -   type: "fix"
+          text: "With the update loop (see 6.2.1) for every update a new backup was created, in some cases filling the hard drive. I now make sure a backup is only created if the last one is old enough"
 -   version: "v6.2.1"
     changes:
       -   type: "fix"
