@@ -256,7 +256,7 @@ public class BackupAndRestore {
     public GenericResponse restoreFromFile(InputStream inputStream) {
         File tempFile = null;
         try {
-            tempFile = tempFileProvider.get TempFile("restore", ".zip");
+            tempFile = tempFileProvider.getTempFile("restore", ".zip");
             FileUtils.copyInputStreamToFile(inputStream, tempFile);
             tempFile.deleteOnExit();
             restoreFromFile(tempFile);

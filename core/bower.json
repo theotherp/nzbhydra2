@@ -81,6 +81,6 @@
     "angular-ui-select": "^0.18.0",
     "objectpath": "~1.2.1",
     "tv4": "~1.2.7",
-    "angular": "1.7.8"
+    "angular": "1.8.3"
   }
 }

@@ -60,24 +60,28 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         String[] locations = new String[]{"classpath:/static/"};
         if (NzbHydra.getDataFolder() != null) {
-            File staticFolderFile = new File(new File(NzbHydra.getDataFolder()).getParentFile(), "static");
+            File staticFolderFile = new File(new File(NzbHydra.getDataFolder()), "static");
             try {
-                String fileStatic = staticFolderFile.toURI().toURL().toString();
-                locations = (fileStatic != null && staticFolderFile.exists()) ? new String[]{fileStatic, "classpath:/static/"} : new String[]{"classpath:/static/"};
-                logger.info("Found folder {}. Will load UI resources from there", staticFolderFile.getAbsolutePath());
+                if (staticFolderFile.exists()) {
+                    String fileStatic = staticFolderFile.toURI().toURL().toString();
+                    locations = new String[]{fileStatic};
+                    logger.warn("Found folder {}. Will load UI resources from there instead", staticFolderFile.getAbsolutePath());
+                } else {
+                    logger.debug("Static resources folder {} does not exist - using baked in resources", staticFolderFile);
+                }
             } catch (MalformedURLException e) {
                 logger.error("Unable to build path for local static files");
             }
         }
         registry.addResourceHandler("/static/**")
-            .addResourceLocations(locations)
-            .setCacheControl(CacheControl.noCache())
-            .resourceChain(false);
+                .addResourceLocations(locations)
+                .setCacheControl(CacheControl.noCache())
+                .resourceChain(false);
 
         //Otherwise swagger is not loaded using /swagger-ui/index.html
         registry.addResourceHandler("/swagger-ui/**")
-            // Must match the dependency for swagger-ui
-            .addResourceLocations("classpath:/META-INF/resources/webjars/swagger-ui/4.10.3/");
+                // Must match the dependency for swagger-ui
+                .addResourceLocations("classpath:/META-INF/resources/webjars/swagger-ui/4.10.3/");
 
 
         registry.setOrder(0);

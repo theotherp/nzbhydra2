@@ -1,0 +1,21 @@
+---
+# Provides an instance of NZBHydra for UI development.
+# The UI source is located on the host in /app/data/ui-src
+# When you run this file two folders will be created:
+# - "data" contains the regular NZBHydra config data.
+# - "ui-src" contains the UI sources. Any changes in this folder will be automatically be built into "static"
+#   which is where NZBHydra loads its UI data from.
+version: "2.1"
+services:
+  nzbhydra-ui-dev:
+    image: ghcr.io/theotherp/nzbhydra-ui-dev:latest
+    container_name: nzbhydra-ui-dev
+    volumes:
+      - ./data:/app/data
+      - ./ui-src:/app/ui-src
+    ports:
+      # NZBHydra port
+      - "5076:5076"
+      # Livereload port, I use https://chromewebstore.google.com/detail/livereload++/ciehpookapcdlakedibajeccomagbfab?pli=1
+      - "1234:1234"
+    restart: unless-stopped
