@@ -14,15 +14,15 @@
   ~  limitations under the License.
   -->
 
-<div class="row">
-  
+<div>
+
   <div class="btn-group" style="margin-bottom: 30px; margin-left: auto; margin-right: auto; float:none !important;">
     <button class="btn btn-info" ng-click="showPresetSelection()">
       <span class="glyphicon glyphicon-plus" style="margin-right: 10px"></span>Add new indexer
     </button>
   </div>
-  
-  
+
+
   <div ng-repeat="entry in model | orderBy: ['-state', '-score', 'name'] : false track by entry.name">
     <div class="row">
       <div style="margin-left: auto; margin-right: auto; float:none !important;">

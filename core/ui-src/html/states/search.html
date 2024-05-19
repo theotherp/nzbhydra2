@@ -7,35 +7,32 @@
 </script>
 
 <div ng-if="::availableIndexers.length == 0">
-  <div class="row">
-    <div class="col-md-5"></div>
-    <div class="col-md-10 alert alert-info" role="alert">
+  <div class="row d-sm-flex justify-content-center">
+    <div class="col-xs-20 col-sm-18 col-md-10 alert alert-info" role="alert">
       No indexers are configured or enabled. Please go to the <a ui-sref="root.config.indexers"
                                                                  style="text-decoration: underline">indexer
       configuration</a> and add or enable some.
     </div>
-    <div class="col-md-5"></div>
   </div>
 </div>
 
 <div ng-show="::availableIndexers.length > 0">
-    <div class="row">
-        <div class="col-md-3"></div>
+    <div class="row d-sm-flex justify-content-center">
 
-        <div class="">
+        <div class="col-xs-20 col-sm-18 col-md-14">
             <form class="form-horizontal">
                 <div class="form-group">
 
                     <label class="col-sm-2 control-label">Search</label>
 
-                    <div class="col-sm-10">
+                    <div class="col-sm-18">
                         <div class="input-group">
-                        <span class="input-group-btn input-group-btn2">
-                              <button type="button" class="btn btn-default dropdown-toggle search-category-button"
+                            <span class="input-group-btn input-group-btn2">
+                                <button type="button" class="btn btn-default dropdown-toggle search-category-button"
                                       data-toggle="dropdown" aria-expanded="false" id="searchCategoryDropdownButton"
                                       ng-cloak>
-                                  {{ category.name }} <span class="caret"></span>
-                              </button>
+                                    {{ category.name }} <span class="caret"></span>
+                                </button>
                                 <ul class="dropdown-menu dropdown-menu-right" role="menu"
                                     style="right: auto; top:initial; margin:0px;">
 
@@ -44,7 +41,6 @@
                                            ng-click="toggleCategory(category)">{{ category.name }}</a>
                                     </li>
                                 </ul>
-
                             </span>
                             <span class="input-group-addon by-id-checkbox" ng-if="isAskById"
                                   uib-tooltip="If enabled the search is done using an ID from TheTVDB or IMDB. The ID is retrieved using autocomplete."
@@ -63,62 +59,57 @@
                                     <span class="glyphicon glyphicon-remove" style="font-size: xx-small;"></span>
                                 </button>
                                 <span id="selected-item-title">
-                              {{selectedItem.title}}
-                                    </span>
+                                    {{selectedItem.title}}
+                                </span>
                             </div>
-              <input id="searchfield" type="search" ngtype="search" ng-model="query"
-                     ng-enter="onTypeAheadEnter()" placeholder="Search" typeahead-min-length="2"
-                     typeahead-wait-ms="typeAheadWait" ng-keydown="onTypeAheadKeyDown($event)"
-                     uib-typeahead="item as item.label for item in getAutocomplete($viewValue)"
-                     typeahead-template-url="autocompleteTemplate.html"
-                     ng-class="{'autocompleteLoading': (loadingItems && autocompleteActive), 'search-border': !seriesSelected}"
-                     typeahead-loading="loadingItems"
-                     typeahead-on-select="selectAutocompleteItem($item)" class="form-control"
-                     focus-on="focus-query-box"
-                     autofocus auto-focus
-                     uib-tooltip="{{searchBoxTooltip}}"
-                     tooltip-placement="top"
-                     tooltip-trigger="mouseenter"
-                     style="border-right: none"
-                     ng-on-drop="onDropOnQueryInput($event)"
-
-              >
-              <button style="position: absolute; top: 2px; right:{{seriesSelected() ? 185 : 105}}px; font-size: xx-small; float: right; z-index: 1000; margin: 0; padding: 0; border: none; background-color: unset"
-                      ng-click="clearQuery()" id="clear-query-button">
-                <span class="glyphicon glyphicon-remove" style="font-size: xx-small;"></span>
-              </button>
-              <span class="input-group-btn" style="width:40px; border-left: none" ng-show="seriesSelected()">
-                              <input type="text" class="form-control season-input" placeholder="S" name="season"
+                            <input id="searchfield" type="search" ngtype="search" ng-model="query"
+                                ng-enter="onTypeAheadEnter()" placeholder="Search" typeahead-min-length="2"
+                                typeahead-wait-ms="typeAheadWait" ng-keydown="onTypeAheadKeyDown($event)"
+                                uib-typeahead="item as item.label for item in getAutocomplete($viewValue)"
+                                typeahead-template-url="autocompleteTemplate.html"
+                                ng-class="{'autocompleteLoading': (loadingItems && autocompleteActive), 'search-border': !seriesSelected}"
+                                typeahead-loading="loadingItems"
+                                typeahead-on-select="selectAutocompleteItem($item)" class="form-control"
+                                focus-on="focus-query-box"
+                                autofocus auto-focus
+                                uib-tooltip="{{searchBoxTooltip}}"
+                                tooltip-placement="top"
+                                tooltip-trigger="mouseenter"
+                                style="border-right: none"
+                                ng-on-drop="onDropOnQueryInput($event)">
+                            <button style="position: absolute; top: 2px; right:{{seriesSelected() ? 185 : 105}}px; font-size: xx-small; float: right; z-index: 1000; margin: 0; padding: 0; border: none; background-color: unset"
+                                ng-click="clearQuery()" id="clear-query-button">
+                                <span class="glyphicon glyphicon-remove" style="font-size: xx-small;"></span>
+                            </button>
+                            <span class="input-group-btn" style="width:40px; border-left: none" ng-show="seriesSelected()">
+                                <input type="text" class="form-control season-input" placeholder="S" name="season"
                                      id="seriesSearchS" style="width:40px; " ng-model="season"
                                      ng-enter="initiateSearch()"
                                      uib-tooltip="Enter a season to search for."
                                      tooltip-placement="top"
                                      tooltip-trigger="mouseenter">
                             </span>
-              <span class="input-group-btn" style="width:40px;" ng-show="seriesSelected()">
-                              <input type="text" class="form-control episode-input" placeholder="E" name="episode"
+                            <span class="input-group-btn" style="width:40px;" ng-show="seriesSelected()">
+                                <input type="text" class="form-control episode-input" placeholder="E" name="episode"
                                      id="seriesSearchE" style="width:40px;" ng-model="episode"
                                      ng-enter="initiateSearch()"
                                      uib-tooltip="Enter an episode to search for."
                                      tooltip-placement="top"
                                      tooltip-trigger="mouseenter">
                             </span>
-              <span class="input-group-btn input-group-btn1" style="border-left-width: 1px">
-                            <div class="btn-group" uib-dropdown is-open="status.isopen">
-                              <button id="history-dropdown-button" type="button" class="btn btn-default"
-                                      uib-dropdown-toggle
-                                      ng-enter="initiateSearch()"
-                                      uib-tooltip="Search history"
-                                      tooltip-placement="top"
-                                      tooltip-trigger="mouseenter"
-                              >
-                                <span class="glyphicon glyphicon-time" style="margin-right: 3px"></span><span
-                                  class="caret"></span>
-                                </button>
+                            <span class="input-group-btn input-group-btn1" style="border-left-width: 1px">
+                                <div class="btn-group" uib-dropdown is-open="status.isopen">
+                                    <button id="history-dropdown-button" type="button" class="btn btn-default"
+                                        uib-dropdown-toggle
+                                        ng-enter="initiateSearch()"
+                                        uib-tooltip="Search history"
+                                        tooltip-placement="top"
+                                        tooltip-trigger="mouseenter">
+                                        <span class="glyphicon glyphicon-time" style="margin-right: 3px"></span><span class="caret"></span>
+                                    </button>
                                     <ul class="dropdown-menu" uib-dropdown-menu
                                         template-url="static/html/search-searchhistory-dropdown.html"
-                                        aria-labelledby="button-template-url"
-                                    >
+                                        aria-labelledby="button-template-url">
                                     </ul>
                                 </div>
                             </span>
@@ -132,63 +123,64 @@
                 </div>
             </form>
 
-            <span ng-if="::showIndexerSelection">
-            <div class="col-md-3"></div>
-            <form class="form-horizontal">
+            <div ng-if="::showIndexerSelection">
+                <form class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">Indexers</label>
+
+                        <div class="col-sm-18">
+                            <div class="d-flex flex-wrap align-items-center">
+                                <div indexer-selection-button available-indexers="availableIndexers"
+                                    selected-indexers="selectedIndexers" class="indexer-selection-button" style="margin-right: 10px;">
+                                </div>
+                                <label ng-repeat="indexer in availableIndexers" class="mb-0 mx-2 my-3">
+                                    <input type="checkbox" ng-class="{'indexer-checkbox': $index > 0}"
+                                        class="indexer-selection-checkbox" data-checklist-model="selectedIndexers"
+                                        data-checklist-value="indexer.name" indexer-name="{{indexer.name}}"> {{ indexer.name }}
+                                </label>
+
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <form class="form-horizontal form-search">
                 <div class="form-group">
-                    <label class="col-sm-2 control-label">Indexers</label>
+                    <div class="col-xs-20 col-sm-10">
+                        <div class="form-group">
+                            <label class="col-xs-4 control-label">Age</label>
 
-                    <div class="col-md-10">
-                        <div class="input-group" style="padding-top: 10px;">
-                            <span indexer-selection-button available-indexers="availableIndexers"
-                                  selected-indexers="selectedIndexers" class="indexer-selection-button">
-                            </span>
-                            <span style="margin-right: 10px;"></span>
-                            <label ng-repeat="indexer in availableIndexers">
-                                <input type="checkbox" ng-class="{'indexer-checkbox': $index > 0}"
-                                       class="indexer-selection-checkbox" data-checklist-model="selectedIndexers"
-                                       data-checklist-value="indexer.name" indexer-name="{{indexer.name}}"> {{ indexer.name }}
-                            </label>
-
+                            <div class="col-xs-8 pe-2">
+                                <div class="input-group">
+                                    <span class="input-group-addon">Min</span>
+                                    <input type="number" class="form-control" id="minage" ng-model="minage" ng-enter="initiateSearch()">
+                                </div>
+                            </div>
+                            <div class="col-xs-8 ps-0">
+                                <div class="input-group">
+                                    <span class="input-group-addon">Max</span>
+                                    <input type="number" class="form-control" id="maxage" ng-model="maxage" ng-enter="initiateSearch()">
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </form>
-        </span>
+                    <div class="col-xs-20 col-sm-10">
+                        <div class="form-group">
+                            <label class="col-xs-4 control-label">Size</label>
 
-            <div class="col-md-3"></div>
-            <form class="form-horizontal">
-                <div class="form-group">
-                    <label class="col-sm-2 control-label">Age</label>
-
-                    <div class="col-sm-3" style="width: 11%">
-                        <div class="input-group">
-                            <span class="input-group-addon">Min</span>
-                            <input type="number" class="form-control" id="minage" ng-model="minage" style="width: 90px"
-                                   ng-enter="initiateSearch()">
-                        </div>
-                    </div>
-                    <div class="col-sm-3" style="width: 11%">
-                        <div class="input-group">
-                            <span class="input-group-addon">Max</span>
-                            <input type="number" class="form-control" id="maxage" ng-model="maxage" style="width: 90px"
-                                   ng-enter="initiateSearch()">
-                        </div>
-                    </div>
-                    <label class="col-sm-5 control-label" style="width:5%">Size</label>
-
-                    <div class="col-sm-3" style="width: 11%">
-                        <div class="input-group">
-                            <span class="input-group-addon">Min</span>
-                            <input type="number" class="form-control" id="minsize" ng-model="minsize"
-                                   style="width: 90px" ng-enter="initiateSearch()">
-                        </div>
-                    </div>
-                    <div class="col-sm-3" style="width: 11%">
-                        <div class="input-group">
-                            <span class="input-group-addon">Max</span>
-                            <input type="number" class="form-control" id="maxsize" ng-model="maxsize"
-                                   style="width: 90px" ng-enter="initiateSearch()">
+                            <div class="col-xs-8 pe-2">
+                                <div class="input-group">
+                                    <span class="input-group-addon">Min</span>
+                                    <input type="number" class="form-control" id="minsize" ng-model="minsize" ng-enter="initiateSearch()">
+                                </div>
+                            </div>
+                            <div class="col-xs-8 ps-0">
+                                <div class="input-group">
+                                    <span class="input-group-addon">Max</span>
+                                    <input type="number" class="form-control" id="maxsize" ng-model="maxsize" ng-enter="initiateSearch()">
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -196,8 +188,8 @@
 
         </div>
 
-        <div class="col-md-3"></div>
     </div>
 
     <!-- Search results go here -->
     <div ui-view="results"></div>
+</div>
