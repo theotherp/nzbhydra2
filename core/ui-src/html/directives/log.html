@@ -14,35 +14,36 @@
                     entries
                 </button>
             </div>
-            <table class="table table-hover" style="margin-bottom: 10px">
-                <thead class="search-results-header">
-                <tr>
-                    <th style="width: 11%">Time (newest first)</th>
-                    <th style="width: 3%">Level</th>
-                    <th style="width: 15%">Logger</th>
-                    <th style="width: 71%; overflow: hidden">Message</th>
-                </tr>
-                </thead>
-                <tbody class="log">
-                <tr ng-repeat="line in jsonLogLines" ng-click="openModal(line)">
-                    <td class="log-line">{{::line["@timestamp"] | formatTimestamp}}</td>
-                    <td class="log-line">
-                        <div ng-switch on="line.level">
-                            <div class="fa fa-info-circle" ng-switch-when="INFO"></div>
-                            <div class="fa fa-warning warning" ng-switch-when="WARN"></div>
-                            <div class="fa fa-times-circle error" ng-switch-when="ERROR"></div>
-                        </div>
-                    </td>
-                    <td class="log-line">{{line.logger_name | formatClassname}}</td>
-                    <td class="log-line">
-                        <div style="width: 945px; overflow: hidden; text-overflow: ellipsis"> <!--Hacky but works :-(-->
-                            {{::line.message}}
-
-                        </div>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
+            <div class="table-responsive">
+                <table class="table table-hover" style="margin-bottom: 20px">
+                    <thead class="search-results-header">
+                    <tr>
+                        <th style="width: 11%">Time (newest first)</th>
+                        <th style="width: 3%">Level</th>
+                        <th style="width: 15%">Logger</th>
+                        <th style="width: 71%; overflow: hidden">Message</th>
+                    </tr>
+                    </thead>
+                    <tbody class="log">
+                    <tr ng-repeat="line in jsonLogLines" ng-click="openModal(line)">
+                        <td class="log-line">{{::line["@timestamp"] | formatTimestamp}}</td>
+                        <td class="log-line">
+                            <div ng-switch on="line.level">
+                                <div class="fa fa-info-circle" ng-switch-when="INFO"></div>
+                                <div class="fa fa-warning warning" ng-switch-when="WARN"></div>
+                                <div class="fa fa-times-circle error" ng-switch-when="ERROR"></div>
+                            </div>
+                        </td>
+                        <td class="log-line">{{line.logger_name | formatClassname}}</td>
+                        <td class="log-line">
+                            <div class="text-break">
+                                {{::line.message}}
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
             <div style="margin-bottom: 20px">
                 <button class="btn btn-default" ng-click="getNewerFormatted()" ng-disabled="currentJsonIndex === 0">Get
                     newer entries

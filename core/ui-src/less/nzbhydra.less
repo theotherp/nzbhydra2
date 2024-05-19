@@ -45,6 +45,48 @@ body {
   padding-bottom: 0;
 }
 
+// Flexbox utilities (like Bootstrap 5)
+.d-flex { display: flex; }
+@media (min-width: @screen-sm-min) {
+  .d-sm-flex {
+    display: flex;
+  }
+}
+@media (min-width: @screen-md-min) {
+  .d-md-flex {
+    display: flex;
+  }
+}
+.flex-wrap {
+  flex-wrap: wrap !important;
+}
+.align-items-center {
+  align-items: center !important;
+}
+.justify-content-center {
+  justify-content: center !important;
+}
+
+// Typography (like Bootstrap 5)
+.text-break {
+  word-wrap: break-word !important;
+  word-break: break-word !important;
+}
+
+// Utilities (like Bootstrap 5)
+.mb-0 { margin-bottom: 0; }
+.mb-2 { margin-bottom: 0.5rem; }
+.mx-2 { margin-left: 0.5rem; margin-right: 0.5rem; }
+.my-3 { margin-top: 1rem; margin-bottom: 1rem; }
+.my-4 { margin-top: 1.5rem; margin-bottom: 1.5rem; }
+.my-5 { margin-top: 3rem; margin-bottom: 3rem; }
+.ms-4 { margin-left: 1.5rem; }
+.pe-0 { padding-right: 0; }
+.pe-2 { padding-right: 0.5rem; }
+.ps-0 { padding-left: 0; }
+.py-3 { padding-top: 1rem; padding-bottom: 1rem; }
+.py-4 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+
 #push,
 #footer {
   height: 70px;
@@ -63,7 +105,6 @@ body {
   position: fixed;
   left: 0;
   bottom: 0;
-  height: 35px;
   width: 100%;
   z-index: 100;
 }
@@ -90,6 +131,28 @@ body {
 
 .no-margin-top {
   margin-top: 0
+}
+
+// Custom to prevent priority input from looking odd with form-inline in xs mobile view
+.form-indexer {
+  .form-group {
+    display: inline-block;
+    margin-bottom: 0;
+    vertical-align: middle;
+  }
+  .input-group {
+    display: inline-table;
+    vertical-align: middle;
+  }
+  .input-group-addon {
+    width: auto;
+  }
+}
+
+.form-search {
+  .control-label {
+    padding-top: 7px;
+  }
 }
 
 /* ------ form-control-lg */
@@ -428,7 +491,7 @@ a.disabled:hover {
 }
 
 .no-nfo {
-  visibility: hidden;
+  opacity: 0.25;
 }
 
 .pagination {
@@ -663,7 +726,7 @@ input:focus + .input-group-addon {
   background: @banner-url no-repeat center;
   background-size: contain;
   height: 150px;
-  margin: 0 auto 25px auto;
+  margin: 0 15px 25px 15px;
   display: block;
   -moz-box-sizing: border-box;
   box-sizing: border-box;
@@ -1083,42 +1146,40 @@ select.form-control {
   }
 }
 
-
-.config-label {
-  width: 20%;
+.config-tabs {
+  margin-bottom: 20px;
 }
 
 .config-content {
-  width: 30%;
   padding-right: 0;
 }
 
-.config-tooltip {
-  padding-left: 10px;
-  padding-right: 10px;
-  width: 3%;
-  display: block;
+.config-fieldset-legend {
+  padding-left: 20px;
 }
 
+.config-label {
+  padding-top: 7px;
+}
 
 .config-help {
-  padding-left: 0;
-  width: 47%;
-  padding-right: 20px;
+  padding-left: 40px;
+  padding-right: 40px;
+}
+
+@media (min-width: @screen-sm-min) {
+  .config-fieldset-legend {
+    padding-left: 0;
+  }
+  .config-help {
+    padding-left: 0;
+    padding-right: 20px;
+  }
 }
 
 .setting-wrapper {
-
-
   .config-content {
     padding-right: 0;
-  }
-
-
-  .config-help {
-    padding-left: 0;
-    width: 47%;
-    padding-right: 20px;
   }
 
   .align-middle {
@@ -1154,12 +1215,6 @@ select.form-control {
     width: 10%;
   }
 }
-
-.config-fieldset-legend {
-  float: left;
-  margin-left: 292px;
-}
-
 
 .formly > .formly-field-group {
   position: relative;

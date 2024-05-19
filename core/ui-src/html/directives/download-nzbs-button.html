@@ -1,10 +1,10 @@
-<div class="btn-group" style="margin-top:20px; margin-bottom:20px;" ng-if="downloaders.length > 0">
-    <span ng-if="::downloaders.length == 1">
+<div class="btn-group pe-2 mb-2" ng-if="downloaders.length > 0">
+    <div ng-if="::downloaders.length == 1">
         <button class="btn btn-default" ng-click="download(downloaders[0])" id="send-selected-to-downloader"><span
                 class="glyphicon glyphicon-plus" style="margin-right: 10px"></span> {{ ::downloaders[0].name }}</button>
-    </span>
-    <span ng-if="::downloaders.length > 1">
-        
+    </div>
+    <div ng-if="::downloaders.length > 1">
+
         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
                 aria-expanded="false" id="send-selected-to-downloader-dropdown">
             <span><span class="glyphicon glyphicon-plus" style="margin-right: 10px"></span>Add to ...</span>
@@ -19,6 +19,6 @@
                 <a ng-click="sendToBlackhole()" class="send-to-downloader">Torrent black hole</a>
             </li>
         </ul>
-    </span>
+    </div>
 
 </div>

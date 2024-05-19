@@ -17,12 +17,14 @@
         <a href="#" ng-click="select(file, 'file')">{{::file.name}}</a>
     </div>
 </div>
-<div class="modal-footer row" ng-show="type === 'folder'">
-    <span class="col-md-15" style="text-align: left">
-    </span>
-    <span class="col-md-5">
-        <button class="btn btn-default" ng-click="submit()">
-            Select
-        </button>
-    </span>
+<div class="modal-footer" ng-show="type === 'folder'">
+    <div class="row">
+        <span class="col-md-15" style="text-align: left">
+        </span>
+        <span class="col-md-5">
+            <button class="btn btn-default" ng-click="submit()">
+                Select
+            </button>
+        </span>
+    </div>
 </div>
