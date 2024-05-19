@@ -156,9 +156,10 @@ gulp.task('copy-assets', function () {
 
 
 gulp.task('reload', function () {
-    if (liveReloadActive)
+    if (liveReloadActive) {
         livereload.reload();
-    log("Triggering live reload")
+        log("Triggering live reload")
+    }
 });
 
 gulp.task('delMainLessCache', function () {
