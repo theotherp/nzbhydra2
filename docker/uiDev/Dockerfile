@@ -5,7 +5,7 @@ LABEL org.opencontainers.image.source="https://github.com/theotherp/nzbhydra2/"
 WORKDIR /app
 
 RUN apt-get update
-RUN apt-get install -y curl gnupg python3 unzip git openjdk-17-jdk
+RUN apt-get install -y curl gnupg python3 unzip git openjdk-21-jdk
 
 # Install nodeJS
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
@@ -33,7 +33,6 @@ RUN curl -L -o repo.zip https://github.com/theotherp/nzbhydra2/releases/download
 # Use the latest built binary so any updates we've made for this container to work are included
 RUN rm -f /app/lib/*.jar
 COPY core/target/*-exec.jar /app/lib/
-
 COPY docker/uiDev/start.sh /
 RUN chmod +x /start.sh
 CMD ["/start.sh"]
