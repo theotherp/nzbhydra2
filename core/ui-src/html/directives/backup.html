@@ -1,46 +1,49 @@
-<div style="text-align: left; margin: auto; width: 800px">
+<div class="text-left row d-sm-flex justify-content-center">
+    <div class="col-xs-20 col-md-14">
+        <div class="btn-group" uib-dropdown>
+            <button id="split-button" type="button" class="btn btn-primary" ng-click="createAndDownloadBackupFile()">Create and download backup
+            </button>
+            <button type="button" class="btn btn-primary" uib-dropdown-toggle>
+                <span class="caret"></span>
+                <span class="sr-only">Split button!</span>
+            </button>
+            <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="split-button">
+                <li role="menuitem"><a href="#" ng-click="createBackupFile()">Just create backup</a></li>
+            </ul>
+        </div>
 
-    <div class="btn-group" uib-dropdown>
-        <button id="split-button" type="button" class="btn btn-primary" ng-click="createAndDownloadBackupFile()">Create and download backup
+        <br>
+        <br>
+        <button type="file" ngf-select="uploadBackupFile($file, $invalidFiles)" class="btn btn-primary">
+            Upload and restore from file
         </button>
-        <button type="button" class="btn btn-primary" uib-dropdown-toggle>
-            <span class="caret"></span>
-            <span class="sr-only">Split button!</span>
-        </button>
-        <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="split-button">
-            <li role="menuitem"><a href="#" ng-click="createBackupFile()">Just create backup</a></li>
-        </ul>
-    </div>
-
-    <br>
-    <br>
-    <button type="file" ngf-select="uploadBackupFile($file, $invalidFiles)" class="btn btn-primary">
-        Upload and restore from file
-    </button>
-    <uib-progressbar ng-class="{'hidden': !uploadActive}" max="file.total" value="file.loaded"
-                     class="progress-striped active" style="margin-top: 10px"><span
-            style="color:white; white-space:nowrap;">{{ file.loaded }} kB</span>
-    </uib-progressbar>
+        <uib-progressbar ng-class="{'hidden': !uploadActive}" max="file.total" value="file.loaded"
+                        class="progress-striped active" style="margin-top: 10px"><span
+                style="color:white; white-space:nowrap;">{{ file.loaded }} kB</span>
+        </uib-progressbar>
 
 
-    <div style="margin-top: 50px">
-        <span style="text-align: center"><h3>Existing backups</h3></span>
-        <table class="table">
-            <tr class="row">
-                <th class="col-md-15" style="text-align: left">Filename</th>
-                <th class="col-md-4" style="text-align: left">Created</th>
-                <th class="col-md-1" style="text-align: left">Restore</th>
-            </tr>
-            <tr ng-repeat="backup in backups" class="row">
-                <td class="col-md-15" style="text-align: left"><a
-                    href="internalapi/backup/download?filename={{ backup.filename }}" target="_self">{{
-                    backup.filename }}</a></td>
-                <td class="col-md-4" style="text-align: left">{{ backup.creationDate | reformatDate }}</td>
-                <td class="col-md-1" style="text-align: center"><span class="glyphicon glyphicon-repeat"
-                                                                      ng-click="restoreFromFile(backup.filename)"></span>
-                </td>
-            </tr>
+        <div style="margin-top: 50px">
+            <span style="text-align: center"><h3>Existing backups</h3></span>
+            <div class="table-responsive">
+                <table class="table">
+                    <tr class="row">
+                        <th class="col-md-15" style="text-align: left">Filename</th>
+                        <th class="col-md-4" style="text-align: left">Created</th>
+                        <th class="col-md-1" style="text-align: left">Restore</th>
+                    </tr>
+                    <tr ng-repeat="backup in backups" class="row">
+                        <td class="col-md-15" style="text-align: left"><a
+                            href="internalapi/backup/download?filename={{ backup.filename }}" target="_self">{{
+                            backup.filename }}</a></td>
+                        <td class="col-md-4" style="text-align: left">{{ backup.creationDate | reformatDate }}</td>
+                        <td class="col-md-1" style="text-align: center"><span class="glyphicon glyphicon-repeat"
+                                                                            ng-click="restoreFromFile(backup.filename)"></span>
+                        </td>
+                    </tr>
 
-        </table>
+                </table>
+            </div>
+        </div>
     </div>
 </div>

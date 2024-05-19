@@ -1,8 +1,6 @@
 <span ng-show="doShowResults">
-<div class="row" ng-if="indexersearches.length" style="margin-top: 25px">
-
-    <div class="col-md-5"></div>
-    <div class="col-md-10" style="padding-right: 0px">
+<div class="row d-flex justify-content-center" ng-if="indexersearches.length" style="margin-top: 25px">
+    <div class="col-xs-20 col-sm-18 col-md-14 col-lg-10">
         <uib-accordion close-others="oneAtATime" id="search-results-accordion">
             <div uib-accordion-group panel-class="panel-indexer-statuses" is-open="foo.indexerStatusesExpanded"
                  is-disabled="true" class="">
@@ -132,67 +130,70 @@
         <h2 ng-if="!anyResultsRejected && anyIndexersSearchedSuccessfully">No results were found for this search</h2>
     </div>
 </div>
-<div class="row" ng-if="::indexersearches.length > 0 && numberOfAvailableResults > 0"
-     style="margin-top: 10px">
-    <div class="col-md-8" style="text-align: left;">
-        <span id="display-options"
-              multiselect-dropdown options="optionsOptions" selected-model="optionsSelectedModel"
-              settings="optionsExtraSettings" events="optionsEvents"
-        ></span>
+<div ng-if="::indexersearches.length > 0 && numberOfAvailableResults > 0" style="margin-top: 10px">
+    <div class="row my-5">
+        <div class="col-md-8 text-left">
+            <div class="d-flex flex-wrap">
+                <div id="display-options" class="pe-2 mb-2"
+                    multiselect-dropdown options="optionsOptions" selected-model="optionsSelectedModel"
+                    settings="optionsExtraSettings" events="optionsEvents"
+                ></div>
 
-        <span selection-button invert-selection="invertSelection" select-all="selectAll" deselect-all="deselectAll"
-              id="search-results-selection-button"></span>
-        
-        <download-nzbs-button search-results="selected" callback="downloadNzbsCallback(result)"></download-nzbs-button>
-        <download-nzbzip-button search-results="selected" search-title="searchTitle"
-                                callback="downloadNzbsCallback(result)" ng-if="foo.showResultsAsZipButton && allowZipDownload"></download-nzbzip-button>
-    </div>
+                <div selection-button invert-selection="invertSelection" select-all="selectAll" deselect-all="deselectAll"
+                    id="search-results-selection-button" class="pe-2 mb-2"></div>
 
-    <div class="col-md-4" style="margin-top: 20px">
-        <dir-pagination-controls auto-hide="false" max-size="5"></dir-pagination-controls>
-    </div>
-    <div class="col-md-8" style="text-align: right;">
-
-
-        <div style="margin-top:20px; margin-bottom:20px;">
-            <span class="badge"
-                  uib-tooltip-html="getRejectedReasonsTooltip()"
-                  tooltip-class="rejected-tooltip"
-                  tooltip-placement="top"
-                  tooltip-trigger="click"
-            >
-                <span ng-if="numberOfLoadedResults <= numberOfAvailableResults">
-                    Loaded {{ numberOfLoadedResults }} ({{ numberOfFilteredResults }} filtered, {{numberOfDuplicateResults}} duplicates) of <span ng-if="totalAvailableUnknown">&gt;</span>{{ numberOfAvailableResults }} results (rejected {{ numberOfRejectedResults }})
-                </span>
-                <span ng-if="numberOfLoadedResults > numberOfAvailableResults">
-                Loaded all {{ numberOfLoadedResults }} results (rejected {{ numberOfRejectedResults }})
-                </span>
-            </span>
-
-            <div class="btn-group">
-                <!--Add tooltip div to body to prevent div being insert in btn-group and changing layout because more children are there -->
-                <button class="btn btn-default" ng-click="loadMore(false)" ng-disabled="!loadMoreEnabled"
-                        tooltip-append-to-body="true"
-                        uib-tooltip="Click to load more results from the indexers. May reset some filters"
-                        tooltip-placement="top"
-                        tooltip-trigger="mouseenter"
-                >Load more
-                    <img src="static/img/spinner.gif" ng-if="loadingMore"/>
-                </button>
-                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
-                        aria-haspopup="true" aria-expanded="false" ng-disabled="!loadMoreEnabled">
-                    <span class="caret"></span>
-                    <span class="sr-only">Toggle Dropdown</span>
-                </button>
-                <ul class="dropdown-menu">
-                    <li><a href="#" ng-click="loadMore(true)"
-                           uib-tooltip="Click to load all of the results from the indexers. May take a while and a lot of API requests..."
-                           tooltip-placement="top"
-                           tooltip-trigger="mouseenter"
-                    >Load all results</a></li>
-                </ul>
+                <download-nzbs-button search-results="selected" callback="downloadNzbsCallback(result)"></download-nzbs-button>
+                <download-nzbzip-button search-results="selected" search-title="searchTitle"
+                                        callback="downloadNzbsCallback(result)" ng-if="foo.showResultsAsZipButton && allowZipDownload"></download-nzbzip-button>
             </div>
+        </div>
 
+        <div class="col-md-4">
+            <dir-pagination-controls auto-hide="false" max-size="5"></dir-pagination-controls>
+        </div>
+        <div class="col-md-8 text-right">
+
+
+            <div>
+                <span class="badge"
+                    uib-tooltip-html="getRejectedReasonsTooltip()"
+                    tooltip-class="rejected-tooltip"
+                    tooltip-placement="top"
+                    tooltip-trigger="click"
+                >
+                    <span ng-if="numberOfLoadedResults <= numberOfAvailableResults">
+                        Loaded {{ numberOfLoadedResults }} ({{ numberOfFilteredResults }} filtered, {{numberOfDuplicateResults}} duplicates) of <span ng-if="totalAvailableUnknown">&gt;</span>{{ numberOfAvailableResults }} results (rejected {{ numberOfRejectedResults }})
+                    </span>
+                    <span ng-if="numberOfLoadedResults > numberOfAvailableResults">
+                    Loaded all {{ numberOfLoadedResults }} results (rejected {{ numberOfRejectedResults }})
+                    </span>
+                </span>
+
+                <div class="btn-group">
+                    <!--Add tooltip div to body to prevent div being insert in btn-group and changing layout because more children are there -->
+                    <button class="btn btn-default" ng-click="loadMore(false)" ng-disabled="!loadMoreEnabled"
+                            tooltip-append-to-body="true"
+                            uib-tooltip="Click to load more results from the indexers. May reset some filters"
+                            tooltip-placement="top"
+                            tooltip-trigger="mouseenter"
+                    >Load more
+                        <img src="static/img/spinner.gif" ng-if="loadingMore"/>
+                    </button>
+                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
+                            aria-haspopup="true" aria-expanded="false" ng-disabled="!loadMoreEnabled">
+                        <span class="caret"></span>
+                        <span class="sr-only">Toggle Dropdown</span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a href="#" ng-click="loadMore(true)"
+                            uib-tooltip="Click to load all of the results from the indexers. May take a while and a lot of API requests..."
+                            tooltip-placement="top"
+                            tooltip-trigger="mouseenter"
+                        >Load all results</a></li>
+                    </ul>
+                </div>
+
+            </div>
         </div>
     </div>
 
@@ -247,13 +248,15 @@
                 <div class="btn-group btn-group-xs" role="group">
                     <button ng-repeat="entry in customFilterButtons" class="btn btn-default filter-button" ng-change="onFilterButtonsModelChange()"
                             uncheckable ng-model="filterButtonsModel.custom[entry]" uib-btn-checkbox>{{entry}}
-                    
+
                     </button>
-                    
+
                 </div>
             </div>
         </div>
     </div>
+
+    <div class="table-responsive">
     <table class="search-results-table table">
         <thead class="search-results-header">
         <tr class="search-results-header-row">
@@ -299,7 +302,7 @@
                 tooltip-placement="top"
                 tooltip-trigger="mouseenter"
             >
-                
+
                 <column-sortable column="grabs" reversed="false" start-mode="2">Details
                 </column-sortable>
                 <column-filter-wrapper>
@@ -335,6 +338,8 @@
         <tbody>{{result.title}}</tbody>
 
     </table>
+    </div>
+
     <dir-pagination-controls auto-hide="false" on-page-change="onPageChange(newPageNumber, oldPageNumber)"></dir-pagination-controls>
 </div>
 </span>

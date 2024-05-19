@@ -14,26 +14,27 @@
   ~  limitations under the License.
   -->
 
-<div style="text-align: left; margin: auto; width: 800px">
-
-    <div style="margin-top: 50px">
+<div class="text-left row d-sm-flex justify-content-center">
+    <div class="col-xs-20 col-md-14" style="margin-top: 50px">
         <span style="text-align: center"><h3>Tasks</h3></span>
-        <table class="table">
-            <tr class="row">
-                <th class="col-md-10" style="text-align: left">Name</th>
-                <th class="col-md-5" style="text-align: left">Last execution</th>
-                <th class="col-md-5" style="text-align: left">Next execution</th>
-            </tr>
-            <tr ng-repeat="task in tasks" class="row">
-                <td class="col-md-10" style="text-align: left"><a ng-click="runTask(task.name)" class="glyph-link"><span
-                        class="glyphicon glyphicon-play-circle"></span> {{task.name}}</a></td>
-                <td class="col-md-5" style="text-align: left"><span ng-show="task.lastExecutionTime"
-                                                                    uib-tooltip="{{task.lastExecutionTime | reformatDateSeconds}}">{{ task.lastExecutionTime | humanizeDate }}</span>
-                </td>
-                <td class="col-md-5" style="text-align: left"><span
-                        uib-tooltip="{{task.nextExecutionTime | reformatDateSeconds}}">{{task.nextExecutionTime | humanizeDate}}</span>
-                </td>
-            </tr>
-        </table>
+        <div class="table-responsive">
+            <table class="table">
+                <tr class="row">
+                    <th class="col-md-10" style="text-align: left">Name</th>
+                    <th class="col-md-5" style="text-align: left">Last execution</th>
+                    <th class="col-md-5" style="text-align: left">Next execution</th>
+                </tr>
+                <tr ng-repeat="task in tasks" class="row">
+                    <td class="col-md-10" style="text-align: left"><a ng-click="runTask(task.name)" class="glyph-link"><span
+                            class="glyphicon glyphicon-play-circle"></span> {{task.name}}</a></td>
+                    <td class="col-md-5" style="text-align: left"><span ng-show="task.lastExecutionTime"
+                                                                        uib-tooltip="{{task.lastExecutionTime | reformatDateSeconds}}">{{ task.lastExecutionTime | humanizeDate }}</span>
+                    </td>
+                    <td class="col-md-5" style="text-align: left"><span
+                            uib-tooltip="{{task.nextExecutionTime | reformatDateSeconds}}">{{task.nextExecutionTime | humanizeDate}}</span>
+                    </td>
+                </tr>
+            </table>
+        </div>
     </div>
 </div>

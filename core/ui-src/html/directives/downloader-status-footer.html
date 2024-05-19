@@ -1,28 +1,32 @@
-<div id="downloader-status-footer"
-     style="margin-bottom: 0; padding-top: 0; margin-top: 5px">
-  
-  <nav class="row navbar-default" style="margin-left: 0; margin-right: 0">
-    <span ng-show="foo">
-      <div class="col-md-2">
+<div id="downloader-status-footer" style="margin-bottom: 0; padding-top: 0; margin-top: 5px">
+  <nav class="navbar-default" style="margin-left: 0; margin-right: 0">
+    <div class="row d-md-flex align-items-center" ng-show="foo">
+      <div class="col-xs-6 col-md-2">
         <a href="{{::foo.url}}" target="_blank">
           <img ng-src="static/img/{{::foo.downloaderImage}}.png"/>
         </a>
       </div>
-      <div class="col-md-3" style="padding-top: 10px; line-height: 15px; margin-left: 15px; text-align: left">
-        <span class="glyphicon glyphicon-{{foo.buttonClass}}" tooltip-placement="auto top" uib-tooltip="{{foo.state}}" style="margin-right: 10px"></span>
-        <span ng-show="foo.state === 'Downloading' && foo.downloadRateFormatted">{{foo.downloadRateFormatted}} &bull; {{foo.remainingTimeFormatted}}  &bull; </span><span
-        ng-show="foo.state !== 'Offline'">{{foo.elementsInQueue}} in queue</span>
-      </div>
-      <div class="col-md-10">
-        <div style="padding-top: 10px; line-height: 15px; margin-left: 15px;" ng-show="foo.downloadingTitle">
-          {{foo.downloadingTitle}} ({{foo.downloadingTitlePercentFinished}}%<span ng-show="foo.downloadingTitleRemainingTimeFormatted"> &bull; {{foo.downloadingTitleRemainingTimeFormatted}}</span>)
+      <div class="col-xs-14 col-md-4 text-left">
+        <div class="py-3" style="line-height: 15px;">
+          <span class="glyphicon glyphicon-{{foo.buttonClass}}" tooltip-placement="auto top" uib-tooltip="{{foo.state}}" style="margin-right: 10px"></span>
+          <span ng-show="foo.state === 'Downloading' && foo.downloadRateFormatted">{{foo.downloadRateFormatted}} &bull; {{foo.remainingTimeFormatted}}  &bull; </span><span
+          ng-show="foo.state !== 'Offline'">{{foo.elementsInQueue}} in queue</span>
         </div>
       </div>
-      <div class="col-md-5 downloader-status" style="width: 24%; float: right" ng-show="foo.state !== 'Offline'">
-        <chart>
-          <nvd3 options="downloaderChart.options" data="downloaderChart.data" api="api" config="downloaderChart.config"></nvd3>
-        </chart>
+      <div class="col-xs-20 col-md-14">
+        <div class="row d-md-flex align-items-center">
+          <div class="col-xs-20 col-md-12 col-lg-13 col-xl-14">
+            <div class="py-3" style="line-height: 15px;" ng-show="foo.downloadingTitle">
+              {{foo.downloadingTitle}} ({{foo.downloadingTitlePercentFinished}}%<span ng-show="foo.downloadingTitleRemainingTimeFormatted"> &bull; {{foo.downloadingTitleRemainingTimeFormatted}}</span>)
+            </div>
+          </div>
+          <div class="col-xs-20 col-md-8 col-lg-7 col-xl-6 downloader-status" ng-show="foo.state !== 'Offline'">
+            <chart>
+              <nvd3 options="downloaderChart.options" data="downloaderChart.data" api="api" config="downloaderChart.config"></nvd3>
+            </chart>
+          </div>
+        </div>
       </div>
-    </span>
+    </div>
   </nav>
 </div>
