@@ -1,3 +1,11 @@
+### v7.0.0
+
+**Feature** It tooks just five years (or eight if you want to count the release of v1) but NZBHydra finally got a responsive design! Huge thanks to saurori for updating the UI code! There's still room for improvement, of course, but it's a huge step up. See <a href="https://github.com/theotherp/nzbhydra2/issues/947">#947</a>
+
+**Fix** With the update loop (see 6.2.1) for every update a new backup was created, in some cases filling the hard drive. I now make sure a backup is only created if the last one is old enough.
+
+
+
 ### v6.2.1
 
 **Fix** Unfortunately the automatic update is broken with the new wrappers introduced in 6.0.0. And I tested it so thoroughly (I thought). NZBHydra would shut down for an update but not actually update, with automatic updates resulting in a loop :-(
