@@ -1,8 +1,10 @@
 #@formatter:off
--   version: "v6.2.2"
+-   version: "v7.0.0"
     changes:
+      -   type: "feature"
+          text: "It tooks just five years (or eight if you want to count the release of v1) but NZBHydra finally got a responsive design! Huge thanks to saurori for updating the UI code! There's still room for improvement, of course, but it's a huge step up. See #947"
       -   type: "fix"
-          text: "With the update loop (see 6.2.1) for every update a new backup was created, in some cases filling the hard drive. I now make sure a backup is only created if the last one is old enough"
+          text: "With the update loop (see 6.2.1) for every update a new backup was created, in some cases filling the hard drive. I now make sure a backup is only created if the last one is old enough."
 -   version: "v6.2.1"
     changes:
       -   type: "fix"
