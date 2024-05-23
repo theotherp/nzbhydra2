@@ -548,7 +548,7 @@ def getJavaVersion(javaExecutable):
         if len(lines) == 0:
             raise Exception("Unable to get output from call to java -version")
         versionLine = lines[0].replace("\n", "").replace("\r", "")
-        match = re.match(r'(java|openjdk) (version )?"?(?P<major>\d+)((\.(?P<minor>\d+)\.(?P<patch>\d)+)?[\-_\w]*)?"?.*',
+        match = re.match('(java|openjdk) (version )?"?(?P<major>\d+)((\.(?P<minor>\d+)\.(?P<patch>\d)+)?[\-_\w]*)?"?.*',
                          versionLine)
         if match is None:
             raise Exception("Unable to determine java version from string " + lines[0])
