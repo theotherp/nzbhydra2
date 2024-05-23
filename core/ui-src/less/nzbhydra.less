@@ -66,26 +66,45 @@ body {
 .justify-content-center {
   justify-content: center !important;
 }
+.justify-content-flex-end {
+  justify-content: flex-end !important;
+}
+.justify-content-space-around {
+  justify-content: space-around !important;
+}
 
 // Typography (like Bootstrap 5)
 .text-break {
   word-wrap: break-word !important;
   word-break: break-word !important;
 }
+.text-center { text-align: center !important; }
+.text-left { text-align: left !important; }
+.text-right { text-align: right !important; }
 
 // Utilities (like Bootstrap 5)
-.mb-0 { margin-bottom: 0; }
-.mb-2 { margin-bottom: 0.5rem; }
-.mx-2 { margin-left: 0.5rem; margin-right: 0.5rem; }
-.my-3 { margin-top: 1rem; margin-bottom: 1rem; }
-.my-4 { margin-top: 1.5rem; margin-bottom: 1.5rem; }
-.my-5 { margin-top: 3rem; margin-bottom: 3rem; }
-.ms-4 { margin-left: 1.5rem; }
-.pe-0 { padding-right: 0; }
-.pe-2 { padding-right: 0.5rem; }
-.ps-0 { padding-left: 0; }
-.py-3 { padding-top: 1rem; padding-bottom: 1rem; }
-.py-4 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+.me-2 { margin-right: 0.5rem !important; }
+.mb-0 { margin-bottom: 0 !important; }
+.mb-2 { margin-bottom: 0.5rem !important; }
+.mb-3 { margin-bottom: 1rem !important; }
+.mb-4 { margin-bottom: 1.5rem !important; }
+.mx-2 { margin-left: 0.5rem !important; margin-right: 0.5rem !important; }
+.my-3 { margin-top: 1rem !important; margin-bottom: 1rem !important; }
+.my-4 { margin-top: 1.5rem !important; margin-bottom: 1.5rem !important; }
+.my-5 { margin-top: 3rem !important; margin-bottom: 3rem !important; }
+.ms-4 { margin-left: 1.5rem !important; }
+.mt-0 { margin-top: 0 !important; }
+.pe-0 { padding-right: 0 !important; }
+.pe-2 { padding-right: 0.5rem !important; }
+.ps-0 { padding-left: 0 !important; }
+.pt-0 { padding-top: 0 !important; }
+.py-3 { padding-top: 1rem !important; padding-bottom: 1rem !important; }
+.py-4 { padding-top: 1.5rem !important; padding-bottom: 1.5rem !important; }
+@media (max-width: @screen-xs-max) {
+  .mt-xs-2 { margin-top: 0.5rem !important; }
+  .mx-xs-4 { margin-left: 1.5rem !important; margin-right: 1.5rem !important; }
+  .pe-xs-0 { padding-right: 0 !important; }
+}
 
 #push,
 #footer {
@@ -356,6 +375,106 @@ a.disabled:hover {
 
 }
 
+@media (max-width: @screen-xs-max) {
+  .search-results-pagination {
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .search-results-table {
+    border: 0;
+    border-collapse: collapse;
+    border-spacing: 0;
+  }
+
+  .search-results-table>tbody+tbody {
+    display: block !important;
+  }
+
+  .search-results-table thead {
+    display: none;
+  }
+
+  .search-results-table tr {
+    display: block;
+  }
+
+  .search-results-table .search-result-row {
+    border-top: 20px solid @table-border-color !important;
+  }
+
+  .search-results-table td {
+    float: none;
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    text-align: right !important;
+    width: auto;
+    position: relative;
+  }
+
+  .search-results-table td:last-child {
+    border-bottom: 0;
+  }
+
+  .search-results-table td:before {
+    content: attr(data-label);
+    text-align: left;
+    text-transform: uppercase;
+    font-weight: bold;
+    min-width: 80px;
+  }
+
+  .search-results-table td.result-title:before {
+    display: none;
+  }
+
+  .search-results-header {
+    display: block !important;
+  }
+
+  .search-results-header {
+    th {
+      float: none;
+      display: block !important;
+      width: auto;
+      position: relative;
+    }
+    .search-results-header-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      .result-title {
+        width: 100%;
+      }
+    }
+    .search-results-cell {
+      border: 0;
+      align-items: center;
+      display: flex !important;
+    }
+    .result-links {
+      display: none !important;
+    }
+  }
+
+  .search-results-table .title-actions {
+    flex-direction: column;
+  }
+
+  .search-results-table .result-links > div {
+    display: flex;
+    justify-content: flex-end;
+    a {
+      padding-left: 10px;
+    }
+  }
+
+  .search-results-cell.result-links {
+    padding-right: 8px !important;
+  }
+}
+
 .other-duplicate-toggle {
   margin-left: 18px;
 }
@@ -491,6 +610,7 @@ a.disabled:hover {
 }
 
 .no-nfo {
+  pointer-events: none;
   opacity: 0.25;
 }
 
@@ -581,37 +701,37 @@ a.disabled:hover {
 
 .result-title {
   font-size: @font-size-result-title;
-  width: 60%;
+  width: 54%;
 }
 
 .result-indexer {
   font-size: @font-size-result-non-title;
-  width: 8%;
+  width: 9%;
 }
 
 .result-category {
   font-size: @font-size-result-non-title;
-  width: 6%;
+  width: 8%;
 }
 
 .result-size {
   font-size: @font-size-result-non-title;
-  width: 6%;
+  width: 7%;
 }
 
 .result-details {
   font-size: @font-size-result-non-title;
-  width: 6%;
+  width: 6.5%;
 }
 
 .result-age {
   font-size: @font-size-result-non-title;
-  width: 4.5%;
+  width: 5.5%;
 }
 
 .result-links {
   font-size: @font-size-result-non-title;
-  width: 8%;
+  width: 10%;
   padding-right: 4px !important;
 }
 
@@ -1154,23 +1274,7 @@ select.form-control {
   padding-right: 0;
 }
 
-.config-fieldset-legend {
-  padding-left: 20px;
-}
-
-.config-label {
-  padding-top: 7px;
-}
-
-.config-help {
-  padding-left: 40px;
-  padding-right: 40px;
-}
-
 @media (min-width: @screen-sm-min) {
-  .config-fieldset-legend {
-    padding-left: 0;
-  }
   .config-help {
     padding-left: 0;
     padding-right: 20px;
@@ -1178,17 +1282,18 @@ select.form-control {
 }
 
 .setting-wrapper {
+  border-bottom: 1px solid @modal-content-border-color;
+
   .config-content {
     padding-right: 0;
   }
 
   .align-middle {
-    vertical-align: middle;
-    height: 36px;
-    display: table-cell;
+    align-items: center;
+    min-height: 36px;
+    display: flex;
   }
 }
-
 
 .config-box {
 
@@ -1204,7 +1309,6 @@ select.form-control {
   }
 
 }
-
 
 .config-field-tooltip {
   max-width: 400px;
@@ -1225,8 +1329,10 @@ select.form-control {
   background-clip: padding-box;
   // Remove focus outline from opened modal
   outline: 0;
+}
 
-
+:is(.formly > .formly-field-group):has(> fieldset.ng-hide) {
+  display: none;
 }
 
 .formly-field-repeatSection {
@@ -1292,14 +1398,9 @@ select.form-control {
 }
 
 
-.formly-field-group:not(:first-child) {
-  margin-top: 25px;
+.formly-field-group {
+  margin-bottom: 25px;
 }
-
-.formly-field-group:first-child {
-  margin-top: -25px;
-}
-
 
 a.glyph-link, a.glyph-link:hover {
   text-decoration: none;

@@ -12,7 +12,7 @@ services:
     container_name: nzbhydra-ui-dev
     volumes:
       - ./data:/app/data
-      - ./ui-src:/app/ui-src
+      - ../../core/ui-src:/app/ui-src
     ports:
       # NZBHydra port
       - "5076:5076"
