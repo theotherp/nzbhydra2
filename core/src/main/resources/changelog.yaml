@@ -1,4 +1,8 @@
 #@formatter:off
+-   version: "v7.1.0"
+    changes:
+      -   type: "feature"
+          text: "Saurori updated the CSS again. The search results table will now collapse its columns into rows on phones which should make the table actually usable there. See #947"
 -   version: "v7.0.0"
     changes:
       -   type: "feature"
