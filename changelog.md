@@ -1,3 +1,9 @@
+### v7.1.0
+
+**Feature** Saurori updated the CSS again. The search results table will now collapse its columns into rows on phones which should make the table actually usable there. See <a href="https://github.com/theotherp/nzbhydra2/issues/947">#947</a>
+
+
+
 ### v7.0.0
 
 **Feature** It tooks just five years (or eight if you want to count the release of v1) but NZBHydra finally got a responsive design! Huge thanks to saurori for updating the UI code! There's still room for improvement, of course, but it's a huge step up. See <a href="https://github.com/theotherp/nzbhydra2/issues/947">#947</a>
