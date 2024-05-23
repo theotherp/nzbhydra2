@@ -133,11 +133,14 @@
 </script>
 
 <script type="text/ng-template" id="setting-wrapper.html">
-  <div class="form-group form-horizontal setting-wrapper" ng-class="{'row': !options.templateOptions.noRow}" ng-show="model.showAdvanced || !to.advanced">
+  <div class="setting-wrapper" ng-show="model.showAdvanced || !to.advanced">
+  <div class="form-group form-horizontal" ng-class="{'row': !options.templateOptions.noRow}">
     <!--Test-->
-    <label class="col-xs-8 col-sm-4 control-label config-label align-middle text-right">
-      {{ to.label }} {{ to.required ? "*" : ""}}
-    </label>
+    <div class="col-xs-8 col-sm-4 text-right config-label pe-xs-0">
+      <label class="control-label align-middle justify-content-flex-end pt-0">
+        {{ to.label }} {{ to.required ? "*" : ""}}
+      </label>
+    </div>
     <div class="col-xs-9 col-sm-6 config-content">
       <!--Before transclude-->
       <formly-transclude></formly-transclude>
@@ -158,16 +161,21 @@
     </div>
     <div class="col-xs-1 col-sm-1">
       <div class="config-tooltip">
-        <div ng-if="::to.tooltip" uib-popover-html="to.tooltip" popover-trigger="'outsideClick'" popover-placement="auto top">
+        <div class="d-flex justify-content-center" ng-if="::to.tooltip" uib-popover-html="to.tooltip" popover-trigger="'outsideClick'" popover-placement="auto top">
             <span class="glyphicon glyphicon-question-sign align-middle" style="cursor: pointer"></span>
         </div>
       </div>
     </div>
-    <div class="col-xs-20 col-sm-9 config-help help-block">
-      <span ng-bind-html="to.help | derefererExtracting | unsafe" class="align-middle">
-          Help
-      </span>
+    <div class="col-xs-20 col-sm-9 config-help mt-xs-2">
+      <div class="help-block mx-xs-4">
+        <div class="align-middle">
+          <span ng-bind-html="to.help | derefererExtracting | unsafe" >
+              Help
+          </span>
+        </div>
+      </div>
     </div>
+  </div>
   </div>
 </script>
 
@@ -176,13 +184,13 @@
     <legend class="text-left">
       <div class="col-sm-4"></div>
       <div class="col-sm-16">
-        <span class="config-fieldset-legend">{{options.templateOptions.label}}
+        <div class="config-fieldset-legend py-3">{{options.templateOptions.label}}
           <span class="glyphicon glyphicon-question-sign" ng-if="::options.templateOptions.tooltip"
               uib-popover-html="options.templateOptions.tooltip"
               tooltip-placement="auto top"
               popover-trigger="'outsideClick'"
               style="font-size: 15px; cursor: pointer"></span>
-        </span>
+        </div>
       </div>
     </legend>
     <formly-transclude></formly-transclude>
@@ -192,7 +200,7 @@
 <script type="text/ng-template" id="notificationRepeatSection.html">
   <!--loop through each element in model array-->
   <div class="{{ hideRepeat }} repeatWrapperClass">
-    <legend><span class="config-fieldset-legend">{{to.headline}}</span></legend>
+    <legend><div class="config-fieldset-legend py-3">{{to.headline}}</div></legend>
     <div class="repeatsection modal-content" ng-repeat="element in model[options.key]"
          ng-init="fields = copyFields(to.fields)">
       <fieldset>
