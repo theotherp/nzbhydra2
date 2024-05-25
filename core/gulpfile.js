@@ -129,7 +129,17 @@ gulp.task('less', function () {
         .pipe(sourcemaps.write("."))
         .pipe(gulp.dest(dest));
 
-    return merge(brightTheme, greyTheme, darkTheme);
+    var autoTheme = gulp.src(uiSrcFolder + '/less/auto.less')
+        .pipe(cached("auto"))
+        .on('error', swallowError)
+        .pipe(sourcemaps.init())
+        .pipe(less())
+        .on('error', swallowError)
+        .pipe(cleancss())
+        .pipe(sourcemaps.write("."))
+        .pipe(gulp.dest(dest));
+
+    return merge(brightTheme, greyTheme, darkTheme, autoTheme);
 });
 
 gulp.task('copy-assets', function () {
@@ -166,6 +176,7 @@ gulp.task('delMainLessCache', function () {
     delete cached.caches["bright"];
     delete cached.caches["grey"];
     delete cached.caches["dark"];
+    delete cached.caches["auto"];
 });
 
 gulp.task('copyStaticToClasses', function () {

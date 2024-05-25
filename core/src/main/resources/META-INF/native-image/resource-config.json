@@ -2453,6 +2453,9 @@
           "pattern": "\\Qstatic/css/dark.css\\E"
       },
       {
+          "pattern": "\\Qstatic/css/auto.css\\E"
+      },
+      {
           "pattern": "\\Q*/static/*\\E"
       },
       {

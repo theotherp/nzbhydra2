@@ -268,7 +268,7 @@ public class FileHandler {
                 continue;
             }
             try {
-                String title = result.getFileName().replaceAll("[\\\\/:*?\"<>|]", "_");
+                String title = result.getFileName().replaceAll("[\\\\/:*?\"<>|!]", "_");
                 File tempFile = new File(targetDirectory.toFile(), title);
                 logger.debug("Writing content to temp file {}", tempFile.getAbsolutePath());
                 Files.write(tempFile.toPath(), result.getContent());

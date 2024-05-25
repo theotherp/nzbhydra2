@@ -241,6 +241,7 @@ function ConfigFields($injector) {
                                 type: 'select',
                                 label: 'Theme',
                                 options: [
+                                    {name: 'Auto', value: 'auto'},
                                     {name: 'Grey', value: 'grey'},
                                     {name: 'Bright', value: 'bright'},
                                     {name: 'Dark', value: 'dark'}
