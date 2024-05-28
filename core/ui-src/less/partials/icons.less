@@ -1,0 +1,153 @@
+.icon {
+  width: 16px;
+  height: 16px;
+  background-repeat: no-repeat;
+  vertical-align: middle;
+}
+
+.nzb-spinning {
+  background-image: url('../../img/spinner.gif');
+}
+
+.addable-nzb {
+  display: inline-block;
+}
+
+.sabnzbd {
+  background-image: url('../../img/sab.png');
+}
+
+.sabnzbd-success {
+  background-image: url('../../img/sabsuccess.png');
+}
+
+.sabnzbd-error {
+  background-image: url('../../img/saberror.png');
+}
+
+.nzbget {
+  background-image: url('../../img/nzbget.png');
+}
+
+.nzbget-success {
+  background-image: url('../../img/nzbgetsuccess.png');
+}
+
+.nzbget-error {
+  background-image: url('../../img/nzbgeterror.png');
+}
+
+.growl-container > .icon {
+  width: inherit;
+  height: inherit;
+}
+
+.glyphicon-refresh-animate {
+  -webkit-animation: spinw .7s infinite linear;
+  -moz-animation: spinm .7s infinite linear;
+}
+
+@-webkit-keyframes spinw {
+  from {
+    -webkit-transform: rotate(0deg);
+  }
+  to {
+    -webkit-transform: rotate(360deg);
+  }
+}
+
+@-moz-keyframes spinm {
+  from {
+    -moz-transform: rotate(0deg);
+  }
+  to {
+    -moz-transform: rotate(360deg);
+  }
+}
+
+/*
+ * Pulse animation
+*/
+
+@-webkit-keyframes pulsew {
+  0% {
+    -webkit-transform: scale(1);
+  }
+  50% {
+    -webkit-transform: scale(1.1);
+  }
+  100% {
+    -webkit-transform: scale(1);
+  }
+}
+
+@-moz-keyframes pulsem {
+  0% {
+    -moz-transform: scale(1);
+  }
+  50% {
+    -moz-transform: scale(1.1);
+  }
+  100% {
+    -moz-transform: scale(1);
+  }
+}
+
+.pulse {
+  -webkit-animation-name: pulsew;
+  -moz-animation: pulsem;
+}
+
+.pulse2 {
+  animation: pulse2 1s linear infinite;
+  animation-direction: alternate-reverse;
+}
+
+@keyframes pulse2 {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1.2);
+  }
+}
+
+.fuzzy-nfo {
+  color: lighten(@gray, 30%);
+}
+
+.no-nfo {
+  pointer-events: none;
+  opacity: 0.25;
+}
+
+.nfo {
+  background-color: transparent;
+  border-width: 0;
+  text-align: left;
+  color: @text-color;
+}
+
+.spinner {
+  display: inline-block;
+  opacity: 0;
+  max-width: 0;
+  -webkit-transition: opacity 0.25s, max-width 0.45s;
+  -moz-transition: opacity 0.25s, max-width 0.45s;
+  -o-transition: opacity 0.25s, max-width 0.45s;
+  transition: opacity 0.25s, max-width 0.45s;
+  /* Duration fixed since we animate additional hidden width */
+}
+
+.has-spinner.active {
+  cursor: progress;
+}
+
+.has-spinner.active .spinner {
+  opacity: 1;
+  max-width: 50px;
+  /* More than it will ever come, notice that this affects on animation duration */
+}

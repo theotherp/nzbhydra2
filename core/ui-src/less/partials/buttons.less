@@ -1,0 +1,54 @@
+.btn:focus {
+  outline: none;
+}
+
+.btn-default:active {
+  background-color: @btn-default-bg;
+}
+
+.config-button {
+  border: 1px solid #1c1e22;
+  border-bottom-color: transparent;
+  border-radius: @border-radius-base @border-radius-base 0 0;
+  margin-top: 7px;
+}
+
+.config-help-button {
+  margin-right: 10px;
+}
+
+.indexer-button {
+  margin-right: 10px;
+  width: 170px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  &.config-incomplete {
+    background-color: @brand-danger;
+    border-color: @brand-danger;
+  }
+
+  &.not-all-checked {
+    background-color: @brand-warning;
+    border-color: @brand-warning;
+  }
+}
+
+.filter-button.btn-default:focus
+  //.filter-button.active
+{
+  background-color: @btn-default-bg !important;
+  border-color: @btn-default-bg !important;
+  color: @btn-default-color !important;
+
+  &.active {
+    background-color: @btn-default-active-bg !important;
+    color: @btn-default-color !important;
+  }
+}
+
+.category-button {
+  min-width: 115px;
+  margin: 6px;
+  height: 35px;
+}
