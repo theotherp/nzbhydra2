@@ -56,10 +56,22 @@ gulp.task('vendor-scripts', function () {
 gulp.task('vendor-css', function () {
     var dest = staticFolder + '/css';
     return merge(
-        gulp.src(wiredep().css)
+        gulp.src(wiredep({
+            exclude: [
+                "bower_components/bootstrap/",
+                "bower_components/bootstrap-switch/"
+            ]
+        }).css)
             .pipe(sort())
             .pipe(cached("vendor-css")),
-        gulp.src(wiredep().less)
+        gulp.src(wiredep(
+            {
+                exclude: [
+                    "bower_components/bootstrap/",
+                    "bower_components/bootstrap-switch/"
+                ]
+            }
+        ).less)
             .pipe(sort())
             .pipe(cached("vendor-less"))
             .pipe(less())
@@ -76,6 +88,7 @@ gulp.task('vendor-css', function () {
 gulp.task('templates', function () {
     return gulp.src(uiSrcFolder + '/html/**/*.html')
         //.pipe(cached("templates")) //Doesn't work properly, will only contain last updated file
+        .pipe(sort())
         .pipe(angularTemplateCache("templates.js", {root: "static/html/"}))
         .pipe(concat('templates.js'))
         .pipe(gulp.dest(staticFolder + '/js'));
@@ -207,6 +220,7 @@ gulp.task('default', function () {
     liveReloadActive = true;
     log("Will watch '" + uiSrcFolder + "'");
     log("Will build files into folder '" + staticFolder + "'");
+    runSequence(["index"]);
     gulp.watch([uiSrcFolder + '/less/nzbhydra.less'], ['delMainLessCache']);
     gulp.watch([uiSrcFolder + '/**/*'], ['index']);
 });
