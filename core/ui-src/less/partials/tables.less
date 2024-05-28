@@ -1,0 +1,253 @@
+.table > tbody > tr > td {
+  text-align: left;
+}
+
+.table > thead > tr > th {
+  text-align: left;
+}
+
+.table > tbody + tbody {
+  border-top: 1px solid @table-border-color;
+}
+
+.td-embedded:first-child {
+  padding-left: 15px;
+}
+
+.search-results-table {
+  border: 1px solid @brand-primary;
+  display: table;
+  width: 100%;
+  background-color: @table-bg;
+  border-collapse: separate;
+}
+
+.search-results-table > tbody:nth-child(3) > tr > td {
+  border-top-width: 0 !important;
+}
+
+.search-results-table > tbody > tr > td {
+  padding-top: 6px !important;
+  padding-bottom: 6px !important;
+}
+
+.search-results-header {
+  text-align: center;
+}
+
+.search-results-cell {
+  text-align: left;
+  border-top-width: 1px;
+}
+
+.search-results-cell:focus {
+  outline: none;
+}
+
+.result-title {
+  font-size: @font-size-result-title;
+  width: 54%;
+}
+
+.result-indexer {
+  font-size: @font-size-result-non-title;
+  width: 9%;
+}
+
+.result-category {
+  font-size: @font-size-result-non-title;
+  width: 8%;
+}
+
+.result-size {
+  font-size: @font-size-result-non-title;
+  width: 7%;
+}
+
+.result-details {
+  font-size: @font-size-result-non-title;
+  width: 6.5%;
+}
+
+.result-age {
+  font-size: @font-size-result-non-title;
+  width: 5.5%;
+}
+
+.result-links {
+  font-size: @font-size-result-non-title;
+  width: 10%;
+  padding-right: 4px !important;
+}
+
+.table .table {
+  background-color: @table-bg;
+}
+
+.results-table-expanded {
+  border-color: red;
+}
+
+@media (max-width: @screen-xs-max) {
+  .search-results-pagination {
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .search-results-table {
+    border: 0;
+    border-collapse: collapse;
+    border-spacing: 0;
+  }
+
+  .search-results-table>tbody+tbody {
+    display: block !important;
+  }
+
+  .search-results-table thead {
+    display: none;
+  }
+
+  .search-results-table tr {
+    display: block;
+  }
+
+  .search-results-table .search-result-row {
+    border-top: 20px solid @table-border-color !important;
+  }
+
+  .search-results-table td {
+    float: none;
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    text-align: right !important;
+    width: auto;
+    position: relative;
+  }
+
+  .search-results-table td:last-child {
+    border-bottom: 0;
+  }
+
+  .search-results-table td:before {
+    content: attr(data-label);
+    text-align: left;
+    text-transform: uppercase;
+    font-weight: bold;
+    min-width: 80px;
+  }
+
+  .search-results-table td.result-title:before {
+    display: none;
+  }
+
+  .search-results-header {
+    display: block !important;
+  }
+
+  .search-results-header {
+    th {
+      float: none;
+      display: block !important;
+      width: auto;
+      position: relative;
+    }
+    .search-results-header-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      .result-title {
+        width: 100%;
+      }
+    }
+    .search-results-cell {
+      border: 0;
+      align-items: center;
+      display: flex !important;
+    }
+    .result-links {
+      display: none !important;
+    }
+  }
+
+  .search-results-table .title-actions {
+    flex-direction: column;
+  }
+
+  .search-results-table .result-links > div {
+    display: flex;
+    justify-content: flex-end;
+    a {
+      padding-left: 10px;
+    }
+  }
+
+  .search-results-cell.result-links {
+    padding-right: 8px !important;
+  }
+}
+
+
+.odd {
+  background-color: darken(@table-bg, 5%);
+}
+
+.duplicate {
+  background-color: fade(darken(@table-bg, 15%), 35%);
+}
+
+.column-filter {
+  border: none !important;
+  background: none !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+  -moz-box-shadow: none !important;
+  padding: 0;
+  margin-left: 3px;
+  font-size: 80% !important;
+}
+
+.column-filter-boolean {
+  margin-bottom: 0;
+
+  .radio {
+    margin-top: 5px;
+    margin-bottom: 5px;
+    margin-left: 5px;
+
+    &:first-child {
+      margin-top: 0;
+    }
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.narrow-row {
+  padding-top: 2px !important;
+  padding-bottom: 2px !important;
+}
+
+.filter-active {
+  color: @brand-success;
+}
+
+.indexer-statuses-table {
+  .label {
+    font-size: 100%;
+    font-weight: 100;
+  }
+
+  .indexer-status-reason {
+    word-break: break-all;
+  }
+}
+
+.log > tr > td.log-line {
+  padding-top: 5px !important;
+  padding-bottom: 5px !important;
+  font-size: small;
+}
