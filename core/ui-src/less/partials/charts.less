@@ -1,0 +1,89 @@
+//Charts
+
+.nv-axis text {
+  fill: @chart-text-color;
+}
+
+.nv-bar text {
+  fill: @chart-text-color !important;
+}
+
+.nvd3 .nv-discretebar .nv-groups rect {
+  fill: @chart-bar-color !important;
+}
+
+.nvd3 .nv-multibarHorizontal .nv-groups rect {
+  fill: @chart-bar-color !important;
+}
+
+.nv-groups .nv-series-0 rect {
+  fill: @chart-bar-color !important;
+}
+
+//Legend
+g.nv-multiBarWithLegend > g > g.nv-legendWrap.nvd3-svg > g > g > g:nth-child(1) > circle {
+  //.nv-series:nth-child(1) > circle {
+  fill: @chart-bar-color !important;
+  stroke: @chart-bar-color !important;
+}
+
+.nv-groups .nv-series-1 rect {
+  fill: @chart-bar-color-alt !important;
+}
+
+//Legend
+g.nv-multiBarWithLegend > g > g.nv-legendWrap.nvd3-svg > g > g > g:nth-child(2) > circle {
+  fill: @chart-bar-color-alt !important;
+  stroke: @chart-bar-color-alt !important;
+}
+
+.nv-legend-text {
+  fill: @chart-text-color;
+}
+
+g.nv-multiBarHorizontalChart > g > g > g > g > g > text {
+  transform: rotate(-31deg);
+}
+
+.nvtooltip {
+  background-color: @modal-content-bg;
+  color: @text-color;
+}
+
+.tick line {
+  opacity: 0 !important;
+}
+
+.downloader-status {
+
+  .nvtooltip, .nv-point {
+    display: none !important;
+  }
+
+  .nv-noData {
+    display: none !important;
+  }
+
+  path.domain {
+    display: none;
+  }
+
+  padding-right: 0;
+
+  .nvd3 text {
+    display: none;
+  }
+
+  .nvd3 {
+    .nv-bars {
+      rect {
+        width: 2px !important;
+      }
+    }
+  }
+
+  chart {
+    float: right;
+  }
+
+}
