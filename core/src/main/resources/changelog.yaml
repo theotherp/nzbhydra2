@@ -1,4 +1,8 @@
 #@formatter:off
+-   version: "v7.2.0"
+    changes:
+      -   type: "feature"
+          text: "Add addons for min/max age and size in the search mask. See #951"
 -   version: "v7.1.0"
     changes:
       -   type: "feature"
