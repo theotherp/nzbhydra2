@@ -3,6 +3,8 @@
     changes:
       -   type: "feature"
           text: "Add addons for min/max age and size in the search mask. See #951"
+      -   type: "feature"
+          text: "Another feature from Saurori. A new \"auto\" theme will select the bright or dark theme depending on the browser / OS theme setting."
 -   version: "v7.1.0"
     changes:
       -   type: "feature"
