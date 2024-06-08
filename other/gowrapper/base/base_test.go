@@ -78,9 +78,15 @@ func TestUpdate(t *testing.T) {
 		restarted, _ := wrapperLogContainsString("Main process has started successfully")
 		assert.True(t, restarted, "Process has not restarted after update")
 
+		_, _ = ExecuteGetRequest("http://127.0.0.1:5076/internalapi/debuginfos/createAndProvideZipAsBytes")
+
 		shutdownWithCode(0)
 		shutdown, _ := wrapperLogContainsString("NZBHydra main process has stopped for shutdown")
 		assert.True(t, shutdown, "Process has not shut down")
+
+		newVersion, _ := mainLogContainsString("NZBHydra2 version: 7.1.1")
+		assert.True(t, newVersion, "New version not actually installed")
+
 		waitForServerDown(t)
 	}()
 	wg.Wait()
@@ -162,7 +168,7 @@ func prepareAndRun(wg *sync.WaitGroup, testType string) {
 	dir := "d:\\NZBHydra\\nzbhydra2\\gowrappertest\\automated\\mainfolder\\"
 	os.RemoveAll(dir)
 	os.Create(dir)
-	Unzip(fmt.Sprintf("d:\\NZBHydra\\nzbhydra2\\gowrappertest\\automated\\sources\\nzbhydra2-5.3.10-%s-testSource.zip", testType), dir)
+	Unzip(fmt.Sprintf("d:\\NZBHydra\\nzbhydra2\\gowrappertest\\automated\\sources\\nzbhydra2-7.1.0-%s-testSource.zip", testType), dir)
 	os.Chdir(dir)
 	Uri = "http://127.0.0.1:5076/"
 	var exitCode int
@@ -230,4 +236,41 @@ func wrapperLogContainsString(searchString string) (bool, error) {
 
 		time.Sleep(time.Millisecond * 500)
 	}
+
+}
+
+func mainLogContainsString(searchString string) (bool, error) {
+	beganAt := time.Now()
+	for {
+		if beganAt.Add(time.Second * 10).Before(time.Now()) {
+			return false, nil
+		}
+		file, err := os.Open("d:\\NZBHydra\\nzbhydra2\\gowrappertest\\automated\\mainfolder\\data\\logs\\nzbhydra2.log")
+		if err != nil {
+			//Assume file does not exist yet
+			continue
+		}
+
+		scanner := bufio.NewScanner(file)
+		lineNumber := 0
+		for scanner.Scan() {
+			lineNumber++
+			//Do not read the same line again
+			if lineNumber < reachedLineNumber {
+				continue
+			}
+			if strings.Contains(scanner.Text(), searchString) {
+				_ = file.Close()
+				reachedLineNumber = lineNumber
+				return true, nil
+			}
+		}
+		_ = file.Close()
+		if err := scanner.Err(); err != nil {
+			return false, err
+		}
+
+		time.Sleep(time.Millisecond * 500)
+	}
+
 }
