@@ -57,7 +57,7 @@ public class Binsearch extends Indexer<String> {
 
     private static final Logger logger = LoggerFactory.getLogger(Binsearch.class);
 
-    private static final Pattern TITLE_PATTERN = Pattern.compile("(.*)\\.(rar|nfo|mkv|mp3|mobi|avi|mp4|epub|txt|pdf|par2|001|nzb|url|zip|r[0-9]{2})", Pattern.CASE_INSENSITIVE); //Note the " (quotation marks)
+    private static final Pattern TITLE_PATTERN = Pattern.compile("\"(.*)\\.(rar|nfo|mkv|mp3|mobi|avi|mp4|epub|txt|pdf|par2|001|nzb|url|zip|r[0-9]{2})\"", Pattern.CASE_INSENSITIVE); //Note the " (quotation marks)
     private static final Pattern GROUP_PATTERN = Pattern.compile("&g=([\\w\\.]*)&", Pattern.CASE_INSENSITIVE);
     private static final Pattern POSTER_PATTERN = Pattern.compile("&p=(.*)&", Pattern.CASE_INSENSITIVE);
     private static final Pattern NFO_INFO_PATTERN = Pattern.compile("\\d nfo file", Pattern.CASE_INSENSITIVE);
@@ -98,7 +98,7 @@ public class Binsearch extends Indexer<String> {
             indexerSearchResult.setTotalResultsKnown(totalKnown);
         } else {
             indexerSearchResult.setHasMoreResults(false);
-            indexerSearchResult.setTotalResults(0);
+            indexerSearchResult.setTotalResults(indexerSearchResult.getSearchResultItems().size());
             indexerSearchResult.setTotalResultsKnown(true);
         }
         indexerSearchResult.setPageSize(100);

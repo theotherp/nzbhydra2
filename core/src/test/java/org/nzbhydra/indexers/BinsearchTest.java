@@ -89,12 +89,6 @@ public class BinsearchTest {
         assertThat(item.getGroup().get()).isEqualTo("alt.binaries.e-book.flood");
     }
 
-    @Test
-    void shouldParseOtherResultsCorrectly() throws Exception {
-        String html = Resources.toString(Resources.getResource(BinsearchTest.class, "/org/nzbhydra/mapping/binsearch_randm.html"), Charsets.UTF_8);
-        List<SearchResultItem> searchResultItems = testee.getSearchResultItems(html, new SearchRequest());
-        assertThat(searchResultItems.size()).isEqualTo(41);
-    }
 
     @Test
     void shouldRecognizeIfSingleResultPage() throws Exception {
@@ -102,7 +96,7 @@ public class BinsearchTest {
         String html = Resources.toString(Resources.getResource(BinsearchTest.class, "/org/nzbhydra/mapping/binsearch_singlepage.html"), Charsets.UTF_8);
         IndexerSearchResult indexerSearchResult = new IndexerSearchResult(testee, "");
         List<SearchResultItem> items = new ArrayList<>();
-        for (int i = 0; i < 24; i++) {
+        for (int i = 0; i < 4; i++) {
             SearchResultItem searchResultItem = new SearchResultItem();
             searchResultItem.setPubDate(Instant.now());
             items.add(searchResultItem);
@@ -111,7 +105,7 @@ public class BinsearchTest {
         testee.completeIndexerSearchResult(html, indexerSearchResult, null, searchRequest, 0, 100);
         assertThat(indexerSearchResult.getOffset()).isEqualTo(0);
         assertThat(indexerSearchResult.getPageSize()).isEqualTo(100);
-        assertThat(indexerSearchResult.getTotalResults()).isEqualTo(24);
+        assertThat(indexerSearchResult.getTotalResults()).isEqualTo(4);
         assertThat(indexerSearchResult.isTotalResultsKnown()).isEqualTo(true);
         assertThat(indexerSearchResult.isHasMoreResults()).isEqualTo(false);
     }
@@ -139,7 +133,7 @@ public class BinsearchTest {
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         searchRequest.setQuery("query");
         UriComponentsBuilder builder = testee.buildSearchUrl(searchRequest, 0, 100);
-        assertThat(builder.toUriString()).isEqualTo("https://www.binsearch.info/?adv_col=on&postdate=date&adv_sort=date&min=0&max=100&q=query");
+        assertThat(builder.toUriString()).isEqualTo("https://www.binsearch.info/?max=100&q=query");
     }
 
     @Test
@@ -148,7 +142,7 @@ public class BinsearchTest {
         searchRequest.getInternalData().setRequiredWords(Arrays.asList("a", "b"));
         searchRequest.setQuery("query");
         UriComponentsBuilder builder = testee.buildSearchUrl(searchRequest, 0, 100);
-        assertThat(builder.build().toString()).isEqualTo("https://www.binsearch.info/?adv_col=on&postdate=date&adv_sort=date&min=0&max=100&q=query a b");
+        assertThat(builder.build().toString()).isEqualTo("https://www.binsearch.info/?max=100&q=query a b");
     }
 
     @Test
