@@ -1,3 +1,9 @@
+### v7.2.2 (2024-06-08)
+
+**Fix** Much ado about nothing - actually got the disappearing images fixed quicker than I thought I would. Sorry for spamming releases ;-)
+
+
+
 ### v7.2.1 (2024-06-08)
 
 **Fix** Aaargh the UI changes made for the auto theme made most images disappear. I had to roll that feature back until fixed. Why do I only notice these things a couple of minutes after making a release?
