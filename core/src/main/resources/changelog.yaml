@@ -1,21 +1,30 @@
 #@formatter:off
 -   version: "v7.2.0"
+    date: "2024-06-8"
     changes:
       -   type: "feature"
           text: "Add addons for min/max age and size in the search mask. See #951"
       -   type: "feature"
           text: "Another feature from Saurori. A new \"auto\" theme will select the bright or dark theme depending on the browser / OS theme setting."
+      -   type: "fix"
+          text: "Correctly marked releases as final and added release dates. See #955"
+    final: true
 -   version: "v7.1.0"
+    date: "2024-05-23"
     changes:
       -   type: "feature"
           text: "Saurori updated the CSS again. The search results table will now collapse its columns into rows on phones which should make the table actually usable there. See #947"
+    final: true
 -   version: "v7.0.0"
+    date: "2024-05-19"
     changes:
       -   type: "feature"
           text: "It tooks just five years (or eight if you want to count the release of v1) but NZBHydra finally got a responsive design! Huge thanks to saurori for updating the UI code! There's still room for improvement, of course, but it's a huge step up. See #947"
       -   type: "fix"
           text: "With the update loop (see 6.2.1) for every update a new backup was created, in some cases filling the hard drive. I now make sure a backup is only created if the last one is old enough."
+    final: true
 -   version: "v6.2.1"
+    date: "2024-05-12"
     changes:
       -   type: "fix"
           text: "Unfortunately the automatic update is broken with the new wrappers introduced in 6.0.0. And I tested it so thoroughly (I thought). NZBHydra would shut down for an update but not actually update, with automatic updates resulting in a loop :-("
@@ -23,7 +32,9 @@
           text: "Days without a buggy release: 0. Fix invalid link returned from DETAILS function. See #943"
       -   type: "fix"
           text: "Fix custom quick filter preselect validation. Thanks, OothecaPickle!"
+    final: true
 -   version: "v6.2.0"
+    date: "2024-05-12"
     changes:
       -   type: "feature"
           text: "Support DETAILS function from Newznab API spec. See #942"
@@ -31,11 +42,15 @@
           text: "Option to show user agent in search history. See #940"
       -   type: note
           text: "I've removed the old binary of the linux wrapper. It was always a bit hard to get it running and it's easier to just run the python wrapper file directly."
+    final: true
 -   version: "v6.1.1"
+    date: "2024-04-03"
     changes:
       -   type: "fix"
           text: "Make sure settings yml file can be written to prevent file corruption"
+    final: true
 -   version: "v6.1.0"
+    date: "2024-04-02"
     changes:
       -   type: "fix"
           text: "Exit codes < 0 are now correctly handled in the python wrapper."
@@ -43,7 +58,9 @@
           text: "Show username in download history. See #932"
       -   type: "note"
           text: "The linux binary nzbhydra2 is now deprecated. Please switch to directly running nzbhydra2wrapperPy3.py. "
+    final: true
 -   version: "v6.0.0"
+    date: "2024-04-01"
     changes:
       -   type: "feature"
           text: "I've completely rewritten the wrapper for windows. It's not a packaged python script anymore but an actually compiled binary. This has a couple of benefits: No more false positives from virus scanners (VirusTotal shows 5/72). No more temporary files not being cleaned up after a crash. The files are (a bit) smaller.\nI don't plan to compile the wrapper for anything but windows as it makes more sense and is easier to run the python wrapper instead."

@@ -36,7 +36,6 @@ public class ChangelogGeneratorMojo extends AbstractMojo {
 
     @Override
     public void execute() throws MojoExecutionException {
-
         if (!changelogYamlFile.exists()) {
             throw new MojoExecutionException("JSON file does not exist: " + changelogYamlFile.getAbsolutePath());
         }
@@ -66,15 +65,16 @@ public class ChangelogGeneratorMojo extends AbstractMojo {
 
     }
 
-    static List<String> getMarkdownLinesFromEntry(ChangelogVersionEntry entry) {
+    static List<String> getMarkdownLinesFromEntry(ChangelogVersionEntry entry) throws MojoExecutionException {
         List<String> lines = new ArrayList<>();
         String versionLine = "### " + entry.getVersion();
         if (!entry.isFinal()) {
             versionLine += " BETA";
         }
-        if (entry.getDate() != null) {
-            versionLine += " (" + entry.getDate() + ")";
+        if (entry.getDate() == null) {
+            throw new MojoExecutionException("No date set for " + entry);
         }
+        versionLine += " (" + entry.getDate() + ")";
         lines.add(versionLine);
 
         for (ChangelogChangeEntry changeEntry : entry.getChanges()) {
