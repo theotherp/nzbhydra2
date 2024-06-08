@@ -1,6 +1,6 @@
 #@formatter:off
 -   version: "v7.2.0"
-    date: "2024-06-8"
+    date: "2024-06-08"
     changes:
       -   type: "feature"
           text: "Add addons for min/max age and size in the search mask. See #951"
@@ -120,6 +120,7 @@
           text: "Fix filtering of history by time. See #913"
     final: true
 -   version: "v5.3.6"
+    date: "2023-12-27"
     changes:
       -   type: "fix"
           text: "Add validation to quick filter buttons to ensure only valid values are saved."
@@ -387,7 +388,7 @@
       \ my tests with auth enabled hydra wouldn't start. Sorry for that."
   final: true
 - version: "v5.0.0"
-  date: null
+  date: "2023-01-02"
   changes:
       - type: "feature"
         text: "Massive upgrade of the underlying framework and used libraries. Java is\
@@ -412,7 +413,7 @@
         text: "Prevent some misleading error messages that were shown when shutting down."
   final: false
 - version: "v4.7.5"
-  date: null
+  date: "2022-12-17"
   changes:
       - type: "fix"
         text: "Configure separate indexers in lidarr using categories. See #802"
@@ -2326,7 +2327,7 @@
         text: "USe localhost:8080 as preset sabNZBd URL"
   final: true
 - version: "v2.6.8"
-  date: null
+  date: "2019-05-16"
   changes:
       - type: "fix"
         text: "IMDB link in search history was invalid"
@@ -2456,7 +2457,7 @@
       \ and on reddit are always willing to help (thanks, guys!)."
   final: true
 - version: "v2.5.6"
-  date: null
+  date: "2019-04-18"
   changes:
       - type: "fix"
         text: "Provide a (better) error message when clicking the infos for a show with\
@@ -2568,7 +2569,7 @@
         text: "Show unit for average response times in stats (ms)."
   final: true
 - version: "v2.3.20"
-  date: null
+  date: "2019-03-21"
   changes:
       - type: "fix"
         text: "Revert revert because, as it turns out, it wasn't the libary at fault but\
@@ -3054,7 +3055,7 @@
         text: "Adapt database to store long torrent magnet links"
   final: true
 - version: "v2.0.7"
-  date: null
+  date: "2018-09-28"
   changes:
       - type: "fix"
         text: "Sabnzbd API key was not migrated"
@@ -3093,7 +3094,7 @@
         text: "Category mapping would sometimes not work for incoming searches"
   final: true
 - version: "v2.0.2"
-  date: null
+  date: "2018-08-20"
   changes:
       - type: "fix"
         text: "Minor stability improvements"
@@ -3223,7 +3224,7 @@
       \ where CPU usage is high when NZBHydra2 is supposed to idle"
   final: true
 - version: "v1.4.9"
-  date: null
+  date: "2018-03-18"
   changes:
       - type: "fix"
         text: "Log levels for console and file were not honored properly."
