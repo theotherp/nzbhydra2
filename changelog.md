@@ -1,3 +1,9 @@
+### v7.2.1 (2024-06-08)
+
+**Fix** Aaargh the UI changes made for the auto theme made most images disappear. I had to roll that feature back until fixed. Why do I only notice these things a couple of minutes after making a release?
+
+
+
 ### v7.2.0 (2024-06-08)
 
 **Feature** Add addons for min/max age and size in the search mask. See <a href="https://github.com/theotherp/nzbhydra2/issues/951">#951</a>
