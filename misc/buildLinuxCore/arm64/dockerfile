@@ -4,25 +4,24 @@ FROM arm64v8/ubuntu:16.04
 RUN echo 'APT::Install-Suggests "0";' >> /etc/apt/apt.conf.d/00-docker
 RUN echo 'APT::Install-Recommends "0";' >> /etc/apt/apt.conf.d/00-docker
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y zip unzip wget curl libfreetype6 libfreetype6-dev build-essential ca-certificates
-RUN wget -nv --no-check-certificate https://dlcdn.apache.org/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz -P /tmp
+RUN wget -nv --no-check-certificate https://dlcdn.apache.org/maven/maven-3/3.9.5/binaries/apache-maven-3.9.5-bin.tar.gz -P /tmp
 
 RUN tar xf /tmp/apache-maven-*.tar.gz -C /opt
-RUN ln -s /opt/apache-maven-3.9.6 /opt/maven
+RUN ln -s /opt/apache-maven-3.9.5 /opt/maven
 ENV M2_HOME=/opt/maven
 ENV MAVEN_HOME=/opt/maven
 ENV PATH=${M2_HOME}/bin:${PATH}
 
-RUN wget -nv --no-check-certificate https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-22.0.1/graalvm-community-jdk-22.0.1_linux-aarch64_bin.tar.gz
-RUN tar xzf graalvm-community-jdk-22.0.1_linux-aarch64_bin.tar.gz -C /
-RUN rm graalvm-community-jdk-22.0.1_linux-aarch64_bin.tar.gz
-ENV PATH=/graalvm-community-openjdk-22.0.1+8.1/bin/:$PATH
-ENV JAVA_HOME=/graalvm-community-openjdk-22.0.1+8.1
+# Newer versions fail on aarch: https://github.com/oracle/graal/issues/7467
+RUN wget -nv --no-check-certificate https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-17.0.9/graalvm-community-jdk-17.0.9_linux-aarch64_bin.tar.gz
+RUN tar xzf graalvm-community-jdk-17.0.9_linux-aarch64_bin.tar.gz -C /
+ENV PATH=/graalvm-community-openjdk-17.0.9+9.1/bin/:$PATH
+ENV JAVA_HOME=/graalvm-community-openjdk-17.0.9+9.1
 
 # When you update this also change the directory in buildInContainer.sh
 #Newer versions crash with segmentation fault: https://github.com/upx/upx/issues/737
 RUN wget -nv --no-check-certificate https://github.com/upx/upx/releases/download/v4.2.4/upx-4.2.4-arm64_linux.tar.xz
 RUN tar -xf upx-4.2.4-arm64_linux.tar.xz
-RUN rm upx-4.2.4-arm64_linux.tar.xz
 ENV PATH=/tmp/upx-4.2.4-arm64_linux/:$PATH
 
 ENV HYDRA_NATIVE_BUILD=true
