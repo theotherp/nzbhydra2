@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.nzbhydra</groupId>
         <artifactId>shared</artifactId>
-        <version>7.2.2</version>
+        <version>7.2.3-SNAPSHOT</version>
     </parent>
 
     <artifactId>assertions</artifactId>
@@ -31,7 +31,7 @@
         <dependency>
             <groupId>org.nzbhydra</groupId>
             <artifactId>mapping</artifactId>
-            <version>7.2.2</version>
+            <version>7.2.3-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.assertj</groupId>
