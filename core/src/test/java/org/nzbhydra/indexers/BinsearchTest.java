@@ -25,7 +25,9 @@ import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.time.Clock;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -54,6 +56,7 @@ public class BinsearchTest {
 
     @BeforeEach
     public void setUp() throws Exception {
+        Binsearch.clock = Clock.fixed(Instant.ofEpochSecond(1707391628L), ZoneId.of("UTC"));
         MockitoAnnotations.initMocks(this);
         when(configProviderMock.getBaseConfig()).thenReturn(baseConfig);
         testee.config = new IndexerConfig();
@@ -75,15 +78,15 @@ public class BinsearchTest {
         List<SearchResultItem> searchResultItems = testee.getSearchResultItems(html, new SearchRequest());
         assertThat(searchResultItems.size()).isEqualTo(1);
         SearchResultItem item = searchResultItems.get(0);
-        assertThat(item.getTitle()).isEqualTo("testtitle. 3D.TOPBOT.TrueFrench.1080p.X264.AC3.5.1-JKF.mkv");
-        assertThat(item.getLink()).isEqualTo("https://www.binsearch.info/?action=nzb&176073735=1");
-        assertThat(item.getDetails()).isEqualTo("https://www.binsearch.info/?b=testtitle1.3D.TOPBOT.TrueFrench.1080p.X264.A&g=alt.binaries.movies.mkv&p=Ramer%40marmer.com+%28Clown_nez%29&max=250");
-        assertThat(item.getSize()).isEqualTo(12209999872L); //12.21 GB = 12.21 * 1000*1000*1000
-        assertThat(item.getIndexerGuid()).isEqualTo("176073735");
-        assertThat(item.getPubDate()).isEqualTo(Instant.ofEpochSecond(1443312000));
+        assertThat(item.getTitle()).isEqualTo("Some title");
+        assertThat(item.getLink()).isEqualTo("https://binsearch.info/nzb?mode=files&huaeF2kx34=on&name=Some title.rar.nzb");
+        assertThat(item.getDetails()).isEqualTo("https://binsearch.info/details/huaeF2kx34");
+        assertThat(item.getSize()).isEqualTo(408260L); //12.21 GB = 12.21 * 1000*1000*1000
+        assertThat(item.getIndexerGuid()).isEqualTo("huaeF2kx34");
+        assertThat(item.getPubDate().getEpochSecond()).isEqualTo(1696764428L);
         assertThat(item.isAgePrecise()).isEqualTo(false);
-        assertThat(item.getPoster().get()).isEqualTo("Ramer@marmer.com (Clown_nez)");
-        assertThat(item.getGroup().get()).isEqualTo("alt.binaries.movies.mkv");
+        assertThat(item.getPoster().get()).isEqualTo("[email protected]");
+        assertThat(item.getGroup().get()).isEqualTo("alt.binaries.e-book.flood");
     }
 
     @Test

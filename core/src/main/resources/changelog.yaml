@@ -12,6 +12,8 @@
           text: "Restore shift click functionality. See #954"
       -   type: "fix"
           text: "Updated the windows build libraries. This requires DLL files to be installed (alongside the main `core.exe´ file). They were previously included in the exe but now need to be provided alongside."
+      -   type: "fix"
+          text: "Fixed parsing of binsearch results. It's still a bit iffy (and I personally think the quality of results isn't worth it) but at least you get some results. See #920"
     final: true
 -   version: "v7.1.0"
     date: "2024-05-23"

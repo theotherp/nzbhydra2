@@ -37,11 +37,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
+import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
@@ -56,34 +57,35 @@ public class Binsearch extends Indexer<String> {
 
     private static final Logger logger = LoggerFactory.getLogger(Binsearch.class);
 
-    private static final Pattern TITLE_PATTERN = Pattern.compile("\"(.*)\\.(rar|nfo|mkv|par2|001|nzb|url|zip|r[0-9]{2})\"", Pattern.CASE_INSENSITIVE); //Note the " (quotation marks)
+    private static final Pattern TITLE_PATTERN = Pattern.compile("(.*)\\.(rar|nfo|mkv|mp3|mobi|avi|mp4|epub|txt|pdf|par2|001|nzb|url|zip|r[0-9]{2})", Pattern.CASE_INSENSITIVE); //Note the " (quotation marks)
     private static final Pattern GROUP_PATTERN = Pattern.compile("&g=([\\w\\.]*)&", Pattern.CASE_INSENSITIVE);
     private static final Pattern POSTER_PATTERN = Pattern.compile("&p=(.*)&", Pattern.CASE_INSENSITIVE);
     private static final Pattern NFO_INFO_PATTERN = Pattern.compile("\\d nfo file", Pattern.CASE_INSENSITIVE);
-    private static final Pattern SIZE_PATTERN = Pattern.compile("size: (?<size>[0-9]+(\\.[0-9]+)?).(?<unit>(GB|MB|KB|B))", Pattern.CASE_INSENSITIVE);
+    private static final Pattern SIZE_PATTERN = Pattern.compile("(?<size>[0-9]+(\\.[0-9]+)?)(?<unit>(GB|MB|KB|B))", Pattern.CASE_INSENSITIVE);
     private static final Pattern PUBDATE_PATTERN = Pattern.compile("(\\d{1,2}\\-\\w{3}\\-\\d{4})", Pattern.CASE_INSENSITIVE);
     private static final DateTimeFormatter DATE_TIME_FORMATTER = new DateTimeFormatterBuilder().appendPattern("dd-MMM-yyyy").parseDefaulting(ChronoField.NANO_OF_DAY, 0).toFormatter().withZone(ZoneId.of("UTC")).withLocale(Locale.ENGLISH);
     private static final Pattern NFO_PATTERN = Pattern.compile("<pre>(?<nfo>.*)<\\/pre>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
     private final RetryPolicy<Object> retry503policy = RetryPolicy.builder()
-        .handleIf(x -> x instanceof IndexerAccessException && Throwables.getStackTraceAsString(x).contains("503"))
-        .withDelay(Duration.ofMillis(500))
-        .withMaxRetries(2).build();
+            .handleIf(x -> x instanceof IndexerAccessException && Throwables.getStackTraceAsString(x).contains("503"))
+            .withDelay(Duration.ofMillis(500))
+            .withMaxRetries(2).build();
 
     public Binsearch(ConfigProvider configProvider, IndexerRepository indexerRepository, SearchResultRepository searchResultRepository, IndexerApiAccessRepository indexerApiAccessRepository, IndexerApiAccessEntityShortRepository indexerApiAccessShortRepository, IndexerLimitRepository indexerStatusRepository, IndexerWebAccess indexerWebAccess, SearchResultAcceptor resultAcceptor, CategoryProvider categoryProvider, InfoProvider infoProvider, ApplicationEventPublisher eventPublisher, QueryGenerator queryGenerator, CustomQueryAndTitleMappingHandler titleMapping, BaseConfigHandler baseConfigHandler) {
         super(configProvider, indexerRepository, searchResultRepository, indexerApiAccessRepository, indexerApiAccessShortRepository, indexerStatusRepository, indexerWebAccess, resultAcceptor, categoryProvider, infoProvider, eventPublisher, queryGenerator, titleMapping, baseConfigHandler);
     }
 
+    static Clock clock = Clock.systemUTC();
 
     //LATER It's not ideal that currently the web response needs to be parsed twice, once for the search results and once for the completion of the indexer search result. Will need to check how much that impacts performance
 
     @Override
     protected void completeIndexerSearchResult(String response, IndexerSearchResult indexerSearchResult, AcceptorResult acceptorResult, SearchRequest searchRequest, int offset, Integer limit) {
         Document doc = Jsoup.parse(response);
-        if (doc.select("table.xMenuT").size() > 0) {
-            Element navigationTable = doc.select("table.xMenuT").get(1);
-            Elements pageLinks = navigationTable.select("a");
-            boolean hasMore = !pageLinks.isEmpty() && pageLinks.last().text().equals(">");
+        Element navElement = getElementOrNone(doc, "div.justify-between:nth-child(2) > ul:nth-child(2)");
+        if (navElement != null) {
+            Elements pageLinks = navElement.select("li");
+            boolean hasMore = !pageLinks.isEmpty() && !pageLinks.get(2).classNames().contains("disabled");
             boolean totalKnown = false;
             indexerSearchResult.setOffset(searchRequest.getOffset());
             int total = searchRequest.getOffset() + 100; //Must be at least as many as already loaded
@@ -113,7 +115,7 @@ public class Binsearch extends Indexer<String> {
             return Collections.emptyList();
         }
 
-        Elements mainTables = doc.select("table#r2");
+        Elements mainTables = doc.select("table.result-table");
         if (mainTables.size() == 0) {
             throw new IndexerParsingException("Unable to find main table in binsearch page. This happens sometimes ;-)");
         }
@@ -135,7 +137,7 @@ public class Binsearch extends Indexer<String> {
     private SearchResultItem parseRow(Element row) {
         SearchResultItem item = new SearchResultItem();
 
-        Element titleElement = getElementOrNone(row, "span[class=s]");
+        Element titleElement = getElementOrNone(row, "td:nth-child(3) > div:nth-child(1) > a");
         if (titleElement == null) {
             debug("Table row does not have a title");
             return null;
@@ -145,35 +147,38 @@ public class Binsearch extends Indexer<String> {
             item.setPassworded(true);
         }
         Matcher matcher = TITLE_PATTERN.matcher(title);
-        if (matcher.find()) {
-            title = matcher.group(1);
+        String filename;
+        if (!matcher.find()) {
+            debug("Unable to find title in text {}", title);
+            return null;
         }
+        title = matcher.group(1);
+        filename = matcher.group(1) + "." + matcher.group(2);
         title = cleanUpTitle(title);
         item.setTitle(title);
 
         item.setIndexerGuid(getElementOrNone(row, "input[type=checkbox]").attr("name"));
-        item.setLink("https://www.binsearch.info/?action=nzb&" + item.getIndexerGuid() + "=1");
-        Element infoElement = getElementOrNone(row, "span.d");
+        item.setLink("https://binsearch.info/nzb?mode=files&%s=on&name=%s".formatted(item.getIndexerGuid(), filename + ".nzb"));
+        Element infoElement = getElementOrNone(row, "td:nth-child(3) > div:nth-child(1) > div");
         if (infoElement == null) {
             debug("Ignored entry because it has no info");
             return null;
         }
         String collectionLink = getElementOrNone(row, "a").attr("href"); //e.g. /?b=Supers.Troopers.of.Mega.3D.TOPBOT.TrueFrench.1080p.X264.A&g=alt.binaries.movies.mkv&p=Ramer%40marmer.com+%28Clown_nez%29&max=250
-        item.setDetails("https://www.binsearch.info" + collectionLink);
+        item.setDetails("https://binsearch.info/details/" + item.getIndexerGuid());
 
-        Matcher groupMatcher = GROUP_PATTERN.matcher(collectionLink);
-        if (groupMatcher.find()) {
-            item.setGroup(groupMatcher.group(1).trim());
+        Element groupElement = getElementOrNone(infoElement, "a[href*=\"search?group\"]");
+        if (groupElement != null) {
+            item.setGroup(groupElement.ownText());
         }
 
-        Matcher posterMatcher = POSTER_PATTERN.matcher(collectionLink); //e.g. Ramer%40marmer.com+%28Clown_nez%29
-        if (posterMatcher.find()) {
-            String poster = posterMatcher.group(1).trim();
-            poster = URLDecoder.decode(poster, StandardCharsets.UTF_8).replace("+", " ");
-            item.setPoster(poster);
+        Element posterElement = getElementOrNone(infoElement, "a[href*=\"search?poster\"]");
+        if (posterElement != null) {
+            item.setPoster(posterElement.text());
         }
 
-        Matcher sizeMatcher = SIZE_PATTERN.matcher(infoElement.ownText());
+        Element sizeElement = getElementOrNone(infoElement, "span");
+        Matcher sizeMatcher = SIZE_PATTERN.matcher(sizeElement.ownText());
         if (sizeMatcher.find()) {
             Float size = Float.parseFloat(sizeMatcher.group("size"));
             String unit = sizeMatcher.group("unit");
@@ -184,17 +189,17 @@ public class Binsearch extends Indexer<String> {
             }
             item.setSize(size.longValue());
         } else {
-            debug("Unable to find size in text {}", infoElement.ownText());
+            debug("Unable to find size in text {}", sizeElement.ownText());
             return null;
         }
 
         Matcher nfoMatcher = NFO_INFO_PATTERN.matcher(infoElement.ownText());
         item.setHasNfo(nfoMatcher.find() ? HasNfo.YES : HasNfo.NO);
 
-        Matcher pubdateMatcher = PUBDATE_PATTERN.matcher(row.text());
-        if (pubdateMatcher.find()) {
-            String pubdateString = pubdateMatcher.group(1);
-            Instant pubdate = DATE_TIME_FORMATTER.parse(pubdateString, Instant::from);
+        Element ageElement = getElementOrNone(row, "td:nth-child(4)");
+        if (ageElement != null) {
+            String pubdateString = ageElement.text();
+            Instant pubdate = Binsearch.convertToInstant(pubdateString);
             item.setPubDate(pubdate);
             item.setAgePrecise(false);
         } else {
@@ -223,8 +228,8 @@ public class Binsearch extends Indexer<String> {
             throw new IndexerSearchAbortedException("Binsearch cannot search without a query");
         }
         query = cleanupQuery(query);
-        UriComponentsBuilder queryBuilder = UriComponentsBuilder.fromHttpUrl("https://www.binsearch.info/?adv_col=on&postdate=date&adv_sort=date")
-                .queryParam("min", offset)
+        UriComponentsBuilder queryBuilder = UriComponentsBuilder.fromHttpUrl("https://www.binsearch.info/")
+//                .queryParam("min", offset)
                 .queryParam("max", limit)
                 .queryParam("q", query);
         if (getConfig().isBinsearchOtherGroups()) {
@@ -262,18 +267,47 @@ public class Binsearch extends Indexer<String> {
     @Override
     protected String getAndStoreResultToDatabase(URI uri, IndexerApiAccessType apiAccessType) throws IndexerAccessException {
         return Failsafe.with(retry503policy)
-            .onFailure(throwable -> logger.warn("Encountered 503 error. Will retry"))
-            .get(new CheckedSupplier<>() {
-                @Override
-                public String get() throws Throwable {
-                    return getAndStoreResultToDatabase(uri, String.class, apiAccessType);
-                }
-            });
+                .onFailure(throwable -> logger.warn("Encountered 503 error. Will retry"))
+                .get(new CheckedSupplier<>() {
+                    @Override
+                    public String get() throws Throwable {
+                        return getAndStoreResultToDatabase(uri, String.class, apiAccessType);
+                    }
+                });
     }
 
     @Override
     protected Logger getLogger() {
         return logger;
+    }
+
+    private static Instant convertToInstant(String ageString) {
+        // Define regex to match the age string
+        Pattern pattern = Pattern.compile("(\\d+)\\s+(second|seconds|minute|minutes|hour|hours|day|days|week|weeks|month|months|year|years)");
+        Matcher matcher = pattern.matcher(ageString);
+
+        if (!matcher.matches()) {
+            throw new IllegalArgumentException("Invalid age string format: " + ageString);
+        }
+
+        // Extract the quantity and time unit
+        int quantity = Integer.parseInt(matcher.group(1));
+        String unit = matcher.group(2).toLowerCase();
+
+        // Determine the duration to subtract
+        LocalDateTime now = LocalDateTime.now(clock);
+        LocalDateTime result = switch (unit) {
+            case "second", "seconds" -> now.minusSeconds(quantity);
+            case "minute", "minutes" -> now.minusMinutes(quantity);
+            case "hour", "hours" -> now.minusHours(quantity);
+            case "day", "days" -> now.minusDays(quantity);
+            case "week", "weeks" -> now.minusWeeks(quantity);
+            case "month", "months" -> now.minusMonths(quantity);
+            case "year", "years" -> now.minusYears(quantity);
+            default -> throw new IllegalArgumentException("Unsupported time unit: " + unit);
+        };
+
+        return result.toInstant(ZoneOffset.UTC);
     }
 
     @Component
