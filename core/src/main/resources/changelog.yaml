@@ -1,10 +1,4 @@
 #@formatter:off
--   version: "v7.2.1"
-    date: "2024-06-08"
-    changes:
-      -   type: "fix"
-          text: "Aaargh the UI changes made for the auto theme made most images disappear. I had to roll that feature back until fixed. Why do I only notice these things a couple of minutes after making a release?"
-    final: true
 -   version: "v7.2.0"
     date: "2024-06-08"
     changes:
