@@ -6,7 +6,7 @@
             text: First major release
     final: false
 -   version: v0.0.1
-    date:
+    date: '2019-11-15'
     changes:
         -   type: note
             text: 'First version. See #123'
