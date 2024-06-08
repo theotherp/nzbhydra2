@@ -116,7 +116,9 @@ gulp.task('less', function () {
         .pipe(cached("bright"))
         .on('error', swallowError)
         .pipe(sourcemaps.init())
-        .pipe(less())
+        .pipe(less({
+            relativeUrls: true
+        }))
         .on('error', swallowError)
         .pipe(cleancss())
         .pipe(sourcemaps.write("."))
@@ -126,7 +128,9 @@ gulp.task('less', function () {
         .pipe(cached("grey"))
         .on('error', swallowError)
         .pipe(sourcemaps.init())
-        .pipe(less())
+        .pipe(less({
+            relativeUrls: true
+        }))
         .on('error', swallowError)
         .pipe(cleancss())
         .pipe(sourcemaps.write("."))
@@ -136,7 +140,9 @@ gulp.task('less', function () {
         .pipe(cached("dark"))
         .on('error', swallowError)
         .pipe(sourcemaps.init())
-        .pipe(less())
+        .pipe(less({
+            relativeUrls: true
+        }))
         .on('error', swallowError)
         .pipe(cleancss())
         .pipe(sourcemaps.write("."))
@@ -146,7 +152,9 @@ gulp.task('less', function () {
         .pipe(cached("auto"))
         .on('error', swallowError)
         .pipe(sourcemaps.init())
-        .pipe(less())
+        .pipe(less({
+            relativeUrls: true
+        }))
         .on('error', swallowError)
         .pipe(cleancss())
         .pipe(sourcemaps.write("."))
