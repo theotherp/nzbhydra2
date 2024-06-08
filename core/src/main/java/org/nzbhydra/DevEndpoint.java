@@ -23,6 +23,7 @@ import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.externaltools.AddRequest;
 import org.nzbhydra.externaltools.ExternalTools;
 import org.nzbhydra.notifications.IndexerDisabledNotificationEvent;
+import org.nzbhydra.systemcontrol.SystemControl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +58,8 @@ public class DevEndpoint {
     private boolean devMode;
 
     private static final Logger logger = LoggerFactory.getLogger(DevEndpoint.class);
+    @Autowired
+    private SystemControl systemControl;
 
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/dev/countDanglingIndexersearches", method = RequestMethod.GET)
@@ -126,6 +129,15 @@ public class DevEndpoint {
         f.setAccessible(true);
         Unsafe unsafe = (Unsafe) f.get(null);
         unsafe.putAddress(0, 0);
+    }
+
+    @Secured({"ROLE_ADMIN"})
+    @RequestMapping(value = "/dev/shutDownForUpdate", method = RequestMethod.GET)
+    public void shutDownForUpdate() throws Exception {
+        if (!devMode) {
+            return;
+        }
+        systemControl.exitWithReturnCode(SystemControl.UPDATE_RETURN_CODE);
     }
 
 

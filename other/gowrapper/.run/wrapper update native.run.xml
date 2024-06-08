@@ -4,6 +4,7 @@
     <working_directory value="d:/NZBHydra/nzbhydra2/gowrappertest/update_native" />
     <envs>
       <env name="NZBHYDRA_FORCE_UPDATE" value="true" />
+        <env name="nzbhydra_dev_mode" value="true"/>
     </envs>
     <kind value="PACKAGE" />
     <package value="theotherp/console" />

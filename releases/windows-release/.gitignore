@@ -2,4 +2,3 @@ target/
 .idea/*
 *.iws
 *.ipr
-*.dll

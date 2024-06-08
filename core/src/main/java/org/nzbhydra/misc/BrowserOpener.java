@@ -21,8 +21,8 @@ public class BrowserOpener {
         Desktop desktop;
         URI uri = urlCalculator.getLocalBaseUriBuilder().build().toUri();
         try {
-            desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
             logger.debug("Desktop supported: {}", Desktop.isDesktopSupported());
+            desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
         } catch (Throwable e) {
             logger.debug("Unable to get desktop", e);
             logger.error("Unable to open browser. Go to {}", uri, e);

@@ -445,6 +445,7 @@ public class UpdateManager implements InitializingBean {
         currentVersion = new SemanticVersion(currentVersionString);
 
         loadPackageInfo();
+        logger.info("Running version {}", currentVersionString);
     }
 
     public PackageInfo getPackageInfo() {
