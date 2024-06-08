@@ -16,26 +16,24 @@
             <input type="checkbox" ng-model="showAdvanced" class="ng-untouched ng-valid ng-not-empty ng-dirty" aria-invalid="false"></div>
         </div>
 
-        <div class="btn-group">
-          <button type="button" class="btn config-button btn-default" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
-                  uib-tooltip="Allows you to automatically configure NZBHydra2 as an indexer in an external tool."
-                  tooltip-placement="top"
-                  tooltip-trigger="mouseenter"
-          >Configure NZBHydra in...
-            <span class="caret"></span>
-            <span class="sr-only">Toggle Dropdown</span>
-          </button>
-          <ul class="dropdown-menu dropdown-menu-right">
-            <li>
-              <a ng-click="configureIn('Lidarr')">Lidarr</a>
-              <a ng-click="configureIn('Sonarr')">Sonarr</a>
-              <a ng-click="configureIn('Sonarrv3')">Sonarr v3</a>
-              <a ng-click="configureIn('Radarr')">Radarr</a>
-              <a ng-click="configureIn('Radarrv3')">Radarr v3+</a>
-              <a ng-click="configureIn('Readarr')">Readarr</a>
-            </li>
-          </ul>
-        </div>
+        <button type="button" class="btn config-button btn-default" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                uib-tooltip="Allows you to automatically configure NZBHydra2 as an indexer in an external tool."
+                tooltip-placement="top"
+                tooltip-trigger="mouseenter"
+        >Configure NZBHydra in...
+          <span class="caret"></span>
+          <span class="sr-only">Toggle Dropdown</span>
+        </button>
+        <ul class="dropdown-menu">
+          <li>
+            <a ng-click="configureIn('Lidarr')">Lidarr</a>
+            <a ng-click="configureIn('Sonarr')">Sonarr</a>
+            <a ng-click="configureIn('Sonarrv3')">Sonarr v3</a>
+            <a ng-click="configureIn('Radarr')">Radarr</a>
+            <a ng-click="configureIn('Radarrv3')">Radarr v3+</a>
+            <a ng-click="configureIn('Readarr')">Readarr</a>
+          </li>
+        </ul>
 
         <button ng-click="apiHelp()" class="btn config-button config-api-button btn-default">API?</button>
         <button ng-click="submit()" class="btn config-button" ng-class="{'btn-info': isSavingNeeded(), 'pulse2': isSavingNeeded(), 'btn-success': !isSavingNeeded()}">
