@@ -1128,16 +1128,17 @@ function searchResult() {
         $scope.clickCheckbox = function (event, result) {
             var isSelected = event.currentTarget.checked;
             sendSelectionEvent(isSelected);
-            $scope.$emit("checkboxClicked", event, $scope.rowIndex, isSelected, event.currentTarget);
+            $scope.$emit("checkboxClicked", event, isSelected, event.currentTarget);
         };
 
         function isBetween(num, betweena, betweenb) {
             return (betweena <= num && num <= betweenb) || (betweena >= num && num >= betweenb);
         }
 
-        $scope.$on("shiftClick", function (event, startIndex, endIndex, newValue, previousClickTargetElement, newClickTargetElement) {
-            var fromYlocation = $($(previousClickTargetElement).prop("parentNode")).prop("offsetTop");
-            var newYlocation = $($(newClickTargetElement).prop("parentNode")).prop("offsetTop");
+        $scope.$on("shiftClick", function (event, newValue, previousClickTargetElement, newClickTargetElement) {
+            //Parent needs to be the td, between checkbox and td are two divs
+            var fromYlocation = $(previousClickTargetElement).parent().parent().parent().prop("offsetTop") ;
+            var newYlocation = $(newClickTargetElement).parent().parent().parent().prop("offsetTop") ;
             var elementYlocation = $($element).prop("offsetTop");
             if (!$scope.resultDisplayed) {
                 return;
@@ -9685,7 +9686,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
     });
 
     //For shift clicking results
-    $scope.lastClickedRowIndex = null;
     $scope.lastClickedValue = null;
 
     var allSearchResults = [];
@@ -10435,8 +10435,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
             sorted = sorted.reverse();
         }
 
-        $scope.lastClickedRowIndex = null;
-
         var filteredResults = [];
         var countTitleGroups = 0;
         var countResultsUntilTitleGroupLimitReached = 0;
@@ -10603,11 +10601,10 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
     };
 
 
-    $scope.$on("checkboxClicked", function (event, originalEvent, rowIndex, newCheckedValue, clickTargetElement) {
-        if (originalEvent.shiftKey && $scope.lastClickedRowIndex !== null) {
-            $scope.$broadcast("shiftClick", Number($scope.lastClickedRowIndex), Number(rowIndex), Number($scope.lastClickedValue), $scope.lastClickedElement, clickTargetElement);
+    $scope.$on("checkboxClicked", function (event, originalEvent, newCheckedValue, clickTargetElement) {
+        if (originalEvent.shiftKey && $scope.lastClickedElement) {
+            $scope.$broadcast("shiftClick", Number($scope.lastClickedValue), $scope.lastClickedElement, clickTargetElement);
         }
-        $scope.lastClickedRowIndex = rowIndex;
         $scope.lastClickedElement = clickTargetElement;
         $scope.lastClickedValue = newCheckedValue;
     });

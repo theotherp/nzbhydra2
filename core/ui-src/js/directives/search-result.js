@@ -87,16 +87,17 @@ function searchResult() {
         $scope.clickCheckbox = function (event, result) {
             var isSelected = event.currentTarget.checked;
             sendSelectionEvent(isSelected);
-            $scope.$emit("checkboxClicked", event, $scope.rowIndex, isSelected, event.currentTarget);
+            $scope.$emit("checkboxClicked", event, isSelected, event.currentTarget);
         };
 
         function isBetween(num, betweena, betweenb) {
             return (betweena <= num && num <= betweenb) || (betweena >= num && num >= betweenb);
         }
 
-        $scope.$on("shiftClick", function (event, startIndex, endIndex, newValue, previousClickTargetElement, newClickTargetElement) {
-            var fromYlocation = $($(previousClickTargetElement).prop("parentNode")).prop("offsetTop");
-            var newYlocation = $($(newClickTargetElement).prop("parentNode")).prop("offsetTop");
+        $scope.$on("shiftClick", function (event, newValue, previousClickTargetElement, newClickTargetElement) {
+            //Parent needs to be the td, between checkbox and td are two divs
+            var fromYlocation = $(previousClickTargetElement).parent().parent().parent().prop("offsetTop");
+            var newYlocation = $(newClickTargetElement).parent().parent().parent().prop("offsetTop");
             var elementYlocation = $($element).prop("offsetTop");
             if (!$scope.resultDisplayed) {
                 return;

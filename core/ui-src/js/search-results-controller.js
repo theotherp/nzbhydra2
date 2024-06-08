@@ -39,7 +39,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
     });
 
     //For shift clicking results
-    $scope.lastClickedRowIndex = null;
     $scope.lastClickedValue = null;
 
     var allSearchResults = [];
@@ -789,8 +788,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
             sorted = sorted.reverse();
         }
 
-        $scope.lastClickedRowIndex = null;
-
         var filteredResults = [];
         var countTitleGroups = 0;
         var countResultsUntilTitleGroupLimitReached = 0;
@@ -957,11 +954,10 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
     };
 
 
-    $scope.$on("checkboxClicked", function (event, originalEvent, rowIndex, newCheckedValue, clickTargetElement) {
-        if (originalEvent.shiftKey && $scope.lastClickedRowIndex !== null) {
-            $scope.$broadcast("shiftClick", Number($scope.lastClickedRowIndex), Number(rowIndex), Number($scope.lastClickedValue), $scope.lastClickedElement, clickTargetElement);
+    $scope.$on("checkboxClicked", function (event, originalEvent, newCheckedValue, clickTargetElement) {
+        if (originalEvent.shiftKey && $scope.lastClickedElement) {
+            $scope.$broadcast("shiftClick", Number($scope.lastClickedValue), $scope.lastClickedElement, clickTargetElement);
         }
-        $scope.lastClickedRowIndex = rowIndex;
         $scope.lastClickedElement = clickTargetElement;
         $scope.lastClickedValue = newCheckedValue;
     });

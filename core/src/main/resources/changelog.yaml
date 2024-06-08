@@ -8,6 +8,8 @@
           text: "Another feature from Saurori. A new \"auto\" theme will select the bright or dark theme depending on the browser / OS theme setting."
       -   type: "fix"
           text: "Correctly marked releases as final and added release dates. See #955"
+      -   type: "fix"
+          text: "Restore shift click functionality. See #954"
     final: true
 -   version: "v7.1.0"
     date: "2024-05-23"
