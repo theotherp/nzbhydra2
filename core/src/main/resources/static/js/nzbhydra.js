@@ -1137,8 +1137,8 @@ function searchResult() {
 
         $scope.$on("shiftClick", function (event, newValue, previousClickTargetElement, newClickTargetElement) {
             //Parent needs to be the td, between checkbox and td are two divs
-            var fromYlocation = $(previousClickTargetElement).parent().parent().parent().prop("offsetTop") ;
-            var newYlocation = $(newClickTargetElement).parent().parent().parent().prop("offsetTop") ;
+            var fromYlocation = $(previousClickTargetElement).parent().parent().parent().prop("offsetTop");
+            var newYlocation = $(newClickTargetElement).parent().parent().parent().prop("offsetTop");
             var elementYlocation = $($element).prop("offsetTop");
             if (!$scope.resultDisplayed) {
                 return;
