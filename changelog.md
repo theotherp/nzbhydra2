@@ -1,10 +1,26 @@
-### v7.1.0
+### v7.2.0 (2024-06-08)
+
+**Feature** Add addons for min/max age and size in the search mask. See <a href="https://github.com/theotherp/nzbhydra2/issues/951">#951</a>
+
+**Feature** Another feature from Saurori. A new "auto" theme will select the bright or dark theme depending on the browser / OS theme setting.
+
+**Fix** Correctly marked releases as final and added release dates. See <a href="https://github.com/theotherp/nzbhydra2/issues/955">#955</a>
+
+**Fix** Restore shift click functionality. See <a href="https://github.com/theotherp/nzbhydra2/issues/954">#954</a>
+
+**Fix** Updated the windows build libraries. This requires DLL files to be installed (alongside the main `core.exe´ file). They were previously included in the exe but now need to be provided alongside.
+
+**Fix** Fixed parsing of binsearch results. It's still a bit iffy (and I personally think the quality of results isn't worth it) but at least you get some results. See <a href="https://github.com/theotherp/nzbhydra2/issues/920">#920</a>
+
+
+
+### v7.1.0 (2024-05-23)
 
 **Feature** Saurori updated the CSS again. The search results table will now collapse its columns into rows on phones which should make the table actually usable there. See <a href="https://github.com/theotherp/nzbhydra2/issues/947">#947</a>
 
 
 
-### v7.0.0
+### v7.0.0 (2024-05-19)
 
 **Feature** It tooks just five years (or eight if you want to count the release of v1) but NZBHydra finally got a responsive design! Huge thanks to saurori for updating the UI code! There's still room for improvement, of course, but it's a huge step up. See <a href="https://github.com/theotherp/nzbhydra2/issues/947">#947</a>
 
@@ -12,7 +28,7 @@
 
 
 
-### v6.2.1
+### v6.2.1 (2024-05-12)
 
 **Fix** Unfortunately the automatic update is broken with the new wrappers introduced in 6.0.0. And I tested it so thoroughly (I thought). NZBHydra would shut down for an update but not actually update, with automatic updates resulting in a loop :-(
 
@@ -22,7 +38,7 @@
 
 
 
-### v6.2.0
+### v6.2.0 (2024-05-12)
 
 **Feature** Support DETAILS function from Newznab API spec. See <a href="https://github.com/theotherp/nzbhydra2/issues/942">#942</a>
 
@@ -32,13 +48,13 @@
 
 
 
-### v6.1.1
+### v6.1.1 (2024-04-03)
 
 **Fix** Make sure settings yml file can be written to prevent file corruption
 
 
 
-### v6.1.0
+### v6.1.0 (2024-04-02)
 
 **Fix** Exit codes < 0 are now correctly handled in the python wrapper.
 
@@ -48,7 +64,7 @@
 
 
 
-### v6.0.0
+### v6.0.0 (2024-04-01)
 
 **Feature** I've completely rewritten the wrapper for windows. It's not a packaged python script anymore but an actually compiled binary. This has a couple of benefits: No more false positives from virus scanners (VirusTotal shows 5/72). No more temporary files not being cleaned up after a crash. The files are (a bit) smaller.
 I don't plan to compile the wrapper for anything but windows as it makes more sense and is easier to run the python wrapper instead.
@@ -103,7 +119,7 @@ I don't plan to compile the wrapper for anything but windows as it makes more se
 
 
 
-### v5.3.6
+### v5.3.6 (2023-12-27)
 
 **Fix** Add validation to quick filter buttons to ensure only valid values are saved.
 
@@ -351,7 +367,7 @@ I don't plan to compile the wrapper for anything but windows as it makes more se
 
 
 
-### v5.0.0 BETA
+### v5.0.0 BETA (2023-01-02)
 
 **Feature** Massive upgrade of the underlying framework and used libraries. Java is not needed anymore in most cases. Highly increased startup and memory performance (on my machine using docker and as a fresh install it starts in 0.9 seconds and uses 180MB memory now versus 9 seconds and 332MB memory before). This is the result of weeks of work and testing. I hope everything goes as smooth as possible.
 
@@ -369,7 +385,7 @@ I don't plan to compile the wrapper for anything but windows as it makes more se
 
 
 
-### v4.7.5
+### v4.7.5 (2022-12-17)
 
 **Fix** Configure separate indexers in lidarr using categories. See <a href="https://github.com/theotherp/nzbhydra2/issues/802">#802</a>
 
@@ -1925,7 +1941,7 @@ I don't plan to compile the wrapper for anything but windows as it makes more se
 
 
 
-### v2.6.8
+### v2.6.8 (2019-05-16)
 
 **Fix** IMDB link in search history was invalid
 
@@ -2031,7 +2047,7 @@ I don't plan to compile the wrapper for anything but windows as it makes more se
 
 
 
-### v2.5.6
+### v2.5.6 (2019-04-18)
 
 **Fix** Provide a (better) error message when clicking the infos for a show with TVRage ID for which no infos could be found.
 
@@ -2123,7 +2139,7 @@ I don't plan to compile the wrapper for anything but windows as it makes more se
 
 
 
-### v2.3.20
+### v2.3.20 (2019-03-21)
 
 **Fix** Revert revert because, as it turns out, it wasn't the libary at fault but the new version just failed to read a file already corrupted.
 
@@ -2511,7 +2527,7 @@ I don't plan to compile the wrapper for anything but windows as it makes more se
 
 
 
-### v2.0.7
+### v2.0.7 (2018-09-28)
 
 **Fix** Sabnzbd API key was not migrated
 
@@ -2547,7 +2563,7 @@ I don't plan to compile the wrapper for anything but windows as it makes more se
 
 
 
-### v2.0.2
+### v2.0.2 (2018-08-20)
 
 **Fix** Minor stability improvements
 
@@ -2657,7 +2673,7 @@ I don't plan to compile the wrapper for anything but windows as it makes more se
 
 
 
-### v1.4.9
+### v1.4.9 (2018-03-18)
 
 **Fix** Log levels for console and file were not honored properly.
 
