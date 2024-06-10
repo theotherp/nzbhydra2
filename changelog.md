@@ -1,3 +1,9 @@
+### v7.2.3 (2024-06-10)
+
+**Fix** Roll back changes that causes errors when downloading NZBs (which kinda sounds like I did those on purpose, but I didn't, really!) See <a href="https://github.com/theotherp/nzbhydra2/issues/957">#957</a>
+
+
+
 ### v7.2.2 (2024-06-08)
 
 **Fix** Much ado about nothing - actually got the disappearing images fixed quicker than I thought I would. Sorry for spamming releases ;-)
