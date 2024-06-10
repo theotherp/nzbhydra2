@@ -2,7 +2,6 @@ package org.nzbhydra.downloading;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Sets;
-import lombok.Getter;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -83,12 +82,10 @@ public class FileHandler {
     @Autowired
     private IndexerSpecificDownloadExceptions indexerSpecificDownloadExceptions;
 
-    @Getter
     private final Set<File> temporaryZipFiles = new HashSet<>();
     @Autowired
     private TempFileProvider tempFileProvider;
 
-    @Transactional
     public DownloadResult getFileByGuid(long guid, SearchSource accessSource) throws InvalidSearchResultIdException {
         final SearchResultEntity searchResult = getResultFromGuid(guid, accessSource);
         final IndexerConfig indexerConfig = configProvider.getIndexerByName(searchResult.getIndexer().getName());
@@ -123,8 +120,7 @@ public class FileHandler {
         return getFileByResult(fileDownloadAccessType, accessSource, result, new HashSet<>());
     }
 
-    @Transactional
-    DownloadResult getFileByResult(FileDownloadAccessType fileDownloadAccessType, SearchSource accessSource, SearchResultEntity result, Set<SearchResultEntity> alreadyTriedDownloading) {
+    private DownloadResult getFileByResult(FileDownloadAccessType fileDownloadAccessType, SearchSource accessSource, SearchResultEntity result, Set<SearchResultEntity> alreadyTriedDownloading) {
         logger.info("{} download request for \"{}\" from indexer {}", fileDownloadAccessType, result.getTitle(), result.getIndexer().getName());
         if (fileDownloadAccessType == FileDownloadAccessType.REDIRECT) {
             return handleRedirect(accessSource, result, null);
@@ -221,7 +217,6 @@ public class FileHandler {
     }
 
 
-    @Transactional
     public FileZipResponse getFilesAsZip(List<Long> guids) throws Exception {
         Path tempDirectory;
         try {
@@ -244,8 +239,7 @@ public class FileHandler {
         return new FileZipResponse(true, zip.getAbsolutePath(), message, nzbsDownload.successfulIds, nzbsDownload.failedIds);
     }
 
-    @Transactional
-    NzbsDownload getNzbsAsFiles(Collection<Long> guids, Path targetDirectory) {
+    private NzbsDownload getNzbsAsFiles(Collection<Long> guids, Path targetDirectory) {
         final NzbsDownload nzbsDownload;
 
         final List<File> files = new ArrayList<>();
@@ -417,7 +411,6 @@ public class FileHandler {
         throw new DownloadException(result.getLink(), 500, "Unable to handle redirect from URL " + result.getLink() + " because no redirection location is set");
     }
 
-    @Transactional
     public GenericResponse saveNzbToBlackhole(Long searchResultId) {
         if (configProvider.getBaseConfig().getDownloading().getSaveNzbsTo().isEmpty()) {
             //Shouldn't happen
@@ -429,6 +422,10 @@ public class FileHandler {
             return GenericResponse.notOk("Unable to save file for download NZB for some reason");
         }
         return GenericResponse.ok();
+    }
+
+    public Set<File> getTemporaryZipFiles() {
+        return temporaryZipFiles;
     }
 
     private static class NzbsDownload {

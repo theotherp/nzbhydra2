@@ -6,6 +6,7 @@ import dev.failsafe.Failsafe;
 import dev.failsafe.RetryPolicy;
 import dev.failsafe.function.CheckedSupplier;
 import joptsimple.internal.Strings;
+import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -158,7 +159,7 @@ public class Binsearch extends Indexer<String> {
         item.setTitle(title);
 
         item.setIndexerGuid(getElementOrNone(row, "input[type=checkbox]").attr("name"));
-        item.setLink("https://binsearch.info/nzb?mode=files&%s=on&name=%s".formatted(item.getIndexerGuid(), filename + ".nzb"));
+        item.setLink("https://binsearch.info/nzb?mode=files&%s=on&name=%s".formatted(item.getIndexerGuid(), StringUtils.removeEnd(filename, ".nzb") + ".nzb"));
         Element infoElement = getElementOrNone(row, "td:nth-child(3) > div:nth-child(1) > div");
         if (infoElement == null) {
             debug("Ignored entry because it has no info");

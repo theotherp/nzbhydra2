@@ -1,4 +1,10 @@
 #@formatter:off
+-   version: "v7.2.3"
+    date: "2024-06-10"
+    changes:
+      -   type: "fix"
+          text: "Roll back changes that causes errors when downloading NZBs (which kinda sounds like I did those on purpose, but I didn't, really!) See #957"
+    final: true
 -   version: "v7.2.2"
     date: "2024-06-08"
     changes:
