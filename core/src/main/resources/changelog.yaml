@@ -1,4 +1,9 @@
 #@formatter:off
+-   version: "v7.2.4"
+    changes:
+      -   type: "feature"
+          text: "Add emdash (—) to \"umlauts\" to be replaced."
+    final: true
 -   version: "v7.2.3"
     date: "2024-06-10"
     changes:

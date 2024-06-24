@@ -103,6 +103,7 @@ public class CustomQueryAndTitleMappingHandler {
                 .replace("ü", "ue")
                 .replace("Ü", "Ue")
                 .replace("ß", "ss")
+                    .replace("—", "-")
             );
             if (!oldQuery.equals(metaData.getQuery().get())) {
                 logger.debug("Replaced umlauts. Old query: {}. New query: {}", oldQuery, metaData.getQuery().get());
