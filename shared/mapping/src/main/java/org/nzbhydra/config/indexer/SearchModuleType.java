@@ -20,6 +20,7 @@ public enum SearchModuleType {
     ANIZB,
     BINSEARCH,
     NEWZNAB,
+    WTFNZB,
     NZBINDEX,
     NZBINDEX_API,
     TORZNAB,

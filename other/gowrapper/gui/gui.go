@@ -34,6 +34,7 @@ func StartupErrorHandler(message string) {
 func onReady() {
 	systray.SetIcon(getIcon())
 	systray.SetTitle("NZBHydra2")
+	systray.SetTooltip("NZBHydra2")
 
 	menuItemOpenWebUI := systray.AddMenuItem("Open web UI", "")
 	go func() {

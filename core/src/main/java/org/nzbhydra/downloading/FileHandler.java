@@ -374,11 +374,19 @@ public class FileHandler {
 
 
     protected byte[] downloadFile(SearchResultEntity result) throws MagnetLinkRedirectException, DownloadException {
-        Request request = new Request.Builder().url(result.getLink()).build();
         Indexer indexerByName = searchModuleProvider.getIndexerByName(result.getIndexer().getName());
-        Integer timeout = indexerByName.getConfig().getTimeout().orElse(configProvider.getBaseConfig().getSearching().getTimeout());
-        final OkHttpClient build = clientHttpRequestFactory.getOkHttpClient(request.url().uri().getHost(), timeout);
-        try (Response response = build.newCall(request).execute()) {
+        IndexerConfig indexerConfig = indexerByName.getConfig();
+        Integer timeout = indexerConfig.getTimeout().orElse(configProvider.getBaseConfig().getSearching().getTimeout());
+        Request.Builder requestBuilder = new Request.Builder().url(result.getLink());
+
+        indexerConfig.getUserAgent()
+                .or(() -> configProvider.getBaseConfig().getSearching().getUserAgent())
+                .ifPresent(s -> requestBuilder.header("User-Agent", s));
+
+        Request request = requestBuilder.build();
+        final OkHttpClient client = clientHttpRequestFactory.getOkHttpClient(request.url().uri().getHost(), timeout);
+
+        try (Response response = client.newCall(request).execute()) {
             if (response.isRedirect()) {
                 return handleRedirect(result, response);
             }

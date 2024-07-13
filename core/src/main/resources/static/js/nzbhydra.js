@@ -3690,7 +3690,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
         });
     }
 
-    if (indexerModel.searchModuleType === 'NEWZNAB' || indexerModel.searchModuleType === 'TORZNAB' || indexerModel.searchModuleType === 'JACKETT_CONFIG') {
+    if (['WTFNZB', 'NEWZNAB', 'TORZNAB', 'JACKETT_CONFIG'].includes(indexerModel.searchModuleType)) {
         var hostField = {
             key: 'host',
             type: 'horizontalInput',
@@ -3716,7 +3716,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
         );
     }
 
-    if ((indexerModel.searchModuleType === 'NEWZNAB' || indexerModel.searchModuleType === 'TORZNAB' || indexerModel.searchModuleType === 'JACKETT_CONFIG' || indexerModel.searchModuleType === 'NZBINDEX_API') && indexerModel.host !== 'https://feed.animetosho.org') {
+    if (['WTFNZB', 'NEWZNAB', 'TORZNAB', 'JACKETT_CONFIG', 'NZBINDEX_API'].includes(indexerModel.searchModuleType) && indexerModel.host !== 'https://feed.animetosho.org') {
         fieldset.push(
             {
                 key: 'apiKey',
@@ -3735,7 +3735,8 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
             }
         )
     }
-    if (indexerModel.searchModuleType === 'NEWZNAB' || indexerModel.searchModuleType === 'TORZNAB') {
+
+    if (['NEWZNAB', 'TORZNAB'].includes(indexerModel.searchModuleType)) {
         fieldset.push(
             {
                 key: 'apiPath',
@@ -3758,7 +3759,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
         )
     }
 
-    if (indexerModel.searchModuleType === 'NEWZNAB' || indexerModel.searchModuleType === 'TORZNAB' || indexerModel.searchModuleType === 'JACKETT_CONFIG') {
+    if (['NEWZNAB', 'TORZNAB', 'JACKETT_CONFIG'].includes(indexerModel.searchModuleType)) {
         fieldset.push(
             {
                 key: 'username',
@@ -3768,6 +3769,28 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
                     required: false,
                     label: 'Username',
                     help: 'Only needed if indexer requires HTTP auth for API access (rare).'
+                },
+                watcher: {
+                    listener: function (field, newValue, oldValue, scope) {
+                        if (newValue !== oldValue) {
+                            scope.$parent.needsConnectionTest = true;
+                        }
+                    }
+                }
+            }
+        );
+    }
+
+    if ('WTFNZB' === indexerModel.searchModuleType) {
+        fieldset.push(
+            {
+                key: 'username',
+                type: 'horizontalInput',
+                templateOptions: {
+                    type: 'text',
+                    required: true,
+                    label: 'Username',
+                    help: 'See the API help on the website. Copy the user ID from the example API request where it says i=&lt;yourUserId&gt; (e.g. ABg4Cd==)'
                 },
                 watcher: {
                     listener: function (field, newValue, oldValue, scope) {
@@ -3792,6 +3815,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
             }
         )
     }
+
 
     if (indexerModel.searchModuleType !== 'JACKETT_CONFIG') {
         fieldset.push(
@@ -3833,7 +3857,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
         }
     );
 
-    if (indexerModel.searchModuleType === 'NEWZNAB' || indexerModel.searchModuleType === 'TORZNAB') {
+    if (['NEWZNAB', 'TORZNAB'].includes(indexerModel.searchModuleType)) {
         fieldset.push(
             {
                 key: 'hitLimit',
@@ -3928,7 +3952,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
         })
     }
 
-    if (indexerModel.searchModuleType === 'NEWZNAB') {
+    if (['NEWZNAB', 'TORZNAB', 'WTFNZB'].includes(indexerModel.searchModuleType)) {
         fieldset.push(
             {
                 key: 'userAgent',
@@ -3944,7 +3968,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
         )
     }
 
-    if (indexerModel.searchModuleType === 'NEWZNAB') {
+    if (['NEWZNAB', 'TORZNAB'].includes(indexerModel.searchModuleType)) {
         fieldset.push(
             {
                 key: 'customParameters',
@@ -3959,7 +3983,6 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
             }
         )
     }
-
 
     fieldset.push(
         {
@@ -4044,7 +4067,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
     }
 
 
-    if ((indexerModel.searchModuleType === 'NEWZNAB' || indexerModel.searchModuleType === 'TORZNAB') && !isInitial && indexerModel.searchModuleType !== 'JACKETT_CONFIG') {
+    if ((['NEWZNAB', 'TORZNAB'].includes(indexerModel.searchModuleType)) && !isInitial && indexerModel.searchModuleType !== 'JACKETT_CONFIG') {
         fieldset.push(
             {
                 key: 'supportedSearchIds',
@@ -4479,6 +4502,30 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
             timeout: null,
             searchModuleType: "NZBINDEX_API",
             username: null
+        },
+        {
+            allCapsChecked: true,
+            enabledForSearchSource: "INTERNAL",
+            categories: [],
+            configComplete: true,
+            downloadLimit: null,
+            generalMinSize: 1,
+            hitLimit: null,
+            hitLimitResetTime: null,
+            host: null,
+            loadLimitOnRandom: null,
+            name: "WtfNzb",
+            password: null,
+            preselect: true,
+            score: 0,
+            showOnSearch: true,
+            state: "ENABLED",
+            supportedSearchIds: [],
+            supportedSearchTypes: [],
+            timeout: null,
+            searchModuleType: "WTFNZB",
+            username: null,
+            userAgent: null
         }
     ];
 

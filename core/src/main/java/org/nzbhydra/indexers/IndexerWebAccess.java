@@ -67,7 +67,6 @@ public class IndexerWebAccess {
         headers.put("Content-Type", "application/xml");
         headers.put("Accept", "application/xml");
 
-
         if (indexerConfig.getUsername().isPresent() && indexerConfig.getPassword().isPresent()) {
             headers.put("Authorization", "Basic " + BaseEncoding.base64().encode((indexerConfig.getUsername().get() + ":" + indexerConfig.getPassword().get()).getBytes()));
         }

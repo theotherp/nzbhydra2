@@ -1,0 +1,1964 @@
+<?xml version="1.0" encoding="utf-8" ?> 
+<!--
+  ~  (C) Copyright 2024 TheOtherP (theotherp@posteo.net)
+  ~
+  ~  Licensed under the Apache License, Version 2.0 (the "License");
+  ~  you may not use this file except in compliance with the License.
+  ~  You may obtain a copy of the License at
+  ~
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~  Unless required by applicable law or agreed to in writing, software
+  ~  distributed under the License is distributed on an "AS IS" BASIS,
+  ~  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~  See the License for the specific language governing permissions and
+  ~  limitations under the License.
+  -->
+
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:newznab="http://www.newznab.com/DTD/2010/feeds/attributes/">
+<channel>
+<atom:link href="https://secretsubdomain.wtfnzb.pw/api" rel="self" type="application/rss+xml" />
+<title>WtF[nZb]</title>
+<description>WtF[nZb] APi Feed | You are searching in last 100k releases, to search older releases go there: https://secretsubdomain.wtfnzb.pw/_search_</description>
+<link>https://secretsubdomain.wtfnzb.pw/</link>
+<language>en-gb</language>
+<webMaster>wtfnzb@tuta.io (WtF[nZb])</webMaster>
+<category></category>
+<image>
+	<title>WtF[nZb]</title>
+	<link>https://secretsubdomain.wtfnzb.pw/</link>
+	<description>Visit WtF[nZb] - Fastest nzb source!</description>
+</image>
+<newznab:response offset="0" total="193" />
+<item>
+	<title><![CDATA[Raiders.of.the.Lost.Ark.1981.UHD.BluRay.1080p.DDP.7.1.DoVi.HDR.x265-SM737 [86e0a43b4]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/343d330f40f9d160abc296ab440110eb</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/343d330f40f9d160abc296ab440110eb.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/343d330f40f9d160abc296ab440110eb#comments</comments>
+        <pubDate>2024-07-05 06:43:15</pubDate> 
+	<description><![CDATA[Raiders.of.the.Lost.Ark.1981.UHD.BluRay.1080p.DDP.7.1.DoVi.HDR.x265-SM737 [86e0a43b4]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/343d330f40f9d160abc296ab440110eb.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="343d330f40f9d160abc296ab440110eb" />
+</item>
+<item>
+	<title><![CDATA[Gorilya-Lostie-(DVNTT039)-WEB-2024-PTC [f984c5f9e]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/aca47db38301c6c2dd5c4bfa93b61eaf</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/aca47db38301c6c2dd5c4bfa93b61eaf.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/aca47db38301c6c2dd5c4bfa93b61eaf#comments</comments>
+        <pubDate>2024-07-05 04:32:07</pubDate> 
+	<description><![CDATA[Gorilya-Lostie-(DVNTT039)-WEB-2024-PTC [f984c5f9e]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/aca47db38301c6c2dd5c4bfa93b61eaf.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="aca47db38301c6c2dd5c4bfa93b61eaf" />
+</item>
+<item>
+	<title><![CDATA[IF.2024.MULTI.HDR.2160p.WEB.H265-LOST [76799b18b]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/2ab27ee62be6b96b7e7d5d7b69a1ac7b</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/2ab27ee62be6b96b7e7d5d7b69a1ac7b.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/2ab27ee62be6b96b7e7d5d7b69a1ac7b#comments</comments>
+        <pubDate>2024-07-05 04:12:18</pubDate> 
+	<description><![CDATA[IF.2024.MULTI.HDR.2160p.WEB.H265-LOST [76799b18b]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/2ab27ee62be6b96b7e7d5d7b69a1ac7b.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="2ab27ee62be6b96b7e7d5d7b69a1ac7b" />
+</item>
+<item>
+	<title><![CDATA[IF.2024.MULTI.DV.2160p.WEB.H265-LOST [300314b17]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/30bc986ab8f2c232149b1763dffe7562</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/30bc986ab8f2c232149b1763dffe7562.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/30bc986ab8f2c232149b1763dffe7562#comments</comments>
+        <pubDate>2024-07-05 03:21:16</pubDate> 
+	<description><![CDATA[IF.2024.MULTI.DV.2160p.WEB.H265-LOST [300314b17]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/30bc986ab8f2c232149b1763dffe7562.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="30bc986ab8f2c232149b1763dffe7562" />
+</item>
+<item>
+	<title><![CDATA[IF.2024.FRENCH.720p.WEB.H264-LOST [aea02db18]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/e284b3d2786465f9498a360fff250c01</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/e284b3d2786465f9498a360fff250c01.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/e284b3d2786465f9498a360fff250c01#comments</comments>
+        <pubDate>2024-07-05 02:25:36</pubDate> 
+	<description><![CDATA[IF.2024.FRENCH.720p.WEB.H264-LOST [aea02db18]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/e284b3d2786465f9498a360fff250c01.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="e284b3d2786465f9498a360fff250c01" />
+</item>
+<item>
+	<title><![CDATA[IF.2024.MULTI.1080p.WEB.H264-LOST [1f56688cb]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/026b611a3e1881e5904810864d567766</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/026b611a3e1881e5904810864d567766.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/026b611a3e1881e5904810864d567766#comments</comments>
+        <pubDate>2024-07-05 01:43:53</pubDate> 
+	<description><![CDATA[IF.2024.MULTI.1080p.WEB.H264-LOST [1f56688cb]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/026b611a3e1881e5904810864d567766.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="026b611a3e1881e5904810864d567766" />
+</item>
+<item>
+	<title><![CDATA[Acres-Lost-SINGLE-WEB-2024-ENRiCH [416af8026]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/fc794d4dd5d46929dce273e533205d9a</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/fc794d4dd5d46929dce273e533205d9a.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/fc794d4dd5d46929dce273e533205d9a#comments</comments>
+        <pubDate>2024-07-05 00:13:33</pubDate> 
+	<description><![CDATA[Acres-Lost-SINGLE-WEB-2024-ENRiCH [416af8026]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/fc794d4dd5d46929dce273e533205d9a.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="fc794d4dd5d46929dce273e533205d9a" />
+</item>
+<item>
+	<title><![CDATA[Maria Healy and Chelsea Holland-Lost-(SUBC359)-WEB-2024-AFO [18a51ed7d]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/fc3bf38aac0ad826fff35a41b6a11153</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/fc3bf38aac0ad826fff35a41b6a11153.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/fc3bf38aac0ad826fff35a41b6a11153#comments</comments>
+        <pubDate>2024-07-04 19:14:40</pubDate> 
+	<description><![CDATA[Maria Healy and Chelsea Holland-Lost-(SUBC359)-WEB-2024-AFO [18a51ed7d]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/fc3bf38aac0ad826fff35a41b6a11153.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="fc3bf38aac0ad826fff35a41b6a11153" />
+</item>
+<item>
+	<title><![CDATA[Even Odds-Lost You Somewhere-(WN032)-SINGLE-WEB-2024-PTC [e4c8649dd]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/75a15a229f04619e0b99f106af3ffd71</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/75a15a229f04619e0b99f106af3ffd71.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/75a15a229f04619e0b99f106af3ffd71#comments</comments>
+        <pubDate>2024-07-04 19:10:01</pubDate> 
+	<description><![CDATA[Even Odds-Lost You Somewhere-(WN032)-SINGLE-WEB-2024-PTC [e4c8649dd]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/75a15a229f04619e0b99f106af3ffd71.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="75a15a229f04619e0b99f106af3ffd71" />
+</item>
+<item>
+	<title><![CDATA[NeonEight-Lost In The Echoes-(ITC098)-SINGLE-WEB-2024-PTC [f70d020fb]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/ab5518ac148941bb5c01bfeb31d1f523</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/ab5518ac148941bb5c01bfeb31d1f523.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/ab5518ac148941bb5c01bfeb31d1f523#comments</comments>
+        <pubDate>2024-07-04 19:09:29</pubDate> 
+	<description><![CDATA[NeonEight-Lost In The Echoes-(ITC098)-SINGLE-WEB-2024-PTC [f70d020fb]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/ab5518ac148941bb5c01bfeb31d1f523.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="ab5518ac148941bb5c01bfeb31d1f523" />
+</item>
+<item>
+	<title><![CDATA[VA-Lost.Tapes.Vol.1-.CRVA01.-WEB-2024-BABA [0xtjuIX]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/a3755c9f31b3a20873d505b1423975e2</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/a3755c9f31b3a20873d505b1423975e2.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/a3755c9f31b3a20873d505b1423975e2#comments</comments>
+        <pubDate>2024-07-03 22:16:58</pubDate> 
+	<description><![CDATA[VA-Lost.Tapes.Vol.1-.CRVA01.-WEB-2024-BABA [0xtjuIX]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/a3755c9f31b3a20873d505b1423975e2.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="a3755c9f31b3a20873d505b1423975e2" />
+</item>
+<item>
+	<title><![CDATA[The.Lost.Daughter.2021.REPACK.1080p.NF.WEB-DL.DDP5.1.x264-TEPES [tamG0hE]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/e7e65d587bd5baa1fc364e4cc91615c3</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/e7e65d587bd5baa1fc364e4cc91615c3.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/e7e65d587bd5baa1fc364e4cc91615c3#comments</comments>
+        <pubDate>2024-07-03 15:00:46</pubDate> 
+	<description><![CDATA[The.Lost.Daughter.2021.REPACK.1080p.NF.WEB-DL.DDP5.1.x264-TEPES [tamG0hE]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/e7e65d587bd5baa1fc364e4cc91615c3.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="e7e65d587bd5baa1fc364e4cc91615c3" />
+</item>
+<item>
+	<title><![CDATA[will.i.am-Lost.Change-16BIT-44-KHZ-WEB-FLAC-2001-WALKMAN]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/5814a0b9beb20e688be52ca6165c91b0</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/5814a0b9beb20e688be52ca6165c91b0.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/5814a0b9beb20e688be52ca6165c91b0#comments</comments>
+        <pubDate>2024-07-03 01:20:38</pubDate> 
+	<description><![CDATA[will.i.am-Lost.Change-16BIT-44-KHZ-WEB-FLAC-2001-WALKMAN]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/5814a0b9beb20e688be52ca6165c91b0.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="5814a0b9beb20e688be52ca6165c91b0" />
+</item>
+<item>
+	<title><![CDATA[Arctic.Circle.S03E02.Lost.and.Found.1080p.STAN.WEB-DL.DDP5.1.H.264-FLUX [yPWE2S6]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/89c4b12972aa02ea3130fb87caba1ed9</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/89c4b12972aa02ea3130fb87caba1ed9.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/89c4b12972aa02ea3130fb87caba1ed9#comments</comments>
+        <pubDate>2024-07-03 00:40:56</pubDate> 
+	<description><![CDATA[Arctic.Circle.S03E02.Lost.and.Found.1080p.STAN.WEB-DL.DDP5.1.H.264-FLUX [yPWE2S6]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/89c4b12972aa02ea3130fb87caba1ed9.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="89c4b12972aa02ea3130fb87caba1ed9" />
+</item>
+<item>
+	<title><![CDATA[John.Williams-The.Lost.World.Jurassic.Park.(Original.Motion.Picture.Score)-16BIT-44-KHZ-WEB-FLAC-2012-WALKMAN]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/416c168b170e0e9bb74a76e53ab223a0</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/416c168b170e0e9bb74a76e53ab223a0.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/416c168b170e0e9bb74a76e53ab223a0#comments</comments>
+        <pubDate>2024-07-04 09:19:59</pubDate> 
+	<description><![CDATA[John.Williams-The.Lost.World.Jurassic.Park.(Original.Motion.Picture.Score)-16BIT-44-KHZ-WEB-FLAC-2012-WALKMAN]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/416c168b170e0e9bb74a76e53ab223a0.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="416c168b170e0e9bb74a76e53ab223a0" />
+</item>
+<item>
+	<title><![CDATA[Antifuchs-Lost.In.XXX-16BIT-44-KHZ-WEB-FLAC-2020-WALKMAN]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/9a3a85132753e1c46ff38957ac670906</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/9a3a85132753e1c46ff38957ac670906.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/9a3a85132753e1c46ff38957ac670906#comments</comments>
+        <pubDate>2024-07-03 01:00:47</pubDate> 
+	<description><![CDATA[Antifuchs-Lost.In.XXX-16BIT-44-KHZ-WEB-FLAC-2020-WALKMAN]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/9a3a85132753e1c46ff38957ac670906.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="9a3a85132753e1c46ff38957ac670906" />
+</item>
+<item>
+	<title><![CDATA[Maria.Healy.and.Chelsea.Holland-Lost-(SUBC359)-WEB-2024-AFO]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/cbceddca40674fbad33356262e16ed12</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/cbceddca40674fbad33356262e16ed12.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/cbceddca40674fbad33356262e16ed12#comments</comments>
+        <pubDate>2024-07-04 15:50:02</pubDate> 
+	<description><![CDATA[Maria.Healy.and.Chelsea.Holland-Lost-(SUBC359)-WEB-2024-AFO]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/cbceddca40674fbad33356262e16ed12.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="cbceddca40674fbad33356262e16ed12" />
+</item>
+<item>
+	<title><![CDATA[Married.With.Children.S03E16.The.House.That.Peg.Lost.1080p.AMZN.WEB-DL.DDP5.1.H.264-FLUX]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/c18d7b297e8bddac67eefce9f22a3945</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/c18d7b297e8bddac67eefce9f22a3945.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/c18d7b297e8bddac67eefce9f22a3945#comments</comments>
+        <pubDate>2024-07-03 09:03:46</pubDate> 
+	<description><![CDATA[Married.With.Children.S03E16.The.House.That.Peg.Lost.1080p.AMZN.WEB-DL.DDP5.1.H.264-FLUX]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/c18d7b297e8bddac67eefce9f22a3945.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="c18d7b297e8bddac67eefce9f22a3945" />
+</item>
+<item>
+	<title><![CDATA[Bastille-Things.We.Lost.In.The.Fire-16BIT-44-KHZ-WEB-FLAC-2013-WALKMAN]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/2a3873241c3c4fe0b2dfa6dad840db2b</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/2a3873241c3c4fe0b2dfa6dad840db2b.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/2a3873241c3c4fe0b2dfa6dad840db2b#comments</comments>
+        <pubDate>2024-07-04 01:31:52</pubDate> 
+	<description><![CDATA[Bastille-Things.We.Lost.In.The.Fire-16BIT-44-KHZ-WEB-FLAC-2013-WALKMAN]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/2a3873241c3c4fe0b2dfa6dad840db2b.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="2a3873241c3c4fe0b2dfa6dad840db2b" />
+</item>
+<item>
+	<title><![CDATA[Emegepe-Lost.Reason-(SAA065)-WEB-2024-AFO]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/eb8fe48b28f06ef87fb36283114f8878</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/eb8fe48b28f06ef87fb36283114f8878.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/eb8fe48b28f06ef87fb36283114f8878#comments</comments>
+        <pubDate>2024-07-04 12:21:55</pubDate> 
+	<description><![CDATA[Emegepe-Lost.Reason-(SAA065)-WEB-2024-AFO]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/eb8fe48b28f06ef87fb36283114f8878.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="eb8fe48b28f06ef87fb36283114f8878" />
+</item>
+<item>
+	<title><![CDATA[Fred.again-Marea.(weve.lost.dancing)-16BIT-44-KHZ-WEB-FLAC-2021-WALKMAN]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/bc4fcc4e95f4b0c4f7ee97889f3837ca</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/bc4fcc4e95f4b0c4f7ee97889f3837ca.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/bc4fcc4e95f4b0c4f7ee97889f3837ca#comments</comments>
+        <pubDate>2024-07-03 14:20:18</pubDate> 
+	<description><![CDATA[Fred.again-Marea.(weve.lost.dancing)-16BIT-44-KHZ-WEB-FLAC-2021-WALKMAN]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/bc4fcc4e95f4b0c4f7ee97889f3837ca.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="bc4fcc4e95f4b0c4f7ee97889f3837ca" />
+</item>
+<item>
+	<title><![CDATA[Emegepe-Lost Reason-(SAA065)-16BIT-WEB-FLAC-2024-AFO [5bc1b7444]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/6d98a88e48a9a0301c0044b64435b569</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/6d98a88e48a9a0301c0044b64435b569.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/6d98a88e48a9a0301c0044b64435b569#comments</comments>
+        <pubDate>2024-07-04 15:44:07</pubDate> 
+	<description><![CDATA[Emegepe-Lost Reason-(SAA065)-16BIT-WEB-FLAC-2024-AFO [5bc1b7444]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/6d98a88e48a9a0301c0044b64435b569.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="6d98a88e48a9a0301c0044b64435b569" />
+</item>
+<item>
+	<title><![CDATA[Lampe-Get Lost-(ALULA245)-SINGLE-16BIT-WEB-FLAC-2024-AFO [5e0d4294e]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/e05f6c7ee7ed30839f4e00415868e94b</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/e05f6c7ee7ed30839f4e00415868e94b.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/e05f6c7ee7ed30839f4e00415868e94b#comments</comments>
+        <pubDate>2024-07-04 14:37:02</pubDate> 
+	<description><![CDATA[Lampe-Get Lost-(ALULA245)-SINGLE-16BIT-WEB-FLAC-2024-AFO [5e0d4294e]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/e05f6c7ee7ed30839f4e00415868e94b.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="e05f6c7ee7ed30839f4e00415868e94b" />
+</item>
+<item>
+	<title><![CDATA[Lampe-Get Lost-(ALULA245)-SINGLE-WEB-2024-AFO [80db7d248]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/9a36f4bf41d9ed6d2b3c4527506997ea</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/9a36f4bf41d9ed6d2b3c4527506997ea.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/9a36f4bf41d9ed6d2b3c4527506997ea#comments</comments>
+        <pubDate>2024-07-04 14:33:42</pubDate> 
+	<description><![CDATA[Lampe-Get Lost-(ALULA245)-SINGLE-WEB-2024-AFO [80db7d248]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/9a36f4bf41d9ed6d2b3c4527506997ea.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="9a36f4bf41d9ed6d2b3c4527506997ea" />
+</item>
+<item>
+	<title><![CDATA[Emegepe-Lost Reason-(SAA065)-WEB-2024-AFO [eea89308c]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/24426c3f6e671e5e1653032982ca10e7</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/24426c3f6e671e5e1653032982ca10e7.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/24426c3f6e671e5e1653032982ca10e7#comments</comments>
+        <pubDate>2024-07-04 13:51:55</pubDate> 
+	<description><![CDATA[Emegepe-Lost Reason-(SAA065)-WEB-2024-AFO [eea89308c]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/24426c3f6e671e5e1653032982ca10e7.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="24426c3f6e671e5e1653032982ca10e7" />
+</item>
+<item>
+	<title><![CDATA[[WtF-pOrN]-[Teacher of Magic] She lost a bet on Anal Sex. First time Anal Creampie.mp4-[N-Z-B] [0605ebda1]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/99ddb90d513fc3cc7201da9cc0239ae1</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/99ddb90d513fc3cc7201da9cc0239ae1.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/99ddb90d513fc3cc7201da9cc0239ae1#comments</comments>
+        <pubDate>2024-07-04 06:30:11</pubDate> 
+	<description><![CDATA[[WtF-pOrN]-[Teacher of Magic] She lost a bet on Anal Sex. First time Anal Creampie.mp4-[N-Z-B] [0605ebda1]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/99ddb90d513fc3cc7201da9cc0239ae1.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="99ddb90d513fc3cc7201da9cc0239ae1" />
+</item>
+<item>
+	<title><![CDATA[Catapulta And Gamora-Lost-(IO037)-SINGLE-WEB-2022-FALCON [468061416]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/27559043a379f4c85288382037076e90</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/27559043a379f4c85288382037076e90.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/27559043a379f4c85288382037076e90#comments</comments>
+        <pubDate>2024-07-04 02:49:55</pubDate> 
+	<description><![CDATA[Catapulta And Gamora-Lost-(IO037)-SINGLE-WEB-2022-FALCON [468061416]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/27559043a379f4c85288382037076e90.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="27559043a379f4c85288382037076e90" />
+</item>
+<item>
+	<title><![CDATA[[WtF-pOrN]-[kisankanna] My wife lost her panties and I didn t help her in the search.mp4-[N-Z-B] [5e535b9e7]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/c0b6948d06a1a130853ef0a2fa096a9c</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/c0b6948d06a1a130853ef0a2fa096a9c.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/c0b6948d06a1a130853ef0a2fa096a9c#comments</comments>
+        <pubDate>2024-07-04 01:03:07</pubDate> 
+	<description><![CDATA[[WtF-pOrN]-[kisankanna] My wife lost her panties and I didn t help her in the search.mp4-[N-Z-B] [5e535b9e7]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/c0b6948d06a1a130853ef0a2fa096a9c.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="c0b6948d06a1a130853ef0a2fa096a9c" />
+</item>
+<item>
+	<title><![CDATA[VA-Lost Tapes Vol 1-(CRVA01)-WEB-2024-BABAS [4cb4a4a4c]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/a2975107728b3a729baf9c8f74730e72</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/a2975107728b3a729baf9c8f74730e72.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/a2975107728b3a729baf9c8f74730e72#comments</comments>
+        <pubDate>2024-07-03 22:40:20</pubDate> 
+	<description><![CDATA[VA-Lost Tapes Vol 1-(CRVA01)-WEB-2024-BABAS [4cb4a4a4c]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/a2975107728b3a729baf9c8f74730e72.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="a2975107728b3a729baf9c8f74730e72" />
+</item>
+<item>
+	<title><![CDATA[[LostYears].KonoSuba.-.God’s.blessing.on.this.wonderful.world!.-.S03E11.(WEB.1080p.x264.AAC.E-AC-3).[E4762CCA].mkv-[N-Z-B] [4bfa01407]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/a0f80e2b63e7c0b12913862dc8670a48</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/a0f80e2b63e7c0b12913862dc8670a48.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/a0f80e2b63e7c0b12913862dc8670a48#comments</comments>
+        <pubDate>2024-07-03 21:58:23</pubDate> 
+	<description><![CDATA[[LostYears].KonoSuba.-.God’s.blessing.on.this.wonderful.world!.-.S03E11.(WEB.1080p.x264.AAC.E-AC-3).[E4762CCA].mkv-[N-Z-B] [4bfa01407]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/a0f80e2b63e7c0b12913862dc8670a48.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="a0f80e2b63e7c0b12913862dc8670a48" />
+</item>
+<item>
+	<title><![CDATA[Notoir-Loved and Lost EP-(HFI090)-WEB-2024-AFO [fd0d4dc5e]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/7b80ee6acf0a1d928f7922d6d72c8ef7</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/7b80ee6acf0a1d928f7922d6d72c8ef7.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/7b80ee6acf0a1d928f7922d6d72c8ef7#comments</comments>
+        <pubDate>2024-07-03 12:10:00</pubDate> 
+	<description><![CDATA[Notoir-Loved and Lost EP-(HFI090)-WEB-2024-AFO [fd0d4dc5e]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/7b80ee6acf0a1d928f7922d6d72c8ef7.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="7b80ee6acf0a1d928f7922d6d72c8ef7" />
+</item>
+<item>
+	<title><![CDATA[Notoir-Loved and Lost EP-(HFI090)-16BIT-WEB-FLAC-2024-AFO [e9cfa040a]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/576142235a4aaf0271a070043279b90f</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/576142235a4aaf0271a070043279b90f.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/576142235a4aaf0271a070043279b90f#comments</comments>
+        <pubDate>2024-07-03 12:06:59</pubDate> 
+	<description><![CDATA[Notoir-Loved and Lost EP-(HFI090)-16BIT-WEB-FLAC-2024-AFO [e9cfa040a]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/576142235a4aaf0271a070043279b90f.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="576142235a4aaf0271a070043279b90f" />
+</item>
+<item>
+	<title><![CDATA[KillemAll Coop-Lost History-EP-WEB-2019-RAGEMP3 [09104b138]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/f1a5a5fa37a428f46c40f44b3e2e400a</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/f1a5a5fa37a428f46c40f44b3e2e400a.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/f1a5a5fa37a428f46c40f44b3e2e400a#comments</comments>
+        <pubDate>2024-07-03 07:28:50</pubDate> 
+	<description><![CDATA[KillemAll Coop-Lost History-EP-WEB-2019-RAGEMP3 [09104b138]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/f1a5a5fa37a428f46c40f44b3e2e400a.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="f1a5a5fa37a428f46c40f44b3e2e400a" />
+</item>
+<item>
+	<title><![CDATA[I.Guess.This.Dragon.Who.Lost.Her.Egg.to.Disaster.Is.My.Mom.Now.[Cross.Infinite.World].[Stick] [192d97ef9]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/f44953f567be5547d8f91099e3aba29f</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/f44953f567be5547d8f91099e3aba29f.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/f44953f567be5547d8f91099e3aba29f#comments</comments>
+        <pubDate>2024-07-02 20:58:39</pubDate> 
+	<description><![CDATA[I.Guess.This.Dragon.Who.Lost.Her.Egg.to.Disaster.Is.My.Mom.Now.[Cross.Infinite.World].[Stick] [192d97ef9]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/f44953f567be5547d8f91099e3aba29f.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="f44953f567be5547d8f91099e3aba29f" />
+</item>
+<item>
+	<title><![CDATA[Lost.And.Found.2011.mkv-[N-Z-B] [57480e95d]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/25ec35afcfd7102b1629601110da07c1</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/25ec35afcfd7102b1629601110da07c1.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/25ec35afcfd7102b1629601110da07c1#comments</comments>
+        <pubDate>2024-07-01 23:10:37</pubDate> 
+	<description><![CDATA[Lost.And.Found.2011.mkv-[N-Z-B] [57480e95d]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/25ec35afcfd7102b1629601110da07c1.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="25ec35afcfd7102b1629601110da07c1" />
+</item>
+<item>
+	<title><![CDATA[Ch4.Lost.Temples.of.Cambodia.3of3.Banteay.Toap.to.Angkor.1080p.WEB.x264.AAC.MVGroup.org.mkv-[N-Z-B] [ee5d15117]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/7d2f9883d4fe9dd08639caff9d3b3a5d</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/7d2f9883d4fe9dd08639caff9d3b3a5d.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/7d2f9883d4fe9dd08639caff9d3b3a5d#comments</comments>
+        <pubDate>2024-07-02 05:15:24</pubDate> 
+	<description><![CDATA[Ch4.Lost.Temples.of.Cambodia.3of3.Banteay.Toap.to.Angkor.1080p.WEB.x264.AAC.MVGroup.org.mkv-[N-Z-B] [ee5d15117]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/7d2f9883d4fe9dd08639caff9d3b3a5d.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="7d2f9883d4fe9dd08639caff9d3b3a5d" />
+</item>
+<item>
+	<title><![CDATA[Ch4.Lost.Temples.of.Cambodia.2of3.Angkor.to.Banteay.Chhmar.1080p.WEB.x264.AAC.MVGroup.org.mkv-[N-Z-B] [098ee9c99]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/3b2c9d480d8db0d8d79e74c8dfc48d27</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/3b2c9d480d8db0d8d79e74c8dfc48d27.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/3b2c9d480d8db0d8d79e74c8dfc48d27#comments</comments>
+        <pubDate>2024-07-02 00:44:39</pubDate> 
+	<description><![CDATA[Ch4.Lost.Temples.of.Cambodia.2of3.Angkor.to.Banteay.Chhmar.1080p.WEB.x264.AAC.MVGroup.org.mkv-[N-Z-B] [098ee9c99]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/3b2c9d480d8db0d8d79e74c8dfc48d27.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="3b2c9d480d8db0d8d79e74c8dfc48d27" />
+</item>
+<item>
+	<title><![CDATA[Ch4.Lost.Temples.of.Cambodia.1of3.Angkor.Wat.1080p.WEB.x264.AAC.MVGroup.org.mkv-[N-Z-B] [b45b6684e]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/8f7567f723a0032a8b4b50e4f5bb6860</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/8f7567f723a0032a8b4b50e4f5bb6860.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/8f7567f723a0032a8b4b50e4f5bb6860#comments</comments>
+        <pubDate>2024-07-01 22:48:48</pubDate> 
+	<description><![CDATA[Ch4.Lost.Temples.of.Cambodia.1of3.Angkor.Wat.1080p.WEB.x264.AAC.MVGroup.org.mkv-[N-Z-B] [b45b6684e]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/8f7567f723a0032a8b4b50e4f5bb6860.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="8f7567f723a0032a8b4b50e4f5bb6860" />
+</item>
+<item>
+	<title><![CDATA[Ch4.Lost.Temples.of.Cambodia.3of3.Banteay.Toap.to.Angkor.1080p.WEB.x264.AAC.MVGroup.org.mkv-[N-Z-B] [8e1fb4228]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/3ce7f5657e6d4738997877030c6e96a6</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/3ce7f5657e6d4738997877030c6e96a6.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/3ce7f5657e6d4738997877030c6e96a6#comments</comments>
+        <pubDate>2024-07-02 06:57:08</pubDate> 
+	<description><![CDATA[Ch4.Lost.Temples.of.Cambodia.3of3.Banteay.Toap.to.Angkor.1080p.WEB.x264.AAC.MVGroup.org.mkv-[N-Z-B] [8e1fb4228]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/3ce7f5657e6d4738997877030c6e96a6.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="3ce7f5657e6d4738997877030c6e96a6" />
+</item>
+<item>
+	<title><![CDATA[BBC.Storyville.2024.Copa.71.The.Lost.Lionesses.1080p.HDTV.x265.AAC.MVGroup.org.mkv-WtF[nZb] [c3ac2792a]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/04e8c672a4450357297b1dee81868334</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/04e8c672a4450357297b1dee81868334.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/04e8c672a4450357297b1dee81868334#comments</comments>
+        <pubDate>2024-07-02 17:57:36</pubDate> 
+	<description><![CDATA[BBC.Storyville.2024.Copa.71.The.Lost.Lionesses.1080p.HDTV.x265.AAC.MVGroup.org.mkv-WtF[nZb] [c3ac2792a]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/04e8c672a4450357297b1dee81868334.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="04e8c672a4450357297b1dee81868334" />
+</item>
+<item>
+	<title><![CDATA[Lost.County.Productions-Lost.County.Presents.Ja-Ro-WEB-2006-RAGEMP3]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/2aea9cbef69278e74794b5758e7f19c3</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/2aea9cbef69278e74794b5758e7f19c3.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/2aea9cbef69278e74794b5758e7f19c3#comments</comments>
+        <pubDate>2024-06-30 14:37:21</pubDate> 
+	<description><![CDATA[Lost.County.Productions-Lost.County.Presents.Ja-Ro-WEB-2006-RAGEMP3]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/2aea9cbef69278e74794b5758e7f19c3.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="2aea9cbef69278e74794b5758e7f19c3" />
+</item>
+<item>
+	<title><![CDATA[Six.Feet.Under.S03E13.Im.Sorry,.Im.Lost [We9Zi7s]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/b0947f67fd5946f1de20224c2f50ceeb</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/b0947f67fd5946f1de20224c2f50ceeb.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/b0947f67fd5946f1de20224c2f50ceeb#comments</comments>
+        <pubDate>2024-06-30 06:11:41</pubDate> 
+	<description><![CDATA[Six.Feet.Under.S03E13.Im.Sorry,.Im.Lost [We9Zi7s]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/b0947f67fd5946f1de20224c2f50ceeb.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="b0947f67fd5946f1de20224c2f50ceeb" />
+</item>
+<item>
+	<title><![CDATA[Sam.Paganini-Get.Lost..Atom-JAM065-WEB-2024-WAV]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/6d08235d079b8030d03c3479799589b2</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/6d08235d079b8030d03c3479799589b2.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/6d08235d079b8030d03c3479799589b2#comments</comments>
+        <pubDate>2024-06-29 23:54:31</pubDate> 
+	<description><![CDATA[Sam.Paganini-Get.Lost..Atom-JAM065-WEB-2024-WAV]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/6d08235d079b8030d03c3479799589b2.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="6d08235d079b8030d03c3479799589b2" />
+</item>
+<item>
+	<title><![CDATA[Fallen.Leaves.2023.MULTI.1080p.WEB.X264-LOST [QU5OAg8]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/52d7e4688a2ba75e82abd5163c7f02f1</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/52d7e4688a2ba75e82abd5163c7f02f1.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/52d7e4688a2ba75e82abd5163c7f02f1#comments</comments>
+        <pubDate>2024-06-30 19:00:24</pubDate> 
+	<description><![CDATA[Fallen.Leaves.2023.MULTI.1080p.WEB.X264-LOST [QU5OAg8]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/52d7e4688a2ba75e82abd5163c7f02f1.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="52d7e4688a2ba75e82abd5163c7f02f1" />
+</item>
+<item>
+	<title><![CDATA[Guano.Apes-The.Best.and.The.Lost.(T)apes-16BIT-44-KHZ-WEB-FLAC-2006-WALKMAN]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/c170232755ca8931940e3e8641fba961</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/c170232755ca8931940e3e8641fba961.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/c170232755ca8931940e3e8641fba961#comments</comments>
+        <pubDate>2024-06-30 00:53:51</pubDate> 
+	<description><![CDATA[Guano.Apes-The.Best.and.The.Lost.(T)apes-16BIT-44-KHZ-WEB-FLAC-2006-WALKMAN]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/c170232755ca8931940e3e8641fba961.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="c170232755ca8931940e3e8641fba961" />
+</item>
+<item>
+	<title><![CDATA[Charlie.Hedges.feat.Jess.Ball.-.Lost.In.It.All-SINGLE-WEB-2024-ZzZz]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/e6f183dd5c69dad53789a56a7bb9356e</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/e6f183dd5c69dad53789a56a7bb9356e.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/e6f183dd5c69dad53789a56a7bb9356e#comments</comments>
+        <pubDate>2024-06-28 21:09:47</pubDate> 
+	<description><![CDATA[Charlie.Hedges.feat.Jess.Ball.-.Lost.In.It.All-SINGLE-WEB-2024-ZzZz]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/e6f183dd5c69dad53789a56a7bb9356e.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="e6f183dd5c69dad53789a56a7bb9356e" />
+</item>
+<item>
+	<title><![CDATA[KarupsOW.18.02.10.Lara.Lost.Solo.2.XXX.XviD-OLDiPT.Team]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/758b06b48c5968c2929bd62b3bec22d3</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/758b06b48c5968c2929bd62b3bec22d3.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/758b06b48c5968c2929bd62b3bec22d3#comments</comments>
+        <pubDate>2024-06-29 18:39:37</pubDate> 
+	<description><![CDATA[KarupsOW.18.02.10.Lara.Lost.Solo.2.XXX.XviD-OLDiPT.Team]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/758b06b48c5968c2929bd62b3bec22d3.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="758b06b48c5968c2929bd62b3bec22d3" />
+</item>
+<item>
+	<title><![CDATA[kaiandMarley.NaturalSweet.Pornhub.Channel.Siterips.Lost.on.the.road.and.STRANGER.girl.SEDUCE.ME.and.SUCK.my.DICK.until.I.CUM.her.MOUTH [aZvyWm4]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/0b299b3c8b20df8b35c5682d0ee2d32e</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/0b299b3c8b20df8b35c5682d0ee2d32e.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/0b299b3c8b20df8b35c5682d0ee2d32e#comments</comments>
+        <pubDate>2024-07-02 02:17:26</pubDate> 
+	<description><![CDATA[kaiandMarley.NaturalSweet.Pornhub.Channel.Siterips.Lost.on.the.road.and.STRANGER.girl.SEDUCE.ME.and.SUCK.my.DICK.until.I.CUM.her.MOUTH [aZvyWm4]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/0b299b3c8b20df8b35c5682d0ee2d32e.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="0b299b3c8b20df8b35c5682d0ee2d32e" />
+</item>
+<item>
+	<title><![CDATA[The.Promised.Land.2023.MULTI.1080p.WEB.X264-LOST [yJinhu1]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/ad4643c27849d174dfc2cf02fad58e79</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/ad4643c27849d174dfc2cf02fad58e79.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/ad4643c27849d174dfc2cf02fad58e79#comments</comments>
+        <pubDate>2024-07-01 05:12:42</pubDate> 
+	<description><![CDATA[The.Promised.Land.2023.MULTI.1080p.WEB.X264-LOST [yJinhu1]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/ad4643c27849d174dfc2cf02fad58e79.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="ad4643c27849d174dfc2cf02fad58e79" />
+</item>
+<item>
+	<title><![CDATA[Cheat.Codes-Senses.(feat..Lostboycrow)-16BIT-44-KHZ-WEB-FLAC-2015-WALKMAN]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/5cdb52ceda953ad71ad33a99fa34243d</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/5cdb52ceda953ad71ad33a99fa34243d.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/5cdb52ceda953ad71ad33a99fa34243d#comments</comments>
+        <pubDate>2024-07-01 14:49:40</pubDate> 
+	<description><![CDATA[Cheat.Codes-Senses.(feat..Lostboycrow)-16BIT-44-KHZ-WEB-FLAC-2015-WALKMAN]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/5cdb52ceda953ad71ad33a99fa34243d.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="5cdb52ceda953ad71ad33a99fa34243d" />
+</item>
+<item>
+	<title><![CDATA[Mauricio.Traglia-Lost.World-WEB-2017-ROSiN]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/96b3f35b786c130e9fcea6571a6cf5b1</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/96b3f35b786c130e9fcea6571a6cf5b1.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/96b3f35b786c130e9fcea6571a6cf5b1#comments</comments>
+        <pubDate>2024-06-29 22:15:48</pubDate> 
+	<description><![CDATA[Mauricio.Traglia-Lost.World-WEB-2017-ROSiN]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/96b3f35b786c130e9fcea6571a6cf5b1.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="96b3f35b786c130e9fcea6571a6cf5b1" />
+</item>
+<item>
+	<title><![CDATA[kaiandMarley.NaturalSweet.Pornhub.Channel.Siterips.INNOCENT.lost.BRUNETTE.catches.me.MASTURBATING,.SHE.is.curious.and.WANT.a.DICK.for.the.FIRST.TIME [cmbRY1I]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/5637df9346ac97dfc31bc6e0ad7ef6c1</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/5637df9346ac97dfc31bc6e0ad7ef6c1.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/5637df9346ac97dfc31bc6e0ad7ef6c1#comments</comments>
+        <pubDate>2024-07-02 02:18:43</pubDate> 
+	<description><![CDATA[kaiandMarley.NaturalSweet.Pornhub.Channel.Siterips.INNOCENT.lost.BRUNETTE.catches.me.MASTURBATING,.SHE.is.curious.and.WANT.a.DICK.for.the.FIRST.TIME [cmbRY1I]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/5637df9346ac97dfc31bc6e0ad7ef6c1.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="5637df9346ac97dfc31bc6e0ad7ef6c1" />
+</item>
+<item>
+	<title><![CDATA[Feuer.und.Flamme.S08E04.Brand.in.Duisburger.Lost.Place.GERMAN.DOKU.720p.WEB.x264-TMSF]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/2eba9a3b9ac55c1722adde4de8ef21d9</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/2eba9a3b9ac55c1722adde4de8ef21d9.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/2eba9a3b9ac55c1722adde4de8ef21d9#comments</comments>
+        <pubDate>2024-07-02 15:31:10</pubDate> 
+	<description><![CDATA[Feuer.und.Flamme.S08E04.Brand.in.Duisburger.Lost.Place.GERMAN.DOKU.720p.WEB.x264-TMSF]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/2eba9a3b9ac55c1722adde4de8ef21d9.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="2eba9a3b9ac55c1722adde4de8ef21d9" />
+</item>
+<item>
+	<title><![CDATA[Fard-Lost.Tapes-16BIT-44-KHZ-WEB-FLAC-2018-WALKMAN]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/0ae09ad0f0822883098b642d45eec0be</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/0ae09ad0f0822883098b642d45eec0be.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/0ae09ad0f0822883098b642d45eec0be#comments</comments>
+        <pubDate>2024-06-29 20:33:22</pubDate> 
+	<description><![CDATA[Fard-Lost.Tapes-16BIT-44-KHZ-WEB-FLAC-2018-WALKMAN]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/0ae09ad0f0822883098b642d45eec0be.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="0ae09ad0f0822883098b642d45eec0be" />
+</item>
+<item>
+	<title><![CDATA[Concrete.Utopia.2023.MULTI.1080p.WEB.X264-LOST [iz0Oxct]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/c2ff4992421ad3504dfac91172d2074b</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/c2ff4992421ad3504dfac91172d2074b.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/c2ff4992421ad3504dfac91172d2074b#comments</comments>
+        <pubDate>2024-06-30 19:23:31</pubDate> 
+	<description><![CDATA[Concrete.Utopia.2023.MULTI.1080p.WEB.X264-LOST [iz0Oxct]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/c2ff4992421ad3504dfac91172d2074b.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="c2ff4992421ad3504dfac91172d2074b" />
+</item>
+<item>
+	<title><![CDATA[Francesco.Devincenti-The.Lost.Tapes-(GDSDUB03)-WEB-2024-PTC]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/9544bbfddfb3ba5ee1fc16f4292bb3a2</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/9544bbfddfb3ba5ee1fc16f4292bb3a2.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/9544bbfddfb3ba5ee1fc16f4292bb3a2#comments</comments>
+        <pubDate>2024-06-30 12:21:57</pubDate> 
+	<description><![CDATA[Francesco.Devincenti-The.Lost.Tapes-(GDSDUB03)-WEB-2024-PTC]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/9544bbfddfb3ba5ee1fc16f4292bb3a2.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="9544bbfddfb3ba5ee1fc16f4292bb3a2" />
+</item>
+<item>
+	<title><![CDATA[J.Dilla-Lost.Tapes,.Reels.+.More-16BIT-44-KHZ-WEB-FLAC-2015-WALKMAN]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/b1473902c297fcbe4d44b5d303e9f56a</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/b1473902c297fcbe4d44b5d303e9f56a.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/b1473902c297fcbe4d44b5d303e9f56a#comments</comments>
+        <pubDate>2024-06-28 19:02:07</pubDate> 
+	<description><![CDATA[J.Dilla-Lost.Tapes,.Reels.+.More-16BIT-44-KHZ-WEB-FLAC-2015-WALKMAN]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/b1473902c297fcbe4d44b5d303e9f56a.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="b1473902c297fcbe4d44b5d303e9f56a" />
+</item>
+<item>
+	<title><![CDATA[Francesco.Devincenti-The.Lost.Tapes-.GDSDUB03.-WEB-2024-PT [bDXjqeW]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/fd7a13722db441c8ce8e94a0826fd6d4</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/fd7a13722db441c8ce8e94a0826fd6d4.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/fd7a13722db441c8ce8e94a0826fd6d4#comments</comments>
+        <pubDate>2024-06-30 12:22:21</pubDate> 
+	<description><![CDATA[Francesco.Devincenti-The.Lost.Tapes-.GDSDUB03.-WEB-2024-PT [bDXjqeW]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/fd7a13722db441c8ce8e94a0826fd6d4.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="fd7a13722db441c8ce8e94a0826fd6d4" />
+</item>
+<item>
+	<title><![CDATA[Getting.Lost.with.Erin.French.S01E02.1080p.WEB.h264-EDITH [BvEH6YM]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/99ad1fd6133ea3b089bced77c87d4af2</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/99ad1fd6133ea3b089bced77c87d4af2.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/99ad1fd6133ea3b089bced77c87d4af2#comments</comments>
+        <pubDate>2024-06-30 20:10:46</pubDate> 
+	<description><![CDATA[Getting.Lost.with.Erin.French.S01E02.1080p.WEB.h264-EDITH [BvEH6YM]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/99ad1fd6133ea3b089bced77c87d4af2.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="99ad1fd6133ea3b089bced77c87d4af2" />
+</item>
+<item>
+	<title><![CDATA[Egotronic-The.Lost.Tapes-16BIT-44-KHZ-WEB-FLAC-2013-WALKMAN]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/2ce5c919b6b073d8b4910b3b86f465b6</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/2ce5c919b6b073d8b4910b3b86f465b6.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/2ce5c919b6b073d8b4910b3b86f465b6#comments</comments>
+        <pubDate>2024-06-29 23:09:43</pubDate> 
+	<description><![CDATA[Egotronic-The.Lost.Tapes-16BIT-44-KHZ-WEB-FLAC-2013-WALKMAN]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/2ce5c919b6b073d8b4910b3b86f465b6.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="2ce5c919b6b073d8b4910b3b86f465b6" />
+</item>
+<item>
+	<title><![CDATA[RealWifeStories.18.02.17.Reagan.Foxx.Lost.And.Pound.XXX.XviD-OLDiPT.Team]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/d46eed873a6cf3d8e252c05234b28675</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/d46eed873a6cf3d8e252c05234b28675.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/d46eed873a6cf3d8e252c05234b28675#comments</comments>
+        <pubDate>2024-07-01 03:24:46</pubDate> 
+	<description><![CDATA[RealWifeStories.18.02.17.Reagan.Foxx.Lost.And.Pound.XXX.XviD-OLDiPT.Team]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/d46eed873a6cf3d8e252c05234b28675.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="d46eed873a6cf3d8e252c05234b28675" />
+</item>
+<item>
+	<title><![CDATA[Dr.Cheon.and.the.Lost.Talisman.2023.1080p.VIKI.WEB-DL.AAC2.0.H.264-DUSKLiGHT [0tql9SN]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/ff580642af7bbdc457da08f91c3a4714</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/ff580642af7bbdc457da08f91c3a4714.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/ff580642af7bbdc457da08f91c3a4714#comments</comments>
+        <pubDate>2024-06-29 03:20:27</pubDate> 
+	<description><![CDATA[Dr.Cheon.and.the.Lost.Talisman.2023.1080p.VIKI.WEB-DL.AAC2.0.H.264-DUSKLiGHT [0tql9SN]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/ff580642af7bbdc457da08f91c3a4714.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="ff580642af7bbdc457da08f91c3a4714" />
+</item>
+<item>
+	<title><![CDATA[King.Henry-Lost.County.Vol..1.45.Min..From.Nowhere-WEB-2005-RAGEMP3]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/4053557f4f95773e2979533ae170e1b2</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/4053557f4f95773e2979533ae170e1b2.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/4053557f4f95773e2979533ae170e1b2#comments</comments>
+        <pubDate>2024-06-30 14:37:50</pubDate> 
+	<description><![CDATA[King.Henry-Lost.County.Vol..1.45.Min..From.Nowhere-WEB-2005-RAGEMP3]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/4053557f4f95773e2979533ae170e1b2.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="4053557f4f95773e2979533ae170e1b2" />
+</item>
+<item>
+	<title><![CDATA[Vertical.Horizon-The.Lost.Mile-16BIT-44-KHZ-WEB-FLAC-2018-WALKMAN]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/27ce9115a940f8511845271d1e04fd2d</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/27ce9115a940f8511845271d1e04fd2d.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/27ce9115a940f8511845271d1e04fd2d#comments</comments>
+        <pubDate>2024-07-02 13:58:35</pubDate> 
+	<description><![CDATA[Vertical.Horizon-The.Lost.Mile-16BIT-44-KHZ-WEB-FLAC-2018-WALKMAN]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/27ce9115a940f8511845271d1e04fd2d.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="27ce9115a940f8511845271d1e04fd2d" />
+</item>
+<item>
+	<title><![CDATA[StepSiblingsCaught.18.02.14.Bella.Rose.Sister.Lost.A.Bet.XXX.XviD-OLDiPT.Team]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/68c0f177b4ff1856a4d60d9479d5d578</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/68c0f177b4ff1856a4d60d9479d5d578.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/68c0f177b4ff1856a4d60d9479d5d578#comments</comments>
+        <pubDate>2024-06-29 18:58:02</pubDate> 
+	<description><![CDATA[StepSiblingsCaught.18.02.14.Bella.Rose.Sister.Lost.A.Bet.XXX.XviD-OLDiPT.Team]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/68c0f177b4ff1856a4d60d9479d5d578.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="68c0f177b4ff1856a4d60d9479d5d578" />
+</item>
+<item>
+	<title><![CDATA[Scrimps-Epochal..the.Lost.Tapes.of.the.Yellow-Jacket-Tour.9798.to.Danishcastle-16BIT-44-KHZ-WEB-FLAC-2011-WALKMAN]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/ddf31146f3a171851ed3aed9a0986479</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/ddf31146f3a171851ed3aed9a0986479.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/ddf31146f3a171851ed3aed9a0986479#comments</comments>
+        <pubDate>2024-06-29 21:04:17</pubDate> 
+	<description><![CDATA[Scrimps-Epochal..the.Lost.Tapes.of.the.Yellow-Jacket-Tour.9798.to.Danishcastle-16BIT-44-KHZ-WEB-FLAC-2011-WALKMAN]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/ddf31146f3a171851ed3aed9a0986479.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="ddf31146f3a171851ed3aed9a0986479" />
+</item>
+<item>
+	<title><![CDATA[Sam.Paganini-Get.Lost..Atom-JAM065-16BIT-WEB-FLAC-2024-WAVED]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/08f312323a7948c7188a557b4f985ac4</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/08f312323a7948c7188a557b4f985ac4.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/08f312323a7948c7188a557b4f985ac4#comments</comments>
+        <pubDate>2024-06-29 23:20:36</pubDate> 
+	<description><![CDATA[Sam.Paganini-Get.Lost..Atom-JAM065-16BIT-WEB-FLAC-2024-WAVED]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/08f312323a7948c7188a557b4f985ac4.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="08f312323a7948c7188a557b4f985ac4" />
+</item>
+<item>
+	<title><![CDATA[Getting.Lost.with.Erin.French.S01E02.720p.WEB.H264-JFF]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/4b9eca33a0c24c06300dcb274e842dfd</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/4b9eca33a0c24c06300dcb274e842dfd.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/4b9eca33a0c24c06300dcb274e842dfd#comments</comments>
+        <pubDate>2024-06-30 21:38:47</pubDate> 
+	<description><![CDATA[Getting.Lost.with.Erin.French.S01E02.720p.WEB.H264-JFF]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/4b9eca33a0c24c06300dcb274e842dfd.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="4b9eca33a0c24c06300dcb274e842dfd" />
+</item>
+<item>
+	<title><![CDATA[Melchi-Lost-.SHM017.-WEB-2024-PT [CMZvj7I]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/191367758fd42fb3684b0b97be13799a</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/191367758fd42fb3684b0b97be13799a.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/191367758fd42fb3684b0b97be13799a#comments</comments>
+        <pubDate>2024-06-29 03:41:06</pubDate> 
+	<description><![CDATA[Melchi-Lost-.SHM017.-WEB-2024-PT [CMZvj7I]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/191367758fd42fb3684b0b97be13799a.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="191367758fd42fb3684b0b97be13799a" />
+</item>
+<item>
+	<title><![CDATA[King.Henry-Lost.County.Vol..2.Still.45.Min..From.Nowhere-WEB-2006-RAGEMP3]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/9c5a6688000702c7b1d52752872e38d3</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/9c5a6688000702c7b1d52752872e38d3.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/9c5a6688000702c7b1d52752872e38d3#comments</comments>
+        <pubDate>2024-06-30 14:37:09</pubDate> 
+	<description><![CDATA[King.Henry-Lost.County.Vol..2.Still.45.Min..From.Nowhere-WEB-2006-RAGEMP3]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/9c5a6688000702c7b1d52752872e38d3.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="9c5a6688000702c7b1d52752872e38d3" />
+</item>
+<item>
+	<title><![CDATA[RooneyNasr-Lost.Again-.CPT043.-SINGLE-WEB-2024-PT [LvyVnHQ]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/dd4fe6c910999683789cc6cf10940dcb</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/dd4fe6c910999683789cc6cf10940dcb.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/dd4fe6c910999683789cc6cf10940dcb#comments</comments>
+        <pubDate>2024-07-01 03:17:35</pubDate> 
+	<description><![CDATA[RooneyNasr-Lost.Again-.CPT043.-SINGLE-WEB-2024-PT [LvyVnHQ]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/dd4fe6c910999683789cc6cf10940dcb.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="dd4fe6c910999683789cc6cf10940dcb" />
+</item>
+<item>
+	<title><![CDATA[Nytrix-Lost.Files-16BIT-44-KHZ-WEB-FLAC-2018-WALKMAN]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/00816af86222829f4ce8d88a15cec051</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/00816af86222829f4ce8d88a15cec051.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/00816af86222829f4ce8d88a15cec051#comments</comments>
+        <pubDate>2024-07-01 19:25:09</pubDate> 
+	<description><![CDATA[Nytrix-Lost.Files-16BIT-44-KHZ-WEB-FLAC-2018-WALKMAN]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/00816af86222829f4ce8d88a15cec051.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="00816af86222829f4ce8d88a15cec051" />
+</item>
+<item>
+	<title><![CDATA[Chris.Webby-Lost.Wednesday-The.Demos-WEB-2024-FT [ukhNSyw]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/b28b951b31fe25f97272abd4c056bb44</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/b28b951b31fe25f97272abd4c056bb44.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/b28b951b31fe25f97272abd4c056bb44#comments</comments>
+        <pubDate>2024-06-28 21:05:04</pubDate> 
+	<description><![CDATA[Chris.Webby-Lost.Wednesday-The.Demos-WEB-2024-FT [ukhNSyw]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/b28b951b31fe25f97272abd4c056bb44.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="b28b951b31fe25f97272abd4c056bb44" />
+</item>
+<item>
+	<title><![CDATA[The.Secret.World.of.Alex.Mack.-.S04E19.-.Paradise.Lost.(1) [f9pKmuoN9a]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/ed5e1f1601a6bf785939df2a91dadf4b</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/ed5e1f1601a6bf785939df2a91dadf4b.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/ed5e1f1601a6bf785939df2a91dadf4b#comments</comments>
+        <pubDate>2024-06-30 20:41:49</pubDate> 
+	<description><![CDATA[The.Secret.World.of.Alex.Mack.-.S04E19.-.Paradise.Lost.(1) [f9pKmuoN9a]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/ed5e1f1601a6bf785939df2a91dadf4b.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="ed5e1f1601a6bf785939df2a91dadf4b" />
+</item>
+<item>
+	<title><![CDATA[Uncertain-Lost EP-(KDRAW112)-WEB-2024-PTC INT [dRXXtAydjU]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/ae34a2e055b733c806ed62ff1f314f60</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/ae34a2e055b733c806ed62ff1f314f60.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/ae34a2e055b733c806ed62ff1f314f60#comments</comments>
+        <pubDate>2024-06-30 02:40:25</pubDate> 
+	<description><![CDATA[Uncertain-Lost EP-(KDRAW112)-WEB-2024-PTC INT [dRXXtAydjU]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/ae34a2e055b733c806ed62ff1f314f60.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="ae34a2e055b733c806ed62ff1f314f60" />
+</item>
+<item>
+	<title><![CDATA[The Unknxwns feat Jerzi Boyz - I Lost Count-(67933)-SINGLE-WEB-2024-ZzZz [VBMwJ5iucs]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/ebe94dc787226489a654ee603816d7c2</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/ebe94dc787226489a654ee603816d7c2.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/ebe94dc787226489a654ee603816d7c2#comments</comments>
+        <pubDate>2024-06-29 20:48:25</pubDate> 
+	<description><![CDATA[The Unknxwns feat Jerzi Boyz - I Lost Count-(67933)-SINGLE-WEB-2024-ZzZz [VBMwJ5iucs]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/ebe94dc787226489a654ee603816d7c2.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="ebe94dc787226489a654ee603816d7c2" />
+</item>
+<item>
+	<title><![CDATA[Truth.Be.Told.S01E08.All.That.Was.Lost.EAC3.5.1.1080p.WEBRip.x265-iVy [43F1GNyFPK]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/eb1354ea9cf39f15ade16c401c433744</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/eb1354ea9cf39f15ade16c401c433744.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/eb1354ea9cf39f15ade16c401c433744#comments</comments>
+        <pubDate>2024-07-02 06:30:04</pubDate> 
+	<description><![CDATA[Truth.Be.Told.S01E08.All.That.Was.Lost.EAC3.5.1.1080p.WEBRip.x265-iVy [43F1GNyFPK]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/eb1354ea9cf39f15ade16c401c433744.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="eb1354ea9cf39f15ade16c401c433744" />
+</item>
+<item>
+	<title><![CDATA[Prince of Persia The Lost Crown Update v1.3.1 NSW-VENOM [NVJXr1dV8D]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/4f15fb5d4b46f103eb17a2ee7f0a849f</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/4f15fb5d4b46f103eb17a2ee7f0a849f.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/4f15fb5d4b46f103eb17a2ee7f0a849f#comments</comments>
+        <pubDate>2024-06-28 17:23:34</pubDate> 
+	<description><![CDATA[Prince of Persia The Lost Crown Update v1.3.1 NSW-VENOM [NVJXr1dV8D]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/4f15fb5d4b46f103eb17a2ee7f0a849f.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="4f15fb5d4b46f103eb17a2ee7f0a849f" />
+</item>
+<item>
+	<title><![CDATA[ALVINNN.And.the.Chipmunks.S03E23.Lost.In.Space.Camp..Super.Hot.Chocolate.1080p.NF.WEB-DL.DDP5.1.H.264-XEBEC [yKQ1BTs]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/1ef5cb5a507719cb5f182e3e43efce1b</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/1ef5cb5a507719cb5f182e3e43efce1b.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/1ef5cb5a507719cb5f182e3e43efce1b#comments</comments>
+        <pubDate>2024-07-02 13:20:47</pubDate> 
+	<description><![CDATA[ALVINNN.And.the.Chipmunks.S03E23.Lost.In.Space.Camp..Super.Hot.Chocolate.1080p.NF.WEB-DL.DDP5.1.H.264-XEBEC [yKQ1BTs]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/1ef5cb5a507719cb5f182e3e43efce1b.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="1ef5cb5a507719cb5f182e3e43efce1b" />
+</item>
+<item>
+	<title><![CDATA[King Henry-Lost County Vol. 1 45 Min. From Nowhere-WEB-2005-RAGEMP3 [0rafl5OCCl]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/ebcd924f2bde2abb97991a279444e481</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/ebcd924f2bde2abb97991a279444e481.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/ebcd924f2bde2abb97991a279444e481#comments</comments>
+        <pubDate>2024-06-30 14:33:38</pubDate> 
+	<description><![CDATA[King Henry-Lost County Vol. 1 45 Min. From Nowhere-WEB-2005-RAGEMP3 [0rafl5OCCl]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/ebcd924f2bde2abb97991a279444e481.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="ebcd924f2bde2abb97991a279444e481" />
+</item>
+<item>
+	<title><![CDATA[Lost.-.S00E10.-.Destiny.Calls.720p-x265-BMF [MKvif8drzG]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/950e1e010c0393acfde4a7eccc318656</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/950e1e010c0393acfde4a7eccc318656.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/950e1e010c0393acfde4a7eccc318656#comments</comments>
+        <pubDate>2024-07-01 02:57:16</pubDate> 
+	<description><![CDATA[Lost.-.S00E10.-.Destiny.Calls.720p-x265-BMF [MKvif8drzG]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/950e1e010c0393acfde4a7eccc318656.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="950e1e010c0393acfde4a7eccc318656" />
+</item>
+<item>
+	<title><![CDATA[Chris Webby-Lost Wednesday-The Demos-WEB-2024-FTD [Jyxq5GV6wu]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/fd9d8924f2bc71f666cda1906de1c29d</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/fd9d8924f2bc71f666cda1906de1c29d.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/fd9d8924f2bc71f666cda1906de1c29d#comments</comments>
+        <pubDate>2024-06-28 20:29:06</pubDate> 
+	<description><![CDATA[Chris Webby-Lost Wednesday-The Demos-WEB-2024-FTD [Jyxq5GV6wu]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/fd9d8924f2bc71f666cda1906de1c29d.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="fd9d8924f2bc71f666cda1906de1c29d" />
+</item>
+<item>
+	<title><![CDATA[Lost.-.S04E02.-.Confirmed.Dead.Bluray-720p-x265-BMF [HqLqoQfCdx]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/60fd814940570369a21e129bf090c4ce</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/60fd814940570369a21e129bf090c4ce.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/60fd814940570369a21e129bf090c4ce#comments</comments>
+        <pubDate>2024-07-01 01:22:10</pubDate> 
+	<description><![CDATA[Lost.-.S04E02.-.Confirmed.Dead.Bluray-720p-x265-BMF [HqLqoQfCdx]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/60fd814940570369a21e129bf090c4ce.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="60fd814940570369a21e129bf090c4ce" />
+</item>
+<item>
+	<title><![CDATA[Lost.-.S03E19.-.The.Brig.Bluray-720p-x265-BMF [OOYeLBezix]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/81df5fb8b7f3a83fa307d457e6bd26bd</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/81df5fb8b7f3a83fa307d457e6bd26bd.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/81df5fb8b7f3a83fa307d457e6bd26bd#comments</comments>
+        <pubDate>2024-07-01 00:25:15</pubDate> 
+	<description><![CDATA[Lost.-.S03E19.-.The.Brig.Bluray-720p-x265-BMF [OOYeLBezix]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/81df5fb8b7f3a83fa307d457e6bd26bd.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="81df5fb8b7f3a83fa307d457e6bd26bd" />
+</item>
+<item>
+	<title><![CDATA[Lost.-.S04E11.-.Cabin.Fever.Bluray-720p-x265-BMF [ZKhYf0ovuT]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/d3ce39cac40bc9adc1df26a9862120d7</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/d3ce39cac40bc9adc1df26a9862120d7.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/d3ce39cac40bc9adc1df26a9862120d7#comments</comments>
+        <pubDate>2024-06-30 23:43:09</pubDate> 
+	<description><![CDATA[Lost.-.S04E11.-.Cabin.Fever.Bluray-720p-x265-BMF [ZKhYf0ovuT]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/d3ce39cac40bc9adc1df26a9862120d7.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="d3ce39cac40bc9adc1df26a9862120d7" />
+</item>
+<item>
+	<title><![CDATA[Lost.-.S02E15.-.Maternity.Leave.Bluray-720p-x265-BMF [CB6LWjjXaC]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/638bd8b586fe74703da6afb4b2339c33</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/638bd8b586fe74703da6afb4b2339c33.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/638bd8b586fe74703da6afb4b2339c33#comments</comments>
+        <pubDate>2024-07-01 00:33:35</pubDate> 
+	<description><![CDATA[Lost.-.S02E15.-.Maternity.Leave.Bluray-720p-x265-BMF [CB6LWjjXaC]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/638bd8b586fe74703da6afb4b2339c33.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="638bd8b586fe74703da6afb4b2339c33" />
+</item>
+<item>
+	<title><![CDATA[Lost.Treasures.of.Egypt.S03E06.Pyramid.Tomb.Raiders.720p.DSNP.WEB-DL.DDP5.1.H.264-playWEB [snFCzLEDpH]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/71911bd526e3dd6460bab72ced0c50e7</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/71911bd526e3dd6460bab72ced0c50e7.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/71911bd526e3dd6460bab72ced0c50e7#comments</comments>
+        <pubDate>2024-06-30 13:59:42</pubDate> 
+	<description><![CDATA[Lost.Treasures.of.Egypt.S03E06.Pyramid.Tomb.Raiders.720p.DSNP.WEB-DL.DDP5.1.H.264-playWEB [snFCzLEDpH]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/71911bd526e3dd6460bab72ced0c50e7.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="71911bd526e3dd6460bab72ced0c50e7" />
+</item>
+<item>
+	<title><![CDATA[Mauricio Traglia-Lost World-16BIT-WEB-FLAC-2017-ROSiN [yn2q9SZ16g]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/94fb1f76b8267d6eefe4522024a9c81a</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/94fb1f76b8267d6eefe4522024a9c81a.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/94fb1f76b8267d6eefe4522024a9c81a#comments</comments>
+        <pubDate>2024-06-29 23:19:53</pubDate> 
+	<description><![CDATA[Mauricio Traglia-Lost World-16BIT-WEB-FLAC-2017-ROSiN [yn2q9SZ16g]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/94fb1f76b8267d6eefe4522024a9c81a.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="94fb1f76b8267d6eefe4522024a9c81a" />
+</item>
+<item>
+	<title><![CDATA[Lost.-.S03E16.-.One.of.Us.Bluray-720p-x265-BMF [OUGXmphnmr]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/5b67cb914fc5ca8b99410d8c67fd2d65</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/5b67cb914fc5ca8b99410d8c67fd2d65.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/5b67cb914fc5ca8b99410d8c67fd2d65#comments</comments>
+        <pubDate>2024-06-30 22:53:52</pubDate> 
+	<description><![CDATA[Lost.-.S03E16.-.One.of.Us.Bluray-720p-x265-BMF [OUGXmphnmr]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/5b67cb914fc5ca8b99410d8c67fd2d65.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="5b67cb914fc5ca8b99410d8c67fd2d65" />
+</item>
+<item>
+	<title><![CDATA[Lost.-.S05E16.-.The.Incident.(1).Bluray-720p-x265-BMF [Mmf1op1RSN]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/5a86cdf47c436b85301a443e2d8201de</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/5a86cdf47c436b85301a443e2d8201de.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/5a86cdf47c436b85301a443e2d8201de#comments</comments>
+        <pubDate>2024-06-30 23:27:07</pubDate> 
+	<description><![CDATA[Lost.-.S05E16.-.The.Incident.(1).Bluray-720p-x265-BMF [Mmf1op1RSN]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/5a86cdf47c436b85301a443e2d8201de.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="5a86cdf47c436b85301a443e2d8201de" />
+</item>
+<item>
+	<title><![CDATA[Boardwalk.Empire.-.S02E12.-.To.the.Lost.Bluray-720p-x265-BMF [cWgGWkJ6wf]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/6b8c5448afb41b6a1dcb8cfc47622223</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/6b8c5448afb41b6a1dcb8cfc47622223.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/6b8c5448afb41b6a1dcb8cfc47622223#comments</comments>
+        <pubDate>2024-07-02 12:54:32</pubDate> 
+	<description><![CDATA[Boardwalk.Empire.-.S02E12.-.To.the.Lost.Bluray-720p-x265-BMF [cWgGWkJ6wf]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/6b8c5448afb41b6a1dcb8cfc47622223.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="6b8c5448afb41b6a1dcb8cfc47622223" />
+</item>
+<item>
+	<title><![CDATA[Lostmind-Synchronicity-(SQLEP012)-WEB-2019-BABAS [OtBgumWr9p]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/7411eab5e728e7b7db9040f87e9264af</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/7411eab5e728e7b7db9040f87e9264af.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/7411eab5e728e7b7db9040f87e9264af#comments</comments>
+        <pubDate>2024-06-30 02:41:03</pubDate> 
+	<description><![CDATA[Lostmind-Synchronicity-(SQLEP012)-WEB-2019-BABAS [OtBgumWr9p]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/7411eab5e728e7b7db9040f87e9264af.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="7411eab5e728e7b7db9040f87e9264af" />
+</item>
+<item>
+	<title><![CDATA[Lost.-.S03E10.-.Tricia.Tanaka.is.Dead.Bluray-720p-x265-BMF [c86YhOH8e3]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/3e6ca6f2f747d1481f269907fad6386b</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/3e6ca6f2f747d1481f269907fad6386b.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/3e6ca6f2f747d1481f269907fad6386b#comments</comments>
+        <pubDate>2024-06-30 23:59:35</pubDate> 
+	<description><![CDATA[Lost.-.S03E10.-.Tricia.Tanaka.is.Dead.Bluray-720p-x265-BMF [c86YhOH8e3]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/3e6ca6f2f747d1481f269907fad6386b.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="3e6ca6f2f747d1481f269907fad6386b" />
+</item>
+<item>
+	<title><![CDATA[Aquaman.and.the.Lost.Kingdom.2023.NORDiC.1080p.REMUX.BluRay.AVC.DTS-HD.MA.7.1.Atmos-NorTekst [VNTncRKOcD]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/7a85bd4b1c26f4fec2d4b43eb4fb0df5</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/7a85bd4b1c26f4fec2d4b43eb4fb0df5.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/7a85bd4b1c26f4fec2d4b43eb4fb0df5#comments</comments>
+        <pubDate>2024-07-02 00:03:53</pubDate> 
+	<description><![CDATA[Aquaman.and.the.Lost.Kingdom.2023.NORDiC.1080p.REMUX.BluRay.AVC.DTS-HD.MA.7.1.Atmos-NorTekst [VNTncRKOcD]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/7a85bd4b1c26f4fec2d4b43eb4fb0df5.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="7a85bd4b1c26f4fec2d4b43eb4fb0df5" />
+</item>
+<item>
+	<title><![CDATA[Avatar-.The.Last.Airbender.-.S02E16.-.Appa's.Lost.Days.DVD-x265-BMF [LxkypHW2fg]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/37e3d35852f95eb023c36bb81aa30492</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/37e3d35852f95eb023c36bb81aa30492.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/37e3d35852f95eb023c36bb81aa30492#comments</comments>
+        <pubDate>2024-06-30 16:07:54</pubDate> 
+	<description><![CDATA[Avatar-.The.Last.Airbender.-.S02E16.-.Appa's.Lost.Days.DVD-x265-BMF [LxkypHW2fg]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/37e3d35852f95eb023c36bb81aa30492.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="37e3d35852f95eb023c36bb81aa30492" />
+</item>
+<item>
+	<title><![CDATA[Lost.-.S02E19.-.S.O.S.Bluray-720p-x265-BMF [jYrFJrzI0I]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/8cc162b51661d7e991c3361306b9382f</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/8cc162b51661d7e991c3361306b9382f.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/8cc162b51661d7e991c3361306b9382f#comments</comments>
+        <pubDate>2024-07-01 03:43:17</pubDate> 
+	<description><![CDATA[Lost.-.S02E19.-.S.O.S.Bluray-720p-x265-BMF [jYrFJrzI0I]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/8cc162b51661d7e991c3361306b9382f.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="8cc162b51661d7e991c3361306b9382f" />
+</item>
+<item>
+	<title><![CDATA[Lost.Treasures.of.Egypt.S03E01.The.Mystery.of.Tut's.Tomb.720p.DSNP.WEB-DL.DDP5.1.H.264-playWEB [yGm9IAIbno]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/ac7665f8856e4ff5e6e6ac94582ea66f</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/ac7665f8856e4ff5e6e6ac94582ea66f.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/ac7665f8856e4ff5e6e6ac94582ea66f#comments</comments>
+        <pubDate>2024-06-30 12:38:33</pubDate> 
+	<description><![CDATA[Lost.Treasures.of.Egypt.S03E01.The.Mystery.of.Tut's.Tomb.720p.DSNP.WEB-DL.DDP5.1.H.264-playWEB [yGm9IAIbno]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/ac7665f8856e4ff5e6e6ac94582ea66f.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="ac7665f8856e4ff5e6e6ac94582ea66f" />
+</item>
+<item>
+	<title><![CDATA[Lost.-.S04E05.-.The.Constant.Bluray-720p-x265-BMF [xCxDvcPoxQ]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/49e570b3e29378c5c28622665c3b5a13</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/49e570b3e29378c5c28622665c3b5a13.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/49e570b3e29378c5c28622665c3b5a13#comments</comments>
+        <pubDate>2024-07-01 00:34:45</pubDate> 
+	<description><![CDATA[Lost.-.S04E05.-.The.Constant.Bluray-720p-x265-BMF [xCxDvcPoxQ]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/49e570b3e29378c5c28622665c3b5a13.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="49e570b3e29378c5c28622665c3b5a13" />
+</item>
+<item>
+	<title><![CDATA[Lost.Treasures.of.Egypt.S03E03.Ramses.Rise.to.Power.720p.DSNP.WEB-DL.DDP5.1.H.264-playWEB [zDfhAUZsh1]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/014674209152fe329ab229eba2ae87dc</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/014674209152fe329ab229eba2ae87dc.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/014674209152fe329ab229eba2ae87dc#comments</comments>
+        <pubDate>2024-06-30 13:47:59</pubDate> 
+	<description><![CDATA[Lost.Treasures.of.Egypt.S03E03.Ramses.Rise.to.Power.720p.DSNP.WEB-DL.DDP5.1.H.264-playWEB [zDfhAUZsh1]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/014674209152fe329ab229eba2ae87dc.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="014674209152fe329ab229eba2ae87dc" />
+</item>
+<item>
+	<title><![CDATA[Lost.-.S04E08.-.Meet.Kevin.Johnson.Bluray-720p-x265-BMF [ZACmDh3rT0]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/62649c465c8fdf1062cf6fd568160b4a</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/62649c465c8fdf1062cf6fd568160b4a.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/62649c465c8fdf1062cf6fd568160b4a#comments</comments>
+        <pubDate>2024-07-01 02:58:03</pubDate> 
+	<description><![CDATA[Lost.-.S04E08.-.Meet.Kevin.Johnson.Bluray-720p-x265-BMF [ZACmDh3rT0]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/62649c465c8fdf1062cf6fd568160b4a.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="62649c465c8fdf1062cf6fd568160b4a" />
+</item>
+<item>
+	<title><![CDATA[Lost.-.S01E20.-.Do.No.Harm.Bluray-720p-x265-BMF [7xmoaYo139]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/abe357013e0a32fa249b8830d4bc29d2</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/abe357013e0a32fa249b8830d4bc29d2.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/abe357013e0a32fa249b8830d4bc29d2#comments</comments>
+        <pubDate>2024-07-01 01:58:56</pubDate> 
+	<description><![CDATA[Lost.-.S01E20.-.Do.No.Harm.Bluray-720p-x265-BMF [7xmoaYo139]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/abe357013e0a32fa249b8830d4bc29d2.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="abe357013e0a32fa249b8830d4bc29d2" />
+</item>
+<item>
+	<title><![CDATA[Lost.-.S02E07.-.The.Other.48.Days.Bluray-720p-x265-BMF [5Cp1ijwSeK]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/6feaeb6635beb84754f27144fcec98cb</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/6feaeb6635beb84754f27144fcec98cb.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/6feaeb6635beb84754f27144fcec98cb#comments</comments>
+        <pubDate>2024-06-30 23:09:15</pubDate> 
+	<description><![CDATA[Lost.-.S02E07.-.The.Other.48.Days.Bluray-720p-x265-BMF [5Cp1ijwSeK]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/6feaeb6635beb84754f27144fcec98cb.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="6feaeb6635beb84754f27144fcec98cb" />
+</item>
+<item>
+	<title><![CDATA[Blue.Bloods.-.S04E05.-.Lost.and.Found.WEBDL-720p-BMF [jYRdiEOK0a]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/da115d948b479c31907d7f7a9c7d3d35</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/da115d948b479c31907d7f7a9c7d3d35.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/da115d948b479c31907d7f7a9c7d3d35#comments</comments>
+        <pubDate>2024-07-01 08:13:41</pubDate> 
+	<description><![CDATA[Blue.Bloods.-.S04E05.-.Lost.and.Found.WEBDL-720p-BMF [jYRdiEOK0a]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/da115d948b479c31907d7f7a9c7d3d35.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="da115d948b479c31907d7f7a9c7d3d35" />
+</item>
+<item>
+	<title><![CDATA[Lost.-.S01E12.-.Whatever.the.Case.May.Be.Bluray-720p-x265-BMF [gmJvyw8HoD]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/8a8606fa6776debad92d2dd583562e1f</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/8a8606fa6776debad92d2dd583562e1f.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/8a8606fa6776debad92d2dd583562e1f#comments</comments>
+        <pubDate>2024-07-01 00:07:54</pubDate> 
+	<description><![CDATA[Lost.-.S01E12.-.Whatever.the.Case.May.Be.Bluray-720p-x265-BMF [gmJvyw8HoD]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/8a8606fa6776debad92d2dd583562e1f.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="8a8606fa6776debad92d2dd583562e1f" />
+</item>
+<item>
+	<title><![CDATA[Lost.Treasures.of.Egypt.S03E08.Cleopatra.Egypt's.Last.Pharaoh.720p.DSNP.WEB-DL.DDP5.1.H.264-playWEB [cmIOgTrWc3]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/7a12d487755a7913fa6f7cf2c9fb3f68</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/7a12d487755a7913fa6f7cf2c9fb3f68.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/7a12d487755a7913fa6f7cf2c9fb3f68#comments</comments>
+        <pubDate>2024-06-30 13:33:37</pubDate> 
+	<description><![CDATA[Lost.Treasures.of.Egypt.S03E08.Cleopatra.Egypt's.Last.Pharaoh.720p.DSNP.WEB-DL.DDP5.1.H.264-playWEB [cmIOgTrWc3]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/7a12d487755a7913fa6f7cf2c9fb3f68.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="7a12d487755a7913fa6f7cf2c9fb3f68" />
+</item>
+<item>
+	<title><![CDATA[Lost.-.S06E17-18.-.The.End.Bluray-720p-x265-BMF [oye69VKFpP]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/391e130335e0a79f1894c4dd411b1678</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/391e130335e0a79f1894c4dd411b1678.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/391e130335e0a79f1894c4dd411b1678#comments</comments>
+        <pubDate>2024-07-01 00:33:23</pubDate> 
+	<description><![CDATA[Lost.-.S06E17-18.-.The.End.Bluray-720p-x265-BMF [oye69VKFpP]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/391e130335e0a79f1894c4dd411b1678.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="391e130335e0a79f1894c4dd411b1678" />
+</item>
+<item>
+	<title><![CDATA[Lost.-.S04E03.-.The.Economist.Bluray-720p-x265-BMF [rZ0Nxvi0hH]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/587d3ba3fc548ec6e49c8dd07539d516</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/587d3ba3fc548ec6e49c8dd07539d516.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/587d3ba3fc548ec6e49c8dd07539d516#comments</comments>
+        <pubDate>2024-07-01 02:12:38</pubDate> 
+	<description><![CDATA[Lost.-.S04E03.-.The.Economist.Bluray-720p-x265-BMF [rZ0Nxvi0hH]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/587d3ba3fc548ec6e49c8dd07539d516.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="587d3ba3fc548ec6e49c8dd07539d516" />
+</item>
+<item>
+	<title><![CDATA[Lost.-.S03E21.-.Greatest.Hits.Bluray-720p-x265-BMF [r1gGAsavaC]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/48878e1878f0efeb209b79c5484bb767</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/48878e1878f0efeb209b79c5484bb767.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/48878e1878f0efeb209b79c5484bb767#comments</comments>
+        <pubDate>2024-07-01 02:58:26</pubDate> 
+	<description><![CDATA[Lost.-.S03E21.-.Greatest.Hits.Bluray-720p-x265-BMF [r1gGAsavaC]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/48878e1878f0efeb209b79c5484bb767.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="48878e1878f0efeb209b79c5484bb767" />
+</item>
+<item>
+	<title><![CDATA[Lost County Productions-Lost County Presents Ja-Ro-WEB-2006-RAGEMP3 [ntx6higHUC]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/1bd03f3c0ad062898f5f47a56eb02cc6</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/1bd03f3c0ad062898f5f47a56eb02cc6.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/1bd03f3c0ad062898f5f47a56eb02cc6#comments</comments>
+        <pubDate>2024-06-30 14:34:05</pubDate> 
+	<description><![CDATA[Lost County Productions-Lost County Presents Ja-Ro-WEB-2006-RAGEMP3 [ntx6higHUC]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/1bd03f3c0ad062898f5f47a56eb02cc6.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="1bd03f3c0ad062898f5f47a56eb02cc6" />
+</item>
+<item>
+	<title><![CDATA[Lost.-.S06E03.-.What.Kate.Does.Bluray-720p-x265-BMF [K20rcv1IQ7]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/2a1a17495d549517955b00ce7f04e4e2</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/2a1a17495d549517955b00ce7f04e4e2.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/2a1a17495d549517955b00ce7f04e4e2#comments</comments>
+        <pubDate>2024-07-01 00:22:29</pubDate> 
+	<description><![CDATA[Lost.-.S06E03.-.What.Kate.Does.Bluray-720p-x265-BMF [K20rcv1IQ7]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/2a1a17495d549517955b00ce7f04e4e2.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="2a1a17495d549517955b00ce7f04e4e2" />
+</item>
+<item>
+	<title><![CDATA[Lost.Treasures.of.Egypt.S03E07.Tutankhamun's.Unsolved.Secrets.720p.DSNP.WEB-DL.DDP5.1.H.264-playWEB [Iy5zef005b]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/7ad8a95082adf458dd125aa953b0434f</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/7ad8a95082adf458dd125aa953b0434f.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/7ad8a95082adf458dd125aa953b0434f#comments</comments>
+        <pubDate>2024-06-30 13:12:18</pubDate> 
+	<description><![CDATA[Lost.Treasures.of.Egypt.S03E07.Tutankhamun's.Unsolved.Secrets.720p.DSNP.WEB-DL.DDP5.1.H.264-playWEB [Iy5zef005b]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/7ad8a95082adf458dd125aa953b0434f.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="7ad8a95082adf458dd125aa953b0434f" />
+</item>
+<item>
+	<title><![CDATA[Futurama.S03E04.Parasites.Lost.720p.HULU.WEB-DL.x265-HETeam [uKv64itSlV]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/e8a65543210543b2c68acdadf6249e2c</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/e8a65543210543b2c68acdadf6249e2c.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/e8a65543210543b2c68acdadf6249e2c#comments</comments>
+        <pubDate>2024-07-01 00:25:31</pubDate> 
+	<description><![CDATA[Futurama.S03E04.Parasites.Lost.720p.HULU.WEB-DL.x265-HETeam [uKv64itSlV]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/e8a65543210543b2c68acdadf6249e2c.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="e8a65543210543b2c68acdadf6249e2c" />
+</item>
+<item>
+	<title><![CDATA[Francesco Devincenti-The Lost Tapes-(GDSDUB03)-WEB-2024-PTC [RsotBtSLdX]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/2676ac2841d471cff1a15bc522ba98fc</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/2676ac2841d471cff1a15bc522ba98fc.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/2676ac2841d471cff1a15bc522ba98fc#comments</comments>
+        <pubDate>2024-06-30 12:21:06</pubDate> 
+	<description><![CDATA[Francesco Devincenti-The Lost Tapes-(GDSDUB03)-WEB-2024-PTC [RsotBtSLdX]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/2676ac2841d471cff1a15bc522ba98fc.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="2676ac2841d471cff1a15bc522ba98fc" />
+</item>
+<item>
+	<title><![CDATA[Lost.Treasures.of.Egypt.S03E02.Legend.of.the.Pyramid.Kings.720p.DSNP.WEB-DL.DDP5.1.H.264-playWEB [IloaSpAaDQ]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/57c606509820877e04ee46986d6337df</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/57c606509820877e04ee46986d6337df.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/57c606509820877e04ee46986d6337df#comments</comments>
+        <pubDate>2024-06-30 13:32:30</pubDate> 
+	<description><![CDATA[Lost.Treasures.of.Egypt.S03E02.Legend.of.the.Pyramid.Kings.720p.DSNP.WEB-DL.DDP5.1.H.264-playWEB [IloaSpAaDQ]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/57c606509820877e04ee46986d6337df.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="57c606509820877e04ee46986d6337df" />
+</item>
+<item>
+	<title><![CDATA[Lost.Treasures.of.Egypt.S03E04.Rise.of.the.Mummies.720p.DSNP.WEB-DL.DDP5.1.H.264-playWEB [Owi2R7mMAF]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/58f05c26d1b07b22aaab2ae259cc2951</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/58f05c26d1b07b22aaab2ae259cc2951.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/58f05c26d1b07b22aaab2ae259cc2951#comments</comments>
+        <pubDate>2024-06-30 13:39:14</pubDate> 
+	<description><![CDATA[Lost.Treasures.of.Egypt.S03E04.Rise.of.the.Mummies.720p.DSNP.WEB-DL.DDP5.1.H.264-playWEB [Owi2R7mMAF]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/58f05c26d1b07b22aaab2ae259cc2951.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="58f05c26d1b07b22aaab2ae259cc2951" />
+</item>
+<item>
+	<title><![CDATA[King Henry-Lost County Vol. 2 Still 45 Min. From Nowhere-WEB-2006-RAGEMP3 [fc10LFwysA]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/ff3f657c765f06cca62c66e3563bfc29</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/ff3f657c765f06cca62c66e3563bfc29.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/ff3f657c765f06cca62c66e3563bfc29#comments</comments>
+        <pubDate>2024-06-30 14:32:50</pubDate> 
+	<description><![CDATA[King Henry-Lost County Vol. 2 Still 45 Min. From Nowhere-WEB-2006-RAGEMP3 [fc10LFwysA]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/ff3f657c765f06cca62c66e3563bfc29.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="ff3f657c765f06cca62c66e3563bfc29" />
+</item>
+<item>
+	<title><![CDATA[Lost.-.S05E02.-.The.Lie.Bluray-720p-x265-BMF [DfEgfLG8LW]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/d1e456e7bd3c9c1d323e0145a69c5e50</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/d1e456e7bd3c9c1d323e0145a69c5e50.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/d1e456e7bd3c9c1d323e0145a69c5e50#comments</comments>
+        <pubDate>2024-07-01 01:58:40</pubDate> 
+	<description><![CDATA[Lost.-.S05E02.-.The.Lie.Bluray-720p-x265-BMF [DfEgfLG8LW]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/d1e456e7bd3c9c1d323e0145a69c5e50.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="d1e456e7bd3c9c1d323e0145a69c5e50" />
+</item>
+<item>
+	<title><![CDATA[Lost.-.S02E02.-.Adrift.Bluray-720p-x265-BMF [sNAfxVasiL]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/fef9ac7c9dc2cc3b2b78df9eed48d4a4</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/fef9ac7c9dc2cc3b2b78df9eed48d4a4.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/fef9ac7c9dc2cc3b2b78df9eed48d4a4#comments</comments>
+        <pubDate>2024-07-01 00:11:16</pubDate> 
+	<description><![CDATA[Lost.-.S02E02.-.Adrift.Bluray-720p-x265-BMF [sNAfxVasiL]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/fef9ac7c9dc2cc3b2b78df9eed48d4a4.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="fef9ac7c9dc2cc3b2b78df9eed48d4a4" />
+</item>
+<item>
+	<title><![CDATA[Lost.-.S06E01-02.-.LA.X.Bluray-720p-x265-BMF [zQqzKM4kuR]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/0aa43db1d7d6ad371718c88a188855af</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/0aa43db1d7d6ad371718c88a188855af.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/0aa43db1d7d6ad371718c88a188855af#comments</comments>
+        <pubDate>2024-07-01 01:14:29</pubDate> 
+	<description><![CDATA[Lost.-.S06E01-02.-.LA.X.Bluray-720p-x265-BMF [zQqzKM4kuR]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/0aa43db1d7d6ad371718c88a188855af.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="0aa43db1d7d6ad371718c88a188855af" />
+</item>
+<item>
+	<title><![CDATA[Lost.-.S03E13.-.The.Man.From.Tallahassee.Bluray-720p-x265-BMF [c8ceHfdALw]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/3e5ea3b338788c46f904450249658979</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/3e5ea3b338788c46f904450249658979.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/3e5ea3b338788c46f904450249658979#comments</comments>
+        <pubDate>2024-07-01 02:28:04</pubDate> 
+	<description><![CDATA[Lost.-.S03E13.-.The.Man.From.Tallahassee.Bluray-720p-x265-BMF [c8ceHfdALw]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/3e5ea3b338788c46f904450249658979.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="3e5ea3b338788c46f904450249658979" />
+</item>
+<item>
+	<title><![CDATA[Charlie Hedges feat Jess Ball - Lost In It All-SINGLE-WEB-2024-ZzZz [xmOuErRcpY]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/062bb28e96c56437fc222d1e4317c276</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/062bb28e96c56437fc222d1e4317c276.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/062bb28e96c56437fc222d1e4317c276#comments</comments>
+        <pubDate>2024-06-28 21:09:57</pubDate> 
+	<description><![CDATA[Charlie Hedges feat Jess Ball - Lost In It All-SINGLE-WEB-2024-ZzZz [xmOuErRcpY]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/062bb28e96c56437fc222d1e4317c276.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="062bb28e96c56437fc222d1e4317c276" />
+</item>
+<item>
+	<title><![CDATA[Lost.-.S02E05.-.And.Found.Bluray-720p-x265-BMF [uA5gTwzSLI]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/34d7819a14a7a103b421b83778d334b1</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/34d7819a14a7a103b421b83778d334b1.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/34d7819a14a7a103b421b83778d334b1#comments</comments>
+        <pubDate>2024-06-30 23:26:43</pubDate> 
+	<description><![CDATA[Lost.-.S02E05.-.And.Found.Bluray-720p-x265-BMF [uA5gTwzSLI]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/34d7819a14a7a103b421b83778d334b1.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="34d7819a14a7a103b421b83778d334b1" />
+</item>
+<item>
+	<title><![CDATA[Lost.-.S06E07.-.Dr..Linus.Bluray-720p-x265-BMF [mEiRPHUzsp]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/bcfaf9be871036b70b6044d837e9611b</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/bcfaf9be871036b70b6044d837e9611b.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/bcfaf9be871036b70b6044d837e9611b#comments</comments>
+        <pubDate>2024-06-30 23:23:14</pubDate> 
+	<description><![CDATA[Lost.-.S06E07.-.Dr..Linus.Bluray-720p-x265-BMF [mEiRPHUzsp]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/bcfaf9be871036b70b6044d837e9611b.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="bcfaf9be871036b70b6044d837e9611b" />
+</item>
+<item>
+	<title><![CDATA[Lost.-.S01E24.-.Exodus.(2).HDTV-720p-x265-BMF [4Sbc33F8YQ]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/dede1259e5b3032c63e8de6850553839</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/dede1259e5b3032c63e8de6850553839.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/dede1259e5b3032c63e8de6850553839#comments</comments>
+        <pubDate>2024-07-01 01:14:52</pubDate> 
+	<description><![CDATA[Lost.-.S01E24.-.Exodus.(2).HDTV-720p-x265-BMF [4Sbc33F8YQ]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/dede1259e5b3032c63e8de6850553839.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="dede1259e5b3032c63e8de6850553839" />
+</item>
+<item>
+	<title><![CDATA[Mauricio Traglia-Lost World-WEB-2017-ROSiN [qb2QSkMr2f]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/f88b092a1502768c1e0d484ff39d68d0</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/f88b092a1502768c1e0d484ff39d68d0.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/f88b092a1502768c1e0d484ff39d68d0#comments</comments>
+        <pubDate>2024-06-29 22:27:26</pubDate> 
+	<description><![CDATA[Mauricio Traglia-Lost World-WEB-2017-ROSiN [qb2QSkMr2f]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/f88b092a1502768c1e0d484ff39d68d0.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="f88b092a1502768c1e0d484ff39d68d0" />
+</item>
+<item>
+	<title><![CDATA[Lost.-.S00E06.-.A.Tale.Of.Survival.720p-x265-BMF [rwyeLiSSJs]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/c636b4dae6c4089e5b94cc9356db8aea</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/c636b4dae6c4089e5b94cc9356db8aea.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/c636b4dae6c4089e5b94cc9356db8aea#comments</comments>
+        <pubDate>2024-07-01 00:26:00</pubDate> 
+	<description><![CDATA[Lost.-.S00E06.-.A.Tale.Of.Survival.720p-x265-BMF [rwyeLiSSJs]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/c636b4dae6c4089e5b94cc9356db8aea.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="c636b4dae6c4089e5b94cc9356db8aea" />
+</item>
+<item>
+	<title><![CDATA[2.Broke.Girls.-.S05E13.-.And.the.Lost.Baggage.WEBDL-1080p-x265-BMF [8hBs1g9q75]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/2f7fd7cc86130a461b58e7eb88d953d9</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/2f7fd7cc86130a461b58e7eb88d953d9.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/2f7fd7cc86130a461b58e7eb88d953d9#comments</comments>
+        <pubDate>2024-07-01 00:14:08</pubDate> 
+	<description><![CDATA[2.Broke.Girls.-.S05E13.-.And.the.Lost.Baggage.WEBDL-1080p-x265-BMF [8hBs1g9q75]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/2f7fd7cc86130a461b58e7eb88d953d9.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="2f7fd7cc86130a461b58e7eb88d953d9" />
+</item>
+<item>
+	<title><![CDATA[ALVINNN.And.the.Chipmunks.S03E23.Lost.In.Space.Camp.&.Super.Hot.Chocolate.1080p.NF.WEB-DL.DDP5.1.H.264-XEBEC [WLkhcg7O26]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/da71df1f1455027f0d0101e169d0959c</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/da71df1f1455027f0d0101e169d0959c.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/da71df1f1455027f0d0101e169d0959c#comments</comments>
+        <pubDate>2024-07-02 01:55:25</pubDate> 
+	<description><![CDATA[ALVINNN.And.the.Chipmunks.S03E23.Lost.In.Space.Camp.&.Super.Hot.Chocolate.1080p.NF.WEB-DL.DDP5.1.H.264-XEBEC [WLkhcg7O26]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/da71df1f1455027f0d0101e169d0959c.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="da71df1f1455027f0d0101e169d0959c" />
+</item>
+<item>
+	<title><![CDATA[Aquaman.and.the.Lost.Kingdom.2023.NORDiC.1080p.REMUX.BluRay.AVC.DTS-HD.MA.7.1.Atmos-NorTekst [3af0dd760]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/16e8536ca77f97919f54767a615a1f6b</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/16e8536ca77f97919f54767a615a1f6b.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/16e8536ca77f97919f54767a615a1f6b#comments</comments>
+        <pubDate>2024-07-02 02:44:52</pubDate> 
+	<description><![CDATA[Aquaman.and.the.Lost.Kingdom.2023.NORDiC.1080p.REMUX.BluRay.AVC.DTS-HD.MA.7.1.Atmos-NorTekst [3af0dd760]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/16e8536ca77f97919f54767a615a1f6b.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="16e8536ca77f97919f54767a615a1f6b" />
+</item>
+<item>
+	<title><![CDATA[Die Klosterjaeger-Koa Herzschlag Ohne Musi-CD-DE-2004-ALPMP3 [69570f4a0] [6872b1942]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/efa152d6ba74b83348c53a668538e609</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/efa152d6ba74b83348c53a668538e609.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/efa152d6ba74b83348c53a668538e609#comments</comments>
+        <pubDate>2024-07-01 21:16:02</pubDate> 
+	<description><![CDATA[Die Klosterjaeger-Koa Herzschlag Ohne Musi-CD-DE-2004-ALPMP3 [69570f4a0] [6872b1942]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/efa152d6ba74b83348c53a668538e609.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="efa152d6ba74b83348c53a668538e609" />
+</item>
+<item>
+	<title><![CDATA[Die Klosterjaeger-Koa Herzschlag Ohne Musi-CD-DE-2004-ALPMP3 [61515b053] [e1010f659]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/1b53b4609cc678602a685094c62b2a98</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/1b53b4609cc678602a685094c62b2a98.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/1b53b4609cc678602a685094c62b2a98#comments</comments>
+        <pubDate>2024-07-01 21:15:57</pubDate> 
+	<description><![CDATA[Die Klosterjaeger-Koa Herzschlag Ohne Musi-CD-DE-2004-ALPMP3 [61515b053] [e1010f659]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/1b53b4609cc678602a685094c62b2a98.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="1b53b4609cc678602a685094c62b2a98" />
+</item>
+<item>
+	<title><![CDATA[Die Klosterjaeger-Koa Herzschlag Ohne Musi-CD-DE-2004-ALPMP3 [e5df058e9] [b8e530e73]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/950755f88d5bb61610de1c7c9b7ffb8e</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/950755f88d5bb61610de1c7c9b7ffb8e.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/950755f88d5bb61610de1c7c9b7ffb8e#comments</comments>
+        <pubDate>2024-07-01 21:16:11</pubDate> 
+	<description><![CDATA[Die Klosterjaeger-Koa Herzschlag Ohne Musi-CD-DE-2004-ALPMP3 [e5df058e9] [b8e530e73]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/950755f88d5bb61610de1c7c9b7ffb8e.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="950755f88d5bb61610de1c7c9b7ffb8e" />
+</item>
+<item>
+	<title><![CDATA[(incomplete)-Die Klosterjaeger-Koa Herzschlag Ohne Musi-CD-DE-2004-ALPMP3 [06d3a8c7f] [9be6dc6fa]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/1e133f8e6c6851d5cc0e11af273fd9d3</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/1e133f8e6c6851d5cc0e11af273fd9d3.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/1e133f8e6c6851d5cc0e11af273fd9d3#comments</comments>
+        <pubDate>2024-07-01 21:15:05</pubDate> 
+	<description><![CDATA[(incomplete)-Die Klosterjaeger-Koa Herzschlag Ohne Musi-CD-DE-2004-ALPMP3 [06d3a8c7f] [9be6dc6fa]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/1e133f8e6c6851d5cc0e11af273fd9d3.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="1e133f8e6c6851d5cc0e11af273fd9d3" />
+</item>
+<item>
+	<title><![CDATA[Die Klosterjaeger-Koa Herzschlag Ohne Musi-CD-DE-2004-ALPMP3 [0c005cb28] [8e005e5fb]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/81f360d858bb7eafec28722ab116cec3</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/81f360d858bb7eafec28722ab116cec3.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/81f360d858bb7eafec28722ab116cec3#comments</comments>
+        <pubDate>2024-07-01 21:15:42</pubDate> 
+	<description><![CDATA[Die Klosterjaeger-Koa Herzschlag Ohne Musi-CD-DE-2004-ALPMP3 [0c005cb28] [8e005e5fb]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/81f360d858bb7eafec28722ab116cec3.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="81f360d858bb7eafec28722ab116cec3" />
+</item>
+<item>
+	<title><![CDATA[Die Klosterjaeger-Koa Herzschlag Ohne Musi-CD-DE-2004-ALPMP3 [1c042af69] [56ccf463a]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/f7f62598819ace283625b45335686930</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/f7f62598819ace283625b45335686930.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/f7f62598819ace283625b45335686930#comments</comments>
+        <pubDate>2024-07-01 21:15:47</pubDate> 
+	<description><![CDATA[Die Klosterjaeger-Koa Herzschlag Ohne Musi-CD-DE-2004-ALPMP3 [1c042af69] [56ccf463a]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/f7f62598819ace283625b45335686930.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="f7f62598819ace283625b45335686930" />
+</item>
+<item>
+	<title><![CDATA[(incomplete)-Die Klosterjaeger-Koa Herzschlag Ohne Musi-CD-DE-2004-ALPMP3 [442d45361] [8300102dc]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/59766cb7ac86d700145746b92820dca9</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/59766cb7ac86d700145746b92820dca9.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/59766cb7ac86d700145746b92820dca9#comments</comments>
+        <pubDate>2024-07-01 21:15:15</pubDate> 
+	<description><![CDATA[(incomplete)-Die Klosterjaeger-Koa Herzschlag Ohne Musi-CD-DE-2004-ALPMP3 [442d45361] [8300102dc]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/59766cb7ac86d700145746b92820dca9.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="59766cb7ac86d700145746b92820dca9" />
+</item>
+<item>
+	<title><![CDATA[(incomplete)-Die Klosterjaeger-Koa Herzschlag Ohne Musi-CD-DE-2004-ALPMP3 [cf74b17a9] [acf57f578]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/fc4f69c12208166ddfbee93e7fee4ddc</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/fc4f69c12208166ddfbee93e7fee4ddc.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/fc4f69c12208166ddfbee93e7fee4ddc#comments</comments>
+        <pubDate>2024-07-01 21:15:31</pubDate> 
+	<description><![CDATA[(incomplete)-Die Klosterjaeger-Koa Herzschlag Ohne Musi-CD-DE-2004-ALPMP3 [cf74b17a9] [acf57f578]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/fc4f69c12208166ddfbee93e7fee4ddc.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="fc4f69c12208166ddfbee93e7fee4ddc" />
+</item>
+<item>
+	<title><![CDATA[(incomplete)-Die Klosterjaeger-Koa Herzschlag Ohne Musi-CD-DE-2004-ALPMP3 [b73785097] [b26280a80]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/f4efcae5284509be988dcdded1e7874b</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/f4efcae5284509be988dcdded1e7874b.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/f4efcae5284509be988dcdded1e7874b#comments</comments>
+        <pubDate>2024-07-01 21:15:26</pubDate> 
+	<description><![CDATA[(incomplete)-Die Klosterjaeger-Koa Herzschlag Ohne Musi-CD-DE-2004-ALPMP3 [b73785097] [b26280a80]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/f4efcae5284509be988dcdded1e7874b.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="f4efcae5284509be988dcdded1e7874b" />
+</item>
+<item>
+	<title><![CDATA[Die Klosterjaeger-Koa Herzschlag Ohne Musi-CD-DE-2004-ALPMP3 [389346c57]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/3f495fa264e42fd0771643af8efc5df5</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/3f495fa264e42fd0771643af8efc5df5.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/3f495fa264e42fd0771643af8efc5df5#comments</comments>
+        <pubDate>2024-07-01 21:15:38</pubDate> 
+	<description><![CDATA[Die Klosterjaeger-Koa Herzschlag Ohne Musi-CD-DE-2004-ALPMP3 [389346c57]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/3f495fa264e42fd0771643af8efc5df5.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="3f495fa264e42fd0771643af8efc5df5" />
+</item>
+<item>
+	<title><![CDATA[(incomplete)-Die Klosterjaeger-Koa Herzschlag Ohne Musi-CD-DE-2004-ALPMP3 [f4afe2f84] [a6ba0652f]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/d55c280e4ce173691e95cb28704ef84b</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/d55c280e4ce173691e95cb28704ef84b.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/d55c280e4ce173691e95cb28704ef84b#comments</comments>
+        <pubDate>2024-07-01 21:15:35</pubDate> 
+	<description><![CDATA[(incomplete)-Die Klosterjaeger-Koa Herzschlag Ohne Musi-CD-DE-2004-ALPMP3 [f4afe2f84] [a6ba0652f]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/d55c280e4ce173691e95cb28704ef84b.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="d55c280e4ce173691e95cb28704ef84b" />
+</item>
+<item>
+	<title><![CDATA[Die Klosterjaeger-Koa Herzschlag Ohne Musi-CD-DE-2004-ALPMP3 [48ebfd579] [bbb00ddd8]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/3fe12d58332425edc16d1dd0a548ae02</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/3fe12d58332425edc16d1dd0a548ae02.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/3fe12d58332425edc16d1dd0a548ae02#comments</comments>
+        <pubDate>2024-07-01 21:15:52</pubDate> 
+	<description><![CDATA[Die Klosterjaeger-Koa Herzschlag Ohne Musi-CD-DE-2004-ALPMP3 [48ebfd579] [bbb00ddd8]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/3fe12d58332425edc16d1dd0a548ae02.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="3fe12d58332425edc16d1dd0a548ae02" />
+</item>
+<item>
+	<title><![CDATA[(incomplete)-Die Klosterjaeger-Koa Herzschlag Ohne Musi-CD-DE-2004-ALPMP3 [3765d0d50] [2b7232010]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/ebe38f42345d1f4d8b001b2a8f623fac</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/ebe38f42345d1f4d8b001b2a8f623fac.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/ebe38f42345d1f4d8b001b2a8f623fac#comments</comments>
+        <pubDate>2024-07-01 21:15:09</pubDate> 
+	<description><![CDATA[(incomplete)-Die Klosterjaeger-Koa Herzschlag Ohne Musi-CD-DE-2004-ALPMP3 [3765d0d50] [2b7232010]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/ebe38f42345d1f4d8b001b2a8f623fac.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="ebe38f42345d1f4d8b001b2a8f623fac" />
+</item>
+<item>
+	<title><![CDATA[(incomplete)-Die Klosterjaeger-Koa Herzschlag Ohne Musi-CD-DE-2004-ALPMP3 [85308dc14]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/57eb5f78ea65dbbf3834acb028465c75</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/57eb5f78ea65dbbf3834acb028465c75.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/57eb5f78ea65dbbf3834acb028465c75#comments</comments>
+        <pubDate>2024-07-01 21:15:01</pubDate> 
+	<description><![CDATA[(incomplete)-Die Klosterjaeger-Koa Herzschlag Ohne Musi-CD-DE-2004-ALPMP3 [85308dc14]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/57eb5f78ea65dbbf3834acb028465c75.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="57eb5f78ea65dbbf3834acb028465c75" />
+</item>
+<item>
+	<title><![CDATA[Franco Romano-Lost in Time-(PLTL118)-WEB-2022-AFO [17c860000]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/a33c1ecc146ffffb1d8a8a93dbc79dba</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/a33c1ecc146ffffb1d8a8a93dbc79dba.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/a33c1ecc146ffffb1d8a8a93dbc79dba#comments</comments>
+        <pubDate>2024-07-01 14:53:26</pubDate> 
+	<description><![CDATA[Franco Romano-Lost in Time-(PLTL118)-WEB-2022-AFO [17c860000]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/a33c1ecc146ffffb1d8a8a93dbc79dba.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="a33c1ecc146ffffb1d8a8a93dbc79dba" />
+</item>
+<item>
+	<title><![CDATA[Lost.Omens.-.16.-.Tian.Xia.World.Guide.pdf-WtF[nZb] [fa2b9949a]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/1290ee0878bf99e0f45ebf54fbdfbf83</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/1290ee0878bf99e0f45ebf54fbdfbf83.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/1290ee0878bf99e0f45ebf54fbdfbf83#comments</comments>
+        <pubDate>2024-07-01 08:08:34</pubDate> 
+	<description><![CDATA[Lost.Omens.-.16.-.Tian.Xia.World.Guide.pdf-WtF[nZb] [fa2b9949a]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/1290ee0878bf99e0f45ebf54fbdfbf83.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="1290ee0878bf99e0f45ebf54fbdfbf83" />
+</item>
+<item>
+	<title><![CDATA[RooneyNasr-Lost Again-(CPT043)-SINGLE-WEB-2024-PTC [b2dd89461]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/d5bb66e86be656bb16f99359af53c019</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/d5bb66e86be656bb16f99359af53c019.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/d5bb66e86be656bb16f99359af53c019#comments</comments>
+        <pubDate>2024-07-01 03:17:10</pubDate> 
+	<description><![CDATA[RooneyNasr-Lost Again-(CPT043)-SINGLE-WEB-2024-PTC [b2dd89461]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/d5bb66e86be656bb16f99359af53c019.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="d5bb66e86be656bb16f99359af53c019" />
+</item>
+<item>
+	<title><![CDATA[Getting.Lost.with.Erin.French.S01E02.1080p.WEB.h264-EDITH [0d42df2ea]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/aaaec95fab5e546124fb4543615de900</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/aaaec95fab5e546124fb4543615de900.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/aaaec95fab5e546124fb4543615de900#comments</comments>
+        <pubDate>2024-07-01 01:10:02</pubDate> 
+	<description><![CDATA[Getting.Lost.with.Erin.French.S01E02.1080p.WEB.h264-EDITH [0d42df2ea]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/aaaec95fab5e546124fb4543615de900.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="aaaec95fab5e546124fb4543615de900" />
+</item>
+<item>
+	<title><![CDATA[Getting.Lost.with.Erin.French.S01E02.1080p.WEB.h264-EDITH [e953d876b]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/c511f97fb0d0f7254ae08d5ba1f3615a</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/c511f97fb0d0f7254ae08d5ba1f3615a.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/c511f97fb0d0f7254ae08d5ba1f3615a#comments</comments>
+        <pubDate>2024-06-30 20:05:35</pubDate> 
+	<description><![CDATA[Getting.Lost.with.Erin.French.S01E02.1080p.WEB.h264-EDITH [e953d876b]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/c511f97fb0d0f7254ae08d5ba1f3615a.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="c511f97fb0d0f7254ae08d5ba1f3615a" />
+</item>
+<item>
+	<title><![CDATA[Lost County Productions-Lost County Presents Ja-Ro-WEB-2006-RAGEMP3 [afc2da7c6]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/e7120509ebf34adbd1a1558cb997634c</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/e7120509ebf34adbd1a1558cb997634c.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/e7120509ebf34adbd1a1558cb997634c#comments</comments>
+        <pubDate>2024-06-30 14:34:16</pubDate> 
+	<description><![CDATA[Lost County Productions-Lost County Presents Ja-Ro-WEB-2006-RAGEMP3 [afc2da7c6]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/e7120509ebf34adbd1a1558cb997634c.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="e7120509ebf34adbd1a1558cb997634c" />
+</item>
+<item>
+	<title><![CDATA[King Henry-Lost County Vol. 1 45 Min. From Nowhere-WEB-2005-RAGEMP3 [853edb8fd]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/70d4ce284e7c04a287394c5cd216b169</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/70d4ce284e7c04a287394c5cd216b169.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/70d4ce284e7c04a287394c5cd216b169#comments</comments>
+        <pubDate>2024-06-30 14:32:48</pubDate> 
+	<description><![CDATA[King Henry-Lost County Vol. 1 45 Min. From Nowhere-WEB-2005-RAGEMP3 [853edb8fd]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/70d4ce284e7c04a287394c5cd216b169.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="70d4ce284e7c04a287394c5cd216b169" />
+</item>
+<item>
+	<title><![CDATA[King Henry-Lost County Vol. 2 Still 45 Min. From Nowhere-WEB-2006-RAGEMP3 [3a8c79755]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/f6add36f44f3ed0d6a65b0fa76d640ea</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/f6add36f44f3ed0d6a65b0fa76d640ea.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/f6add36f44f3ed0d6a65b0fa76d640ea#comments</comments>
+        <pubDate>2024-06-30 14:32:36</pubDate> 
+	<description><![CDATA[King Henry-Lost County Vol. 2 Still 45 Min. From Nowhere-WEB-2006-RAGEMP3 [3a8c79755]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/f6add36f44f3ed0d6a65b0fa76d640ea.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="f6add36f44f3ed0d6a65b0fa76d640ea" />
+</item>
+<item>
+	<title><![CDATA[[WtF-pOrN]-[Nyna Ferragni] Are you lost babygirl Romantic fuck and squirting orgasm watching 365 days.mp4-[N-Z-B] [253cdb2d0]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/f9a53e2e5b25746d97d78f03d3f91759</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/f9a53e2e5b25746d97d78f03d3f91759.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/f9a53e2e5b25746d97d78f03d3f91759#comments</comments>
+        <pubDate>2024-06-30 13:04:59</pubDate> 
+	<description><![CDATA[[WtF-pOrN]-[Nyna Ferragni] Are you lost babygirl Romantic fuck and squirting orgasm watching 365 days.mp4-[N-Z-B] [253cdb2d0]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/f9a53e2e5b25746d97d78f03d3f91759.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="f9a53e2e5b25746d97d78f03d3f91759" />
+</item>
+<item>
+	<title><![CDATA[Francesco Devincenti-The Lost Tapes-(GDSDUB03)-WEB-2024-PTC [90a32da7e]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/01841cc111845b2fb4797f186989d7d5</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/01841cc111845b2fb4797f186989d7d5.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/01841cc111845b2fb4797f186989d7d5#comments</comments>
+        <pubDate>2024-06-30 12:20:51</pubDate> 
+	<description><![CDATA[Francesco Devincenti-The Lost Tapes-(GDSDUB03)-WEB-2024-PTC [90a32da7e]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/01841cc111845b2fb4797f186989d7d5.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="01841cc111845b2fb4797f186989d7d5" />
+</item>
+<item>
+	<title><![CDATA[Concrete.Utopia.2023.MULTI.1080p.WEB.X264-LOST]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/a0b5f7290fb16a7af34fa3b9449e41fb</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/a0b5f7290fb16a7af34fa3b9449e41fb.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/a0b5f7290fb16a7af34fa3b9449e41fb#comments</comments>
+        <pubDate>2024-06-29 18:17:35</pubDate> 
+	<description><![CDATA[Concrete.Utopia.2023.MULTI.1080p.WEB.X264-LOST]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/a0b5f7290fb16a7af34fa3b9449e41fb.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="a0b5f7290fb16a7af34fa3b9449e41fb" />
+</item>
+<item>
+	<title><![CDATA[[LostYears].The.Dangers.in.My.Heart.-.S02E02.(BD.1080p.x265.AAC.Opus).[1E63B37F].mkv-[N-Z-B] [f12945252]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/e5cbe1bf80d68659664d3c35aafd5a0b</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/e5cbe1bf80d68659664d3c35aafd5a0b.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/e5cbe1bf80d68659664d3c35aafd5a0b#comments</comments>
+        <pubDate>2024-06-30 02:23:07</pubDate> 
+	<description><![CDATA[[LostYears].The.Dangers.in.My.Heart.-.S02E02.(BD.1080p.x265.AAC.Opus).[1E63B37F].mkv-[N-Z-B] [f12945252]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/e5cbe1bf80d68659664d3c35aafd5a0b.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="e5cbe1bf80d68659664d3c35aafd5a0b" />
+</item>
+<item>
+	<title><![CDATA[Lost.Treasures.of.Egypt.S03.720p.DSNP.WEB-DL.DDP5.1.H.264-playWEB [f5390d286]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/2a7ef86ecaee18106fbe5ff9335beb2e</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/2a7ef86ecaee18106fbe5ff9335beb2e.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/2a7ef86ecaee18106fbe5ff9335beb2e#comments</comments>
+        <pubDate>2024-06-30 02:11:20</pubDate> 
+	<description><![CDATA[Lost.Treasures.of.Egypt.S03.720p.DSNP.WEB-DL.DDP5.1.H.264-playWEB [f5390d286]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/2a7ef86ecaee18106fbe5ff9335beb2e.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="2a7ef86ecaee18106fbe5ff9335beb2e" />
+</item>
+<item>
+	<title><![CDATA[Uncertain-Lost EP-(KDRAW112)-WEB-2024-PTC INT [9c9201433]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/6cf3b625c8545d6c8caa293eff747975</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/6cf3b625c8545d6c8caa293eff747975.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/6cf3b625c8545d6c8caa293eff747975#comments</comments>
+        <pubDate>2024-06-30 01:40:17</pubDate> 
+	<description><![CDATA[Uncertain-Lost EP-(KDRAW112)-WEB-2024-PTC INT [9c9201433]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/6cf3b625c8545d6c8caa293eff747975.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="6cf3b625c8545d6c8caa293eff747975" />
+</item>
+<item>
+	<title><![CDATA[[LostYears].The.Dangers.in.My.Heart.-.S02E02.(BD.1080p.x265.AAC.Opus).[1E63B37F].mkv-[N-Z-B] [0dd9ca66b]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/b03e0f4bfbdb9c4d8547d49aabed0540</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/b03e0f4bfbdb9c4d8547d49aabed0540.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/b03e0f4bfbdb9c4d8547d49aabed0540#comments</comments>
+        <pubDate>2024-06-30 00:16:09</pubDate> 
+	<description><![CDATA[[LostYears].The.Dangers.in.My.Heart.-.S02E02.(BD.1080p.x265.AAC.Opus).[1E63B37F].mkv-[N-Z-B] [0dd9ca66b]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/b03e0f4bfbdb9c4d8547d49aabed0540.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="b03e0f4bfbdb9c4d8547d49aabed0540" />
+</item>
+<item>
+	<title><![CDATA[Mauricio Traglia-Lost World-16BIT-WEB-FLAC-2017-ROSiN [9a0a30723]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/fdc285e10aa861ffd89c8f3ebd2907a9</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/fdc285e10aa861ffd89c8f3ebd2907a9.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/fdc285e10aa861ffd89c8f3ebd2907a9#comments</comments>
+        <pubDate>2024-06-29 23:17:56</pubDate> 
+	<description><![CDATA[Mauricio Traglia-Lost World-16BIT-WEB-FLAC-2017-ROSiN [9a0a30723]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/fdc285e10aa861ffd89c8f3ebd2907a9.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="fdc285e10aa861ffd89c8f3ebd2907a9" />
+</item>
+<item>
+	<title><![CDATA[Mauricio Traglia-Lost World-WEB-2017-ROSiN [67d3f38d6]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/4950588300e88193a8c281320f0ec62a</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/4950588300e88193a8c281320f0ec62a.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/4950588300e88193a8c281320f0ec62a#comments</comments>
+        <pubDate>2024-06-29 22:11:45</pubDate> 
+	<description><![CDATA[Mauricio Traglia-Lost World-WEB-2017-ROSiN [67d3f38d6]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/4950588300e88193a8c281320f0ec62a.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="4950588300e88193a8c281320f0ec62a" />
+</item>
+<item>
+	<title><![CDATA[The.Promised.Land.2023.MULTI.1080p.WEB.X264-LOST [98f29dbe1]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/751fb482431d0623e9f86da44674e04f</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/751fb482431d0623e9f86da44674e04f.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/751fb482431d0623e9f86da44674e04f#comments</comments>
+        <pubDate>2024-06-29 22:09:10</pubDate> 
+	<description><![CDATA[The.Promised.Land.2023.MULTI.1080p.WEB.X264-LOST [98f29dbe1]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/751fb482431d0623e9f86da44674e04f.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="751fb482431d0623e9f86da44674e04f" />
+</item>
+<item>
+	<title><![CDATA[The.Promised.Land.2023.FRENCH.WEB.X264-LOST [869ff0125]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/ea8a7953f70ab91a240386c0c890ace5</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/ea8a7953f70ab91a240386c0c890ace5.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/ea8a7953f70ab91a240386c0c890ace5#comments</comments>
+        <pubDate>2024-06-29 22:06:41</pubDate> 
+	<description><![CDATA[The.Promised.Land.2023.FRENCH.WEB.X264-LOST [869ff0125]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/ea8a7953f70ab91a240386c0c890ace5.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="ea8a7953f70ab91a240386c0c890ace5" />
+</item>
+<item>
+	<title><![CDATA[The.Promised.Land.2023.FRENCH.720p.WEB.X264-LOST [a0512054b]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/97cf7a8db5e5dccfcf68ead418490e7c</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/97cf7a8db5e5dccfcf68ead418490e7c.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/97cf7a8db5e5dccfcf68ead418490e7c#comments</comments>
+        <pubDate>2024-06-29 22:06:44</pubDate> 
+	<description><![CDATA[The.Promised.Land.2023.FRENCH.720p.WEB.X264-LOST [a0512054b]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/97cf7a8db5e5dccfcf68ead418490e7c.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="97cf7a8db5e5dccfcf68ead418490e7c" />
+</item>
+<item>
+	<title><![CDATA[How.to.Have.Sex.2023.FRENCH.WEB.X264-LOST [9b3390264]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/162ee8bc4a99953ba6c375c8e3784695</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/162ee8bc4a99953ba6c375c8e3784695.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/162ee8bc4a99953ba6c375c8e3784695#comments</comments>
+        <pubDate>2024-06-29 22:05:40</pubDate> 
+	<description><![CDATA[How.to.Have.Sex.2023.FRENCH.WEB.X264-LOST [9b3390264]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/162ee8bc4a99953ba6c375c8e3784695.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="162ee8bc4a99953ba6c375c8e3784695" />
+</item>
+<item>
+	<title><![CDATA[The Unknxwns feat Jerzi Boyz - I Lost Count-(67933)-SINGLE-WEB-2024-ZzZz [08ca863fb]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/ca7ca78c7c387a3225d585ecdc63692a</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/ca7ca78c7c387a3225d585ecdc63692a.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/ca7ca78c7c387a3225d585ecdc63692a#comments</comments>
+        <pubDate>2024-06-29 20:49:41</pubDate> 
+	<description><![CDATA[The Unknxwns feat Jerzi Boyz - I Lost Count-(67933)-SINGLE-WEB-2024-ZzZz [08ca863fb]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/ca7ca78c7c387a3225d585ecdc63692a.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="ca7ca78c7c387a3225d585ecdc63692a" />
+</item>
+<item>
+	<title><![CDATA[How.to.Have.Sex.2023.FRENCH.720p.WEB.X264-LOST [77eba3347]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/a46eee7e9e9589fa4b0278835c78e94a</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/a46eee7e9e9589fa4b0278835c78e94a.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/a46eee7e9e9589fa4b0278835c78e94a#comments</comments>
+        <pubDate>2024-06-29 20:43:14</pubDate> 
+	<description><![CDATA[How.to.Have.Sex.2023.FRENCH.720p.WEB.X264-LOST [77eba3347]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/a46eee7e9e9589fa4b0278835c78e94a.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="a46eee7e9e9589fa4b0278835c78e94a" />
+</item>
+<item>
+	<title><![CDATA[Lostmind-Synchronicity-(SQLEP012)-WEB-2019-BABAS [c571d33f1]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/d157540a976684ab95c901817d821222</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/d157540a976684ab95c901817d821222.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/d157540a976684ab95c901817d821222#comments</comments>
+        <pubDate>2024-06-29 20:23:34</pubDate> 
+	<description><![CDATA[Lostmind-Synchronicity-(SQLEP012)-WEB-2019-BABAS [c571d33f1]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/d157540a976684ab95c901817d821222.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="d157540a976684ab95c901817d821222" />
+</item>
+<item>
+	<title><![CDATA[How.to.Have.Sex.2023.MULTI.1080p.WEB.X264-LOST [856c9bdfa]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/912868ed8e59541685cf1f795b5596ff</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/912868ed8e59541685cf1f795b5596ff.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/912868ed8e59541685cf1f795b5596ff#comments</comments>
+        <pubDate>2024-06-29 20:04:59</pubDate> 
+	<description><![CDATA[How.to.Have.Sex.2023.MULTI.1080p.WEB.X264-LOST [856c9bdfa]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/912868ed8e59541685cf1f795b5596ff.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="912868ed8e59541685cf1f795b5596ff" />
+</item>
+<item>
+	<title><![CDATA[Fallen.Leaves.2023.FRENCH.WEB.X264-LOST [7e3e58ef4]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/6b9f3661508e61f1f2242066b65376aa</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/6b9f3661508e61f1f2242066b65376aa.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/6b9f3661508e61f1f2242066b65376aa#comments</comments>
+        <pubDate>2024-06-29 20:01:45</pubDate> 
+	<description><![CDATA[Fallen.Leaves.2023.FRENCH.WEB.X264-LOST [7e3e58ef4]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/6b9f3661508e61f1f2242066b65376aa.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="6b9f3661508e61f1f2242066b65376aa" />
+</item>
+<item>
+	<title><![CDATA[Concrete.Utopia.2023.FRENCH.WEB.X264-LOST [808e7799e]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/645af11eec98c644e80c99328db74a76</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/645af11eec98c644e80c99328db74a76.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/645af11eec98c644e80c99328db74a76#comments</comments>
+        <pubDate>2024-06-29 18:10:01</pubDate> 
+	<description><![CDATA[Concrete.Utopia.2023.FRENCH.WEB.X264-LOST [808e7799e]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/645af11eec98c644e80c99328db74a76.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="645af11eec98c644e80c99328db74a76" />
+</item>
+<item>
+	<title><![CDATA[Fallen.Leaves.2023.MULTI.1080p.WEB.X264-LOST [e81ca77e8]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/d847f59d3ab9a0702772b188c982b26f</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/d847f59d3ab9a0702772b188c982b26f.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/d847f59d3ab9a0702772b188c982b26f#comments</comments>
+        <pubDate>2024-06-29 18:08:22</pubDate> 
+	<description><![CDATA[Fallen.Leaves.2023.MULTI.1080p.WEB.X264-LOST [e81ca77e8]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/d847f59d3ab9a0702772b188c982b26f.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="d847f59d3ab9a0702772b188c982b26f" />
+</item>
+<item>
+	<title><![CDATA[Fallen.Leaves.2023.FRENCH.720p.WEB.X264-LOST [b9aedb1be]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/fe0ff90d47342cafb3e9192f3d3e07b6</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/fe0ff90d47342cafb3e9192f3d3e07b6.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/fe0ff90d47342cafb3e9192f3d3e07b6#comments</comments>
+        <pubDate>2024-06-29 18:07:25</pubDate> 
+	<description><![CDATA[Fallen.Leaves.2023.FRENCH.720p.WEB.X264-LOST [b9aedb1be]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/fe0ff90d47342cafb3e9192f3d3e07b6.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="fe0ff90d47342cafb3e9192f3d3e07b6" />
+</item>
+<item>
+	<title><![CDATA[Concrete.Utopia.2023.MULTI.1080p.WEB.X264-LOST [84b9f92c9]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/ac6be0323d7245560e8f5b8aaaba1768</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/ac6be0323d7245560e8f5b8aaaba1768.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/ac6be0323d7245560e8f5b8aaaba1768#comments</comments>
+        <pubDate>2024-06-29 18:06:22</pubDate> 
+	<description><![CDATA[Concrete.Utopia.2023.MULTI.1080p.WEB.X264-LOST [84b9f92c9]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/ac6be0323d7245560e8f5b8aaaba1768.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="ac6be0323d7245560e8f5b8aaaba1768" />
+</item>
+<item>
+	<title><![CDATA[Concrete.Utopia.2023.FRENCH.720p.WEB.X264-LOST [f52e8f492]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/93f3c0052320e416919fa8e7dac6dbfa</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/93f3c0052320e416919fa8e7dac6dbfa.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/93f3c0052320e416919fa8e7dac6dbfa#comments</comments>
+        <pubDate>2024-06-29 18:05:07</pubDate> 
+	<description><![CDATA[Concrete.Utopia.2023.FRENCH.720p.WEB.X264-LOST [f52e8f492]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/93f3c0052320e416919fa8e7dac6dbfa.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="93f3c0052320e416919fa8e7dac6dbfa" />
+</item>
+<item>
+	<title><![CDATA[[LostYears].Spice.and.Wolf.-.Merchant.Meets.the.Wise.Wolf.-.S01E08.(WEB.1080p.x265.10-bit.AAC.E-AC-3).[5453C842].mkv-[N-Z-B] [c1ae69915]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/db84157149a57bb1d3926f7773027ab1</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/db84157149a57bb1d3926f7773027ab1.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/db84157149a57bb1d3926f7773027ab1#comments</comments>
+        <pubDate>2024-06-29 11:48:01</pubDate> 
+	<description><![CDATA[[LostYears].Spice.and.Wolf.-.Merchant.Meets.the.Wise.Wolf.-.S01E08.(WEB.1080p.x265.10-bit.AAC.E-AC-3).[5453C842].mkv-[N-Z-B] [c1ae69915]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/db84157149a57bb1d3926f7773027ab1.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="db84157149a57bb1d3926f7773027ab1" />
+</item>
+<item>
+	<title><![CDATA[[LostYears].A.Condition.Called.Love.-.S01E11.(WEB.1080p.Hi10P.AAC).[7D453B60].mkv-[N-Z-B] [bc3024675]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/c755a945ebb2667314dedabf855181b4</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/c755a945ebb2667314dedabf855181b4.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/c755a945ebb2667314dedabf855181b4#comments</comments>
+        <pubDate>2024-06-29 11:11:24</pubDate> 
+	<description><![CDATA[[LostYears].A.Condition.Called.Love.-.S01E11.(WEB.1080p.Hi10P.AAC).[7D453B60].mkv-[N-Z-B] [bc3024675]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/c755a945ebb2667314dedabf855181b4.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="c755a945ebb2667314dedabf855181b4" />
+</item>
+<item>
+	<title><![CDATA[The.Watchers.2024.FRENCH.HDR.2160p.WEB.H265-LOST [f9942083d]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/3e21d89c16cb35259872e68e6a9426be</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/3e21d89c16cb35259872e68e6a9426be.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/3e21d89c16cb35259872e68e6a9426be#comments</comments>
+        <pubDate>2024-06-29 09:51:15</pubDate> 
+	<description><![CDATA[The.Watchers.2024.FRENCH.HDR.2160p.WEB.H265-LOST [f9942083d]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/3e21d89c16cb35259872e68e6a9426be.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="3e21d89c16cb35259872e68e6a9426be" />
+</item>
+<item>
+	<title><![CDATA[The.Watchers.2024.FRENCH.DV.2160p.WEB.H265-LOST [26a551c84]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/eddedf55e716edc8af2cf69420891eac</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/eddedf55e716edc8af2cf69420891eac.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/eddedf55e716edc8af2cf69420891eac#comments</comments>
+        <pubDate>2024-06-29 09:21:43</pubDate> 
+	<description><![CDATA[The.Watchers.2024.FRENCH.DV.2160p.WEB.H265-LOST [26a551c84]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/eddedf55e716edc8af2cf69420891eac.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="eddedf55e716edc8af2cf69420891eac" />
+</item>
+<item>
+	<title><![CDATA[The.Watchers.2024.FRENCH.1080p.WEB.H264-LOST [f9e0eb4ae]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/584848d3db6f03787f0a0b4f93243964</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/584848d3db6f03787f0a0b4f93243964.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/584848d3db6f03787f0a0b4f93243964#comments</comments>
+        <pubDate>2024-06-29 09:13:48</pubDate> 
+	<description><![CDATA[The.Watchers.2024.FRENCH.1080p.WEB.H264-LOST [f9e0eb4ae]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/584848d3db6f03787f0a0b4f93243964.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="584848d3db6f03787f0a0b4f93243964" />
+</item>
+<item>
+	<title><![CDATA[Melchi-Lost-(SHM017)-WEB-2024-PTC [cfa37bd42]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/c875304ccd46232c8e216bfe4e916190</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/c875304ccd46232c8e216bfe4e916190.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/c875304ccd46232c8e216bfe4e916190#comments</comments>
+        <pubDate>2024-06-29 03:38:06</pubDate> 
+	<description><![CDATA[Melchi-Lost-(SHM017)-WEB-2024-PTC [cfa37bd42]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/c875304ccd46232c8e216bfe4e916190.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="c875304ccd46232c8e216bfe4e916190" />
+</item>
+<item>
+	<title><![CDATA[Charlie Hedges feat Jess Ball - Lost In It All-SINGLE-WEB-2024-ZzZz [0266edfd3]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/9eb6f55e72b1a1ea8148bda4af2e132c</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/9eb6f55e72b1a1ea8148bda4af2e132c.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/9eb6f55e72b1a1ea8148bda4af2e132c#comments</comments>
+        <pubDate>2024-06-28 21:10:13</pubDate> 
+	<description><![CDATA[Charlie Hedges feat Jess Ball - Lost In It All-SINGLE-WEB-2024-ZzZz [0266edfd3]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/9eb6f55e72b1a1ea8148bda4af2e132c.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="9eb6f55e72b1a1ea8148bda4af2e132c" />
+</item>
+<item>
+	<title><![CDATA[Chris Webby-Lost Wednesday-The Demos-WEB-2024-FTD [196e105b1]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/6381409da5f5d3af2894869a95d89f2a</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/6381409da5f5d3af2894869a95d89f2a.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/6381409da5f5d3af2894869a95d89f2a#comments</comments>
+        <pubDate>2024-06-28 20:56:50</pubDate> 
+	<description><![CDATA[Chris Webby-Lost Wednesday-The Demos-WEB-2024-FTD [196e105b1]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/6381409da5f5d3af2894869a95d89f2a.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="6381409da5f5d3af2894869a95d89f2a" />
+</item>
+<item>
+	<title><![CDATA[Prince of Persia The Lost Crown Update v1.3.1 NSW-VENOM [19a8fa66a]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/349389b6b0f1ce9cbb03162f13e21bca</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/349389b6b0f1ce9cbb03162f13e21bca.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/349389b6b0f1ce9cbb03162f13e21bca#comments</comments>
+        <pubDate>2024-06-28 17:35:41</pubDate> 
+	<description><![CDATA[Prince of Persia The Lost Crown Update v1.3.1 NSW-VENOM [19a8fa66a]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/349389b6b0f1ce9cbb03162f13e21bca.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="349389b6b0f1ce9cbb03162f13e21bca" />
+</item>
+<item>
+	<title><![CDATA[Prince of Persia The Lost Crown Update v1.3.1 NSW-VENOM [69147190f]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/a0b6834961b9a2d448847953543e02bc</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/a0b6834961b9a2d448847953543e02bc.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/a0b6834961b9a2d448847953543e02bc#comments</comments>
+        <pubDate>2024-06-28 17:29:24</pubDate> 
+	<description><![CDATA[Prince of Persia The Lost Crown Update v1.3.1 NSW-VENOM [69147190f]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/a0b6834961b9a2d448847953543e02bc.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="a0b6834961b9a2d448847953543e02bc" />
+</item>
+<item>
+	<title><![CDATA[Warren.Ellis.-.Nina.Simone.s.Gum.A.Memoir.Of.Things.Lost.And.Found.2021.Retail.EPUB.eBook-BitBook [9RZfuRPqrm]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/2075cb14b39cbfab761fbc8ae5c10f7d</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/2075cb14b39cbfab761fbc8ae5c10f7d.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/2075cb14b39cbfab761fbc8ae5c10f7d#comments</comments>
+        <pubDate>2024-06-27 01:09:01</pubDate> 
+	<description><![CDATA[Warren.Ellis.-.Nina.Simone.s.Gum.A.Memoir.Of.Things.Lost.And.Found.2021.Retail.EPUB.eBook-BitBook [9RZfuRPqrm]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/2075cb14b39cbfab761fbc8ae5c10f7d.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="2075cb14b39cbfab761fbc8ae5c10f7d" />
+</item>
+<item>
+	<title><![CDATA[Lost.Angel.The.Genius.of.Judee.Sill.2022.1080p.AMZN.WEB-DL.DDP5.1.H.264-BYNDR [jhrreSjRkM]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/6c932486456c40375f7aabccb742dd37</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/6c932486456c40375f7aabccb742dd37.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/6c932486456c40375f7aabccb742dd37#comments</comments>
+        <pubDate>2024-06-28 03:46:14</pubDate> 
+	<description><![CDATA[Lost.Angel.The.Genius.of.Judee.Sill.2022.1080p.AMZN.WEB-DL.DDP5.1.H.264-BYNDR [jhrreSjRkM]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/6c932486456c40375f7aabccb742dd37.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="6c932486456c40375f7aabccb742dd37" />
+</item>
+<item>
+	<title><![CDATA[Lost Witness and Ayda van Helden and Andrew Senior and call me AL-Timeless-(AMSTR547)-WEB-2024-AFO [YGsBnFsUwH]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/a0c7b58d07e99923dae8b1391ded0a02</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/a0c7b58d07e99923dae8b1391ded0a02.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/a0c7b58d07e99923dae8b1391ded0a02#comments</comments>
+        <pubDate>2024-06-27 16:35:01</pubDate> 
+	<description><![CDATA[Lost Witness and Ayda van Helden and Andrew Senior and call me AL-Timeless-(AMSTR547)-WEB-2024-AFO [YGsBnFsUwH]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/a0c7b58d07e99923dae8b1391ded0a02.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="a0c7b58d07e99923dae8b1391ded0a02" />
+</item>
+<item>
+	<title><![CDATA[Judge.John.Deed.-.S05E03.-.Lost.Youth [xwah35K8of]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/d6a3c53effb7d87ee7fed5b7cd9b1d90</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/d6a3c53effb7d87ee7fed5b7cd9b1d90.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/d6a3c53effb7d87ee7fed5b7cd9b1d90#comments</comments>
+        <pubDate>2024-06-27 22:22:48</pubDate> 
+	<description><![CDATA[Judge.John.Deed.-.S05E03.-.Lost.Youth [xwah35K8of]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/d6a3c53effb7d87ee7fed5b7cd9b1d90.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="d6a3c53effb7d87ee7fed5b7cd9b1d90" />
+</item>
+<item>
+	<title><![CDATA[Lost.Angel.The.Genius.of.Judee.Sill.2022.720p.AMZN.WEB-DL.DDP5.1.H.264-BYNDR [DE8Ud7RshB]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/d165ddd4a75ec8fa326aa305bd92f7f8</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/d165ddd4a75ec8fa326aa305bd92f7f8.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/d165ddd4a75ec8fa326aa305bd92f7f8#comments</comments>
+        <pubDate>2024-06-28 12:56:04</pubDate> 
+	<description><![CDATA[Lost.Angel.The.Genius.of.Judee.Sill.2022.720p.AMZN.WEB-DL.DDP5.1.H.264-BYNDR [DE8Ud7RshB]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/d165ddd4a75ec8fa326aa305bd92f7f8.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="d165ddd4a75ec8fa326aa305bd92f7f8" />
+</item>
+<item>
+	<title><![CDATA[Judge.John.Deed.-.S04E01.-.Lost.and.Found [F0uyB5s1DI]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/2da6cd9be9f7847e538a5e8b6f01f688</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/2da6cd9be9f7847e538a5e8b6f01f688.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/2da6cd9be9f7847e538a5e8b6f01f688#comments</comments>
+        <pubDate>2024-06-27 22:28:34</pubDate> 
+	<description><![CDATA[Judge.John.Deed.-.S04E01.-.Lost.and.Found [F0uyB5s1DI]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/2da6cd9be9f7847e538a5e8b6f01f688.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="2da6cd9be9f7847e538a5e8b6f01f688" />
+</item>
+<item>
+	<title><![CDATA[[LostYears].KonoSuba.-.Godas.blessing.on.this.wonderful.world!.-.S03E10.(WEB.1080p.x264.AAC.E-AC-3).[5C3A6D6B] [cKg84Rn7kT]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/856fe1b1bf7e09318e7d650064de9922</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/856fe1b1bf7e09318e7d650064de9922.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/856fe1b1bf7e09318e7d650064de9922#comments</comments>
+        <pubDate>2024-06-26 23:55:40</pubDate> 
+	<description><![CDATA[[LostYears].KonoSuba.-.Godas.blessing.on.this.wonderful.world!.-.S03E10.(WEB.1080p.x264.AAC.E-AC-3).[5C3A6D6B] [cKg84Rn7kT]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/856fe1b1bf7e09318e7d650064de9922.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="856fe1b1bf7e09318e7d650064de9922" />
+</item>
+<item>
+	<title><![CDATA[Tom.de.Freston.-.Wreck.Gericault.s.Raft.and.the.Art.of.Being.Lost.at.Sea.2022.Retail.EPUB.eBook-BitBook [7BGAO3wl3R]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/b53172e2344e8a3cd32f6b5605a49e74</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/b53172e2344e8a3cd32f6b5605a49e74.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/b53172e2344e8a3cd32f6b5605a49e74#comments</comments>
+        <pubDate>2024-06-27 01:07:56</pubDate> 
+	<description><![CDATA[Tom.de.Freston.-.Wreck.Gericault.s.Raft.and.the.Art.of.Being.Lost.at.Sea.2022.Retail.EPUB.eBook-BitBook [7BGAO3wl3R]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/b53172e2344e8a3cd32f6b5605a49e74.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="b53172e2344e8a3cd32f6b5605a49e74" />
+</item>
+<item>
+	<title><![CDATA[Sam Paganini-Get Lost  Atom-JAM065-WEB-2024-WAV [8N1sGudn9x]]]></title>
+	<guid isPermaLink="true">https://secretsubdomain.wtfnzb.pw/details/5ebdfbc42dfdf1a0f717fe2babd5582f</guid>
+	<link>https://secretsubdomain.wtfnzb.pw/getnzb/5ebdfbc42dfdf1a0f717fe2babd5582f.nzb&amp;r=apikey&amp;i=</link>
+	<comments>https://secretsubdomain.wtfnzb.pw/details/5ebdfbc42dfdf1a0f717fe2babd5582f#comments</comments>
+        <pubDate>2024-06-28 00:16:11</pubDate> 
+	<description><![CDATA[Sam Paganini-Get Lost  Atom-JAM065-WEB-2024-WAV [8N1sGudn9x]]]></description>
+	<enclosure url="https://secretsubdomain.wtfnzb.pw/getnzb/5ebdfbc42dfdf1a0f717fe2babd5582f.nzb&amp;r=apikey&amp;i=" type="application/x-nzb" />
+	<newznab:attr name="guid" value="5ebdfbc42dfdf1a0f717fe2babd5582f" />
+</item>
+</channel>
+</rss>

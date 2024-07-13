@@ -31,6 +31,7 @@ import org.nzbhydra.indexers.NzbGeek;
 import org.nzbhydra.indexers.NzbIndex;
 import org.nzbhydra.indexers.NzbIndexApi;
 import org.nzbhydra.indexers.QueryGenerator;
+import org.nzbhydra.indexers.WtfNzb;
 import org.nzbhydra.indexers.status.IndexerLimitRepository;
 import org.nzbhydra.indexers.torznab.Torznab;
 import org.nzbhydra.mediainfo.InfoProvider;
@@ -87,6 +88,9 @@ public class IndexerInstantiator {
             }
             case "NEWZNAB" -> {
                 return new Newznab(configProvider, indexerRepository, searchResultRepository, indexerApiAccessRepository, indexerApiAccessShortRepository, indexerStatusRepository, indexerWebAccess, resultAcceptor, categoryProvider, infoProvider, eventPublisher, queryGenerator, titleMapping, unmarshaller, baseConfigHandler);
+            }
+            case "WTFNZB" -> {
+                return new WtfNzb(configProvider, indexerRepository, searchResultRepository, indexerApiAccessRepository, indexerApiAccessShortRepository, indexerStatusRepository, indexerWebAccess, resultAcceptor, categoryProvider, infoProvider, eventPublisher, queryGenerator, titleMapping, unmarshaller, baseConfigHandler);
             }
             case "NZBINDEX" -> {
                 return new NzbIndex(configProvider, indexerRepository, searchResultRepository, indexerApiAccessRepository, indexerApiAccessShortRepository, indexerStatusRepository, indexerWebAccess, resultAcceptor, categoryProvider, infoProvider, eventPublisher, queryGenerator, titleMapping, baseConfigHandler);

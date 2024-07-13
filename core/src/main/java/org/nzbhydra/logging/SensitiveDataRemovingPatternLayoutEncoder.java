@@ -32,7 +32,7 @@ public class SensitiveDataRemovingPatternLayoutEncoder extends PatternLayoutEnco
     }
 
     protected String removeSensitiveData(String txt) {
-        return txt.replaceAll("(?i)(username|apikey|password)(=|:|%3D)([^&\\s]{2,})", "$1$2<$1>")
+        return txt.replaceAll("(?i)(r|username|apikey|password)(=|:|%3D)([^&\\s]{2,})", "$1$2<$1>")
                 //Format in requests to and responses from *arr:
                 /*
                 "name": "apiKey",

@@ -1,8 +1,9 @@
 #@formatter:off
--   version: "v7.2.4"
+-   version: "v7.3.0"
+    date: "2024-07-13"
     changes:
       -   type: "feature"
-          text: "Add emdash (—) to \"umlauts\" to be replaced."
+          text: "Add support for the appropriately named WtfNzb. Only query based searches are supported. See #275"
     final: true
 -   version: "v7.2.3"
     date: "2024-06-10"
