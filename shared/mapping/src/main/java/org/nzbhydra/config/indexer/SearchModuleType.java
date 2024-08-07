@@ -23,6 +23,8 @@ public enum SearchModuleType {
     WTFNZB,
     NZBINDEX,
     NZBINDEX_API,
+    NZBINDEX_BETA,
+    NZBKING,
     TORZNAB,
     DEVONLY,
     JACKETT_CONFIG

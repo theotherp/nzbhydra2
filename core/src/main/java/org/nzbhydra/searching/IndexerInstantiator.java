@@ -18,20 +18,7 @@ package org.nzbhydra.searching;
 
 import org.nzbhydra.config.BaseConfigHandler;
 import org.nzbhydra.config.ConfigProvider;
-import org.nzbhydra.indexers.Anizb;
-import org.nzbhydra.indexers.Binsearch;
-import org.nzbhydra.indexers.DogNzb;
-import org.nzbhydra.indexers.Indexer;
-import org.nzbhydra.indexers.IndexerApiAccessEntityShortRepository;
-import org.nzbhydra.indexers.IndexerApiAccessRepository;
-import org.nzbhydra.indexers.IndexerRepository;
-import org.nzbhydra.indexers.IndexerWebAccess;
-import org.nzbhydra.indexers.Newznab;
-import org.nzbhydra.indexers.NzbGeek;
-import org.nzbhydra.indexers.NzbIndex;
-import org.nzbhydra.indexers.NzbIndexApi;
-import org.nzbhydra.indexers.QueryGenerator;
-import org.nzbhydra.indexers.WtfNzb;
+import org.nzbhydra.indexers.*;
 import org.nzbhydra.indexers.status.IndexerLimitRepository;
 import org.nzbhydra.indexers.torznab.Torznab;
 import org.nzbhydra.mediainfo.InfoProvider;
@@ -95,11 +82,17 @@ public class IndexerInstantiator {
             case "NZBINDEX" -> {
                 return new NzbIndex(configProvider, indexerRepository, searchResultRepository, indexerApiAccessRepository, indexerApiAccessShortRepository, indexerStatusRepository, indexerWebAccess, resultAcceptor, categoryProvider, infoProvider, eventPublisher, queryGenerator, titleMapping, baseConfigHandler);
             }
+            case "NZBINDEX_BETA" -> {
+                return new NzbIndexBeta(configProvider, indexerRepository, searchResultRepository, indexerApiAccessRepository, indexerApiAccessShortRepository, indexerStatusRepository, indexerWebAccess, resultAcceptor, categoryProvider, infoProvider, eventPublisher, queryGenerator, titleMapping, baseConfigHandler);
+            }
             case "NZBINDEX_API" -> {
                 return new NzbIndexApi(configProvider, indexerRepository, searchResultRepository, indexerApiAccessRepository, indexerApiAccessShortRepository, indexerStatusRepository, indexerWebAccess, resultAcceptor, categoryProvider, infoProvider, eventPublisher, queryGenerator, titleMapping, baseConfigHandler);
             }
             case "NZBGEEK" -> {
                 return new NzbGeek(configProvider, indexerRepository, searchResultRepository, indexerApiAccessRepository, indexerApiAccessShortRepository, indexerStatusRepository, indexerWebAccess, resultAcceptor, categoryProvider, infoProvider, eventPublisher, queryGenerator, titleMapping, unmarshaller, baseConfigHandler);
+            }
+            case "NZBKING" -> {
+                return new NzbKing(configProvider, indexerRepository, searchResultRepository, indexerApiAccessRepository, indexerApiAccessShortRepository, indexerStatusRepository, indexerWebAccess, resultAcceptor, categoryProvider, infoProvider, eventPublisher, queryGenerator, titleMapping, baseConfigHandler);
             }
             case "TORZNAB" -> {
                 return new Torznab(configProvider, indexerRepository, searchResultRepository, indexerApiAccessRepository, indexerApiAccessShortRepository, indexerStatusRepository, indexerWebAccess, resultAcceptor, categoryProvider, infoProvider, eventPublisher, queryGenerator, titleMapping, unmarshaller, baseConfigHandler);
