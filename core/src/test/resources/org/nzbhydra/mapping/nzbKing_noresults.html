@@ -1,0 +1,218 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head> 
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-30514420-1"></script><script>window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', 'UA-30514420-1', { 'anonymize_ip': true });</script>
+
+
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+	
+	<title>NZBKing - Usenet Indexer</title> 
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="revisit-after" content="2 days"> 
+	<meta name="robots" content="index,follow"> 
+	<meta name="description" content="NZBKing Usenet Indexer - Search Usenet Binaries"> 
+	<meta name="keywords" content="usenet, search engine, nzb, binary, binaries, binsearch, files, indexing, indexer, service, newsgroups, nfo, yEnc, best, retention, poster, alt.binaries, picture, audio, video, mkv, avi, mp3"> 
+	<link type="text/css" rel="stylesheet" href="/static/styles8.css"> 
+	<link rel="shortcut icon" href="/static/favicon.ico" type="image/x-icon">
+	
+</head> 
+
+
+<body>
+<div class="top">
+
+<div class="menuR">
+<a href="/search/">Search</a> &#9702;
+<a href="/groups/">Groups</a> &#9702;
+<a href="/disclaimer/">Disclaimer</a> &#9702;
+<a href="/about/">About</a>
+</div>
+
+<div class='logo'>
+<a href="http://www.nzbking.com">
+<span class="logo1">NZBKing<span class="logo2">.com</span></span>
+</a>
+
+</div>
+
+
+
+</div>
+
+<div class="body">
+<h2>Search Usenet Binaries</h2>
+<div class="searchdiv">
+  <script>
+    function openAdvanced(evt) {
+      document.getElementById('Simple').style.display = "none";
+      document.getElementById('qAdvanced').value = document.getElementById('qSimple').value;
+      document.getElementById('Advanced').style.display = "block";
+      evt.currentTarget.className += " active";
+    }
+    function openSimple(evt) {
+      document.getElementById('Simple').style.display = "block";
+      document.getElementById('qSimple').value = document.getElementById('qAdvanced').value;
+      document.getElementById('Advanced').style.display = "none";
+      evt.currentTarget.className += " active";
+    }
+    function userDefFt() {
+      if (document.getElementById('otherft').checked == true){
+        document.getElementById('userdefxt').style.display = "table-row";
+      }
+      else{
+        document.getElementById('userdefxt').style.display = "none"; 
+      }
+    }
+    function userDefXt() {
+      if (document.getElementById('otherft').checked == true){
+        document.getElementById('otherft').value = '"'+document.getElementById('userxt').value+'"';
+      }
+    } 
+
+  </script>
+
+  <div id="Simple" style="display:none;">
+    <form class="search">
+      <input class="searchField" id="qSimple" type="text" name="q" autocomplete="off" placeholder="Search usenet..." value="Opusssssum" />
+      <input class="searchSubmit" type="submit" value="" />
+    </form>
+    <p>&#9660; <label class="hooverline" onclick="openAdvanced(event)">Advanced search</label></p>
+  </div>
+  <div id="Advanced" style="display:none;">
+    <form class="search">
+      <input class="searchField" id="qAdvanced" type="text" name="q" autocomplete="off" placeholder="Search usenet..." value="Opusssssum" />
+      <input class="searchSubmit" type="submit" value="" />
+      <div class='filter-details'>
+        <div class='filter-details-group'>
+          <div class='filter-detail'>
+            <div class='filter-detail-name'>
+              <label class="lbladvanced">Filetypes:</label>
+            </div>
+            <div class='filter-detail-value'>
+              <input type="radio" name="ft" value="" id="all"  checked  onchange="userDefFt();"/><label for="all">All</label>
+              <input type="radio" name="ft" value="au" id="audio"  onchange="userDefFt();"/><label for="audio">Audio</label>
+              <input type="radio" name="ft" value="vi" id="video"  onchange="userDefFt();"/><label for="video">Video</label>
+              <input type="radio" name="ft" value="im" id="image"  onchange="userDefFt();"/><label for="image">Image</label>
+              <input type="radio" name="ft" value="ap" id="apps"  onchange="userDefFt();"/><label for="apps">App</label>
+              <input type="radio" name="ft" id="otherft"  value=""  onchange="userDefFt();"/><label for="otherft">Other...</label>
+            </div>
+          </div>
+            <div class='filter-detail'  id='userdefxt'  style="display:none;" >
+              <div class='filter-detail-name'>
+                <label class="lbladvanced">Extension(s):</label>
+              </div>
+              <div class='filter-detail-value'>
+                <input type="text" id="userxt" autocomplete="off" placeholder="All (experimental)" value="" onchange="userDefXt();" />
+              </div>
+            </div>
+          
+          <div class='filter-detail'>
+            <div class='filter-detail-name'>
+              <label class="lbladvanced">Group:</label>
+            </div>
+            <div class='filter-detail-value'>
+              <input type="text" name="gr" autocomplete="off" placeholder="All" value=""  />
+            </div>
+          </div>
+          <div class='filter-detail'>
+            <div class='filter-detail-name'>
+              <label class="lbladvanced">Poster:</label>
+            </div>
+            <div class='filter-detail-value'>
+              <input type="text" name="po" autocomplete="off" placeholder="All" value="" />
+            </div>
+          </div>
+          <div class='filter-detail'>
+            <div class='filter-detail-name'>
+              <label class="lbladvanced">Sort order:</label>
+            </div>
+            <div class='filter-detail-value'>
+              <input type="radio" name="so" value="" id="sortdate"  checked /><label for="sortdate">Date</label>
+              <input type="radio" name="so" value="s" id="sortsize" /><label for="sortsize">Size</label>
+              <input type="radio" name="so" value="m" id="sortmagic" /><label for="sortmagic">Magic</label>
+            </div>
+            <div><a href="#" id="SearchTips">tips...</a></div>
+          </div>
+        </div>
+      </div>
+    </form>
+    <p>&#9650; <label class="hooverline" onclick="openSimple(event)">Simple search</label></p>
+  </div>
+</div>
+<div id="SearchTipModal" class="modal">
+  <div class="modal-content">
+    <span class="modal-close">&times;</span>
+    <h2>Quotes</h2>
+    <p>Consider putting your query in quotes if you want narrow your results to match all words. For example: <code>"big buck bunny"</code>.</p>
+    <h2>Exclude specific words</h2>
+    <p>Put - in front words you want to leave out. For example: <code>"big buck bunny" -surround</code>.</p>
+    <h2>Search specific filetypes</h2>
+    <p>Narrow your search to specific filetypes in the advanced search. For example, choose [&#9679;]Video for video-type file extensions</p>
+    <h2>Sort order</h2>
+    <p>Normally new posts are displayed first. Example, try [&#9679;]Magic for what we think is a relevant sort order.</p>
+    <h2>Specific groups</h2>
+    <p>If you want only results from specific groups use the Group search-field. For example, Group:<code>test</code>.</p>
+  </div>
+</div>
+<script>
+var modal = document.getElementById("SearchTipModal");
+var btn = document.getElementById("SearchTips");
+var span = document.getElementsByClassName("modal-close")[0];
+btn.onclick = function() {
+  modal.style.display = "block";
+}
+span.onclick = function() {
+  modal.style.display = "none";
+}
+window.onclick = function(event) {
+  if (event.target == modal) {
+    modal.style.display = "none";
+  }
+}
+</script>
+
+<script>document.getElementById('Advanced').style.display = "block";</script>
+
+
+
+
+
+
+
+Your search criteria did not match any documents.
+<p>
+Suggestions:
+<ul>
+<li>Make sure all words are spelled correctly.</li>
+<li>Try different keywords.</li>
+<li>Try more general keywords.</li>
+<li>Try fewer keywords.</li>
+</ul>
+
+
+
+<h3>Welcome to NZBKing – A Free NZB indexing service</h3>
+Our NZB index spans over 4000+ days retention and allows you to quickly and securely create your own NZB files for free. Search and browse over 200+ million usenet posts, containing 60+ petabytes in 3500+ newsgroups.
+<br><br>
+In order to download NZBs, you need:
+<ul>
+<li>Access to a premium Usenet provider. We recommend <a href="https://www.newshosting.com/partners/?a_aid=bytefountain&a_bid=5ecfe99b&chan=a1" rel='noreferrer'>Newshosting</a>. It provides 100% unlimited Usenet downloads with the fastest speeds and most retention, which will maximize your download completions. <a href="https://www.newshosting.com/partners/?a_aid=bytefountain&a_bid=5ecfe99b&chan=a2"  rel='noreferrer'>You can also get a 58% lifetime discount here</a>.</li>
+<li>An NZB capable newsreader, such as SABnzbd or NZBGet. The Newshosting deal above also includes a free newsreader that will support all NZBKing NZB files.
+</ul>
+You may use this site only for your own personal use and at your own risk. Commercial use, in any shape or form, is strictly prohibited. We want to keep a responsive website so do <em>not</em> run any scraping scripts or we will ban your IP-address.
+
+
+</div>
+<br>
+<br>
+<footer>
+<div>
+Copyright &copy; 2012-2024 ByteFountain, <a href="mailto:info@nzbking.com?subject=info%20-%20nzbking">info@nzbking.com</a>.
+</div>
+</footer>
+
+</body>
+</html>
