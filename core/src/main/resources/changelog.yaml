@@ -1,5 +1,6 @@
 #@formatter:off
--   version: "v7.3.1"
+-   version: "v7.4.0"
+    date: "2024-08-10"
     changes:
       -   type: "feature"
           text: "Support for NzbIndex Beta and NZBKing. Big thanks to Daniel Kastner for implementing this. See #960"
