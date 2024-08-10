@@ -40,7 +40,7 @@ import java.util.regex.Pattern;
 public class NzbIndexBeta extends Indexer<NewznabXmlRoot> {
 
     private static final Logger logger = LoggerFactory.getLogger(NzbIndexBeta.class);
-    private static final Pattern GUID_PATTERN = Pattern.compile(".*/download/(\\d+).*", Pattern.DOTALL);
+    private static final Pattern GUID_PATTERN = Pattern.compile(".*/download/([\\d\\-a-f]+).*", Pattern.DOTALL);
     private static final Pattern NFO_PATTERN = Pattern.compile(".*<pre id=\"nfo0\">(.*)</pre>.*", Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
 
     public NzbIndexBeta(ConfigProvider configProvider, IndexerRepository indexerRepository, SearchResultRepository searchResultRepository, IndexerApiAccessRepository indexerApiAccessRepository, IndexerApiAccessEntityShortRepository indexerApiAccessShortRepository, IndexerLimitRepository indexerStatusRepository, IndexerWebAccess indexerWebAccess, SearchResultAcceptor resultAcceptor, CategoryProvider categoryProvider, InfoProvider infoProvider, ApplicationEventPublisher eventPublisher, QueryGenerator queryGenerator, CustomQueryAndTitleMappingHandler titleMapping, BaseConfigHandler baseConfigHandler) {
@@ -50,11 +50,10 @@ public class NzbIndexBeta extends Indexer<NewznabXmlRoot> {
 
     @Override
     protected void completeIndexerSearchResult(NewznabXmlRoot response, IndexerSearchResult indexerSearchResult, AcceptorResult acceptorResult, SearchRequest searchRequest, int offset, Integer limit) {
-        //Never provide more than the first 250 results, RSS doesn't allow paging
-        indexerSearchResult.setTotalResultsKnown(true);
-        indexerSearchResult.setTotalResults(acceptorResult.getNumberOfRejectedResults() + indexerSearchResult.getSearchResultItems().size());
-        indexerSearchResult.setHasMoreResults(false);
-        indexerSearchResult.setOffset(0);
+        indexerSearchResult.setTotalResultsKnown(false);
+        //Doesn't work when resultCount % 250 == but good enough
+        indexerSearchResult.setHasMoreResults(response.getRssChannel().getItems().size() == 250);
+        indexerSearchResult.setOffset(offset);
         indexerSearchResult.setPageSize(250);
     }
 
@@ -118,7 +117,7 @@ public class NzbIndexBeta extends Indexer<NewznabXmlRoot> {
             componentsBuilder.queryParam("minage", searchRequest.getMinage().get());
         }
         if (searchRequest.getMaxage().isPresent()) {
-            componentsBuilder.queryParam("age", searchRequest.getMaxage().get());
+            componentsBuilder.queryParam("maxage", searchRequest.getMaxage().get());
         }
 
         String query = "";
@@ -131,6 +130,9 @@ public class NzbIndexBeta extends Indexer<NewznabXmlRoot> {
         query = addRequiredAndforbiddenWordsToQuery(searchRequest, query);
         query = cleanupQuery(query);
         componentsBuilder.queryParam("q", query);
+        componentsBuilder.queryParam("sort", "agedesc");
+        //page 0 is the first one
+        componentsBuilder.queryParam("page", (offset + 250) / 250 - 1);
 
         return componentsBuilder;
     }
@@ -188,7 +190,8 @@ public class NzbIndexBeta extends Indexer<NewznabXmlRoot> {
     }
 
     protected UriComponentsBuilder getBaseUri() {
-        return UriComponentsBuilder.fromHttpUrl(config.getHost());
+        //Hack but we need "/search" in the base URL because otherwise the connection check will fail and okhttp can't do 307 redirects right now
+        return UriComponentsBuilder.fromHttpUrl(config.getHost().replace("/search", "/"));
     }
 
     @Component

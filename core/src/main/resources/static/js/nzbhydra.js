@@ -4512,7 +4512,7 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
             generalMinSize: 1,
             hitLimit: null,
             hitLimitResetTime: null,
-            host: "https://beta.nzbindex.com",
+            host: "https://beta.nzbindex.com/search",
             loadLimitOnRandom: null,
             name: "NZBIndex Beta",
             password: null,

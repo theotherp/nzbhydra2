@@ -1,6 +1,8 @@
 #@formatter:off
 -   version: "v7.3.1"
     changes:
+      -   type: "feature"
+          text: "Support for NzbIndex Beta and NZBKing. Big thanks to Daniel Kastner for implementing this. See #960"
       -   type: "fix"
           text: "Prevent indexer searches with null IDs. See #961"
       -   type: "fix"
