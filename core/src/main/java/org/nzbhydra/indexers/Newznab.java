@@ -165,7 +165,8 @@ public class Newznab extends Indexer<Xml> {
     private void verifyIdentifiersNotUnhandled(SearchRequest searchRequest, UriComponentsBuilder componentsBuilder, String query) throws IndexerNoIdConversionPossibleException {
         //Make sure we didn't for some reason neither find any usable search IDs nor generate a query
         String currentUriString = componentsBuilder.toUriString();
-        if (Strings.isNullOrEmpty(query) && !searchRequest.getIdentifiers().isEmpty() && idTypeToParamValueMap.values().stream().noneMatch(currentUriString::contains)) {
+        boolean noIdsOrIdWithNull = idTypeToParamValueMap.values().stream().noneMatch(s -> currentUriString.contains(s) && !currentUriString.contains(s + "=null"));
+        if (Strings.isNullOrEmpty(query) && !searchRequest.getIdentifiers().isEmpty() && noIdsOrIdWithNull) {
             throw new IndexerNoIdConversionPossibleException("Aborting searching for indexer because no usable search IDs could be found and no query was generated");
         }
     }

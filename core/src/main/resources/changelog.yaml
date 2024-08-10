@@ -1,4 +1,9 @@
 #@formatter:off
+-   version: "v7.3.1"
+    changes:
+      -   type: "fix"
+          text: "Prevent indexer searches with null IDs. See #961"
+    final: true
 -   version: "v7.3.0"
     date: "2024-07-13"
     changes:

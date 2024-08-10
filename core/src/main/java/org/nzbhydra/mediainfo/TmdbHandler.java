@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @SuppressWarnings("unchecked")
 @Component
@@ -113,7 +114,7 @@ public class TmdbHandler {
         try {
             final String json = webAccess.callUrl(url);
             final Map map = Jackson.JSON_MAPPER.readValue(json, Map.class);
-            return String.valueOf(map.get("imdb_id"));
+            return Optional.ofNullable(map.get("imdb_id")).map(x -> String.valueOf(map.get("imdb_id"))).orElse(null);
         } catch (IOException e) {
             throw new InfoProviderException("Error loading details for movie with ID " + tmdbId, e);
         }
