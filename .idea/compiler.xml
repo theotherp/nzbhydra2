@@ -23,9 +23,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel target="17">
-      <module name="linux-release" target="17" />
-      <module name="loadtest" target="17" />
-      <module name="ui" target="1.5" />
+      <module name="tests" target="17" />
     </bytecodeTargetLevel>
   </component>
   <component name="EclipseCompilerSettings">
@@ -37,8 +35,6 @@
       <module name="core" options="-parameters" />
       <module name="discordreleaser" options="" />
       <module name="github-release-plugin" options="" />
-      <module name="linux-release" options="-parameters" />
-      <module name="loadtest" options="" />
       <module name="mapping" options="-parameters" />
       <module name="mockserver" options="" />
       <module name="nzbhydra2" options="-parameters" />

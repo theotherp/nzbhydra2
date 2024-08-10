@@ -37,7 +37,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
-import java.time.*;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -49,14 +53,14 @@ public class NzbKing extends Indexer<String> {
 
     private static final Logger logger = LoggerFactory.getLogger(NzbKing.class);
 
-    private static final Pattern TITLE_PATTERN = Pattern.compile("\"(.*)\\.(rar|nfo|mkv|mp3|mobi|avi|mp4|epub|txt|pdf|par2|001|nzb|url|zip|r[0-9]{2})\"", Pattern.CASE_INSENSITIVE); //Note the " (quotation marks)
+    private static final Pattern TITLE_PATTERN = Pattern.compile("\"(.*)\\.(rar|nfo|mkv|mp3|mobi|avi|mp4|m3u|epub|txt|pdf|par2|001|nzb|url|jpg|zip|r[0-9]{2})\"", Pattern.CASE_INSENSITIVE); //Note the " (quotation marks)
     private static final Pattern SIZE_PATTERN = Pattern.compile("(?<size>[0-9]+(\\.[0-9]+)?)(?<unit>(GB|MB|KB|B))", Pattern.CASE_INSENSITIVE);
     private static final Pattern NFO_PATTERN = Pattern.compile("<pre>(?<nfo>.*)<\\/pre>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
     private final RetryPolicy<Object> retry503policy = RetryPolicy.builder()
-            .handleIf(x -> x instanceof IndexerAccessException && Throwables.getStackTraceAsString(x).contains("503"))
-            .withDelay(Duration.ofMillis(500))
-            .withMaxRetries(2).build();
+        .handleIf(x -> x instanceof IndexerAccessException && Throwables.getStackTraceAsString(x).contains("503"))
+        .withDelay(Duration.ofMillis(500))
+        .withMaxRetries(2).build();
 
     public NzbKing(ConfigProvider configProvider, IndexerRepository indexerRepository, SearchResultRepository searchResultRepository, IndexerApiAccessRepository indexerApiAccessRepository, IndexerApiAccessEntityShortRepository indexerApiAccessShortRepository, IndexerLimitRepository indexerStatusRepository, IndexerWebAccess indexerWebAccess, SearchResultAcceptor resultAcceptor, CategoryProvider categoryProvider, InfoProvider infoProvider, ApplicationEventPublisher eventPublisher, QueryGenerator queryGenerator, CustomQueryAndTitleMappingHandler titleMapping, BaseConfigHandler baseConfigHandler) {
         super(configProvider, indexerRepository, searchResultRepository, indexerApiAccessRepository, indexerApiAccessShortRepository, indexerStatusRepository, indexerWebAccess, resultAcceptor, categoryProvider, infoProvider, eventPublisher, queryGenerator, titleMapping, baseConfigHandler);
@@ -66,10 +70,9 @@ public class NzbKing extends Indexer<String> {
 
     @Override
     protected void completeIndexerSearchResult(String response, IndexerSearchResult indexerSearchResult, AcceptorResult acceptorResult, SearchRequest searchRequest, int offset, Integer limit) {
-        indexerSearchResult.setHasMoreResults(false);
-        indexerSearchResult.setTotalResults(indexerSearchResult.getSearchResultItems().size());
-        indexerSearchResult.setTotalResultsKnown(true);
-        indexerSearchResult.setPageSize(100);
+        indexerSearchResult.setHasMoreResults(response.contains("next 50 posts"));
+        indexerSearchResult.setTotalResultsKnown(false);
+        indexerSearchResult.setPageSize(50);
         indexerSearchResult.setOffset(offset);
     }
 
@@ -84,7 +87,7 @@ public class NzbKing extends Indexer<String> {
         }
 
         Elements resultsTables = doc.select("div.search-results-group");
-        if (resultsTables.size() == 0) {
+        if (resultsTables.isEmpty()) {
             throw new IndexerParsingException("Unable to find result table in NZBKing page. This happens sometimes ;-)");
         }
         Elements allRows = new Elements();
@@ -146,19 +149,9 @@ public class NzbKing extends Indexer<String> {
         }
 
         String partsAndSize = titleElement.childNodes().get(6).outerHtml().trim();
-        Matcher sizeMatcher = SIZE_PATTERN.matcher(partsAndSize);
-        if (sizeMatcher.find()) {
-            Float size = Float.parseFloat(sizeMatcher.group("size"));
-            String unit = sizeMatcher.group("unit");
-            switch (unit) {
-                case "GB" -> size = size * 1000 * 1000 * 1000;
-                case "MB" -> size = size * 1000 * 1000;
-                case "KB" -> size = size * 1000;
-            }
-            item.setSize(size.longValue());
-        } else {
-            debug("Unable to find size in text {}", partsAndSize);
-//            return null;
+        if (!findSize(item, partsAndSize)) {
+            partsAndSize = titleElement.childNodes().get(8).outerHtml().trim();
+            findSize(item, partsAndSize);
         }
 
         Element nfoElement = getElementOrNone(titleElement, "a[href^=/nfo]");
@@ -183,9 +176,27 @@ public class NzbKing extends Indexer<String> {
         return item;
     }
 
+    private boolean findSize(SearchResultItem item, String partsAndSize) {
+        Matcher sizeMatcher = SIZE_PATTERN.matcher(partsAndSize);
+        if (sizeMatcher.find()) {
+            Float size = Float.parseFloat(sizeMatcher.group("size"));
+            String unit = sizeMatcher.group("unit");
+            switch (unit) {
+                case "GB" -> size = size * 1024 * 1024 * 1024;
+                case "MB" -> size = size * 1024 * 1024;
+                case "KB" -> size = size * 1024;
+            }
+            item.setSize(size.longValue());
+            return true;
+        } else {
+            debug("Unable to find size in text {}", partsAndSize);
+            return false;
+        }
+    }
+
     private Element getElementOrNone(Element parent, String selector) {
         Elements selectionResult = parent.select(selector);
-        return selectionResult.size() == 0 ? null : selectionResult.get(0);
+        return selectionResult.isEmpty() ? null : selectionResult.get(0);
     }
 
     @Override
@@ -198,10 +209,11 @@ public class NzbKing extends Indexer<String> {
         }
         query = cleanupQuery(query);
         UriComponentsBuilder queryBuilder = UriComponentsBuilder.fromHttpUrl("https://www.nzbking.com/search")
-                .queryParam("q", query);
+            .queryParam("q", query);
         if (getConfig().isBinsearchOtherGroups()) {
             queryBuilder = queryBuilder.queryParam("server", "2");
         }
+        queryBuilder = queryBuilder.queryParam("o", offset);
         return queryBuilder;
     }
 
@@ -234,13 +246,13 @@ public class NzbKing extends Indexer<String> {
     @Override
     protected String getAndStoreResultToDatabase(URI uri, IndexerApiAccessType apiAccessType) throws IndexerAccessException {
         return Failsafe.with(retry503policy)
-                .onFailure(throwable -> logger.warn("Encountered 503 error. Will retry"))
-                .get(new CheckedSupplier<>() {
-                    @Override
-                    public String get() throws Throwable {
-                        return getAndStoreResultToDatabase(uri, String.class, apiAccessType);
-                    }
-                });
+            .onFailure(throwable -> logger.warn("Encountered 503 error. Will retry"))
+            .get(new CheckedSupplier<>() {
+                @Override
+                public String get() throws Throwable {
+                    return getAndStoreResultToDatabase(uri, String.class, apiAccessType);
+                }
+            });
     }
 
     @Override
