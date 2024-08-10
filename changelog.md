@@ -1,3 +1,13 @@
+### v7.4.0 (2024-08-10)
+
+**Feature** Support for NzbIndex Beta and NZBKing. Big thanks to Daniel Kastner for implementing this. See <a href="https://github.com/theotherp/nzbhydra2/issues/960">#960</a>
+
+**Fix** Prevent indexer searches with null IDs. See <a href="https://github.com/theotherp/nzbhydra2/issues/961">#961</a>
+
+**Fix** Support multiple entries in X-Forwarded-Host header. See <a href="https://github.com/theotherp/nzbhydra2/issues/963">#963</a>
+
+
+
 ### v7.3.0 (2024-07-13)
 
 **Feature** Add support for the appropriately named WtfNzb. Only query based searches are supported. See <a href="https://github.com/theotherp/nzbhydra2/issues/275">#275</a>
