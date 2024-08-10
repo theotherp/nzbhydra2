@@ -3,6 +3,8 @@
     changes:
       -   type: "fix"
           text: "Prevent indexer searches with null IDs. See #961"
+      -   type: "fix"
+          text: "Support multiple entries in X-Forwarded-Host header. See #963"
     final: true
 -   version: "v7.3.0"
     date: "2024-07-13"

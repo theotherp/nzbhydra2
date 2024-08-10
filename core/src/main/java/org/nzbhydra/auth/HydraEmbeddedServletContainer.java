@@ -20,6 +20,7 @@ import jakarta.servlet.ServletException;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.valves.ValveBase;
+import org.apache.logging.log4j.util.Strings;
 import org.apache.tomcat.util.buf.MessageBytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,7 +65,9 @@ public class HydraEmbeddedServletContainer implements WebServerFactoryCustomizer
                 if (forwardedHost == null) {
                     forwardedHost = request.getHeader("host");
                 }
-                if (forwardedHost != null) {
+                if (Strings.isNotBlank(forwardedHost)) {
+                    String[] split = forwardedHost.split("[ ,]");
+                    forwardedHost = split[0];
                     int colonIndex = forwardedHost.indexOf(":");
                     if (colonIndex > -1) {
                         if (originalPort == -1) {
