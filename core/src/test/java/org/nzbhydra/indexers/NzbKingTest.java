@@ -5,7 +5,11 @@ import com.google.common.io.Resources;
 import dev.failsafe.FailsafeException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.*;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.stubbing.Answer;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
@@ -73,12 +77,12 @@ public class NzbKingTest {
     void shouldParseResultsCorrectly() throws Exception {
         String html = Resources.toString(Resources.getResource(NzbKingTest.class, "/org/nzbhydra/mapping/nzbKing.html"), Charsets.UTF_8);
         List<SearchResultItem> searchResultItems = testee.getSearchResultItems(html, new SearchRequest());
-        assertThat(searchResultItems.size()).isEqualTo(42);
+        assertThat(searchResultItems.size()).isEqualTo(48);
         SearchResultItem item = searchResultItems.get(0);
         assertThat(item.getTitle()).isEqualTo("Furiosa.de.la.saga.Mad.Max.2024.2160p.WEB-DL.DDP5.1.DV.HDR.H.265-KWK");
         assertThat(item.getLink()).isEqualTo("https://www.nzbking.com/nzb:669923f04e4d6b10f89f50fb");
         assertThat(item.getDetails()).isEqualTo("https://www.nzbking.com/details:669923f04e4d6b10f89f50fb");
-        assertThat(item.getSize()).isEqualTo(28000000000L);
+        assertThat(item.getSize()).isEqualTo(30064771072L);
         assertThat(item.getIndexerGuid()).isEqualTo("669923f04e4d6b10f89f50fb");
         assertThat(item.getPubDate().getEpochSecond()).isEqualTo(1705750028L);
         assertThat(item.isAgePrecise()).isEqualTo(false);
@@ -114,7 +118,7 @@ public class NzbKingTest {
         String html = Resources.toString(Resources.getResource(NzbKingTest.class, "/org/nzbhydra/mapping/nzbKing.html"), Charsets.UTF_8);
         IndexerSearchResult indexerSearchResult = new IndexerSearchResult(testee, "");
         testee.completeIndexerSearchResult(html, indexerSearchResult, null, searchRequest, 0, 100);
-        assertThat(indexerSearchResult.isTotalResultsKnown()).isEqualTo(true);
+        assertThat(indexerSearchResult.isTotalResultsKnown()).isEqualTo(false);
         assertThat(indexerSearchResult.isHasMoreResults()).isEqualTo(false);
     }
 
@@ -130,7 +134,7 @@ public class NzbKingTest {
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         searchRequest.setQuery("query");
         UriComponentsBuilder builder = testee.buildSearchUrl(searchRequest, 0, 100);
-        assertThat(builder.toUriString()).isEqualTo("https://www.nzbking.com/search?q=query");
+        assertThat(builder.toUriString()).isEqualTo("https://www.nzbking.com/search?q=query&o=0");
     }
 
     @Test
@@ -139,7 +143,7 @@ public class NzbKingTest {
         searchRequest.getInternalData().setRequiredWords(Arrays.asList("a", "b"));
         searchRequest.setQuery("query");
         UriComponentsBuilder builder = testee.buildSearchUrl(searchRequest, 0, 100);
-        assertThat(builder.build().toString()).isEqualTo("https://www.nzbking.com/search?q=query a b");
+        assertThat(builder.build().toString()).isEqualTo("https://www.nzbking.com/search?q=query a b&o=0");
     }
 
     @Test
