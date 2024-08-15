@@ -1,6 +1,6 @@
 ## How to create a bug report
 
-**Set your log file level to debug, repeat the steps that cause the problem and post the debug infos ZIP which can be retrieved in the [System / Bugreport section](http://127.0.0.1:5076/system/bugreport). If other tools are involved post their logs as well.**
+**Set your log file level to debug, restart NZBHydra, repeat the steps that cause the problem and post the debug infos ZIP which can be retrieved in the [System / Bugreport section](http://127.0.0.1:5076/system/bugreport). If other tools are involved post their logs as well.**
 
 * Prefix the issue title with "BUG"
 * You don't have to follow the next steps by the letter, just think about what you're trying to achieve ;-) 
