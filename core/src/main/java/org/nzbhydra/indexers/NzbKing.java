@@ -42,10 +42,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -133,7 +130,7 @@ public class NzbKing extends Indexer<String> {
         filename = matcher.group(1) + "." + matcher.group(2);
         title = cleanUpTitle(title);
         item.setTitle(title);
-        item.setAttributes(Map.of("filename", filename));
+        item.setAttributes(new HashMap<>(Map.of("filename", filename)));
 
         item.setIndexerGuid(getElementOrNone(row, "input[type=checkbox]").attr("value"));
         item.setLink("https://www.nzbking.com/nzb:" + item.getIndexerGuid());
