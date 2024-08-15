@@ -23,6 +23,7 @@ public class InternalData {
     private final Map<String, FallbackState> fallbackState = new HashMap<>();
     private List<String> forbiddenWords = new ArrayList<>();
     private List<String> requiredWords = new ArrayList<>();
+    private List<String> queryWords = new ArrayList<>();
     private List<Integer> newznabCategories = new ArrayList<>();
     private boolean includePasswords = false;
     private boolean queryGenerated = false;

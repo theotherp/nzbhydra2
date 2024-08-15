@@ -3,6 +3,12 @@
     date: "2024-08-10"
     changes:
       -   type: "feature"
+          text: "Filter NZBKing results for query words to get rid of some of the trash. See #960"
+    final: true
+-   version: "v7.4.0"
+    date: "2024-08-10"
+    changes:
+      -   type: "feature"
           text: "Support for NzbIndex Beta and NZBKing. Big thanks to Daniel Kastner for implementing this. See #960"
       -   type: "fix"
           text: "Prevent indexer searches with null IDs. See #961"

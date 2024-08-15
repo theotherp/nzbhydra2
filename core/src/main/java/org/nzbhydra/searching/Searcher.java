@@ -300,7 +300,7 @@ public class Searcher {
             searchEntity.setAuthor(searchRequest.getAuthor().orElse(null));
 
             //Extend search request
-            searchRequest.extractForbiddenWords();
+            searchRequest.extractQueryAndForbiddenWords();
 
             if (configProvider.getBaseConfig().getMain().isKeepHistory()) {
                 searchRepository.save(searchEntity);

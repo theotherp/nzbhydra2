@@ -58,9 +58,9 @@ public class NzbKing extends Indexer<String> {
     private static final Pattern NFO_PATTERN = Pattern.compile("<pre>(?<nfo>.*)<\\/pre>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
     private final RetryPolicy<Object> retry503policy = RetryPolicy.builder()
-        .handleIf(x -> x instanceof IndexerAccessException && Throwables.getStackTraceAsString(x).contains("503"))
-        .withDelay(Duration.ofMillis(500))
-        .withMaxRetries(2).build();
+            .handleIf(x -> x instanceof IndexerAccessException && Throwables.getStackTraceAsString(x).contains("503"))
+            .withDelay(Duration.ofMillis(500))
+            .withMaxRetries(2).build();
 
     public NzbKing(ConfigProvider configProvider, IndexerRepository indexerRepository, SearchResultRepository searchResultRepository, IndexerApiAccessRepository indexerApiAccessRepository, IndexerApiAccessEntityShortRepository indexerApiAccessShortRepository, IndexerLimitRepository indexerStatusRepository, IndexerWebAccess indexerWebAccess, SearchResultAcceptor resultAcceptor, CategoryProvider categoryProvider, InfoProvider infoProvider, ApplicationEventPublisher eventPublisher, QueryGenerator queryGenerator, CustomQueryAndTitleMappingHandler titleMapping, BaseConfigHandler baseConfigHandler) {
         super(configProvider, indexerRepository, searchResultRepository, indexerApiAccessRepository, indexerApiAccessShortRepository, indexerStatusRepository, indexerWebAccess, resultAcceptor, categoryProvider, infoProvider, eventPublisher, queryGenerator, titleMapping, baseConfigHandler);
@@ -75,7 +75,6 @@ public class NzbKing extends Indexer<String> {
         indexerSearchResult.setPageSize(50);
         indexerSearchResult.setOffset(offset);
     }
-
 
     @Override
     protected List<SearchResultItem> getSearchResultItems(String searchRequestResponse, SearchRequest searchRequest) throws IndexerParsingException {
@@ -101,10 +100,12 @@ public class NzbKing extends Indexer<String> {
                 if (item == null) {
                     continue;
                 }
+
                 items.add(item);
             }
             isFirstGroup = false;
         }
+        items.removeIf(item -> searchRequest.getInternalData().getQueryWords().stream().noneMatch(queryWord -> item.getTitle().contains(queryWord)));
         debug("Finished parsing {} of {} rows", items.size(), allRows.size());
 
         return items;
@@ -209,7 +210,7 @@ public class NzbKing extends Indexer<String> {
         }
         query = cleanupQuery(query);
         UriComponentsBuilder queryBuilder = UriComponentsBuilder.fromHttpUrl("https://www.nzbking.com/search")
-            .queryParam("q", query);
+                .queryParam("q", query);
         if (getConfig().isBinsearchOtherGroups()) {
             queryBuilder = queryBuilder.queryParam("server", "2");
         }
@@ -246,13 +247,13 @@ public class NzbKing extends Indexer<String> {
     @Override
     protected String getAndStoreResultToDatabase(URI uri, IndexerApiAccessType apiAccessType) throws IndexerAccessException {
         return Failsafe.with(retry503policy)
-            .onFailure(throwable -> logger.warn("Encountered 503 error. Will retry"))
-            .get(new CheckedSupplier<>() {
-                @Override
-                public String get() throws Throwable {
-                    return getAndStoreResultToDatabase(uri, String.class, apiAccessType);
-                }
-            });
+                .onFailure(throwable -> logger.warn("Encountered 503 error. Will retry"))
+                .get(new CheckedSupplier<>() {
+                    @Override
+                    public String get() throws Throwable {
+                        return getAndStoreResultToDatabase(uri, String.class, apiAccessType);
+                    }
+                });
     }
 
     @Override

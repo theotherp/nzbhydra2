@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -122,20 +123,26 @@ public class SearchRequest {
         return !identifiers.isEmpty();
     }
 
-    public SearchRequest extractForbiddenWords() {
+    public SearchRequest extractQueryAndForbiddenWords() {
         if (Strings.isNullOrEmpty(query)) {
             return this;
         }
         Matcher matcher = EXCLUSION_PATTERN.matcher(query);
         Set<String> exclusions = new HashSet<>();
         while (matcher.find()) {
-            exclusions.add(matcher.group("term"));
+            String match = matcher.group("term");
+            exclusions.add(match);
+            internalData.getRequiredWords().remove(match);
         }
         query = matcher.replaceAll("");
         internalData.getForbiddenWords().addAll(exclusions);
         if (!exclusions.isEmpty()) {
             logger.debug("Extracted excluded words \"{}\" from query, leaving \"{}\" as qeuery", Joiner.on(", ").join(exclusions), query);
         }
+        if (!Strings.isNullOrEmpty(query)) {
+            internalData.setQueryWords(List.of(query.split(" ")));
+        }
+
         return this;
     }
 
