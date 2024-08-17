@@ -1,3 +1,19 @@
+### v7.5.0 (2024-08-17)
+
+**Feature** Filter NZBKing results for query words to get rid of some of the trash. See <a href="https://github.com/theotherp/nzbhydra2/issues/960">#960</a>
+
+**Feature** Added SceneNZBs.com to indexer templates. If you want german or spanish results make sure to add the newznab IDs in the categories config. For example for german UHD movies add 2145. You can find out the IDs by browsing the categories on the indexer website.
+
+**Feature** The config box shown when you add an indexer can now show additional information about an indexer. In this first instance you'll find the note about SceneNZBs. If you can think of stuff which should be shown for individual indexers please let me know.
+
+**Fix** Daniel Kastner fixed API access to NZBKing. See <a href="https://github.com/theotherp/nzbhydra2/issues/965">#965</a>
+
+**Fix** Improved title detection for NZBKing.
+
+**Fix** Some fonts could not be loaded since the UI rewrite.
+
+
+
 ### v7.4.0 (2024-08-10)
 
 **Feature** Support for NzbIndex Beta and NZBKing. Big thanks to Daniel Kastner for implementing this. See <a href="https://github.com/theotherp/nzbhydra2/issues/960">#960</a>
