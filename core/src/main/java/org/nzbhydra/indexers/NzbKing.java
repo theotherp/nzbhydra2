@@ -42,7 +42,11 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -50,7 +54,7 @@ public class NzbKing extends Indexer<String> {
 
     private static final Logger logger = LoggerFactory.getLogger(NzbKing.class);
 
-    private static final Pattern TITLE_PATTERN = Pattern.compile("\"(.*)\\.(rar|nfo|mkv|mp3|mobi|avi|mp4|m3u|epub|txt|pdf|par2|001|nzb|url|jpg|zip|r[0-9]{2})\"", Pattern.CASE_INSENSITIVE); //Note the " (quotation marks)
+    private static final Pattern TITLE_PATTERN = Pattern.compile("\"?(.*)\\.(rar|nfo|mkv|mp3|mobi|avi|mp4|m3u|epub|txt|pdf|par2|001|nzb|url|jpg|zip|flac|m4a|m4b|sfv|7z|md5|r[0-9]{2})\"?", Pattern.CASE_INSENSITIVE); //Note the " (quotation marks)
     private static final Pattern SIZE_PATTERN = Pattern.compile("(?<size>[0-9]+(\\.[0-9]+)?)(?<unit>(GB|MB|KB|B))", Pattern.CASE_INSENSITIVE);
     private static final Pattern NFO_PATTERN = Pattern.compile("<pre>(?<nfo>.*)<\\/pre>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
@@ -187,7 +191,6 @@ public class NzbKing extends Indexer<String> {
             item.setSize(size.longValue());
             return true;
         } else {
-            debug("Unable to find size in text {}", partsAndSize);
             return false;
         }
     }

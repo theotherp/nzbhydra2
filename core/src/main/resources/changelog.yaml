@@ -4,6 +4,12 @@
     changes:
       -   type: "feature"
           text: "Filter NZBKing results for query words to get rid of some of the trash. See #960"
+      -   type: "feature"
+          text: "Added SceneNZBs.com to indexer templates. If you want german or spanish results make sure to add the newznab IDs in the categories config. For example for german UHD movies add 2145. You can find out the IDs by browsing the categories on the indexer website."
+      -   type: "Fix"
+          text: "Daniel Kastner fixed API access to NZBKing. See #965"
+      -   type: "Fix"
+          text: "Improved title detection for NZBKing."
     final: true
 -   version: "v7.4.0"
     date: "2024-08-10"

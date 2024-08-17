@@ -862,6 +862,10 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
             host: "https://api.omgwtfnzbs.org"
         },
         {
+            name: "SceneNZBs",
+            host: "https://scenenzbs.com"
+        },
+        {
             name: "spotweb.com",
             host: "https://spotweb.me"
         },

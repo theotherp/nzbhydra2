@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~  (C) Copyright 2024 TheOtherP (theotherp@posteo.net)
+  ~
+  ~  Licensed under the Apache License, Version 2.0 (the "License");
+  ~  you may not use this file except in compliance with the License.
+  ~  You may obtain a copy of the License at
+  ~
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~  Unless required by applicable law or agreed to in writing, software
+  ~  distributed under the License is distributed on an "AS IS" BASIS,
+  ~  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~  See the License for the specific language governing permissions and
+  ~  limitations under the License.
+  -->
+
+<caps>
+	<server appversion="0.2.3p" version="0.5" title="SceneNZBs" strapline="" email="support@scenenzbs.com" url="https://scenenzbs.com/" image="https://scenenzbs.com/images/banner.jpg" />
+	<limits max="100" default="100"/>
+
+	<registration available="yes" open="yes" />
+
+    <searching>
+        <search available="yes" supportedParams="q" />
+        <tv-search available="yes" supportedParams="q,rid,tvdbid,tvmazeid,season,ep" />
+        <movie-search available="yes" supportedParams="q,imdbid,genre"/>
+    </searching>
+
+	<categories>
+	<category id="3000" name="Audio">
+		<subcat id="3030" name="Audiobook"/>
+		<subcat id="3130" name="Audiobook - DE"/>
+		<subcat id="3230" name="Audiobook - ES"/>
+		<subcat id="3040" name="Lossless"/>
+		<subcat id="3010" name="MP3"/>
+		<subcat id="3050" name="Other"/>
+		<subcat id="3020" name="Video"/>
+	</category>
+	<category id="7000" name="Books">
+		<subcat id="7030" name="Comics"/>
+		<subcat id="7020" name="Ebook"/>
+		<subcat id="7010" name="Mags"/>
+	</category>
+	<category id="7100" name="Books - DE">
+		<subcat id="7130" name="Comics"/>
+		<subcat id="7120" name="Ebook"/>
+		<subcat id="7110" name="Mags"/>
+	</category>
+	<category id="1000" name="Console">
+		<subcat id="1010" name="NDS"/>
+		<subcat id="1080" name="PS3"/>
+		<subcat id="1100" name="PS4"/>
+		<subcat id="1110" name="PS5"/>
+		<subcat id="1020" name="PSP"/>
+		<subcat id="1035" name="Switch"/>
+		<subcat id="1030" name="Wii"/>
+		<subcat id="1060" name="WiiWare/VC"/>
+		<subcat id="1070" name="XBOX 360 DLC"/>
+		<subcat id="1040" name="Xbox"/>
+		<subcat id="1050" name="Xbox 360"/>
+		<subcat id="1090" name="Xbox One"/>
+	</category>
+	<category id="2000" name="Movies">
+		<subcat id="2060" name="3D"/>
+		<subcat id="2050" name="BluRay"/>
+		<subcat id="2010" name="Foreign"/>
+		<subcat id="2040" name="HD"/>
+		<subcat id="2020" name="Other"/>
+		<subcat id="2030" name="SD"/>
+		<subcat id="2045" name="UHD"/>
+	</category>
+	<category id="2100" name="Movies - DE">
+		<subcat id="2160" name="3D"/>
+		<subcat id="2150" name="BluRay"/>
+		<subcat id="2140" name="HD"/>
+		<subcat id="2120" name="Other"/>
+		<subcat id="2130" name="SD"/>
+		<subcat id="2145" name="UHD"/>
+	</category>
+	<category id="2200" name="Movies - ES">
+		<subcat id="2260" name="3D"/>
+		<subcat id="2250" name="BluRay"/>
+		<subcat id="2240" name="HD"/>
+		<subcat id="2220" name="Other"/>
+		<subcat id="2230" name="SD"/>
+		<subcat id="2245" name="UHD"/>
+	</category>
+	<category id="8000" name="Other">
+		<subcat id="8010" name="Misc"/>
+	</category>
+	<category id="4000" name="PC">
+		<subcat id="4010" name="0day"/>
+		<subcat id="4080" name="3D-Print"/>
+		<subcat id="4050" name="Games"/>
+		<subcat id="4020" name="ISO"/>
+		<subcat id="4035" name="Linux"/>
+		<subcat id="4030" name="Mac"/>
+		<subcat id="4070" name="Mobile-Android"/>
+		<subcat id="4040" name="Mobile-Other"/>
+		<subcat id="4060" name="Mobile-iOS"/>
+		<subcat id="4100" name="Pico"/>
+		<subcat id="4090" name="Tutorials"/>
+	</category>
+	<category id="5000" name="TV">
+		<subcat id="5070" name="Anime"/>
+		<subcat id="5080" name="Documentary"/>
+		<subcat id="5020" name="Foreign"/>
+		<subcat id="5040" name="HD"/>
+		<subcat id="5050" name="Other"/>
+		<subcat id="5030" name="SD"/>
+		<subcat id="5060" name="Sport"/>
+		<subcat id="5045" name="UHD"/>
+	</category>
+	<category id="5100" name="TV - DE">
+		<subcat id="5170" name="Anime"/>
+		<subcat id="5180" name="Documentary"/>
+		<subcat id="5140" name="HD"/>
+		<subcat id="5150" name="Other"/>
+		<subcat id="5130" name="SD"/>
+		<subcat id="5160" name="Sport"/>
+		<subcat id="5145" name="UHD"/>
+	</category>
+	<category id="5200" name="TV - ES">
+		<subcat id="5270" name="Anime"/>
+		<subcat id="5280" name="Documentary"/>
+		<subcat id="5240" name="HD"/>
+		<subcat id="5250" name="Other"/>
+		<subcat id="5230" name="SD"/>
+		<subcat id="5260" name="Sport"/>
+		<subcat id="5245" name="UHD"/>
+	</category>
+	<category id="6000" name="XXX">
+		<subcat id="6010" name="DVD"/>
+		<subcat id="6060" name="ImgSet"/>
+		<subcat id="6070" name="Other"/>
+		<subcat id="6050" name="Pack"/>
+		<subcat id="6020" name="WMV"/>
+		<subcat id="6030" name="XviD"/>
+		<subcat id="6040" name="x264"/>
+	</category>
+	</categories>
+
+	<groups>
+	</groups>
+
+	<genres>
+		<genre id="22" categoryid="1000" name="Adventure"/>
+		<genre id="27" categoryid="1000" name="Arcade"/>
+		<genre id="132" categoryid="1000" name="Card &amp; Board Game"/>
+		<genre id="24" categoryid="1000" name="Fighting"/>
+		<genre id="2" categoryid="1000" name="Game Boy"/>
+		<genre id="21" categoryid="1000" name="Hack and slash/Beat &#039;em up"/>
+		<genre id="23" categoryid="1000" name="Indie"/>
+		<genre id="135" categoryid="1000" name="Music"/>
+		<genre id="9" categoryid="1000" name="Nintendo 64"/>
+		<genre id="143" categoryid="1000" name="Pinball"/>
+		<genre id="50" categoryid="1000" name="Platform"/>
+		<genre id="85" categoryid="1000" name="Point-and-click"/>
+		<genre id="60" categoryid="1000" name="Puzzle"/>
+		<genre id="140" categoryid="1000" name="Quiz/Trivia"/>
+		<genre id="38" categoryid="1000" name="Racing"/>
+		<genre id="101" categoryid="1000" name="Real Time Strategy (RTS)"/>
+		<genre id="20" categoryid="1000" name="Role-playing (RPG)"/>
+		<genre id="55" categoryid="1000" name="Shooter"/>
+		<genre id="30" categoryid="1000" name="Simulator"/>
+		<genre id="125" categoryid="1000" name="Sport"/>
+		<genre id="31" categoryid="1000" name="Strategy"/>
+		<genre id="35" categoryid="1000" name="Tactical"/>
+		<genre id="34" categoryid="1000" name="Turn-based strategy (TBS)"/>
+		<genre id="134" categoryid="1000" name="Visual Novel"/>
+	</genres>
+</caps>
