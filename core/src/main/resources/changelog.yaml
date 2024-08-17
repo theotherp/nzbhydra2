@@ -1,6 +1,6 @@
 #@formatter:off
--   version: "v7.4.0"
-    date: "2024-08-10"
+-   version: "v7.5.0"
+    date: "2024-08-17"
     changes:
       -   type: "feature"
           text: "Filter NZBKing results for query words to get rid of some of the trash. See #960"
