@@ -76,10 +76,13 @@ public class NzbKingTest {
     @Test
     void shouldParseResultsCorrectly() throws Exception {
         String html = Resources.toString(Resources.getResource(NzbKingTest.class, "/org/nzbhydra/mapping/nzbKing.html"), Charsets.UTF_8);
-        List<SearchResultItem> searchResultItems = testee.getSearchResultItems(html, new SearchRequest());
-        assertThat(searchResultItems.size()).isEqualTo(48);
+        SearchRequest searchRequest = new SearchRequest();
+        searchRequest.setQuery("rabiata");
+        searchRequest.getInternalData().setQueryWords(List.of("rabiata"));
+        List<SearchResultItem> searchResultItems = testee.getSearchResultItems(html, searchRequest);
+        assertThat(searchResultItems.size()).isEqualTo(21);
         SearchResultItem item = searchResultItems.get(0);
-        assertThat(item.getTitle()).isEqualTo("Furiosa.de.la.saga.Mad.Max.2024.2160p.WEB-DL.DDP5.1.DV.HDR.H.265-KWK");
+        assertThat(item.getTitle()).isEqualTo("Rabiata.de.la.saga.Crazy.John.2024.2160p.WEB-DL.DDP5.1.DV.HDR.H.265-KWK");
         assertThat(item.getLink()).isEqualTo("https://www.nzbking.com/nzb:669923f04e4d6b10f89f50fb");
         assertThat(item.getDetails()).isEqualTo("https://www.nzbking.com/details:669923f04e4d6b10f89f50fb");
         assertThat(item.getSize()).isEqualTo(30064771072L);

@@ -54,7 +54,7 @@ public class NzbKing extends Indexer<String> {
 
     private static final Logger logger = LoggerFactory.getLogger(NzbKing.class);
 
-    private static final Pattern TITLE_PATTERN = Pattern.compile("\"?(.*)\\.(rar|nfo|mkv|mp3|mobi|avi|mp4|m3u|epub|txt|pdf|par2|001|nzb|url|jpg|zip|flac|m4a|m4b|sfv|7z|md5|r[0-9]{2})\"?", Pattern.CASE_INSENSITIVE); //Note the " (quotation marks)
+    private static final Pattern TITLE_PATTERN = Pattern.compile("\"(.*)\\.(rar|nfo|mkv|mp3|mobi|avi|mp4|m3u|epub|txt|pdf|par2|001|nzb|url|jpg|zip|flac|m4a|m4b|sfv|7z|md5|r[0-9]{2})\"?", Pattern.CASE_INSENSITIVE); //Note the " (quotation marks)
     private static final Pattern SIZE_PATTERN = Pattern.compile("(?<size>[0-9]+(\\.[0-9]+)?)(?<unit>(GB|MB|KB|B))", Pattern.CASE_INSENSITIVE);
     private static final Pattern NFO_PATTERN = Pattern.compile("<pre>(?<nfo>.*)<\\/pre>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
@@ -106,7 +106,7 @@ public class NzbKing extends Indexer<String> {
             }
             isFirstGroup = false;
         }
-        items.removeIf(item -> searchRequest.getInternalData().getQueryWords().stream().noneMatch(queryWord -> item.getTitle().contains(queryWord)));
+        items.removeIf(item -> !searchRequest.getInternalData().getQueryWords().stream().allMatch(queryWord -> item.getTitle().toLowerCase().contains(queryWord.toLowerCase())));
         debug("Finished parsing {} of {} rows", items.size(), allRows.size());
 
         return items;
