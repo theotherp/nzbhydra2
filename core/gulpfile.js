@@ -173,6 +173,10 @@ gulp.task('copy-assets', function () {
         .pipe(cached("fonts2"))
         .pipe(gulp.dest(fontDest));
 
+    var fonts3 = gulp.src("bower_components/bootstrap-less/fonts/*")
+        .pipe(cached("fonts3"))
+        .pipe(gulp.dest(fontDest));
+
     var imgDest = staticFolder + '/img';
     var img = gulp.src(uiSrcFolder + "/img/**/*")
         .pipe(cached("images"))
@@ -182,7 +186,7 @@ gulp.task('copy-assets', function () {
         .pipe(cached("favicon"))
         .pipe(gulp.dest(staticFolder));
 
-    return merge(img, fonts1, fonts2, favIcon);
+    return merge(img, fonts1, fonts2, fonts3, favIcon);
 });
 
 

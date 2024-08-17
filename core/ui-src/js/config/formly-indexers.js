@@ -604,6 +604,10 @@ function _showBox(indexerModel, parentModel, isInitial, $uibModal, CategoriesSer
             parentModel: function () {
                 return parentModel;
             }
+            ,
+            info: function () {
+                return indexerModel.info;
+            }
         }
     });
 
@@ -863,7 +867,8 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
         },
         {
             name: "SceneNZBs",
-            host: "https://scenenzbs.com"
+            host: "https://scenenzbs.com",
+            info: "If you want german or spanish results make sure to add the newznab IDs in the categories config.<br>For example for german UHD movies add 2145.<br>You can find out the IDs by browsing the categories on the indexer website."
         },
         {
             name: "spotweb.com",

@@ -22,6 +22,11 @@
         </h3>
     </div>
     <div class="modal-body">
+        <div class="panel panel-default" ng-if="model.info">
+            <div class="panel-body ">
+                <span ng-bind-html="model.info | unsafe"></span>
+            </div>
+        </div>
         <formly-form fields="fields"
                      model="model"
                      form="form"
