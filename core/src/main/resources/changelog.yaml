@@ -1,4 +1,12 @@
 #@formatter:off
+-   version: "v7.6.0"
+    date: "2024-09-15"
+    changes:
+      -   type: "feature"
+          text: "Quickfilters now support regular expressions. Surround them with / to mark them as such. See #969"
+      -   type: "Fix"
+          text: "When converting from media IDs all IDs will be used where possible instead of returning on the first fail. See #964"
+    final: true
 -   version: "v7.5.0"
     date: "2024-08-17"
     changes:

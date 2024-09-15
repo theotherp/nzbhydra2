@@ -7575,7 +7575,7 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'text',
                                 label: 'Custom quick filters',
-                                help: 'Enter in the format <code>DisplayName=Required1,Required2</code>. Prefix words with ! to exclude them. Apply values with enter key.',
+                                help: 'Enter in the format <code>DisplayName=Required1,Required2</code>. Prefix words with ! to exclude them. Surround with <code>/<code> to mark as a regex. Apply values with enter key.',
                                 tooltip: 'E.g. use <code>WEB=webdl,web-dl.</code> for a quick filter with the name "WEB" to be displayed that searches for "webdl" and "web-dl" in lowercase search results.',
                                 advanced: true
                             }
@@ -10377,13 +10377,17 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
                 }
             }
             if ($scope.filterButtonsModel.custom !== null && !_.isEmpty($scope.filterButtonsModel.custom)) {
+
                 var quickFilterWords = [];
+                var quickFilterRegexes = [];
                 _.each($scope.filterButtonsModel.custom, function (value, key) { //key is something like 'camts', value is true or false
                     if (value) {
-
                         _.each($scope.filterButtonsModelMap[key], function (string) {
-                            Array.prototype.push.apply(quickFilterWords, string.split(" "));
-
+                            if (string.startsWith("/") && string.endsWith("/")) {
+                                quickFilterRegexes.push(string);
+                            } else {
+                                Array.prototype.push.apply(quickFilterWords, string.split(" "));
+                            }
                         });
                     }
                 });
@@ -10400,6 +10404,17 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
 
                     if (!allMatch) {
                         console.debug(item.title + " does not match all the terms of " + JSON.stringify(quickFilterWords));
+                        filterReasons["quickFilter"] = filterReasons["quickFilter"] + 1;
+                        return false;
+                    }
+                }
+                if (quickFilterRegexes.length !== 0) {
+                    var allMatch = _.all(quickFilterRegexes, function (regex) {
+                        return new RegExp(regex.toLowerCase().slice(1,-1)).test(item.title.toLowerCase());
+                    })
+
+                    if (!allMatch) {
+                        console.debug(item.title + " does not match all the regexes of " + JSON.stringify(quickFilterRegexes));
                         filterReasons["quickFilter"] = filterReasons["quickFilter"] + 1;
                         return false;
                     }

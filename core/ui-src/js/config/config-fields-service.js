@@ -1423,7 +1423,7 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'text',
                                 label: 'Custom quick filters',
-                                help: 'Enter in the format <code>DisplayName=Required1,Required2</code>. Prefix words with ! to exclude them. Apply values with enter key.',
+                                help: 'Enter in the format <code>DisplayName=Required1,Required2</code>. Prefix words with ! to exclude them. Surround with <code>/<code> to mark as a regex. Apply values with enter key.',
                                 tooltip: 'E.g. use <code>WEB=webdl,web-dl.</code> for a quick filter with the name "WEB" to be displayed that searches for "webdl" and "web-dl" in lowercase search results.',
                                 advanced: true
                             }
