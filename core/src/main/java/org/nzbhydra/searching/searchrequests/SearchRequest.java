@@ -4,6 +4,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.nzbhydra.config.SearchSource;
 import org.nzbhydra.config.SearchSourceRestriction;
@@ -38,7 +39,9 @@ public class SearchRequest {
     protected SearchSource source;
     protected SearchType searchType = SearchType.SEARCH;
     protected Category category = new Category();
+    @Getter
     protected int offset = 0;
+    @Getter
     protected int limit;
     protected boolean loadAll;
     protected Integer minsize = null;
@@ -69,14 +72,6 @@ public class SearchRequest {
 
     public Optional<Set<String>> getIndexers() {
         return Optional.ofNullable(indexers);
-    }
-
-    public int getOffset() {
-        return offset;
-    }
-
-    public int getLimit() {
-        return limit;
     }
 
     public Optional<Integer> getMinsize() {
@@ -121,6 +116,14 @@ public class SearchRequest {
 
     public boolean isIdBasedQuery() {
         return !identifiers.isEmpty();
+    }
+
+    public void setQuery(String query) {
+        if (query == null) {
+            this.query = null;
+        } else {
+            this.query = query.trim();
+        }
     }
 
     public SearchRequest extractQueryAndForbiddenWords() {
