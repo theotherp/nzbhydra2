@@ -4434,7 +4434,7 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
         {
             name: "SceneNZBs",
             host: "https://scenenzbs.com",
-            info: "If you want german or spanish results make sure to add the newznab IDs in the categories config.<br>For example for german UHD movies add 2145.<br>You can find out the IDs by browsing the categories on the indexer website."
+            info: "If you want german or spanish (or other language specific) results make sure to add the newznab IDs in the categories config.<br>For example for german UHD movies add 2145.<br>You can find out the IDs by browsing https://scenenzbs.com/rss."
         },
         {
             name: "spotweb.com",
@@ -9690,6 +9690,7 @@ function SearchService($http) {
                 searchRequestParameters.imdbId = metaData.imdbId;
             } else if (category.indexOf("TV") > -1 || (category.indexOf("50") === 0) || mode === "tvsearch") {
                 searchRequestParameters.tvdbId = metaData.tvdbId;
+                searchRequestParameters.imdbId = metaData.imdbId;
                 searchRequestParameters.tvrageId = metaData.rid;
                 searchRequestParameters.tvmazeId = metaData.tvmazeId;
                 searchRequestParameters.season = season;

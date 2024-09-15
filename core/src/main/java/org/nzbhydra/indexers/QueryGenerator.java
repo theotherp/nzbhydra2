@@ -91,7 +91,7 @@ public class QueryGenerator {
                 throw new IndexerSearchAbortedException("Unable to generate query because no identifier is known");
             }
             try {
-                MediaInfo mediaInfo = infoProvider.convert(firstIdentifierEntry.get().getValue(), firstIdentifierEntry.get().getKey());
+                MediaInfo mediaInfo = infoProvider.convert(searchRequest.getIdentifiers());
                 if (mediaInfo.getTitle().isEmpty()) {
                     throw new IndexerSearchAbortedException("Unable to generate query because no title is known");
                 }
@@ -129,7 +129,7 @@ public class QueryGenerator {
             }
         }
 
-        logger.debug("{} does not support any of the supplied IDs or the requested search type. The following query was generated{} ", indexer.getName(), query);
+        logger.debug("{} does not support any of the supplied IDs or the requested search type. The following query was generated: {} ", indexer.getName(), query);
 
         generatedQueries.put(searchRequest, query);
         searchRequest.getInternalData().setQueryGenerated(true);

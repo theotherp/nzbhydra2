@@ -73,10 +73,15 @@ public class InfoProvider {
         return from.stream().anyMatch(x -> canConvertMap.containsKey(x) && canConvertMap.get(x).stream().anyMatch(to::contains));
     }
 
+    @Cacheable(cacheNames = "infos", sync = true)
     public MediaInfo convert(Map<MediaIdType, String> identifiers) throws InfoProviderException {
         for (MediaIdType idType : REAL_ID_TYPES) {
             if (identifiers.containsKey(idType) && identifiers.get(idType) != null) {
-                return convert(identifiers.get(idType), idType);
+                try {
+                    return convert(identifiers.get(idType), idType);
+                } catch (InfoProviderException ignored) {
+                    //Already logged in call, we continue and hope another ID will work
+                }
             }
         }
 
@@ -156,11 +161,11 @@ public class InfoProvider {
                 default:
                     throw new IllegalArgumentException("Wrong IdType");
             }
-            logger.debug("Conversion successful: " + info);
+            logger.debug("Conversion successful: {}", info);
             mediaInfoMap.put(hash, info);
             return info;
         } catch (Exception e) {
-            logger.error("Error while converting " + fromType + " " + value, e);
+            logger.error("Error while converting {} {}", fromType, value, e);
             Throwables.throwIfInstanceOf(e, InfoProviderException.class);
             throw new InfoProviderException("Unexpected error while converting infos", e);
         }
@@ -203,7 +208,7 @@ public class InfoProvider {
 
             return infos;
         } catch (Exception e) {
-            logger.error("Error while searching for " + titleType + " " + title, e);
+            logger.error("Error while searching for {} {}", titleType, title, e);
             Throwables.throwIfInstanceOf(e, InfoProviderException.class);
             throw new InfoProviderException("Unexpected error while converting infos", e);
         }

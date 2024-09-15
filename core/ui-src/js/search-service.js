@@ -51,6 +51,7 @@ function SearchService($http) {
                 searchRequestParameters.imdbId = metaData.imdbId;
             } else if (category.indexOf("TV") > -1 || (category.indexOf("50") === 0) || mode === "tvsearch") {
                 searchRequestParameters.tvdbId = metaData.tvdbId;
+                searchRequestParameters.imdbId = metaData.imdbId;
                 searchRequestParameters.tvrageId = metaData.rid;
                 searchRequestParameters.tvmazeId = metaData.tvmazeId;
                 searchRequestParameters.season = season;
