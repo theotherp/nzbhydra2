@@ -1,3 +1,11 @@
+### v7.6.0 (2024-09-15)
+
+**Feature** Quickfilters now support regular expressions. Surround them with / to mark them as such. See <a href="https://github.com/theotherp/nzbhydra2/issues/969">#969</a>
+
+**Fix** When converting from media IDs all IDs will be used where possible instead of returning on the first fail. See <a href="https://github.com/theotherp/nzbhydra2/issues/964">#964</a>
+
+
+
 ### v7.5.0 (2024-08-17)
 
 **Feature** Filter NZBKing results for query words to get rid of some of the trash. See <a href="https://github.com/theotherp/nzbhydra2/issues/960">#960</a>
