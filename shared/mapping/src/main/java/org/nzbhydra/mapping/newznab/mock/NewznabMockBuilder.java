@@ -51,7 +51,7 @@ public class NewznabMockBuilder {
         List<NewznabXmlItem> items = new ArrayList<>();
         for (int i = request.getOffset() + 1; i <= request.getOffset() + request.getNumberOfResults(); i++) {
 
-            NewznabXmlItem item = new NewznabXmlItem();
+
             String size = String.valueOf(Math.abs(random.nextInt(999999999)));
             String poster = "poster";
             String group = "group";
@@ -73,44 +73,50 @@ public class NewznabMockBuilder {
                 size = String.valueOf(Math.abs(title.hashCode()));
             }
 
-            item.setDescription("indexer " + request.getTitleBase() + "-" + i + " offset " + request.getOffset());
-            item.setTitle(title);
-            item.setPubDate(pubDate);
-            String guid = getHostUrl() + "/nzb/" + request.getTitleBase() + i;
-            item.setEnclosure(new NewznabXmlEnclosure(guid, Long.valueOf(size), request.isTorznab() ? "application/x-bittorrent" : "application/x-nzb"));
-            item.setComments(getHostUrl() + "/comments/" + request.getTitleBase() + i);
-            item.setLink(guid);
-            item.setCategory("TV > HD");
-            item.setRssGuid(new NewznabXmlGuid(guid, true));
-
-            List<NewznabAttribute> attributes = new ArrayList<>();
-            attributes.add(new NewznabAttribute("category", request.getNewznabCategory() != null ? request.getNewznabCategory() : String.valueOf(newznabCategories.get(random.nextInt(newznabCategories.size())))));
-            attributes.add(new NewznabAttribute("size", size));
-            attributes.add(new NewznabAttribute("guid", guid));
-
-            attributes.add(new NewznabAttribute("poster", poster));
-            attributes.add(new NewznabAttribute("group", group));
-            attributes.add(new NewznabAttribute("grabs", String.valueOf(random.nextInt(1000))));
-            if (random.nextBoolean()) {
-                attributes.add(new NewznabAttribute("nfo", String.valueOf(random.nextInt(2))));
-            }
-            item.setNewznabAttributes(attributes);
-
-            if (request.isTorznab()) {
-                item.setGrabs(i * 2);
-                List<NewznabAttribute> torznabAttributes = new ArrayList<>();
-                torznabAttributes.add(new NewznabAttribute("seeders", String.valueOf(i)));
-                torznabAttributes.add(new NewznabAttribute("peers", String.valueOf(i * 2)));
-                torznabAttributes.add(new NewznabAttribute("size", size));
-                item.setTorznabAttributes(torznabAttributes);
-                item.setSize(Long.valueOf(size));
-            }
+            NewznabXmlItem item = buildItem(i, title, pubDate, size, poster, group, request.getNewznabCategory(), request.getTitleBase(), request.isTorznab(), "indexer " + request.getTitleBase() + "-" + i + " offset " + request.getOffset());
 
             items.add(item);
         }
 
         NewznabXmlRoot rssRoot = getRssRoot(items, request.getOffset(), request.getTotal());
         return rssRoot;
+    }
+
+    public static NewznabXmlItem buildItem(int counter, String title, Instant pubDate, String size, String poster, String group, String newznabCategory, String titleBase, boolean isTorznab, String description) {
+        NewznabXmlItem item = new NewznabXmlItem();
+        item.setDescription(description);
+        item.setTitle(title);
+        item.setPubDate(pubDate);
+        String guid = getHostUrl() + "/nzb/" + titleBase + counter;
+        item.setEnclosure(new NewznabXmlEnclosure(guid, Long.valueOf(size), isTorznab ? "application/x-bittorrent" : "application/x-nzb"));
+        item.setComments(getHostUrl() + "/comments/" + titleBase + counter);
+        item.setLink(guid);
+        item.setCategory("TV > HD");
+        item.setRssGuid(new NewznabXmlGuid(guid, true));
+
+        List<NewznabAttribute> attributes = new ArrayList<>();
+        attributes.add(new NewznabAttribute("category", newznabCategory != null ? newznabCategory : String.valueOf(newznabCategories.get(random.nextInt(newznabCategories.size())))));
+        attributes.add(new NewznabAttribute("size", size));
+        attributes.add(new NewznabAttribute("guid", guid));
+
+        attributes.add(new NewznabAttribute("poster", poster));
+        attributes.add(new NewznabAttribute("group", group));
+        attributes.add(new NewznabAttribute("grabs", String.valueOf(random.nextInt(1000))));
+        if (random.nextBoolean()) {
+            attributes.add(new NewznabAttribute("nfo", String.valueOf(random.nextInt(2))));
+        }
+        item.setNewznabAttributes(attributes);
+
+        if (isTorznab) {
+            item.setGrabs(counter * 2);
+            List<NewznabAttribute> torznabAttributes = new ArrayList<>();
+            torznabAttributes.add(new NewznabAttribute("seeders", String.valueOf(counter)));
+            torznabAttributes.add(new NewznabAttribute("peers", String.valueOf(counter * 2)));
+            torznabAttributes.add(new NewznabAttribute("size", size));
+            item.setTorznabAttributes(torznabAttributes);
+            item.setSize(Long.valueOf(size));
+        }
+        return item;
     }
 
     private static String getHostUrl() {

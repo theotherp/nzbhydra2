@@ -150,6 +150,19 @@ public class MockNewznab {
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }
 
+        if ("titleduplicates".equals(params.getQ())) {
+            List<NewznabXmlItem> items = new ArrayList<>();
+            Random random = new Random();
+            for (int i = 0; i < 10; i++) {
+                Instant pubDate = Instant.now().minus(i * 100, ChronoUnit.DAYS).minus(params.getApikey().equals("1") ? 10 : 20, ChronoUnit.DAYS);
+                NewznabXmlItem newznabXmlItem = NewznabMockBuilder.buildItem(i, "result" + i, pubDate, String.valueOf(1000 * i), "a" + random.nextInt(), "b", "5069", "", false, "result" + i);
+                items.add(newznabXmlItem);
+            }
+            NewznabXmlRoot rssRoot = NewznabMockBuilder.getRssRoot(items, 0, 10);
+            return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
+        }
+
+
         boolean doGenerateDuplicates = params.getQ() != null && params.getQ().startsWith("duplicates");
         if (params.getQ() != null && params.getQ().equals("offsettest")) {
             NewznabXmlRoot rssRoot = new NewznabXmlRoot();
