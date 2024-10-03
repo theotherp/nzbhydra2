@@ -52,8 +52,8 @@ public class SearchingConfig {
     private List<String> forbiddenWords = new ArrayList<>();
     private SearchSourceRestriction alwaysConvertIds = SearchSourceRestriction.NONE;
     private SearchSourceRestriction generateQueries = SearchSourceRestriction.INTERNAL;
-
     private QueryFormat generateQueriesFormat = QueryFormat.TITLE;
+    private int historyForSearching = 25;
     @JsonFormat(shape = Shape.STRING)
     private SearchSourceRestriction idFallbackToQueryGeneration = SearchSourceRestriction.NONE;
     private boolean ignorePassworded = false;

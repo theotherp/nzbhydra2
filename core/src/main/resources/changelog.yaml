@@ -1,4 +1,10 @@
 #@formatter:off
+-   version: "v7.7.0"
+    date: "2024-10-03"
+    changes:
+      -   type: "feature"
+          text: "Configure the number of recent searches shown in the search bar dropdown."
+    final: true
 -   version: "v7.6.0"
     date: "2024-09-15"
     changes:

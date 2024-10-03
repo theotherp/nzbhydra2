@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.Hibernate;
+import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.downloading.FileDownloadEntity;
 import org.nzbhydra.historystats.stats.HistoryRequest;
 import org.nzbhydra.indexers.IndexerSearchEntity;
@@ -48,6 +49,8 @@ public class History {
     private SearchRepository searchRepository;
     @Autowired
     private IndexerSearchRepository indexerSearchRepository;
+    @Autowired
+    private ConfigProvider configProvider;
 
     @Transactional
     public <T> Page<T> getHistory(HistoryRequest requestData, String tableName, Class<T> resultClass) {
@@ -161,7 +164,7 @@ public class History {
             }
             contained.add(hash);
             entities.add(searchEntity);
-            if (entities.size() == 25) {
+            if (entities.size() == configProvider.getBaseConfig().getSearching().getHistoryForSearching()) {
                 break;
             }
         }
