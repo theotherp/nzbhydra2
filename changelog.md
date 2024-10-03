@@ -1,3 +1,9 @@
+### v7.7.0 (2024-10-03)
+
+**Feature** Configure the number of recent searches shown in the search bar dropdown.
+
+
+
 ### v7.6.0 (2024-09-15)
 
 **Feature** Quickfilters now support regular expressions. Surround them with / to mark them as such. See <a href="https://github.com/theotherp/nzbhydra2/issues/969">#969</a>
