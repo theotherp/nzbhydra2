@@ -7672,6 +7672,15 @@ function ConfigFields($injector) {
                                 required: true,
                                 tooltip: 'Found results are stored in the database for this long until they\'re deleted. After that any links to Hydra results still stored elsewhere become invalid. You can increase the limit if you want, the disc space needed is negligible (about 75 MB for 7 days on my server).'
                             }
+                        }, {
+                            key: 'historyForSearching',
+                            type: 'horizontalInput',
+                            templateOptions: {
+                                type: 'number',
+                                label: 'Recet searches in search bar',
+                                required: true,
+                                tooltip: 'The number of recent searches shown in the search bar dropdown (the <span class="glyphicon glyphicon-time"></span> icon).'
+                            }
                         },
                         {
                             key: 'globalCacheTimeMinutes',
@@ -10410,7 +10419,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
                 }
                 if (quickFilterRegexes.length !== 0) {
                     var allMatch = _.all(quickFilterRegexes, function (regex) {
-                        return new RegExp(regex.toLowerCase().slice(1,-1)).test(item.title.toLowerCase());
+                        return new RegExp(regex.toLowerCase().slice(1, -1)).test(item.title.toLowerCase());
                     })
 
                     if (!allMatch) {

@@ -354,6 +354,7 @@ searching:
   generateQueries: "INTERNAL"
   generateQueriesFormat: "TITLE"
   globalCacheTimeMinutes: null
+  historyForSearching: 25
   idFallbackToQueryGeneration: "NONE"
   ignorePassworded: false
   ignoreTemporarilyDisabled: false
