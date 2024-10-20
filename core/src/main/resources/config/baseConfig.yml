@@ -310,6 +310,7 @@ main:
   proxyIgnoreDomains: []
   proxyUsername: null
   proxyPassword: null
+  proxyImages: false
   repositoryBase: "https://github.com/theotherp"
   showNews: true
   showUpdateBannerOnDocker: true

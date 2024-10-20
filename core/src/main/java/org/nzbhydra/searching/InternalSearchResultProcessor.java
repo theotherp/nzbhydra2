@@ -2,6 +2,7 @@ package org.nzbhydra.searching;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Multiset;
+import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.downloading.FileDownloadEntity;
 import org.nzbhydra.downloading.FileDownloadRepository;
@@ -12,11 +13,14 @@ import org.nzbhydra.searching.dtoseventsenums.IndexerSearchResult;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultWebTO;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultWebTO.SearchResultWebTOBuilder;
+import org.nzbhydra.web.UrlCalculator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -24,6 +28,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -44,6 +49,8 @@ public class InternalSearchResultProcessor {
 
     @Autowired
     private FileDownloadRepository fileDownloadRepository;
+    @Autowired
+    private UrlCalculator urlCalculator;
 
     public SearchResponse createSearchResponse(org.nzbhydra.searching.SearchResult searchResult) {
         Stopwatch stopwatch = Stopwatch.createStarted();
@@ -96,10 +103,18 @@ public class InternalSearchResultProcessor {
         DecimalFormat df = new DecimalFormat();
         df.setMaximumFractionDigits(0);
         for (SearchResultItem item : searchResultItems) {
+            BaseConfig baseConfig = configProvider.getBaseConfig();
             SearchResultWebTOBuilder builder = SearchResultWebTO.builder()
-                    .category(configProvider.getBaseConfig().getSearching().isUseOriginalCategories() ? item.getOriginalCategory() : item.getCategory().getName())
+                    .category(baseConfig.getSearching().isUseOriginalCategories() ? item.getOriginalCategory() : item.getCategory().getName())
                     .comments(item.getCommentsCount())
-                    .cover(item.getCover())
+                    .cover(
+                            item.getCover().map(originalUrl -> {
+                                        if (!baseConfig.getMain().isProxyImages()) {
+                                            return originalUrl;
+                                        }
+                                        return "cache/" + Base64.getEncoder().encodeToString(originalUrl.getBytes(StandardCharsets.UTF_8));
+                                    }
+                            ).orElse(null))
                     .details_link(item.getDetails())
                     .downloadType(item.getDownloadType().name())
                     .files(item.getFiles())
@@ -113,7 +128,12 @@ public class InternalSearchResultProcessor {
                     .indexerscore(item.getIndexer().getConfig().getScore())
                     .link(nzbHandler.getDownloadLinkForResults(item.getSearchResultId(), true, item.getDownloadType()))
                     .originalCategory(item.getOriginalCategory())
-                    .poster(item.getPoster().orElse(null))
+                    .poster(item.getPoster().map(originalUrl -> {
+                        if (!baseConfig.getMain().isProxyImages()) {
+                            return originalUrl;
+                        }
+                        return "cache/" + URLEncoder.encode(originalUrl, StandardCharsets.UTF_8);
+                    }).orElse(null))
                     .searchResultId(item.getSearchResultId().toString())
                     .size(item.getSize())
                     .title(item.getTitle())

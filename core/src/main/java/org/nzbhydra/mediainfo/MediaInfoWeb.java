@@ -23,6 +23,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -67,7 +69,13 @@ public class MediaInfoWeb {
     @RequestMapping(value = "/internalapi/autocomplete/{type}", produces = "application/json")
     public List<MediaInfoTO> autocomplete(@PathVariable("type") AutocompleteType type, @RequestParam("input") String input) throws ExecutionException {
         try {
-            return autocompleteCache.get(new CacheKey(type, input));
+            List<MediaInfoTO> tos = autocompleteCache.get(new CacheKey(type, input));
+            if (configProvider.getBaseConfig().getMain().isProxyImages()) {
+                tos.stream().filter(to -> to.getPosterUrl() != null).forEach(to -> {
+                    to.setPosterUrl("cache/" + Base64.getEncoder().encodeToString(to.getPosterUrl().getBytes(StandardCharsets.UTF_8)));
+                });
+            }
+            return tos;
         } catch (ExecutionException e) {
             logger.warn("Error while trying to find autocomplete data for input {}: {}", input, e.getMessage());
             return Collections.emptyList();

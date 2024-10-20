@@ -36,6 +36,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportRuntimeHints;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
@@ -347,7 +348,8 @@ public class NzbHydra {
 
 
     @Bean
-    public CacheManager getCacheManager() {
+    @Primary
+    public CacheManager genericCacheManager() {
         return new CaffeineCacheManager("infos", "titles", "updates", "dev");
     }
 

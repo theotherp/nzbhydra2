@@ -73,7 +73,7 @@ public class InfoProvider {
         return from.stream().anyMatch(x -> canConvertMap.containsKey(x) && canConvertMap.get(x).stream().anyMatch(to::contains));
     }
 
-    @Cacheable(cacheNames = "infos", sync = true)
+    @Cacheable(cacheNames = "infos", sync = true, cacheManager = "genericCacheManager")
     public MediaInfo convert(Map<MediaIdType, String> identifiers) throws InfoProviderException {
         for (MediaIdType idType : REAL_ID_TYPES) {
             if (identifiers.containsKey(idType) && identifiers.get(idType) != null) {
@@ -89,7 +89,7 @@ public class InfoProvider {
     }
 
 
-    @Cacheable(cacheNames = "infos", sync = true)
+    @Cacheable(cacheNames = "infos", sync = true, cacheManager = "genericCacheManager")
     //sync=true is currently apparently not supported by Caffeine. synchronizing by method is good enough because we'll likely rarely hit this method concurrently with different parameters
     public synchronized MediaInfo convert(String value, MediaIdType fromType) throws InfoProviderException {
         if (value == null) {
@@ -181,7 +181,7 @@ public class InfoProvider {
         return matchingInfos.stream().max(MovieInfo::compareTo).orElse(null);
     }
 
-    @Cacheable(cacheNames = "titles", sync = true)
+    @Cacheable(cacheNames = "titles", sync = true, cacheManager = "genericCacheManager")
     public List<MediaInfo> search(String title, MediaIdType titleType) throws InfoProviderException {
         try {
             List<MediaInfo> infos;

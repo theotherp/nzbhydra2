@@ -6821,6 +6821,15 @@ function ConfigFields($injector) {
                             }
                         },
                         {
+                            key: 'proxyImages',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Proxy images',
+                                help: 'Download images from indexers and info providers (e.g. TMBD) and serve them via NZBHydra. Will only affect searches via UI, not API searches.'
+                            }
+                        },
+                        {
                             key: 'checkOpenPort',
                             type: 'horizontalSwitch',
                             templateOptions: {

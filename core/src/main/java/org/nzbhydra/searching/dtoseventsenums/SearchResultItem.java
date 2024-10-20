@@ -94,6 +94,10 @@ public class SearchResultItem  {
         return Optional.ofNullable(poster);
     }
 
+    public Optional<String> getCover() {
+        return Optional.ofNullable(cover);
+    }
+
     public Optional<String> getSource() {
         return Optional.ofNullable(source);
     }

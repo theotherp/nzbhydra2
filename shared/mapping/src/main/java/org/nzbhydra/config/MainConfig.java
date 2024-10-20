@@ -61,6 +61,8 @@ public class MainConfig {
     @SensitiveData
     private String proxyPassword;
 
+    private boolean proxyImages;
+
 
     //Database settings
     private String backupFolder;

@@ -1,4 +1,10 @@
 #@formatter:off
+-   version: "v7.8.0"
+    date: "2024-10-20"
+    changes:
+      -   type: "feature"
+          text: "Proxy images from indexers and media providers. See #970"
+    final: true
 -   version: "v7.7.0"
     date: "2024-10-03"
     changes:
