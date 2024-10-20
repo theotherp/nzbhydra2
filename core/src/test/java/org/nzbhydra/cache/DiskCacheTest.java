@@ -52,7 +52,7 @@ class DiskCacheTest {
     @Test
     @SneakyThrows
     public void shouldSaveAndLoad() {
-        DiskCache diskCache = new DiskCache(file);
+        DiskCache diskCache = new DiskCache(file, "name");
         assertThat(diskCache.lookup("doesntExistYet")).isNull();
         assertThat(diskCache.get("doesntExistYet")).isNull();
 
@@ -70,7 +70,7 @@ class DiskCacheTest {
     @Test
     @SneakyThrows
     public void shouldCleanWhenTooMany() {
-        DiskCache diskCache = new DiskCache(file);
+        DiskCache diskCache = new DiskCache(file, "name");
         for (int i = 1; i <= 501; i++) {
             byte[] value = "hello".getBytes(StandardCharsets.UTF_8);
             diskCache.put("key" + i, value);
@@ -87,7 +87,7 @@ class DiskCacheTest {
     @Test
     @SneakyThrows
     public void shouldCleanWhenTooLarge() {
-        DiskCache diskCache = new DiskCache(file);
+        DiskCache diskCache = new DiskCache(file, "name");
         for (int i = 1; i <= 3; i++) {
             String value = RandomStringUtils.random(10_000_000);
             diskCache.put("key" + i, value.getBytes(StandardCharsets.UTF_8));
