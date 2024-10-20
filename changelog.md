@@ -1,3 +1,9 @@
+### v7.8.0 (2024-10-20)
+
+**Feature** Proxy images from indexers and media providers. See <a href="https://github.com/theotherp/nzbhydra2/issues/970">#970</a>
+
+
+
 ### v7.7.0 (2024-10-03)
 
 **Feature** Configure the number of recent searches shown in the search bar dropdown.
