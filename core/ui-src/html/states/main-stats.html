@@ -88,7 +88,8 @@
                 <span uib-tooltip="Hiding a stat will disable its calculation and may improve overall loading time" tooltip-placement="auto top">
                 <input bs-switch type="checkbox" ng-model="foo.statsSwichState.avgIndexerUniquenessScore" switch-size="mini" ng-change="onStatsSwitchToggle('avgIndexerUniquenessScore')">
                 </span>
-                Indexer scores
+                Indexer scores <span class="glyphicon glyphicon-question-sign" tooltip-placement="auto top"
+                                     uib-tooltip="Is not being calculated depending on the after and before dates set above but for the whole time an indexer has been used."></span>
             </div>
                 <table class="table">
                     <thead>
