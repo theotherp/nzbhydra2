@@ -60,6 +60,7 @@ import static org.mockito.Mockito.*;
 
 public class IndexerTest {
 
+    private Logger testLogger = LoggerFactory.getLogger("test");
     private BaseConfig baseConfig;
     private IndexerEntity indexerEntityMock = new IndexerEntity("indexerName");
     private IndexerConfig indexerConfig = new IndexerConfig();
@@ -109,7 +110,7 @@ public class IndexerTest {
         return new Indexer<>() {
             @Override
             protected Logger getLogger() {
-                return LoggerFactory.getLogger("test");
+                return testLogger;
             }
 
 
@@ -152,6 +153,7 @@ public class IndexerTest {
 
         testee.indexer = indexerEntityMock;
         testee.config = indexerConfig;
+        indexerConfig.setName("testIndexer");
         indexerConfig.setTimeout(1);
         baseConfig = new BaseConfig();
         when(configProviderMock.getBaseConfig()).thenReturn(baseConfig);
@@ -364,8 +366,11 @@ public class IndexerTest {
             testee.cleanUpTitle("abc trailing1 trailing2");
         }
         System.out.println(stopwatch.elapsed(TimeUnit.MILLISECONDS));
+    }
 
-
+    @Test
+    public void shouldLogWithMessages() {
+        testee.info("Some message {}", "arg1");
     }
 
 

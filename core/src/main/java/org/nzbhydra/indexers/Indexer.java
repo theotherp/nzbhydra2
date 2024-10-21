@@ -61,7 +61,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-@SuppressWarnings("TypeParameterHidesVisibleType")
+@SuppressWarnings({"TypeParameterHidesVisibleType", "StringConcatenationArgumentToLogCall"})
 @Reflective
 @Component
 public abstract class Indexer<T> {
@@ -479,7 +479,6 @@ public abstract class Indexer<T> {
     }
 
 
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -503,27 +502,27 @@ public abstract class Indexer<T> {
     }
 
     protected void warn(String msg) {
-        getLogger().warn("{}: {}", getName(), msg);
+        getLogger().warn(getName() + ": " + msg);
     }
 
     protected void error(String msg) {
-        getLogger().error("{}: {}", getName(), msg);
+        getLogger().error(getName() + ": " + msg);
     }
 
     protected void error(String msg, Throwable t) {
-        getLogger().error("{}: {}", getName(), msg, t);
+        getLogger().error(getName() + ": " + msg, t);
     }
 
     protected void info(String msg, Object... arguments) {
-        getLogger().info("{}: {}", getName(), msg, arguments);
+        getLogger().info(getName() + ": " + msg, arguments);
     }
 
     protected void debug(String msg, Object... arguments) {
-        getLogger().debug("{}: {}", getName(), msg, arguments);
+        getLogger().debug(getName() + ": " + msg, arguments);
     }
 
     protected void debug(Marker marker, String msg, Object... arguments) {
-        getLogger().debug(marker, "{}: {}", getName(), msg, arguments);
+        getLogger().debug(marker, getName() + ": " + msg, arguments);
     }
 
     protected abstract Logger getLogger();
