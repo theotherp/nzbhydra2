@@ -1,3 +1,15 @@
+### v7.9.0 (2024-11-10)
+
+**Feature** Added new(ish) indexer Digital Carnage as preset.
+
+**Fix** Fixed name of indexer missing in logs.
+
+**Fix** Prevent 404s from missing UI resources. See <a href="https://github.com/theotherp/nzbhydra2/issues/971">#971</a>
+
+**Note** Added note to the stats page that indexer scores are not affected by the time range selection.
+
+
+
 ### v7.8.0 (2024-10-20)
 
 **Feature** Proxy images from indexers and media providers. See <a href="https://github.com/theotherp/nzbhydra2/issues/970">#970</a>
