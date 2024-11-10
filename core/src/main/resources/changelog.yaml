@@ -1,4 +1,16 @@
 #@formatter:off
+-   version: "v7.9.0"
+    date: "2024-11-10"
+    changes:
+      -   type: "feature"
+          text: "Added new(ish) indexer Digital Carnage as preset."
+      -   type: "fix"
+          text: "Fixed name of indexer missing in logs."
+      -   type: "fix"
+          text: "Prevent 404s from missing UI resources. See #971"
+      -   type: "note"
+          text: "Added note to the stats page that indexer scores are not affected by the time range selection."
+    final: true
 -   version: "v7.8.0"
     date: "2024-10-20"
     changes:

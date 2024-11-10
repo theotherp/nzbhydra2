@@ -810,6 +810,10 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
             }
         },
         {
+            name: "Digital Carnage",
+            host: "https://digitalcarnage.info"
+        },
+        {
             name: "DogNZB",
             host: "https://api.dognzb.cr"
         },
