@@ -2168,7 +2168,8 @@ function ConfigFields($injector) {
                         lines: [
                             "NZBHydra supports sending and displaying notifications for certain events. You can enable notifications for each event by adding entries below.",
                             'NZBHydra uses Apprise to communicate with the actual notification providers. You need either a) an instance of Apprise API running or b) an Apprise runnable accessible by NZBHydra. Either are not part of NZBHydra.',
-                            "NZBHydra will also show notifications on the GUI if enabled."
+                            "NZBHydra will also show notifications on the GUI if enabled.",
+                            "Only URLs in the form of the http://../notify/<key> form will work. Each notification requires a non-null value for URL to be enabled, but always uses the Main URL."
                         ]
                     }
                 },
