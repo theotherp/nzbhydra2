@@ -50,6 +50,7 @@ import java.io.StringReader;
 import java.net.URI;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -117,6 +118,8 @@ public class NewznabCheckerTest {
                 .thenReturn(builder.getTestResult(1, 100, "Avengers", 0, 100));
         when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&imdbid=0848228"), indexerConfig))
                 .thenReturn(builder.getTestResult(1, 100, "Avengers", 0, 100));
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=search&q=Avengers%20--1080p"), indexerConfig, NewznabXmlRoot.class))
+                .thenReturn(builder.getTestResult(1, 100, "Avengers", 0, 100));
 
         capsRoot.getSearching().setAudioSearch(new CapsXmlSearch("yes", "q"));
 
@@ -138,6 +141,7 @@ public class NewznabCheckerTest {
         assertThat(checkCapsRespone.getIndexerConfig().getBackend()).isEqualTo(BackendType.NZEDB);
 
         assertTrue(checkCapsRespone.isAllCapsChecked());
+        assertEquals(IndexerConfig.ForbiddenWordPrefix.DOUBLE_DASH, checkCapsRespone.getIndexerConfig().getForbiddenWordPrefix());
 
         verify(indexerWebAccess, times(8)).get(any(), eq(indexerConfig));
     }

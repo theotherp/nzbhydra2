@@ -114,6 +114,8 @@ public class NewznabTest {
     SearchingConfig searchingConfigMock;
     @Mock
     private QueryGenerator queryGeneratorMock;
+    @Mock
+    private BaseConfigHandler configHandler;
     Category animeCategory = new Category("anime");
     Category naCategory = new Category("n/a");
     Category otherCategory = new Category("other");
@@ -121,8 +123,7 @@ public class NewznabTest {
     private ConfigProvider configProviderMock;
 
     @InjectMocks
-    private Newznab testee = new Newznab(configProviderMock, indexerRepositoryMock, searchResultRepositoryMock, indexerApiAccessRepositoryMock, shortRepositoryMock, null, indexerWebAccessMock, resultAcceptorMock,
-        categoryProviderMock, infoProviderMock, null, queryGeneratorMock, null, unmarshallerMock, null);
+    private Newznab testee;
 
 
     @BeforeEach
@@ -145,6 +146,7 @@ public class NewznabTest {
         testee.config = new IndexerConfig();
         testee.config.setSupportedSearchIds(Lists.newArrayList(MediaIdType.TMDB, MediaIdType.TVRAGE));
         testee.config.setHost("http://127.0.0.1:1234");
+        testee.config.setForbiddenWordPrefix(IndexerConfig.ForbiddenWordPrefix.EXCLAMATION_MARK);
         testee.indexer = indexerEntityMock;
 
         baseConfig = new BaseConfig();
@@ -175,6 +177,7 @@ public class NewznabTest {
                 return invocation.getArgument(1);
             }
         });
+
     }
 
     @Test
@@ -411,6 +414,7 @@ public class NewznabTest {
 
     @Test
     void shouldAddExcludedAndRequiredWordsToQuery() throws Exception {
+        testee.config.setForbiddenWordPrefix(IndexerConfig.ForbiddenWordPrefix.DOUBLE_DASH);
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         searchRequest.setQuery("q");
         searchRequest.getInternalData().setForbiddenWords(Lists.newArrayList("a", "b", "c"));
@@ -436,10 +440,20 @@ public class NewznabTest {
 
     @Test
     void shoulNotdAddExcludedAndRequiredWordsWithSomeCharacters() throws Exception {
+        testee.config.setForbiddenWordPrefix(IndexerConfig.ForbiddenWordPrefix.DOUBLE_DASH);
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         searchRequest.setQuery("q");
         searchRequest.getInternalData().setForbiddenWords(Lists.newArrayList("a", "b b", "-c", "d.d"));
         assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?t=search&extended=1&q=q --a&limit=1000").build(), buildCleanedSearchUrl(searchRequest, null, null).build());
+    }
+
+    @Test
+    void shoulNotdAddExcludedWordsWithExclamationMark() throws Exception {
+        testee.config.setForbiddenWordPrefix(IndexerConfig.ForbiddenWordPrefix.EXCLAMATION_MARK);
+        SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
+        searchRequest.setQuery("q");
+        searchRequest.getInternalData().setForbiddenWords(Lists.newArrayList("a", "b b", "-c", "d.d"));
+        assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?t=search&extended=1&q=q !a&limit=1000").build(), buildCleanedSearchUrl(searchRequest, null, null).build());
     }
 
     @Test
