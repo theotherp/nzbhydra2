@@ -1,3 +1,11 @@
+### v7.10.0 (2024-11-12)
+
+**Feature** Previously the way forbidden words would be excluded from queries depended on the backend and, to a certain degree, on the indexer but in some cases -- would be used as a prefix which is only supported by many indexers. NZBHydra will now attempt to automatically detect if and how certain words may be excluded from a query. This will either happen during a caps check or on the first search request where needed.
+
+**Note** Added some more infos in the notifications section. Thanks, @pikeas. See <a href="https://github.com/theotherp/nzbhydra2/issues/660">#660</a>
+
+
+
 ### v7.9.0 (2024-11-10)
 
 **Feature** Added new(ish) indexer Digital Carnage as preset.
