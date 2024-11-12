@@ -4,6 +4,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import lombok.Getter;
 import lombok.Setter;
+import org.nzbhydra.NzbHydra;
 import org.nzbhydra.NzbHydraException;
 import org.nzbhydra.config.BaseConfigHandler;
 import org.nzbhydra.config.ConfigProvider;
@@ -17,6 +18,7 @@ import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.config.mediainfo.MediaIdType;
 import org.nzbhydra.config.searching.SearchType;
+import org.nzbhydra.indexers.capscheck.IndexerChecker;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.exceptions.IndexerAuthException;
 import org.nzbhydra.indexers.exceptions.IndexerErrorCodeException;
@@ -111,12 +113,15 @@ public class Newznab extends Indexer<Xml> {
     @Autowired
     private IndexerLimitRepository indexerStatusRepository;
 
+    private BaseConfigHandler baseConfigHandler;
+
     private final ConcurrentHashMap<Integer, Category> idToCategory = new ConcurrentHashMap<>();
 
     public Newznab(ConfigProvider configProvider, IndexerRepository indexerRepository, SearchResultRepository searchResultRepository, IndexerApiAccessRepository indexerApiAccessRepository, IndexerApiAccessEntityShortRepository indexerApiAccessShortRepository, IndexerLimitRepository indexerStatusRepository, IndexerWebAccess indexerWebAccess, SearchResultAcceptor resultAcceptor, CategoryProvider categoryProvider, InfoProvider infoProvider, ApplicationEventPublisher eventPublisher, QueryGenerator queryGenerator, CustomQueryAndTitleMappingHandler titleMapping, Unmarshaller unmarshaller, BaseConfigHandler baseConfigHandler) {
         super(configProvider, indexerRepository, searchResultRepository, indexerApiAccessRepository, indexerApiAccessShortRepository, indexerStatusRepository, indexerWebAccess, resultAcceptor, categoryProvider, infoProvider, eventPublisher, queryGenerator, titleMapping, baseConfigHandler);
         this.unmarshaller = unmarshaller;
         this.indexerStatusRepository = indexerStatusRepository;
+        this.baseConfigHandler = baseConfigHandler;
     }
 
     protected UriComponentsBuilder getBaseUri() {
@@ -275,17 +280,27 @@ public class Newznab extends Indexer<Xml> {
     }
 
     protected String addForbiddenWords(SearchRequest searchRequest, String query) {
+        if (config.getForbiddenWordPrefix() == IndexerConfig.ForbiddenWordPrefix.UNKNOWN) {
+            info("Forbidden word prefix unknown - running check to determine it");
+            //Horrible but easier...
+            config.setForbiddenWordPrefix(NzbHydra.getApplicationContext().getAutowireCapableBeanFactory().getBean(IndexerChecker.class).determineForbiddenWordPrefix(config));
+            baseConfigHandler.save(false);
+        }
+        if (config.getForbiddenWordPrefix() == IndexerConfig.ForbiddenWordPrefix.UNSUPPORTED) {
+            debug("Not adding forbidden words as this indexer doesn't support them.");
+            return query;
+        }
         List<String> allForbiddenWords = new ArrayList<>(searchRequest.getInternalData().getForbiddenWords());
         allForbiddenWords.addAll(configProvider.getBaseConfig().getSearching().getForbiddenWords());
         allForbiddenWords.addAll(searchRequest.getCategory().getForbiddenWords());
         List<String> allPossibleForbiddenWords = allForbiddenWords.stream().filter(x -> !(x.contains(" ") || x.contains("-") || x.contains("."))).collect(Collectors.toList());
         if (allForbiddenWords.size() > allPossibleForbiddenWords.size()) {
-            debug("Not using some forbidden words in query because characters forbidden by newznab are contained");
+            debug("Not using some forbidden words in query because characters forbidden by newznab are contained.");
         }
         if (!allPossibleForbiddenWords.isEmpty()) {
-            if (config.getBackend().equals(BackendType.NZEDB) || config.getBackend().equals(BackendType.NNTMUX) || config.getHost().toLowerCase().contains("omgwtf") || config.getHost().toLowerCase().contains("nzbfinder")) {
+            if (config.getForbiddenWordPrefix() == IndexerConfig.ForbiddenWordPrefix.EXCLAMATION_MARK) {
                 query += (query.isEmpty() ? "" : " ") + "!" + Joiner.on(",!").join(allPossibleForbiddenWords);
-            } else {
+            } else if (config.getForbiddenWordPrefix() == IndexerConfig.ForbiddenWordPrefix.DOUBLE_DASH) {
                 query += (query.isEmpty() ? "" : " ") + "--" + Joiner.on(" --").join(allPossibleForbiddenWords);
             }
         }

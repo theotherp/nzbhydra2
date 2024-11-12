@@ -38,6 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.springframework.aot.hint.annotation.Reflective;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -105,6 +106,8 @@ public abstract class Indexer<T> {
 
     private BaseConfigHandler baseConfigHandler;
 
+    protected AutowireCapableBeanFactory beanFactory;
+
 
     protected Indexer() {
     }
@@ -125,6 +128,7 @@ public abstract class Indexer<T> {
         this.titleMapping = titleMapping;
         this.baseConfigHandler = baseConfigHandler;
     }
+
 
     public void initialize(IndexerConfig config, IndexerEntity indexer) {
         this.indexer = indexer;

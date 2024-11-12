@@ -200,6 +200,7 @@ public class IndexerChecker {
         try {
             logger.info("Will check capabilities of indexer {} using {} concurrent connections and a delay of {}ms", indexerConfig.getName(), capsCheckLimit.maxConnections, capsCheckLimit.delayInMiliseconds);
             List<Future<SingleCheckCapsResponse>> futures = executor.invokeAll(callables);
+            Future<IndexerConfig.ForbiddenWordPrefix> forbiddenWordPrefixFuture = executor.submit(() -> determineForbiddenWordPrefix(indexerConfig));
             for (Future<SingleCheckCapsResponse> future : futures) {
                 try {
                     SingleCheckCapsResponse response = future.get(timeout, TimeUnit.SECONDS);
@@ -209,7 +210,7 @@ public class IndexerChecker {
                     responses.add(response);
                 } catch (ExecutionException e) {
                     if (e.getCause() instanceof IndexerAccessException) {
-                        logger.error("Error while communicating with indexer: " + e.getMessage());
+                        logger.error("Error while communicating with indexer: {}", e.getMessage());
                     } else {
                         logger.error("Unexpected error while checking caps", e);
                     }
@@ -218,6 +219,14 @@ public class IndexerChecker {
                     logger.error("Indexer {} failed to answer in {} seconds", indexerConfig.getName(), timeout);
                     allChecked = false;
                 }
+            }
+            try {
+                IndexerConfig.ForbiddenWordPrefix prefix = forbiddenWordPrefixFuture.get();
+                logger.info("Prefix for forbidden words: {}", prefix);
+                indexerConfig.setForbiddenWordPrefix(prefix);
+            } catch (ExecutionException e) {
+                allChecked = false;
+                logger.error("Error checking forbidden word prefix", e);
             }
             supportedIds = responses.stream().filter(SingleCheckCapsResponse::isSupported).map(SingleCheckCapsResponse::getIdType).collect(Collectors.toSet());
             Optional<SingleCheckCapsResponse> responseWithLimits = responses.stream().filter(x -> x.getApiMax() != null).findFirst();
@@ -252,7 +261,7 @@ public class IndexerChecker {
                 logger.info("Indexer {} supports the following search types: {}", indexerConfig.getName(), indexerConfig.getSupportedSearchTypes().stream().map(Enum::name).collect(Collectors.joining(", ")));
             }
         } catch (IndexerAccessException e) {
-            logger.error("Error while accessing indexer: " + e.getMessage());
+            logger.error("Error while accessing indexer: {}", e.getMessage());
             configComplete = false;
         }
 
@@ -276,15 +285,43 @@ public class IndexerChecker {
         return new CheckCapsResponse(indexerConfig, allChecked, configComplete);
     }
 
+    public IndexerConfig.ForbiddenWordPrefix determineForbiddenWordPrefix(IndexerConfig indexerConfig) {
+        URI uri = getBaseUri(indexerConfig).queryParam("t", "search").queryParam("q", "Avengers --1080p").build().toUri();
+        try {
+            NewznabXmlRoot root = indexerWebAccess.get(uri, indexerConfig, NewznabXmlRoot.class);
+            if (!root.getRssChannel().getItems().isEmpty() && root.getRssChannel().getItems().stream().noneMatch(x -> x.getTitle().contains("1080p"))) {
+                logger.info("Determined forbidden word prefix \"--\" for indexer {}", indexerConfig.getName());
+                return IndexerConfig.ForbiddenWordPrefix.DOUBLE_DASH;
+            }
+        } catch (IndexerAccessException e) {
+            logger.error("Error while determining forbidden word prefix", e);
+            return IndexerConfig.ForbiddenWordPrefix.UNKNOWN;
+        }
+
+        uri = getBaseUri(indexerConfig).queryParam("t", "search").queryParam("q", "Avengers !1080p").build().toUri();
+        try {
+            NewznabXmlRoot root = indexerWebAccess.get(uri, indexerConfig, NewznabXmlRoot.class);
+            if (!root.getRssChannel().getItems().isEmpty() && root.getRssChannel().getItems().stream().noneMatch(x -> x.getTitle().contains("1080p"))) {
+                logger.info("Determined forbidden word prefix \"!\" for indexer {}", indexerConfig.getName());
+                return IndexerConfig.ForbiddenWordPrefix.EXCLAMATION_MARK;
+            }
+        } catch (IndexerAccessException e) {
+            logger.error("Error while determining forbidden word prefix", e);
+            return IndexerConfig.ForbiddenWordPrefix.UNKNOWN;
+        }
+
+        return IndexerConfig.ForbiddenWordPrefix.UNSUPPORTED;
+    }
+
     private List<CheckCapsResponse> checkCaps(CapsCheckRequest.CheckType checkType) {
         Predicate<IndexerConfig> isToBeCheckedPredicate = x ->
-            x.getState() == IndexerConfig.State.ENABLED
+                x.getState() == IndexerConfig.State.ENABLED
                 && (x.getSearchModuleType() == SearchModuleType.NEWZNAB || x.getSearchModuleType() == SearchModuleType.TORZNAB)
                 && x.isConfigComplete()
                 && (checkType == CheckType.ALL || !x.isAllCapsChecked());
         List<IndexerConfig> configsToCheck = configProvider.getBaseConfig().getIndexers().stream()
-            .filter(isToBeCheckedPredicate)
-            .toList();
+                .filter(isToBeCheckedPredicate)
+                .toList();
         if (configsToCheck.isEmpty()) {
             logger.info("No indexers to check");
             return Collections.emptyList();
@@ -452,7 +489,7 @@ public class IndexerChecker {
     }
 
     @Data
-@ReflectionMarker
+    @ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     public static class CheckerEvent {
@@ -461,7 +498,7 @@ public class IndexerChecker {
     }
 
     @Data
-@ReflectionMarker
+    @ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     public static class ConnectionCheckResponse {
@@ -471,7 +508,7 @@ public class IndexerChecker {
 
 
     @Data
-@ReflectionMarker
+    @ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     private static class CheckCapsRequest {
@@ -484,7 +521,7 @@ public class IndexerChecker {
     }
 
     @Data
-@ReflectionMarker
+    @ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     private static class SingleCheckCapsResponse {

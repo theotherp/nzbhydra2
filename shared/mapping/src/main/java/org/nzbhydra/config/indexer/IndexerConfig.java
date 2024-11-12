@@ -59,6 +59,13 @@ public class IndexerConfig {
         }
     }
 
+    public enum ForbiddenWordPrefix {
+        UNKNOWN,
+        EXCLAMATION_MARK,
+        DOUBLE_DASH,
+        UNSUPPORTED
+    }
+
     private boolean allCapsChecked;
     @SensitiveData
     private String apiKey;
@@ -71,6 +78,7 @@ public class IndexerConfig {
     private boolean configComplete = true;
     private List<String> enabledCategories = new ArrayList<>();
     private Integer downloadLimit = null;
+    private ForbiddenWordPrefix forbiddenWordPrefix = ForbiddenWordPrefix.UNKNOWN;
     @JsonFormat(shape = Shape.STRING)
     private State state = State.ENABLED;
     @JsonFormat(shape = Shape.STRING)
