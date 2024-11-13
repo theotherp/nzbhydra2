@@ -275,7 +275,7 @@ public abstract class Downloader {
 
             logger.debug(LoggingMarkers.PERFORMANCE, "Took {}ms to check download status updates for {} downloads in the database and {} entries from {} {}", stopwatch.elapsed(TimeUnit.MILLISECONDS), downloads.size(), downloaderEntries.size(), downloaderConfig.getName(), statusCheckType);
         } catch (DownloaderException e) {
-            logger.warn(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Unable to contact downloader {}: {}", downloaderConfig.getName(), e.getMessage());
+            logger.warn("Unable to contact downloader {}: {}", downloaderConfig.getName(), e.getMessage());
         } catch (Throwable throwable) {
             logger.error("Error while trying to update download statuses", throwable);
         }

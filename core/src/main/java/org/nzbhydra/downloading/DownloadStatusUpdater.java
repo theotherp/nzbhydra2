@@ -65,6 +65,7 @@ public class DownloadStatusUpdater {
     @HydraTask(configId = "downloadHistoryCheck", name = "Download history check", interval = TEN_MINUTES_MS)
     @Transactional
     public void checkHistoryStatus() {
+        logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Running download history  check");
         if (!configProvider.getBaseConfig().getDownloading().isUpdateStatuses()) {
             logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Skipping history status update because it's disabled");
             return;
@@ -85,6 +86,7 @@ public class DownloadStatusUpdater {
     @HydraTask(configId = "downloadQueueCheck", name = "Download queue check", interval = TEN_SECONDS_MS)
     @Transactional
     public void checkQueueStatus() {
+        logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Running download queue check");
         if (!configProvider.getBaseConfig().getDownloading().isUpdateStatuses()) {
             logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Skipping queue status update because it's disabled");
             return;

@@ -31,11 +31,13 @@ import java.util.List;
 public class History {
 
     private Integer noofslots;
+    private Integer ppslots;
     private String day_size;
     private String week_size;
     private String month_size;
     private String total_size;
     private Long last_history_update;
     private List<HistoryEntry> slots = new ArrayList<>();
+    private String version;
 
 }

@@ -73,17 +73,17 @@ public class DownloaderWebSocket {
             final DownloaderStatus newStatus = downloaderStatusRetrieval.getStatus();
             if (newStatus.getState() == DownloaderStatus.State.DOWNLOADING) {
                 //Always send updates when downloading
-                logger.debug(LoggingMarkers.DOWNLOADER_STATUS_UPDATE, "Sending new downloading status data. Status: {}. In queue: {}. Remaing time: {}. Download rate: {}", newStatus.getState(), newStatus.getElementsInQueue(), newStatus.getRemainingTimeFormatted(), newStatus.getDownloadRateFormatted());
+                logger.debug(LoggingMarkers.DOWNLOADER_STATUS_UPDATE, "Sending new downloading status data. Status: {}. In queue: {}. Remaining time: {}. Download rate: {}", newStatus.getState(), newStatus.getElementsInQueue(), newStatus.getRemainingTimeFormatted(), newStatus.getDownloadRateFormatted());
                 messagingTemplate.convertAndSend("/topic/downloaderStatus", newStatus);
                 lastSentStatus = newStatus;
             } else if (!newStatus.equals(lastSentStatus)) {
                 //Send update because data has changed
-                logger.debug(LoggingMarkers.DOWNLOADER_STATUS_UPDATE, "Sending new status data because it's different from the last sent. Status: {}. In queue: {}. Remaing time: {}. Download rate: {}", newStatus.getState(), newStatus.getElementsInQueue(), newStatus.getRemainingTimeFormatted(), newStatus.getDownloadRateFormatted());
+                logger.debug(LoggingMarkers.DOWNLOADER_STATUS_UPDATE, "Sending new status data because it's different from the last sent. Status: {}. In queue: {}. Remaining time: {}. Download rate: {}", newStatus.getState(), newStatus.getElementsInQueue(), newStatus.getRemainingTimeFormatted(), newStatus.getDownloadRateFormatted());
                 messagingTemplate.convertAndSend("/topic/downloaderStatus", newStatus);
                 lastSentStatus = newStatus;
             } else if (!lastSentStatus.isLastUpdateForNow()) {
                 //Same data as before and we haven't nofified the backend yet that we'll send no further data for now
-                logger.debug(LoggingMarkers.DOWNLOADER_STATUS_UPDATE, "New status data is the same as the old. Informing the frontend this is the last update for now. Status: {}. In queue: {}. Remaing time: {}. Download rate: {}", newStatus.getState(), newStatus.getElementsInQueue(), newStatus.getRemainingTimeFormatted(), newStatus.getDownloadRateFormatted());
+                logger.debug(LoggingMarkers.DOWNLOADER_STATUS_UPDATE, "New status data is the same as the old. Informing the frontend this is the last update for now. Status: {}. In queue: {}. Remaining time: {}. Download rate: {}", newStatus.getState(), newStatus.getElementsInQueue(), newStatus.getRemainingTimeFormatted(), newStatus.getDownloadRateFormatted());
                 newStatus.setLastUpdateForNow(true);
                 messagingTemplate.convertAndSend("/topic/downloaderStatus", newStatus);
                 lastSentStatus = newStatus;

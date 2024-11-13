@@ -17,6 +17,7 @@
 package org.nzbhydra;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.nzbhydra.config.indexer.BackendType;
 import org.nzbhydra.config.indexer.CapsCheckRequest;
@@ -65,12 +66,11 @@ public class IndexerWebTest {
         });
         assertThat(checkCapsResponses).isNotEmpty();
 
-        org.nzbhydra.Assertions.assertThat(checkCapsResponses.get(0))
-            .isAllCapsChecked().isConfigComplete();
-        org.nzbhydra.Assertions.assertThat(checkCapsResponses.get(0).getIndexerConfig())
-            .hasBackend(BackendType.NEWZNAB)
-            .hasSupportedSearchIds(MediaIdType.IMDB, MediaIdType.TMDB, MediaIdType.TVIMDB)
-            .hasSupportedSearchTypes(ActionAttribute.TVSEARCH, ActionAttribute.MOVIE);
+        Assertions.assertThat(checkCapsResponses.get(0).isAllCapsChecked()).isTrue();
+        Assertions.assertThat(checkCapsResponses.get(0).isConfigComplete()).isTrue();
+        Assertions.assertThat(checkCapsResponses.get(0).getIndexerConfig().getBackend()).isEqualTo(BackendType.NEWZNAB);
+        Assertions.assertThat(checkCapsResponses.get(0).getIndexerConfig().getSupportedSearchIds()).contains(MediaIdType.IMDB, MediaIdType.TMDB, MediaIdType.TVIMDB);
+        Assertions.assertThat(checkCapsResponses.get(0).getIndexerConfig().getSupportedSearchTypes()).contains(ActionAttribute.TVSEARCH, ActionAttribute.MOVIE);
         assertThat(checkerMessages).isNotEmpty();
         assertThat(checkerMessages).contains("Probably supports TVIMDB");
         assertThat(checkerMessages).contains("Probably supports IMDB");

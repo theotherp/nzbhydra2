@@ -1,144 +1,78 @@
 {
   "history": {
-    "noofslots": 220,
-    "day_size": "1.9 G",
-    "week_size": "30.4 G",
-    "month_size": "167.3 G",
-    "total_size": "678.1 G",
-    "last_history_update": 1469210913,
+    "total_size": "19.6 T",
+    "month_size": "8.2 M",
+    "week_size": "8.2 M",
+    "day_size": "8.2 M",
     "slots": [
       {
-        "action_line": "",
-        "series": "TV.Show/4/2",
-        "show_details": "True",
-        "script_log": "",
-        "meta": null,
-        "fail_message": "",
-        "loaded": false,
-        "id": 235,
-        "size": "2.3 GB",
-        "category": "tv",
+        "completed": 1731505105,
+        "name": "some mp3",
+        "nzb_name": "some mp3.nzb",
+        "category": "*",
         "pp": "D",
-        "retry": 0,
-        "completeness": 0,
         "script": "None",
-        "nzb_name": "TV.Show.S04E02.720p.BluRay.x264-xHD.nzb",
-        "download_time": 64,
-        "storage": "C:\\Users\\xxx\\Videos\\Complete\\TV.Show.S04E02.720p.BluRay.x264-xHD",
-        "has_rating": false,
+        "report": "",
+        "url": null,
         "status": "Completed",
+        "nzo_id": "SABnzbd_nzo_zt7_3tov",
+        "storage": "D:\\Usenet\\some mp3",
+        "path": "c:\\Users\\user\\AppData\\Local\\Temp\\SabnzbdIntermediate\\some mp3",
         "script_line": "",
-        "completed": 1469172988,
-        "nzo_id": "SABnzbd_nzo_sdkoun",
+        "download_time": 0,
+        "postproc_time": 0,
+        "stage_log": [
+          {
+            "name": "Source",
+            "actions": [
+              "some mp3.nzb"
+            ]
+          },
+          {
+            "name": "Download",
+            "actions": [
+              "Downloaded in 0 seconds at an average of 11.0 MB/s<br/>Age: 19d"
+            ]
+          },
+          {
+            "name": "Servers",
+            "actions": [
+              "news.tweaknews.eu=7.1 MB, news.usenetexpress.com=1.0 MB"
+            ]
+          },
+          {
+            "name": "Repair",
+            "actions": [
+              "[32werdtfdyuy7889uiyhg.rar] Quick Check OK"
+            ]
+          },
+          {
+            "name": "Unpack",
+            "actions": [
+              "[32werdtfdyuy7889uiyhg] Direct Unpack - Unpacked 6 files/folders in 0 seconds"
+            ]
+          }
+        ],
         "downloaded": 24369063766787,
-        "report": "",
-        "password": "",
-        "path": "\\\\?\\C:\\SABnzbd\\TV.Show.S04E02.720p.BluRay.x264-xHD",
-        "postproc_time": 40,
-        "name": "TV.Show.S04E02.720p.BluRay.x264-xHD",
-        "url": "TV.Show.S04E02.720p.BluRay.x264-xHD.nzb",
-        "md5sum": "d2c16aeecbc1b1921d04422850e93013",
-        "bytes": 2436906376,
-        "url_info": "",
-        "stage_log": [
-          {
-            "name": "Source",
-            "actions": [
-              "TV.Show.S04E02.720p.BluRay.x264-xHD.nzb"
-            ]
-          },
-          {
-            "name": "Download",
-            "actions": [
-              "Downloaded in 1 min 4 seconds at an average of 36.2 MB/s<br/>Age: 550d<br/>10 articles were malformed"
-            ]
-          },
-          {
-            "name": "Servers",
-            "actions": [
-              "Frugal=2.3 GB"
-            ]
-          },
-          {
-            "name": "Repair",
-            "actions": [
-              "[pA72r5Ac6lW3bmpd20T7Hj1Zg2bymUsINBB50skrI] Repaired in 19 seconds"
-            ]
-          },
-          {
-            "name": "Unpack",
-            "actions": [
-              "[pA72r5Ac6lW3bmpd20T7Hj1Zg2bymUsINBB50skrI] Unpacked 1 files/folders in 6 seconds"
-            ]
-          }
-        ]
-      },
-      {
-        "action_line": "",
-        "series": "TV.Show/4/13",
-        "show_details": "True",
-        "script_log": "",
-        "meta": null,
+        "completeness": null,
         "fail_message": "",
-        "loaded": false,
-        "id": 234,
-        "size": "2.3 GB",
-        "category": "tv",
-        "pp": "D",
-        "retry": 0,
-        "completeness": 0,
-        "script": "None",
-        "nzb_name": "TV.Show.S04E13.720p.BluRay.x264-xHD.nzb",
-        "download_time": 60,
-        "storage": "C:\\Users\\xxx\\Videos\\Complete\\TV.Show.S04E13.720p.BluRay.x264-xHD",
-        "has_rating": false,
-        "status": "Completed",
-        "script_line": "",
-        "completed": 1469172947,
-        "nzo_id": "SABnzbd_nzo_gqhp63",
-        "downloaded": 2491255137,
-        "report": "",
-        "password": "",
-        "path": "\\\\?\\C:\\SABnzbd\\TV.Show.S04E13.720p.BluRay.x264-xHD",
-        "postproc_time": 82,
-        "name": "TV.Show.S04E13.720p.BluRay.x264-xHD",
-        "url": "TV.Show.S04E13.720p.BluRay.x264-xHD.nzb",
-        "md5sum": "85baf55ec0de0dc732c2af6537c5c01b",
-        "bytes": 2491255137,
         "url_info": "",
-        "stage_log": [
-          {
-            "name": "Source",
-            "actions": [
-              "TV.Show.S04E13.720p.BluRay.x264-xHD.nzb"
-            ]
-          },
-          {
-            "name": "Download",
-            "actions": [
-              "Downloaded in 1 min at an average of 39.4 MB/s<br/>Age: 558d<br/>15 articles were malformed"
-            ]
-          },
-          {
-            "name": "Servers",
-            "actions": [
-              "Frugal=2.3 GB"
-            ]
-          },
-          {
-            "name": "Repair",
-            "actions": [
-              "[m0vklMEMKIT5L5XH9z5YTmuquoitCQ3F5LISTLFjT] Repaired in 47 seconds"
-            ]
-          },
-          {
-            "name": "Unpack",
-            "actions": [
-              "[m0vklMEMKIT5L5XH9z5YTmuquoitCQ3F5LISTLFjT] Unpacked 1 files/folders in 6 seconds"
-            ]
-          }
-        ]
+        "bytes": 8284638,
+        "meta": null,
+        "series": null,
+        "md5sum": "c2f7aa53d4f658278a9fc6ee09b5b2a4",
+        "password": null,
+        "duplicate_key": "something",
+        "archive": false,
+        "size": "7.9 MB",
+        "action_line": "",
+        "loaded": false,
+        "retry": false
       }
-    ]
+    ],
+    "ppslots": 0,
+    "noofslots": 5445,
+    "last_history_update": 9,
+    "version": "4.3.3"
   }
 }

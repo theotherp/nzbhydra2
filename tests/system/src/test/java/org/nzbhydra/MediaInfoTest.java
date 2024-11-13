@@ -40,12 +40,11 @@ public class MediaInfoTest {
 
         List<MediaInfoTO> checkCapsResponses = hydraClient.get("/internalapi/autocomplete/TV", "input=Lost").as(new TypeReference<>() {
         });
-        Assertions.assertThat(checkCapsResponses)
-            .isNotEmpty()
-            .first(AssertFactories.MediaInfoTO)
-            .hasTvmazeId("123")
-            .hasTitle("Lost")
-            .hasYear(2004);
+        Assertions.assertThat(checkCapsResponses).isNotEmpty();
+        MediaInfoTO mediaInfoTO = checkCapsResponses.get(0);
+        Assertions.assertThat(mediaInfoTO.getTvmazeId()).isEqualTo("123");
+        Assertions.assertThat(mediaInfoTO.getTitle()).isEqualTo("Lost");
+        Assertions.assertThat(mediaInfoTO.getYear()).isEqualTo(2004);
     }
 
     @Test
@@ -54,9 +53,10 @@ public class MediaInfoTest {
 
         List<MediaInfoTO> checkCapsResponses = hydraClient.get("/internalapi/autocomplete/MOVIE", "input=Gladiator").as(new TypeReference<>() {
         });
-        Assertions.assertThat(checkCapsResponses).isNotEmpty()
-            .first(AssertFactories.MediaInfoTO)
-            .hasTmdbId("98");
+        Assertions.assertThat(checkCapsResponses).isNotEmpty();
+        MediaInfoTO mediaInfoTO = checkCapsResponses.get(0);
+        Assertions.assertThat(mediaInfoTO.getImdbId()).isEqualTo("98");
+
     }
 
 

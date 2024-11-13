@@ -16,51 +16,24 @@
 
 package org.nzbhydra.downloading.downloaders.sabnzbd.mapping;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.nzbhydra.springnative.ReflectionMarker;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Data
 @ReflectionMarker
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class HistoryEntry {
-    private String action_line;
-    private String series;
-    private String show_details;
-    private String script_log;
-    private Object meta;
-    private String fail_message;
-    private Boolean loaded;
-    private Long id;
-    private String size;
-    private String category;
-    private String pp;
-    private Integer retry;
-    private Integer completeness;
-    private String script;
-    private String nzb_name;
-    private Integer download_time;
-    private String storage;
-    private Boolean has_rating;
-    private String status;
-    private String script_line;
-    private Long completed;
+
     private String nzo_id;
-    private Long downloaded;
-    private String report;
-    private String password;
-    private String path;
-    private Long postproc_time;
+    private String status;
     private String name;
-    private String url;
-    private String md5sum;
-    private Long bytes;
-    private String url_info;
-    private List<StageLogEntry> stage_log = new ArrayList<>();
+    private Long completed;
+    private Long downloaded;
+
 
 }

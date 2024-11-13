@@ -1,4 +1,10 @@
 #@formatter:off
+-   version: "v7.10.1"
+    date: "2024-11-13"
+    changes:
+      -   type: "fix"
+          text: "The status of downloads was not properly updated for sabnzbd downloads. Previously unmapped downloads will keep their wrong status in the history because it would be a pain to retroactively update them. See #968"
+    final: true
 -   version: "v7.10.0"
     date: "2024-11-12"
     changes:
