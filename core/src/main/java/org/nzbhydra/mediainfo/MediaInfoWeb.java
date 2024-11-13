@@ -72,7 +72,9 @@ public class MediaInfoWeb {
             List<MediaInfoTO> tos = autocompleteCache.get(new CacheKey(type, input));
             if (configProvider.getBaseConfig().getMain().isProxyImages()) {
                 tos.stream().filter(to -> to.getPosterUrl() != null).forEach(to -> {
-                    to.setPosterUrl("cache/" + Base64.getEncoder().encodeToString(to.getPosterUrl().getBytes(StandardCharsets.UTF_8)));
+                    if (!to.getPosterUrl().startsWith("cache/")) {
+                        to.setPosterUrl("cache/" + Base64.getEncoder().encodeToString(to.getPosterUrl().getBytes(StandardCharsets.UTF_8)));
+                    }
                 });
             }
             return tos;
