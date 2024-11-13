@@ -107,6 +107,16 @@ public class LogAnonymizerTest {
         assertThat(anonymized).isEqualTo("Cookies: Parsing b[]: remember-me=0:<HIDDEN> Auth-Type=http; Auth-Token=b:<HIDDEN> HYDRA-XSRF-TOKEN=2:<HIDDEN>");
     }
 
+    @Test
+    void shouldNotCropLine() throws Exception {
+        String anonymized = testee.getAnonymizedLog("2024-11-13 08:13:43.656  INFO --- [http-nio-0.0.0.0-5] org.nzbhydra.searching.SearchWeb         : [ID: 35674, Host: hello-1.hello.com] New search request: SearchRequest{source=INTERNAL, indexers=[NZBGeek], searchType=SEARCH, category=All, offset=0, limit=100, query=high potential, identifiers={}}");
+
+        anonymized = anonymized.replaceAll("IP4:[a-z0-9]*>-5", "IP4:abc>-5");
+
+        assertThat(anonymized).isEqualTo("2024-11-13 08:13:43.656  INFO --- [http-nio-<IP4:abc>-5] org.nzbhydra.searching.SearchWeb         : [ID: 35674, Host: <hidden>] New search request: SearchRequest{source=INTERNAL, indexers=[NZBGeek], searchType=SEARCH, category=All, offset=0, limit=100, query=high potential, identifiers={}}");
+    }
+
+
 
 
 }

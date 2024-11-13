@@ -82,7 +82,7 @@ public class LogAnonymizer {
 
     private String removeIpsFromLog(String log) {
         logger.debug("Removing IPs and hostnames from log");
-        log = log.replaceAll("Host: .*\\..*\\]", "Host: <hidden>]");
+        log = log.replaceAll("Host: [^\\]]*", "Host: <hidden>");
         log = log.replace("127.0.0.1", "<localhost>");
         log = replaceWithHashedValues(log, IPV4_PATTERN, "IP4");
 //        log = replaceWithHashedValues(log, IPV6_PATTERN, "IP6");
