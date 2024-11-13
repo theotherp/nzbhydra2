@@ -1,285 +1,285 @@
 name: system-test
 
 on:
-    push:
-    workflow_dispatch:
+  push:
+  workflow_dispatch:
 
 jobs:
-    waitForNative:
-        uses: ./.github/workflows/buildNative.yml
-    buildMockserver:
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v4
-                name: "Check out source"
-                with:
-                    # Check out last 15 commits
-                    fetch-depth: 15
+  waitForNative:
+    uses: ./.github/workflows/buildNative.yml
+  buildMockserver:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        name: "Check out source"
+        with:
+          # Check out last 15 commits
+          fetch-depth: 15
 
-            -   name: "Get changed files in core module"
-                id: changed-files-specific
-                uses: tj-actions/changed-files@v35
-                with:
-                    since_last_remote_commit: true
-                    files: |
-                        other/mockserver/**
+      - name: "Get changed files in core module"
+        id: changed-files-specific
+        uses: tj-actions/changed-files@v35
+        with:
+          since_last_remote_commit: true
+          files: |
+            other/mockserver/**
 
-            -   if: steps.changed-files-specific.outputs.any_changed == 'true'
-                run: |
-                    echo "::notice::Will build new mock server container. Changed files since last push:"
-                    echo "${{ steps.changed-files-specific.outputs.all_changed_files }}"
+      - if: steps.changed-files-specific.outputs.any_changed == 'true'
+        run: |
+          echo "::notice::Will build new mock server container. Changed files since last push:"
+          echo "${{ steps.changed-files-specific.outputs.all_changed_files }}"
 
-            -   if: steps.changed-files-specific.outputs.any_changed == 'false'
-                run: |
-                    echo "::notice::Will skip build of new mock server container. No changed files since last push."
+      - if: steps.changed-files-specific.outputs.any_changed == 'false'
+        run: |
+          echo "::notice::Will skip build of new mock server container. No changed files since last push."
 
-            -   name: Set up JDK 17
-                if: steps.changed-files-specific.outputs.any_changed == 'true'
-                uses: actions/setup-java@v4
-                with:
-                    java-version: '17'
-                    distribution: 'adopt'
-                    cache: 'maven'
+      - name: Set up JDK 17
+        if: steps.changed-files-specific.outputs.any_changed == 'true'
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'adopt'
+          cache: 'maven'
 
-            -   name: "Login to GitHub Container Registry"
-                if: steps.changed-files-specific.outputs.any_changed == 'true'
-                uses: docker/login-action@v2
-                with:
-                    registry: ghcr.io
-                    username: ${{ github.actor }}
-                    password: ${{ secrets.GITHUB_TOKEN }}
+      - name: "Login to GitHub Container Registry"
+        if: steps.changed-files-specific.outputs.any_changed == 'true'
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-            -   name: "Build and push mockserver container"
-                if: steps.changed-files-specific.outputs.any_changed == 'true'
-                run: |
-                    mvn --batch-mode install -DskipTests -T 1C
-                    cd other/mockserver/
-                    mvn --batch-mode spring-boot:build-image
-                    docker tag mockserver:3.1.0 ghcr.io/theotherp/mockserver:3.1.0
-                    docker push ghcr.io/theotherp/mockserver:3.1.0
+      - name: "Build and push mockserver container"
+        if: steps.changed-files-specific.outputs.any_changed == 'true'
+        run: |
+          mvn --batch-mode install -DskipTests -T 1C
+          cd other/mockserver/
+          mvn --batch-mode spring-boot:build-image
+          docker tag mockserver:3.1.0 ghcr.io/theotherp/mockserver:3.1.0
+          docker push ghcr.io/theotherp/mockserver:3.1.0
 
-    runSystemTestsLinux:
-        needs: [ waitForNative, buildMockserver ]
-        runs-on: ubuntu-latest
-        strategy:
-            matrix:
-                test: [ { port: 5076, name: core }, { port: 5077, name: v1Migration } ]
-        env:
-            spring_profiles_active: build,systemtest,testdocker,${{ matrix.test.name }}
-            nzbhydra_port: ${{ matrix.test.port }}
-            nzbhydra.port: ${{ matrix.test.port }}
-            nzbhydra_name: ${{ matrix.test.name }}
-            NZBHYDRANAME: ${{ matrix.test.name }}
-            nzbhydra.name: ${{ matrix.test.name }}
-        steps:
-            -   run: echo Running test ${{ matrix.test.name }} with port ${{ matrix.test.port }}
-            - uses: actions/checkout@v4
-                name: "Check out source"
+  runSystemTestsLinux:
+    needs: [ waitForNative, buildMockserver ]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        test: [ { port: 5076, name: core }, { port: 5077, name: v1Migration } ]
+    env:
+      spring_profiles_active: build,systemtest,testdocker,${{ matrix.test.name }}
+      nzbhydra_port: ${{ matrix.test.port }}
+      nzbhydra.port: ${{ matrix.test.port }}
+      nzbhydra_name: ${{ matrix.test.name }}
+      NZBHYDRANAME: ${{ matrix.test.name }}
+      nzbhydra.name: ${{ matrix.test.name }}
+    steps:
+      - run: echo Running test ${{ matrix.test.name }} with port ${{ matrix.test.port }}
+      - uses: actions/checkout@v4
+        name: "Check out source"
 
-            -   name: Set up JDK 17
-                uses: actions/setup-java@v4
-                with:
-                    java-version: '17'
-                    distribution: 'adopt'
-                    cache: 'maven'
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'adopt'
+          cache: 'maven'
 
-            - name: "Install maven"
-              run: mvn --batch-mode clean install -DskipTests -pl org.nzbhydra:nzbhydra2,org.nzbhydra:shared,org.nzbhydra:mapping,org.nzbhydra:assertions
+      - name: "Install maven"
+        run: mvn --batch-mode clean install -DskipTests -pl org.nzbhydra:nzbhydra2,org.nzbhydra:shared,org.nzbhydra:mapping,org.nzbhydra:assertions
 
-            -   name: "Create docker network"
-                run: docker network create systemtest
+      - name: "Create docker network"
+        run: docker network create systemtest
 
-            -   name: "Copy v1Migration docker data"
-                run: |
-                    mkdir -p /tmp/hydra/v1MigrationDataFolder
-                    cp -R tests/system/instanceData/v1Migration/* /tmp/hydra/v1MigrationDataFolder/
+      - name: "Copy v1Migration docker data"
+        run: |
+          mkdir -p /tmp/hydra/v1MigrationDataFolder
+          cp -R tests/system/instanceData/v1Migration/* /tmp/hydra/v1MigrationDataFolder/
 
-            -   name: "Run docker compose"
-                run: |
-                    cd docker/docker-compose-systemtest/linux
-                    docker compose up -d
-                    cd ../../..
+      - name: "Run docker compose"
+        run: |
+          cd docker/docker-compose-systemtest/linux
+          docker compose up -d
+          cd ../../..
 
-            -   name: "Wait for healthy containers"
-                run: |
-                    docker ps
-                    sleep 10
-                    docker ps
-                    sleep 10
-                    docker ps
-                    echo "Core container mounts:"
-                    docker container inspect -f '{{ .Mounts}}' core
-                    echo "v1Migration container mounts:"
-                    docker container inspect -f '{{ .Mounts}}' v1Migration
+      - name: "Wait for healthy containers"
+        run: |
+          docker ps
+          sleep 10
+          docker ps
+          sleep 10
+          docker ps
+          echo "Core container mounts:"
+          docker container inspect -f '{{ .Mounts}}' core
+          echo "v1Migration container mounts:"
+          docker container inspect -f '{{ .Mounts}}' v1Migration
 
-            -   name: "Run tests"
-                run: mvn --batch-mode test -pl org.nzbhydra.tests:system -DtrimStackTrace=false
+      - name: "Run tests"
+        run: mvn --batch-mode test -pl org.nzbhydra.tests:system -DtrimStackTrace=false
 
-            -   name: "Write docker-compose logs"
-                if: always()
-                run: |
-                    cd docker/docker-compose-systemtest/linux
-                    echo "Writing docker compose logs to files"
-                    docker compose logs --no-color radarr > docker-compose-radarr.log
-                    docker compose logs --no-color sonarr > docker-compose-sonarr.log
-                    docker compose logs --no-color mockserver > docker-compose-mockserver.log
-                    docker compose logs --no-color core > docker-compose-core.log
-                    docker compose logs --no-color v1Migration > docker-compose-v1Migration.log
-                    echo "Found log files:"
-                    find . -name "*.log"
-                    cd ../../..
+      - name: "Write docker-compose logs"
+        if: always()
+        run: |
+          cd docker/docker-compose-systemtest/linux
+          echo "Writing docker compose logs to files"
+          docker compose logs --no-color radarr > docker-compose-radarr.log
+          docker compose logs --no-color sonarr > docker-compose-sonarr.log
+          docker compose logs --no-color mockserver > docker-compose-mockserver.log
+          docker compose logs --no-color core > docker-compose-core.log
+          docker compose logs --no-color v1Migration > docker-compose-v1Migration.log
+          echo "Found log files:"
+          find . -name "*.log"
+          cd ../../..
 
-            -   name: "Truncate large log files"
-                if: always()
-                # If the logs are larger than 1MB there's probably something wrong
-                run: |
-                    shopt -s globstar
-                    for d in ./**/*.log ; do (truncate --size=1M $d); done
+      - name: "Truncate large log files"
+        if: always()
+        # If the logs are larger than 1MB there's probably something wrong
+        run: |
+          shopt -s globstar
+          for d in ./**/*.log ; do (truncate --size=1M $d); done
 
-            -   name: "Upload data folder artifact"
-                uses: actions/upload-artifact@v4
-                if: always()
-                with:
-                    name: dataLinux
-                    path: /tmp/hydra
+      - name: "Upload data folder artifact"
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dataLinux
+          path: /tmp/hydra
 
-            -   name: "Upload test logs artifact"
-                uses: actions/upload-artifact@v4
-                if: always()
-                with:
-                    name: ${{ matrix.test.name }}-test-logs
-                    path: tests/**/*.log
+      - name: "Upload test logs artifact"
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ${{ matrix.test.name }}-test-logs
+          path: tests/**/*.log
 
-            -   name: "Upload docker logs artifact"
-                uses: actions/upload-artifact@v4
-                if: always()
-                with:
-                    name: ${{ matrix.test.name }}-docker-logs
-                    path: docker/docker-compose-systemtest/linux/*.log
+      - name: "Upload docker logs artifact"
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ${{ matrix.test.name }}-docker-logs
+          path: docker/docker-compose-systemtest/linux/*.log
 
-            -   name: "Create test Report"
-                uses: dorny/test-reporter@v1
-                if: always()
-                continue-on-error: true
-                with:
-                    name: System test report ${{ matrix.test.name }}
-                    path: "**/surefire-reports/*.xml"
-                    reporter: java-junit
-
-
+      - name: "Create test Report"
+        uses: dorny/test-reporter@v1
+        if: always()
+        continue-on-error: true
+        with:
+          name: System test report ${{ matrix.test.name }}
+          path: "**/surefire-reports/*.xml"
+          reporter: java-junit
 
 
-    runSystemTestsWindows:
-        needs: [ waitForNative, buildMockserver ]
-        runs-on: windows-latest
-        env:
-            spring_profiles_active: build,systemtest,core,testwindows
-            nzbhydra_port: 5076
-            nzbhydra.port: 5076
-            nzbhydra_name: windows
-            NZBHYDRANAME: windows
-            nzbhydra.name: windows
-        steps:
-            - name: "Check out source"
-              uses: actions/checkout@v4
 
-            - name: "Download windows artifact from current workflow"
-              id: "downloadArtifactThisBuild"
-              continue-on-error: true
-              uses: actions/download-artifact@v4
-              with:
-                  name: coreWindows
-                  path: ./
 
-            - name: "Check if core.exe was downloaded"
-              id: checkCoreExe
-              uses: andstor/file-existence-action@v3
-              with:
-                  files: core.exe
+  runSystemTestsWindows:
+    needs: [ waitForNative, buildMockserver ]
+    runs-on: windows-latest
+    env:
+      spring_profiles_active: build,systemtest,core,testwindows
+      nzbhydra_port: 5076
+      nzbhydra.port: 5076
+      nzbhydra_name: windows
+      NZBHYDRANAME: windows
+      nzbhydra.name: windows
+    steps:
+      - name: "Check out source"
+        uses: actions/checkout@v4
 
-            - name: "Download windows artifact from previous workflow if no native build was executed"
-              if: ${{steps.checkCoreExe.outputs.files_exists == 'false'}}
-              uses: dawidd6/action-download-artifact@v6
-              with:
-                  name: coreWindows
-                  #Search for matching artifact in any of the last completed workflows
-                  search_artifacts: true
-                  workflow_conclusion: 'completed'
-                  path: .
+      - name: "Download windows artifact from current workflow"
+        id: "downloadArtifactThisBuild"
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: coreWindows
+          path: ./
 
-            - name: "Set up JDK 17"
-              uses: actions/setup-java@v4
-              with:
-                  java-version: '17'
-                  distribution: 'adopt'
-                  cache: 'maven'
+      - name: "Check if core.exe was downloaded"
+        id: checkCoreExe
+        uses: andstor/file-existence-action@v3
+        with:
+          files: core.exe
 
-            - name: "Install maven"
-              run: mvn --batch-mode clean install -DskipTests -pl org.nzbhydra:nzbhydra2,org.nzbhydra:shared,org.nzbhydra:mapping,org.nzbhydra:assertions,org.nzbhydra:mockserver
+      - name: "Download windows artifact from previous workflow if no native build was executed"
+        if: ${{steps.checkCoreExe.outputs.files_exists == 'false'}}
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          name: coreWindows
+          #Search for matching artifact in any of the last completed workflows
+          search_artifacts: true
+          workflow_conclusion: 'completed'
+          path: .
 
-            - name: "Copy mockserver"
-              run: |
-                  copy other/mockserver/target/*-exec.jar exec.jar
+      - name: "Set up JDK 17"
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'adopt'
+          cache: 'maven'
 
-            - name: "List files in folder"
-              run: ls
+      - name: "Install maven"
+        run: mvn --batch-mode clean install -DskipTests -pl org.nzbhydra:nzbhydra2,org.nzbhydra:shared,org.nzbhydra:mapping,org.nzbhydra:assertions,org.nzbhydra:mockserver
 
-            - name: "Add mockserver to /etc/hosts"
-              run: |
-                $file = "C:\Windows\System32\drivers\etc\hosts"
-                $hostfile = Get-Content $file
-                $hostfile += "127.0.0.1 mockserver"
-                Set-Content -Path $file -Value $hostfile -Force
+      - name: "Copy mockserver"
+        run: |
+          copy other/mockserver/target/*-exec.jar exec.jar
 
-            - name: "Start mock server and hydra, run tests"
-              uses: BerniWittmann/background-server-action@v1
-              with:
-                  start: ./core.exe directstart, java -jar ./exec.jar
-                  command: mvn --batch-mode test -pl org.nzbhydra.tests:system -DtrimStackTrace=false
+      - name: "List files in folder"
+        run: ls
 
-            - name: "Shutdown hydra"
-              uses: fjogeleit/http-request-action@v1
-              if: always()
-              continue-on-error: true
-              with:
-                  method: "GET"
-                  url: "http://127.0.0.1:5076/internalapi/control/shutdown"
+      - name: "Add mockserver to /etc/hosts"
+        run: |
+          $file = "C:\Windows\System32\drivers\etc\hosts"
+          $hostfile = Get-Content $file
+          $hostfile += "127.0.0.1 mockserver"
+          Set-Content -Path $file -Value $hostfile -Force
 
-            - name: "Shutdown mockserver"
-              uses: fjogeleit/http-request-action@v1
-              if: always()
-              continue-on-error: true
-              with:
-                  method: "POST"
-                  url: "http://127.0.0.1:5080/actuator/shutdown"
+      - name: "Start mock server and hydra, run tests"
+        uses: BerniWittmann/background-server-action@v1
+        with:
+          start: ./core.exe directstart, java -jar ./exec.jar
+          command: mvn --batch-mode test -pl org.nzbhydra.tests:system -DtrimStackTrace=false
 
-            - name: "Upload data folder artifact"
-              uses: actions/upload-artifact@v4
-              if: always()
-              continue-on-error: true
-              with:
-                  name: dataWindows
-                  path: data
+      - name: "Shutdown hydra"
+        uses: fjogeleit/http-request-action@v1
+        if: always()
+        continue-on-error: true
+        with:
+          method: "GET"
+          url: "http://127.0.0.1:5076/internalapi/control/shutdown"
 
-            - name: "Upload test logs artifact"
-              uses: actions/upload-artifact@v4
-              if: always()
-              with:
-                  name: windows-test-logs
-                  path: tests/**/*.log
+      - name: "Shutdown mockserver"
+        uses: fjogeleit/http-request-action@v1
+        if: always()
+        continue-on-error: true
+        with:
+          method: "POST"
+          url: "http://127.0.0.1:5080/actuator/shutdown"
 
-            - name: "Upload docker logs artifact"
-              uses: actions/upload-artifact@v4
-              if: always()
-              with:
-                  name: windows-docker-logs
-                  path: docker/*.log
+      - name: "Upload data folder artifact"
+        uses: actions/upload-artifact@v4
+        if: always()
+        continue-on-error: true
+        with:
+          name: dataWindows
+          path: data
 
-            - name: "Create test Report"
-              uses: dorny/test-reporter@v1
-              if: always()
-              continue-on-error: true
-              with:
-                  name: System test report windows
-                  path: "**/surefire-reports/*.xml"
-                  reporter: java-junit
+      - name: "Upload test logs artifact"
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: windows-test-logs
+          path: tests/**/*.log
+
+      - name: "Upload docker logs artifact"
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: windows-docker-logs
+          path: docker/*.log
+
+      - name: "Create test Report"
+        uses: dorny/test-reporter@v1
+        if: always()
+        continue-on-error: true
+        with:
+          name: System test report windows
+          path: "**/surefire-reports/*.xml"
+          reporter: java-junit
