@@ -1,1 +1,3 @@
-// Can be extended for local UI development. Will not be overwritten by gulp
+/*
+Intentionally left blank. Can be overwritten by UI developers but should exist to prevent 404s when it's attempted to be loaded
+*/
