@@ -18,13 +18,13 @@ jobs:
             -   if: startsWith(matrix.os,'ubuntu')
                 name: Log free memory
                 run: free -s 1 -h -c 3
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     # Check out last 15 commits
                     fetch-depth: 15
 
             -   name: Set up JDK 21
-                uses: actions/setup-java@v3
+                uses: actions/setup-java@v4
                 with:
                     java-version: '21'
                     distribution: 'adopt'
@@ -83,14 +83,14 @@ jobs:
 
             -   name: "Upload linux artifact"
                 if: steps.changed-files-specific.outputs.any_changed == 'true' && startsWith(matrix.os,'ubuntu')
-                uses: actions/upload-artifact@v3
+                uses: actions/upload-artifact@v4
                 with:
                     name: coreLinux
                     path: core/target/core
 
             -   name: "Upload windows artifact"
                 if: steps.changed-files-specific.outputs.any_changed == 'true' && startsWith(matrix.os,'windows')
-                uses: actions/upload-artifact@v3
+                uses: actions/upload-artifact@v4
                 with:
                     name: coreWindows
                     path: core/target/core.exe
