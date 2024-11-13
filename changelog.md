@@ -1,3 +1,15 @@
+### v7.10.1 (2024-11-13)
+
+**Fix** The status of downloads was not properly updated for sabnzbd downloads. Previously unmapped downloads will keep their wrong status in the history because it would be a pain to retroactively update them. See <a href="https://github.com/theotherp/nzbhydra2/issues/968">#968</a>
+
+**Fix** Do not use IMDB IDs for indexers that don't support them. This would happen when using the TV search function in the ID and selecting a result from the autocomplete.
+
+**Fix** When autocomplete images were proxied they could not be loaded a second time.
+
+**Fix** The log anonymizer used when you create debug infos removed too much, sometimes resulting in missing information.
+
+
+
 ### v7.10.0 (2024-11-12)
 
 **Feature** Previously the way forbidden words would be excluded from queries depended on the backend and, to a certain degree, on the indexer but in some cases -- would be used as a prefix which is only supported by many indexers. NZBHydra will now attempt to automatically detect if and how certain words may be excluded from a query. This will either happen during a caps check or on the first search request where needed.
