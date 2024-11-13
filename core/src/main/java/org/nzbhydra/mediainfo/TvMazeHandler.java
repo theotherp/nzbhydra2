@@ -28,7 +28,7 @@ public class TvMazeHandler {
     protected RestTemplate restTemplate;
 
 
-    public TvMazeSearchResult getInfos(String id, MediaIdType idType) throws InfoProviderException {
+    TvMazeSearchResult getInfos(String id, MediaIdType idType) throws InfoProviderException {
         if (idType == MediaIdType.TVTITLE) {
             return fromTitle(id);
         }
@@ -73,7 +73,7 @@ public class TvMazeHandler {
         return new TvMazeSearchResult(String.valueOf(show.getId()), show.getExternals().getTvrage(), show.getExternals().getThetvdb(), show.getExternals().getImdb(), show.getName(), year, makePosterLinksSecure(show).getMediumPosterUrl());
     }
 
-    public List<TvMazeSearchResult> search(String title) throws InfoProviderException {
+    List<TvMazeSearchResult> search(String title) throws InfoProviderException {
         logger.info("Searching TVMaze for shows with title '{}", title);
         List<TvmazeShowSearch> shows = searchByTitle(title);
         logger.info("TVMaze found {} shows for title '{}'", shows.size(), title);
@@ -111,14 +111,14 @@ public class TvMazeHandler {
 
 
     @Data
-@ReflectionMarker
+    @ReflectionMarker
     private static class TvmazeShowSearch { //Without static deserialization fails
         private Integer score;
         private TvmazeShow show;
     }
 
     @Data
-@ReflectionMarker
+    @ReflectionMarker
     private static class TvmazeShow { //Without static deserialization fails
         private Integer id;
         private String name;
@@ -142,7 +142,7 @@ public class TvMazeHandler {
     }
 
     @Data
-@ReflectionMarker
+    @ReflectionMarker
     private static class TvmazeExternals { //Without static deserialization fails
         private String tvrage;
         private String thetvdb;
@@ -159,7 +159,7 @@ public class TvMazeHandler {
     }
 
     @Data
-@ReflectionMarker
+    @ReflectionMarker
     private static class TvmazeImage { //Without static deserialization fails
         private String medium;
         private String original;

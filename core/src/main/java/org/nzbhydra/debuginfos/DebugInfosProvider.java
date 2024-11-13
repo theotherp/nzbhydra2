@@ -259,7 +259,7 @@ public class DebugInfosProvider {
         final Set<String> metricsNames = metricsEndpoint.listNames().getNames();
         for (String metric : metricsNames) {
             final MetricsEndpoint.MetricDescriptor response = metricsEndpoint.metric(metric, null);
-            logger.info(metric + ": " + response.getMeasurements().stream()
+            logger.info("{}: {}", metric, response.getMeasurements().stream()
                     .map(x -> x.getStatistic().name() + ": " + formatSample(metric, x.getValue()))
                     .collect(Collectors.joining(", ")));
         }
@@ -315,8 +315,10 @@ public class DebugInfosProvider {
     }
 
     public String logThreadDump() {
+
         try {
             StringBuilder sb = new StringBuilder();
+            sb.append("Thread dump:\n");
             Map<Thread, StackTraceElement[]> allStackTraces = Thread.getAllStackTraces();
             for (Map.Entry<Thread, StackTraceElement[]> entry : allStackTraces.entrySet()) {
                 sb.append("Thread name: ").append(entry.getKey().getName()).append("\n");
@@ -382,9 +384,9 @@ public class DebugInfosProvider {
 
     protected void logNumberOfTableRows(final String tableName) {
         try {
-            logger.info("Number of rows in table " + tableName + ": " + entityManager.createNativeQuery("select count(*) from " + tableName).getSingleResult());
+            logger.info("Number of rows in table {}: {}", tableName, entityManager.createNativeQuery("select count(*) from " + tableName).getSingleResult());
         } catch (Exception e) {
-            logger.error("Unable to get number of rows in table " + tableName, e);
+            logger.error("Unable to get number of rows in table {}", tableName, e);
         }
     }
 

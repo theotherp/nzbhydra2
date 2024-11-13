@@ -2,6 +2,7 @@ package org.nzbhydra.searching;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Stopwatch;
+import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import jakarta.persistence.EntityManager;
@@ -40,7 +41,6 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.TextStyle;
-import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -236,7 +236,7 @@ public class IndexerForSearchSelector {
         boolean indexerNotSelected = !searchRequest.getIndexers().get().contains(indexer.getName());
         if (indexerNotSelected) {
             //Don't send a search log message for this because showing it to the leader would be useless. He knows he hasn't selected it
-            logger.info(String.format("Not using %s because it's not in selection %s", indexer.getName(), searchRequest.getIndexers().get()));
+            logger.info("Not using {} because it's not in selection {}", indexer.getName(), searchRequest.getIndexers().get());
             notSelectedIndersWithReason.put(indexer, "Not selected by the user");
             return false;
         }
@@ -264,12 +264,12 @@ public class IndexerForSearchSelector {
         LocalDateTime comparisonTime;
         LocalDateTime now = LocalDateTime.now(clock);
         if (indexerConfig.getHitLimitResetTime().isPresent()) {
-            comparisonTime = now.with(ChronoField.HOUR_OF_DAY, indexerConfig.getHitLimitResetTime().get());
+            comparisonTime = now.withHour(indexerConfig.getHitLimitResetTime().get());
             if (comparisonTime.isAfter(now)) {
-                comparisonTime = comparisonTime.minus(1, ChronoUnit.DAYS);
+                comparisonTime = comparisonTime.minusDays(1);
             }
         } else {
-            comparisonTime = now.minus(1, ChronoUnit.DAYS);
+            comparisonTime = now.minusDays(1);
         }
         if (indexerConfig.getHitLimit().isPresent()) {
             boolean limitExceeded = checkIfHitLimitIsExceeded(indexer, indexerConfig, comparisonTime, IndexerApiAccessType.SEARCH, indexerConfig.getHitLimit().get(), "API hit");
@@ -308,7 +308,7 @@ public class IndexerForSearchSelector {
         if (oldestAccess.isBefore(Instant.now(clock).minusSeconds(timespanSeconds))) {
             return true;
         }
-        logger.info(String.format("Not using %s because too many frequent hits were made: More than %d in %d seconds. Oldest of these hits was %d seconds ago", indexer.getName(), limitHits, timespanSeconds, oldestSecondsAgo));
+        logger.info("Not using {} because too many frequent hits were made: More than {} in {} seconds. Oldest of these hits was {} seconds ago", indexer.getName(), limitHits, timespanSeconds, oldestSecondsAgo);
         notSelectedIndersWithReason.put(indexer, "Too many frequent hits");
         return false;
     }
@@ -358,7 +358,7 @@ public class IndexerForSearchSelector {
 
                 Instant nextAccess = oldestAccess.plus(24, ChronoUnit.HOURS);
                 String message = String.format("Not using %s because all %d allowed " + type + "s were already made. The next " + type + " should be possible at %s", indexerConfig.getName(), limit, nextAccess);
-                logger.debug(LoggingMarkers.PERFORMANCE, "Detection that " + type + " limit has been reached for indexer {} took {}ms", indexerConfig.getName(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+                logger.debug(LoggingMarkers.PERFORMANCE, "Detection that {} limit has been reached for indexer {} took {}ms", type, indexerConfig.getName(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
                 return !handleIndexerNotSelected(indexer, message, type + " limit reached");
             }
 
@@ -445,13 +445,13 @@ public class IndexerForSearchSelector {
         if (indexerConfig.getHitLimitResetTime().isPresent()) {
             //Next possible hit is at the hour of day defined by the reset time. If that is already in the past it will be the next day at that time
             LocalDateTime now = LocalDateTime.now(clock);
-            nextPossibleHit = now.with(ChronoField.HOUR_OF_DAY, indexerConfig.getHitLimitResetTime().get()).with(ChronoField.MINUTE_OF_HOUR, 0);
+            nextPossibleHit = now.withHour(indexerConfig.getHitLimitResetTime().get()).withMinute(0);
             if (nextPossibleHit.isBefore(now)) {
-                nextPossibleHit = nextPossibleHit.plus(1, ChronoUnit.DAYS);
+                nextPossibleHit = nextPossibleHit.plusDays(1);
             }
         } else {
             //Next possible hit is at the earlierst 24 hours after the first hit in the hit limit time window (5 hits are limit, the first was made now, then the next hit is available tomorrow at this time)
-            nextPossibleHit = LocalDateTime.ofInstant(firstInWindowAccessTime, ZoneOffset.UTC).plus(1, ChronoUnit.DAYS);
+            nextPossibleHit = LocalDateTime.ofInstant(firstInWindowAccessTime, ZoneOffset.UTC).plusDays(1);
         }
         return nextPossibleHit;
     }
@@ -518,10 +518,10 @@ public class IndexerForSearchSelector {
         }
 
         if (matcher.group("hour1") != null) {
-            int fromHour = Integer.valueOf(matcher.group("hour1"));
+            int fromHour = Integer.parseInt(matcher.group("hour1"));
             int toHour;
             if (matcher.group("hour2") != null) {
-                toHour = Integer.valueOf(matcher.group("hour2"));
+                toHour = Integer.parseInt(matcher.group("hour2"));
             } else {
                 toHour = fromHour;
             }
@@ -544,15 +544,17 @@ public class IndexerForSearchSelector {
     }
 
     private boolean handleIndexerNotSelected(Indexer indexer, String message, String reason) {
-        logger.info(message);
         notSelectedIndersWithReason.put(indexer, reason);
-        eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, message));
+        if (!Strings.isNullOrEmpty(message)) {
+            logger.info(message);
+            eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, message));
+        }
         return false;
     }
 
 
     @Data
-@ReflectionMarker
+    @ReflectionMarker
     @NoArgsConstructor
     public static class IndexerForSearchSelection {
         private Map<Indexer, String> notPickedIndexersWithReason = new HashMap<>();
