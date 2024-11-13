@@ -149,8 +149,8 @@ public class Newznab extends Indexer<Xml> {
 
         String query = "";
 
+        //Only provide search IDs when no fallback to query generation was requested
         if (searchRequest.getInternalData().getFallbackStateByIndexer(getName()) != InternalData.FallbackState.REQUESTED) {
-            //Don't provide search IDs when a fallback to query generation was requested
             componentsBuilder = extendQueryUrlWithSearchIds(searchRequest, componentsBuilder);
         }
         query = generateQueryIfApplicable(searchRequest, query);
@@ -382,7 +382,7 @@ public class Newznab extends Indexer<Xml> {
                 if (!config.getSupportedSearchIds().contains(entry.getKey())) {
                     continue;
                 }
-                debug("Using media type ID {}={}", entry.getKey(), entry.getValue());
+                debug("Using media ID {}={}", entry.getKey(), entry.getValue());
                 componentsBuilder.queryParam(idTypeToParamValueMap.get(entry.getKey()), entry.getValue().replace("tt", ""));
             }
 
