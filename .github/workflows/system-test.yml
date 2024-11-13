@@ -140,7 +140,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: dataLinux
+          name: dataLinux${{ matrix.test.name }}
           path: /tmp/hydra
 
       - name: "Upload test logs artifact"
@@ -186,6 +186,7 @@ jobs:
       - name: "Download windows artifact from current workflow"
         id: "downloadArtifactThisBuild"
         continue-on-error: true
+        if: ${{ env.WINDOWS_BUILT == 'true' }}
         uses: actions/download-artifact@v4
         with:
           name: coreWindows

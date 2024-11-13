@@ -95,6 +95,10 @@ jobs:
                     name: coreWindows
                     path: core/target/core.exe
 
+            -   name: Store if windows exe was built
+                if: steps.changed-files-specific.outputs.any_changed == 'true' && startsWith(matrix.os,'windows')
+                run: echo "WINDOWS_BUILT=true" >> $GITHUB_ENV
+
             -   name: "Copy artifact to include folder"
                 if: steps.changed-files-specific.outputs.any_changed == 'true' && startsWith(matrix.os,'ubuntu')
                 run: |
