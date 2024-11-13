@@ -55,7 +55,7 @@ public class MediaInfoTest {
         });
         Assertions.assertThat(checkCapsResponses).isNotEmpty();
         MediaInfoTO mediaInfoTO = checkCapsResponses.get(0);
-        Assertions.assertThat(mediaInfoTO.getImdbId()).isEqualTo("98");
+        Assertions.assertThat(mediaInfoTO.getTmdbId()).isEqualTo("98");
 
     }
 

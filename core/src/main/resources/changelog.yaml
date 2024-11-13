@@ -4,6 +4,8 @@
     changes:
       -   type: "fix"
           text: "The status of downloads was not properly updated for sabnzbd downloads. Previously unmapped downloads will keep their wrong status in the history because it would be a pain to retroactively update them. See #968"
+      -   type: "fix"
+          text: "Do not use IMDB IDs for indexers that don't support them. This would happen when using the TV search function in the ID and selecting a result from the autocomplete."
     final: true
 -   version: "v7.10.0"
     date: "2024-11-12"

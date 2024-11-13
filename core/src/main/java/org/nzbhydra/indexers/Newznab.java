@@ -326,8 +326,10 @@ public class Newznab extends Indexer<Xml> {
             Map<MediaIdType, String> params = new HashMap<>();
             boolean idConversionNeeded = isIdConversionNeeded(searchRequest);
             if (idConversionNeeded) {
+                debug("Will try to convert IDs if possible");
                 boolean canConvertAnyId = infoProvider.canConvertAny(searchRequest.getIdentifiers().keySet(), new HashSet<>(config.getSupportedSearchIds()));
                 if (canConvertAnyId) {
+                    debug("Can convert any of provided IDs {} to at least one of supported IDs {}", searchRequest.getIdentifiers().keySet(), config.getSupportedSearchIds());
                     try {
                         MediaInfo info = infoProvider.convert(searchRequest.getIdentifiers());
 
@@ -352,6 +354,7 @@ public class Newznab extends Indexer<Xml> {
                         if (info.getTvDbId().isPresent()) {
                             params.put(MediaIdType.TVDB, info.getTvDbId().get());
                         }
+                        debug("Available search IDs: {}", params);
                     } catch (InfoProviderException e) {
                         error("Error while converting search ID", e);
                     }
@@ -366,6 +369,10 @@ public class Newznab extends Indexer<Xml> {
 
             //Don't overwrite IDs provided by the calling instance, only add missing ones
             params.forEach((key, value) -> searchRequest.getIdentifiers().putIfAbsent(key, value));
+            if (searchRequest.getSearchType() == SearchType.TVSEARCH) {
+                //IMDB is not the same as TVIMDB
+                searchRequest.getIdentifiers().remove(MediaIdType.IMDB);
+            }
 
             for (Map.Entry<MediaIdType, String> entry : searchRequest.getIdentifiers().entrySet()) {
                 //We just add all IDs that we have (if the indexer supports them). Some indexers will find results under one ID but not the other
@@ -375,6 +382,7 @@ public class Newznab extends Indexer<Xml> {
                 if (!config.getSupportedSearchIds().contains(entry.getKey())) {
                     continue;
                 }
+                debug("Using media type ID {}={}", entry.getKey(), entry.getValue());
                 componentsBuilder.queryParam(idTypeToParamValueMap.get(entry.getKey()), entry.getValue().replace("tt", ""));
             }
 
