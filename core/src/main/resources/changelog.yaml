@@ -7,7 +7,7 @@
       -   type: "fix"
           text: "Do not use IMDB IDs for indexers that don't support them. This would happen when using the TV search function in the ID and selecting a result from the autocomplete."
       -   type: "fix"
-          text: "When images were proxied the second time autocomplete images they could not be loaded a second time."
+          text: "When autocomplete images were proxied they could not be loaded a second time."
       -   type: "fix"
           text: "The log anonymizer used when you create debug infos removed too much, sometimes resulting in missing information."
     final: true
