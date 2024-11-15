@@ -101,22 +101,22 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
 
-        <spring.boot.version>3.1.5</spring.boot.version>
-        <spring.boot.devtools.version>3.1.5</spring.boot.devtools.version>
-        <spring.boot.maven.version>3.1.5</spring.boot.maven.version>
-        <spring.oxm.version>6.0.12</spring.oxm.version>
-        <spring-data-commons.version>3.1.5</spring-data-commons.version>
+        <spring.boot.version>3.3.5</spring.boot.version>
+        <spring.boot.devtools.version>3.3.5</spring.boot.devtools.version>
+        <spring.boot.maven.version>3.3.5</spring.boot.maven.version>
+        <spring.oxm.version>6.1.14</spring.oxm.version>
+        <spring-data-commons.version>3.3.5</spring-data-commons.version>
         <jakarta.persistence-api.version>3.1.0</jakarta.persistence-api.version>
-        <jackson.version>2.15.0</jackson.version>
+        <jackson.version>2.18.1</jackson.version>
         <lombok.version>1.18.30</lombok.version>
-        <logback.version>1.4.11</logback.version>
+        <logback.version>1.5.12</logback.version>
         <guava.version>23.0</guava.version>
         <junit.version>4.13.2</junit.version>
-        <okhttp.version>4.11.0</okhttp.version>
+        <okhttp.version>4.12.0</okhttp.version>
         <logstash-logback-encoder.version>7.2</logstash-logback-encoder.version>
-        <commons-lang3.version>3.12.0</commons-lang3.version>
+        <commons-lang3.version>3.17.0</commons-lang3.version>
         <commons-io.version>2.11.0</commons-io.version>
-        <flyway-core.version>9.10.2</flyway-core.version>
+        <flyway-core.version>10.21.0</flyway-core.version>
         <jaxb.sun.core.version>2.3.0.1</jaxb.sun.core.version>
         <jaxb.sun.impl.version>3.0.1</jaxb.sun.impl.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

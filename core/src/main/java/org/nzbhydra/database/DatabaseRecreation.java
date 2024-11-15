@@ -88,9 +88,12 @@ public class DatabaseRecreation {
             }
             final String header = new String(buffer).trim();
             if (header.contains("format:1")) {
-                logger.info("Determined existing database to be version 1.4. Migration needed.");
+                logger.info("Determined existing database to be version 1.4. Migration needed. Use any version lower than 7.10.0");
+                return;
             } else if (header.contains("format:2")) {
-                logger.info("Determined existing database to be version 2. No migration needed.");
+                logger.info("Determined existing database to be version 2. Migration needed to version 3.");
+            } else if (header.contains("format:3")) {
+                logger.info("Determined existing database to be version 3. No migration needed.");
                 return;
             } else {
                 logger.error("Unable to determine database version from header {}", header);
@@ -99,81 +102,80 @@ public class DatabaseRecreation {
         } catch (Exception e) {
             throw new RuntimeException("Unable to open database file " + databaseFile, e);
         }
-        boolean isUpgrade14To210 = true;
-        if (isUpgrade14To210) {
 
-            try {
-                final File[] traceFiles = databaseFile.getParentFile().listFiles((FilenameFilter) new WildcardFileFilter("*.trace.db"));
-                if (traceFiles != null) {
-                    for (File traceFile : traceFiles) {
-                        traceFile.delete();
-                    }
+        try {
+            final File[] traceFiles = databaseFile.getParentFile().listFiles((FilenameFilter) new WildcardFileFilter("*.trace.db"));
+            if (traceFiles != null) {
+                for (File traceFile : traceFiles) {
+                    traceFile.delete();
                 }
-            } catch (Exception e) {
-                logger.error("Unable to delete trace files", e);
             }
+        } catch (Exception e) {
+            logger.error("Unable to delete trace files", e);
+        }
 
-            File backupDatabaseFile = null;
-            String javaExecutable;
-            final File h2OldJar;
-            final File h2NewJar;
-            final String scriptFilePath;
-            try {
-                javaExecutable = getJavaExecutable();
-                h2OldJar = downloadJarFile("https://repo1.maven.org/maven2/com/h2database/h2/1.4.200/h2-1.4.200.jar");
-                h2NewJar = downloadJarFile("https://repo1.maven.org/maven2/com/h2database/h2/2.1.214/h2-2.1.214.jar");
-            } catch (Exception e) {
-                logger.error("Error migrating old database. Unable to download h2 jars");
-                throw e;
-            }
-            try {
-                final File scriptFile = Files.createTempFile("nzbhydra", ".sql").toFile();
-                scriptFile.deleteOnExit();
-                scriptFilePath = scriptFile.getCanonicalPath();
+        File backupDatabaseFile = null;
+        String javaExecutable;
+        final File h2OldJar;
+        final File h2NewJar;
+        final String scriptFilePath;
+        try {
+            javaExecutable = getJavaExecutable();
+            h2OldJar = downloadJarFile("https://repo1.maven.org/maven2/com/h2database/h2/2.1.214/h2-2.1.214.jar");
+            h2NewJar = downloadJarFile("https://repo1.maven.org/maven2/com/h2database/h2/2.3.232/h2-2.3.232.jar");
+        } catch (Exception e) {
+            logger.error("Error migrating old database. Unable to download h2 jars");
+            throw e;
+        }
+        try {
+            final File scriptFile = Files.createTempFile("nzbhydra", ".sql").toFile();
+            scriptFile.deleteOnExit();
+            scriptFilePath = scriptFile.getCanonicalPath();
 
-                logger.info("Running database migration from 1.4 to 2");
+            logger.info("Running database migration from 2 to 3");
 
-                backupDatabaseFile = new File(databaseFile.getParent(), databaseFile.getName() + ".old.bak." + System.currentTimeMillis());
-                logger.info("Copying old database file {} to backup {} which will be automatically deleted after 14 days", databaseFile, backupDatabaseFile);
-                Files.copy(databaseFile.toPath(), backupDatabaseFile.toPath());
+            backupDatabaseFile = new File(databaseFile.getParent(), databaseFile.getName() + ".old.bak." + System.currentTimeMillis());
+            logger.info("Copying old database file {} to backup {} which will be automatically deleted after 14 days", databaseFile, backupDatabaseFile);
+            Files.copy(databaseFile.toPath(), backupDatabaseFile.toPath());
 
-                final String updatePasswordQuery = "alter user sa set password 'sa'";
-                updatePassword(dbConnectionUrl, javaExecutable, h2OldJar, updatePasswordQuery);
+            final String updatePasswordQuery = "alter user sa set password 'sa'";
+            //Apparently not needed anymore for format 3
+//           updatePassword(dbConnectionUrl, javaExecutable, h2OldJar, updatePasswordQuery);
 
-                runH2Command(Arrays.asList(javaExecutable, "-Xmx700M", "-cp", h2OldJar.toString(), "org.h2.tools.Script", "-url", dbConnectionUrl, "-user", "sa", "-password", "sa", "-script", scriptFilePath), "Database export failed.");
-            } catch (Exception e) {
-                logger.error("Error migrating old database file to new one");
+            runH2Command(Arrays.asList(javaExecutable, "-Xmx700M", "-cp", h2OldJar.toString(), "org.h2.tools.Script", "-url", dbConnectionUrl, "-user", "sa", "-password", "sa", "-script", scriptFilePath), "Database export failed.");
+        } catch (Exception e) {
+            logger.error("Error migrating old database file to new one");
+            if (backupDatabaseFile != null && backupDatabaseFile.exists()) {
                 if (backupDatabaseFile != null && backupDatabaseFile.exists()) {
-                    if (backupDatabaseFile != null && backupDatabaseFile.exists()) {
-                        backupDatabaseFile.delete();
-                    }
+                    backupDatabaseFile.delete();
                 }
-
-                throw e;
             }
-            try {
-                final boolean deleted = databaseFile.delete();
-                if (!deleted) {
-                    throw new RuntimeException("Unable to delete old database file " + databaseFile);
-                }
 
-                runH2Command(Arrays.asList(javaExecutable, "-Xmx700M", "-cp", h2NewJar.toString(), "org.h2.tools.RunScript", "-url", dbConnectionUrl, "-user", "sa", "-password", "sa", "-script", scriptFilePath, "-options", "FROM_1X"), "Database import failed.");
+            throw e;
+        }
+        try {
+            final boolean deleted = databaseFile.delete();
+            if (!deleted) {
+                throw new RuntimeException("Unable to delete old database file " + databaseFile);
+            }
 
-                final Flyway flyway = Flyway.configure()
+            runH2Command(Arrays.asList(javaExecutable, "-Xmx700M", "-cp", h2NewJar.toString(), "org.h2.tools.RunScript", "-url", dbConnectionUrl, "-user", "sa", "-password", "sa", "-script", scriptFilePath, "-options", "FROM_1X"), "Database import failed.");
+
+            final Flyway flyway = Flyway.configure()
                     .dataSource(dbConnectionUrl, "sa", "sa")
                     .baselineDescription("INITIAL")
                     .baselineVersion("1")
                     .load();
-                flyway.baseline();
-            } catch (Exception e) {
-                logger.error("Error while trying to migrate database to 2.0");
-                if (backupDatabaseFile != null && backupDatabaseFile.exists()) {
-                    logger.info("Restoring database file {} from backup {}", databaseFile, backupDatabaseFile);
-                    Files.move(backupDatabaseFile.toPath(), databaseFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                }
-                throw new RuntimeException(e);
+            flyway.baseline();
+        } catch (Exception e) {
+            logger.error("Error while trying to migrate database to 2.0");
+            if (backupDatabaseFile != null && backupDatabaseFile.exists()) {
+                logger.info("Restoring database file {} from backup {}", databaseFile, backupDatabaseFile);
+                Files.move(backupDatabaseFile.toPath(), databaseFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
             }
+            throw new RuntimeException(e);
         }
+
     }
 
     private static void updatePassword(String dbConnectionUrl, String javaExecutable, File h2OldJar, String updatePasswordQuery) throws IOException, InterruptedException {
@@ -185,11 +187,11 @@ public class DatabaseRecreation {
     }
 
     private static void runH2Command(List<String> updatePassCommand, String errorMessage) throws IOException, InterruptedException {
-        logger.info("Running command: " + Joiner.on(" ").join(updatePassCommand));
+        logger.info("Running command: {}", Joiner.on(" ").join(updatePassCommand));
         final Process process = new ProcessBuilder(updatePassCommand)
-            .redirectErrorStream(true)
-            .inheritIO()
-            .start();
+                .redirectErrorStream(true)
+                .inheritIO()
+                .start();
         final int result = process.waitFor();
         if (result != 0) {
             throw new RuntimeException(errorMessage + ". Code: " + result);
