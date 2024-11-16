@@ -109,7 +109,7 @@
         <spring-data-commons.version>3.3.5</spring-data-commons.version>
         <jakarta.persistence-api.version>3.1.0</jakarta.persistence-api.version>
         <jackson.version>2.18.1</jackson.version>
-        <lombok.version>1.18.30</lombok.version>
+        <lombok.version>1.18.36</lombok.version>
         <logback.version>1.5.12</logback.version>
         <guava.version>23.0</guava.version>
         <junit.version>4.13.2</junit.version>

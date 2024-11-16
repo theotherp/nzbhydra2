@@ -130,7 +130,12 @@
             <artifactId>assertions</artifactId>
             <version>7.10.2-SNAPSHOT</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.36</version>
+            <scope>provided</scope>
+        </dependency>
 
     </dependencies>
 
