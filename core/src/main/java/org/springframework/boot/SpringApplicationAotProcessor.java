@@ -4,6 +4,7 @@ The original from Spring Boot does not return for some reason.
 
 package org.springframework.boot;
 
+import org.nzbhydra.NzbHydra;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.aot.ContextAotProcessor;
@@ -42,6 +43,7 @@ public class SpringApplicationAotProcessor extends ContextAotProcessor {
 
     public static void main(String[] args) throws Exception {
         System.out.println("Using My org.springframework.boot.SpringApplicationAotProcessor");
+        NzbHydra.isDirectstart = true;
         int requiredArgs = 6;
         Assert.isTrue(args.length >= requiredArgs, () -> "Usage: " + SpringApplicationAotProcessor.class.getName()
             + " <applicationName> <sourceOutput> <resourceOutput> <classOutput> <groupId> <artifactId> <originalArgs...>");

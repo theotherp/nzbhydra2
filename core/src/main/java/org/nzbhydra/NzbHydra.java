@@ -72,6 +72,7 @@ public class NzbHydra {
     private static boolean wasRestarted = false;
     private static boolean anySettingsOverwritten = false;
     private static final ConfigReaderWriter CONFIG_READER_WRITER = new ConfigReaderWriter();
+    public static boolean isDirectstart;
 
     @Autowired
     private ConfigProvider configProvider;
@@ -130,7 +131,7 @@ public class NzbHydra {
             parser.printHelpOn(System.out);
         } else if (options.has("version")) {
             System.out.println(DebugInfosProvider.getVersionAndBuildTimestamp().getLeft());
-        } else if (System.getProperty("fromWrapper") == null && Arrays.stream(args).noneMatch(x -> x.equals("directstart"))) {
+        } else if (System.getProperty("fromWrapper") == null && Arrays.stream(args).noneMatch(x -> x.equals("directstart")) && !isDirectstart) {
             logger.info("NZBHydra 2 must be started using the wrapper for restart and updates to work. If for some reason you need to start it from the JAR directly provide the command line argument \"directstart\"");
         } else {
             startup(args, options);

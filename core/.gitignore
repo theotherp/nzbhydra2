@@ -24,3 +24,5 @@ sql notes.sql
 *.trc
 package-lock.json
 afile.txt
+/nativeImage
+!/nativeImage/mergeReflectInfos.py
