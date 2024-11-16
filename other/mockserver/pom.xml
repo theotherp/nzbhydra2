@@ -31,7 +31,6 @@
         <maven.compiler.parameters>true</maven.compiler.parameters>
     </properties>
 
-
     <build>
         <plugins>
             <plugin>
