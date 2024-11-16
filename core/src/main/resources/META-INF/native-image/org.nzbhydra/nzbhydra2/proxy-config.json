@@ -1,0 +1,338 @@
+[
+  {
+    "interfaces": [
+      "com.fasterxml.jackson.annotation.JsonProperty",
+      "org.glassfish.jaxb.core.v2.model.annotation.Locatable"
+    ]
+  },
+  {
+    "interfaces": [
+      "jakarta.xml.bind.annotation.XmlAccessorType",
+      "org.glassfish.jaxb.core.v2.model.annotation.Locatable"
+    ]
+  },
+  {
+    "interfaces": [
+      "jakarta.xml.bind.annotation.XmlSeeAlso",
+      "org.glassfish.jaxb.core.v2.model.annotation.Locatable"
+    ]
+  },
+  {
+    "interfaces": [
+      "jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter",
+      "org.glassfish.jaxb.core.v2.model.annotation.Locatable"
+    ]
+  },
+  {
+    "interfaces": [
+      "java.lang.reflect.ParameterizedType",
+      "org.springframework.core.SerializableTypeWrapper$SerializableTypeProxy",
+      "java.io.Serializable"
+    ]
+  },
+  {
+    "interfaces": [
+      "java.lang.reflect.TypeVariable",
+      "org.springframework.core.SerializableTypeWrapper$SerializableTypeProxy",
+      "java.io.Serializable"
+    ]
+  },
+  {
+    "interfaces": [
+      "java.lang.reflect.WildcardType",
+      "org.springframework.core.SerializableTypeWrapper$SerializableTypeProxy",
+      "java.io.Serializable"
+    ]
+  },
+  {
+    "interfaces": [
+      "java.sql.Connection"
+    ]
+  },
+  {
+    "interfaces": [
+      "net.bytebuddy.description.method.MethodDescription$InDefinedShape$AbstractBase$Executable"
+    ]
+  },
+  {
+    "interfaces": [
+      "net.bytebuddy.description.method.ParameterDescription$ForLoadedParameter$Parameter"
+    ]
+  },
+  {
+    "interfaces": [
+      "net.bytebuddy.description.method.ParameterList$ForLoadedExecutable$Executable"
+    ]
+  },
+  {
+    "interfaces": [
+      "net.bytebuddy.description.type.TypeDefinition$Sort$AnnotatedType"
+    ]
+  },
+  {
+    "interfaces": [
+      "net.bytebuddy.description.type.TypeDescription$ForLoadedType$Dispatcher"
+    ]
+  },
+  {
+    "interfaces": [
+      "net.bytebuddy.description.type.TypeDescription$Generic$AnnotationReader$Delegator$ForLoadedExecutableExceptionType$Dispatcher"
+    ]
+  },
+  {
+    "interfaces": [
+      "net.bytebuddy.description.type.TypeDescription$Generic$AnnotationReader$Delegator$ForLoadedExecutableParameterType$Dispatcher"
+    ]
+  },
+  {
+    "interfaces": [
+      "net.bytebuddy.description.type.TypeDescription$Generic$AnnotationReader$Delegator$ForLoadedMethodReturnType$Dispatcher"
+    ]
+  },
+  {
+    "interfaces": [
+      "net.bytebuddy.description.type.TypeDescription$Generic$AnnotationReader$ForComponentType$AnnotatedParameterizedType"
+    ]
+  },
+  {
+    "interfaces": [
+      "net.bytebuddy.description.type.TypeDescription$Generic$AnnotationReader$ForTypeArgument$AnnotatedParameterizedType"
+    ]
+  },
+  {
+    "interfaces": [
+      "net.bytebuddy.dynamic.loading.ClassInjector$UsingLookup$MethodHandles"
+    ]
+  },
+  {
+    "interfaces": [
+      "net.bytebuddy.dynamic.loading.ClassInjector$UsingLookup$MethodHandles$Lookup"
+    ]
+  },
+  {
+    "interfaces": [
+      "org.hibernate.Session",
+      "org.springframework.orm.jpa.EntityManagerProxy"
+    ]
+  },
+  {
+    "interfaces": [
+      "org.hibernate.SessionFactory",
+      "org.springframework.orm.jpa.EntityManagerFactoryInfo"
+    ]
+  },
+  {
+    "interfaces": [
+      "org.hibernate.query.hql.spi.SqmQueryImplementor",
+      "org.hibernate.query.sqm.internal.SqmInterpretationsKey$InterpretationsKeySource",
+      "org.hibernate.query.spi.DomainQueryExecutionContext",
+      "org.hibernate.query.SelectionQuery",
+      "org.hibernate.query.CommonQueryContract"
+    ]
+  },
+  {
+    "interfaces": [
+      "org.hibernate.query.sql.spi.NativeQueryImplementor",
+      "org.hibernate.query.spi.DomainQueryExecutionContext",
+      "org.hibernate.query.internal.ResultSetMappingResolutionContext",
+      "org.hibernate.query.spi.QueryImplementor",
+      "org.hibernate.query.SelectionQuery",
+      "org.hibernate.query.CommonQueryContract"
+    ]
+  },
+  {
+    "interfaces": [
+      "org.nzbhydra.downloading.FileDownloadRepository",
+      "org.springframework.data.repository.Repository",
+      "org.springframework.transaction.interceptor.TransactionalProxy",
+      "org.springframework.aop.framework.Advised",
+      "org.springframework.core.DecoratingProxy"
+    ]
+  },
+  {
+    "interfaces": [
+      "org.nzbhydra.indexers.IndexerApiAccessEntityShortRepository",
+      "org.springframework.data.repository.Repository",
+      "org.springframework.transaction.interceptor.TransactionalProxy",
+      "org.springframework.aop.framework.Advised",
+      "org.springframework.core.DecoratingProxy"
+    ]
+  },
+  {
+    "interfaces": [
+      "org.nzbhydra.indexers.IndexerApiAccessRepository",
+      "org.springframework.data.repository.Repository",
+      "org.springframework.transaction.interceptor.TransactionalProxy",
+      "org.springframework.aop.framework.Advised",
+      "org.springframework.core.DecoratingProxy"
+    ]
+  },
+  {
+    "interfaces": [
+      "org.nzbhydra.indexers.IndexerRepository",
+      "org.springframework.data.repository.Repository",
+      "org.springframework.transaction.interceptor.TransactionalProxy",
+      "org.springframework.aop.framework.Advised",
+      "org.springframework.core.DecoratingProxy"
+    ]
+  },
+  {
+    "interfaces": [
+      "org.nzbhydra.indexers.IndexerSearchRepository",
+      "org.springframework.data.repository.Repository",
+      "org.springframework.transaction.interceptor.TransactionalProxy",
+      "org.springframework.aop.framework.Advised",
+      "org.springframework.core.DecoratingProxy"
+    ]
+  },
+  {
+    "interfaces": [
+      "org.nzbhydra.indexers.status.IndexerLimitRepository",
+      "org.springframework.data.repository.Repository",
+      "org.springframework.transaction.interceptor.TransactionalProxy",
+      "org.springframework.aop.framework.Advised",
+      "org.springframework.core.DecoratingProxy"
+    ]
+  },
+  {
+    "interfaces": [
+      "org.nzbhydra.mediainfo.MovieInfoRepository",
+      "org.springframework.data.repository.Repository",
+      "org.springframework.transaction.interceptor.TransactionalProxy",
+      "org.springframework.aop.framework.Advised",
+      "org.springframework.core.DecoratingProxy"
+    ]
+  },
+  {
+    "interfaces": [
+      "org.nzbhydra.mediainfo.TvInfoRepository",
+      "org.springframework.data.repository.Repository",
+      "org.springframework.transaction.interceptor.TransactionalProxy",
+      "org.springframework.aop.framework.Advised",
+      "org.springframework.core.DecoratingProxy"
+    ]
+  },
+  {
+    "interfaces": [
+      "org.nzbhydra.news.ShownNewsRepository",
+      "org.springframework.data.repository.Repository",
+      "org.springframework.transaction.interceptor.TransactionalProxy",
+      "org.springframework.aop.framework.Advised",
+      "org.springframework.core.DecoratingProxy"
+    ]
+  },
+  {
+    "interfaces": [
+      "org.nzbhydra.notifications.NotificationRepository",
+      "org.springframework.data.repository.Repository",
+      "org.springframework.transaction.interceptor.TransactionalProxy",
+      "org.springframework.aop.framework.Advised",
+      "org.springframework.core.DecoratingProxy"
+    ]
+  },
+  {
+    "interfaces": [
+      "org.nzbhydra.searching.db.SearchRepository",
+      "org.springframework.data.repository.Repository",
+      "org.springframework.transaction.interceptor.TransactionalProxy",
+      "org.springframework.aop.framework.Advised",
+      "org.springframework.core.DecoratingProxy"
+    ]
+  },
+  {
+    "interfaces": [
+      "org.nzbhydra.searching.db.SearchResultRepository",
+      "org.springframework.data.repository.Repository",
+      "org.springframework.transaction.interceptor.TransactionalProxy",
+      "org.springframework.aop.framework.Advised",
+      "org.springframework.core.DecoratingProxy"
+    ]
+  },
+  {
+    "interfaces": [
+      "org.nzbhydra.searching.uniqueness.IndexerUniquenessScoreEntityRepository",
+      "org.springframework.data.repository.Repository",
+      "org.springframework.transaction.interceptor.TransactionalProxy",
+      "org.springframework.aop.framework.Advised",
+      "org.springframework.core.DecoratingProxy"
+    ]
+  },
+  {
+    "interfaces": [
+      "org.springframework.beans.factory.annotation.Qualifier"
+    ]
+  },
+  {
+    "interfaces": [
+      "org.springframework.boot.actuate.endpoint.annotation.Endpoint"
+    ]
+  },
+  {
+    "interfaces": [
+      "org.springframework.boot.actuate.endpoint.annotation.EndpointExtension"
+    ]
+  },
+  {
+    "interfaces": [
+      "org.springframework.boot.context.properties.ConfigurationProperties"
+    ]
+  },
+  {
+    "interfaces": [
+      "org.springframework.cache.annotation.Cacheable"
+    ]
+  },
+  {
+    "interfaces": [
+      "org.springframework.context.event.EventListener"
+    ]
+  },
+  {
+    "interfaces": [
+      "org.springframework.data.jpa.repository.support.CrudMethodMetadata",
+      "org.springframework.aop.SpringProxy",
+      "org.springframework.aop.framework.Advised",
+      "org.springframework.core.DecoratingProxy"
+    ]
+  },
+  {
+    "interfaces": [
+      "org.springframework.jdbc.datasource.ConnectionProxy"
+    ]
+  },
+  {
+    "interfaces": [
+      "org.springframework.web.bind.annotation.ControllerAdvice"
+    ]
+  },
+  {
+    "interfaces": [
+      "org.springframework.web.bind.annotation.CrossOrigin"
+    ]
+  },
+  {
+    "interfaces": [
+      "org.springframework.web.bind.annotation.PathVariable"
+    ]
+  },
+  {
+    "interfaces": [
+      "org.springframework.web.bind.annotation.RequestMapping"
+    ]
+  },
+  {
+    "interfaces": [
+      "org.springframework.web.bind.annotation.RequestParam"
+    ]
+  },
+  {
+    "interfaces": [
+      "org.springframework.web.bind.annotation.ResponseStatus"
+    ]
+  },
+  {
+    "interfaces": [
+      "org.mockito.plugins.PluginSwitch"
+    ]
+  }
+]
