@@ -30,11 +30,11 @@
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_STRING" value="-parameters" />
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="core" options="-parameters" />
+      <module name="core" options="-parameters -parameters" />
       <module name="discordreleaser" options="" />
       <module name="github-release-plugin" options="" />
       <module name="mapping" options="-parameters" />
-      <module name="mockserver" options="" />
+      <module name="mockserver" options="-parameters" />
       <module name="nzbhydra2" options="-parameters" />
       <module name="other" options="" />
       <module name="releases" options="-parameters" />

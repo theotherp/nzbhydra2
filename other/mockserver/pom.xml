@@ -28,6 +28,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.javadoc.skip>true</maven.javadoc.skip>
         <spring.boot.maven.version>3.0.1</spring.boot.maven.version>
+        <maven.compiler.parameters>true</maven.compiler.parameters>
     </properties>
 
 

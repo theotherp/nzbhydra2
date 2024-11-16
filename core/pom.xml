@@ -15,6 +15,7 @@
         <maven.build.timestamp2>${maven.build.timestamp}</maven.build.timestamp2>
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
         <version.roaster>2.28.0.Final</version.roaster>
+        <maven.compiler.parameters>true</maven.compiler.parameters>
     </properties>
 
     <build>
