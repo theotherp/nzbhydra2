@@ -100,7 +100,7 @@
         <maven.javadoc.skip>true</maven.javadoc.skip>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-
+        <maven.compiler.parameters>true</maven.compiler.parameters>
         <!-- When updating spring: Run with native image trace agent, merge infos, run system test agains result       -->
         <spring.boot.version>3.3.5</spring.boot.version>
         <spring.boot.devtools.version>3.3.5</spring.boot.devtools.version>

@@ -13,6 +13,7 @@ import org.nzbhydra.searching.db.SearchEntityTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,7 +39,7 @@ public class HistoryWeb {
         final List<SearchEntityTO> searchEntityTOS = page.getContent().stream()
             .map(x -> Jackson.JSON_MAPPER.convertValue(x, SearchEntityTO.class))
             .toList();
-        return new PageImpl<>(searchEntityTOS);
+        return new PageImpl<>(searchEntityTOS, PageRequest.of(requestData.getPage(), requestData.getLimit()), page.getTotalElements());
     }
 
     @Secured({"ROLE_STATS"})
@@ -65,7 +66,7 @@ public class HistoryWeb {
             .stream()
             .map(x -> Jackson.JSON_MAPPER.convertValue(x, FileDownloadEntityTO.class))
             .toList();
-        return new PageImpl<>(downloadEntityTOS);
+        return new PageImpl<>(downloadEntityTOS, PageRequest.of(requestData.getPage(), requestData.getLimit()), page.getTotalElements());
     }
 
     @Secured({"ROLE_STATS"})
@@ -77,7 +78,7 @@ public class HistoryWeb {
             .stream()
             .map(x -> Jackson.JSON_MAPPER.convertValue(x, NotificationEntityTO.class))
             .toList();
-        return new PageImpl<>(tos);
+        return new PageImpl<>(tos, PageRequest.of(requestData.getPage(), requestData.getLimit()), page.getTotalElements());
     }
 
 }

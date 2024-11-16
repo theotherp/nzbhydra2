@@ -117,7 +117,7 @@ public class ErrorHandler {
         } else {
             //Sometimes favicons are not requested properly by the browser
             if (!requestURI.contains("favicon")) {
-                logger.warn("Unexpected error when client tried to access path " + requestURI + fullParametersString, ex);
+                logger.warn("Unexpected error when client tried to access path {}{}", requestURI, fullParametersString, ex);
             }
         }
         Object bodyOfResponse;

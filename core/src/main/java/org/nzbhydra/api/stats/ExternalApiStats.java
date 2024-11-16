@@ -29,6 +29,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -71,14 +73,16 @@ public class ExternalApiStats {
     public Page<SearchEntity> apiHistorySearches(ApiHistoryRequest request) throws Exception {
         verifyAccessAllowed(request.getApikey());
 
-        return history.getHistory(request.getRequest(), History.SEARCH_TABLE, SearchEntity.class);
+        Page<SearchEntity> page = history.getHistory(request.getRequest(), History.SEARCH_TABLE, SearchEntity.class);
+        return new PageImpl<>(page.getContent(), PageRequest.of(request.getRequest().getPage(), request.getRequest().getLimit()), page.getTotalElements());
     }
 
     @RequestMapping(value = "/api/history/downloads", consumes = MediaType.ALL_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public Page<FileDownloadEntity> apiHistoryDownloads(ApiHistoryRequest request) throws Exception {
         verifyAccessAllowed(request.getApikey());
 
-        return history.getHistory(request.getRequest(), History.DOWNLOAD_TABLE, FileDownloadEntity.class);
+        Page<FileDownloadEntity> page = history.getHistory(request.getRequest(), History.DOWNLOAD_TABLE, FileDownloadEntity.class);
+        return new PageImpl<>(page.getContent(), PageRequest.of(request.getRequest().getPage(), request.getRequest().getLimit()), page.getTotalElements());
     }
 
     protected void verifyAccessAllowed(String apikey) throws IllegalAccessException {

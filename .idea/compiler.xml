@@ -30,18 +30,23 @@
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_STRING" value="-parameters" />
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="assertions" options="-parameters -parameters" />
       <module name="core" options="-parameters -parameters" />
       <module name="discordreleaser" options="" />
+      <module name="generic-release" options="-parameters -parameters" />
       <module name="github-release-plugin" options="" />
-      <module name="mapping" options="-parameters" />
+      <module name="linux-amd64-release" options="-parameters -parameters" />
+      <module name="linux-arm64-release" options="-parameters -parameters" />
+      <module name="mapping" options="-parameters -parameters" />
       <module name="mockserver" options="-parameters" />
-      <module name="nzbhydra2" options="-parameters" />
+      <module name="nzbhydra2" options="-parameters -parameters" />
       <module name="other" options="" />
-      <module name="releases" options="-parameters" />
-      <module name="shared" options="-parameters" />
+      <module name="releases" options="-parameters -parameters" />
+      <module name="shared" options="-parameters -parameters" />
       <module name="sockslib" options="" />
-      <module name="tests" options="-parameters" />
-      <module name="windows-release" options="-parameters" />
+      <module name="system" options="-parameters -parameters" />
+      <module name="tests" options="-parameters -parameters" />
+      <module name="windows-release" options="-parameters -parameters" />
     </option>
   </component>
   <component name="TypeScriptCompiler">
