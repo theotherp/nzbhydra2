@@ -11,7 +11,7 @@
     </parent>
 
     <!-- Update tag of built docker container image in build scripts   -->
-    <version>4.0.0</version>
+    <version>4.1.0</version>
     <artifactId>mockserver</artifactId>
 
     <properties>
@@ -33,6 +33,13 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <compilerArgument>-parameters</compilerArgument>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
