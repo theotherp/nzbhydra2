@@ -64,11 +64,12 @@ jobs:
                 run: mvn --batch-mode clean install -pl !org.nzbhydra:linux-amd64-release,!org.nzbhydra:linux-arm64-release,!org.nzbhydra:windows-release,!org.nzbhydra:generic-release -DskipTests -T 1C
 
             -   name: "Run unit tests"
+                if: steps.changed-files-specific.outputs.any_changed == 'true'
                 run: mvn --batch-mode test -T 1C -pl !org.nzbhydra:tests,!org.nzbhydra.tests:system --fail-at-end
 
             -   name: "Create test Report"
                 uses: dorny/test-reporter@v1
-                if: always()
+                if: steps.changed-files-specific.outputs.any_changed == 'true'
                 continue-on-error: true
                 with:
                     name: Unit test report
