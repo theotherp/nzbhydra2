@@ -25,7 +25,7 @@
     <conversionRule conversionWord="mdc" converterClass="org.nzbhydra.logging.MdcLogConverter"/>
 
     <property name="CONSOLE_LOG_PATTERN"
-              value="${CONSOLE_LOG_PATTERN:-%d{yyyy-MM-dd HH:mm:ss.SSS} ${LOG_LEVEL_PATTERN:-%5p} --- [%18.-18t] %-40.40logger{39} : %replace(%mdc){'^ ',''}%replace(%marker: ){'^: ',''}%m%n} %ex{full}}"/>
+              value="${CONSOLE_LOG_PATTERN:-%d{yyyy-MM-dd HH:mm:ss.SSS} ${LOG_LEVEL_PATTERN:-%5p} --- [%18.-18t] %-40.40logger{39} : %replace(%mdc){'^ ',''}%replace(%marker: ){'^: ',''}%m%n}}"/>
     <!--    <property name="FILE_LOG_PATTERN"-->
     <!--              value="${FILE_LOG_PATTERN:-%d{yyyy-MM-dd HH:mm:ss.SSS} ${LOG_LEVEL_PATTERN:-%5p} -&#45;&#45; [%18.-18t] %-40.40logger{39} : %replace(%mdc){'^ ',''}%replace(%marker: ){'^: ',''}%m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx{full,-->
     <!--              org.apache.catalina,-->
@@ -52,7 +52,7 @@
     <!--              }}}"/>    -->
 
     <property name="FILE_LOG_PATTERN"
-              value="${FILE_LOG_PATTERN:-%d{yyyy-MM-dd HH:mm:ss.SSS} ${LOG_LEVEL_PATTERN:-%5p} --- [%18.-18t] %-40.40logger{39} : %replace(%mdc){'^ ',''}%replace(%marker: ){'^: ',''}%m%n} %ex{full}}"/>
+              value="${FILE_LOG_PATTERN:-%d{yyyy-MM-dd HH:mm:ss.SSS} ${LOG_LEVEL_PATTERN:-%5p} --- [%18.-18t] %-40.40logger{39} : %replace(%mdc){'^ ',''}%replace(%marker: ){'^: ',''}%m%n}}"/>
 
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="org.nzbhydra.logging.SensitiveDataRemovingPatternLayoutEncoder">
