@@ -175,7 +175,6 @@ public class DatabaseRecreation {
             }
             throw new RuntimeException(e);
         }
-
     }
 
     private static void updatePassword(String dbConnectionUrl, String javaExecutable, File h2OldJar, String updatePasswordQuery) throws IOException, InterruptedException {
