@@ -1,0 +1,118 @@
+<configuration>
+    <!-- Must be explicitly set in org.nzbhydra.NzbHydra#setApplicationPropertiesFromConfig   -->
+    <springProperty scope="context" name="logging.baseFolder" source="nzbhydra.dataFolder" defaultValue="."/>
+    <springProperty scope="context" name="logging.level.console" source="main.logging.consolelevel" defaultValue="INFO"/>
+    <springProperty scope="context" name="logging.level.file" source="main.logging.logfilelevel" defaultValue="INFO"/>
+    <springProperty scope="context" name="logging.logMaxHistory" source="main.logging.logMaxHistory" defaultValue="30"/>
+    <!--
+    consolelevel: "DEBUG"
+    keepLogFiles: 25
+    logIpAddresses: true
+    logMaxSize: 1000
+    logRotateAfterDays: null
+    consolelevel: "DEBUG"
+    logfilename: "nzbhydra2.log"
+    rolloverAtStart: false
+
+    -->
+
+    <!--<conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter"/>-->
+    <conversionRule conversionWord="clr" converterClass="org.nzbhydra.logging.ColorConverter"/>
+    <conversionRule conversionWord="wex"
+                    converterClass="org.springframework.boot.logging.logback.WhitespaceThrowableProxyConverter"/>
+    <conversionRule conversionWord="wEx"
+                    converterClass="org.springframework.boot.logging.logback.ExtendedWhitespaceThrowableProxyConverter"/>
+    <conversionRule conversionWord="mdc" converterClass="org.nzbhydra.logging.MdcLogConverter"/>
+
+    <property name="CONSOLE_LOG_PATTERN"
+              value="${CONSOLE_LOG_PATTERN:-%d{yyyy-MM-dd HH:mm:ss.SSS} ${LOG_LEVEL_PATTERN:-%5p} --- [%18.-18t] %-40.40logger{39} : %replace(%mdc){'^ ',''}%replace(%marker: ){'^: ',''}%m%n}}"/>
+    <!--    <property name="FILE_LOG_PATTERN"-->
+    <!--              value="${FILE_LOG_PATTERN:-%d{yyyy-MM-dd HH:mm:ss.SSS} ${LOG_LEVEL_PATTERN:-%5p} -&#45;&#45; [%18.-18t] %-40.40logger{39} : %replace(%mdc){'^ ',''}%replace(%marker: ){'^: ',''}%m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx{full,-->
+    <!--              org.apache.catalina,-->
+    <!--              org.apache.tomcat,-->
+    <!--              org.springframework.security.web.FilterChainProxy,-->
+    <!--              org.springframework.security.web.access.ExceptionTranslationFilter,-->
+    <!--              org.springframework.security.web.session.SessionManagementFilter,-->
+    <!--              org.springframework.security.web.csrf.CsrfFilter,-->
+    <!--              org.springframework.security.web.header.HeaderWriterFilter,-->
+    <!--              org.springframework.security.web.servletapi,-->
+    <!--              org.springframework.security.web.context.SecurityContextPersistenceFilter,-->
+    <!--              org.springframework.security.web.context.SecurityContextHolderFilter,-->
+    <!--              org.springframework.security.web.savedrequest,-->
+    <!--              org.springframework.security.web.authentication.AnonymousAuthenticationFilter,-->
+    <!--              org.springframework.security.web.ObservationFilterChainDecorator,-->
+    <!--              org.springframework.web.filter,-->
+    <!--              org.springframework.cglib,-->
+    <!--              org.springframework.aop,-->
+    <!--              org.springframework.web.servlet,-->
+    <!--              org.springframework.web.method,-->
+    <!--              java.lang.reflect.Method,-->
+    <!--              jakarta.servlet,-->
+    <!--              sun.reflect-->
+    <!--              }}}"/>    -->
+
+    <property name="FILE_LOG_PATTERN"
+              value="${FILE_LOG_PATTERN:-%d{yyyy-MM-dd HH:mm:ss.SSS} ${LOG_LEVEL_PATTERN:-%5p} --- [%18.-18t] %-40.40logger{39} : %replace(%mdc){'^ ',''}%replace(%marker: ){'^: ',''}%m%n}}"/>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="org.nzbhydra.logging.SensitiveDataRemovingPatternLayoutEncoder">
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+            <charset>utf8</charset>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>${logging.level.console}</level>
+        </filter>
+    </appender>
+
+    <appender name="FILE"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <encoder class="org.nzbhydra.logging.SensitiveDataRemovingPatternLayoutEncoder">
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+        </encoder>
+        <file>${logging.baseFolder}/logs/nzbhydra2.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${logging.baseFolder}/logs/nzbhydra2.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>${logging.logMaxHistory}</maxHistory>
+        </rollingPolicy>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>${logging.level.file}</level>
+        </filter>
+
+    </appender>
+
+    <appender name="STASH" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>info</level>
+        </filter>
+        <file>${logging.baseFolder}/logs/nzbhydra2-log.json</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${logging.baseFolder}/logs/nzbhydra2-log.json.%d{yyyy-ww}</fileNamePattern>
+            <maxHistory>1</maxHistory>
+        </rollingPolicy>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <includeContext>false</includeContext>
+        </encoder>
+
+    </appender>
+
+    <logger name="org.nzbhydra" level="DEBUG">
+        <appender-ref ref="STASH"/>
+    </logger>
+    <logger name="org.spring" level="INFO"/>
+    <logger name="org.hibernate" level="WARN"/>
+    <logger name="org.apache" level="WARN"/>
+    <logger name="org.springframework" level="INFO"/>
+    <logger name="org.thymeleaf" level="WARN"/>
+    <logger name="org.eclipse" level="WARN"/>
+    <logger name="okhttp3.OkHttpClient" level="DEBUG"/>
+    <logger name="org.apache.catalina.util" level="ERROR"/>
+    <logger name="org.springframework.web.filter.CommonsRequestLoggingFilter" level="DEBUG"/>
+    <logger name="org.reflections" level="WARN"/>
+    <logger name="com.gargoylesoftware.htmlunit" level="off"/>
+    <logger name="org.apache.catalina.loader.WebappClassLoaderBase" level="ERROR"/>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </root>
+</configuration>
