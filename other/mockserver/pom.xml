@@ -11,8 +11,9 @@
     </parent>
 
     <!-- Update tag of built docker container image in build scripts   -->
-    <version>4.2.0</version>
+    <version>4.3.0</version>
     <artifactId>mockserver</artifactId>
+
 
     <properties>
         <spring.boot.version>3.3.5</spring.boot.version>
