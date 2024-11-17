@@ -55,8 +55,8 @@ jobs:
           mvn --batch-mode install -DskipTests -T 1C
           cd other/mockserver/
           mvn --batch-mode spring-boot:build-image
-          docker tag mockserver:latest ghcr.io/theotherp/mockserver:latest
-          docker push ghcr.io/theotherp/mockserver:latest
+          docker tag mockserver:4.2.0 ghcr.io/theotherp/mockserver:4.2.0
+          docker push ghcr.io/theotherp/mockserver:4.2.0
 
   runSystemTestsLinux:
     needs: [ waitForNative, buildMockserver ]

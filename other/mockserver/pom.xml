@@ -11,7 +11,7 @@
     </parent>
 
     <!-- Update tag of built docker container image in build scripts   -->
-    <version>4.1.0</version>
+    <version>4.2.0</version>
     <artifactId>mockserver</artifactId>
 
     <properties>
