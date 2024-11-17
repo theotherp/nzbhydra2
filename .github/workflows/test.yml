@@ -16,4 +16,4 @@ jobs:
           distribution: 'adopt'
           cache: 'maven'
       - name: Test with Maven
-        run: mvn --batch-mode --update-snapshots verify -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+        run: mvn --batch-mode --update-snapshots verify 

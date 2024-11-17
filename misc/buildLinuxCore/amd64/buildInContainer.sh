@@ -7,8 +7,8 @@
 cd /nzbhydra2 || exit
 #clean so that if the build fails we won't use the old results
 rm -rf core/target
-mvn --batch-mode clean install -pl \!org.nzbhydra:linux-amd64-release,!org.nzbhydra:linux-arm64-release,\!org.nzbhydra:windows-release,\!org.nzbhydra:generic-release -DskipTests -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn -T 1C
-mvn -pl org.nzbhydra:core -Pnative clean native:compile -DskipTests -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+mvn --batch-mode clean install -pl \!org.nzbhydra:linux-amd64-release,!org.nzbhydra:linux-arm64-release,\!org.nzbhydra:windows-release,\!org.nzbhydra:generic-release -DskipTests
+mvn -pl org.nzbhydra:core -Pnative clean native:compile -DskipTests
 /upx-4.2.4-amd64_linux/upx -3 core/target/core
 #Because docker is run as root the files are written to the host file system as root
 chmod o+rwx -R .

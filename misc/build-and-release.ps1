@@ -139,7 +139,7 @@ if (-not $?) {
 
 
 Write-Host "Building core jar"
-exec { mvn -q -pl org.nzbhydra:nzbhydra2,org.nzbhydra:shared,org.nzbhydra:mapping,org.nzbhydra:assertions,org.nzbhydra:core clean install -B -T 1C `-DskipTests=true}
+exec { mvn -q -pl org.nzbhydra:nzbhydra2,org.nzbhydra:shared,org.nzbhydra:mapping,org.nzbhydra:assertions,org.nzbhydra:core clean install -B  `-DskipTests=true}
 erase .\releases\generic-release\include\*.jar
 copy .\core\target\*-exec.jar .\releases\generic-release\include\
 if (-not $?) {
@@ -188,7 +188,7 @@ if ($linuxArm64Version -ne $version) {
 Write-Host "All required files exist and versions match"
 
 Write-Host "Building releases ***********************************************************************"
-exec { mvn -q -pl org.nzbhydra:windows-release,org.nzbhydra:generic-release,org.nzbhydra:linux-amd64-release,org.nzbhydra:linux-arm64-release clean install -T 1C `-DskipTests=true}
+exec { mvn -q -pl org.nzbhydra:windows-release,org.nzbhydra:generic-release,org.nzbhydra:linux-amd64-release,org.nzbhydra:linux-arm64-release clean install  `-DskipTests=true}
 
 
 #We need to commit and push the source code now so that it's packaged in the release
