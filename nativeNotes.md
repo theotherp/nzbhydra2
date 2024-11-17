@@ -136,6 +136,6 @@ export PATH=${M2_HOME}/bin:${PATH}
 curl -s "https://get.sdkman.io" | bash
 source "/root/.sdkman/bin/sdkman-init.sh"
 sdk install java 22.3.r17-grl
-mvn --batch-mode clean install -DskipTests
+mvn --batch-mode clean install -DskipTests -T 1C
 export HYDRA_NATIVE_BUILD=true
 mvn -pl org.nzbhydra:core -Pnative clean native:compile -DskipTests

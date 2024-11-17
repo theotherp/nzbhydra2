@@ -38,7 +38,7 @@
       <module name="linux-amd64-release" options="-parameters -parameters" />
       <module name="linux-arm64-release" options="-parameters -parameters" />
       <module name="mapping" options="-parameters -parameters" />
-      <module name="mockserver" options="-parameters" />
+      <module name="mockserver" options="-parameters -parameters" />
       <module name="nzbhydra2" options="-parameters -parameters" />
       <module name="other" options="" />
       <module name="releases" options="-parameters -parameters" />

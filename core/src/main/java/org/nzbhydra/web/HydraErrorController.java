@@ -35,8 +35,9 @@ public class HydraErrorController extends AbstractErrorController implements Err
     }
 
     @RequestMapping("/error")
-    public ModelAndView handleError(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
+    public ModelAndView handleError(HttpServletRequest request, HttpServletResponse response, Object handler) {
         //do something like logging
+        Throwable ex = (Throwable) request.getAttribute("javax.servlet.error.exception");
         ModelAndView errorPage = new ModelAndView("error");
         errorPage.addObject("exception", StackTraceFilter.getFilteredStackTrace(ex));
         errorPage.addObject("error", ex.getMessage());
