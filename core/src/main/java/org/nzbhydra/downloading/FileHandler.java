@@ -40,6 +40,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.ConnectException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -398,6 +399,8 @@ public class FileHandler {
                 throw new DownloadException(result.getLink(), 500, "NZB downloaded is empty");
             }
             return body.bytes();
+        } catch (ConnectException e) {
+            throw new DownloadException(result.getLink(), 502, e.getMessage());
         } catch (IOException e) {
             logger.error("Error downloading result", e);
             throw new DownloadException(result.getLink(), 500, "IOException: " + e.getMessage());

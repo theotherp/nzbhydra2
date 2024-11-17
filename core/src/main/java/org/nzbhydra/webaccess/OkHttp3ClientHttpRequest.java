@@ -22,7 +22,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.client.ClientHttpRequest;
 import org.springframework.http.client.ClientHttpResponse;
-import org.springframework.http.client.OkHttp3ClientHttpRequestFactory;
 
 import java.io.IOException;
 import java.net.URI;
@@ -30,7 +29,7 @@ import java.net.URI;
 /**
  * {@link ClientHttpRequest} implementation based on OkHttp 3.x.
  * <p>
- * <p>Created via the {@link OkHttp3ClientHttpRequestFactory}.
+ * <p>Created via the {@link HydraOkHttp3ClientHttpRequestFactory}.
  *
  * @author Luciano Leggieri
  * @author Arjen Poutsma

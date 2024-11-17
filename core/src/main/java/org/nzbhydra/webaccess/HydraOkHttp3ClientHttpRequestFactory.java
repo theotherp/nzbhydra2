@@ -109,12 +109,12 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
 
 
     static Request buildRequest(HttpHeaders headers, byte[] content, URI uri, HttpMethod method)
-        throws MalformedURLException {
+            throws MalformedURLException {
 
         okhttp3.MediaType contentType = getContentType(headers);
         RequestBody body = (content.length > 0 ||
-            okhttp3.internal.http.HttpMethod.requiresRequestBody(method.name()) ?
-            RequestBody.create(contentType, content) : null);
+                            okhttp3.internal.http.HttpMethod.requiresRequestBody(method.name()) ?
+                RequestBody.create(content, contentType) : null);
 
         Request.Builder builder = new Request.Builder().url(uri.toURL()).method(method.name(), body);
         for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
@@ -243,15 +243,15 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
                 InetAddress byName = InetAddress.getByName(host);
                 long ipToLong = ipToLong(byName);
                 return host.equals("127.0.0.1")
-                    ||
-                    (ipToLong >= ipToLong(InetAddress.getByName("10.0.0.0")) && ipToLong <= ipToLong(InetAddress.getByName("10.255.255.255")))
-                    ||
-                    (ipToLong >= ipToLong(InetAddress.getByName("172.16.0.0")) && ipToLong <= ipToLong(InetAddress.getByName("172.16.255.255")))
-                    ||
-                    (ipToLong >= ipToLong(InetAddress.getByName("192.168.0.0")) && ipToLong <= ipToLong(InetAddress.getByName("192.168.255.255")))
-                    ;
+                       ||
+                       (ipToLong >= ipToLong(InetAddress.getByName("10.0.0.0")) && ipToLong <= ipToLong(InetAddress.getByName("10.255.255.255")))
+                       ||
+                       (ipToLong >= ipToLong(InetAddress.getByName("172.16.0.0")) && ipToLong <= ipToLong(InetAddress.getByName("172.16.255.255")))
+                       ||
+                       (ipToLong >= ipToLong(InetAddress.getByName("192.168.0.0")) && ipToLong <= ipToLong(InetAddress.getByName("192.168.255.255")))
+                        ;
             } catch (UnknownHostException e) {
-                logger.error("Unable to parse host " + host, e);
+                logger.error("Unable to parse host {}", host, e);
                 return false;
             }
         }
