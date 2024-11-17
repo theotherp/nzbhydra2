@@ -52,9 +52,9 @@ jobs:
       - name: "Build and push mockserver container"
         if: steps.changed-files-specific.outputs.any_changed == 'true'
         run: |
-          mvn --batch-mode install -DskipTests -T 1C
+          mvn --batch-mode -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn install -DskipTests -T 1C
           cd other/mockserver/
-          mvn --batch-mode spring-boot:build-image -Dspring-boot.build-image.imageName=ghcr.io/theotherp/mockserver:latest
+          mvn --batch-mode -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn spring-boot:build-image -Dspring-boot.build-image.imageName=ghcr.io/theotherp/mockserver:latest
           docker push ghcr.io/theotherp/mockserver:latest
 
   runSystemTestsLinux:
@@ -83,7 +83,7 @@ jobs:
           cache: 'maven'
 
       - name: "Install maven"
-        run: mvn --batch-mode clean install -DskipTests -pl org.nzbhydra:nzbhydra2,org.nzbhydra:shared,org.nzbhydra:mapping,org.nzbhydra:assertions
+        run: mvn --batch-mode -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn clean install -DskipTests -pl org.nzbhydra:nzbhydra2,org.nzbhydra:shared,org.nzbhydra:mapping,org.nzbhydra:assertions
 
       - name: "Create docker network"
         run: docker network create systemtest
@@ -112,7 +112,7 @@ jobs:
           docker container inspect -f '{{ .Mounts}}' v1Migration
 
       - name: "Run tests"
-        run: mvn --batch-mode test -pl org.nzbhydra.tests:system -DtrimStackTrace=false
+        run: mvn --batch-mode -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn test -pl org.nzbhydra.tests:system -DtrimStackTrace=false
 
       - name: "Write docker-compose logs"
         if: always()
@@ -215,7 +215,7 @@ jobs:
           cache: 'maven'
 
       - name: "Install maven"
-        run: mvn --batch-mode clean install -DskipTests -pl org.nzbhydra:nzbhydra2,org.nzbhydra:shared,org.nzbhydra:mapping,org.nzbhydra:assertions,org.nzbhydra:mockserver
+        run: mvn --batch-mode -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn clean install -DskipTests -pl org.nzbhydra:nzbhydra2,org.nzbhydra:shared,org.nzbhydra:mapping,org.nzbhydra:assertions,org.nzbhydra:mockserver
 
       - name: "Copy mockserver"
         run: |
@@ -235,7 +235,7 @@ jobs:
         uses: BerniWittmann/background-server-action@v1
         with:
           start: ./core.exe directstart, java -jar ./exec.jar
-          command: mvn --batch-mode test -pl org.nzbhydra.tests:system -DtrimStackTrace=false
+          command: mvn --batch-mode -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn test -pl org.nzbhydra.tests:system -DtrimStackTrace=false
 
       - name: "Shutdown hydra"
         uses: fjogeleit/http-request-action@v1
