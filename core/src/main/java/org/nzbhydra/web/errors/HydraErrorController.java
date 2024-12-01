@@ -1,5 +1,5 @@
 /*
- *  (C) Copyright 2023 TheOtherP (theotherp@posteo.net)
+ *  (C) Copyright 2024 TheOtherP (theotherp@posteo.net)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,25 +14,29 @@
  *  limitations under the License.
  */
 
-package org.nzbhydra.web;
+package org.nzbhydra.web.errors;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.nzbhydra.Jackson;
 import org.nzbhydra.misc.StackTraceFilter;
 import org.springframework.boot.autoconfigure.web.servlet.error.AbstractErrorController;
 import org.springframework.boot.web.servlet.error.DefaultErrorAttributes;
 import org.springframework.boot.web.servlet.error.ErrorAttributes;
 import org.springframework.boot.web.servlet.error.ErrorController;
-import org.springframework.stereotype.Controller;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
-import org.springframework.web.servlet.ModelAndView;
 
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 
-@Controller
+//@Controller
 @Slf4j
 public class HydraErrorController extends AbstractErrorController implements ErrorController {
 
@@ -41,23 +45,20 @@ public class HydraErrorController extends AbstractErrorController implements Err
     }
 
     @RequestMapping("/error")
-    public ModelAndView handleError(HttpServletRequest request, HttpServletResponse response, Object handler) {
-        ModelAndView errorPage = new ModelAndView("error");
+    public ResponseEntity<Object> handleError(HttpServletRequest request, HttpServletResponse response, Object handler) {
         WebRequest webRequest = new ServletWebRequest(request);
         Throwable ex = new DefaultErrorAttributes().getError(webRequest);
-        if (ex != null) {
-            errorPage.addObject("exception", StackTraceFilter.getFilteredStackTrace(ex));
-            errorPage.addObject("error", ex.getMessage());
-            //Log for good measure, perhaps it wasn't already logged
-            log.debug("Handling exception", ex);
-        } else {
-            log.error("Cannot show filtered exception because it's null");
-            errorPage.addObject("exception", "<Unknown>");
-            errorPage.addObject("error", "<Unknown>");
+        Map<String, Object> map = new HashMap<>();
+        HttpStatus status = getStatus(request);
+        map.put("exception", StackTraceFilter.getFilteredStackTrace(ex));
+        map.put("error", ex.getMessage());
+        map.put("timestap", Instant.now());
+        try {
+            map.put("parameters", Jackson.JSON_MAPPER.writeValueAsString(request.getParameterMap()));
+        } catch (JsonProcessingException e) {
+            log.error("Error serializing parameters", e);
         }
 
-        errorPage.addObject("status", response.getStatus());
-        errorPage.addObject("timestamp", Instant.now().toString());
-        return errorPage;
+        return ResponseEntity.status(status).body(map);
     }
 }
