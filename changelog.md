@@ -2,6 +2,9 @@
 
 **Feature** Improve error message when communication with an indexer fails.
 
+**Fix** Mapping IP addresses to host names (enabled in the logging config) may cause a huge delay when accessing NZBHydra from inside a local network. The tooltip warning about this was probably too small. The mapping will now be aborted
+after a short timeout.
+
 ### v7.10.1 (2024-11-13)
 
 **Fix** The status of downloads was not properly updated for sabnzbd downloads. Previously unmapped downloads will keep their wrong status in the history because it would be a pain to retroactively update them. See <a href="https://github.com/theotherp/nzbhydra2/issues/968">#968</a>
