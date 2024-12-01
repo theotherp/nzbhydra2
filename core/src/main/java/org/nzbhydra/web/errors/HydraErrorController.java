@@ -51,15 +51,18 @@ public class HydraErrorController extends AbstractErrorController implements Err
         Throwable ex = new DefaultErrorAttributes().getError(webRequest);
         Map<String, Object> map = new HashMap<>();
         HttpStatus status = getStatus(request);
-        map.put("exception", StackTraceFilter.getFilteredStackTrace(ex));
-        map.put("error", ex.getMessage());
-        map.put("timestap", Instant.now());
+        map.put("path", request.getServletPath());
+        map.put("timestamp", Instant.now().toString());
         try {
             map.put("parameters", Jackson.JSON_MAPPER.writeValueAsString(request.getParameterMap()));
         } catch (JsonProcessingException e) {
             log.error("Error serializing parameters", e);
         }
 
+        log.error("Handling error:\n{}", map, ex);
+        //Put values we don't want logged in now
+        map.put("error", ex.getMessage());
+        map.put("exception", StackTraceFilter.getFilteredStackTrace(ex));
         return ResponseEntity.status(status).body(map);
     }
 }
