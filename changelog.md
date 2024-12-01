@@ -1,3 +1,7 @@
+### v7.10.2 (2024-11-30)
+
+**Feature** Improve error message when communication with an indexer fails.
+
 ### v7.10.1 (2024-11-13)
 
 **Fix** The status of downloads was not properly updated for sabnzbd downloads. Previously unmapped downloads will keep their wrong status in the history because it would be a pain to retroactively update them. See <a href="https://github.com/theotherp/nzbhydra2/issues/968">#968</a>

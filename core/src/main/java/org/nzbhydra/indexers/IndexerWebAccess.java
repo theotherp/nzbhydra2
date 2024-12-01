@@ -103,7 +103,7 @@ public class IndexerWebAccess {
                 throw new IndexerAccessException("Unable to parse indexer output: " + e.getCause().getMessage(), e.getCause());
             }
             logger.debug("Indexer communication error", e.getCause());
-            throw new IndexerUnreachableException("Error while communicating with indexer " + indexerConfig.getName() + ". Server returned: " + e.getMessage(), e.getCause());
+            throw new IndexerUnreachableException("Error while communicating with indexer " + indexerConfig.getName() + ". Server returned: " + e.getCause().getMessage(), e.getCause());
         } catch (TimeoutException e) {
             throw new IndexerUnreachableException("Indexer did not complete request within " + timeout + " seconds");
         } catch (Exception e) {

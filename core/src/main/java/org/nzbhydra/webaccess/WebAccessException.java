@@ -16,12 +16,19 @@
 
 package org.nzbhydra.webaccess;
 
+import lombok.Getter;
+import org.apache.logging.log4j.util.Strings;
+
 import java.io.IOException;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class WebAccessException extends IOException {
 
-    private String message;
+    private final String message;
+    @Getter
     private String body;
+    @Getter
     private int code;
 
     public WebAccessException(Exception e) {
@@ -41,14 +48,12 @@ public class WebAccessException extends IOException {
     }
 
     public String getMessage() {
-        return message;
+        return Stream.of(Strings.isNotEmpty(message) ? message : "",
+                        Strings.isNotEmpty(body) ? body : "",
+                        "Code: " + code)
+                .filter(Strings::isNotEmpty)
+                .collect(Collectors.joining(". "));
     }
 
-    public String getBody() {
-        return body;
-    }
 
-    public int getCode() {
-        return code;
-    }
 }

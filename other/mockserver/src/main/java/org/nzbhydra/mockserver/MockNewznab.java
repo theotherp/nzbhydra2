@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -104,6 +105,9 @@ public class MockNewznab {
     @RequestMapping(value = {"/api", "/dognzb/api"}, produces = MediaType.APPLICATION_XML_VALUE)
     public ResponseEntity<? extends Object> api(NewznabParameters params, HttpServletRequest request) throws Exception {
         logger.info("Received API request {}", params);
+        if ("429".equals(params.getApikey())) {
+            return new ResponseEntity<>(HttpStatusCode.valueOf(429));
+        }
         if (params.getT() == ActionAttribute.CAPS) {
             //throw new RuntimeException("test");
             return new ResponseEntity<Object>(NewznabMockBuilder.getCaps(), HttpStatus.OK);

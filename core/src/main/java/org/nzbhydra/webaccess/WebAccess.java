@@ -11,6 +11,7 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 import okio.BufferedSink;
 import okio.Okio;
+import org.apache.logging.log4j.util.Strings;
 import org.nzbhydra.Jackson;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.slf4j.Logger;
@@ -54,24 +55,24 @@ public class WebAccess {
 
     public String postToUrl(String url, MediaType mediaContent, String content, Map<String, String> headers, int timeout) throws IOException {
         Builder builder = new Builder()
-            .url(url)
-            .post(RequestBody.create(mediaContent, content));
+                .url(url)
+                .post(RequestBody.create(mediaContent, content));
 
         return callUrl(url, headers, timeout, builder);
     }
 
     public String putToUrl(String url, MediaType mediaContent, String content, Map<String, String> headers, int timeout) throws IOException {
         Builder builder = new Builder()
-            .url(url)
-            .put(RequestBody.create(mediaContent, content));
+                .url(url)
+                .put(RequestBody.create(mediaContent, content));
 
         return callUrl(url, headers, timeout, builder);
     }
 
     public String deleteToUrl(String url, Map<String, String> headers, int timeout) throws IOException {
         Builder builder = new Builder()
-            .url(url)
-            .delete();
+                .url(url)
+                .delete();
 
         return callUrl(url, headers, timeout, builder);
     }
@@ -94,11 +95,19 @@ public class WebAccess {
                 bodyAsString = null;
             }
             if (!response.isSuccessful()) {
-                String error = String.format("URL call to %s returned %d: %s", url, response.code(), response.message());
-                if (response.code() != 429) {
-                    //No reason to log 429 errors, they all look more or less the same
-                    logger.error(error + "\n" + bodyAsString);
+                if (response.code() == 429) {
+                    //No reason to log body of 429 errors, they all look more or less the same
+                    logger.debug("Error 429 (Too many requests or API call limit exceeded) from {}", url);
+
+                    String message = response.message();
+                    if (Strings.isBlank(message)) {
+                        message = "Error 429 (Too many requests or API call limit exceeded)";
+                    }
+                    throw new WebAccessException(message, bodyAsString, response.code());
                 }
+                //Debug only because the whole body is rarely needed
+                logger.debug("URL call to {} returned {}: {}\n{}", url, response.code(), response.message(), bodyAsString);
+
                 throw new WebAccessException(response.message(), bodyAsString, response.code());
             }
             return bodyAsString;

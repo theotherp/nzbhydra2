@@ -2327,7 +2327,7 @@ function handleConnectionCheckFail(ModalService, data, model, whatFailed, deferr
     var message;
     var yesText;
     if (data.checked) {
-        message = "The connection to the " + whatFailed + " failed: " + data.message + "<br>Do you want to add it anyway?";
+        message = `<span class="has-error">${data.message}</span><br><br>Do you want to add it anyway?`;
         yesText = "I know what I'm doing";
     } else {
         message = "The connection to the " + whatFailed + " could not be tested, sorry. Please check the log.";
