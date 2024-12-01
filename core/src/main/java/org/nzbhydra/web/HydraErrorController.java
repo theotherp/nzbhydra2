@@ -52,6 +52,8 @@ public class HydraErrorController extends AbstractErrorController implements Err
             log.debug("Handling exception", ex);
         } else {
             log.error("Cannot show filtered exception because it's null");
+            errorPage.addObject("exception", "<Unknown>");
+            errorPage.addObject("error", "<Unknown>");
         }
 
         errorPage.addObject("status", response.getStatus());
