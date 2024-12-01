@@ -61,6 +61,7 @@ public class BeforeAll {
         config.getMain().getLogging().setLogIpAddresses(true);
         config.getMain().getLogging().setLogUsername(true);
         config.getMain().getLogging().setConsolelevel("DEBUG");
+        config.getMain().getLogging().setLogfilelevel("DEBUG");
         configManager.setConfig(config);
         indexerConfigurer.configureTwoMockIndexers();
         downloaderConfigurer.configureSabnzbdMock();
