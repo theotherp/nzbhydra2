@@ -85,6 +85,8 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
 
         registry.addResourceHandler("/bower_components/bootstrap-less/fonts/**")
                 .addResourceLocations("classpath:/static/fonts/");
+        registry.addResourceHandler("/favicon.ico")
+                .addResourceLocations("classpath:/static/favicon.ico");
 
         registry.setOrder(0);
     }
