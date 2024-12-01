@@ -60,6 +60,7 @@ public class BeforeAll {
         config.getMain().setApiKey("apikey");
         config.getMain().getLogging().setLogIpAddresses(true);
         config.getMain().getLogging().setLogUsername(true);
+        config.getMain().getLogging().setConsolelevel("DEBUG");
         configManager.setConfig(config);
         indexerConfigurer.configureTwoMockIndexers();
         downloaderConfigurer.configureSabnzbdMock();

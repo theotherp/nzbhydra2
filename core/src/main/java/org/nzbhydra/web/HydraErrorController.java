@@ -42,12 +42,13 @@ public class HydraErrorController extends AbstractErrorController implements Err
     @RequestMapping("/error")
     public ModelAndView handleError(HttpServletRequest request, HttpServletResponse response, Object handler) {
         ModelAndView errorPage = new ModelAndView("error");
-
         WebRequest webRequest = new ServletWebRequest(request);
         Throwable ex = new DefaultErrorAttributes().getError(webRequest);
         if (ex != null) {
             errorPage.addObject("exception", StackTraceFilter.getFilteredStackTrace(ex));
             errorPage.addObject("error", ex.getMessage());
+            //Log for good measure, perhaps it wasn't already logged
+            log.debug("Handling exception", ex);
         } else {
             log.error("Cannot show filtered exception because it's null");
         }
