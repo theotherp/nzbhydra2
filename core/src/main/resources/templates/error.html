@@ -29,33 +29,49 @@ An error occurred. Check the logs.
 
 <br>Some details:
 <table>
-    <tr th:if="${#vars.containsVariable('jakarta.servlet.forward.servlet_path')}">
+    <tr>
         <td>Path</td>
         <td th:text="${#vars.getVariable('jakarta.servlet.forward.servlet_path')}"></td>
     </tr>
-    <tr th:if="${#vars.containsVariable('jakarta.servlet.forward.query_string')}">
+    <tr>
         <td>Query parameters</td>
         <td th:text="${#vars.getVariable('jakarta.servlet.forward.query_string')}"></td>
     </tr>
-    <tr th:if="${#vars.containsVariable('status')}">
+    <tr>
         <td>Status</td>
         <td th:text="${#vars.getVariable('status')}"></td>
     </tr>
-    <tr th:if="${#vars.containsVariable('timestamp')}">
+    <tr>
         <td>Timestamp</td>
         <td th:text="${#vars.getVariable('timestamp')}"></td>
     </tr>
-    <tr th:if="${#vars.containsVariable('error')}">
+    <tr>
         <td>Error</td>
         <td th:text="${#vars.getVariable('error')}"></td>
     </tr>
-    <tr th:if="${#vars.containsVariable('exception')}">
+    <tr>
         <td>Exception</td>
         <td th:text="${#vars.getVariable('exception')}"></td>
     </tr>
 </table>
 
-
+<!--Print available variables-->
+<!--
+Session
+<table>
+    <tr th:each="var : ${session}">
+        <td th:text="${var.key}"></td>
+        <td th:text="${var.value}"></td>
+    </tr>
+</table>
+Vars
+<table>
+    <tr th:each="var : ${#vars.getVariableNames()}">
+        <td th:text="${var}"></td>
+        <td th:text="${#vars.getVariable(var)}"></td>
+    </tr>
+</table>
+-->
 </body>
 </html>
 
