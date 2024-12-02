@@ -37,22 +37,31 @@ import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 @SuppressWarnings("ResultOfMethodCallIgnored")
 public class DatabaseRecreation {
 
     private static final Logger logger = LoggerFactory.getLogger(DatabaseRecreation.class);
-
     private static final Map<String, String> SCHEMA_VERSION_CHANGES = new LinkedHashMap<>();
+    private static final SimpleClientHttpRequestFactory simpleClientHttpRequestFactory = new SimpleClientHttpRequestFactory();
+    private static final String DB_TOOL_URL_BASE = "https://github.com/theotherp/h2-db-tool/releases/download/1.0.0/nzbhydra-db-tool-";
+    private static final String DB_TOOL_OLD_VERSION = "2-1-214";
+    private static final String DB_TOOL_NEW_VERSION = "2-3-232";
+    private static final String JAR_URL_OLD_VERSION = "https://repo1.maven.org/maven2/com/h2database/h2/2.1.214/h2-2.1.214.jar";
+    private static final String JAR_URL_NEW_VERSION = "https://repo1.maven.org/maven2/com/h2database/h2/2.3.232/h2-2.3.232.jar";
 
 
     public static void runDatabaseScript() throws Exception {
@@ -116,15 +125,42 @@ public class DatabaseRecreation {
 
         File backupDatabaseFile = null;
         String javaExecutable;
-        final File h2OldJar;
-        final File h2NewJar;
+        final File fileOldVersion;
+        final File fileNewVersion;
         final String scriptFilePath;
+        boolean useJava;
+
         try {
-            javaExecutable = getJavaExecutable();
-            h2OldJar = downloadJarFile("https://repo1.maven.org/maven2/com/h2database/h2/2.1.214/h2-2.1.214.jar");
-            h2NewJar = downloadJarFile("https://repo1.maven.org/maven2/com/h2database/h2/2.3.232/h2-2.3.232.jar");
+            // TODO sist 02.12.2024: Build for linux and arm and upload all as assets
+            // TODO sist 02.12.2024: Build and upload arm release
+            logger.debug("org.graalvm.nativeimage.imagecode: {}", System.getProperty("org.graalvm.nativeimage.imagecode"));
+            if (System.getProperty("org.graalvm.nativeimage.imagecode") != null) {
+                String suffix;
+                String fileEnding = "";
+                if (System.getProperty("os.name").toLowerCase().contains("win")) {
+                    logger.debug("Determined OS is windows");
+                    suffix = "-amd64.exe";
+                    fileEnding = ".exe";
+                } else if (System.getProperty("os.arch").toLowerCase().contains("arm")) {
+                    logger.debug("Determined architecture is arm");
+                    suffix = "-arm64";
+                } else {
+                    logger.debug("Determined architecture is amd64");
+                    suffix = "-amd64";
+                }
+                logger.info("Recreating database using executable {}", suffix);
+                useJava = false;
+                fileOldVersion = downloadFile(DB_TOOL_URL_BASE + DB_TOOL_OLD_VERSION + suffix + ".zip", fileEnding);
+                fileNewVersion = downloadFile(DB_TOOL_URL_BASE + DB_TOOL_NEW_VERSION + suffix + ".zip", fileEnding);
+            } else {
+                logger.info("Recreating database using JARs");
+                useJava = true;
+                fileOldVersion = downloadFile(JAR_URL_OLD_VERSION, ".jar");
+                fileNewVersion = downloadFile(JAR_URL_NEW_VERSION, ".jar");
+            }
+
         } catch (Exception e) {
-            logger.error("Error migrating old database. Unable to download h2 jars");
+            logger.error("Error migrating old database. Unable to download db tools");
             throw e;
         }
         try {
@@ -138,11 +174,9 @@ public class DatabaseRecreation {
             logger.info("Copying old database file {} to backup {} which will be automatically deleted after 14 days", databaseFile, backupDatabaseFile);
             Files.copy(databaseFile.toPath(), backupDatabaseFile.toPath());
 
-            final String updatePasswordQuery = "alter user sa set password 'sa'";
-            //Apparently not needed anymore for format 3
-//           updatePassword(dbConnectionUrl, javaExecutable, h2OldJar, updatePasswordQuery);
 
-            runH2Command(Arrays.asList(javaExecutable, "-Xmx700M", "-cp", h2OldJar.toString(), "org.h2.tools.Script", "-url", dbConnectionUrl, "-user", "sa", "-password", "sa", "-script", scriptFilePath), "Database export failed.");
+            List<String> parameters = new ArrayList<>(Arrays.asList(fileOldVersion.toString(), "org.h2.tools.Script", "-url", dbConnectionUrl, "-user", "sa", "-password", "sa", "-script", scriptFilePath));
+            runDbTool(getCommands(parameters, useJava), "Database export failed.");
         } catch (Exception e) {
             logger.error("Error migrating old database file to new one");
             if (backupDatabaseFile != null && backupDatabaseFile.exists()) {
@@ -159,7 +193,9 @@ public class DatabaseRecreation {
                 throw new RuntimeException("Unable to delete old database file " + databaseFile);
             }
 
-            runH2Command(Arrays.asList(javaExecutable, "-Xmx700M", "-cp", h2NewJar.toString(), "org.h2.tools.RunScript", "-url", dbConnectionUrl, "-user", "sa", "-password", "sa", "-script", scriptFilePath, "-options", "FROM_1X"), "Database import failed.");
+            List<String> parameters = new ArrayList<>(Arrays.asList(fileNewVersion.toString(), "org.h2.tools.RunScript", "-url", dbConnectionUrl, "-user", "sa", "-password", "sa", "-script", scriptFilePath, "-options", "FROM_1X"));
+
+            runDbTool(getCommands(parameters, useJava), "Database import failed.");
 
             final Flyway flyway = Flyway.configure()
                     .dataSource(dbConnectionUrl, "sa", "sa")
@@ -168,7 +204,7 @@ public class DatabaseRecreation {
                     .load();
             flyway.baseline();
         } catch (Exception e) {
-            logger.error("Error while trying to migrate database to 2.0");
+            logger.error("Error while trying to migrate database to 3.0");
             if (backupDatabaseFile != null && backupDatabaseFile.exists()) {
                 logger.info("Restoring database file {} from backup {}", databaseFile, backupDatabaseFile);
                 Files.move(backupDatabaseFile.toPath(), databaseFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
@@ -177,17 +213,21 @@ public class DatabaseRecreation {
         }
     }
 
-    private static void updatePassword(String dbConnectionUrl, String javaExecutable, File h2OldJar, String updatePasswordQuery) throws IOException, InterruptedException {
-        try {
-            runH2Command(Arrays.asList(javaExecutable, "-cp", h2OldJar.toString(), "org.h2.tools.Shell", "-url", dbConnectionUrl, "-user", "sa", "-sql", NzbHydra.isOsWindows() ? ("\"" + updatePasswordQuery + "\"") : updatePasswordQuery), "Password update failed.");
-        } catch (Exception e) {
-            runH2Command(Arrays.asList(javaExecutable, "-cp", h2OldJar.toString(), "org.h2.tools.Shell", "-url", dbConnectionUrl, "-user", "sa", "-password", "sa", "-sql", NzbHydra.isOsWindows() ? ("\"" + updatePasswordQuery + "\"") : updatePasswordQuery), "Password update failed.");
+    private static List<String> getCommands(List<String> parameters, boolean useJava) {
+        if (!useJava) {
+            return parameters;
         }
+        final List<String> commands = new ArrayList<>(parameters);
+        commands.add(0, getJavaExecutable());
+        commands.add(1, "-Xmx700M");
+        commands.add(2, "-cp");
+        return commands;
     }
 
-    private static void runH2Command(List<String> updatePassCommand, String errorMessage) throws IOException, InterruptedException {
-        logger.info("Running command: {}", Joiner.on(" ").join(updatePassCommand));
-        final Process process = new ProcessBuilder(updatePassCommand)
+
+    private static void runDbTool(List<String> commandParameters, String errorMessage) throws IOException, InterruptedException {
+        logger.info("Running command: {}", Joiner.on(" ").join(commandParameters));
+        final Process process = new ProcessBuilder(commandParameters)
                 .redirectErrorStream(true)
                 .inheritIO()
                 .start();
@@ -197,22 +237,27 @@ public class DatabaseRecreation {
         }
     }
 
-    private static File downloadJarFile(String url) throws IOException {
+    private static File downloadFile(String url, String suffix) throws IOException {
         //Can't use Hydra request factory as no config was loaded
-        final ClientHttpRequest request = new SimpleClientHttpRequestFactory().createRequest(URI.create(url), HttpMethod.GET);
-        final File jarFile;
+        final ClientHttpRequest request = simpleClientHttpRequestFactory.createRequest(URI.create(url), HttpMethod.GET);
+        final File file = Files.createTempFile("nzbhydra", suffix).toFile();
+        file.delete();
+        logger.debug("Downloading file from {} to {}. Will be deleted on exit", url, file);
         try (ClientHttpResponse response = request.execute()) {
-            jarFile = Files.createTempFile("nzbhydra", ".jar").toFile();
-            logger.debug("Downloaded file from {} to {}. Will be deleted on exit", url, jarFile);
-            jarFile.deleteOnExit();
+
+            file.deleteOnExit();
             try (InputStream body = response.getBody()) {
-                com.google.common.io.Files.asByteSink(jarFile).writeFrom(body);
+                if (url.endsWith(".zip")) {
+                    extractZip(body, file);
+                } else {
+                    com.google.common.io.Files.asByteSink(file).writeFrom(body);
+                }
             }
             if (response.getStatusCode() != HttpStatus.OK) {
-                throw new RuntimeException("Unable to download database library. Response: " + response.getStatusCode());
+                throw new RuntimeException("Unable to download file. Response: " + response.getStatusCode());
             }
         }
-        return jarFile;
+        return file;
 
     }
 
@@ -230,6 +275,22 @@ public class DatabaseRecreation {
             javaExecutable = "java";
         }
         return javaExecutable;
+    }
+
+    private static void extractZip(InputStream inputStream, File destFile) throws IOException {
+        try (ZipInputStream zipIn = new ZipInputStream(inputStream)) {
+            ZipEntry entry;
+            while ((zipIn.getNextEntry()) != null) {
+                try (OutputStream out = Files.newOutputStream(destFile.toPath())) {
+                    byte[] buffer = new byte[4096];
+                    int bytesRead;
+                    while ((bytesRead = zipIn.read(buffer)) != -1) {
+                        out.write(buffer, 0, bytesRead);
+                    }
+                }
+                zipIn.closeEntry();
+            }
+        }
     }
 
 

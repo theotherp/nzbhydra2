@@ -93,6 +93,7 @@ public class NzbHydra {
 
     public static void main(String[] args) throws Exception {
         if (isNativeBuild()) {
+
             logger.warn("Running for native build");
 
             String dataFolder = "./data";

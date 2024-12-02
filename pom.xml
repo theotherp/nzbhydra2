@@ -117,7 +117,7 @@
         <logstash-logback-encoder.version>7.2</logstash-logback-encoder.version>
         <commons-lang3.version>3.17.0</commons-lang3.version>
         <commons-io.version>2.11.0</commons-io.version>
-        <flyway-core.version>10.21.0</flyway-core.version>
+        <flyway-core.version>11.0.0</flyway-core.version>
         <jaxb.sun.core.version>2.3.0.1</jaxb.sun.core.version>
         <jaxb.sun.impl.version>3.0.1</jaxb.sun.impl.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

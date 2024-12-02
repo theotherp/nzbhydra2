@@ -1,0 +1,53 @@
+{
+  "types": [
+    {
+      "name": "byte[]"
+    },
+    {
+      "name": "java.lang.String"
+    },
+    {
+      "name": "java.rmi.dgc.Lease"
+    },
+    {
+      "name": "java.rmi.dgc.VMID"
+    },
+    {
+      "name": "java.rmi.server.ObjID"
+    },
+    {
+      "name": "java.rmi.server.ObjID[]"
+    },
+    {
+      "name": "java.rmi.server.RemoteObject"
+    },
+    {
+      "name": "java.rmi.server.RemoteStub"
+    },
+    {
+      "name": "java.rmi.server.UID"
+    },
+    {
+      "name": "javax.management.ObjectName"
+    },
+    {
+      "name": "javax.management.remote.rmi.RMIConnectionImpl_Stub"
+    },
+    {
+      "name": "javax.management.remote.rmi.RMIServerImpl_Stub"
+    },
+    {
+      "name": "java.io.ObjectOutputStream"
+    },
+    {
+      "name": "org.h2.util.JdbcUtils"
+    },
+    {
+      "name": "org.h2.mvstore.type.ObjectDataType"
+    }
+  ],
+  "lambdaCapturingTypes": [
+  ],
+  "proxies": [
+  ]
+}

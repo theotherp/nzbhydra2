@@ -10,16 +10,18 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="github-release-maven-plugin" />
-        <module name="core" />
         <module name="mapping" />
-        <module name="sockslib" />
-        <module name="system" />
         <module name="classloader" />
-        <module name="github-release-plugin" />
-        <module name="assertions" />
+        <module name="loadtest" />
         <module name="discordreleaser" />
         <module name="updater" />
         <module name="mockserver" />
+        <module name="core" />
+        <module name="sockslib" />
+        <module name="system" />
+        <module name="github-release-plugin" />
+        <module name="assertions" />
+        <module name="db-tool" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel target="17" />
@@ -32,11 +34,13 @@
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="assertions" options="-parameters -parameters" />
       <module name="core" options="-parameters -parameters" />
+      <module name="db-tool" options="" />
       <module name="discordreleaser" options="" />
       <module name="generic-release" options="-parameters -parameters" />
       <module name="github-release-plugin" options="" />
       <module name="linux-amd64-release" options="-parameters -parameters" />
       <module name="linux-arm64-release" options="-parameters -parameters" />
+      <module name="loadtest" options="" />
       <module name="mapping" options="-parameters -parameters" />
       <module name="mockserver" options="-parameters -parameters" />
       <module name="nzbhydra2" options="-parameters -parameters" />
