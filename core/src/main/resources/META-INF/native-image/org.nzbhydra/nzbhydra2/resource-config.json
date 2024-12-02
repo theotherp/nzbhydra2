@@ -2444,6 +2444,9 @@
         "pattern": "\\Qstatic/css/alllibs.css\\E"
       },
       {
+        "pattern": "\\Qstatic/css/additional.css\\E"
+      },
+      {
         "pattern": "\\Qstatic/css/bright.css\\E"
       },
       {
@@ -2454,6 +2457,21 @@
       },
       {
         "pattern": "\\Qstatic/css/auto.css\\E"
+      },
+      {
+        "pattern": "\\Qstatic/css/alllibs.css.map\\E"
+      },
+      {
+        "pattern": "\\Qstatic/css/bright.css.map\\E"
+      },
+      {
+        "pattern": "\\Qstatic/css/grey.css.map\\E"
+      },
+      {
+        "pattern": "\\Qstatic/css/dark.css.map\\E"
+      },
+      {
+        "pattern": "\\Qstatic/css/auto.css.map\\E"
       },
       {
         "pattern": "\\Q*/static/*\\E"
@@ -2508,6 +2526,9 @@
       },
       {
         "pattern": "\\Qstatic/img/botlogo.png\\E"
+      },
+      {
+        "pattern": "\\Qstatic/favicon.ico\\E"
       },
       {
         "pattern": "\\Qstatic/img/favicon.ico\\E"
@@ -2585,10 +2606,19 @@
         "pattern": "\\Qstatic/img/spinner.gif\\E"
       },
       {
+        "pattern": "\\Qstatic/js/additional.js\\E"
+      },
+      {
         "pattern": "\\Qstatic/js/alllibs.js\\E"
       },
       {
         "pattern": "\\Qstatic/js/nzbhydra.js\\E"
+      },
+      {
+        "pattern": "\\Qstatic/js/alllibs.js.map\\E"
+      },
+      {
+        "pattern": "\\Qstatic/js/nzbhydra.js.map\\E"
       },
       {
         "pattern": "\\Qstatic/js/templates.js\\E"
