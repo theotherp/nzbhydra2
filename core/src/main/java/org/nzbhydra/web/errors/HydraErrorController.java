@@ -17,6 +17,7 @@
 package org.nzbhydra.web.errors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +31,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 
@@ -48,18 +50,23 @@ public class HydraErrorController extends AbstractErrorController implements Err
     @RequestMapping("/error")
     public ResponseEntity<Object> handleError(HttpServletRequest request, HttpServletResponse response, Object handler) {
         WebRequest webRequest = new ServletWebRequest(request);
-        Throwable ex = new DefaultErrorAttributes().getError(webRequest);
+        DefaultErrorAttributes errorAttributes = new DefaultErrorAttributes();
+        Throwable ex = errorAttributes.getError(webRequest);
         Map<String, Object> map = new HashMap<>();
         HttpStatus status = getStatus(request);
-        map.put("path", request.getServletPath());
         map.put("timestamp", Instant.now().toString());
+        map.put("path", webRequest.getAttribute(RequestDispatcher.ERROR_REQUEST_URI, RequestAttributes.SCOPE_REQUEST));
         try {
             map.put("parameters", Jackson.JSON_MAPPER.writeValueAsString(request.getParameterMap()));
         } catch (JsonProcessingException e) {
             log.error("Error serializing parameters", e);
         }
+        if (response.getStatus() != 404) {
+            log.error("Handling error:\n{}", map, ex);
+        } else {
+            log.debug("Resource not found: {}", request.getServletPath());
+        }
 
-        log.error("Handling error:\n{}", map, ex);
         //Put values we don't want logged in now
         map.put("error", ex.getMessage());
         map.put("exception", StackTraceFilter.getFilteredStackTrace(ex));
