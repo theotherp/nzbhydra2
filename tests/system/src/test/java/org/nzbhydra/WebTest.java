@@ -31,9 +31,15 @@ public class WebTest {
 
     @Test
     public void shouldNotGet404() {
-        Assertions.assertThat(hydraClient.get("/favicon.ico").getStatus()).isNotEqualTo(404);
-        Assertions.assertThat(hydraClient.get("/additional.css").getStatus()).isNotEqualTo(404);
-        Assertions.assertThat(hydraClient.get("/additional.js").getStatus()).isNotEqualTo(404);
+        Assertions.assertThat(hydraClient.get("/favicon.ico").getStatus())
+                .as("Resource /favicon.ico should be returned")
+                .isNotEqualTo(404);
+        Assertions.assertThat(hydraClient.get("/static/css/additional.css").getStatus())
+                .as("Resource /static/css/additional.css should be returned")
+                .isNotEqualTo(404);
+        Assertions.assertThat(hydraClient.get("/static/js/additional.js").getStatus())
+                .as("Resource /static/js/additional.js should be returned")
+                .isNotEqualTo(404);
     }
 
 }
