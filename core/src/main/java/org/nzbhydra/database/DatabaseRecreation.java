@@ -134,7 +134,12 @@ public class DatabaseRecreation {
             // TODO sist 02.12.2024: Build for linux and arm and upload all as assets
             // TODO sist 02.12.2024: Build and upload arm release
             logger.debug("org.graalvm.nativeimage.imagecode: {}", System.getProperty("org.graalvm.nativeimage.imagecode"));
-            if (System.getProperty("org.graalvm.nativeimage.imagecode") != null) {
+            boolean useDbTool = System.getProperty("org.graalvm.nativeimage.imagecode") != null;
+            if ("false".equals(System.getenv("use_db_tool"))) {
+                logger.debug("Not using DB tool");
+                useDbTool = false;
+            }
+            if (useDbTool) {
                 String suffix;
                 String fileEnding = "";
                 if (System.getProperty("os.name").toLowerCase().contains("win")) {
