@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Run app" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+    <module name="core" />
+    <option name="PROGRAM_PARAMETERS" value="directstart" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="org.nzbhydra.NzbHydra" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

@@ -199,7 +199,6 @@
         </dependency>
 
 
-
         <!-- database -->
         <dependency>
             <groupId>com.h2database</groupId>
@@ -259,7 +258,7 @@
             <artifactId>lombok</artifactId>
             <version>${lombok.version}</version>
             <scope>provided</scope>
-<!--            <optional>true</optional>-->
+            <!--            <optional>true</optional>-->
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -385,12 +384,11 @@
             <artifactId>logback-access</artifactId>
             <version>${logback.version}</version>
         </dependency>
-        <!--  todo spring Only supports Spring 2.x      -->
-        <!--        <dependency>-->
-        <!--            <groupId>net.rakugakibox.spring.boot</groupId>-->
-        <!--            <artifactId>logback-access-spring-boot-starter</artifactId>-->
-        <!--            <version>2.7.1</version>-->
-        <!--        </dependency>-->
+        <dependency>
+            <groupId>dev.akkinoc.spring.boot</groupId>
+            <artifactId>logback-access-spring-boot-starter</artifactId>
+            <version>4.3.2</version>
+        </dependency>
         <dependency>
             <groupId>net.logstash.logback</groupId>
             <artifactId>logstash-logback-encoder</artifactId>
@@ -535,7 +533,7 @@
                                     <buildArg>-march=compatibility</buildArg>
                                     <buildArg>--no-fallback -J-Xmx13g</buildArg>
                                     <buildArg>--native-image-info</buildArg>
-                            </buildArgs>
+                                </buildArgs>
                                 <classesDirectory>${project.build.outputDirectory}</classesDirectory>
                                 <metadataRepository>
                                     <enabled>true</enabled>

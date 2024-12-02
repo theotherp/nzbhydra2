@@ -213,11 +213,8 @@ public class NzbHydra {
         setApplicationProperty("main.logging.logfilelevel", "MAIN_LOGGING_LOGFILELEVEL", baseConfig.getMain().getLogging().getLogfilelevel());
         setApplicationProperty("main.logging.logMaxHistory", "MAIN_LOGGING_LOG_MAX_HISTORY", String.valueOf(baseConfig.getMain().getLogging().getLogMaxHistory()));
 
-        if (baseConfig.getMain().getLogging().getMarkersToLog().contains(LoggingMarkers.SERVER.getName())) {
             System.setProperty("logback.access.enabled", "true");
-        } else {
-            System.setProperty("logback.access.enabled", "false");
-        }
+
 
         if (baseConfig.getMain().getLogging().getMarkersToLog().contains(LoggingMarkers.HTTPS.getName())) {
             System.setProperty("javax.net.debug", "ssl:handshake:verbose:keymanager:trustmanager");
