@@ -160,6 +160,8 @@ public class DatabaseRecreation {
                 useJava = false;
                 fileOldVersion = downloadFile(DB_TOOL_URL_BASE + DB_TOOL_OLD_VERSION + suffix + ".zip", fileEnding);
                 fileNewVersion = downloadFile(DB_TOOL_URL_BASE + DB_TOOL_NEW_VERSION + suffix + ".zip", fileEnding);
+                fileOldVersion.setExecutable(true);
+                fileNewVersion.setExecutable(true);
             } else {
                 logger.info("Recreating database using JARs");
                 useJava = true;
@@ -250,7 +252,7 @@ public class DatabaseRecreation {
         final ClientHttpRequest request = simpleClientHttpRequestFactory.createRequest(URI.create(url), HttpMethod.GET);
 
         //Do not use a temporary folder because we may not have writing or execution rights there but we should have them inside our own folder
-        final File file = new File("dbrecreation-" + RandomStringUtils.insecure().nextAlphabetic(5) + suffix);
+        final File file = new File(NzbHydra.getDataFolder(), "dbrecreation-" + RandomStringUtils.insecure().nextAlphabetic(5) + suffix);
         file.delete();
         logger.debug("Downloading file from {} to {}. Will be deleted on exit", url, file);
         try (ClientHttpResponse response = request.execute()) {
@@ -266,6 +268,9 @@ public class DatabaseRecreation {
             if (response.getStatusCode() != HttpStatus.OK) {
                 throw new RuntimeException("Unable to download file. Response: " + response.getStatusCode());
             }
+        }
+        if (!file.exists()) {
+            throw new RuntimeException("Unable to download file to " + file);
         }
         return file;
 
