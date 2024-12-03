@@ -1,9 +1,10 @@
-### v7.10.2 (2024-11-30)
+### v7.10.2 (2024-12-04)
 
 **Feature** Improve error message when communication with an indexer fails.
 
-**Fix** Mapping IP addresses to host names (enabled in the logging config) may cause a huge delay when accessing NZBHydra from inside a local network. The tooltip warning about this was probably too small. The mapping will now be aborted
-after a short timeout.
+**Fix** Mapping IP addresses to host names (enabled in the logging config) may cause a huge delay when accessing NZBHydra from inside a local network. The tooltip warning about this was probably too small. The mapping will now be aborted after a short timeout.
+
+
 
 ### v7.10.1 (2024-11-13)
 

@@ -15,6 +15,7 @@
         <module name="sockslib" />
         <module name="system" />
         <module name="classloader" />
+        <module name="loadtest" />
         <module name="github-release-plugin" />
         <module name="assertions" />
         <module name="discordreleaser" />
@@ -22,7 +23,9 @@
         <module name="mockserver" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel target="17" />
+    <bytecodeTargetLevel target="17">
+      <module name="db-tool" target="21" />
+    </bytecodeTargetLevel>
   </component>
   <component name="EclipseCompilerSettings">
     <option name="GENERATE_NO_WARNINGS" value="true" />
@@ -33,6 +36,7 @@
       <module name="core" options="-parameters" />
       <module name="discordreleaser" options="" />
       <module name="github-release-plugin" options="" />
+      <module name="loadtest" options="" />
       <module name="mapping" options="-parameters" />
       <module name="mockserver" options="" />
       <module name="nzbhydra2" options="-parameters" />
