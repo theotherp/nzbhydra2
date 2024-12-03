@@ -62,7 +62,7 @@ services:
         environment:
             - spring_profiles_active=build,systemtest
             # Do not use DB tool in pipeline because running executable is not allowed or doesn't work?
-            - use_db_tool=false
+            #- use_db_tool=false
         volumes:
             - /tmp/hydra/v1MigrationDataFolder:/data
             - /tmp/hydraBlackhole_v1Migration:/hydraBlackhole

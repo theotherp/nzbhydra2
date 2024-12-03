@@ -141,6 +141,7 @@ public class DatabaseRecreation {
                 logger.debug("Not using DB tool");
                 useDbTool = false;
             }
+
             if (useDbTool) {
                 String suffix;
                 String fileEnding = "";
