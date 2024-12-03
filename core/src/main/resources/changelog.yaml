@@ -1,4 +1,12 @@
 #@formatter:off
+-   version: "v7.10.2"
+    date: "2024-12-04"
+    changes:
+      -   type: "feature"
+          text: "Improve error message when communication with an indexer fails."
+      -   type: "fix"
+          text: "Mapping IP addresses to host names (enabled in the logging config) may cause a huge delay when accessing NZBHydra from inside a local network. The tooltip warning about this was probably too small. The mapping will now be aborted after a short timeout."
+    final: true
 -   version: "v7.10.1"
     date: "2024-11-13"
     changes:
