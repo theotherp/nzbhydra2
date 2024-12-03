@@ -21,6 +21,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.flywaydb.core.Flyway;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.springnative.ReflectionMarker;
@@ -133,6 +134,7 @@ public class DatabaseRecreation {
         try {
             // TODO sist 02.12.2024: Build for linux and arm and upload all as assets
             // TODO sist 02.12.2024: Build and upload arm release
+            // TODO sist 03.12.2024: Delete all dbrecreation* files
             logger.debug("org.graalvm.nativeimage.imagecode: {}", System.getProperty("org.graalvm.nativeimage.imagecode"));
             boolean useDbTool = System.getProperty("org.graalvm.nativeimage.imagecode") != null;
             if ("false".equals(System.getenv("use_db_tool"))) {
@@ -245,7 +247,9 @@ public class DatabaseRecreation {
     private static File downloadFile(String url, String suffix) throws IOException {
         //Can't use Hydra request factory as no config was loaded
         final ClientHttpRequest request = simpleClientHttpRequestFactory.createRequest(URI.create(url), HttpMethod.GET);
-        final File file = Files.createTempFile("nzbhydra", suffix).toFile();
+
+        //Do not use a temporary folder because we may not have writing or execution rights there but we should have them inside our own folder
+        final File file = new File("dbrecreation-" + RandomStringUtils.insecure().nextAlphabetic(5) + suffix);
         file.delete();
         logger.debug("Downloading file from {} to {}. Will be deleted on exit", url, file);
         try (ClientHttpResponse response = request.execute()) {
