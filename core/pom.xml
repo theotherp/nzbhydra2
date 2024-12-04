@@ -523,14 +523,14 @@
                         <plugin>
                             <groupId>org.graalvm.buildtools</groupId>
                             <!-- Fix Illegal char error on windows -->
-                            <version>0.9.27</version>
+                            <version>0.10.3</version>
                             <artifactId>native-maven-plugin</artifactId>
                             <configuration>
                                 <buildArgs>
                                     <buildArg>-H:+ReportExceptionStackTraces</buildArg>
                                     <buildArg>-H:-DeadlockWatchdogExitOnTimeout</buildArg>
                                     <buildArg>-H:DeadlockWatchdogInterval=0</buildArg>
-                                    <buildArg>--initialize-at-build-time=org.apache.commons.logging.LogFactoryService</buildArg>
+                                    <buildArg>--initialize-at-build-time=org.apache.commons.logging.LogFactoryService,sun.reflect.misc.Trampoline</buildArg>
                                     <buildArg>-H:+StaticExecutableWithDynamicLibC</buildArg>
                                     <buildArg>-march=compatibility</buildArg>
                                     <buildArg>--no-fallback -J-Xmx13g</buildArg>

@@ -20,6 +20,7 @@ import com.google.common.base.Joiner;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.flywaydb.core.Flyway;
@@ -132,9 +133,6 @@ public class DatabaseRecreation {
         boolean useJava;
 
         try {
-            // TODO sist 02.12.2024: Build for linux and arm and upload all as assets
-            // TODO sist 02.12.2024: Build and upload arm release
-            // TODO sist 03.12.2024: Delete all dbrecreation* files
             logger.debug("org.graalvm.nativeimage.imagecode: {}", System.getProperty("org.graalvm.nativeimage.imagecode"));
             boolean useDbTool = System.getProperty("org.graalvm.nativeimage.imagecode") != null;
             if ("false".equals(System.getenv("use_db_tool"))) {
@@ -149,9 +147,9 @@ public class DatabaseRecreation {
                     logger.debug("Determined OS is windows");
                     suffix = "-amd64.exe";
                     fileEnding = ".exe";
-                } else if (System.getProperty("os.arch").toLowerCase().contains("arm")) {
+                } else if (System.getProperty("os.arch").toLowerCase().contains("arm") || System.getProperty("os.arch").toLowerCase().contains("aarch")) {
                     logger.debug("Determined architecture is arm");
-                    suffix = "-arm64";
+                    suffix = "-aarch64";
                 } else {
                     logger.debug("Determined architecture is amd64");
                     suffix = "-amd64";
@@ -221,6 +219,9 @@ public class DatabaseRecreation {
             }
             throw new RuntimeException(e);
         }
+        FileUtils.deleteQuietly(fileOldVersion);
+        FileUtils.deleteQuietly(fileNewVersion);
+        FileUtils.deleteQuietly(new File(scriptFilePath));
     }
 
     private static List<String> getCommands(List<String> parameters, boolean useJava) {
