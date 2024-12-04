@@ -530,7 +530,7 @@
                                     <buildArg>-H:+ReportExceptionStackTraces</buildArg>
                                     <buildArg>-H:-DeadlockWatchdogExitOnTimeout</buildArg>
                                     <buildArg>-H:DeadlockWatchdogInterval=0</buildArg>
-                                    <buildArg>--initialize-at-build-time=org.apache.commons.logging.LogFactoryService,sun.reflect.misc.Trampoline</buildArg>
+                                    <buildArg>--initialize-at-build-time=org.apache.commons.logging.LogFactoryService</buildArg>
                                     <buildArg>-H:+StaticExecutableWithDynamicLibC</buildArg>
                                     <buildArg>-march=compatibility</buildArg>
                                     <buildArg>--no-fallback -J-Xmx13g</buildArg>

@@ -20,7 +20,6 @@ import com.google.common.base.Joiner;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.flywaydb.core.Flyway;
@@ -219,9 +218,13 @@ public class DatabaseRecreation {
             }
             throw new RuntimeException(e);
         }
-        FileUtils.deleteQuietly(fileOldVersion);
-        FileUtils.deleteQuietly(fileNewVersion);
-        FileUtils.deleteQuietly(new File(scriptFilePath));
+        try {
+            fileOldVersion.delete();
+            fileNewVersion.delete();
+            new File(scriptFilePath).delete();
+        } catch (Exception e) {
+            logger.info("Error deleting file", e);
+        }
     }
 
     private static List<String> getCommands(List<String> parameters, boolean useJava) {

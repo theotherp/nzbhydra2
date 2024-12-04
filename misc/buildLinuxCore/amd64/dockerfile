@@ -29,7 +29,7 @@ ENV HYDRA_NATIVE_BUILD=true
 
 COPY buildInContainer.sh /
 
-ENTRYPOINT /buildInContainer.sh
+ENTRYPOINT ["/buildInContainer.sh"]
 
 # To debug docker run --rm -it --entrypoint bash hydrabuild
 # or for a running container docker exec -it <container-name-or-id> bash

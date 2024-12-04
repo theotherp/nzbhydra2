@@ -13,10 +13,10 @@ ENV MAVEN_HOME=/opt/maven
 ENV PATH=${M2_HOME}/bin:${PATH}
 
 # Newer versions fail on aarch: https://github.com/oracle/graal/issues/7467
-RUN wget -nv --no-check-certificate https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-17.0.9/graalvm-community-jdk-17.0.9_linux-aarch64_bin.tar.gz
-RUN tar xzf graalvm-community-jdk-17.0.9_linux-aarch64_bin.tar.gz -C /
-ENV PATH=/graalvm-community-openjdk-17.0.9+9.1/bin/:$PATH
-ENV JAVA_HOME=/graalvm-community-openjdk-17.0.9+9.1
+RUN wget -nv --no-check-certificate https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-22.0.1/graalvm-community-jdk-22.0.1_linux-aarch64_bin.tar.gz
+RUN tar xzf graalvm-community-jdk-22.0.1_linux-aarch64_bin.tar.gz -C /
+ENV PATH=/graalvm-community-openjdk-22.0.1+8.1/bin/:$PATH
+ENV JAVA_HOME=/graalvm-community-openjdk-22.0.1+8.1
 
 # When you update this also change the directory in buildInContainer.sh
 #Newer versions crash with segmentation fault: https://github.com/upx/upx/issues/737
@@ -28,7 +28,7 @@ ENV HYDRA_NATIVE_BUILD=true
 
 COPY buildInContainer.sh /
 
-ENTRYPOINT /buildInContainer.sh
+ENTRYPOINT ["/buildInContainer.sh"]
 
 # To debug docker run --rm -it --entrypoint bash hydrabuild
 # or for a running container docker exec -it <container-name-or-id> bash
