@@ -84,8 +84,9 @@ public class LogAnonymizer {
         logger.debug("Removing IPs and hostnames from log");
         log = log.replaceAll("Host: [^\\]]*", "Host: <hidden>");
         log = log.replace("127.0.0.1", "<localhost>");
+        log = log.replace("::1", "<localhost>");
         log = replaceWithHashedValues(log, IPV4_PATTERN, "IP4");
-//        log = replaceWithHashedValues(log, IPV6_PATTERN, "IP6");
+        log = replaceWithHashedValues(log, IPV6_PATTERN, "IP6");
         return log;
     }
 
@@ -94,13 +95,13 @@ public class LogAnonymizer {
         Matcher matcher = ipPattern.matcher(log);
         StringBuilder sb = new StringBuilder();
         while (matcher.find()) {
-            if (matcher.group(0).equals("127.0.0.1") || matcher.group(0).startsWith("192.168") || matcher.group(0).startsWith("10.")) {
+            String ipAddress = matcher.group(0);
+            if (ipAddress.startsWith("192.168") || ipAddress.startsWith("10.") || ipAddress.startsWith("f")) {
                 continue;
             }
-            matcher.appendReplacement(sb, "<" + tag + ":" + hashFunction.hashString(matcher.group(0), Charset.defaultCharset()).toString() + ">");
+            matcher.appendReplacement(sb, "<" + tag + ":" + hashFunction.hashString(ipAddress, Charset.defaultCharset()).toString() + ">");
         }
         matcher.appendTail(sb);
         return sb.toString();
     }
-
 }

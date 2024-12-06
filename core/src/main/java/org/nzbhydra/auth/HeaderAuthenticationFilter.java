@@ -35,6 +35,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.util.matcher.IpAddressMatcher;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -89,15 +90,25 @@ public class HeaderAuthenticationFilter extends BasicAuthenticationFilter {
         String ip = SessionStorage.originalIp.get();
         long ipAsLong = HydraOkHttp3ClientHttpRequestFactory.ipToLong(InetAddresses.forString(ip));
         boolean isInSecureRange = authConfig.getAuthHeaderIpRanges().stream().anyMatch(x -> {
-            if (!x.contains("-")) {
-                return x.equals(ip);
-            }
-            String[] split = x.split("-");
-            long ipLow = HydraOkHttp3ClientHttpRequestFactory.ipToLong(InetAddresses.forString(split[0]));
-            long ipHigh = HydraOkHttp3ClientHttpRequestFactory.ipToLong(InetAddresses.forString(split[1]));
-            return ipLow <= ipAsLong && ipAsLong <= ipHigh;
-        });
+            if(x.equals("*"))
+                return true;
 
+            if (x.contains("/")) {
+                // CIDR Notation
+                return new IpAddressMatcher(x).matches(ip)
+            }
+
+            if (x.contains("-")) {
+                // IP Range
+                String[] split = x.split("-");
+                long ipLow = HydraOkHttp3ClientHttpRequestFactory.ipToLong(InetAddresses.forString(split[0]));
+                long ipHigh = HydraOkHttp3ClientHttpRequestFactory.ipToLong(InetAddresses.forString(split[1]));
+                return ipLow <= ipAsLong && ipAsLong <= ipHigh;
+            }
+
+            // Single IP
+            return x.equals(ip);
+        });
         if (!isInSecureRange) {
             handleInvalidAuth(request, response, "Auth header sent in request from insecure IP " + ip);
             return;

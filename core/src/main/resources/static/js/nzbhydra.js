@@ -8128,7 +8128,7 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'text',
                                 label: 'Secure IP ranges',
-                                help: 'IP ranges from which the auth header will be accepted. Apply with return key. Use values like "192.168.0.1-192.168.0.100" or single IP addresses like "127.0.0.1".',
+                                help: 'IP ranges from which the auth header will be accepted. Apply with return key. Use IPv4 or IPv6 ranges like "192.168.0.1-192.168.0.100", CIDRs like 192.168.0.0/24 or single IP addresses like "127.0.0.1".',
                                 advanced: true
                             },
                             hideExpression: function () {
