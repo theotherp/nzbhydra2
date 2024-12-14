@@ -322,4 +322,11 @@ public abstract class Downloader {
     public String getUrl() {
         return downloaderConfig.getUrl();
     }
+
+    protected String suffixNzbToTitle(String title) {
+        if (!title.toLowerCase().endsWith(".nzb")) {
+            title += ".nzb";
+        }
+        return title;
+    }
 }

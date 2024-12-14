@@ -1,0 +1,29 @@
+{
+  "success": true,
+  "error": null,
+  "detail": "Usenet downloads list retrieved successfully.",
+  "data": [
+    {
+      "id": 27928,
+      "created_at": "2024-12-14T09:41:07Z",
+      "updated_at": "2024-12-14T09:41:42Z",
+      "auth_id": "1668bedb-8f02-491d-ac8d-a606158c505b",
+      "name": "SomeMovie.2000.2160p.10bit.DV.HDR10.60FPS.Remastered.Bluray.x265.Dual.Audio",
+      "hash": "6d2365067b5a1eaab4c0fd786bffbe0f",
+      "download_state": "downloading",
+      "download_speed": 65462282,
+      "original_url": null,
+      "eta": 605,
+      "progress": 0.09,
+      "size": 43930825523,
+      "download_id": "SABnzbd_nzo_x8lmutaj",
+      "files": [],
+      "active": true,
+      "cached": false,
+      "download_present": false,
+      "download_finished": false,
+      "expires_at": null,
+      "server": 18
+    }
+  ]
+}

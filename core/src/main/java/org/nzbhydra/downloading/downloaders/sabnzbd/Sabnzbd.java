@@ -112,12 +112,6 @@ public class Sabnzbd extends Downloader {
         return nzoId;
     }
 
-    protected String suffixNzbToTitle(String title) {
-        if (!title.toLowerCase().endsWith(".nzbd")) {
-            title += ".nzb";
-        }
-        return title;
-    }
 
     private String sendAddNzbLinkCommand(UriComponentsBuilder urlBuilder, HttpEntity httpEntity, HttpMethod httpMethod) throws DownloaderException {
         try {

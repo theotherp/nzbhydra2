@@ -1,0 +1,43 @@
+{
+  "success": true,
+  "error": null,
+  "detail": "Usenet downloads list retrieved successfully.",
+  "data": [
+    {
+      "id": 27901,
+      "created_at": "2024-12-14T08:08:30Z",
+      "updated_at": "2024-12-14T08:08:40Z",
+      "auth_id": "408f0af4-f476-4fb9-9f13-c62dbb1f4d45",
+      "name": "US.Papa.S20E07.480p.x264-mSD",
+      "hash": "dc6055b1ed9006d9a9bafa7153373c86",
+      "download_state": "completed",
+      "download_speed": 0,
+      "original_url": null,
+      "eta": 0,
+      "progress": 1,
+      "size": 52445925,
+      "download_id": "SABnzbd_nzo_sjkdfdqt",
+      "files": [
+        {
+          "id": 0,
+          "md5": null,
+          "hash": "dc6055b1ed9006d9a9bafa7153373c86",
+          "name": "US.Papa.S20E07.480p.x264-mSD/US.Papa.S20E07.480p.x264-mSD.mkv",
+          "size": 52445925,
+          "zipped": false,
+          "s3_path": "55c07a6d1b0dd05963a91a76c89bf3e3/US.Papa.S20E07.480p.x264-mSD/US.Papa.S20E07.480p.x264-mSD.mkv",
+          "infected": false,
+          "mimetype": "video/x-matroska",
+          "short_name": "US.Papa.S20E07.480p.x264-mSD.mkv",
+          "absolute_path": "/downloads/55c07a6d1b0dd05963a91a76c89bf3e3/US.Papa.S20E07.480p.x264-mSD/US.Papa.S20E07.480p.x264-mSD.mkv"
+        }
+      ],
+      "active": false,
+      "cached": true,
+      "download_present": true,
+      "download_finished": true,
+      "expires_at": "2025-01-13T08:08:40Z",
+      "server": 19
+    }
+  ]
+}
