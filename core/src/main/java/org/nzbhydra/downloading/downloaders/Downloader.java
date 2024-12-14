@@ -282,11 +282,11 @@ public abstract class Downloader {
         return updatedDownloads;
     }
 
-    protected void addDownloadRate(long downloadRate) {
+    protected void addDownloadRate(long downloadRateKb) {
         if (downloadRates.size() >= 300) {
             downloadRates.remove(0);
         }
-        downloadRates.add(downloadRate);
+        downloadRates.add(downloadRateKb);
     }
 
     public abstract List<DownloaderEntry> getHistory(Instant earliestDownload) throws DownloaderException;

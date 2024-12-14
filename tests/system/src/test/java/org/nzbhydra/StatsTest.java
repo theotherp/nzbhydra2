@@ -38,7 +38,7 @@ public class StatsTest {
     private Searcher searcher;
 
     @Autowired
-    private Downloader downloader;
+    private TestDownloader downloader;
 
 
     @Test

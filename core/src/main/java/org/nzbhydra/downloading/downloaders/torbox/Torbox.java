@@ -16,6 +16,7 @@
 
 package org.nzbhydra.downloading.downloaders.torbox;
 
+import jakarta.annotation.Nullable;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Request;
 import org.jetbrains.annotations.NotNull;
@@ -29,6 +30,7 @@ import org.nzbhydra.downloading.downloaders.Downloader;
 import org.nzbhydra.downloading.downloaders.DownloaderEntry;
 import org.nzbhydra.downloading.downloaders.DownloaderStatus;
 import org.nzbhydra.downloading.downloaders.torbox.mapping.AddUDlResponse;
+import org.nzbhydra.downloading.downloaders.torbox.mapping.TorboxDownload;
 import org.nzbhydra.downloading.downloaders.torbox.mapping.UsenetListResponse;
 import org.nzbhydra.downloading.exceptions.DownloaderException;
 import org.nzbhydra.searching.db.SearchResultRepository;
@@ -69,7 +71,7 @@ public class Torbox extends Downloader {
 
     private final RestTemplate restTemplate;
     private Instant lastUpdate = Instant.MIN;
-    private final List<DownloaderEntry> lastDownloaderEntries = new ArrayList<>();
+    private final List<TorboxDownload> lastTorboxDownloads = new ArrayList<>();
 
 
     public Torbox(FileHandler nzbHandler, SearchResultRepository searchResultRepository, ApplicationEventPublisher applicationEventPublisher, IndexerSpecificDownloadExceptions indexerSpecificDownloadExceptions, ConfigProvider configProvider, HydraOkHttp3ClientHttpRequestFactory requestFactory) {
@@ -155,14 +157,32 @@ public class Torbox extends Downloader {
 
     @Override
     public DownloaderStatus getStatus() throws DownloaderException {
-        return DownloaderStatus.builder()
+        List<TorboxDownload> downloadingEntries = getLastTorboxDownloads().stream().filter(x -> x.getDownloadState().equals("downloading")).toList();
+        long downloadSpeedKb = downloadingEntries.stream().mapToLong(TorboxDownload::getDownloadSpeedBytes).sum() / 1024;
+        addDownloadRate(downloadSpeedKb);
+        DownloaderStatus.DownloaderStatusBuilder statusBuilder = DownloaderStatus.builder()
                 .downloaderName("Torbox")
                 .downloaderType(DownloaderType.TORBOX)
-                .state(DownloaderStatus.State.IDLE)
+                .state(downloadingEntries.isEmpty() ? DownloaderStatus.State.IDLE : DownloaderStatus.State.DOWNLOADING)
                 .url(BASE_URL)
-                .elementsInQueue(0)
-                .downloadingRatesInKilobytes(new ArrayList<>())
-                .build();
+                .downloadingRatesInKilobytes(downloadRates)
+                .downloadRateInKilobytes(downloadSpeedKb)
+                .elementsInQueue(downloadingEntries.size());
+        if (!downloadingEntries.isEmpty()) {
+            double etaSeconds = downloadingEntries.stream().mapToLong(TorboxDownload::getEta).average().orElse(0);
+            long remainingMegaBytes = downloadingEntries.stream().mapToLong(TorboxDownload::getSize).sum() / 1024 / 1024;
+
+            TorboxDownload torboxDownload = downloadingEntries.get(0);
+            statusBuilder = statusBuilder
+                    .remainingSeconds((long) etaSeconds)
+                    .remainingSizeInMegaBytes(remainingMegaBytes)
+                    .downloadingTitle(torboxDownload.getName())
+                    .downloadingTitlePercentFinished((int) (100 * torboxDownload.getProgress()))
+                    .downloadingTitleRemainingSizeKilobytes(torboxDownload.getSize() / 1024)
+                    .downloadingTitleRemainingTimeSeconds(torboxDownload.getEta())
+            ;
+        }
+        return statusBuilder.build();
     }
 
     @Override
@@ -174,7 +194,7 @@ public class Torbox extends Downloader {
     }
 
     @Override
-    public List<DownloaderEntry> getQueue(Instant earliestDownload) throws DownloaderException {
+    public List<DownloaderEntry> getQueue(@Nullable Instant earliestDownload) throws DownloaderException {
         return getDownloaderEntries()
                 .stream()
                 .filter(x -> !x.getStatus().equals("failed") && !x.getStatus().equals("completed"))
@@ -183,29 +203,32 @@ public class Torbox extends Downloader {
 
     @NotNull
     private List<DownloaderEntry> getDownloaderEntries() throws DownloaderException {
+        return getLastTorboxDownloads().stream().map(entry -> DownloaderEntry.builder()
+                        .nzbId(String.valueOf(entry.getId()))
+                        .nzbName(entry.getName())
+                        .time(entry.getCreated_at())
+                        .status(entry.getDownloadState())
+                        .build())
+                .toList();
+    }
+
+    private List<TorboxDownload> getLastTorboxDownloads() throws DownloaderException {
         if (lastUpdate.isAfter(Instant.now().minus(CACHE_TIME))) {
-            return lastDownloaderEntries;
+            return lastTorboxDownloads;
         }
-        log.debug("Loading usenet list from torbox");
         UriComponentsBuilder url = getBaseUrl()
                 .path("/usenet/mylist")
                 .queryParam("bypass_cache", true);
         try {
             ResponseEntity<UsenetListResponse> response = restTemplate.getForEntity(url.toUriString(), UsenetListResponse.class);
             UsenetListResponse body = response.getBody();
-            if (response.getStatusCode().is2xxSuccessful()) {
-                List<DownloaderEntry> downloaderEntries = body.getData().stream().map(entry -> DownloaderEntry.builder()
-                                .nzbId(String.valueOf(entry.getId()))
-                                .nzbName(entry.getName())
-                                .time(entry.getCreated_at())
-                                .status(entry.getDownload_state())
-                                .build())
-                        .toList();
-                lastUpdate = Instant.now();
-                lastDownloaderEntries.clear();
-                lastDownloaderEntries.addAll(downloaderEntries);
 
-                return downloaderEntries;
+            if (response.getStatusCode().is2xxSuccessful()) {
+
+                lastUpdate = Instant.now();
+                lastTorboxDownloads.clear();
+                lastTorboxDownloads.addAll(body.getData());
+                return lastTorboxDownloads;
             }
             log.error("Loading usenet list from torbox failed. Error: {}. Details:\n{}", body.getError(), body.getDetail());
             throw new DownloaderException("Error loading usenet list from torbox. Error: " + body.getError());

@@ -16,6 +16,7 @@
 
 package org.nzbhydra.downloading.downloaders.torbox.mapping;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import java.time.Instant;
@@ -29,8 +30,10 @@ public class TorboxDownload {
     private String auth_id;
     private String name;
     private String hash;
-    private String download_state;
-    private int download_speed;
+    @JsonProperty("download_state")
+    private String downloadState;
+    @JsonProperty("download_speed")
+    private long downloadSpeedBytes;
     private String original_url;
     private int eta;
     private double progress;

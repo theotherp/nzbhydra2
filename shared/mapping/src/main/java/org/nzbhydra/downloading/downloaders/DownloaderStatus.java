@@ -16,11 +16,11 @@
 
 package org.nzbhydra.downloading.downloaders;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.Iterables;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.nzbhydra.downloading.DownloaderType;
 import org.nzbhydra.springnative.ReflectionMarker;
@@ -32,6 +32,7 @@ import java.util.List;
 @ReflectionMarker
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode
 @Builder
 public class DownloaderStatus {
 
@@ -47,20 +48,19 @@ public class DownloaderStatus {
     private DownloaderType downloaderType;
     private int elementsInQueue;
     private String downloadingTitle;
-    private String downloadingTitleRemainingSizeFormatted;
-    private String downloadingTitleRemainingTimeFormatted;
+
+    private long downloadingTitleRemainingSizeKilobytes;
+
+    private long downloadingTitleRemainingTimeSeconds;
+
     private int downloadingTitlePercentFinished;
 
-    private String downloadRateFormatted;
     private long downloadRateInKilobytes;
     @Builder.Default
     private List<Long> downloadingRatesInKilobytes = new ArrayList<>();
     private Long lastDownloadRate;
 
-    private String remainingTimeFormatted;
     private long remainingSeconds;
-
-    private String remainingSizeFormatted;
     private long remainingSizeInMegaBytes;
 
     private State state;
@@ -74,13 +74,20 @@ public class DownloaderStatus {
     }
 
     public String getDownloadRateFormatted() {
-        return Converters.formatBytesPerSecond(downloadRateInKilobytes * 1024, false);
+        return downloadRateInKilobytes == 0 ? "" : Converters.formatBytesPerSecond(downloadRateInKilobytes * 1024, false);
     }
 
     public String getRemainingSizeFormatted() {
-        return Converters.formatMegabytes(remainingSizeInMegaBytes, false);
+        return remainingSizeInMegaBytes == 0 ? "" : Converters.formatMegabytes(remainingSizeInMegaBytes, false);
     }
 
+    public String getRemainingTimeFormatted() {
+        return Converters.formatTime(remainingSeconds);
+    }
+
+    public String getDownloadingTitleRemainingTimeFormatted() {
+        return downloadingTitleRemainingTimeSeconds == 0 ? "" : Converters.formatTime(downloadingTitleRemainingTimeSeconds);
+    }
 
     public List<Long> getDownloadingRatesInKilobytes() {
         if (downloadingRatesInKilobytes.isEmpty() || downloadingRatesInKilobytes.size() < 5) {
@@ -96,25 +103,9 @@ public class DownloaderStatus {
         return downloadingRatesInKilobytes;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        DownloaderStatus that = (DownloaderStatus) o;
-        return elementsInQueue == that.elementsInQueue && downloadingTitlePercentFinished == that.downloadingTitlePercentFinished && downloadRateInKilobytes == that.downloadRateInKilobytes && remainingSeconds == that.remainingSeconds && remainingSizeInMegaBytes == that.remainingSizeInMegaBytes && Objects.equal(downloaderName, that.downloaderName) && downloaderType == that.downloaderType && Objects.equal(downloadingTitle, that.downloadingTitle) && Objects.equal(downloadingTitleRemainingSizeFormatted, that.downloadingTitleRemainingSizeFormatted) && Objects.equal(downloadingTitleRemainingTimeFormatted, that.downloadingTitleRemainingTimeFormatted) && Objects.equal(downloadRateFormatted, that.downloadRateFormatted) && Objects.equal(downloadingRatesInKilobytes, that.downloadingRatesInKilobytes) && Objects.equal(lastDownloadRate, that.lastDownloadRate) && Objects.equal(remainingTimeFormatted, that.remainingTimeFormatted) && Objects.equal(remainingSizeFormatted, that.remainingSizeFormatted) && state == that.state && Objects.equal(url, that.url);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(downloaderName, downloaderType, elementsInQueue, downloadingTitle, downloadingTitleRemainingSizeFormatted, downloadingTitleRemainingTimeFormatted, downloadingTitlePercentFinished, downloadRateFormatted, downloadRateInKilobytes, downloadingRatesInKilobytes, lastDownloadRate, remainingTimeFormatted, remainingSeconds, remainingSizeFormatted, remainingSizeInMegaBytes, state, url);
-    }
 
     @Data
-@ReflectionMarker
+    @ReflectionMarker
     @AllArgsConstructor
     static class DownloadRate {
         private long x;

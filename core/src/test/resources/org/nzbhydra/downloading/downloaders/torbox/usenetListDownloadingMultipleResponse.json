@@ -1,0 +1,52 @@
+{
+  "success": true,
+  "error": null,
+  "detail": "Usenet downloads list retrieved successfully.",
+  "data": [
+
+    {
+      "id": 28310,
+      "created_at": "2024-12-14T18:41:38Z",
+      "updated_at": "2024-12-14T18:41:40Z",
+      "auth_id": "1668bedb-8f02-491d-ac8d-a606158c505b",
+      "name": "US.Prettiness.1999.BluRay.1080P.AVC.DTS-HD.MA-AAOurBits",
+      "hash": "60903ff38d94e9e7d025ef2bbde088f8",
+      "download_state": "downloading",
+      "download_speed": 109698324,
+      "original_url": null,
+      "eta": 381,
+      "progress": 0,
+      "size": 41827644211,
+      "download_id": "SABnzbd_nzo_biu6tdth",
+      "files": [],
+      "active": true,
+      "cached": false,
+      "download_present": false,
+      "download_finished": false,
+      "expires_at": null,
+      "server": 19
+    },
+    {
+      "id": 28308,
+      "created_at": "2024-12-14T18:40:04Z",
+      "updated_at": "2024-12-14T18:41:38Z",
+      "auth_id": "1668bedb-8f02-491d-ac8d-a606158c505b",
+      "name": "US.Prettiness.1999.BluRay.1080P.AVC.DTS-HD.MA-DiYHDHome",
+      "hash": "fac532eb1d56e359be05282c918208cf",
+      "download_state": "downloading",
+      "download_speed": 105414533,
+      "original_url": null,
+      "eta": 400,
+      "progress": 0,
+      "size": 42250765598,
+      "download_id": "SABnzbd_nzo_uep87kn_",
+      "files": [],
+      "active": true,
+      "cached": false,
+      "download_present": false,
+      "download_finished": false,
+      "expires_at": null,
+      "server": 18
+    }
+  ]
+}

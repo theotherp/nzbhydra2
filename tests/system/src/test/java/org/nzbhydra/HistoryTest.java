@@ -44,7 +44,7 @@ public class HistoryTest {
     private Searcher searcher;
 
     @Autowired
-    private Downloader downloader;
+    private TestDownloader downloader;
 
     @Test
     public void shouldShowSearchHistory() throws Exception {
