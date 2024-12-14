@@ -1,0 +1,29 @@
+{
+  "success": true,
+  "error": null,
+  "detail": "Usenet downloads list retrieved successfully.",
+  "data": [
+    {
+          "id": 27949,
+          "created_at": "2024-12-14T10:27:00Z",
+          "updated_at": "2024-12-14T10:27:00Z",
+          "auth_id": "408f0af4-f476-4fb9-9f13-c62dbb1f4d45",
+          "name": "Die.Hamburger.Purzelschachtel",
+          "hash": "6b531e077cd6b8b86e190dc9614e6807",
+          "download_state": "failed",
+          "download_speed": 0,
+          "original_url": null,
+          "eta": 0,
+          "progress": 0,
+          "size": 444711567,
+          "download_id": "SABnzbd_nzo_1q30bevu",
+          "files": [],
+          "active": false,
+          "cached": false,
+          "download_present": false,
+          "download_finished": false,
+          "expires_at": null,
+          "server": 18
+        }
+  ]
+}

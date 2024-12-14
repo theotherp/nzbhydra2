@@ -19,7 +19,9 @@ package org.nzbhydra.downloading.downloaders;
 import com.google.common.base.Objects;
 import com.google.common.collect.Iterables;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.nzbhydra.downloading.DownloaderType;
 import org.nzbhydra.springnative.ReflectionMarker;
 
@@ -28,6 +30,9 @@ import java.util.List;
 
 @Data
 @ReflectionMarker
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class DownloaderStatus {
 
     public enum State {
@@ -48,6 +53,7 @@ public class DownloaderStatus {
 
     private String downloadRateFormatted;
     private long downloadRateInKilobytes;
+    @Builder.Default
     private List<Long> downloadingRatesInKilobytes = new ArrayList<>();
     private Long lastDownloadRate;
 

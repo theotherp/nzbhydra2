@@ -18,8 +18,10 @@ package org.nzbhydra.downloading.downloaders.torbox;
 
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Request;
+import org.jetbrains.annotations.NotNull;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.downloading.DownloaderType;
 import org.nzbhydra.downloading.FileDownloadStatus;
 import org.nzbhydra.downloading.FileHandler;
 import org.nzbhydra.downloading.IndexerSpecificDownloadExceptions;
@@ -27,6 +29,7 @@ import org.nzbhydra.downloading.downloaders.Downloader;
 import org.nzbhydra.downloading.downloaders.DownloaderEntry;
 import org.nzbhydra.downloading.downloaders.DownloaderStatus;
 import org.nzbhydra.downloading.downloaders.torbox.mapping.AddUDlResponse;
+import org.nzbhydra.downloading.downloaders.torbox.mapping.UsenetListResponse;
 import org.nzbhydra.downloading.exceptions.DownloaderException;
 import org.nzbhydra.searching.db.SearchResultRepository;
 import org.nzbhydra.webaccess.HydraOkHttp3ClientHttpRequestFactory;
@@ -44,7 +47,9 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -54,11 +59,18 @@ public class Torbox extends Downloader {
     // TODO sist 14.12.2024: Try and parse error responses
     // TODO sist 14.12.2024: Exclude nzbs.in
     // TODO sist 14.12.2024: Check if bypass_cache for status check is OK and which limit should be used
+    // TODO sist 14.12.2024: Cache calls to usenet/torrents list so that we only make one call for history, status and queue
+    // TODO sist 14.12.2024: What are possible values for download_state?
 
     private static final String HOST = "torbox.app";
-    private static final String BASE_URL = "https://api.torbox.app/v1/api";
+    private static final String BASE_URL = "https://torbox.app";
+    private static final String BASE_API_URL = "https://api.torbox.app/v1/api";
+    public static final Duration CACHE_TIME = Duration.ofSeconds(5);
 
     private final RestTemplate restTemplate;
+    private Instant lastUpdate = Instant.MIN;
+    private final List<DownloaderEntry> lastDownloaderEntries = new ArrayList<>();
+
 
     public Torbox(FileHandler nzbHandler, SearchResultRepository searchResultRepository, ApplicationEventPublisher applicationEventPublisher, IndexerSpecificDownloadExceptions indexerSpecificDownloadExceptions, ConfigProvider configProvider, HydraOkHttp3ClientHttpRequestFactory requestFactory) {
         super(nzbHandler, searchResultRepository, applicationEventPublisher, indexerSpecificDownloadExceptions, configProvider);
@@ -143,26 +155,87 @@ public class Torbox extends Downloader {
 
     @Override
     public DownloaderStatus getStatus() throws DownloaderException {
-        return null;
+        return DownloaderStatus.builder()
+                .downloaderName("Torbox")
+                .downloaderType(DownloaderType.TORBOX)
+                .state(DownloaderStatus.State.IDLE)
+                .url(BASE_URL)
+                .elementsInQueue(0)
+                .downloadingRatesInKilobytes(new ArrayList<>())
+                .build();
     }
 
     @Override
     public List<DownloaderEntry> getHistory(Instant earliestDownload) throws DownloaderException {
-        return List.of();
+        return getDownloaderEntries()
+                .stream()
+                .filter(x -> x.getStatus().equals("failed") || x.getStatus().equals("completed"))
+                .toList();
     }
 
     @Override
     public List<DownloaderEntry> getQueue(Instant earliestDownload) throws DownloaderException {
-        return List.of();
+        return getDownloaderEntries()
+                .stream()
+                .filter(x -> !x.getStatus().equals("failed") && !x.getStatus().equals("completed"))
+                .toList();
+    }
+
+    @NotNull
+    private List<DownloaderEntry> getDownloaderEntries() throws DownloaderException {
+        if (lastUpdate.isAfter(Instant.now().minus(CACHE_TIME))) {
+            return lastDownloaderEntries;
+        }
+        log.debug("Loading usenet list from torbox");
+        UriComponentsBuilder url = getBaseUrl()
+                .path("/usenet/mylist")
+                .queryParam("bypass_cache", true);
+        try {
+            ResponseEntity<UsenetListResponse> response = restTemplate.getForEntity(url.toUriString(), UsenetListResponse.class);
+            UsenetListResponse body = response.getBody();
+            if (response.getStatusCode().is2xxSuccessful()) {
+                List<DownloaderEntry> downloaderEntries = body.getData().stream().map(entry -> DownloaderEntry.builder()
+                                .nzbId(String.valueOf(entry.getId()))
+                                .nzbName(entry.getName())
+                                .time(entry.getCreated_at())
+                                .status(entry.getDownload_state())
+                                .build())
+                        .toList();
+                lastUpdate = Instant.now();
+                lastDownloaderEntries.clear();
+                lastDownloaderEntries.addAll(downloaderEntries);
+
+                return downloaderEntries;
+            }
+            log.error("Loading usenet list from torbox failed. Error: {}. Details:\n{}", body.getError(), body.getDetail());
+            throw new DownloaderException("Error loading usenet list from torbox. Error: " + body.getError());
+
+        } catch (RestClientException e) {
+            throw new DownloaderException("Error loading usenet list from torbox", e);
+        }
     }
 
     @Override
     protected FileDownloadStatus getDownloadStatusFromDownloaderEntry(DownloaderEntry entry, StatusCheckType statusCheckType) {
-        return null;
+        switch (entry.getStatus()) {
+            case "completed" -> {
+                return FileDownloadStatus.CONTENT_DOWNLOAD_SUCCESSFUL;
+            }
+            case "failed" -> {
+                return FileDownloadStatus.CONTENT_DOWNLOAD_ERROR;
+            }
+            case "downloading" -> {
+                return FileDownloadStatus.NZB_ADDED;
+            }
+            default -> {
+                return FileDownloadStatus.NONE;
+            }
+        }
+
     }
 
     private UriComponentsBuilder getBaseUrl() {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(BASE_URL);
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(BASE_API_URL);
         return builder;
     }
 }
