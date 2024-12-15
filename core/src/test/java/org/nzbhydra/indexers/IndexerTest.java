@@ -2,7 +2,6 @@ package org.nzbhydra.indexers;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.HashMultiset;
-import com.google.common.collect.Sets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -78,8 +77,9 @@ public class IndexerTest {
     private IndexerApiAccessEntityShortRepository shortRepositoryMock;
     @Mock
     private SearchResultRepository searchResultRepositoryMock;
-    @Captor
-    private ArgumentCaptor<List<SearchResultEntity>> searchResultEntitiesCaptor;
+    @Mock
+    private IndexerSearchResultPersistor searchResultPersistor;
+
     @Captor
     private ArgumentCaptor<String> errorMessageCaptor;
     @Captor
@@ -139,6 +139,11 @@ public class IndexerTest {
             protected String getAndStoreResultToDatabase(URI uri, IndexerApiAccessType apiAccessType) throws IndexerAccessException {
                 return null;
             }
+
+            @Override
+            protected List<SearchResultItem> persistSearchResults(List<SearchResultItem> searchResultItems, IndexerSearchResult indexerSearchResult) {
+                return searchResultItems;
+            }
         };
     }
 
@@ -177,41 +182,6 @@ public class IndexerTest {
             }
             return invocation.getArgument(1);
         });
-    }
-
-    @Test
-    void shouldCreateNewSearchResultEntityWhenNoneIsFound() throws Exception {
-        SearchResultItem item = new SearchResultItem();
-        item.setIndexer(indexerMock);
-        item.setTitle("title");
-        item.setDetails("details");
-        item.setIndexerGuid("guid");
-
-        testee.persistSearchResults(Collections.singletonList(item), new IndexerSearchResult());
-
-        verify(searchResultRepositoryMock).saveAll(searchResultEntitiesCaptor.capture());
-
-        List<SearchResultEntity> persistedEntities = searchResultEntitiesCaptor.getValue();
-        assertThat(persistedEntities.size()).isEqualTo(1);
-        assertThat(persistedEntities.get(0).getTitle()).isEqualTo("title");
-        assertThat(persistedEntities.get(0).getDetails()).isEqualTo("details");
-        assertThat(persistedEntities.get(0).getIndexerGuid()).isEqualTo("guid");
-    }
-
-    @Test
-    void shouldNotCreateNewSearchResultEntityWhenOneExists() throws Exception {
-        SearchResultItem item = new SearchResultItem();
-        item.setIndexerGuid("guid");
-        item.setIndexer(indexerMock);
-        searchResultEntityMock.setIndexerGuid("guid");
-        when(searchResultRepositoryMock.findAllIdsByIdIn(anyList())).thenReturn(Sets.newHashSet(299225959498991027L));
-
-        testee.persistSearchResults(Collections.singletonList(item), new IndexerSearchResult());
-
-        verify(searchResultRepositoryMock).saveAll(searchResultEntitiesCaptor.capture());
-
-        List<SearchResultEntity> persistedEntities = searchResultEntitiesCaptor.getValue();
-        assertThat(persistedEntities.size()).isEqualTo(0);
     }
 
 

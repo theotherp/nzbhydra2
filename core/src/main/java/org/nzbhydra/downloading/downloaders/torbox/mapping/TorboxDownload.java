@@ -18,11 +18,13 @@ package org.nzbhydra.downloading.downloaders.torbox.mapping;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.time.Instant;
 import java.util.List;
 
 @Data
+@ReflectionMarker
 public class TorboxDownload {
     private long id;
     private Instant created_at;

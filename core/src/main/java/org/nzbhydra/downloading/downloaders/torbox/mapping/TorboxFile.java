@@ -17,8 +17,10 @@
 package org.nzbhydra.downloading.downloaders.torbox.mapping;
 
 import lombok.Data;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 @Data
+@ReflectionMarker
 public class TorboxFile {
     private long id;
     private String md5;

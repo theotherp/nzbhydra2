@@ -49,6 +49,7 @@ import org.nzbhydra.mapping.newznab.xml.Xml;
 import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.mediainfo.MediaInfo;
 import org.nzbhydra.searching.CategoryProvider;
+import org.nzbhydra.searching.CustomQueryAndTitleMappingHandler;
 import org.nzbhydra.searching.SearchResultAcceptor;
 import org.nzbhydra.searching.SearchResultAcceptor.AcceptorResult;
 import org.nzbhydra.searching.db.SearchResultRepository;
@@ -61,6 +62,7 @@ import org.springframework.oxm.Unmarshaller;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.lang.reflect.Field;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -100,6 +102,10 @@ public class NewznabTest {
     private SearchResultAcceptor resultAcceptorMock;
     @Mock
     private Unmarshaller unmarshallerMock;
+    @Mock
+    private CustomQueryAndTitleMappingHandler customQueryAndTitleMappingHandler;
+    @Mock
+    private IndexerSearchResultPersistor searchResultPersistor;
     @Captor
     ArgumentCaptor<String> errorMessageCaptor;
     @Captor
@@ -129,6 +135,7 @@ public class NewznabTest {
     @BeforeEach
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
+//        testee = new Newznab(configProviderMock,indexerRepositoryMock,searchResultRepositoryMock, indexerApiAccessRepositoryMock, null,null,indexerWebAccessMock,resultAcceptorMock, categoryProviderMock, infoProviderMock, null,queryGeneratorMock, customQueryAndTitleMappingHandler,unmarshallerMock,baseConfigHandler,null);
         testee = spy(testee);
         when(infoProviderMock.canConvert(MediaIdType.IMDB, MediaIdType.TMDB)).thenReturn(true);
         MediaInfo info = new MediaInfo();
@@ -148,6 +155,9 @@ public class NewznabTest {
         testee.config.setHost("http://127.0.0.1:1234");
         testee.config.setForbiddenWordPrefix(IndexerConfig.ForbiddenWordPrefix.EXCLAMATION_MARK);
         testee.indexer = indexerEntityMock;
+        Field field = Indexer.class.getDeclaredField("titleMapping");
+        field.setAccessible(true);
+        field.set(testee, customQueryAndTitleMappingHandler);
 
         baseConfig = new BaseConfig();
         when(configProviderMock.getBaseConfig()).thenReturn(baseConfig);

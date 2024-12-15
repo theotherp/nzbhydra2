@@ -18,7 +18,7 @@ import java.util.Objects;
 @ReflectionMarker
 @Entity
 @Table(name = "indexer")
-public final class IndexerEntity {
+public class IndexerEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
