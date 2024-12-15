@@ -1884,7 +1884,9 @@ function ConfigFields($injector) {
                         {
                             key: 'primaryDownloader',
                             type: 'horizontalSelect',
-                            hideExpression: 'model.downloaders.length <= 1 || !model.showDownloaderStatus',
+                            hideExpression: function ($viewValue, $modelValue, scope) {
+                                return !rootModel.downloading.showDownloaderStatus || rootModel.downloading.downloaders.filter((downloader) => downloader.enabled).length <= 1;
+                            },
                             templateOptions: {
                                 label: 'Primary downloader',
                                 options: [],

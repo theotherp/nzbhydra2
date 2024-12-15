@@ -123,14 +123,8 @@ function downloaderStatusFooter() {
             }
 
             $scope.foo = downloaderStatus;
-            if (downloaderStatus.downloaderType === 'NZBGET') {
-                $scope.foo.downloaderImage = 'nzbgetlogo';
-            }
-            if (downloaderStatus.downloaderType === 'TORBOX') {
-                $scope.foo.downloaderImage = 'torboxlogo';
-            } else {
-                $scope.foo.downloaderImage = 'sabnzbdlogo';
-            }
+            $scope.foo.downloaderImage = downloaderStatus.downloaderType.toLowerCase() + "logo";
+
             $scope.foo.url = downloaderStatus.url;
             //We need to splice the variable with the rates because it's watched by angular and when overwriting it we would lose the watch and it wouldn't be updated
             var maxEntriesHistory = 200;
