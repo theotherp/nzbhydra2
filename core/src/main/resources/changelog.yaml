@@ -1,4 +1,12 @@
 #@formatter:off
+-   version: "v7.11.0"
+    date: "2024-12-15"
+    changes:
+      -   type: "feature"
+          text: "Support for torbox.app as a usenet downloader. They allow sending NZBs to them and you can access the downloaded stuff via web or multiple integrations like FTP, WebDAV, etc. Using them as a search engine or to download torrents will / may come later."
+      -   type: "fix"
+          text: "Remove unneeded file from generic release which increased the size of the architect by a whopping 100MB"
+    final: true
 -   version: "v7.10.2"
     date: "2024-12-04"
     changes:

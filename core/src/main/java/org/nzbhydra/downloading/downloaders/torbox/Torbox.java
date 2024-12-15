@@ -61,8 +61,8 @@ public class Torbox extends Downloader {
     // TODO sist 14.12.2024: Try and parse error responses
     // TODO sist 14.12.2024: Exclude nzbs.in
     // TODO sist 14.12.2024: Check if bypass_cache for status check is OK and which limit should be used
-    // TODO sist 14.12.2024: Cache calls to usenet/torrents list so that we only make one call for history, status and queue
     // TODO sist 14.12.2024: What are possible values for download_state?
+    // TODO sist 14.12.2024: Switching the downloader doesn't update the status footer
 
     private static final String HOST = "torbox.app";
     private static final String BASE_URL = "https://torbox.app";

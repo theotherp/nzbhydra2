@@ -4943,7 +4943,8 @@ angular
                         nzbAddingType: "UPLOAD",
                         nzbAccessType: "PROXY",
                         iconCssClass: "",
-                        downloadType: "NZB"
+                        downloadType: "NZB",
+                        defaultCategory: "Use no category"
                     }
                 ];
 
