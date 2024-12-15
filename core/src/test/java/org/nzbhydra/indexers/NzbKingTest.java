@@ -53,7 +53,7 @@ public class NzbKingTest {
 
     @InjectMocks
     private NzbKing testee = new NzbKing(configProviderMock, null, null, null, null, null,
-        null, null, categoryProviderMock, null, null, queryGeneratorMock, null, null);
+            null, null, categoryProviderMock, null, null, queryGeneratorMock, null, null, null);
 
     @BeforeEach
     public void setUp() throws Exception {

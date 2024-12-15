@@ -2583,7 +2583,8 @@ function downloaderStatusFooter() {
             }
 
             $scope.foo = downloaderStatus;
-            $scope.foo.downloaderImage = downloaderStatus.downloaderType === 'NZBGET' ? 'nzbgetlogo' : 'sabnzbdlogo';
+            $scope.foo.downloaderImage = downloaderStatus.downloaderType.toLowerCase() + "logo";
+
             $scope.foo.url = downloaderStatus.url;
             //We need to splice the variable with the rates because it's watched by angular and when overwriting it we would lose the watch and it wouldn't be updated
             var maxEntriesHistory = 200;
@@ -3220,13 +3221,13 @@ function connectionTest() {
             if ($scope.type === "downloader") {
                 url = "internalapi/test_downloader";
                 params = {name: $scope.downloader, username: $scope.data.username, password: $scope.data.password};
-                if ($scope.downloader === "SABNZBD") {
-                    params.apiKey = $scope.data.apiKey;
-                    params.url = $scope.data.url;
-                } else {
+                if ($scope.downloader === "NZBGET") {
                     params.host = $scope.data.host;
                     params.port = $scope.data.port;
                     params.ssl = $scope.data.ssl;
+                } else {
+                    params.apiKey = $scope.data.apiKey;
+                    params.url = $scope.data.url;
                 }
             } else if ($scope.data.type === "newznab") {
                 url = "internalapi/test_newznab";
@@ -3517,6 +3518,16 @@ addableNzb.$inject = ["DebugService"];angular
     .module('nzbhydraApp')
     .directive('addableNzb', addableNzb);
 
+function getCssClass(downloaderType) {
+    if (downloaderType === "SABNZBD") {
+        return "sabnzbd";
+    } else if (downloaderType === "TORBOX") {
+        return "torbox";
+    } else {
+        return "nzbget";
+    }
+}
+
 function addableNzb(DebugService) {
     controller.$inject = ["$scope", "NzbDownloadService", "growl"];
     return {
@@ -3533,7 +3544,7 @@ function addableNzb(DebugService) {
         if (!_.isNullOrEmpty($scope.downloader.iconCssClass)) {
             $scope.cssClass = "fa fa-" + $scope.downloader.iconCssClass.replace("fa-", "").replace("fa ", "");
         } else {
-            $scope.cssClass = $scope.downloader.downloaderType === "SABNZBD" ? "sabnzbd" : "nzbget";
+            $scope.cssClass = getCssClass($scope.downloader.downloaderType);
         }
 
         $scope.add = function () {
@@ -3546,16 +3557,16 @@ function addableNzb(DebugService) {
             }], $scope.alwaysAsk).then(function (response) {
                 if (response !== "dismissed") {
                     if (response.data.successful && (response.data.addedIds != null && response.data.addedIds.indexOf(Number($scope.searchresult.searchResultId)) > -1)) {
-                        $scope.cssClass = $scope.downloader.downloaderType === "SABNZBD" ? "sabnzbd-success" : "nzbget-success";
+                        $scope.cssClass = getCssClass($scope.downloader.downloaderType) + "-success";
                     } else {
-                        $scope.cssClass = $scope.downloader.downloaderType === "SABNZBD" ? "sabnzbd-error" : "nzbget-error";
+                        $scope.cssClass = getCssClass($scope.downloader.downloaderType) + "-error";
                         growl.error(response.data.message);
                     }
                 } else {
                     $scope.cssClass = originalClass;
                 }
             }, function () {
-                $scope.cssClass = $scope.downloader.downloaderType === "SABNZBD" ? "sabnzbd-error" : "nzbget-error";
+                $scope.cssClass = getCssClass($scope.downloader.downloaderType) + "-error";
                 growl.error("An unexpected error occurred while trying to contact NZBHydra or add the NZB.");
             })
         };
@@ -4919,6 +4930,15 @@ angular
                         nzbAccessType: "REDIRECT",
                         iconCssClass: "",
                         downloadType: "NZB"
+                    },
+                    {
+                        downloaderType: "TORBOX",
+                        name: "Torbox",
+                        nzbAddingType: "UPLOAD",
+                        nzbAccessType: "PROXY",
+                        iconCssClass: "",
+                        downloadType: "NZB",
+                        defaultCategory: "Use no category"
                     }
                 ];
 
@@ -5016,10 +5036,11 @@ angular
                                 }
                             }
 
-                        },
-                        {
+                        }]);
+                    fieldset.push({
                             key: 'url',
                             type: 'horizontalInput',
+                        hideFor: ["TORBOX"],
                             templateOptions: {
                                 type: 'text',
                                 label: 'URL',
@@ -5034,13 +5055,14 @@ angular
                                 }
                             }
                         }
-                    ]);
+                    );
 
 
-                    if (model.downloaderType === "SABNZBD") {
+                    if (model.downloaderType === "SABNZBD" || model.downloaderType === "TORBOX") {
                         fieldset.push({
                             key: 'apiKey',
                             type: 'horizontalInput',
+                            showFor: ["SABNZBD", "TORBOX"],
                             templateOptions: {
                                 type: 'text',
                                 label: 'API Key'
@@ -5086,43 +5108,47 @@ angular
                         })
                     }
 
-                    fieldset = _.union(fieldset, [
+                    fieldset.push(
                         {
                             key: 'defaultCategory',
                             type: 'horizontalInput',
+                            hideFor: ["TORBOX"],
                             templateOptions: {
                                 type: 'text',
                                 label: 'Default category',
                                 help: 'When adding NZBs this category will be used instead of asking for the category. Write "Use original category", "Use no category" or "Use mapped category" to not be asked.',
                                 placeholder: 'Ask when downloading'
                             }
-                        },
-                        {
-                            key: 'nzbAddingType',
-                            type: 'horizontalSelect',
-                            templateOptions: {
-                                type: 'select',
-                                label: 'NZB adding type',
-                                options: [
-                                    {name: 'Send link', value: 'SEND_LINK'},
-                                    {name: 'Upload NZB', value: 'UPLOAD'}
-                                ],
-                                help: "How NZBs are added to the downloader, either by sending a link to the NZB or by uploading the NZB data.",
-                                tooltip: 'You can select if you want to upload the NZB to the downloader or send a Hydra link. The downloader will do the download itself. This is a matter of taste, but adding a link and redirecting the downloader is the fastest way.' +
-                                    '<br>Usually the links are determined using the URL via which you call it in your browser. If your downloader cannot access NZBHydra using that URL you can set a specific URL to be used in the main downloading config.',
-                                advanced: true
-                            }
-                        },
-                        {
-                            key: 'addPaused',
-                            type: 'horizontalSwitch',
-                            templateOptions: {
-                                type: 'switch',
-                                label: 'Add paused',
-                                help: 'Add NZBs paused',
-                                advanced: true
-                            }
-                        },
+                        });
+                    fieldset.push({
+                        key: 'nzbAddingType',
+                        type: 'horizontalSelect',
+                        hideFor: ["TORBOX"],
+                        templateOptions: {
+                            type: 'select',
+                            label: 'NZB adding type',
+                            options: [
+                                {name: 'Send link', value: 'SEND_LINK'},
+                                {name: 'Upload NZB', value: 'UPLOAD'}
+                            ],
+                            help: "How NZBs are added to the downloader, either by sending a link to the NZB or by uploading the NZB data.",
+                            tooltip: 'You can select if you want to upload the NZB to the downloader or send a Hydra link. The downloader will do the download itself. This is a matter of taste, but adding a link and redirecting the downloader is the fastest way.' +
+                                '<br>Usually the links are determined using the URL via which you call it in your browser. If your downloader cannot access NZBHydra using that URL you can set a specific URL to be used in the main downloading config.',
+                            advanced: true
+                        }
+                    });
+                    fieldset.push({
+                        key: 'addPaused',
+                        type: 'horizontalSwitch',
+                        hideFor: ["TORBOX"],
+                        templateOptions: {
+                            type: 'switch',
+                            label: 'Add paused',
+                            help: 'Add NZBs paused',
+                            advanced: true
+                        }
+                    });
+                    fieldset.push(
                         {
                             key: 'iconCssClass',
                             type: 'horizontalInput',
@@ -5134,9 +5160,16 @@ angular
                                 tooltip: 'If you have multiple downloaders of the same type you can select an icon from the Font Awesome library. This icon will be shown in the search results and the NZB download history instead of the default downloader icon.',
                                 advanced: true
                             }
+                        });
+                    fieldset = fieldset.filter(function (field) {
+                        if (field.showFor) {
+                            return field.showFor.includes(model.downloaderType);
                         }
-                    ]);
-
+                        if (field.hideFor) {
+                            return !field.hideFor.includes(model.downloaderType);
+                        }
+                        return true;
+                    });
                     return fieldset;
                 }
             }
@@ -7939,7 +7972,7 @@ function ConfigFields($injector) {
                     wrapper: 'fieldset',
                     templateOptions: {
                         label: 'General',
-                        tooltip: 'Hydra allows sending NZB search results directly to downloaders (NZBGet, sabnzbd). Torrent downloaders are not supported.'
+                        tooltip: 'Hydra allows sending NZB search results directly to downloaders (NZBGet, sabnzbd, torbox). Torrent downloaders are not supported.'
                     },
                     fieldGroup: [
                         {
@@ -8040,7 +8073,9 @@ function ConfigFields($injector) {
                         {
                             key: 'primaryDownloader',
                             type: 'horizontalSelect',
-                            hideExpression: 'model.downloaders.length <= 1 || !model.showDownloaderStatus',
+                            hideExpression: function ($viewValue, $modelValue, scope) {
+                                return !rootModel.downloading.showDownloaderStatus || rootModel.downloading.downloaders.filter((downloader) => downloader.enabled).length <= 1;
+                            },
                             templateOptions: {
                                 label: 'Primary downloader',
                                 options: [],

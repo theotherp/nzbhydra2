@@ -2,7 +2,6 @@ package org.nzbhydra.indexers;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Stopwatch;
-import jakarta.persistence.EntityExistsException;
 import joptsimple.internal.Strings;
 import org.nzbhydra.config.BaseConfigHandler;
 import org.nzbhydra.config.ConfigChangedEvent;
@@ -24,8 +23,6 @@ import org.nzbhydra.searching.CategoryProvider;
 import org.nzbhydra.searching.CustomQueryAndTitleMappingHandler;
 import org.nzbhydra.searching.SearchResultAcceptor;
 import org.nzbhydra.searching.SearchResultAcceptor.AcceptorResult;
-import org.nzbhydra.searching.SearchResultIdCalculator;
-import org.nzbhydra.searching.db.SearchResultEntity;
 import org.nzbhydra.searching.db.SearchResultRepository;
 import org.nzbhydra.searching.dtoseventsenums.FallbackSearchInitiatedEvent;
 import org.nzbhydra.searching.dtoseventsenums.IndexerSearchFinishedEvent;
@@ -42,7 +39,6 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
@@ -50,13 +46,10 @@ import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -107,13 +100,15 @@ public abstract class Indexer<T> {
     private BaseConfigHandler baseConfigHandler;
 
     protected AutowireCapableBeanFactory beanFactory;
+    private IndexerSearchResultPersistor searchResultPersistor;
+
 
 
     protected Indexer() {
     }
 
 
-    public Indexer(ConfigProvider configProvider, IndexerRepository indexerRepository, SearchResultRepository searchResultRepository, IndexerApiAccessRepository indexerApiAccessRepository, IndexerApiAccessEntityShortRepository indexerApiAccessShortRepository, IndexerLimitRepository indexerStatusRepository, IndexerWebAccess indexerWebAccess, SearchResultAcceptor resultAcceptor, CategoryProvider categoryProvider, InfoProvider infoProvider, ApplicationEventPublisher eventPublisher, QueryGenerator queryGenerator, CustomQueryAndTitleMappingHandler titleMapping, BaseConfigHandler baseConfigHandler) {
+    public Indexer(ConfigProvider configProvider, IndexerRepository indexerRepository, SearchResultRepository searchResultRepository, IndexerApiAccessRepository indexerApiAccessRepository, IndexerApiAccessEntityShortRepository indexerApiAccessShortRepository, IndexerLimitRepository indexerStatusRepository, IndexerWebAccess indexerWebAccess, SearchResultAcceptor resultAcceptor, CategoryProvider categoryProvider, InfoProvider infoProvider, ApplicationEventPublisher eventPublisher, QueryGenerator queryGenerator, CustomQueryAndTitleMappingHandler titleMapping, BaseConfigHandler baseConfigHandler, IndexerSearchResultPersistor persistor) {
         this.configProvider = configProvider;
         this.indexerRepository = indexerRepository;
         this.searchResultRepository = searchResultRepository;
@@ -127,6 +122,7 @@ public abstract class Indexer<T> {
         this.queryGenerator = queryGenerator;
         this.titleMapping = titleMapping;
         this.baseConfigHandler = baseConfigHandler;
+        this.searchResultPersistor = persistor;
     }
 
 
@@ -280,39 +276,11 @@ public abstract class Indexer<T> {
         return query;
     }
 
-    @Transactional
+
     protected List<SearchResultItem> persistSearchResults(List<SearchResultItem> searchResultItems, IndexerSearchResult indexerSearchResult) {
         Stopwatch stopwatch = Stopwatch.createStarted();
         synchronized (dbLock) { //Locking per indexer prevents multiple threads trying to save the same "new" results to the database
-            ArrayList<SearchResultEntity> searchResultEntities = new ArrayList<>();
-            Set<Long> alreadySavedIds = searchResultRepository.findAllIdsByIdIn(searchResultItems.stream().map(SearchResultIdCalculator::calculateSearchResultId).collect(Collectors.toList()));
-            for (SearchResultItem item : searchResultItems) {
-                long guid = SearchResultIdCalculator.calculateSearchResultId(item);
-                if (!alreadySavedIds.contains(guid)) {
-                    SearchResultEntity searchResultEntity = new SearchResultEntity();
-
-                    //Set all entity relevant data
-                    searchResultEntity.setIndexer(indexer);
-                    searchResultEntity.setTitle(item.getTitle());
-                    searchResultEntity.setLink(item.getLink());
-                    searchResultEntity.setDetails(item.getDetails());
-                    searchResultEntity.setIndexerGuid(item.getIndexerGuid());
-                    searchResultEntity.setFirstFound(Instant.now());
-                    searchResultEntity.setDownloadType(item.getDownloadType());
-                    searchResultEntity.setPubDate(item.getPubDate());
-                    searchResultEntities.add(searchResultEntity);
-                }
-                //LATER Unify guid and searchResultId which are the same
-                item.setGuid(guid);
-                item.setSearchResultId(guid);
-            }
-            debug("Found {} results which were already in the database and {} new ones", alreadySavedIds.size(), searchResultEntities.size());
-            try {
-                searchResultRepository.saveAll(searchResultEntities);
-                indexerSearchResult.setSearchResultEntities(new HashSet<>(searchResultEntities));
-            } catch (EntityExistsException e) {
-                error("Unable to save the search results to the database", e);
-            }
+            searchResultPersistor.persistSearchResults(this, searchResultItems, indexerSearchResult);
         }
 
         getLogger().debug(LoggingMarkers.PERFORMANCE, "Persisting {} search results took {}ms", searchResultItems.size(), stopwatch.elapsed(TimeUnit.MILLISECONDS));

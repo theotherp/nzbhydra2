@@ -51,6 +51,7 @@ class FileDownloadEntityTest {
         searchResult.setFirstFound(Instant.now());
         searchResult.setPubDate(Instant.now());
         searchResult.setDownloadType(DownloadType.NZB);
+        searchResult.setId(1234L);
         final IndexerEntity indexerEntity = new IndexerEntity("indexerName");
         searchResult.setIndexer(indexerEntity);
         final SearchEntity searchEntity = new SearchEntity();
@@ -61,7 +62,9 @@ class FileDownloadEntityTest {
 
         final ObjectWriter printer = Jackson.JSON_MAPPER.writerWithDefaultPrettyPrinter();
         final FileDownloadEntityTO to = Jackson.JSON_MAPPER.convertValue(testee, FileDownloadEntityTO.class);
-        final String jsonTO = printer.writeValueAsString(to);
+        final String jsonTO = printer.writeValueAsString(to)
+                //Long value is serialized as string to prevent precision loss
+                .replace("\"1234\"", "1234");
         final String jsonEntity = printer.writeValueAsString(testee);
         assertThat(jsonTO).isEqualTo(jsonEntity);
     }

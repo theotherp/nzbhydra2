@@ -1,0 +1,56 @@
+{
+  "success": true,
+  "error": null,
+  "detail": "Torrent list retrieved successfully.",
+  "data": [
+    {
+      "id": 364792,
+      "auth_id": "1668bedb-8f02-491d-ac8d-a606158c505b",
+      "server": 16,
+      "hash": "3f9aac158c7de8dfcab171ea58a17aabdf7fbc93",
+      "name": "ubuntu-24.10-desktop-amd64",
+      "magnet": null,
+      "size": 5665497088,
+      "active": false,
+      "created_at": "2024-12-14T16:32:01Z",
+      "updated_at": "2024-12-14T16:32:01Z",
+      "download_state": "cached",
+      "seeds": 0,
+      "peers": 0,
+      "ratio": 0,
+      "progress": 1,
+      "download_speed": 0,
+      "upload_speed": 0,
+      "eta": 0,
+      "torrent_file": false,
+      "expires_at": null,
+      "download_present": true,
+      "files": [
+        {
+          "id": 0,
+          "md5": "ea0baab241893d4f2b679e7179009e1c",
+          "hash": "3f9aac158c7de8dfcab171ea58a17aabdf7fbc93",
+          "name": "ubuntu-24.10-desktop-amd64/ubuntu-24.10-desktop-amd64.iso",
+          "size": 5665497088,
+          "s3_path": "3f9aac158c7de8dfcab171ea58a17aabdf7fbc93/ubuntu-24.10-desktop-amd64/ubuntu-24.10-desktop-amd64.iso",
+          "mimetype": "application/x-iso9660-image",
+          "short_name": "ubuntu-24.10-desktop-amd64.iso",
+          "absolute_path": "/completed/3f9aac158c7de8dfcab171ea58a17aabdf7fbc93/ubuntu-24.10-desktop-amd64/ubuntu-24.10-desktop-amd64.iso"
+        }
+      ],
+      "download_path": "3f9aac158c7de8dfcab171ea58a17aabdf7fbc93",
+      "inactive_check": 0,
+      "availability": 0,
+      "download_finished": true,
+      "tracker": null,
+      "total_uploaded": 0,
+      "total_downloaded": 0,
+      "cached": true,
+      "owner": "1668bedb-8f02-491d-ac8d-a606158c505b",
+      "seed_torrent": false,
+      "allow_zipped": true,
+      "long_term_seeding": false,
+      "tracker_message": null
+    }
+  ]
+}

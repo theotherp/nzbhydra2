@@ -44,6 +44,15 @@ angular
                         nzbAccessType: "REDIRECT",
                         iconCssClass: "",
                         downloadType: "NZB"
+                    },
+                    {
+                        downloaderType: "TORBOX",
+                        name: "Torbox",
+                        nzbAddingType: "UPLOAD",
+                        nzbAccessType: "PROXY",
+                        iconCssClass: "",
+                        downloadType: "NZB",
+                        defaultCategory: "Use no category"
                     }
                 ];
 
@@ -141,10 +150,11 @@ angular
                                 }
                             }
 
-                        },
-                        {
+                        }]);
+                    fieldset.push({
                             key: 'url',
                             type: 'horizontalInput',
+                        hideFor: ["TORBOX"],
                             templateOptions: {
                                 type: 'text',
                                 label: 'URL',
@@ -159,13 +169,14 @@ angular
                                 }
                             }
                         }
-                    ]);
+                    );
 
 
-                    if (model.downloaderType === "SABNZBD") {
+                    if (model.downloaderType === "SABNZBD" || model.downloaderType === "TORBOX") {
                         fieldset.push({
                             key: 'apiKey',
                             type: 'horizontalInput',
+                            showFor: ["SABNZBD", "TORBOX"],
                             templateOptions: {
                                 type: 'text',
                                 label: 'API Key'
@@ -211,43 +222,47 @@ angular
                         })
                     }
 
-                    fieldset = _.union(fieldset, [
+                    fieldset.push(
                         {
                             key: 'defaultCategory',
                             type: 'horizontalInput',
+                            hideFor: ["TORBOX"],
                             templateOptions: {
                                 type: 'text',
                                 label: 'Default category',
                                 help: 'When adding NZBs this category will be used instead of asking for the category. Write "Use original category", "Use no category" or "Use mapped category" to not be asked.',
                                 placeholder: 'Ask when downloading'
                             }
-                        },
-                        {
-                            key: 'nzbAddingType',
-                            type: 'horizontalSelect',
-                            templateOptions: {
-                                type: 'select',
-                                label: 'NZB adding type',
-                                options: [
-                                    {name: 'Send link', value: 'SEND_LINK'},
-                                    {name: 'Upload NZB', value: 'UPLOAD'}
-                                ],
-                                help: "How NZBs are added to the downloader, either by sending a link to the NZB or by uploading the NZB data.",
-                                tooltip: 'You can select if you want to upload the NZB to the downloader or send a Hydra link. The downloader will do the download itself. This is a matter of taste, but adding a link and redirecting the downloader is the fastest way.' +
-                                    '<br>Usually the links are determined using the URL via which you call it in your browser. If your downloader cannot access NZBHydra using that URL you can set a specific URL to be used in the main downloading config.',
-                                advanced: true
-                            }
-                        },
-                        {
-                            key: 'addPaused',
-                            type: 'horizontalSwitch',
-                            templateOptions: {
-                                type: 'switch',
-                                label: 'Add paused',
-                                help: 'Add NZBs paused',
-                                advanced: true
-                            }
-                        },
+                        });
+                    fieldset.push({
+                        key: 'nzbAddingType',
+                        type: 'horizontalSelect',
+                        hideFor: ["TORBOX"],
+                        templateOptions: {
+                            type: 'select',
+                            label: 'NZB adding type',
+                            options: [
+                                {name: 'Send link', value: 'SEND_LINK'},
+                                {name: 'Upload NZB', value: 'UPLOAD'}
+                            ],
+                            help: "How NZBs are added to the downloader, either by sending a link to the NZB or by uploading the NZB data.",
+                            tooltip: 'You can select if you want to upload the NZB to the downloader or send a Hydra link. The downloader will do the download itself. This is a matter of taste, but adding a link and redirecting the downloader is the fastest way.' +
+                                '<br>Usually the links are determined using the URL via which you call it in your browser. If your downloader cannot access NZBHydra using that URL you can set a specific URL to be used in the main downloading config.',
+                            advanced: true
+                        }
+                    });
+                    fieldset.push({
+                        key: 'addPaused',
+                        type: 'horizontalSwitch',
+                        hideFor: ["TORBOX"],
+                        templateOptions: {
+                            type: 'switch',
+                            label: 'Add paused',
+                            help: 'Add NZBs paused',
+                            advanced: true
+                        }
+                    });
+                    fieldset.push(
                         {
                             key: 'iconCssClass',
                             type: 'horizontalInput',
@@ -259,9 +274,16 @@ angular
                                 tooltip: 'If you have multiple downloaders of the same type you can select an icon from the Font Awesome library. This icon will be shown in the search results and the NZB download history instead of the default downloader icon.',
                                 advanced: true
                             }
+                        });
+                    fieldset = fieldset.filter(function (field) {
+                        if (field.showFor) {
+                            return field.showFor.includes(model.downloaderType);
                         }
-                    ]);
-
+                        if (field.hideFor) {
+                            return !field.hideFor.includes(model.downloaderType);
+                        }
+                        return true;
+                    });
                     return fieldset;
                 }
             }

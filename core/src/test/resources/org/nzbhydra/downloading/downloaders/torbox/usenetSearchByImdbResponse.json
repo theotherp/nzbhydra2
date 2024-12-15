@@ -1,0 +1,38 @@
+{
+  "success": true,
+  "message": "Successfully found metadata and usenets.",
+  "data": {
+    "metadata": null,
+    "nzbs": [
+      {
+        "hash": "fb7e1c54749e2c994a80ff02c8405529",
+        "raw_title": "Planetary.Wars.5",
+        "title": "Planetary Wars 5",
+        "title_parsed_data": {
+          "resolution": "1080p",
+          "quality": "Blu-ray",
+          "year": 1980,
+          "codec": "H.264",
+          "language": "Nordic",
+          "title": "Planetary Wars 5 The Ruling Class Strikes Back",
+          "encoder": "CDB"
+        },
+        "magnet": null,
+        "last_known_seeders": -1,
+        "last_known_peers": -1,
+        "size": 10307009423,
+        "tracker": null,
+        "categories": [
+          "Movies HD"
+        ],
+        "files": [],
+        "type": "usenet",
+        "nzb": "http://100.107.249.66:4010/getnzb/user/0676488742964106928",
+        "age": "707d"
+      }
+    ],
+    "time_taken": 0.02,
+    "cached": true,
+    "total_nzbs": 1
+  }
+}

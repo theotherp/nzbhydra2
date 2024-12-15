@@ -56,7 +56,7 @@ public class WebAccess {
     public String postToUrl(String url, MediaType mediaContent, String content, Map<String, String> headers, int timeout) throws IOException {
         Builder builder = new Builder()
                 .url(url)
-                .post(RequestBody.create(mediaContent, content));
+                .post(RequestBody.create(content, mediaContent));
 
         return callUrl(url, headers, timeout, builder);
     }
@@ -64,7 +64,7 @@ public class WebAccess {
     public String putToUrl(String url, MediaType mediaContent, String content, Map<String, String> headers, int timeout) throws IOException {
         Builder builder = new Builder()
                 .url(url)
-                .put(RequestBody.create(mediaContent, content));
+                .put(RequestBody.create(content, mediaContent));
 
         return callUrl(url, headers, timeout, builder);
     }

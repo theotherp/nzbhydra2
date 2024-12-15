@@ -22,6 +22,7 @@ import org.nzbhydra.downloading.FileHandler;
 import org.nzbhydra.downloading.IndexerSpecificDownloadExceptions;
 import org.nzbhydra.downloading.downloaders.nzbget.NzbGet;
 import org.nzbhydra.downloading.downloaders.sabnzbd.Sabnzbd;
+import org.nzbhydra.downloading.downloaders.torbox.Torbox;
 import org.nzbhydra.searching.db.SearchResultRepository;
 import org.nzbhydra.webaccess.HydraOkHttp3ClientHttpRequestFactory;
 import org.nzbhydra.webaccess.Ssl;
@@ -57,6 +58,9 @@ public class DownloaderInstatiator {
             }
             case SABNZBD -> {
                 return new Sabnzbd(nzbHandler, searchResultRepository, applicationEventPublisher, indexerSpecificDownloadExceptions, configProvider, restTemplate, requestFactory);
+            }
+            case TORBOX -> {
+                return new Torbox(nzbHandler, searchResultRepository, applicationEventPublisher, indexerSpecificDownloadExceptions, configProvider, requestFactory);
             }
         }
         throw new RuntimeException("Unable to instantiate " + downloaderType);

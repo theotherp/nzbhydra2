@@ -39,8 +39,15 @@
             <directory>../linux-amd64-release/include</directory>
             <outputDirectory>./</outputDirectory>
             <excludes>
-                <exclude>core</exclude>
-                <exclude>nzbhydra</exclude>
+                <exclude>executables/**</exclude>
+            </excludes>
+        </fileSet>
+        <fileSet>
+            <!-- Include service scripts and wrapper -->
+            <directory>../linux-arm64-release/include</directory>
+            <outputDirectory>./</outputDirectory>
+            <excludes>
+                <exclude>executables/**</exclude>
             </excludes>
         </fileSet>
         <fileSet>
@@ -48,7 +55,7 @@
             <directory>../windows-release/include</directory>
             <outputDirectory>./</outputDirectory>
             <includes>
-                <include>WindowsService</include>
+                <include>WindowsService/**</include>
                 <include>NZBHydra2.exe</include>
                 <include>NZBHydra2 Console.exe</include>
             </includes>

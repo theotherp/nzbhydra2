@@ -44,8 +44,8 @@ import java.util.concurrent.TimeUnit;
 @EnabledIfEnvironmentVariable(named = "DEV_ENV_SET", matches = "true")
 public class IndexerIdiocyCheckTest {
 
-    private final NzbGeek nzbGeek = new NzbGeek(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
-    private final DogNzb dogNzb = new DogNzb(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+    private final NzbGeek nzbGeek = new NzbGeek(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+    private final DogNzb dogNzb = new DogNzb(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
 
     protected Unmarshaller unmarshaller = new WebConfiguration().marshaller();
 

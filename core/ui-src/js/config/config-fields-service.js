@@ -1783,7 +1783,7 @@ function ConfigFields($injector) {
                     wrapper: 'fieldset',
                     templateOptions: {
                         label: 'General',
-                        tooltip: 'Hydra allows sending NZB search results directly to downloaders (NZBGet, sabnzbd). Torrent downloaders are not supported.'
+                        tooltip: 'Hydra allows sending NZB search results directly to downloaders (NZBGet, sabnzbd, torbox). Torrent downloaders are not supported.'
                     },
                     fieldGroup: [
                         {
@@ -1884,7 +1884,9 @@ function ConfigFields($injector) {
                         {
                             key: 'primaryDownloader',
                             type: 'horizontalSelect',
-                            hideExpression: 'model.downloaders.length <= 1 || !model.showDownloaderStatus',
+                            hideExpression: function ($viewValue, $modelValue, scope) {
+                                return !rootModel.downloading.showDownloaderStatus || rootModel.downloading.downloaders.filter((downloader) => downloader.enabled).length <= 1;
+                            },
                             templateOptions: {
                                 label: 'Primary downloader',
                                 options: [],

@@ -32,7 +32,7 @@ jobs:
 
             -   name: "Get changed files in core module"
                 id: changed-files-specific
-                uses: tj-actions/changed-files@v35
+                uses: tj-actions/changed-files@v45
                 with:
                     since_last_remote_commit: true
                     files: |

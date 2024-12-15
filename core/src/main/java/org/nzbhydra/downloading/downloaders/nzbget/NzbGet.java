@@ -25,7 +25,6 @@ import org.nzbhydra.config.downloading.DownloaderConfig;
 import org.nzbhydra.downloading.FileDownloadStatus;
 import org.nzbhydra.downloading.FileHandler;
 import org.nzbhydra.downloading.IndexerSpecificDownloadExceptions;
-import org.nzbhydra.downloading.downloaders.Converters;
 import org.nzbhydra.downloading.downloaders.Downloader;
 import org.nzbhydra.downloading.downloaders.DownloaderEntry;
 import org.nzbhydra.downloading.downloaders.DownloaderStatus;
@@ -207,7 +206,7 @@ public class NzbGet extends Downloader {
         if (!nzbs.isEmpty()) {
 
             status.setElementsInQueue(queue.size());
-            if (queue.size() > 0) {
+            if (!queue.isEmpty()) {
                 final Optional<LinkedHashMap<String, Object>> downloadingEntry = queue.stream().filter(x -> ((String) x.get("Status")).equals("DOWNLOADING")).findFirst();
                 if (downloadingEntry.isPresent()) {
                     LinkedHashMap<String, Object> map = downloadingEntry.get();
@@ -220,16 +219,15 @@ public class NzbGet extends Downloader {
                         status.setDownloadingTitlePercentFinished(Math.round(((totalMb - remainingMb) / (float) (totalMb)) * 100));
                     }
                     if (status.getState() == DownloaderStatus.State.DOWNLOADING && status.getDownloadRateInKilobytes() > 0) {
-                        status.setDownloadingTitleRemainingTimeFormatted(calculateTimeLeft(remainingMb, status.getDownloadRateInKilobytes() * 1024));
+                        status.setDownloadingTitleRemainingTimeSeconds(calculateSecondsLeft(remainingMb, status.getDownloadRateInKilobytes() * 1024));
                     }
                 }
             }
         }
     }
 
-    private String calculateTimeLeft(int remainingMb, long downloadRateBytesPerSecond) {
-        int secondsLeft = (int) ((remainingMb * 1024F) / (downloadRateBytesPerSecond / 1024F));
-        return Converters.formatTime(secondsLeft);
+    private int calculateSecondsLeft(int remainingMb, long downloadRateBytesPerSecond) {
+        return (int) ((remainingMb * 1024F) / (downloadRateBytesPerSecond / 1024F));
     }
 
     private DownloaderStatus getStatusFromMap(LinkedHashMap<String, Object> statusMap) {
@@ -239,11 +237,11 @@ public class NzbGet extends Downloader {
         status.setDownloaderType(downloaderConfig.getDownloaderType());
 
         int remainingSizeMB = (Integer) statusMap.get("RemainingSizeMB") - (Integer) statusMap.getOrDefault("PausedSizeMB", 0);
-        status.setRemainingSizeFormatted(remainingSizeMB > 0 ? Converters.formatMegabytes(remainingSizeMB, true) : "");
+//        status.setRemainingSizeFormatted(remainingSizeMB > 0 ? Converters.formatMegabytes(remainingSizeMB, true) : "");
         status.setRemainingSizeInMegaBytes(remainingSizeMB);
 
         Integer downloadRateInBytes = (Integer) statusMap.get("DownloadRate");
-        status.setDownloadRateFormatted(downloadRateInBytes > 0 ? (Converters.formatBytesPerSecond(downloadRateInBytes, true)) : "");
+//        status.setDownloadRateFormatted(downloadRateInBytes > 0 ? (Converters.formatBytesPerSecond(downloadRateInBytes, true)) : "");
         int downloadRateInKilobytes = downloadRateInBytes / 1024;
         status.setDownloadRateInKilobytes(downloadRateInKilobytes);
         addDownloadRate(downloadRateInKilobytes);
@@ -265,7 +263,7 @@ public class NzbGet extends Downloader {
                 mb = (int) statusMap.get("RemainingSizeMB");
             }
             status.setRemainingSeconds((long) ((mb * 1024F) / (downloadRateInBytes / 1024F)));
-            status.setRemainingTimeFormatted(Converters.formatTime(status.getRemainingSeconds()));
+//            status.setRemainingTimeFormatted(Converters.formatTime(status.getRemainingSeconds()));
         }
         return status;
     }

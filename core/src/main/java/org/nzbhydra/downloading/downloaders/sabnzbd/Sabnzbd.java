@@ -16,7 +16,6 @@ import org.nzbhydra.downloading.DownloaderType;
 import org.nzbhydra.downloading.FileDownloadStatus;
 import org.nzbhydra.downloading.FileHandler;
 import org.nzbhydra.downloading.IndexerSpecificDownloadExceptions;
-import org.nzbhydra.downloading.downloaders.Converters;
 import org.nzbhydra.downloading.downloaders.Downloader;
 import org.nzbhydra.downloading.downloaders.DownloaderEntry;
 import org.nzbhydra.downloading.downloaders.DownloaderStatus;
@@ -112,12 +111,6 @@ public class Sabnzbd extends Downloader {
         return nzoId;
     }
 
-    protected String suffixNzbToTitle(String title) {
-        if (!title.toLowerCase().endsWith(".nzbd")) {
-            title += ".nzb";
-        }
-        return title;
-    }
 
     private String sendAddNzbLinkCommand(UriComponentsBuilder urlBuilder, HttpEntity httpEntity, HttpMethod httpMethod) throws DownloaderException {
         try {
@@ -221,13 +214,13 @@ public class Sabnzbd extends Downloader {
         if (queue.getMbleft() != null) {
             status.setRemainingSizeInMegaBytes((long) Float.parseFloat(queue.getMbleft()));
         }
-        status.setRemainingTimeFormatted(parseRemainingTime(queue.getTimeleft()));
+        status.setRemainingSeconds(parseRemainingTime(queue.getTimeleft()));
 
         if (!queue.getSlots().isEmpty()) {
             QueueEntry currentEntry = queue.getSlots().get(0);
             status.setDownloadingTitle(currentEntry.getFilename());
-            status.setDownloadingTitleRemainingTimeFormatted(parseRemainingTime(currentEntry.getTimeleft()));
-            status.setDownloadingTitleRemainingSizeFormatted(Converters.formatMegabytes((long) Float.parseFloat(currentEntry.getMbleft()), false));
+            status.setDownloadingTitleRemainingTimeSeconds(parseRemainingTime(currentEntry.getTimeleft()));
+            status.setDownloadingTitleRemainingSizeKilobytes((long) Float.parseFloat(currentEntry.getMbleft()) * 1024);
             status.setDownloadingTitlePercentFinished(Integer.parseInt(currentEntry.getPercentage()));
         }
 
@@ -235,18 +228,18 @@ public class Sabnzbd extends Downloader {
         return status;
     }
 
-    private String parseRemainingTime(String timeleft) {
+    private long parseRemainingTime(String timeleft) {
         if (Strings.isNullOrEmpty(timeleft)) {
-            return null;
+            return 0;
         }
         try {
             if (StringUtils.countMatches(timeleft, ":") == 3) {
-                return Converters.formatTime(durationStringToSeconds(timeleft));
+                return durationStringToSeconds(timeleft);
             }
-            return Converters.formatTime(durationStringToSeconds(timeleft));
+            return durationStringToSeconds(timeleft);
         } catch (Exception e) {
             logger.error("Unable to parse time left from value '{}'", timeleft);
-            return null;
+            return 0;
         }
     }
 
