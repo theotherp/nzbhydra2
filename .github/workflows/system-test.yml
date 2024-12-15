@@ -111,6 +111,11 @@ jobs:
           docker container inspect -f '{{ .Mounts}}' core
           echo "v1Migration container mounts:"
           docker container inspect -f '{{ .Mounts}}' v1Migration
+      - name: "Curl core"
+        run: "curl --verbose http://127.0.0.1:5076"
+
+      - name: "Curl core config"
+        run: "curl --verbose http://127.0.0.1:5076/internalapi/config"
 
       - name: "Run tests"
         run: mvn --batch-mode test -pl org.nzbhydra.tests:system -DtrimStackTrace=false
