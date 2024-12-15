@@ -29,6 +29,7 @@ import okhttp3.Response;
 import okhttp3.Route;
 import okhttp3.logging.HttpLoggingInterceptor;
 import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.security.web.util.matcher.IpAddressMatcher;
 import org.nzbhydra.config.ConfigChangedEvent;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.MainConfig;
@@ -62,6 +63,7 @@ import java.net.Proxy.Type;
 import java.net.Socket;
 import java.net.URI;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -237,28 +239,33 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
         return mainConfig.getProxyIgnoreDomains().stream().anyMatch(x -> isSameHost(x, host));
     }
 
-    private Boolean isHostInLocalNetwork(String host) {
-        if (InetAddresses.isInetAddress(host)) {
-            try {
-                InetAddress byName = InetAddress.getByName(host);
-                long ipToLong = ipToLong(byName);
-                return host.equals("127.0.0.1")
-                    ||
-                    (ipToLong >= ipToLong(InetAddress.getByName("10.0.0.0")) && ipToLong <= ipToLong(InetAddress.getByName("10.255.255.255")))
-                    ||
-                    (ipToLong >= ipToLong(InetAddress.getByName("172.16.0.0")) && ipToLong <= ipToLong(InetAddress.getByName("172.16.255.255")))
-                    ||
-                    (ipToLong >= ipToLong(InetAddress.getByName("192.168.0.0")) && ipToLong <= ipToLong(InetAddress.getByName("192.168.255.255")))
-                    ;
-            } catch (UnknownHostException e) {
-                logger.error("Unable to parse host " + host, e);
-                return false;
-            }
-        }
-        if (host.equals("localhost")) {
+    private static final IpAddressMatcher[] IP_PRIVATE_RANGES = {
+        // IPv4 private ranges
+        new IpAddressMatcher("127.0.0.1/8"),     // Loopback
+        new IpAddressMatcher("10.0.0.0/8"),
+        new IpAddressMatcher("172.16.0.0/12"),
+        new IpAddressMatcher("192.168.0.0/16"),
+        new IpAddressMatcher("::1/128"),         // Loopback
+        new IpAddressMatcher("fc00::/7"),        // ULA
+        new IpAddressMatcher("fe80::/10"),       // LL
+        new IpAddressMatcher("::ffff:10.0.0.0/104"),      // IPv4-mapped 10.0.0.0/8
+        new IpAddressMatcher("::ffff:172.16.0.0/108"),    // IPv4-mapped 172.16.0.0/12
+        new IpAddressMatcher("::ffff:192.168.0.0/112"),   // IPv4-mapped 192.168.0.0/16
+    };
+    private boolean isHostInLocalNetwork(String host) {
+        if (host.equalsIgnoreCase("localhost")) {
             return true;
         }
-        return null;
+
+        try {
+            InetAddress byName = InetAddress.getByName(host);
+            String ipAddress = byName.getHostAddress();
+            return Arrays.stream(IP_PRIVATE_RANGES).anyMatch(matcher -> matcher.matches(ipAddress));
+        } catch (UnknownHostException e) {
+            System.err.println("Unable to parse host: " + host);
+            e.printStackTrace();
+            return false;
+        }
     }
 
     public static long ipToLong(InetAddress ip) {
