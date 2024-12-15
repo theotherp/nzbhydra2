@@ -16,7 +16,6 @@
 
 package org.nzbhydra.webaccess;
 
-import com.google.common.net.InetAddresses;
 import jakarta.annotation.PostConstruct;
 import joptsimple.internal.Strings;
 import okhttp3.ConnectionPool;
@@ -29,7 +28,6 @@ import okhttp3.Response;
 import okhttp3.Route;
 import okhttp3.logging.HttpLoggingInterceptor;
 import org.apache.commons.lang3.tuple.Pair;
-import org.springframework.security.web.util.matcher.IpAddressMatcher;
 import org.nzbhydra.config.ConfigChangedEvent;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.MainConfig;
@@ -45,6 +43,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.client.ClientHttpRequest;
 import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.security.web.util.matcher.IpAddressMatcher;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import sockslib.client.Socks5;
@@ -226,10 +225,10 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
     protected boolean isUriToBeIgnoredByProxy(String host) {
         MainConfig mainConfig = configProvider.getBaseConfig().getMain();
         if (mainConfig.isProxyIgnoreLocal()) {
-            Boolean ipToLong = isHostInLocalNetwork(host);
-            if (ipToLong != null) {
-                return ipToLong;
+            if (isHostInLocalNetwork(host)) {
+                return true;
             }
+
         }
 
         if (mainConfig.getProxyIgnoreDomains() == null || mainConfig.getProxyIgnoreDomains().isEmpty()) {
@@ -240,18 +239,18 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
     }
 
     private static final IpAddressMatcher[] IP_PRIVATE_RANGES = {
-        // IPv4 private ranges
-        new IpAddressMatcher("127.0.0.1/8"),     // Loopback
-        new IpAddressMatcher("10.0.0.0/8"),
-        new IpAddressMatcher("172.16.0.0/12"),
-        new IpAddressMatcher("192.168.0.0/16"),
-        new IpAddressMatcher("::1/128"),         // Loopback
-        new IpAddressMatcher("fc00::/7"),        // ULA
-        new IpAddressMatcher("fe80::/10"),       // LL
-        new IpAddressMatcher("::ffff:10.0.0.0/104"),      // IPv4-mapped 10.0.0.0/8
-        new IpAddressMatcher("::ffff:172.16.0.0/108"),    // IPv4-mapped 172.16.0.0/12
-        new IpAddressMatcher("::ffff:192.168.0.0/112"),   // IPv4-mapped 192.168.0.0/16
+            // IPv4 local and private ranges
+            new IpAddressMatcher("127.0.0.0/8"),     // Loopback (IPv4)
+            new IpAddressMatcher("10.0.0.0/8"),      // Private (Class A)
+            new IpAddressMatcher("172.16.0.0/12"),   // Private (Class B)
+            new IpAddressMatcher("192.168.0.0/16"),  // Private (Class C)
+
+            // IPv6 local and private ranges
+            new IpAddressMatcher("::1/128"),         // Loopback (IPv6)
+            new IpAddressMatcher("fc00::/7"),        // Unique Local IPv6
+            new IpAddressMatcher("fe80::/10")        // Link Local IPv6
     };
+
     private boolean isHostInLocalNetwork(String host) {
         if (host.equalsIgnoreCase("localhost")) {
             return true;
@@ -262,8 +261,7 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
             String ipAddress = byName.getHostAddress();
             return Arrays.stream(IP_PRIVATE_RANGES).anyMatch(matcher -> matcher.matches(ipAddress));
         } catch (UnknownHostException e) {
-            System.err.println("Unable to parse host: " + host);
-            e.printStackTrace();
+            logger.error("Error analyzing host {}", host, e);
             return false;
         }
     }

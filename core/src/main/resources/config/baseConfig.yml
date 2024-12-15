@@ -287,7 +287,7 @@ main:
   deleteBackupsAfterWeeks: 4
   disableSslLocally: false
   dereferer: null
-  host: "::"
+  host: "127.0.0.1"
   instanceCounterDownloaded: false
   keepHistory: true
   keepHistoryForWeeks: null

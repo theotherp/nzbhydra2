@@ -95,7 +95,7 @@ public class HeaderAuthenticationFilter extends BasicAuthenticationFilter {
 
             if (x.contains("/")) {
                 // CIDR Notation
-                return new IpAddressMatcher(x).matches(ip)
+                return new IpAddressMatcher(x).matches(ip);
             }
 
             if (x.contains("-")) {
