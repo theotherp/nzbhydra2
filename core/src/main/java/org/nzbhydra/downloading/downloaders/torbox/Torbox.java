@@ -224,7 +224,6 @@ public class Torbox extends Downloader {
             UsenetListResponse body = response.getBody();
 
             if (response.getStatusCode().is2xxSuccessful()) {
-
                 lastUpdate = Instant.now();
                 lastTorboxDownloads.clear();
                 lastTorboxDownloads.addAll(body.getData());

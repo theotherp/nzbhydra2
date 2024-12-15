@@ -16,6 +16,8 @@
 
 package org.nzbhydra.searching.db;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -32,7 +34,7 @@ import java.time.Instant;
 @NoArgsConstructor
 public class SearchResultEntityTO {
 
-
+    @JsonSerialize(using = ToStringSerializer.class)
     private long id;
     private IndexerEntityTO indexer;
     private Instant firstFound;

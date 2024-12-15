@@ -52,7 +52,7 @@ public class BinsearchTest {
 
     @InjectMocks
     private Binsearch testee = new Binsearch(configProviderMock, null, null, null, null, null,
-        null, null, categoryProviderMock, null, null, queryGeneratorMock, null, null);
+            null, null, categoryProviderMock, null, null, queryGeneratorMock, null, null, null);
 
     @BeforeEach
     public void setUp() throws Exception {

@@ -8,6 +8,8 @@
           text: "Remove unneeded file from generic release which increased the size of the architect by a whopping 100MB."
       -   type: "fix"
           text: "Only show option for primary downloader if multiple downloaders are enabled."
+      -   type: "fix"
+          text: "Sometimes downloads from the search result history could not be downloaded again."
     final: true
 -   version: "v7.10.2"
     date: "2024-12-04"

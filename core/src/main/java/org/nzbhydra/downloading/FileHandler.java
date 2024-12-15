@@ -2,6 +2,7 @@ package org.nzbhydra.downloading;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Sets;
+import lombok.Getter;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -29,6 +30,7 @@ import org.nzbhydra.web.UrlCalculator;
 import org.nzbhydra.webaccess.HydraOkHttp3ClientHttpRequestFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
@@ -81,7 +83,10 @@ public class FileHandler {
     protected UrlCalculator urlCalculator;
     @Autowired
     private IndexerSpecificDownloadExceptions indexerSpecificDownloadExceptions;
+    @Autowired
+    private BeanFactory beanFactory;
 
+    @Getter
     private final Set<File> temporaryZipFiles = new HashSet<>();
     @Autowired
     private TempFileProvider tempFileProvider;
@@ -91,7 +96,7 @@ public class FileHandler {
         final IndexerConfig indexerConfig = configProvider.getIndexerByName(searchResult.getIndexer().getName());
 
         FileDownloadAccessType fileDownloadAccessType = indexerSpecificDownloadExceptions.getAccessTypeForIndexer(indexerConfig, configProvider.getBaseConfig().getDownloading().getNzbAccessType());
-        return getFileByResult(fileDownloadAccessType, accessSource, searchResult);
+        return beanFactory.getBean(FileHandler.class).getFileByResult(fileDownloadAccessType, accessSource, searchResult);
     }
 
     @Transactional
@@ -123,10 +128,10 @@ public class FileHandler {
     private DownloadResult getFileByResult(FileDownloadAccessType fileDownloadAccessType, SearchSource accessSource, SearchResultEntity result, Set<SearchResultEntity> alreadyTriedDownloading) {
         logger.info("{} download request for \"{}\" from indexer {}", fileDownloadAccessType, result.getTitle(), result.getIndexer().getName());
         if (fileDownloadAccessType == FileDownloadAccessType.REDIRECT) {
-            return handleRedirect(accessSource, result, null);
+            return beanFactory.getBean(FileHandler.class).handleRedirect(accessSource, result, null);
         } else {
             try {
-                final DownloadResult downloadResult = handleContentDownload(accessSource, result);
+                final DownloadResult downloadResult = beanFactory.getBean(FileHandler.class).handleContentDownload(accessSource, result);
                 if (downloadResult.isSuccessful()) {
                     return downloadResult;
                 }
@@ -137,8 +142,8 @@ public class FileHandler {
                 alreadyTriedDownloading.add(result);
                 final Set<SearchResultEntity> similarResults = searchResultRepository.findAllByTitleLikeIgnoreCase(result.getTitle().replaceAll("[ .\\-_]", "_"));
                 final Optional<SearchResultEntity> similarResult = similarResults.stream()
-                    .filter(x -> x != result && !alreadyTriedDownloading.contains(x))
-                    .findFirst();
+                        .filter(x -> x != result && !alreadyTriedDownloading.contains(x))
+                        .findFirst();
                 if (similarResult.isPresent()) {
                     logger.info("Falling back from failed download to similar result {}", similarResult.get());
                     return getFileByResult(fileDownloadAccessType, accessSource, similarResult.get(), alreadyTriedDownloading);
@@ -194,7 +199,7 @@ public class FileHandler {
 
     @Transactional
     public DownloadResult handleRedirect(SearchSource accessSource, SearchResultEntity result, String actualUrl) {
-        logger.debug("Redirecting to " + result.getLink());
+        logger.debug("Redirecting to {}", result.getLink());
         FileDownloadEntity downloadEntity = new FileDownloadEntity(result, FileDownloadAccessType.REDIRECT, accessSource, FileDownloadStatus.REQUESTED, null);
         if (configProvider.getBaseConfig().getMain().isKeepHistory()) {
             downloadRepository.save(downloadEntity);
@@ -253,7 +258,7 @@ public class FileHandler {
                 final IndexerConfig indexerConfig = configProvider.getIndexerByName(searchResult.getIndexer().getName());
                 final FileDownloadAccessType accessType = indexerSpecificDownloadExceptions.getAccessTypeForIndexer(indexerConfig, FileDownloadAccessType.PROXY);
                 if (accessType == FileDownloadAccessType.PROXY) {
-                    result = getFileByGuid(guid, FileDownloadAccessType.PROXY, SearchSource.INTERNAL);
+                    result = beanFactory.getBean(FileHandler.class).getFileByGuid(guid, FileDownloadAccessType.PROXY, SearchSource.INTERNAL);
                 } else {
                     logger.info("Can't download NZB from indexer {} because it forbids direct access from NZBHydra", indexerConfig.getName());
                     failedIds.add(guid);
@@ -275,7 +280,7 @@ public class FileHandler {
                 files.add(tempFile);
                 successfulIds.add(guid);
             } catch (IOException e) {
-                logger.error("Unable to write file content to temporary file: " + e.getMessage());
+                logger.error("Unable to write file content to temporary file: {}", e.getMessage());
                 failedIds.add(guid);
             }
         }
@@ -357,7 +362,7 @@ public class FileHandler {
     public NfoResult getNfo(Long searchResultId) {
         Optional<SearchResultEntity> optionalResult = searchResultRepository.findById(searchResultId);
         if (optionalResult.isEmpty()) {
-            logger.error("Download request with invalid/outdated search result ID " + searchResultId);
+            logger.error("Download request with invalid/outdated search result ID {}", searchResultId);
             throw new RuntimeException("Download request with invalid/outdated search result ID " + searchResultId);
         }
         SearchResultEntity result = optionalResult.get();
@@ -430,10 +435,6 @@ public class FileHandler {
             return GenericResponse.notOk("Unable to save file for download NZB for some reason");
         }
         return GenericResponse.ok();
-    }
-
-    public Set<File> getTemporaryZipFiles() {
-        return temporaryZipFiles;
     }
 
     private static class NzbsDownload {
