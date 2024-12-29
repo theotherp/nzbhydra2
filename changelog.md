@@ -1,3 +1,9 @@
+### v7.11.1 (2024-12-29)
+
+**Fix** Another one of those times where I tried to improve something but broke it. For some users downloading results didn't work. This is hopefully fixed now. It worked fine for me locally and in the automated tests.
+
+
+
 ### v7.11.0 (2024-12-29)
 
 **Feature** Support for torbox.app as a usenet downloader. They allow sending NZBs to them and you can access the downloaded stuff via web or multiple integrations like FTP, WebDAV, etc. Using them as a search engine or to download torrents will / may come later.
