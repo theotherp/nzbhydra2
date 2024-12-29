@@ -432,6 +432,10 @@ public class FileHandler {
         return GenericResponse.ok();
     }
 
+    public Set<File> getTemporaryZipFiles() {
+        return temporaryZipFiles;
+    }
+
     private static class NzbsDownload {
         private final List<File> files;
         private final List<Long> successfulIds;
