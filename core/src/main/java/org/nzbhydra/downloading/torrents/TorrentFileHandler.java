@@ -30,7 +30,6 @@ import org.nzbhydra.searching.db.SearchResultEntity;
 import org.nzbhydra.searching.db.SearchResultRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,8 +52,6 @@ public class TorrentFileHandler {
 
     @Autowired
     private FileHandler fileHandler;
-    @Autowired
-    private BeanFactory beanFactory;
     @Autowired
     protected ConfigProvider configProvider;
     @Autowired
@@ -88,7 +85,7 @@ public class TorrentFileHandler {
             DownloadResult result;
             boolean successful = false;
             try {
-                result = beanFactory.getBean(TorrentFileHandler.class).getTorrentByGuid(guid, FileDownloadAccessType.PROXY, SearchSource.INTERNAL);
+                result = getTorrentByGuid(guid, FileDownloadAccessType.PROXY, SearchSource.INTERNAL);
             } catch (InvalidSearchResultIdException e) {
                 logger.error("Unable to find result with ID {}", guid);
                 failedIds.add(guid);

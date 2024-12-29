@@ -2,7 +2,6 @@ package org.nzbhydra.downloading;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Sets;
-import lombok.Getter;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -30,7 +29,6 @@ import org.nzbhydra.web.UrlCalculator;
 import org.nzbhydra.webaccess.HydraOkHttp3ClientHttpRequestFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
@@ -83,10 +81,7 @@ public class FileHandler {
     protected UrlCalculator urlCalculator;
     @Autowired
     private IndexerSpecificDownloadExceptions indexerSpecificDownloadExceptions;
-    @Autowired
-    private BeanFactory beanFactory;
 
-    @Getter
     private final Set<File> temporaryZipFiles = new HashSet<>();
     @Autowired
     private TempFileProvider tempFileProvider;
@@ -96,7 +91,7 @@ public class FileHandler {
         final IndexerConfig indexerConfig = configProvider.getIndexerByName(searchResult.getIndexer().getName());
 
         FileDownloadAccessType fileDownloadAccessType = indexerSpecificDownloadExceptions.getAccessTypeForIndexer(indexerConfig, configProvider.getBaseConfig().getDownloading().getNzbAccessType());
-        return beanFactory.getBean(FileHandler.class).getFileByResult(fileDownloadAccessType, accessSource, searchResult);
+        return getFileByResult(fileDownloadAccessType, accessSource, searchResult);
     }
 
     @Transactional
@@ -128,10 +123,10 @@ public class FileHandler {
     private DownloadResult getFileByResult(FileDownloadAccessType fileDownloadAccessType, SearchSource accessSource, SearchResultEntity result, Set<SearchResultEntity> alreadyTriedDownloading) {
         logger.info("{} download request for \"{}\" from indexer {}", fileDownloadAccessType, result.getTitle(), result.getIndexer().getName());
         if (fileDownloadAccessType == FileDownloadAccessType.REDIRECT) {
-            return beanFactory.getBean(FileHandler.class).handleRedirect(accessSource, result, null);
+            return handleRedirect(accessSource, result, null);
         } else {
             try {
-                final DownloadResult downloadResult = beanFactory.getBean(FileHandler.class).handleContentDownload(accessSource, result);
+                final DownloadResult downloadResult = handleContentDownload(accessSource, result);
                 if (downloadResult.isSuccessful()) {
                     return downloadResult;
                 }
@@ -258,7 +253,7 @@ public class FileHandler {
                 final IndexerConfig indexerConfig = configProvider.getIndexerByName(searchResult.getIndexer().getName());
                 final FileDownloadAccessType accessType = indexerSpecificDownloadExceptions.getAccessTypeForIndexer(indexerConfig, FileDownloadAccessType.PROXY);
                 if (accessType == FileDownloadAccessType.PROXY) {
-                    result = beanFactory.getBean(FileHandler.class).getFileByGuid(guid, FileDownloadAccessType.PROXY, SearchSource.INTERNAL);
+                    result = getFileByGuid(guid, FileDownloadAccessType.PROXY, SearchSource.INTERNAL);
                 } else {
                     logger.info("Can't download NZB from indexer {} because it forbids direct access from NZBHydra", indexerConfig.getName());
                     failedIds.add(guid);
