@@ -24,7 +24,7 @@ if [[ ! -d "${PWD}/core" ]] ; then
 fi
 
 echo Syncing with build directory
-rsync -rvu --exclude "target" --exclude "bower_components" --exclude "node_modules" --exclude ".git" --exclude ".idea" --exclude "results" --exclude "*.db" --exclude "venv*" ${PWD}/ ~/nzbhydra2/
+rsync -ru --delete --exclude "target" --exclude "bower_components" --exclude "node_modules" --exclude ".git" --exclude ".idea" --exclude "results" --exclude "*.db" --exclude "venv*" ${PWD}/ ~/nzbhydra2/
 
 echo Running build script using docker
 docker run -v ~/nzbhydra2/:/nzbhydra2:rw -v ~/.m2/repository:/home/sist/.m2/repository:rw --rm hydrabuild:latest
