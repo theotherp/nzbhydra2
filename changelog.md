@@ -1,3 +1,17 @@
+### v7.11.0 (2024-12-29)
+
+**Feature** Support for torbox.app as a usenet downloader. They allow sending NZBs to them and you can access the downloaded stuff via web or multiple integrations like FTP, WebDAV, etc. Using them as a search engine or to download torrents will / may come later.
+
+**Feature** Improve IPv6 support. Thanks @ Ruakij. See <a href="https://github.com/theotherp/nzbhydra2/issues/975">#975</a>
+
+**Fix** Remove unneeded file from generic release which increased the size of the architect by a whopping 100MB.
+
+**Fix** Only show option for primary downloader if multiple downloaders are enabled.
+
+**Fix** Sometimes downloads from the search result history could not be downloaded again.
+
+
+
 ### v7.10.2 (2024-12-04)
 
 **Feature** Improve error message when communication with an indexer fails.
