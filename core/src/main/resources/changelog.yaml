@@ -1,6 +1,6 @@
 #@formatter:off
 -   version: "v7.11.0"
-    date: "2024-12-15"
+    date: "2024-12-29"
     changes:
       -   type: "feature"
           text: "Support for torbox.app as a usenet downloader. They allow sending NZBs to them and you can access the downloaded stuff via web or multiple integrations like FTP, WebDAV, etc. Using them as a search engine or to download torrents will / may come later."
