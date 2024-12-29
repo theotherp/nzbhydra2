@@ -139,7 +139,7 @@ if (-not $?) {
 
 
 Write-Host "Building core jar"
-exec { mvn -q -pl org.nzbhydra:nzbhydra2,org.nzbhydra:shared,org.nzbhydra:mapping,org.nzbhydra:assertions,org.nzbhydra:core clean install -B -T 1C `-DskipTests=true}
+exec { mvn -q -pl org.nzbhydra:nzbhydra2,org.nzbhydra:shared,org.nzbhydra:mapping,org.nzbhydra:core clean install -B -T 1C `-DskipTests=true}
 erase .\releases\generic-release\include\*.jar
 copy .\core\target\*-exec.jar .\releases\generic-release\include\
 if (-not $?) {
