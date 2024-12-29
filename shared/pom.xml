@@ -13,7 +13,6 @@
 
     <modules>
         <module>mapping</module>
-        <module>assertions</module>
     </modules>
 
 </project>

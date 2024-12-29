@@ -17,13 +17,13 @@
         <module name="classloader" />
         <module name="loadtest" />
         <module name="github-release-plugin" />
-        <module name="assertions" />
         <module name="discordreleaser" />
         <module name="updater" />
         <module name="mockserver" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel target="17">
+      <module name="assertions" target="17" />
       <module name="db-tool" target="21" />
     </bytecodeTargetLevel>
   </component>

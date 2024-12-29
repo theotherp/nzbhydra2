@@ -125,12 +125,6 @@
             <artifactId>awaitility</artifactId>
             <version>4.2.0</version>
         </dependency>
-        <dependency>
-            <groupId>org.nzbhydra</groupId>
-            <artifactId>assertions</artifactId>
-            <version>7.10.2</version>
-        </dependency>
-
 
     </dependencies>
 
