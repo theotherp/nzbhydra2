@@ -2441,7 +2441,13 @@
           "pattern": "\\Qorg/thymeleaf/thymeleaf.properties\\E"
       },
       {
+          "pattern": "\\Qstatic/css/additional.css\\E"
+      },
+      {
           "pattern": "\\Qstatic/css/alllibs.css\\E"
+      },
+      {
+          "pattern": "\\Qstatic/css/alllibs.css.map\\E"
       },
       {
           "pattern": "\\Qstatic/css/bright.css\\E"
@@ -2631,6 +2637,63 @@
       },
       {
           "pattern": "java.base:\\Qsun/text/resources/SentenceBreakIteratorData\\E"
+      },
+      {
+          "pattern": "\\Qstatic/css/auto.css.map\\E"
+      },
+      {
+          "pattern": "\\Qstatic/css/bright.css.map\\E"
+      },
+      {
+          "pattern": "\\Qstatic/css/dark.css.map\\E"
+      },
+      {
+          "pattern": "\\Qstatic/css/grey.css.map\\E"
+      },
+      {
+          "pattern": "\\Qstatic/DO-NOT-EDIT-THESE-FILES\\E"
+      },
+      {
+          "pattern": "\\Qstatic/favicon.ico\\E"
+      },
+      {
+          "pattern": "\\Qstatic/img/checkmark.png\\E"
+      },
+      {
+          "pattern": "\\Qstatic/img/redcross.png\\E"
+      },
+      {
+          "pattern": "\\Qstatic/img/torbox.svg\\E"
+      },
+      {
+          "pattern": "\\Qstatic/index.html\\E"
+      },
+      {
+          "pattern": "\\Qstatic/js/additional.js\\E"
+      },
+      {
+          "pattern": "\\Qstatic/js/alllibs.js.map\\E"
+      },
+      {
+          "pattern": "\\Qstatic/js/nzbhydra.js.map\\E"
+      },
+      {
+          "pattern": "\\Qstatic/main.js\\E"
+      },
+      {
+          "pattern": "\\Qstatic/polyfills.js\\E"
+      },
+      {
+          "pattern": "\\Qstatic/runtime.js\\E"
+      },
+      {
+          "pattern": "\\Qstatic/styles.css\\E"
+      },
+      {
+          "pattern": "\\Qstatic/styles.css.map\\E"
+      },
+      {
+          "pattern": "\\Qstatic/vendor.js\\E"
       }
   ]},
   "bundles": [
