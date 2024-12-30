@@ -1,3 +1,9 @@
+### v7.11.2 (2024-12-30)
+
+**Fix** Some images (like the torbox icon) were not visible. Fixed it and added a test to prevent this in the future.
+
+
+
 ### v7.11.1 (2024-12-29)
 
 **Fix** Another one of those times where I tried to improve something but broke it. For some users downloading results didn't work. This is hopefully fixed now. It worked fine for me locally and in the automated tests.
