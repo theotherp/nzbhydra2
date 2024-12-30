@@ -18,6 +18,7 @@ package org.nzbhydra.notifications;
 
 import com.google.common.collect.Sets;
 import jakarta.annotation.PreDestroy;
+import org.nzbhydra.ShutdownEvent;
 import org.nzbhydra.config.notification.NotificationEventType;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.slf4j.Logger;
@@ -144,6 +145,11 @@ public class NotificationsWeb {
                 logger.debug(LoggingMarkers.NOTIFICATIONS, "Not cancelling schedule because still connections left");
             }
         }
+    }
+
+    @EventListener
+    public void handleShutdown(ShutdownEvent shutdownEvent) {
+        onShutdown();
     }
 
     @PreDestroy

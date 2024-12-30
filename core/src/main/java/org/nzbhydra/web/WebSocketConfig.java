@@ -18,7 +18,9 @@ package org.nzbhydra.web;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
+import org.nzbhydra.ShutdownEvent;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -60,6 +62,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
         registration.taskExecutor(taskExecutor);
+    }
+
+    @EventListener
+    public void handleShutdown(ShutdownEvent shutdownEvent) {
+        onShutdown();
     }
 
     @PreDestroy

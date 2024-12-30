@@ -442,7 +442,7 @@ public class Searcher {
     public void onShutdown() {
         shutdownRequested = true;
         synchronized (executors) {
-            if (executors.size() > 0) {
+            if (!executors.isEmpty()) {
                 logger.debug("Waiting up to 10 seconds for {} background tasks to finish", executors.size());
             }
             for (ExecutorService executorService : executors) {

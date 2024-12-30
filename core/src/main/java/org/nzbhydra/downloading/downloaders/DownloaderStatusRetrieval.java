@@ -53,7 +53,7 @@ public class DownloaderStatusRetrieval {
             logger.error("Unable to determine to choose downloader for which to retrieve status.");
             return new DownloaderStatus();
         }
-        DownloaderStatus status = null;
+        DownloaderStatus status;
         try {
             status = downloader.get().getStatus();
             status.setUrl(downloader.get().getUrl());

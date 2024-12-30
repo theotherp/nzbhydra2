@@ -22,6 +22,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.time.DurationFormatUtils;
+import org.nzbhydra.ShutdownEvent;
 import org.nzbhydra.springnative.ReflectionMarker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +31,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.context.event.EventListener;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.scheduling.Trigger;
 import org.springframework.scheduling.TriggerContext;
@@ -62,6 +64,11 @@ public class HydraTaskScheduler implements BeanPostProcessor, SmartInitializingS
     private final ConcurrentMap<HydraTask, TaskInformation> taskInformations = new ConcurrentHashMap<>();
     private final Map<String, ScheduledFuture> taskSchedules = new HashMap<>();
     private boolean shutdownRequested;
+
+    @EventListener
+    public void handleShutdown(ShutdownEvent shutdownEvent) {
+        onShutdown();
+    }
 
     @PreDestroy
     public void onShutdown() {

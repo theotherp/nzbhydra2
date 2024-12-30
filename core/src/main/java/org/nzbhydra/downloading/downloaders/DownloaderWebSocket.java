@@ -17,6 +17,7 @@
 package org.nzbhydra.downloading.downloaders;
 
 import jakarta.annotation.PreDestroy;
+import org.nzbhydra.ShutdownEvent;
 import org.nzbhydra.config.ConfigChangedEvent;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.logging.LoggingMarkers;
@@ -136,6 +137,11 @@ public class DownloaderWebSocket {
         } else if (scheduledFuture == null && configChangedEvent.getNewConfig().getDownloading().isShowDownloaderStatus()) {
             scheduleDownloadStatusSending();
         }
+    }
+
+    @EventListener
+    public void handleShutdown(ShutdownEvent shutdownEvent) {
+        onShutdown();
     }
 
     @PreDestroy
