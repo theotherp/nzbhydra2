@@ -36,6 +36,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.stereotype.Component;
+import org.springframework.util.MimeTypeUtils;
 import org.springframework.validation.BindException;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
@@ -103,37 +104,43 @@ public class ErrorHandler {
             AsyncRequestTimeoutException.class})
     @ResponseBody
     public ResponseEntity<Object> handleConflict(Exception ex, HttpServletRequest request) {
-        String fullParametersString = "";
-        String parametersString = "";
-        if (!request.getParameterMap().isEmpty()) {
-            parametersString = request.getParameterMap().entrySet().stream().map(this::getFormattedEntry).collect(Collectors.joining(", "));
-            fullParametersString = " and parameters " + parametersString;
-        }
-        String requestURI = request.getRequestURI();
-        HttpStatus status = getStatusForException(ex);
-        String message = "Unexpected error when client tried to access path " + requestURI + fullParametersString + ". Error message: " + ex.getMessage();
-        if (EXCEPTIONS_LOG_WITHOUT_STACKTRACE.contains(ex.getClass())) {
-            logger.warn(message);
-        } else {
-            //Sometimes favicons are not requested properly by the browser
-            if (!requestURI.contains("favicon")) {
-                logger.warn("Unexpected error when client tried to access path " + requestURI + fullParametersString, ex);
-            }
-        }
-        Object bodyOfResponse;
-        List<MediaType> mediaTypes = new ArrayList<>();
         try {
-            mediaTypes = resolveMediaTypes(request);
-        } catch (HttpMediaTypeNotAcceptableException e) {
-            logger.error("Unable to parse Media Types of request", e);
-        }
-        if (mediaTypes.contains(MediaType.APPLICATION_JSON)) {
-            bodyOfResponse = new JsonExceptionResponse(ExceptionUtils.getStackTrace(ex), requestURI, parametersString, status.value(), ex.getMessage());
-        } else {
-            bodyOfResponse = message;
-        }
+            String fullParametersString = "";
+            String parametersString = "";
+            if (!request.getParameterMap().isEmpty()) {
+                parametersString = request.getParameterMap().entrySet().stream().map(this::getFormattedEntry).collect(Collectors.joining(", "));
+                fullParametersString = " and parameters " + parametersString;
+            }
+            String requestURI = request.getRequestURI();
+            HttpStatus status = getStatusForException(ex);
+            String message = "Unexpected error when client tried to access path " + requestURI + fullParametersString + ". Error message: " + ex.getMessage();
+            if (EXCEPTIONS_LOG_WITHOUT_STACKTRACE.contains(ex.getClass())) {
+                logger.warn(message);
+            } else {
+                //Sometimes favicons are not requested properly by the browser
+                if (!requestURI.contains("favicon")) {
+                    logger.warn("Unexpected error when client tried to access path {}{}", requestURI, fullParametersString, ex);
+                }
+            }
+            Object bodyOfResponse;
+            List<MediaType> mediaTypes = new ArrayList<>();
+            try {
+                mediaTypes = resolveMediaTypes(request);
+            } catch (HttpMediaTypeNotAcceptableException e) {
+                logger.error("Unable to parse Media Types of request", e);
+            }
+            if (mediaTypes.contains(MediaType.APPLICATION_JSON)) {
+                bodyOfResponse = new JsonExceptionResponse(ExceptionUtils.getStackTrace(ex), requestURI, parametersString, status.value(), ex.getMessage());
+            } else {
+                bodyOfResponse = message;
+            }
 
-        return new ResponseEntity<>(bodyOfResponse, new HttpHeaders(), status);
+            return new ResponseEntity<>(bodyOfResponse, new HttpHeaders(), status);
+        } catch (Exception e) {
+            logger.error("Error occurred while handling error (how ironic)", e);
+            return ResponseEntity.internalServerError()
+                    .body(ExceptionUtils.getStackTrace(ex));
+        }
     }
 
     protected String getFormattedEntry(Entry<String, String[]> x) {
@@ -191,7 +198,7 @@ public class ErrorHandler {
         List<String> headerValues = Collections.list(headerValueArray);
         try {
             List<MediaType> mediaTypes = MediaType.parseMediaTypes(headerValues);
-            MediaType.sortBySpecificityAndQuality(mediaTypes);
+            MimeTypeUtils.sortBySpecificity(mediaTypes);
             return mediaTypes;
         } catch (InvalidMediaTypeException ex) {
             throw new HttpMediaTypeNotAcceptableException(
