@@ -1,4 +1,10 @@
 #@formatter:off
+-   version: "v7.11.2"
+    date: "2024-12-30"
+    changes:
+      -   type: "fix"
+          text: "Some images (like the torbox icon) were not visible. Fixed it and added a test to prevent this in the future."
+    final: true
 -   version: "v7.11.1"
     date: "2024-12-29"
     changes:
