@@ -2582,6 +2582,18 @@
           "pattern": "\\Qstatic/img/sabsuccess.png\\E"
       },
       {
+          "pattern": "\\Qstatic/img/torbox.png\\E"
+      },
+      {
+          "pattern": "\\Qstatic/img/torboxlogo.png\\E"
+      },
+      {
+          "pattern": "\\Qstatic/img/torboxerror.png\\E"
+      },
+      {
+          "pattern": "\\Qstatic/img/torboxsuccess.png\\E"
+      },
+      {
           "pattern": "\\Qstatic/img/spinner.gif\\E"
       },
       {
