@@ -3,6 +3,8 @@
     changes:
       -   type: "fix"
           text: "Repeating a TV search from the search history would instead search for all TV results."
+      -   type: "fix"
+          text: "Filtering for 3D using the quick filter button filtered for the wrong term. See #977"
     final: true
 -   version: "v7.11.2"
     date: "2024-12-30"

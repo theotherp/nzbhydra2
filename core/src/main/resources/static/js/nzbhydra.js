@@ -10424,7 +10424,8 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
                     return true;
                 }
                 var containsAtLeastOne = _.any(requiresAnyOf, function (required) {
-                    if (item.title.toLowerCase().indexOf(required.toLowerCase()) > -1) {
+                    if (item.title.toLowerCase().indexOf(required.substring(1).toLowerCase()) > -1) {
+                        //We need to remove the "q" which is there because keys may not start with a digit
                         return true;
                     }
                 })
@@ -10478,23 +10479,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
                     }
                 }
 
-
-                // var requiresAnyOf = _.keys(_.pick($scope.filterButtonsModel.custom, function (value, key) {
-                //     return value
-                // }));
-                // if (requiresAnyOf.length === 0) {
-                //     return true;
-                // }
-                // var containsAtLeastOne = _.any(requiresAnyOf, function (required) {
-                //     if (item.title.toLowerCase().indexOf(required.toLowerCase()) > -1) {
-                //         return true;
-                //     }
-                // })
-                // if (!containsAtLeastOne) {
-                //     console.debug(item.title + " does not contain any of the custom values' " + JSON.stringify(requiresAnyOf));
-                //     filterReasons["quickFilter"] = filterReasons["quickFilter"] + 1;
-                //     return false;
-                // }
             }
 
             if ($scope.foo.hideAlreadyDownloadedResults && item.downloadedAt !== null) {
