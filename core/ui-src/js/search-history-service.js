@@ -111,9 +111,9 @@ function SearchHistoryService($filter, $http) {
         var stateParams = {};
         stateParams.mode = "search";
         var availableIdentifiers = _.pluck(request.identifiers, "identifierKey");
-        if (availableIdentifiers.indexOf("TMDB") > -1 || availableIdentifiers.indexOf("IMDB") > -1) {
+        if (request.searchType === "MOVIE") {
             stateParams.mode = "movie";
-        } else if (availableIdentifiers.indexOf("TVRAGE") > -1 || availableIdentifiers.indexOf("TVMAZE") > -1 || availableIdentifiers.indexOf("TVDB") > -1) {
+        } else if (request.searchType === "TVSEARCH") {
             stateParams.mode = "tvsearch";
         }
         if (request.season) {

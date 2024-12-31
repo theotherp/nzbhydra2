@@ -1,4 +1,9 @@
 #@formatter:off
+-   version: "v7.11.3"
+    changes:
+      -   type: "fix"
+          text: "Repeating a TV search from the search history would instead search for all TV results."
+    final: true
 -   version: "v7.11.2"
     date: "2024-12-30"
     changes:
