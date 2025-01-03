@@ -1,3 +1,13 @@
+### v7.11.3 (2025-01-03)
+
+**Fix** Repeating a TV search from the search history would instead search for all TV results.
+
+**Fix** Filtering for 3D using the quick filter button filtered for the wrong term. See <a href="https://github.com/theotherp/nzbhydra2/issues/977">#977</a>
+
+**Fix** IPv6 reverse proxies would result in error 500. See <a href="https://github.com/theotherp/nzbhydra2/issues/980">#980</a>
+
+
+
 ### v7.11.2 (2024-12-30)
 
 **Fix** Some images (like the torbox icon) were not visible. Fixed it and added a test to prevent this in the future.
