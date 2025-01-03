@@ -20,7 +20,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.MainConfig;
@@ -39,6 +40,7 @@ import org.nzbhydra.searching.searchrequests.SearchRequest;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class NewznabXmlTransformerTest {
 
     @Mock
@@ -56,7 +58,7 @@ public class NewznabXmlTransformerTest {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+
         when(configProvider.getBaseConfig()).thenReturn(baseConfig);
         baseConfig.setMain(new MainConfig());
         baseConfig.getMain().setApiKey("apikey");

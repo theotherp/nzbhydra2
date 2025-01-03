@@ -4,8 +4,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.mockito.stubbing.Answer;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
@@ -39,7 +40,7 @@ import java.time.temporal.ChronoUnit;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
-
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class ExternalApiTest {
 
     BaseConfig baseConfig = new BaseConfig();
@@ -76,7 +77,7 @@ public class ExternalApiTest {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+
         when(configProvider.getBaseConfig()).thenReturn(baseConfig);
         baseConfig.setMain(new MainConfig());
         baseConfig.getMain().setApiKey("apikey");

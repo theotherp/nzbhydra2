@@ -6,7 +6,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.genericstorage.GenericStorage;
@@ -22,8 +23,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class BackupTaskTest {
 
+    BaseConfig config = new BaseConfig();
     @Mock
     private BackupAndRestore backupAndRestore;
     @Mock
@@ -32,14 +35,12 @@ public class BackupTaskTest {
     private ConfigProvider configProvider;
     @Captor
     private ArgumentCaptor<BackupData> backupDataArgumentCaptor;
-    BaseConfig config = new BaseConfig();
-
     @InjectMocks
     private BackupTask testee = new BackupTask();
 
     @BeforeEach
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+
 
         when(configProvider.getBaseConfig()).thenReturn(config);
         config.getMain().setBackupEveryXDays(7);

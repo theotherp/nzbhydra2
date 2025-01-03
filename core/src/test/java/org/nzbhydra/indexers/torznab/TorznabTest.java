@@ -24,8 +24,9 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.mockito.stubbing.Answer;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
@@ -68,6 +69,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 @SuppressWarnings("ALL")
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class TorznabTest {
 
     private BaseConfig baseConfig;
@@ -108,7 +110,7 @@ public class TorznabTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+
         testee = spy(testee);
         final IndexerConfig config = new IndexerConfig();
         testee.initialize(config, indexerEntityMock);

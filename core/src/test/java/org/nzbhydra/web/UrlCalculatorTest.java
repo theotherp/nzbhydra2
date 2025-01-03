@@ -22,7 +22,6 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -43,7 +42,7 @@ public class UrlCalculatorTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+
     }
 
     @Test

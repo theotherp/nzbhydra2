@@ -9,8 +9,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.mockito.stubbing.Answer;
 import org.nzbhydra.NzbHydraException;
 import org.nzbhydra.config.BaseConfig;
@@ -75,6 +76,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @SuppressWarnings("ALL")
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class NewznabTest {
 
     private BaseConfig baseConfig;
@@ -134,7 +136,7 @@ public class NewznabTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+
 //        testee = new Newznab(configProviderMock,indexerRepositoryMock,searchResultRepositoryMock, indexerApiAccessRepositoryMock, null,null,indexerWebAccessMock,resultAcceptorMock, categoryProviderMock, infoProviderMock, null,queryGeneratorMock, customQueryAndTitleMappingHandler,unmarshallerMock,baseConfigHandler,null);
         testee = spy(testee);
         when(infoProviderMock.canConvert(MediaIdType.IMDB, MediaIdType.TMDB)).thenReturn(true);
@@ -206,11 +208,11 @@ public class NewznabTest {
     @Test
     void shouldAccountForRejectedResults() throws Exception {
         List<NewznabXmlItem> items = Arrays.asList(
-            RssItemBuilder.builder("title1").build(),
-            RssItemBuilder.builder("title2").build(),
-            RssItemBuilder.builder("title3").build(),
-            RssItemBuilder.builder("title4").build(),
-            RssItemBuilder.builder("title5").build()
+                RssItemBuilder.builder("title1").build(),
+                RssItemBuilder.builder("title2").build(),
+                RssItemBuilder.builder("title3").build(),
+                RssItemBuilder.builder("title4").build(),
+                RssItemBuilder.builder("title5").build()
         );
         NewznabXmlRoot root = RssBuilder.builder().items(items).newznabResponse(100, 105).build();
         when(indexerWebAccessMock.get(any(), eq(testee.config), any())).thenReturn(root);

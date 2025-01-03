@@ -4,8 +4,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.mockito.stubbing.Answer;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
@@ -23,11 +24,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class AnizbTest {
 
+    BaseConfig baseConfig = new BaseConfig();
     @Mock
     private ConfigProvider configProviderMock;
-    BaseConfig baseConfig = new BaseConfig();
     @Mock
     private QueryGenerator queryGeneratorMock;
 
@@ -37,7 +39,7 @@ public class AnizbTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+
         when(configProviderMock.getBaseConfig()).thenReturn(baseConfig);
         testee.config = new IndexerConfig();
         testee.config.setName("anizb");

@@ -11,8 +11,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.mockito.stubbing.Answer;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
@@ -50,8 +51,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
 
-//@ExtendWith(SpringExtension.class)
-//@ContextConfiguration(classes = {Searcher.class, DuplicateDetector.class})
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class SearcherUnitTest {
 
     @InjectMocks
@@ -100,7 +100,7 @@ public class SearcherUnitTest {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+
         searchResultEntityMock.setIndexer(indexerEntity);
         searcher.duplicateDetector = duplicateDetector;
 

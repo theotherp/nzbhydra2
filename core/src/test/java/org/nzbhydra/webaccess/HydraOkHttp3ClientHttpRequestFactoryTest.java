@@ -5,7 +5,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigChangedEvent;
 import org.nzbhydra.config.ConfigProvider;
@@ -20,6 +21,7 @@ import java.util.Arrays;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class HydraOkHttp3ClientHttpRequestFactoryTest {
 
     @InjectMocks
@@ -33,10 +35,10 @@ public class HydraOkHttp3ClientHttpRequestFactoryTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+
         when(configProviderMock.getBaseConfig()).thenReturn(baseConfig);
         baseConfig.getMain().setProxyIgnoreLocal(true);
-        baseConfig.getMain().setProxyIgnoreDomains(Arrays.asList("mydomain.com", "github.com", "*.otherdomain.net"));
+        baseConfig.getMain().setProxyIgnoreDomains(Arrays.asList("mydomain.com", "github.com", "*.google.com"));
         testee.handleConfigChangedEvent(new ConfigChangedEvent(this, baseConfig, baseConfig));
 
         testee = spy(testee);
@@ -57,10 +59,10 @@ public class HydraOkHttp3ClientHttpRequestFactoryTest {
     void shouldRecognizeIgnoredDomains() {
         assertThat(testee.isUriToBeIgnoredByProxy("mydomain.com")).isEqualTo(true);
         assertThat(testee.isUriToBeIgnoredByProxy("github.com")).isEqualTo(true);
-        assertThat(testee.isUriToBeIgnoredByProxy("subdomain.otherdomain.net")).isEqualTo(true);
-        assertThat(testee.isUriToBeIgnoredByProxy("subdomain.otherDOmain.NET")).isEqualTo(true);
+        assertThat(testee.isUriToBeIgnoredByProxy("mail.google.com")).isEqualTo(true);
+        assertThat(testee.isUriToBeIgnoredByProxy("mail.google.COM")).isEqualTo(true);
 
-        assertThat(testee.isUriToBeIgnoredByProxy("subdomain.otherdomain.ORG")).isEqualTo(false);
+        assertThat(testee.isUriToBeIgnoredByProxy("mail.yahoo.com")).isEqualTo(false);
         assertThat(testee.isUriToBeIgnoredByProxy("somedomain.com")).isEqualTo(false);
     }
 

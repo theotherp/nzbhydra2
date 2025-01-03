@@ -9,7 +9,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.mockito.stubbing.Answer;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
@@ -37,14 +38,16 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import org.mockito.quality.Strictness;
 @SuppressWarnings("ConstantConditions")
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class BinsearchTest {
 
+    BaseConfig baseConfig = new BaseConfig();
     @Mock
     private ConfigProvider configProviderMock;
     @Mock
     private CategoryProvider categoryProviderMock;
-    BaseConfig baseConfig = new BaseConfig();
     @Captor
     private ArgumentCaptor<URI> uriCaptor;
     @Mock
@@ -57,7 +60,7 @@ public class BinsearchTest {
     @BeforeEach
     public void setUp() throws Exception {
         Binsearch.clock = Clock.fixed(Instant.ofEpochSecond(1707391628L), ZoneId.of("UTC"));
-        MockitoAnnotations.initMocks(this);
+
         when(configProviderMock.getBaseConfig()).thenReturn(baseConfig);
         testee.config = new IndexerConfig();
         testee.config.setName("binsearch");

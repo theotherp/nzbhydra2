@@ -20,7 +20,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.downloading.downloaders.Downloader;
@@ -38,6 +39,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class DownloadStatusUpdaterTest {
 
     @Mock
@@ -54,7 +56,7 @@ public class DownloadStatusUpdaterTest {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+
         when(downloaderProvider.getAllDownloaders()).thenReturn(Collections.singletonList(downloaderMock));
         when(downloaderMock.isEnabled()).thenReturn(true);
         when(configProvider.getBaseConfig()).thenReturn(new BaseConfig());

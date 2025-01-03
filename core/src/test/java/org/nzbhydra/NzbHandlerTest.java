@@ -3,7 +3,8 @@ package org.nzbhydra;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.downloading.FileDownloadEntity;
@@ -12,6 +13,7 @@ import org.nzbhydra.downloading.FileHandler;
 
 import static org.mockito.Mockito.when;
 
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class NzbHandlerTest {
 
     @InjectMocks
@@ -26,7 +28,7 @@ public class NzbHandlerTest {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+
         when(configProviderMock.getBaseConfig()).thenReturn(baseConfig);
     }
 

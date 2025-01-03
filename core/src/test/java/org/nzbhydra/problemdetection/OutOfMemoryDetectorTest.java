@@ -22,7 +22,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.nzbhydra.genericstorage.GenericStorage;
 import org.nzbhydra.logging.LogContentProvider;
 
@@ -33,6 +34,7 @@ import java.nio.file.Path;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class OutOfMemoryDetectorTest {
 
     @Mock
@@ -51,7 +53,7 @@ public class OutOfMemoryDetectorTest {
     @Disabled //Fails on Pipeline
     @Test
     void executeCheck() throws Exception {
-        MockitoAnnotations.initMocks(this);
+
 
         final Path tempFile = Files.createTempFile("nzbhydra", ".log");
         try {

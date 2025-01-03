@@ -9,7 +9,8 @@ import com.google.common.collect.Sets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.nzbhydra.config.category.Category;
 import org.nzbhydra.config.validation.BaseConfigValidator;
 import org.nzbhydra.config.validation.ConfigValidationTools;
@@ -27,22 +28,21 @@ import java.util.stream.Collectors;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class BaseConfigTest {
 
     //If true the actual content of the config in code and in baseConfig.yml will be compared
     //If false only the structure will be compare, meaning both sides have to have the same keys but the values can be different
     private static final boolean COMPARE_CONFIG_VALUES = false;
     private Set<String> dontCheckTheseLists = Sets.newHashSet("categories");
-
-    @BeforeEach
-    public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
-    }
-
     @InjectMocks
     private BaseConfig testee = new BaseConfig();
     private BaseConfigValidator baseConfigValidator = new BaseConfigValidator();
 
+    @BeforeEach
+    public void setUp() throws Exception {
+
+    }
 
     @Test
     void shouldRecognizeRestartRequired() {
@@ -86,8 +86,6 @@ public class BaseConfigTest {
 
         compare(mapFromApplicationYml, mapFromBaseConfig);
     }
-
-
 
 
     private void compare(Object left, Object right) {

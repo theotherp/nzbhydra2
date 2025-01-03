@@ -9,7 +9,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.mockito.stubbing.Answer;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
@@ -35,8 +36,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-
 @SuppressWarnings("ConstantConditions")
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class NzbKingTest {
 
     // kksLWrBiAXSBciUljS4ISqMxyqzC
@@ -58,7 +59,7 @@ public class NzbKingTest {
     @BeforeEach
     public void setUp() throws Exception {
         NzbKing.clock = Clock.fixed(Instant.ofEpochSecond(1707391628L), ZoneId.of("UTC"));
-        MockitoAnnotations.initMocks(this);
+
         when(configProviderMock.getBaseConfig()).thenReturn(baseConfig);
         testee.config = new IndexerConfig();
         testee.config.setName("NZBKing");

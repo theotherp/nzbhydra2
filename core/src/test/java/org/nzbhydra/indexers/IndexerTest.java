@@ -8,8 +8,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.mockito.stubbing.Answer;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.BaseConfigHandler;
@@ -57,6 +58,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class IndexerTest {
 
     private Logger testLogger = LoggerFactory.getLogger("test");
@@ -150,7 +152,7 @@ public class IndexerTest {
     @BeforeEach
     public void setUp() throws Exception {
 
-        MockitoAnnotations.initMocks(this);
+
         when(indexerMock.getIndexerEntity()).thenReturn(indexerEntityMock);
         when(indexerMock.getConfig()).thenReturn(indexerConfig);
 
