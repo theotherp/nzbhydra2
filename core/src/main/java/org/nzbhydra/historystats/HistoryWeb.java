@@ -38,7 +38,7 @@ public class HistoryWeb {
         final List<SearchEntityTO> searchEntityTOS = page.getContent().stream()
             .map(x -> Jackson.JSON_MAPPER.convertValue(x, SearchEntityTO.class))
             .toList();
-        return new PageImpl<>(searchEntityTOS);
+        return new PageImpl<>(searchEntityTOS, page.getPageable(), page.getTotalElements());
     }
 
     @Secured({"ROLE_STATS"})
@@ -65,7 +65,7 @@ public class HistoryWeb {
             .stream()
             .map(x -> Jackson.JSON_MAPPER.convertValue(x, FileDownloadEntityTO.class))
             .toList();
-        return new PageImpl<>(downloadEntityTOS);
+        return new PageImpl<>(downloadEntityTOS, page.getPageable(), page.getTotalElements());
     }
 
     @Secured({"ROLE_STATS"})
@@ -77,7 +77,7 @@ public class HistoryWeb {
             .stream()
             .map(x -> Jackson.JSON_MAPPER.convertValue(x, NotificationEntityTO.class))
             .toList();
-        return new PageImpl<>(tos);
+        return new PageImpl<>(tos, page.getPageable(), page.getTotalElements());
     }
 
 }
