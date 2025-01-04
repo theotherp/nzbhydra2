@@ -110,7 +110,7 @@ class HydraEmbeddedServletContainerTest {
 
         HydraEmbeddedServletContainer.Result result = parseRequest(request);
 
-        assertThat(result.originalPort()).isEqualTo(80);
+        assertThat(result.originalPort()).isEqualTo(-1);
         assertThat(result.forwardedHost()).isEqualTo("[2001:db8:85a3:8d3:1319:8a2e:370:7348]");
     }
 
