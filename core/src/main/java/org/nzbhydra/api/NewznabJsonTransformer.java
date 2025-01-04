@@ -19,6 +19,7 @@ package org.nzbhydra.api;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.downloading.FileHandler;
+import org.nzbhydra.downloading.downloadurls.DownloadUrlBuilder;
 import org.nzbhydra.mapping.newznab.NewznabResponse;
 import org.nzbhydra.mapping.newznab.json.NewznabJsonChannel;
 import org.nzbhydra.mapping.newznab.json.NewznabJsonChannelResponse;
@@ -48,6 +49,8 @@ public class NewznabJsonTransformer {
     protected FileHandler nzbHandler;
     @Autowired
     protected ConfigProvider configProvider;
+    @Autowired
+    private DownloadUrlBuilder downloadUrlBuilder;
 
     NewznabJsonRoot transformToRoot(List<SearchResultItem> searchResultItems, Integer offset, int total, boolean isNzb) {
         NewznabJsonRoot rssRoot = new NewznabJsonRoot();
@@ -74,7 +77,7 @@ public class NewznabJsonTransformer {
 
     private NewznabJsonItem buildRssItem(SearchResultItem searchResultItem, boolean isNzb) {
         NewznabJsonItem rssItem = new NewznabJsonItem();
-        String link = nzbHandler.getDownloadLinkForResults(searchResultItem.getSearchResultId(), false, DownloadType.NZB);
+        String link = downloadUrlBuilder.getDownloadLinkForResults(searchResultItem.getSearchResultId(), false, DownloadType.NZB);
         rssItem.setLink(link);
         rssItem.setTitle(searchResultItem.getTitle());
         rssItem.setGuid(String.valueOf(searchResultItem.getGuid()));

@@ -19,6 +19,7 @@ package org.nzbhydra.api;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.downloading.FileHandler;
+import org.nzbhydra.downloading.downloadurls.DownloadUrlBuilder;
 import org.nzbhydra.mapping.newznab.NewznabResponse;
 import org.nzbhydra.mapping.newznab.xml.NewznabAttribute;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlChannel;
@@ -48,6 +49,8 @@ public class NewznabXmlTransformer {
     protected FileHandler nzbHandler;
     @Autowired
     protected ConfigProvider configProvider;
+    @Autowired
+    private DownloadUrlBuilder downloadUrlBuilder;
 
     NewznabXmlRoot getRssRoot(List<SearchResultItem> searchResultItems, Integer offset, int total, boolean isNzb) {
         NewznabXmlRoot rssRoot = new NewznabXmlRoot();
@@ -77,7 +80,7 @@ public class NewznabXmlTransformer {
 
     NewznabXmlItem buildRssItem(SearchResultItem searchResultItem, boolean isNzb) {
         NewznabXmlItem rssItem = new NewznabXmlItem();
-        String link = nzbHandler.getDownloadLinkForResults(searchResultItem.getSearchResultId(), false, isNzb ? DownloadType.NZB : DownloadType.TORRENT);
+        String link = downloadUrlBuilder.getDownloadLinkForResults(searchResultItem.getSearchResultId(), false, isNzb ? DownloadType.NZB : DownloadType.TORRENT);
         rssItem.setLink(link);
         rssItem.setTitle(searchResultItem.getTitle());
         rssItem.setRssGuid(new NewznabXmlGuid(String.valueOf(searchResultItem.getGuid()), false));

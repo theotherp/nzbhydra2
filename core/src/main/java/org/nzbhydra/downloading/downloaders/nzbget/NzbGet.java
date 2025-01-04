@@ -28,6 +28,7 @@ import org.nzbhydra.downloading.IndexerSpecificDownloadExceptions;
 import org.nzbhydra.downloading.downloaders.Downloader;
 import org.nzbhydra.downloading.downloaders.DownloaderEntry;
 import org.nzbhydra.downloading.downloaders.DownloaderStatus;
+import org.nzbhydra.downloading.downloadurls.DownloadUrlBuilder;
 import org.nzbhydra.downloading.exceptions.DownloaderException;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.searching.db.SearchResultRepository;
@@ -82,8 +83,8 @@ public class NzbGet extends Downloader {
 
     private final Ssl ssl;
 
-    public NzbGet(FileHandler nzbHandler, SearchResultRepository searchResultRepository, ApplicationEventPublisher applicationEventPublisher, IndexerSpecificDownloadExceptions indexerSpecificDownloadExceptions, ConfigProvider configProvider, Ssl ssl) {
-        super(nzbHandler, searchResultRepository, applicationEventPublisher, indexerSpecificDownloadExceptions, configProvider);
+    public NzbGet(FileHandler nzbHandler, SearchResultRepository searchResultRepository, ApplicationEventPublisher applicationEventPublisher, IndexerSpecificDownloadExceptions indexerSpecificDownloadExceptions, ConfigProvider configProvider, Ssl ssl, DownloadUrlBuilder downloadUrlBuilder) {
+        super(nzbHandler, searchResultRepository, applicationEventPublisher, indexerSpecificDownloadExceptions, configProvider, downloadUrlBuilder);
         this.ssl = ssl;
     }
 

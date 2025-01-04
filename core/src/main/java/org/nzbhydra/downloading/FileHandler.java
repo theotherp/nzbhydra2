@@ -9,7 +9,6 @@ import okhttp3.ResponseBody;
 import org.jetbrains.annotations.NotNull;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.ConfigProvider;
-import org.nzbhydra.config.MainConfig;
 import org.nzbhydra.config.SearchSource;
 import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.config.downloading.FileDownloadAccessType;
@@ -19,7 +18,6 @@ import org.nzbhydra.indexers.IndexerApiAccessEntityShort;
 import org.nzbhydra.indexers.IndexerApiAccessEntityShortRepository;
 import org.nzbhydra.indexers.IndexerApiAccessType;
 import org.nzbhydra.indexers.NfoResult;
-import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.misc.TempFileProvider;
 import org.nzbhydra.notifications.DownloadNotificationEvent;
 import org.nzbhydra.searching.SearchModuleProvider;
@@ -34,7 +32,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -90,7 +87,7 @@ public class FileHandler {
         final SearchResultEntity searchResult = getResultFromGuid(guid, accessSource);
         final IndexerConfig indexerConfig = configProvider.getIndexerByName(searchResult.getIndexer().getName());
 
-        FileDownloadAccessType fileDownloadAccessType = indexerSpecificDownloadExceptions.getAccessTypeForIndexer(indexerConfig, configProvider.getBaseConfig().getDownloading().getNzbAccessType());
+        FileDownloadAccessType fileDownloadAccessType = indexerSpecificDownloadExceptions.getAccessTypeForIndexer(indexerConfig, configProvider.getBaseConfig().getDownloading().getNzbAccessType(), searchResult);
         return getFileByResult(fileDownloadAccessType, accessSource, searchResult);
     }
 
@@ -116,7 +113,7 @@ public class FileHandler {
 
     @Transactional
     public DownloadResult getFileByResult(FileDownloadAccessType fileDownloadAccessType, SearchSource accessSource, SearchResultEntity result) {
-        fileDownloadAccessType = indexerSpecificDownloadExceptions.getAccessTypeForIndexer(configProvider.getIndexerByName(result.getIndexer().getName()), fileDownloadAccessType);
+        fileDownloadAccessType = indexerSpecificDownloadExceptions.getAccessTypeForIndexer(configProvider.getIndexerByName(result.getIndexer().getName()), fileDownloadAccessType, result);
         return getFileByResult(fileDownloadAccessType, accessSource, result, new HashSet<>());
     }
 
@@ -251,7 +248,7 @@ public class FileHandler {
             try {
                 final SearchResultEntity searchResult = getResultFromGuid(guid, SearchSource.INTERNAL);
                 final IndexerConfig indexerConfig = configProvider.getIndexerByName(searchResult.getIndexer().getName());
-                final FileDownloadAccessType accessType = indexerSpecificDownloadExceptions.getAccessTypeForIndexer(indexerConfig, FileDownloadAccessType.PROXY);
+                final FileDownloadAccessType accessType = indexerSpecificDownloadExceptions.getAccessTypeForIndexer(indexerConfig, FileDownloadAccessType.PROXY, searchResult);
                 if (accessType == FileDownloadAccessType.PROXY) {
                     result = getFileByGuid(guid, FileDownloadAccessType.PROXY, SearchSource.INTERNAL);
                 } else {
@@ -320,39 +317,6 @@ public class FileHandler {
         fis.close();
     }
 
-
-    public String getDownloadLinkForSendingToDownloader(Long searchResultId, boolean internal, DownloadType downloadType) {
-        UriComponentsBuilder builder;
-        final Optional<String> externalUrl = configProvider.getBaseConfig().getDownloading().getExternalUrl();
-        if (externalUrl.isPresent()) {
-            logger.debug(LoggingMarkers.URL_CALCULATION, "Using configured external URL: {}", externalUrl.get());
-            builder = UriComponentsBuilder.fromHttpUrl(externalUrl.get());
-        } else {
-            builder = urlCalculator.getRequestBasedUriBuilder();
-            logger.debug(LoggingMarkers.URL_CALCULATION, "Using URL calculated from request: {}", builder.toUriString());
-        }
-        return getDownloadLink(searchResultId, internal, downloadType, builder);
-    }
-
-    public String getDownloadLinkForResults(Long searchResultId, boolean internal, DownloadType downloadType) {
-        UriComponentsBuilder builder = urlCalculator.getRequestBasedUriBuilder();
-        logger.debug(LoggingMarkers.URL_CALCULATION, "Using URL calculated from request: {}", builder.toUriString());
-        return getDownloadLink(searchResultId, internal, downloadType, builder);
-    }
-
-    private String getDownloadLink(Long searchResultId, boolean internal, DownloadType downloadType, UriComponentsBuilder builder) {
-        String getName = downloadType == DownloadType.NZB ? "getnzb" : "gettorrent";
-        if (internal) {
-            builder.path("/" + getName + "/user");
-            builder.path("/" + searchResultId);
-        } else {
-            MainConfig main = configProvider.getBaseConfig().getMain();
-            builder.path("/" + getName + "/api");
-            builder.path("/" + searchResultId);
-            builder.queryParam("apikey", main.getApiKey());
-        }
-        return builder.toUriString();
-    }
 
     public NfoResult getNfo(Long searchResultId) {
         Optional<SearchResultEntity> optionalResult = searchResultRepository.findById(searchResultId);

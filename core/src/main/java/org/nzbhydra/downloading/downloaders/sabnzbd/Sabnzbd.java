@@ -26,6 +26,7 @@ import org.nzbhydra.downloading.downloaders.sabnzbd.mapping.HistoryResponse;
 import org.nzbhydra.downloading.downloaders.sabnzbd.mapping.Queue;
 import org.nzbhydra.downloading.downloaders.sabnzbd.mapping.QueueEntry;
 import org.nzbhydra.downloading.downloaders.sabnzbd.mapping.QueueResponse;
+import org.nzbhydra.downloading.downloadurls.DownloadUrlBuilder;
 import org.nzbhydra.downloading.exceptions.DownloaderException;
 import org.nzbhydra.downloading.exceptions.DownloaderUnreachableException;
 import org.nzbhydra.downloading.exceptions.DuplicateNzbException;
@@ -82,8 +83,8 @@ public class Sabnzbd extends Downloader {
     private final RestTemplate restTemplate;
     private final HydraOkHttp3ClientHttpRequestFactory requestFactory;
 
-    public Sabnzbd(FileHandler nzbHandler, SearchResultRepository searchResultRepository, ApplicationEventPublisher applicationEventPublisher, IndexerSpecificDownloadExceptions indexerSpecificDownloadExceptions, ConfigProvider configProvider, RestTemplate restTemplate, HydraOkHttp3ClientHttpRequestFactory requestFactory) {
-        super(nzbHandler, searchResultRepository, applicationEventPublisher, indexerSpecificDownloadExceptions, configProvider);
+    public Sabnzbd(FileHandler nzbHandler, SearchResultRepository searchResultRepository, ApplicationEventPublisher applicationEventPublisher, IndexerSpecificDownloadExceptions indexerSpecificDownloadExceptions, ConfigProvider configProvider, RestTemplate restTemplate, HydraOkHttp3ClientHttpRequestFactory requestFactory, DownloadUrlBuilder downloadUrlBuilder) {
+        super(nzbHandler, searchResultRepository, applicationEventPublisher, indexerSpecificDownloadExceptions, configProvider, downloadUrlBuilder);
         this.restTemplate = restTemplate;
         this.requestFactory = requestFactory;
     }

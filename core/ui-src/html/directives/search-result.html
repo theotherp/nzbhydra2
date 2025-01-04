@@ -4,24 +4,24 @@
     <div class="d-flex">
       <div class="d-flex align-items-center justify-content-space-around title-actions me-2">
         <input type="checkbox"
-              ng-model="foo.selected"
-              ng-click="clickCheckbox($event, result)" data-checkbox-index="0" class="result-checkbox mt-0"/>
+               ng-model="foo.selected"
+               ng-click="clickCheckbox($event, result)" data-checkbox-index="0" class="result-checkbox mt-0"/>
         <a href="" ng-click="toggleTitleExpansion()"
-          ng-class="{'visibility-hidden': (result.titlesLength === 1 || result.titleGroupIndex > 0 || result.duplicateGroupIndex > 0)}"
-          class="title-expand-toggle mx-2"
-          uib-tooltip="Click to see or hide all results with the same title"
-          tooltip-placement="top"
-          tooltip-trigger="mouseenter"
-          style="text-decoration: none">
-            <span class="glyphicon" ng-class="{'glyphicon-minus': titlesExpanded, 'glyphicon-plus': !titlesExpanded}"></span>
+           ng-class="{'visibility-hidden': (result.titlesLength === 1 || result.titleGroupIndex > 0 || result.duplicateGroupIndex > 0)}"
+           class="title-expand-toggle mx-2"
+           uib-tooltip="Click to see or hide all results with the same title"
+           tooltip-placement="top"
+           tooltip-trigger="mouseenter"
+           style="text-decoration: none">
+          <span class="glyphicon" ng-class="{'glyphicon-minus': titlesExpanded, 'glyphicon-plus': !titlesExpanded}"></span>
         </a>
       </div>
       <a ng-if="foo.duplicatesDisplayed" href="" ng-click="toggleDuplicateExpansion()"
-        ng-class="{'visibility-hidden': (result.duplicatesLength == 1 || result.duplicateGroupIndex > 0)}"
-        class="duplicate-expand-toggle"
-        uib-tooltip="Click to see or hide all duplicates of this result"
-        tooltip-placement="right"
-        tooltip-trigger="mouseenter" style="text-decoration: none">
+         ng-class="{'visibility-hidden': (result.duplicatesLength == 1 || result.duplicateGroupIndex > 0)}"
+         class="duplicate-expand-toggle"
+         uib-tooltip="Click to see or hide all duplicates of this result"
+         tooltip-placement="right"
+         tooltip-trigger="mouseenter" style="text-decoration: none">
         <!-- Formatting must be so weird because otherwise we'll have leading whitespaces in the titles   -->
         <span class="glyphicon" ng-class="{'glyphicon-minus': duplicatesExpanded, 'glyphicon-plus': !duplicatesExpanded}"></span>
       </a>
@@ -34,7 +34,7 @@
       <span class="badge" ng-if="result.torrentDownloadFactor">{{::result.torrentDownloadFactor}}</span>
     </div>
   </td>
-
+  
   <td class="col-md-1 search-results-cell result-indexer text-right" data-label="Indexer">
     {{ ::result.indexer }}
   </td>
@@ -62,15 +62,15 @@
   </td>
   <td class="col-md-2 search-results-cell result-links" data-label="Links">
     <div>
-    <a href ng-click="showNfo(result)" ng-class="::{'no-nfo': result.hasNfo === 'NO'}"
-       class="no-underline result-show-nfo-link"
-       uib-tooltip="{{ ::getNfoTooltip() }}"
-       tooltip-placement="top"
-       tooltip-trigger="mouseenter">
-      <i class="fa fa-file-text" aria-hidden="true" ng-class="::{'fuzzy-nfo': result.hasNfo == 'MAYBE'}"
-         style="margin-left:3px; margin-right:3px; vertical-align: middle"></i>
-    </a>
-    <span ng-if="::showDetailsDl">
+      <a href ng-click="showNfo(result)" ng-class="::{'no-nfo': result.hasNfo === 'NO'}"
+         class="no-underline result-show-nfo-link"
+         uib-tooltip="{{ ::getNfoTooltip() }}"
+         tooltip-placement="top"
+         tooltip-trigger="mouseenter">
+        <i class="fa fa-file-text" aria-hidden="true" ng-class="::{'fuzzy-nfo': result.hasNfo == 'MAYBE'}"
+           style="margin-left:3px; margin-right:3px; vertical-align: middle"></i>
+      </a>
+      <span ng-if="::showDetailsDl">
         <a ng-if="result.source" target="_blank" href="{{ ::result.source | binsearch | dereferer}}"
            style="vertical-align: middle" class="no-underline result-details-link"
            uib-tooltip="Search via Binsearch"
@@ -95,30 +95,33 @@
             <i class="fa fa-info" aria-hidden="true"
                style="margin-left:3px; margin-right:3px; vertical-align: middle"></i>
         </a>
-
-      </a>
+        
+        </a>
     </span>
-    <span ng-switch on="::result.downloadType">
-      <span ng-switch-when="TORRENT">
-          <a target="_blank" href="gettorrent/user/{{ ::result.searchResultId }}"
-              style="vertical-align: middle; margin-left: 3px; margin-right: 3px"
-              class="no-underline result-torrent-download-link"
-              uib-tooltip="Download torrent"
-              tooltip-placement="top"
-              tooltip-trigger="mouseenter"><span class="glyphicon glyphicon-save"></span>
-          </a>
-      </span>
-      <save-or-send-file search-result-id="result.searchResultId" type="result.downloadType"></save-or-send-file>
-        <span ng-switch-default>
-            <a target="_blank" href="getnzb/user/{{ ::result.searchResultId }}"
-                style="vertical-align: middle; margin-left: 3px; margin-right: 3px"
-                class="no-underline result-nzb-download-link"
-                uib-tooltip="Download NZB"
-                tooltip-placement="top"
-                tooltip-trigger="mouseenter"><span class="glyphicon glyphicon-save"></span>
-            </a>
-            <addable-nzbs searchresult="::result"></addable-nzbs>
+      <span ng-switch on="::result.downloadType">
+        <span ng-switch-when="TORBOX">
+          <addable-nzbs searchresult="::result"></addable-nzbs>
         </span>
+        <span ng-switch-when="TORRENT">
+            <a target="_blank" href="gettorrent/user/{{ ::result.searchResultId }}"
+               style="vertical-align: middle; margin-left: 3px; margin-right: 3px"
+               class="no-underline result-torrent-download-link"
+               uib-tooltip="Download torrent"
+               tooltip-placement="top"
+               tooltip-trigger="mouseenter"><span class="glyphicon glyphicon-save"></span>
+            </a>
+        </span>
+        <save-or-send-file ng-if="result.downloadType!='TORBOX'" search-result-id="result.searchResultId" type="result.downloadType"></save-or-send-file>
+          <span ng-switch-default>
+              <a target="_blank" href="getnzb/user/{{ ::result.searchResultId }}"
+                 style="vertical-align: middle; margin-left: 3px; margin-right: 3px"
+                 class="no-underline result-nzb-download-link"
+                 uib-tooltip="Download NZB"
+                 tooltip-placement="top"
+                 tooltip-trigger="mouseenter"><span class="glyphicon glyphicon-save"></span>
+              </a>
+              <addable-nzbs searchresult="::result"></addable-nzbs>
+          </span>
       </span>
     </div>
   </td>

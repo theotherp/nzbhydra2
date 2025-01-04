@@ -7,6 +7,7 @@ import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.downloading.FileDownloadEntity;
 import org.nzbhydra.downloading.FileDownloadRepository;
 import org.nzbhydra.downloading.FileHandler;
+import org.nzbhydra.downloading.downloadurls.DownloadUrlBuilder;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.searching.dtoseventsenums.IndexerSearchMetaData;
 import org.nzbhydra.searching.dtoseventsenums.IndexerSearchResult;
@@ -51,6 +52,8 @@ public class InternalSearchResultProcessor {
     private FileDownloadRepository fileDownloadRepository;
     @Autowired
     private UrlCalculator urlCalculator;
+    @Autowired
+    private DownloadUrlBuilder downloadUrlBuilder;
 
     public SearchResponse createSearchResponse(org.nzbhydra.searching.SearchResult searchResult) {
         Stopwatch stopwatch = Stopwatch.createStarted();
@@ -126,7 +129,7 @@ public class InternalSearchResultProcessor {
                     .indexer(item.getIndexer().getName())
                     .indexerguid(item.getIndexerGuid())
                     .indexerscore(item.getIndexer().getConfig().getScore())
-                    .link(nzbHandler.getDownloadLinkForResults(item.getSearchResultId(), true, item.getDownloadType()))
+                    .link(downloadUrlBuilder.getDownloadLinkForResults(item.getSearchResultId(), true, item.getDownloadType()))
                     .originalCategory(item.getOriginalCategory())
                     .poster(item.getPoster().map(originalUrl -> {
                         if (!baseConfig.getMain().isProxyImages()) {

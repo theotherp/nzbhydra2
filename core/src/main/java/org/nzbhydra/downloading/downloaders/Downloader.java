@@ -38,6 +38,7 @@ import org.nzbhydra.downloading.FileDownloadStatus;
 import org.nzbhydra.downloading.FileHandler;
 import org.nzbhydra.downloading.IndexerSpecificDownloadExceptions;
 import org.nzbhydra.downloading.InvalidSearchResultIdException;
+import org.nzbhydra.downloading.downloadurls.DownloadUrlBuilder;
 import org.nzbhydra.downloading.exceptions.DownloaderException;
 import org.nzbhydra.downloading.exceptions.DuplicateNzbException;
 import org.nzbhydra.logging.LoggingMarkers;
@@ -70,6 +71,7 @@ public abstract class Downloader {
             .expirationPolicy(ExpirationPolicy.CREATED)
             .expiration(5, TimeUnit.MINUTES)
             .build();
+    private final DownloadUrlBuilder downloadUrlBuilder;
 
     public enum StatusCheckType {
         QUEUE,
@@ -77,7 +79,7 @@ public abstract class Downloader {
     }
 
 
-    protected FileHandler nzbHandler;
+    protected FileHandler fileHandler;
     protected SearchResultRepository searchResultRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
     private final IndexerSpecificDownloadExceptions indexerSpecificDownloadExceptions;
@@ -86,12 +88,13 @@ public abstract class Downloader {
     protected DownloaderConfig downloaderConfig;
     protected List<Long> downloadRates = new ArrayList<>();
 
-    public Downloader(FileHandler nzbHandler, SearchResultRepository searchResultRepository, ApplicationEventPublisher applicationEventPublisher, IndexerSpecificDownloadExceptions indexerSpecificDownloadExceptions, ConfigProvider configProvider) {
-        this.nzbHandler = nzbHandler;
+    public Downloader(FileHandler fileHandler, SearchResultRepository searchResultRepository, ApplicationEventPublisher applicationEventPublisher, IndexerSpecificDownloadExceptions indexerSpecificDownloadExceptions, ConfigProvider configProvider, DownloadUrlBuilder downloadUrlBuilder) {
+        this.fileHandler = fileHandler;
         this.searchResultRepository = searchResultRepository;
         this.applicationEventPublisher = applicationEventPublisher;
         this.indexerSpecificDownloadExceptions = indexerSpecificDownloadExceptions;
         this.configProvider = configProvider;
+        this.downloadUrlBuilder = downloadUrlBuilder;
     }
 
     public void initialize(DownloaderConfig downloaderConfig) {
@@ -108,7 +111,7 @@ public abstract class Downloader {
 
     @Transactional
     public AddNzbsResponse addBySearchResultIds(List<AddFilesRequest.SearchResult> searchResults, String category) {
-        NzbAddingType addingType = downloaderConfig.getNzbAddingType();
+
         Set<Long> addedNzbs = new HashSet<>();
         Set<SearchResultEntity> missedNzbs = new HashSet<>();
         try {
@@ -140,19 +143,22 @@ public abstract class Downloader {
                 final String searchResultTitle = optionalResult.get().getTitle();
                 final IndexerConfig indexerConfig = configProvider.getIndexerByName(optionalResult.get().getIndexer().getName());
                 try {
-                    final FileDownloadAccessType accessTypeForIndexer = indexerSpecificDownloadExceptions.getAccessTypeForIndexer(indexerConfig, configProvider.getBaseConfig().getDownloading().getNzbAccessType());
+
+                    NzbAddingType addingType = getNzbAddingType(searchResult.getDownloadType());
+                    final FileDownloadAccessType accessTypeForIndexer = indexerSpecificDownloadExceptions.getAccessTypeForIndexer(indexerConfig, configProvider.getBaseConfig().getDownloading().getNzbAccessType(), searchResult);
                     if (addingType == NzbAddingType.UPLOAD && accessTypeForIndexer == FileDownloadAccessType.PROXY) {
-                        DownloadResult result = nzbHandler.getFileByResult(FileDownloadAccessType.PROXY, SearchSource.INTERNAL, optionalResult.get()); //Uploading NZBs can only be done via proxying
+                        DownloadResult result = fileHandler.getFileByResult(FileDownloadAccessType.PROXY, SearchSource.INTERNAL, optionalResult.get()); //Uploading NZBs can only be done via proxying
                         if (result.isSuccessful()) {
                             String externalId = addNzb(result.getContent(), result.getTitle(), categoryToSend);
                             result.getDownloadEntity().setExternalId(externalId);
-                            nzbHandler.updateStatusByEntity(result.getDownloadEntity(), FileDownloadStatus.NZB_ADDED);
+                            fileHandler.updateStatusByEntity(result.getDownloadEntity(), FileDownloadStatus.NZB_ADDED);
                             addedNzbs.add(guid);
                         } else {
                             missedNzbs.add(searchResult);
                         }
                     } else {
-                        String externalId = addLink(nzbHandler.getDownloadLinkForSendingToDownloader(guid, false, DownloadType.NZB), searchResultTitle, categoryToSend);
+                        String link = downloadUrlBuilder.getDownloadLinkForSendingToDownloader(searchResult, false);
+                        String externalId = addLink(link, searchResultTitle, categoryToSend);
                         guidExternalIds.put(guid, externalId);
                         addedNzbs.add(guid);
                     }
@@ -185,6 +191,10 @@ public abstract class Downloader {
             String message = "NZBs for the following titles could not be downloaded or added:\r\n" + missedNzbs.stream().map(SearchResultEntity::getTitle).collect(Collectors.joining(", "));
             return new AddNzbsResponse(true, message, addedNzbs, missedNzbIds);
         }
+    }
+
+    protected NzbAddingType getNzbAddingType(DownloadType downloadType) {
+        return downloaderConfig.getNzbAddingType();
     }
 
 

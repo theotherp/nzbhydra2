@@ -23,6 +23,7 @@ import org.nzbhydra.downloading.IndexerSpecificDownloadExceptions;
 import org.nzbhydra.downloading.downloaders.nzbget.NzbGet;
 import org.nzbhydra.downloading.downloaders.sabnzbd.Sabnzbd;
 import org.nzbhydra.downloading.downloaders.torbox.Torbox;
+import org.nzbhydra.downloading.downloadurls.DownloadUrlBuilder;
 import org.nzbhydra.searching.db.SearchResultRepository;
 import org.nzbhydra.webaccess.HydraOkHttp3ClientHttpRequestFactory;
 import org.nzbhydra.webaccess.Ssl;
@@ -50,17 +51,19 @@ public class DownloaderInstatiator {
     private RestTemplate restTemplate;
     @Autowired
     private Ssl ssl;
+    @Autowired
+    private DownloadUrlBuilder downloadUrlBuilder;
 
     public Downloader instantiate(DownloaderType downloaderType) {
         switch (downloaderType) {
             case NZBGET -> {
-                return new NzbGet(nzbHandler, searchResultRepository, applicationEventPublisher, indexerSpecificDownloadExceptions, configProvider, ssl);
+                return new NzbGet(nzbHandler, searchResultRepository, applicationEventPublisher, indexerSpecificDownloadExceptions, configProvider, ssl, downloadUrlBuilder);
             }
             case SABNZBD -> {
-                return new Sabnzbd(nzbHandler, searchResultRepository, applicationEventPublisher, indexerSpecificDownloadExceptions, configProvider, restTemplate, requestFactory);
+                return new Sabnzbd(nzbHandler, searchResultRepository, applicationEventPublisher, indexerSpecificDownloadExceptions, configProvider, restTemplate, requestFactory, downloadUrlBuilder);
             }
             case TORBOX -> {
-                return new Torbox(nzbHandler, searchResultRepository, applicationEventPublisher, indexerSpecificDownloadExceptions, configProvider, requestFactory);
+                return new Torbox(nzbHandler, searchResultRepository, applicationEventPublisher, indexerSpecificDownloadExceptions, configProvider, requestFactory, downloadUrlBuilder);
             }
         }
         throw new RuntimeException("Unable to instantiate " + downloaderType);

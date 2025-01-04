@@ -22,6 +22,8 @@ import okhttp3.Request;
 import org.jetbrains.annotations.NotNull;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.downloading.DownloadType;
+import org.nzbhydra.config.downloading.NzbAddingType;
 import org.nzbhydra.downloading.DownloaderType;
 import org.nzbhydra.downloading.FileDownloadStatus;
 import org.nzbhydra.downloading.FileHandler;
@@ -32,6 +34,7 @@ import org.nzbhydra.downloading.downloaders.DownloaderStatus;
 import org.nzbhydra.downloading.downloaders.torbox.mapping.AddUDlResponse;
 import org.nzbhydra.downloading.downloaders.torbox.mapping.TorboxDownload;
 import org.nzbhydra.downloading.downloaders.torbox.mapping.UsenetListResponse;
+import org.nzbhydra.downloading.downloadurls.DownloadUrlBuilder;
 import org.nzbhydra.downloading.exceptions.DownloaderException;
 import org.nzbhydra.searching.db.SearchResultRepository;
 import org.nzbhydra.webaccess.HydraOkHttp3ClientHttpRequestFactory;
@@ -74,8 +77,8 @@ public class Torbox extends Downloader {
     private final List<TorboxDownload> lastTorboxDownloads = new ArrayList<>();
 
 
-    public Torbox(FileHandler nzbHandler, SearchResultRepository searchResultRepository, ApplicationEventPublisher applicationEventPublisher, IndexerSpecificDownloadExceptions indexerSpecificDownloadExceptions, ConfigProvider configProvider, HydraOkHttp3ClientHttpRequestFactory requestFactory) {
-        super(nzbHandler, searchResultRepository, applicationEventPublisher, indexerSpecificDownloadExceptions, configProvider);
+    public Torbox(FileHandler nzbHandler, SearchResultRepository searchResultRepository, ApplicationEventPublisher applicationEventPublisher, IndexerSpecificDownloadExceptions indexerSpecificDownloadExceptions, ConfigProvider configProvider, HydraOkHttp3ClientHttpRequestFactory requestFactory, DownloadUrlBuilder downloadUrlBuilder) {
+        super(nzbHandler, searchResultRepository, applicationEventPublisher, indexerSpecificDownloadExceptions, configProvider, downloadUrlBuilder);
         this.restTemplate = new RestTemplate(requestFactory);
         this.restTemplate.getInterceptors().add((request, body, execution) -> {
             request.getHeaders().add("Authorization", "Bearer " + downloaderConfig.getApiKey());
@@ -139,6 +142,7 @@ public class Torbox extends Downloader {
             map.add("file", fileResource);
         } else {
             map.add(addType, value);
+            map.add("name", title);
         }
         HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(map, headers);
         try {
@@ -212,6 +216,15 @@ public class Torbox extends Downloader {
                 .toList();
     }
 
+    @Override
+    protected NzbAddingType getNzbAddingType(DownloadType downloadType) {
+        if (downloadType == DownloadType.TORBOX) {
+            //Torbox only allows downloading their results for themselves
+            return NzbAddingType.SEND_LINK;
+        }
+        return NzbAddingType.UPLOAD;
+    }
+
     private List<TorboxDownload> getLastTorboxDownloads() throws DownloaderException {
         if (lastUpdate.isAfter(Instant.now().minus(CACHE_TIME))) {
             return lastTorboxDownloads;
@@ -260,4 +273,6 @@ public class Torbox extends Downloader {
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(BASE_API_URL);
         return builder;
     }
+
+
 }
