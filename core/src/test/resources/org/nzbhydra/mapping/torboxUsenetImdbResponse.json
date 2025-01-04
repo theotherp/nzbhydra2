@@ -1,0 +1,70 @@
+{
+  "success": true,
+  "message": "Successfully found nzbs.",
+  "data": {
+    "metadata": null,
+    "nzbs": [
+      {
+        "hash": "b3db88bdaec51a6bafbdee9d46652",
+        "raw_title": "The Crazy Android.2024.2160p.UHD.BluRay.HDR10+.DoVi.TrueHD 7.1.Atmos.x265-SPHD",
+        "title": "The Crazy Android.",
+        "title_parsed_data": {
+          "resolution": "2160p",
+          "quality": "Blu-ray",
+          "year": 2024,
+          "codec": "H.265",
+          "audio": "Dolby TrueHD 7.1",
+          "hdr": true,
+          "title": "The Crazy Android.",
+          "excess": "+.DoVi",
+          "encoder": "SPHD"
+        },
+        "magnet": null,
+        "torrent": null,
+        "last_known_seeders": -1,
+        "last_known_peers": -1,
+        "size": "24703500901",
+        "tracker": "Newznab",
+        "categories": [
+          "2045"
+        ],
+        "files": "54",
+        "nzb": "https://search-api.torbox.app/usenet/download/0/0e4aeffbe9ddd9c97ab571e103343166",
+        "age": "15d",
+        "type": "usenet"
+      },
+      {
+        "hash": "f06a4cba5c15f98cb95814db8d767",
+        "raw_title": "The.Crazy.Android.2024.UHD.BluRay.2160p.TrueHD.Atmos.7.1.DV.HEVC.REMUX-FraMeSToR",
+        "title": "The Crazy Android",
+        "title_parsed_data": {
+          "resolution": "2160p",
+          "quality": "Blu-ray",
+          "year": 2024,
+          "codec": "H.265",
+          "audio": "Dolby TrueHD",
+          "remux": true,
+          "title": "The Crazy Android",
+          "excess": "DV",
+          "encoder": "FraMeSToR"
+        },
+        "magnet": null,
+        "torrent": null,
+        "last_known_seeders": -1,
+        "last_known_peers": -1,
+        "size": "60702898626",
+        "tracker": "Newznab",
+        "categories": [
+          "2045"
+        ],
+        "files": "123",
+        "nzb": "https://search-api.torbox.app/usenet/download/0/71fa5bde319326eb5d35a61bbf086573",
+        "age": "27d",
+        "type": "usenet"
+      }
+    ],
+    "time_taken": 1.34,
+    "cached": false,
+    "total_nzbs": 2
+  }
+}

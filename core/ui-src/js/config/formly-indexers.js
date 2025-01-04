@@ -150,7 +150,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
         );
     }
 
-    if (['WTFNZB', 'NEWZNAB', 'TORZNAB', 'JACKETT_CONFIG', 'NZBINDEX_API'].includes(indexerModel.searchModuleType) && indexerModel.host !== 'https://feed.animetosho.org') {
+    if (['WTFNZB', 'NEWZNAB', 'TORZNAB', 'JACKETT_CONFIG', 'NZBINDEX_API', 'TORBOX'].includes(indexerModel.searchModuleType) && indexerModel.host !== 'https://feed.animetosho.org') {
         fieldset.push(
             {
                 key: 'apiKey',
@@ -251,7 +251,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
     }
 
 
-    if (indexerModel.searchModuleType !== 'JACKETT_CONFIG') {
+    if (!['JACKETT_CONFIG', 'TORBOX'].includes(indexerModel.searchModuleType)) {
         fieldset.push(
             {
                 key: 'score',
@@ -1063,6 +1063,20 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
     $scope.torznabPresets = _.sortBy($scope.torznabPresets, function (entry) {
         return entry.name.toLowerCase()
     });
+
+    $scope.specialPresets = [
+        {
+            allCapsChecked: true,
+            configComplete: true,
+            name: "Torbox",
+            host: "https://search-api.torbox.app",
+            supportedSearchIds: ["IMDB", "TVDB", "TMDB"],
+            supportedSearchTypes: ["MOVIE", "SEARCH", "TVSEARCH"],
+            searchModuleType: "TORBOX",
+            state: "ENABLED",
+            enabledForSearchSource: "BOTH"
+        }
+    ];
 });
 
 

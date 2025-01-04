@@ -1,0 +1,66 @@
+{
+  "success": true,
+  "message": "Successfully found metadata and torrents.",
+  "data": {
+    "metadata": null,
+    "torrents": [
+      {
+        "hash": "5257078db2bc46d33e827a4e2c2dcbbeec75e1a7",
+        "raw_title": "The Crazy Android (2024) [2160p] [WEBRip] [x265] [10bit] [5.1]",
+        "title": "The Crazy Android",
+        "title_parsed_data": {
+          "resolution": "2160p",
+          "quality": "WEBRip",
+          "year": 2024,
+          "codec": "H.265",
+          "audio": "5.1",
+          "bitDepth": 10,
+          "title": "The Crazy Android"
+        },
+        "magnet": "magnet:?xt=urn:btih:5257078DB2BC46D33E827A4E2C2DCBBEEC75E1A7",
+        "torrent": null,
+        "last_known_seeders": 1133,
+        "last_known_peers": 0,
+        "size": 4874787881,
+        "tracker": "thepiratebay",
+        "categories": [],
+        "files": 0,
+        "type": "torrent",
+        "nzb": null,
+        "age": "72d"
+      },
+      {
+        "hash": "58abbb5a3dfe8dea39a442491d7fbdd9bb2fbf93",
+        "raw_title": "The Crazy Android 2024 2160p UHD Blu-ray Remux DV HDR HEVC TrueHD Atmos 7 1-CiNEPHiLES mkv",
+        "title": "The Crazy Android",
+        "title_parsed_data": {
+          "resolution": "2160p",
+          "quality": "Blu-ray",
+          "year": 2024,
+          "codec": "H.265",
+          "audio": "Dolby TrueHD",
+          "filetype": "MKV",
+          "hdr": true,
+          "remux": true,
+          "title": "The Crazy Android",
+          "excess": "DV",
+          "encoder": "CiNEPHiLES"
+        },
+        "magnet": "magnet:?xt=urn:btih:58ABBB5A3DFE8DEA39A442491D7FBDD9BB2FBF93",
+        "torrent": null,
+        "last_known_seeders": 794,
+        "last_known_peers": 0,
+        "size": 57853209477,
+        "tracker": "popcorntime",
+        "categories": [],
+        "files": 0,
+        "type": "torrent",
+        "nzb": null,
+        "age": "35d"
+      }
+    ],
+    "time_taken": 0.19,
+    "cached": true,
+    "total_torrents": 2
+  }
+}

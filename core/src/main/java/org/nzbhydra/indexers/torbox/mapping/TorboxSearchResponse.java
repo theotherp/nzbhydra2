@@ -1,5 +1,5 @@
 /*
- *  (C) Copyright 2017 TheOtherP (theotherp@posteo.net)
+ *  (C) Copyright 2025 TheOtherP (theotherp@posteo.net)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,19 +14,14 @@
  *  limitations under the License.
  */
 
-package org.nzbhydra.config.indexer;
+package org.nzbhydra.indexers.torbox.mapping;
 
-public enum SearchModuleType {
-    ANIZB,
-    BINSEARCH,
-    NEWZNAB,
-    WTFNZB,
-    NZBINDEX,
-    NZBINDEX_API,
-    NZBINDEX_BETA,
-    NZBKING,
-    TORZNAB,
-    DEVONLY,
-    JACKETT_CONFIG,
-    TORBOX
+import lombok.Data;
+
+@Data
+public class TorboxSearchResponse {
+
+    private boolean success;
+    private String message;
+    private TorboxSearchResultsContainer data;
 }
