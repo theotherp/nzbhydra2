@@ -23,5 +23,5 @@ public class TorboxSearchResponse {
 
     private boolean success;
     private String message;
-    private TorboxSearchResultsContainer data;
+    private TorboxSearchResultsContainer data = new TorboxSearchResultsContainer();
 }

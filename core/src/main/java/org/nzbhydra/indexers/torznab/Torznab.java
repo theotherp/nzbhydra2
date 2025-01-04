@@ -18,6 +18,7 @@ package org.nzbhydra.indexers.torznab;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.nzbhydra.NzbHydra;
 import org.nzbhydra.NzbHydraException;
 import org.nzbhydra.config.BaseConfigHandler;
 import org.nzbhydra.config.ConfigProvider;
@@ -31,6 +32,7 @@ import org.nzbhydra.indexers.IndexerRepository;
 import org.nzbhydra.indexers.IndexerSearchResultPersistor;
 import org.nzbhydra.indexers.IndexerWebAccess;
 import org.nzbhydra.indexers.Newznab;
+import org.nzbhydra.indexers.NewznabCategoryComputer;
 import org.nzbhydra.indexers.QueryGenerator;
 import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
 import org.nzbhydra.indexers.status.IndexerLimitRepository;
@@ -94,7 +96,7 @@ public class Torznab extends Newznab {
         }
         List<Integer> foundCategories = tryAndGetCategoryAsNumber(item);
         if (!foundCategories.isEmpty()) {
-            computeCategory(searchResultItem, foundCategories);
+            NzbHydra.getApplicationContext().getBean(NewznabCategoryComputer.class).computeCategory(searchResultItem, foundCategories, config);
         } else {
             searchResultItem.setCategory(categoryProvider.getNotAvailable());
         }

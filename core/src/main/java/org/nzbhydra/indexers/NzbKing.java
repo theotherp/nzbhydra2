@@ -19,6 +19,7 @@ import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.exceptions.IndexerParsingException;
 import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
 import org.nzbhydra.indexers.status.IndexerLimitRepository;
+import org.nzbhydra.mapping.AgeToPubDateConverter;
 import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.searching.CategoryProvider;
 import org.nzbhydra.searching.CustomQueryAndTitleMappingHandler;
@@ -37,11 +38,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
-import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -67,7 +65,6 @@ public class NzbKing extends Indexer<String> {
         super(configProvider, indexerRepository, searchResultRepository, indexerApiAccessRepository, indexerApiAccessShortRepository, indexerStatusRepository, indexerWebAccess, resultAcceptor, categoryProvider, infoProvider, eventPublisher, queryGenerator, titleMapping, baseConfigHandler, searchResultPersistor);
     }
 
-    static Clock clock = Clock.systemUTC();
 
     @Override
     protected void completeIndexerSearchResult(String response, IndexerSearchResult indexerSearchResult, AcceptorResult acceptorResult, SearchRequest searchRequest, int offset, Integer limit) {
@@ -163,7 +160,7 @@ public class NzbKing extends Indexer<String> {
         Element ageElement = getElementOrNone(row, "div.search-age");
         if (ageElement != null) {
             String pubdateString = ageElement.text();
-            Instant pubdate = NzbKing.convertToInstant(pubdateString);
+            Instant pubdate = AgeToPubDateConverter.convertToInstant(pubdateString);
             item.setPubDate(pubdate);
             item.setAgePrecise(false);
         } else {
@@ -261,35 +258,10 @@ public class NzbKing extends Indexer<String> {
         return logger;
     }
 
-    private static Instant convertToInstant(String ageString) {
-        // Define regex to match the age string
-        Pattern pattern = Pattern.compile("(\\d+)([smhd])");
-        Matcher matcher = pattern.matcher(ageString);
-
-        if (!matcher.matches()) {
-            throw new IllegalArgumentException("Invalid age string format: " + ageString);
-        }
-
-        // Extract the quantity and time unit
-        int quantity = Integer.parseInt(matcher.group(1));
-        String unit = matcher.group(2).toLowerCase();
-
-        // Determine the duration to subtract
-        LocalDateTime now = LocalDateTime.now(clock);
-        LocalDateTime result = switch (unit) {
-            case "s" -> now.minusSeconds(quantity);
-            case "m" -> now.minusMinutes(quantity);
-            case "h" -> now.minusHours(quantity);
-            case "d" -> now.minusDays(quantity);
-            default -> throw new IllegalArgumentException("Unsupported time unit: " + unit);
-        };
-
-        return result.toInstant(ZoneOffset.UTC);
-    }
 
     @Component
     @Order(2000)
-    public static class NewznabHandlingStrategy implements IndexerHandlingStrategy<NzbKing> {
+    public static class HandlingStrategy implements IndexerHandlingStrategy<NzbKing> {
 
         @Override
         public boolean handlesIndexerConfig(IndexerConfig config) {

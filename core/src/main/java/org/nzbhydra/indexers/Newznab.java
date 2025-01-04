@@ -9,11 +9,9 @@ import org.nzbhydra.NzbHydraException;
 import org.nzbhydra.config.BaseConfigHandler;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.category.CategoriesConfig;
-import org.nzbhydra.config.category.Category;
 import org.nzbhydra.config.category.Category.Subtype;
 import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.config.indexer.BackendType;
-import org.nzbhydra.config.indexer.IndexerCategoryConfig;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.config.mediainfo.MediaIdType;
@@ -39,8 +37,6 @@ import org.nzbhydra.mapping.newznab.xml.NewznabXmlResponse;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.nzbhydra.mapping.newznab.xml.Xml;
 import org.nzbhydra.mediainfo.InfoProvider;
-import org.nzbhydra.mediainfo.InfoProviderException;
-import org.nzbhydra.mediainfo.MediaInfo;
 import org.nzbhydra.searching.CategoryProvider;
 import org.nzbhydra.searching.CustomQueryAndTitleMappingHandler;
 import org.nzbhydra.searching.SearchResultAcceptor;
@@ -72,12 +68,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -115,7 +109,6 @@ public class Newznab extends Indexer<Xml> {
 
     private BaseConfigHandler baseConfigHandler;
 
-    private final ConcurrentHashMap<Integer, Category> idToCategory = new ConcurrentHashMap<>();
 
     public Newznab(ConfigProvider configProvider, IndexerRepository indexerRepository, SearchResultRepository searchResultRepository, IndexerApiAccessRepository indexerApiAccessRepository, IndexerApiAccessEntityShortRepository indexerApiAccessShortRepository, IndexerLimitRepository indexerStatusRepository, IndexerWebAccess indexerWebAccess, SearchResultAcceptor resultAcceptor, CategoryProvider categoryProvider, InfoProvider infoProvider, ApplicationEventPublisher eventPublisher, QueryGenerator queryGenerator, CustomQueryAndTitleMappingHandler titleMapping, Unmarshaller unmarshaller, BaseConfigHandler baseConfigHandler, IndexerSearchResultPersistor searchResultPersistor) {
         super(configProvider, indexerRepository, searchResultRepository, indexerApiAccessRepository, indexerApiAccessShortRepository, indexerStatusRepository, indexerWebAccess, resultAcceptor, categoryProvider, infoProvider, eventPublisher, queryGenerator, titleMapping, baseConfigHandler, searchResultPersistor);
@@ -322,85 +315,24 @@ public class Newznab extends Indexer<Xml> {
     }
 
     protected UriComponentsBuilder extendQueryUrlWithSearchIds(SearchRequest searchRequest, UriComponentsBuilder componentsBuilder) {
-        if (!searchRequest.getIdentifiers().isEmpty()) {
-            Map<MediaIdType, String> params = new HashMap<>();
-            boolean idConversionNeeded = isIdConversionNeeded(searchRequest);
-            if (idConversionNeeded) {
-                debug("Will try to convert IDs if possible");
-                boolean canConvertAnyId = infoProvider.canConvertAny(searchRequest.getIdentifiers().keySet(), new HashSet<>(config.getSupportedSearchIds()));
-                if (canConvertAnyId) {
-                    debug("Can convert any of provided IDs {} to at least one of supported IDs {}", searchRequest.getIdentifiers().keySet(), config.getSupportedSearchIds());
-                    try {
-                        MediaInfo info = infoProvider.convert(searchRequest.getIdentifiers());
+        if (searchRequest.getIdentifiers().isEmpty()) {
+            return componentsBuilder;
+        }
 
-                        if (info.getImdbId().isPresent()) {
-                            if (searchRequest.getSearchType() == SearchType.MOVIE && config.getSupportedSearchIds().contains(MediaIdType.IMDB)) {
-                                params.put(MediaIdType.IMDB, info.getImdbId().get().replace("tt", ""));
-                            }
-                            //Most indexers don't actually support IMDB IDs for tv searches and would return unrelevant results
-                            if (searchRequest.getSearchType() == SearchType.TVSEARCH && config.getSupportedSearchIds().contains(MediaIdType.TVIMDB)) {
-                                params.put(MediaIdType.TVIMDB, info.getImdbId().get().replace("tt", ""));
-                            }
-                        }
-                        if (info.getTmdbId().isPresent()) {
-                            params.put(MediaIdType.TMDB, info.getTmdbId().get());
-                        }
-                        if (info.getTvRageId().isPresent()) {
-                            params.put(MediaIdType.TVRAGE, info.getTvRageId().get());
-                        }
-                        if (info.getTvMazeId().isPresent()) {
-                            params.put(MediaIdType.TVMAZE, info.getTvMazeId().get());
-                        }
-                        if (info.getTvDbId().isPresent()) {
-                            params.put(MediaIdType.TVDB, info.getTvDbId().get());
-                        }
-                        debug("Available search IDs: {}", params);
-                    } catch (InfoProviderException e) {
-                        error("Error while converting search ID", e);
-                    }
-                } else {
-                    final String supportedSearchIds = config.getSupportedSearchIds().isEmpty() ? "[]" : Joiner.on(", ").join(config.getSupportedSearchIds());
-                    debug("Unable to convert any of the provided IDs to any of these supported IDs: {}", supportedSearchIds);
-                }
-                if (params.isEmpty()) {
-                    warn("Didn't find any usable IDs to add to search request");
-                }
+        NzbHydra.getApplicationContext().getAutowireCapableBeanFactory().getBean(SearchRequestIdConverter.class).convertSearchIdsIfNeeded(searchRequest, config);
+
+        for (Map.Entry<MediaIdType, String> entry : searchRequest.getIdentifiers().entrySet()) {
+            //We just add all IDs that we have (if the indexer supports them). Some indexers will find results under one ID but not the other
+            if (entry.getValue() == null) {
+                continue;
             }
-
-            //Don't overwrite IDs provided by the calling instance, only add missing ones
-            params.forEach((key, value) -> searchRequest.getIdentifiers().putIfAbsent(key, value));
-            if (searchRequest.getSearchType() == SearchType.TVSEARCH) {
-                //IMDB is not the same as TVIMDB
-                searchRequest.getIdentifiers().remove(MediaIdType.IMDB);
+            if (!config.getSupportedSearchIds().contains(entry.getKey())) {
+                continue;
             }
-
-            for (Map.Entry<MediaIdType, String> entry : searchRequest.getIdentifiers().entrySet()) {
-                //We just add all IDs that we have (if the indexer supports them). Some indexers will find results under one ID but not the other
-                if (entry.getValue() == null) {
-                    continue;
-                }
-                if (!config.getSupportedSearchIds().contains(entry.getKey())) {
-                    continue;
-                }
-                debug("Using media ID {}={}", entry.getKey(), entry.getValue());
-                componentsBuilder.queryParam(idTypeToParamValueMap.get(entry.getKey()), entry.getValue().replace("tt", ""));
-            }
-
+            debug("Using media ID {}={}", entry.getKey(), entry.getValue());
+            componentsBuilder.queryParam(idTypeToParamValueMap.get(entry.getKey()), entry.getValue().replace("tt", ""));
         }
         return componentsBuilder;
-    }
-
-    private boolean isIdConversionNeeded(SearchRequest searchRequest) {
-        final boolean indexerNeedsConversion = searchRequest.getIdentifiers().keySet().stream().noneMatch(x -> searchRequest.getIdentifiers().get(x) != null && config.getSupportedSearchIds().contains(x));
-        if (indexerNeedsConversion) {
-            debug("Indexer doesn't support any of the provided search IDs: {}", Joiner.on(", ").join(searchRequest.getIdentifiers().keySet()));
-            return true;
-        }
-        if (searchRequest.getSource().meets(configProvider.getBaseConfig().getSearching().getAlwaysConvertIds())) {
-            debug("Will convert IDs as ID conversion is to be always done for {}", configProvider.getBaseConfig().getSearching().getAlwaysConvertIds());
-            return true;
-        }
-        return false;
     }
 
     protected Xml getAndStoreResultToDatabase(URI uri, IndexerApiAccessType apiAccessType) throws IndexerAccessException {
@@ -702,8 +634,7 @@ public class Newznab extends Indexer<Xml> {
         if (attributes.containsKey("source")) {
             searchResultItem.setSource(attributes.get("source"));
         }
-
-        computeCategory(searchResultItem, newznabCategories);
+        NzbHydra.getApplicationContext().getBean(NewznabCategoryComputer.class).computeCategory(searchResultItem, newznabCategories, config);
 
         if (searchResultItem.getHasNfo() == HasNfo.MAYBE && (config.getBackend() == BackendType.NNTMUX || config.getBackend() == BackendType.NZEDB)) {
             //For these backends if not specified it doesn't exist
@@ -770,47 +701,6 @@ public class Newznab extends Indexer<Xml> {
         }
     }
 
-    protected void computeCategory(SearchResultItem searchResultItem, List<Integer> newznabCategories) {
-        if (!newznabCategories.isEmpty()) {
-            debug(LoggingMarkers.CATEGORY_MAPPING, "Result {} has newznab categories {} and self-reported category {}", searchResultItem.getTitle(), newznabCategories, searchResultItem.getCategory());
-            Integer mostSpecific = newznabCategories.stream().max(Integer::compareTo).get();
-            IndexerCategoryConfig mapping = config.getCategoryMapping();
-            Category category;
-            if (mapping == null) { //May be the case in some corner cases
-                category = categoryProvider.fromSearchNewznabCategories(newznabCategories, categoryProvider.getNotAvailable());
-                searchResultItem.setOriginalCategory(categoryProvider.getNotAvailable().getName());
-                debug(LoggingMarkers.CATEGORY_MAPPING, "No mapping available. Using original category N/A and new category {} for result {}", category, searchResultItem.getTitle());
-            } else {
-                category = idToCategory.computeIfAbsent(mostSpecific, x -> {
-                    Optional<Category> categoryOptional = Optional.empty();
-                    if (mapping.getAnime().isPresent() && Objects.equals(mapping.getAnime().get(), mostSpecific)) {
-                        categoryOptional = categoryProvider.fromSubtype(Subtype.ANIME);
-                    } else if (mapping.getAudiobook().isPresent() && Objects.equals(mapping.getAudiobook().get(), mostSpecific)) {
-                        categoryOptional = categoryProvider.fromSubtype(Subtype.AUDIOBOOK);
-                    } else if (mapping.getEbook().isPresent() && Objects.equals(mapping.getEbook().get(), mostSpecific)) {
-                        categoryOptional = categoryProvider.fromSubtype(Subtype.EBOOK);
-                    } else if (mapping.getComic().isPresent() && Objects.equals(mapping.getComic().get(), mostSpecific)) {
-                        categoryOptional = categoryProvider.fromSubtype(Subtype.COMIC);
-                    } else if (mapping.getMagazine().isPresent() && Objects.equals(mapping.getMagazine().get(), mostSpecific)) {
-                        categoryOptional = categoryProvider.fromSubtype(Subtype.MAGAZINE);
-                    }
-                    return categoryOptional.orElse(categoryProvider.fromResultNewznabCategories(newznabCategories));
-                });
-                //Use the indexer's own category mapping to build the category name
-                searchResultItem.setOriginalCategory(mapping.getNameFromId(mostSpecific));
-            }
-            if (category == null) {
-                debug(LoggingMarkers.CATEGORY_MAPPING, "No category found for {}. Using N/A", searchResultItem.getTitle());
-                searchResultItem.setCategory(categoryProvider.getNotAvailable());
-            } else {
-                debug(LoggingMarkers.CATEGORY_MAPPING, "Determined category {} for {}", category, searchResultItem.getTitle());
-                searchResultItem.setCategory(category);
-            }
-        } else {
-            debug(LoggingMarkers.CATEGORY_MAPPING, "No newznab categories exist for {}. Using N/A", searchResultItem.getTitle());
-            searchResultItem.setCategory(categoryProvider.getNotAvailable());
-        }
-    }
 
     protected Logger getLogger() {
         return logger;

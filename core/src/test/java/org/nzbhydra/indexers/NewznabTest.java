@@ -197,7 +197,7 @@ public class NewznabTest {
         NewznabXmlRoot root = RssBuilder.builder().items(Arrays.asList(RssItemBuilder.builder("title").build())).newznabResponse(0, 1).build();
         when(indexerWebAccessMock.get(any(), eq(testee.config), any())).thenReturn(root);
 
-        IndexerSearchResult indexerSearchResult = testee.searchInternal(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
+        IndexerSearchResult indexerSearchResult = testee.buildSearchUrlAndCall(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
 
         assertThat(indexerSearchResult.getSearchResultItems().size()).isEqualTo(1);
         assertThat(indexerSearchResult.getTotalResults()).isEqualTo(1);
@@ -228,7 +228,7 @@ public class NewznabTest {
             }
         });
 
-        IndexerSearchResult indexerSearchResult = testee.searchInternal(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
+        IndexerSearchResult indexerSearchResult = testee.buildSearchUrlAndCall(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
 
         assertThat(indexerSearchResult.getSearchResultItems().size()).isEqualTo(3);
         assertThat(indexerSearchResult.getTotalResults()).isEqualTo(105);
@@ -367,7 +367,7 @@ public class NewznabTest {
             doReturn(new NewznabXmlError("101", "Wrong API key")).when(testee).getAndStoreResultToDatabase(any(), eq(Xml.class), eq(IndexerApiAccessType.SEARCH));
             doNothing().when(testee).handleFailure(errorMessageCaptor.capture(), disabledPermanentlyCaptor.capture(), any(IndexerApiAccessType.class), any(), indexerApiAccessResultCaptor.capture());
 
-            testee.searchInternal(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
+            testee.buildSearchUrlAndCall(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
         });
     }
 
@@ -377,7 +377,7 @@ public class NewznabTest {
             doReturn(new NewznabXmlError("100", "Daily Hits Limit Reached\"")).when(testee).getAndStoreResultToDatabase(any(), eq(Xml.class), eq(IndexerApiAccessType.SEARCH));
             doNothing().when(testee).handleFailure(errorMessageCaptor.capture(), disabledPermanentlyCaptor.capture(), any(IndexerApiAccessType.class), any(), indexerApiAccessResultCaptor.capture());
 
-            testee.searchInternal(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
+            testee.buildSearchUrlAndCall(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
         });
     }
 
@@ -388,7 +388,7 @@ public class NewznabTest {
             doReturn(new NewznabXmlError("200", "Whatever")).when(testee).getAndStoreResultToDatabase(any(), eq(Xml.class), eq(IndexerApiAccessType.SEARCH));
             doNothing().when(testee).handleFailure(errorMessageCaptor.capture(), disabledPermanentlyCaptor.capture(), any(IndexerApiAccessType.class), any(), indexerApiAccessResultCaptor.capture());
 
-            testee.searchInternal(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
+            testee.buildSearchUrlAndCall(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
         });
     }
 
@@ -398,7 +398,7 @@ public class NewznabTest {
             doReturn(new NewznabXmlError("123", "Whatever")).when(testee).getAndStoreResultToDatabase(any(), eq(Xml.class), eq(IndexerApiAccessType.SEARCH));
             doNothing().when(testee).handleFailure(errorMessageCaptor.capture(), disabledPermanentlyCaptor.capture(), any(IndexerApiAccessType.class), any(), indexerApiAccessResultCaptor.capture());
 
-            testee.searchInternal(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
+            testee.buildSearchUrlAndCall(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
         });
     }
 
@@ -757,21 +757,6 @@ public class NewznabTest {
         assertThat(nfo.getContent()).isEqualTo("message");
         assertThat(nfo.isSuccessful()).isEqualTo(false);
         assertThat(nfo.isHasNfo()).isEqualTo(false);
-    }
-
-    @Test
-    void shouldComputeCategory() throws Exception {
-        when(categoryProviderMock.fromResultNewznabCategories(any())).thenReturn(otherCategory);
-        testee.config.getCategoryMapping().setAnime(1010);
-        SearchResultItem item = new SearchResultItem();
-
-        //Found a specific mapping
-        testee.computeCategory(item, Arrays.asList(1000, 1010));
-        assertThat(item.getCategory()).isEqualTo(animeCategory);
-
-        //Didn't find a specific mapping, use the general one from the categories
-        testee.computeCategory(item, Arrays.asList(3030));
-        assertThat(item.getCategory()).isEqualTo(otherCategory);
     }
 
     @Test

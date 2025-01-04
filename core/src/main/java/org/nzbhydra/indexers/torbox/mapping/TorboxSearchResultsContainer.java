@@ -19,6 +19,7 @@ package org.nzbhydra.indexers.torbox.mapping;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -26,8 +27,8 @@ import java.util.List;
 public class TorboxSearchResultsContainer {
 
     private Object metadata;
-    private List<TorboxResult> torrents;
-    private List<TorboxResult> nzbs;
+    private List<TorboxResult> torrents = new ArrayList<>();
+    private List<TorboxResult> nzbs = new ArrayList<>();
     @JsonProperty("time_taken")
     private double timeTaken;
     private boolean cached;

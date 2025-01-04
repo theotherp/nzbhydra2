@@ -16,21 +16,8 @@
 
 package org.nzbhydra.indexers.torbox.mapping;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.Data;
+public enum TorboxResultType {
 
-@Data
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class TitleParsedData {
-    private String resolution;
-    private String quality;
-    private int year;
-    private String codec;
-    private String audio;
-    private Integer bitDepth;
-    private String title;
-    private String filetype;
-    private Boolean hdr;
-    private Boolean remux;
-    private String encoder;
+    TORRENT,
+    USENET
 }

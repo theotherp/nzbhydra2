@@ -142,7 +142,7 @@ public abstract class Indexer<T> {
     public IndexerSearchResult search(SearchRequest searchRequest, int offset, Integer limit) {
         IndexerSearchResult indexerSearchResult;
         try {
-            indexerSearchResult = searchInternal(searchRequest, offset, limit);
+            indexerSearchResult = buildSearchUrlAndCall(searchRequest, offset, limit);
 
             if (isFallbackRequired(searchRequest, indexerSearchResult)) {
                 info("No results found for ID based search. Will do a fallback search using a generated query");
@@ -153,7 +153,7 @@ public abstract class Indexer<T> {
                 eventPublisher.publishEvent(new FallbackSearchInitiatedEvent(searchRequest));
 
                 searchRequest.getInternalData().setFallbackStateByIndexer(getName(), FallbackState.REQUESTED);
-                indexerSearchResult = searchInternal(searchRequest, offset, limit);
+                indexerSearchResult = buildSearchUrlAndCall(searchRequest, offset, limit);
                 eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, indexerSearchResult.getTotalResults() + " results via fallback search from " + getName(), getName()));
             } else {
                 eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, indexerSearchResult.getTotalResults() + " results via search from " + getName(), getName()));
@@ -200,7 +200,7 @@ public abstract class Indexer<T> {
         return searchRequest.meets(configProvider.getBaseConfig().getSearching().getIdFallbackToQueryGeneration());
     }
 
-    protected IndexerSearchResult searchInternal(SearchRequest searchRequest, int offset, Integer limit) throws IndexerSearchAbortedException, IndexerAccessException {
+    protected IndexerSearchResult buildSearchUrlAndCall(SearchRequest searchRequest, int offset, Integer limit) throws IndexerSearchAbortedException, IndexerAccessException {
         UriComponentsBuilder builder = buildSearchUrl(searchRequest, offset, limit);
         URI url = builder.build().toUri();
 
@@ -209,6 +209,10 @@ public abstract class Indexer<T> {
         info("Calling {}", url.toString());
 
         response = getAndStoreResultToDatabase(url, IndexerApiAccessType.SEARCH);
+        return processSearchResponse(searchRequest, offset, limit, stopwatch, response);
+    }
+
+    protected IndexerSearchResult processSearchResponse(SearchRequest searchRequest, int offset, Integer limit, Stopwatch stopwatch, T response) throws IndexerParsingException {
         long responseTime = stopwatch.elapsed(TimeUnit.MILLISECONDS);
 
         stopwatch.reset();
@@ -361,6 +365,7 @@ public abstract class Indexer<T> {
         }
         handleFailure(e.getMessage(), disablePermanently, accessType, null, apiAccessResult);
     }
+
 
     /**
      * Implementations should call {link #getAndStoreResultToDatabase(java.net.URI, java.lang.Class, org.nzbhydra.database.IndexerApiAccessType)} with the class of the response

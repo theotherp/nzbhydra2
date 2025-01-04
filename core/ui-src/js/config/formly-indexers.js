@@ -1070,7 +1070,7 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
             configComplete: true,
             name: "Torbox",
             host: "https://search-api.torbox.app",
-            supportedSearchIds: ["IMDB", "TVDB", "TMDB"],
+            supportedSearchIds: ["IMDB", "TVDB"],
             supportedSearchTypes: ["MOVIE", "SEARCH", "TVSEARCH"],
             searchModuleType: "TORBOX",
             state: "ENABLED",

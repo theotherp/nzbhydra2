@@ -6,8 +6,8 @@
     "torrents": [
       {
         "hash": "5257078db2bc46d33e827a4e2c2dcbbeec75e1a7",
-        "raw_title": "The Crazy Android (2024) [2160p] [WEBRip] [x265] [10bit] [5.1]",
-        "title": "The Crazy Android",
+        "raw_title": "The Wild Robot (2024) [2160p] [WEBRip] [x265] [10bit] [5.1]",
+        "title": "The Wild Robot",
         "title_parsed_data": {
           "resolution": "2160p",
           "quality": "WEBRip",
@@ -15,9 +15,9 @@
           "codec": "H.265",
           "audio": "5.1",
           "bitDepth": 10,
-          "title": "The Crazy Android"
+          "title": "The Wild Robot"
         },
-        "magnet": "magnet:?xt=urn:btih:5257078DB2BC46D33E827A4E2C2DCBBEEC75E1A7",
+        "magnet": "magnet:?xt=urn:btih:5257078DB2BC46D33E827A4E2C2DCBBEEC75E1A7&dn=The%20Wild%20Robot%20%282024%29%20%5B2160p%5D%20%5BWEBRip%5D%20%5Bx265%5D%20%5B10bit%5D%20%5B5.1%5D&tr=http%3A%2F%2Fp4p.arenabg.com%3A1337%2Fannounce&tr=udp%3A%2F%2F47.ip-51-68-199.eu%3A6969%2Fannounce&tr=udp%3A%2F%2F9.rarbg.me%3A2780%2Fannounce&tr=udp%3A%2F%2F9.rarbg.to%3A2710%2Fannounce&tr=udp%3A%2F%2F9.rarbg.to%3A2730%2Fannounce&tr=udp%3A%2F%2F9.rarbg.to%3A2920%2Fannounce&tr=udp%3A%2F%2Fopen.stealth.si%3A80%2Fannounce&tr=udp%3A%2F%2Fopentracker.i2p.rocks%3A6969%2Fannounce&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969%2Fannounce&tr=udp%3A%2F%2Ftracker.cyberia.is%3A6969%2Fannounce&tr=udp%3A%2F%2Ftracker.dler.org%3A6969%2Fannounce&tr=udp%3A%2F%2Ftracker.internetwarriors.net%3A1337%2Fannounce&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969%2Fannounce&tr=udp%3A%2F%2Ftracker.openbittorrent.com%3A6969%2Fannounce&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337&tr=udp%3A%2F%2Ftracker.pirateparty.gr%3A6969%2Fannounce&tr=udp%3A%2F%2Ftracker.tiny-vps.com%3A6969%2Fannounce&tr=udp%3A%2F%2Ftracker.torrent.eu.org%3A451%2Fannounce",
         "torrent": null,
         "last_known_seeders": 1133,
         "last_known_peers": 0,
@@ -31,8 +31,8 @@
       },
       {
         "hash": "58abbb5a3dfe8dea39a442491d7fbdd9bb2fbf93",
-        "raw_title": "The Crazy Android 2024 2160p UHD Blu-ray Remux DV HDR HEVC TrueHD Atmos 7 1-CiNEPHiLES mkv",
-        "title": "The Crazy Android",
+        "raw_title": "The Wild Robot 2024 2160p UHD Blu-ray Remux DV HDR HEVC TrueHD Atmos 7 1-CiNEPHiLES mkv",
+        "title": "The Wild Robot",
         "title_parsed_data": {
           "resolution": "2160p",
           "quality": "Blu-ray",
@@ -42,11 +42,11 @@
           "filetype": "MKV",
           "hdr": true,
           "remux": true,
-          "title": "The Crazy Android",
+          "title": "The Wild Robot",
           "excess": "DV",
           "encoder": "CiNEPHiLES"
         },
-        "magnet": "magnet:?xt=urn:btih:58ABBB5A3DFE8DEA39A442491D7FBDD9BB2FBF93",
+        "magnet": "magnet:?xt=urn:btih:58ABBB5A3DFE8DEA39A442491D7FBDD9BB2FBF93&dn=The%20Wild%20Robot%202024%202160p%20UHD%20Blu-ray%20Remux%20DV%20HDR%20HEVC%20TrueHD%20Atmos%207%201-CiNEPHiLES%20&tr=udp%3A%2F%2Fopen.stealth.si%3A80%2Fannounce&tr=udp%3A%2F%2Fexodus.desync.com%3A6969%2Fannounce&tr=udp%3A%2F%2Ftracker.cyberia.is%3A6969%2Fannounce&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&tr=udp%3A%2F%2Ftracker.torrent.eu.org%3A451%2Fannounce&tr=udp%3A%2F%2Fexplodie.org%3A6969%2Fannounce&tr=udp%3A%2F%2Ftracker.birkenwald.de%3A6969%2Fannounce&tr=udp%3A%2F%2Ftracker.moeking.me%3A6969%2Fannounce&tr=udp%3A%2F%2Fipv4.tracker.harry.lu%3A80%2Fannounce&tr=udp%3A%2F%2Ftracker.tiny-vps.com%3A6969%2Fannounce",
         "torrent": null,
         "last_known_seeders": 794,
         "last_known_peers": 0,
@@ -59,8 +59,8 @@
         "age": "35d"
       }
     ],
-    "time_taken": 0.19,
+    "time_taken": 0.17,
     "cached": true,
-    "total_torrents": 2
+    "total_torrents": 293
   }
 }

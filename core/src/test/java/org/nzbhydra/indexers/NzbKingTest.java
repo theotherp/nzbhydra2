@@ -19,12 +19,14 @@ import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.searching.SearchType;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
+import org.nzbhydra.mapping.AgeToPubDateConverter;
 import org.nzbhydra.searching.CategoryProvider;
 import org.nzbhydra.searching.dtoseventsenums.IndexerSearchResult;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.time.Clock;
 import java.time.Instant;
@@ -58,7 +60,9 @@ public class NzbKingTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        NzbKing.clock = Clock.fixed(Instant.ofEpochSecond(1707391628L), ZoneId.of("UTC"));
+        Field field = AgeToPubDateConverter.class.getDeclaredField("clock");
+        field.setAccessible(true);
+        field.set(null, Clock.fixed(Instant.ofEpochSecond(1707391628L), ZoneId.of("UTC")));
 
         when(configProviderMock.getBaseConfig()).thenReturn(baseConfig);
         testee.config = new IndexerConfig();

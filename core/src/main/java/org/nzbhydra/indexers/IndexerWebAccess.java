@@ -9,9 +9,11 @@ import org.jetbrains.annotations.NotNull;
 import org.nzbhydra.Jackson;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.indexer.IndexerConfig;
+import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.exceptions.IndexerProgramErrorException;
 import org.nzbhydra.indexers.exceptions.IndexerUnreachableException;
+import org.nzbhydra.indexers.torbox.mapping.TorboxSearchResponse;
 import org.nzbhydra.logging.MdcThreadPoolExecutor;
 import org.nzbhydra.mapping.nzbindex.NzbIndexRoot;
 import org.nzbhydra.springnative.ReflectionMarker;
@@ -70,6 +72,9 @@ public class IndexerWebAccess {
         if (indexerConfig.getUsername().isPresent() && indexerConfig.getPassword().isPresent()) {
             headers.put("Authorization", "Basic " + BaseEncoding.base64().encode((indexerConfig.getUsername().get() + ":" + indexerConfig.getPassword().get()).getBytes()));
         }
+        if (indexerConfig.getSearchModuleType() == SearchModuleType.TORBOX) {
+            headers.put("Authorization", "Bearer " + indexerConfig.getApiKey());
+        }
 
         Future<T> future;
         ExecutorService executorService = MdcThreadPoolExecutor.newWithInheritedMdc(1);
@@ -79,7 +84,7 @@ public class IndexerWebAccess {
                 if (responseType == String.class) {
                     return (T) response;
                 }
-                if (responseType == NzbIndexRoot.class) {
+                if (responseType == NzbIndexRoot.class || responseType == TorboxSearchResponse.class) {
                     // TODO 23.03.2024: Make more generic
                     return (T) Jackson.JSON_MAPPER.readValue(response, responseType);
 
@@ -88,7 +93,7 @@ public class IndexerWebAccess {
                 return unmarshalXml(response);
             });
         } catch (RejectedExecutionException e) {
-            logger.error("Unexpected execution exception while executing call for indexer " + indexerConfig.getName() + ". This will hopefully be fixed soon", e);
+            logger.error("Unexpected execution exception while executing call for indexer {}. This will hopefully be fixed soon", indexerConfig.getName(), e);
             throw new IndexerProgramErrorException("Unexpected error in hydra code. Sorry...");
         } finally {
             executorService.shutdown();

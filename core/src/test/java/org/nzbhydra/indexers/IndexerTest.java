@@ -273,7 +273,7 @@ public class IndexerTest {
         //searchResultItemsToReturn = Arrays.asList(item);
 
         IndexerSearchResult search = testee.search(searchRequest, 0, 100);
-        verify(testee, times(2)).searchInternal(searchRequestCaptor.capture(), anyInt(), anyInt());
+        verify(testee, times(2)).buildSearchUrlAndCall(searchRequestCaptor.capture(), anyInt(), anyInt());
     }
 
 

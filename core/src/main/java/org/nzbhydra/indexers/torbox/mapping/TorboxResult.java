@@ -17,8 +17,12 @@
 package org.nzbhydra.indexers.torbox.mapping;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
 import lombok.Data;
 
+import java.io.IOException;
 import java.util.List;
 
 @Data
@@ -34,7 +38,7 @@ public class TorboxResult {
     private TitleParsedData titleParsedData;
 
     private String magnet;
-    private Object torrent;
+    private String torrent;
 
     @JsonProperty("last_known_seeders")
     private int lastKnownSeeders;
@@ -44,9 +48,20 @@ public class TorboxResult {
 
     private long size;
     private String tracker;
-    private List<Object> categories;
+    private List<String> categories;
     private int files;
+    //Do not use for now, is not only usenet or torrent but also sometimes movie
+//    @JsonDeserialize(using = TorboxResultTypeDeserializer.class)
     private String type;
-    private Object nzb;
+    private String nzb;
     private String age;
+
+    public static class TorboxResultTypeDeserializer extends JsonDeserializer<TorboxResultType> {
+        @Override
+        public TorboxResultType deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+            String value = p.getText().toUpperCase();
+
+            return TorboxResultType.valueOf(value);
+        }
+    }
 }

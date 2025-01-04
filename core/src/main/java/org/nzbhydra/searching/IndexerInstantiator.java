@@ -20,6 +20,7 @@ import org.nzbhydra.config.BaseConfigHandler;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.indexers.*;
 import org.nzbhydra.indexers.status.IndexerLimitRepository;
+import org.nzbhydra.indexers.torbox.Torbox;
 import org.nzbhydra.indexers.torznab.Torznab;
 import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.searching.db.SearchResultRepository;
@@ -98,6 +99,9 @@ public class IndexerInstantiator {
             }
             case "TORZNAB" -> {
                 return new Torznab(configProvider, indexerRepository, searchResultRepository, indexerApiAccessRepository, indexerApiAccessShortRepository, indexerStatusRepository, indexerWebAccess, resultAcceptor, categoryProvider, infoProvider, eventPublisher, queryGenerator, titleMapping, unmarshaller, baseConfigHandler, searchResultPersistor);
+            }
+            case "TORBOX" -> {
+                return new Torbox(configProvider, indexerRepository, searchResultRepository, indexerApiAccessRepository, indexerApiAccessShortRepository, indexerStatusRepository, indexerWebAccess, resultAcceptor, categoryProvider, infoProvider, eventPublisher, queryGenerator, titleMapping, baseConfigHandler, searchResultPersistor);
             }
         }
         throw new RuntimeException("Unable to instantiate " + name);
