@@ -58,7 +58,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
-@Component
+@Component("torboxdownloader")
 public class Torbox extends Downloader {
 
     // TODO sist 14.12.2024: Try and parse error responses

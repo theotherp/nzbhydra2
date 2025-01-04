@@ -17,8 +17,10 @@
 package org.nzbhydra.indexers.torbox.mapping;
 
 import lombok.Data;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 @Data
+@ReflectionMarker
 public class TorboxSearchResponse {
 
     private boolean success;

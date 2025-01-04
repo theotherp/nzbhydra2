@@ -3,11 +3,10 @@ package org.nzbhydra.indexers;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.NzbHydraException;
-import org.nzbhydra.config.BaseConfigHandler;
-import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.category.CategoriesConfig;
 import org.nzbhydra.config.category.Category.Subtype;
 import org.nzbhydra.config.downloading.DownloadType;
@@ -36,14 +35,9 @@ import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlResponse;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.nzbhydra.mapping.newznab.xml.Xml;
-import org.nzbhydra.mediainfo.InfoProvider;
-import org.nzbhydra.searching.CategoryProvider;
-import org.nzbhydra.searching.CustomQueryAndTitleMappingHandler;
-import org.nzbhydra.searching.SearchResultAcceptor;
 import org.nzbhydra.searching.SearchResultAcceptor.AcceptorResult;
 import org.nzbhydra.searching.SearchResultIdCalculator;
 import org.nzbhydra.searching.UnknownResponseException;
-import org.nzbhydra.searching.db.SearchResultRepository;
 import org.nzbhydra.searching.dtoseventsenums.IndexerSearchResult;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem.HasNfo;
@@ -52,7 +46,7 @@ import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Scope;
 import org.springframework.core.annotation.Order;
 import org.springframework.oxm.Unmarshaller;
 import org.springframework.stereotype.Component;
@@ -79,6 +73,9 @@ import java.util.stream.Stream;
 
 @Getter
 @Setter
+@Scope(value = "prototype")
+@Component(value = "newznab")
+@NoArgsConstructor
 public class Newznab extends Indexer<Xml> {
 
     private static final Logger logger = LoggerFactory.getLogger(Newznab.class);
@@ -106,16 +103,11 @@ public class Newznab extends Indexer<Xml> {
     private Unmarshaller unmarshaller;
     @Autowired
     private IndexerLimitRepository indexerStatusRepository;
+    @Autowired
+    protected NewznabCategoryComputer newznabCategoryComputer;
+    @Autowired
+    private SearchRequestIdConverter searchRequestIdConverter;
 
-    private BaseConfigHandler baseConfigHandler;
-
-
-    public Newznab(ConfigProvider configProvider, IndexerRepository indexerRepository, SearchResultRepository searchResultRepository, IndexerApiAccessRepository indexerApiAccessRepository, IndexerApiAccessEntityShortRepository indexerApiAccessShortRepository, IndexerLimitRepository indexerStatusRepository, IndexerWebAccess indexerWebAccess, SearchResultAcceptor resultAcceptor, CategoryProvider categoryProvider, InfoProvider infoProvider, ApplicationEventPublisher eventPublisher, QueryGenerator queryGenerator, CustomQueryAndTitleMappingHandler titleMapping, Unmarshaller unmarshaller, BaseConfigHandler baseConfigHandler, IndexerSearchResultPersistor searchResultPersistor) {
-        super(configProvider, indexerRepository, searchResultRepository, indexerApiAccessRepository, indexerApiAccessShortRepository, indexerStatusRepository, indexerWebAccess, resultAcceptor, categoryProvider, infoProvider, eventPublisher, queryGenerator, titleMapping, baseConfigHandler, searchResultPersistor);
-        this.unmarshaller = unmarshaller;
-        this.indexerStatusRepository = indexerStatusRepository;
-        this.baseConfigHandler = baseConfigHandler;
-    }
 
     protected UriComponentsBuilder getBaseUri() {
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(config.getHost()).path(config.getApiPath().orElse("/api"));
@@ -319,7 +311,7 @@ public class Newznab extends Indexer<Xml> {
             return componentsBuilder;
         }
 
-        NzbHydra.getApplicationContext().getAutowireCapableBeanFactory().getBean(SearchRequestIdConverter.class).convertSearchIdsIfNeeded(searchRequest, config);
+        searchRequestIdConverter.convertSearchIdsIfNeeded(searchRequest, config);
 
         for (Map.Entry<MediaIdType, String> entry : searchRequest.getIdentifiers().entrySet()) {
             //We just add all IDs that we have (if the indexer supports them). Some indexers will find results under one ID but not the other
@@ -634,7 +626,7 @@ public class Newznab extends Indexer<Xml> {
         if (attributes.containsKey("source")) {
             searchResultItem.setSource(attributes.get("source"));
         }
-        NzbHydra.getApplicationContext().getBean(NewznabCategoryComputer.class).computeCategory(searchResultItem, newznabCategories, config);
+        newznabCategoryComputer.computeCategory(searchResultItem, newznabCategories, config);
 
         if (searchResultItem.getHasNfo() == HasNfo.MAYBE && (config.getBackend() == BackendType.NNTMUX || config.getBackend() == BackendType.NZEDB)) {
             //For these backends if not specified it doesn't exist

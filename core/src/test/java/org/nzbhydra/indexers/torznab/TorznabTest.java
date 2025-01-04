@@ -44,6 +44,7 @@ import org.nzbhydra.indexers.IndexerEntity;
 import org.nzbhydra.indexers.IndexerRepository;
 import org.nzbhydra.indexers.IndexerSearchRepository;
 import org.nzbhydra.indexers.IndexerWebAccess;
+import org.nzbhydra.indexers.NewznabCategoryComputer;
 import org.nzbhydra.indexers.QueryGenerator;
 import org.nzbhydra.mapping.newznab.xml.JaxbPubdateAdapter;
 import org.nzbhydra.mapping.newznab.xml.NewznabAttribute;
@@ -65,8 +66,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @SuppressWarnings("ALL")
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -103,9 +103,11 @@ public class TorznabTest {
     private Category categoryMock;
     @Mock
     private QueryGenerator queryGeneratorMock;
+    @Mock
+    private NewznabCategoryComputer newznabCategoryComputer;
 
     @InjectMocks
-    private Torznab testee = new Torznab(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+    private Torznab testee = new Torznab();
 
 
     @BeforeEach
@@ -134,6 +136,16 @@ public class TorznabTest {
                 return invocation.getArgument(1);
             }
         });
+        doAnswer(new Answer() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                SearchResultItem item = invocation.getArgument(0);
+                List<Integer> cats = invocation.getArgument(1);
+                IndexerConfig config = invocation.getArgument(2);
+                new NewznabCategoryComputer(categoryProviderMock).computeCategory(item, cats, config);
+                return null;
+            }
+        }).when(newznabCategoryComputer).computeCategory(any(), any(), any());
     }
 
 

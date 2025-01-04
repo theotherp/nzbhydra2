@@ -122,13 +122,15 @@ public class NewznabTest {
     SearchingConfig searchingConfigMock;
     @Mock
     private QueryGenerator queryGeneratorMock;
-    @Mock
-    private BaseConfigHandler configHandler;
     Category animeCategory = new Category("anime");
     Category naCategory = new Category("n/a");
     Category otherCategory = new Category("other");
     @Mock
     private ConfigProvider configProviderMock;
+    @Mock
+    private NewznabCategoryComputer newznabCategoryComputer;
+    @Mock
+    private SearchRequestIdConverter searchRequestIdConverter;
 
     @InjectMocks
     private Newznab testee;
@@ -136,8 +138,6 @@ public class NewznabTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-
-//        testee = new Newznab(configProviderMock,indexerRepositoryMock,searchResultRepositoryMock, indexerApiAccessRepositoryMock, null,null,indexerWebAccessMock,resultAcceptorMock, categoryProviderMock, infoProviderMock, null,queryGeneratorMock, customQueryAndTitleMappingHandler,unmarshallerMock,baseConfigHandler,null);
         testee = spy(testee);
         when(infoProviderMock.canConvert(MediaIdType.IMDB, MediaIdType.TMDB)).thenReturn(true);
         MediaInfo info = new MediaInfo();
@@ -189,6 +189,17 @@ public class NewznabTest {
                 return invocation.getArgument(1);
             }
         });
+        doAnswer(new Answer() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                SearchResultItem item = invocation.getArgument(0);
+                List<Integer> cats = invocation.getArgument(1);
+                IndexerConfig config = invocation.getArgument(2);
+                new NewznabCategoryComputer(categoryProviderMock).computeCategory(item, cats, config);
+                return null;
+            }
+        }).when(newznabCategoryComputer).computeCategory(any(), any(), any());
+
 
     }
 
@@ -408,7 +419,15 @@ public class NewznabTest {
         searchRequest.getIdentifiers().put(MediaIdType.IMDB, "imdbId");
         testee.config.getSupportedSearchIds().add(MediaIdType.TMDB);
         when(infoProviderMock.canConvertAny(anySet(), anySet())).thenReturn(true);
-
+        doAnswer(new Answer() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                SearchRequest request = invocation.getArgument(0);
+                IndexerConfig config = invocation.getArgument(1);
+                new SearchRequestIdConverter(configProviderMock, infoProviderMock).convertSearchIdsIfNeeded(request, config);
+                return null;
+            }
+        }).when(searchRequestIdConverter).convertSearchIdsIfNeeded(any(), any());
         testee.extendQueryUrlWithSearchIds(searchRequest, uriComponentsBuilderMock);
 
         verify(uriComponentsBuilderMock).queryParam("tmdbid", "tmdbId");

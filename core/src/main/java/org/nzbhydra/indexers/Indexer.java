@@ -35,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.springframework.aot.hint.annotation.Reflective;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
@@ -67,41 +68,41 @@ public abstract class Indexer<T> {
 
     private final Object dbLock = "";
 
+    @Autowired
+    protected ConfigProvider configProvider;
+    @Autowired
+    protected IndexerRepository indexerRepository;
+    @Autowired
+    protected SearchResultRepository searchResultRepository;
+    @Autowired
+    protected IndexerApiAccessRepository indexerApiAccessRepository;
+    @Autowired
+    protected IndexerApiAccessEntityShortRepository indexerApiAccessShortRepository;
+    @Autowired
+    protected IndexerWebAccess indexerWebAccess;
+    @Autowired
+    protected SearchResultAcceptor resultAcceptor;
+    @Autowired
+    protected CategoryProvider categoryProvider;
+    @Autowired
+    protected InfoProvider infoProvider;
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
+    @Autowired
+    private QueryGenerator queryGenerator;
+    @Autowired
+    private CustomQueryAndTitleMappingHandler titleMapping;
+    @Autowired
+    protected BaseConfigHandler baseConfigHandler;
+    @Autowired
+    private IndexerSearchResultPersistor searchResultPersistor;
+
+
     protected IndexerEntity indexer;
     protected IndexerConfig config;
     private Pattern cleanupPattern;
 
-
-    protected ConfigProvider configProvider;
-
-    protected IndexerRepository indexerRepository;
-
-    protected SearchResultRepository searchResultRepository;
-
-    protected IndexerApiAccessRepository indexerApiAccessRepository;
-
-    protected IndexerApiAccessEntityShortRepository indexerApiAccessShortRepository;
-
-
-    protected IndexerWebAccess indexerWebAccess;
-
-    protected SearchResultAcceptor resultAcceptor;
-
-    protected CategoryProvider categoryProvider;
-
-    protected InfoProvider infoProvider;
-
-    private ApplicationEventPublisher eventPublisher;
-
-    private QueryGenerator queryGenerator;
-
-    private CustomQueryAndTitleMappingHandler titleMapping;
-
-    private BaseConfigHandler baseConfigHandler;
-
     protected AutowireCapableBeanFactory beanFactory;
-    private IndexerSearchResultPersistor searchResultPersistor;
-
 
 
     protected Indexer() {

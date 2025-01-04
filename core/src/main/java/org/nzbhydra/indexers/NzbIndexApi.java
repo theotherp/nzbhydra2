@@ -2,28 +2,21 @@ package org.nzbhydra.indexers;
 
 import com.google.common.base.Joiner;
 import joptsimple.internal.Strings;
-import org.nzbhydra.config.BaseConfigHandler;
-import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.config.searching.SearchType;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
-import org.nzbhydra.indexers.status.IndexerLimitRepository;
 import org.nzbhydra.mapping.nzbindex.NzbIndexRoot;
-import org.nzbhydra.mediainfo.InfoProvider;
-import org.nzbhydra.searching.CategoryProvider;
-import org.nzbhydra.searching.CustomQueryAndTitleMappingHandler;
-import org.nzbhydra.searching.SearchResultAcceptor;
 import org.nzbhydra.searching.SearchResultAcceptor.AcceptorResult;
-import org.nzbhydra.searching.db.SearchResultRepository;
 import org.nzbhydra.searching.dtoseventsenums.IndexerSearchResult;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -34,6 +27,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+@Component("nzbindexapi")
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class NzbIndexApi extends Indexer<NzbIndexRoot> {
 
     //https://nzbindex.com/api/v3
@@ -43,9 +38,6 @@ public class NzbIndexApi extends Indexer<NzbIndexRoot> {
     private static final Pattern NFO_PATTERN = Pattern.compile(".*<pre id=\"nfo0\">(.*)</pre>.*", Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
     public static final int PAGE_SIZE = 250;
 
-    public NzbIndexApi(ConfigProvider configProvider, IndexerRepository indexerRepository, SearchResultRepository searchResultRepository, IndexerApiAccessRepository indexerApiAccessRepository, IndexerApiAccessEntityShortRepository indexerApiAccessShortRepository, IndexerLimitRepository indexerStatusRepository, IndexerWebAccess indexerWebAccess, SearchResultAcceptor resultAcceptor, CategoryProvider categoryProvider, InfoProvider infoProvider, ApplicationEventPublisher eventPublisher, QueryGenerator queryGenerator, CustomQueryAndTitleMappingHandler titleMapping, BaseConfigHandler baseConfigHandler, IndexerSearchResultPersistor searchResultPersistor) {
-        super(configProvider, indexerRepository, searchResultRepository, indexerApiAccessRepository, indexerApiAccessShortRepository, indexerStatusRepository, indexerWebAccess, resultAcceptor, categoryProvider, infoProvider, eventPublisher, queryGenerator, titleMapping, baseConfigHandler, searchResultPersistor);
-    }
 
 
     @Override

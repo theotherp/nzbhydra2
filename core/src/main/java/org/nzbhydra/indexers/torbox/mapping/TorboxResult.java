@@ -21,11 +21,13 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import lombok.Data;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.io.IOException;
 import java.util.List;
 
 @Data
+@ReflectionMarker
 public class TorboxResult {
     private String hash;
 

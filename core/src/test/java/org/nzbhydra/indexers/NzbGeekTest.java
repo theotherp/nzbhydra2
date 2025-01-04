@@ -8,7 +8,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class NzbGeekTest {
 
     @InjectMocks
-    private NzbGeek testee = new NzbGeek(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+    private NzbGeek testee = new NzbGeek();
 
 
     @Test

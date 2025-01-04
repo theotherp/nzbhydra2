@@ -17,6 +17,8 @@
 package org.nzbhydra.indexers;
 
 import com.google.common.base.Joiner;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.indexer.IndexerConfig;
@@ -35,6 +37,8 @@ import java.util.Map;
 
 @Component
 @Slf4j
+@NoArgsConstructor
+@AllArgsConstructor
 public class SearchRequestIdConverter {
 
     @Autowired

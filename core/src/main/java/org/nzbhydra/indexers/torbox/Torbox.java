@@ -20,43 +20,32 @@ import com.google.common.base.Stopwatch;
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.NotImplementedException;
+import org.javers.common.collections.Lists;
 import org.nzbhydra.NzbHydra;
-import org.nzbhydra.config.BaseConfigHandler;
-import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.config.mediainfo.MediaIdType;
 import org.nzbhydra.indexers.Indexer;
-import org.nzbhydra.indexers.IndexerApiAccessEntityShortRepository;
-import org.nzbhydra.indexers.IndexerApiAccessRepository;
 import org.nzbhydra.indexers.IndexerApiAccessType;
 import org.nzbhydra.indexers.IndexerHandlingStrategy;
-import org.nzbhydra.indexers.IndexerRepository;
-import org.nzbhydra.indexers.IndexerSearchResultPersistor;
-import org.nzbhydra.indexers.IndexerWebAccess;
 import org.nzbhydra.indexers.NewznabCategoryComputer;
 import org.nzbhydra.indexers.NfoResult;
-import org.nzbhydra.indexers.QueryGenerator;
 import org.nzbhydra.indexers.SearchRequestIdConverter;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.exceptions.IndexerParsingException;
 import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
-import org.nzbhydra.indexers.status.IndexerLimitRepository;
 import org.nzbhydra.indexers.torbox.mapping.TorboxResult;
 import org.nzbhydra.indexers.torbox.mapping.TorboxResultType;
 import org.nzbhydra.indexers.torbox.mapping.TorboxSearchResponse;
 import org.nzbhydra.mapping.AgeToPubDateConverter;
-import org.nzbhydra.mediainfo.InfoProvider;
-import org.nzbhydra.searching.CategoryProvider;
-import org.nzbhydra.searching.CustomQueryAndTitleMappingHandler;
 import org.nzbhydra.searching.SearchResultAcceptor;
-import org.nzbhydra.searching.db.SearchResultRepository;
 import org.nzbhydra.searching.dtoseventsenums.IndexerSearchResult;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
-import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -71,6 +60,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 @Slf4j
+@Component("torbox")
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class Torbox extends Indexer<Torbox.UsenetAndTorrentResponse> {
     private static final Map<MediaIdType, String> ID_TYPE_MAP = new HashMap<>();
     public static final Set<MediaIdType> SUPPORTED_MEDIA_ID_TYPES = Set.of(MediaIdType.IMDB, MediaIdType.TVDB);
@@ -88,9 +79,6 @@ public class Torbox extends Indexer<Torbox.UsenetAndTorrentResponse> {
 
     private final ExecutorService executorService = Executors.newFixedThreadPool(2);
 
-    public Torbox(ConfigProvider configProvider, IndexerRepository indexerRepository, SearchResultRepository searchResultRepository, IndexerApiAccessRepository indexerApiAccessRepository, IndexerApiAccessEntityShortRepository indexerApiAccessShortRepository, IndexerLimitRepository indexerStatusRepository, IndexerWebAccess indexerWebAccess, SearchResultAcceptor resultAcceptor, CategoryProvider categoryProvider, InfoProvider infoProvider, ApplicationEventPublisher eventPublisher, QueryGenerator queryGenerator, CustomQueryAndTitleMappingHandler titleMapping, BaseConfigHandler baseConfigHandler, IndexerSearchResultPersistor searchResultPersistor) {
-        super(configProvider, indexerRepository, searchResultRepository, indexerApiAccessRepository, indexerApiAccessShortRepository, indexerStatusRepository, indexerWebAccess, resultAcceptor, categoryProvider, infoProvider, eventPublisher, queryGenerator, titleMapping, baseConfigHandler, searchResultPersistor);
-    }
 
     @Override
     protected void completeIndexerSearchResult(UsenetAndTorrentResponse response, IndexerSearchResult indexerSearchResult, SearchResultAcceptor.AcceptorResult acceptorResult, SearchRequest searchRequest, int offset, Integer limit) {
@@ -104,7 +92,8 @@ public class Torbox extends Indexer<Torbox.UsenetAndTorrentResponse> {
     @Override
     protected List<SearchResultItem> getSearchResultItems(UsenetAndTorrentResponse searchRequestResponse, SearchRequest searchRequest) throws IndexerParsingException {
         final List<SearchResultItem> items = new ArrayList<>();
-        for (TorboxResult result : searchRequestResponse.usenet().getData().getNzbs()) {
+        final List<TorboxResult> allResults = Lists.join(searchRequestResponse.usenet().getData().getNzbs(), searchRequestResponse.torrent().getData().getTorrents());
+        for (TorboxResult result : allResults) {
             SearchResultItem searchResultItem = new SearchResultItem();
             searchResultItem.setDownloadType(DownloadType.TORBOX);
             searchResultItem.setTitle(result.getRawTitle());
@@ -145,15 +134,19 @@ public class Torbox extends Indexer<Torbox.UsenetAndTorrentResponse> {
     protected IndexerSearchResult buildSearchUrlAndCall(SearchRequest searchRequest, int offset, Integer limit) throws IndexerSearchAbortedException, IndexerAccessException {
         NzbHydra.getApplicationContext().getAutowireCapableBeanFactory().getBean(SearchRequestIdConverter.class).convertSearchIdsIfNeeded(searchRequest, config);
 
-        UriComponentsBuilder builder = buildSearchUrl(searchRequest, TorboxResultType.USENET);
-        URI url = builder.build().toUri();
-
         Stopwatch stopwatch = Stopwatch.createStarted();
-        info("Calling {}", url.toString());
-        TorboxSearchResponse usenetResponse = getAndStoreResultToDatabase(url, TorboxSearchResponse.class, IndexerApiAccessType.SEARCH);
-        // TODO sist 04.01.2025: Torrents search
+        TorboxSearchResponse usenetResponse = buildAndCall(searchRequest, TorboxResultType.USENET);
         UsenetAndTorrentResponse response = new UsenetAndTorrentResponse(usenetResponse, new TorboxSearchResponse());
         return processSearchResponse(searchRequest, offset, limit, stopwatch, response);
+    }
+
+    private TorboxSearchResponse buildAndCall(SearchRequest searchRequest, TorboxResultType searchType) throws IndexerSearchAbortedException, IndexerAccessException {
+        UriComponentsBuilder builder = buildSearchUrl(searchRequest, searchType);
+        URI url = builder.build().toUri();
+
+        info("Calling {}", url.toString());
+        TorboxSearchResponse usenetResponse = getAndStoreResultToDatabase(url, TorboxSearchResponse.class, IndexerApiAccessType.SEARCH);
+        return usenetResponse;
     }
 
 

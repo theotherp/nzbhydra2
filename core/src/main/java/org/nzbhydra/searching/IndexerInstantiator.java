@@ -24,6 +24,7 @@ import org.nzbhydra.indexers.torbox.Torbox;
 import org.nzbhydra.indexers.torznab.Torznab;
 import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.searching.db.SearchResultRepository;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.oxm.Unmarshaller;
@@ -64,44 +65,46 @@ public class IndexerInstantiator {
     private BaseConfigHandler baseConfigHandler;
     @Autowired
     private IndexerSearchResultPersistor searchResultPersistor;
+    @Autowired
+    private BeanFactory beanFactory;
 
     public Indexer instantiateIndexer(String name) {
-        switch (name) {
+        switch (name.toUpperCase()) {
             case "ANIZB" -> {
-                return new Anizb(configProvider, indexerRepository, searchResultRepository, indexerApiAccessRepository, indexerApiAccessShortRepository, indexerStatusRepository, indexerWebAccess, resultAcceptor, categoryProvider, infoProvider, eventPublisher, queryGenerator, titleMapping, baseConfigHandler, searchResultPersistor);
+                return beanFactory.getBean("anizb", Anizb.class);
             }
             case "BINSEARCH" -> {
-                return new Binsearch(configProvider, indexerRepository, searchResultRepository, indexerApiAccessRepository, indexerApiAccessShortRepository, indexerStatusRepository, indexerWebAccess, resultAcceptor, categoryProvider, infoProvider, eventPublisher, queryGenerator, titleMapping, baseConfigHandler, searchResultPersistor);
+                return beanFactory.getBean("binsearch", Binsearch.class);
             }
             case "DOGNZB" -> {
-                return new DogNzb(configProvider, indexerRepository, searchResultRepository, indexerApiAccessRepository, indexerApiAccessShortRepository, indexerStatusRepository, indexerWebAccess, resultAcceptor, categoryProvider, infoProvider, eventPublisher, queryGenerator, titleMapping, unmarshaller, baseConfigHandler, searchResultPersistor);
+                return beanFactory.getBean("dognzb", DogNzb.class);
             }
             case "NEWZNAB" -> {
-                return new Newznab(configProvider, indexerRepository, searchResultRepository, indexerApiAccessRepository, indexerApiAccessShortRepository, indexerStatusRepository, indexerWebAccess, resultAcceptor, categoryProvider, infoProvider, eventPublisher, queryGenerator, titleMapping, unmarshaller, baseConfigHandler, searchResultPersistor);
+                return beanFactory.getBean("newznab", Newznab.class);
             }
             case "WTFNZB" -> {
-                return new WtfNzb(configProvider, indexerRepository, searchResultRepository, indexerApiAccessRepository, indexerApiAccessShortRepository, indexerStatusRepository, indexerWebAccess, resultAcceptor, categoryProvider, infoProvider, eventPublisher, queryGenerator, titleMapping, unmarshaller, baseConfigHandler, searchResultPersistor);
+                return beanFactory.getBean("wtfnzb", WtfNzb.class);
             }
             case "NZBINDEX" -> {
-                return new NzbIndex(configProvider, indexerRepository, searchResultRepository, indexerApiAccessRepository, indexerApiAccessShortRepository, indexerStatusRepository, indexerWebAccess, resultAcceptor, categoryProvider, infoProvider, eventPublisher, queryGenerator, titleMapping, baseConfigHandler, searchResultPersistor);
+                return beanFactory.getBean("nzbindex", NzbIndex.class);
             }
             case "NZBINDEX_BETA" -> {
-                return new NzbIndexBeta(configProvider, indexerRepository, searchResultRepository, indexerApiAccessRepository, indexerApiAccessShortRepository, indexerStatusRepository, indexerWebAccess, resultAcceptor, categoryProvider, infoProvider, eventPublisher, queryGenerator, titleMapping, baseConfigHandler, searchResultPersistor);
+                return beanFactory.getBean("nzbindexbeta", NzbIndexBeta.class);
             }
             case "NZBINDEX_API" -> {
-                return new NzbIndexApi(configProvider, indexerRepository, searchResultRepository, indexerApiAccessRepository, indexerApiAccessShortRepository, indexerStatusRepository, indexerWebAccess, resultAcceptor, categoryProvider, infoProvider, eventPublisher, queryGenerator, titleMapping, baseConfigHandler, searchResultPersistor);
+                return beanFactory.getBean("nzbindexapi", NzbIndexApi.class);
             }
             case "NZBGEEK" -> {
-                return new NzbGeek(configProvider, indexerRepository, searchResultRepository, indexerApiAccessRepository, indexerApiAccessShortRepository, indexerStatusRepository, indexerWebAccess, resultAcceptor, categoryProvider, infoProvider, eventPublisher, queryGenerator, titleMapping, unmarshaller, baseConfigHandler, searchResultPersistor);
+                return beanFactory.getBean("nzbgeek", NzbGeek.class);
             }
             case "NZBKING" -> {
-                return new NzbKing(configProvider, indexerRepository, searchResultRepository, indexerApiAccessRepository, indexerApiAccessShortRepository, indexerStatusRepository, indexerWebAccess, resultAcceptor, categoryProvider, infoProvider, eventPublisher, queryGenerator, titleMapping, baseConfigHandler, searchResultPersistor);
+                return beanFactory.getBean("nzbking", NzbKing.class);
             }
             case "TORZNAB" -> {
-                return new Torznab(configProvider, indexerRepository, searchResultRepository, indexerApiAccessRepository, indexerApiAccessShortRepository, indexerStatusRepository, indexerWebAccess, resultAcceptor, categoryProvider, infoProvider, eventPublisher, queryGenerator, titleMapping, unmarshaller, baseConfigHandler, searchResultPersistor);
+                return beanFactory.getBean("torznab", Torznab.class);
             }
             case "TORBOX" -> {
-                return new Torbox(configProvider, indexerRepository, searchResultRepository, indexerApiAccessRepository, indexerApiAccessShortRepository, indexerStatusRepository, indexerWebAccess, resultAcceptor, categoryProvider, infoProvider, eventPublisher, queryGenerator, titleMapping, baseConfigHandler, searchResultPersistor);
+                return beanFactory.getBean("torbox", Torbox.class);
             }
         }
         throw new RuntimeException("Unable to instantiate " + name);

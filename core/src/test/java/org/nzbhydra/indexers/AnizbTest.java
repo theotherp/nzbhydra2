@@ -34,8 +34,7 @@ public class AnizbTest {
     private QueryGenerator queryGeneratorMock;
 
     @InjectMocks
-    private Anizb testee =
-            new Anizb(configProviderMock, null, null, null, null, null, null, null, null, null, null, queryGeneratorMock, null, null, null);
+    private Anizb testee;
 
     @BeforeEach
     public void setUp() throws Exception {

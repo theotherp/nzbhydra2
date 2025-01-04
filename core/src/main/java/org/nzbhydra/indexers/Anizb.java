@@ -2,30 +2,23 @@ package org.nzbhydra.indexers;
 
 import com.google.common.base.Joiner;
 import joptsimple.internal.Strings;
-import org.nzbhydra.config.BaseConfigHandler;
-import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.exceptions.IndexerParsingException;
 import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
-import org.nzbhydra.indexers.status.IndexerLimitRepository;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
-import org.nzbhydra.mediainfo.InfoProvider;
-import org.nzbhydra.searching.CategoryProvider;
-import org.nzbhydra.searching.CustomQueryAndTitleMappingHandler;
-import org.nzbhydra.searching.SearchResultAcceptor;
 import org.nzbhydra.searching.SearchResultAcceptor.AcceptorResult;
-import org.nzbhydra.searching.db.SearchResultRepository;
 import org.nzbhydra.searching.dtoseventsenums.IndexerSearchResult;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem.HasNfo;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -34,13 +27,11 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
+@Component("aninzb")
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class Anizb extends Indexer<NewznabXmlRoot> {
 
     private static final Logger logger = LoggerFactory.getLogger(Anizb.class);
-
-    public Anizb(ConfigProvider configProvider, IndexerRepository indexerRepository, SearchResultRepository searchResultRepository, IndexerApiAccessRepository indexerApiAccessRepository, IndexerApiAccessEntityShortRepository indexerApiAccessShortRepository, IndexerLimitRepository indexerStatusRepository, IndexerWebAccess indexerWebAccess, SearchResultAcceptor resultAcceptor, CategoryProvider categoryProvider, InfoProvider infoProvider, ApplicationEventPublisher eventPublisher, QueryGenerator queryGenerator, CustomQueryAndTitleMappingHandler titleMapping, BaseConfigHandler baseConfigHandler, IndexerSearchResultPersistor searchResultPersistor) {
-        super(configProvider, indexerRepository, searchResultRepository, indexerApiAccessRepository, indexerApiAccessShortRepository, indexerStatusRepository, indexerWebAccess, resultAcceptor, categoryProvider, infoProvider, eventPublisher, queryGenerator, titleMapping, baseConfigHandler, searchResultPersistor);
-    }
 
 
     @Override

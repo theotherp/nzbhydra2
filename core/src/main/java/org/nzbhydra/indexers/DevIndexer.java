@@ -3,27 +3,18 @@ package org.nzbhydra.indexers;
 import lombok.Getter;
 import lombok.Setter;
 import org.nzbhydra.NzbHydraException;
-import org.nzbhydra.config.BaseConfigHandler;
-import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
-import org.nzbhydra.indexers.status.IndexerLimitRepository;
 import org.nzbhydra.mapping.newznab.mock.NewznabMockBuilder;
 import org.nzbhydra.mapping.newznab.mock.NewznabMockRequest;
 import org.nzbhydra.mapping.newznab.xml.NewznabAttribute;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.nzbhydra.mapping.newznab.xml.Xml;
-import org.nzbhydra.mediainfo.InfoProvider;
-import org.nzbhydra.searching.CategoryProvider;
-import org.nzbhydra.searching.CustomQueryAndTitleMappingHandler;
-import org.nzbhydra.searching.SearchResultAcceptor;
-import org.nzbhydra.searching.db.SearchResultRepository;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
-import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Scope;
 import org.springframework.core.annotation.Order;
-import org.springframework.oxm.Unmarshaller;
 import org.springframework.stereotype.Component;
 
 import java.net.URI;
@@ -32,12 +23,10 @@ import java.util.Collections;
 
 @Getter
 @Setter
-@Component
+@Component("devindexer")
+@Scope("prototype")
 public class DevIndexer extends Newznab {
 
-    public DevIndexer(ConfigProvider configProvider, IndexerRepository indexerRepository, SearchResultRepository searchResultRepository, IndexerApiAccessRepository indexerApiAccessRepository, IndexerApiAccessEntityShortRepository indexerApiAccessShortRepository, IndexerLimitRepository indexerStatusRepository, IndexerWebAccess indexerWebAccess, SearchResultAcceptor resultAcceptor, CategoryProvider categoryProvider, InfoProvider infoProvider, ApplicationEventPublisher eventPublisher, QueryGenerator queryGenerator, CustomQueryAndTitleMappingHandler titleMapping, Unmarshaller unmarshaller, BaseConfigHandler baseConfigHandler, IndexerSearchResultPersistor searchResultPersistor) {
-        super(configProvider, indexerRepository, searchResultRepository, indexerApiAccessRepository, indexerApiAccessShortRepository, indexerStatusRepository, indexerWebAccess, resultAcceptor, categoryProvider, infoProvider, eventPublisher, queryGenerator, titleMapping, unmarshaller, baseConfigHandler, searchResultPersistor);
-    }
 
     protected Xml getAndStoreResultToDatabase(URI uri, IndexerApiAccessType apiAccessType) throws IndexerAccessException {
 

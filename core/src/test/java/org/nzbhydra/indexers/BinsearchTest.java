@@ -37,8 +37,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-
-import org.mockito.quality.Strictness;
 @SuppressWarnings("ConstantConditions")
 @MockitoSettings(strictness = Strictness.LENIENT)
 public class BinsearchTest {
@@ -54,8 +52,7 @@ public class BinsearchTest {
     private QueryGenerator queryGeneratorMock;
 
     @InjectMocks
-    private Binsearch testee = new Binsearch(configProviderMock, null, null, null, null, null,
-            null, null, categoryProviderMock, null, null, queryGeneratorMock, null, null, null);
+    private Binsearch testee;
 
     @BeforeEach
     public void setUp() throws Exception {

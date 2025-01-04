@@ -31,6 +31,7 @@ import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.searching.SearchType;
 import org.nzbhydra.downloading.FileHandler;
+import org.nzbhydra.downloading.downloadurls.DownloadUrlBuilder;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
 import org.nzbhydra.searching.SearchResult;
@@ -49,6 +50,8 @@ public class NewznabXmlTransformerTest {
     protected ConfigProvider configProvider;
     @Mock
     private SearchResult searchResult;
+    @Mock
+    private DownloadUrlBuilder downloadUrlBuilder;
 
     @Mock
     private Indexer indexerMock;

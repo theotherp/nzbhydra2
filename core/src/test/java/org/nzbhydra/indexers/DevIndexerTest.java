@@ -26,7 +26,7 @@ import java.net.URI;
 public class DevIndexerTest {
 
     @InjectMocks
-    private DevIndexer testee = new DevIndexer(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+    private DevIndexer testee = new DevIndexer();
 
     @Test
     void testGeneration() throws Exception {
