@@ -95,7 +95,7 @@ public class HydraEmbeddedServletContainer implements WebServerFactoryCustomizer
         if (Strings.isNotBlank(forwardedHost)) {
             String[] split = forwardedHost.split("[ ,]");
             forwardedHost = split[0];
-            int colonIndex = forwardedHost.lastIndexOf(":");
+            int colonIndex = forwardedHost.endsWith("]") ? -1 : forwardedHost.lastIndexOf(":");
             if (colonIndex > -1) {
                 if (originalPort == -1) {
                     originalPort = request.getServerPort();

@@ -3,7 +3,9 @@
     date: "2025-01-05"
     changes:
       -   type: "fix"
-          text: "Fix paging for search / download / notification history"
+          text: "Fix paging for search / download / notification history."
+      -   type: "fix"
+          text: "Hopefully actually fix ipv6 reverse proxies access. See #980"
     final: true
 -   version: "v7.11.3"
     date: "2025-01-03"

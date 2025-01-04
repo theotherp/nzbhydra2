@@ -103,6 +103,18 @@ class HydraEmbeddedServletContainerTest {
     }
 
     @Test
+    void shouldHandleIpv6ForwardedHostWithoutPort() {
+        when(request.getHeader("X-Forwarded-Host")).thenReturn("[2001:db8:85a3:8d3:1319:8a2e:370:7348]");
+        when(serverNameMB.getString()).thenReturn("original.com");
+        when(request.getServerPort()).thenReturn(8080);
+
+        HydraEmbeddedServletContainer.Result result = parseRequest(request);
+
+        assertThat(result.originalPort()).isEqualTo(80);
+        assertThat(result.forwardedHost()).isEqualTo("[2001:db8:85a3:8d3:1319:8a2e:370:7348]");
+    }
+
+    @Test
     void shouldHandleForwardedHostWithPort() {
         when(request.getHeader("X-Forwarded-Host")).thenReturn("example.com:9443");
         when(serverNameMB.getString()).thenReturn("original.com");
