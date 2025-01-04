@@ -75,12 +75,10 @@ public class Torbox extends Indexer<Torbox.UsenetAndTorrentResponse> {
     private static final Map<MediaIdType, String> ID_TYPE_MAP = new HashMap<>();
     public static final Set<MediaIdType> SUPPORTED_MEDIA_ID_TYPES = Set.of(MediaIdType.IMDB, MediaIdType.TVDB);
 
-    // TODO sist 04.01.2025: Show downloader for torbox results
     // TODO sist 04.01.2025: Search and add torrent results
     // TODO sist 04.01.2025: Show disabled download icon for direct download of torbox results
     // TODO sist 04.01.2025: Make sure whatever the setting for the torbox downloader is send the link to the result
     // TODO sist 04.01.2025: nice to have: If torbox is available as indexer show it for torbox results even if it's not the primary one?
-    // TODO sist 04.01.2025: Migrate torbox downloader downloadType to torbox if necessary
 
     static {
         ID_TYPE_MAP.put(MediaIdType.IMDB, "imdb_id");

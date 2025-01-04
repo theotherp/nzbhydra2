@@ -36,7 +36,7 @@ import java.util.Optional;
 public class MainConfig {
 
 
-    private Integer configVersion = 20;
+    private Integer configVersion = 21;
 
     //Hosting settings
     @RestartRequired
