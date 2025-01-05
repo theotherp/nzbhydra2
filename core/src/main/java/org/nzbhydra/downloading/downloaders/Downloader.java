@@ -149,7 +149,7 @@ public abstract class Downloader {
                     if (addingType == NzbAddingType.UPLOAD && accessTypeForIndexer == FileDownloadAccessType.PROXY) {
                         DownloadResult result = fileHandler.getFileByResult(FileDownloadAccessType.PROXY, SearchSource.INTERNAL, optionalResult.get()); //Uploading NZBs can only be done via proxying
                         if (result.isSuccessful()) {
-                            String externalId = addNzb(result.getContent(), result.getTitle(), categoryToSend);
+                            String externalId = addContent(result.getContent(), result.getTitle(), searchResult.getDownloadType(), categoryToSend);
                             result.getDownloadEntity().setExternalId(externalId);
                             fileHandler.updateStatusByEntity(result.getDownloadEntity(), FileDownloadStatus.NZB_ADDED);
                             addedNzbs.add(guid);
@@ -158,7 +158,7 @@ public abstract class Downloader {
                         }
                     } else {
                         String link = downloadUrlBuilder.getDownloadLinkForSendingToDownloader(searchResult, false);
-                        String externalId = addLink(link, searchResultTitle, categoryToSend);
+                        String externalId = addLink(link, searchResultTitle, searchResult.getDownloadType(), categoryToSend);
                         guidExternalIds.put(guid, externalId);
                         addedNzbs.add(guid);
                     }
@@ -203,22 +203,24 @@ public abstract class Downloader {
     public abstract List<String> getCategories();
 
     /**
-     * @param link     Link to the NZB
-     * @param title    Title to tell the downloader
-     * @param category Category to file under
+     * @param link         Link to the NZB
+     * @param title        Title to tell the downloader
+     * @param downloadType
+     * @param category     Category to file under
      * @return ID returned by the downloader
      * @throws DownloaderException Error while downloading
      */
-    public abstract String addLink(String link, String title, String category) throws DownloaderException;
+    public abstract String addLink(String link, String title, DownloadType downloadType, String category) throws DownloaderException;
 
     /**
-     * @param content  NZB content to upload
-     * @param title    Title to tell the downloader
-     * @param category Category to file under
+     * @param content      NZB content to upload
+     * @param title        Title to tell the downloader
+     * @param downloadType
+     * @param category     Category to file under
      * @return ID returned by the downloader
      * @throws DownloaderException Error while downloading
      */
-    public abstract String addNzb(byte[] content, String title, String category) throws DownloaderException;
+    public abstract String addContent(byte[] content, String title, DownloadType downloadType, String category) throws DownloaderException;
 
     public abstract DownloaderStatus getStatus() throws DownloaderException;
 

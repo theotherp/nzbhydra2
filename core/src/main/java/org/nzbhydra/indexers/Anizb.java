@@ -27,7 +27,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
-@Component("aninzb")
+@Component("anizb")
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class Anizb extends Indexer<NewznabXmlRoot> {
 

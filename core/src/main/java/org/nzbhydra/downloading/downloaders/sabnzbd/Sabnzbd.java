@@ -12,6 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.Jackson;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.downloading.DownloaderType;
 import org.nzbhydra.downloading.FileDownloadStatus;
 import org.nzbhydra.downloading.FileHandler;
@@ -99,7 +100,7 @@ public class Sabnzbd extends Downloader {
     }
 
     @Override
-    public String addLink(String url, String title, String category) throws DownloaderException {
+    public String addLink(String url, String title, DownloadType downloadType, String category) throws DownloaderException {
         logger.debug("Sending link for NZB {} to sabnzbd", title);
         title = suffixNzbToTitle(title);
         UriComponentsBuilder urlBuilder = getBaseUrl();
@@ -133,7 +134,7 @@ public class Sabnzbd extends Downloader {
     }
 
     @Override
-    public String addNzb(byte[] fileContent, String title, String category) throws DownloaderException {
+    public String addContent(byte[] fileContent, String title, DownloadType downloadType, String category) throws DownloaderException {
         //Using OKHTTP here because RestTemplate wouldn't work
         logger.debug("Uploading NZB {} to sabnzbd", title);
         UriComponentsBuilder urlBuilder = getBaseUrl();

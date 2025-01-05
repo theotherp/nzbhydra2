@@ -17,6 +17,7 @@
 package org.nzbhydra.indexers.torbox;
 
 import com.google.common.base.Stopwatch;
+import com.google.common.base.Strings;
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.NotImplementedException;
@@ -31,8 +32,10 @@ import org.nzbhydra.indexers.IndexerApiAccessType;
 import org.nzbhydra.indexers.IndexerHandlingStrategy;
 import org.nzbhydra.indexers.NewznabCategoryComputer;
 import org.nzbhydra.indexers.NfoResult;
+import org.nzbhydra.indexers.QueryGenerator;
 import org.nzbhydra.indexers.SearchRequestIdConverter;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
+import org.nzbhydra.indexers.exceptions.IndexerNoIdConversionPossibleException;
 import org.nzbhydra.indexers.exceptions.IndexerParsingException;
 import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
 import org.nzbhydra.indexers.torbox.mapping.TorboxResult;
@@ -44,6 +47,7 @@ import org.nzbhydra.searching.dtoseventsenums.IndexerSearchResult;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.core.annotation.Order;
@@ -55,16 +59,25 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 @Slf4j
 @Component("torbox")
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class Torbox extends Indexer<Torbox.UsenetAndTorrentResponse> {
+
     private static final Map<MediaIdType, String> ID_TYPE_MAP = new HashMap<>();
     public static final Set<MediaIdType> SUPPORTED_MEDIA_ID_TYPES = Set.of(MediaIdType.IMDB, MediaIdType.TVDB);
+
+    @Autowired
+    private SearchRequestIdConverter searchRequestIdConverter;
 
     // TODO sist 04.01.2025: Search and add torrent results
     // TODO sist 04.01.2025: Show disabled download icon for direct download of torbox results
@@ -78,6 +91,11 @@ public class Torbox extends Indexer<Torbox.UsenetAndTorrentResponse> {
     }
 
     private final ExecutorService executorService = Executors.newFixedThreadPool(2);
+    private final QueryGenerator queryGenerator;
+
+    public Torbox(QueryGenerator queryGenerator) {
+        this.queryGenerator = queryGenerator;
+    }
 
 
     @Override
@@ -113,9 +131,12 @@ public class Torbox extends Indexer<Torbox.UsenetAndTorrentResponse> {
             searchResultItem.setIndexerGuid(String.valueOf(result.getHash()));
             if (result.getNzb() != null) {
                 searchResultItem.setLink(result.getNzb());
-            } else if (result.getMagnet() != null && result.getTorrent() != null) {
-                searchResultItem.setSource(result.getTracker());
-                searchResultItem.setLink(result.getMagnet());
+            } else if (result.getMagnet() != null || result.getTorrent() != null) {
+                if (result.getMagnet() != null) {
+                    searchResultItem.setLink(result.getMagnet());
+                } else {
+                    searchResultItem.setLink(result.getTorrent());
+                }
             } else {
                 error("Result " + result.getRawTitle() + " has neither nzb nor magnet or torrent");
                 continue;
@@ -131,12 +152,19 @@ public class Torbox extends Indexer<Torbox.UsenetAndTorrentResponse> {
     }
 
     @Override
-    protected IndexerSearchResult buildSearchUrlAndCall(SearchRequest searchRequest, int offset, Integer limit) throws IndexerSearchAbortedException, IndexerAccessException {
-        NzbHydra.getApplicationContext().getAutowireCapableBeanFactory().getBean(SearchRequestIdConverter.class).convertSearchIdsIfNeeded(searchRequest, config);
+    protected IndexerSearchResult buildSearchUrlAndCall(SearchRequest searchRequest, int offset, Integer limit) throws IndexerAccessException {
+        searchRequestIdConverter.convertSearchIdsIfNeeded(searchRequest, config);
 
         Stopwatch stopwatch = Stopwatch.createStarted();
-        TorboxSearchResponse usenetResponse = buildAndCall(searchRequest, TorboxResultType.USENET);
-        UsenetAndTorrentResponse response = new UsenetAndTorrentResponse(usenetResponse, new TorboxSearchResponse());
+        Future<TorboxSearchResponse> usenetFuture = executorService.submit(() -> buildAndCall(searchRequest, TorboxResultType.USENET));
+        Future<TorboxSearchResponse> torrentFuture = executorService.submit(() -> buildAndCall(searchRequest, TorboxResultType.TORRENT));
+
+        Optional<TorboxSearchResponse> usenetResponse = getResultWithTimeout(usenetFuture);
+        Optional<TorboxSearchResponse> torrentResponse = getResultWithTimeout(torrentFuture);
+        if (usenetResponse.isEmpty() && torrentResponse.isEmpty()) {
+            throw new IndexerAccessException("Usenet and torrent search failed");
+        }
+        UsenetAndTorrentResponse response = new UsenetAndTorrentResponse(usenetResponse.orElse(new TorboxSearchResponse()), torrentResponse.orElse(new TorboxSearchResponse()));
         return processSearchResponse(searchRequest, offset, limit, stopwatch, response);
     }
 
@@ -153,9 +181,9 @@ public class Torbox extends Indexer<Torbox.UsenetAndTorrentResponse> {
     private UriComponentsBuilder buildSearchUrl(SearchRequest searchRequest, TorboxResultType type) throws IndexerSearchAbortedException {
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("https://search-api.torbox.app");
         if (type == TorboxResultType.TORRENT) {
-            builder.path("/torrents/");
+            builder.pathSegment("torrents");
         } else {
-            builder.path("/usenet/");
+            builder.pathSegment("usenet");
         }
         boolean idSearch = false;
         for (MediaIdType idType : SUPPORTED_MEDIA_ID_TYPES) {
@@ -165,20 +193,31 @@ public class Torbox extends Indexer<Torbox.UsenetAndTorrentResponse> {
                 if (idType == MediaIdType.IMDB && !idValue.startsWith("tt")) {
                     idValue = "tt" + idValue;
                 }
-                builder.path(ID_TYPE_MAP.get(idType) + ":" + idValue);
+                builder.pathSegment(ID_TYPE_MAP.get(idType) + ":" + idValue);
                 break;
 
             }
         }
         if (!idSearch) {
-            builder.path("/search");
-            // TODO sist 04.01.2025: query generation, clean up
-            builder.path(searchRequest.getQuery().orElseThrow(() -> new IndexerSearchAbortedException("No query or supported IDs found")));
+            builder.pathSegment("search");
+            String query = queryGenerator.generateQueryIfApplicable(searchRequest, "", this);
+            verifyIdentifiersNotUnhandled(searchRequest, builder, query);
+
+            builder.path(query);
         }
         builder.queryParam("metadata", "false");
 
 
         return builder;
+    }
+
+    private void verifyIdentifiersNotUnhandled(SearchRequest searchRequest, UriComponentsBuilder componentsBuilder, String query) throws IndexerNoIdConversionPossibleException {
+        //Make sure we didn't for some reason neither find any usable search IDs nor generate a query
+        String currentUriString = componentsBuilder.toUriString();
+        boolean noIdsOrIdWithNull = ID_TYPE_MAP.values().stream().noneMatch(currentUriString::contains);
+        if (Strings.isNullOrEmpty(query) && !searchRequest.getIdentifiers().isEmpty() && noIdsOrIdWithNull) {
+            throw new IndexerNoIdConversionPossibleException("Aborting searching for indexer because no usable search IDs could be found and no query was generated");
+        }
     }
 
     @Override
@@ -194,6 +233,16 @@ public class Torbox extends Indexer<Torbox.UsenetAndTorrentResponse> {
     @Override
     protected Logger getLogger() {
         return log;
+    }
+
+    private <T> Optional<T> getResultWithTimeout(Future<T> future) {
+        try {
+            Integer timeoutSeconds = config.getTimeout().orElse(configProvider.getBaseConfig().getSearching().getTimeout());
+            return Optional.of(future.get(timeoutSeconds, TimeUnit.SECONDS));
+        } catch (ExecutionException | InterruptedException | TimeoutException e) {
+            log.error("Error searching torbox", e);
+            return Optional.empty();
+        }
     }
 
     @PreDestroy

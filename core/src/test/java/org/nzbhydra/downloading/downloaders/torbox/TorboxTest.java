@@ -24,6 +24,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.backup.BackupTask;
+import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.config.downloading.DownloaderConfig;
 import org.nzbhydra.downloading.exceptions.DownloaderException;
 import org.nzbhydra.webaccess.HydraOkHttp3ClientHttpRequestFactory;
@@ -71,7 +72,7 @@ class TorboxTest {
         String title = "Test NZB";
         String category = null;
 
-        String downloadId = torbox.addLink(nzbLink, title, category);
+        String downloadId = torbox.addLink(nzbLink, title, DownloadType.NZB, category);
 
         assertThat(downloadId).isNotEmpty();
     }
@@ -79,11 +80,11 @@ class TorboxTest {
     @Test
     @SneakyThrows
     void shouldAddData() throws DownloaderException {
-        byte[] data = Files.readAllBytes(Path.of("c:\\temp\\American.Dad.S20E07.480p.x264-mSD.nzb"));
+        byte[] data = Files.readAllBytes(Path.of("c:\\temp\\Northern.Papa.S20E07.480p.x264-mSD.nzb"));
         String title = "Test NZB";
         String category = null;
 
-        String downloadId = torbox.addNzb(data, title, category);
+        String downloadId = torbox.addContent(data, title, DownloadType.NZB, category);
 
         assertThat(downloadId).isNotEmpty();
     }

@@ -61,6 +61,14 @@ import java.util.List;
 @Component("torboxdownloader")
 public class Torbox extends Downloader {
 
+    private enum ResultType {
+        TORBOX_TORRENT,
+        TORRENT,
+        MAGNET,
+        TORBOX_USENET,
+        NZB
+    }
+
     // TODO sist 14.12.2024: Try and parse error responses
     // TODO sist 14.12.2024: Exclude nzbs.in
     // TODO sist 14.12.2024: Check if bypass_cache for status check is OK and which limit should be used
@@ -116,23 +124,31 @@ public class Torbox extends Downloader {
     }
 
     @Override
-    public String addLink(String link, String title, String category) throws DownloaderException {
-        return sendAddRequest(link.getBytes(StandardCharsets.UTF_8), title, "link", "link");
+    public String addLink(String link, String title, DownloadType downloadType, String category) throws DownloaderException {
+        return sendAddRequest(link.getBytes(StandardCharsets.UTF_8), title, "link", "link", downloadType);
     }
 
     @Override
-    public String addNzb(byte[] content, String title, String category) throws DownloaderException {
-        return sendAddRequest(content, title, "file", "data");
+    public String addContent(byte[] content, String title, DownloadType downloadType, String category) throws DownloaderException {
+        return sendAddRequest(content, title, "file", "data", downloadType);
     }
 
-    private String sendAddRequest(byte[] value, String title, String addType, String descInLog) throws DownloaderException {
-        log.debug("Sending {} for NZB {} to torbox", descInLog, title);
-        UriComponentsBuilder url = getBaseUrl().path("/usenet/createusenetdownload");
+    private String sendAddRequest(byte[] value, String title, String addType, String descInLog, DownloadType downloadType) throws DownloaderException {
+        log.debug("Sending {} for \"{}\" to torbox", descInLog, title);
+        UriComponentsBuilder url;
+        // We have no way of knowing if the original search result was a torrent or usenet result. Kinda hacky, I know...
+        final ResultType resultType = determineResultType(value, title, downloadType);
+
+        switch (resultType) {
+            case TORBOX_USENET, NZB -> url = getBaseUrl().path("/usenet/createusenetdownload");
+            case TORBOX_TORRENT, TORRENT, MAGNET -> url = getBaseUrl().path("/torrents/createtorrent");
+            default -> throw new IllegalStateException("Unexpected result type " + resultType);
+        }
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
         MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
-        if (addType.equals("file")) {
+        if (addType.equals("file") && resultType != ResultType.MAGNET) {
             ByteArrayResource fileResource = new ByteArrayResource(value) {
                 @Override
                 public String getFilename() {
@@ -141,7 +157,11 @@ public class Torbox extends Downloader {
             };
             map.add("file", fileResource);
         } else {
-            map.add(addType, value);
+            if (resultType == ResultType.MAGNET) {
+                map.add("magnet", value);
+            } else {
+                map.add(addType, value);
+            }
             map.add("name", title);
         }
         HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(map, headers);
@@ -149,14 +169,34 @@ public class Torbox extends Downloader {
             ResponseEntity<AddUDlResponse> entity = restTemplate.postForEntity(url.toUriString(), request, AddUDlResponse.class);
             AddUDlResponse dlResponse = entity.getBody();
             if (dlResponse.isSuccess()) {
+                log.info("Successfully added \"{}\" to torbox", title);
                 return dlResponse.getData().getUsenetdownload_id();
             }
             log.error("Error adding {} for NZB {} to torbox. Error: {}\nDetail:{}", descInLog, title, dlResponse.getError(), dlResponse.getDetail());
             throw new DownloaderException("Torbox returned error: " + dlResponse.getError());
 
         } catch (Exception e) {
+            log.error("Unexpected response when sending add request for {} to torbox", title, e);
             throw new DownloaderException("Error sending " + descInLog + " to torbox", e);
         }
+    }
+
+    private static ResultType determineResultType(byte[] value, String title, DownloadType downloadType) throws DownloaderException {
+        String valueString = new String(value);
+        final ResultType resultType;
+
+        if (downloadType == DownloadType.TORRENT) {
+            resultType = ResultType.TORRENT;
+        } else if (downloadType == DownloadType.NZB) {
+            resultType = ResultType.NZB;
+        } else if (valueString.contains("usenet/download")) {
+            resultType = ResultType.TORBOX_USENET;
+        } else if (valueString.startsWith("magnet:")) {
+            resultType = ResultType.MAGNET;
+        } else {
+            throw new DownloaderException("Unable to determine type of download for " + title + " from type " + downloadType + " and content " + valueString);
+        }
+        return resultType;
     }
 
     @Override
@@ -268,6 +308,7 @@ public class Torbox extends Downloader {
         }
 
     }
+
 
     private UriComponentsBuilder getBaseUrl() {
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(BASE_API_URL);

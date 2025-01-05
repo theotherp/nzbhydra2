@@ -21,6 +21,7 @@ import com.google.common.io.BaseEncoding;
 import com.googlecode.jsonrpc4j.JsonRpcHttpClient;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.config.downloading.DownloaderConfig;
 import org.nzbhydra.downloading.FileDownloadStatus;
 import org.nzbhydra.downloading.FileHandler;
@@ -151,7 +152,7 @@ public class NzbGet extends Downloader {
     }
 
     @Override
-    public String addLink(String link, String title, String category) throws DownloaderException {
+    public String addLink(String link, String title, DownloadType downloadType, String category) throws DownloaderException {
         logger.debug("Adding link for {} to NZB with category {}", title, category);
         try {
             return callAppend(link, title, category);
@@ -165,7 +166,7 @@ public class NzbGet extends Downloader {
     }
 
     @Override
-    public String addNzb(byte[] content, String title, String category) throws DownloaderException {
+    public String addContent(byte[] content, String title, DownloadType downloadType, String category) throws DownloaderException {
         logger.debug("Adding NZB for {} to NZB with category {}", title, category);
         try {
             return callAppend(BaseEncoding.base64().encode(content), title, category);
