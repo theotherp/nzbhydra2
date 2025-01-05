@@ -18,10 +18,12 @@ package org.nzbhydra.downloading.downloadurls;
 
 import lombok.extern.slf4j.Slf4j;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.HistoryUserInfoType;
 import org.nzbhydra.config.MainConfig;
 import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.searching.db.SearchResultEntity;
+import org.nzbhydra.web.SessionStorage;
 import org.nzbhydra.web.UrlCalculator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -77,6 +79,10 @@ public class DownloadUrlBuilder {
             builder.path("/" + getName + "/api");
             builder.path("/" + searchResultId);
             builder.queryParam("apikey", main.getApiKey());
+        }
+        HistoryUserInfoType infoType = configProvider.getBaseConfig().getMain().getLogging().getHistoryUserInfoType();
+        if (infoType.isLogUserInfo() && SessionStorage.username.get() != null) {
+            builder.queryParam("username", SessionStorage.username.get());
         }
         return builder.toUriString();
     }

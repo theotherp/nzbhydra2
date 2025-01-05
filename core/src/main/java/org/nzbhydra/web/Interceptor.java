@@ -51,11 +51,19 @@ public class Interceptor implements HandlerInterceptor {
         if (configProvider.getBaseConfig().getMain().getLogging().isLogIpAddresses()) {
             MDC.put("IPADDRESS", ip);
         }
-        if (configProvider.getBaseConfig().getMain().getLogging().isLogUsername() && !Strings.isNullOrEmpty(request.getRemoteUser())) {
-            MDC.put("USERNAME", request.getRemoteUser());
-        }
+
         SessionStorage.IP.set(ip);
-        SessionStorage.username.set(request.getRemoteUser());
+
+        if (request.getRemoteUser() != null) {
+            SessionStorage.username.set(request.getRemoteUser());
+        } else if (request.getParameter("username") != null) {
+            SessionStorage.username.set(request.getParameter("username"));
+        }
+        if (configProvider.getBaseConfig().getMain().getLogging().isLogUsername()) {
+            if (!Strings.isNullOrEmpty(SessionStorage.username.get())) {
+                MDC.put("USERNAME", SessionStorage.username.get());
+            }
+        }
         SessionStorage.userAgent.set(userAgentMapper.getUserAgent(request.getHeader("User-Agent")));
         SessionStorage.requestUrl.set(request.getRequestURI());
 

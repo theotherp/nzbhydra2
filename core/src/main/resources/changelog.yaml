@@ -2,6 +2,8 @@
 -   version: "v7.12.0"
     date: "2025-01-05"
     changes:
+      -   type: "feature"
+          text: "If enabled log and/or store username for NZB links. This way when sending a link to be downloaded from hydra the username that caused the download will be known. See #981"
       -   type: "fix"
           text: "Fix paging for search / download / notification history."
       -   type: "fix"

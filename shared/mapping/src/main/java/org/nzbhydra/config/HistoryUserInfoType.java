@@ -4,5 +4,9 @@ public enum HistoryUserInfoType {
     BOTH,
     IP,
     USERNAME,
-    NONE
+    NONE;
+
+    public boolean isLogUserInfo() {
+        return this == BOTH || this == USERNAME;
+    }
 }

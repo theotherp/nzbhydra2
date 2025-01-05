@@ -135,6 +135,7 @@ public class NzbHandlingWeb {
     @RequestMapping(value = "/getnzb/api/{guid}", produces = "application/x-nzb")
     public ResponseEntity downloadNzbWithApikey(@PathVariable("guid") long guid, @RequestParam(required = false) String apikey) throws WrongApiKeyException {
         logger.debug("downloadNzbWithApikey guid: {}", guid);
+
         BaseConfig baseConfig = configProvider.getBaseConfig();
         if ((apikey == null || !apikey.equals(baseConfig.getMain().getApiKey())) && !noApiKeyNeeded) {
             logger.error("Received NZB API download call with wrong API key");
