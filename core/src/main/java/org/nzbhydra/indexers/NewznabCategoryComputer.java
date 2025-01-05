@@ -45,14 +45,14 @@ public class NewznabCategoryComputer {
 
     public void computeCategory(SearchResultItem searchResultItem, List<Integer> newznabCategories, IndexerConfig config) {
         if (!newznabCategories.isEmpty()) {
-            log.debug(config.getName() + ":" + LoggingMarkers.CATEGORY_MAPPING, "Result {} has newznab categories {} and self-reported category {}", searchResultItem.getTitle(), newznabCategories, searchResultItem.getCategory());
+            log.debug(LoggingMarkers.CATEGORY_MAPPING, config.getName() + ":" + "Result {} has newznab categories {} and self-reported category {}", searchResultItem.getTitle(), newznabCategories, searchResultItem.getCategory());
             Integer mostSpecific = newznabCategories.stream().max(Integer::compareTo).get();
             IndexerCategoryConfig mapping = config.getCategoryMapping();
             Category category;
             if (mapping == null) { //May be the case in some corner cases
                 category = categoryProvider.fromSearchNewznabCategories(newznabCategories, categoryProvider.getNotAvailable());
                 searchResultItem.setOriginalCategory(categoryProvider.getNotAvailable().getName());
-                log.debug(config.getName() + ":" + LoggingMarkers.CATEGORY_MAPPING, "No mapping available. Using original category N/A and new category {} for result {}", category, searchResultItem.getTitle());
+                log.debug(LoggingMarkers.CATEGORY_MAPPING, config.getName() + ":" + "No mapping available. Using original category N/A and new category {} for result {}", category, searchResultItem.getTitle());
             } else {
                 category = idToCategory.computeIfAbsent(mostSpecific, x -> {
                     Optional<Category> categoryOptional = Optional.empty();
@@ -73,14 +73,14 @@ public class NewznabCategoryComputer {
                 searchResultItem.setOriginalCategory(mapping.getNameFromId(mostSpecific));
             }
             if (category == null) {
-                log.debug(config.getName() + ":" + LoggingMarkers.CATEGORY_MAPPING, "No category found for {}. Using N/A", searchResultItem.getTitle());
+                log.debug(LoggingMarkers.CATEGORY_MAPPING, config.getName() + ":" + "No category found for {}. Using N/A", searchResultItem.getTitle());
                 searchResultItem.setCategory(categoryProvider.getNotAvailable());
             } else {
-                log.debug(config.getName() + ":" + LoggingMarkers.CATEGORY_MAPPING, "Determined category {} for {}", category, searchResultItem.getTitle());
+                log.debug(LoggingMarkers.CATEGORY_MAPPING, config.getName() + ":" + "Determined category {} for {}", category, searchResultItem.getTitle());
                 searchResultItem.setCategory(category);
             }
         } else {
-            log.debug(config.getName() + ":" + LoggingMarkers.CATEGORY_MAPPING, "No newznab categories exist for {}. Using N/A ", searchResultItem.getTitle());
+            log.debug(LoggingMarkers.CATEGORY_MAPPING, config.getName() + ":" + "No newznab categories exist for {}. Using N/A ", searchResultItem.getTitle());
             searchResultItem.setCategory(categoryProvider.getNotAvailable());
         }
     }
