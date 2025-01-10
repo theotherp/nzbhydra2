@@ -73,16 +73,18 @@ import java.util.concurrent.TimeoutException;
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class Torbox extends Indexer<Torbox.UsenetAndTorrentResponse> {
 
+
     private static final Map<MediaIdType, String> ID_TYPE_MAP = new HashMap<>();
-    public static final Set<MediaIdType> SUPPORTED_MEDIA_ID_TYPES = Set.of(MediaIdType.IMDB, MediaIdType.TVDB);
+    // TODO sist 05.01.2025: Migrate config to support TVSEARCH and TVDB when implemented
+    public static final Set<MediaIdType> SUPPORTED_MEDIA_ID_TYPES = Set.of(MediaIdType.IMDB);
 
     @Autowired
     private SearchRequestIdConverter searchRequestIdConverter;
 
     static {
         ID_TYPE_MAP.put(MediaIdType.IMDB, "imdb_id");
-        ID_TYPE_MAP.put(MediaIdType.TMDB, "tmdb_id");
-        ID_TYPE_MAP.put(MediaIdType.TVDB, "tvdb_id");
+//        ID_TYPE_MAP.put(MediaIdType.TMDB, "tmdb_id");
+//        ID_TYPE_MAP.put(MediaIdType.TVDB, "tvdb_id");
     }
 
     private final ExecutorService executorService = Executors.newFixedThreadPool(2);

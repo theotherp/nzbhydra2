@@ -1065,17 +1065,17 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
     });
 
     $scope.specialPresets = [
-        {
-            allCapsChecked: true,
-            configComplete: true,
-            name: "Torbox",
-            host: "https://search-api.torbox.app",
-            supportedSearchIds: ["IMDB", "TVDB"],
-            supportedSearchTypes: ["MOVIE", "SEARCH", "TVSEARCH"],
-            searchModuleType: "TORBOX",
-            state: "ENABLED",
-            enabledForSearchSource: "BOTH"
-        }
+        // {
+        //     allCapsChecked: true,
+        //     configComplete: true,
+        //     name: "Torbox",
+        //     host: "https://search-api.torbox.app",
+        //     supportedSearchIds: ["IMDB"],
+        //     supportedSearchTypes: ["MOVIE", "SEARCH"],
+        //     searchModuleType: "TORBOX",
+        //     state: "ENABLED",
+        //     enabledForSearchSource: "BOTH"
+        // }
     ];
 });
 

@@ -503,5 +503,6 @@ public abstract class Indexer<T> {
         getLogger().debug(marker, getName() + ": " + msg, arguments);
     }
 
+
     protected abstract Logger getLogger();
 }
