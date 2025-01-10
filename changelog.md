@@ -1,3 +1,13 @@
+### v7.12.0 (2025-01-10)
+
+**Feature** If enabled log and/or store username for NZB links. This way when sending a link to be downloaded from hydra the username that caused the download will be known. See <a href="https://github.com/theotherp/nzbhydra2/issues/981">#981</a>
+
+**Fix** Fix paging for search / download / notification history.
+
+**Fix** Hopefully actually fix ipv6 reverse proxies access. See <a href="https://github.com/theotherp/nzbhydra2/issues/980">#980</a>
+
+
+
 ### v7.11.3 (2025-01-03)
 
 **Fix** Repeating a TV search from the search history would instead search for all TV results.
