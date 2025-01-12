@@ -1,4 +1,10 @@
 #@formatter:off
+-   version: "v7.12.1"
+    date: "2025-01-12"
+    changes:
+      -   type: "fix"
+          text: "Workaround for parsing of results for an indexer which had to restore from a backup lately. Results will show no category until they fix the issue on their side."
+    final: true
 -   version: "v7.12.0"
     date: "2025-01-10"
     changes:
