@@ -1,3 +1,9 @@
+### v7.12.1 (2025-01-12)
+
+**Fix** Workaround for parsing of results for an indexer which had to restore from a backup lately. Results will show no category until they fix the issue on their side.
+
+
+
 ### v7.12.0 (2025-01-10)
 
 **Feature** If enabled log and/or store username for NZB links. This way when sending a link to be downloaded from hydra the username that caused the download will be known. See <a href="https://github.com/theotherp/nzbhydra2/issues/981">#981</a>
