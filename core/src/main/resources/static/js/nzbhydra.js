@@ -9819,14 +9819,14 @@ function SearchService($http) {
     }
 }
 
-SearchResultsController.$inject = ["$stateParams", "$scope", "$q", "$timeout", "$document", "blockUI", "growl", "localStorageService", "SearchService", "ConfigService", "CategoriesService", "DebugService", "GenericStorageService", "ModalService", "$uibModal"];angular
+SearchResultsController.$inject = ["$stateParams", "$scope", "$http", "$q", "$timeout", "$document", "blockUI", "growl", "localStorageService", "SearchService", "ConfigService", "CategoriesService", "DebugService", "GenericStorageService", "ModalService", "$uibModal"];angular
     .module('nzbhydraApp')
     .controller('SearchResultsController', SearchResultsController);
 
 //SearchResultsController.$inject = ['blockUi'];
-function SearchResultsController($stateParams, $scope, $q, $timeout, $document, blockUI, growl, localStorageService, SearchService, ConfigService, CategoriesService, DebugService, GenericStorageService, ModalService, $uibModal) {
+function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $document, blockUI, growl, localStorageService, SearchService, ConfigService, CategoriesService, DebugService, GenericStorageService, ModalService, $uibModal) {
     // console.time("Presenting");
-    DebugService.log("foobar");
+
     $scope.limitTo = ConfigService.getSafe().searching.loadLimitInternal;
     $scope.offset = 0;
     $scope.allowZipDownload = ConfigService.getSafe().downloading.fileDownloadAccessType === 'PROXY';
@@ -10841,53 +10841,29 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         }, 1);
     });
 
+    if (ConfigService.getSafe().emby.embyApiKey) {
+        if ($stateParams.mode === "tvsearch") {
+            $http.get("http://127.0.0.1:5076/internalapi/emby/isSeriesAvailable?tvdbId=" + $stateParams.tvdbId).then(function (result) {
+                console.log("Show already available on emby: " + result.data);
+                $scope.showEmbyResults = result.data;
+                $scope.embyType = "show";
+            });
+
+        } else if ($stateParams.mode === "movie") {
+            $http.get("http://127.0.0.1:5076/internalapi/emby/isMovieAvailable?tmdbId=" + $stateParams.tmdbId).then(function (result) {
+                console.log("Movie already available on emby: " + result.data);
+                $scope.showEmbyResults = result.data;
+                $scope.embyType = "movie";
+            });
+        }
+    }
+
 
     $timeout(function () {
         DebugService.print();
     }, 3000);
 
-    // $timeout(function () {
-    //     function getWatchers(root) {
-    //         root = angular.element(root || document.documentElement);
-    //         var watcherCount = 0;
-    //         var ids = [];
-    //
-    //         function getElemWatchers(element, ids) {
-    //             var isolateWatchers = getWatchersFromScope(element.data().$isolateScope, ids);
-    //             var scopeWatchers = getWatchersFromScope(element.data().$scope, ids);
-    //             var watchers = scopeWatchers.concat(isolateWatchers);
-    //             angular.forEach(element.children(), function (childElement) {
-    //                 watchers = watchers.concat(getElemWatchers(angular.element(childElement), ids));
-    //             });
-    //             return watchers;
-    //         }
-    //
-    //         function getWatchersFromScope(scope, ids) {
-    //             if (scope) {
-    //                 if (_.indexOf(ids, scope.$id) > -1) {
-    //                     return [];
-    //                 }
-    //                 ids.push(scope.$id);
-    //                 if (scope.$$watchers) {
-    //                     if (scope.$$watchers.length > 1) {
-    //                         var a;
-    //                         a = 1;
-    //                     }
-    //                     return scope.$$watchers;
-    //                 }
-    //                 {
-    //                     return [];
-    //                 }
-    //
-    //             } else {
-    //                 return [];
-    //             }
-    //         }
-    //
-    //         return getElemWatchers(root, ids);
-    //     }
-    //
-    // }, $scope.limitTo);
+
 }
 
 

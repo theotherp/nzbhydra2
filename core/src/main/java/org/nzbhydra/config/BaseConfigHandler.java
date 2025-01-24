@@ -101,6 +101,7 @@ public class BaseConfigHandler {
         baseConfig.setAuth(newConfig.getAuth());
         baseConfig.setGenericStorage(newConfig.getGenericStorage());
         baseConfig.setNotificationConfig(newConfig.getNotificationConfig());
+        baseConfig.setEmby(newConfig.getEmby());
 
 
         if (fireConfigChangedEvent) {

@@ -197,6 +197,20 @@
         </div>
     </div>
 
+    <div class="row" ng-if="::showEmbyResults">
+        <div class="col-md-6"></div>
+        <div class="col-md-8">
+    <div class="alert alert-success" role="alert">
+        <span ng-if="embyType==='show'">
+            This show is already available on the server. Please check if the episodes you are interested in are available or request them using Ombi.
+        </span>
+        <span ng-if="embyType==='movie'">
+            This movie is already available on the server. Please check if the quality matches the one you want..
+        </span>
+    </div>
+            </div>
+    </div>
+    
     <div class="row" ng-if="::(isShowFilterButtons)">
         <div class="col-md-20">
             <div class="btn-toolbar" role="toolbar" style="margin: auto; display:inline-block">

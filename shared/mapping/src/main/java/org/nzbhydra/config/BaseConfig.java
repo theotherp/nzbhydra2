@@ -22,6 +22,7 @@ import org.javers.core.metamodel.annotation.DiffIgnore;
 import org.nzbhydra.config.auth.AuthConfig;
 import org.nzbhydra.config.category.CategoriesConfig;
 import org.nzbhydra.config.downloading.DownloadingConfig;
+import org.nzbhydra.config.emby.EmbyConfig;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.springnative.ReflectionMarker;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
@@ -56,6 +57,9 @@ public class BaseConfig {
     private SearchingConfig searching = new SearchingConfig();
     @NestedConfigurationProperty
     private NotificationConfig notificationConfig = new NotificationConfig();
+    @NestedConfigurationProperty
+    private EmbyConfig emby = new EmbyConfig();
+
 
     @DiffIgnore
     private Map<String, String> genericStorage = new HashMap<>();

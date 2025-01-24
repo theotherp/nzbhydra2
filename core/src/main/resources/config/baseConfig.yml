@@ -272,6 +272,9 @@ downloading:
     fallbackForFailed: BOTH
     primaryDownloader: null
     externalUrl: null
+emby:
+  embyBaseUrl: null
+  embyApiKey: null
 genericStorage: {}
 indexers: []
 main:
