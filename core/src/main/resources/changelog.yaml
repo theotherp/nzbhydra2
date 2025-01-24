@@ -1,4 +1,10 @@
 #@formatter:off
+-   version: "v7.12.2"
+    date: "2025-01-24"
+    changes:
+      -   type: "note"
+          text: "This is an internal build without any added functionality. Sorry."
+    final: true
 -   version: "v7.12.1"
     date: "2025-01-12"
     changes:
