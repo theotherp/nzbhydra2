@@ -1,3 +1,9 @@
+### v7.12.2 (2025-01-24)
+
+**Note** This is an internal build without any added functionality. Sorry.
+
+
+
 ### v7.12.1 (2025-01-12)
 
 **Fix** Workaround for parsing of results for an indexer which had to restore from a backup lately. Results will show no category until they fix the issue on their side.
