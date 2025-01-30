@@ -1,4 +1,9 @@
 #@formatter:off
+-   version: "v7.12.5"
+    changes:
+      -   type: "fix"
+          text: "Search or download history entries could contain wrong usernames. Existing history entries will not be fixed, this only affects new entries."
+    final: true
 -   version: "v7.12.3"
     date: "2025-01-30"
     changes:

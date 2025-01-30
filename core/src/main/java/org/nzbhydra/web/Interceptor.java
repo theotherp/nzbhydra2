@@ -33,9 +33,16 @@ public class Interceptor implements HandlerInterceptor {
 
     private final Set<String> skipHostnameMappingFor = new HashSet<>();
 
-
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        //Reset because this thread may have been reused. Most will be overwritten below but perhaps not all, e.g. username.
+        SessionStorage.username.remove();
+        SessionStorage.IP.remove();
+        SessionStorage.originalIp.remove();
+        SessionStorage.userAgent.remove();
+        SessionStorage.requestUrl.remove();
+        SessionStorage.outputType.remove();
+
         String ip = request.getHeader("X-Forwarded-For");
         if (ip == null) {
             ip = request.getHeader("X-Real-IP");
@@ -66,7 +73,6 @@ public class Interceptor implements HandlerInterceptor {
         }
         SessionStorage.userAgent.set(userAgentMapper.getUserAgent(request.getHeader("User-Agent")));
         SessionStorage.requestUrl.set(request.getRequestURI());
-
 
         return true;
     }
