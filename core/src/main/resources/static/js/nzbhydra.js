@@ -10843,14 +10843,14 @@ function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $doc
 
     if (ConfigService.getSafe().emby.embyApiKey) {
         if ($stateParams.mode === "tvsearch") {
-            $http.get("http://127.0.0.1:5076/internalapi/emby/isSeriesAvailable?tvdbId=" + $stateParams.tvdbId).then(function (result) {
+            $http.get("internalapi/emby/isSeriesAvailable?tvdbId=" + $stateParams.tvdbId).then(function (result) {
                 console.log("Show already available on emby: " + result.data);
                 $scope.showEmbyResults = result.data;
                 $scope.embyType = "show";
             });
 
         } else if ($stateParams.mode === "movie") {
-            $http.get("http://127.0.0.1:5076/internalapi/emby/isMovieAvailable?tmdbId=" + $stateParams.tmdbId).then(function (result) {
+            $http.get("internalapi/emby/isMovieAvailable?tmdbId=" + $stateParams.tmdbId).then(function (result) {
                 console.log("Movie already available on emby: " + result.data);
                 $scope.showEmbyResults = result.data;
                 $scope.embyType = "movie";

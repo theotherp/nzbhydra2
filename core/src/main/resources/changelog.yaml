@@ -1,4 +1,12 @@
 #@formatter:off
+-   version: "v7.12.3"
+    date: "2025-01-30"
+    changes:
+      -   type: "fix"
+          text: "Fix parsing when indexers return empty newznab attributes. This should fix searches for an indexer which you may know (or not)."
+      -   type: "note"
+          text: "On a personal note: I had a heart attack a week ago and had to be reanimated. Without going into details bug fixes may take some more time in the near future. Take care."
+    final: true
 -   version: "v7.12.2"
     date: "2025-01-24"
     changes:

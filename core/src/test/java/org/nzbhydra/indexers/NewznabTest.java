@@ -532,6 +532,7 @@ public class NewznabTest {
         rssItem.getNewznabAttributes().add(new NewznabAttribute("usenetdate", new JaxbPubdateAdapter().marshal(Instant.ofEpochSecond(6666666))));
         rssItem.getNewznabAttributes().add(new NewznabAttribute("category", "5000"));
         rssItem.getNewznabAttributes().add(new NewznabAttribute("category", "5050"));
+        rssItem.getNewznabAttributes().add(new NewznabAttribute("category", null));
 
         SearchResultItem item = testee.createSearchResultItem(rssItem);
         assertThat(item.getLink()).isEqualTo("http://indexer.com/nzb/123");
