@@ -1,3 +1,11 @@
+### v7.12.3 (2025-01-30)
+
+**Fix** Fix parsing when indexers return empty newznab attributes. This should fix searches for an indexer which you may know (or not).
+
+**Note** On a personal note: I had a heart attack a week ago and had to be reanimated. Without going into details bug fixes may take some more time in the near future. Take care.
+
+
+
 ### v7.12.2 (2025-01-24)
 
 **Note** This is an internal build without any added functionality. Sorry.
