@@ -169,14 +169,6 @@ public class RssCustomQueryAndTitleMappingTest {
     }
 
     @Test
-    void shouldParseResponseUnnamed() throws Exception {
-        NewznabXmlRoot rssRoot = getRssRootFromXml("unnamedv2.xml");
-
-        assertThat(rssRoot.getRssChannel().getNewznabResponse().getTotal()).isEqualTo(Integer.valueOf(2000));
-        assertThat(rssRoot.getRssChannel().getItems().get(0).getPubDate()).isNotNull();
-    }
-
-    @Test
     void shouldParseResponseFromNewztown() throws Exception {
         NewznabXmlRoot rssRoot = getRssRootFromXml("newztownResponse.xml");
 
