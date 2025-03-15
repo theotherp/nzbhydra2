@@ -30,28 +30,30 @@ jobs:
                     distribution: 'adopt'
                     cache: 'maven'
 
-            -   name: "Get changed files in core module"
-                id: changed-files-specific
-                uses: tj-actions/changed-files@v45
-                with:
-                    since_last_remote_commit: true
-                    files: |
-                        core/**
-                        docker/nativeTest/**
-                        .github/workflows/buildNative.yml
+## Disabled for now because of compromised security: https://github.com/tj-actions/changed-files/issues/2463
 
-            -   if: steps.changed-files-specific.outputs.any_changed == 'true'
-                run: |
-                    echo "::notice::Will build new native image / docker container. Changed files in core since last push:"
-                    echo "${{ steps.changed-files-specific.outputs.all_changed_files }}"
+#            -   name: "Get changed files in core module"
+#                id: changed-files-specific
+#                uses: tj-actions/changed-files@v45
+#                with:
+#                    since_last_remote_commit: true
+#                    files: |
+#                        core/**
+#                        docker/nativeTest/**
+#                        .github/workflows/buildNative.yml
+#
+#            -   if: steps.changed-files-specific.outputs.any_changed == 'true'
+#                run: |
+#                    echo "::notice::Will build new native image / docker container. Changed files in core since last push:"
+#                    echo "${{ steps.changed-files-specific.outputs.all_changed_files }}"
 
-            -   if: steps.changed-files-specific.outputs.any_changed == 'false'
-                run: |
-                    echo "::notice::Will skip build of native image / docker container. No changed files in core since last push."
+#            -   if: steps.changed-files-specific.outputs.any_changed == 'false'
+#                run: |
+#                    echo "::notice::Will skip build of native image / docker container. No changed files in core since last push."
 
             -   name: NativeImage
                 uses: graalvm/setup-graalvm@v1
-                if: steps.changed-files-specific.outputs.any_changed == 'true'
+#                if: steps.changed-files-specific.outputs.any_changed == 'true'
                 with:
                     java-version: '22'
                     distribution: 'graalvm-community'
@@ -60,7 +62,7 @@ jobs:
                     github-token: ${{ secrets.GITHUB_TOKEN }}
 
             -   name: "Install all with Maven"
-                if: steps.changed-files-specific.outputs.any_changed == 'true'
+#                if: steps.changed-files-specific.outputs.any_changed == 'true'
                 run: mvn --batch-mode clean install -pl !org.nzbhydra:linux-amd64-release,!org.nzbhydra:linux-arm64-release,!org.nzbhydra:windows-release,!org.nzbhydra:generic-release -DskipTests -T 1C
 
             -   name: "Run unit tests"
@@ -76,37 +78,42 @@ jobs:
                     reporter: java-junit
 
             -   name: "Build native image"
-                if: steps.changed-files-specific.outputs.any_changed == 'true'
+#                if: steps.changed-files-specific.outputs.any_changed == 'true'
                 working-directory: ./core
                 run: |
                     mvn --batch-mode -Pnative clean native:compile -DskipTests
 
             -   name: "Upload linux artifact"
-                if: steps.changed-files-specific.outputs.any_changed == 'true' && startsWith(matrix.os,'ubuntu')
+#                if: steps.changed-files-specific.outputs.any_changed == 'true' && startsWith(matrix.os,'ubuntu')
+                if: startsWith(matrix.os,'ubuntu')
                 uses: actions/upload-artifact@v4
                 with:
                     name: coreLinux
                     path: core/target/core
 
             -   name: "Upload windows artifact"
-                if: steps.changed-files-specific.outputs.any_changed == 'true' && startsWith(matrix.os,'windows')
+#                if: steps.changed-files-specific.outputs.any_changed == 'true' && startsWith(matrix.os,'windows')
+                if: startsWith(matrix.os,'windows')
                 uses: actions/upload-artifact@v4
                 with:
                     name: coreWindows
                     path: core/target/core.exe
 
             -   name: Store if windows exe was built
-                if: steps.changed-files-specific.outputs.any_changed == 'true' && startsWith(matrix.os,'windows')
+#                if: steps.changed-files-specific.outputs.any_changed == 'true' && startsWith(matrix.os,'windows')
+                if: startsWith(matrix.os,'windows')
                 run: echo "WINDOWS_BUILT=true" >> $GITHUB_ENV
 
             -   name: "Copy artifact to include folder"
-                if: steps.changed-files-specific.outputs.any_changed == 'true' && startsWith(matrix.os,'ubuntu')
+#                if: steps.changed-files-specific.outputs.any_changed == 'true' && startsWith(matrix.os,'ubuntu')
+                if: startsWith(matrix.os,'ubuntu')
                 run: |
                     mv core/target/core ./docker/nativeTest/
                     chmod +x ./docker/nativeTest/core
 
             -   name: "Login to GitHub Container Registry"
-                if: steps.changed-files-specific.outputs.any_changed == 'true' && startsWith(matrix.os,'ubuntu')
+#                if: steps.changed-files-specific.outputs.any_changed == 'true' && startsWith(matrix.os,'ubuntu')
+                if: startsWith(matrix.os,'ubuntu')
                 uses: docker/login-action@v2
                 with:
                     registry: ghcr.io
@@ -114,7 +121,8 @@ jobs:
                     password: ${{ secrets.GITHUB_TOKEN }}
 
             -   name: "Build and push core container"
-                if: steps.changed-files-specific.outputs.any_changed == 'true' && startsWith(matrix.os,'ubuntu')
+#                if: steps.changed-files-specific.outputs.any_changed == 'true' && startsWith(matrix.os,'ubuntu')
+                if: startsWith(matrix.os,'ubuntu')
                 run: |
                     cp other/wrapper/nzbhydra2wrapperPy3.py ./docker/nativeTest/
                     cd ./docker/nativeTest/
