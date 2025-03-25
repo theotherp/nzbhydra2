@@ -92,7 +92,8 @@ You're welcome to donate:
 
 ## Thanks
 
-<img src="https://github.com/theotherp/nzbhydra/raw/gh-pages/images/logo.png" width="60px"/> To Jetbrains for kindly providing me a license for IntelliJ - I can't imagine developing without it
+[![IntelliJ IDEA logo](https://resources.jetbrains.com/storage/products/company/brand/logos/IntelliJ_IDEA.svg)](https://jb.gg/OpenSourceSupport)
+
 <br>
 <img src="https://www.ej-technologies.com/images/product_banners/jprofiler_small.png"/> To ej-technologies for providing me a license for their great java profiler [JProfiler](https://www.ej-technologies.com/products/jprofiler/overview.html)
 <br>
