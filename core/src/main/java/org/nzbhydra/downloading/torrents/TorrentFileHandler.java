@@ -26,6 +26,7 @@ import org.nzbhydra.downloading.DownloadResult;
 import org.nzbhydra.downloading.FileHandler;
 import org.nzbhydra.downloading.InvalidSearchResultIdException;
 import org.nzbhydra.downloading.MagnetLinkRedirectException;
+import org.nzbhydra.downloading.SaveOrSendResultsResponse;
 import org.nzbhydra.searching.db.SearchResultEntity;
 import org.nzbhydra.searching.db.SearchResultRepository;
 import org.slf4j.Logger;
@@ -78,7 +79,7 @@ public class TorrentFileHandler {
         }
     }
 
-    public SaveOrSendTorrentsResponse saveOrSendTorrents(Set<Long> guids) {
+    public SaveOrSendResultsResponse saveOrSendTorrents(Set<Long> guids) {
         List<Long> successfulIds = new ArrayList<>();
         List<Long> failedIds = new ArrayList<>();
         for (Long guid : guids) {
@@ -110,7 +111,7 @@ public class TorrentFileHandler {
             }
         }
         String message = failedIds.isEmpty() ? "All torrents successfully handled" : failedIds.size() + " torrents could not be handled";
-        return new SaveOrSendTorrentsResponse(!successfulIds.isEmpty(), message, successfulIds, failedIds);
+        return new SaveOrSendResultsResponse(!successfulIds.isEmpty(), message, successfulIds, failedIds);
     }
 
     private boolean handleMagnetLink(DownloadResult result) {

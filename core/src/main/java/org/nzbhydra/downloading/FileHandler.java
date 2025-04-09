@@ -7,7 +7,6 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import org.jetbrains.annotations.NotNull;
-import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.SearchSource;
 import org.nzbhydra.config.downloading.DownloadType;
@@ -383,17 +382,16 @@ public class FileHandler {
         throw new DownloadException(result.getLink(), 500, "Unable to handle redirect from URL " + result.getLink() + " because no redirection location is set");
     }
 
-    public GenericResponse saveNzbToBlackhole(Long searchResultId) {
+    public SaveOrSendResultsResponse saveNzbToBlackhole(Set<Long> searchResultIds) {
         if (configProvider.getBaseConfig().getDownloading().getSaveNzbsTo().isEmpty()) {
             //Shouldn't happen
-            return GenericResponse.notOk("NZBs black hole not set");
+            return SaveOrSendResultsResponse.notOk("Black hole folder not set", searchResultIds);
         }
-        //Is always just one file
-        final NzbsDownload nzbsAsFiles = getNzbsAsFiles(Sets.newHashSet(searchResultId), Paths.get(configProvider.getBaseConfig().getDownloading().getSaveNzbsTo().get()));
+        final NzbsDownload nzbsAsFiles = getNzbsAsFiles(Sets.newHashSet(searchResultIds), Paths.get(configProvider.getBaseConfig().getDownloading().getSaveNzbsTo().get()));
         if (nzbsAsFiles.successfulIds.isEmpty()) {
-            return GenericResponse.notOk("Unable to save file for download NZB for some reason");
+            return SaveOrSendResultsResponse.notOk("Unable to save file for download NZB for some reason", searchResultIds);
         }
-        return GenericResponse.ok();
+        return new SaveOrSendResultsResponse(true, null, nzbsAsFiles.successfulIds, nzbsAsFiles.failedIds);
     }
 
     public Set<File> getTemporaryZipFiles() {

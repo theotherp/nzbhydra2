@@ -980,7 +980,7 @@ function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $doc
 
     $scope.downloadNzbsCallback = function (addedIds) {
         if (addedIds !== null && addedIds.length > 0) {
-            growl.info("Removing downloaded NZBs from selection");
+            growl.info("Removing downloaded results from selection");
             var toRemove = _.filter($scope.selected, function (x) {
                 return addedIds.indexOf(Number(x.searchResultId)) > -1;
             });

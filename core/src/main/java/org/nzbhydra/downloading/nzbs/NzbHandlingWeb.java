@@ -16,7 +16,6 @@
 
 package org.nzbhydra.downloading.nzbs;
 
-import org.nzbhydra.GenericResponse;
 import org.nzbhydra.api.WrongApiKeyException;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
@@ -24,6 +23,7 @@ import org.nzbhydra.config.SearchSource;
 import org.nzbhydra.downloading.FileHandler;
 import org.nzbhydra.downloading.FileZipResponse;
 import org.nzbhydra.downloading.InvalidSearchResultIdException;
+import org.nzbhydra.downloading.SaveOrSendResultsResponse;
 import org.nzbhydra.indexers.NfoResult;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.slf4j.Logger;
@@ -45,6 +45,7 @@ import java.io.File;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @RestController
 public class NzbHandlingWeb {
@@ -73,9 +74,9 @@ public class NzbHandlingWeb {
     }
 
 
-    @RequestMapping(value = "/internalapi/saveNzbToBlackhole", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/internalapi/saveNzbsToBlackhole", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
     @Secured({"ROLE_USER"})
-    public GenericResponse saveNzbToBlackhole(@RequestBody Long searchResultId) {
+    public SaveOrSendResultsResponse saveNzbToBlackhole(@RequestBody Set<Long> searchResultId) {
         logger.debug("saveNzbToBlackhole searchResultId: {}", searchResultId);
         return fileHandler.saveNzbToBlackhole(searchResultId);
     }

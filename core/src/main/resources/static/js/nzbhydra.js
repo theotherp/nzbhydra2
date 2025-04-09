@@ -1331,10 +1331,12 @@ function saveOrSendFile() {
     function controller($scope, $http, growl, ConfigService) {
         $scope.cssClass = "glyphicon-save-file";
         var endpoint;
+        var toSend;
         if ($scope.type === "TORRENT") {
             $scope.enableButton = !_.isNullOrEmpty(ConfigService.getSafe().downloading.saveTorrentsTo) || ConfigService.getSafe().downloading.sendMagnetLinks;
             $scope.tooltip = "Save torrent to black hole or send magnet link";
-            endpoint = "internalapi/saveOrSendTorrent";
+            endpoint = "internalapi/saveOrSendTorrents";
+            toSend = [$scope.searchResultId]
         } else {
             $scope.tooltip = "Save NZB to black hole";
             $scope.enableButton = !_.isNullOrEmpty(ConfigService.getSafe().downloading.saveNzbsTo);
@@ -1342,7 +1344,7 @@ function saveOrSendFile() {
         }
         $scope.add = function () {
             $scope.cssClass = "nzb-spinning";
-            $http.put(endpoint, $scope.searchResultId).then(function (response) {
+            $http.put(endpoint, toSend).then(function (response) {
                 if (response.data.successful) {
                     $scope.cssClass = "glyphicon-ok";
                 } else {
@@ -2760,38 +2762,43 @@ function downloadNzbsButton() {
         };
 
         $scope.sendToBlackhole = function () {
-            var didFilterOutResults = false;
-            var didKeepAnyResults = false;
-            var searchResults = _.filter($scope.searchResults, function (value) {
+            var torrentSearchResults = _.filter($scope.searchResults, function (value) {
                 if (value.downloadType === "TORRENT") {
-                    didKeepAnyResults = true;
                     return true;
-                } else {
-                    console.log("Not sending NZB result to black hole");
-                    didFilterOutResults = true;
-                    return false;
                 }
             });
-            if (didFilterOutResults && !didKeepAnyResults) {
-                growl.info("None of the selected results were torrents. Adding aborted");
-                if (angular.isDefined($scope.callback)) {
-                    $scope.callback({result: []});
+            var nzbSearchResults = _.filter($scope.searchResults, function (value) {
+                if (value.downloadType === "NZB") {
+                    return true;
                 }
-                return;
-            } else if (didFilterOutResults && didKeepAnyResults) {
-                growl.info("Some the selected results are NZB results which were skipped");
+            });
+
+            var torrentSearchResultIds = _.pluck(torrentSearchResults, "searchResultId");
+            if (torrentSearchResultIds.length > 0) {
+                $http.put("internalapi/saveOrSendTorrents", torrentSearchResultIds).then(function (response) {
+                    if (response.data.successful) {
+                        growl.info("Successfully saved all torrents");
+                    } else {
+                        growl.error(response.data.message);
+                    }
+                    if (angular.isDefined($scope.callback)) {
+                        $scope.callback({result: response.data.addedIds});
+                    }
+                });
             }
-            var searchResultIds = _.pluck(searchResults, "searchResultId");
-            $http.put("internalapi/saveTorrent", searchResultIds).then(function (response) {
-                if (response.data.successful) {
-                    growl.info("Successfully saved all torrents");
-                } else {
-                    growl.error(response.data.message);
-                }
-                if (angular.isDefined($scope.callback)) {
-                    $scope.callback({result: response.data.addedIds});
-                }
-            });
+            var nzbSearchResultIds = _.pluck(nzbSearchResults, "searchResultId");
+            if (nzbSearchResultIds.length > 0) {
+                $http.put("internalapi/saveNzbsToBlackhole", nzbSearchResultIds).then(function (response) {
+                    if (response.data.successful) {
+                        growl.info("Successfully saved all NZBs");
+                    } else {
+                        growl.error(response.data.message);
+                    }
+                    if (angular.isDefined($scope.callback)) {
+                        $scope.callback({result: response.data.addedIds});
+                    }
+                });
+            }
         }
 
     }
@@ -10801,7 +10808,7 @@ function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $doc
 
     $scope.downloadNzbsCallback = function (addedIds) {
         if (addedIds !== null && addedIds.length > 0) {
-            growl.info("Removing downloaded NZBs from selection");
+            growl.info("Removing downloaded results from selection");
             var toRemove = _.filter($scope.selected, function (x) {
                 return addedIds.indexOf(Number(x.searchResultId)) > -1;
             });

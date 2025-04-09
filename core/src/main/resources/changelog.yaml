@@ -1,6 +1,8 @@
 #@formatter:off
--   version: "v7.12.5"
+-   version: "v7.12.4"
     changes:
+      -   type: "added"
+          text: "Support mass sending NZBs to black hole folder. See #984"
       -   type: "fix"
           text: "Search or download history entries could contain wrong usernames. Existing history entries will not be fixed, this only affects new entries."
     final: true

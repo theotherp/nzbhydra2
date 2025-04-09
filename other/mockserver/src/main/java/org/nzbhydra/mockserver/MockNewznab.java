@@ -460,7 +460,7 @@ public class MockNewznab {
     }
 
 
-    @RequestMapping(value = "/torznab/api", produces = MediaType.TEXT_XML_VALUE)
+    @RequestMapping(value = "/torznab/api", produces = {MediaType.TEXT_XML_VALUE, MediaType.APPLICATION_XML_VALUE})
     public ResponseEntity<? extends Object> torznabapi(NewznabParameters params) throws Exception {
         if (params.getT() == ActionAttribute.CAPS) {
             return new ResponseEntity<Object>(NewznabMockBuilder.getCaps(), HttpStatus.OK);
