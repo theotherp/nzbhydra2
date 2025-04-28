@@ -62,6 +62,9 @@ public class DownloadingConfigValidator implements ConfigValidator<DownloadingCo
         if (isEnabledWithoutRedirect(newBaseConfig, "omgwtfnzbs")) {
             warnings.add("omgwftnzbs forbids NZBHydra to download NZBs directly. The NZB access type \"Redirect to indexer\" will automatically be used for this indexer.");
         }
+        if (isEnabledWithoutRedirect(newBaseConfig, "nzbfinder")) {
+            warnings.add("NZB Finder forbids NZBHydra to download NZBs directly. The NZB access type \"Redirect to indexer\" will automatically be used for this indexer.");
+        }
 
         warnings.addAll(validationResults.stream().map(ConfigValidationResult::getWarningMessages).flatMap(Collection::stream).toList());
 

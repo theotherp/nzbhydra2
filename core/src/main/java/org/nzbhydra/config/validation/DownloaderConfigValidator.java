@@ -43,6 +43,9 @@ public class DownloaderConfigValidator implements ConfigValidator<DownloaderConf
         if (isEnabledWithoutSendLink(newBaseConfig, "omgwtfnzbs", newConfig)) {
             warnings.add("omgwtfnzbs forbids NZBHydra to download NZBs directly. The NZB adding type \"Send link\" will automatically used for this indexer.");
         }
+        if (isEnabledWithoutSendLink(newBaseConfig, "nzbfinder", newConfig)) {
+            warnings.add("NZB Finder forbids NZBHydra to download NZBs directly. The NZB adding type \"Send link\" will automatically used for this indexer.");
+        }
         return new ConfigValidationResult(true, false, Collections.emptyList(), warnings);
     }
 

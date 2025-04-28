@@ -43,7 +43,7 @@ public class IndexerSpecificDownloadExceptions {
             return defaultType;
         }
         final String host = indexerConfig.getHost().toLowerCase();
-        if (host.contains("omgwtf") || host.contains("nzbs.in")) {
+        if (isSendLinkRequired(host)) {
             logger.debug("Using nzb adding type type 'Send link' for indexer {}", indexerConfig.getName());
             return NzbAddingType.SEND_LINK;
         }
@@ -55,7 +55,7 @@ public class IndexerSpecificDownloadExceptions {
             return FileDownloadAccessType.REDIRECT;
         }
         final String host = indexerConfig.getHost().toLowerCase();
-        boolean isSpecial = host.contains("omgwtf") || host.contains("nzbs.in");
+        boolean isSpecial = isSendLinkRequired(host);
         boolean isTorboxDownloader = indexerConfig.getSearchModuleType() == SearchModuleType.TORBOX;
         if (isSpecial) {
             if (isTorboxDownloader) {
@@ -70,6 +70,10 @@ public class IndexerSpecificDownloadExceptions {
         }
 
         return defaultType;
+    }
+
+    private static boolean isSendLinkRequired(String host) {
+        return host.contains("omgwtf") || host.contains("nzbs.in") || host.contains("nzbfinder");
     }
 
 
