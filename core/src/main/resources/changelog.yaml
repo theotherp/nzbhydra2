@@ -8,6 +8,8 @@
           text: "Always redirect downloads to NZB Finder. See #989"
       -   type: "fix"
           text: "Search or download history entries could contain wrong usernames. Existing history entries will not be fixed, this only affects new entries."
+      -   type: "fix"
+          text: "Hopefully prevent rate limiting when checking nzb.su limits. See #988"
     final: true
 -   version: "v7.12.3"
     date: "2025-01-30"

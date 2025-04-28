@@ -86,7 +86,10 @@ public class IndexerChecker {
     /**
      * Host/Indexer specific limits
      */
-    private static final Set<CapsCheckLimit> CAPS_CHECK_LIMITS = Sets.newHashSet(new CapsCheckLimit(1, 2000, "rarbg"));
+    private static final Set<CapsCheckLimit> CAPS_CHECK_LIMITS = Sets.newHashSet(
+            new CapsCheckLimit(1, 2000, "rarbg"),
+            new CapsCheckLimit(1, 2000, "nzb.su")
+    );
 
     @Autowired
     protected ConfigProvider configProvider;
