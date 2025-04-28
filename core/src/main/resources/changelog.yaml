@@ -1,6 +1,6 @@
 #@formatter:off
--   version: "v7.12.4"
-    data: "2025-04-28"
+-   version: "v7.13.0"
+    date: "2025-04-28"
     changes:
       -   type: "added"
           text: "Support mass sending NZBs to black hole folder. See #984"
