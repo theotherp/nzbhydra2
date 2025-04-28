@@ -1,3 +1,15 @@
+### v7.13.0 (2025-04-28)
+
+**Added** Support mass sending NZBs to black hole folder. See <a href="https://github.com/theotherp/nzbhydra2/issues/984">#984</a>
+
+**Added** Always redirect downloads to NZB Finder. See <a href="https://github.com/theotherp/nzbhydra2/issues/989">#989</a>
+
+**Fix** Search or download history entries could contain wrong usernames. Existing history entries will not be fixed, this only affects new entries.
+
+**Fix** Hopefully prevent rate limiting when checking nzb.su limits. See <a href="https://github.com/theotherp/nzbhydra2/issues/988">#988</a>
+
+
+
 ### v7.12.3 (2025-01-30)
 
 **Fix** Fix parsing when indexers return empty newznab attributes. This should fix searches for an indexer which you may know (or not).
