@@ -88,7 +88,9 @@ public class IndexerChecker {
      */
     private static final Set<CapsCheckLimit> CAPS_CHECK_LIMITS = Sets.newHashSet(
             new CapsCheckLimit(1, 2000, "rarbg"),
-            new CapsCheckLimit(1, 2000, "nzb.su")
+            new CapsCheckLimit(1, 2000, "nzb.su"),
+            new CapsCheckLimit(1, 2000, "nzb.life")
+
     );
 
     @Autowired
