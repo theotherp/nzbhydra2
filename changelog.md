@@ -1,3 +1,9 @@
+### v7.13.2 (2025-05-28)
+
+**Fixed** Configuration of *arr should work again. Sorry for the version spam ;-)
+
+
+
 ### v7.13.1 (2025-05-28)
 
 **Fixed** Check for nzb.life in host. See <a href="https://github.com/theotherp/nzbhydra2/issues/990">#990</a>
