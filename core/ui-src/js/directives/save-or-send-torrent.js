@@ -16,16 +16,15 @@ function saveOrSendFile() {
     function controller($scope, $http, growl, ConfigService) {
         $scope.cssClass = "glyphicon-save-file";
         var endpoint;
-        var toSend;
+        var toSend = [$scope.searchResultId]
         if ($scope.type === "TORRENT") {
             $scope.enableButton = !_.isNullOrEmpty(ConfigService.getSafe().downloading.saveTorrentsTo) || ConfigService.getSafe().downloading.sendMagnetLinks;
             $scope.tooltip = "Save torrent to black hole or send magnet link";
             endpoint = "internalapi/saveOrSendTorrents";
-            toSend = [$scope.searchResultId]
         } else {
             $scope.tooltip = "Save NZB to black hole";
             $scope.enableButton = !_.isNullOrEmpty(ConfigService.getSafe().downloading.saveNzbsTo);
-            endpoint = "internalapi/saveNzbToBlackhole";
+            endpoint = "internalapi/saveNzbsToBlackhole";
         }
         $scope.add = function () {
             $scope.cssClass = "nzb-spinning";

@@ -14991,9 +14991,9 @@
           "parameterTypes": []
       },
       {
-          "name": "saveNzbToBlackhole",
+          "name": "saveNzbsToBlackhole",
           "parameterTypes": [
-              "java.lang.Long"
+              "java.util.Set"
           ]
       }
   ]
@@ -15642,9 +15642,9 @@
                 ]
             },
             {
-                "name": "saveNzbToBlackhole",
+                "name": "saveNzbsToBlackhole",
                 "parameterTypes": [
-                    "java.lang.Long"
+                    "java.util.Set"
                 ]
             }
         ]
@@ -64357,9 +64357,9 @@
         ]
       },
       {
-        "name": "saveNzbToBlackhole",
+        "name": "saveNzbsToBlackhole",
         "parameterTypes": [
-          "java.lang.Long"
+          "java.util.Set"
         ]
       },
       {

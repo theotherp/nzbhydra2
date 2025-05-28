@@ -32,6 +32,7 @@ import org.springframework.test.context.ContextConfiguration;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -77,7 +78,7 @@ public class NzbHandlingTest {
         configManager.setConfig(config);
 
         final String guid = searchResultProvider.findOneGuid();
-        hydraClient.put("/internalapi/saveNzbToBlackhole", guid);
+        hydraClient.put("/internalapi/saveNzbsToBlackhole", Set.of(guid));
         final File[] files = new File(blackholeFolderTestAccess).listFiles();
         assertThat(files)
                 .as("Expected files to exist in " + blackholeFolderTestAccess)

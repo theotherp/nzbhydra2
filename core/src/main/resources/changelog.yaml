@@ -1,4 +1,12 @@
 #@formatter:off
+-   version: "v7.13.1"
+    date: "2025-05-28"
+    changes:
+      -   type: "fixed"
+          text: "Check for nzb.life in host. See #990"
+      -   type: "fixed"
+          text: "Send NZB to black hole via button in results list"
+    final: true
 -   version: "v7.13.0"
     date: "2025-04-28"
     changes:
