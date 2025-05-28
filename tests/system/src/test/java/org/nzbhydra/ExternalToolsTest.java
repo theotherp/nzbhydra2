@@ -78,6 +78,7 @@ public class ExternalToolsTest {
         addRequest.setEnableInteractiveSearch(true);
         addRequest.setCategories(getIdFromConfiguredIndexer());
         addRequest.setAddType(AddRequest.AddType.SINGLE);
+        addRequest.setPriority(1);
 
         final Boolean response = hydraClient.post("/internalapi/externalTools/configure", Jackson.JSON_MAPPER.writeValueAsString(addRequest)).as(Boolean.class);
         assertThat(response).isTrue();
@@ -97,6 +98,7 @@ public class ExternalToolsTest {
         addRequest.setEnableInteractiveSearch(true);
         addRequest.setCategories(getIdFromConfiguredIndexer());
         addRequest.setAddType(AddRequest.AddType.SINGLE);
+        addRequest.setPriority(1);
 
         final Boolean response = hydraClient.post("/internalapi/externalTools/configure", Jackson.JSON_MAPPER.writeValueAsString(addRequest)).as(Boolean.class);
         assertThat(response).isTrue();
