@@ -92,7 +92,7 @@ public class ExternalTools {
 
             if (addRequest.isConfigureForUsenet()) {
                 final boolean anyUsenetIndexerEnabled = configProvider.getBaseConfig().getIndexers().stream()
-                    .filter(x -> SearchSource.API.meets(x.getEnabledForSearchSource()))
+                        .filter(x -> SearchSource.API.meets(x.getEnabledForSearchSource()))
                         .filter(x -> x.getState() == IndexerConfig.State.ENABLED)
                         .anyMatch(x -> x.getSearchModuleType() != SearchModuleType.TORZNAB);
                 if (!anyUsenetIndexerEnabled) {
@@ -110,9 +110,9 @@ public class ExternalTools {
 
             logger.info("Received request to configure {} at URL {} with add type {} for usenet: {} and torrents: {}", addRequest.getExternalTool(), addRequest.getXdarrHost(), addRequest.getAddType(), addRequest.isConfigureForUsenet(), addRequest.isConfigureForTorrents());
             final List<IndexerConfig> availableIndexers = configProvider.getBaseConfig().getIndexers().stream()
-                .filter(x -> (x.getState() == IndexerConfig.State.ENABLED || addRequest.isAddDisabledIndexers()) && x.isConfigComplete() && x.isAllCapsChecked())
-                .filter(x -> SearchSource.API.meets(x.getEnabledForSearchSource()))
-                .toList();
+                    .filter(x -> (x.getState() == IndexerConfig.State.ENABLED || addRequest.isAddDisabledIndexers()) && x.isConfigComplete() && x.isAllCapsChecked())
+                    .filter(x -> SearchSource.API.meets(x.getEnabledForSearchSource()))
+                    .toList();
 
             final Optional<Integer> maxPriority = availableIndexers.stream().map(IndexerConfig::getScore).max(Comparator.naturalOrder());
             if (addRequest.getAddType() == AddRequest.AddType.PER_INDEXER && addRequest.isUseHydraPriorities() && maxPriority.isPresent() && maxPriority.get() > 51) {
@@ -303,9 +303,11 @@ public class ExternalTools {
         }
 
         if (externalTool.isV3()) {
-            if (addRequest.getAddType() == AddRequest.AddType.SINGLE && addRequest.getPriority() != null) {
+            //Must be filled, 25 is default
+            xdarrAddRequest.setPriority(25);
+            if (addRequest.getAddType() == AddRequest.AddType.SINGLE && addRequest.getPriority() != null && addRequest.getPriority() != 0) {
                 xdarrAddRequest.setPriority(addRequest.getPriority());
-            } else if (addRequest.isUseHydraPriorities()) {
+            } else if (addRequest.isUseHydraPriorities() && indexer != null) {
                 if (!indexerPrioritiesMapped.isEmpty()) {
                     xdarrAddRequest.setPriority(indexerPrioritiesMapped.get(indexer));
                 } else {
@@ -314,7 +316,7 @@ public class ExternalTools {
                     logger.debug("Calculated *arr priority for {} to be {}. NZBHydra priority: {}", indexer.getName(), arrPriority, indexer.getScore());
                     xdarrAddRequest.setPriority(arrPriority);
                 }
-            } //else: Set value 0 (no priority)
+            } //else: Set value 25 (default priority)
         }
 
         if (externalTool.isRadarr()) {
@@ -414,7 +416,7 @@ public class ExternalTools {
 
         if (e.getBody() != null && e.getBody().trim().startsWith("[")) {
             final List<Map> requestResponse = Jackson.JSON_MAPPER.readValue(e.getBody(), LIST_TYPE_REFERENCE);
-            if (requestResponse.size() > 0 && requestResponse.get(0).containsKey("errorMessage")) {
+            if (!requestResponse.isEmpty() && requestResponse.get(0).containsKey("errorMessage")) {
                 final String errorMessage = (String) requestResponse.get(0).get("errorMessage");
                 messages.add("Error: " + errorMessage);
                 throw new IOException(addRequest.getExternalTool().name() + " returned error message: " + errorMessage);
@@ -478,7 +480,7 @@ public class ExternalTools {
     }
 
     @Data
-@ReflectionMarker
+    @ReflectionMarker
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class XdarrIndexer {
 
@@ -503,7 +505,7 @@ public class ExternalTools {
     }
 
     @Data
-@ReflectionMarker
+    @ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -514,7 +516,7 @@ public class ExternalTools {
     }
 
     @Data
-@ReflectionMarker
+    @ReflectionMarker
     public static class XdarrAddRequestResponse {
         private boolean isWarning;
         private String propertyName;

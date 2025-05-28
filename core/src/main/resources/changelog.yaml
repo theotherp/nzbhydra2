@@ -1,4 +1,10 @@
 #@formatter:off
+-   version: "v7.13.2"
+    date: "2025-05-28"
+    changes:
+      -   type: "fixed"
+          text: "Configuration of *arr should work again. Sorry for the version spam ;-)"
+    final: true
 -   version: "v7.13.1"
     date: "2025-05-28"
     changes:
