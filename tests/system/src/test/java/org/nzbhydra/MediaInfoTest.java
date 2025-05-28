@@ -51,11 +51,11 @@ public class MediaInfoTest {
     public void shouldAutocompleteMovie() throws Exception {
         CapsCheckRequest capsCheckRequest = new CapsCheckRequest();
 
-        List<MediaInfoTO> checkCapsResponses = hydraClient.get("/internalapi/autocomplete/MOVIE", "input=Gladiator").as(new TypeReference<>() {
+        List<MediaInfoTO> checkCapsResponses = hydraClient.get("/internalapi/autocomplete/MOVIE", "input=american beauty").as(new TypeReference<>() {
         });
         Assertions.assertThat(checkCapsResponses).isNotEmpty();
         MediaInfoTO mediaInfoTO = checkCapsResponses.get(0);
-        Assertions.assertThat(mediaInfoTO.getTmdbId()).isEqualTo("98");
+        Assertions.assertThat(mediaInfoTO.getTmdbId()).isEqualTo("14");
 
     }
 
