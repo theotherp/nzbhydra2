@@ -1,3 +1,11 @@
+### v7.13.1 (2025-05-28)
+
+**Fixed** Check for nzb.life in host. See <a href="https://github.com/theotherp/nzbhydra2/issues/990">#990</a>
+
+**Fixed** Send NZB to black hole via button in results list
+
+
+
 ### v7.13.0 (2025-04-28)
 
 **Added** Support mass sending NZBs to black hole folder. See <a href="https://github.com/theotherp/nzbhydra2/issues/984">#984</a>
