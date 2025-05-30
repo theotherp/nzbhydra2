@@ -1,3 +1,11 @@
+### v7.14.0 (2025-05-30)
+
+**Added** Extended "Replace umlauts" feature to also replace diacritics, e.g. "è" will be replaced with "e"
+
+**Fixed** With quick filter buttons to be preselected they would also be preselected if they weren't even shown, resulting in filtering unrelated result categories, e.g. filtering audiobooks for "1080p". See <a href="https://github.com/theotherp/nzbhydra2/issues/992">#992</a>
+
+
+
 ### v7.13.2 (2025-05-28)
 
 **Fixed** Configuration of *arr should work again. Sorry for the version spam ;-)
