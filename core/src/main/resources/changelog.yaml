@@ -1,5 +1,5 @@
 #@formatter:off
--   version: "v7.14.9"
+-   version: "v7.14.0"
     date: "2025-05-30"
     changes:
       -   type: "added"
