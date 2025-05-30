@@ -278,6 +278,9 @@ public abstract class Indexer<T> {
 
     //May be overwritten by specific indexer implementations
     protected String cleanupQuery(String query) {
+        if (configProvider.getBaseConfig().getSearching().isReplaceUmlauts()) {
+            return CustomQueryAndTitleMappingHandler.removeDiacriticalAndUmlauts(query);
+        }
         return query;
     }
 

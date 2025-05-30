@@ -24,6 +24,7 @@ public class NzbGeek extends Newznab {
 
     @Override
     protected String cleanupQuery(String query) {
+        query = super.cleanupQuery(query);
         //With nzbgeek not more than 6 words at all are allowed
         String[] split = query.split(" ");
         if (query.split(" ").length > 6) {

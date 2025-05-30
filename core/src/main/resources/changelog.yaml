@@ -1,4 +1,10 @@
 #@formatter:off
+-   version: "v7.14.9"
+    date: "2025-05-30"
+    changes:
+      -   type: "added"
+          text: "Extended \"Replace umlauts\" feature to also replace diacritics, e.g. \"è\" will be replaced with \"e\""
+    final: true
 -   version: "v7.13.2"
     date: "2025-05-28"
     changes:

@@ -7293,8 +7293,8 @@ function ConfigFields($injector) {
                             type: 'horizontalSwitch',
                             templateOptions: {
                                 type: 'switch',
-                                label: 'Replace umlauts',
-                                help: 'Replace german umlauts and special characters (ä, ö, ü and ß) in external request queries.'
+                                label: 'Replace umlauts and diacritics',
+                                help: 'Replace diacritics (e.g. è) and german umlauts and special characters (ä, ö, ü and ß) in external request queries.'
                             }
                         }
                     ]

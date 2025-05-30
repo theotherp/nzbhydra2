@@ -41,14 +41,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.text.Normalizer;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 @Component
 @RestController
 public class CustomQueryAndTitleMappingHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(CustomQueryAndTitleMappingHandler.class);
+    private static final Pattern DIACRITICAL_MARKS = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
 
     @Autowired
     private ConfigProvider configProvider;
@@ -92,23 +95,22 @@ public class CustomQueryAndTitleMappingHandler {
         return searchResult;
     }
 
-    public MetaData mapMetaData(MetaData metaData, List<CustomQueryAndTitleMapping> customQueryAndTitleMappings) {
-        if (metaData.getQuery().isPresent() && configProvider.getBaseConfig().getSearching().isReplaceUmlauts()) {
-            final String oldQuery = metaData.getQuery().get();
-            metaData.setQuery(oldQuery
-                .replace("ä", "ae")
-                .replace("Ä", "Ae")
-                .replace("ö", "oe")
-                .replace("Ö", "Oe")
-                .replace("ü", "ue")
-                .replace("Ü", "Ue")
+    public static String removeDiacriticalAndUmlauts(String string) {
+        return DIACRITICAL_MARKS.matcher(Normalizer.normalize(string, Normalizer.Form.NFD)).replaceAll("")
                 .replace("ß", "ss")
-                    .replace("—", "-")
-            );
-            if (!oldQuery.equals(metaData.getQuery().get())) {
-                logger.debug("Replaced umlauts. Old query: {}. New query: {}", oldQuery, metaData.getQuery().get());
-            }
+                .replace("—", "-");
+    }
 
+    public MetaData mapMetaData(MetaData metaData, List<CustomQueryAndTitleMapping> customQueryAndTitleMappings) {
+        if (metaData.getQuery().isPresent()) {
+            if (configProvider.getBaseConfig().getSearching().isReplaceUmlauts()) {
+                String oldQuery = metaData.getQuery().get();
+                final String newQuery = removeDiacriticalAndUmlauts(oldQuery);
+                if (!oldQuery.equals(newQuery)) {
+                    metaData.setQuery(newQuery);
+                    logger.debug("Replaced umlauts. Old query: {}. New query: {}", oldQuery, metaData.getQuery().get());
+                }
+            }
         }
 
         final List<CustomQueryAndTitleMapping> relevantMappings = customQueryAndTitleMappings.stream()
@@ -251,7 +253,7 @@ public class CustomQueryAndTitleMappingHandler {
 
 
     @Data
-@ReflectionMarker
+    @ReflectionMarker
     @AllArgsConstructor
     static class TestResponse {
         private final String output;
@@ -260,10 +262,10 @@ public class CustomQueryAndTitleMappingHandler {
     }
 
     @Data
-@ReflectionMarker
+    @ReflectionMarker
     @AllArgsConstructor
     @NoArgsConstructor
-    static class MetaData {
+    public static class MetaData {
         enum Type {
             SEARCH_REQUEST,
             RESULT_TITLE
