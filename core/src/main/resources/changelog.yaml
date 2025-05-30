@@ -4,6 +4,8 @@
     changes:
       -   type: "added"
           text: "Extended \"Replace umlauts\" feature to also replace diacritics, e.g. \"è\" will be replaced with \"e\""
+      -   type: "fixed"
+          text: "With quick filter buttons to be preselected they would also be preselected if they weren't even shown, resulting in filtering unrelated result categories, e.g. filtering audiobooks for \"1080p\". See #992"
     final: true
 -   version: "v7.13.2"
     date: "2025-05-28"

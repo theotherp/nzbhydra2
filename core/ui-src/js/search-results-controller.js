@@ -71,7 +71,7 @@ function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $doc
         var split1 = entry.split("|");
         var category = split1[0];
         var id = split1[1];
-        if (category !== 'source' || $scope.isShowFilterButtonsVideo) {
+        if (category !== 'source' && $scope.isShowFilterButtonsVideo) {
             $scope.filterButtonsModel[category][id] = true;
         }
     })
