@@ -205,7 +205,10 @@ public class IndexerChecker {
         try {
             logger.info("Will check capabilities of indexer {} using {} concurrent connections and a delay of {}ms", indexerConfig.getName(), capsCheckLimit.maxConnections, capsCheckLimit.delayInMiliseconds);
             List<Future<SingleCheckCapsResponse>> futures = executor.invokeAll(callables);
-            Future<IndexerConfig.ForbiddenWordPrefix> forbiddenWordPrefixFuture = executor.submit(() -> determineForbiddenWordPrefix(indexerConfig));
+            Future<IndexerConfig.ForbiddenWordPrefix> forbiddenWordPrefixFuture = executor.submit(() -> {
+                Thread.sleep(capsCheckLimit.delayInMiliseconds); //Give indexer some time to breathe
+                return determineForbiddenWordPrefix(indexerConfig);
+            });
             for (Future<SingleCheckCapsResponse> future : futures) {
                 try {
                     SingleCheckCapsResponse response = future.get(timeout, TimeUnit.SECONDS);

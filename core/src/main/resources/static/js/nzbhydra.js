@@ -4425,8 +4425,8 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
             host: "https://nzb.cat"
         },
         {
-            name: "nzb.su",
-            host: "https://api.nzb.su"
+            name: "nzb.life",
+            host: "https://api.nzb.life"
         },
         {
             name: "NZBGeek",

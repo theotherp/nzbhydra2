@@ -1,4 +1,10 @@
 #@formatter:off
+-   version: "v7.14.1"
+    date: "2025-06-02"
+    changes:
+      -   type: "fixed"
+          text: "nzb.su / nzb.life caps check should now actually work. I previously didn't have VIP access and couldn't test it. See #990"
+    final: true
 -   version: "v7.14.0"
     date: "2025-05-30"
     changes:
