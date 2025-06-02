@@ -1,3 +1,9 @@
+### v7.14.1 (2025-06-02)
+
+**Fixed** nzb.su / nzb.life caps check should now actually work. I previously didn't have VIP access and couldn't test it. See <a href="https://github.com/theotherp/nzbhydra2/issues/990">#990</a>
+
+
+
 ### v7.14.0 (2025-05-30)
 
 **Added** Extended "Replace umlauts" feature to also replace diacritics, e.g. "è" will be replaced with "e"
