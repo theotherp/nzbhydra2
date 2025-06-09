@@ -1,6 +1,6 @@
 #@formatter:off
 -   version: "v7.14.2"
-    date: "2025-06-02"
+    date: "2025-06-09"
     changes:
       -   type: "fixed"
           text: "Increased checking delay for nzb.su/life even more as some users were still rate limited. See #990"
