@@ -37,7 +37,7 @@ import java.net.URI;
  * @author Roy Clarkson
  * @since 4.3
  */
-class OkHttp3ClientHttpRequest extends AbstractBufferingClientHttpRequest {
+public class OkHttp3ClientHttpRequest extends AbstractBufferingClientHttpRequest {
 
     private final OkHttpClient client;
 

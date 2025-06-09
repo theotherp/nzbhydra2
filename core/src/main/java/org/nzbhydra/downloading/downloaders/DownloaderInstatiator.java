@@ -28,6 +28,7 @@ import org.nzbhydra.searching.db.SearchResultRepository;
 import org.nzbhydra.webaccess.HydraOkHttp3ClientHttpRequestFactory;
 import org.nzbhydra.webaccess.Ssl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -53,6 +54,8 @@ public class DownloaderInstatiator {
     private Ssl ssl;
     @Autowired
     private DownloadUrlBuilder downloadUrlBuilder;
+    @Autowired
+    private AutowireCapableBeanFactory beanFactory;
 
     public Downloader instantiate(DownloaderType downloaderType) {
         switch (downloaderType) {
@@ -63,7 +66,7 @@ public class DownloaderInstatiator {
                 return new Sabnzbd(nzbHandler, searchResultRepository, applicationEventPublisher, indexerSpecificDownloadExceptions, configProvider, restTemplate, requestFactory, downloadUrlBuilder);
             }
             case TORBOX -> {
-                return new Torbox(nzbHandler, searchResultRepository, applicationEventPublisher, indexerSpecificDownloadExceptions, configProvider, requestFactory, downloadUrlBuilder);
+                return new Torbox(nzbHandler, searchResultRepository, applicationEventPublisher, indexerSpecificDownloadExceptions, configProvider, requestFactory, downloadUrlBuilder, beanFactory);
             }
         }
         throw new RuntimeException("Unable to instantiate " + downloaderType);
