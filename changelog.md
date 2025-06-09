@@ -1,3 +1,11 @@
+### v7.14.2 (2025-06-09)
+
+**Fixed** Increased checking delay for nzb.su/life even more as some users were still rate limited. See <a href="https://github.com/theotherp/nzbhydra2/issues/990">#990</a>
+
+**Fixed** Increased timeout when sending NZBs to Torbox. The initial value was too low because I didn't consider that sending NZBs for huge files would take longer for a downloader that's not on the local network. The timeout is now a generous 90 seconds which should allow uploading an NZB for a 75GB result with 1MBit/s. If that's now enough what are you even doing?
+
+
+
 ### v7.14.1 (2025-06-02)
 
 **Fixed** nzb.su / nzb.life caps check should now actually work. I previously didn't have VIP access and couldn't test it. See <a href="https://github.com/theotherp/nzbhydra2/issues/990">#990</a>
