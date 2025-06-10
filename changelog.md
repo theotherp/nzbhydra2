@@ -1,3 +1,9 @@
+### v7.14.3 (2025-06-10)
+
+**Fixed** Connection to Torbox failed. Unfortunately this didn't happen with my development code but only with the deployed code :-(
+
+
+
 ### v7.14.2 (2025-06-09)
 
 **Fixed** Increased checking delay for nzb.su/life even more as some users were still rate limited. See <a href="https://github.com/theotherp/nzbhydra2/issues/990">#990</a>
