@@ -1,4 +1,9 @@
 #@formatter:off
+-   version: "v7.14.3"
+    date: "2025-06-10"
+    changes:
+      -   type: "fixed"
+          text: "Connection to Torbox failed. Unfortunately this didn't happen with my development code but only with the deployed code :-("
 -   version: "v7.14.2"
     date: "2025-06-09"
     changes:

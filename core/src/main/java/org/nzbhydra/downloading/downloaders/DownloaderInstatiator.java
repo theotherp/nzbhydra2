@@ -23,6 +23,7 @@ import org.nzbhydra.downloading.IndexerSpecificDownloadExceptions;
 import org.nzbhydra.downloading.downloaders.nzbget.NzbGet;
 import org.nzbhydra.downloading.downloaders.sabnzbd.Sabnzbd;
 import org.nzbhydra.downloading.downloaders.torbox.Torbox;
+import org.nzbhydra.downloading.downloaders.torbox.TorboxHttpRequestFactory;
 import org.nzbhydra.downloading.downloadurls.DownloadUrlBuilder;
 import org.nzbhydra.searching.db.SearchResultRepository;
 import org.nzbhydra.webaccess.HydraOkHttp3ClientHttpRequestFactory;
@@ -56,6 +57,8 @@ public class DownloaderInstatiator {
     private DownloadUrlBuilder downloadUrlBuilder;
     @Autowired
     private AutowireCapableBeanFactory beanFactory;
+    @Autowired
+    private TorboxHttpRequestFactory torboxHttpRequestFactory;
 
     public Downloader instantiate(DownloaderType downloaderType) {
         switch (downloaderType) {
@@ -66,7 +69,7 @@ public class DownloaderInstatiator {
                 return new Sabnzbd(nzbHandler, searchResultRepository, applicationEventPublisher, indexerSpecificDownloadExceptions, configProvider, restTemplate, requestFactory, downloadUrlBuilder);
             }
             case TORBOX -> {
-                return new Torbox(nzbHandler, searchResultRepository, applicationEventPublisher, indexerSpecificDownloadExceptions, configProvider, requestFactory, downloadUrlBuilder, beanFactory);
+                return new Torbox(nzbHandler, searchResultRepository, applicationEventPublisher, indexerSpecificDownloadExceptions, configProvider, requestFactory, downloadUrlBuilder, torboxHttpRequestFactory);
             }
         }
         throw new RuntimeException("Unable to instantiate " + downloaderType);

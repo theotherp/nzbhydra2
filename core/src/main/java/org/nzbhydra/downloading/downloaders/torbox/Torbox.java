@@ -18,7 +18,6 @@ package org.nzbhydra.downloading.downloaders.torbox;
 
 import jakarta.annotation.Nullable;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import org.jetbrains.annotations.NotNull;
 import org.nzbhydra.GenericResponse;
@@ -39,16 +38,12 @@ import org.nzbhydra.downloading.downloadurls.DownloadUrlBuilder;
 import org.nzbhydra.downloading.exceptions.DownloaderException;
 import org.nzbhydra.searching.db.SearchResultRepository;
 import org.nzbhydra.webaccess.HydraOkHttp3ClientHttpRequestFactory;
-import org.nzbhydra.webaccess.OkHttp3ClientHttpRequest;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.ClientHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -56,7 +51,6 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
@@ -66,8 +60,6 @@ import java.util.List;
 @Slf4j
 @Component("torboxdownloader")
 public class Torbox extends Downloader {
-
-    public static final int TIMEOUT_SECONDS = 90;
 
     private enum ResultType {
         TORBOX_TORRENT,
@@ -93,11 +85,9 @@ public class Torbox extends Downloader {
     private final List<TorboxDownload> lastTorboxDownloads = new ArrayList<>();
 
 
-    public Torbox(FileHandler nzbHandler, SearchResultRepository searchResultRepository, ApplicationEventPublisher applicationEventPublisher, IndexerSpecificDownloadExceptions indexerSpecificDownloadExceptions, ConfigProvider configProvider, HydraOkHttp3ClientHttpRequestFactory requestFactory, DownloadUrlBuilder downloadUrlBuilder, AutowireCapableBeanFactory beanFactory) {
+    public Torbox(FileHandler nzbHandler, SearchResultRepository searchResultRepository, ApplicationEventPublisher applicationEventPublisher, IndexerSpecificDownloadExceptions indexerSpecificDownloadExceptions, ConfigProvider configProvider, HydraOkHttp3ClientHttpRequestFactory requestFactory, DownloadUrlBuilder downloadUrlBuilder, TorboxHttpRequestFactory torboxHttpRequestFactory) {
         super(nzbHandler, searchResultRepository, applicationEventPublisher, indexerSpecificDownloadExceptions, configProvider, downloadUrlBuilder);
-        CustomizableHttpRequestFactory customizableHttpRequestFactory = new CustomizableHttpRequestFactory();
-        beanFactory.autowireBean(customizableHttpRequestFactory);
-        this.restTemplate = new RestTemplate(customizableHttpRequestFactory);
+        this.restTemplate = new RestTemplate(torboxHttpRequestFactory);
         this.restTemplate.getInterceptors().add((request, body, execution) -> {
             request.getHeaders().add("Authorization", "Bearer " + downloaderConfig.getApiKey());
             return execution.execute(request, body);
@@ -322,15 +312,6 @@ public class Torbox extends Downloader {
     private UriComponentsBuilder getBaseUrl() {
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(BASE_API_URL);
         return builder;
-    }
-
-    private static class CustomizableHttpRequestFactory extends HydraOkHttp3ClientHttpRequestFactory {
-
-        @Override
-        public ClientHttpRequest createRequest(URI uri, HttpMethod httpMethod) {
-            OkHttpClient client = getOkHttpClient(uri.getHost(), TIMEOUT_SECONDS);
-            return new OkHttp3ClientHttpRequest(client, uri, httpMethod);
-        }
     }
 
 
