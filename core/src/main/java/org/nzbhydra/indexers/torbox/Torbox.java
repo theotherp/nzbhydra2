@@ -195,7 +195,6 @@ public class Torbox extends Indexer<Torbox.UsenetAndTorrentResponse> {
                 }
                 builder.pathSegment(ID_TYPE_MAP.get(idType) + ":" + idValue);
                 break;
-
             }
         }
         if (!idSearch) {
@@ -204,6 +203,13 @@ public class Torbox extends Indexer<Torbox.UsenetAndTorrentResponse> {
             verifyIdentifiersNotUnhandled(searchRequest, builder, query);
 
             builder.path(query);
+        } else {
+            if (searchRequest.getSeason().isPresent()) {
+                builder.queryParam("season", searchRequest.getSeason().get());
+            }
+            if (searchRequest.getEpisode().isPresent()) {
+                builder.queryParam("episode", searchRequest.getEpisode().get());
+            }
         }
         builder.queryParam("metadata", "false");
 
