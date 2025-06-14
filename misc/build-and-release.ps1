@@ -94,6 +94,9 @@ if (!$dockerInfo -contains "Docker Root Dir") {
     exit 1
 }
 
+$env:Path = "$HOME\.jdks\openjdk-21.0.2\bin\;"+$env:Path
+$env:JAVA_HOME = "$HOME\.jdks\openjdk-21.0.2"
+
 
 Write-Host "Setting release version"
 exec { mvn -q -B versions:set `-DnewVersion="$version" }
