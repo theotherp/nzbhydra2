@@ -1,6 +1,6 @@
-### v7.14.3 (2025-06-10)
+### v7.15.0 (2025-06-14)
 
-**Fixed** Connection to Torbox failed. Unfortunately this didn't happen with my development code but only with the deployed code :-(
+**Added** Torbox can now be searched via the GUI. You can search by query or by ID (movies and TV shows) and send the results individually or in a batch to your Torbox downloader. The selected category will have no influence on the search results but Movies and TV will allow you to search using autocomplete.
 
 
 
