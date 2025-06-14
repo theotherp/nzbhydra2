@@ -121,7 +121,8 @@ angular
                 function getDownloaderBoxFields(model, parentModel, isInitial) {
                     var fieldset = [];
 
-                    fieldset = _.union(fieldset, [
+
+                    fieldset.push(
                         {
                             key: 'enabled',
                             type: 'horizontalSwitch',
@@ -129,7 +130,10 @@ angular
                                 type: 'switch',
                                 label: 'Enabled'
                             }
-                        },
+                        });
+                    if (model.downloaderType !== "TORBOX") {
+
+                        fieldset.push(
                         {
                             key: 'name',
                             type: 'horizontalInput',
@@ -150,7 +154,8 @@ angular
                                 }
                             }
 
-                        }]);
+                        });
+                    }
                     fieldset.push({
                             key: 'url',
                             type: 'horizontalInput',

@@ -26,7 +26,7 @@ function downloadNzbsButton() {
                 var didFilterOutResults = false;
                 var didKeepAnyResults = false;
                 var searchResults = _.filter($scope.searchResults, function (value) {
-                    if (value.downloadType === "NZB") {
+                    if (value.downloadType === "NZB" || (value.downloadType === "TORBOX" && downloader.downloaderType === "TORBOX")) {
                         didKeepAnyResults = true;
                         return true;
                     } else {

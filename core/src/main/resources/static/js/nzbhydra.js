@@ -2712,7 +2712,7 @@ function downloadNzbsButton() {
                 var didFilterOutResults = false;
                 var didKeepAnyResults = false;
                 var searchResults = _.filter($scope.searchResults, function (value) {
-                    if (value.downloadType === "NZB") {
+                    if (value.downloadType === "NZB" || (value.downloadType === "TORBOX" && downloader.downloaderType === "TORBOX")) {
                         didKeepAnyResults = true;
                         return true;
                     } else {
@@ -3511,11 +3511,17 @@ function addableNzbs(DebugService) {
     function controller($scope, NzbDownloadService) {
         $scope.alwaysAsk = $scope.alwaysAsk === "true";
         $scope.downloaders = _.filter(NzbDownloadService.getEnabledDownloaders(), function (downloader) {
+            // console.log(downloader.downloaderType);
+            // console.log($scope.searchresult.downloadType);
+            if ($scope.searchresult.downloadType === "TORBOX" && downloader.downloaderType === "TORBOX") {
+                return true;
+            }
             if ($scope.searchresult.downloadType !== "NZB") {
                 return downloader.downloadType === $scope.searchresult.downloadType
             }
             return true;
         });
+        console.log($scope.downloaders);
     }
 }
 
@@ -3850,18 +3856,21 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
             });
     }
 
+    if (indexerModel.searchModuleType !== 'TORBOX') {
+        fieldset.push(
+            {
+                key: 'timeout',
+                type: 'horizontalInput',
+                templateOptions: {
+                    type: 'number',
+                    label: 'Timeout',
+                    min: 1,
+                    help: 'Supercedes the general timeout in "Searching".',
+                    advanced: true
+                }
+            });
+    }
     fieldset.push(
-        {
-            key: 'timeout',
-            type: 'horizontalInput',
-            templateOptions: {
-                type: 'number',
-                label: 'Timeout',
-                min: 1,
-                help: 'Supercedes the general timeout in "Searching".',
-                advanced: true
-            }
-        },
         {
             key: 'schedule',
             type: 'horizontalChips',
@@ -4013,24 +4022,26 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
             }
         }
     );
-    fieldset.push(
-        {
-            key: 'enabledForSearchSource',
-            type: 'horizontalSelect',
-            templateOptions: {
-                label: 'Enable for...',
-                options: [
-                    {name: 'Internal searches only', value: 'INTERNAL'},
-                    {name: 'API searches only', value: 'API'},
-                    {name: 'All but API update queries ', value: 'ALL_BUT_RSS'},
-                    {name: 'Only API update queries ', value: 'ONLY_RSS'},
-                    {name: 'Internal and any API searches', value: 'BOTH'}
-                ],
-                help: 'Select for which searches this indexer will be used. "Update queries" are searches without query or ID (e.g. done by Sonarr periodically).',
-                advanced: true
+    if (indexerModel.searchModuleType !== 'TORBOX') {
+        fieldset.push(
+            {
+                key: 'enabledForSearchSource',
+                type: 'horizontalSelect',
+                templateOptions: {
+                    label: 'Enable for...',
+                    options: [
+                        {name: 'Internal searches only', value: 'INTERNAL'},
+                        {name: 'API searches only', value: 'API'},
+                        {name: 'All but API update queries ', value: 'ALL_BUT_RSS'},
+                        {name: 'Only API update queries ', value: 'ONLY_RSS'},
+                        {name: 'Internal and any API searches', value: 'BOTH'}
+                    ],
+                    help: 'Select for which searches this indexer will be used. "Update queries" are searches without query or ID (e.g. done by Sonarr periodically).',
+                    advanced: true
+                }
             }
-        }
-    );
+        );
+    }
 
     fieldset.push(
         {
@@ -4648,17 +4659,17 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
     });
 
     $scope.specialPresets = [
-        // {
-        //     allCapsChecked: true,
-        //     configComplete: true,
-        //     name: "Torbox",
-        //     host: "https://search-api.torbox.app",
-        //     supportedSearchIds: ["IMDB"],
-        //     supportedSearchTypes: ["MOVIE", "SEARCH"],
-        //     searchModuleType: "TORBOX",
-        //     state: "ENABLED",
-        //     enabledForSearchSource: "BOTH"
-        // }
+        {
+            allCapsChecked: true,
+            configComplete: true,
+            name: "Torbox",
+            host: "https://search-api.torbox.app",
+            supportedSearchIds: ["IMDB"],
+            supportedSearchTypes: ["MOVIE", "SEARCH"],
+            searchModuleType: "TORBOX",
+            state: "ENABLED",
+            enabledForSearchSource: "INTERNAL"
+        }
     ];
 }]);
 
@@ -5027,7 +5038,8 @@ angular
                 function getDownloaderBoxFields(model, parentModel, isInitial) {
                     var fieldset = [];
 
-                    fieldset = _.union(fieldset, [
+
+                    fieldset.push(
                         {
                             key: 'enabled',
                             type: 'horizontalSwitch',
@@ -5035,7 +5047,10 @@ angular
                                 type: 'switch',
                                 label: 'Enabled'
                             }
-                        },
+                        });
+                    if (model.downloaderType !== "TORBOX") {
+
+                        fieldset.push(
                         {
                             key: 'name',
                             type: 'horizontalInput',
@@ -5056,7 +5071,8 @@ angular
                                 }
                             }
 
-                        }]);
+                        });
+                    }
                     fieldset.push({
                             key: 'url',
                             type: 'horizontalInput',
@@ -9835,7 +9851,9 @@ function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $doc
 
     $scope.limitTo = ConfigService.getSafe().searching.loadLimitInternal;
     $scope.offset = 0;
-    $scope.allowZipDownload = ConfigService.getSafe().downloading.fileDownloadAccessType === 'PROXY';
+    $scope.allowZipDownload = ConfigService.getSafe().downloading.fileDownloadAccessType === 'PROXY' && _.any($scope.searchResults, function (result) {
+        return result.downloadType === "TORBOX";
+    });
 
     var indexerColors = {};
 

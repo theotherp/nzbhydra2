@@ -16,6 +16,7 @@
 
 package org.nzbhydra.indexers.torbox.mapping;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -28,6 +29,7 @@ import java.util.List;
 
 @Data
 @ReflectionMarker
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class TorboxResult {
     private String hash;
 

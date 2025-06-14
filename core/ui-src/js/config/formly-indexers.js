@@ -267,18 +267,21 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
             });
     }
 
+    if (indexerModel.searchModuleType !== 'TORBOX') {
+        fieldset.push(
+            {
+                key: 'timeout',
+                type: 'horizontalInput',
+                templateOptions: {
+                    type: 'number',
+                    label: 'Timeout',
+                    min: 1,
+                    help: 'Supercedes the general timeout in "Searching".',
+                    advanced: true
+                }
+            });
+    }
     fieldset.push(
-        {
-            key: 'timeout',
-            type: 'horizontalInput',
-            templateOptions: {
-                type: 'number',
-                label: 'Timeout',
-                min: 1,
-                help: 'Supercedes the general timeout in "Searching".',
-                advanced: true
-            }
-        },
         {
             key: 'schedule',
             type: 'horizontalChips',
@@ -430,24 +433,26 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
             }
         }
     );
-    fieldset.push(
-        {
-            key: 'enabledForSearchSource',
-            type: 'horizontalSelect',
-            templateOptions: {
-                label: 'Enable for...',
-                options: [
-                    {name: 'Internal searches only', value: 'INTERNAL'},
-                    {name: 'API searches only', value: 'API'},
-                    {name: 'All but API update queries ', value: 'ALL_BUT_RSS'},
-                    {name: 'Only API update queries ', value: 'ONLY_RSS'},
-                    {name: 'Internal and any API searches', value: 'BOTH'}
-                ],
-                help: 'Select for which searches this indexer will be used. "Update queries" are searches without query or ID (e.g. done by Sonarr periodically).',
-                advanced: true
+    if (indexerModel.searchModuleType !== 'TORBOX') {
+        fieldset.push(
+            {
+                key: 'enabledForSearchSource',
+                type: 'horizontalSelect',
+                templateOptions: {
+                    label: 'Enable for...',
+                    options: [
+                        {name: 'Internal searches only', value: 'INTERNAL'},
+                        {name: 'API searches only', value: 'API'},
+                        {name: 'All but API update queries ', value: 'ALL_BUT_RSS'},
+                        {name: 'Only API update queries ', value: 'ONLY_RSS'},
+                        {name: 'Internal and any API searches', value: 'BOTH'}
+                    ],
+                    help: 'Select for which searches this indexer will be used. "Update queries" are searches without query or ID (e.g. done by Sonarr periodically).',
+                    advanced: true
+                }
             }
-        }
-    );
+        );
+    }
 
     fieldset.push(
         {
@@ -1065,17 +1070,17 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
     });
 
     $scope.specialPresets = [
-        // {
-        //     allCapsChecked: true,
-        //     configComplete: true,
-        //     name: "Torbox",
-        //     host: "https://search-api.torbox.app",
-        //     supportedSearchIds: ["IMDB"],
-        //     supportedSearchTypes: ["MOVIE", "SEARCH"],
-        //     searchModuleType: "TORBOX",
-        //     state: "ENABLED",
-        //     enabledForSearchSource: "BOTH"
-        // }
+        {
+            allCapsChecked: true,
+            configComplete: true,
+            name: "Torbox",
+            host: "https://search-api.torbox.app",
+            supportedSearchIds: ["IMDB"],
+            supportedSearchTypes: ["MOVIE", "SEARCH"],
+            searchModuleType: "TORBOX",
+            state: "ENABLED",
+            enabledForSearchSource: "INTERNAL"
+        }
     ];
 });
 

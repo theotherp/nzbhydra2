@@ -27,6 +27,7 @@ import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.config.mediainfo.MediaIdType;
+import org.nzbhydra.downloading.downloaders.torbox.TorboxHttpRequestFactory;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.indexers.IndexerApiAccessType;
 import org.nzbhydra.indexers.IndexerHandlingStrategy;
@@ -76,14 +77,16 @@ public class Torbox extends Indexer<Torbox.UsenetAndTorrentResponse> {
 
     private static final Map<MediaIdType, String> ID_TYPE_MAP = new HashMap<>();
     // TODO sist 05.01.2025: Migrate config to support TVSEARCH and TVDB when implemented
-    public static final Set<MediaIdType> SUPPORTED_MEDIA_ID_TYPES = Set.of(MediaIdType.IMDB);
+    public static final Set<MediaIdType> SUPPORTED_MEDIA_ID_TYPES = Set.of(MediaIdType.IMDB, MediaIdType.TMDB, MediaIdType.TVMAZE, MediaIdType.TVIMDB);
 
     @Autowired
     private SearchRequestIdConverter searchRequestIdConverter;
 
     static {
         ID_TYPE_MAP.put(MediaIdType.IMDB, "imdb_id");
-//        ID_TYPE_MAP.put(MediaIdType.TMDB, "tmdb_id");
+        ID_TYPE_MAP.put(MediaIdType.TVIMDB, "imdb_id");
+        ID_TYPE_MAP.put(MediaIdType.TMDB, "tmdb_id");
+        ID_TYPE_MAP.put(MediaIdType.TVMAZE, "tvmaze_id");
 //        ID_TYPE_MAP.put(MediaIdType.TVDB, "tvdb_id");
     }
 
@@ -234,7 +237,7 @@ public class Torbox extends Indexer<Torbox.UsenetAndTorrentResponse> {
 
     private <T> Optional<T> getResultWithTimeout(Future<T> future) {
         try {
-            Integer timeoutSeconds = config.getTimeout().orElse(configProvider.getBaseConfig().getSearching().getTimeout());
+            int timeoutSeconds = TorboxHttpRequestFactory.TIMEOUT_SECONDS;
             return Optional.of(future.get(timeoutSeconds, TimeUnit.SECONDS));
         } catch (ExecutionException | InterruptedException | TimeoutException e) {
             log.error("Error searching torbox", e);

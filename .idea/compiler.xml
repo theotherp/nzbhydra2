@@ -23,7 +23,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel target="17">
-      <module name="assertions" target="17" />
+      <module name="assertions" target="1.5" />
       <module name="db-tool" target="21" />
     </bytecodeTargetLevel>
   </component>
@@ -33,6 +33,7 @@
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_STRING" value="-parameters" />
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="assertions" options="" />
       <module name="core" options="-parameters" />
       <module name="discordreleaser" options="" />
       <module name="github-release-plugin" options="" />
