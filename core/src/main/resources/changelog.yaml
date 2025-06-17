@@ -1,4 +1,10 @@
 #@formatter:off
+-   version: "v7.15.1"
+    date: "2025-06-17"
+    changes:
+      -   type: "fixed"
+          text: "Button to downloads results as zip file was gone. I wanted it to be hidden for torbox results and it never showed up. I don't understand my GUI code anymore so now it will be shown even if it doesn't work for Torbox. See #994"
+    final: true
 -   version: "v7.15.0"
     date: "2025-06-14"
     changes:

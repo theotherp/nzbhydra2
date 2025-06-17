@@ -26,6 +26,5 @@ function addableNzbs(DebugService) {
             }
             return true;
         });
-        console.log($scope.downloaders);
     }
 }

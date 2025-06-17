@@ -8,9 +8,7 @@ function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $doc
 
     $scope.limitTo = ConfigService.getSafe().searching.loadLimitInternal;
     $scope.offset = 0;
-    $scope.allowZipDownload = ConfigService.getSafe().downloading.fileDownloadAccessType === 'PROXY' && _.any($scope.searchResults, function (result) {
-        return result.downloadType === "TORBOX";
-    });
+    $scope.allowZipDownload = ConfigService.getSafe().downloading.fileDownloadAccessType === 'PROXY';
 
     var indexerColors = {};
 
