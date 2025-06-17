@@ -1,3 +1,9 @@
+### v7.15.1 (2025-06-17)
+
+**Fixed** Button to downloads results as zip file was gone. I wanted it to be hidden for torbox results and it never showed up. I don't understand my GUI code anymore so now it will be shown even if it doesn't work for Torbox. See <a href="https://github.com/theotherp/nzbhydra2/issues/994">#994</a>
+
+
+
 ### v7.15.0 (2025-06-14)
 
 **Added** Torbox can now be searched via the GUI. You can search by query or by ID (movies and TV shows) and send the results individually or in a batch to your Torbox downloader. The selected category will have no influence on the search results but Movies and TV will allow you to search using autocomplete.
