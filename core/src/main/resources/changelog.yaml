@@ -1,4 +1,9 @@
 #@formatter:off
+-   version: "v7.15.2"
+    changes:
+      -   type: "fixed"
+          text: "Show webp covers. See #995"
+    final: true
 -   version: "v7.15.1"
     date: "2025-06-17"
     changes:
