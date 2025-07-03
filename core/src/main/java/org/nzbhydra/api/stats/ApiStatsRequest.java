@@ -16,10 +16,12 @@
 
 package org.nzbhydra.api.stats;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.nzbhydra.historystats.stats.StatsRequest;
 import org.nzbhydra.springnative.ReflectionMarker;
 
+@AllArgsConstructor
 @Data
 @ReflectionMarker
 public class ApiStatsRequest {
