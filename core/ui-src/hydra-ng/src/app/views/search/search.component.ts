@@ -229,12 +229,20 @@ export class SearchComponent implements OnInit {
 
         // Set focus to search input after category selection
         setTimeout(() => {
-
             this.cdr.detectChanges();
             this.setFocusToSearchInput();
         }, 50);
 
-        // TODO: Update form and state as needed
+        // Trigger autocomplete if there's a current query and autocomplete is enabled
+        const currentQuery = this.searchForm.get("query")?.value;
+        if (currentQuery && currentQuery.length >= 2 && this.shouldShowAutocomplete() && this.searchForm.get("autocomplete")?.value) {
+            this.isAutocompleteLoading = true;
+            this.showAutocomplete = true;
+            this.getAutocompleteResults(currentQuery).subscribe(results => {
+                this.autocompleteResults = results;
+                this.isAutocompleteLoading = false;
+            });
+        }
     }
 
     setFocusToSearchInput() {
