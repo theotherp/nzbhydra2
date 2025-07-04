@@ -30,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -54,28 +55,28 @@ public class ExternalApiStats {
     private History history;
 
     @RequestMapping(value = "/api/stats", consumes = MediaType.ALL_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public StatsResponse apiStats(ApiStatsRequest request) throws Exception {
+    public StatsResponse apiStats(@RequestBody ApiStatsRequest request) throws Exception {
         verifyAccessAllowed(request.getApikey());
 
         return stats.getAllStats(request.getRequest());
     }
 
     @RequestMapping(value = "/api/stats/indexers", consumes = MediaType.ALL_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<IndexerStatusesAndLimits.IndexerStatus> indexerStatuses(ApiHistoryRequest request) throws Exception {
+    public List<IndexerStatusesAndLimits.IndexerStatus> indexerStatuses(@RequestBody ApiHistoryRequest request) throws Exception {
         verifyAccessAllowed(request.getApikey());
 
         return indexerStatuses.getSortedStatuses();
     }
 
     @RequestMapping(value = "/api/history/searches", consumes = MediaType.ALL_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Page<SearchEntity> apiHistorySearches(ApiHistoryRequest request) throws Exception {
+    public Page<SearchEntity> apiHistorySearches(@RequestBody ApiHistoryRequest request) throws Exception {
         verifyAccessAllowed(request.getApikey());
 
         return history.getHistory(request.getRequest(), History.SEARCH_TABLE, SearchEntity.class);
     }
 
     @RequestMapping(value = "/api/history/downloads", consumes = MediaType.ALL_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Page<FileDownloadEntity> apiHistoryDownloads(ApiHistoryRequest request) throws Exception {
+    public Page<FileDownloadEntity> apiHistoryDownloads(@RequestBody ApiHistoryRequest request) throws Exception {
         verifyAccessAllowed(request.getApikey());
 
         return history.getHistory(request.getRequest(), History.DOWNLOAD_TABLE, FileDownloadEntity.class);
