@@ -5,14 +5,9 @@ import {Observable, of} from "rxjs";
 import {catchError, debounceTime, distinctUntilChanged, switchMap} from "rxjs/operators";
 import {CategoriesService} from "../../services/categories.service";
 import {Category} from "../../services/config.service";
+import {IndexersService, IndexerWithState} from "../../services/indexers.service";
 import {AutocompleteType, MediaInfo, MediaInfoService} from "../../services/media-info.service";
 import {SearchRequestParameters, SearchResponse, SearchService} from "../../services/search.service";
-
-interface Indexer {
-    name: string;
-    activated: boolean;
-    preselect?: boolean;
-}
 
 @Component({
     selector: "app-search",
@@ -27,7 +22,7 @@ export class SearchComponent implements OnInit {
     searchForm: FormGroup;
     categories: Category[] = [];
     category: Category | undefined;
-    availableIndexers: Indexer[] = [];
+    availableIndexers: IndexerWithState[] = [];
     selectedIndexers: string[] = [];
     minsize?: number;
     maxsize?: number;
@@ -53,6 +48,7 @@ export class SearchComponent implements OnInit {
         private mediaInfoService: MediaInfoService,
         private searchService: SearchService,
         private categoriesService: CategoriesService,
+        private indexersService: IndexersService,
         private router: Router,
         private route: ActivatedRoute,
         private cdr: ChangeDetectorRef
@@ -77,19 +73,22 @@ export class SearchComponent implements OnInit {
             this.categories = categories;
             this.category = this.categories[0];
 
+            // Load indexers for the default category
+            this.loadIndexersForCategory(this.category);
+
             // Set up autocomplete
             this.setupAutocomplete();
 
             // Load search parameters from URL
             this.loadSearchFromUrl();
         });
+    }
 
-        // TODO: Load indexers from service
-        this.availableIndexers = [
-            {name: "Indexer1", activated: true, preselect: true},
-            {name: "Indexer2", activated: false, preselect: false}
-        ];
-        this.selectedIndexers = this.availableIndexers.filter(i => i.activated).map(i => i.name);
+    loadIndexersForCategory(category: Category) {
+        this.indexersService.getAvailableIndexers(category.name, this.selectedIndexers).subscribe(indexers => {
+            this.availableIndexers = indexers;
+            this.selectedIndexers = this.indexersService.getSelectedIndexers(indexers);
+        });
     }
 
     ngAfterViewInit() {
@@ -216,6 +215,9 @@ export class SearchComponent implements OnInit {
         this.category = cat;
         this.selectedItem = null;
         this.showAutocomplete = false;
+
+        // Load indexers for the new category
+        this.loadIndexersForCategory(cat);
 
         // Enable or disable autocomplete checkbox based on category
         if (this.shouldShowAutocomplete()) {
@@ -406,7 +408,7 @@ export class SearchComponent implements OnInit {
         this.updateSearchBoxTooltip();
     }
 
-    onIndexerChange(indexer: Indexer) {
+    onIndexerChange(indexer: IndexerWithState) {
         indexer.activated = !indexer.activated;
         this.selectedIndexers = this.availableIndexers
             .filter(i => i.activated)

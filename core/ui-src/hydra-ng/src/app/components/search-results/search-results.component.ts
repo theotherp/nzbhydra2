@@ -25,6 +25,7 @@ export class SearchResultsComponent implements OnInit {
   @Input() searchResponse?: SearchResponse;
   @Input() isLoading = false;
 
+
   // Display properties
   currentPage = 1;
   pageSize = 100;
@@ -57,6 +58,9 @@ export class SearchResultsComponent implements OnInit {
       this.totalPages = 0;
       return;
     }
+
+    // Reset filter config for new results
+    this.filterConfig = {};
 
     // Extract available filter options
     this.extractFilterOptions();
@@ -95,12 +99,13 @@ export class SearchResultsComponent implements OnInit {
     this.availableCategories = Array.from(categories).sort();
   }
 
+
   ensureDefaultFilters() {
-    // If no filter set, select all by default
-    if (!this.filterConfig.indexer) {
+    // If no filter set or empty array, select all by default
+    if (!this.filterConfig.indexer || this.filterConfig.indexer.length === 0) {
       this.filterConfig.indexer = [...this.availableIndexers];
     }
-    if (!this.filterConfig.category) {
+    if (!this.filterConfig.category || this.filterConfig.category.length === 0) {
       this.filterConfig.category = [...this.availableCategories];
     }
   }
