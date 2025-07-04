@@ -1,4 +1,4 @@
-import {Component, ElementRef, OnInit, ViewChild} from "@angular/core";
+import {ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild} from "@angular/core";
 import {FormBuilder, FormGroup} from "@angular/forms";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Observable, of} from "rxjs";
@@ -50,13 +50,15 @@ export class SearchComponent implements OnInit {
     isAutocompleteEnabled = true; // Default to enabled
     searchResponse?: SearchResponse;
     isSearching = false;
+    isInitialLoad = true; // Flag to track initial load
 
     constructor(
         private fb: FormBuilder,
         private mediaInfoService: MediaInfoService,
         private searchService: SearchService,
         private router: Router,
-        private route: ActivatedRoute
+        private route: ActivatedRoute,
+        private cdr: ChangeDetectorRef
     ) {
         this.searchForm = this.fb.group({
             query: [""],
@@ -151,10 +153,13 @@ export class SearchComponent implements OnInit {
                 // Update search box tooltip
                 this.updateSearchBoxTooltip();
 
-                // Start search if there are parameters
-                if (Object.keys(params).length > 0) {
+                // Only start search if this is the initial load (not from URL updates)
+                if (this.isInitialLoad && Object.keys(params).length > 0) {
                     this.performSearch();
                 }
+
+                // Mark as no longer initial load
+                this.isInitialLoad = false;
             }
         });
     }
@@ -206,11 +211,19 @@ export class SearchComponent implements OnInit {
         this.selectedItem = null;
         this.showAutocomplete = false;
 
+        // Enable or disable autocomplete checkbox based on category
+        if (this.shouldShowAutocomplete()) {
+            this.searchForm.get("autocomplete")?.setValue(true);
+        } else {
+            this.searchForm.get("autocomplete")?.setValue(false);
+        }
+
         // Update search box tooltip
         this.updateSearchBoxTooltip();
 
         // Set focus to search input after category selection
         setTimeout(() => {
+            this.cdr.detectChanges();
             this.setFocusToSearchInput();
         }, 100);
 
@@ -334,6 +347,7 @@ export class SearchComponent implements OnInit {
     onKeyPress(event: KeyboardEvent) {
         if (event.key === "Enter") {
             event.preventDefault();
+            event.stopPropagation();
             this.initiateSearch();
         }
     }
@@ -369,9 +383,9 @@ export class SearchComponent implements OnInit {
             event.preventDefault();
         }
         this.selectedItem = item;
-        this.query = "";
+        this.query = item.title || "";
         this.showAutocomplete = false;
-        this.searchForm.patchValue({query: ""});
+        this.searchForm.patchValue({query: item.title || ""});
         this.updateSearchBoxTooltip();
     }
 
@@ -384,6 +398,43 @@ export class SearchComponent implements OnInit {
 
     isIndexerSelected(indexerName: string): boolean {
         return this.selectedIndexers.includes(indexerName);
+    }
+
+    invertIndexerSelection(event?: Event) {
+        event?.preventDefault();
+        this.availableIndexers.forEach(indexer => {
+            indexer.activated = !indexer.activated;
+        });
+        this.selectedIndexers = this.availableIndexers
+            .filter(i => i.activated)
+            .map(i => i.name);
+    }
+
+    resetIndexerSelection(event?: Event) {
+        event?.preventDefault();
+        // Reset to original state (all activated indexers)
+        this.availableIndexers.forEach(indexer => {
+            indexer.activated = indexer.name === "Indexer1"; // Reset to original state
+        });
+        this.selectedIndexers = this.availableIndexers
+            .filter(i => i.activated)
+            .map(i => i.name);
+    }
+
+    selectAllIndexers(event?: Event) {
+        event?.preventDefault();
+        this.availableIndexers.forEach(indexer => {
+            indexer.activated = true;
+        });
+        this.selectedIndexers = this.availableIndexers.map(i => i.name);
+    }
+
+    deselectAllIndexers(event?: Event) {
+        event?.preventDefault();
+        this.availableIndexers.forEach(indexer => {
+            indexer.activated = false;
+        });
+        this.selectedIndexers = [];
     }
 
     onAutocompleteFocus() {
