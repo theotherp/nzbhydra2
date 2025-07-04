@@ -170,30 +170,54 @@
             </div>
           </td>
         </tr>
-        <tr *ngFor="let result of displayedResults">
-          <td class="col-title">
-            <div class="text-truncate" style="max-width: 300px;" title="{{ result.title }}">
-              {{ result.title }}
-            </div>
-          </td>
-          <td class="col-indexer">{{ result.indexer }}</td>
-          <td class="col-category">{{ result.category }}</td>
-          <td class="col-size">{{ formatSize(result.size) }}</td>
-          <td class="col-details">{{ result.grabs || 0 }}</td>
-          <td class="col-age">{{ formatAge(result.age || 0) }}</td>
-          <td class="col-links">
-            <div class="btn-group btn-group-sm">
-              <a *ngIf="result.downloadUrl" [href]="result.downloadUrl"
-                 class="btn btn-outline-primary btn-sm" target="_blank" title="Download">
-                <i class="bi bi-download"></i>
-              </a>
-              <a *ngIf="result.detailsLink" [href]="result.detailsLink"
-                 class="btn btn-outline-secondary btn-sm" target="_blank" title="Details">
-                <i class="bi bi-info-circle"></i>
-              </a>
-            </div>
-          </td>
-        </tr>
+        
+        <!-- Grouped Results -->
+        <ng-container *ngFor="let groupedResult of displayedResults">
+          <!-- Result Row -->
+          <tr [class.table-secondary]="groupedResult.type === 'grouped' && !groupedResult.hashGroup.isExpanded"
+              [class.table-dark]="groupedResult.type === 'grouped' && groupedResult.hashGroup.isExpanded">
+            <td class="col-title">
+              <div class="d-flex align-items-center">
+                <!-- Title Group Expand/Collapse Button -->
+                <button *ngIf="groupedResult.type === 'primary' && groupedResult.titleGroup.hashGroups.length > 1"
+                        class="btn btn-sm btn-link p-0 me-2"
+                        (click)="toggleTitleGroupExpansion(groupedResult.titleGroup)"
+                        [title]="groupedResult.titleGroup.isExpanded ? 'Collapse Title Group' : 'Expand Title Group'">
+                  <i class="bi fw-bold" [class]="groupedResult.titleGroup.isExpanded ? 'bi-dash-lg' : 'bi-plus-lg'"></i>
+                </button>
+                
+                <!-- Hash Group Expand/Collapse Button -->
+                <button *ngIf="groupedResult.type === 'primary' && groupedResult.hashGroup.results.length > 1"
+                        class="btn btn-sm btn-link p-0 me-2"
+                        (click)="toggleHashGroupExpansion(groupedResult.hashGroup)"
+                        [title]="groupedResult.hashGroup.isExpanded ? 'Collapse Hash Group' : 'Expand Hash Group'">
+                  <i class="bi fw-bold" [class]="groupedResult.hashGroup.isExpanded ? 'bi-dash-lg' : 'bi-plus-lg'"></i>
+                </button>
+                
+                <div class="text-truncate" style="max-width: 300px;" title="{{ groupedResult.result.title }}">
+                  {{ groupedResult.result.title }}
+                </div>
+              </div>
+            </td>
+            <td class="col-indexer">{{ groupedResult.result.indexer }}</td>
+            <td class="col-category">{{ groupedResult.result.category }}</td>
+            <td class="col-size">{{ formatSize(groupedResult.result.size) }}</td>
+            <td class="col-details">{{ groupedResult.result.grabs || 0 }}</td>
+            <td class="col-age">{{ formatAge(groupedResult.result.age || 0) }}</td>
+            <td class="col-links">
+              <div class="btn-group btn-group-sm">
+                <a *ngIf="groupedResult.result.downloadUrl" [href]="groupedResult.result.downloadUrl"
+                   class="btn btn-outline-primary btn-sm" target="_blank" title="Download">
+                  <i class="bi bi-download"></i>
+                </a>
+                <a *ngIf="groupedResult.result.detailsLink" [href]="groupedResult.result.detailsLink"
+                   class="btn btn-outline-secondary btn-sm" target="_blank" title="Details">
+                  <i class="bi bi-info-circle"></i>
+                </a>
+              </div>
+            </td>
+          </tr>
+        </ng-container>
         </tbody>
       </table>
     </div>

@@ -15,6 +15,31 @@ export interface FilterConfig {
   age?: { min?: number; max?: number };
 }
 
+export interface TitleGroup {
+  title: string;
+  groupingString: string;
+  results: SearchResultWebTO[];
+  isExpanded: boolean;
+  hashGroups: HashGroup[];
+  primaryResult: SearchResultWebTO;
+}
+
+export interface HashGroup {
+  hash: string;
+  results: SearchResultWebTO[];
+  isExpanded: boolean;
+  primaryResult: SearchResultWebTO;
+}
+
+export interface GroupedResult {
+  type: "primary" | "grouped";
+  titleGroup: TitleGroup;
+  hashGroup: HashGroup;
+  result: SearchResultWebTO;
+  isExpanded: boolean;
+  canExpand: boolean;
+}
+
 @Component({
   selector: "app-search-results",
   templateUrl: "./search-results.component.html",
@@ -41,7 +66,11 @@ export class SearchResultsComponent implements OnInit {
 
   // Filtered and sorted results
   filteredResults: SearchResultWebTO[] = [];
-  displayedResults: SearchResultWebTO[] = [];
+  displayedResults: GroupedResult[] = [];
+
+  // Grouped results
+  titleGroups: TitleGroup[] = [];
+  groupedResults: GroupedResult[] = [];
 
   ngOnInit() {
     this.updateResults();
@@ -113,6 +142,8 @@ export class SearchResultsComponent implements OnInit {
   applyFiltersAndSorting() {
     if (!this.searchResponse?.searchResults) {
       this.filteredResults = [];
+      this.titleGroups = [];
+      this.groupedResults = [];
       return;
     }
 
@@ -121,10 +152,18 @@ export class SearchResultsComponent implements OnInit {
     // Apply filters
     results = this.applyFilters(results);
 
-    // Apply sorting
-    results = this.applySorting(results);
-
     this.filteredResults = results;
+
+    // Group the results (sorting is handled within grouping)
+    this.titleGroups = this.groupResults(results);
+    this.groupedResults = this.createGroupedResults();
+
+    // Debug logging
+    console.log("Grouping:", {
+      originalResults: results.length,
+      titleGroups: this.titleGroups.length,
+      groupedResults: this.groupedResults.length
+    });
   }
 
   applyFilters(results: SearchResultWebTO[]): SearchResultWebTO[] {
@@ -234,7 +273,7 @@ export class SearchResultsComponent implements OnInit {
   }
 
   calculatePagination() {
-    this.totalPages = Math.ceil(this.filteredResults.length / this.pageSize);
+    this.totalPages = Math.ceil(this.groupedResults.length / this.pageSize);
     if (this.currentPage > this.totalPages) {
       this.currentPage = 1;
     }
@@ -243,7 +282,287 @@ export class SearchResultsComponent implements OnInit {
   updateDisplayedResults() {
     const startIndex = (this.currentPage - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.displayedResults = this.filteredResults.slice(startIndex, endIndex);
+    this.displayedResults = this.groupedResults.slice(startIndex, endIndex);
+
+    // Debug logging
+    console.log("Pagination:", {
+      total: this.groupedResults.length,
+      page: this.currentPage,
+      pageSize: this.pageSize,
+      startIndex,
+      endIndex,
+      displayedCount: this.displayedResults.length
+    });
+  }
+
+  // Grouping methods
+  getGroupingString(result: SearchResultWebTO): string {
+    // Normalize title for grouping - remove common suffixes and prefixes
+    let title = result.title?.toLowerCase() || "";
+
+    // Remove common suffixes
+    const suffixes = [
+      "hdtv", "web-dl", "webrip", "bluray", "dvdrip", "xvid", "x264", "x265", "hevc",
+      "aac", "ac3", "dts", "mp3", "flac", "mkv", "avi", "mp4", "m4v",
+      "proper", "repack", "rerip", "extended", "directors.cut", "unrated",
+      "1080p", "720p", "480p", "2160p", "4k", "uhd"
+    ];
+
+    suffixes.forEach(suffix => {
+      // More flexible regex to match suffixes with various separators
+      const regex = new RegExp(`[\\s\\.\\-_]${suffix}(?:[\\s\\.\\-_]|$)`, "gi");
+      title = title.replace(regex, " ");
+    });
+
+    // Remove year patterns
+    title = title.replace(/\(?\d{4}\)?/g, "");
+
+    // Clean up extra spaces and normalize
+    title = title.replace(/\s+/g, " ").trim();
+
+    return title;
+  }
+
+  groupResults(results: SearchResultWebTO[]): TitleGroup[] {
+    // Group by title first
+    const titleGroupsMap = new Map<string, SearchResultWebTO[]>();
+
+    results.forEach(result => {
+      const groupingString = this.getGroupingString(result);
+      if (!titleGroupsMap.has(groupingString)) {
+        titleGroupsMap.set(groupingString, []);
+      }
+      titleGroupsMap.get(groupingString)!.push(result);
+    });
+
+    // Create title groups and sort them
+    const titleGroups: TitleGroup[] = [];
+
+    titleGroupsMap.forEach((results, groupingString) => {
+      // Sort results within the title group
+      const sortedResults = this.sortResultsWithinGroup(results);
+
+      // Group by hash
+      const hashGroupsMap = new Map<string, SearchResultWebTO[]>();
+      sortedResults.forEach(result => {
+        const hash = result.hash || "";
+        if (!hashGroupsMap.has(hash)) {
+          hashGroupsMap.set(hash, []);
+        }
+        hashGroupsMap.get(hash)!.push(result);
+      });
+
+      // Create hash groups
+      const hashGroups: HashGroup[] = [];
+      hashGroupsMap.forEach((hashResults, hash) => {
+        const sortedHashResults = this.sortHashGroupResults(hashResults);
+        hashGroups.push({
+          hash,
+          results: sortedHashResults,
+          isExpanded: false,
+          primaryResult: sortedHashResults[0]
+        });
+      });
+
+      // Sort hash groups by their primary result
+      hashGroups.sort((a, b) => {
+        if (this.sortConfig.column === "title") {
+          // Sort by indexer score first, then by age
+          const scoreA = this.getResultIndexerScore(a.primaryResult);
+          const scoreB = this.getResultIndexerScore(b.primaryResult);
+          if (scoreA !== scoreB) {
+            return scoreB - scoreA; // Higher score first
+          }
+          return (b.primaryResult.age || 0) - (a.primaryResult.age || 0); // Newer first
+        } else {
+          // Sort by the selected predicate
+          return this.compareResults(a.primaryResult, b.primaryResult);
+        }
+      });
+
+      titleGroups.push({
+        title: sortedResults[0].title || "",
+        groupingString,
+        results: sortedResults,
+        isExpanded: false, // Title groups are collapsed by default
+        hashGroups,
+        primaryResult: hashGroups[0]?.primaryResult || sortedResults[0]
+      });
+    });
+
+    // Sort title groups by their first hash group's primary result
+    titleGroups.sort((a, b) => {
+      if (a.hashGroups.length === 0 || b.hashGroups.length === 0) {
+        return 0;
+      }
+      return this.compareResults(a.hashGroups[0].primaryResult, b.hashGroups[0].primaryResult);
+    });
+
+    return titleGroups;
+  }
+
+  sortResultsWithinGroup(results: SearchResultWebTO[]): SearchResultWebTO[] {
+    return results.sort((a, b) => this.compareResults(a, b));
+  }
+
+  sortHashGroupResults(results: SearchResultWebTO[]): SearchResultWebTO[] {
+    if (this.sortConfig.column === "title") {
+      // Sort by indexer score first, then by age
+      return results.sort((a, b) => {
+        const scoreA = this.getResultIndexerScore(a);
+        const scoreB = this.getResultIndexerScore(b);
+        if (scoreA !== scoreB) {
+          return scoreB - scoreA; // Higher score first
+        }
+        return (b.age || 0) - (a.age || 0); // Newer first
+      });
+    } else {
+      // Sort by the selected predicate
+      return results.sort((a, b) => this.compareResults(a, b));
+    }
+  }
+
+  getIndexerScore(indexerName: string): number {
+    // Simple scoring - can be enhanced later
+    const scores: { [key: string]: number } = {
+      "nzbgeek": 100,
+      "dognzb": 90,
+      "nzbplanet": 85,
+      "nzb.su": 80,
+      "omgwtfnzbs": 75,
+      "nzbindex": 70,
+      "binsearch": 50,
+      "nzbs.org": 45
+    };
+    return scores[indexerName.toLowerCase()] || 0;
+  }
+
+  getResultIndexerScore(result: SearchResultWebTO): number {
+    // Use the indexerscore property if available, otherwise fall back to indexer name scoring
+    return (result as any).indexerscore || this.getIndexerScore(result.indexer);
+  }
+
+  compareResults(a: SearchResultWebTO, b: SearchResultWebTO): number {
+    let aValue: any;
+    let bValue: any;
+
+    switch (this.sortConfig.column) {
+      case "title":
+        aValue = a.title?.toLowerCase() || "";
+        bValue = b.title?.toLowerCase() || "";
+        break;
+      case "indexer":
+        aValue = a.indexer?.toLowerCase() || "";
+        bValue = b.indexer?.toLowerCase() || "";
+        break;
+      case "category":
+        aValue = a.category?.toLowerCase() || "";
+        bValue = b.category?.toLowerCase() || "";
+        break;
+      case "size":
+        aValue = a.size || 0;
+        bValue = b.size || 0;
+        break;
+      case "details":
+        aValue = a.grabs || 0;
+        bValue = b.grabs || 0;
+        break;
+      case "age":
+        aValue = a.age || 0;
+        bValue = b.age || 0;
+        break;
+      default:
+        return 0;
+    }
+
+    if (aValue < bValue) {
+      return this.sortConfig.direction === "asc" ? -1 : 1;
+    }
+    if (aValue > bValue) {
+      return this.sortConfig.direction === "asc" ? 1 : -1;
+    }
+    return 0;
+  }
+
+  createGroupedResults(): GroupedResult[] {
+    const groupedResults: GroupedResult[] = [];
+
+    this.titleGroups.forEach((titleGroup, tIdx) => {
+      titleGroup.hashGroups.forEach((hashGroup, hashIndex) => {
+        const isFirstHashGroup = hashIndex === 0;
+        let resultsToShow: SearchResultWebTO[] = [];
+
+        if (hashGroup.isExpanded) {
+          resultsToShow = hashGroup.results;
+        } else if (titleGroup.isExpanded) {
+          resultsToShow = [hashGroup.results[0]];
+        } else if (isFirstHashGroup) {
+          resultsToShow = [hashGroup.results[0]];
+        }
+
+        resultsToShow.forEach((result, resultIndex) => {
+          const isPrimaryResult = resultIndex === 0;
+          const canExpand = hashGroup.results.length > 1 || titleGroup.hashGroups.length > 1;
+
+          groupedResults.push({
+            type: isPrimaryResult && isFirstHashGroup ? "primary" : "grouped",
+            titleGroup,
+            hashGroup,
+            result,
+            isExpanded: titleGroup.isExpanded || hashGroup.isExpanded,
+            canExpand,
+          });
+        });
+
+        // Debug: log what is being shown for this hash group
+        console.log("[GROUPED RESULTS]", {
+          titleGroupIdx: tIdx,
+          title: titleGroup.title,
+          titleExpanded: titleGroup.isExpanded,
+          hash: hashGroup.hash,
+          hashExpanded: hashGroup.isExpanded,
+          resultsToShow: resultsToShow.map(r => r.title)
+        });
+      });
+    });
+
+    // Debug: log the final grouped results
+    console.log("[FINAL GROUPED RESULTS]", groupedResults.map(gr => ({
+      title: gr.titleGroup.title,
+      hash: gr.hashGroup.hash,
+      result: gr.result.title,
+      isExpanded: gr.isExpanded,
+      type: gr.type
+    })));
+
+    return groupedResults;
+  }
+
+  toggleTitleGroupExpansion(titleGroup: TitleGroup) {
+    titleGroup.isExpanded = !titleGroup.isExpanded;
+    console.log("[TOGGLE TITLE GROUP]", {
+      title: titleGroup.title,
+      isExpanded: titleGroup.isExpanded,
+      hashGroups: titleGroup.hashGroups.map(hg => ({hash: hg.hash, isExpanded: hg.isExpanded}))
+    });
+    this.updateGroupedResults();
+  }
+
+  toggleHashGroupExpansion(hashGroup: HashGroup) {
+    hashGroup.isExpanded = !hashGroup.isExpanded;
+    console.log("[TOGGLE HASH GROUP]", {
+      hash: hashGroup.hash,
+      isExpanded: hashGroup.isExpanded,
+      results: hashGroup.results.map(r => r.title)
+    });
+    this.updateGroupedResults();
+  }
+
+
+  updateGroupedResults() {
+    this.groupedResults = this.createGroupedResults();
+    this.calculatePagination();
+    this.updateDisplayedResults();
   }
 
   // Sorting methods
@@ -353,7 +672,7 @@ export class SearchResultsComponent implements OnInit {
   }
 
   get filteredCount(): number {
-    return this.filteredResults.length;
+    return this.groupedResults.length;
   }
 
   // Utility methods

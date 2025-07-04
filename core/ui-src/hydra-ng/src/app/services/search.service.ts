@@ -58,6 +58,7 @@ export interface SearchResultWebTO {
     title: string;
     link: string;
     guid: string;
+    hash: string;
     detailsLink: string;
     publishDate: string;
     category: string;

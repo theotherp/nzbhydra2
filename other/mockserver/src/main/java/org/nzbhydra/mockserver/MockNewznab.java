@@ -374,6 +374,12 @@ public class MockNewznab {
         } else {
             endIndex = 0;
         }
+        if (params.getQ() != null) {
+            try {
+                endIndex = Integer.parseInt(params.getQ().replace("duplicates", "").replaceAll(" .*", ""));
+            } catch (NumberFormatException e) {
+            }
+        }
 
         if (params.getQ() != null && params.getQ().startsWith("show")) {
             endIndex = Integer.parseInt(params.getQ().substring(4));
