@@ -1,3 +1,15 @@
+### v7.15.3 (2025-07-04)
+
+**Fixed** External API stats requests should work again.
+
+
+
+### v7.15.2 (2025-06-19)
+
+**Fixed** Show webp covers. See <a href="https://github.com/theotherp/nzbhydra2/issues/995">#995</a>
+
+
+
 ### v7.15.1 (2025-06-17)
 
 **Fixed** Button to downloads results as zip file was gone. I wanted it to be hidden for torbox results and it never showed up. I don't understand my GUI code anymore so now it will be shown even if it doesn't work for Torbox. See <a href="https://github.com/theotherp/nzbhydra2/issues/994">#994</a>
