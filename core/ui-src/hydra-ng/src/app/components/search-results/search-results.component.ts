@@ -1,4 +1,5 @@
 import {Component, Input, OnInit} from "@angular/core";
+import {LocalStorageService} from "../../services/local-storage.service";
 import {SearchResponse, SearchResultWebTO} from "../../services/search.service";
 
 export interface SortConfig {
@@ -50,6 +51,9 @@ export class SearchResultsComponent implements OnInit {
   @Input() searchResponse?: SearchResponse;
   @Input() isLoading = false;
 
+  constructor(private localStorageService: LocalStorageService) {
+  }
+
 
   // Display properties
   currentPage = 1;
@@ -73,6 +77,7 @@ export class SearchResultsComponent implements OnInit {
   groupedResults: GroupedResult[] = [];
 
   ngOnInit() {
+    this.loadSortConfig();
     this.updateResults();
   }
 
@@ -573,6 +578,7 @@ export class SearchResultsComponent implements OnInit {
       this.sortConfig.column = column;
       this.sortConfig.direction = "asc";
     }
+    this.saveSortConfig();
     this.applyFiltersAndSorting();
     this.calculatePagination();
     this.updateDisplayedResults();
@@ -763,5 +769,17 @@ export class SearchResultsComponent implements OnInit {
   // Make Math available in template
   get Math() {
     return Math;
+  }
+
+  // Local storage methods for sort configuration
+  private loadSortConfig(): void {
+    const savedConfig = this.localStorageService.getItem<SortConfig>("searchResultsSortConfig");
+    if (savedConfig) {
+      this.sortConfig = savedConfig;
+    }
+  }
+
+  private saveSortConfig(): void {
+    this.localStorageService.setItem("searchResultsSortConfig", this.sortConfig);
   }
 } 
