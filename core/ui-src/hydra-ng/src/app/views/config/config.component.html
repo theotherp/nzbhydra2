@@ -1,0 +1,51 @@
+<div class="config-container">
+  <h2>Configuration</h2>
+  
+  <ul class="nav nav-tabs" id="configTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" [class.active]="activeTab === 0" type="button" role="tab">Main</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" [class.active]="activeTab === 1" type="button" role="tab">Auth</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" [class.active]="activeTab === 2" type="button" role="tab">Searching</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" [class.active]="activeTab === 3" type="button" role="tab">Categories</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" [class.active]="activeTab === 4" type="button" role="tab">Downloading</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" [class.active]="activeTab === 5" type="button" role="tab">Indexers</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" [class.active]="activeTab === 6" type="button" role="tab">Notifications</button>
+    </li>
+  </ul>
+  
+  <div class="tab-content" id="configTabContent">
+    <div class="tab-pane fade" [class.show]="activeTab === 0" [class.active]="activeTab === 0">
+      <p>Main configuration will be implemented here.</p>
+    </div>
+    <div class="tab-pane fade" [class.show]="activeTab === 1" [class.active]="activeTab === 1">
+      <p>Auth configuration will be implemented here.</p>
+    </div>
+    <div class="tab-pane fade" [class.show]="activeTab === 2" [class.active]="activeTab === 2">
+      <p>Searching configuration will be implemented here.</p>
+    </div>
+    <div class="tab-pane fade" [class.show]="activeTab === 3" [class.active]="activeTab === 3">
+      <p>Categories configuration will be implemented here.</p>
+    </div>
+    <div class="tab-pane fade" [class.show]="activeTab === 4" [class.active]="activeTab === 4">
+      <p>Downloading configuration will be implemented here.</p>
+    </div>
+    <div class="tab-pane fade" [class.show]="activeTab === 5" [class.active]="activeTab === 5">
+      <p>Indexers configuration will be implemented here.</p>
+    </div>
+    <div class="tab-pane fade" [class.show]="activeTab === 6" [class.active]="activeTab === 6">
+      <p>Notifications configuration will be implemented here.</p>
+    </div>
+  </div>
+</div> 

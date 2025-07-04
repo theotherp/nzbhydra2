@@ -1,0 +1,57 @@
+## Overview
+
+This document describes the migration of NZBHydra2's AngularJS 1.x frontend to modern Angular 17+ with Bootstrap 5.
+The backend Spring Boot application will remain largely unchanged, with the new Angular app replacing the old UI entirely.
+
+## Migration Strategy
+
+- **Complete replacement**: No hybrid approach, old AngularJS code will be removed after migration
+- **Minimal backend changes**: Keep existing REST API endpoints unchanged
+- **Feature parity**: Ensure all current functionality is preserved
+- **Modern UX**: Improve user experience with Bootstrap 5 and modern Angular patterns
+- **Tests**: All relevant logic in the new Angular components should be tested
+
+## Instructions
+
+- Unless stated otherwise ignore:
+    - authentication, session handling or anything other security related
+    - themes
+- Use as many common SCSS styles or variables as possible. Do not create new color definitions for each component. Use bootstrap components and variables where it makes sense.
+
+## Backend Integration
+
+### Spring Boot Configuration
+
+- Keep existing REST API endpoints unchanged
+- Configure static file serving for Angular build output
+- Update CORS configuration if needed
+- Maintain existing authentication mechanisms
+
+### Build Integration
+
+- Angular build output goes to `core/src/main/resources/static/`
+- Configure Angular CLI for production builds
+- Set up development proxy for API calls
+- Ensure proper asset handling
+
+### Bundle Optimization
+
+- Lazy loading for route-based code splitting
+- Tree shaking for unused code removal
+- Asset optimization (images, fonts)
+- CDN integration for static assets
+
+### Key Decisions
+
+1. **State Management**: Use NgRx for complex state, Angular signals for simple state
+2. **UI Framework**: Bootstrap 5 with custom SCSS themes
+3. **Charts**: Replace NVD3 with Chart.js or ng2-charts
+4. **Forms**: Replace Formly with Angular Reactive Forms
+5. **Testing**: Jest for unit tests, Cypress for E2E tests
+
+### Challenges and Solutions
+
+1. **Complex Forms**: Build custom dynamic form system
+2. **Real-time Updates**: Implement WebSocket or polling
+3. **Theme System**: Create Bootstrap 5 theme variables
+4. **Performance**: Optimize bundle size and loading times

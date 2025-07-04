@@ -1,0 +1,57 @@
+<div class="system-container">
+  <h2>System</h2>
+  
+  <ul class="nav nav-tabs" id="systemTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" [class.active]="activeTab === 0" type="button" role="tab">Control</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" [class.active]="activeTab === 1" type="button" role="tab">Updates</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" [class.active]="activeTab === 2" type="button" role="tab">Log</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" [class.active]="activeTab === 3" type="button" role="tab">Tasks</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" [class.active]="activeTab === 4" type="button" role="tab">Backup</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" [class.active]="activeTab === 5" type="button" role="tab">Bug Report</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" [class.active]="activeTab === 6" type="button" role="tab">News</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" [class.active]="activeTab === 7" type="button" role="tab">About</button>
+    </li>
+  </ul>
+  
+  <div class="tab-content" id="systemTabContent">
+    <div class="tab-pane fade" [class.show]="activeTab === 0" [class.active]="activeTab === 0">
+      <p>System control functionality will be implemented here.</p>
+    </div>
+    <div class="tab-pane fade" [class.show]="activeTab === 1" [class.active]="activeTab === 1">
+      <p>Updates functionality will be implemented here.</p>
+    </div>
+    <div class="tab-pane fade" [class.show]="activeTab === 2" [class.active]="activeTab === 2">
+      <p>Log functionality will be implemented here.</p>
+    </div>
+    <div class="tab-pane fade" [class.show]="activeTab === 3" [class.active]="activeTab === 3">
+      <p>Tasks functionality will be implemented here.</p>
+    </div>
+    <div class="tab-pane fade" [class.show]="activeTab === 4" [class.active]="activeTab === 4">
+      <p>Backup functionality will be implemented here.</p>
+    </div>
+    <div class="tab-pane fade" [class.show]="activeTab === 5" [class.active]="activeTab === 5">
+      <p>Bug report functionality will be implemented here.</p>
+    </div>
+    <div class="tab-pane fade" [class.show]="activeTab === 6" [class.active]="activeTab === 6">
+      <p>News functionality will be implemented here.</p>
+    </div>
+    <div class="tab-pane fade" [class.show]="activeTab === 7" [class.active]="activeTab === 7">
+      <p>About functionality will be implemented here.</p>
+    </div>
+  </div>
+</div> 

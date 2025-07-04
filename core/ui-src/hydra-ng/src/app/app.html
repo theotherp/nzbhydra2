@@ -1,0 +1,49 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <div class="container">
+    <a class="navbar-brand" routerLink="/">NZBHydra2</a>
+    
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item" *ngIf="showSearch">
+          <a class="nav-link" routerLink="/search" routerLinkActive="active">Search</a>
+        </li>
+        <li class="nav-item" *ngIf="showStats && keepHistory">
+          <a class="nav-link" routerLink="/stats" routerLinkActive="active">History & Stats</a>
+        </li>
+        <li class="nav-item" *ngIf="showStats && !keepHistory">
+          <a class="nav-link" routerLink="/stats" routerLinkActive="active">Indexer statuses</a>
+        </li>
+        <li class="nav-item" *ngIf="showAdmin">
+          <a class="nav-link" routerLink="/config" routerLinkActive="active">Config</a>
+        </li>
+        <li class="nav-item" *ngIf="showAdmin">
+          <a class="nav-link" routerLink="/system" routerLinkActive="active">System</a>
+        </li>
+      </ul>
+      
+      <ul class="navbar-nav" *ngIf="showLoginout">
+        <li class="nav-item">
+          <a class="nav-link" href="#" (click)="loginout()" title="{{ loginlogoutText }}">
+            <i class="bi bi-power"></i>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container mt-4">
+  <router-outlet></router-outlet>
+</div>
+
+<!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
+<!-- * * * * * * * * * * * The content above * * * * * * * * * * * * -->
+<!-- * * * * * * * * * * is only a placeholder * * * * * * * * * * * -->
+<!-- * * * * * * * * * * and can be replaced.  * * * * * * * * * * * -->
+<!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
+<!-- * * * * * * * * * * End of Placeholder  * * * * * * * * * * * * -->
+<!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->

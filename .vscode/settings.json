@@ -1,0 +1,19 @@
+{
+  "files.watcherExclude": {
+    "**/target/**": true,
+    "**/src/main/java/**": true,
+    "**/generated/**": true
+  },
+  "search.exclude": {
+    "**/target/**": true,
+    "**/build/**": true
+  },
+  "typescript.tsserver.exclude": [
+    "**/target/**"
+  ],
+  "eslint.enable": false,
+  "prettier.disableLanguages": [
+    "java",
+    "xml"
+  ]
+}

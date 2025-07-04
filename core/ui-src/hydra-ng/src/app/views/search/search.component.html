@@ -1,0 +1,177 @@
+<div class="search-container">
+  <h2>Search</h2>
+  <p>Search functionality will be implemented here.</p>
+</div>
+
+<!-- Search Form -->
+<div *ngIf="availableIndexers.length === 0">
+  <div class="row justify-content-center">
+    <div class="col-md-8 alert alert-info" role="alert">
+      No indexers are configured or enabled. Please go to the <a routerLink="/config/indexers" style="text-decoration: underline">indexer configuration</a> and add or enable some.
+    </div>
+  </div>
+</div>
+
+<div *ngIf="availableIndexers.length > 0">
+  <div class="row justify-content-center">
+    <div class="col-md-10">
+      <form [formGroup]="searchForm" (ngSubmit)="initiateSearch()" class="mb-3">
+        <div class="mb-3 row align-items-center">
+          <label class="col-sm-2 col-form-label">Search</label>
+          <div class="col-sm-10">
+            <div class="input-group position-relative">
+              <!-- Category Dropdown -->
+              <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                {{ category?.name }}
+              </button>
+              <ul class="dropdown-menu">
+                <li *ngFor="let cat of categories">
+                  <a class="dropdown-item" href="#" (click)="toggleCategory(cat, $event)">{{ cat.name }}</a>
+                </li>
+              </ul>
+              
+              <!-- By-ID Checkbox for Movies/TV -->
+              <div class="input-group-text" *ngIf="shouldShowAutocomplete()"
+                   title="If enabled the search is done using an ID from TheTVDB or IMDB. The ID is retrieved using autocomplete.">
+                <input type="checkbox" class="form-check-input"
+                       [(ngModel)]="isAutocompleteEnabled"
+                       (change)="toggleAutocomplete()">
+              </div>
+              
+              <!-- Selected Item Display -->
+              <div class="input-group-text" *ngIf="selectedItem?.title"
+                   style="max-width: 250px; overflow: hidden; text-overflow: ellipsis;">
+                <button type="button" class="btn-close btn-close-sm me-2"
+                        (click)="clearAutocomplete()" title="Clear selection"></button>
+                <span>{{ selectedItem?.title }}</span>
+                <span *ngIf="selectedItem?.year"> ({{ selectedItem?.year }})</span>
+              </div>
+              
+              <!-- Search Input -->
+              <input #queryInput type="text" class="form-control" formControlName="query"
+                     placeholder="Search..."
+                     [title]="searchBoxTooltip"
+                     (focus)="onAutocompleteFocus()"
+                     (blur)="onAutocompleteBlur()"
+                     (keypress)="onKeyPress($event)">
+              
+              <button type="button" class="btn btn-outline-secondary"
+                      (click)="clearQuery()"
+                      *ngIf="searchForm.value.query && !selectedItem">
+                <i class="bi bi-x"></i>
+              </button>
+              
+              <!-- Season/Episode inputs for TV -->
+              <input type="text" class="form-control" placeholder="S"
+                     *ngIf="category?.searchType === 'TVSEARCH'"
+                     style="width: 60px;" formControlName="season"
+                     (keypress)="onKeyPress($event)">
+              <input type="text" class="form-control" placeholder="E"
+                     *ngIf="category?.searchType === 'TVSEARCH'"
+                     style="width: 60px;" formControlName="episode"
+                     (keypress)="onKeyPress($event)">
+              
+              <!-- Search Button -->
+              <button class="btn btn-primary" type="submit">Go!</button>
+            </div>
+            
+            <!-- Autocomplete Dropdown -->
+            <div class="position-absolute w-100" style="z-index: 1000;" *ngIf="showAutocomplete">
+              <div class="dropdown-menu show w-100">
+                <div class="dropdown-item" *ngIf="isAutocompleteLoading">
+                  <i class="bi bi-arrow-clockwise spin"></i> Loading...
+                </div>
+                <div class="dropdown-item" *ngIf="!isAutocompleteLoading && autocompleteResults.length === 0">
+                  No results found
+                </div>
+                <a class="dropdown-item" href="#"
+                   *ngFor="let item of autocompleteResults"
+                   (click)="selectAutocompleteItem(item, $event)">
+                  <div class="d-flex align-items-center">
+                    <img *ngIf="item.posterUrl" [src]="item.posterUrl"
+                         style="width: 40px; height: 60px; object-fit: cover;"
+                         class="me-2">
+                    <div>
+                      <div>{{ item.title }}</div>
+                      <small class="text-muted" *ngIf="item.year">({{ item.year }})</small>
+                    </div>
+                  </div>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+      
+      <!-- Indexer Selection -->
+      <div *ngIf="showIndexerSelection">
+        <div class="mb-3 row align-items-center">
+          <label class="col-sm-2 col-form-label">Indexers</label>
+          <div class="col-sm-10 d-flex flex-wrap align-items-center">
+            <div *ngFor="let indexer of availableIndexers" class="form-check me-3 mb-2">
+              <input class="form-check-input" type="checkbox"
+                     [checked]="isIndexerSelected(indexer.name)"
+                     (change)="onIndexerChange(indexer)">
+              <label class="form-check-label">{{ indexer.name }}</label>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Advanced Search Options -->
+      <form [formGroup]="searchForm" (ngSubmit)="initiateSearch()" class="form-search">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="mb-3 row align-items-center">
+              <label class="col-sm-4 col-form-label">Age</label>
+              <div class="col-sm-4">
+                <div class="input-group">
+                  <span class="input-group-text">Min</span>
+                  <input type="number" class="form-control" formControlName="minage"
+                         (keypress)="onKeyPress($event)">
+                  <span class="input-group-text">days</span>
+                </div>
+              </div>
+              <div class="col-sm-4">
+                <div class="input-group">
+                  <span class="input-group-text">Max</span>
+                  <input type="number" class="form-control" formControlName="maxage"
+                         (keypress)="onKeyPress($event)">
+                  <span class="input-group-text">days</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="mb-3 row align-items-center">
+              <label class="col-sm-4 col-form-label">Size</label>
+              <div class="col-sm-4">
+                <div class="input-group">
+                  <span class="input-group-text">Min</span>
+                  <input type="number" class="form-control" formControlName="minsize"
+                         (keypress)="onKeyPress($event)">
+                  <span class="input-group-text">MB</span>
+                </div>
+              </div>
+              <div class="col-sm-4">
+                <div class="input-group">
+                  <span class="input-group-text">Max</span>
+                  <input type="number" class="form-control" formControlName="maxsize"
+                         (keypress)="onKeyPress($event)">
+                  <span class="input-group-text">MB</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+      
+      <!-- Search Results -->
+      <app-search-results
+        *ngIf="showResults"
+        [searchResponse]="searchResponse"
+        [isLoading]="isSearching">
+      </app-search-results>
+    </div>
+  </div>
+</div> 

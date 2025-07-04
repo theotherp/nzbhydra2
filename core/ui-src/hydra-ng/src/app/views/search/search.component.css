@@ -1,0 +1,40 @@
+/* Search component styles */
+
+.spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Autocomplete dropdown styling */
+.dropdown-menu.show {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.dropdown-item:hover {
+    background-color: #f8f9fa;
+}
+
+/* Selected item display */
+.input-group-text .btn-close {
+    font-size: 0.5rem;
+    padding: 0.125rem;
+}
+
+/* Autocomplete item styling */
+.dropdown-item img {
+    border-radius: 4px;
+}
+
+/* Loading state */
+.dropdown-item .bi-arrow-clockwise {
+    margin-right: 0.5rem;
+} 
