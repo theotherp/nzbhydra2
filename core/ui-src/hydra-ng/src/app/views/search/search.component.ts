@@ -1,10 +1,10 @@
-import {Component, OnInit, ViewChild, ElementRef} from "@angular/core";
+import {Component, ElementRef, OnInit, ViewChild} from "@angular/core";
 import {FormBuilder, FormGroup} from "@angular/forms";
-import {Router, ActivatedRoute} from "@angular/router";
-import {MediaInfoService, MediaInfo, AutocompleteType} from "../../services/media-info.service";
-import {SearchService, SearchRequestParameters, SearchResponse} from "../../services/search.service";
-import {debounceTime, distinctUntilChanged, switchMap, catchError} from "rxjs/operators";
-import {of, Observable} from "rxjs";
+import {ActivatedRoute, Router} from "@angular/router";
+import {Observable, of} from "rxjs";
+import {catchError, debounceTime, distinctUntilChanged, switchMap} from "rxjs/operators";
+import {AutocompleteType, MediaInfo, MediaInfoService} from "../../services/media-info.service";
+import {SearchRequestParameters, SearchResponse, SearchService} from "../../services/search.service";
 
 interface Category {
     name: string;
@@ -67,7 +67,8 @@ export class SearchComponent implements OnInit {
             season: [""],
             episode: [""],
             category: [""],
-            indexers: [[]]
+            indexers: [[]],
+            autocomplete: [true] // Enable autocomplete by default
         });
     }
 
@@ -163,7 +164,8 @@ export class SearchComponent implements OnInit {
             debounceTime(300),
             distinctUntilChanged(),
             switchMap(value => {
-                if (!value || value.length < 2 || !this.shouldShowAutocomplete() || !this.isAutocompleteEnabled) {
+                const autocompleteEnabled = this.searchForm.get("autocomplete")?.value;
+                if (!value || value.length < 2 || !this.shouldShowAutocomplete() || !autocompleteEnabled) {
                     this.showAutocomplete = false;
                     return of([]);
                 }
@@ -344,6 +346,16 @@ export class SearchComponent implements OnInit {
         this.updateSearchBoxTooltip();
     }
 
+    clearForm() {
+        this.searchForm.reset();
+        this.query = "";
+        this.selectedItem = null;
+        this.showAutocomplete = false;
+        this.autocompleteResults = [];
+        this.category = this.categories[0];
+        this.setFocusToSearchInput();
+    }
+
     clearAutocomplete() {
         this.selectedItem = null;
         this.query = "";
@@ -375,7 +387,8 @@ export class SearchComponent implements OnInit {
     }
 
     onAutocompleteFocus() {
-        if (this.shouldShowAutocomplete() && this.searchForm.get("query")?.value?.length >= 2) {
+        const autocompleteEnabled = this.searchForm.get("autocomplete")?.value;
+        if (this.shouldShowAutocomplete() && this.searchForm.get("query")?.value?.length >= 2 && autocompleteEnabled) {
             this.showAutocomplete = true;
         }
     }
@@ -388,8 +401,9 @@ export class SearchComponent implements OnInit {
     }
 
     toggleAutocomplete() {
-        this.isAutocompleteEnabled = !this.isAutocompleteEnabled;
-        if (!this.isAutocompleteEnabled) {
+        const currentValue = this.searchForm.get("autocomplete")?.value;
+        this.searchForm.get("autocomplete")?.setValue(!currentValue);
+        if (!this.searchForm.get("autocomplete")?.value) {
             this.showAutocomplete = false;
             this.selectedItem = null;
         }

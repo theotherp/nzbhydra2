@@ -3,20 +3,219 @@
 </div>
 
 <div *ngIf="!isLoading && searchResponse" class="search-results">
+  <!-- Search Statistics -->
   <div class="alert alert-success">
     <strong>{{ totalResults }} results found</strong>
     <br>
     <small class="text-muted">
       {{ availableResults }} available • {{ processedResults }} processed • {{ rejectedResults }} rejected • {{ duplicateResults }} duplicates
+      <span *ngIf="filteredCount !== totalResults">• {{ filteredCount }} filtered</span>
     </small>
   </div>
-  
+
   <div *ngIf="!hasResults" class="alert alert-warning">
     No results found for your search criteria.
   </div>
   
-  <!-- TODO: Add actual search results display here -->
-  <div *ngIf="hasResults" class="mt-3">
-    <p class="text-muted">Search results display will be implemented in the next iteration.</p>
+  <!-- Search Results Table -->
+  <div *ngIf="hasResults" class="mt-4">
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead class="table-light">
+        <tr>
+          <!-- Title Column -->
+          <th class="col-title">
+            <div class="d-flex align-items-center">
+              <span>Title</span>
+              <i class="bi ms-1" [class]="getSortIcon('title')" (click)="onSortIconClick($event, 'title')" style="cursor:pointer;"></i>
+              <input type="text" class="form-control form-control-sm ms-2 title-search-input" placeholder="Filter title..."
+                     [value]="filterConfig.title || ''"
+                     (input)="updateTitleFilter($any($event.target).value)"
+                     (keydown)="onFilterInputKeydown($event)">
+            </div>
+          </th>
+          
+          <!-- Indexer Column -->
+          <th class="col-indexer">
+            <div class="d-flex align-items-center">
+              <span>Indexer</span>
+              <i class="bi ms-1" [class]="getSortIcon('indexer')" (click)="onSortIconClick($event, 'indexer')" style="cursor:pointer;"></i>
+              <i class="bi bi-funnel ms-1 filter-icon" [class.text-primary]="isFilterActive('indexer')" tabindex="0" data-bs-toggle="dropdown" aria-expanded="false" style="cursor:pointer;"></i>
+              <div class="dropdown-menu p-2" style="min-width: 220px;">
+                <div *ngFor="let indexer of availableIndexers">
+                  <label class="dropdown-item">
+                    <input type="checkbox" class="form-check-input me-2"
+                           [checked]="filterConfig.indexer?.includes(indexer)"
+                           (change)="updateIndexerFilter(getUpdatedFilterValues('indexer', indexer, $event))">
+                    {{ indexer }}
+                  </label>
+                </div>
+              </div>
+            </div>
+          </th>
+          
+          <!-- Category Column -->
+          <th class="col-category">
+            <div class="d-flex align-items-center">
+              <span>Category</span>
+              <i class="bi ms-1" [class]="getSortIcon('category')" (click)="onSortIconClick($event, 'category')" style="cursor:pointer;"></i>
+              <i class="bi bi-funnel ms-1 filter-icon" [class.text-primary]="isFilterActive('category')" tabindex="0" data-bs-toggle="dropdown" aria-expanded="false" style="cursor:pointer;"></i>
+              <div class="dropdown-menu p-2" style="min-width: 220px;">
+                <div *ngFor="let category of availableCategories">
+                  <label class="dropdown-item">
+                    <input type="checkbox" class="form-check-input me-2"
+                           [checked]="filterConfig.category?.includes(category)"
+                           (change)="updateCategoryFilter(getUpdatedFilterValues('category', category, $event))">
+                    {{ category }}
+                  </label>
+                </div>
+              </div>
+            </div>
+          </th>
+          
+          <!-- Size Column -->
+          <th class="col-size">
+            <div class="d-flex align-items-center">
+              <span>Size</span>
+              <i class="bi ms-1" [class]="getSortIcon('size')" (click)="onSortIconClick($event, 'size')" style="cursor:pointer;"></i>
+              <i class="bi bi-funnel ms-1 filter-icon" [class.text-primary]="isRangeFilterActive('size')" tabindex="0" data-bs-toggle="dropdown" aria-expanded="false" style="cursor:pointer;"></i>
+              <div class="dropdown-menu p-3" style="width: 250px;">
+                <div class="mb-2">
+                  <label class="form-label">Min Size (MB)</label>
+                  <input type="number" class="form-control form-control-sm"
+                         placeholder="Min"
+                         [value]="filterConfig.size?.min || ''"
+                         (input)="updateSizeFilter($any($event.target).value, filterConfig.size?.max)"
+                         (keydown)="onFilterInputKeydown($event)">
+                </div>
+                <div class="mb-2">
+                  <label class="form-label">Max Size (MB)</label>
+                  <input type="number" class="form-control form-control-sm"
+                         placeholder="Max"
+                         [value]="filterConfig.size?.max || ''"
+                         (input)="updateSizeFilter(filterConfig.size?.min, $any($event.target).value)"
+                         (keydown)="onFilterInputKeydown($event)">
+                </div>
+              </div>
+            </div>
+          </th>
+          
+          <!-- Details Column -->
+          <th class="col-details">
+            <div class="d-flex align-items-center">
+              <span>Details</span>
+              <i class="bi ms-1" [class]="getSortIcon('details')" (click)="onSortIconClick($event, 'details')" style="cursor:pointer;"></i>
+              <i class="bi bi-funnel ms-1 filter-icon" [class.text-primary]="isRangeFilterActive('details')" tabindex="0" data-bs-toggle="dropdown" aria-expanded="false" style="cursor:pointer;"></i>
+              <div class="dropdown-menu p-3" style="width: 250px;">
+                <div class="mb-2">
+                  <label class="form-label">Min Grabs</label>
+                  <input type="number" class="form-control form-control-sm"
+                         placeholder="Min"
+                         [value]="filterConfig.details?.min || ''"
+                         (input)="updateDetailsFilter($any($event.target).value, filterConfig.details?.max)"
+                         (keydown)="onFilterInputKeydown($event)">
+                </div>
+                <div class="mb-2">
+                  <label class="form-label">Max Grabs</label>
+                  <input type="number" class="form-control form-control-sm"
+                         placeholder="Max"
+                         [value]="filterConfig.details?.max || ''"
+                         (input)="updateDetailsFilter(filterConfig.details?.min, $any($event.target).value)"
+                         (keydown)="onFilterInputKeydown($event)">
+                </div>
+              </div>
+            </div>
+          </th>
+          
+          <!-- Age Column -->
+          <th class="col-age">
+            <div class="d-flex align-items-center">
+              <span>Age</span>
+              <i class="bi ms-1" [class]="getSortIcon('age')" (click)="onSortIconClick($event, 'age')" style="cursor:pointer;"></i>
+              <i class="bi bi-funnel ms-1 filter-icon" [class.text-primary]="isRangeFilterActive('age')" tabindex="0" data-bs-toggle="dropdown" aria-expanded="false" style="cursor:pointer;"></i>
+              <div class="dropdown-menu p-3" style="width: 250px;">
+                <div class="mb-2">
+                  <label class="form-label">Min Age (days)</label>
+                  <input type="number" class="form-control form-control-sm"
+                         placeholder="Min"
+                         [value]="filterConfig.age?.min || ''"
+                         (input)="updateAgeFilter($any($event.target).value, filterConfig.age?.max)"
+                         (keydown)="onFilterInputKeydown($event)">
+                </div>
+                <div class="mb-2">
+                  <label class="form-label">Max Age (days)</label>
+                  <input type="number" class="form-control form-control-sm"
+                         placeholder="Max"
+                         [value]="filterConfig.age?.max || ''"
+                         (input)="updateAgeFilter(filterConfig.age?.min, $any($event.target).value)"
+                         (keydown)="onFilterInputKeydown($event)">
+                </div>
+              </div>
+            </div>
+          </th>
+          
+          <!-- Links Column -->
+          <th class="col-links">Links</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngIf="displayedResults.length === 0" style="height: 200px;">
+          <td colspan="7" class="text-center text-muted align-middle">
+            <div class="py-4">
+              <i class="bi bi-search" style="font-size: 2rem; opacity: 0.5;"></i>
+              <br>
+              <strong>All results are filtered out by your current filters.</strong>
+              <br>
+              <small class="text-muted">Try adjusting your filters to see results.</small>
+            </div>
+          </td>
+        </tr>
+        <tr *ngFor="let result of displayedResults">
+          <td class="col-title">
+            <div class="text-truncate" style="max-width: 300px;" title="{{ result.title }}">
+              {{ result.title }}
+            </div>
+          </td>
+          <td class="col-indexer">{{ result.indexer }}</td>
+          <td class="col-category">{{ result.category }}</td>
+          <td class="col-size">{{ formatSize(result.size) }}</td>
+          <td class="col-details">{{ result.grabs || 0 }}</td>
+          <td class="col-age">{{ formatAge(result.age || 0) }}</td>
+          <td class="col-links">
+            <div class="btn-group btn-group-sm">
+              <a *ngIf="result.downloadUrl" [href]="result.downloadUrl"
+                 class="btn btn-outline-primary btn-sm" target="_blank" title="Download">
+                <i class="bi bi-download"></i>
+              </a>
+              <a *ngIf="result.detailsLink" [href]="result.detailsLink"
+                 class="btn btn-outline-secondary btn-sm" target="_blank" title="Details">
+                <i class="bi bi-info-circle"></i>
+              </a>
+            </div>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <!-- Pagination -->
+    <div *ngIf="totalPages > 1" class="d-flex justify-content-between align-items-center mt-3">
+      <div class="text-muted">
+        Showing {{ (currentPage - 1) * pageSize + 1 }} to {{ Math.min(currentPage * pageSize, filteredCount) }} of {{ filteredCount }} results
+      </div>
+      <nav>
+        <ul class="pagination pagination-sm mb-0">
+          <li class="page-item" [class.disabled]="currentPage === 1">
+            <a class="page-link" href="#" (click)="goToPage(currentPage - 1); $event.preventDefault()">Previous</a>
+          </li>
+          <li *ngFor="let page of getPageNumbers()" class="page-item" [class.active]="page === currentPage">
+            <a class="page-link" href="#" (click)="goToPage(page); $event.preventDefault()">{{ page }}</a>
+          </li>
+          <li class="page-item" [class.disabled]="currentPage === totalPages">
+            <a class="page-link" href="#" (click)="goToPage(currentPage + 1); $event.preventDefault()">Next</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
   </div>
 </div> 

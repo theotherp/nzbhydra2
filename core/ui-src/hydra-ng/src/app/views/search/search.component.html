@@ -13,165 +13,177 @@
 </div>
 
 <div *ngIf="availableIndexers.length > 0">
-  <div class="row justify-content-center">
-    <div class="col-md-10">
-      <form [formGroup]="searchForm" (ngSubmit)="initiateSearch()" class="mb-3">
-        <div class="mb-3 row align-items-center">
-          <label class="col-sm-2 col-form-label">Search</label>
-          <div class="col-sm-10">
-            <div class="input-group position-relative">
-              <!-- Category Dropdown -->
-              <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
-                {{ category?.name }}
-              </button>
-              <ul class="dropdown-menu">
-                <li *ngFor="let cat of categories">
-                  <a class="dropdown-item" href="#" (click)="toggleCategory(cat, $event)">{{ cat.name }}</a>
-                </li>
-              </ul>
-              
-              <!-- By-ID Checkbox for Movies/TV -->
-              <div class="input-group-text" *ngIf="shouldShowAutocomplete()"
-                   title="If enabled the search is done using an ID from TheTVDB or IMDB. The ID is retrieved using autocomplete.">
-                <input type="checkbox" class="form-check-input"
-                       [(ngModel)]="isAutocompleteEnabled"
-                       (change)="toggleAutocomplete()">
-              </div>
-              
-              <!-- Selected Item Display -->
-              <div class="input-group-text" *ngIf="selectedItem?.title"
-                   style="max-width: 250px; overflow: hidden; text-overflow: ellipsis;">
-                <button type="button" class="btn-close btn-close-sm me-2"
-                        (click)="clearAutocomplete()" title="Clear selection"></button>
-                <span>{{ selectedItem?.title }}</span>
-                <span *ngIf="selectedItem?.year"> ({{ selectedItem?.year }})</span>
-              </div>
-              
-              <!-- Search Input -->
-              <input #queryInput type="text" class="form-control" formControlName="query"
-                     placeholder="Search..."
-                     [title]="searchBoxTooltip"
-                     (focus)="onAutocompleteFocus()"
-                     (blur)="onAutocompleteBlur()"
-                     (keypress)="onKeyPress($event)">
-              
-              <button type="button" class="btn btn-outline-secondary"
-                      (click)="clearQuery()"
-                      *ngIf="searchForm.value.query && !selectedItem">
-                <i class="bi bi-x"></i>
-              </button>
-              
-              <!-- Season/Episode inputs for TV -->
-              <input type="text" class="form-control" placeholder="S"
-                     *ngIf="category?.searchType === 'TVSEARCH'"
-                     style="width: 60px;" formControlName="season"
-                     (keypress)="onKeyPress($event)">
-              <input type="text" class="form-control" placeholder="E"
-                     *ngIf="category?.searchType === 'TVSEARCH'"
-                     style="width: 60px;" formControlName="episode"
-                     (keypress)="onKeyPress($event)">
-              
-              <!-- Search Button -->
-              <button class="btn btn-primary" type="submit">Go!</button>
-            </div>
-            
-            <!-- Autocomplete Dropdown -->
-            <div class="position-absolute w-100" style="z-index: 1000;" *ngIf="showAutocomplete">
-              <div class="dropdown-menu show w-100">
-                <div class="dropdown-item" *ngIf="isAutocompleteLoading">
-                  <i class="bi bi-arrow-clockwise spin"></i> Loading...
-                </div>
-                <div class="dropdown-item" *ngIf="!isAutocompleteLoading && autocompleteResults.length === 0">
-                  No results found
-                </div>
-                <a class="dropdown-item" href="#"
-                   *ngFor="let item of autocompleteResults"
-                   (click)="selectAutocompleteItem(item, $event)">
-                  <div class="d-flex align-items-center">
-                    <img *ngIf="item.posterUrl" [src]="item.posterUrl"
-                         style="width: 40px; height: 60px; object-fit: cover;"
-                         class="me-2">
-                    <div>
-                      <div>{{ item.title }}</div>
-                      <small class="text-muted" *ngIf="item.year">({{ item.year }})</small>
-                    </div>
-                  </div>
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </form>
+  <form [formGroup]="searchForm" (ngSubmit)="initiateSearch()" class="mb-3 search-form-wide mx-auto">
+    <div class="input-group input-group-lg">
+      <!-- Category Dropdown -->
+      <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+        {{ category?.name || 'Category' }}
+      </button>
+      <ul class="dropdown-menu">
+        <li *ngFor="let cat of categories">
+          <a class="dropdown-item" href="#" (click)="toggleCategory(cat, $event)">{{ cat.name }}</a>
+        </li>
+      </ul>
       
-      <!-- Indexer Selection -->
-      <div *ngIf="showIndexerSelection">
-        <div class="mb-3 row align-items-center">
-          <label class="col-sm-2 col-form-label">Indexers</label>
-          <div class="col-sm-10 d-flex flex-wrap align-items-center">
-            <div *ngFor="let indexer of availableIndexers" class="form-check me-3 mb-2">
-              <input class="form-check-input" type="checkbox"
-                     [checked]="isIndexerSelected(indexer.name)"
-                     (change)="onIndexerChange(indexer)">
-              <label class="form-check-label">{{ indexer.name }}</label>
+      <!-- Autocomplete Checkbox - only show if autocomplete is available -->
+      <div class="input-group-text" *ngIf="shouldShowAutocomplete()">
+        <input class="form-check-input mt-0" type="checkbox" formControlName="autocomplete" id="autocomplete" aria-label="Search by ID">
+      </div>
+      
+      <!-- Search Input -->
+      <input type="text" class="form-control" formControlName="query" placeholder="Query" aria-label="Query" (keypress)="onKeyPress($event)" (focus)="onAutocompleteFocus()" (blur)="onAutocompleteBlur()">
+      
+      <!-- Clear Button -->
+      <button class="btn btn-success" type="button" (click)="clearForm()">
+        <i class="bi bi-check-circle"></i> Clear
+      </button>
+      
+      <!-- Submit Button -->
+      <button class="btn btn-success" type="submit">
+        <i class="bi bi-check-circle"></i> Submit
+      </button>
+    </div>
+    
+    <!-- Autocomplete Dropdown -->
+    <div class="position-relative">
+      <div *ngIf="showAutocomplete && autocompleteResults.length > 0" class="autocomplete-dropdown">
+        <div class="list-group">
+          <a *ngFor="let item of autocompleteResults"
+             class="list-group-item list-group-item-action"
+             href="#" 
+             (click)="selectAutocompleteItem(item, $event)">
+            <div class="d-flex align-items-center">
+              <!-- Cover Image -->
+              <div class="autocomplete-cover me-3" *ngIf="item.posterUrl">
+                <img [src]="item.posterUrl" [alt]="item.title" class="img-fluid" style="width: 50px; height: 75px; object-fit: cover;">
+              </div>
+              <div class="autocomplete-cover-placeholder me-3" *ngIf="!item.posterUrl">
+                <div class="bg-secondary d-flex align-items-center justify-content-center" style="width: 50px; height: 75px;">
+                  <i class="bi bi-image text-white"></i>
+                </div>
+              </div>
+              
+              <!-- Content -->
+              <div class="flex-grow-1">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div>
+                    <strong>{{ item.title }}</strong>
+                    <div *ngIf="item.year" class="text-muted small">{{ item.year }}</div>
+                    <div *ngIf="item.label" class="text-muted small">{{ item.label }}</div>
+                  </div>
+                  <div class="text-muted small">
+                    <span *ngIf="item.imdbId" class="badge bg-primary me-1">IMDB</span>
+                    <span *ngIf="item.tmdbId" class="badge bg-success me-1">TMDB</span>
+                    <span *ngIf="item.tvdbId" class="badge bg-info me-1">TVDB</span>
+                  </div>
+                </div>
+              </div>
             </div>
+          </a>
+        </div>
+      </div>
+      
+      <!-- Loading state -->
+      <div *ngIf="showAutocomplete && isAutocompleteLoading" class="autocomplete-dropdown">
+        <div class="list-group">
+          <div class="list-group-item text-center">
+            <div class="spinner-border spinner-border-sm" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <span class="ms-2">Loading...</span>
           </div>
         </div>
       </div>
       
-      <!-- Advanced Search Options -->
-      <form [formGroup]="searchForm" (ngSubmit)="initiateSearch()" class="form-search">
-        <div class="row">
-          <div class="col-md-6">
-            <div class="mb-3 row align-items-center">
-              <label class="col-sm-4 col-form-label">Age</label>
-              <div class="col-sm-4">
-                <div class="input-group">
-                  <span class="input-group-text">Min</span>
-                  <input type="number" class="form-control" formControlName="minage"
-                         (keypress)="onKeyPress($event)">
-                  <span class="input-group-text">days</span>
-                </div>
-              </div>
-              <div class="col-sm-4">
-                <div class="input-group">
-                  <span class="input-group-text">Max</span>
-                  <input type="number" class="form-control" formControlName="maxage"
-                         (keypress)="onKeyPress($event)">
-                  <span class="input-group-text">days</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-6">
-            <div class="mb-3 row align-items-center">
-              <label class="col-sm-4 col-form-label">Size</label>
-              <div class="col-sm-4">
-                <div class="input-group">
-                  <span class="input-group-text">Min</span>
-                  <input type="number" class="form-control" formControlName="minsize"
-                         (keypress)="onKeyPress($event)">
-                  <span class="input-group-text">MB</span>
-                </div>
-              </div>
-              <div class="col-sm-4">
-                <div class="input-group">
-                  <span class="input-group-text">Max</span>
-                  <input type="number" class="form-control" formControlName="maxsize"
-                         (keypress)="onKeyPress($event)">
-                  <span class="input-group-text">MB</span>
-                </div>
-              </div>
-            </div>
+      <!-- No results state -->
+      <div *ngIf="showAutocomplete && !isAutocompleteLoading && autocompleteResults.length === 0 && searchForm.get('query')?.value?.length >= 2" class="autocomplete-dropdown">
+        <div class="list-group">
+          <div class="list-group-item text-center text-muted">
+            No results found
           </div>
         </div>
-      </form>
-      
-      <!-- Search Results -->
-      <app-search-results
-        *ngIf="showResults"
-        [searchResponse]="searchResponse"
-        [isLoading]="isSearching">
-      </app-search-results>
+      </div>
     </div>
-  </div>
-</div> 
+    
+    <div class="row mt-3">
+      <!-- Age Filters -->
+      <div class="col-md-6 d-flex align-items-center">
+        <label class="me-2 mb-0" style="min-width: 40px;">Age</label>
+        <div class="input-group me-2" style="max-width: 150px;">
+          <span class="input-group-text">Min</span>
+          <input type="number" class="form-control" formControlName="minage" (keypress)="onKeyPress($event)">
+          <span class="input-group-text">days</span>
+        </div>
+        <div class="input-group" style="max-width: 150px;">
+          <span class="input-group-text">Max</span>
+          <input type="number" class="form-control" formControlName="maxage" (keypress)="onKeyPress($event)">
+          <span class="input-group-text">days</span>
+        </div>
+      </div>
+      <!-- Size Filters -->
+      <div class="col-md-6 d-flex align-items-center">
+        <label class="me-2 mb-0" style="min-width: 40px;">Size</label>
+        <div class="input-group me-2" style="max-width: 150px;">
+          <span class="input-group-text">Min</span>
+          <input type="number" class="form-control" formControlName="minsize" (keypress)="onKeyPress($event)">
+          <span class="input-group-text">MB</span>
+        </div>
+        <div class="input-group" style="max-width: 150px;">
+          <span class="input-group-text">Max</span>
+          <input type="number" class="form-control" formControlName="maxsize" (keypress)="onKeyPress($event)">
+          <span class="input-group-text">MB</span>
+        </div>
+      </div>
+    </div>
+  </form>
+  
+  <!-- Search Results -->
+  <app-search-results
+    *ngIf="showResults"
+    [searchResponse]="searchResponse"
+    [isLoading]="isSearching">
+  </app-search-results>
+</div>
+
+<style>
+    .search-form-wide {
+        max-width: 75vw;
+        min-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    @media (max-width: 1200px) {
+        .search-form-wide {
+            max-width: 98vw;
+        }
+    }
+
+    .autocomplete-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    .autocomplete-dropdown .list-group-item {
+        border: none;
+        border-bottom: 1px solid #dee2e6;
+        cursor: pointer;
+    }
+
+    .autocomplete-dropdown .list-group-item:last-child {
+        border-bottom: none;
+    }
+
+    .autocomplete-dropdown .list-group-item:hover {
+        background-color: #f8f9fa;
+    }
+</style> 
