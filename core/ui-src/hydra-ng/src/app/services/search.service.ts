@@ -1,5 +1,5 @@
-import {Injectable} from "@angular/core";
 import {HttpClient} from "@angular/common/http";
+import {Injectable} from "@angular/core";
 import {Observable} from "rxjs";
 
 export interface SearchRequestParameters {
@@ -79,18 +79,15 @@ export interface SearchResultWebTO {
     providedIn: "root"
 })
 export class SearchService {
-    private baseUrl = "http://127.0.0.1:5076";
 
     constructor(private http: HttpClient) {
     }
 
     search(parameters: SearchRequestParameters): Observable<SearchResponse> {
-        const url = `${this.baseUrl}/internalapi/search`;
-        return this.http.post<SearchResponse>(url, parameters);
+        return this.http.post<SearchResponse>("/internalapi/search", parameters);
     }
 
     shortcutSearch(searchRequestId: number): Observable<void> {
-        const url = `${this.baseUrl}/internalapi/shortcutSearch/${searchRequestId}`;
-        return this.http.post<void>(url, {});
+        return this.http.post<void>(`/internalapi/shortcutSearch/${searchRequestId}`, {});
     }
 } 

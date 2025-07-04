@@ -1,5 +1,5 @@
-import {Injectable} from "@angular/core";
 import {HttpClient} from "@angular/common/http";
+import {Injectable} from "@angular/core";
 import {Observable} from "rxjs";
 
 export interface MediaInfo {
@@ -20,13 +20,11 @@ export type AutocompleteType = "TV" | "MOVIE";
     providedIn: "root"
 })
 export class MediaInfoService {
-    private baseUrl = "http://127.0.0.1:5076";
 
     constructor(private http: HttpClient) {
     }
 
     getAutocomplete(type: AutocompleteType, input: string): Observable<MediaInfo[]> {
-        const url = `${this.baseUrl}/internalapi/autocomplete/${type}`;
-        return this.http.get<MediaInfo[]>(url, {params: {input}});
+        return this.http.get<MediaInfo[]>(`/internalapi/autocomplete/${type}`, {params: {input}});
     }
 } 

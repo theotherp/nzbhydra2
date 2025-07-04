@@ -1,0 +1,8 @@
+{
+  "/internalapi/**": {
+    "target": "http://localhost:5076",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  }
+} 

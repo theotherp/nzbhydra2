@@ -3,19 +3,15 @@ import {FormBuilder, FormGroup} from "@angular/forms";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Observable, of} from "rxjs";
 import {catchError, debounceTime, distinctUntilChanged, switchMap} from "rxjs/operators";
+import {CategoriesService} from "../../services/categories.service";
+import {Category} from "../../services/config.service";
 import {AutocompleteType, MediaInfo, MediaInfoService} from "../../services/media-info.service";
 import {SearchRequestParameters, SearchResponse, SearchService} from "../../services/search.service";
-
-interface Category {
-    name: string;
-    searchType?: string;
-    minSizePreset?: number;
-    maxSizePreset?: number;
-}
 
 interface Indexer {
     name: string;
     activated: boolean;
+    preselect?: boolean;
 }
 
 @Component({
@@ -56,6 +52,7 @@ export class SearchComponent implements OnInit {
         private fb: FormBuilder,
         private mediaInfoService: MediaInfoService,
         private searchService: SearchService,
+        private categoriesService: CategoriesService,
         private router: Router,
         private route: ActivatedRoute,
         private cdr: ChangeDetectorRef
@@ -75,24 +72,24 @@ export class SearchComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        // TODO: Load categories and indexers from service
-        this.categories = [
-            {name: "All"},
-            {name: "Movies", searchType: "MOVIE"},
-            {name: "TV", searchType: "TVSEARCH"}
-        ];
-        this.category = this.categories[0];
+        // Load categories from backend
+        this.categoriesService.getAvailableCategories().subscribe(categories => {
+            this.categories = categories;
+            this.category = this.categories[0];
+
+            // Set up autocomplete
+            this.setupAutocomplete();
+
+            // Load search parameters from URL
+            this.loadSearchFromUrl();
+        });
+
+        // TODO: Load indexers from service
         this.availableIndexers = [
-            {name: "Indexer1", activated: true},
-            {name: "Indexer2", activated: false}
+            {name: "Indexer1", activated: true, preselect: true},
+            {name: "Indexer2", activated: false, preselect: false}
         ];
         this.selectedIndexers = this.availableIndexers.filter(i => i.activated).map(i => i.name);
-
-        // Set up autocomplete
-        this.setupAutocomplete();
-
-        // Load search parameters from URL
-        this.loadSearchFromUrl();
     }
 
     ngAfterViewInit() {
@@ -112,7 +109,16 @@ export class SearchComponent implements OnInit {
                 }
                 if (params["category"]) {
                     const categoryName = params["category"];
-                    this.category = this.categories.find(c => c.name === categoryName) || this.categories[0];
+                    // Wait for categories to be loaded before setting category
+                    if (this.categories.length > 0) {
+                        this.category = this.categories.find(c => c.name === categoryName) || this.categories[0];
+                    } else {
+                        this.categoriesService.getCategoryByName(categoryName).subscribe(category => {
+                            if (category) {
+                                this.category = category;
+                            }
+                        });
+                    }
                 }
                 if (params["minsize"]) {
                     formValues.minsize = params["minsize"];
@@ -223,9 +229,10 @@ export class SearchComponent implements OnInit {
 
         // Set focus to search input after category selection
         setTimeout(() => {
+
             this.cdr.detectChanges();
             this.setFocusToSearchInput();
-        }, 100);
+        }, 50);
 
         // TODO: Update form and state as needed
     }
@@ -366,7 +373,9 @@ export class SearchComponent implements OnInit {
         this.selectedItem = null;
         this.showAutocomplete = false;
         this.autocompleteResults = [];
-        this.category = this.categories[0];
+        this.categoriesService.getDefaultCategory().subscribe(defaultCategory => {
+            this.category = defaultCategory;
+        });
         this.setFocusToSearchInput();
     }
 
@@ -414,7 +423,7 @@ export class SearchComponent implements OnInit {
         event?.preventDefault();
         // Reset to original state (all activated indexers)
         this.availableIndexers.forEach(indexer => {
-            indexer.activated = indexer.name === "Indexer1"; // Reset to original state
+            indexer.activated = indexer.preselect || false; // Use preselect property from backend
         });
         this.selectedIndexers = this.availableIndexers
             .filter(i => i.activated)
