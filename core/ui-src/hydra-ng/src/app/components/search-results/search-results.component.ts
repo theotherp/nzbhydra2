@@ -711,7 +711,7 @@ export class SearchResultsComponent implements OnInit {
   }
 
   get filteredCount(): number {
-    return this.groupedResults.length;
+    return this.availableResults - this.filteredResults.length;
   }
 
   // Utility methods
