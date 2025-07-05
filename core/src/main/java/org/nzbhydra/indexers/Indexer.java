@@ -175,7 +175,7 @@ public abstract class Indexer<T> {
             eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, "Error while accessing indexer " + getName(), getName()));
         } catch (Exception e) {
             if (e.getCause() instanceof InterruptedException) {
-                debug("Hydra was shut down, ignoring InterruptedException");
+                debug("Was shut down, ignoring InterruptedException");
                 indexerSearchResult = new IndexerSearchResult(this, e.getMessage());
             } else {
                 error("Unexpected error while searching", e);

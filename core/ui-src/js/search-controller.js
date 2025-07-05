@@ -455,11 +455,25 @@ function SearchUpdateModalInstanceCtrl($scope, $interval, SearchService, $uibMod
             if ($scope.searchFinished && !loggedSearchFinished) {
                 $scope.messages.push("Finished searching. Preparing results...");
                 loggedSearchFinished = true;
+                console.log("Disconnecting from websocket")
+                stompClient.disconnect();
             }
         });
     });
 
+    $scope.$on('$destroy', function () {
+        console.log("Disconnecting from websocket")
+        stompClient.disconnect();
+    });
+
+    function disconnect() {
+        console.log("Disconnecting from websocket")
+        stompClient.disconnect();
+    }
+
     $scope.shortcutSearch = function () {
+        console.log("Disconnecting from websocket")
+        stompClient.disconnect();
         SearchService.shortcutSearch(searchRequestId);
         // onCancel();
         // $uibModalInstance.dismiss();

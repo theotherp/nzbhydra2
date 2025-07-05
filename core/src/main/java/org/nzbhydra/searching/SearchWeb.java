@@ -93,7 +93,6 @@ public class SearchWeb {
 
     private void sendSearchState(SearchState searchState) {
         messagingTemplate.convertAndSend("/topic/searchState", searchState);
-        logger.debug("{}", searchState);
     }
 
 

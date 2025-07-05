@@ -91,7 +91,7 @@ public class DuplicateDetector {
             duplicateIdentifier++;
         }
 
-        logger.debug("Duplicate detection for {} search results found {} duplicates", results.size(), countDetectedDuplicates);
+//        logger.debug("Duplicate detection for {} search results found {} duplicates", results.size(), countDetectedDuplicates);
 
         return new DuplicateDetectionResult(duplicateGroups, countUniqueResultsPerIndexer, countDetectedDuplicates);
     }

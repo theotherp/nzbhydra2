@@ -79,7 +79,7 @@ export class SearchComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         // Load categories from backend
-        this.categoriesService.getAvailableCategories().subscribe(categories => {
+        this.categoriesService.getAvailableCategories().subscribe(async categories => {
             this.categories = categories;
             this.category = this.categories[0];
 
@@ -90,7 +90,7 @@ export class SearchComponent implements OnInit, OnDestroy {
             this.setupAutocomplete();
 
             // Load search parameters from URL
-            this.loadSearchFromUrl();
+            await this.loadSearchFromUrl();
         });
     }
 
@@ -106,8 +106,8 @@ export class SearchComponent implements OnInit, OnDestroy {
         this.setFocusToSearchInput();
     }
 
-    loadSearchFromUrl() {
-        this.route.queryParams.subscribe(params => {
+    async loadSearchFromUrl() {
+        this.route.queryParams.subscribe(async params => {
             if (Object.keys(params).length > 0) {
                 // Populate form from URL parameters
                 const formValues: any = {};
@@ -170,7 +170,7 @@ export class SearchComponent implements OnInit, OnDestroy {
 
                 // Only start search if this is the initial load (not from URL updates)
                 if (this.isInitialLoad && Object.keys(params).length > 0) {
-                    this.performSearch();
+                    await this.performSearch();
                 }
 
                 // Mark as no longer initial load
@@ -273,25 +273,25 @@ export class SearchComponent implements OnInit, OnDestroy {
         }
     }
 
-    initiateSearch() {
+    async initiateSearch(): Promise<void> {
         if (this.selectedIndexers.length === 0) {
             // TODO: Show error message
             console.error("You didn't select any indexers");
             return;
         }
 
-        this.performSearch();
+        await this.performSearch();
     }
 
-    performSearch() {
+    async performSearch(): Promise<void> {
         if (this.selectedIndexers.length === 0) {
             // TODO: Show error message to user
             console.error("No indexers selected");
             return;
         }
 
-        // Start the search with status modal
-        this.startSearch();
+        // Start the search with status modal and wait for WebSocket connection
+        await this.startSearch();
 
         this.isSearching = true;
         this.showResults = true;
@@ -397,11 +397,11 @@ export class SearchComponent implements OnInit, OnDestroy {
         });
     }
 
-    onKeyPress(event: KeyboardEvent) {
+    async onKeyPress(event: KeyboardEvent): Promise<void> {
         if (event.key === "Enter") {
             event.preventDefault();
             event.stopPropagation();
-            this.initiateSearch();
+            await this.initiateSearch();
         }
     }
 
@@ -548,13 +548,9 @@ export class SearchComponent implements OnInit, OnDestroy {
         // Call shortcut search to get current partial results
         this.searchService.shortcutSearch(this.searchRequestId).subscribe({
             next: () => {
-                // After shortcut search, fetch the results
-                this.fetchCurrentResults();
             },
             error: (error) => {
                 console.error("Shortcut search error:", error);
-                // Even if shortcut search fails, try to fetch results anyway
-                this.fetchCurrentResults();
             }
         });
     }
@@ -611,9 +607,10 @@ export class SearchComponent implements OnInit, OnDestroy {
         });
     }
 
-    startSearch(): void {
+    async startSearch(): Promise<void> {
         this.isSearchCancelled = false;
         this.searchRequestId = Math.round(Math.random() * 99999);
+        console.log("Starting search with requestId:", this.searchRequestId);
         this.showSearchStatusModal = true;
 
         // Reset search response when starting new search
@@ -625,24 +622,31 @@ export class SearchComponent implements OnInit, OnDestroy {
             this.searchStatusModal.resetForNewSearch();
         }
 
-        // Connect to WebSocket for search updates with a small delay to ensure proxy is ready
-        setTimeout(() => {
-            this.webSocketService.connect(window.location.origin);
-        }, 100);
+        try {
+            // Connect to WebSocket for search updates and wait for connection
+            await this.webSocketService.connect(window.location.origin);
+            console.log("WebSocket connected successfully for search");
 
-        // Unsubscribe from previous search state updates
-        if (this.webSocketSubscription) {
-            this.webSocketSubscription.unsubscribe();
-        }
-
-        // Subscribe to search state updates
-        this.webSocketSubscription = this.webSocketService.searchState$.subscribe((state: SearchState) => {
-            if (state.searchRequestId === this.searchRequestId) {
-                // Update the modal component with new state
-                // This would be handled by the modal component itself
-                console.log("Search state update:", state);
+            // Unsubscribe from previous search state updates
+            if (this.webSocketSubscription) {
+                this.webSocketSubscription.unsubscribe();
             }
-        });
+
+            // Subscribe to search state updates
+            this.webSocketSubscription = this.webSocketService.searchState$.subscribe((state: SearchState) => {
+                console.log("Search component received state update for requestId:", state.searchRequestId, "current requestId:", this.searchRequestId);
+                if (state.searchRequestId === this.searchRequestId) {
+                    // Update the modal component with new state
+                    // This would be handled by the modal component itself
+                    console.log("Search component processing state update:", state);
+                } else {
+                    console.log("Search component ignoring state update - requestId mismatch");
+                }
+            });
+        } catch (error) {
+            console.error("Failed to connect to WebSocket:", error);
+            // Continue with search even if WebSocket fails
+        }
     }
 
     ngOnDestroy(): void {

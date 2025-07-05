@@ -130,6 +130,7 @@
     <logger name="com.gargoylesoftware.htmlunit" level="off"/>
     <logger name="org.apache.catalina.loader.WebappClassLoaderBase" level="ERROR"/>
     <logger name="org.springframework.web.socket.config.WebSocketMessageBrokerStats" level="WARN"/>
+    <logger name="org.nzbhydra.web.WebSocketConfig" level="info"/>
 
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>

@@ -18,18 +18,24 @@ package org.nzbhydra.web;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
+import lombok.extern.slf4j.Slf4j;
 import org.nzbhydra.ShutdownEvent;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+import org.springframework.web.socket.handler.WebSocketHandlerDecorator;
+import org.springframework.web.socket.handler.WebSocketHandlerDecoratorFactory;
 
 @Configuration(proxyBeanMethods = false)
 @EnableWebSocketMessageBroker
+@Slf4j
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private final ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
@@ -62,6 +68,31 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
         registration.taskExecutor(taskExecutor);
+    }
+
+
+    @Override
+    public void configureWebSocketTransport(org.springframework.web.socket.config.annotation.WebSocketTransportRegistration registration) {
+        registration.addDecoratorFactory(new WebSocketHandlerDecoratorFactory() {
+            @Override
+            public org.springframework.web.socket.WebSocketHandler decorate(org.springframework.web.socket.WebSocketHandler handler) {
+                return new WebSocketHandlerDecorator(handler) {
+                    @Override
+                    public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+                        log.debug("WebSocket client connected: sessionId={}, remoteAddress={}",
+                                session.getId(), session.getRemoteAddress());
+                        super.afterConnectionEstablished(session);
+                    }
+
+                    @Override
+                    public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) throws Exception {
+                        log.debug("WebSocket client disconnected: sessionId={}, remoteAddress={}, closeStatus={}",
+                                session.getId(), session.getRemoteAddress(), closeStatus);
+                        super.afterConnectionClosed(session, closeStatus);
+                    }
+                };
+            }
+        });
     }
 
     @EventListener

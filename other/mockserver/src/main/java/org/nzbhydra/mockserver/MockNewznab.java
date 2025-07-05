@@ -279,11 +279,16 @@ public class MockNewznab {
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }
 
-        if (params.getQ() != null && !params.getApikey().equals("1")) {
+        if (params.getQ() != null) {
             Matcher matcher = Pattern.compile("sleep(\\d+)-(\\d+).*").matcher(params.getQ());
             if (matcher.matches()) {
                 int from = Integer.parseInt(matcher.group(1));
                 int to = Integer.parseInt(matcher.group(2));
+                if (params.getApikey().equals("1")) {
+                    logger.info("Only sleeping one second for indexer with api key 1");
+                    from = 1;
+                    to = 1;
+                }
                 logger.info("Sleeping {} to {} s", from, to);
                 Thread.sleep(new Random().nextInt(to * 1000) + from * 1000);
             }

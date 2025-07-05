@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from "@angular/core";
+import {Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges} from "@angular/core";
 import {Subscription} from "rxjs";
 import {WebSocketService} from "../../services/websocket.service";
 
@@ -22,7 +22,7 @@ export interface SearchState {
     styleUrls: ["./search-status-modal.component.css"],
     standalone: false
 })
-export class SearchStatusModalComponent implements OnDestroy, OnInit {
+export class SearchStatusModalComponent implements OnDestroy, OnInit, OnChanges {
     @Input() isVisible = false;
     @Input() searchRequestId = 0;
     @Output() cancel = new EventEmitter<void>();
@@ -45,11 +45,22 @@ export class SearchStatusModalComponent implements OnDestroy, OnInit {
     ngOnInit() {
         // Subscribe to WebSocket updates when component initializes
         this.subscription = this.webSocketService.searchState$.subscribe((state: SearchState) => {
+            console.log("Modal received search state update for requestId:", state.searchRequestId, "current requestId:", this.searchRequestId);
             if (state.searchRequestId === this.searchRequestId) {
-                console.log("Modal received search state update:", state);
+                console.log("Modal processing search state update:", state);
                 this.updateSearchState(state);
+            } else {
+                console.log("Modal ignoring search state update - requestId mismatch");
             }
         });
+    }
+
+    ngOnChanges(changes: SimpleChanges) {
+        // When searchRequestId changes, reset the component state
+        if (changes["searchRequestId"] && !changes["searchRequestId"].firstChange) {
+            console.log("Modal searchRequestId changed to:", this.searchRequestId);
+            this.reset();
+        }
     }
 
     ngOnDestroy() {
@@ -83,12 +94,14 @@ export class SearchStatusModalComponent implements OnDestroy, OnInit {
         if (state.searchRequestId !== this.searchRequestId) {
             return;
         }
-        console.log(state);
+        console.log("Updating modal state:", state);
 
         this.searchFinished = state.searchFinished;
         this.indexerSelectionFinished = state.indexerSelectionFinished;
         this.indexersSelected = state.indexersSelected;
         this.indexersFinished = state.indexersFinished;
+
+        console.log("Modal state after update - messages.length:", this.messages.length, "indexerSelectionFinished:", this.indexerSelectionFinished);
 
         if (this.indexersFinished > 0) {
             this.buttonText = "Show results";
@@ -101,6 +114,7 @@ export class SearchStatusModalComponent implements OnDestroy, OnInit {
             this.messages = state.messages.sort((a, b) =>
                 a.messageSortValue.localeCompare(b.messageSortValue)
             );
+            console.log("Messages updated:", this.messages.length, "messages");
         }
         console.log("Search finished: " + this.searchFinished);
 

@@ -77,6 +77,11 @@ public class Searcher {
             .expiration(5, TimeUnit.MINUTES) //This should be more than enough... Nobody will wait that long
             .expirationPolicy(ExpirationPolicy.ACCESSED)
             .build();
+    private final Map<Long, Boolean> searchesCancelled = ExpiringMap.builder()
+            .maxSize(10)
+            .expiration(5, TimeUnit.MINUTES) //This should be more than enough... Nobody will wait that long
+            .expirationPolicy(ExpirationPolicy.ACCESSED)
+            .build();
     private boolean shutdownRequested = false;
 
     /**
@@ -132,7 +137,7 @@ public class Searcher {
                 searchResultItems.add(newestIndexerSearchCacheEntry.pop());
 
                 indexersWithCachedResults = getIndexersWithCachedResults(searchCacheEntry);
-                if (!newestIndexerSearchCacheEntry.isMoreResultsInCache() && newestIndexerSearchCacheEntry.isMoreResultsAvailable()) {
+                if (!searchesCancelled.containsKey(searchRequest.getSearchRequestId()) && !newestIndexerSearchCacheEntry.isMoreResultsInCache() && newestIndexerSearchCacheEntry.isMoreResultsAvailable()) {
                     indexersToSearch.add(newestIndexerSearchCacheEntry);
                     //We need to make a new search for that indexer so we need to stop here. If we still haven't enough results the outer loop will cause more results to be loaded
                     break;
@@ -394,6 +399,7 @@ public class Searcher {
     }
 
     public void shortcutSearch(Long searchRequestId) {
+        searchesCancelled.put(searchRequestId, true);
         for (Future<IndexerSearchResult> x : searchCallables.get(searchRequestId)) {
             x.cancel(true);
         }
