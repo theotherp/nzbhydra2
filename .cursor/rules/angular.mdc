@@ -52,3 +52,6 @@ The backend Spring Boot application will remain largely unchanged, with the new 
 2. **Real-time Updates**: Implement WebSocket or polling
 3. **Theme System**: Create Bootstrap 5 theme variables
 4. **Performance**: Optimize bundle size and loading times
+
+Always check the file `ANGULAR_MIGRATION_FEATURES.md` to see which features were supported in the original code.
+Always check the file `ANGULAR_ARCHITECTURE.md` for common services and components. Update it's needed.
