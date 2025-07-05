@@ -1,115 +1,129 @@
 import {Injectable} from "@angular/core";
 import {Subject} from "rxjs";
 import {SearchState} from "../components/search-status-modal/search-status-modal.component";
+import SockJS from 'sockjs-client/dist/sockjs';
+import {Client, Message} from '@stomp/stompjs';
 
 @Injectable({
     providedIn: "root"
 })
 export class WebSocketService {
-    private socket: WebSocket | null = null;
-    private stompClient: any = null;
-    private searchStateSubject = new Subject<SearchState>();
+  private stompClient: Client | null = null;
+  private searchStateSubject = new Subject<SearchState>();
+  private isConnected = false;
 
-    searchState$ = this.searchStateSubject.asObservable();
+  searchState$ = this.searchStateSubject.asObservable();
 
-    connect(baseUrl: string): void {
-        // Note: In a real implementation, you would need to include SockJS and Stomp libraries
-        // For now, this is a placeholder that would need to be implemented with actual WebSocket libraries
-        console.log("WebSocket connection would be established here");
-
-        // Mock implementation for demonstration
-        // In reality, you would use:
-        // const socket = new SockJS(baseUrl + 'websocket');
-        // this.stompClient = Stomp.over(socket);
-        // this.stompClient.connect({}, () => {
-        //   this.stompClient.subscribe('/topic/searchState', (message: any) => {
-        //     const data = JSON.parse(message.body);
-        //     this.searchStateSubject.next(data);
-        //   });
-        // });
+  connect(baseUrl: string): void {
+    if (this.isConnected) {
+      console.log("WebSocket already connected");
+      return;
     }
 
-    disconnect(): void {
-        if (this.stompClient) {
-            this.stompClient.disconnect();
+    console.log("Connecting to WebSocket at:", baseUrl + '/websocket');
+    
+    // Create SockJS connection with retry options
+    const socket = new SockJS(baseUrl + '/websocket', null, {
+      timeout: 5000,
+      transports: ['websocket', 'xhr-streaming', 'xhr-polling']
+    });
+    
+    // Create STOMP client
+    this.stompClient = new Client({
+      webSocketFactory: () => socket,
+      debug: (str) => {
+        console.log('STOMP Debug:', str);
+      },
+      reconnectDelay: 5000,
+      heartbeatIncoming: 4000,
+      heartbeatOutgoing: 4000
+    });
+
+    // Connect to the WebSocket
+    this.stompClient.onConnect = (frame) => {
+      console.log('Connected to WebSocket:', frame);
+      this.isConnected = true;
+      
+      // Subscribe to search state updates
+      this.stompClient!.subscribe('/topic/searchState', (message: Message) => {
+        try {
+          const data = JSON.parse(message.body);
+          console.log('Received search state update:', data);
+          this.searchStateSubject.next(data);
+        } catch (error) {
+          console.error('Error parsing search state message:', error);
         }
-        if (this.socket) {
-            this.socket.close();
+      });
+    };
+
+    this.stompClient.onStompError = (frame) => {
+      console.error('STOMP error:', frame);
+      this.isConnected = false;
+      // Retry connection after a delay
+      setTimeout(() => {
+        if (!this.isConnected) {
+          console.log('Retrying WebSocket connection...');
+          this.connect(baseUrl);
         }
-    }
+      }, 3000);
+    };
 
-    // Mock method to simulate search state updates for testing
-    simulateSearchStateUpdate(searchRequestId: number): void {
-        const mockStates: SearchState[] = [
-            {
-                searchRequestId,
-                indexerSelectionFinished: false,
-                searchFinished: false,
-                indexersSelected: 0,
-                indexersFinished: 0,
-                messages: []
-            },
-            {
-                searchRequestId,
-                indexerSelectionFinished: true,
-                searchFinished: false,
-                indexersSelected: 2,
-                indexersFinished: 0,
-                messages: [
-                    {
-                        message: "Not using Mock3 because the search source is INTERNAL but the indexer is only enabled for API searches",
-                        messageSortValue: "Not using Mock3 because the search source is INTERNAL but the indexer is only enabled for API searches"
-                    }
-                ]
-            },
-            {
-                searchRequestId,
-                indexerSelectionFinished: true,
-                searchFinished: false,
-                indexersSelected: 2,
-                indexersFinished: 1,
-                messages: [
-                    {
-                        message: "Not using Mock3 because the search source is INTERNAL but the indexer is only enabled for API searches",
-                        messageSortValue: "Not using Mock3 because the search source is INTERNAL but the indexer is only enabled for API searches"
-                    },
-                    {
-                        message: "Indexer1: 150 results found",
-                        messageSortValue: "Indexer1: 150 results found"
-                    }
-                ]
-            },
-            {
-                searchRequestId,
-                indexerSelectionFinished: true,
-                searchFinished: true,
-                indexersSelected: 2,
-                indexersFinished: 2,
-                messages: [
-                    {
-                        message: "Not using Mock3 because the search source is INTERNAL but the indexer is only enabled for API searches",
-                        messageSortValue: "Not using Mock3 because the search source is INTERNAL but the indexer is only enabled for API searches"
-                    },
-                    {
-                        message: "Indexer1: 150 results found",
-                        messageSortValue: "Indexer1: 150 results found"
-                    },
-                    {
-                        message: "Indexer2: 75 results found",
-                        messageSortValue: "Indexer2: 75 results found"
-                    }
-                ]
-            }
-        ];
+    this.stompClient.onWebSocketError = (error) => {
+      console.error('WebSocket error:', error);
+      this.isConnected = false;
+      // Retry connection after a delay
+      setTimeout(() => {
+        if (!this.isConnected) {
+          console.log('Retrying WebSocket connection...');
+          this.connect(baseUrl);
+        }
+      }, 3000);
+    };
 
-        let stateIndex = 0;
-        const interval = setInterval(() => {
-            if (stateIndex < mockStates.length) {
-                this.searchStateSubject.next(mockStates[stateIndex]);
-                stateIndex++;
-            } else {
-                clearInterval(interval);
-            }
-        }, 2000);
+    this.stompClient.onWebSocketClose = () => {
+      console.log('WebSocket connection closed');
+      this.isConnected = false;
+    };
+
+    // Activate the connection
+    this.stompClient.activate();
+  }
+
+      disconnect(): void {
+    if (this.stompClient && this.isConnected) {
+      this.stompClient.deactivate();
+      this.isConnected = false;
     }
+  }
+
+      // Method to check if WebSocket is connected
+  isWebSocketConnected(): boolean {
+    return this.isConnected;
+  }
+
+  // Method to wait for WebSocket to be ready
+  waitForConnection(): Promise<boolean> {
+    return new Promise((resolve) => {
+      if (this.isConnected) {
+        resolve(true);
+        return;
+      }
+
+      // Wait up to 10 seconds for connection
+      let attempts = 0;
+      const maxAttempts = 20;
+      const checkConnection = () => {
+        attempts++;
+        if (this.isConnected) {
+          resolve(true);
+        } else if (attempts >= maxAttempts) {
+          console.warn('WebSocket connection timeout');
+          resolve(false);
+        } else {
+          setTimeout(checkConnection, 500);
+        }
+      };
+      checkConnection();
+    });
+  }
 } 

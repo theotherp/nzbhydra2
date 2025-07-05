@@ -4,5 +4,12 @@
     "secure": false,
     "changeOrigin": true,
     "logLevel": "debug"
+  },
+  "/websocket": {
+    "target": "http://localhost:5076",
+    "ws": true,
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
   }
 } 

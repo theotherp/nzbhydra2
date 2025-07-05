@@ -1,7 +1,7 @@
-import {ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild} from "@angular/core";
+import {ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild} from "@angular/core";
 import {FormBuilder, FormGroup} from "@angular/forms";
 import {ActivatedRoute, Router} from "@angular/router";
-import {Observable, of} from "rxjs";
+import {Observable, of, Subscription} from "rxjs";
 import {catchError, debounceTime, distinctUntilChanged, switchMap} from "rxjs/operators";
 import {SearchState, SearchStatusModalComponent} from "../../components/search-status-modal/search-status-modal.component";
 import {CategoriesService} from "../../services/categories.service";
@@ -17,10 +17,12 @@ import {WebSocketService} from "../../services/websocket.service";
     styleUrls: ["./search.component.css"],
     standalone: false
 })
-export class SearchComponent implements OnInit {
+export class SearchComponent implements OnInit, OnDestroy {
     @ViewChild("searchInput", {static: false}) searchInput!: ElementRef;
     @ViewChild("queryInput", {static: false}) queryInput!: ElementRef;
     @ViewChild(SearchStatusModalComponent, {static: false}) searchStatusModal!: SearchStatusModalComponent;
+
+    private webSocketSubscription?: Subscription;
 
     searchForm: FormGroup;
     categories: Category[] = [];
@@ -371,12 +373,25 @@ export class SearchComponent implements OnInit {
                 this.isSearching = false;
                 this.showSearchStatusModal = false; // Close modal when search completes
                 this.showingPartialResults = false; // Reset partial results flag
+                
+                // Unsubscribe from search state updates when search completes
+                if (this.webSocketSubscription) {
+                    this.webSocketSubscription.unsubscribe();
+                    this.webSocketSubscription = undefined;
+                }
             },
             error: (error) => {
                 console.error("Search error:", error);
                 this.isSearching = false;
                 this.showSearchStatusModal = false; // Close modal on error
                 this.showingPartialResults = false; // Reset partial results flag
+                
+                // Unsubscribe from search state updates on error
+                if (this.webSocketSubscription) {
+                    this.webSocketSubscription.unsubscribe();
+                    this.webSocketSubscription = undefined;
+                }
+                
                 // TODO: Show error message to user
             }
         });
@@ -504,14 +519,31 @@ export class SearchComponent implements OnInit {
     onSearchCancel(): void {
         this.isSearchCancelled = true;
         this.showSearchStatusModal = false;
+        
+        // Unsubscribe from current search state updates
+        if (this.webSocketSubscription) {
+            this.webSocketSubscription.unsubscribe();
+            this.webSocketSubscription = undefined;
+        }
+        
         this.webSocketService.disconnect();
     }
 
     onShowResults(): void {
         console.log("User wants to see the results now");
         this.showSearchStatusModal = false;
-        this.webSocketService.disconnect();
         this.showingPartialResults = true;
+
+        // Unsubscribe from current search state updates
+        if (this.webSocketSubscription) {
+            this.webSocketSubscription.unsubscribe();
+            this.webSocketSubscription = undefined;
+        }
+
+        // Disconnect WebSocket after a short delay to allow final messages
+        setTimeout(() => {
+            this.webSocketService.disconnect();
+        }, 1000);
 
         // Call shortcut search to get current partial results
         this.searchService.shortcutSearch(this.searchRequestId).subscribe({
@@ -593,20 +625,33 @@ export class SearchComponent implements OnInit {
             this.searchStatusModal.resetForNewSearch();
         }
 
-        // Connect to WebSocket for search updates
-        this.webSocketService.connect(window.location.origin);
+        // Connect to WebSocket for search updates with a small delay to ensure proxy is ready
+        setTimeout(() => {
+            this.webSocketService.connect(window.location.origin);
+        }, 100);
+
+        // Unsubscribe from previous search state updates
+        if (this.webSocketSubscription) {
+            this.webSocketSubscription.unsubscribe();
+        }
 
         // Subscribe to search state updates
-        this.webSocketService.searchState$.subscribe((state: SearchState) => {
+        this.webSocketSubscription = this.webSocketService.searchState$.subscribe((state: SearchState) => {
             if (state.searchRequestId === this.searchRequestId) {
                 // Update the modal component with new state
                 // This would be handled by the modal component itself
                 console.log("Search state update:", state);
             }
         });
+    }
 
-        // For testing, simulate search state updates
-        this.webSocketService.simulateSearchStateUpdate(this.searchRequestId);
+    ngOnDestroy(): void {
+        // Clean up WebSocket subscription
+        if (this.webSocketSubscription) {
+            this.webSocketSubscription.unsubscribe();
+        }
+        // Disconnect WebSocket
+        this.webSocketService.disconnect();
     }
 
     // Add more methods as needed for autocomplete, etc.

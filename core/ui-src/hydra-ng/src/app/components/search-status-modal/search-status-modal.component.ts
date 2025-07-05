@@ -46,6 +46,7 @@ export class SearchStatusModalComponent implements OnDestroy, OnInit {
         // Subscribe to WebSocket updates when component initializes
         this.subscription = this.webSocketService.searchState$.subscribe((state: SearchState) => {
             if (state.searchRequestId === this.searchRequestId) {
+                console.log("Modal received search state update:", state);
                 this.updateSearchState(state);
             }
         });
