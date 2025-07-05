@@ -3,11 +3,13 @@ import {FormBuilder, FormGroup} from "@angular/forms";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Observable, of} from "rxjs";
 import {catchError, debounceTime, distinctUntilChanged, switchMap} from "rxjs/operators";
+import {SearchState, SearchStatusModalComponent} from "../../components/search-status-modal/search-status-modal.component";
 import {CategoriesService} from "../../services/categories.service";
 import {Category} from "../../services/config.service";
 import {IndexersService, IndexerWithState} from "../../services/indexers.service";
 import {AutocompleteType, MediaInfo, MediaInfoService} from "../../services/media-info.service";
 import {SearchRequestParameters, SearchResponse, SearchService} from "../../services/search.service";
+import {WebSocketService} from "../../services/websocket.service";
 
 @Component({
     selector: "app-search",
@@ -18,6 +20,7 @@ import {SearchRequestParameters, SearchResponse, SearchService} from "../../serv
 export class SearchComponent implements OnInit {
     @ViewChild("searchInput", {static: false}) searchInput!: ElementRef;
     @ViewChild("queryInput", {static: false}) queryInput!: ElementRef;
+    @ViewChild(SearchStatusModalComponent, {static: false}) searchStatusModal!: SearchStatusModalComponent;
 
     searchForm: FormGroup;
     categories: Category[] = [];
@@ -42,6 +45,9 @@ export class SearchComponent implements OnInit {
     searchResponse?: SearchResponse;
     isSearching = false;
     isInitialLoad = true; // Flag to track initial load
+    showSearchStatusModal = false;
+    searchRequestId = 0;
+    isSearchCancelled = false;
 
     constructor(
         private fb: FormBuilder,
@@ -51,7 +57,8 @@ export class SearchComponent implements OnInit {
         private indexersService: IndexersService,
         private router: Router,
         private route: ActivatedRoute,
-        private cdr: ChangeDetectorRef
+        private cdr: ChangeDetectorRef,
+        private webSocketService: WebSocketService
     ) {
         this.searchForm = this.fb.group({
             query: [""],
@@ -274,6 +281,15 @@ export class SearchComponent implements OnInit {
     }
 
     performSearch() {
+        if (this.selectedIndexers.length === 0) {
+            // TODO: Show error message to user
+            console.error("No indexers selected");
+            return;
+        }
+
+        // Start the search with status modal
+        this.startSearch();
+
         this.isSearching = true;
         this.showResults = true;
         this.searchResponse = undefined;
@@ -314,7 +330,7 @@ export class SearchComponent implements OnInit {
 
         // Create search request parameters
         const searchRequestParams: SearchRequestParameters = {
-            searchRequestId: Date.now(), // Use timestamp as search request ID
+            searchRequestId: this.searchRequestId, // Use the search request ID from modal
             query: this.searchForm.value.query,
             category: this.category?.name,
             minsize: this.searchForm.value.minsize,
@@ -352,10 +368,12 @@ export class SearchComponent implements OnInit {
             next: (response) => {
                 this.searchResponse = response;
                 this.isSearching = false;
+                this.showSearchStatusModal = false; // Close modal when search completes
             },
             error: (error) => {
                 console.error("Search error:", error);
                 this.isSearching = false;
+                this.showSearchStatusModal = false; // Close modal on error
                 // TODO: Show error message to user
             }
         });
@@ -477,6 +495,49 @@ export class SearchComponent implements OnInit {
             this.showAutocomplete = false;
             this.selectedItem = null;
         }
+    }
+
+    // Search status modal methods
+    onSearchCancel(): void {
+        this.isSearchCancelled = true;
+        this.showSearchStatusModal = false;
+        this.webSocketService.disconnect();
+    }
+
+    onShowResults(): void {
+        this.showSearchStatusModal = false;
+        this.webSocketService.disconnect();
+        // Navigate to results page or show results
+        this.showResults = true;
+    }
+
+    startSearch(): void {
+        this.isSearchCancelled = false;
+        this.searchRequestId = Math.round(Math.random() * 99999);
+        this.showSearchStatusModal = true;
+
+        // Reset search response when starting new search
+        this.searchResponse = undefined;
+
+        // Reset modal state for new search
+        if (this.searchStatusModal) {
+            this.searchStatusModal.resetForNewSearch();
+        }
+
+        // Connect to WebSocket for search updates
+        this.webSocketService.connect(window.location.origin);
+
+        // Subscribe to search state updates
+        this.webSocketService.searchState$.subscribe((state: SearchState) => {
+            if (state.searchRequestId === this.searchRequestId) {
+                // Update the modal component with new state
+                // This would be handled by the modal component itself
+                console.log("Search state update:", state);
+            }
+        });
+
+        // For testing, simulate search state updates
+        this.webSocketService.simulateSearchStateUpdate(this.searchRequestId);
     }
 
     // Add more methods as needed for autocomplete, etc.

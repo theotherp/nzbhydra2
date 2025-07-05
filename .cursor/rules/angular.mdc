@@ -53,5 +53,7 @@ The backend Spring Boot application will remain largely unchanged, with the new 
 3. **Theme System**: Create Bootstrap 5 theme variables
 4. **Performance**: Optimize bundle size and loading times
 
+Whenever implementing calls to the backend check the backend sources to find the correct data model, do not attempt to deduce it from the javascript code.
+
 Always check the file `ANGULAR_MIGRATION_FEATURES.md` to see which features were supported in the original code.
 Always check the file `ANGULAR_ARCHITECTURE.md` for common services and components. Update it's needed.

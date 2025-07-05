@@ -1,0 +1,71 @@
+<div *ngIf="isVisible" class="search-status-overlay" (click)="onCancel()">
+  <div class="search-status-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h5 class="modal-title">
+        <i class="bi bi-search me-2"></i>
+        Searching... please wait
+      </h5>
+      <button type="button" class="btn-close" (click)="onCancel()" aria-label="Close"></button>
+    </div>
+    
+    <div class="modal-body">
+      <!-- Loading spinner when no messages and indexer selection not finished -->
+      <div *ngIf="messages.length === 0 && !indexerSelectionFinished" class="text-center">
+        <div class="spinner-border text-primary mb-3" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="text-muted">Initializing search...</p>
+      </div>
+      
+      <!-- Messages -->
+      <div *ngIf="messages.length > 0" class="mb-3">
+        <ul class="list-unstyled">
+          <li *ngFor="let message of messages" class="mb-2">
+            <span [class.text-success]="hasResults(message)" [class.text-muted]="!hasResults(message)">
+              {{ message.message }}
+            </span>
+          </li>
+        </ul>
+        
+        <!-- Loading spinner for ongoing search -->
+        <div *ngIf="!searchFinished" class="text-center mt-3">
+          <div class="spinner-border spinner-border-sm text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Progress bar -->
+      <div *ngIf="indexerSelectionFinished && indexersSelected > 0" class="mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="text-muted">Indexers finished:</span>
+          <span class="text-muted">{{ indexersFinished }} / {{ indexersSelected }}</span>
+        </div>
+        <div class="progress">
+          <div class="progress-bar progress-bar-striped progress-bar-animated"
+               role="progressbar"
+               [style.width.%]="(indexersFinished / indexersSelected) * 100"
+               [attr.aria-valuenow]="indexersFinished"
+               [attr.aria-valuemin]="0"
+               [attr.aria-valuemax]="indexersSelected">
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="modal-footer">
+      <div class="d-flex justify-content-between align-items-center w-100">
+        <small class="text-muted">
+          This window will close automatically when searching is finished
+        </small>
+        <button type="button"
+                class="btn"
+                [class]="btnType"
+                (click)="hasPartialResults ? onShowResults() : onCancel()"
+                [title]="buttonTooltip">
+          {{ buttonText }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div> 

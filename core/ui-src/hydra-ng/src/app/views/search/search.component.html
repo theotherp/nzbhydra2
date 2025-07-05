@@ -197,6 +197,14 @@
   </app-search-results>
 </div>
 
+<!-- Search Status Modal -->
+<app-search-status-modal
+  [isVisible]="showSearchStatusModal"
+  [searchRequestId]="searchRequestId"
+  (cancel)="onSearchCancel()"
+  (showResults)="onShowResults()">
+</app-search-status-modal>
+
 <style>
     .search-form-wide {
         max-width: 75vw;

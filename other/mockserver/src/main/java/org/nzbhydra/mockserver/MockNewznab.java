@@ -35,6 +35,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @SuppressWarnings("ALL")
 @RestController
@@ -276,6 +278,17 @@ public class MockNewznab {
             NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, -1, itemTitleBase, false, Collections.emptyList(), false, 0);
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }
+
+        if (params.getQ() != null) {
+            Matcher matcher = Pattern.compile("sleep(\\d+)-(\\d+).*").matcher(params.getQ());
+            if (matcher.matches()) {
+                int from = Integer.parseInt(matcher.group(1));
+                int to = Integer.parseInt(matcher.group(2));
+                logger.info("Sleeping {} to {} s", from, to);
+                Thread.sleep(new Random().nextInt(to * 1000) + from * 1000);
+            }
+        }
+
 
         if (params.getQ() != null && params.getQ().startsWith("sleep")) {
             Thread.sleep(new Random().nextInt(5000));
