@@ -1,4 +1,4 @@
-import {Component, Input, OnInit} from "@angular/core";
+import {Component, EventEmitter, Input, OnInit, Output} from "@angular/core";
 import {LocalStorageService} from "../../services/local-storage.service";
 import {SearchResponse, SearchResultWebTO} from "../../services/search.service";
 
@@ -39,6 +39,7 @@ export interface GroupedResult {
   result: SearchResultWebTO;
   isExpanded: boolean;
   canExpand: boolean;
+  isSelected?: boolean;
 }
 
 @Component({
@@ -50,6 +51,7 @@ export interface GroupedResult {
 export class SearchResultsComponent implements OnInit {
   @Input() searchResponse?: SearchResponse;
   @Input() isLoading = false;
+  @Output() selectionChanged = new EventEmitter<SearchResultWebTO[]>();
 
   constructor(private localStorageService: LocalStorageService) {
   }
@@ -76,6 +78,11 @@ export class SearchResultsComponent implements OnInit {
   titleGroups: TitleGroup[] = [];
   groupedResults: GroupedResult[] = [];
 
+  // Selection state
+  selectedResults: Set<string> = new Set();
+  lastSelectedIndex: number = -1;
+  lastSelectionAction: "select" | "unselect" | null = null;
+
   ngOnInit() {
     this.loadSortConfig();
     this.updateResults();
@@ -90,8 +97,12 @@ export class SearchResultsComponent implements OnInit {
       this.filteredResults = [];
       this.displayedResults = [];
       this.totalPages = 0;
+      this.resetSelection();
       return;
     }
+
+    // Reset selection for new search results
+    this.resetSelection();
 
     // Reset filter config for new results
     this.filterConfig = {};
@@ -508,6 +519,7 @@ export class SearchResultsComponent implements OnInit {
         resultsToShow.forEach((result, resultIndex) => {
           const isPrimaryResult = resultIndex === 0;
           const canExpand = hashGroup.results.length > 1 || titleGroup.hashGroups.length > 1;
+          const isSelected = this.selectedResults.has(result.searchResultId);
 
           groupedResults.push({
             type: isPrimaryResult && isFirstHashGroup ? "primary" : "grouped",
@@ -516,6 +528,7 @@ export class SearchResultsComponent implements OnInit {
             result,
             isExpanded: titleGroup.isExpanded || hashGroup.isExpanded,
             canExpand,
+            isSelected,
           });
         });
 
@@ -537,7 +550,8 @@ export class SearchResultsComponent implements OnInit {
       hash: gr.hashGroup.hash,
       result: gr.result.title,
       isExpanded: gr.isExpanded,
-      type: gr.type
+      type: gr.type,
+      isSelected: gr.isSelected
     })));
 
     return groupedResults;
@@ -563,11 +577,23 @@ export class SearchResultsComponent implements OnInit {
     this.updateGroupedResults();
   }
 
+  // Preserve selection when groups are collapsed/expanded
+  private preserveSelection() {
+    // The selection is already preserved because we use searchResultId as the key
+    // and the selectedResults Set maintains the selection state
+    // This method is here for future enhancements if needed
+  }
+
 
   updateGroupedResults() {
     this.groupedResults = this.createGroupedResults();
     this.calculatePagination();
     this.updateDisplayedResults();
+    this.emitSelectionChange();
+  }
+
+  private emitSelectionChange() {
+    this.selectionChanged.emit(this.getSelectedResults());
   }
 
   // Sorting methods
@@ -579,6 +605,7 @@ export class SearchResultsComponent implements OnInit {
       this.sortConfig.direction = "asc";
     }
     this.saveSortConfig();
+    this.resetSelectionState();
     this.applyFiltersAndSorting();
     this.calculatePagination();
     this.updateDisplayedResults();
@@ -600,6 +627,7 @@ export class SearchResultsComponent implements OnInit {
   updateTitleFilter(value: string) {
     this.filterConfig.title = value;
     this.currentPage = 1;
+    this.resetSelectionState();
     this.applyFiltersAndSorting();
     this.calculatePagination();
     this.updateDisplayedResults();
@@ -608,6 +636,7 @@ export class SearchResultsComponent implements OnInit {
   updateIndexerFilter(indexers: string[]) {
     this.filterConfig.indexer = indexers.length > 0 ? indexers : [];
     this.currentPage = 1;
+    this.resetSelectionState();
     this.applyFiltersAndSorting();
     this.calculatePagination();
     this.updateDisplayedResults();
@@ -616,6 +645,7 @@ export class SearchResultsComponent implements OnInit {
   updateCategoryFilter(categories: string[]) {
     this.filterConfig.category = categories.length > 0 ? categories : [];
     this.currentPage = 1;
+    this.resetSelectionState();
     this.applyFiltersAndSorting();
     this.calculatePagination();
     this.updateDisplayedResults();
@@ -624,6 +654,7 @@ export class SearchResultsComponent implements OnInit {
   updateSizeFilter(min?: number, max?: number) {
     this.filterConfig.size = {min, max};
     this.currentPage = 1;
+    this.resetSelectionState();
     this.applyFiltersAndSorting();
     this.calculatePagination();
     this.updateDisplayedResults();
@@ -632,6 +663,7 @@ export class SearchResultsComponent implements OnInit {
   updateDetailsFilter(min?: number, max?: number) {
     this.filterConfig.details = {min, max};
     this.currentPage = 1;
+    this.resetSelectionState();
     this.applyFiltersAndSorting();
     this.calculatePagination();
     this.updateDisplayedResults();
@@ -640,6 +672,7 @@ export class SearchResultsComponent implements OnInit {
   updateAgeFilter(min?: number, max?: number) {
     this.filterConfig.age = {min, max};
     this.currentPage = 1;
+    this.resetSelectionState();
     this.applyFiltersAndSorting();
     this.calculatePagination();
     this.updateDisplayedResults();
@@ -764,6 +797,134 @@ export class SearchResultsComponent implements OnInit {
     if (dropdown) {
       dropdown.classList.remove("show");
     }
+  }
+
+  // Selection methods
+  toggleSelection(groupedResult: GroupedResult, event: MouseEvent) {
+    event.preventDefault(); // Prevent text selection
+    event.stopPropagation(); // Prevent event bubbling
+
+    const resultId = groupedResult.result.searchResultId;
+    const currentIndex = this.displayedResults.indexOf(groupedResult);
+
+    if (event.shiftKey && this.lastSelectedIndex !== -1) {
+      // Shift-click: select range from last clicked to current
+      this.selectRange(this.lastSelectedIndex, currentIndex);
+    } else {
+      // Single click: toggle selection
+      if (this.selectedResults.has(resultId)) {
+        this.selectedResults.delete(resultId);
+      } else {
+        this.selectedResults.add(resultId);
+      }
+      this.lastSelectedIndex = currentIndex;
+    }
+
+    this.updateGroupedResults();
+  }
+
+  selectRange(startIndex: number, endIndex: number) {
+    const start = Math.min(startIndex, endIndex);
+    const end = Math.max(startIndex, endIndex);
+
+    for (let i = start; i <= end; i++) {
+      const groupedResult = this.displayedResults[i];
+      if (groupedResult) {
+        this.selectedResults.add(groupedResult.result.searchResultId);
+      }
+    }
+  }
+
+  unselectRange(startIndex: number, endIndex: number) {
+    const start = Math.min(startIndex, endIndex);
+    const end = Math.max(startIndex, endIndex);
+
+    for (let i = start; i <= end; i++) {
+      const groupedResult = this.displayedResults[i];
+      if (groupedResult) {
+        this.selectedResults.delete(groupedResult.result.searchResultId);
+      }
+    }
+  }
+
+  // Proper shift-click behavior
+  toggleSelectionWithUnselect(groupedResult: GroupedResult, event: MouseEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const resultId = groupedResult.result.searchResultId;
+    const currentIndex = this.displayedResults.indexOf(groupedResult);
+
+    if (event.shiftKey && this.lastSelectedIndex !== -1 && this.lastSelectionAction) {
+      // Shift-click: apply the same action to the range
+      if (this.lastSelectionAction === "select") {
+        this.selectRange(this.lastSelectedIndex, currentIndex);
+      } else {
+        this.unselectRange(this.lastSelectedIndex, currentIndex);
+      }
+    } else {
+      // Single click: toggle selection and remember the action
+      if (this.selectedResults.has(resultId)) {
+        this.selectedResults.delete(resultId);
+        this.lastSelectionAction = "unselect";
+      } else {
+        this.selectedResults.add(resultId);
+        this.lastSelectionAction = "select";
+      }
+      this.lastSelectedIndex = currentIndex;
+    }
+
+    this.updateGroupedResults();
+  }
+
+  resetSelection() {
+    this.selectedResults.clear();
+    this.lastSelectedIndex = -1;
+    this.lastSelectionAction = null;
+    this.updateGroupedResults();
+  }
+
+  resetSelectionState() {
+    this.lastSelectedIndex = -1;
+    this.lastSelectionAction = null;
+  }
+
+  selectAll() {
+    this.displayedResults.forEach(groupedResult => {
+      this.selectedResults.add(groupedResult.result.searchResultId);
+    });
+    this.updateGroupedResults();
+  }
+
+  selectNone() {
+    this.selectedResults.clear();
+    this.updateGroupedResults();
+  }
+
+  invertSelection() {
+    this.displayedResults.forEach(groupedResult => {
+      const resultId = groupedResult.result.searchResultId;
+      if (this.selectedResults.has(resultId)) {
+        this.selectedResults.delete(resultId);
+      } else {
+        this.selectedResults.add(resultId);
+      }
+    });
+    this.updateGroupedResults();
+  }
+
+  get selectedCount(): number {
+    return this.selectedResults.size;
+  }
+
+  get hasSelection(): boolean {
+    return this.selectedResults.size > 0;
+  }
+
+  getSelectedResults(): SearchResultWebTO[] {
+    return this.searchResponse?.searchResults.filter(result =>
+        this.selectedResults.has(result.searchResultId)
+    ) || [];
   }
 
   // Make Math available in template

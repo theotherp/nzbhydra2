@@ -23,6 +23,31 @@
       <table class="table table-hover">
         <thead class="table-light">
         <tr>
+          <!-- Selection Column -->
+          <th class="col-selection" style="width: 50px;">
+            <div class="d-flex align-items-center justify-content-center">
+              <i class="bi bi-three-dots-vertical selection-dropdown"
+                 data-bs-toggle="dropdown"
+                 aria-expanded="false"
+                 title="Selection options"></i>
+              <div class="dropdown-menu p-2" style="min-width: 150px;">
+                <button class="dropdown-item" (click)="selectAll()">
+                  <i class="bi bi-check-all me-2"></i>Select All
+                </button>
+                <button class="dropdown-item" (click)="selectNone()">
+                  <i class="bi bi-x-circle me-2"></i>Select None
+                </button>
+                <button class="dropdown-item" (click)="invertSelection()">
+                  <i class="bi bi-arrow-repeat me-2"></i>Invert Selection
+                </button>
+                <div class="dropdown-divider"></div>
+                <small class="dropdown-item-text text-muted">
+                  {{ selectedCount }} selected
+                </small>
+              </div>
+            </div>
+          </th>
+          
           <!-- Title Column -->
           <th class="col-title">
             <div class="d-flex align-items-center">
@@ -160,7 +185,7 @@
         </thead>
         <tbody>
         <tr *ngIf="displayedResults.length === 0" style="height: 200px;">
-          <td colspan="7" class="text-center text-muted align-middle">
+          <td colspan="8" class="text-center text-muted align-middle">
             <div class="py-4">
               <i class="bi bi-search" style="font-size: 2rem; opacity: 0.5;"></i>
               <br>
@@ -175,7 +200,17 @@
         <ng-container *ngFor="let groupedResult of displayedResults">
           <!-- Result Row -->
           <tr [class.table-secondary]="groupedResult.type === 'grouped' && !groupedResult.hashGroup.isExpanded"
-              [class.table-dark]="groupedResult.type === 'grouped' && groupedResult.hashGroup.isExpanded">
+              [class.table-dark]="groupedResult.type === 'grouped' && groupedResult.hashGroup.isExpanded"
+              [class.selected]="groupedResult.isSelected"
+              class="search-result-row">
+            <!-- Selection Checkbox -->
+            <td class="col-selection text-center">
+              <input type="checkbox"
+                     class="form-check-input"
+                     [checked]="groupedResult.isSelected"
+                     (click)="toggleSelectionWithUnselect(groupedResult, $event)"
+                     style="cursor: pointer;">
+            </td>
             <td class="col-title">
               <div class="d-flex align-items-center">
                 <!-- Title Group Expand/Collapse Button -->

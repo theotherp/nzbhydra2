@@ -15,6 +15,22 @@
     table-layout: fixed;
 }
 
+.col-selection {
+    width: 50px;
+    text-align: center;
+}
+
+.selection-dropdown {
+    cursor: pointer;
+    font-size: 0.8rem;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.selection-dropdown:hover {
+    opacity: 1;
+}
+
 .table tbody {
     min-height: 200px;
 }
@@ -81,6 +97,29 @@
 
 .table th .form-check-input {
     margin-top: 0.125rem;
+}
+
+.table td .form-check-input {
+    margin: 0;
+    cursor: pointer;
+}
+
+.table td .form-check-input:checked {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+/* Selection styles */
+.search-result-row {
+    user-select: none;
+}
+
+.search-result-row.selected {
+    background-color: #e3f2fd;
+}
+
+.selection-column {
+    user-select: none;
 }
 
 .table td {
