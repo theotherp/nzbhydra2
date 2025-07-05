@@ -1,4 +1,4 @@
-@import '../../styles/variables';
+@use '../../styles/variables';
 
 .search-status-overlay {
   position: fixed;
@@ -6,31 +6,31 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: var(--bg-overlay);
+  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1060;
   backdrop-filter: blur(2px);
-  animation: fadeIn var(--animation-duration-fast) ease-out;
+  animation: fadeIn 0.2s ease-out;
 }
 
 .search-status-modal {
-  background: var(--bg-modal);
+  background: var(--bs-body-bg);
   border-radius: 8px;
-  box-shadow: 0 10px 30px var(--shadow-modal);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
   max-width: 800px;
   width: 90%;
   max-height: 90vh;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  animation: slideIn var(--animation-duration-normal) ease-out;
+  animation: slideIn 0.3s ease-out;
 }
 
 .modal-header {
-  background: var(--bg-modal-header);
-  border-bottom: 1px solid var(--border-primary);
+  background: var(--bs-secondary-bg);
+  border-bottom: 1px solid var(--bs-border-color);
   padding: 1rem 1.5rem;
   display: flex;
   align-items: center;
@@ -40,19 +40,19 @@
 .modal-title {
   margin: 0;
   font-weight: 600;
-  color: var(--text-modal-title);
+  color: var(--bs-body-color);
 }
 
 .modal-body {
   padding: 1.5rem;
   overflow-y: auto;
   flex: 1;
-  color: var(--text-primary);
+  color: var(--bs-body-color);
 }
 
 .modal-footer {
-  background: var(--bg-modal-footer);
-  border-top: 1px solid var(--border-primary);
+  background: var(--bs-secondary-bg);
+  border-top: 1px solid var(--bs-border-color);
   padding: 1rem 1.5rem;
 }
 
@@ -60,7 +60,7 @@
   background: none;
   border: none;
   font-size: 1.5rem;
-  color: var(--btn-close-color);
+  color: var(--bs-secondary-color);
   cursor: pointer;
   padding: 0;
   width: 1.5rem;
@@ -68,10 +68,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  @include theme-transition;
+  @include variables.theme-transition;
 
   &:hover {
-    color: var(--btn-close-hover);
+    color: var(--bs-body-color);
   }
 
   &::before {
@@ -83,19 +83,19 @@
 .progress {
   height: 0.5rem;
   border-radius: 0.25rem;
-  background-color: var(--bg-secondary);
+  background-color: var(--bs-secondary-bg);
 }
 
 .progress-bar {
-  background-color: var(--progress-bg);
+  background-color: var(--bs-primary);
 }
 
 .text-success {
-  color: var(--text-success) !important;
+  color: var(--bs-success) !important;
 }
 
 .text-muted {
-  color: var(--text-muted) !important;
+  color: var(--bs-secondary-color) !important;
 }
 
 .spinner-border {

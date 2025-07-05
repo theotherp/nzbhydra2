@@ -1,6 +1,6 @@
+@use './app/styles/variables';
 @import 'bootstrap/dist/css/bootstrap.min.css';
 @import 'bootstrap-icons/font/bootstrap-icons.css';
-@import './app/styles/variables';
 
 /* Global styles */
 body {
@@ -11,9 +11,9 @@ body {
   sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  @include theme-transition;
+  background-color: var(--bs-body-bg);
+  color: var(--bs-body-color);
+  @include variables.theme-transition;
 }
 
 /* Ensure proper spacing */
@@ -24,35 +24,35 @@ body {
 
 /* Navigation styling */
 .navbar {
-  box-shadow: 0 2px 4px var(--shadow-primary);
-  background-color: var(--bg-primary);
-  border-bottom: 1px solid var(--border-primary);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: var(--bs-body-bg);
+  border-bottom: 1px solid var(--bs-border-color);
 }
 
 .navbar-brand {
   font-weight: bold;
-  color: var(--text-primary);
+  color: var(--bs-body-color);
 }
 
 /* Tab styling */
 .nav-tabs {
-  border-bottom: 1px solid var(--border-primary);
+  border-bottom: 1px solid var(--bs-border-color);
 
   .nav-link {
     border: none;
     border-bottom: 2px solid transparent;
-    color: var(--text-muted);
-    @include theme-transition;
+    color: var(--bs-secondary-color);
+    @include variables.theme-transition;
 
     &.active {
-      border-bottom: 2px solid var(--text-link);
-      color: var(--text-link);
+      border-bottom: 2px solid var(--bs-primary);
+      color: var(--bs-primary);
       background: none;
     }
 
     &:hover {
-      border-bottom: 2px solid var(--border-primary);
-      color: var(--text-secondary);
+      border-bottom: 2px solid var(--bs-border-color);
+      color: var(--bs-secondary-color);
     }
   }
 }

@@ -1,124 +1,248 @@
-// Theme Variables
-// This file contains all color variables for easy theming
+// Bootstrap 5.3 Color Mode Support
+// Using Bootstrap's native color mode system with data-bs-theme attribute
 
-// Light theme (default)
-:root {
-  // Background colors
-  --bg-primary: #ffffff;
-  --bg-secondary: #f8f9fa;
-  --bg-tertiary: #e9ecef;
-  --bg-overlay: rgba(0, 0, 0, 0.5);
-  --bg-modal: #ffffff;
-  --bg-modal-header: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  --bg-modal-footer: #f8f9fa;
-  --bg-selected: #e3f2fd;
-  --bg-hover: rgba(0, 0, 0, 0.02);
-  --bg-hover-strong: rgba(0, 0, 0, 0.05);
-  --bg-dropdown-hover: #f8f9fa;
+// Enable dark mode support
+$enable-dark-mode: true;
 
-  // Text colors
-  --text-primary: #212529;
-  --text-secondary: #6c757d;
-  --text-muted: #6c757d;
-  --text-success: #198754;
-  --text-link: #0d6efd;
-  --text-modal-title: #495057;
+// Color mode type (data attribute approach for user control)
+$color-mode-type: data;
 
-  // Border colors
-  --border-primary: #dee2e6;
-  --border-secondary: #ced4da;
-  --border-focus: #86b7fe;
-  --border-dropdown: rgba(0, 0, 0, 0.15);
-
-  // Shadow colors
-  --shadow-primary: rgba(0, 0, 0, 0.1);
-  --shadow-secondary: rgba(0, 0, 0, 0.175);
-  --shadow-modal: rgba(0, 0, 0, 0.3);
-  --shadow-focus: rgba(13, 110, 253, 0.25);
-
-  // Button colors
-  --btn-close-color: #6c757d;
-  --btn-close-hover: #495057;
-  --btn-primary-bg: #0d6efd;
-  --btn-primary-border: #0d6efd;
-
-  // Progress bar colors
-  --progress-bg: #0d6efd;
-
-  // Animation durations
-  --animation-duration-fast: 0.2s;
-  --animation-duration-normal: 0.3s;
-  --animation-duration-slow: 1s;
-}
-
-// Dark theme
-[data-theme="dark"] {
-  // Background colors
-  --bg-primary: #212529;
-  --bg-secondary: #343a40;
-  --bg-tertiary: #495057;
-  --bg-overlay: rgba(0, 0, 0, 0.7);
-  --bg-modal: #343a40;
-  --bg-modal-header: linear-gradient(135deg, #343a40 0%, #495057 100%);
-  --bg-modal-footer: #343a40;
-  --bg-selected: #0d6efd;
-  --bg-hover: rgba(255, 255, 255, 0.05);
-  --bg-hover-strong: rgba(255, 255, 255, 0.1);
-  --bg-dropdown-hover: #495057;
-
-  // Text colors
-  --text-primary: #f8f9fa;
-  --text-secondary: #dee2e6;
-  --text-muted: #adb5bd;
-  --text-success: #20c997;
-  --text-link: #6ea8fe;
-  --text-modal-title: #e9ecef;
-
-  // Border colors
-  --border-primary: #6c757d;
-  --border-secondary: #adb5bd;
-  --border-focus: #6ea8fe;
-  --border-dropdown: rgba(255, 255, 255, 0.15);
-
-  // Shadow colors
-  --shadow-primary: rgba(0, 0, 0, 0.3);
-  --shadow-secondary: rgba(0, 0, 0, 0.4);
-  --shadow-modal: rgba(0, 0, 0, 0.6);
-  --shadow-focus: rgba(13, 110, 253, 0.4);
-
-  // Button colors
-  --btn-close-color: #adb5bd;
-  --btn-close-hover: #e9ecef;
-  --btn-primary-bg: #6ea8fe;
-  --btn-primary-border: #6ea8fe;
-
-  // Progress bar colors
-  --progress-bg: #6ea8fe;
+// Custom color mode mixin for our components
+@mixin color-mode($mode) {
+  @if $color-mode-type == "data" {
+    [data-bs-theme="#{$mode}"] & {
+      @content;
+    }
+  } @else if $color-mode-type == "media-query" {
+    @media (prefers-color-scheme: #{$mode}) {
+      @content;
+    }
+  }
 }
 
 // Mixins for common patterns
 @mixin theme-transition {
-  transition: background-color var(--animation-duration-fast) ease,
-  color var(--animation-duration-fast) ease,
-  border-color var(--animation-duration-fast) ease,
-  box-shadow var(--animation-duration-fast) ease;
+  transition: background-color 0.2s ease,
+  color 0.2s ease,
+  border-color 0.2s ease,
+  box-shadow 0.2s ease;
 }
 
 @mixin focus-ring {
   &:focus {
-    border-color: var(--border-focus);
-    box-shadow: 0 0 0 0.25rem var(--shadow-focus);
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
   }
 }
 
 @mixin hover-effect {
   &:hover {
-    background-color: var(--bg-hover);
+    background-color: var(--bs-secondary-bg);
   }
 }
 
 @mixin selected-effect {
   &.selected {
-    background-color: var(--bg-selected);
+    background-color: var(--bs-primary-bg-subtle);
+  }
+}
+
+// Custom component styles using Bootstrap's color mode system
+.search-status-overlay {
+  @include color-mode(dark) {
+    background-color: rgba(0, 0, 0, 0.7);
+  }
+
+  @include color-mode(light) {
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+}
+
+.search-status-modal {
+  @include color-mode(dark) {
+    background-color: var(--bs-dark);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  }
+
+  @include color-mode(light) {
+    background-color: var(--bs-light);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  }
+}
+
+.modal-header {
+  @include color-mode(dark) {
+    background: linear-gradient(135deg, var(--bs-dark) 0%, var(--bs-secondary) 100%);
+    border-bottom: 1px solid var(--bs-border-color);
+  }
+
+  @include color-mode(light) {
+    background: linear-gradient(135deg, var(--bs-light) 0%, var(--bs-secondary-bg) 100%);
+    border-bottom: 1px solid var(--bs-border-color);
+  }
+}
+
+.modal-body {
+  @include color-mode(dark) {
+    color: var(--bs-body-color);
+  }
+
+  @include color-mode(light) {
+    color: var(--bs-body-color);
+  }
+}
+
+.modal-footer {
+  @include color-mode(dark) {
+    background-color: var(--bs-dark);
+    border-top: 1px solid var(--bs-border-color);
+  }
+
+  @include color-mode(light) {
+    background-color: var(--bs-secondary-bg);
+    border-top: 1px solid var(--bs-border-color);
+  }
+}
+
+.btn-close {
+  @include color-mode(dark) {
+    color: var(--bs-secondary-color);
+
+    &:hover {
+      color: var(--bs-body-color);
+    }
+  }
+
+  @include color-mode(light) {
+    color: var(--bs-secondary-color);
+
+    &:hover {
+      color: var(--bs-body-color);
+    }
+  }
+}
+
+.progress {
+  @include color-mode(dark) {
+    background-color: var(--bs-secondary-bg);
+  }
+
+  @include color-mode(light) {
+    background-color: var(--bs-secondary-bg);
+  }
+}
+
+.progress-bar {
+  @include color-mode(dark) {
+    background-color: var(--bs-primary);
+  }
+
+  @include color-mode(light) {
+    background-color: var(--bs-primary);
+  }
+}
+
+// Table styles
+.table {
+  @include color-mode(dark) {
+    color: var(--bs-body-color);
+
+    th {
+      color: var(--bs-secondary-color);
+      border-color: var(--bs-border-color);
+    }
+
+    td {
+      border-color: var(--bs-border-color);
+    }
+  }
+
+  @include color-mode(light) {
+    color: var(--bs-body-color);
+
+    th {
+      color: var(--bs-secondary-color);
+      border-color: var(--bs-border-color);
+    }
+
+    td {
+      border-color: var(--bs-border-color);
+    }
+  }
+}
+
+// Dropdown styles
+.dropdown-menu {
+  @include color-mode(dark) {
+    background-color: var(--bs-dark);
+    border-color: var(--bs-border-color);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.4);
+  }
+
+  @include color-mode(light) {
+    background-color: var(--bs-light);
+    border-color: var(--bs-border-color);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.175);
+  }
+}
+
+.dropdown-item {
+  @include color-mode(dark) {
+    &:hover {
+      background-color: var(--bs-secondary-bg);
+    }
+  }
+
+  @include color-mode(light) {
+    &:hover {
+      background-color: var(--bs-secondary-bg);
+    }
+  }
+}
+
+// Selection styles
+.search-result-row {
+  @include color-mode(dark) {
+    &.selected {
+      background-color: var(--bs-primary-bg-subtle);
+    }
+  }
+
+  @include color-mode(light) {
+    &.selected {
+      background-color: var(--bs-primary-bg-subtle);
+    }
+  }
+}
+
+// Sortable styles
+.sortable {
+  @include color-mode(dark) {
+    &:hover {
+      background-color: var(--bs-secondary-bg);
+    }
+  }
+
+  @include color-mode(light) {
+    &:hover {
+      background-color: var(--bs-secondary-bg);
+    }
+  }
+}
+
+// Form control styles
+.form-control {
+  @include color-mode(dark) {
+    &:focus {
+      border-color: var(--bs-primary);
+      box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+    }
+  }
+
+  @include color-mode(light) {
+    &:focus {
+      border-color: var(--bs-primary);
+      box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+    }
   }
 } 

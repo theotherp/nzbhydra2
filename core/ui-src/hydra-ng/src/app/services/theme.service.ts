@@ -26,8 +26,8 @@ export class ThemeService {
     }
 
     setTheme(theme: Theme): void {
-        // Update the data-theme attribute on the document element
-        document.documentElement.setAttribute("data-theme", theme);
+        // Update the data-bs-theme attribute on the document element (Bootstrap 5.3 standard)
+        document.documentElement.setAttribute("data-bs-theme", theme);
 
         // Save to localStorage using the service
         this.localStorageService.setItem("theme", theme);

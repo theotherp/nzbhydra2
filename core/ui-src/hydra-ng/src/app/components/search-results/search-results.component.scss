@@ -1,4 +1,4 @@
-@import '../../styles/variables';
+@use '../../styles/variables';
 
 /* Search results component styles */
 
@@ -15,37 +15,37 @@
   font-size: 0.9rem;
   width: 100%;
   table-layout: fixed;
-  color: var(--text-primary);
+  color: var(--bs-body-color);
 
   tbody {
     min-height: 200px;
 
     tr {
-      @include theme-transition;
-      @include hover-effect;
+      @include variables.theme-transition;
+      @include variables.hover-effect;
     }
   }
 
   th {
     position: relative;
     vertical-align: top;
-    color: var(--text-secondary);
-    border-color: var(--border-primary);
+    color: var(--bs-secondary-color);
+    border-color: var(--bs-border-color);
 
     .dropdown-menu {
       max-height: 300px;
       overflow-y: auto;
-      border: 1px solid var(--border-dropdown);
-      box-shadow: 0 0.5rem 1rem var(--shadow-secondary);
-      background-color: var(--bg-primary);
+      border: 1px solid var(--bs-border-color);
+      box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.175);
+      background-color: var(--bs-body-bg);
     }
 
     .dropdown-item {
       padding: 0.25rem 0.75rem;
-      @include theme-transition;
+      @include variables.theme-transition;
 
       &:hover {
-        background-color: var(--bg-hover-strong);
+        background-color: var(--bs-secondary-bg);
       }
     }
 
@@ -56,15 +56,15 @@
 
   td {
     vertical-align: middle;
-    border-color: var(--border-primary);
+    border-color: var(--bs-border-color);
 
     .form-check-input {
       margin: 0;
       cursor: pointer;
 
       &:checked {
-        background-color: var(--btn-primary-bg);
-        border-color: var(--btn-primary-border);
+        background-color: var(--bs-primary);
+        border-color: var(--bs-primary);
       }
     }
   }
@@ -79,7 +79,7 @@
   cursor: pointer;
   font-size: 0.8rem;
   opacity: 0.7;
-  @include theme-transition;
+  @include variables.theme-transition;
 
   &:hover {
     opacity: 1;
@@ -122,17 +122,17 @@
 .sortable {
   cursor: pointer;
   user-select: none;
-  @include theme-transition;
+  @include variables.theme-transition;
 
   &:hover {
-    background-color: var(--bg-hover-strong);
+    background-color: var(--bs-secondary-bg);
   }
 }
 
 /* Selection styles */
 .search-result-row {
   user-select: none;
-  @include selected-effect;
+  @include variables.selected-effect;
 }
 
 .selection-column {
@@ -155,7 +155,7 @@
 }
 
 .spin {
-  animation: spin var(--animation-duration-slow) linear infinite;
+  animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
@@ -169,13 +169,13 @@
 
 /* Filter dropdown styles */
 .dropdown-menu {
-  border: 1px solid var(--border-dropdown);
-  box-shadow: 0 0.5rem 1rem var(--shadow-secondary);
-  background-color: var(--bg-primary);
+  border: 1px solid var(--bs-border-color);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.175);
+  background-color: var(--bs-body-bg);
 
   .form-control {
-    border: 1px solid var(--border-primary);
-    @include focus-ring;
+    border: 1px solid var(--bs-border-color);
+    @include variables.focus-ring;
   }
 }
 

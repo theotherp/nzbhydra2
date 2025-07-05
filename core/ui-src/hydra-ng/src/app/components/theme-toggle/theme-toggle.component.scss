@@ -1,18 +1,18 @@
-@import '../../styles/variables';
+@use '../../styles/variables';
 
 .theme-toggle-btn {
-  @include theme-transition;
-  border-color: var(--border-primary);
-  color: var(--text-secondary);
+  @include variables.theme-transition;
+  border-color: var(--bs-border-color);
+  color: var(--bs-secondary-color);
 
   &:hover {
-    background-color: var(--bg-hover);
-    border-color: var(--border-secondary);
-    color: var(--text-primary);
+    background-color: var(--bs-secondary-bg);
+    border-color: var(--bs-border-color);
+    color: var(--bs-body-color);
   }
 
   &:focus {
-    @include focus-ring;
+    @include variables.focus-ring;
   }
 
   .bi {
