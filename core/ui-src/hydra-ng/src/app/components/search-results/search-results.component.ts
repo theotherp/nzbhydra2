@@ -534,7 +534,7 @@ export class SearchResultsComponent implements OnInit {
         });
 
         // Debug: log what is being shown for this hash group
-        console.log("[GROUPED RESULTS]", {
+        console.debug("[GROUPED RESULTS]", {
           titleGroupIdx: tIdx,
           title: titleGroup.title,
           titleExpanded: titleGroup.isExpanded,
@@ -546,7 +546,7 @@ export class SearchResultsComponent implements OnInit {
     });
 
     // Debug: log the final grouped results
-    console.log("[FINAL GROUPED RESULTS]", groupedResults.map(gr => ({
+    console.debug("[FINAL GROUPED RESULTS]", groupedResults.map(gr => ({
       title: gr.titleGroup.title,
       hash: gr.hashGroup.hash,
       result: gr.result.title,

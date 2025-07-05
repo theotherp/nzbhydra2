@@ -279,7 +279,7 @@ public class MockNewznab {
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }
 
-        if (params.getQ() != null) {
+        if (params.getQ() != null && !params.getApikey().equals("1")) {
             Matcher matcher = Pattern.compile("sleep(\\d+)-(\\d+).*").matcher(params.getQ());
             if (matcher.matches()) {
                 int from = Integer.parseInt(matcher.group(1));
@@ -287,23 +287,20 @@ public class MockNewznab {
                 logger.info("Sleeping {} to {} s", from, to);
                 Thread.sleep(new Random().nextInt(to * 1000) + from * 1000);
             }
-        }
-
-
-        if (params.getQ() != null && params.getQ().startsWith("sleep")) {
+        } else if (params.getQ() != null && params.getQ().startsWith("sleep") && !params.getApikey().equals("1")) {
             Thread.sleep(new Random().nextInt(5000));
-        }
+        } else
 
         if (params.getQ() != null && params.getQ().startsWith("sleep10")) {
             Thread.sleep(10000);
-        }
+        } else
         if (params.getQ() != null && params.getQ().startsWith("sleep20")) {
             Thread.sleep(20000);
-        }
+        } else
         if (params.getQ() != null && params.getQ().equals("sleeplong1") && params.getApikey().equals("1")) {
             logger.info("Sleeping long for indexer 1");
             Thread.sleep(10000 * 10000);
-        }
+        } else
         if (params.getQ() != null && params.getQ().equals("sleeplong")) {
             Thread.sleep(10000 * 60);
         }

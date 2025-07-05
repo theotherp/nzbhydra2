@@ -27,9 +27,12 @@
     "@angular/platform-browser": "^20.0.0",
     "@angular/router": "^20.0.0",
     "@ng-bootstrap/ng-bootstrap": "^19.0.1",
+    "@stomp/stompjs": "^7.1.1",
+    "@types/sockjs-client": "^1.5.4",
     "bootstrap": "^5.3.7",
     "bootstrap-icons": "^1.13.1",
     "rxjs": "~7.8.0",
+    "sockjs-client": "^1.6.1",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"
   },

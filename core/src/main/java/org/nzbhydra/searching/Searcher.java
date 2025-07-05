@@ -390,7 +390,7 @@ public class Searcher {
             executor.shutdownNow(); //Need to explicitly shutdown executor for threads to be closed
             executors.remove(executor);
         }
-        handleIndexersWithFailedFutureExecutions(indexersToSearch, indexerSearchResults);
+        handleIndexersWithFailedFutureExecutions(indexersToSearch, indexerSearchResults, searchCacheEntry);
     }
 
     public void shortcutSearch(Long searchRequestId) {
@@ -400,18 +400,28 @@ public class Searcher {
     }
 
 
-    private void handleIndexersWithFailedFutureExecutions(List<IndexerSearchCacheEntry> indexerSearchCacheEntries, Map<Indexer, List<IndexerSearchResult>> indexerSearchResults) {
+    private void handleIndexersWithFailedFutureExecutions(List<IndexerSearchCacheEntry> indexerSearchCacheEntries, Map<Indexer, List<IndexerSearchResult>> indexerSearchResults, SearchCacheEntry searchCacheEntry) {
         for (IndexerSearchCacheEntry toSearch : indexerSearchCacheEntries) {
             if (!indexerSearchResults.containsKey(toSearch.getIndexer())) {
-                IndexerSearchResult unknownFailureSearchResult = new IndexerSearchResult();
-                unknownFailureSearchResult.setWasSuccessful(false);
-                unknownFailureSearchResult.setHasMoreResults(false);
-                unknownFailureSearchResult.setErrorMessage("Unexpected error. Please check the log.");
-                List<IndexerSearchResult> previousIndexerSearchResults = indexerSearchResults.get(toSearch.getIndexer());
-                previousIndexerSearchResults.add(unknownFailureSearchResult);
-                indexerSearchResults.put(toSearch.getIndexer(), previousIndexerSearchResults);
+                IndexerSearchResult failureResult = createIndexerSearchResult(false, false, "Unexpected error. Please check the log.", toSearch);
+                indexerSearchResults.put(toSearch.getIndexer(), List.of(failureResult));
+                searchCacheEntry.getIndexerCacheEntries().get(toSearch.getIndexer().getName()).addIndexerSearchResult(failureResult);
+            } else if (indexerSearchResults.get(toSearch.getIndexer()).isEmpty()) {
+                // TODO 05.07.2025: wasSuccessful needs to be tristate to include not executed
+                IndexerSearchResult skippedResult = createIndexerSearchResult(true, false, "Skipped before results were returned", toSearch);
+                indexerSearchResults.put(toSearch.getIndexer(), List.of(skippedResult));
+                searchCacheEntry.getIndexerCacheEntries().get(toSearch.getIndexer().getName()).addIndexerSearchResult(skippedResult);
             }
         }
+    }
+
+    private IndexerSearchResult createIndexerSearchResult(boolean wasSuccessful, boolean hasMoreResults, String errorMessage, IndexerSearchCacheEntry toSearch) {
+        IndexerSearchResult result = new IndexerSearchResult();
+        result.setWasSuccessful(wasSuccessful);
+        result.setHasMoreResults(hasMoreResults);
+        result.setErrorMessage(errorMessage);
+        result.setIndexer(toSearch.getIndexer());
+        return result;
     }
 
     private List<IndexerCallable> getRegisteredCallables(SearchRequest searchRequest, List<IndexerSearchCacheEntry> indexersToSearch) {

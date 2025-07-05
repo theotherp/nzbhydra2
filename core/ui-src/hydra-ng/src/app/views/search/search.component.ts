@@ -48,6 +48,7 @@ export class SearchComponent implements OnInit {
     showSearchStatusModal = false;
     searchRequestId = 0;
     isSearchCancelled = false;
+    showingPartialResults = false;
 
     constructor(
         private fb: FormBuilder,
@@ -369,11 +370,13 @@ export class SearchComponent implements OnInit {
                 this.searchResponse = response;
                 this.isSearching = false;
                 this.showSearchStatusModal = false; // Close modal when search completes
+                this.showingPartialResults = false; // Reset partial results flag
             },
             error: (error) => {
                 console.error("Search error:", error);
                 this.isSearching = false;
                 this.showSearchStatusModal = false; // Close modal on error
+                this.showingPartialResults = false; // Reset partial results flag
                 // TODO: Show error message to user
             }
         });
@@ -505,10 +508,75 @@ export class SearchComponent implements OnInit {
     }
 
     onShowResults(): void {
+        console.log("User wants to see the results now");
         this.showSearchStatusModal = false;
         this.webSocketService.disconnect();
-        // Navigate to results page or show results
-        this.showResults = true;
+        this.showingPartialResults = true;
+
+        // Call shortcut search to get current partial results
+        this.searchService.shortcutSearch(this.searchRequestId).subscribe({
+            next: () => {
+                // After shortcut search, fetch the results
+                this.fetchCurrentResults();
+            },
+            error: (error) => {
+                console.error("Shortcut search error:", error);
+                // Even if shortcut search fails, try to fetch results anyway
+                this.fetchCurrentResults();
+            }
+        });
+    }
+
+    private fetchCurrentResults(): void {
+        // Create search request parameters for fetching current results
+        const searchRequestParams: SearchRequestParameters = {
+            searchRequestId: this.searchRequestId,
+            query: this.searchForm.value.query,
+            category: this.category?.name,
+            minsize: this.searchForm.value.minsize,
+            maxsize: this.searchForm.value.maxsize,
+            minage: this.searchForm.value.minage,
+            maxage: this.searchForm.value.maxage,
+            season: this.searchForm.value.season,
+            episode: this.searchForm.value.episode,
+            indexers: this.selectedIndexers,
+            limit: 100,
+            offset: 0
+        };
+
+        // Add media identifiers if autocomplete item is selected
+        if (this.selectedItem) {
+            if (this.selectedItem.imdbId) {
+                searchRequestParams.imdbId = this.selectedItem.imdbId;
+            }
+            if (this.selectedItem.tmdbId) {
+                searchRequestParams.tmdbId = this.selectedItem.tmdbId;
+            }
+            if (this.selectedItem.tvdbId) {
+                searchRequestParams.tvdbId = this.selectedItem.tvdbId;
+            }
+            if (this.selectedItem.tvmazeId) {
+                searchRequestParams.tvmazeId = this.selectedItem.tvmazeId;
+            }
+            if (this.selectedItem.title) {
+                searchRequestParams.title = this.selectedItem.title;
+            }
+        }
+
+        // Fetch the current results
+        this.searchService.search(searchRequestParams).subscribe({
+            next: (response) => {
+                this.searchResponse = response;
+                this.isSearching = false;
+                this.showResults = true;
+            },
+            error: (error) => {
+                console.error("Fetch current results error:", error);
+                this.isSearching = false;
+                this.showResults = true;
+                // TODO: Show error message to user
+            }
+        });
     }
 
     startSearch(): void {
@@ -518,6 +586,7 @@ export class SearchComponent implements OnInit {
 
         // Reset search response when starting new search
         this.searchResponse = undefined;
+        this.showingPartialResults = false;
 
         // Reset modal state for new search
         if (this.searchStatusModal) {
