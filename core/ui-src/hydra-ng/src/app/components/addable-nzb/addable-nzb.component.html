@@ -1,0 +1,10 @@
+<button
+  type="button"
+  class="btn btn-sm btn-outline-primary"
+  [class]="cssClass"
+  (click)="add()"
+  [disabled]="isDownloading"
+  [title]="'Send to ' + downloader.name">
+  <i class="bi" [class]="cssClass"></i>
+  <span *ngIf="isDownloading" class="spinner-border spinner-border-sm ms-1"></span>
+</button> 

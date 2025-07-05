@@ -258,6 +258,14 @@
                    class="btn btn-outline-secondary btn-sm" target="_blank" title="Details">
                   <i class="bi bi-info-circle"></i>
                 </a>
+                <!-- Downloader buttons -->
+                <app-addable-nzb
+                  *ngFor="let downloader of enabledDownloaders"
+                  [searchResult]="groupedResult.result"
+                  [downloader]="downloader"
+                  [alwaysAsk]="false"
+                  (downloadComplete)="onDownloadComplete($event)">
+                </app-addable-nzb>
               </div>
             </td>
           </tr>

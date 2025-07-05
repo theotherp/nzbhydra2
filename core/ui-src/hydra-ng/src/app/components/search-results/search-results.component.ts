@@ -1,4 +1,5 @@
 import {Component, EventEmitter, Input, OnInit, Output} from "@angular/core";
+import {Downloader, DownloaderService} from "../../services/downloader.service";
 import {LocalStorageService} from "../../services/local-storage.service";
 import {SearchResponse, SearchResultWebTO} from "../../services/search.service";
 
@@ -53,7 +54,10 @@ export class SearchResultsComponent implements OnInit {
   @Input() isLoading = false;
   @Output() selectionChanged = new EventEmitter<SearchResultWebTO[]>();
 
-  constructor(private localStorageService: LocalStorageService) {
+  constructor(
+      private localStorageService: LocalStorageService,
+      private downloaderService: DownloaderService
+  ) {
   }
 
 
@@ -84,8 +88,12 @@ export class SearchResultsComponent implements OnInit {
   lastSelectionAction: "select" | "unselect" | null = null;
   showIndexerStatuses = false;
 
+  // Downloader state
+  enabledDownloaders: Downloader[] = [];
+
   ngOnInit() {
     this.loadSortConfig();
+    this.loadEnabledDownloaders();
     this.updateResults();
   }
 
@@ -955,5 +963,25 @@ export class SearchResultsComponent implements OnInit {
 
   getObjectKeys(obj: any): string[] {
     return obj ? Object.keys(obj) : [];
+  }
+
+  private loadEnabledDownloaders(): void {
+    this.downloaderService.getEnabledDownloaders().subscribe({
+      next: (downloaders) => {
+        this.enabledDownloaders = downloaders;
+        console.log("Enabled downloaders: ", downloaders);
+      },
+      error: (error) => {
+        console.error("Error loading enabled downloaders:", error);
+        this.enabledDownloaders = [];
+      }
+    });
+  }
+
+  onDownloadComplete(result: { successful: boolean, message?: string }): void {
+    if (!result.successful && result.message) {
+      // TODO: Show error message to user (could use a toast service)
+      console.error("Download failed:", result.message);
+    }
   }
 } 

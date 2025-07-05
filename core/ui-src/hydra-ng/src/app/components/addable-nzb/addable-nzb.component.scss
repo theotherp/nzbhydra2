@@ -1,0 +1,97 @@
+@use '../../styles/variables';
+
+.btn {
+  @include variables.theme-transition;
+  min-width: 32px;
+  height: 32px;
+  padding: 0.25rem 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .bi {
+    font-size: 0.875rem;
+  }
+}
+
+// Downloader-specific styles
+.sabnzbd {
+  color: var(--bs-primary);
+  border-color: var(--bs-primary);
+
+  &:hover:not(:disabled) {
+    background-color: var(--bs-primary);
+    color: white;
+  }
+
+  &.sabnzbd-success {
+    color: var(--bs-success);
+    border-color: var(--bs-success);
+  }
+
+  &.sabnzbd-error {
+    color: var(--bs-danger);
+    border-color: var(--bs-danger);
+  }
+}
+
+.torbox {
+  color: var(--bs-info);
+  border-color: var(--bs-info);
+
+  &:hover:not(:disabled) {
+    background-color: var(--bs-info);
+    color: white;
+  }
+
+  &.torbox-success {
+    color: var(--bs-success);
+    border-color: var(--bs-success);
+  }
+
+  &.torbox-error {
+    color: var(--bs-danger);
+    border-color: var(--bs-danger);
+  }
+}
+
+.nzbget {
+  color: var(--bs-warning);
+  border-color: var(--bs-warning);
+
+  &:hover:not(:disabled) {
+    color: white;
+  }
+
+  &.nzbget-success {
+    color: var(--bs-success);
+    border-color: var(--bs-success);
+  }
+
+  &.nzbget-error {
+    color: var(--bs-danger);
+    border-color: var(--bs-danger);
+  }
+}
+
+// Spinning animation
+.nzb-spinning {
+  .bi {
+    animation: spin 1s linear infinite;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+} 
