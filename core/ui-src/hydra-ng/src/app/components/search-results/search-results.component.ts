@@ -82,6 +82,7 @@ export class SearchResultsComponent implements OnInit {
   selectedResults: Set<string> = new Set();
   lastSelectedIndex: number = -1;
   lastSelectionAction: "select" | "unselect" | null = null;
+  showIndexerStatuses = false;
 
   ngOnInit() {
     this.loadSortConfig();
@@ -889,6 +890,14 @@ export class SearchResultsComponent implements OnInit {
     this.lastSelectionAction = null;
   }
 
+  toggleIndexerStatuses() {
+    this.showIndexerStatuses = !this.showIndexerStatuses;
+  }
+
+  closeIndexerStatuses() {
+    this.showIndexerStatuses = false;
+  }
+
   selectAll() {
     this.displayedResults.forEach(groupedResult => {
       this.selectedResults.add(groupedResult.result.searchResultId);
@@ -942,5 +951,9 @@ export class SearchResultsComponent implements OnInit {
 
   private saveSortConfig(): void {
     this.localStorageService.setItem("searchResultsSortConfig", this.sortConfig);
+  }
+
+  getObjectKeys(obj: any): string[] {
+    return obj ? Object.keys(obj) : [];
   }
 } 

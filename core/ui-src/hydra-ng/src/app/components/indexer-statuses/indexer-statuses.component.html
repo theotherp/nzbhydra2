@@ -1,0 +1,143 @@
+<div *ngIf="isVisible" class="indexer-statuses-overlay" (click)="onBackdropClick($event)">
+  <div class="indexer-statuses-modal">
+    <div class="modal-header">
+      <h5 class="modal-title">
+        <i class="bi bi-info-circle me-2"></i>
+        Indexer Statuses
+        <span *ngIf="hasRejectedResults" class="text-muted">/ Rejected Results</span>
+      </h5>
+      <button type="button" class="btn-close" (click)="onClose()" aria-label="Close"></button>
+    </div>
+    
+    <div class="modal-body">
+      <!-- Indexer Search Results -->
+      <div *ngIf="indexerSearchMetaDatas.length > 0" class="mb-4">
+        <h6 class="mb-3">
+          <i class="bi bi-search me-2"></i>
+          Search Results
+        </h6>
+        
+        <div class="table-responsive">
+          <table class="table table-sm">
+            <thead class="table-light">
+            <tr>
+              <th>Indexer</th>
+              <th>Results</th>
+              <th>Response Time</th>
+              <th>Status</th>
+            </tr>
+            </thead>
+            <tbody>
+            <!-- Successful searches -->
+            <tr *ngFor="let indexer of successfulIndexers" class="table-success">
+              <td>{{ indexer.indexerName }}</td>
+              <td>
+                <span *ngIf="!indexer.totalResultsKnown && indexer.numberOfAvailableResults > 0">&gt;</span>
+                {{ indexer.numberOfAvailableResults }}
+              </td>
+              <td>{{ formatResponseTime(indexer.responseTime) }}</td>
+              <td>
+                <i class="bi me-1" [class]="getStatusIcon(indexer)" [class]="getStatusClass(indexer)"></i>
+                {{ getStatusText(indexer) }}
+              </td>
+            </tr>
+            
+            <!-- Failed searches -->
+            <tr *ngFor="let indexer of failedIndexers" class="table-danger">
+              <td>{{ indexer.indexerName }}</td>
+              <td>-</td>
+              <td>{{ formatResponseTime(indexer.responseTime) }}</td>
+              <td>
+                <i class="bi me-1" [class]="getStatusIcon(indexer)" [class]="getStatusClass(indexer)"></i>
+                {{ getStatusText(indexer) }}
+                <span *ngIf="indexer.errorMessage" class="text-muted ms-2">({{ indexer.errorMessage }})</span>
+              </td>
+            </tr>
+            
+            <!-- Did not search -->
+            <tr *ngFor="let indexer of didNotSearchIndexers" class="table-secondary">
+              <td>{{ indexer.indexerName }}</td>
+              <td>-</td>
+              <td>-</td>
+              <td>
+                <i class="bi me-1" [class]="getStatusIcon(indexer)" [class]="getStatusClass(indexer)"></i>
+                {{ getStatusText(indexer) }}
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <!-- Not Picked Indexers -->
+      <div *ngIf="notPickedIndexers.length > 0" class="mb-4">
+        <h6 class="mb-3">
+          <i class="bi bi-x-circle me-2"></i>
+          Not Picked Indexers
+        </h6>
+        
+        <div class="table-responsive">
+          <table class="table table-sm">
+            <thead class="table-light">
+            <tr>
+              <th>Indexer</th>
+              <th>Reason</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let indexer of notPickedIndexers" class="table-warning">
+              <td>{{ indexer.indexer }}</td>
+              <td>{{ indexer.reason }}</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <!-- Rejected Results -->
+      <div *ngIf="hasRejectedResults" class="mb-4">
+        <h6 class="mb-3">
+          <i class="bi bi-exclamation-triangle me-2"></i>
+          Rejected Results
+        </h6>
+        
+        <div class="table-responsive">
+          <table class="table table-sm">
+            <thead class="table-light">
+            <tr>
+              <th>Reject Reason</th>
+              <th>Count</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let rejected of rejectedReasons" class="table-danger">
+              <td>{{ rejected.reason }}</td>
+              <td>{{ rejected.count }}</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <!-- No indexers message -->
+      <div *ngIf="indexerSearchMetaDatas.length === 0" class="text-center text-muted">
+        <i class="bi bi-info-circle fs-1 mb-3"></i>
+        <h5>No indexers were picked for this search</h5>
+        <div *ngIf="notPickedIndexers.length > 0" class="mt-3">
+          <p><strong>Reasons:</strong></p>
+          <ul class="list-unstyled">
+            <li *ngFor="let indexer of notPickedIndexers">
+              <strong>{{ indexer.indexer }}:</strong> {{ indexer.reason }}
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" (click)="onClose()">
+        Close
+      </button>
+    </div>
+  </div>
+</div> 

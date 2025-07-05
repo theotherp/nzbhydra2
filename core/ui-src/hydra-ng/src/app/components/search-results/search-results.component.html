@@ -5,12 +5,21 @@
 <div *ngIf="!isLoading && searchResponse" class="search-results">
   <!-- Search Statistics -->
   <div class="alert alert-success">
-    <strong>{{ totalResults }} results found</strong>
-    <br>
-    <small class="text-muted">
-      {{ availableResults }} available • {{ processedResults }} processed • {{ rejectedResults }} rejected • {{ duplicateResults }} duplicates
-      <span *ngIf="filteredCount !== totalResults">• {{ filteredCount }} filtered</span>
-    </small>
+    <div class="d-flex justify-content-between align-items-start">
+      <div>
+        <strong>{{ totalResults }} results found</strong>
+        <br>
+        <small class="text-muted">
+          {{ availableResults }} available • {{ processedResults }} processed • {{ rejectedResults }} rejected • {{ duplicateResults }} duplicates
+          <span *ngIf="filteredCount !== totalResults">• {{ filteredCount }} filtered</span>
+        </small>
+      </div>
+      <button class="btn btn-outline-info btn-sm" (click)="toggleIndexerStatuses()" title="View indexer statuses">
+        <i class="bi bi-info-circle me-1"></i>
+        Indexer Statuses
+        <span *ngIf="getObjectKeys(searchResponse.rejectedReasonsMap).length > 0" class="badge bg-warning ms-1">!</span>
+      </button>
+    </div>
   </div>
 
   <div *ngIf="!hasResults" class="alert alert-warning">
@@ -277,4 +286,13 @@
       </nav>
     </div>
   </div>
-</div> 
+</div>
+
+<!-- Indexer Statuses Modal -->
+<app-indexer-statuses
+  [isVisible]="showIndexerStatuses"
+  [indexerSearchMetaDatas]="searchResponse?.indexerSearchMetaDatas || []"
+  [notPickedIndexersWithReason]="searchResponse?.notPickedIndexersWithReason || {}"
+  [rejectedReasonsMap]="searchResponse?.rejectedReasonsMap || {}"
+  (close)="closeIndexerStatuses()">
+</app-indexer-statuses> 

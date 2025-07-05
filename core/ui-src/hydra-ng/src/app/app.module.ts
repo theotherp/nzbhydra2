@@ -6,6 +6,7 @@ import {RouterModule} from "@angular/router";
 import {NgbModule} from "@ng-bootstrap/ng-bootstrap";
 
 import {App} from "./app";
+import {IndexerStatusesComponent} from "./components/indexer-statuses/indexer-statuses.component";
 import {SearchResultsComponent} from "./components/search-results/search-results.component";
 import {MediaInfoService} from "./services/media-info.service";
 import {SearchService} from "./services/search.service";
@@ -23,7 +24,8 @@ import {SystemComponent} from "./views/system/system.component";
         StatsComponent,
         SystemComponent,
         LoginComponent,
-        SearchResultsComponent
+        SearchResultsComponent,
+        IndexerStatusesComponent
     ],
     imports: [
         BrowserModule,
