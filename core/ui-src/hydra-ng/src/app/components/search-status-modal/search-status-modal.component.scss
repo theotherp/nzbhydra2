@@ -1,0 +1,146 @@
+@import '../../styles/variables';
+
+.search-status-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--bg-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1060;
+  backdrop-filter: blur(2px);
+  animation: fadeIn var(--animation-duration-fast) ease-out;
+}
+
+.search-status-modal {
+  background: var(--bg-modal);
+  border-radius: 8px;
+  box-shadow: 0 10px 30px var(--shadow-modal);
+  max-width: 800px;
+  width: 90%;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: slideIn var(--animation-duration-normal) ease-out;
+}
+
+.modal-header {
+  background: var(--bg-modal-header);
+  border-bottom: 1px solid var(--border-primary);
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-title {
+  margin: 0;
+  font-weight: 600;
+  color: var(--text-modal-title);
+}
+
+.modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+  color: var(--text-primary);
+}
+
+.modal-footer {
+  background: var(--bg-modal-footer);
+  border-top: 1px solid var(--border-primary);
+  padding: 1rem 1.5rem;
+}
+
+.btn-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--btn-close-color);
+  cursor: pointer;
+  padding: 0;
+  width: 1.5rem;
+  height: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  @include theme-transition;
+
+  &:hover {
+    color: var(--btn-close-hover);
+  }
+
+  &::before {
+    content: "×";
+    font-weight: bold;
+  }
+}
+
+.progress {
+  height: 0.5rem;
+  border-radius: 0.25rem;
+  background-color: var(--bg-secondary);
+}
+
+.progress-bar {
+  background-color: var(--progress-bg);
+}
+
+.text-success {
+  color: var(--text-success) !important;
+}
+
+.text-muted {
+  color: var(--text-muted) !important;
+}
+
+.spinner-border {
+  width: 2rem;
+  height: 2rem;
+}
+
+.spinner-border-sm {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Animation keyframes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .search-status-modal {
+    width: 95%;
+    max-height: 95vh;
+  }
+
+  .modal-body {
+    padding: 1rem;
+  }
+
+  .modal-footer {
+    padding: 1rem;
+  }
+} 

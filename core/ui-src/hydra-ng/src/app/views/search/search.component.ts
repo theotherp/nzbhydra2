@@ -14,7 +14,7 @@ import {WebSocketService} from "../../services/websocket.service";
 @Component({
     selector: "app-search",
     templateUrl: "./search.component.html",
-    styleUrls: ["./search.component.css"],
+    styleUrls: ["./search.component.scss"],
     standalone: false
 })
 export class SearchComponent implements OnInit, OnDestroy {

@@ -1,4 +1,4 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+<nav class="navbar navbar-expand-lg">
   <div class="container">
     <a class="navbar-brand" routerLink="/">NZBHydra2</a>
     
@@ -25,8 +25,11 @@
         </li>
       </ul>
       
-      <ul class="navbar-nav" *ngIf="showLoginout">
-        <li class="nav-item">
+      <ul class="navbar-nav">
+        <li class="nav-item me-2">
+          <app-theme-toggle></app-theme-toggle>
+        </li>
+        <li class="nav-item" *ngIf="showLoginout">
           <a class="nav-link" href="#" (click)="loginout()" title="{{ loginlogoutText }}">
             <i class="bi bi-power"></i>
           </a>

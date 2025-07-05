@@ -1,0 +1,21 @@
+@import '../../styles/variables';
+
+.theme-toggle-btn {
+  @include theme-transition;
+  border-color: var(--border-primary);
+  color: var(--text-secondary);
+
+  &:hover {
+    background-color: var(--bg-hover);
+    border-color: var(--border-secondary);
+    color: var(--text-primary);
+  }
+
+  &:focus {
+    @include focus-ring;
+  }
+
+  .bi {
+    margin-right: 0.25rem;
+  }
+} 

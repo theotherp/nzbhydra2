@@ -9,6 +9,7 @@ import {App} from "./app";
 import {IndexerStatusesComponent} from "./components/indexer-statuses/indexer-statuses.component";
 import {SearchResultsComponent} from "./components/search-results/search-results.component";
 import {SearchStatusModalComponent} from "./components/search-status-modal/search-status-modal.component";
+import {ThemeToggleComponent} from "./components/theme-toggle/theme-toggle.component";
 import {MediaInfoService} from "./services/media-info.service";
 import {SearchService} from "./services/search.service";
 import {ConfigComponent} from "./views/config/config.component";
@@ -27,7 +28,8 @@ import {SystemComponent} from "./views/system/system.component";
         LoginComponent,
         SearchResultsComponent,
         IndexerStatusesComponent,
-        SearchStatusModalComponent
+        SearchStatusModalComponent,
+        ThemeToggleComponent
     ],
     imports: [
         BrowserModule,

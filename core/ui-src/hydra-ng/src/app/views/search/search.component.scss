@@ -1,0 +1,54 @@
+@import '../../styles/variables';
+
+/* Search component styles */
+
+.spin {
+  animation: spin var(--animation-duration-slow) linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Autocomplete dropdown styling */
+.dropdown-menu.show {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid var(--border-dropdown);
+  box-shadow: 0 0.5rem 1rem var(--shadow-secondary);
+  background-color: var(--bg-primary);
+}
+
+.dropdown-item {
+  @include theme-transition;
+
+  &:hover {
+    background-color: var(--bg-dropdown-hover);
+  }
+}
+
+/* Selected item display */
+.input-group-text .btn-close {
+  font-size: 0.5rem;
+  padding: 0.125rem;
+  color: var(--btn-close-color);
+
+  &:hover {
+    color: var(--btn-close-hover);
+  }
+}
+
+/* Autocomplete item styling */
+.dropdown-item img {
+  border-radius: 4px;
+}
+
+/* Loading state */
+.dropdown-item .bi-arrow-clockwise {
+  margin-right: 0.5rem;
+} 

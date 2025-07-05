@@ -19,7 +19,7 @@ export interface SearchState {
 @Component({
     selector: "app-search-status-modal",
     templateUrl: "./search-status-modal.component.html",
-    styleUrls: ["./search-status-modal.component.css"],
+    styleUrls: ["./search-status-modal.component.scss"],
     standalone: false
 })
 export class SearchStatusModalComponent implements OnDestroy, OnInit, OnChanges {

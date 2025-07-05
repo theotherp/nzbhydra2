@@ -43,10 +43,10 @@ export interface GroupedResult {
 }
 
 @Component({
-  selector: "app-search-results",
-  templateUrl: "./search-results.component.html",
-  styleUrls: ["./search-results.component.css"],
-  standalone: false
+    selector: "app-search-results",
+    templateUrl: "./search-results.component.html",
+    styleUrls: ["./search-results.component.scss"],
+    standalone: false
 })
 export class SearchResultsComponent implements OnInit {
   @Input() searchResponse?: SearchResponse;
