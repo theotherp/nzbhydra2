@@ -121,8 +121,16 @@ describe("SearchResultsComponent", () => {
             })));
 
             const titleGroup = component.titleGroups[0];
-            // First hash group should be the one with newest result
+
+            // Debug: log what we're actually checking
+            console.log("First hash group age:", titleGroup.hashGroups[0].primaryResult.age);
+            console.log("Second hash group age:", titleGroup.hashGroups[1].primaryResult.age);
+
+            // First hash group should be the one with newest result (lowest age)
+            // hash1 has primary result with age 2, hash2 has primary result with age 5
+            // Since we sort by newer first (lower age), hash1 should come first
             expect(titleGroup.hashGroups[0].primaryResult.age).toBe(2);
+            expect(titleGroup.hashGroups[1].primaryResult.age).toBe(5);
         });
 
         it("should sort by selected predicate for non-title sorting", () => {

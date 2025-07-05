@@ -378,7 +378,7 @@ export class SearchResultsComponent implements OnInit {
           if (scoreA !== scoreB) {
             return scoreB - scoreA; // Higher score first
           }
-          return (b.primaryResult.age || 0) - (a.primaryResult.age || 0); // Newer first
+          return (a.primaryResult.age || 0) - (b.primaryResult.age || 0); // Newer first (lower age first)
         } else {
           // Sort by the selected predicate
           return this.compareResults(a.primaryResult, b.primaryResult);
@@ -419,7 +419,7 @@ export class SearchResultsComponent implements OnInit {
         if (scoreA !== scoreB) {
           return scoreB - scoreA; // Higher score first
         }
-        return (b.age || 0) - (a.age || 0); // Newer first
+        return (a.age || 0) - (b.age || 0); // Newer first (lower age first)
       });
     } else {
       // Sort by the selected predicate
