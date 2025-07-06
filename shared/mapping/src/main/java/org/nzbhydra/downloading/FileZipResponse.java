@@ -16,6 +16,8 @@
 
 package org.nzbhydra.downloading;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -32,6 +34,8 @@ public class FileZipResponse {
     private boolean successful;
     private String zipFilepath;
     private String message;
+    @JsonSerialize(contentUsing = ToStringSerializer.class)
     private Collection<Long> addedIds;
+    @JsonSerialize(contentUsing = ToStringSerializer.class)
     private Collection<Long> missedIds;
 }

@@ -1,5 +1,7 @@
 package org.nzbhydra.downloading;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,7 +25,7 @@ public class AddFilesRequest {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class SearchResult {
-
+        @JsonSerialize(using = ToStringSerializer.class)
         private Long searchResultId;
         private String originalCategory;
         private String mappedCategory;

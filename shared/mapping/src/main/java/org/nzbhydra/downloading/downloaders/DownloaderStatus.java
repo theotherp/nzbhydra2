@@ -16,6 +16,8 @@
 
 package org.nzbhydra.downloading.downloaders;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.google.common.collect.Iterables;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -49,8 +51,9 @@ public class DownloaderStatus {
     private int elementsInQueue;
     private String downloadingTitle;
 
+    @JsonSerialize(using = ToStringSerializer.class)
     private long downloadingTitleRemainingSizeKilobytes;
-
+    @JsonSerialize(using = ToStringSerializer.class)
     private long downloadingTitleRemainingTimeSeconds;
 
     private int downloadingTitlePercentFinished;

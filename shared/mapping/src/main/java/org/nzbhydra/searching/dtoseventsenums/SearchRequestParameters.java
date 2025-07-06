@@ -16,6 +16,8 @@
 
 package org.nzbhydra.searching.dtoseventsenums;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -53,7 +55,7 @@ public class SearchRequestParameters {
 
     private Integer season;
     private String episode;
-
+    @JsonSerialize(using = ToStringSerializer.class)
     private long searchRequestId; //Sent by the GUI to identify this search when getting updates for it
 
 }

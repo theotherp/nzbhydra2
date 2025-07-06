@@ -83,7 +83,7 @@ export class SearchResultsComponent implements OnInit {
   groupedResults: GroupedResult[] = [];
 
   // Selection state
-  selectedResultsIds: Set<number> = new Set();
+  selectedResultsIds: Set<string> = new Set();
   lastSelectedIndex: number = -1;
   lastSelectionAction: "select" | "unselect" | null = null;
   showIndexerStatuses = false;

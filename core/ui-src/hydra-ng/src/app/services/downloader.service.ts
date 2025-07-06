@@ -1,7 +1,9 @@
 import {HttpClient} from "@angular/common/http";
 import {Injectable} from "@angular/core";
+import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {Observable, throwError} from "rxjs";
-import {catchError, map} from "rxjs/operators";
+import {catchError, map, switchMap, take} from "rxjs/operators";
+import {CategorySelectionModalComponent} from "../components/category-selection-modal/category-selection-modal.component";
 import {ConfigService} from "./config.service";
 
 export interface Downloader {
@@ -13,7 +15,7 @@ export interface Downloader {
 }
 
 export interface SearchResultDl {
-    searchResultId: number;
+    searchResultId: string;
     originalCategory: string;
     mappedCategory: string;
 }
@@ -26,7 +28,7 @@ export interface DownloadRequest {
 
 export interface DownloadResponse {
     successful: boolean;
-    addedIds?: number[];
+    addedIds?: string[];
     message?: string;
 }
 
@@ -36,7 +38,8 @@ export interface DownloadResponse {
 export class DownloaderService {
     constructor(
         private http: HttpClient,
-        private configService: ConfigService
+        private configService: ConfigService,
+        private modalService: NgbModal
     ) {
     }
 
@@ -55,9 +58,36 @@ export class DownloaderService {
 
     /**
      * Download NZB to specified downloader
+     * Opens category selection modal if no default category is set
      */
-    download(downloader: Downloader, searchResults: SearchResultDl[], category: string): Observable<DownloadResponse> {
-        return this.sendNzbAddCommand(downloader, searchResults, category);
+    download(downloader: Downloader, searchResults: SearchResultDl[]): Observable<DownloadResponse> {
+        let category = downloader.defaultCategory;
+        if (!category) {
+            return this.getCategories(downloader).pipe(
+                take(1),
+                switchMap(categories => {
+                    const modalRef = this.modalService.open(CategorySelectionModalComponent, {size: "sm"});
+                    modalRef.componentInstance.categories = categories;
+
+                    return new Observable<DownloadResponse>(observer => {
+                        modalRef.result.then((selectedCategory: string) => {
+                            this.sendNzbAddCommand(downloader, searchResults, selectedCategory).subscribe({
+                                next: (response) => observer.next(response),
+                                error: (error) => observer.error(error)
+                            });
+                        }, () => {
+                            observer.error(new Error("Category selection cancelled"));
+                        });
+                    });
+                }),
+                catchError(error => {
+                    console.error("Error fetching categories:", error);
+                    return throwError(() => error);
+                })
+            );
+        } else {
+            return this.sendNzbAddCommand(downloader, searchResults, category);
+        }
     }
 
     /**

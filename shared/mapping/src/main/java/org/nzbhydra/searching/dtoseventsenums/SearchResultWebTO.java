@@ -16,6 +16,8 @@
 
 package org.nzbhydra.searching.dtoseventsenums;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,7 +29,6 @@ import lombok.extern.jackson.Jacksonized;
 @Jacksonized
 public class SearchResultWebTO {
 
-
     private String age;
     private Boolean age_precise;
     private String category;
@@ -36,6 +37,7 @@ public class SearchResultWebTO {
     private Integer comments;
     private String details_link;
     private String downloadType;
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long epoch;
     private Integer files;
     private Integer grabs;
@@ -49,8 +51,10 @@ public class SearchResultWebTO {
     private String link;
     private String originalCategory;
     private String poster;
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long searchResultId;
     private String source;
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long size;
     private String title;
     private String season;

@@ -1,9 +1,6 @@
 import {Component, EventEmitter, Input, Output} from "@angular/core";
-import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
-import {take} from "rxjs/operators";
-import {Downloader, DownloaderService, SearchResultDl} from "../../services/downloader.service";
+import {Downloader, DownloaderService} from "../../services/downloader.service";
 import {SearchResultWebTO} from "../../services/search.service";
-import {CategorySelectionModalComponent} from "../category-selection-modal/category-selection-modal.component";
 
 
 @Component({
@@ -15,18 +12,15 @@ import {CategorySelectionModalComponent} from "../category-selection-modal/categ
 export class AddableNzbComponent {
     @Input() searchResult!: SearchResultWebTO;
     @Input() downloader!: Downloader;
-    @Input() alwaysAsk: boolean = false;
     @Output() downloadComplete = new EventEmitter<{ successful: boolean, message?: string }>();
 
     cssClass: string = "";
     isDownloading: boolean = false;
 
     constructor(
-        private downloaderService: DownloaderService,
-        private modalService: NgbModal
+        private downloaderService: DownloaderService
     ) {
         this.updateCssClass();
-
     }
 
     ngOnChanges(): void {
@@ -57,55 +51,26 @@ export class AddableNzbComponent {
         }
 
         this.isDownloading = true;
-        const originalClass = this.cssClass;
         this.cssClass = "nzb-spinning";
 
-        // If alwaysAsk or no default category, open modal
-        if (this.alwaysAsk || !this.downloader.defaultCategory) {
-            this.downloaderService.getCategories(this.downloader).pipe(take(1)).subscribe({
-                next: (categories) => {
-                    const modalRef = this.modalService.open(CategorySelectionModalComponent, {size: "sm"});
-                    modalRef.componentInstance.categories = categories;
-                    modalRef.result.then((selectedCategory: string) => {
-                        this.doDownload(this.searchResult, selectedCategory);
-                    }, () => {
-                        this.cssClass = originalClass;
-                        this.isDownloading = false;
-                    });
-                },
-                error: () => {
-                    this.cssClass = this.buildCssClass("-error");
-                    this.downloadComplete.emit({
-                        successful: false,
-                        message: "Failed to load categories from downloader."
-                    });
-                    this.isDownloading = false;
-                }
-            });
-        } else {
-            this.doDownload(this.searchResult, this.downloader.defaultCategory);
-        }
+        this.doDownload();
     }
-
-    private buildSearchResultDl(searchResult: SearchResultWebTO): SearchResultDl {
-        return {
-            searchResultId: this.searchResult.searchResultId,
-            originalCategory: this.searchResult.originalCategory,
-            mappedCategory: this.searchResult.category
-        };
-    }
-
     private buildCssClass(postfix: string) {
         let baseClass = this.getCssClass(this.downloader.downloaderType);
         return baseClass + " " + baseClass + postfix;
     }
 
-    private doDownload(searchResult: SearchResultWebTO, category: string) {
-        this.downloaderService.download(this.downloader, [this.buildSearchResultDl(searchResult)], category)
+    private doDownload() {
+        const searchResultDl = {
+            searchResultId: this.searchResult.searchResultId,
+            originalCategory: this.searchResult.originalCategory,
+            mappedCategory: this.searchResult.category
+        };
+        this.downloaderService.download(this.downloader, [searchResultDl])
             .subscribe({
                 next: (response) => {
                     if (
-                        response.successful && response.addedIds?.includes(searchResult.searchResultId)
+                        response.successful && response.addedIds?.includes(searchResultDl.searchResultId)
                     ) {
                         this.cssClass = this.buildCssClass("-success");
                         this.downloadComplete.emit({successful: true});
@@ -115,12 +80,20 @@ export class AddableNzbComponent {
                     }
                     this.isDownloading = false;
                 },
-                error: () => {
+                error: (error) => {
                     this.cssClass = this.buildCssClass("-error");
-                    this.downloadComplete.emit({
-                        successful: false,
-                        message: "An unexpected error occurred while trying to contact NZBHydra or add the NZB."
-                    });
+                    if (error.message === "Category selection cancelled") {
+                        this.cssClass = this.getCssClass(this.downloader.downloaderType);
+                        this.downloadComplete.emit({
+                            successful: false,
+                            message: "Download cancelled by user."
+                        });
+                    } else {
+                        this.downloadComplete.emit({
+                            successful: false,
+                            message: "An unexpected error occurred while trying to contact NZBHydra or add the NZB."
+                        });
+                    }
                     this.isDownloading = false;
                 }
             });

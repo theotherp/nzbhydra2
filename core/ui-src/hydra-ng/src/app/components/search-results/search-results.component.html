@@ -263,7 +263,6 @@
                   *ngFor="let downloader of enabledDownloaders"
                   [searchResult]="groupedResult.result"
                   [downloader]="downloader"
-                  [alwaysAsk]="false"
                   (downloadComplete)="onDownloadComplete($event)">
                 </app-addable-nzb>
               </div>

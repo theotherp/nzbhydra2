@@ -16,6 +16,8 @@
 
 package org.nzbhydra.searching.dtoseventsenums;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import lombok.Data;
 import org.nzbhydra.springnative.ReflectionMarker;
 
@@ -31,6 +33,7 @@ public class IndexerSearchMetaData {
     private int numberOfAvailableResults;
     private int numberOfFoundResults;
     private int offset;
+    @JsonSerialize(using = ToStringSerializer.class)
     private long responseTime;
     private boolean totalResultsKnown;
     private boolean wasSuccessful;

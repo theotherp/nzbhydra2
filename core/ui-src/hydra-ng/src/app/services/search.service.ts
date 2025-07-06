@@ -54,7 +54,7 @@ export interface IndexerSearchMetaData {
 }
 
 export interface SearchResultWebTO {
-    searchResultId: number;
+    searchResultId: string;
     title: string;
     link: string;
     guid: string;
