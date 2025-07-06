@@ -10,7 +10,7 @@ import {LocalStorageService} from "../../services/local-storage.service";
     standalone: false
 })
 export class ConfigComponent implements OnInit {
-    activeTab: string = "main";
+    activeTabIndex: string = "0";
     showAdvanced = signal(false);
     isLoading = signal(false);
     isSaving = signal(false);
@@ -25,13 +25,37 @@ export class ConfigComponent implements OnInit {
 
     ngOnInit() {
         this.loadAdvancedSetting();
-        
         // Determine active tab based on route
         const url = this.route.snapshot.url;
         if (url.length > 1) {
             const tab = url[1].path;
-            this.activeTab = tab;
+            this.activeTabIndex = this.tabNameToIndex(tab).toString();
         }
+    }
+
+    private tabNameToIndex(tab: string): number {
+        switch (tab) {
+            case "main":
+                return 0;
+            case "auth":
+                return 1;
+            case "searching":
+                return 2;
+            case "categories":
+                return 3;
+            case "downloading":
+                return 4;
+            case "indexers":
+                return 5;
+            case "notifications":
+                return 6;
+            default:
+                return 0;
+        }
+    }
+
+    setActiveTabIndex(index: string | number) {
+        this.activeTabIndex = index.toString();
     }
 
     private loadAdvancedSetting() {
@@ -42,12 +66,6 @@ export class ConfigComponent implements OnInit {
     toggleAdvanced() {
         this.showAdvanced.update(current => !current);
         this.localStorageService.setItem("showAdvanced", this.showAdvanced());
-    }
-
-    setActiveTab(tab: string) {
-        console.log("Setting active tab to:", tab);
-        this.activeTab = tab;
-        console.log("Active tab is now:", this.activeTab);
     }
 
     onFormDirtyChange(isDirty: boolean) {

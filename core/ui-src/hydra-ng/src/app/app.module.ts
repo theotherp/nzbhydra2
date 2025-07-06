@@ -10,6 +10,9 @@ import {FormlyModule} from "@ngx-formly/core";
 import Aura from "@primeuix/themes/aura";
 import {Button} from "primeng/button";
 import {providePrimeNG} from "primeng/config";
+import {ProgressSpinner} from "primeng/progressspinner";
+import {Tab, TabList, TabPanel, TabPanels, Tabs} from "primeng/tabs";
+import {ToggleSwitchModule} from "primeng/toggleswitch";
 
 import {App} from "./app";
 import {AddableNzbComponent} from "./components/addable-nzb/addable-nzb.component";
@@ -97,7 +100,14 @@ export function IpValidator(control: AbstractControl): ValidationErrors {
             {path: "system", component: SystemComponent},
             {path: "login", component: LoginComponent}
         ]),
-        Button
+        Button,
+        ToggleSwitchModule,
+        Tabs,
+        TabList,
+        Tab,
+        ProgressSpinner,
+        TabPanels,
+        TabPanel
     ],
     providers: [
         MediaInfoService,

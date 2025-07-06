@@ -1,171 +1,102 @@
-<div class="config-container">
+<div class="p-6">
   <!-- Header with Advanced Toggle -->
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Configuration</h2>
-    <div class="d-flex align-items-center gap-3">
-      <div class="form-check form-switch">
-        <input class="form-check-input"
-               type="checkbox"
-               [checked]="showAdvanced()"
-               (change)="toggleAdvanced()"
-               id="advancedToggle">
-        <label class="form-check-label" for="advancedToggle">
+  <div class="flex justify-between items-center mb-6">
+    <h2 class="text-2xl font-bold text-gray-900">Configuration</h2>
+    <div class="flex items-center gap-4">
+      <div class="flex items-center gap-2">
+        <p-toggleSwitch
+          [ngModel]="showAdvanced()"
+          (ngModelChange)="toggleAdvanced()"
+        ></p-toggleSwitch>
+        <label class="text-sm font-medium text-gray-700">
           Show Advanced Settings
         </label>
       </div>
     </div>
   </div>
+  
   <!-- Loading State -->
-  <div *ngIf="isLoading()" class="text-center py-5">
-    <div class="spinner-border" role="status">
-      <span class="visually-hidden">Loading...</span>
-    </div>
-    <p class="mt-2">Loading configuration...</p>
+  <div *ngIf="isLoading()" class="flex flex-col items-center justify-center py-12">
+    <p-progressSpinner></p-progressSpinner>
+    <p class="mt-4 text-gray-600">Loading configuration...</p>
   </div>
   
   <!-- Config Content -->
-  <div *ngIf="!isLoading()" class="config-content">
-    <!-- Tab Navigation -->
-    <ul class="nav nav-tabs" role="tablist">
-      <li class="nav-item" role="presentation">
-        <button class="nav-link"
-                [class.active]="activeTab === 'main'"
-                (click)="setActiveTab('main')"
-                type="button"
-                role="tab">
-          Main
-        </button>
-      </li>
-      <li class="nav-item" role="presentation">
-        <button class="nav-link"
-                [class.active]="activeTab === 'auth'"
-                (click)="setActiveTab('auth')"
-                type="button"
-                role="tab">
-          Authorization
-        </button>
-      </li>
-      <li class="nav-item" role="presentation">
-        <button class="nav-link"
-                [class.active]="activeTab === 'searching'"
-                (click)="setActiveTab('searching')"
-                type="button"
-                role="tab">
-          Searching
-        </button>
-      </li>
-      <li class="nav-item" role="presentation">
-        <button class="nav-link"
-                [class.active]="activeTab === 'categories'"
-                (click)="setActiveTab('categories')"
-                type="button"
-                role="tab">
-          Categories
-        </button>
-      </li>
-      <li class="nav-item" role="presentation">
-        <button class="nav-link"
-                [class.active]="activeTab === 'downloading'"
-                (click)="setActiveTab('downloading')"
-                type="button"
-                role="tab">
-          Downloading
-        </button>
-      </li>
-      <li class="nav-item" role="presentation">
-        <button class="nav-link"
-                [class.active]="activeTab === 'indexers'"
-                (click)="setActiveTab('indexers')"
-                type="button"
-                role="tab">
-          Indexers
-        </button>
-      </li>
-      <li class="nav-item" role="presentation">
-        <button class="nav-link"
-                [class.active]="activeTab === 'notifications'"
-                (click)="setActiveTab('notifications')"
-                type="button"
-                role="tab">
-          Notifications
-        </button>
-      </li>
-    </ul>
-    
-    <!-- Tab Content -->
-    <div class="tab-content mt-3">
-      <!-- Main Tab -->
-      <div *ngIf="activeTab === 'main'">
-        <app-main-config-tab
-          [showAdvanced]="showAdvanced()"
-          (dirtyChange)="onFormDirtyChange($event)"
-          (validChange)="onFormValidChange($event)">
-        </app-main-config-tab>
-      </div>
-      
-      <!-- Auth Tab -->
-      <div *ngIf="activeTab === 'auth'">
-        <app-auth-config-tab
-          [showAdvanced]="showAdvanced()"
-          (dirtyChange)="onFormDirtyChange($event)"
-          (validChange)="onFormValidChange($event)">
-        </app-auth-config-tab>
-      </div>
-      
-      <!-- Searching Tab -->
-      <div *ngIf="activeTab === 'searching'">
-        <app-searching-config-tab
-          [showAdvanced]="showAdvanced()"
-          (dirtyChange)="onFormDirtyChange($event)"
-          (validChange)="onFormValidChange($event)">
-        </app-searching-config-tab>
-      </div>
-      
-      <!-- Categories Tab -->
-      <div *ngIf="activeTab === 'categories'">
-        <app-categories-config-tab
-          [showAdvanced]="showAdvanced()"
-          (dirtyChange)="onFormDirtyChange($event)"
-          (validChange)="onFormValidChange($event)">
-        </app-categories-config-tab>
-      </div>
-      
-      <!-- Downloading Tab -->
-      <div *ngIf="activeTab === 'downloading'">
-        <app-downloading-config-tab
-          [showAdvanced]="showAdvanced()"
-          (dirtyChange)="onFormDirtyChange($event)"
-          (validChange)="onFormValidChange($event)">
-        </app-downloading-config-tab>
-      </div>
-      
-      <!-- Indexers Tab -->
-      <div *ngIf="activeTab === 'indexers'">
-        <app-indexers-config-tab
-          [showAdvanced]="showAdvanced()"
-          (dirtyChange)="onFormDirtyChange($event)"
-          (validChange)="onFormValidChange($event)">
-        </app-indexers-config-tab>
-      </div>
-      
-      <!-- Notifications Tab -->
-      <div *ngIf="activeTab === 'notifications'">
-        <app-notifications-config-tab
-          [showAdvanced]="showAdvanced()"
-          (dirtyChange)="onFormDirtyChange($event)"
-          (validChange)="onFormValidChange($event)">
-        </app-notifications-config-tab>
-      </div>
+  <div *ngIf="!isLoading()" class="space-y-6">
+    <div class="card">
+      <p-tabs [value]="activeTabIndex" (valueChange)="setActiveTabIndex($event)">
+        <p-tablist>
+          <p-tab value="0">Main</p-tab>
+          <p-tab value="1">Authorization</p-tab>
+          <p-tab value="2">Searching</p-tab>
+          <p-tab value="3">Categories</p-tab>
+          <p-tab value="4">Downloading</p-tab>
+          <p-tab value="5">Indexers</p-tab>
+          <p-tab value="6">Notifications</p-tab>
+        </p-tablist>
+        <p-tabpanels>
+          <p-tabpanel value="0">
+            <app-main-config-tab
+              [showAdvanced]="showAdvanced()"
+              (dirtyChange)="onFormDirtyChange($event)"
+              (validChange)="onFormValidChange($event)">
+            </app-main-config-tab>
+          </p-tabpanel>
+          <p-tabpanel value="1">
+            <app-auth-config-tab
+              [showAdvanced]="showAdvanced()"
+              (dirtyChange)="onFormDirtyChange($event)"
+              (validChange)="onFormValidChange($event)">
+            </app-auth-config-tab>
+          </p-tabpanel>
+          <p-tabpanel value="2">
+            <app-searching-config-tab
+              [showAdvanced]="showAdvanced()"
+              (dirtyChange)="onFormDirtyChange($event)"
+              (validChange)="onFormValidChange($event)">
+            </app-searching-config-tab>
+          </p-tabpanel>
+          <p-tabpanel value="3">
+            <app-categories-config-tab
+              [showAdvanced]="showAdvanced()"
+              (dirtyChange)="onFormDirtyChange($event)"
+              (validChange)="onFormValidChange($event)">
+            </app-categories-config-tab>
+          </p-tabpanel>
+          <p-tabpanel value="4">
+            <app-downloading-config-tab
+              [showAdvanced]="showAdvanced()"
+              (dirtyChange)="onFormDirtyChange($event)"
+              (validChange)="onFormValidChange($event)">
+            </app-downloading-config-tab>
+          </p-tabpanel>
+          <p-tabpanel value="5">
+            <app-indexers-config-tab
+              [showAdvanced]="showAdvanced()"
+              (dirtyChange)="onFormDirtyChange($event)"
+              (validChange)="onFormValidChange($event)">
+            </app-indexers-config-tab>
+          </p-tabpanel>
+          <p-tabpanel value="6">
+            <app-notifications-config-tab
+              [showAdvanced]="showAdvanced()"
+              (dirtyChange)="onFormDirtyChange($event)"
+              (validChange)="onFormValidChange($event)">
+            </app-notifications-config-tab>
+          </p-tabpanel>
+        </p-tabpanels>
+      </p-tabs>
     </div>
     
     <!-- Save Button -->
-    <div class="d-flex justify-content-end mt-4">
-      <button class="btn btn-primary"
-              [disabled]="!hasUnsavedChanges() || isSaving()"
-              (click)="saveConfig()">
-        <span *ngIf="isSaving()" class="spinner-border spinner-border-sm me-2"></span>
-        {{ isSaving() ? 'Saving...' : 'Save Configuration' }}
-      </button>
+    <div class="flex justify-end">
+      <p-button
+        label="{{ isSaving() ? 'Saving...' : 'Save Configuration' }}"
+        [disabled]="!hasUnsavedChanges() || isSaving()"
+        (onClick)="saveConfig()"
+        [loading]="isSaving()"
+        icon="pi pi-save">
+      </p-button>
     </div>
   </div>
 </div> 
