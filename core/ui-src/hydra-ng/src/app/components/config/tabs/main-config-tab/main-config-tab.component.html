@@ -1,0 +1,11 @@
+<div class="main-config-tab">
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <formly-form
+      [form]="form"
+      [fields]="fields"
+      [model]="model"
+      [options]="options"
+      (modelChange)="onModelChange()">
+    </formly-form>
+  </form>
+</div> 

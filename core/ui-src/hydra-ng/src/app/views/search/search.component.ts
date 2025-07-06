@@ -84,7 +84,11 @@ export class SearchComponent implements OnInit, OnDestroy {
             this.category = this.categories[0];
 
             // Load indexers for the default category
-            this.loadIndexersForCategory(this.category);
+            if (this.category) {
+                this.loadIndexersForCategory(this.category);
+            } else {
+                console.warn("No categories available, cannot load indexers.");
+            }
 
             // Set up autocomplete
             this.setupAutocomplete();

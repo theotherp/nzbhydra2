@@ -27,6 +27,8 @@
     "@angular/platform-browser": "^20.0.0",
     "@angular/router": "^20.0.0",
     "@ng-bootstrap/ng-bootstrap": "^19.0.1",
+    "@ngx-formly/bootstrap": "^7.0.0",
+    "@ngx-formly/core": "^7.0.0",
     "@stomp/stompjs": "^7.1.1",
     "@types/sockjs-client": "^1.5.4",
     "bootstrap": "^5.3.7",

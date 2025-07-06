@@ -1,5 +1,7 @@
-import {Component, OnInit} from "@angular/core";
+import {Component, OnInit, signal} from "@angular/core";
 import {ActivatedRoute} from "@angular/router";
+import {ConfigService} from "../../services/config.service";
+import {LocalStorageService} from "../../services/local-storage.service";
 
 @Component({
     selector: "app-config",
@@ -8,39 +10,67 @@ import {ActivatedRoute} from "@angular/router";
     standalone: false
 })
 export class ConfigComponent implements OnInit {
-    activeTab = 0;
+    activeTab: string = "main";
+    showAdvanced = signal(false);
+    isLoading = signal(false);
+    isSaving = signal(false);
+    hasUnsavedChanges = signal(false);
 
-    constructor(private route: ActivatedRoute) {
+    constructor(
+        private route: ActivatedRoute,
+        private configService: ConfigService,
+        private localStorageService: LocalStorageService
+    ) {
     }
 
     ngOnInit() {
+        this.loadAdvancedSetting();
+        
         // Determine active tab based on route
         const url = this.route.snapshot.url;
         if (url.length > 1) {
             const tab = url[1].path;
-            switch (tab) {
-                case "main":
-                    this.activeTab = 0;
-                    break;
-                case "auth":
-                    this.activeTab = 1;
-                    break;
-                case "searching":
-                    this.activeTab = 2;
-                    break;
-                case "categories":
-                    this.activeTab = 3;
-                    break;
-                case "downloading":
-                    this.activeTab = 4;
-                    break;
-                case "indexers":
-                    this.activeTab = 5;
-                    break;
-                case "notifications":
-                    this.activeTab = 6;
-                    break;
-            }
+            this.activeTab = tab;
         }
+    }
+
+    private loadAdvancedSetting() {
+        const savedAdvanced = this.localStorageService.getItem<boolean>("showAdvanced");
+        this.showAdvanced.set(savedAdvanced ?? false);
+    }
+
+    toggleAdvanced() {
+        this.showAdvanced.update(current => !current);
+        this.localStorageService.setItem("showAdvanced", this.showAdvanced());
+    }
+
+    setActiveTab(tab: string) {
+        console.log("Setting active tab to:", tab);
+        this.activeTab = tab;
+        console.log("Active tab is now:", this.activeTab);
+    }
+
+    onFormDirtyChange(isDirty: boolean) {
+        this.hasUnsavedChanges.set(isDirty);
+    }
+
+    onFormValidChange(isValid: boolean) {
+        // Handle form validation changes
+    }
+
+    saveConfig() {
+        if (!this.hasUnsavedChanges()) {
+            return;
+        }
+
+        this.isSaving.set(true);
+
+        // TODO: Collect all form data from tabs and save
+        // For now, just simulate saving
+        setTimeout(() => {
+            this.isSaving.set(false);
+            this.hasUnsavedChanges.set(false);
+            console.log("Configuration saved successfully");
+        }, 1000);
     }
 } 
