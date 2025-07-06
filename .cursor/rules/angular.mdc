@@ -1,6 +1,5 @@
 ---
-description: Describes the migration from the old AngularJS code to Angular17+
-alwaysApply: false
+alwaysApply: true
 ---
 ## Overview
 This document describes the migration of NZBHydra2's AngularJS 1.x frontend to modern Angular 17+ with Bootstrap 5.
@@ -55,6 +54,7 @@ The backend Spring Boot application will remain largely unchanged, with the new 
 
 Whenever implementing calls to the backend check the backend sources to find the correct data model, do not attempt to deduce it from the javascript code.
 Always check the .scss files for common colors and use bootstrap variables where possible.
+Always use `ng build --output-path NUL` when checking if the code compiles.
 
 Always check the file `ANGULAR_MIGRATION_FEATURES.md` to see which features were supported in the original code.
 Always check the file `ANGULAR_ARCHITECTURE.md` for common services and components. Update it's needed.
