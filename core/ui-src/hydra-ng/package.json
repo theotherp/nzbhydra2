@@ -35,6 +35,7 @@
     "@types/sockjs-client": "^1.5.4",
     "bootstrap": "^5.3.7",
     "bootstrap-icons": "^1.13.1",
+    "primeicons": "^7.0.0",
     "primeng": "^20.0.0-rc.1",
     "rxjs": "~7.8.0",
     "sockjs-client": "^1.6.1",

@@ -3,14 +3,14 @@ import {FormBuilder, FormGroup} from "@angular/forms";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Nullable} from "primeng/ts-helpers";
 import {Observable, of, Subscription} from "rxjs";
-import {catchError, debounceTime, distinctUntilChanged, switchMap} from "rxjs/operators";
+import {catchError} from "rxjs/operators";
 import {SearchState, SearchStatusModalComponent} from "../../components/search-status-modal/search-status-modal.component";
 import {CategoriesService} from "../../services/categories.service";
 import {IndexersService, IndexerWithState} from "../../services/indexers.service";
 import {AutocompleteType, MediaInfo, MediaInfoService} from "../../services/media-info.service";
 import {SearchRequestParameters, SearchResponse, SearchService} from "../../services/search.service";
 import {WebSocketService} from "../../services/websocket.service";
-import {Category} from "../../types/config.types";
+import {Category, SearchType} from "../../types/config.types";
 
 @Component({
     selector: "app-search",
@@ -50,6 +50,7 @@ export class SearchComponent implements OnInit, OnDestroy {
     isInitialLoad = true; // Flag to track initial load
     showSearchStatusModal = false;
     searchRequestId = 0;
+    showSeasonAndEpisode = false;
     isSearchCancelled = false;
     showingPartialResults = false;
     showCategoryDropdown = false;
@@ -87,23 +88,34 @@ export class SearchComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
-        // Load categories from backend
+        // Load categories and set default category
         this.categoriesService.getAvailableCategories().subscribe(async categories => {
             this.categories = categories;
-            this.category = this.categories[0];
 
-            // Load indexers for the default category
-            if (this.category) {
-                this.loadIndexersForCategory(this.category);
-            } else {
-                console.warn("No categories available, cannot load indexers.");
-            }
+            // Get the default category
+            this.categoriesService.getDefaultCategory().subscribe(defaultCategory => {
+                this.category = defaultCategory;
 
-            // Set up autocomplete
-            this.setupAutocomplete();
+                // Set the default category in the form
+                this.searchForm.patchValue({category: defaultCategory});
 
-            // Load search parameters from URL
-            await this.loadSearchFromUrl();
+                // Load indexers for the default category
+                if (this.category) {
+                    this.loadIndexersForCategory(this.category);
+                } else {
+                    console.warn("No categories available, cannot load indexers.");
+                }
+
+                // Set up category form control subscription
+                this.searchForm.get("category")?.valueChanges.subscribe(selectedCategory => {
+                    if (selectedCategory && selectedCategory !== this.category) {
+                        this.toggleCategory(selectedCategory);
+                    }
+                });
+
+                // Load search parameters from URL
+                this.loadSearchFromUrl();
+            });
         });
     }
 
@@ -133,11 +145,14 @@ export class SearchComponent implements OnInit, OnDestroy {
                     const categoryName = params["category"];
                     // Wait for categories to be loaded before setting category
                     if (this.categories.length > 0) {
-                        this.category = this.categories.find(c => c.name === categoryName) || this.categories[0];
+                        const foundCategory = this.categories.find(c => c.name === categoryName) || this.categories[0];
+                        this.category = foundCategory;
+                        formValues.category = foundCategory;
                     } else {
                         this.categoriesService.getCategoryByName(categoryName).subscribe(category => {
                             if (category) {
                                 this.category = category;
+                                formValues.category = category;
                             }
                         });
                     }
@@ -192,30 +207,7 @@ export class SearchComponent implements OnInit, OnDestroy {
         });
     }
 
-    setupAutocomplete() {
-        this.searchForm.get("query")?.valueChanges.pipe(
-            debounceTime(300),
-            distinctUntilChanged(),
-            switchMap(value => {
-                const autocompleteEnabled = this.searchForm.get("autocomplete")?.value;
-                if (!value || value.length < 2 || !this.shouldShowAutocomplete() || !autocompleteEnabled) {
-                    this.showAutocomplete = false;
-                    return of([]);
-                }
-                this.isAutocompleteLoading = true;
-                this.showAutocomplete = true;
-                return this.getAutocompleteResults(value);
-            }),
-            catchError(error => {
-                console.error("Autocomplete error:", error);
-                this.isAutocompleteLoading = false;
-                return of([]);
-            })
-        ).subscribe(results => {
-            this.autocompleteResults = results;
-            this.isAutocompleteLoading = false;
-        });
-    }
+
 
     getAutocompleteResults(input: string): Observable<MediaInfo[]> {
         if (!this.category?.searchType) {
@@ -223,11 +215,37 @@ export class SearchComponent implements OnInit, OnDestroy {
         }
 
         const type: AutocompleteType = this.category.searchType === "MOVIE" ? "MOVIE" : "TV";
-        return this.mediaInfoService.getAutocomplete(type, input);
+        return this.mediaInfoService.getAutocomplete(type, input).pipe(
+            catchError(error => {
+                console.error("Autocomplete error:", error);
+                return of([]);
+            })
+        );
+    }
+
+    onAutocompleteSearch(event: any): void {
+        const query = event.query;
+        if (!query || query.length < 2 || !this.shouldShowAutocomplete() || !this.searchForm.get("autocomplete")?.value) {
+            this.autocompleteResults = [];
+            return;
+        }
+
+        this.isAutocompleteLoading = true;
+        this.getAutocompleteResults(query).subscribe({
+            next: (results) => {
+                this.autocompleteResults = results;
+                this.isAutocompleteLoading = false;
+            },
+            error: (error) => {
+                console.error("Autocomplete search error:", error);
+                this.autocompleteResults = [];
+                this.isAutocompleteLoading = false;
+            }
+        });
     }
 
     shouldShowAutocomplete(): boolean {
-        return this.category?.searchType === "MOVIE" || this.category?.searchType === "TVSEARCH";
+        return this.category?.searchType === SearchType.MOVIE || this.category?.searchType === SearchType.TVSEARCH;
     }
 
     toggleCategory(cat: Category, event?: Event) {
@@ -268,6 +286,7 @@ export class SearchComponent implements OnInit, OnDestroy {
                 this.isAutocompleteLoading = false;
             });
         }
+        this.showSeasonAndEpisode = this.category.searchType === SearchType.TVSEARCH;
     }
 
     setFocusToSearchInput() {

@@ -51,4 +51,8 @@
 /* Loading state */
 .dropdown-item .bi-arrow-clockwise {
   margin-right: 0.5rem;
-} 
+}
+
+::ng-deep button.clear-button {
+  border-radius: 0 !important;
+}

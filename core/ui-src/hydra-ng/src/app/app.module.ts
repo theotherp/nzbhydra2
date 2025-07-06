@@ -13,6 +13,8 @@ import {Button} from "primeng/button";
 import {Card} from "primeng/card";
 import {Checkbox} from "primeng/checkbox";
 import {providePrimeNG} from "primeng/config";
+import {InputGroup} from "primeng/inputgroup";
+import {InputGroupAddon} from "primeng/inputgroupaddon";
 import {InputNumber} from "primeng/inputnumber";
 import {InputText} from "primeng/inputtext";
 import {Menubar} from "primeng/menubar";
@@ -113,6 +115,7 @@ export function IpValidator(control: AbstractControl): ValidationErrors {
         Button,
         Card,
         Checkbox,
+        InputGroup,
         InputNumber,
         InputText,
         Menubar,
@@ -125,7 +128,8 @@ export function IpValidator(control: AbstractControl): ValidationErrors {
         Tab,
         TabPanels,
         TabPanel,
-        ToggleSwitchModule
+        ToggleSwitchModule,
+        InputGroupAddon
     ],
     providers: [
         MediaInfoService,

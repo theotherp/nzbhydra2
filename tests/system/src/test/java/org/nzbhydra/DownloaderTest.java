@@ -78,7 +78,7 @@ public class DownloaderTest {
         AddFilesRequest addFilesRequest = new AddFilesRequest();
         addFilesRequest.setDownloaderName(config.getName());
         addFilesRequest.setCategory("TV HD");
-        addFilesRequest.setSearchResults(Collections.singletonList(new AddFilesRequest.SearchResult(guid, "original", "TV HD")));
+        addFilesRequest.setSearchResults(Collections.singletonList(new AddFilesRequest.SearchResult(Long.valueOf(guid), "original", "TV HD")));
         final String addFilesRequestJson = Jackson.JSON_MAPPER.writeValueAsString(addFilesRequest);
         final HydraResponse response = hydraClient.put("/internalapi/downloader/addNzbs", addFilesRequestJson);
         final AddNzbsResponse status = response.as(AddNzbsResponse.class);
