@@ -10,6 +10,7 @@ import {FormlyModule} from "@ngx-formly/core";
 import Aura from "@primeuix/themes/aura";
 import {Button} from "primeng/button";
 import {providePrimeNG} from "primeng/config";
+import {Menubar} from "primeng/menubar";
 import {ProgressSpinner} from "primeng/progressspinner";
 import {Tab, TabList, TabPanel, TabPanels, Tabs} from "primeng/tabs";
 import {ToggleSwitchModule} from "primeng/toggleswitch";
@@ -101,6 +102,7 @@ export function IpValidator(control: AbstractControl): ValidationErrors {
             {path: "login", component: LoginComponent}
         ]),
         Button,
+        Menubar,
         ToggleSwitchModule,
         Tabs,
         TabList,

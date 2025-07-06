@@ -1,45 +1,22 @@
-<nav class="navbar navbar-expand-lg">
-  <div class="container">
-    <a class="navbar-brand" routerLink="/">NZBHydra2</a>
-    
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav me-auto">
-        <li class="nav-item" *ngIf="showSearch">
-          <a class="nav-link" routerLink="/search" routerLinkActive="active">Search</a>
-        </li>
-        <li class="nav-item" *ngIf="showStats && keepHistory">
-          <a class="nav-link" routerLink="/stats" routerLinkActive="active">History & Stats</a>
-        </li>
-        <li class="nav-item" *ngIf="showStats && !keepHistory">
-          <a class="nav-link" routerLink="/stats" routerLinkActive="active">Indexer statuses</a>
-        </li>
-        <li class="nav-item" *ngIf="showAdmin">
-          <a class="nav-link" routerLink="/config" routerLinkActive="active">Config</a>
-        </li>
-        <li class="nav-item" *ngIf="showAdmin">
-          <a class="nav-link" routerLink="/system" routerLinkActive="active">System</a>
-        </li>
-      </ul>
-      
-      <ul class="navbar-nav">
-        <li class="nav-item me-2">
-          <app-theme-toggle></app-theme-toggle>
-        </li>
-        <li class="nav-item" *ngIf="showLoginout">
-          <a class="nav-link" href="#" (click)="loginout()" title="{{ loginlogoutText }}">
-            <i class="bi bi-power"></i>
-          </a>
-        </li>
-      </ul>
+<p-menubar [model]="menuItems">
+  <ng-template pTemplate="start">
+    <a routerLink="/" class="text-xl font-bold text-blue-600 hover:text-blue-800">NZBHydra2</a>
+  </ng-template>
+  
+  <ng-template pTemplate="end">
+    <div class="flex items-center gap-4">
+      <app-theme-toggle></app-theme-toggle>
+      <p-button *ngIf="showLoginout"
+                icon="pi pi-power-off"
+                [title]="loginlogoutText"
+                (onClick)="loginout()"
+                styleClass="p-button-text">
+      </p-button>
     </div>
-  </div>
-</nav>
+  </ng-template>
+</p-menubar>
 
-<div class="main-container mt-4">
+<div class="p-6">
   <router-outlet></router-outlet>
 </div>
 
