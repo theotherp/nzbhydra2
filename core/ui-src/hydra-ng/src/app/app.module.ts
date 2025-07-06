@@ -30,6 +30,7 @@ import {AddableNzbComponent} from "./components/addable-nzb/addable-nzb.componen
 import {CategorySelectionModalComponent} from "./components/category-selection-modal/category-selection-modal.component";
 import {ChipsInputFieldType} from "./components/config/customtypes/chips-input.component";
 import {MultiSelectFieldType} from "./components/config/customtypes/multiselect.component";
+import {RepeatTypeComponent} from "./components/config/customtypes/repeat-type.component";
 
 import {AuthConfigTabComponent} from "./components/config/tabs/auth-config-tab/auth-config-tab.component";
 import {CategoriesConfigTabComponent} from "./components/config/tabs/categories-config-tab/categories-config-tab.component";
@@ -108,7 +109,8 @@ export function IpValidator(control: AbstractControl): ValidationErrors {
             ],
             types: [
                 {name: "multiselect", component: MultiSelectFieldType},
-                {name: "chipsInput", component: ChipsInputFieldType}
+                {name: "chipsInput", component: ChipsInputFieldType},
+                {name: "repeat", component: RepeatTypeComponent}
             ]
         }),
         FormlyBootstrapModule,
@@ -140,7 +142,8 @@ export function IpValidator(control: AbstractControl): ValidationErrors {
         ToggleSwitchModule,
         InputGroupAddon,
         MultiSelectFieldType,
-        ChipsInputFieldType
+        ChipsInputFieldType,
+        RepeatTypeComponent
     ],
     providers: [
         MediaInfoService,

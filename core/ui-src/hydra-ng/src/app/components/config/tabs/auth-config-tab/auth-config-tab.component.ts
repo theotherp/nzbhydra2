@@ -128,7 +128,7 @@ export class AuthConfigTabComponent implements OnInit {
                 wrappers: ["fieldset"],
                 props: {
                     label: "Restrictions",
-                    description: "Select which areas/features can only be accessed by logged in users (i.e. are restricted). If you don't want to allow anonymous users to do anything just leave everything selected."
+                    description: "Select which areas/features can only be accessed by logged in users (i.e. are restricted). If you don't want to allow anonymous users to do anything just leave everything selected.",
                 },
                 expressions: {
                     hide: "model.authType === 'NONE'"
@@ -189,10 +189,8 @@ export class AuthConfigTabComponent implements OnInit {
                 key: "users",
                 props: {
                     label: "Users",
-                    description: "Configure users for authentication"
-                },
-                expressions: {
-                    hide: "model.authType === 'NONE'"
+                    description: "Configure users for authentication",
+                    hideWhen: "this.form.value['authType'] === 'NONE';"
                 },
                 fieldArray: {
                     fieldGroup: [
