@@ -28,6 +28,7 @@ import {ToggleSwitchModule} from "primeng/toggleswitch";
 import {App} from "./app";
 import {AddableNzbComponent} from "./components/addable-nzb/addable-nzb.component";
 import {CategorySelectionModalComponent} from "./components/category-selection-modal/category-selection-modal.component";
+import {MultiSelectFieldType} from "./components/config/customtypes/multiselect.component";
 
 import {AuthConfigTabComponent} from "./components/config/tabs/auth-config-tab/auth-config-tab.component";
 import {CategoriesConfigTabComponent} from "./components/config/tabs/categories-config-tab/categories-config-tab.component";
@@ -36,6 +37,7 @@ import {IndexersConfigTabComponent} from "./components/config/tabs/indexers-conf
 import {MainConfigTabComponent} from "./components/config/tabs/main-config-tab/main-config-tab.component";
 import {NotificationsConfigTabComponent} from "./components/config/tabs/notifications-config-tab/notifications-config-tab.component";
 import {SearchingConfigTabComponent} from "./components/config/tabs/searching-config-tab/searching-config-tab.component";
+import {AdvancedWrapperComponent} from "./components/config/wrappers/advanced-wrapper.component";
 import {FieldsetWrapperComponent} from "./components/config/wrappers/fieldset-wrapper.component";
 import {IndexerStatusesComponent} from "./components/indexer-statuses/indexer-statuses.component";
 import {SaveOrSendFileComponent} from "./components/save-or-send-file/save-or-send-file.component";
@@ -80,7 +82,8 @@ export function IpValidator(control: AbstractControl): ValidationErrors {
         IndexersConfigTabComponent,
         NotificationsConfigTabComponent,
         // Config wrappers
-        FieldsetWrapperComponent
+        FieldsetWrapperComponent,
+        AdvancedWrapperComponent
     ],
     imports: [
         BrowserModule,
@@ -99,7 +102,11 @@ export function IpValidator(control: AbstractControl): ValidationErrors {
                 {name: "invalidIpAddress", message: "Not a valid IP address"},
             ],
             wrappers: [
-                {name: "fieldset", component: FieldsetWrapperComponent}
+                {name: "fieldset", component: FieldsetWrapperComponent},
+                {name: "advanced", component: AdvancedWrapperComponent},
+            ],
+            types: [
+                {name: "multiselect", component: MultiSelectFieldType}
             ]
         }),
         FormlyBootstrapModule,
@@ -129,7 +136,8 @@ export function IpValidator(control: AbstractControl): ValidationErrors {
         TabPanels,
         TabPanel,
         ToggleSwitchModule,
-        InputGroupAddon
+        InputGroupAddon,
+        MultiSelectFieldType
     ],
     providers: [
         MediaInfoService,

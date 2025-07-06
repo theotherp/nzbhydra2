@@ -11,7 +11,21 @@ import {MainConfig} from "../../../../types/config.types";
     standalone: false
 })
 export class MainConfigTabComponent implements OnInit {
-    @Input() showAdvanced = false;
+    private _showAdvanced = false;
+
+    @Input()
+    set showAdvanced(value: boolean) {
+        this._showAdvanced = value;
+        // Rebuild form when showAdvanced changes
+        if (this.fields.length > 0) {
+            this.setupForm();
+        }
+    }
+
+    get showAdvanced(): boolean {
+        return this._showAdvanced;
+    }
+    
     @Output() dirtyChange = new EventEmitter<boolean>();
     @Output() validChange = new EventEmitter<boolean>();
     @Output() modelChange = new EventEmitter<MainConfig>();
@@ -131,15 +145,13 @@ export class MainConfigTabComponent implements OnInit {
                     {
                         key: "urlBase",
                         type: "input",
+                        wrappers: ["advanced"],
                         props: {
                             label: "URL base",
                             type: "text",
                             placeholder: "/nzbhydra",
                             description: "Adapt when using a reverse proxy. Always use when calling Hydra, even locally.",
-                            advanced: true
-                        },
-                        expressions: {
-                            hide: "!model.showAdvanced"
+                            showAdvanced: this.showAdvanced
                         }
                     }
                 ]
@@ -187,6 +199,44 @@ export class MainConfigTabComponent implements OnInit {
             {
                 wrappers: ["fieldset"],
                 props: {
+                    label: "Logging"
+                },
+                fieldGroup: [
+                    {
+                        key: "logging.markersToLog",
+                        type: "multiselect",
+                        props: {
+                            label: "Log markers",
+                            description: "todo",
+                            options: [
+                                {label: "API limits", value: "LIMITS"},
+                                {label: "Category mapping", value: "CATEGORY_MAPPING"},
+                                {label: "Config file handling", value: "CONFIG_READ_WRITE"},
+                                {label: "Custom mapping", value: "CUSTOM_MAPPING"},
+                                {label: "Downloader status updating", value: "DOWNLOADER_STATUS_UPDATE"},
+                                {label: "Duplicate detection", value: "DUPLICATES"},
+                                {label: "External tool configuration", value: "EXTERNAL_TOOLS"},
+                                {label: "History cleanup", value: "HISTORY_CLEANUP"},
+                                {label: "HTTP", value: "HTTP"},
+                                {label: "HTTPS", value: "HTTPS"},
+                                {label: "HTTP Server", value: "SERVER"},
+                                {label: "Indexer scheduler", value: "SCHEDULER"},
+                                {label: "Notifications", value: "NOTIFICATIONS"},
+                                {label: "NZB download status updating", value: "DOWNLOAD_STATUS_UPDATE"},
+                                {label: "Performance", value: "PERFORMANCE"},
+                                {label: "Rejected results", value: "RESULT_ACCEPTOR"},
+                                {label: "Removed trailing words", value: "TRAILING"},
+                                {label: "URL calculation", value: "URL_CALCULATION"},
+                                {label: "User agent mapping", value: "USER_AGENT"},
+                                {label: "VIP expiry", value: "VIP_EXPIRY"}
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                wrappers: ["fieldset"],
+                props: {
                     label: "Miscellaneous"
                 },
                 fieldGroup: [
@@ -200,13 +250,11 @@ export class MainConfigTabComponent implements OnInit {
                     {
                         key: "showNews",
                         type: "checkbox",
+                        wrappers: ["advanced"],
                         props: {
                             label: "Show news",
                             description: "Hydra will occasionally show news when opened. You can always find them in the system section",
-                            advanced: true
-                        },
-                        expressions: {
-                            hide: "!model.showAdvanced"
+                            showAdvanced: this.showAdvanced
                         }
                     }
                 ]
