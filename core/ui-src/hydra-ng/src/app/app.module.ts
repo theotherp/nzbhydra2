@@ -2,10 +2,14 @@ import {HttpClientModule} from "@angular/common/http";
 import {NgModule} from "@angular/core";
 import {AbstractControl, FormsModule, ReactiveFormsModule, ValidationErrors} from "@angular/forms";
 import {BrowserModule} from "@angular/platform-browser";
+import {provideAnimationsAsync} from "@angular/platform-browser/animations/async";
 import {RouterModule} from "@angular/router";
 import {NgbModule} from "@ng-bootstrap/ng-bootstrap";
 import {FormlyBootstrapModule} from "@ngx-formly/bootstrap";
 import {FormlyModule} from "@ngx-formly/core";
+import Aura from "@primeuix/themes/aura";
+import {Button} from "primeng/button";
+import {providePrimeNG} from "primeng/config";
 
 import {App} from "./app";
 import {AddableNzbComponent} from "./components/addable-nzb/addable-nzb.component";
@@ -92,9 +96,19 @@ export function IpValidator(control: AbstractControl): ValidationErrors {
             {path: "stats", component: StatsComponent},
             {path: "system", component: SystemComponent},
             {path: "login", component: LoginComponent}
-        ])
+        ]),
+        Button
     ],
-    providers: [MediaInfoService, SearchService],
+    providers: [
+        MediaInfoService,
+        SearchService,
+        provideAnimationsAsync(),
+        providePrimeNG({
+            theme: {
+                preset: Aura
+            }
+        })
+    ],
     bootstrap: [App]
 })
 export class AppModule {

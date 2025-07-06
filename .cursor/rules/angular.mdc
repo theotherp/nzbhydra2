@@ -2,14 +2,14 @@
 alwaysApply: true
 ---
 ## Overview
-This document describes the migration of NZBHydra2's AngularJS 1.x frontend to modern Angular 17+ with Bootstrap 5.
+This document describes the migration of NZBHydra2's AngularJS 1.x frontend to modern Angular 17+ with PrimeNG.
 The backend Spring Boot application will remain largely unchanged, with the new Angular app replacing the old UI entirely.
 
 ## Migration Strategy
 - **Complete replacement**: No hybrid approach, old AngularJS code will be removed after migration
 - **Minimal backend changes**: Keep existing REST API endpoints unchanged
 - **Feature parity**: Ensure all current functionality is preserved
-- **Modern UX**: Improve user experience with Bootstrap 5 and modern Angular patterns
+- **Modern UX**: Improve user experience with PrimeNG and modern Angular patterns
 - **Tests**: All relevant logic in the new Angular components should be tested
 
 
@@ -17,7 +17,7 @@ The backend Spring Boot application will remain largely unchanged, with the new 
 - Unless stated otherwise ignore:
   - authentication, session handling or anything other security related
   - themes
-- Use as many common SCSS styles or variables as possible. Do not create new color definitions for each component. Use bootstrap components and variables where it makes sense.
+- Use as many common SCSS styles or variables as possible. Do not create new color definitions for each component. Use PrimeNG components and variables where it makes sense.
 
 ## Backend Integration
 
@@ -41,7 +41,7 @@ The backend Spring Boot application will remain largely unchanged, with the new 
 
 ### Key Decisions
 1. **State Management**: Use NgRx for complex state, Angular signals for simple state
-2. **UI Framework**: Bootstrap 5 with custom SCSS themes
+2. **UI Framework**: PrimeNG with custom SCSS themes
 3. **Charts**: Replace NVD3 with Chart.js or ng2-charts
 4. **Forms**: Replace Formly with Angular Reactive Forms
 5. **Testing**: Jest for unit tests, Cypress for E2E tests
@@ -49,7 +49,7 @@ The backend Spring Boot application will remain largely unchanged, with the new 
 ### Challenges and Solutions
 1. **Complex Forms**: Build custom dynamic form system
 2. **Real-time Updates**: Implement WebSocket or polling
-3. **Theme System**: Create Bootstrap 5 theme variables
+3. **Theme System**: Create PrimeNG theme variables
 4. **Performance**: Optimize bundle size and loading times
 
 Whenever implementing calls to the backend check the backend sources to find the correct data model, do not attempt to deduce it from the javascript code.
