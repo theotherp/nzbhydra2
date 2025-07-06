@@ -24,60 +24,60 @@
   <!-- Config Content -->
   <div *ngIf="!isLoading()" class="space-y-6">
     <div class="card">
-      <p-tabs [value]="activeTabIndex" (valueChange)="setActiveTabIndex($event)">
+      <p-tabs [value]="activeTabName" (valueChange)="setActiveTabName($event)">
         <p-tablist>
-          <p-tab value="0">Main</p-tab>
-          <p-tab value="1">Authorization</p-tab>
-          <p-tab value="2">Searching</p-tab>
-          <p-tab value="3">Categories</p-tab>
-          <p-tab value="4">Downloading</p-tab>
-          <p-tab value="5">Indexers</p-tab>
-          <p-tab value="6">Notifications</p-tab>
+          <p-tab value="main">Main</p-tab>
+          <p-tab value="auth">Authorization</p-tab>
+          <p-tab value="searching">Searching</p-tab>
+          <p-tab value="categories">Categories</p-tab>
+          <p-tab value="downloading">Downloading</p-tab>
+          <p-tab value="indexers">Indexers</p-tab>
+          <p-tab value="notifications">Notifications</p-tab>
         </p-tablist>
         <p-tabpanels>
-          <p-tabpanel value="0">
+          <p-tabpanel value="main">
             <app-main-config-tab
               [showAdvanced]="showAdvanced()"
               (dirtyChange)="onFormDirtyChange($event)"
               (validChange)="onFormValidChange($event)">
             </app-main-config-tab>
           </p-tabpanel>
-          <p-tabpanel value="1">
+          <p-tabpanel value="auth">
             <app-auth-config-tab
               [showAdvanced]="showAdvanced()"
               (dirtyChange)="onFormDirtyChange($event)"
               (validChange)="onFormValidChange($event)">
             </app-auth-config-tab>
           </p-tabpanel>
-          <p-tabpanel value="2">
+          <p-tabpanel value="searching">
             <app-searching-config-tab
               [showAdvanced]="showAdvanced()"
               (dirtyChange)="onFormDirtyChange($event)"
               (validChange)="onFormValidChange($event)">
             </app-searching-config-tab>
           </p-tabpanel>
-          <p-tabpanel value="3">
+          <p-tabpanel value="categories">
             <app-categories-config-tab
               [showAdvanced]="showAdvanced()"
               (dirtyChange)="onFormDirtyChange($event)"
               (validChange)="onFormValidChange($event)">
             </app-categories-config-tab>
           </p-tabpanel>
-          <p-tabpanel value="4">
+          <p-tabpanel value="downloading">
             <app-downloading-config-tab
               [showAdvanced]="showAdvanced()"
               (dirtyChange)="onFormDirtyChange($event)"
               (validChange)="onFormValidChange($event)">
             </app-downloading-config-tab>
           </p-tabpanel>
-          <p-tabpanel value="5">
+          <p-tabpanel value="indexers">
             <app-indexers-config-tab
               [showAdvanced]="showAdvanced()"
               (dirtyChange)="onFormDirtyChange($event)"
               (validChange)="onFormValidChange($event)">
             </app-indexers-config-tab>
           </p-tabpanel>
-          <p-tabpanel value="6">
+          <p-tabpanel value="notifications">
             <app-notifications-config-tab
               [showAdvanced]="showAdvanced()"
               (dirtyChange)="onFormDirtyChange($event)"

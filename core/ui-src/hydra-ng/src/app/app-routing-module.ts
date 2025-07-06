@@ -1,13 +1,13 @@
 import {NgModule} from "@angular/core";
 import {RouterModule, Routes} from "@angular/router";
-import {SearchComponent} from "./views/search/search.component";
 import {ConfigComponent} from "./views/config/config.component";
-import {IndexerStatusesComponent} from "./views/stats/indexer-statuses.component";
-import {SearchHistoryComponent} from "./views/stats/search-history.component";
-import {DownloadHistoryComponent} from "./views/stats/download-history.component";
-import {NotificationHistoryComponent} from "./views/stats/notification-history.component";
-import {SystemComponent} from "./views/system/system.component";
 import {LoginComponent} from "./views/login/login.component";
+import {SearchComponent} from "./views/search/search.component";
+import {DownloadHistoryComponent} from "./views/stats/download-history.component";
+import {IndexerStatusesComponent} from "./views/stats/indexer-statuses.component";
+import {NotificationHistoryComponent} from "./views/stats/notification-history.component";
+import {SearchHistoryComponent} from "./views/stats/search-history.component";
+import {SystemComponent} from "./views/system/system.component";
 
 const routes: Routes = [
     // Search routes
@@ -16,16 +16,17 @@ const routes: Routes = [
 
     // Config routes
     {
-        path: "config", children: [
-            {path: "", redirectTo: "main", pathMatch: "full"},
-            {path: "main", component: ConfigComponent},
-            {path: "auth", component: ConfigComponent},
-            {path: "searching", component: ConfigComponent},
-            {path: "categories", component: ConfigComponent},
-            {path: "downloading", component: ConfigComponent},
-            {path: "indexers", component: ConfigComponent},
-            {path: "notifications", component: ConfigComponent}
-        ]
+        path: "config/:activeTab", component: ConfigComponent
+        // children: [
+        //     {path: "", redirectTo: "main", pathMatch: "full"},
+        //     {path: "main", component: ConfigComponent, data: {activeTab: 0}},
+        //     {path: "auth", component: ConfigComponent, data: {activeTab: 1}},
+        //     {path: "searching", component: ConfigComponent, data: {activeTab: 2}},
+        //     {path: "categories", component: ConfigComponent, data: {activeTab: 3}},
+        //     {path: "downloading", component: ConfigComponent, data: {activeTab: 4}},
+        //     {path: "indexers", component: ConfigComponent, data: {activeTab: 5}},
+        //     {path: "notifications", component: ConfigComponent, data: {activeTab: 6}}
+        // ]
     },
 
     // Stats routes

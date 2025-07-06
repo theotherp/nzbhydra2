@@ -3,7 +3,6 @@ import {NgModule} from "@angular/core";
 import {AbstractControl, FormsModule, ReactiveFormsModule, ValidationErrors} from "@angular/forms";
 import {BrowserModule} from "@angular/platform-browser";
 import {provideAnimationsAsync} from "@angular/platform-browser/animations/async";
-import {RouterModule} from "@angular/router";
 import {NgbModule} from "@ng-bootstrap/ng-bootstrap";
 import {FormlyBootstrapModule} from "@ngx-formly/bootstrap";
 import {FormlyModule} from "@ngx-formly/core";
@@ -26,6 +25,7 @@ import {Tab, TabList, TabPanel, TabPanels, Tabs} from "primeng/tabs";
 import {ToggleSwitchModule} from "primeng/toggleswitch";
 
 import {App} from "./app";
+import {AppRoutingModule} from "./app-routing-module";
 import {AddableNzbComponent} from "./components/addable-nzb/addable-nzb.component";
 import {CategorySelectionModalComponent} from "./components/category-selection-modal/category-selection-modal.component";
 import {ChipsInputFieldType} from "./components/config/customtypes/chips-input.component";
@@ -114,14 +114,7 @@ export function IpValidator(control: AbstractControl): ValidationErrors {
             ]
         }),
         FormlyBootstrapModule,
-        RouterModule.forRoot([
-            {path: "", redirectTo: "/search", pathMatch: "full"},
-            {path: "search", component: SearchComponent},
-            {path: "config", component: ConfigViewComponent},
-            {path: "stats", component: StatsComponent},
-            {path: "system", component: SystemComponent},
-            {path: "login", component: LoginComponent}
-        ]),
+        AppRoutingModule,
         AutoComplete,
         Button,
         Card,

@@ -1,5 +1,5 @@
 import {Component, OnInit, signal, ViewChild} from "@angular/core";
-import {ActivatedRoute} from "@angular/router";
+import {ActivatedRoute, Router} from "@angular/router";
 import {AuthConfigTabComponent} from "../../components/config/tabs/auth-config-tab/auth-config-tab.component";
 import {CategoriesConfigTabComponent} from "../../components/config/tabs/categories-config-tab/categories-config-tab.component";
 import {DownloadingConfigTabComponent} from "../../components/config/tabs/downloading-config-tab/downloading-config-tab.component";
@@ -18,11 +18,18 @@ import {BaseConfig} from "../../types/config.types";
     standalone: false
 })
 export class ConfigComponent implements OnInit {
-    activeTabIndex: string = "0";
+    activeTabName: string = "0";
     showAdvanced = signal(false);
     isLoading = signal(false);
     isSaving = signal(false);
     hasUnsavedChanges = signal(false);
+
+    allTabs = [
+        {
+            "path": "main",
+
+        }
+    ];
 
     // ViewChild references to tab components
     @ViewChild(MainConfigTabComponent) mainConfigTab?: MainConfigTabComponent;
@@ -34,6 +41,7 @@ export class ConfigComponent implements OnInit {
     @ViewChild(NotificationsConfigTabComponent) notificationsConfigTab?: NotificationsConfigTabComponent;
 
     constructor(
+        private router: Router,
         private route: ActivatedRoute,
         private configService: ConfigService,
         private localStorageService: LocalStorageService
@@ -42,37 +50,13 @@ export class ConfigComponent implements OnInit {
 
     ngOnInit() {
         this.loadAdvancedSetting();
-        // Determine active tab based on route
-        const url = this.route.snapshot.url;
-        if (url.length > 1) {
-            const tab = url[1].path;
-            this.activeTabIndex = this.tabNameToIndex(tab).toString();
-        }
+        this.activeTabName = this.route.snapshot.params["activeTab"];
     }
 
-    private tabNameToIndex(tab: string): number {
-        switch (tab) {
-            case "main":
-                return 0;
-            case "auth":
-                return 1;
-            case "searching":
-                return 2;
-            case "categories":
-                return 3;
-            case "downloading":
-                return 4;
-            case "indexers":
-                return 5;
-            case "notifications":
-                return 6;
-            default:
-                return 0;
-        }
-    }
 
-    setActiveTabIndex(index: string | number) {
-        this.activeTabIndex = index.toString();
+    setActiveTabName(name: string | number) {
+        this.activeTabName = name.toString();
+        this.router.navigate(["config", this.activeTabName]);
     }
 
     private loadAdvancedSetting() {
