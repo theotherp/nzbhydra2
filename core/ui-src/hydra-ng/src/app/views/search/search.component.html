@@ -13,17 +13,19 @@
 </div>
 
 <div *ngIf="availableIndexers.length > 0">
-  <form [formGroup]="searchForm">
+  <form [formGroup]="searchForm" class="max-w-6xl mx-auto">
     <!-- Main Search Input Group -->
-    <div class="max-w-5xl mx-auto">
+    <div class="">
       <p-inputgroup>
         <!-- Category Dropdown -->
         <p-select
+          appendTo="body"
           class="max-w-[180px]"
           [options]="categories"
           formControlName="category"
           optionLabel="name"
           placeholder="Category">
+        
         </p-select>
         
         <!-- Autocomplete Checkbox -->
@@ -123,29 +125,27 @@
     <!-- Indexer Selection -->
     <div *ngIf="showIndexerSelection">
       <p-card>
-        <ng-template pTemplate="header">
-          <div>
-            <span>Indexers</span>
+        <ng-template pTemplate="content">
+          <div class="flex items-center">
             <p-splitButton
               label="Options"
               icon="pi pi-cog"
               [model]="indexerOptions"
-              styleClass="p-button-outlined p-button-sm">
+              size="small"
+              styleClass="p-button-outlined p-button-sm mr-4">
             </p-splitButton>
-          </div>
-        </ng-template>
-        <ng-template pTemplate="content">
-          <div>
-            <div *ngFor="let indexer of availableIndexers">
-              <p-checkbox
-                [inputId]="'indexer-' + indexer.name"
-                [(ngModel)]="indexer.activated" [ngModelOptions]="{standalone: true}"
-                (onChange)="onIndexerChange(indexer)"
-                [binary]="true">
-              </p-checkbox>
-              <label [for]="'indexer-' + indexer.name">
-                {{ indexer.name }}
-              </label>
+            <div class="flex flex-wrap">
+              <div *ngFor="let indexer of availableIndexers" class="flex items-center mr-4 mb-2">
+                <p-checkbox
+                  [inputId]="'indexer-' + indexer.name"
+                  [(ngModel)]="indexer.activated" [ngModelOptions]="{standalone: true}"
+                  (onChange)="onIndexerChange(indexer)"
+                  [binary]="true">
+                </p-checkbox>
+                <label [for]="'indexer-' + indexer.name" class="ml-1">
+                  {{ indexer.name }}
+                </label>
+              </div>
             </div>
           </div>
         </ng-template>
@@ -153,26 +153,30 @@
     </div>
     
     <!-- Filters -->
-    <div>
+    <div class="flex gap-4 mt-4">
+      
+      
       <!-- Age Filters -->
-      <p-card header="Age">
+      <p-card header="Age" class="flex-1">
         <ng-template pTemplate="content">
-          <div>
-            <div>
-              <label>Min</label>
+          <div class="flex gap-2">
+            <div class="flex-1">
+              <label class="block mb-1 pr-2">Min</label>
               <p-inputNumber
                 formControlName="minage"
                 placeholder="Min days"
                 suffix=" days"
+                class="minmax"
                 (keypress)="onKeyPress($event)">
               </p-inputNumber>
             </div>
-            <div>
-              <label>Max</label>
+            <div class="flex-1">
+              <label class="block mb-1 pr-2">Max</label>
               <p-inputNumber
                 formControlName="maxage"
                 placeholder="Max days"
                 suffix=" days"
+                class="minmax"
                 (keypress)="onKeyPress($event)">
               </p-inputNumber>
             </div>
@@ -181,24 +185,26 @@
       </p-card>
       
       <!-- Size Filters -->
-      <p-card header="Size">
+      <p-card header="Size" class="flex-1">
         <ng-template pTemplate="content">
-          <div>
-            <div>
-              <label>Min</label>
+          <div class="flex gap-2">
+            <div class="flex-1">
+              <label class="block mb-1 pr-2">Min</label>
               <p-inputNumber
                 formControlName="minsize"
                 placeholder="Min MB"
                 suffix=" MB"
+                class="minmax"
                 (keypress)="onKeyPress($event)">
               </p-inputNumber>
             </div>
-            <div>
-              <label>Max</label>
+            <div class="flex-1">
+              <label class="block mb-1 pr-2">Max</label>
               <p-inputNumber
                 formControlName="maxsize"
                 placeholder="Max MB"
                 suffix=" MB"
+                class="minmax"
                 (keypress)="onKeyPress($event)">
               </p-inputNumber>
             </div>

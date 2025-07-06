@@ -68,4 +68,13 @@ body {
 
 .tab-pane {
   min-height: 200px;
-} 
+}
+
+.p-select-list-container {
+  max-height: none !important;
+}
+
+.p-select-option {
+  padding: 2px !important;
+}
+

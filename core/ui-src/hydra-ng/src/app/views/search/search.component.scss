@@ -56,3 +56,8 @@
 ::ng-deep button.clear-button {
   border-radius: 0 !important;
 }
+
+::ng-deep .p-inputnumber.minmax input {
+  max-width: 80px;
+}
+
