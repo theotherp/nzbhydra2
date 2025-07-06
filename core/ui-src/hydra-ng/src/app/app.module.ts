@@ -28,6 +28,7 @@ import {ToggleSwitchModule} from "primeng/toggleswitch";
 import {App} from "./app";
 import {AddableNzbComponent} from "./components/addable-nzb/addable-nzb.component";
 import {CategorySelectionModalComponent} from "./components/category-selection-modal/category-selection-modal.component";
+import {ChipsInputFieldType} from "./components/config/customtypes/chips-input.component";
 import {MultiSelectFieldType} from "./components/config/customtypes/multiselect.component";
 
 import {AuthConfigTabComponent} from "./components/config/tabs/auth-config-tab/auth-config-tab.component";
@@ -106,7 +107,8 @@ export function IpValidator(control: AbstractControl): ValidationErrors {
                 {name: "advanced", component: AdvancedWrapperComponent},
             ],
             types: [
-                {name: "multiselect", component: MultiSelectFieldType}
+                {name: "multiselect", component: MultiSelectFieldType},
+                {name: "chipsInput", component: ChipsInputFieldType}
             ]
         }),
         FormlyBootstrapModule,
@@ -137,7 +139,8 @@ export function IpValidator(control: AbstractControl): ValidationErrors {
         TabPanel,
         ToggleSwitchModule,
         InputGroupAddon,
-        MultiSelectFieldType
+        MultiSelectFieldType,
+        ChipsInputFieldType
     ],
     providers: [
         MediaInfoService,
