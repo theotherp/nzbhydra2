@@ -101,7 +101,7 @@ export class ConfigComponent implements OnInit {
 
         // Collect main config tab model
         allModels.main = this.mainConfigTab!.getCurrentModel();
-        // allModels.auth = this.authConfigTab!.getCurrentModel();
+        allModels.auth = this.authConfigTab!.getCurrentModel();
         // allModels.searching = this.searchingConfigTab!.getCurrentModel();
         // allModels.categories = this.categoriesConfigTab!.getCurrentModel();
         // allModels.downloading = this.downloadingConfigTab!.getCurrentModel();
@@ -118,10 +118,10 @@ export class ConfigComponent implements OnInit {
             isDirty = true;
         }
 
+        if (this.authConfigTab?.isDirty()) {
+            isDirty = true;
+        }
         // TODO: Check other tabs as they are created
-        // if (this.authConfigTab?.isDirty()) {
-        //     isDirty = true;
-        // }
         // if (this.searchingConfigTab?.isDirty()) {
         //     isDirty = true;
         // }
@@ -143,9 +143,9 @@ export class ConfigComponent implements OnInit {
 
     private markAllTabsAsPristine() {
         this.mainConfigTab?.markAsPristine();
+        this.authConfigTab?.markAsPristine();
 
         // TODO: Mark other tabs as pristine as they are created
-        // this.authConfigTab?.markAsPristine();
         // this.searchingConfigTab?.markAsPristine();
         // this.categoriesConfigTab?.markAsPristine();
         // this.downloadingConfigTab?.markAsPristine();
