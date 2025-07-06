@@ -1,6 +1,6 @@
 import {HttpClientModule} from "@angular/common/http";
 import {NgModule} from "@angular/core";
-import {FormsModule, ReactiveFormsModule} from "@angular/forms";
+import {AbstractControl, FormsModule, ReactiveFormsModule, ValidationErrors} from "@angular/forms";
 import {BrowserModule} from "@angular/platform-browser";
 import {RouterModule} from "@angular/router";
 import {NgbModule} from "@ng-bootstrap/ng-bootstrap";
@@ -32,7 +32,13 @@ import {SearchComponent} from "./views/search/search.component";
 import {StatsComponent} from "./views/stats/stats.component";
 import {SystemComponent} from "./views/system/system.component";
 
+export function IpValidator(control: AbstractControl): ValidationErrors {
+    let isValid = /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$/.test(control.value) || /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(control.value);
+    return isValid ? {} : {"invalidIpAddress": true};
+}
 @NgModule({
+
+
     declarations: [
         App,
         SearchComponent,
@@ -66,9 +72,13 @@ import {SystemComponent} from "./views/system/system.component";
         NgbModule,
         FormlyModule.forRoot({
             validators: [
-                {name: "ipAddress", validation: () => ({value: true, message: "Invalid IP address"})},
+                {name: "ipAddress", validation: IpValidator},
                 {name: "port", validation: () => ({value: true, message: "Invalid port number"})},
                 {name: "apiKey", validation: () => ({value: true, message: "Invalid API key"})}
+            ],
+            validationMessages: [
+                {name: "required", message: "This field is required"},
+                {name: "invalidIpAddress", message: "Not a valid IP address"},
             ],
             wrappers: [
                 {name: "fieldset", component: FieldsetWrapperComponent}
