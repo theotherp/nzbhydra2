@@ -1,7 +1,18 @@
 import {Component, EventEmitter, Input, OnInit, Output} from "@angular/core";
 import {FormGroup} from "@angular/forms";
 import {FormlyFieldConfig, FormlyFormOptions} from "@ngx-formly/core";
-import {ConfigService, MainConfig} from "../../../../services/config.service";
+import {ConfigService} from "../../../../services/config.service";
+
+export interface MainConfig {
+    host: string;
+    port: number;
+    urlBase?: string;
+    ssl: boolean;
+    theme?: string;
+    apiKey: string;
+    startupBrowser?: boolean;
+    showNews?: boolean;
+}
 
 @Component({
     selector: "app-main-config-tab",
@@ -20,16 +31,10 @@ export class MainConfigTabComponent implements OnInit {
         port: 5076,
         urlBase: "",
         ssl: false,
-        sslKeyStore: "",
-        sslKeyStorePassword: "",
-        proxyType: "NONE",
-        proxyHost: "",
-        proxyPort: 1080,
-        proxyUsername: "",
-        proxyPassword: "",
-        externalUrl: "",
+        theme: "auto",
         apiKey: "",
-        showAdvanced: false
+        startupBrowser: true,
+        showNews: true
     };
     options: FormlyFormOptions = {};
     fields: FormlyFieldConfig[] = [];
@@ -55,17 +60,18 @@ export class MainConfigTabComponent implements OnInit {
     }
 
     private setupForm() {
+        console.log("Setting up form with showAdvanced:", this.showAdvanced);
         this.fields = [
             {
-                type: "fieldset",
-                templateOptions: {
+                wrappers: ["fieldset"],
+                props: {
                     label: "Hosting"
                 },
                 fieldGroup: [
                     {
                         key: "host",
                         type: "input",
-                        templateOptions: {
+                        props: {
                             label: "Host",
                             type: "text",
                             required: true,
@@ -79,7 +85,7 @@ export class MainConfigTabComponent implements OnInit {
                     {
                         key: "port",
                         type: "input",
-                        templateOptions: {
+                        props: {
                             label: "Port",
                             type: "number",
                             required: true,
@@ -93,163 +99,104 @@ export class MainConfigTabComponent implements OnInit {
                     {
                         key: "urlBase",
                         type: "input",
-                        templateOptions: {
+                        props: {
                             label: "URL base",
                             type: "text",
                             placeholder: "/nzbhydra",
                             description: "Adapt when using a reverse proxy. Always use when calling Hydra, even locally.",
                             advanced: true
                         },
-                        hideExpression: "!model.showAdvanced"
+                        expressions: {
+                            hide: "!model.showAdvanced"
+                        }
                     }
                 ]
             },
             {
-                type: "fieldset",
-                templateOptions: {
-                    label: "SSL Configuration",
-                    advanced: true
+                wrappers: ["fieldset"],
+                props: {
+                    label: "UI"
                 },
                 fieldGroup: [
                     {
-                        key: "ssl",
-                        type: "checkbox",
-                        templateOptions: {
-                            label: "Use SSL",
-                            description: "Requires restart. You can use SSL but I recommend using a reverse proxy with SSL."
-                        },
-                        hideExpression: "!model.showAdvanced"
-                    },
-                    {
-                        key: "sslKeyStore",
-                        type: "input",
-                        templateOptions: {
-                            label: "SSL keystore file",
-                            type: "text",
-                            required: true,
-                            description: "Requires restart."
-                        },
-                        hideExpression: "!model.ssl || !model.showAdvanced"
-                    },
-                    {
-                        key: "sslKeyStorePassword",
-                        type: "input",
-                        templateOptions: {
-                            label: "SSL keystore password",
-                            type: "password",
-                            required: true,
-                            description: "Requires restart."
-                        },
-                        hideExpression: "!model.ssl || !model.showAdvanced"
-                    }
-                ]
-            },
-            {
-                type: "fieldset",
-                templateOptions: {
-                    label: "Proxy Configuration",
-                    description: "You can select to use either a SOCKS or an HTTPS proxy. All outside connections will be done via the configured proxy.",
-                    advanced: true
-                },
-                fieldGroup: [
-                    {
-                        key: "proxyType",
+                        key: "theme",
                         type: "select",
-                        templateOptions: {
-                            label: "Use proxy",
+                        props: {
+                            label: "Theme",
                             options: [
-                                {label: "None", value: "NONE"},
-                                {label: "SOCKS", value: "SOCKS"},
-                                {label: "HTTP(S)", value: "HTTP"}
+                                {label: "Auto", value: "auto"},
+                                {label: "Grey", value: "grey"},
+                                {label: "Bright", value: "bright"},
+                                {label: "Dark", value: "dark"}
                             ]
-                        },
-                        hideExpression: "!model.showAdvanced"
-                    },
-                    {
-                        key: "proxyHost",
-                        type: "input",
-                        templateOptions: {
-                            label: "Proxy host",
-                            type: "text",
-                            placeholder: "Set to use a proxy",
-                            description: "IPv4 only"
-                        },
-                        hideExpression: "model.proxyType === 'NONE' || !model.showAdvanced"
-                    },
-                    {
-                        key: "proxyPort",
-                        type: "input",
-                        templateOptions: {
-                            label: "Proxy port",
-                            type: "number",
-                            placeholder: "1080"
-                        },
-                        hideExpression: "model.proxyType === 'NONE' || !model.showAdvanced"
-                    },
-                    {
-                        key: "proxyUsername",
-                        type: "input",
-                        templateOptions: {
-                            label: "Proxy username",
-                            type: "text"
-                        },
-                        hideExpression: "model.proxyType === 'NONE' || !model.showAdvanced"
-                    },
-                    {
-                        key: "proxyPassword",
-                        type: "input",
-                        templateOptions: {
-                            label: "Proxy password",
-                            type: "password"
-                        },
-                        hideExpression: "model.proxyType === 'NONE' || !model.showAdvanced"
+                        }
                     }
                 ]
             },
             {
-                type: "fieldset",
-                templateOptions: {
-                    label: "API Configuration"
+                wrappers: ["fieldset"],
+                props: {
+                    label: "Security"
                 },
                 fieldGroup: [
                     {
                         key: "apiKey",
                         type: "input",
-                        templateOptions: {
+                        props: {
                             label: "API Key",
                             type: "text",
                             required: true,
-                            description: "Used for API access and external tool integration."
+                            description: "Alphanumeric only."
+                        },
+                        validators: {
+                            validation: ["apiKey"]
+                        }
+                    }
+                ]
+            },
+            {
+                wrappers: ["fieldset"],
+                props: {
+                    label: "Miscellaneous"
+                },
+                fieldGroup: [
+                    {
+                        key: "startupBrowser",
+                        type: "checkbox",
+                        props: {
+                            label: "Open browser on startup"
                         }
                     },
                     {
-                        key: "externalUrl",
-                        type: "input",
-                        templateOptions: {
-                            label: "External URL",
-                            type: "text",
-                            placeholder: "https://your-domain.com/nzbhydra",
-                            description: "Set this if you access NZBHydra from outside your network.",
+                        key: "showNews",
+                        type: "checkbox",
+                        props: {
+                            label: "Show news",
+                            description: "Hydra will occasionally show news when opened. You can always find them in the system section",
                             advanced: true
                         },
-                        hideExpression: "!model.showAdvanced"
+                        expressions: {
+                            hide: "!model.showAdvanced"
+                        }
                     }
                 ]
             }
         ];
 
-        // Update model with showAdvanced
-        this.model.showAdvanced = this.showAdvanced;
+        console.log("Fields setup complete:", this.fields);
     }
 
     onSubmit() {
         if (this.form.valid) {
             console.log("Form submitted:", this.model);
+            // For now, just log the form data
+            // TODO: Implement proper config saving when all tabs are ready
+            console.log("Config to save:", this.model);
         }
     }
 
     onModelChange() {
-        this.dirtyChange.emit(this.form.dirty);
-        this.validChange.emit(this.form.valid);
+        console.log("Model changed:", this.model);
+        // TODO: Implement dirty tracking and validation
     }
 } 

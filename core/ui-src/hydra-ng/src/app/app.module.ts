@@ -18,6 +18,7 @@ import {IndexersConfigTabComponent} from "./components/config/tabs/indexers-conf
 import {MainConfigTabComponent} from "./components/config/tabs/main-config-tab/main-config-tab.component";
 import {NotificationsConfigTabComponent} from "./components/config/tabs/notifications-config-tab/notifications-config-tab.component";
 import {SearchingConfigTabComponent} from "./components/config/tabs/searching-config-tab/searching-config-tab.component";
+import {FieldsetWrapperComponent} from "./components/config/wrappers/fieldset-wrapper.component";
 import {IndexerStatusesComponent} from "./components/indexer-statuses/indexer-statuses.component";
 import {SaveOrSendFileComponent} from "./components/save-or-send-file/save-or-send-file.component";
 import {SearchResultsComponent} from "./components/search-results/search-results.component";
@@ -53,7 +54,9 @@ import {SystemComponent} from "./views/system/system.component";
         CategoriesConfigTabComponent,
         DownloadingConfigTabComponent,
         IndexersConfigTabComponent,
-        NotificationsConfigTabComponent
+        NotificationsConfigTabComponent,
+        // Config wrappers
+        FieldsetWrapperComponent
     ],
     imports: [
         BrowserModule,
@@ -61,7 +64,16 @@ import {SystemComponent} from "./views/system/system.component";
         FormsModule,
         HttpClientModule,
         NgbModule,
-        FormlyModule.forRoot(),
+        FormlyModule.forRoot({
+            validators: [
+                {name: "ipAddress", validation: () => ({value: true, message: "Invalid IP address"})},
+                {name: "port", validation: () => ({value: true, message: "Invalid port number"})},
+                {name: "apiKey", validation: () => ({value: true, message: "Invalid API key"})}
+            ],
+            wrappers: [
+                {name: "fieldset", component: FieldsetWrapperComponent}
+            ]
+        }),
         FormlyBootstrapModule,
         RouterModule.forRoot([
             {path: "", redirectTo: "/search", pathMatch: "full"},
