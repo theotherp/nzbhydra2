@@ -9,25 +9,21 @@ import {NotificationHistoryComponent} from "./views/stats/notification-history.c
 import {SearchHistoryComponent} from "./views/stats/search-history.component";
 import {SystemComponent} from "./views/system/system.component";
 
+// Generic route generator for tabbed sections
+function createTabbedSectionRoutes(section: string, component: any, defaultTab: string): Routes {
+    return [
+        {path: section, redirectTo: `${section}/${defaultTab}`, pathMatch: "full"},
+        {path: `${section}/:activeTab`, component}
+    ];
+}
+
 const routes: Routes = [
     // Search routes
     {path: "", redirectTo: "/search", pathMatch: "full"},
     {path: "search", component: SearchComponent},
 
-    // Config routes
-    {
-        path: "config/:activeTab", component: ConfigComponent
-        // children: [
-        //     {path: "", redirectTo: "main", pathMatch: "full"},
-        //     {path: "main", component: ConfigComponent, data: {activeTab: 0}},
-        //     {path: "auth", component: ConfigComponent, data: {activeTab: 1}},
-        //     {path: "searching", component: ConfigComponent, data: {activeTab: 2}},
-        //     {path: "categories", component: ConfigComponent, data: {activeTab: 3}},
-        //     {path: "downloading", component: ConfigComponent, data: {activeTab: 4}},
-        //     {path: "indexers", component: ConfigComponent, data: {activeTab: 5}},
-        //     {path: "notifications", component: ConfigComponent, data: {activeTab: 6}}
-        // ]
-    },
+    // Config routes - generated generically
+    ...createTabbedSectionRoutes("config", ConfigComponent, "main"),
 
     // Stats routes
     {

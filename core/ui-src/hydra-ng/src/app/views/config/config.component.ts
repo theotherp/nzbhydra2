@@ -1,5 +1,6 @@
-import {Component, OnInit, signal, ViewChild} from "@angular/core";
-import {ActivatedRoute, Router} from "@angular/router";
+import {Component, signal, ViewChild} from "@angular/core";
+import {ActivatedRoute} from "@angular/router";
+import {BaseTabComponent} from "../../components/base-tab-component";
 import {AuthConfigTabComponent} from "../../components/config/tabs/auth-config-tab/auth-config-tab.component";
 import {CategoriesConfigTabComponent} from "../../components/config/tabs/categories-config-tab/categories-config-tab.component";
 import {DownloadingConfigTabComponent} from "../../components/config/tabs/downloading-config-tab/downloading-config-tab.component";
@@ -7,7 +8,7 @@ import {IndexersConfigTabComponent} from "../../components/config/tabs/indexers-
 import {MainConfigTabComponent} from "../../components/config/tabs/main-config-tab/main-config-tab.component";
 import {NotificationsConfigTabComponent} from "../../components/config/tabs/notifications-config-tab/notifications-config-tab.component";
 import {SearchingConfigTabComponent} from "../../components/config/tabs/searching-config-tab/searching-config-tab.component";
-import {ConfigService} from "../../services/config.service";
+import {GenericTabNavigationService, TabConfig} from "../../services/generic-tab-navigation.service";
 import {LocalStorageService} from "../../services/local-storage.service";
 import {BaseConfig} from "../../types/config.types";
 
@@ -17,19 +18,26 @@ import {BaseConfig} from "../../types/config.types";
     styleUrls: ["./config.component.css"],
     standalone: false
 })
-export class ConfigComponent implements OnInit {
-    activeTabName: string = "0";
+export class ConfigComponent extends BaseTabComponent {
+    // Config-specific properties
     showAdvanced = signal(false);
     isLoading = signal(false);
     isSaving = signal(false);
     hasUnsavedChanges = signal(false);
 
-    allTabs = [
-        {
-            "path": "main",
-
-        }
+    // Tab configuration
+    readonly tabs: TabConfig[] = [
+        {id: "main", label: "Main", route: "/config/main"},
+        {id: "auth", label: "Authorization", route: "/config/auth"},
+        {id: "searching", label: "Searching", route: "/config/searching"},
+        {id: "categories", label: "Categories", route: "/config/categories"},
+        {id: "downloading", label: "Downloading", route: "/config/downloading"},
+        {id: "indexers", label: "Indexers", route: "/config/indexers"},
+        {id: "notifications", label: "Notifications", route: "/config/notifications"}
     ];
+
+    readonly section = "config";
+    readonly defaultTab = "main";
 
     // ViewChild references to tab components
     @ViewChild(MainConfigTabComponent) mainConfigTab?: MainConfigTabComponent;
@@ -41,22 +49,19 @@ export class ConfigComponent implements OnInit {
     @ViewChild(NotificationsConfigTabComponent) notificationsConfigTab?: NotificationsConfigTabComponent;
 
     constructor(
-        private router: Router,
-        private route: ActivatedRoute,
-        private configService: ConfigService,
-        private localStorageService: LocalStorageService
+        route: ActivatedRoute,
+        private localStorageService: LocalStorageService,
+        tabNavigationService: GenericTabNavigationService
     ) {
+        super(route, tabNavigationService);
     }
 
-    ngOnInit() {
+    override ngOnInit() {
+        console.log("ConfigComponent ngOnInit");
+        console.log("Route snapshot in component:", this.route.snapshot);
+        console.log("Route params in component:", this.route.snapshot.params);
+        super.ngOnInit();
         this.loadAdvancedSetting();
-        this.activeTabName = this.route.snapshot.params["activeTab"];
-    }
-
-
-    setActiveTabName(name: string | number) {
-        this.activeTabName = name.toString();
-        this.router.navigate(["config", this.activeTabName]);
     }
 
     private loadAdvancedSetting() {

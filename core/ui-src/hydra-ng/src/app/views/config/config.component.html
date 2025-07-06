@@ -24,15 +24,9 @@
   <!-- Config Content -->
   <div *ngIf="!isLoading()" class="space-y-6">
     <div class="card">
-      <p-tabs [value]="activeTabName" (valueChange)="setActiveTabName($event)">
+      <p-tabs [value]="activeTabId" (valueChange)="setActiveTab($event)">
         <p-tablist>
-          <p-tab value="main">Main</p-tab>
-          <p-tab value="auth">Authorization</p-tab>
-          <p-tab value="searching">Searching</p-tab>
-          <p-tab value="categories">Categories</p-tab>
-          <p-tab value="downloading">Downloading</p-tab>
-          <p-tab value="indexers">Indexers</p-tab>
-          <p-tab value="notifications">Notifications</p-tab>
+          <p-tab *ngFor="let tab of tabs" [value]="tab.id">{{ tab.label }}</p-tab>
         </p-tablist>
         <p-tabpanels>
           <p-tabpanel value="main">
