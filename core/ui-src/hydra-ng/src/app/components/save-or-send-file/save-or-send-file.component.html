@@ -1,0 +1,8 @@
+<span *ngIf="enableButton">
+    <a href="#" (click)="add(); $event.preventDefault()" 
+       [title]="tooltip"
+       class="no-underline">
+        <i *ngIf="!isSaving" class="bi" [class]="cssClass"></i>
+        <span *ngIf="isSaving" class="spinner-border spinner-border-sm"></span>
+    </a>
+</span> 

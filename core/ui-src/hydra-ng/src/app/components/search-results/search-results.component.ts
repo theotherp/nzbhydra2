@@ -984,4 +984,45 @@ export class SearchResultsComponent implements OnInit {
       console.error("Download failed:", result.message);
     }
   }
+
+  onSaveComplete(result: { successful: boolean, message?: string }): void {
+    if (!result.successful && result.message) {
+      // TODO: Show error message to user (could use a toast service)
+      console.error("Save failed:", result.message);
+    }
+  }
+
+  // Link action methods
+  showNfo(searchResult: SearchResultWebTO): void {
+    // TODO: Implement NFO display modal
+    console.log("Show NFO for:", searchResult.title);
+  }
+
+  getNfoTooltip(searchResult: SearchResultWebTO): string {
+    if (searchResult.hasNfo === "NO") {
+      return "No NFO available";
+    } else if (searchResult.hasNfo === "MAYBE") {
+      return "NFO might be available";
+    } else {
+      return "Show NFO";
+    }
+  }
+
+  getBinsearchUrl(source: string): string {
+    // TODO: Implement proper binsearch URL generation
+    return `https://www.binsearch.info/?q=${encodeURIComponent(source)}`;
+  }
+
+  getDerefererUrl(url: string): string {
+    // TODO: Implement proper dereferer URL generation
+    return url;
+  }
+
+  getDownloadUrl(searchResult: SearchResultWebTO): string {
+    if (searchResult.downloadType === "TORRENT") {
+      return `gettorrent/user/${searchResult.searchResultId}`;
+    } else {
+      return `getnzb/user/${searchResult.searchResultId}`;
+    }
+  }
 } 

@@ -75,6 +75,16 @@ export interface SearchResultWebTO {
     downloadUrl: string;
     nzbDownloadUrl: string;
     torrentDownloadUrl: string;
+    // Additional properties from original AngularJS version
+    hasNfo?: string; // 'YES', 'NO', 'MAYBE'
+    source?: string;
+    details_link?: string;
+    cover?: string;
+    downloadedAt?: string;
+    torrentDownloadFactor?: string;
+    seeders?: number;
+    peers?: number;
+    date?: string;
 }
 
 @Injectable({

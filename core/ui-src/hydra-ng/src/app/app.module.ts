@@ -9,6 +9,7 @@ import {App} from "./app";
 import {AddableNzbComponent} from "./components/addable-nzb/addable-nzb.component";
 import {CategorySelectionModalComponent} from "./components/category-selection-modal/category-selection-modal.component";
 import {IndexerStatusesComponent} from "./components/indexer-statuses/indexer-statuses.component";
+import {SaveOrSendFileComponent} from "./components/save-or-send-file/save-or-send-file.component";
 import {SearchResultsComponent} from "./components/search-results/search-results.component";
 import {SearchStatusModalComponent} from "./components/search-status-modal/search-status-modal.component";
 import {ThemeToggleComponent} from "./components/theme-toggle/theme-toggle.component";
@@ -30,8 +31,9 @@ import {SystemComponent} from "./views/system/system.component";
         LoginComponent,
         AddableNzbComponent,
         CategorySelectionModalComponent,
-        SearchResultsComponent,
         IndexerStatusesComponent,
+        SaveOrSendFileComponent,
+        SearchResultsComponent,
         SearchStatusModalComponent,
         ThemeToggleComponent
     ],

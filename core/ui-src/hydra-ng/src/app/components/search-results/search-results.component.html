@@ -249,15 +249,72 @@
             <td class="col-details">{{ groupedResult.result.grabs || 0 }}</td>
             <td class="col-age">{{ formatAge(groupedResult.result.age || 0) }}</td>
             <td class="col-links">
-              <div class="btn-group btn-group-sm">
-                <a *ngIf="groupedResult.result.downloadUrl" [href]="groupedResult.result.downloadUrl"
-                   class="btn btn-outline-primary btn-sm" target="_blank" title="Download">
-                  <i class="bi bi-download"></i>
+              <div class="d-flex gap-1">
+                <!-- NFO Link -->
+                <a href="#" (click)="showNfo(groupedResult.result); $event.preventDefault()"
+                   [class.no-nfo]="groupedResult.result.hasNfo === 'NO'"
+                   class="no-underline"
+                   [title]="getNfoTooltip(groupedResult.result)">
+                  <i class="bi bi-file-text"
+                     [class.fuzzy-nfo]="groupedResult.result.hasNfo === 'MAYBE'"></i>
                 </a>
-                <a *ngIf="groupedResult.result.detailsLink" [href]="groupedResult.result.detailsLink"
-                   class="btn btn-outline-secondary btn-sm" target="_blank" title="Details">
+                
+                <!-- Binsearch Link (if source available) -->
+                <a *ngIf="groupedResult.result.source"
+                   [href]="getBinsearchUrl(groupedResult.result.source)"
+                   target="_blank"
+                   class="no-underline"
+                   title="Search via Binsearch">
+                  <i class="bi bi-search"></i>
+                </a>
+                
+                <!-- Comments Link -->
+                <a *ngIf="groupedResult.result.comments"
+                   [href]="getDerefererUrl(groupedResult.result.details_link || '')"
+                   target="_blank"
+                   class="no-underline"
+                   title="Comments">
+                  <i class="bi bi-chat"></i>
+                </a>
+                
+                <!-- Details Link -->
+                <a *ngIf="groupedResult.result.details_link"
+                   [href]="getDerefererUrl(groupedResult.result.details_link)"
+                   target="_blank"
+                   class="no-underline"
+                   title="Details">
                   <i class="bi bi-info-circle"></i>
                 </a>
+                
+                <!-- Download Links based on type -->
+                <ng-container [ngSwitch]="groupedResult.result.downloadType">
+                  <!-- Torrent Download -->
+                  <a *ngSwitchCase="'TORRENT'"
+                     [href]="getDownloadUrl(groupedResult.result)"
+                     target="_blank"
+                     class="no-underline"
+                     title="Download torrent">
+                    <i class="bi bi-download"></i>
+                  </a>
+                  
+                  <!-- NZB Download -->
+                  <a *ngSwitchDefault
+                     [href]="getDownloadUrl(groupedResult.result)"
+                     target="_blank"
+                     class="no-underline"
+                     title="Download NZB">
+                    <i class="bi bi-download"></i>
+                  </a>
+                </ng-container>
+                
+                <!-- Save or Send File -->
+                <app-save-or-send-file
+                  *ngIf="groupedResult.result.downloadType !== 'TORBOX'"
+                  [searchResultId]="groupedResult.result.searchResultId"
+                  [type]="groupedResult.result.downloadType"
+                  (saveComplete)="onSaveComplete($event)">
+                </app-save-or-send-file>
+                
                 <!-- Downloader buttons -->
                 <app-addable-nzb
                   *ngFor="let downloader of enabledDownloaders"

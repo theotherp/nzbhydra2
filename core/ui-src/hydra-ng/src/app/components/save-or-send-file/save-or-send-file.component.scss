@@ -1,0 +1,24 @@
+.no-underline {
+    text-decoration: none;
+}
+
+/* Icon styling to match search results */
+a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    color: var(--bs-secondary-color);
+    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out;
+    
+    &:hover {
+        color: var(--bs-primary);
+        background-color: var(--bs-secondary-bg);
+    }
+    
+    i {
+        font-size: 0.875rem;
+    }
+} 
