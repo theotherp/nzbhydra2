@@ -2,17 +2,7 @@ import {Component, EventEmitter, Input, OnInit, Output} from "@angular/core";
 import {FormGroup} from "@angular/forms";
 import {FormlyFieldConfig, FormlyFormOptions} from "@ngx-formly/core";
 import {ConfigService} from "../../../../services/config.service";
-
-export interface MainConfig {
-    host: string;
-    port: number;
-    urlBase?: string;
-    ssl: boolean;
-    theme?: string;
-    apiKey: string;
-    startupBrowser?: boolean;
-    showNews?: boolean;
-}
+import {MainConfig} from "../../../../types/config.types";
 
 @Component({
     selector: "app-main-config-tab",
@@ -27,14 +17,49 @@ export class MainConfigTabComponent implements OnInit {
 
     form = new FormGroup({});
     model: MainConfig = {
+        configVersion: 21,
         host: "0.0.0.0",
         port: 5076,
         urlBase: "",
+        proxyType: "NONE" as any,
+        proxyPort: 1080,
+        proxyIgnoreLocal: true,
+        proxyIgnoreDomains: [],
+        proxyImages: false,
+        backupBeforeUpdate: true,
+        keepHistory: true,
         ssl: false,
-        theme: "auto",
-        apiKey: "",
+        verifySsl: true,
+        disableSslLocally: false,
+        sniDisabledFor: [],
+        verifySslDisabledFor: [],
+        updateAutomatically: false,
+        updateToPrereleases: false,
+        updateCheckEnabled: true,
+        showUpdateBannerOnDocker: true,
+        showWhatsNewBanner: true,
+        showNews: true,
         startupBrowser: true,
-        showNews: true
+        checkOpenPort: true,
+        welcomeShown: false,
+        theme: "auto",
+        databaseCompactTime: 15000,
+        databaseRetentionTime: 1000,
+        databaseWriteDelay: 5000,
+        instanceCounterDownloaded: false,
+        shutdownForRestart: false,
+        useCsrf: true,
+        logging: {
+            consolelevel: "INFO",
+            historyUserInfoType: "NONE" as any,
+            logIpAddresses: false,
+            mapIpToHost: false,
+            logGc: false,
+            logMaxHistory: 7,
+            logfilelevel: "INFO",
+            logUsername: false,
+            markersToLog: []
+        }
     };
     options: FormlyFormOptions = {};
     fields: FormlyFieldConfig[] = [];

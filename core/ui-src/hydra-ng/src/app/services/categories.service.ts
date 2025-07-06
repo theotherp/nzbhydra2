@@ -1,7 +1,8 @@
 import {Injectable} from "@angular/core";
 import {Observable} from "rxjs";
 import {map} from "rxjs/operators";
-import {CategoriesConfig, Category, ConfigService} from "./config.service";
+import {CategoriesConfig, Category} from "../types/config.types";
+import {ConfigService} from "./config.service";
 
 @Injectable({
     providedIn: "root"

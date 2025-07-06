@@ -4,33 +4,10 @@ import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {Observable, throwError} from "rxjs";
 import {catchError, map, switchMap, take} from "rxjs/operators";
 import {CategorySelectionModalComponent} from "../components/category-selection-modal/category-selection-modal.component";
+import {Downloader, DownloadRequest, DownloadResponse, SearchResultDl} from "../types/config.types";
 import {ConfigService} from "./config.service";
 
-export interface Downloader {
-    name: string;
-    downloaderType: string;
-    enabled: boolean;
-    defaultCategory?: string;
-    iconCssClass?: string;
-}
-
-export interface SearchResultDl {
-    searchResultId: string;
-    originalCategory: string;
-    mappedCategory: string;
-}
-
-export interface DownloadRequest {
-    downloaderName: string;
-    searchResults: SearchResultDl[];
-    category: string;
-}
-
-export interface DownloadResponse {
-    successful: boolean;
-    addedIds?: string[];
-    message?: string;
-}
+// Types are now imported from ../types/config.types
 
 @Injectable({
     providedIn: "root"

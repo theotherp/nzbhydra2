@@ -1,7 +1,8 @@
 import {Component, EventEmitter, Input, OnInit, Output} from "@angular/core";
-import {Downloader, DownloaderService} from "../../services/downloader.service";
+import {DownloaderService} from "../../services/downloader.service";
 import {LocalStorageService} from "../../services/local-storage.service";
 import {SearchResponse, SearchResultWebTO} from "../../services/search.service";
+import {Downloader} from "../../types/config.types";
 
 export interface SortConfig {
   column: string;

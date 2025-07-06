@@ -5,11 +5,11 @@ import {Observable, of, Subscription} from "rxjs";
 import {catchError, debounceTime, distinctUntilChanged, switchMap} from "rxjs/operators";
 import {SearchState, SearchStatusModalComponent} from "../../components/search-status-modal/search-status-modal.component";
 import {CategoriesService} from "../../services/categories.service";
-import {Category} from "../../services/config.service";
 import {IndexersService, IndexerWithState} from "../../services/indexers.service";
 import {AutocompleteType, MediaInfo, MediaInfoService} from "../../services/media-info.service";
 import {SearchRequestParameters, SearchResponse, SearchService} from "../../services/search.service";
 import {WebSocketService} from "../../services/websocket.service";
+import {Category} from "../../types/config.types";
 
 @Component({
     selector: "app-search",

@@ -1,6 +1,7 @@
 import {Component, EventEmitter, Input, Output} from "@angular/core";
-import {Downloader, DownloaderService} from "../../services/downloader.service";
+import {DownloaderService} from "../../services/downloader.service";
 import {SearchResultWebTO} from "../../services/search.service";
+import {Downloader} from "../../types/config.types";
 
 
 @Component({
