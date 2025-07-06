@@ -12,16 +12,15 @@ export interface Downloader {
     iconCssClass?: string;
 }
 
-export interface SearchResult {
-    searchResultId?: number;
-    id?: number;
-    originalCategory?: string;
-    category?: string;
+export interface SearchResultDl {
+    searchResultId: number;
+    originalCategory: string;
+    mappedCategory: string;
 }
 
 export interface DownloadRequest {
     downloaderName: string;
-    searchResults: SearchResult[];
+    searchResults: SearchResultDl[];
     category: string;
 }
 
@@ -44,7 +43,7 @@ export class DownloaderService {
     /**
      * Send NZB add command to downloader
      */
-    private sendNzbAddCommand(downloader: Downloader, searchResults: SearchResult[], category: string): Observable<DownloadResponse> {
+    private sendNzbAddCommand(downloader: Downloader, searchResults: SearchResultDl[], category: string): Observable<DownloadResponse> {
         const params: DownloadRequest = {
             downloaderName: downloader.name,
             searchResults: searchResults,
@@ -57,17 +56,8 @@ export class DownloaderService {
     /**
      * Download NZB to specified downloader
      */
-    download(downloader: Downloader, searchResults: SearchResult[], alwaysAsk: boolean = false): Observable<DownloadResponse> {
-        const category = downloader.defaultCategory;
-
-        // If always ask or no default category, we'll need to show category selection
-        if (alwaysAsk || (!category || category === "Use original category" || category === "Use mapped category" || category === "Use no category")) {
-            // For now, we'll use the default category and handle category selection in the component
-            // TODO: Implement category selection modal
-            return this.sendNzbAddCommand(downloader, searchResults, category || "");
-        } else {
-            return this.sendNzbAddCommand(downloader, searchResults, category);
-        }
+    download(downloader: Downloader, searchResults: SearchResultDl[], category: string): Observable<DownloadResponse> {
+        return this.sendNzbAddCommand(downloader, searchResults, category);
     }
 
     /**

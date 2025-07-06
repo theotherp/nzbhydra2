@@ -83,7 +83,7 @@ export class SearchResultsComponent implements OnInit {
   groupedResults: GroupedResult[] = [];
 
   // Selection state
-  selectedResults: Set<string> = new Set();
+  selectedResultsIds: Set<number> = new Set();
   lastSelectedIndex: number = -1;
   lastSelectionAction: "select" | "unselect" | null = null;
   showIndexerStatuses = false;
@@ -528,7 +528,7 @@ export class SearchResultsComponent implements OnInit {
         resultsToShow.forEach((result, resultIndex) => {
           const isPrimaryResult = resultIndex === 0;
           const canExpand = hashGroup.results.length > 1 || titleGroup.hashGroups.length > 1;
-          const isSelected = this.selectedResults.has(result.searchResultId);
+          const isSelected = this.selectedResultsIds.has(result.searchResultId);
 
           groupedResults.push({
             type: isPrimaryResult && isFirstHashGroup ? "primary" : "grouped",
@@ -821,10 +821,10 @@ export class SearchResultsComponent implements OnInit {
       this.selectRange(this.lastSelectedIndex, currentIndex);
     } else {
       // Single click: toggle selection
-      if (this.selectedResults.has(resultId)) {
-        this.selectedResults.delete(resultId);
+      if (this.selectedResultsIds.has(resultId)) {
+        this.selectedResultsIds.delete(resultId);
       } else {
-        this.selectedResults.add(resultId);
+        this.selectedResultsIds.add(resultId);
       }
       this.lastSelectedIndex = currentIndex;
     }
@@ -839,7 +839,7 @@ export class SearchResultsComponent implements OnInit {
     for (let i = start; i <= end; i++) {
       const groupedResult = this.displayedResults[i];
       if (groupedResult) {
-        this.selectedResults.add(groupedResult.result.searchResultId);
+        this.selectedResultsIds.add(groupedResult.result.searchResultId);
       }
     }
   }
@@ -851,7 +851,7 @@ export class SearchResultsComponent implements OnInit {
     for (let i = start; i <= end; i++) {
       const groupedResult = this.displayedResults[i];
       if (groupedResult) {
-        this.selectedResults.delete(groupedResult.result.searchResultId);
+        this.selectedResultsIds.delete(groupedResult.result.searchResultId);
       }
     }
   }
@@ -873,11 +873,11 @@ export class SearchResultsComponent implements OnInit {
       }
     } else {
       // Single click: toggle selection and remember the action
-      if (this.selectedResults.has(resultId)) {
-        this.selectedResults.delete(resultId);
+      if (this.selectedResultsIds.has(resultId)) {
+        this.selectedResultsIds.delete(resultId);
         this.lastSelectionAction = "unselect";
       } else {
-        this.selectedResults.add(resultId);
+        this.selectedResultsIds.add(resultId);
         this.lastSelectionAction = "select";
       }
       this.lastSelectedIndex = currentIndex;
@@ -887,7 +887,7 @@ export class SearchResultsComponent implements OnInit {
   }
 
   resetSelection() {
-    this.selectedResults.clear();
+    this.selectedResultsIds.clear();
     this.lastSelectedIndex = -1;
     this.lastSelectionAction = null;
     this.updateGroupedResults();
@@ -908,39 +908,39 @@ export class SearchResultsComponent implements OnInit {
 
   selectAll() {
     this.displayedResults.forEach(groupedResult => {
-      this.selectedResults.add(groupedResult.result.searchResultId);
+      this.selectedResultsIds.add(groupedResult.result.searchResultId);
     });
     this.updateGroupedResults();
   }
 
   selectNone() {
-    this.selectedResults.clear();
+    this.selectedResultsIds.clear();
     this.updateGroupedResults();
   }
 
   invertSelection() {
     this.displayedResults.forEach(groupedResult => {
       const resultId = groupedResult.result.searchResultId;
-      if (this.selectedResults.has(resultId)) {
-        this.selectedResults.delete(resultId);
+      if (this.selectedResultsIds.has(resultId)) {
+        this.selectedResultsIds.delete(resultId);
       } else {
-        this.selectedResults.add(resultId);
+        this.selectedResultsIds.add(resultId);
       }
     });
     this.updateGroupedResults();
   }
 
   get selectedCount(): number {
-    return this.selectedResults.size;
+    return this.selectedResultsIds.size;
   }
 
   get hasSelection(): boolean {
-    return this.selectedResults.size > 0;
+    return this.selectedResultsIds.size > 0;
   }
 
   getSelectedResults(): SearchResultWebTO[] {
     return this.searchResponse?.searchResults.filter(result =>
-        this.selectedResults.has(result.searchResultId)
+        this.selectedResultsIds.has(result.searchResultId)
     ) || [];
   }
 

@@ -24,7 +24,7 @@ public class AddFilesRequest {
     @AllArgsConstructor
     public static class SearchResult {
 
-        private String searchResultId;
+        private Long searchResultId;
         private String originalCategory;
         private String mappedCategory;
 

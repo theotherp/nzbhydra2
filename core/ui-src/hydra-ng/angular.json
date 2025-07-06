@@ -24,6 +24,10 @@
           "builder": "@angular/build:application",
           "options": {
             "browser": "src/main.ts",
+            "outputPath": {
+              "base": "../../src/main/resources/static",
+              "browser": ""
+            },
             "polyfills": [
               "zone.js"
             ],
@@ -95,6 +99,11 @@
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "**/*",
+                "input": "src/assets",
+                "output": "assets"
               }
             ],
             "styles": [

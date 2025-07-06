@@ -9,20 +9,14 @@ import {NgbActiveModal} from "@ng-bootstrap/ng-bootstrap";
 })
 export class CategorySelectionModalComponent {
     @Input() categories: string[] = [];
-    selectedCategory: string | null = null;
 
     constructor(public activeModal: NgbActiveModal) {
     }
 
     selectCategory(category: string) {
-        this.selectedCategory = category;
+        this.activeModal.close(category);
     }
 
-    confirm() {
-        if (this.selectedCategory) {
-            this.activeModal.close(this.selectedCategory);
-        }
-    }
 
     cancel() {
         this.activeModal.dismiss("cancel");

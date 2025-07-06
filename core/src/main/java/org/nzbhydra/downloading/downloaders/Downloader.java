@@ -116,7 +116,6 @@ public abstract class Downloader {
         Set<SearchResultEntity> missedNzbs = new HashSet<>();
         try {
             for (AddFilesRequest.SearchResult entry : searchResults) {
-                Long guid = Long.valueOf(entry.getSearchResultId());
                 String categoryToSend;
 
                 if ("Use original category".equals(category)) {
@@ -134,10 +133,10 @@ public abstract class Downloader {
                     categoryToSend = category;
                 }
 
-                Optional<SearchResultEntity> optionalResult = searchResultRepository.findById(guid);
+                Optional<SearchResultEntity> optionalResult = searchResultRepository.findById(entry.getSearchResultId());
                 if (optionalResult.isEmpty()) {
-                    logger.error("Download request with invalid/outdated GUID {}", guid);
-                    throw new InvalidSearchResultIdException(guid, true);
+                    logger.error("Download request with invalid/outdated GUID {}", entry.getSearchResultId());
+                    throw new InvalidSearchResultIdException(entry.getSearchResultId(), true);
                 }
                 final SearchResultEntity searchResult = optionalResult.get();
                 final String searchResultTitle = optionalResult.get().getTitle();
@@ -152,15 +151,15 @@ public abstract class Downloader {
                             String externalId = addContent(result.getContent(), result.getTitle(), searchResult.getDownloadType(), categoryToSend);
                             result.getDownloadEntity().setExternalId(externalId);
                             fileHandler.updateStatusByEntity(result.getDownloadEntity(), FileDownloadStatus.NZB_ADDED);
-                            addedNzbs.add(guid);
+                            addedNzbs.add(entry.getSearchResultId());
                         } else {
                             missedNzbs.add(searchResult);
                         }
                     } else {
                         String link = downloadUrlBuilder.getDownloadLinkForSendingToDownloader(searchResult, false);
                         String externalId = addLink(link, searchResultTitle, searchResult.getDownloadType(), categoryToSend);
-                        guidExternalIds.put(guid, externalId);
-                        addedNzbs.add(guid);
+                        guidExternalIds.put(entry.getSearchResultId(), externalId);
+                        addedNzbs.add(entry.getSearchResultId());
                     }
                 } catch (DuplicateNzbException e) {
                     if (searchResult != null) {

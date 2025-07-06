@@ -49,7 +49,7 @@ public class SearchResultWebTO {
     private String link;
     private String originalCategory;
     private String poster;
-    private String searchResultId;
+    private Long searchResultId;
     private String source;
     private Long size;
     private String title;

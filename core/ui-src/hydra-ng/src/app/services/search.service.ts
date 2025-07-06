@@ -54,13 +54,14 @@ export interface IndexerSearchMetaData {
 }
 
 export interface SearchResultWebTO {
-    searchResultId: string;
+    searchResultId: number;
     title: string;
     link: string;
     guid: string;
     hash: string;
     detailsLink: string;
     publishDate: string;
+    originalCategory: string;
     category: string;
     size: number;
     files: number;

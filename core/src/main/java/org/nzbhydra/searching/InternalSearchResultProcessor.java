@@ -137,7 +137,7 @@ public class InternalSearchResultProcessor {
                         }
                         return "cache/" + URLEncoder.encode(originalUrl, StandardCharsets.UTF_8);
                     }).orElse(null))
-                    .searchResultId(item.getSearchResultId().toString())
+                    .searchResultId(item.getSearchResultId())
                     .size(item.getSize())
                     .title(item.getTitle())
                     .source(item.getSource().orElse(null));

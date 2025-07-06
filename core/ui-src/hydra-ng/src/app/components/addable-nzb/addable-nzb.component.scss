@@ -62,27 +62,31 @@
 }
 
 .nzbget {
-  color: var(--bs-warning);
-  border-color: var(--bs-warning);
-
-  &:hover:not(:disabled) {
-    color: white;
-  }
-
-  &.nzbget-success {
-    color: var(--bs-success);
-    border-color: var(--bs-success);
-  }
-
-  &.nzbget-error {
-    color: var(--bs-danger);
-    border-color: var(--bs-danger);
-  }
-}
-
-// Spinning animation
-.nzb-spinning {
+  // Hide the .bi icon if present
   .bi {
+    display: none;
+  }
+
+  // Use PNG as icon
+  &::before {
+    content: "";
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    background: url('/img/nzbget.png') no-repeat center/contain;
+    vertical-align: middle;
+    margin-right: 0.25rem;
+  }
+
+  &.nzbget-success::before {
+    background-image: url('/img/nzbgetsuccess.png');
+  }
+
+  &.nzbget-error::before {
+    background-image: url('/img/nzbgeterror.png');
+  }
+
+  &.nzb-spinning::before {
     animation: spin 1s linear infinite;
   }
 }

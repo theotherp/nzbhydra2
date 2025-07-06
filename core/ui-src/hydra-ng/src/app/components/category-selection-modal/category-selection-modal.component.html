@@ -9,14 +9,9 @@
       <button *ngFor="let category of categories"
               type="button"
               class="list-group-item list-group-item-action"
-              [class.active]="selectedCategory === category"
               (click)="selectCategory(category)">
         {{ category }}
       </button>
     </div>
   </div>
 </div>
-<div class="modal-footer">
-  <button type="button" class="btn btn-secondary" (click)="cancel()">Cancel</button>
-  <button type="button" class="btn btn-primary" [disabled]="!selectedCategory" (click)="confirm()">OK</button>
-</div> 
