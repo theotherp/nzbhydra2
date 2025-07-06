@@ -43,7 +43,7 @@ The backend Spring Boot application will remain largely unchanged, with the new 
 1. **State Management**: Use NgRx for complex state, Angular signals for simple state
 2. **UI Framework**: PrimeNG with custom SCSS themes
 3. **Charts**: Replace NVD3 with Chart.js or ng2-charts
-4. **Forms**: Replace Formly with Angular Reactive Forms
+4. **Forms**: Replace Formly with ngx-formly
 5. **Testing**: Jest for unit tests, Cypress for E2E tests
 
 ### Challenges and Solutions
@@ -55,6 +55,7 @@ The backend Spring Boot application will remain largely unchanged, with the new 
 Whenever implementing calls to the backend check the backend sources to find the correct data model, do not attempt to deduce it from the javascript code.
 Always check the .scss files for common colors and use bootstrap variables where possible.
 Always use `ng build --output-path NUL` when checking if the code compiles.
+If you don't know the correct UI component to use, e.g. because it may have been renamed, ask the user what to use.
 
 Always check the file `ANGULAR_MIGRATION_FEATURES.md` to see which features were supported in the original code.
 Always check the file `ANGULAR_ARCHITECTURE.md` for common services and components. Update it's needed.

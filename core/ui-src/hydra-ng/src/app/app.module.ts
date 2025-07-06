@@ -8,10 +8,18 @@ import {NgbModule} from "@ng-bootstrap/ng-bootstrap";
 import {FormlyBootstrapModule} from "@ngx-formly/bootstrap";
 import {FormlyModule} from "@ngx-formly/core";
 import Aura from "@primeuix/themes/aura";
+import {AutoComplete} from "primeng/autocomplete";
 import {Button} from "primeng/button";
+import {Card} from "primeng/card";
+import {Checkbox} from "primeng/checkbox";
 import {providePrimeNG} from "primeng/config";
+import {InputNumber} from "primeng/inputnumber";
+import {InputText} from "primeng/inputtext";
 import {Menubar} from "primeng/menubar";
+import {Message} from "primeng/message";
 import {ProgressSpinner} from "primeng/progressspinner";
+import {Select} from "primeng/select";
+import {SplitButton} from "primeng/splitbutton";
 import {Tab, TabList, TabPanel, TabPanels, Tabs} from "primeng/tabs";
 import {ToggleSwitchModule} from "primeng/toggleswitch";
 
@@ -101,15 +109,23 @@ export function IpValidator(control: AbstractControl): ValidationErrors {
             {path: "system", component: SystemComponent},
             {path: "login", component: LoginComponent}
         ]),
+        AutoComplete,
         Button,
+        Card,
+        Checkbox,
+        InputNumber,
+        InputText,
         Menubar,
-        ToggleSwitchModule,
+        Message,
+        ProgressSpinner,
+        Select,
+        SplitButton,
         Tabs,
         TabList,
         Tab,
-        ProgressSpinner,
         TabPanels,
-        TabPanel
+        TabPanel,
+        ToggleSwitchModule
     ],
     providers: [
         MediaInfoService,

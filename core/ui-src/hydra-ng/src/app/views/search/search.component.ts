@@ -1,6 +1,7 @@
 import {ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild} from "@angular/core";
 import {FormBuilder, FormGroup} from "@angular/forms";
 import {ActivatedRoute, Router} from "@angular/router";
+import {Nullable} from "primeng/ts-helpers";
 import {Observable, of, Subscription} from "rxjs";
 import {catchError, debounceTime, distinctUntilChanged, switchMap} from "rxjs/operators";
 import {SearchState, SearchStatusModalComponent} from "../../components/search-status-modal/search-status-modal.component";
@@ -18,8 +19,8 @@ import {Category} from "../../types/config.types";
     standalone: false
 })
 export class SearchComponent implements OnInit, OnDestroy {
-    @ViewChild("searchInput", {static: false}) searchInput!: ElementRef;
-    @ViewChild("queryInput", {static: false}) queryInput!: ElementRef;
+    @ViewChild("searchInput", {static: false}) searchInput!: Nullable<ElementRef>;
+    @ViewChild("queryInput", {static: false}) queryInput!: Nullable<ElementRef>;
     @ViewChild(SearchStatusModalComponent, {static: false}) searchStatusModal!: SearchStatusModalComponent;
 
     private webSocketSubscription?: Subscription;
@@ -51,6 +52,14 @@ export class SearchComponent implements OnInit, OnDestroy {
     searchRequestId = 0;
     isSearchCancelled = false;
     showingPartialResults = false;
+    showCategoryDropdown = false;
+    indexerOptions: any[] = [
+        {label: "Invert Selection", icon: "pi pi-arrow-left-right", command: () => this.invertIndexerSelection()},
+        {label: "Reset to Preselection", icon: "pi pi-arrow-clockwise", command: () => this.resetIndexerSelection()},
+        {separator: true},
+        {label: "Select All", icon: "pi pi-check-all", command: () => this.selectAllIndexers()},
+        {label: "Deselect All", icon: "pi pi-x-circle", command: () => this.deselectAllIndexers()}
+    ];
 
     constructor(
         private fb: FormBuilder,
