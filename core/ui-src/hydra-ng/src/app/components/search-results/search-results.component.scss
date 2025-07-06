@@ -14,7 +14,6 @@
 .table {
   font-size: 0.9rem;
   width: 100%;
-  table-layout: fixed;
   color: var(--bs-body-color);
 
   tbody {
@@ -87,23 +86,23 @@
 }
 
 .col-indexer {
-  width: 10%;
+  width: 8%;
 }
 
 .col-category {
-  width: 12%;
+  width: 10%;
 }
 
 .col-size {
-  width: 10%;
+  width: 8%;
 }
 
 .col-details {
-  width: 10%;
+  width: 8%;
 }
 
 .col-age {
-  width: 10%;
+  width: 8%;
 }
 
 .col-links {

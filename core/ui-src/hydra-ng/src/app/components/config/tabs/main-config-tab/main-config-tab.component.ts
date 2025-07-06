@@ -14,6 +14,7 @@ export class MainConfigTabComponent implements OnInit {
     @Input() showAdvanced = false;
     @Output() dirtyChange = new EventEmitter<boolean>();
     @Output() validChange = new EventEmitter<boolean>();
+    @Output() modelChange = new EventEmitter<MainConfig>();
 
     form = new FormGroup({});
     model: MainConfig = {
@@ -70,6 +71,10 @@ export class MainConfigTabComponent implements OnInit {
     ngOnInit() {
         this.loadConfig();
         this.setupForm();
+        this.setupFormListeners();
+        // Ensure form starts as pristine
+        this.form.markAsPristine();
+        this.dirtyChange.emit(false);
     }
 
     private loadConfig() {
@@ -77,6 +82,9 @@ export class MainConfigTabComponent implements OnInit {
             next: (config) => {
                 this.model = config.main;
                 this.setupForm();
+                // Mark form as pristine after loading data
+                this.form.markAsPristine();
+                this.dirtyChange.emit(false);
             },
             error: (error) => {
                 console.error("Error loading config:", error);
@@ -114,11 +122,10 @@ export class MainConfigTabComponent implements OnInit {
                             label: "Port",
                             type: "number",
                             required: true,
+                            min: 1,
+                            max: 99999,
                             placeholder: "5076",
                             description: "Requires restart."
-                        },
-                        validators: {
-                            validation: ["port"]
                         }
                     },
                     {
@@ -171,10 +178,8 @@ export class MainConfigTabComponent implements OnInit {
                             label: "API Key",
                             type: "text",
                             required: true,
-                            description: "Alphanumeric only."
-                        },
-                        validators: {
-                            validation: ["apiKey"]
+                            description: "Alphanumeric only.",
+                            pattern: /^[a-zA-Z0-9]*$/
                         }
                     }
                 ]
@@ -211,6 +216,18 @@ export class MainConfigTabComponent implements OnInit {
         console.log("Fields setup complete:", this.fields);
     }
 
+    private setupFormListeners() {
+        // Listen for form value changes
+        this.form.valueChanges.subscribe(() => {
+            this.onModelChange();
+        });
+
+        // Listen for form status changes
+        this.form.statusChanges.subscribe(() => {
+            this.validChange.emit(this.form.valid);
+        });
+    }
+
     onSubmit() {
         if (this.form.valid) {
             console.log("Form submitted:", this.model);
@@ -222,6 +239,28 @@ export class MainConfigTabComponent implements OnInit {
 
     onModelChange() {
         console.log("Model changed:", this.model);
-        // TODO: Implement dirty tracking and validation
+        this.dirtyChange.emit(this.form.dirty);
+        this.modelChange.emit(this.model);
+    }
+
+    // Method to get current model for saving
+    getCurrentModel(): MainConfig {
+        return this.model;
+    }
+
+    // Method to check if form is dirty
+    isDirty(): boolean {
+        return this.form.dirty;
+    }
+
+    // Method to check if form is valid
+    isValid(): boolean {
+        return this.form.valid;
+    }
+
+    // Method to mark form as pristine (after save)
+    markAsPristine() {
+        this.form.markAsPristine();
+        this.dirtyChange.emit(false);
     }
 } 
