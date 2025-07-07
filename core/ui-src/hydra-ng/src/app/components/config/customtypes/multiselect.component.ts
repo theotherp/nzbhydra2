@@ -9,6 +9,8 @@ import {Observable, Subscription} from "rxjs";
     selector: "formly-field-multiselect",
     template: `
       <p-multiselect
+        class="mt-[5px] flex"
+        style="display: flex"
         placeholder="None selected"
         [formControl]="formControl"
         [formlyAttributes]="field"

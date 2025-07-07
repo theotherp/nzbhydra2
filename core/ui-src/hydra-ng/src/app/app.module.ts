@@ -41,6 +41,7 @@ import {NotificationsConfigTabComponent} from "./components/config/tabs/notifica
 import {SearchingConfigTabComponent} from "./components/config/tabs/searching-config-tab/searching-config-tab.component";
 import {AdvancedWrapperComponent} from "./components/config/wrappers/advanced-wrapper.component";
 import {FieldsetWrapperComponent} from "./components/config/wrappers/fieldset-wrapper.component";
+import {PrimengFormFieldWrapperComponent} from "./components/config/wrappers/primeng-form-field-wrapper.component";
 import {IndexerStatusesComponent} from "./components/indexer-statuses/indexer-statuses.component";
 import {SaveOrSendFileComponent} from "./components/save-or-send-file/save-or-send-file.component";
 import {SearchResultsComponent} from "./components/search-results/search-results.component";
@@ -85,7 +86,8 @@ export function IpValidator(control: AbstractControl): ValidationErrors {
         NotificationsConfigTabComponent,
         // Config wrappers
         FieldsetWrapperComponent,
-        AdvancedWrapperComponent
+        AdvancedWrapperComponent,
+        PrimengFormFieldWrapperComponent
     ],
     imports: [
         BrowserModule,
@@ -105,11 +107,12 @@ export function IpValidator(control: AbstractControl): ValidationErrors {
             ],
             wrappers: [
                 {name: "fieldset", component: FieldsetWrapperComponent},
+                {name: "primeng-form-field", component: PrimengFormFieldWrapperComponent},
                 {name: "advanced", component: AdvancedWrapperComponent},
             ],
             types: [
-                {name: "multiselect", component: MultiSelectFieldType},
-                {name: "chipsInput", component: ChipsInputFieldType},
+                {name: "multiselect", component: MultiSelectFieldType, wrappers: ["primeng-form-field"]},
+                {name: "chipsInput", component: ChipsInputFieldType, wrappers: ["primeng-form-field"]},
                 {name: "repeat", component: RepeatTypeComponent}
             ]
         }),
