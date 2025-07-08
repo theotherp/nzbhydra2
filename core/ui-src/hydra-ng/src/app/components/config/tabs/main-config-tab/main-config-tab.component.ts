@@ -286,7 +286,7 @@ export class MainConfigTabComponent implements OnInit {
     }
 
     onModelChange() {
-        console.log("Model changed:", this.model);
+        // console.log("Model changed:", this.model);
         this.dirtyChange.emit(this.form.dirty);
         this.modelChange.emit(this.model);
     }

@@ -136,7 +136,7 @@ export class SearchingConfigTabComponent implements OnInit {
     }
 
     onModelChange() {
-        console.log("Model changed:", this.model);
+        // console.log("Model changed:", this.model);
         this.dirtyChange.emit(this.form.dirty);
         this.modelChange.emit(this.model);
     }
@@ -523,39 +523,39 @@ export class SearchingConfigTabComponent implements OnInit {
                             props: {
                                 label: "Affected value",
                                 options: [
-                                    {name: "Query", value: "QUERY"},
-                                    {name: "Search title", value: "TITLE"},
-                                    {name: "Result title", value: "RESULT_TITLE"},
+                                    {label: "Query", value: "QUERY"},
+                                    {label: "Search title", value: "TITLE"},
+                                    {label: "Result title", value: "RESULT_TITLE"},
                                 ],
                                 required: true,
-                                help: "Determines which value of the search request or result will be processed"
+                                description: "Determines which value of the search request or result will be processed"
                             }
                         },
                         {
                             key: "searchType",
                             type: "select",
                             expressions: {
-                                hide: "model.affectedValue === \"RESULT_TITLE\"",
+                                hide: (field) => field.model?.affectedValue === "RESULT_TITLE",
                             },
                             props: {
                                 label: "Search type",
                                 options: [
-                                    {name: "General", value: "SEARCH"},
-                                    {name: "Audio", value: "MUSIC"},
-                                    {name: "EBook", value: "BOOK"},
-                                    {name: "Movie", value: "MOVIE"},
-                                    {name: "TV", value: "TVSEARCH"}
+                                    {label: "General", value: "SEARCH"},
+                                    {label: "Audio", value: "MUSIC"},
+                                    {label: "EBook", value: "BOOK"},
+                                    {label: "Movie", value: "MOVIE"},
+                                    {label: "TV", value: "TVSEARCH"}
                                 ],
-                                help: "Determines in what context the mapping will be executed"
+                                required: true,
+                                description: "Determines in what context the mapping will be executed"
                             }
                         },
                         {
                             key: "matchAll",
-                            type: "select",
+                            type: "checkbox",
                             props: {
-                                type: "switch",
                                 label: "Match whole string",
-                                help: "If true then the input pattern must match the whole affected value. If false then any match will be replaced, even if it's only part of the affected value."
+                                description: "If true then the input pattern must match the whole affected value. If false then any match will be replaced, even if it's only part of the affected value."
                             }
                         },
                         {
@@ -564,7 +564,7 @@ export class SearchingConfigTabComponent implements OnInit {
                             props: {
                                 type: "text",
                                 label: "Input pattern",
-                                help: "Pattern which must match the query or title of a search request (completely or in part, depending on the previous setting). You may use regexes in groups which can be referenced in the output puttern by using <code>{group:regex}</code>. Case insensitive.",
+                                description: "Pattern which must match the query or title of a search request (completely or in part, depending on the previous setting). You may use regexes in groups which can be referenced in the output puttern by using <code>{group:regex}</code>. Case insensitive.",
                                 required: true
                             }
                         },
@@ -575,7 +575,7 @@ export class SearchingConfigTabComponent implements OnInit {
                                 type: "text",
                                 label: "Output pattern",
                                 required: true,
-                                help: "If a query or title matches the input pattern it will be replaced using this. You may reference groups from the input pattern by using {group}. Additionally you may use <code>{season:0}</code> or <code>{season:00}</code> or <code>{episode:0}</code> or <code>{episode:00}</code> (with and without leading zeroes). Use <code>&lt;remove&gt;</code> to remove the match."
+                                description: "If a query or title matches the input pattern it will be replaced using this. You may reference groups from the input pattern by using {group}. Additionally you may use <code>{season:0}</code> or <code>{season:00}</code> or <code>{episode:0}</code> or <code>{episode:00}</code> (with and without leading zeroes). Use <code>&lt;remove&gt;</code> to remove the match."
                             }
                         },
                         {

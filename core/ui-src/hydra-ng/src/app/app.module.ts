@@ -12,6 +12,7 @@ import {Button} from "primeng/button";
 import {Card} from "primeng/card";
 import {Checkbox} from "primeng/checkbox";
 import {providePrimeNG} from "primeng/config";
+import {DialogService, DynamicDialogModule} from "primeng/dynamicdialog";
 import {InputGroup} from "primeng/inputgroup";
 import {InputGroupAddon} from "primeng/inputgroupaddon";
 import {InputNumber} from "primeng/inputnumber";
@@ -138,6 +139,7 @@ export function IpValidator(control: AbstractControl): ValidationErrors {
         TabPanels,
         TabPanel,
         ToggleSwitchModule,
+        DynamicDialogModule,
         InputGroupAddon,
         MultiSelectFieldType,
         ChipsInputFieldType,
@@ -147,6 +149,7 @@ export function IpValidator(control: AbstractControl): ValidationErrors {
     providers: [
         MediaInfoService,
         SearchService,
+        DialogService,
         provideAnimationsAsync(),
         providePrimeNG({
             theme: {

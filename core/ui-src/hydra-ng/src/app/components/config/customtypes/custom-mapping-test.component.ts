@@ -1,10 +1,10 @@
 import {CommonModule} from "@angular/common";
 import {HttpClient} from "@angular/common/http";
-import {Component, OnInit} from "@angular/core";
+import {ChangeDetectorRef, Component, OnInit} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {FieldType, FieldTypeConfig} from "@ngx-formly/core";
 import {ButtonModule} from "primeng/button";
-import {DialogService, DynamicDialogConfig, DynamicDialogRef} from "primeng/dynamicdialog";
+import {DialogService, DynamicDialogConfig, DynamicDialogModule, DynamicDialogRef} from "primeng/dynamicdialog";
 import {InputTextModule} from "primeng/inputtext";
 import {SelectModule} from "primeng/select";
 import {ToggleSwitchModule} from "primeng/toggleswitch";
@@ -23,13 +23,14 @@ import {CustomMappingAffectedValue, CustomMappingSearchType, CustomQueryAndTitle
       </div>
     `,
     standalone: true,
-    imports: [ButtonModule]
+    imports: [ButtonModule, DynamicDialogModule]
 })
 export class CustomMappingTestComponent extends FieldType<FieldTypeConfig> implements OnInit {
 
     constructor(
         private http: HttpClient,
-        private dialogService: DialogService
+        private dialogService: DialogService,
+        private cdr: ChangeDetectorRef
     ) {
         super();
     }
@@ -39,8 +40,10 @@ export class CustomMappingTestComponent extends FieldType<FieldTypeConfig> imple
     }
 
     openDialog() {
-        const model = this.model as CustomQueryAndTitleMapping;
+        // Get the current model from parent since this field doesn't have a key
+        const model = this.field.parent?.model as CustomQueryAndTitleMapping;
         const modelCopy = structuredClone(model);
+        console.log("[CustomMappingTest] openDialog: current model", model);
 
         const ref = this.dialogService.open(CustomMappingTestDialogComponent, {
             header: "Custom query and title mapping help and test",
@@ -52,9 +55,60 @@ export class CustomMappingTestComponent extends FieldType<FieldTypeConfig> imple
         });
 
         ref.onClose.subscribe((result) => {
+            console.log("[CustomMappingTest] Dialog closed. Result:", result);
             if (result) {
-                Object.assign(model, result);
-                this.formControl.markAsDirty();
+                // Get the current model from parent
+                const currentModel = this.field.parent?.model as CustomQueryAndTitleMapping;
+                console.log("[CustomMappingTest] Current model:", currentModel);
+
+                // Find the parent array and index of the current item
+                const parentField = this.field.parent;
+                if (!parentField) {
+                    console.warn("[CustomMappingTest] No parent field found!");
+                    return;
+                }
+
+                // Get the grandparent to access the actual array
+                const grandParentField = parentField.parent;
+                if (!grandParentField) {
+                    console.warn("[CustomMappingTest] No grandparent field found!");
+                    return;
+                }
+
+                const parentArray = grandParentField.model as CustomQueryAndTitleMapping[];
+                console.log("[CustomMappingTest] Parent array before update:", parentArray);
+
+                if (!Array.isArray(parentArray)) {
+                    console.warn("[CustomMappingTest] Parent array is not an array:", parentArray);
+                    return;
+                }
+
+                const idx = parentArray.indexOf(currentModel);
+                console.log("[CustomMappingTest] Index of current model in parent array:", idx);
+
+                if (idx > -1) {
+                    // Create a new array and replace the item at idx
+                    const newArray = [...parentArray];
+                    newArray[idx] = result;
+                    console.log("[CustomMappingTest] New array after replacement:", newArray);
+
+                    // Update the array using the form control's parent form
+                    const parentFormControl = grandParentField.formControl;
+                    if (parentFormControl) {
+                        parentFormControl.setValue(newArray);
+                        parentFormControl.markAsDirty();
+                        console.log("[CustomMappingTest] Updated parent form control with new array");
+                    } else {
+                        console.warn("[CustomMappingTest] No parent form control found");
+                    }
+
+                    // Update the form control value for this field
+                    this.formControl.setValue(result);
+                    this.formControl.markAsDirty();
+                    console.log("[CustomMappingTest] Form control value after setValue:", this.formControl.value);
+                } else {
+                    console.warn("[CustomMappingTest] Index not found in parent array!");
+                }
             }
         });
     }
@@ -91,20 +145,6 @@ export class CustomMappingTestComponent extends FieldType<FieldTypeConfig> imple
         
         <div class="form-section">
           <div class="field grid">
-            <label class="col-12 md:col-3 font-medium">Search Type</label>
-            <div class="col-12 md:col-9">
-              <p-select
-                [(ngModel)]="model.searchType"
-                [options]="searchTypeOptions"
-                optionLabel="label"
-                optionValue="value"
-                placeholder="Select search type"
-                class="w-full">
-              </p-select>
-            </div>
-          </div>
-          
-          <div class="field grid">
             <label class="col-12 md:col-3 font-medium">Affected Value</label>
             <div class="col-12 md:col-9">
               <p-select
@@ -113,6 +153,20 @@ export class CustomMappingTestComponent extends FieldType<FieldTypeConfig> imple
                 optionLabel="label"
                 optionValue="value"
                 placeholder="Select affected value"
+                class="w-full">
+              </p-select>
+            </div>
+          </div>
+          
+          <div class="field grid">
+            <label class="col-12 md:col-3 font-medium">Search Type</label>
+            <div class="col-12 md:col-9">
+              <p-select
+                [(ngModel)]="model.searchType"
+                [options]="searchTypeOptions"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Select search type"
                 class="w-full">
               </p-select>
             </div>
@@ -210,7 +264,8 @@ export class CustomMappingTestComponent extends FieldType<FieldTypeConfig> imple
         ButtonModule,
         InputTextModule,
         SelectModule,
-        ToggleSwitchModule
+        ToggleSwitchModule,
+        DynamicDialogModule
     ]
 })
 export class CustomMappingTestDialogComponent implements OnInit {
