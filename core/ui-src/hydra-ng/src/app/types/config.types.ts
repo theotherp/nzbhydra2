@@ -289,9 +289,26 @@ export interface CategoriesConfig {
 // SEARCHING CONFIG
 // =============================================================================
 
+export enum CustomMappingSearchType {
+    BOOK = "BOOK",
+    MOVIE = "MOVIE",
+    MUSIC = "MUSIC",
+    SEARCH = "SEARCH",
+    TVSEARCH = "TVSEARCH"
+}
+
+export enum CustomMappingAffectedValue {
+    TITLE = "TITLE",
+    QUERY = "QUERY",
+    RESULT_TITLE = "RESULT_TITLE"
+}
+
 export interface CustomQueryAndTitleMapping {
-    query: string;
-    title: string;
+    searchType: CustomMappingSearchType;
+    affectedValue: CustomMappingAffectedValue;
+    matchAll: boolean;
+    from: string;
+    to: string;
 }
 
 export interface SearchingConfig {

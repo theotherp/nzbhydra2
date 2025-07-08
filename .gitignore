@@ -32,3 +32,4 @@ other/wrapper/pyInstaller/windows/build
 other/wrapper/pyInstaller/windows_console/build
 
 **/.DS_Store
+.aider*

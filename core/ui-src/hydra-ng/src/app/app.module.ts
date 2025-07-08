@@ -29,6 +29,7 @@ import {AppRoutingModule} from "./app-routing-module";
 import {AddableNzbComponent} from "./components/addable-nzb/addable-nzb.component";
 import {CategorySelectionModalComponent} from "./components/category-selection-modal/category-selection-modal.component";
 import {ChipsInputFieldType} from "./components/config/customtypes/chips-input.component";
+import {CustomMappingTestComponent} from "./components/config/customtypes/custom-mapping-test.component";
 import {MultiSelectFieldType} from "./components/config/customtypes/multiselect.component";
 import {RepeatTypeComponent} from "./components/config/customtypes/repeat-type.component";
 
@@ -113,7 +114,8 @@ export function IpValidator(control: AbstractControl): ValidationErrors {
             types: [
                 {name: "multiselect", component: MultiSelectFieldType, wrappers: ["primeng-form-field"]},
                 {name: "chipsInput", component: ChipsInputFieldType, wrappers: ["primeng-form-field"]},
-                {name: "repeat", component: RepeatTypeComponent}
+                {name: "repeat", component: RepeatTypeComponent},
+                {name: "customMappingTest", component: CustomMappingTestComponent}
             ]
         }),
         FormlyBootstrapModule,
@@ -139,7 +141,8 @@ export function IpValidator(control: AbstractControl): ValidationErrors {
         InputGroupAddon,
         MultiSelectFieldType,
         ChipsInputFieldType,
-        RepeatTypeComponent
+        RepeatTypeComponent,
+        CustomMappingTestComponent
     ],
     providers: [
         MediaInfoService,

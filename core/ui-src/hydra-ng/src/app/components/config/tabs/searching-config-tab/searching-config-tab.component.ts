@@ -498,6 +498,94 @@ export class SearchingConfigTabComponent implements OnInit {
             },
             {
                 wrappers: ["fieldset"],
+                type: "repeat",
+                key: "customMappings",
+
+                props: {
+                    tooltip: "Here you can define mappings to modify either queries or titles for search requests or to dynamically change the titles of found results. The former allows you, for example,  to change requests made by external tools, the latter to clean up results by indexers in a more advanced way.",
+                    btnText: "Add new custom mapping",
+                    altLegendText: "Mapping",
+                    headline: "Custom mappings of queries, search titles and result titles",
+                    advanced: true,
+                    defaultModel: {
+                        searchType: null,
+                        affectedValue: null,
+                        matchAll: true,
+                        from: null,
+                        to: null
+                    }
+                },
+                fieldArray: {
+                    fieldGroup: [
+                        {
+                            key: "affectedValue",
+                            type: "select",
+                            props: {
+                                label: "Affected value",
+                                options: [
+                                    {name: "Query", value: "QUERY"},
+                                    {name: "Search title", value: "TITLE"},
+                                    {name: "Result title", value: "RESULT_TITLE"},
+                                ],
+                                required: true,
+                                help: "Determines which value of the search request or result will be processed"
+                            }
+                        },
+                        {
+                            key: "searchType",
+                            type: "select",
+                            expressions: {
+                                hide: "model.affectedValue === \"RESULT_TITLE\"",
+                            },
+                            props: {
+                                label: "Search type",
+                                options: [
+                                    {name: "General", value: "SEARCH"},
+                                    {name: "Audio", value: "MUSIC"},
+                                    {name: "EBook", value: "BOOK"},
+                                    {name: "Movie", value: "MOVIE"},
+                                    {name: "TV", value: "TVSEARCH"}
+                                ],
+                                help: "Determines in what context the mapping will be executed"
+                            }
+                        },
+                        {
+                            key: "matchAll",
+                            type: "select",
+                            props: {
+                                type: "switch",
+                                label: "Match whole string",
+                                help: "If true then the input pattern must match the whole affected value. If false then any match will be replaced, even if it's only part of the affected value."
+                            }
+                        },
+                        {
+                            key: "from",
+                            type: "input",
+                            props: {
+                                type: "text",
+                                label: "Input pattern",
+                                help: "Pattern which must match the query or title of a search request (completely or in part, depending on the previous setting). You may use regexes in groups which can be referenced in the output puttern by using <code>{group:regex}</code>. Case insensitive.",
+                                required: true
+                            }
+                        },
+                        {
+                            key: "to",
+                            type: "input",
+                            props: {
+                                type: "text",
+                                label: "Output pattern",
+                                required: true,
+                                help: "If a query or title matches the input pattern it will be replaced using this. You may reference groups from the input pattern by using {group}. Additionally you may use <code>{season:0}</code> or <code>{season:00}</code> or <code>{episode:0}</code> or <code>{episode:00}</code> (with and without leading zeroes). Use <code>&lt;remove&gt;</code> to remove the match."
+                            }
+                        },
+                        {
+                            type: "customMappingTest",
+                        }
+                    ]
+                }
+            },
+            {
+                wrappers: ["fieldset"],
                 props: {
                     label: "Result display"
                 },
