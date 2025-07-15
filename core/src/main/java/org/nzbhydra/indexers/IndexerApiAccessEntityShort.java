@@ -8,7 +8,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -29,8 +28,7 @@ import java.time.Instant;
 public final class IndexerApiAccessEntityShort {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    @SequenceGenerator(allocationSize = 1, name = "INDEXERAPIACCESS_SHORT_SEQ")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     protected int id;
 
     @Column(name = "INDEXER_ID")

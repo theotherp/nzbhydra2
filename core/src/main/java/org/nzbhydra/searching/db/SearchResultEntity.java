@@ -24,7 +24,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.ManyToOne;
@@ -51,18 +50,10 @@ public final class SearchResultEntity {
 
     @GenericGenerator(
         name = "search-result-sequence",
-        strategy = "org.nzbhydra.searching.db.SearchResultSequenceGenerator",
-        parameters = {@org.hibernate.annotations.Parameter(
-            name = "sequence_name",
-            value = "HIBERNATE_SEQUENCE"
-        ),
-            @org.hibernate.annotations.Parameter(
-                name = "increment_size",
-                value = "1"
-            )}
+            strategy = "org.nzbhydra.searching.db.SearchResultSequenceGenerator"
     )
     @Id
-    @GeneratedValue(generator = "search-result-sequence", strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(generator = "search-result-sequence")
     private long id;
 
     @ManyToOne

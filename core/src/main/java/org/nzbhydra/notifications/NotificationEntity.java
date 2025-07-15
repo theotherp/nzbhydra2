@@ -7,7 +7,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.Data;
 import org.nzbhydra.config.notification.NotificationEventType;
@@ -22,8 +21,7 @@ import java.time.Instant;
 public final class NotificationEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @SequenceGenerator(allocationSize = 1, name = "NOTIFICATION_SEQ")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     protected int id;
 
     @Enumerated(EnumType.STRING)

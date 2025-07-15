@@ -10,7 +10,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -30,8 +29,7 @@ import java.util.Objects;
 public final class IndexerApiAccessEntity {
 
     @Id
-    @SequenceGenerator(allocationSize = 1, name = "INDEXERAPIACCESS_SEQ")
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     protected int id;
 
     @ManyToOne

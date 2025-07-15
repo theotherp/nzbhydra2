@@ -52,13 +52,13 @@ public class SQLiteConfiguration {
         config.setDriverClassName(driverClassName);
 
         // SQLite-specific connection pooling settings for multithreading
-        // SQLite has file-level locking, so we limit to 1 connection
-        config.setMaximumPoolSize(1);
-        config.setMinimumIdle(1);
-        config.setConnectionTimeout(30000);
-        config.setIdleTimeout(600000);
-        config.setMaxLifetime(1800000);
-        config.setLeakDetectionThreshold(60000);
+        // SQLite has file-level locking, but we need more connections for concurrent reads
+        config.setMaximumPoolSize(5);
+        config.setMinimumIdle(2);
+        config.setConnectionTimeout(60000);
+        config.setIdleTimeout(300000);
+        config.setMaxLifetime(900000);
+        config.setLeakDetectionThreshold(30000);
         config.setConnectionTestQuery("SELECT 1");
 
         // Additional SQLite-specific settings

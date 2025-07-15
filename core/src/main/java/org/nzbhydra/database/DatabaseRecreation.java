@@ -210,7 +210,56 @@ public class DatabaseRecreation {
             }
 
             logger.info("SQLite migration completed: {} statements executed, {} statements skipped", executedCount, skippedCount);
+
+            // Mark Flyway migrations as applied to prevent Flyway from trying to run them
+            markFlywayMigrationsAsApplied(connection);
         }
+    }
+
+    private static void markFlywayMigrationsAsApplied(Connection connection) throws Exception {
+        logger.info("Marking Flyway migrations as applied...");
+
+        // Create the flyway_schema_history table if it doesn't exist
+        try (Statement stmt = connection.createStatement()) {
+            stmt.execute("""
+                        CREATE TABLE IF NOT EXISTS flyway_schema_history (
+                            installed_rank INTEGER PRIMARY KEY,
+                            version VARCHAR(50),
+                            description VARCHAR(200),
+                            type VARCHAR(20),
+                            script VARCHAR(1000),
+                            checksum INTEGER,
+                            installed_by VARCHAR(100),
+                            installed_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                            execution_time INTEGER,
+                            success BOOLEAN
+                        )
+                    """);
+        }
+
+        // Insert records for the migrations that were "applied" during the conversion
+        Object[] migrations = {
+                "1", "INITIAL", "SQL", "V1__INITIAL.sql", -2068548846,
+                "2", "SEQUENCES", "SQL", "V2__SEQUENCES.SQL", -1814366603
+        };
+
+        for (int i = 0; i < migrations.length; i += 5) {
+            String version = (String) migrations[i];
+            String description = (String) migrations[i + 1];
+            String type = (String) migrations[i + 2];
+            String script = (String) migrations[i + 3];
+            int checksum = (Integer) migrations[i + 4];
+
+            try (Statement stmt = connection.createStatement()) {
+                stmt.execute(String.format("""
+                            INSERT INTO flyway_schema_history 
+                            (installed_rank, version, description, type, script, checksum, installed_by, execution_time, success)
+                            VALUES (%s, '%s', '%s', '%s', '%s', %d, 'SQLite Migration', 0, 1)
+                        """, version, version, description, type, script, checksum));
+            }
+        }
+
+        logger.info("Flyway migrations marked as applied successfully");
     }
 
     private static String convertH2ScriptToSQLite(String h2Script) {

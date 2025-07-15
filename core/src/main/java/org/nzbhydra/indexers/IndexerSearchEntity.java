@@ -6,7 +6,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.Data;
 import org.hibernate.annotations.OnDelete;
@@ -24,8 +23,7 @@ import java.util.Objects;
 public final class IndexerSearchEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    @SequenceGenerator(allocationSize = 1, name = "INDEXERSEARCH_SEQ")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
     @ManyToOne
