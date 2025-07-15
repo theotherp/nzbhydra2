@@ -7,7 +7,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 import org.apache.commons.io.FileUtils;
-import org.h2.message.DbException;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.config.ConfigProvider;
@@ -23,6 +22,7 @@ import org.springframework.aot.hint.annotation.Reflective;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.sqlite.SQLiteException;
 
 import java.io.File;
 import java.io.IOException;
@@ -214,7 +214,7 @@ public class BackupAndRestore {
             targetFile.delete();
             tempFile.delete();
             if (!triggeredByUsed) {
-                final String dbExceptionMessage = Throwables.getCausalChain(e).stream().filter(x -> x instanceof DbException).findFirst().map(Throwable::getMessage).orElse(null);
+                final String dbExceptionMessage = Throwables.getCausalChain(e).stream().filter(x -> x instanceof SQLiteException).findFirst().map(Throwable::getMessage).orElse(null);
                 genericStorage.save("FAILED_BACKUP", new FailedBackupData(dbExceptionMessage));
             }
             throw e;

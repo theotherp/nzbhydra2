@@ -97,7 +97,7 @@ public class NzbHydra {
             String dataFolder = "./data";
             NzbHydra.setDataFolder(dataFolder);
             System.setProperty("nzbhydra.dataFolder", dataFolder);
-            System.setProperty("spring.datasource.url", "jdbc:h2:mem:testdb;NON_KEYWORDS=YEAR,DATA,KEY");
+            System.setProperty("spring.datasource.url", "jdbc:sqlite:./data/database/nzbhydra.db");
 
             setApplicationPropertiesFromConfig();
 
