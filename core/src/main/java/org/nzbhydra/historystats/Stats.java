@@ -320,7 +320,7 @@ public class Stats {
             "   FROM INDEXERAPIACCESS\n" +
             buildWhereFromStatsRequest(false, statsRequest) +
             "   GROUP BY INDEXER_ID,\n" +
-            "     truncate(time)))\n" +
+                                              "     date(time)))\n" +
             "GROUP BY INDEXER_ID";
 
         Map<Integer, Double> accessesPerDayCountMap = new HashMap<>();
@@ -407,11 +407,11 @@ public class Stats {
         Stopwatch stopwatch = Stopwatch.createStarted();
         logger.debug("Calculating count for day of week for table {}", table);
         String sql = "SELECT \n" +
-            "  DAYOFWEEK(time) AS dayofweek, \n" +
+                     "  strftime('%w', time) AS dayofweek, \n" +
             "  count(*)        AS counter \n" +
             "FROM " + table + " \n" +
             buildWhereFromStatsRequest(false, statsRequest) +
-            "GROUP BY DAYOFWEEK(time)";
+                     "GROUP BY strftime('%w', time)";
 
         List<CountPerDayOfWeek> dayOfWeekCounts = new ArrayList<>();
         for (int i = 0; i < 7; i++) {
@@ -422,15 +422,15 @@ public class Stats {
         for (Object o : resultList) {
             Object[] resultSet = (Object[]) o;
             Integer index = (Integer) resultSet[0];
-            //HSQL returns 1 for sunday, 2 for monday, etc.
-            //We have the sunday in index 6, monday in index 0
-            //HSQL      S   M   T   W   T   F   S
-            //index     1   2   3   4   5   6   7
+            //SQLite strftime('%w') returns 0 for sunday, 1 for monday, etc.
+            //We want sunday in index 6, monday in index 0
+            //SQLite     S   M   T   W   T   F   S
+            //index      0   1   2   3   4   5   6
 
-            //want      6   0   1   2   3   4   5
-            //          S   M   T   W   T   F   S
+            //want       6   0   1   2   3   4   5
+            //           S   M   T   W   T   F   S
             Long counter = (Long) resultSet[1];
-            int indexInList = (index + 5) % 7;
+            int indexInList = (index + 6) % 7;
             dayOfWeekCounts.get(indexInList).setCount(counter.intValue());
         }
         logger.debug(LoggingMarkers.PERFORMANCE, "Calculated count for day of week for table {}. Took {}ms", table, stopwatch.elapsed(TimeUnit.MILLISECONDS));
@@ -442,11 +442,11 @@ public class Stats {
         Stopwatch stopwatch = Stopwatch.createStarted();
         logger.debug("Calculating count for hour of day for table {}", table);
         String sql = "SELECT \n" +
-            "  HOUR(time) AS hourofday, \n" +
+                     "  strftime('%H', time) AS hourofday, \n" +
             "  count(*)        AS counter \n" +
             "FROM " + table + " \n" +
             buildWhereFromStatsRequest(false, statsRequest) +
-            "GROUP BY HOUR(time)";
+                     "GROUP BY strftime('%H', time)";
 
         List<CountPerHourOfDay> hourOfDayCounts = new ArrayList<>();
         for (int i = 0; i < 24; i++) {
@@ -703,9 +703,9 @@ public class Stats {
             return " ";
         }
         return (useAnd ? " AND " : " WHERE ") +
-            (statsRequest.getAfter() != null ? " TIME > DATEADD('SECOND', " + statsRequest.getAfter().getEpochSecond() + ", DATE '1970-01-01') " : "") +
+               (statsRequest.getAfter() != null ? " TIME > datetime(" + statsRequest.getAfter().getEpochSecond() + ", 'unixepoch') " : "") +
             ((statsRequest.getBefore() != null && statsRequest.getAfter() != null) ? " AND " : " ") +
-            (statsRequest.getBefore() != null ? " TIME < DATEADD('SECOND', " + statsRequest.getBefore().getEpochSecond() + ", DATE '1970-01-01') " : "");
+               (statsRequest.getBefore() != null ? " TIME < datetime(" + statsRequest.getBefore().getEpochSecond() + ", 'unixepoch') " : "");
     }
 
 

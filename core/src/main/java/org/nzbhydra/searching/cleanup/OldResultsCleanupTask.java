@@ -53,7 +53,7 @@ public class OldResultsCleanupTask {
         Stopwatch stopwatch = Stopwatch.createStarted();
         int keepSearchResultsForDays = configProvider.getBaseConfig().getSearching().getKeepSearchResultsForDays();
         String sqlString = "delete from SEARCHRESULT where FIRST_FOUND "
-                + " < DATEADD('SECOND', :epochSecond, DATE '1970-01-01') " +
+                           + " < datetime(:epochSecond, 'unixepoch') " +
                 "AND ID not in (select SEARCH_RESULT_ID from INDEXERNZBDOWNLOAD where SEARCH_RESULT_ID is not null)";
         sqlString = sqlString.replace(":epochSecond", String.valueOf(Instant.now().minus(keepSearchResultsForDays, ChronoUnit.DAYS).getEpochSecond()));
         int deletedResults = entityManager.createNativeQuery(sqlString).executeUpdate();
