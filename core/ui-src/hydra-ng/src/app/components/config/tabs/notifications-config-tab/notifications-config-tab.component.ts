@@ -222,7 +222,7 @@ export class NotificationsConfigTabComponent implements OnInit {
                                 {
                                     key: "titleTemplate",
                                     type: "input",
-                                    wrappers: ["advanced"],
+                                    wrappers: ["advanced", "form-field"],
                                     props: {
                                         label: "Title template",
                                         placeholder: "NZBHydra2 - {{ eventType }}",
@@ -233,7 +233,7 @@ export class NotificationsConfigTabComponent implements OnInit {
                                 {
                                     key: "bodyTemplate",
                                     type: "textarea",
-                                    wrappers: ["advanced"],
+                                    wrappers: ["advanced", "form-field"],
                                     props: {
                                         label: "Body template",
                                         placeholder: "Event: {{ eventType }}\nMessage: {{ message }}",

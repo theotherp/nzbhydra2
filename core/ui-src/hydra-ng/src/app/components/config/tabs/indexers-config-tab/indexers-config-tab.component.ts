@@ -191,7 +191,7 @@ export class IndexersConfigTabComponent implements OnInit {
                                 {
                                     key: "apiPath",
                                     type: "input",
-                                    wrappers: ["advanced"],
+                                    wrappers: ["advanced", "form-field"],
                                     props: {
                                         label: "API Path",
                                         placeholder: "/api",
@@ -248,7 +248,7 @@ export class IndexersConfigTabComponent implements OnInit {
                                 {
                                     key: "timeout",
                                     type: "input",
-                                    wrappers: ["advanced"],
+                                    wrappers: ["advanced", "form-field"],
                                     props: {
                                         label: "Timeout (seconds)",
                                         type: "number",
@@ -262,7 +262,7 @@ export class IndexersConfigTabComponent implements OnInit {
                                 {
                                     key: "retries",
                                     type: "input",
-                                    wrappers: ["advanced"],
+                                    wrappers: ["advanced", "form-field"],
                                     props: {
                                         label: "Retries",
                                         type: "number",
@@ -276,7 +276,7 @@ export class IndexersConfigTabComponent implements OnInit {
                                 {
                                     key: "statsRetention",
                                     type: "input",
-                                    wrappers: ["advanced"],
+                                    wrappers: ["advanced", "form-field"],
                                     props: {
                                         label: "Stats retention (days)",
                                         type: "number",
@@ -290,7 +290,7 @@ export class IndexersConfigTabComponent implements OnInit {
                                 {
                                     key: "searchSource",
                                     type: "input",
-                                    wrappers: ["advanced"],
+                                    wrappers: ["advanced", "form-field"],
                                     props: {
                                         label: "Search source",
                                         placeholder: "Source identifier for searches",
@@ -301,7 +301,7 @@ export class IndexersConfigTabComponent implements OnInit {
                                 {
                                     key: "searchSourceType",
                                     type: "input",
-                                    wrappers: ["advanced"],
+                                    wrappers: ["advanced", "form-field"],
                                     props: {
                                         label: "Search source type",
                                         placeholder: "Source type identifier",
@@ -312,7 +312,7 @@ export class IndexersConfigTabComponent implements OnInit {
                                 {
                                     key: "iconCssClass",
                                     type: "input",
-                                    wrappers: ["advanced"],
+                                    wrappers: ["advanced", "form-field"],
                                     props: {
                                         label: "Icon CSS class",
                                         placeholder: "e.g., fa fa-rss",

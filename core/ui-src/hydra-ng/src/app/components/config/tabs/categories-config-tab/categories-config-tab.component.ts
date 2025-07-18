@@ -181,7 +181,7 @@ export class CategoriesConfigTabComponent implements OnInit {
                                 {
                                     key: "description",
                                     type: "input",
-                                    wrappers: ["advanced"],
+                                    wrappers: ["advanced", "form-field"],
                                     props: {
                                         label: "Description",
                                         placeholder: "Optional description of this category",
@@ -224,7 +224,7 @@ export class CategoriesConfigTabComponent implements OnInit {
                                 {
                                     key: "applySizeLimitsToApi",
                                     type: "checkbox",
-                                    wrappers: ["advanced"],
+                                    wrappers: ["advanced", "form-field"],
                                     props: {
                                         label: "Apply size limits to API",
                                         description: "Whether to apply size limits to API searches",
@@ -234,7 +234,7 @@ export class CategoriesConfigTabComponent implements OnInit {
                                 {
                                     key: "minSizePreset",
                                     type: "input",
-                                    wrappers: ["advanced"],
+                                    wrappers: ["advanced", "form-field"],
                                     props: {
                                         label: "Minimum size (MB)",
                                         type: "number",
@@ -246,7 +246,7 @@ export class CategoriesConfigTabComponent implements OnInit {
                                 {
                                     key: "maxSizePreset",
                                     type: "input",
-                                    wrappers: ["advanced"],
+                                    wrappers: ["advanced", "form-field"],
                                     props: {
                                         label: "Maximum size (MB)",
                                         type: "number",
@@ -278,7 +278,7 @@ export class CategoriesConfigTabComponent implements OnInit {
                                 {
                                     key: "forbiddenRegex",
                                     type: "input",
-                                    wrappers: ["advanced"],
+                                    wrappers: ["advanced", "form-field"],
                                     props: {
                                         label: "Forbidden regex",
                                         placeholder: "e.g., \\b(cam|ts)\\b",
@@ -289,7 +289,7 @@ export class CategoriesConfigTabComponent implements OnInit {
                                 {
                                     key: "requiredRegex",
                                     type: "input",
-                                    wrappers: ["advanced"],
+                                    wrappers: ["advanced", "form-field"],
                                     props: {
                                         label: "Required regex",
                                         placeholder: "e.g., \\b(1080p|720p)\\b",

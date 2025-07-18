@@ -141,7 +141,7 @@ export class DownloadingConfigTabComponent implements OnInit {
                     {
                         key: "primaryDownloader",
                         type: "input",
-                        wrappers: ["advanced"],
+                        wrappers: ["advanced", "form-field"],
                         props: {
                             label: "Primary downloader",
                             placeholder: "Leave empty for automatic selection",
@@ -152,7 +152,7 @@ export class DownloadingConfigTabComponent implements OnInit {
                     {
                         key: "externalUrl",
                         type: "input",
-                        wrappers: ["advanced"],
+                        wrappers: ["advanced", "form-field"],
                         props: {
                             label: "External URL",
                             placeholder: "https://example.com/nzbhydra2",
@@ -171,7 +171,7 @@ export class DownloadingConfigTabComponent implements OnInit {
                     {
                         key: "saveNzbsTo",
                         type: "input",
-                        wrappers: ["advanced"],
+                        wrappers: ["advanced", "form-field"],
                         props: {
                             label: "Save NZBs to",
                             placeholder: "/path/to/nzb/folder",
@@ -182,7 +182,7 @@ export class DownloadingConfigTabComponent implements OnInit {
                     {
                         key: "saveTorrentsTo",
                         type: "input",
-                        wrappers: ["advanced"],
+                        wrappers: ["advanced", "form-field"],
                         props: {
                             label: "Save torrents to",
                             placeholder: "/path/to/torrent/folder",
@@ -303,7 +303,7 @@ export class DownloadingConfigTabComponent implements OnInit {
                                 {
                                     key: "defaultCategory",
                                     type: "input",
-                                    wrappers: ["advanced"],
+                                    wrappers: ["advanced", "form-field"],
                                     props: {
                                         label: "Default category",
                                         placeholder: "Category to use when none is specified",
@@ -341,7 +341,7 @@ export class DownloadingConfigTabComponent implements OnInit {
                                 {
                                     key: "iconCssClass",
                                     type: "input",
-                                    wrappers: ["advanced"],
+                                    wrappers: ["advanced", "form-field"],
                                     props: {
                                         label: "Icon CSS class",
                                         placeholder: "e.g., fa fa-download",

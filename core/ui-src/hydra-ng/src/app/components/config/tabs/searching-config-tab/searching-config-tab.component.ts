@@ -263,7 +263,7 @@ export class SearchingConfigTabComponent implements OnInit {
                     {
                         key: "alwaysConvertIds",
                         type: "select",
-                        wrappers: ["advanced"],
+                        wrappers: ["advanced", "form-field"],
                         props: {
                             label: "Convert media IDs for...",
                             options: [
@@ -361,7 +361,7 @@ export class SearchingConfigTabComponent implements OnInit {
                     {
                         key: "forbiddenRegex",
                         type: "input",
-                        wrappers: ["advanced"],
+                        wrappers: ["advanced", "form-field"],
                         props: {
                             type: "text",
                             label: "Forbidden regex",
@@ -384,7 +384,7 @@ export class SearchingConfigTabComponent implements OnInit {
                     {
                         key: "requiredRegex",
                         type: "input",
-                        wrappers: ["advanced"],
+                        wrappers: ["advanced", "form-field"],
                         props: {
                             type: "text",
                             label: "Required regex",
