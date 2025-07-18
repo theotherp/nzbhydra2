@@ -3,6 +3,7 @@ import {FormGroup} from "@angular/forms";
 import {FormlyFieldConfig, FormlyFormOptions} from "@ngx-formly/core";
 import {ConfigService} from "../../../../services/config.service";
 import {AppriseType, NotificationConfig} from "../../../../types/config.types";
+import {processFieldWrappers} from "../../../../utils/formly-utils";
 
 @Component({
     selector: "app-notifications-config-tab",
@@ -75,6 +76,7 @@ export class NotificationsConfigTabComponent implements OnInit {
             }
         });
     }
+
 
     private setupForm() {
         this.fields = [
@@ -222,7 +224,7 @@ export class NotificationsConfigTabComponent implements OnInit {
                                 {
                                     key: "titleTemplate",
                                     type: "input",
-                                    wrappers: ["advanced", "form-field"],
+                                    wrappers: ["advanced"],
                                     props: {
                                         label: "Title template",
                                         placeholder: "NZBHydra2 - {{ eventType }}",
@@ -233,7 +235,7 @@ export class NotificationsConfigTabComponent implements OnInit {
                                 {
                                     key: "bodyTemplate",
                                     type: "textarea",
-                                    wrappers: ["advanced", "form-field"],
+                                    wrappers: ["advanced"],
                                     props: {
                                         label: "Body template",
                                         placeholder: "Event: {{ eventType }}\nMessage: {{ message }}",
@@ -248,6 +250,8 @@ export class NotificationsConfigTabComponent implements OnInit {
                 ]
             }
         ];
+
+        processFieldWrappers(this.fields);
     }
 
     private setupFormListeners() {

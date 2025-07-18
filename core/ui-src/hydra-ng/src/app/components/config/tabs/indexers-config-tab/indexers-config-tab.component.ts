@@ -3,6 +3,7 @@ import {FormGroup} from "@angular/forms";
 import {FormlyFieldConfig, FormlyFormOptions} from "@ngx-formly/core";
 import {ConfigService} from "../../../../services/config.service";
 import {IndexerConfig} from "../../../../types/config.types";
+import {processFieldWrappers} from "../../../../utils/formly-utils";
 
 @Component({
     selector: "app-indexers-config-tab",
@@ -71,6 +72,7 @@ export class IndexersConfigTabComponent implements OnInit {
             }
         });
     }
+
 
     private setupForm() {
         this.fields = [
@@ -191,7 +193,7 @@ export class IndexersConfigTabComponent implements OnInit {
                                 {
                                     key: "apiPath",
                                     type: "input",
-                                    wrappers: ["advanced", "form-field"],
+                                    wrappers: ["advanced"],
                                     props: {
                                         label: "API Path",
                                         placeholder: "/api",
@@ -202,7 +204,7 @@ export class IndexersConfigTabComponent implements OnInit {
                                 {
                                     key: "backendType",
                                     type: "select",
-                                    wrappers: ["advanced", "primeng-form-field"],
+                                    wrappers: ["advanced"],
                                     props: {
                                         label: "Backend type",
                                         options: [
@@ -217,7 +219,7 @@ export class IndexersConfigTabComponent implements OnInit {
                                 {
                                     key: "downloadType",
                                     type: "select",
-                                    wrappers: ["advanced", "primeng-form-field"],
+                                    wrappers: ["advanced"],
                                     props: {
                                         label: "Download type",
                                         options: [
@@ -248,7 +250,7 @@ export class IndexersConfigTabComponent implements OnInit {
                                 {
                                     key: "timeout",
                                     type: "input",
-                                    wrappers: ["advanced", "form-field"],
+                                    wrappers: ["advanced"],
                                     props: {
                                         label: "Timeout (seconds)",
                                         type: "number",
@@ -262,7 +264,7 @@ export class IndexersConfigTabComponent implements OnInit {
                                 {
                                     key: "retries",
                                     type: "input",
-                                    wrappers: ["advanced", "form-field"],
+                                    wrappers: ["advanced"],
                                     props: {
                                         label: "Retries",
                                         type: "number",
@@ -276,7 +278,7 @@ export class IndexersConfigTabComponent implements OnInit {
                                 {
                                     key: "statsRetention",
                                     type: "input",
-                                    wrappers: ["advanced", "form-field"],
+                                    wrappers: ["advanced"],
                                     props: {
                                         label: "Stats retention (days)",
                                         type: "number",
@@ -290,7 +292,7 @@ export class IndexersConfigTabComponent implements OnInit {
                                 {
                                     key: "searchSource",
                                     type: "input",
-                                    wrappers: ["advanced", "form-field"],
+                                    wrappers: ["advanced"],
                                     props: {
                                         label: "Search source",
                                         placeholder: "Source identifier for searches",
@@ -301,7 +303,7 @@ export class IndexersConfigTabComponent implements OnInit {
                                 {
                                     key: "searchSourceType",
                                     type: "input",
-                                    wrappers: ["advanced", "form-field"],
+                                    wrappers: ["advanced"],
                                     props: {
                                         label: "Search source type",
                                         placeholder: "Source type identifier",
@@ -312,7 +314,7 @@ export class IndexersConfigTabComponent implements OnInit {
                                 {
                                     key: "iconCssClass",
                                     type: "input",
-                                    wrappers: ["advanced", "form-field"],
+                                    wrappers: ["advanced"],
                                     props: {
                                         label: "Icon CSS class",
                                         placeholder: "e.g., fa fa-rss",
@@ -326,6 +328,8 @@ export class IndexersConfigTabComponent implements OnInit {
                 ]
             }
         ];
+
+        processFieldWrappers(this.fields);
     }
 
     private setupFormListeners() {

@@ -3,6 +3,7 @@ import {FormGroup} from "@angular/forms";
 import {FormlyFieldConfig, FormlyFormOptions} from "@ngx-formly/core";
 import {ConfigService} from "../../../../services/config.service";
 import {CategoriesConfig} from "../../../../types/config.types";
+import {processFieldWrappers} from "../../../../utils/formly-utils";
 
 @Component({
     selector: "app-categories-config-tab",
@@ -73,6 +74,7 @@ export class CategoriesConfigTabComponent implements OnInit {
             }
         });
     }
+
 
     private setupForm() {
         this.fields = [
@@ -145,7 +147,7 @@ export class CategoriesConfigTabComponent implements OnInit {
                                 {
                                     key: "searchType",
                                     type: "select",
-                                    wrappers: ["advanced", "primeng-form-field"],
+                                    wrappers: ["advanced"],
                                     props: {
                                         label: "Search type",
                                         options: [
@@ -162,7 +164,7 @@ export class CategoriesConfigTabComponent implements OnInit {
                                 {
                                     key: "subtype",
                                     type: "select",
-                                    wrappers: ["advanced", "primeng-form-field"],
+                                    wrappers: ["advanced"],
                                     props: {
                                         label: "Subtype",
                                         options: [
@@ -181,7 +183,7 @@ export class CategoriesConfigTabComponent implements OnInit {
                                 {
                                     key: "description",
                                     type: "input",
-                                    wrappers: ["advanced", "form-field"],
+                                    wrappers: ["advanced"],
                                     props: {
                                         label: "Description",
                                         placeholder: "Optional description of this category",
@@ -192,7 +194,7 @@ export class CategoriesConfigTabComponent implements OnInit {
                                 {
                                     key: "ignoreResultsFrom",
                                     type: "select",
-                                    wrappers: ["advanced", "primeng-form-field"],
+                                    wrappers: ["advanced"],
                                     props: {
                                         label: "Ignore results from",
                                         options: [
@@ -208,7 +210,7 @@ export class CategoriesConfigTabComponent implements OnInit {
                                 {
                                     key: "applyRestrictionsType",
                                     type: "select",
-                                    wrappers: ["advanced", "primeng-form-field"],
+                                    wrappers: ["advanced"],
                                     props: {
                                         label: "Apply restrictions type",
                                         options: [
@@ -224,7 +226,7 @@ export class CategoriesConfigTabComponent implements OnInit {
                                 {
                                     key: "applySizeLimitsToApi",
                                     type: "checkbox",
-                                    wrappers: ["advanced", "form-field"],
+                                    wrappers: ["advanced"],
                                     props: {
                                         label: "Apply size limits to API",
                                         description: "Whether to apply size limits to API searches",
@@ -234,7 +236,7 @@ export class CategoriesConfigTabComponent implements OnInit {
                                 {
                                     key: "minSizePreset",
                                     type: "input",
-                                    wrappers: ["advanced", "form-field"],
+                                    wrappers: ["advanced"],
                                     props: {
                                         label: "Minimum size (MB)",
                                         type: "number",
@@ -246,7 +248,7 @@ export class CategoriesConfigTabComponent implements OnInit {
                                 {
                                     key: "maxSizePreset",
                                     type: "input",
-                                    wrappers: ["advanced", "form-field"],
+                                    wrappers: ["advanced"],
                                     props: {
                                         label: "Maximum size (MB)",
                                         type: "number",
@@ -258,7 +260,7 @@ export class CategoriesConfigTabComponent implements OnInit {
                                 {
                                     key: "forbiddenWords",
                                     type: "chipsInput",
-                                    wrappers: ["advanced", "primeng-form-field"],
+                                    wrappers: ["advanced"],
                                     props: {
                                         label: "Forbidden words",
                                         description: "Words that will cause results to be rejected",
@@ -268,7 +270,7 @@ export class CategoriesConfigTabComponent implements OnInit {
                                 {
                                     key: "requiredWords",
                                     type: "chipsInput",
-                                    wrappers: ["advanced", "primeng-form-field"],
+                                    wrappers: ["advanced"],
                                     props: {
                                         label: "Required words",
                                         description: "Words that must be present in results",
@@ -278,7 +280,7 @@ export class CategoriesConfigTabComponent implements OnInit {
                                 {
                                     key: "forbiddenRegex",
                                     type: "input",
-                                    wrappers: ["advanced", "form-field"],
+                                    wrappers: ["advanced"],
                                     props: {
                                         label: "Forbidden regex",
                                         placeholder: "e.g., \\b(cam|ts)\\b",
@@ -289,7 +291,7 @@ export class CategoriesConfigTabComponent implements OnInit {
                                 {
                                     key: "requiredRegex",
                                     type: "input",
-                                    wrappers: ["advanced", "form-field"],
+                                    wrappers: ["advanced"],
                                     props: {
                                         label: "Required regex",
                                         placeholder: "e.g., \\b(1080p|720p)\\b",
@@ -303,6 +305,8 @@ export class CategoriesConfigTabComponent implements OnInit {
                 ]
             }
         ];
+
+        processFieldWrappers(this.fields);
     }
 
     private setupFormListeners() {
