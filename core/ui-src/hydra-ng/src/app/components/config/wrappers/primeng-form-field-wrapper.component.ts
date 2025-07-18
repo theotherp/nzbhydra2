@@ -10,6 +10,9 @@ import {FieldWrapper} from "@ngx-formly/core";
           <span *ngIf="props.required && props['hideRequiredMarker'] !== true" aria-hidden="true">*</span>
         </label>
         <ng-container #fieldComponent></ng-container>
+        <small *ngIf="props.description && !showError" class="p-text-secondary block mt-1">
+          {{ props.description }}
+        </small>
         <small *ngIf="showError" class="p-error">
           <formly-validation-message class="ui-message-text" [field]="field"></formly-validation-message>
         </small>

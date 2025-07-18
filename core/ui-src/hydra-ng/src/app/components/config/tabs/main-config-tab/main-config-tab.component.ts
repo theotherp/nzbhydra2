@@ -205,6 +205,7 @@ export class MainConfigTabComponent implements OnInit {
                     {
                         key: "logging.markersToLog",
                         type: "multiselect",
+                        wrappers: ["primeng-form-field"],
                         props: {
                             label: "Log markers",
                             description: "todo",

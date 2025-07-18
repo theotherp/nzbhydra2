@@ -11,6 +11,9 @@ import {Card} from "primeng/card";
     template: `
       <div *ngIf="!shouldHide()" class="mb-4">
         <p-card [header]="getHeader()" styleClass="shadow-1">
+          <small *ngIf="props.description" class="p-text-secondary block mb-4">
+            {{ props.description }}
+          </small>
           <div class="space-y-4">
             <div *ngFor="let field of field.fieldGroup; let i = index;" class="p-4 border rounded-lg bg-gray-50">
               <formly-field [field]="field"></formly-field>

@@ -4,9 +4,9 @@ import {FieldWrapper} from "@ngx-formly/core";
 @Component({
     selector: "formly-advanced-wrapper",
     template: `
-      <span *ngIf="showAdvanced">
+      <div *ngIf="showAdvanced">
         <ng-container #fieldComponent></ng-container>
-      </span>
+      </div>
     `,
     standalone: false
 })

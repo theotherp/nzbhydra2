@@ -113,8 +113,8 @@ export function IpValidator(control: AbstractControl): ValidationErrors {
                 {name: "advanced", component: AdvancedWrapperComponent},
             ],
             types: [
-                {name: "multiselect", component: MultiSelectFieldType, wrappers: ["primeng-form-field"]},
-                {name: "chipsInput", component: ChipsInputFieldType, wrappers: ["primeng-form-field"]},
+                {name: "multiselect", component: MultiSelectFieldType},
+                {name: "chipsInput", component: ChipsInputFieldType},
                 {name: "repeat", component: RepeatTypeComponent},
                 {name: "customMappingTest", component: CustomMappingTestComponent}
             ]
