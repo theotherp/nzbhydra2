@@ -1824,13 +1824,13 @@ function ConfigFields($injector) {
                             key: 'externalUrl',
                             type: 'horizontalInput',
                             hideExpression: function ($viewValue, $modelValue, scope) {
-                                return !_.any(scope.model.downloaders, function (downloader) {
+                                return !scope.model.showDownloaderStatus && !_.any(scope.model.downloaders, function (downloader) {
                                     return downloader.nzbAddingType === "SEND_LINK";
                                 });
                             },
                             templateOptions: {
                                 label: 'External URL',
-                                help: 'Used for links when sending links to the downloader.',
+                                help: 'Used for links when sending links to the downloader and as link target for the downloader icon in the footer (when set).',
                                 tooltip: 'When using "Add links" to add NZBs to your downloader the links are usually calculated using the URL with which you accessed NZBHydra. This might be a URL that\'s not accessible by the downloader (e.g. when it\'s inside a docker container). Set the URL for NZBHydra that\'s accessible by the downloader here and it will be used instead. ',
                                 advanced: true
                             }

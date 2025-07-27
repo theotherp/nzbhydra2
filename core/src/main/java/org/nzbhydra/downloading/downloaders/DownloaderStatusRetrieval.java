@@ -56,7 +56,7 @@ public class DownloaderStatusRetrieval {
         DownloaderStatus status;
         try {
             status = downloader.get().getStatus();
-            status.setUrl(downloader.get().getUrl());
+            status.setUrl(configProvider.getBaseConfig().getDownloading().getExternalUrl().orElse(downloader.get().getUrl()));
         } catch (Exception e) {
             logger.error("Error while retrieving downloader status", e);
             status = DownloaderStatus.builder().state(DownloaderStatus.State.OFFLINE).build();
