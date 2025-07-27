@@ -110,6 +110,7 @@
                tooltip-placement="top"
                tooltip-trigger="mouseenter"><span class="glyphicon glyphicon-save"></span>
             </a>
+          <addable-nzbs searchresult="::result"></addable-nzbs>
         </span>
         <save-or-send-file ng-if="result.downloadType!='TORBOX'" search-result-id="result.searchResultId" type="result.downloadType"></save-or-send-file>
           <span ng-switch-default>

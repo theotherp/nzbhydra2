@@ -29,7 +29,7 @@ import java.util.Optional;
 public class TorboxDownloadUrlBuilderStrategy implements DownloadUrlBuilderStrategy {
     @Override
     public Optional<String> getDownloadLinkForSendingToDownloader(SearchResultEntity searchResult, boolean internal, DownloadType downloadType) {
-        if (downloadType == DownloadType.TORBOX) {
+        if (downloadType == DownloadType.TORBOX || downloadType == DownloadType.TORRENT || searchResult.getLink().contains("search-api.torbox.app")) {
             return Optional.of(searchResult.getLink());
         }
         return Optional.empty();

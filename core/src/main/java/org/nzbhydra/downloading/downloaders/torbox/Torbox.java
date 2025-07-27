@@ -36,6 +36,7 @@ import org.nzbhydra.downloading.downloaders.torbox.mapping.TorboxDownload;
 import org.nzbhydra.downloading.downloaders.torbox.mapping.UsenetListResponse;
 import org.nzbhydra.downloading.downloadurls.DownloadUrlBuilder;
 import org.nzbhydra.downloading.exceptions.DownloaderException;
+import org.nzbhydra.searching.db.SearchResultEntity;
 import org.nzbhydra.searching.db.SearchResultRepository;
 import org.nzbhydra.webaccess.HydraOkHttp3ClientHttpRequestFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -51,6 +52,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
@@ -156,8 +158,8 @@ public class Torbox extends Downloader {
             };
             map.add("file", fileResource);
         } else {
-            if (resultType == ResultType.MAGNET) {
-                map.add("magnet", value);
+            if (resultType == ResultType.MAGNET || ("link".equals(addType) && new String(value).startsWith("magnet"))) {
+                map.add("magnet", URLDecoder.decode(new String(value), StandardCharsets.UTF_8));
             } else {
                 map.add(addType, value);
             }
@@ -256,8 +258,8 @@ public class Torbox extends Downloader {
     }
 
     @Override
-    protected NzbAddingType getNzbAddingType(DownloadType downloadType) {
-        if (downloadType == DownloadType.TORBOX) {
+    protected NzbAddingType getNzbAddingType(DownloadType downloadType, SearchResultEntity searchResult) {
+        if (downloadType == DownloadType.TORBOX || downloadType == DownloadType.TORRENT || searchResult.getLink().contains("search-api.torbox.app")) {
             //Torbox only allows downloading their results for themselves
             return NzbAddingType.SEND_LINK;
         }

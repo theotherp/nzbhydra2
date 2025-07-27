@@ -18,9 +18,7 @@ package org.nzbhydra.downloading;
 
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.downloading.DownloadType;
-import org.nzbhydra.config.downloading.DownloaderConfig;
 import org.nzbhydra.config.downloading.FileDownloadAccessType;
-import org.nzbhydra.config.downloading.NzbAddingType;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.searching.db.SearchResultEntity;
@@ -37,18 +35,6 @@ public class IndexerSpecificDownloadExceptions {
     @Autowired
     private ConfigProvider configProvider;
 
-    public NzbAddingType getAddingTypeForIndexer(IndexerConfig indexerConfig, DownloaderConfig downloaderConfig) {
-        final NzbAddingType defaultType = downloaderConfig.getNzbAddingType();
-        if (defaultType == NzbAddingType.SEND_LINK) {
-            return defaultType;
-        }
-        final String host = indexerConfig.getHost().toLowerCase();
-        if (isSendLinkRequired(host)) {
-            logger.debug("Using nzb adding type type 'Send link' for indexer {}", indexerConfig.getName());
-            return NzbAddingType.SEND_LINK;
-        }
-        return defaultType;
-    }
 
     public FileDownloadAccessType getAccessTypeForIndexer(IndexerConfig indexerConfig, FileDownloadAccessType defaultType, SearchResultEntity searchResult) {
         if (defaultType == FileDownloadAccessType.REDIRECT) {
@@ -69,11 +55,15 @@ public class IndexerSpecificDownloadExceptions {
             return FileDownloadAccessType.PROXY;
         }
 
+
         return defaultType;
     }
 
     private static boolean isSendLinkRequired(String host) {
-        return host.contains("omgwtf") || host.contains("nzbs.in") || host.contains("nzbfinder");
+        return host.contains("omgwtf")
+               || host.contains("nzbs.in")
+               || host.contains("nzbfinder")
+                ;
     }
 
 

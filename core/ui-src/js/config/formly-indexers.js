@@ -888,6 +888,11 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
             host: "https://www.tabula-rasa.pw/api/v1/"
         },
         {
+            name: "Torbox (Newznab)",
+            host: "https://search-api.torbox.app/newznab",
+            searchModuleType: "NEWZNAB"
+        },
+        {
             allCapsChecked: true,
             enabledForSearchSource: "INTERNAL",
             categories: [],
@@ -1053,6 +1058,11 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
             searchModuleType: "TORZNAB",
             state: "ENABLED",
             enabledForSearchSource: "BOTH"
+        },
+        {
+            name: "Torbox (Torrents)",
+            host: "https://search-api.torbox.app/torznab",
+            searchModuleType: "TORZNAB"
         }
     ];
 
@@ -1079,7 +1089,8 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
             supportedSearchTypes: ["MOVIE", "SEARCH"],
             searchModuleType: "TORBOX",
             state: "ENABLED",
-            enabledForSearchSource: "INTERNAL"
+            enabledForSearchSource: "INTERNAL",
+            info: "Torbox supports Newznab and Torznab requests. You may want to add those instead (or additionally)."
         }
     ];
 });

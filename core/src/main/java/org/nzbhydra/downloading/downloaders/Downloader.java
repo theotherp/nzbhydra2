@@ -144,7 +144,7 @@ public abstract class Downloader {
                 final IndexerConfig indexerConfig = configProvider.getIndexerByName(optionalResult.get().getIndexer().getName());
                 try {
 
-                    NzbAddingType addingType = getNzbAddingType(searchResult.getDownloadType());
+                    NzbAddingType addingType = getNzbAddingType(searchResult.getDownloadType(), searchResult);
                     final FileDownloadAccessType accessTypeForIndexer = indexerSpecificDownloadExceptions.getAccessTypeForIndexer(indexerConfig, configProvider.getBaseConfig().getDownloading().getNzbAccessType(), searchResult);
                     if (addingType == NzbAddingType.UPLOAD && accessTypeForIndexer == FileDownloadAccessType.PROXY) {
                         DownloadResult result = fileHandler.getFileByResult(FileDownloadAccessType.PROXY, SearchSource.INTERNAL, optionalResult.get()); //Uploading NZBs can only be done via proxying
@@ -193,7 +193,7 @@ public abstract class Downloader {
         }
     }
 
-    protected NzbAddingType getNzbAddingType(DownloadType downloadType) {
+    protected NzbAddingType getNzbAddingType(DownloadType downloadType, SearchResultEntity searchResult) {
         return downloaderConfig.getNzbAddingType();
     }
 

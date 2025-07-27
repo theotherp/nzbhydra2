@@ -234,5 +234,5 @@ gulp.task('default', function () {
     log("Will build files into folder '" + staticFolder + "'");
     runSequence(["index"]);
     gulp.watch([uiSrcFolder + '/less/nzbhydra.less'], ['delMainLessCache']);
-    gulp.watch([uiSrcFolder + '/**/*'], ['index']);
+    gulp.watch([uiSrcFolder + '/**/*', '!' + uiSrcFolder + '/hydra-ng/**'], ['index']);
 });

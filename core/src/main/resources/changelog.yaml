@@ -1,4 +1,10 @@
 #@formatter:off
+-   version: "v7.16.9"
+    changes:
+      -   type: "added"
+          text: "Added newznab and torznab support for Torbox. You can add it as two separate indexers from the presets. It should now be possible to send any torrent or usenet results (from torbox or anywhere else) to Torbox. See #1005"
+    final: true
+    date: "2025-07-27"
 -   version: "v7.15.3"
     changes:
       -   type: "fixed"
