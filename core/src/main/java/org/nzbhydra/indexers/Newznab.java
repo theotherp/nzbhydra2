@@ -413,7 +413,7 @@ public class Newznab extends Indexer<Xml> {
 
         for (NewznabXmlItem item : newznabXmlRoot.getRssChannel().getItems()) {
             try {
-                if (config.getSearchModuleType() == SearchModuleType.TORZNAB && item.getEnclosures().stream().noneMatch(x -> Objects.equals(x.getType(), "application/x-bittorrent"))) {
+                if (config.getSearchModuleType() == SearchModuleType.TORZNAB && item.getEnclosures().stream().noneMatch(x -> getEnclosureTypes().contains(x.getType()))) {
                     debug("Skipping result {} because it doesn't contain a torrent link", item.getTitle());
                     continue;
                 }
@@ -555,10 +555,10 @@ public class Newznab extends Indexer<Xml> {
 
     protected String getEnclosureUrl(NewznabXmlItem item) throws NzbHydraException {
         String link;
-        if (item.getEnclosures().size() == 0) {
+        if (item.getEnclosures().isEmpty()) {
             link = item.getEnclosures().get(0).getUrl();
         } else {
-            Optional<NewznabXmlEnclosure> nzbEnclosure = item.getEnclosures().stream().filter(x -> getEnclosureType().equals(x.getType())).findAny();
+            Optional<NewznabXmlEnclosure> nzbEnclosure = item.getEnclosures().stream().filter(x -> getEnclosureTypes().contains(x.getType())).findAny();
             if (nzbEnclosure.isEmpty()) {
                 warn("Unable to find URL for result " + item.getTitle() + ". Will skip it.");
                 throw new NzbHydraException();
@@ -568,8 +568,8 @@ public class Newznab extends Indexer<Xml> {
         return link;
     }
 
-    protected String getEnclosureType() {
-        return "application/x-nzb";
+    protected List<String> getEnclosureTypes() {
+        return List.of("application/x-nzb");
     }
 
     protected void parseAttributes(NewznabXmlItem item, SearchResultItem searchResultItem) {

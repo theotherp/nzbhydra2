@@ -138,8 +138,8 @@ public class Torznab extends Newznab {
     }
 
     @Override
-    protected String getEnclosureType() {
-        return "application/x-bittorrent";
+    protected List<String> getEnclosureTypes() {
+        return List.of("application/x-bittorrent", "application/x-bittorrent;x-scheme-handler/magnet");
     }
 
     protected Logger getLogger() {
