@@ -1,9 +1,12 @@
 ### v7.16.0 (2025-07-27)
 
-**Added** Added newznab and torznab support for Torbox. You can add it as two separate indexers from the presets. It should now be possible to send any torrent or usenet results (from torbox or anywhere else) to Torbox. This may break some
-stuff (sorry, let me know). See <a href="https://github.com/theotherp/nzbhydra2/issues/1005">#1005</a>
+**Added** Added newznab and torznab support for Torbox. You can add it as two separate indexers from the presets. It should now be possible to send any torrent or usenet results (from torbox or anywhere else) to Torbox. This may break some stuff (sorry, let me know). See <a href="https://github.com/theotherp/nzbhydra2/issues/1005">#1005</a>
 
-**Fixed** If an external URL for a downloader is set it's used as link target for the downloader icon in the lower left.
+**Fixed** If an external URL for a downloader is set it's used as link target for the downloader icon in the lower left. See <a href="https://github.com/theotherp/nzbhydra2/issues/999">#999</a>
+
+**Fixed** Support results with type application/x-bittorrent;x-scheme-handler/magnet. See <a href="https://github.com/theotherp/nzbhydra2/issues/997">#997</a>
+
+
 
 ### v7.15.3 (2025-07-04)
 
