@@ -2,7 +2,7 @@
 -   version: "v7.16.0"
     changes:
       -   type: "added"
-          text: "Added newznab and torznab support for Torbox. You can add it as two separate indexers from the presets. It should now be possible to send any torrent or usenet results (from torbox or anywhere else) to Torbox. See #1005"
+          text: "Added newznab and torznab support for Torbox. You can add it as two separate indexers from the presets. It should now be possible to send any torrent or usenet results (from torbox or anywhere else) to Torbox. This may break some stuff (sorry, let me know). See #1005"
       -   type: "fixed"
           text: "If an external URL for a downloader is set it's used as link target for the downloader icon in the lower left."
     final: true
