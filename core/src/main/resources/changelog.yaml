@@ -1,4 +1,10 @@
 #@formatter:off
+-   version: "v7.16.1"
+    changes:
+      -   type: "fixed"
+          text: "Skip empty attributes, may fix gingadaddy issues. See #634"
+    final: true
+    date: "2025-09-03"
 -   version: "v7.16.0"
     changes:
       -   type: "added"

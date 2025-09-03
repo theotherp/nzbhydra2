@@ -574,7 +574,7 @@ public class Newznab extends Indexer<Xml> {
 
     protected void parseAttributes(NewznabXmlItem item, SearchResultItem searchResultItem) {
         Map<String, String> attributes = item.getNewznabAttributes().stream()
-                .filter(x -> x.getValue() != null)
+                .filter(x -> !Strings.isNullOrEmpty(x.getValue()))
                 .collect(Collectors.toMap(NewznabAttribute::getName, NewznabAttribute::getValue, (a, b) -> b));
         List<Integer> newznabCategories = item.getNewznabAttributes().stream().filter(x -> x.getName().equals("category") && !"None".equals(x.getValue()) && !Strings.isNullOrEmpty(x.getValue())).map(newznabAttribute -> {
                     try {
