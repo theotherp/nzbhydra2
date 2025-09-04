@@ -1,3 +1,11 @@
+### v7.16.2 (2025-09-04)
+
+**Fixed** Hopefully fixed magnet handling for Torbox. I neither use Torbox nor Torrents myself and don't know much about magnet links. Hopefully I didn't break something else in the process. Closes <a href="https://github.com/theotherp/nzbhydra2/issues/1010">#1010</a>
+
+**Fixed** Adapt indexer caps check to gingadaddy's responses. You may need to run a new caps check. They only support IMDB IDs you you should enable ID conversion in the searching config. Closes <a href="https://github.com/theotherp/nzbhydra2/issues/634">#634</a>
+
+
+
 ### v7.16.1 (2025-09-03)
 
 **Fixed** Skip empty attributes, may fix gingadaddy issues. See <a href="https://github.com/theotherp/nzbhydra2/issues/634">#634</a>
