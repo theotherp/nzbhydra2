@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.nzbhydra</groupId>
         <artifactId>shared</artifactId>
-        <version>7.16.2</version>
+        <version>7.16.3-SNAPSHOT</version>
     </parent>
 
     <artifactId>mapping</artifactId>
