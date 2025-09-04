@@ -445,6 +445,9 @@ public class IndexerChecker {
             } else if (e.getCause() instanceof final WebAccessException webAccessException) {
                 notSupported = webAccessException.getBody() != null && webAccessException.getBody().toLowerCase().contains("function not available");
             }
+            if (e.getMessage() != null && e.getMessage().contains("Incorrect parameter")) {
+                notSupported = true;
+            }
             if (notSupported) {
                 return new SingleCheckCapsResponse(request.getKey(), request.getIdType(), false, null, null, null);
             }
