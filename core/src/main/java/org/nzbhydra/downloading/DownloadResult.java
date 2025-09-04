@@ -26,7 +26,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.net.URI;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -93,19 +95,23 @@ public class DownloadResult {
             }
         } else if (isRedirect()) {
             HttpHeaders headers = new HttpHeaders();
-            //Jackett doesn't properly encode magnet URLs. Completely encoding it would  destroy the magnet link
+            //Jackett doesn't properly encode magnet URLs. Completely encoding it would destroy the magnet link
             String url = getCleanedUrl();
             headers.setLocation(URI.create(url));
             response = new ResponseEntity<>(headers, HttpStatus.FOUND);
         } else {
             HttpHeaders headers = new HttpHeaders();
             headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + getFileName().replace("\\", "\\\\").replace("\"", "\\\"") + "\"");
+            headers.add(HttpHeaders.CONTENT_TYPE, "application/x-bittorrent");
             response = new ResponseEntity<>(getContent(), headers, HttpStatus.OK);
         }
         return response;
     }
 
     public String getCleanedUrl() {
+        if (url.startsWith("magnet%3A")) {
+            url = URLDecoder.decode(url, StandardCharsets.UTF_8);
+        }
         if (!url.contains("magnet:")) {
             return url;
         }

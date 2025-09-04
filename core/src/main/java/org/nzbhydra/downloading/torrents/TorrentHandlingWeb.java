@@ -65,7 +65,7 @@ public class TorrentHandlingWeb {
      *
      * @return A {@link ResponseEntity} with the torrent content, a redirect to the actual indexer link or an error
      */
-    @RequestMapping(value = "/gettorrent/user/{guid}", produces = "application/x-bittorrent")
+    @RequestMapping(value = "/gettorrent/user/{guid}")
     @Secured({"ROLE_USER"})
     public ResponseEntity<Object> downloadTorrentForUsers(@PathVariable("guid") long guid) throws InvalidSearchResultIdException {
         DownloadResult downloadResult = torrentHandler.getTorrentByGuid(guid, configProvider.getBaseConfig().getDownloading().getNzbAccessType(), SearchSource.INTERNAL);
