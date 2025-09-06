@@ -102,7 +102,11 @@ public class DownloadResult {
         } else {
             HttpHeaders headers = new HttpHeaders();
             headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + getFileName().replace("\\", "\\\\").replace("\"", "\\\"") + "\"");
-            headers.add(HttpHeaders.CONTENT_TYPE, "application/x-bittorrent");
+            if (downloadEntity.getSearchResult().getDownloadType() == DownloadType.TORRENT) {
+                headers.add(HttpHeaders.CONTENT_TYPE, "application/x-bittorrent");
+            } else if (downloadEntity.getSearchResult().getDownloadType() == DownloadType.NZB) {
+                headers.add(HttpHeaders.CONTENT_TYPE, "application/x-nzb");
+            }
             response = new ResponseEntity<>(getContent(), headers, HttpStatus.OK);
         }
         return response;

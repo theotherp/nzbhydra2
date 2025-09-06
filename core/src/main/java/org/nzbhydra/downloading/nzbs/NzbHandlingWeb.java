@@ -66,7 +66,7 @@ public class NzbHandlingWeb {
      *
      * @return A {@link ResponseEntity} with the NZB content, a redirect to the actual indexer link or an error
      */
-    @RequestMapping(value = "/internalapi/nzb/{guid}", produces = "application/x-nzb")
+    @RequestMapping(value = "/internalapi/nzb/{guid}")
     @Secured({"ROLE_USER"})
     public ResponseEntity<Object> downloadNzbInternal(@PathVariable("guid") long guid) throws InvalidSearchResultIdException {
         logger.debug("downloadNzbInternal: {}", guid);
