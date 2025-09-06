@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.nzbhydra</groupId>
         <artifactId>releases</artifactId>
-        <version>7.16.3-SNAPSHOT</version>
+        <version>7.16.3</version>
     </parent>
 
     <artifactId>linux-arm64-release</artifactId>
@@ -15,7 +15,7 @@
         <dependency>
             <groupId>org.nzbhydra</groupId>
             <artifactId>core</artifactId>
-            <version>7.16.3-SNAPSHOT</version>
+            <version>7.16.3</version>
         </dependency>
     </dependencies>
 
