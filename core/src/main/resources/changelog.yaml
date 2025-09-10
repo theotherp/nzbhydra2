@@ -1,4 +1,9 @@
 #@formatter:off
+-   version: "v7.16.4"
+    changes:
+      -   type: "fixed"
+          text: "Do not warn about indexer access restrictions when using Torbox. It's up to you to keep in line with indexer restrictions."
+    final: true
 -   version: "v7.16.3"
     changes:
       -   type: "fixed"

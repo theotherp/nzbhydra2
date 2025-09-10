@@ -20,6 +20,7 @@ import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.downloading.DownloadingConfig;
 import org.nzbhydra.config.downloading.FileDownloadAccessType;
 import org.nzbhydra.config.indexer.IndexerConfig;
+import org.nzbhydra.downloading.DownloaderType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -72,7 +73,11 @@ public class DownloadingConfigValidator implements ConfigValidator<DownloadingCo
     }
 
     private static boolean isEnabledWithoutRedirect(BaseConfig newBaseConfig, String hostContains) {
-        return newBaseConfig.getIndexers().stream().anyMatch(x -> x.getHost().toLowerCase().contains(hostContains) && x.getState() == IndexerConfig.State.ENABLED) && newBaseConfig.getDownloading().getNzbAccessType() != FileDownloadAccessType.REDIRECT;
+        if (newBaseConfig.getDownloading().getDownloaders().stream().anyMatch(x -> x.isEnabled() && x.getDownloaderType() != DownloaderType.TORBOX)) {
+            boolean indexerEnabled = newBaseConfig.getIndexers().stream().anyMatch(x -> x.getHost().toLowerCase().contains(hostContains) && x.getState() == IndexerConfig.State.ENABLED);
+            return indexerEnabled && newBaseConfig.getDownloading().getNzbAccessType() != FileDownloadAccessType.REDIRECT;
+        }
+        return false;
     }
 
     private void validateBlackholeFolder(List<String> errors, File file, String blackholeSettings, final String blackholeType) {
