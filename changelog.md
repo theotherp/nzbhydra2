@@ -1,3 +1,11 @@
+### v7.17.0 BETA (2025-09-13)
+
+**Added** NZBHydra will attempt to reduce the size of the database on shutdown. This is experimental which is why I'll release this version as a beta first.
+
+**Fixed** Do not warn about indexer access restrictions when using Torbox. It's up to you to keep in line with indexer restrictions.
+
+
+
 ### v7.16.3 (2025-09-06)
 
 **Fixed** I did break something. NZB downloads via browser should have the correct media type again. See <a href="https://github.com/theotherp/nzbhydra2/issues/1011">#1011</a>
