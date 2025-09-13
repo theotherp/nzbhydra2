@@ -5,6 +5,7 @@
           text: "NZBHydra will attempt to reduce the size of the database on shutdown. This is experimental which is why I'll release this version as a beta first."
       -   type: "fixed"
           text: "Do not warn about indexer access restrictions when using Torbox. It's up to you to keep in line with indexer restrictions."
+    date: "2025-09-13"
     final: false
 -   version: "v7.16.3"
     changes:
