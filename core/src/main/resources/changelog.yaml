@@ -3,6 +3,8 @@
     changes:
       -   type: "fixed"
           text: "Fixed configuration of Radarr v6. Removed distinction between v1/v2 and v3+ of *arr because v3 has been around long enough. See #1012"
+      -   type: "fixed"
+          text: "Made the checkmark in the torbox downloader icon better visible."
     date: "2025-09-14"
     final: true
 -   version: "v7.17.0"

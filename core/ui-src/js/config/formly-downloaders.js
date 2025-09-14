@@ -34,6 +34,7 @@ angular
                         nzbAccessType: "REDIRECT",
                         iconCssClass: "",
                         downloadType: "NZB",
+                        addPaused: false,
                         url: "http://nzbget:tegbzn6789@localhost:6789"
                     },
                     {
@@ -43,6 +44,7 @@ angular
                         nzbAddingType: "UPLOAD",
                         nzbAccessType: "REDIRECT",
                         iconCssClass: "",
+                        addPaused: false,
                         downloadType: "NZB"
                     },
                     {
