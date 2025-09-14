@@ -38,6 +38,7 @@ import org.nzbhydra.downloading.FileDownloadStatus;
 import org.nzbhydra.downloading.FileHandler;
 import org.nzbhydra.downloading.IndexerSpecificDownloadExceptions;
 import org.nzbhydra.downloading.InvalidSearchResultIdException;
+import org.nzbhydra.downloading.downloadurls.DownloadLink;
 import org.nzbhydra.downloading.downloadurls.DownloadUrlBuilder;
 import org.nzbhydra.downloading.exceptions.DownloaderException;
 import org.nzbhydra.downloading.exceptions.DuplicateNzbException;
@@ -147,6 +148,8 @@ public abstract class Downloader {
                     NzbAddingType addingType = getNzbAddingType(searchResult.getDownloadType(), searchResult);
                     final FileDownloadAccessType accessTypeForIndexer = indexerSpecificDownloadExceptions.getAccessTypeForIndexer(indexerConfig, configProvider.getBaseConfig().getDownloading().getNzbAccessType(), searchResult);
                     if (addingType == NzbAddingType.UPLOAD && accessTypeForIndexer == FileDownloadAccessType.PROXY) {
+                        logger.debug("Adding type UPLOAD and file download access type PROXY for downloader {} and indexer {}", getName(), indexerConfig.getName());
+                        // As we need to get the NZB and send it to the downloader there's no difference between redirect or proxy
                         DownloadResult result = fileHandler.getFileByResult(FileDownloadAccessType.PROXY, SearchSource.INTERNAL, optionalResult.get()); //Uploading NZBs can only be done via proxying
                         if (result.isSuccessful()) {
                             String externalId = addContent(result.getContent(), result.getTitle(), searchResult.getDownloadType(), categoryToSend);
@@ -157,10 +160,21 @@ public abstract class Downloader {
                             missedNzbs.add(searchResult);
                         }
                     } else {
-                        String link = downloadUrlBuilder.getDownloadLinkForSendingToDownloader(searchResult, false);
-                        String externalId = addLink(link, searchResultTitle, searchResult.getDownloadType(), categoryToSend);
+                        logger.debug("Adding type SEND_LINK for downloader {} and indexer {}", getName(), indexerConfig.getName());
+                        //Adding type is SEND_LINK or indexer requires a redirect or even sending the direct link
+                        //In any case we send a link, either to us or to the indexer
+                        DownloadLink link = downloadUrlBuilder.getDownloadLinkForSendingToDownloader(searchResult, false);
+
+                        String externalId = addLink(link.link(), searchResultTitle, searchResult.getDownloadType(), categoryToSend);
                         guidExternalIds.put(guid, externalId);
                         addedNzbs.add(guid);
+
+                        //Ideally we would add the download and set it to failed after an exception but that is too much work
+                        if (!link.isInternal()) {
+                            logger.debug("Saving download for sending an external link to the downloader");
+                            //We're sending an external link to the downloader and will never hear back about that so we need to store this as a download
+                            fileHandler.handleRedirect(SearchSource.INTERNAL, searchResult, link.link());
+                        }
                     }
                 } catch (DuplicateNzbException e) {
                     if (searchResult != null) {
@@ -181,6 +195,7 @@ public abstract class Downloader {
             }
             Set<Long> searchResultIds = searchResults.stream().map(x -> Long.valueOf(x.getSearchResultId())).collect(Collectors.toSet());
             searchResultIds.removeAll(addedNzbs);
+
             return new AddNzbsResponse(false, message, addedNzbs, searchResultIds);
         }
         if (missedNzbs.isEmpty()) {

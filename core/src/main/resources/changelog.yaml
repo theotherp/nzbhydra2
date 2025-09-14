@@ -5,6 +5,8 @@
           text: "Fixed configuration of Radarr v6. Removed distinction between v1/v2 and v3+ of *arr because v3 has been around long enough. See #1012"
       -   type: "fixed"
           text: "Made the checkmark in the torbox downloader icon better visible."
+      -   type: "fixed"
+          text: "Downloads to torbox should now be added to the history. This required a rewrite of the overall download handling so hopefully everything still works... See #1007"
     date: "2025-09-14"
     final: true
 -   version: "v7.17.0"

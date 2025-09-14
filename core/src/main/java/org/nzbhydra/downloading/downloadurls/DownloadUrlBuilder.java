@@ -44,8 +44,8 @@ public class DownloadUrlBuilder {
     @Autowired
     private List<DownloadUrlBuilderStrategy> downloadUrlBuilderStrategies = new ArrayList<>();
 
-    public String getDownloadLinkForSendingToDownloader(SearchResultEntity searchResult, boolean internal) {
-        Optional<String> specialUrl = downloadUrlBuilderStrategies
+    public DownloadLink getDownloadLinkForSendingToDownloader(SearchResultEntity searchResult, boolean internal) {
+        Optional<DownloadLink> specialUrl = downloadUrlBuilderStrategies
                 .stream().map(x -> x.getDownloadLinkForSendingToDownloader(searchResult, internal, searchResult.getDownloadType()))
                 .filter(Optional::isPresent).map(Optional::get).findFirst();
         if (specialUrl.isPresent()) {
@@ -60,7 +60,7 @@ public class DownloadUrlBuilder {
             builder = urlCalculator.getRequestBasedUriBuilder();
             log.debug(LoggingMarkers.URL_CALCULATION, "Using URL calculated from request: {}", builder.toUriString());
         }
-        return getDownloadLink(searchResult.getId(), internal, searchResult.getDownloadType(), builder);
+        return new DownloadLink(getDownloadLink(searchResult.getId(), internal, searchResult.getDownloadType(), builder), true);
     }
 
     public String getDownloadLinkForResults(Long searchResultId, boolean internal, DownloadType downloadType) {
@@ -86,4 +86,5 @@ public class DownloadUrlBuilder {
         }
         return builder.toUriString();
     }
+
 }

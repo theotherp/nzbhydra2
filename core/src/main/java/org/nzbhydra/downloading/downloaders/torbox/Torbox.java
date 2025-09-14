@@ -24,6 +24,8 @@ import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.config.downloading.NzbAddingType;
+import org.nzbhydra.config.indexer.IndexerConfig;
+import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.downloading.DownloaderType;
 import org.nzbhydra.downloading.FileDownloadStatus;
 import org.nzbhydra.downloading.FileHandler;
@@ -259,7 +261,12 @@ public class Torbox extends Downloader {
 
     @Override
     protected NzbAddingType getNzbAddingType(DownloadType downloadType, SearchResultEntity searchResult) {
-        if (downloadType == DownloadType.TORBOX || downloadType == DownloadType.TORRENT || searchResult.getLink().contains("search-api.torbox.app")) {
+        IndexerConfig indexer = configProvider.getIndexerByName(searchResult.getIndexer().getName());
+        if (downloadType == DownloadType.TORBOX
+            || downloadType == DownloadType.TORRENT
+            || indexer.getSearchModuleType() == SearchModuleType.TORBOX
+            || indexer.getHost().contains("torbox.app")
+        ) {
             //Torbox only allows downloading their results for themselves
             return NzbAddingType.SEND_LINK;
         }
