@@ -33,25 +33,15 @@ public class AddRequest {
     public enum ExternalTool {
         Readarr,
         Radarr,
-        Radarrv3,
         Sonarr,
-        Sonarrv3,
         Lidarr;
 
         public boolean isRadarr() {
-            return this == Radarr || this == Radarrv3;
+            return this == Radarr;
         }
 
         public boolean isSonarr() {
-            return this == Sonarr || this == Sonarrv3;
-        }
-
-        public boolean isV2() {
-            return this == Sonarr || this == Radarr;
-        }
-
-        public boolean isV3() {
-            return this == Sonarrv3 || this == Radarrv3 || this == Lidarr;
+            return this == Sonarr;
         }
 
     }

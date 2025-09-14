@@ -25,7 +25,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import okhttp3.MediaType;
-import org.apache.commons.lang3.StringUtils;
 import org.nzbhydra.Jackson;
 import org.nzbhydra.api.ExternalApi;
 import org.nzbhydra.config.ConfigProvider;
@@ -45,7 +44,6 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -209,21 +207,16 @@ public class ExternalTools {
             throw new IOException("Error: no version found in external tool response");
         }
         String version = (String) statusMap.get("version");
-        if (addRequest.getExternalTool() == AddRequest.ExternalTool.Sonarrv3) {
+        if (addRequest.getExternalTool() == AddRequest.ExternalTool.Sonarr) {
             if (version == null || (!version.startsWith("3") && !version.startsWith("4"))) {
-                messages.add("Error: configuration for v3 +but returned version is " + version);
-                throw new IOException("Error: configuration for v3 but returned version is " + version);
+                messages.add("Error: unsupported Sonarr version " + version);
+                throw new IOException("Error: unsupported Sonarr version " + version);
             }
-        } else if (addRequest.getExternalTool() == AddRequest.ExternalTool.Radarrv3) {
-            //For some reason some radarr v3 builds return 10.xxx instead of 3.xxx
+        } else if (addRequest.getExternalTool() == AddRequest.ExternalTool.Radarr) {
+            //For some reason some radarr builds return 10.xxx instead of 3.xxx
             if (version == null || (!version.startsWith("3") && !version.startsWith("4") && !version.startsWith("5") && !version.startsWith("6") && !version.startsWith("7") && !version.startsWith("10"))) {
-                messages.add("Error: configuration for v3+ but returned version is " + version);
-                throw new IOException("Error: configuration for v3 but returned version is " + version);
-            }
-        } else if (addRequest.getExternalTool() == AddRequest.ExternalTool.Sonarr || addRequest.getExternalTool() == AddRequest.ExternalTool.Radarr) {
-            if (version == null || version.startsWith("3")) {
-                messages.add("Error: configuration for v2 but returned version is " + version);
-                throw new IOException("Error: configuration for v2 but returned version is " + version);
+                messages.add("Error: unsupported Radarr version " + version);
+                throw new IOException("Error: unsupported Radarr version " + version);
             }
         }
         return false;
@@ -263,29 +256,20 @@ public class ExternalTools {
         xdarrAddRequest.getFields().add(new XdarrAddRequestField("categories", mapCategories(addRequest.getCategories(), addRequest)));
         xdarrAddRequest.getFields().add(new XdarrAddRequestField("additionalParameters", getAdditionalParameters(addRequest, indexer == null ? null : indexer.getName())));
 
-        if (externalTool == AddRequest.ExternalTool.Sonarrv3) {
+        if (externalTool == AddRequest.ExternalTool.Sonarr) {
             //V3 requires an empty list if no categories are supplied
             xdarrAddRequest.getFields().add(new XdarrAddRequestField("animeCategories", addRequest.getAnimeCategories() == null ? Collections.emptyList() : addRequest.getAnimeCategories()));
             xdarrAddRequest.setDownloadClientId(0);
             xdarrAddRequest.getFields().add(new XdarrAddRequestField("animeStandardFormatSearch", false));
-        } else if (externalTool != AddRequest.ExternalTool.Lidarr && externalTool != AddRequest.ExternalTool.Radarrv3) {
-            new XdarrAddRequestField("animeCategories", mapCategories(addRequest.getCategories(), addRequest));
         }
         if (externalTool == AddRequest.ExternalTool.Lidarr || externalTool == AddRequest.ExternalTool.Readarr) {
             xdarrAddRequest.getFields().add(new XdarrAddRequestField("earlyReleaseLimit", addRequest.getEarlyDownloadLimit()));
         }
 
         if (backendType == BackendType.Torznab) {
-            if (externalTool == AddRequest.ExternalTool.Sonarrv3 || externalTool == AddRequest.ExternalTool.Lidarr || externalTool == AddRequest.ExternalTool.Radarrv3 || externalTool == AddRequest.ExternalTool.Readarr) {
-                xdarrAddRequest.getFields().add(new XdarrAddRequestField("seedCriteria.seedRatio", addRequest.getSeedRatio()));
-                xdarrAddRequest.getFields().add(new XdarrAddRequestField("seedCriteria.seedTime", addRequest.getSeedTime()));
-            }
+            xdarrAddRequest.getFields().add(new XdarrAddRequestField("seedCriteria.seedRatio", addRequest.getSeedRatio()));
+            xdarrAddRequest.getFields().add(new XdarrAddRequestField("seedCriteria.seedTime", addRequest.getSeedTime()));
             if (externalTool == AddRequest.ExternalTool.Sonarr) {
-                xdarrAddRequest.getFields().add(new XdarrAddRequestField("SeedCriteria.SeedRatio", addRequest.getSeedRatio()));
-                xdarrAddRequest.getFields().add(new XdarrAddRequestField("SeedCriteria.SeedTime", addRequest.getSeedTime()));
-                xdarrAddRequest.getFields().add(new XdarrAddRequestField("SeedCriteria.SeasonPackSeedTime", addRequest.getSeasonPackSeedTime()));
-            }
-            if (externalTool == AddRequest.ExternalTool.Sonarrv3) {
                 xdarrAddRequest.getFields().add(new XdarrAddRequestField("seedCriteria.seasonPackSeedTime", addRequest.getSeasonPackSeedTime()));
             }
             if (externalTool == AddRequest.ExternalTool.Lidarr || externalTool == AddRequest.ExternalTool.Readarr) {
@@ -293,65 +277,39 @@ public class ExternalTools {
             }
 
             xdarrAddRequest.getFields().add(new XdarrAddRequestField("baseUrl", addRequest.getNzbhydraHost() + "/torznab"));
-            if (externalTool.isV3()) {
-                xdarrAddRequest.getFields().add(new XdarrAddRequestField("minimumSeeders", addRequest.getMinimumSeeders() != null ? Integer.parseInt(addRequest.getMinimumSeeders()) : 1));
-            } else {
-                xdarrAddRequest.getFields().add(new XdarrAddRequestField("minimumSeeders", addRequest.getMinimumSeeders() != null ? addRequest.getMinimumSeeders() : "1"));
-            }
+            xdarrAddRequest.getFields().add(new XdarrAddRequestField("minimumSeeders", addRequest.getMinimumSeeders() != null ? Integer.parseInt(addRequest.getMinimumSeeders()) : 1));
         } else {
             xdarrAddRequest.getFields().add(new XdarrAddRequestField("baseUrl", addRequest.getNzbhydraHost()));
         }
 
-        if (externalTool.isV3()) {
-            //Must be filled, 25 is default
-            xdarrAddRequest.setPriority(25);
-            if (addRequest.getAddType() == AddRequest.AddType.SINGLE && addRequest.getPriority() != null && addRequest.getPriority() != 0) {
-                xdarrAddRequest.setPriority(addRequest.getPriority());
-            } else if (addRequest.isUseHydraPriorities() && indexer != null) {
-                if (!indexerPrioritiesMapped.isEmpty()) {
-                    xdarrAddRequest.setPriority(indexerPrioritiesMapped.get(indexer));
-                } else {
-                    int arrPriority = 50 - indexer.getScore();
-                    arrPriority = Math.max(arrPriority, 1); //0 is "disabled"
-                    logger.debug("Calculated *arr priority for {} to be {}. NZBHydra priority: {}", indexer.getName(), arrPriority, indexer.getScore());
-                    xdarrAddRequest.setPriority(arrPriority);
-                }
-            } //else: Set value 25 (default priority)
-        }
+        //Must be filled, 25 is default
+        xdarrAddRequest.setPriority(25);
+        if (addRequest.getAddType() == AddRequest.AddType.SINGLE && addRequest.getPriority() != null && addRequest.getPriority() != 0) {
+            xdarrAddRequest.setPriority(addRequest.getPriority());
+        } else if (addRequest.isUseHydraPriorities() && indexer != null) {
+            if (!indexerPrioritiesMapped.isEmpty()) {
+                xdarrAddRequest.setPriority(indexerPrioritiesMapped.get(indexer));
+            } else {
+                int arrPriority = 50 - indexer.getScore();
+                arrPriority = Math.max(arrPriority, 1); //0 is "disabled"
+                logger.debug("Calculated *arr priority for {} to be {}. NZBHydra priority: {}", indexer.getName(), arrPriority, indexer.getScore());
+                xdarrAddRequest.setPriority(arrPriority);
+            }
+        } //else: Set value 25 (default priority)
 
         if (externalTool.isRadarr()) {
             xdarrAddRequest.getFields().add(new XdarrAddRequestField("removeYear", addRequest.isRemoveYearFromSearchString()));
             //Not easily mapped as it's a list of numbers mapped to language names
-            if (externalTool == AddRequest.ExternalTool.Radarrv3) {
-                xdarrAddRequest.getFields().add(new XdarrAddRequestField("multiLanguages", Collections.emptyList()));
-            } else {
-                xdarrAddRequest.getFields().add(new XdarrAddRequestField("multiLanguages", ""));
-            }
-            if (externalTool == AddRequest.ExternalTool.Radarr) {
-                xdarrAddRequest.getFields().add(new XdarrAddRequestField("SearchByTitle", false));
-            }
+            xdarrAddRequest.getFields().add(new XdarrAddRequestField("multiLanguages", Collections.emptyList()));
 
             //todo make configurable via dialog
             if (backendType == BackendType.Torznab) {
-                if (externalTool.isV3()) {
-                    xdarrAddRequest.getFields().add(new XdarrAddRequestField("requiredFlags", Collections.emptyList()));
-                } else {
-                    xdarrAddRequest.getFields().add(new XdarrAddRequestField("requiredFlags", ""));
-                }
+                xdarrAddRequest.getFields().add(new XdarrAddRequestField("requiredFlags", Collections.emptyList()));
             }
 
         }
 
-        if (externalTool != AddRequest.ExternalTool.Radarr) {
-            xdarrAddRequest.getFields().add(new XdarrAddRequestField("apiPath", "/api"));
-        }
-
-        if (externalTool.isV2()) {
-            //non-v3 versions require that all field keys / names start with an uppercase letter
-            xdarrAddRequest.getFields().forEach(x -> {
-                x.setName(StringUtils.capitalize(x.getName()));
-            });
-        }
+        xdarrAddRequest.getFields().add(new XdarrAddRequestField("apiPath", "/api"));
 
         final String body;
         try {
@@ -382,17 +340,9 @@ public class ExternalTools {
 
     private Object mapCategories(String categoriesString, AddRequest addRequest) {
         if (Strings.isNullOrEmpty(categoriesString)) {
-            if (addRequest.getExternalTool().isV3()) {
-                return Collections.emptyList();
-            } else {
-                return "";
-            }
+            return Collections.emptyList();
         } else {
-            if (addRequest.getExternalTool().isV3() || addRequest.getExternalTool() == AddRequest.ExternalTool.Readarr || addRequest.getExternalTool() == AddRequest.ExternalTool.Lidarr) {
-                return Stream.of(addRequest.getCategories().split(",")).map(Integer::parseInt).collect(Collectors.toList());
-            } else {
-                return Arrays.asList(addRequest.getCategories().split(","));
-            }
+            return Stream.of(addRequest.getCategories().split(",")).map(Integer::parseInt).collect(Collectors.toList());
         }
     }
 
@@ -444,7 +394,7 @@ public class ExternalTools {
 
     private String getExternalToolUrl(AddRequest addRequest) {
         final String url;
-        if (addRequest.getExternalTool() == AddRequest.ExternalTool.Sonarrv3 || addRequest.getExternalTool() == AddRequest.ExternalTool.Radarrv3) {
+        if (addRequest.getExternalTool() == AddRequest.ExternalTool.Sonarr || addRequest.getExternalTool() == AddRequest.ExternalTool.Radarr) {
             url = addRequest.getXdarrHost() + "/api/v3";
         } else if (addRequest.getExternalTool() == AddRequest.ExternalTool.Lidarr || addRequest.getExternalTool() == AddRequest.ExternalTool.Readarr) {
             url = addRequest.getXdarrHost() + "/api/v1";

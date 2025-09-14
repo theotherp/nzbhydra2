@@ -20,7 +20,7 @@
       <br>
       Any indexer entries containing "{{nzbhydraName}}" in the name will be deleted. I recommend you make a backup of {{::externalToolDisplayName}} before.
       <br>
-      <span ng-if="prioritiesConfigured && (externalTool === 'Sonarrv3' || externalTool === 'Radarrv3') && addType === 'PER_INDEXER'">
+      <span ng-if="prioritiesConfigured && (externalTool === 'Sonarr' || externalTool === 'Radarr') && addType === 'PER_INDEXER'">
       <br>
       This tool supports indexer priorities. Unfortunately where NZBHydra uses higher values for higher priorities this tool uses lower values (0 for highest, 50 for lowest priority). NZBHydra will try to map the priorities accordingly.
       <br>
@@ -125,8 +125,8 @@
         <input bs-switch type="checkbox" ng-model="enableInteractiveSearch">
       </div>
     </div>
-  
-    <div class="form-group row" ng-show="prioritiesConfigured && (externalTool === 'Sonarrv3' || externalTool === 'Radarrv3') && addType === 'PER_INDEXER'">
+    
+    <div class="form-group row" ng-show="prioritiesConfigured && (externalTool === 'Sonarr' || externalTool === 'Radarr') && addType === 'PER_INDEXER'">
       <div class="col-md-8" style="text-align: right">
         <label>Set indexer priorities</label>
       </div>
@@ -152,8 +152,8 @@
         <input type="text" class="form-control" ng-model="additionalParameters">
       </div>
     </div>
-  
-    <div class="form-group row" ng-show="externalTool !== 'Lidarr' && externalTool !== 'Radarrv3' && externalTool !== 'Readarr'">
+    
+    <div class="form-group row" ng-show="externalTool !== 'Lidarr' && externalTool !== 'Radarr' && externalTool !== 'Readarr'">
       <div class="col-md-8" style="text-align: right">
         <label>Anime categories</label>
       </div>
@@ -161,8 +161,8 @@
         <input type="text" class="form-control" ng-model="animeCategories">
       </div>
     </div>
-  
-    <div class="form-group row" ng-show="externalTool === 'Radarr' || externalTool === 'Radarrv3'">
+    
+    <div class="form-group row" ng-show="externalTool === 'Radarr' || externalTool === 'Radarr'">
       <div class="col-md-8" style="text-align: right">
         <label>Remove year from search string</label>
       </div>
@@ -188,8 +188,8 @@
         <input type="text" class="form-control" ng-model="minimumSeeders">
       </div>
     </div>
-  
-    <div class="form-group row" ng-show="configureForTorrents && (externalTool === 'Sonarr' || externalTool === 'Sonarrv3' || externalTool === 'Lidarr' || externalTool === 'Radarrv3' || externalTool === 'Readarr')">
+    
+    <div class="form-group row" ng-show="configureForTorrents && (externalTool === 'Sonarr'  || externalTool === 'Lidarr' || externalTool === 'Radarr' || externalTool === 'Readarr')">
       <div class="col-md-8" style="text-align: right">
         <label>Seed ratio</label>
       </div>
@@ -197,8 +197,8 @@
         <input type="text" class="form-control" ng-model="seedRatio">
       </div>
     </div>
-  
-    <div class="form-group row" ng-show="configureForTorrents && (externalTool === 'Sonarr' || externalTool === 'Sonarrv3' || externalTool === 'Lidarr' || externalTool === 'Radarrv3' || externalTool === 'Readarr')">
+    
+    <div class="form-group row" ng-show="configureForTorrents && (externalTool === 'Sonarr' || externalTool === 'Lidarr' || externalTool === 'Radarr' || externalTool === 'Readarr')">
       <div class="col-md-8" style="text-align: right">
         <label>Seed time</label>
       </div>
@@ -207,7 +207,7 @@
       </div>
     </div>
     
-    <div class="form-group row" ng-show="configureForTorrents && (externalTool === 'Sonarr' || externalTool === 'Sonarrv3')">
+    <div class="form-group row" ng-show="configureForTorrents && externalTool === 'Sonarr' ">
       <div class="col-md-8" style="text-align: right">
         <label>Season pack seed time</label>
       </div>

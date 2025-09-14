@@ -6089,6 +6089,13 @@ function ConfigService($http, $q, $cacheFactory, $uibModal, bootstrapped, Reques
 
     function ConfigureInModalInstanceCtrl($scope, $uibModalInstance, $http, growl, $interval, RequestsErrorHandler, localStorageService, externalTool, dialogInfo) {
         var lastConfig = localStorageService.get(externalTool);
+        if (lastConfig === null && externalTool === "Sonarr") {
+            lastConfig = localStorageService.get("Sonarrv3");
+            lastConfig.externalTool = "Sonarr";
+        } else if (lastConfig === null && externalTool === "Radarr") {
+            lastConfig = localStorageService.get("Radarrv3");
+            lastConfig.externalTool = "Radarr";
+        }
 
         $scope.externalTool = externalTool;
         $scope.externalToolDisplayName = externalTool;
@@ -6122,18 +6129,12 @@ function ConfigService($http, $q, $cacheFactory, $uibModal, bootstrapped, Reques
         $scope.priority = 0;
         $scope.useHydraPriorities = true;
 
-        if (externalTool === "Sonarr" || externalTool === "Sonarrv3") {
+        if (externalTool === "Sonarr") {
             $scope.xdarrHost += "8989";
             $scope.categories = "5030,5040";
-            if (externalTool === "Sonarrv3") {
-                $scope.externalToolDisplayName = "Sonarr v3+";
-            }
-        } else if (externalTool === "Radarr" || externalTool === "Radarrv3") {
+        } else if (externalTool === "Radarr") {
             $scope.xdarrHost += "7878";
             $scope.categories = "2000";
-            if (externalTool === "Radarrv3") {
-                $scope.externalToolDisplayName = "Radarr v3+";
-            }
         } else if (externalTool === "Lidarr") {
             $scope.xdarrHost += "8686";
             $scope.categories = "3000";

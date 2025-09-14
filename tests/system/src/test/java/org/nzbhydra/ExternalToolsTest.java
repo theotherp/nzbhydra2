@@ -60,7 +60,7 @@ public class ExternalToolsTest {
 
     @PostConstruct
     public void log() {
-        logger.info("Using sonarr host: " + sonarrHost + ", radarr host: " + radarrHost + ", nzbhydra external host: " + nzbhydraHostExternal);
+        logger.info("Using sonarr host: {}, radarr host: {}, nzbhydra external host: {}", sonarrHost, radarrHost, nzbhydraHostExternal);
     }
 
 
@@ -69,7 +69,7 @@ public class ExternalToolsTest {
         AddRequest addRequest = new AddRequest();
         addRequest.setConfigureForUsenet(true);
         addRequest.setNzbhydraName("NZBHydra2");
-        addRequest.setExternalTool(AddRequest.ExternalTool.Sonarrv3);
+        addRequest.setExternalTool(AddRequest.ExternalTool.Sonarr);
         addRequest.setXdarrHost(sonarrHost);
         addRequest.setXdarrApiKey("apikey");
         addRequest.setNzbhydraHost(nzbhydraHostExternal);
@@ -89,7 +89,7 @@ public class ExternalToolsTest {
         AddRequest addRequest = new AddRequest();
         addRequest.setConfigureForUsenet(true);
         addRequest.setNzbhydraName("NZBHydra2");
-        addRequest.setExternalTool(AddRequest.ExternalTool.Radarrv3);
+        addRequest.setExternalTool(AddRequest.ExternalTool.Radarr);
         addRequest.setXdarrHost(radarrHost);
         addRequest.setXdarrApiKey("apikey");
         addRequest.setNzbhydraHost(nzbhydraHostExternal);
