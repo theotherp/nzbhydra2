@@ -236,7 +236,7 @@ public class Torbox extends Downloader {
     public List<DownloaderEntry> getHistory(Instant earliestDownload) throws DownloaderException {
         return getDownloaderEntries()
                 .stream()
-                .filter(x -> x.getStatus().equals("failed") || x.getStatus().equals("completed"))
+                .filter(x -> x.getStatus().equals("failed") || x.getStatus().equals("completed") || x.getStatus().equals("cached"))
                 .toList();
     }
 
@@ -244,7 +244,7 @@ public class Torbox extends Downloader {
     public List<DownloaderEntry> getQueue(@Nullable Instant earliestDownload) throws DownloaderException {
         return getDownloaderEntries()
                 .stream()
-                .filter(x -> !x.getStatus().equals("failed") && !x.getStatus().equals("completed"))
+                .filter(x -> !x.getStatus().equals("failed") && !x.getStatus().equals("completed") && !x.getStatus().equals("cached"))
                 .toList();
     }
 
@@ -301,7 +301,7 @@ public class Torbox extends Downloader {
     @Override
     protected FileDownloadStatus getDownloadStatusFromDownloaderEntry(DownloaderEntry entry, StatusCheckType statusCheckType) {
         switch (entry.getStatus()) {
-            case "completed" -> {
+            case "completed", "cached" -> {
                 return FileDownloadStatus.CONTENT_DOWNLOAD_SUCCESSFUL;
             }
             case "failed" -> {
