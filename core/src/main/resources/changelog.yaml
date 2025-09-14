@@ -7,6 +7,8 @@
           text: "Made the checkmark in the torbox downloader icon better visible."
       -   type: "fixed"
           text: "Downloads to torbox should now be added to the history. This required a rewrite of the overall download handling so hopefully everything still works... See #1007"
+      -   type: "fixed"
+          text: "When downloading multiple results using the UI each result will be handled individually so that errors will not affect the other downloads."
     date: "2025-09-14"
     final: true
 -   version: "v7.17.0"
