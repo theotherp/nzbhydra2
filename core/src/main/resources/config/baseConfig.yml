@@ -334,6 +334,7 @@ main:
   verifySslDisabledFor: []
   welcomeShown: false
   xmx: 256
+  customVmOptions: null
 notificationConfig:
     appriseApiUrl: null
     appriseCliPath: null

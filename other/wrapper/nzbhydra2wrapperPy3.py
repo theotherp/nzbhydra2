@@ -396,6 +396,7 @@ def startup():
 
     xmx = None
     logGc = False
+    customVmOptions = ""
     if args.xmx:
         xmx = args.xmx
     if os.path.exists(yamlPath):
@@ -408,6 +409,9 @@ def startup():
                 index = line.find("logGc: ")
                 if index > -1:
                     logGc = line[index + 7:].rstrip("\n\r ") == "true"
+                index = line.find("customVmOptions:")
+                if index > -1:
+                    customVmOptions = line[index + 17:].rstrip("\n\r ").strip(' "\'')  # Remove quotes if present
     if xmx is None:
         xmx = 256
     xmx = str(xmx)
@@ -431,6 +435,10 @@ def startup():
     if internalApiKey is None or internalApiKey is False:
         internalApiKey = ''.join(random.choice(string.ascii_lowercase) for i in range(20))
     java_arguments = ["-Xmx" + xmx + "M", "-DfromWrapper=true", "-DinternalApiKey=" + internalApiKey, "-Dsun.security.pkcs11.enable-solaris=false", "-Dfile.encoding=UTF8"]
+
+    if customVmOptions:
+        custom_options = customVmOptions.split()
+        java_arguments.extend(custom_options)
 
     if releaseType == ReleaseType.GENERIC:
         java_arguments.append("-XX:+HeapDumpOnOutOfMemoryError")

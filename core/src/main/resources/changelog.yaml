@@ -3,6 +3,8 @@
     changes:
       -   type: "added"
           text: "When downloading results as ZIP is not possible show a button to copy links for selected results to the clipboard. See #996"
+      -   type: "added"
+          text: "Add custom options to main process on startup. See #985"
       -   type: "fixed"
           text: "Fixed configuration of Radarr v6. Removed distinction between v1/v2 and v3+ of *arr because v3 has been around long enough. See #1012"
       -   type: "fixed"

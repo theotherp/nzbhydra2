@@ -378,6 +378,7 @@ def startup():
 
     xmx = None
     logGc = False
+    customVmOptions = ""
     if args.xmx:
         xmx = args.xmx
     if os.path.exists(yamlPath):
@@ -389,6 +390,9 @@ def startup():
                 index = line.find("logGc: ")
                 if index > -1:
                     logGc = line[index + 7:].rstrip("\n\r ") == "true"
+                index = line.find("customVmOptions:")
+                if index > -1:
+                    customVmOptions = line[index + 17:].rstrip("\n\r ").strip(' "\'')  # Remove quotes if present
     if xmx is None:
         xmx = 256
     xmx = str(xmx)
@@ -410,6 +414,10 @@ def startup():
     gcArguments = [
         "-Xlog:gc*:file=" + gcLogFilename + "::filecount=10,filesize=5000"]
     java_arguments = ["-Xmx" + xmx + "M", "-DfromWrapper=true"]
+
+    if customVmOptions:
+        custom_options = customVmOptions.split()
+        java_arguments.extend(custom_options)
 
     if releaseType == "generic":
         java_arguments.append("-XX:+HeapDumpOnOutOfMemoryError")

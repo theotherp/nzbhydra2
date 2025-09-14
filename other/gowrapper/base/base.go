@@ -306,10 +306,11 @@ func cleanUpOldFiles() {
 	}
 }
 
-func determineXmxAndLogGc() (string, bool) {
+func determineXmxAndLogGc() (string, bool, string) {
 	yamlPath := filepath.Join(dataFolder, "nzbhydra.yml")
 	xmx := ""
 	logGc := false
+	customVmOptions := ""
 	if *argsXmx != "" {
 		xmx = *argsXmx
 	}
@@ -325,6 +326,11 @@ func determineXmxAndLogGc() (string, bool) {
 			}
 			if strings.Contains(line, "logGc: ") {
 				logGc = strings.TrimSpace(line[7:]) == "true"
+			}
+			if strings.Contains(line, "customVmOptions:") {
+				customVmOptions = strings.TrimSpace(line[17:])
+				// Remove quotes if present
+				customVmOptions = strings.Trim(customVmOptions, `"'`)
 			}
 		}
 
@@ -342,7 +348,7 @@ func determineXmxAndLogGc() (string, bool) {
 		Log(logrus.InfoLevel, "Removing superfluous M from XMX value "+xmx)
 		xmx = xmx[:len(xmx)-1]
 	}
-	return xmx, logGc
+	return xmx, logGc, customVmOptions
 }
 
 func handleUnexpectedExit() {
@@ -423,7 +429,7 @@ func startupLoop() {
 }
 
 func buildJavaArguments(releaseType ReleaseType) []string {
-	xmx, logGc := determineXmxAndLogGc()
+	xmx, logGc, customVmOptions := determineXmxAndLogGc()
 	if releaseType == "generic" {
 		javaVersion := getJavaVersion(*argsJavaExecutable)
 		if javaVersion < 17 {
@@ -437,6 +443,11 @@ func buildJavaArguments(releaseType ReleaseType) []string {
 		"-DinternalApiKey=" + internalApiKey,
 		"-Dsun.security.pkcs11.enable-solaris=false",
 		"-Dfile.encoding=UTF8",
+	}
+
+	if customVmOptions != "" {
+		customOptions := strings.Fields(customVmOptions)
+		javaArguments = append(javaArguments, customOptions...)
 	}
 	if releaseType == GENERIC {
 		javaArguments = append(javaArguments, "-XX:+HeapDumpOnOutOfMemoryError")

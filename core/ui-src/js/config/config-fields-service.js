@@ -700,6 +700,16 @@ function ConfigFields($injector) {
                                 help: '256 should suffice except when working with big databases / many indexers. See <a href="https://github.com/theotherp/nzbhydra2/wiki/Memory-requirements" target="_blank">wiki</a>.',
                                 advanced: true
                             }
+                        },
+                        {
+                            key: 'customVmOptions',
+                            type: 'horizontalInput',
+                            templateOptions: {
+                                type: 'text',
+                                label: 'Custom VM options',
+                                help: 'Additional JVM options to pass to the main process. Separate multiple options with spaces. Example: "-Djava.net.preferIPv6Addresses=true -Dother.property=value"',
+                                advanced: true
+                            }
                         }
                     ]
 

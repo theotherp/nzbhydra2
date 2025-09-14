@@ -133,6 +133,8 @@ public class MainConfig {
     private boolean useCsrf = true;
     @RestartRequired
     private int xmx;
+    @RestartRequired
+    private String customVmOptions;
 
     private LoggingConfig logging = new LoggingConfig();
 
