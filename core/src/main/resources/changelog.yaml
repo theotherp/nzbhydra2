@@ -13,6 +13,8 @@
           text: "Downloads to torbox that were already cached are now shown as downloaded successfully."
       -   type: "fixed"
           text: "When downloading multiple results using the UI each result will be handled individually so that errors will not affect the other downloads."
+      -   type: "fixed"
+          text: "Fix regex in python wrapper. See #998"
     date: "2025-09-14"
     final: true
 -   version: "v7.17.0"
