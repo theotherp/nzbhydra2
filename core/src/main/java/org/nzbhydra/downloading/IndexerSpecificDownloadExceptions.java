@@ -41,7 +41,7 @@ public class IndexerSpecificDownloadExceptions {
             return FileDownloadAccessType.REDIRECT;
         }
         final String host = indexerConfig.getHost().toLowerCase();
-        boolean isSpecial = isSendLinkRequired(host);
+        boolean isSpecial = isSendLinkRequired(host, indexerConfig.getName());
         boolean isTorboxDownloader = indexerConfig.getSearchModuleType() == SearchModuleType.TORBOX;
         if (isSpecial) {
             if (isTorboxDownloader) {
@@ -59,7 +59,11 @@ public class IndexerSpecificDownloadExceptions {
         return defaultType;
     }
 
-    private static boolean isSendLinkRequired(String host) {
+    private static boolean isSendLinkRequired(String host, String name) {
+        if (host.contains("5080") && name.contains("Mock3")) {
+            //For local dev
+            return true;
+        }
         return host.contains("omgwtf")
                || host.contains("nzbs.in")
                || host.contains("nzbfinder")
