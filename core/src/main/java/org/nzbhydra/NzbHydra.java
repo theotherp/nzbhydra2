@@ -343,7 +343,7 @@ public class NzbHydra {
 
     @PreDestroy
     public void destroy() {
-        logger.info("Shutting down and using up to {}ms to compact database", configProvider.getBaseConfig().getMain().getDatabaseCompactTime());
+        logger.info("Shutting down");
     }
 
 

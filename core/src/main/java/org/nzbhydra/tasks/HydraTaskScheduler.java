@@ -80,6 +80,8 @@ public class HydraTaskScheduler implements BeanPostProcessor, SmartInitializingS
     @Override
     public void afterSingletonsInstantiated() {
         scheduleTasks();
+        scheduler.setWaitForTasksToCompleteOnShutdown(true);
+        scheduler.setAwaitTerminationSeconds(5);
     }
 
 

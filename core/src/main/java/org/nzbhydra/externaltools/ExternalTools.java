@@ -211,13 +211,13 @@ public class ExternalTools {
         String version = (String) statusMap.get("version");
         if (addRequest.getExternalTool() == AddRequest.ExternalTool.Sonarrv3) {
             if (version == null || (!version.startsWith("3") && !version.startsWith("4"))) {
-                messages.add("Error: configuration for v3 but returned version is " + version);
+                messages.add("Error: configuration for v3 +but returned version is " + version);
                 throw new IOException("Error: configuration for v3 but returned version is " + version);
             }
         } else if (addRequest.getExternalTool() == AddRequest.ExternalTool.Radarrv3) {
             //For some reason some radarr v3 builds return 10.xxx instead of 3.xxx
-            if (version == null || (!version.startsWith("3") && !version.startsWith("4") && !version.startsWith("5") && !version.startsWith("10"))) {
-                messages.add("Error: configuration for v3 but returned version is " + version);
+            if (version == null || (!version.startsWith("3") && !version.startsWith("4") && !version.startsWith("5") && !version.startsWith("6") && !version.startsWith("7") && !version.startsWith("10"))) {
+                messages.add("Error: configuration for v3+ but returned version is " + version);
                 throw new IOException("Error: configuration for v3 but returned version is " + version);
             }
         } else if (addRequest.getExternalTool() == AddRequest.ExternalTool.Sonarr || addRequest.getExternalTool() == AddRequest.ExternalTool.Radarr) {

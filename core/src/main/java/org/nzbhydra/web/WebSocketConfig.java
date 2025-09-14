@@ -36,8 +36,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @PostConstruct
     public void init() {
-        this.taskExecutor.setCorePoolSize(2);
-        this.taskExecutor.setAllowCoreThreadTimeOut(true);
+        taskExecutor.setCorePoolSize(2);
+        taskExecutor.setAllowCoreThreadTimeOut(true);
+        taskExecutor.setWaitForTasksToCompleteOnShutdown(true);
+        taskExecutor.setAwaitTerminationSeconds(5);
+        taskExecutor.setThreadNamePrefix("websocket-");
+        taskExecutor.initialize();
     }
 
     @Override
@@ -71,7 +75,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @PreDestroy
     public void onShutdown() {
-        taskExecutor.shutdown();
+        if (!taskExecutor.getThreadPoolExecutor().isShutdown()) {
+            taskExecutor.shutdown();
+        }
     }
 
 }
