@@ -60,10 +60,6 @@ public class IndexerSpecificDownloadExceptions {
     }
 
     private static boolean isSendLinkRequired(String host, String name) {
-        if (host.contains("5080") && name.contains("Mock3")) {
-            //For local dev
-            return true;
-        }
         return host.contains("omgwtf")
                || host.contains("nzbs.in")
                || host.contains("nzbfinder")
