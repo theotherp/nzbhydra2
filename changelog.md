@@ -1,3 +1,23 @@
+### v7.18.0 (2025-09-17)
+
+**Added** When downloading results as ZIP is not possible show a button to copy links for selected results to the clipboard. See <a href="https://github.com/theotherp/nzbhydra2/issues/996">#996</a>
+
+**Added** Add custom options to main process on startup. See <a href="https://github.com/theotherp/nzbhydra2/issues/985">#985</a>
+
+**Fixed** Fixed configuration of Radarr v6. Removed distinction between v1/v2 and v3+ of *arr because v3 has been around long enough. See <a href="https://github.com/theotherp/nzbhydra2/issues/1012">#1012</a>
+
+**Fixed** Made the checkmark in the torbox downloader icon better visible.
+
+**Fixed** Downloads to torbox should now be added to the history. This required a rewrite of the overall download handling so hopefully everything still works... See <a href="https://github.com/theotherp/nzbhydra2/issues/1007">#1007</a>
+
+**Fixed** Downloads to torbox that were already cached are now shown as downloaded successfully.
+
+**Fixed** When downloading multiple results using the UI each result will be handled individually so that errors will not affect the other downloads.
+
+**Fixed** Fix regex in python wrapper. See <a href="https://github.com/theotherp/nzbhydra2/issues/998">#998</a>
+
+
+
 ### v7.17.0 BETA (2025-09-13)
 
 **Added** NZBHydra will attempt to reduce the size of the database on shutdown. This is experimental which is why I'll release this version as a beta first.
