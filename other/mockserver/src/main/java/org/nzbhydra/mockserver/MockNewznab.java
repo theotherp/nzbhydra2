@@ -70,7 +70,6 @@ public class MockNewznab {
         NewznabMockBuilder.port = this.port;
     }
 
-
     @RequestMapping(value = "/nzb/{nzbId}", produces = MediaType.APPLICATION_XML_VALUE)
     public ResponseEntity<String> nzbDownload(@PathVariable String nzbId) throws Exception {
         if (nzbId.endsWith("91")) {

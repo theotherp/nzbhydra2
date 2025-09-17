@@ -55,7 +55,6 @@ public class IndexerSpecificDownloadExceptions {
             return FileDownloadAccessType.PROXY;
         }
 
-
         return defaultType;
     }
 
