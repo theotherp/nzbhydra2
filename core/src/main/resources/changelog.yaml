@@ -1,4 +1,8 @@
 #@formatter:off
+-   version: "v7.19.0"
+    changes:
+      -   type: "added"
+          text: "Configure external tools once. Sync your indexers to them manually and automatically whenever you change your indexer config. See #1014"
 -   version: "v7.18.0"
     changes:
       -   type: "added"

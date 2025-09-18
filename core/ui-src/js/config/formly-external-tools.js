@@ -123,6 +123,7 @@ angular
                         syncType: "PER_INDEXER",
                         configureForUsenet: true,
                         configureForTorrents: false,
+                        addDisabledIndexers: false,
                         enableRss: true,
                         enableAutomaticSearch: true,
                         enableInteractiveSearch: true,

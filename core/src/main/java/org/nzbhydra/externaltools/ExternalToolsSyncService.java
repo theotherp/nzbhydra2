@@ -20,8 +20,8 @@ import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.ExternalToolConfig;
 import org.nzbhydra.config.ExternalToolsConfig;
 import org.nzbhydra.config.indexer.IndexerConfig;
-import org.nzbhydra.notifications.NotificationEntity;
-import org.nzbhydra.notifications.NotificationMessageType;
+import org.nzbhydra.notifications.ExternalToolConfigResultEvent;
+import org.nzbhydra.notifications.NotificationHandler;
 import org.nzbhydra.notifications.NotificationRepository;
 import org.nzbhydra.web.UrlCalculator;
 import org.slf4j.Logger;
@@ -30,7 +30,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -49,6 +48,8 @@ public class ExternalToolsSyncService {
     private UrlCalculator urlCalculator;
     @Autowired
     private NotificationRepository notificationRepository;
+    @Autowired
+    private NotificationHandler notificationHandler;
 
     /**
      * Sync all indexers to all configured external tools
@@ -143,7 +144,7 @@ public class ExternalToolsSyncService {
         // Set connection details
         request.setXdarrHost(tool.getHost());
         request.setXdarrApiKey(tool.getApiKey());
-        request.setNzbhydraHost(urlCalculator.getRequestBasedUriBuilder().build().toUriString());
+        request.setNzbhydraHost(tool.getNzbhydraHost());
         request.setNzbhydraName(tool.getNzbhydraName());
 
         // Set sync type
@@ -199,17 +200,7 @@ public class ExternalToolsSyncService {
             body = String.format("Synced to %d tool(s), %d failed. Check logs for details.", successCount, failureCount);
         }
 
-        NotificationEntity notification = new NotificationEntity();
-        notification.setTime(Instant.now());
-        notification.setTitle(title);
-        notification.setBody(body);
-        notification.setUrls(null);
-        notification.setDisplayed(false);
-        notification.setMessageType(failureCount > 0
-                ? NotificationMessageType.FAILURE
-                : NotificationMessageType.SUCCESS);
-
-        notificationRepository.save(notification);
+        notificationHandler.handleNotification(new ExternalToolConfigResultEvent(body));
     }
 
     public static class SyncResult {

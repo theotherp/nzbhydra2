@@ -5129,6 +5129,7 @@ angular
                         syncType: "PER_INDEXER",
                         configureForUsenet: true,
                         configureForTorrents: false,
+                        addDisabledIndexers: false,
                         enableRss: true,
                         enableAutomaticSearch: true,
                         enableInteractiveSearch: true,
@@ -12788,6 +12789,13 @@ function NotificationService($http) {
             bodyTemplate: "NZBHydra: VIP access for indexer $indexerName$ will run out soon: $expirationDate$.",
             templateHelp: "Available variables: $indexerName$, $expirationDate$.",
             messageType: "WARNING"
+        },
+        EXTERNAL_TOOL_CONFIGURATION: {
+            readable: "External tool configuration",
+            titleTemplate: "External tool configuration",
+            bodyTemplate: "NZBHydra: Result of external tool configuration: $body$",
+            templateHelp: "Available variables: $body$",
+            messageType: "INFO"
         }
     }
 
