@@ -3,6 +3,8 @@
     changes:
       -   type: "added"
           text: "Configure external tools once. Sync your indexers to them manually and automatically whenever you change your indexer config. See #1014"
+      -   type: "fixed"
+          text: "Replace slash and quotation marks in download name sent to sabNZBd. See #1015"
 -   version: "v7.18.0"
     changes:
       -   type: "added"

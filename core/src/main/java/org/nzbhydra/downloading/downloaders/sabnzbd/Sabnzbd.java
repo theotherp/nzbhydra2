@@ -103,6 +103,7 @@ public class Sabnzbd extends Downloader {
     public String addLink(String url, String title, DownloadType downloadType, String category) throws DownloaderException {
         logger.debug("Sending link for NZB {} to sabnzbd", title);
         title = suffixNzbToTitle(title);
+        title = title.replace("\"", "_").replace("/", "_");
         UriComponentsBuilder urlBuilder = getBaseUrl();
         urlBuilder.queryParam("mode", "addurl").queryParam("name", url).queryParam("nzbname", title).queryParam("priority", getPriority());
         if (!Strings.isNullOrEmpty(category)) {
