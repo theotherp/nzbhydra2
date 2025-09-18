@@ -59,6 +59,8 @@ public class BaseConfig {
     private NotificationConfig notificationConfig = new NotificationConfig();
     @NestedConfigurationProperty
     private EmbyConfig emby = new EmbyConfig();
+    @NestedConfigurationProperty
+    private ExternalToolsConfig externalTools = new ExternalToolsConfig();
 
 
     @DiffIgnore

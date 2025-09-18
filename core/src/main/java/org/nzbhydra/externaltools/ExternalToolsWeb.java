@@ -33,6 +33,8 @@ public class ExternalToolsWeb {
     @Autowired
     private IndexerRepository indexerRepository;
     private final ConfigReaderWriter configReaderWriter = new ConfigReaderWriter();
+    @Autowired
+    private ExternalToolsSyncService externalToolsSyncService;
 
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/externalTools/getDialogInfo", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -54,6 +56,53 @@ public class ExternalToolsWeb {
     @RequestMapping(value = "/internalapi/externalTools/messages", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public List<String> getMessages() {
         return externalTools.getMessages();
+    }
+
+    @Secured({"ROLE_ADMIN"})
+    @RequestMapping(value = "/internalapi/externalTools/syncAll", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ExternalToolsSyncService.SyncResult syncAllTools() {
+        return externalToolsSyncService.syncAllTools();
+    }
+
+    @Secured({"ROLE_ADMIN"})
+    @RequestMapping(value = "/internalapi/externalTools/testConnection", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ConnectionTestResult testConnection(@RequestBody AddRequest addRequest) {
+        try {
+            // Just test the connection without actually syncing
+            boolean success = externalTools.addNzbhydraAsIndexer(buildTestRequest(addRequest));
+            return new ConnectionTestResult(success, success ? "Connection successful" : "Connection failed");
+        } catch (Exception e) {
+            return new ConnectionTestResult(false, "Error: " + e.getMessage());
+        }
+    }
+
+    private AddRequest buildTestRequest(AddRequest request) {
+        // Create a test request that only checks connection without modifying anything
+        AddRequest testRequest = new AddRequest();
+        testRequest.setExternalTool(request.getExternalTool());
+        testRequest.setXdarrHost(request.getXdarrHost());
+        testRequest.setXdarrApiKey(request.getXdarrApiKey());
+        testRequest.setAddType(AddRequest.AddType.DELETE_ONLY); // Only delete, don't add
+        testRequest.setNzbhydraName("TEST_CONNECTION_" + System.currentTimeMillis());
+        return testRequest;
+    }
+
+    public static class ConnectionTestResult {
+        private final boolean successful;
+        private final String message;
+
+        public ConnectionTestResult(boolean successful, String message) {
+            this.successful = successful;
+            this.message = message;
+        }
+
+        public boolean isSuccessful() {
+            return successful;
+        }
+
+        public String getMessage() {
+            return message;
+        }
     }
 
 

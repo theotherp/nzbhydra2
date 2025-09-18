@@ -1,0 +1,62 @@
+<div class="form-horizontal config-section">
+
+    <div class="form-group">
+        <label class="control-label col-md-2">External tools</label>
+
+        <div class="col-md-10">
+            <p>Configure external tools (Sonarr, Radarr, Lidarr, Readarr) for automatic indexer synchronization.</p>
+            <p>When indexers are added, removed or modified in NZBHydra, they will be automatically synced to all configured external tools.</p>
+        </div>
+    </div>
+
+    <div class="form-group" ng-if="!model.externalTools || model.externalTools.length === 0">
+        <label class="control-label col-md-2"></label>
+        <div class="col-md-10">
+            <p><i>No external tools configured</i></p>
+        </div>
+    </div>
+
+    <div ng-repeat="entry in model.externalTools" class="form-group">
+        <label class="control-label col-md-2"></label>
+        <div class="col-md-8">
+            <div class="btn btn-default" ng-click="showBox(entry, model.externalTools)" style="width: 100%; text-align: left">
+                <span ng-class="entry.enabled ? 'glyphicon-ok' : 'glyphicon-remove'"
+                      class="glyphicon"
+                      style="color: gray"
+                      ng-style="{'color': entry.enabled ? 'green' : 'red'}"></span>
+                <span style="margin-left: 10px">{{ entry.name }} ({{ entry.type }})</span>
+                <span class="pull-right">{{ entry.host }}</span>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <button type="button" class="btn btn-danger" ng-click="model.externalTools.splice($index, 1); form.$setDirty(true)">
+                <span class="glyphicon glyphicon-remove"></span>
+            </button>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="control-label col-md-2"></label>
+        <div class="col-md-10">
+            <div class="btn-group" uib-dropdown dropdown-append-to-body>
+                <button type="button" class="btn btn-default" uib-dropdown-toggle>
+                    Add external tool <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" uib-dropdown-menu role="menu">
+                    <li role="menuitem" ng-repeat="preset in presets">
+                        <a href="" ng-click="addEntry(model.externalTools, preset)">{{ preset.name }}</a>
+                    </li>
+                    <li class="divider"></li>
+                    <li role="menuitem">
+                        <a href="" ng-click="addEntry(model.externalTools)">Custom</a>
+                    </li>
+                </ul>
+            </div>
+
+            <button type="button" class="btn btn-info" ng-click="syncAll()" style="margin-left: 10px">
+                <span class="glyphicon glyphicon-refresh"></span> Sync All Now
+            </button>
+        </div>
+    </div>
+
+</div>

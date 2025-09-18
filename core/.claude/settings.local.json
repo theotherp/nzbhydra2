@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/strat/IdeaProjects/nzbhydra2/**)",
+      "Bash(mvn:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

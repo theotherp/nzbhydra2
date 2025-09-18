@@ -5,12 +5,11 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.nzbhydra.GenericResponse;
-import org.nzbhydra.config.FileSystemBrowser.DirectoryListingRequest;
-import org.nzbhydra.config.FileSystemBrowser.FileSystemEntry;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.safeconfig.SafeConfig;
 import org.nzbhydra.config.validation.BaseConfigValidator;
 import org.nzbhydra.config.validation.ConfigValidationResult;
+import org.nzbhydra.externaltools.ExternalToolsSyncService;
 import org.nzbhydra.indexers.IndexerEntity;
 import org.nzbhydra.indexers.IndexerRepository;
 import org.nzbhydra.springnative.ReflectionMarker;
@@ -54,6 +53,8 @@ public class ConfigWeb {
     private BaseConfigValidator baseConfigValidator;
     @Autowired
     private BaseConfigHandler baseConfigHandler;
+    @Autowired
+    private ExternalToolsSyncService externalToolsSyncService;
     private final ConfigReaderWriter configReaderWriter = new ConfigReaderWriter();
 
     @Secured({"ROLE_ADMIN"})
@@ -80,14 +81,33 @@ public class ConfigWeb {
         }
 
         logger.info("Received new config");
-        newConfig = baseConfigValidator.prepareForSaving(configProvider.getBaseConfig(), newConfig);
-        ConfigValidationResult result = baseConfigValidator.validateConfig(configProvider.getBaseConfig(), newConfig, newConfig);
+        BaseConfig oldConfig = configProvider.getBaseConfig();
+        newConfig = baseConfigValidator.prepareForSaving(oldConfig, newConfig);
+        ConfigValidationResult result = baseConfigValidator.validateConfig(oldConfig, newConfig, newConfig);
         if (result.isOk()) {
             handleRenamedIndexers(newConfig);
+
+            // Detect which indexers changed before replacing config
+            Set<String> changedIndexers = externalToolsSyncService.detectChangedIndexers(
+                    oldConfig.getIndexers(),
+                    newConfig.getIndexers()
+            );
 
             baseConfigHandler.replace(newConfig);
             baseConfigHandler.save(true);
             result.setNewConfig(configProvider.getBaseConfig());
+
+            // Sync to external tools if enabled and indexers changed
+            if (configProvider.getBaseConfig().getExternalTools().isSyncOnConfigChange() && !changedIndexers.isEmpty()) {
+                logger.info("Indexers changed, syncing to external tools");
+                try {
+                    ExternalToolsSyncService.SyncResult syncResult = externalToolsSyncService.syncTools(changedIndexers);
+                    logger.info("External tools sync completed: {} successful, {} failed",
+                            syncResult.getSuccessCount(), syncResult.getFailureCount());
+                } catch (Exception e) {
+                    logger.error("Error syncing to external tools", e);
+                }
+            }
         }
         return result;
     }
@@ -141,7 +161,7 @@ public class ConfigWeb {
 
     @Secured({"ROLE_USER"})
     @RequestMapping(value = "/internalapi/config/folderlisting", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public FileSystemEntry getDirectoryListing(@RequestBody DirectoryListingRequest request) {
+    public FileSystemBrowser.FileSystemEntry getDirectoryListing(@RequestBody FileSystemBrowser.DirectoryListingRequest request) {
         return fileSystemBrowser.getDirectoryListing(request);
     }
 

@@ -1931,6 +1931,28 @@ function ConfigFields($injector) {
                 }
             ],
 
+            externalTools: [
+                {
+                    wrapper: 'fieldset',
+                    templateOptions: {label: 'External Tool Sync Settings'},
+                    fieldGroup: [
+                        {
+                            key: 'syncOnConfigChange',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Sync on config change',
+                                help: 'Automatically sync indexers to external tools when configuration is saved'
+                            }
+                        }
+                    ]
+                },
+                {
+                    type: 'externalToolConfig',
+                    data: {}
+                }
+            ],
+
             indexers: [
                 {
                     type: "indexers",
