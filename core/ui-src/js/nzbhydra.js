@@ -177,6 +177,32 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
                 }
             }
         })
+        .state("root.config.externalTools", {
+            url: "/externalTools",
+            views: {
+                'container@': {
+                    templateUrl: "static/html/states/config.html",
+                    controller: "ConfigController",
+                    resolve: {
+                        loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {
+                            return loginRequired($q, $timeout, $state, HydraAuthService, "admin")
+                        }],
+                        config: ['loginRequired', 'ConfigService', function (loginRequired, ConfigService) {
+                            return ConfigService.get();
+                        }],
+                        safeConfig: ['loginRequired', 'ConfigService', function (loginRequired, ConfigService) {
+                            return ConfigService.getSafe();
+                        }],
+                        activeTab: [function () {
+                            return 5;
+                        }],
+                        $title: function ($stateParams) {
+                            return "Config (External Tools)"
+                        }
+                    }
+                }
+            }
+        })
         .state("root.config.indexers", {
             url: "/indexers",
             views: {
@@ -194,7 +220,7 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
                             return ConfigService.getSafe();
                         }],
                         activeTab: [function () {
-                            return 5;
+                            return 6;
                         }],
                         $title: function ($stateParams) {
                             return "Config (Indexers)"
@@ -220,7 +246,7 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
                             return ConfigService.getSafe();
                         }],
                         activeTab: [function () {
-                            return 6;
+                            return 7;
                         }],
                         $title: function ($stateParams) {
                             return "Config (Notifications)"

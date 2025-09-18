@@ -56,7 +56,7 @@ angular
                     }
                 ];
 
-                function _showBox(model, parentModel, isInitial, callback) {
+                function _showBox(model, parentModel, isInitial, form, callback) {
                     var modalInstance = $uibModal.open({
                         templateUrl: 'static/html/config/external-tool-config-box.html',
                         controller: 'ExternalToolConfigBoxInstanceController',
@@ -83,7 +83,7 @@ angular
 
 
                     modalInstance.result.then(function (returnedModel) {
-                        $scope.form.$setDirty(true);
+                        form.$setDirty(true);
                         if (angular.isDefined(callback)) {
                             callback(true, returnedModel);
                         }
@@ -95,7 +95,7 @@ angular
                 }
 
                 function showBox(model, parentModel) {
-                    $scope._showBox(model, parentModel, false)
+                    $scope._showBox(model, parentModel, false, $scope.form)
                 }
 
                 $scope.syncAll = function () {
@@ -128,7 +128,8 @@ angular
                         enableInteractiveSearch: true,
                         useHydraPriorities: true,
                         priority: 25,
-                        nzbhydraName: "NZBHydra2"
+                        nzbhydraName: "NZBHydra2",
+                        nzbhydraHost: "http://host.docker.internal:5076"
                     });
                     if (angular.isDefined(preset)) {
                         _.extend(model, preset);
@@ -136,7 +137,7 @@ angular
 
                     $scope.isInitial = true;
 
-                    $scope._showBox(model, entriesCollection, true, function (isSubmitted, returnedModel) {
+                    $scope._showBox(model, entriesCollection, true, $scope.form, function (isSubmitted, returnedModel) {
                         if (isSubmitted) {
                             entriesCollection.push(angular.isDefined(returnedModel) ? returnedModel : model);
                         }
@@ -270,6 +271,17 @@ angular
                             type: 'text',
                             label: 'NZBHydra Name',
                             help: 'Name prefix used in the external tool',
+                            required: true
+                        }
+                    });
+
+                    fieldset.push({
+                        key: 'nzbhydraHost',
+                        type: 'horizontalInput',
+                        templateOptions: {
+                            type: 'text',
+                            label: 'NZBHydra Host',
+                            help: 'NZBHydra URL that the external tool can reach (use host.docker.internal for Docker containers)',
                             required: true
                         }
                     });
@@ -493,7 +505,10 @@ angular.module('nzbhydraApp').controller('ExternalToolConfigBoxInstanceControlle
     $scope.obSubmit = function () {
         if ($scope.form.$valid) {
             checkConnection().then(function () {
-                $uibModalInstance.close($scope.model);
+                // When adding/editing a specific external tool, block and show results
+                syncToExternalTool().then(function () {
+                    $uibModalInstance.close($scope.model);
+                });
             });
         } else {
             growl.error("Config invalid. Please check your settings.");
@@ -590,6 +605,54 @@ angular.module('nzbhydraApp').controller('ExternalToolConfigBoxInstanceControlle
                 }
             );
         }
+
+        return deferred.promise;
+    }
+
+    function syncToExternalTool() {
+        var deferred = $q.defer();
+
+        $scope.spinnerActive = true;
+        blockUI.start("Configuring NZBHydra in " + model.type + "...");
+
+        var syncRequest = {
+            externalTool: model.type === 'SONARR' ? 'Sonarr' :
+                model.type === 'RADARR' ? 'Radarr' :
+                    model.type === 'LIDARR' ? 'Lidarr' : 'Readarr',
+            xdarrHost: model.host,
+            xdarrApiKey: model.apiKey,
+            addType: model.syncType === 'SINGLE' ? 'SINGLE' : 'PER_INDEXER',
+            nzbhydraName: model.nzbhydraName,
+            nzbhydraHost: model.nzbhydraHost,
+            configureForUsenet: model.configureForUsenet,
+            configureForTorrents: model.configureForTorrents,
+            enableRss: model.enableRss,
+            enableAutomaticSearch: model.enableAutomaticSearch,
+            enableInteractiveSearch: model.enableInteractiveSearch,
+            enableCategories: true,
+            categories: model.categories || '',
+            additionalParameters: model.additionalParameters
+        };
+
+        $http.post("internalapi/externalTools/configure", syncRequest).then(
+            function (response) {
+                blockUI.reset();
+                $scope.spinnerActive = false;
+                if (response.data === true) {
+                    growl.success("Successfully configured NZBHydra in " + model.type);
+                    deferred.resolve();
+                } else {
+                    growl.error("Failed to configure NZBHydra in " + model.type);
+                    deferred.reject();
+                }
+            },
+            function (error) {
+                blockUI.reset();
+                $scope.spinnerActive = false;
+                growl.error("Error configuring NZBHydra in " + model.type + ": " + (error.data ? error.data : "Unknown error"));
+                deferred.reject();
+            }
+        );
 
         return deferred.promise;
     }

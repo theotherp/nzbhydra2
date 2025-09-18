@@ -2,7 +2,24 @@
   "permissions": {
     "allow": [
       "Read(//c/Users/strat/IdeaProjects/nzbhydra2/**)",
-      "Bash(mvn:*)"
+      "Bash(mvn:*)",
+      "mcp__intellij__execute_run_configuration",
+      "Bash(npm install)",
+      "Bash(npx playwright install:*)",
+      "Bash(npx playwright test:*)",
+      "Bash(timeout 60s npx playwright test external-tools.spec.ts --grep \"should open external tool configuration modal with presets\")",
+      "Bash(timeout 120s npx playwright test external-tools.spec.ts --grep \"should open Sonarr preset configuration modal\")",
+      "Bash(find:*)",
+      "Bash(timeout 300s npx playwright test external-tools.spec.ts)",
+      "Bash(timeout 120s npx playwright test external-tools.spec.ts --grep \"should toggle sync on config change setting\")",
+      "Bash(timeout 120s npx playwright test external-tools.spec.ts --grep \"should navigate to External Tools configuration\")",
+      "Bash(timeout 120s npx playwright test external-tools.spec.ts --grep \"should trigger manual sync all\")",
+      "Bash(timeout 120s npx playwright test external-tools.spec.ts --grep \"should save external tool configuration\" --headed)",
+      "mcp__intellij__get_run_configurations",
+      "Bash(timeout 120s npx playwright test external-tools.spec.ts --grep \"should save external tool configuration\")",
+      "Bash(timeout 120s npx playwright test external-tools.spec.ts --grep \"should edit existing external tool\")",
+      "Bash(timeout 120s npx playwright test external-tools.spec.ts --grep \"should delete external tool\")",
+      "Read(//c/Users/strat/IdeaProjects/**)"
     ],
     "deny": [],
     "ask": []

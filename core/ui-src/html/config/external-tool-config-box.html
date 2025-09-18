@@ -1,0 +1,39 @@
+<!--
+  ~  (C) Copyright 2023 TheOtherP (theotherp@posteo.net)
+  ~
+  ~  Licensed under the Apache License, Version 2.0 (the "License");
+  ~  you may not use this file except in compliance with the License.
+  ~  You may obtain a copy of the License at
+  ~
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~  Unless required by applicable law or agreed to in writing, software
+  ~  distributed under the License is distributed on an "AS IS" BASIS,
+  ~  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~  See the License for the specific language governing permissions and
+  ~  limitations under the License.
+  -->
+
+<span class="config-box">
+    <div class="modal-header">
+        <h3 class="modal-title">External Tool Configuration</h3>
+    </div>
+    <div class="modal-body">
+        <formly-form fields="fields"
+                     model="model"
+                     form="form"
+                     options="options"
+        >
+        </formly-form>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-danger pull-left" ng-click="deleteEntry()" ng-if="!isInitial">Delete</button>
+        <button class="btn btn-warning" ng-click="reset()">Reset</button>
+        <button class="btn btn-info" ng-click="testConnection()" ng-if="model.host && model.apiKey">Test connection</button>
+        <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+        <button class="btn btn-success has-spinner" ng-class="{'active': spinnerActive}" ng-click="obSubmit()">
+            <span class="spinner"><i class="fa fa-refresh fa-spin"></i></span>
+            OK
+        </button>
+    </div>
+</span>

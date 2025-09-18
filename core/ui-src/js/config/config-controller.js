@@ -234,6 +234,14 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
         },
         {
             active: false,
+            state: 'root.config.externalTools',
+            name: 'External Tools',
+            model: ConfigModel.externalTools,
+            fields: $scope.fields.externalTools,
+            options: {}
+        },
+        {
+            active: false,
             state: 'root.config.indexers',
             name: 'Indexers',
             model: ConfigModel.indexers,

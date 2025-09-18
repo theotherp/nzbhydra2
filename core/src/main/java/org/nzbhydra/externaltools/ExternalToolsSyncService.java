@@ -252,7 +252,7 @@ public class ExternalToolsSyncService {
             if (oldIndexer == null) {
                 // New indexer
                 changed.add(newIndexer.getName());
-            } else if (!oldIndexer.equals(newIndexer)) {
+            } else if (!IndexerConfig.isIndexerEquals(oldIndexer, newIndexer)) {
                 // Modified indexer
                 changed.add(newIndexer.getName());
             }

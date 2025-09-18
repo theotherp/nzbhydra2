@@ -1,11 +1,14 @@
 package org.nzbhydra.externaltools;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.ConfigReaderWriter;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.indexers.IndexerRepository;
 import org.nzbhydra.web.UrlCalculator;
+import org.nzbhydra.webaccess.WebAccess;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -35,6 +39,8 @@ public class ExternalToolsWeb {
     private final ConfigReaderWriter configReaderWriter = new ConfigReaderWriter();
     @Autowired
     private ExternalToolsSyncService externalToolsSyncService;
+    @Autowired
+    private WebAccess webAccess;
 
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/externalTools/getDialogInfo", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -68,23 +74,39 @@ public class ExternalToolsWeb {
     @RequestMapping(value = "/internalapi/externalTools/testConnection", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ConnectionTestResult testConnection(@RequestBody AddRequest addRequest) {
         try {
-            // Just test the connection without actually syncing
-            boolean success = externalTools.addNzbhydraAsIndexer(buildTestRequest(addRequest));
-            return new ConnectionTestResult(success, success ? "Connection successful" : "Connection failed");
+            return testSimpleConnection(addRequest.getXdarrHost(), addRequest.getXdarrApiKey());
         } catch (Exception e) {
             return new ConnectionTestResult(false, "Error: " + e.getMessage());
         }
     }
 
-    private AddRequest buildTestRequest(AddRequest request) {
-        // Create a test request that only checks connection without modifying anything
-        AddRequest testRequest = new AddRequest();
-        testRequest.setExternalTool(request.getExternalTool());
-        testRequest.setXdarrHost(request.getXdarrHost());
-        testRequest.setXdarrApiKey(request.getXdarrApiKey());
-        testRequest.setAddType(AddRequest.AddType.DELETE_ONLY); // Only delete, don't add
-        testRequest.setNzbhydraName("TEST_CONNECTION_" + System.currentTimeMillis());
-        return testRequest;
+    private ConnectionTestResult testSimpleConnection(String host, String apiKey) {
+        try {
+            // Remove trailing slash if present
+            String cleanHost = host.endsWith("/") ? host.substring(0, host.length() - 1) : host;
+
+            // Build the API URL: http://host/api?apikey=key
+            String apiUrl = cleanHost + "/api?apikey=" + apiKey;
+
+            logger.debug("Testing connection to: {}", apiUrl);
+
+            // Make the API call
+            String response = webAccess.callUrl(URI.create(apiUrl).toString());
+
+            // Parse response as JSON and check for "current" key
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode jsonNode = mapper.readTree(response);
+
+            if (jsonNode.has("current")) {
+                return new ConnectionTestResult(true, "Connection successful");
+            } else {
+                return new ConnectionTestResult(false, "Invalid response: missing 'current' field");
+            }
+
+        } catch (Exception e) {
+            logger.debug("Connection test failed", e);
+            return new ConnectionTestResult(false, "Connection failed: " + e.getMessage());
+        }
     }
 
     public static class ConnectionTestResult {

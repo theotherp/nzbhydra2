@@ -102,6 +102,7 @@ public class BaseConfigHandler {
         baseConfig.setGenericStorage(newConfig.getGenericStorage());
         baseConfig.setNotificationConfig(newConfig.getNotificationConfig());
         baseConfig.setEmby(newConfig.getEmby());
+        baseConfig.setExternalTools(newConfig.getExternalTools());
 
 
         if (fireConfigChangedEvent) {

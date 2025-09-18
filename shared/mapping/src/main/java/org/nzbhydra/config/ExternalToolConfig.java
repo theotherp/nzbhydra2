@@ -48,6 +48,7 @@ public class ExternalToolConfig {
     private boolean enabled = true;
     private SyncType syncType = AddRequest.AddType.SINGLE.name().equals("SINGLE") ? SyncType.SINGLE : SyncType.PER_INDEXER;
     private String nzbhydraName = "NZBHydra2";
+    private String nzbhydraHost = "http://host.docker.internal:5076";
 
     // Sync settings
     private boolean configureForUsenet = true;
