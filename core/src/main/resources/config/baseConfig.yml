@@ -384,3 +384,6 @@ searching:
   userAgents: [ "Mozilla", "Sonarr", "Radarr", "CouchPotato", "LazyLibrarian", "Lidarr", "Mylar", "Readarr", "NZB360", "NZBGet", "sabNZBd" ]
   useOriginalCategories: false
   wrapApiErrors: false
+externalTools:
+  externalTools: [ ]
+  syncOnConfigChange: true
