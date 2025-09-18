@@ -140,6 +140,7 @@ public class Sabnzbd extends Downloader {
         logger.debug("Uploading NZB {} to sabnzbd", title);
         UriComponentsBuilder urlBuilder = getBaseUrl();
         title = suffixNzbToTitle(title);
+        title = title.replace("\"", "_").replace("/", "_");
         urlBuilder.queryParam("mode", "addfile").queryParam("nzbname", title).queryParam("priority", getPriority());
         if (!Strings.isNullOrEmpty(category)) {
             urlBuilder.queryParam("cat", category);
