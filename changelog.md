@@ -1,3 +1,11 @@
+### v7.19.0 (2025-09-18)
+
+**Added** Configure external tools once. Sync your indexers to them manually and automatically whenever you change your indexer config. See <a href="https://github.com/theotherp/nzbhydra2/issues/1014">#1014</a>
+
+**Fixed** Replace slash and quotation marks in download name sent to sabNZBd. See <a href="https://github.com/theotherp/nzbhydra2/issues/1015">#1015</a>
+
+
+
 ### v7.18.0 (2025-09-17)
 
 **Added** When downloading results as ZIP is not possible show a button to copy links for selected results to the clipboard. See <a href="https://github.com/theotherp/nzbhydra2/issues/996">#996</a>
