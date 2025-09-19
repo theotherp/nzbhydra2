@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__github__get_issue"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
