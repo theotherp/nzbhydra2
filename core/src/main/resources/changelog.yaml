@@ -1,4 +1,9 @@
 #@formatter:off
+-   version: "v7.19.1"
+    changes:
+      -   type: "fixed"
+          text: "Fixed wrapper scripts failing to launch when customVmOptions is null in config. See #1016"
+    date: "2025-09-19"
 -   version: "v7.19.0"
     changes:
       -   type: "added"
