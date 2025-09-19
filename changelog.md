@@ -1,3 +1,9 @@
+### v7.19.1 (2025-09-19)
+
+**Fixed** Fixed wrapper scripts failing to launch when customVmOptions is null in config. See <a href="https://github.com/theotherp/nzbhydra2/issues/1016">#1016</a>
+
+
+
 ### v7.19.0 (2025-09-18)
 
 **Added** Configure external tools once. Sync your indexers to them manually and automatically whenever you change your indexer config. See <a href="https://github.com/theotherp/nzbhydra2/issues/1014">#1014</a>

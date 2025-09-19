@@ -4,12 +4,12 @@
     <parent>
         <groupId>org.nzbhydra</groupId>
         <artifactId>nzbhydra2</artifactId>
-        <version>7.19.1-SNAPSHOT</version>
+        <version>7.19.1</version>
     </parent>
 
     <artifactId>releases</artifactId>
     <packaging>pom</packaging>
-    <version>7.19.1-SNAPSHOT</version>
+    <version>7.19.1</version>
 
     <modules>
         <module>generic-release</module>
