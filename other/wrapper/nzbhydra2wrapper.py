@@ -393,6 +393,9 @@ def startup():
                 index = line.find("customVmOptions:")
                 if index > -1:
                     customVmOptions = line[index + 17:].rstrip("\n\r ").strip(' "\'')  # Remove quotes if present
+                    # Treat "null" as empty string
+                    if customVmOptions == "null":
+                        customVmOptions = ""
     if xmx is None:
         xmx = 256
     xmx = str(xmx)

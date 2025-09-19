@@ -331,6 +331,10 @@ func determineXmxAndLogGc() (string, bool, string) {
 				customVmOptions = strings.TrimSpace(line[17:])
 				// Remove quotes if present
 				customVmOptions = strings.Trim(customVmOptions, `"'`)
+				// Treat "null" as empty string
+				if customVmOptions == "null" {
+					customVmOptions = ""
+				}
 			}
 		}
 
