@@ -4,6 +4,7 @@
       -   type: "fixed"
           text: "Fixed wrapper scripts failing to launch when customVmOptions is null in config. See #1016"
     date: "2025-09-19"
+    final: true
 -   version: "v7.19.0"
     changes:
       -   type: "added"
@@ -11,6 +12,7 @@
       -   type: "fixed"
           text: "Replace slash and quotation marks in download name sent to sabNZBd. See #1015"
     date: "2025-09-18"
+    final: true
 -   version: "v7.18.0"
     changes:
       -   type: "added"
