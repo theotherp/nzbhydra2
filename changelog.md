@@ -1,3 +1,9 @@
+### v7.19.2 (2025-09-26)
+
+**Fixed** Actuator endpoint (for health checks and infos and so on) are only available to admin users
+
+
+
 ### v7.19.1 (2025-09-19)
 
 **Fixed** Fixed wrapper scripts failing to launch when customVmOptions is null in config. See <a href="https://github.com/theotherp/nzbhydra2/issues/1016">#1016</a>
