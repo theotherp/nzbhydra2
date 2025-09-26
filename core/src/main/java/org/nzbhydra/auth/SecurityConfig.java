@@ -18,6 +18,8 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.channel.ChannelProcessingFilter;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
@@ -29,6 +31,7 @@ import org.springframework.security.web.firewall.DefaultHttpFirewall;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.filter.ForwardedHeaderFilter;
 
+@SuppressWarnings("removal")
 @Configuration(proxyBeanMethods = false)
 @Order
 @EnableWebSecurity
@@ -183,12 +186,20 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authManager(HttpSecurity http)
+    public AuthenticationManager authManager(HttpSecurity http, PasswordEncoder passwordEncoder)
         throws Exception {
         return http.getSharedObject(AuthenticationManagerBuilder.class)
             .userDetailsService(hydraUserDetailsManager)
+                .passwordEncoder(passwordEncoder)
             .and()
             .build();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        // Create a delegating password encoder that can handle multiple formats
+        // This will handle {bcrypt}, {noop}, and other standard formats
+        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 
 

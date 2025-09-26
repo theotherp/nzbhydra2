@@ -79,13 +79,21 @@ public class AuthConfigValidator implements ConfigValidator<AuthConfig> {
 
     @Override
     public AuthConfig prepareForSaving(BaseConfig oldBaseConfig, AuthConfig newAuthConfig) {
-        newAuthConfig.getUsers().forEach(userAuthConfig -> userAuthConfigValidator.prepareForSaving(oldBaseConfig, userAuthConfig));
-        return new AuthConfig();
+        // Need to update each user config and replace it with the result
+        for (int i = 0; i < newAuthConfig.getUsers().size(); i++) {
+            UserAuthConfig updated = userAuthConfigValidator.prepareForSaving(oldBaseConfig, newAuthConfig.getUsers().get(i));
+            newAuthConfig.getUsers().set(i, updated);
+        }
+        return newAuthConfig;
     }
 
     @Override
     public AuthConfig updateAfterLoading(AuthConfig newAuthConfig) {
-        newAuthConfig.getUsers().forEach(userAuthConfig -> userAuthConfigValidator.updateAfterLoading(userAuthConfig));
+        // Need to update each user config and replace it with the result
+        for (int i = 0; i < newAuthConfig.getUsers().size(); i++) {
+            UserAuthConfig updated = userAuthConfigValidator.updateAfterLoading(newAuthConfig.getUsers().get(i));
+            newAuthConfig.getUsers().set(i, updated);
+        }
         return newAuthConfig;
     }
 

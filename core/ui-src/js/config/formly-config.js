@@ -93,16 +93,138 @@ angular
 
         formlyConfigProvider.setType({
             name: 'passwordSwitch',
-            extends: 'horizontalInput',
+            wrapper: ['settingWrapper', 'bootstrapHasError'],
             template: [
                 '<div class="input-group">',
-                '<input ng-attr-type="{{ hidePassword ? \'password\' : \'text\' }}" class="form-control" ng-model="model[options.key]"/>',
+                '<input ng-attr-type="{{ hidePassword ? \'password\' : \'text\' }}" class="form-control" ng-model="internalValue"',
+                'ng-attr-placeholder="{{ isUnchangedPassword ? \'Password unchanged\' : \'\' }}"',
+                'ng-change="onPasswordChange()" ng-focus="onPasswordFocus()" ng-blur="onPasswordBlur()"',
+                'ng-required="false"/>',  // Disable HTML5 required validation
                 '<span class="input-group-btn input-group-btn2">',
                 '<button class="btn btn-default" type="button" ng-click="hidePassword=!hidePassword"><span class="glyphicon glyphicon-eye-open" ng-class="{\'glyphicon-eye-open\': hidePassword, \'glyphicon-eye-close\': !hidePassword}"></span></button>',
                 '</div>'
             ].join(' '),
+            defaultOptions: {
+                validators: {
+                    passwordRequired: {
+                        expression: function ($viewValue, $modelValue, scope) {
+                            var UNCHANGED_PASSWORD_MARKER = '***UNCHANGED***';
+
+                            // If the field is not required, always pass
+                            if (!scope.to.required) {
+                                return true;
+                            }
+
+                            // If the model value is the unchanged marker, it's valid (existing password)
+                            if ($modelValue === UNCHANGED_PASSWORD_MARKER) {
+                                return true;
+                            }
+
+                            // IMPORTANT: If we have a username but no password value yet,
+                            // this is likely an existing user whose password hasn't been initialized yet
+                            // We should allow this temporarily as the controller will fix it
+                            if (scope.model.username && (!$modelValue || $modelValue === '')) {
+                                return true;
+                            }
+
+                            // For new users (no username), require a password
+                            if (!scope.model.username) {
+                                return !!$modelValue && $modelValue.length > 0;
+                            }
+
+                            // Otherwise, check if a value is present
+                            return !!$modelValue && $modelValue.length > 0;
+                        },
+                        message: '"This field is required"'
+                    }
+                }
+            },
             controller: function ($scope) {
                 $scope.hidePassword = true;
+                var UNCHANGED_PASSWORD_MARKER = '***UNCHANGED***';
+                var passwordWasChanged = false;
+                var originalValue = $scope.model[$scope.options.key];
+                var actualModelValue = originalValue; // Store the actual value
+
+                // Override the model property to control access
+                Object.defineProperty($scope.model, $scope.options.key, {
+                    get: function () {
+                        // Always return the actual stored value for validation
+                        return actualModelValue;
+                    },
+                    set: function (newValue) {
+                        // Only allow setting if it's intentional
+                        if (passwordWasChanged || newValue === UNCHANGED_PASSWORD_MARKER) {
+                            actualModelValue = newValue;
+                        } else if (actualModelValue === UNCHANGED_PASSWORD_MARKER && (newValue === '' || newValue === null || newValue === undefined)) {
+                            // Prevent clearing of unchanged marker
+                        } else {
+                            actualModelValue = newValue;
+                        }
+                    },
+                    configurable: true,
+                    enumerable: true
+                });
+
+                // Use a completely separate internal value for display to avoid touching the model
+                $scope.internalValue = '';
+                $scope.isUnchangedPassword = false;
+
+                if (originalValue === UNCHANGED_PASSWORD_MARKER) {
+                    $scope.isUnchangedPassword = true;
+                    $scope.internalValue = ''; // Show empty field with placeholder
+                } else if (originalValue) {
+                    $scope.internalValue = originalValue;
+                } else {
+                    // No value at all - could be a new user
+                    $scope.internalValue = '';
+                }
+
+                $scope.onPasswordChange = function () {
+                    // If user types something, update the actual model
+                    if ($scope.internalValue && $scope.internalValue !== '') {
+                        $scope.model[$scope.options.key] = $scope.internalValue;
+                        $scope.isUnchangedPassword = false;
+                        passwordWasChanged = true;
+                    } else if (passwordWasChanged && $scope.internalValue === '') {
+                        // User cleared a password they were typing
+                        if (originalValue === UNCHANGED_PASSWORD_MARKER) {
+                            // Restore the unchanged marker
+                            $scope.model[$scope.options.key] = UNCHANGED_PASSWORD_MARKER;
+                            $scope.isUnchangedPassword = true;
+                            passwordWasChanged = false;
+                        } else {
+                            // This was a new password field, clear it
+                            $scope.model[$scope.options.key] = '';
+                        }
+                    }
+                };
+
+                $scope.onPasswordFocus = function () {
+                    // Nothing special needed on focus
+                };
+
+                $scope.onPasswordBlur = function () {
+                    // If user leaves the field empty after it was originally the unchanged marker,
+                    // ensure the marker is still there (meaning no change)
+                    if (originalValue === UNCHANGED_PASSWORD_MARKER &&
+                        ($scope.internalValue === '' || $scope.internalValue === null) &&
+                        !passwordWasChanged) {
+                        // The model should still have the marker, but make sure
+                        $scope.model[$scope.options.key] = UNCHANGED_PASSWORD_MARKER;
+                        $scope.isUnchangedPassword = true;
+                    }
+                };
+
+                // Watch for external changes to the model (e.g., when loading config)
+                $scope.$watch('model[options.key]', function (newVal, oldVal) {
+                    if (newVal === UNCHANGED_PASSWORD_MARKER && oldVal !== UNCHANGED_PASSWORD_MARKER) {
+                        $scope.isUnchangedPassword = true;
+                        $scope.internalValue = '';
+                        originalValue = UNCHANGED_PASSWORD_MARKER;
+                        passwordWasChanged = false;
+                    }
+                });
             }
         });
 

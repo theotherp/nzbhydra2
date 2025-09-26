@@ -1,4 +1,9 @@
 #@formatter:off
+-   version: "v7.20.0"
+    changes:
+      -   type: "added"
+          text: "Passwords for users are finally encrypted (and salted) and not stored in plaintext in the config."
+    final: true
 -   version: "v7.19.2"
     changes:
       -   type: "fixed"
