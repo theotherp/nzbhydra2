@@ -1,4 +1,10 @@
 #@formatter:off
+-   version: "v7.19.2"
+    changes:
+      -   type: "fixed"
+          text: "Actuator endpoint (for health checks and infos and so on) are only available to admin users"
+    date: "2025-09-26"
+    final: true
 -   version: "v7.19.1"
     changes:
       -   type: "fixed"
