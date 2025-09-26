@@ -192,6 +192,9 @@ public class ReleaseMojo extends AbstractMojo {
 
     protected void setChangelogBody(ReleaseRequest releaseRequest) throws MojoExecutionException {
         ChangelogVersionEntry latestEntry = getChangelogVersionEntry();
+        if (latestEntry.getDate() == null) {
+            throw new MojoExecutionException("Date missing in changelog entry");
+        }
         releaseRequest.setBody(Joiner.on("\n\n").join(ChangelogGeneratorMojo.getMarkdownLinesFromEntry(latestEntry)));
     }
 
