@@ -53,6 +53,8 @@ public class BaseConfigValidator implements ConfigValidator<BaseConfig> {
     private IndexerConfigValidator indexerConfigValidator;
     @Autowired
     private List<ConfigValidator> configValidatorList;
+    @Autowired
+    private SensitiveDataConfigValidator sensitiveDataConfigValidator;
 
     @Override
     public boolean doesValidate(Class<?> clazz) {
@@ -147,6 +149,9 @@ public class BaseConfigValidator implements ConfigValidator<BaseConfig> {
 
     @Override
     public BaseConfig prepareForSaving(BaseConfig oldBaseConfig, BaseConfig newConfig) {
+        // First handle sensitive data unchanged markers
+        sensitiveDataConfigValidator.prepareForSaving(oldBaseConfig, newConfig);
+
         categoriesConfigValidator.prepareForSaving(oldBaseConfig, newConfig.getCategoriesConfig());
         downloadingConfigValidator.prepareForSaving(oldBaseConfig, newConfig.getDownloading());
         searchingConfigValidator.prepareForSaving(oldBaseConfig, newConfig.getSearching());
@@ -160,6 +165,8 @@ public class BaseConfigValidator implements ConfigValidator<BaseConfig> {
     @Override
     public BaseConfig updateAfterLoading(BaseConfig newConfig) {
         authConfigValidator.updateAfterLoading(newConfig.getAuth());
+        // Replace encrypted sensitive data with placeholders for display
+        sensitiveDataConfigValidator.prepareForDisplay(newConfig);
         return newConfig;
     }
 

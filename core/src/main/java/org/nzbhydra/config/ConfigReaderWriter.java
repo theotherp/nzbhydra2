@@ -28,6 +28,7 @@ import dev.failsafe.event.ExecutionCompletedEvent;
 import org.apache.commons.io.IOUtils;
 import org.nzbhydra.Jackson;
 import org.nzbhydra.NzbHydra;
+import org.nzbhydra.config.sensitive.SensitiveDataHandler;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,11 +54,16 @@ public class ConfigReaderWriter {
     public static final TypeReference<HashMap<String, Object>> MAP_TYPE_REFERENCE = new TypeReference<>() {
     };
     private final RetryPolicy saveRetryPolicy = RetryPolicy.builder().withDelay(Duration.ofMillis(1000)).withMaxRetries(3).handle(IOException.class).build();
+    private final SensitiveDataHandler sensitiveDataHandler = new SensitiveDataHandler();
 
 
     public void save(BaseConfig baseConfig) {
         try {
-            save(buildConfigFileFile(), Jackson.YAML_MAPPER.writeValueAsString(baseConfig));
+            // Create a copy to avoid modifying the original
+            BaseConfig copy = getCopy(baseConfig);
+            // Encrypt sensitive data before saving
+            sensitiveDataHandler.encryptSensitiveData(copy);
+            save(buildConfigFileFile(), Jackson.YAML_MAPPER.writeValueAsString(copy));
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Unable to save config", e);
         }
@@ -66,7 +72,11 @@ public class ConfigReaderWriter {
     public void save(BaseConfig baseConfig, File targetFile) {
         Stopwatch stopwatch = Stopwatch.createStarted();
         try {
-            save(targetFile, Jackson.YAML_MAPPER.writeValueAsString(baseConfig));
+            // Create a copy to avoid modifying the original
+            BaseConfig copy = getCopy(baseConfig);
+            // Encrypt sensitive data before saving
+            sensitiveDataHandler.encryptSensitiveData(copy);
+            save(targetFile, Jackson.YAML_MAPPER.writeValueAsString(copy));
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Unable to save config", e);
         } finally {
@@ -217,6 +227,8 @@ public class ConfigReaderWriter {
         File configFile = buildConfigFileFile();
         if (configFile.exists()) {
             BaseConfig baseConfig = Jackson.YAML_MAPPER.readValue(configFile, BaseConfig.class);
+            // Decrypt sensitive data after loading
+            sensitiveDataHandler.decryptSensitiveData(baseConfig);
             return baseConfig;
         }
         return originalConfig();

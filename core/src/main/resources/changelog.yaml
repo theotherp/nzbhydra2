@@ -1,8 +1,10 @@
 #@formatter:off
--   version: "v7.20.0"
+-   version: "v8.0.0"
     changes:
       -   type: "added"
-          text: "Passwords for users are finally encrypted (and salted) and not stored in plaintext in the config."
+          text: "Passwords for users are finally encrypted (and salted) and not stored in plaintext in the config. See #908"
+      -   type: "added"
+          text: "Sensitive data like proxy credentials and indexer API keys are now obfuscated in the config. They can still be read by any NZBHydra instance, but automated sniffing tools will no longer be able to read these values from the saved config. Making this more secure would make other features like backups much less convenient, so I decided to go with this middle ground approach."
     final: true
 -   version: "v7.19.2"
     changes:
