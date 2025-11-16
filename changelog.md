@@ -1,3 +1,15 @@
+### v8.0.0 (2025-11-16)
+
+**Added** Passwords for users are finally encrypted (and salted) and not stored in plaintext in the config. See <a href="https://github.com/theotherp/nzbhydra2/issues/908">#908</a>
+
+**Added** Sensitive data like proxy credentials and indexer API keys are now obfuscated in the config. They can still be read by any NZBHydra instance, but automated sniffing tools will no longer be able to read these values from the saved config. Making this more secure would make other features like backups much less convenient, so I decided to go with this middle ground approach.
+
+**Fixed** NZBGeek queries will not be truncated to 6 words.
+
+**Fixed** Properly encode characters in queries. See <a href="https://github.com/theotherp/nzbhydra2/issues/1023">#1023</a>
+
+
+
 ### v7.19.2 (2025-09-26)
 
 **Fixed** Actuator endpoint (for health checks and infos and so on) are only available to admin users
