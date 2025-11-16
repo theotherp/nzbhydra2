@@ -151,8 +151,6 @@ public class IndexerTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-
-
         when(indexerMock.getIndexerEntity()).thenReturn(indexerEntityMock);
         when(indexerMock.getConfig()).thenReturn(indexerConfig);
 

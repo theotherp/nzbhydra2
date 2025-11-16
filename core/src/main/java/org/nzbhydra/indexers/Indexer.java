@@ -203,7 +203,7 @@ public abstract class Indexer<T> {
 
     protected IndexerSearchResult buildSearchUrlAndCall(SearchRequest searchRequest, int offset, Integer limit) throws IndexerSearchAbortedException, IndexerAccessException {
         UriComponentsBuilder builder = buildSearchUrl(searchRequest, offset, limit);
-        URI url = builder.build().toUri();
+        URI url = builder.build().encode().toUri();
 
         T response;
         Stopwatch stopwatch = Stopwatch.createStarted();
