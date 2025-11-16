@@ -1,5 +1,6 @@
 #@formatter:off
 -   version: "v8.0.0"
+    date: "2025-11-16"
     changes:
       -   type: "added"
           text: "Passwords for users are finally encrypted (and salted) and not stored in plaintext in the config. See #908"
