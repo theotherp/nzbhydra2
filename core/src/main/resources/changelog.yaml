@@ -7,6 +7,8 @@
           text: "SVG as favicon. Also removes the black background on supported (basically any modern) browsers See #1019"
       -   type: "fixed"
           text: "Delete indexers and their related data from the database when removed from the config. See #1022"
+      -   type: "fixed"
+          text: "Remove old linux wrapper binary from list of files to update. See #1020"
     final: true
 -   version: "v8.0.0"
     date: "2025-11-16"
