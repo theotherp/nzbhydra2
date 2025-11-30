@@ -264,7 +264,7 @@ public class Sabnzbd extends Downloader {
     @Override
     public List<DownloaderEntry> getHistory(Instant earliestDownloadTime) throws DownloaderException {
         //TODO: Store and use last_history_update? See https://sabnzbd.org/wiki/advanced/api#history_main
-        UriComponentsBuilder uriBuilder = getBaseUrl().queryParam("mode", "history");
+        UriComponentsBuilder uriBuilder = getBaseUrl().queryParam("mode", "history").queryParam("archive", "1");
         HistoryResponse queueResponse = callSabnzb(uriBuilder.build().toUri(), HistoryResponse.class);
         List<DownloaderEntry> historyEntries = new ArrayList<>();
         for (HistoryEntry historyEntry : queueResponse.getHistory().getSlots()) {
