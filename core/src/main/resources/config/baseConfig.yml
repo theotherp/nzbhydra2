@@ -315,6 +315,7 @@ main:
   proxyPassword: null
   proxyImages: false
   repositoryBase: "https://github.com/theotherp"
+  scheduledRestartTime: null
   showNews: true
   showUpdateBannerOnDocker: true
   showWhatsNewBanner: true
