@@ -77,6 +77,10 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
                 .addResourceLocations(locations)
                 .setCacheControl(CacheControl.noCache())
                 .resourceChain(false);
+        registry.addResourceHandler("/favicon.*")
+                .addResourceLocations("classpath:/static/img/")
+                .setCacheControl(CacheControl.noCache())
+                .resourceChain(false);
 
         //Otherwise swagger is not loaded using /swagger-ui/index.html
         registry.addResourceHandler("/swagger-ui/**")

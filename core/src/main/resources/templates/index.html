@@ -1,20 +1,21 @@
 <!DOCTYPE html>
 <html ng-app="nzbhydraApp" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
-    <title ng-bind="'NZBHydra 2' + ((' - ' + title) || '')">NZBHydra 2</title>
-    <base th:href="${session.baseUrl}"/>
-    <meta name="robots" content="noindex"/>
-    <meta name="referrer" content="no-referrer"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <link href="static/css/alllibs.css" rel="stylesheet"/>
-    <link th:href="${session.cssUrl}" rel="stylesheet">
-    <link href="static/css/additional.css" rel="stylesheet"/>
-    <link rel="shortcut icon" type="image/x-icon" href="static/img/favicon.ico"/>
-    <link rel="icon" type="image/png" href="static/img/favicon32.png" sizes="32x32">
-    <link rel="icon" type="image/png" href="static/img/favicon48.png" sizes="48x48">
-    <link rel="icon" type="image/png" href="static/img/favicon96.png" sizes="96x96">
-    <link rel="apple-touch-icon" sizes="180x180" href="static/img/favicon180.png">
-    <meta charset="utf-8"/>
+  <title ng-bind="'NZBHydra 2' + ((' - ' + title) || '')">NZBHydra 2</title>
+  <base th:href="${session.baseUrl}"/>
+  <meta name="robots" content="noindex"/>
+  <meta name="referrer" content="no-referrer"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link href="static/css/alllibs.css" rel="stylesheet"/>
+  <link th:href="${session.cssUrl}" rel="stylesheet">
+  <link href="static/css/additional.css" rel="stylesheet"/>
+  <link rel="shortcut icon" type="image/x-icon" href="static/img/favicon.ico"/>
+  <link rel="icon" href="static/img/favicon.svg" sizes="any" type="image/svg+xml">
+  <link rel="icon" type="image/png" href="static/img/favicon32.png" sizes="32x32">
+  <link rel="icon" type="image/png" href="static/img/favicon48.png" sizes="48x48">
+  <link rel="icon" type="image/png" href="static/img/favicon96.png" sizes="96x96">
+  <link rel="apple-touch-icon" sizes="180x180" href="static/img/favicon180.png">
+  <meta charset="utf-8"/>
 
 </head>
 <body style="text-align: center">
@@ -22,15 +23,15 @@
 <div growl=""></div>
 
 <div id="wrap" ng-cloak="">
-
-    <div ui-view="header"></div>
-    
-    <div style="margin: auto; max-width: 1700px;">
-        <div id="banner"></div>
-        <div class="container-fluid"  ui-view="container"  th:classappend="${session.disableBlockUi} ? '' : 'block-ui-main'">
-        </div>
+  
+  <div ui-view="header"></div>
+  
+  <div style="margin: auto; max-width: 1700px;">
+    <div id="banner"></div>
+    <div class="container-fluid" ui-view="container" th:classappend="${session.disableBlockUi} ? '' : 'block-ui-main'">
     </div>
-    <div id="push"></div>
+  </div>
+  <div id="push"></div>
 </div>
 
 <span footer></span>

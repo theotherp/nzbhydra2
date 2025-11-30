@@ -2519,6 +2519,9 @@
           "pattern": "\\Qstatic/img/favicon.ico\\E"
       },
       {
+          "pattern": "\\Qstatic/img/favicon.svg\\E"
+      },
+      {
           "pattern": "\\Qstatic/img/favicon180.png\\E"
       },
       {
