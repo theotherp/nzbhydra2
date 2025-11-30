@@ -4,7 +4,7 @@
       -   type: "added"
           text: "Also search in archived entries when checking for download completion for sabnzbd downloads."
       -   type: "added"
-          text: "SVG as favicon. See #1019"
+          text: "SVG as favicon. Also removes the black background on supported (basically any modern) browsers See #1019"
     final: true
 -   version: "v8.0.0"
     date: "2025-11-16"
