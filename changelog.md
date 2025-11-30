@@ -1,3 +1,19 @@
+### v8.1.0 (2025-11-30)
+
+**Added** Allow configuring a daily restart time. See <a href="https://github.com/theotherp/nzbhydra2/issues/1002">#1002</a>
+
+**Added** Also search in archived entries when checking for download completion for sabnzbd downloads.
+
+**Added** SVG as favicon. Also removes the black background on supported (basically any modern) browsers (so you may need to get used to a new-ish icon in your browser). See <a href="https://github.com/theotherp/nzbhydra2/issues/1019">#1019</a>
+
+**Fixed** Delete indexers and their related data from the database when removed from the config. See <a href="https://github.com/theotherp/nzbhydra2/issues/1022">#1022</a>
+
+**Fixed** Remove old linux wrapper binary from list of files to update. See <a href="https://github.com/theotherp/nzbhydra2/issues/1020">#1020</a>
+
+**Fixed** Fix memory leak in downloader status footer causing browser tab to freeze over time. See <a href="https://github.com/theotherp/nzbhydra2/issues/982">#982</a>
+
+
+
 ### v8.0.0 (2025-11-16)
 
 **Added** Passwords for users are finally encrypted (and salted) and not stored in plaintext in the config. See <a href="https://github.com/theotherp/nzbhydra2/issues/908">#908</a>
