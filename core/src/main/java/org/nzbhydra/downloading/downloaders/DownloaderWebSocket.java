@@ -32,8 +32,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import org.springframework.web.socket.messaging.SessionSubscribeEvent;
 
-import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -58,9 +58,13 @@ public class DownloaderWebSocket {
 
     private ScheduledFuture<?> scheduledFuture;
 
-    private DownloaderStatus lastSentStatus;
+    private volatile DownloaderStatus lastSentStatus;
 
-    private final Set<String> connectedSessionIds = new HashSet<>();
+    // Use thread-safe set since subscribe/disconnect events can come from different threads
+    private final Set<String> connectedSessionIds = ConcurrentHashMap.newKeySet();
+
+    // Lock for synchronizing scheduler operations
+    private final Object schedulerLock = new Object();
 
 
     @MessageMapping("/connectDownloaderStatus")
@@ -100,30 +104,34 @@ public class DownloaderWebSocket {
             final String simpSessionId = (String) event.getMessage().getHeaders().get("simpSessionId");
             logger.debug(LoggingMarkers.DOWNLOADER_STATUS_UPDATE, "Registered new connection with session ID {}", simpSessionId);
 
-            if (connectedSessionIds.isEmpty()) {
-                logger.debug(LoggingMarkers.DOWNLOADER_STATUS_UPDATE, "Scheduling downloader status update {}", simpSessionId);
-                scheduleDownloadStatusSending();
+            synchronized (schedulerLock) {
+                boolean wasEmpty = connectedSessionIds.isEmpty();
+                connectedSessionIds.add(simpSessionId);
+                if (wasEmpty && scheduledFuture == null) {
+                    logger.debug(LoggingMarkers.DOWNLOADER_STATUS_UPDATE, "Scheduling downloader status update {}", simpSessionId);
+                    scheduleDownloadStatusSending();
+                }
             }
-            connectedSessionIds.add(simpSessionId);
         }
     }
 
     @EventListener
     public void onClientDisconnect(SessionDisconnectEvent event) {
         final String simpSessionId = (String) event.getMessage().getHeaders().get("simpSessionId");
-        if (connectedSessionIds.contains(simpSessionId)) {
-            logger.debug(LoggingMarkers.DOWNLOADER_STATUS_UPDATE, "Registered disconnect with session ID {}", simpSessionId);
-            connectedSessionIds.remove(simpSessionId);
-            if (connectedSessionIds.isEmpty()) {
-                if (scheduledFuture != null) {
-                    logger.debug(LoggingMarkers.DOWNLOADER_STATUS_UPDATE, "Cancelling update schedule because no connections left");
-                    scheduledFuture.cancel(true);
-                    scheduledFuture = null;
+        synchronized (schedulerLock) {
+            if (connectedSessionIds.remove(simpSessionId)) {
+                logger.debug(LoggingMarkers.DOWNLOADER_STATUS_UPDATE, "Registered disconnect with session ID {}", simpSessionId);
+                if (connectedSessionIds.isEmpty()) {
+                    if (scheduledFuture != null) {
+                        logger.debug(LoggingMarkers.DOWNLOADER_STATUS_UPDATE, "Cancelling update schedule because no connections left");
+                        scheduledFuture.cancel(true);
+                        scheduledFuture = null;
+                    } else {
+                        logger.debug(LoggingMarkers.DOWNLOADER_STATUS_UPDATE, "No connections found but update was also not scheduled");
+                    }
                 } else {
-                    logger.debug(LoggingMarkers.DOWNLOADER_STATUS_UPDATE, "No connections found but update was also not scheduled");
+                    logger.debug(LoggingMarkers.DOWNLOADER_STATUS_UPDATE, "Not cancelling schedule because still connections left");
                 }
-            } else {
-                logger.debug(LoggingMarkers.DOWNLOADER_STATUS_UPDATE, "Not cancelling schedule because still connections left");
             }
         }
     }
@@ -131,11 +139,13 @@ public class DownloaderWebSocket {
 
     @EventListener
     public void handleNewConfig(ConfigChangedEvent configChangedEvent) {
-        if (scheduledFuture != null && !configChangedEvent.getNewConfig().getDownloading().isShowDownloaderStatus()) {
-            scheduledFuture.cancel(true);
-            scheduledFuture = null;
-        } else if (scheduledFuture == null && configChangedEvent.getNewConfig().getDownloading().isShowDownloaderStatus()) {
-            scheduleDownloadStatusSending();
+        synchronized (schedulerLock) {
+            if (scheduledFuture != null && !configChangedEvent.getNewConfig().getDownloading().isShowDownloaderStatus()) {
+                scheduledFuture.cancel(true);
+                scheduledFuture = null;
+            } else if (scheduledFuture == null && configChangedEvent.getNewConfig().getDownloading().isShowDownloaderStatus() && !connectedSessionIds.isEmpty()) {
+                scheduleDownloadStatusSending();
+            }
         }
     }
 
@@ -146,9 +156,11 @@ public class DownloaderWebSocket {
 
     @PreDestroy
     public void onShutdown() {
-        if (scheduledFuture != null) {
-            scheduledFuture.cancel(true);
-            scheduledFuture = null;
+        synchronized (schedulerLock) {
+            if (scheduledFuture != null) {
+                scheduledFuture.cancel(true);
+                scheduledFuture = null;
+            }
         }
         scheduler.shutdown();
     }

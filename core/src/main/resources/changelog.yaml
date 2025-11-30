@@ -9,6 +9,8 @@
           text: "Delete indexers and their related data from the database when removed from the config. See #1022"
       -   type: "fixed"
           text: "Remove old linux wrapper binary from list of files to update. See #1020"
+      -   type: "fixed"
+          text: "Fix memory leak in downloader status footer causing browser tab to freeze over time. See #982"
     final: true
 -   version: "v8.0.0"
     date: "2025-11-16"

@@ -28,24 +28,53 @@ function downloaderStatusFooter() {
 
         var downloaderStatus;
         var updateInterval = null;
-        console.log("websocket");
-        var socket = new SockJS(bootstrapped.baseUrl + 'websocket');
-        var stompClient = Stomp.over(socket);
-        stompClient.debug = null;
-        stompClient.connect({}, function (frame) {
-            stompClient.subscribe('/topic/downloaderStatus', function (message) {
-                downloaderStatus = JSON.parse(message.body);
-                updateFooter(downloaderStatus);
+        var stompClient = null;
+        var socket = null;
+        var downloadRateCounter = 0;
+        var maxXValue = 10000; // Reset counter before it gets too large
+
+        function connectWebSocket() {
+            console.log("websocket");
+            socket = new SockJS(bootstrapped.baseUrl + 'websocket');
+            stompClient = Stomp.over(socket);
+            stompClient.debug = null;
+            stompClient.connect({}, function (frame) {
+                stompClient.subscribe('/topic/downloaderStatus', function (message) {
+                    downloaderStatus = JSON.parse(message.body);
+                    updateFooter(downloaderStatus);
+                });
+                stompClient.send("/app/connectDownloaderStatus", function (message) {
+                    downloaderStatus = JSON.parse(message.body);
+                    updateFooter(downloaderStatus);
+                })
             });
-            stompClient.send("/app/connectDownloaderStatus", function (message) {
-                downloaderStatus = JSON.parse(message.body);
-                updateFooter(downloaderStatus);
-            })
+        }
+
+        connectWebSocket();
+
+        // Clean up on scope destroy to prevent memory leaks
+        $scope.$on('$destroy', function () {
+            if (updateInterval !== null) {
+                $interval.cancel(updateInterval);
+                updateInterval = null;
+            }
+            if (stompClient !== null) {
+                try {
+                    stompClient.disconnect();
+                } catch (ignored) {
+                }
+                stompClient = null;
+            }
+            if (socket !== null) {
+                try {
+                    socket.close();
+                } catch (ignored) {
+                }
+                socket = null;
+            }
         });
 
-
         $scope.$emit("showDownloaderStatus", true);
-        var downloadRateCounter = 0;
 
         $scope.downloaderChart = {
             options: {
@@ -93,6 +122,22 @@ function downloaderStatusFooter() {
             }
         };
 
+        function getNextXValue() {
+            downloadRateCounter++;
+            // Reset counter to prevent number overflow after extended use
+            if (downloadRateCounter > maxXValue) {
+                downloadRateCounter = 0;
+            }
+            return downloadRateCounter;
+        }
+
+        function safeApply() {
+            // Only apply if not already in a digest cycle
+            if (!$scope.$$phase && !$scope.$root.$$phase) {
+                $scope.$apply();
+            }
+        }
+
         function updateFooter() {
             if (downloaderStatus.lastUpdateForNow && updateInterval === null) {
                 //Server will send no new status updates for a while because the last two retrieved statuses are the same.
@@ -101,7 +146,7 @@ function downloaderStatusFooter() {
                 updateInterval = $interval(function () {
                     //Just put the last known rate at the end to keep it going
                     $scope.downloaderChart.data[0].values.splice(0, 1);
-                    $scope.downloaderChart.data[0].values.push({x: downloadRateCounter++, y: downloaderStatus.lastDownloadRate});
+                    $scope.downloaderChart.data[0].values.push({x: getNextXValue(), y: downloaderStatus.lastDownloadRate});
                     try {
                         $scope.api.update();
                     } catch (ignored) {
@@ -136,13 +181,13 @@ function downloaderStatusFooter() {
                     if (i >= downloaderStatus.downloadingRatesInKilobytes.length) {
                         break;
                     }
-                    $scope.downloaderChart.data[0].values.push({x: downloadRateCounter++, y: downloaderStatus.downloadingRatesInKilobytes[i]});
+                    $scope.downloaderChart.data[0].values.push({x: getNextXValue(), y: downloaderStatus.downloadingRatesInKilobytes[i]});
                 }
             } else {
                 console.debug("Adding data, moving bar")
                 //Remove first one, add to the end
                 $scope.downloaderChart.data[0].values.splice(0, 1);
-                $scope.downloaderChart.data[0].values.push({x: downloadRateCounter++, y: downloaderStatus.lastDownloadRate});
+                $scope.downloaderChart.data[0].values.push({x: getNextXValue(), y: downloaderStatus.lastDownloadRate});
             }
             try {
                 $scope.api.update();
@@ -158,8 +203,7 @@ function downloaderStatusFooter() {
                 $scope.foo.buttonClass = "time";
             }
             $scope.foo.state = $scope.foo.state.substr(0, 1) + $scope.foo.state.substr(1).toLowerCase();
-            //Bad but without the state isn't updated
-            $scope.$apply();
+            safeApply();
         }
 
     }
