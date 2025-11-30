@@ -135,6 +135,7 @@ public class MainConfig {
     private int xmx;
     @RestartRequired
     private String customVmOptions;
+    private String scheduledRestartTime;
 
     private LoggingConfig logging = new LoggingConfig();
 
@@ -154,5 +155,8 @@ public class MainConfig {
         return Optional.ofNullable(backupEveryXDays);
     }
 
+    public Optional<String> getScheduledRestartTime() {
+        return Optional.ofNullable(Strings.emptyToNull(scheduledRestartTime));
+    }
 
 }

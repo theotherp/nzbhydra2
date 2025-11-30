@@ -710,6 +710,20 @@ function ConfigFields($injector) {
                                 help: 'Additional JVM options to pass to the main process. Separate multiple options with spaces. Example: "-Djava.net.preferIPv6Addresses=true -Dother.property=value"',
                                 advanced: true
                             }
+                        },
+                        {
+                            key: 'scheduledRestartTime',
+                            type: 'horizontalInput',
+                            templateOptions: {
+                                type: 'text',
+                                label: 'Scheduled restart time',
+                                placeholder: 'HH:mm',
+                                help: 'Time of day when NZBHydra should automatically restart. Leave empty to disable. May help with keeping database size low(er).',
+                                advanced: true
+                            },
+                            validators: {
+                                time: regexValidator(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, "is not a valid time (use HH:mm format)", true)
+                            }
                         }
                     ]
 

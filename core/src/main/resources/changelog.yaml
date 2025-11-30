@@ -2,9 +2,11 @@
 -   version: "v8.1.0"
     changes:
       -   type: "added"
+          text: "Allow configuring a daily restart time. See #1002"
+      -   type: "added"
           text: "Also search in archived entries when checking for download completion for sabnzbd downloads."
       -   type: "added"
-          text: "SVG as favicon. Also removes the black background on supported (basically any modern) browsers See #1019"
+          text: "SVG as favicon. Also removes the black background on supported (basically any modern) browsers (so you may need to get used to a new-ish icon in your browser). See #1019"
       -   type: "fixed"
           text: "Delete indexers and their related data from the database when removed from the config. See #1022"
       -   type: "fixed"

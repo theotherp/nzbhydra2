@@ -87,7 +87,17 @@ angular
             name: 'timeOfDay',
             extends: 'horizontalInput',
             controller: ['$scope', function ($scope) {
-                $scope.model[$scope.options.key] = moment.utc($scope.model[$scope.options.key]).toDate();
+                var key = $scope.options.key;
+                var value = $scope.model[key];
+                // Convert HH:mm string to Date for the time picker on load
+                if (value && typeof value === 'string') {
+                    // Parse HH:mm format
+                    var parts = value.split(':');
+                    if (parts.length >= 2) {
+                        var date = new Date(Date.UTC(1970, 0, 1, parseInt(parts[0], 10), parseInt(parts[1], 10), 0));
+                        $scope.model[key] = date;
+                    }
+                }
             }]
         });
 

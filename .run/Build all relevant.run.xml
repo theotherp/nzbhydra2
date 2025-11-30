@@ -1,0 +1,56 @@
+<!--
+  ~  (C) Copyright 2025 TheOtherP (theotherp@posteo.net)
+  ~
+  ~  Licensed under the Apache License, Version 2.0 (the "License");
+  ~  you may not use this file except in compliance with the License.
+  ~  You may obtain a copy of the License at
+  ~
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~  Unless required by applicable law or agreed to in writing, software
+  ~  distributed under the License is distributed on an "AS IS" BASIS,
+  ~  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~  See the License for the specific language governing permissions and
+  ~  limitations under the License.
+  -->
+
+<component name="ProjectRunConfigurationManager">
+    <configuration default="false" name="Build all relevant" type="MavenRunConfiguration" factoryName="Maven">
+        <MavenSettings>
+            <option name="myGeneralSettings"/>
+            <option name="myRunnerSettings"/>
+            <option name="myRunnerParameters">
+                <MavenRunnerParameters>
+                    <option name="cmdOptions"/>
+                    <option name="profiles">
+                        <set/>
+                    </option>
+                    <option name="goals">
+                        <list>
+                            <option value="-q"/>
+                            <option value="-pl"/>
+                            <option value="org.nzbhydra:nzbhydra2,org.nzbhydra:shared,org.nzbhydra:mapping,org.nzbhydra:core"/>
+                            <option value="clean"/>
+                            <option value="install"/>
+                            <option value="-B"/>
+                            <option value="-T"/>
+                            <option value="1C"/>
+                            <option value="-DskipTests=true"/>
+                        </list>
+                    </option>
+                    <option name="multimoduleDir"/>
+                    <option name="pomFileName"/>
+                    <option name="profilesMap">
+                        <map/>
+                    </option>
+                    <option name="projectsCmdOptionValues">
+                        <list/>
+                    </option>
+                    <option name="resolveToWorkspace" value="false"/>
+                    <option name="workingDirPath" value="$PROJECT_DIR$"/>
+                </MavenRunnerParameters>
+            </option>
+        </MavenSettings>
+        <method v="2"/>
+    </configuration>
+</component>

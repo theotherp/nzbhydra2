@@ -44,6 +44,7 @@ public class Jackson {
         defaultPrettyPrinter.indentObjectsWith(indenter);
         defaultPrettyPrinter.indentArraysWith(indenter);
         YAML_MAPPER.registerModule(new Jdk8Module());
+        YAML_MAPPER.registerModule(new JavaTimeModule());
         YAML_MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         YAML_MAPPER.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
         YAML_WRITER = YAML_MAPPER.writer(defaultPrettyPrinter);
