@@ -8,6 +8,8 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.Data;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.nzbhydra.indexers.IndexerEntity;
 import org.nzbhydra.springnative.ReflectionMarker;
 
@@ -26,6 +28,7 @@ public final class IndexerLimit {
     protected int id;
 
     @OneToOne
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private IndexerEntity indexer;
     private Integer apiHits;
     private Integer apiHitLimit;

@@ -5,13 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.nzbhydra.GenericResponse;
-import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.safeconfig.SafeConfig;
 import org.nzbhydra.config.validation.BaseConfigValidator;
 import org.nzbhydra.config.validation.ConfigValidationResult;
 import org.nzbhydra.externaltools.ExternalToolsSyncService;
-import org.nzbhydra.indexers.IndexerEntity;
-import org.nzbhydra.indexers.IndexerRepository;
 import org.nzbhydra.springnative.ReflectionMarker;
 import org.nzbhydra.web.UrlCalculator;
 import org.slf4j.Logger;
@@ -30,7 +27,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -48,13 +44,13 @@ public class ConfigWeb {
     @Autowired
     private UrlCalculator urlCalculator;
     @Autowired
-    private IndexerRepository indexerRepository;
-    @Autowired
     private BaseConfigValidator baseConfigValidator;
     @Autowired
     private BaseConfigHandler baseConfigHandler;
     @Autowired
     private ExternalToolsSyncService externalToolsSyncService;
+    @Autowired
+    private IndexerConfigService indexerConfigService;
     private final ConfigReaderWriter configReaderWriter = new ConfigReaderWriter();
 
     @Secured({"ROLE_ADMIN"})
@@ -85,7 +81,8 @@ public class ConfigWeb {
         newConfig = baseConfigValidator.prepareForSaving(oldConfig, newConfig);
         ConfigValidationResult result = baseConfigValidator.validateConfig(oldConfig, newConfig, newConfig);
         if (result.isOk()) {
-            handleRenamedIndexers(newConfig);
+            // Handle indexer renames and deletions in a single transaction
+            indexerConfigService.handleIndexerConfigChanges(newConfig);
 
             // Detect which indexers changed before replacing config
             Set<String> changedIndexers = externalToolsSyncService.detectChangedIndexers(
@@ -111,35 +108,6 @@ public class ConfigWeb {
         }
         return result;
     }
-
-    private void handleRenamedIndexers(@RequestBody BaseConfig newConfig) {
-        final Set<String> loggedSameNameAndApiKey = new HashSet<>();
-        for (IndexerConfig newIndexer : newConfig.getIndexers()) {
-            final boolean alreadyExistedBefore = configProvider.getBaseConfig().getIndexers().stream()
-                    .filter(x -> x != newIndexer)
-                    .anyMatch(x -> x.getName().equals(newIndexer.getName()));
-            if (alreadyExistedBefore) {
-                //If an indexer with the same name already existed before it can't have been renamed. Better be safe than sorry...
-                continue;
-            }
-
-            final Optional<IndexerConfig> sameOldIndexer = configProvider.getBaseConfig().getIndexers().stream()
-                    .filter(x -> !x.getName().equals(newIndexer.getName()))
-                    .filter(x -> IndexerConfig.isIndexerEquals(newIndexer, x))
-                    .findFirst();
-            if (sameOldIndexer.isPresent()) {
-                logger.info("Indexer was renamed from {} to {}", sameOldIndexer.get().getName(), newIndexer.getName());
-                try {
-                    final IndexerEntity indexerEntity = indexerRepository.findByName(sameOldIndexer.get().getName());
-                    indexerEntity.setName(newIndexer.getName());
-                    indexerRepository.save(indexerEntity);
-                } catch (Exception e) {
-                    logger.error("Error while renaming indexer", e);
-                }
-            }
-        }
-    }
-
 
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/config/reload", method = RequestMethod.GET)
