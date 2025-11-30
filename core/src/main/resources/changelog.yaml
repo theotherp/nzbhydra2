@@ -1,5 +1,6 @@
 #@formatter:off
 -   version: "v8.1.0"
+    date: "2025-11-30"
     changes:
       -   type: "added"
           text: "Allow configuring a daily restart time. See #1002"
