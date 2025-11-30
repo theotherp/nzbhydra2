@@ -9,7 +9,8 @@
       "mcp__jetbrains__get_run_configurations",
       "mcp__jetbrains__execute_run_configuration",
       "mcp__jetbrains__search_in_files_by_text",
-      "Bash(mvn compile:*)"
+      "Bash(mvn compile:*)",
+      "Bash(mvn test:*)"
     ],
     "deny": [],
     "ask": []
