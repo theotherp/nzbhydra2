@@ -18,9 +18,9 @@ package org.nzbhydra.web;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
-import org.nzbhydra.ShutdownEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -28,9 +28,14 @@ import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBr
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
+import java.util.concurrent.RejectedExecutionHandler;
+import java.util.concurrent.ThreadPoolExecutor;
+
 @Configuration(proxyBeanMethods = false)
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+
+    private static final Logger logger = LoggerFactory.getLogger(WebSocketConfig.class);
 
     private final ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
 
@@ -41,7 +46,26 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         taskExecutor.setWaitForTasksToCompleteOnShutdown(true);
         taskExecutor.setAwaitTerminationSeconds(5);
         taskExecutor.setThreadNamePrefix("websocket-");
+        // Use a graceful rejection policy that silently discards tasks during shutdown
+        // This prevents warnings when WebSocket disconnect messages can't be sent
+        taskExecutor.setRejectedExecutionHandler(new GracefulShutdownRejectionHandler());
         taskExecutor.initialize();
+    }
+
+    /**
+     * A rejection handler that silently discards tasks when the executor is shutting down.
+     * This prevents noisy warnings during application shutdown when WebSocket sessions
+     * try to send disconnect messages after the executor has been terminated.
+     */
+    private static class GracefulShutdownRejectionHandler implements RejectedExecutionHandler {
+        @Override
+        public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
+            if (!executor.isShutdown()) {
+                // Only log if we're not shutting down - this would indicate a real problem
+                logger.warn("Task rejected by WebSocket executor while not shutting down: {}", r);
+            }
+            // During shutdown, silently discard the task
+        }
     }
 
     @Override
@@ -66,11 +90,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
         registration.taskExecutor(taskExecutor);
-    }
-
-    @EventListener
-    public void handleShutdown(ShutdownEvent shutdownEvent) {
-        onShutdown();
     }
 
     @PreDestroy
