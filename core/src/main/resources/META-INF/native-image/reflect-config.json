@@ -67054,6 +67054,36 @@
     ]
   },
   {
+    "name": "org.nzbhydra.systemcontrol.ScheduledRestartTask",
+    "allPublicMethods": true,
+    "fields": [
+      {
+        "name": "configProvider"
+      },
+      {
+        "name": "systemControl"
+      },
+      {
+        "name": "genericStorage"
+      },
+      {
+        "name": "clock"
+      }
+    ],
+    "methods": [
+      {
+        "name": "checkForScheduledRestart",
+        "parameterTypes": []
+      }
+    ],
+    "queriedMethods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
     "name": "org.springframework.boot.diagnostics.analyzer.BindFailureAnalyzer",
     "allDeclaredConstructors": true
   },
