@@ -139,6 +139,35 @@ jobs:
           shopt -s globstar
           for d in ./**/*.log ; do (truncate --size=1M $d); done
 
+      - name: "Check logs for unwanted strings"
+        run: |
+          # Add unwanted strings to this list (one per line)
+          UNWANTED_STRINGS=(
+            "MissingReflectionRegistrationError"
+          )
+
+          FOUND_ISSUES=0
+          for pattern in "${UNWANTED_STRINGS[@]}"; do
+            echo "Searching for: $pattern"
+            matches=$(grep -rH "$pattern" docker/docker-compose-systemtest/linux/*.log /tmp/hydra/**/*.log 2>/dev/null || true)
+            if [ -n "$matches" ]; then
+              echo "::error::Found unwanted string '$pattern' in logs:"
+              echo "$matches" | while read -r line; do
+                file=$(echo "$line" | cut -d: -f1)
+                content=$(echo "$line" | cut -d: -f2-)
+                echo "  File: $file"
+                echo "  Content: $content"
+              done
+              FOUND_ISSUES=1
+            fi
+          done
+
+          if [ $FOUND_ISSUES -eq 1 ]; then
+            echo "::error::Unwanted strings found in log files. See above for details."
+            exit 1
+          fi
+          echo "No unwanted strings found in logs"
+
       - name: "Upload data folder artifact"
         uses: actions/upload-artifact@v4
         if: always()
@@ -256,6 +285,40 @@ jobs:
         with:
           method: "POST"
           url: "http://127.0.0.1:5080/actuator/shutdown"
+
+      - name: "Check logs for unwanted strings"
+        shell: pwsh
+        run: |
+          # Add unwanted strings to this list (one per line)
+          $unwantedStrings = @(
+            "MissingReflectionRegistrationError"
+          )
+
+          $foundIssues = $false
+          $logPaths = @("data", "tests")
+
+          foreach ($pattern in $unwantedStrings) {
+            Write-Host "Searching for: $pattern"
+            foreach ($logPath in $logPaths) {
+              if (Test-Path $logPath) {
+                $results = Get-ChildItem -Path $logPath -Filter "*.log" -Recurse -ErrorAction SilentlyContinue | Select-String -Pattern $pattern -ErrorAction SilentlyContinue
+                if ($results) {
+                  Write-Host "::error::Found unwanted string '$pattern' in logs:"
+                  $results | ForEach-Object {
+                    Write-Host "  File: $($_.Path)"
+                    Write-Host "  Line $($_.LineNumber): $($_.Line)"
+                  }
+                  $foundIssues = $true
+                }
+              }
+            }
+          }
+
+          if ($foundIssues) {
+            Write-Host "::error::Unwanted strings found in log files. See above for details."
+            exit 1
+          }
+          Write-Host "No unwanted strings found in logs"
 
       - name: "Upload data folder artifact"
         uses: actions/upload-artifact@v4
