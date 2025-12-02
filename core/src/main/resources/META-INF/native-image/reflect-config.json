@@ -179,13 +179,13 @@
   "name":"ch.qos.logback.classic.joran.SerializedModelConfigurator",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
-  "allDeclaredConstructors":true,
-  "methods":[
-    {
-      "name":"configure",
-      "parameterTypes":["ch.qos.logback.classic.LoggerContext"]
-    }
-  ]
+  "allDeclaredConstructors":true
+},
+{
+  "name":"ch.qos.logback.classic.joran.JoranConfigurator",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
 },
 {
   "name":"ch.qos.logback.classic.filter.ThresholdFilter",
