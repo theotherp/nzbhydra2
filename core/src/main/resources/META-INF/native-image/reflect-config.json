@@ -67055,33 +67055,24 @@
   },
   {
     "name": "org.nzbhydra.systemcontrol.ScheduledRestartTask",
-    "allPublicMethods": true,
-    "fields": [
-      {
-        "name": "configProvider"
-      },
-      {
-        "name": "systemControl"
-      },
-      {
-        "name": "genericStorage"
-      },
-      {
-        "name": "clock"
-      }
-    ],
-    "methods": [
-      {
-        "name": "checkForScheduledRestart",
-        "parameterTypes": []
-      }
-    ],
-    "queriedMethods": [
-      {
-        "name": "<init>",
-        "parameterTypes": []
-      }
-    ]
+      "allDeclaredFields":true,
+      "queryAllDeclaredMethods":true,
+      "queryAllPublicMethods":true,
+      "queryAllDeclaredConstructors":true,
+      "methods": [
+          {
+              "name": "<init>",
+              "parameterTypes": []
+          },
+          {
+              "name": "checkForScheduledRestart",
+              "parameterTypes": []
+          },
+          {
+              "name": "init",
+              "parameterTypes": []
+          }
+      ]
   },
   {
     "name": "org.springframework.boot.diagnostics.analyzer.BindFailureAnalyzer",

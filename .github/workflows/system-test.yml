@@ -149,14 +149,19 @@ jobs:
           FOUND_ISSUES=0
           for pattern in "${UNWANTED_STRINGS[@]}"; do
             echo "Searching for: $pattern"
-            matches=$(grep -rH "$pattern" docker/docker-compose-systemtest/linux/*.log /tmp/hydra/**/*.log 2>/dev/null || true)
+            matches=$(grep -rHn "$pattern" docker/docker-compose-systemtest/linux/*.log /tmp/hydra/**/*.log 2>/dev/null || true)
             if [ -n "$matches" ]; then
               echo "::error::Found unwanted string '$pattern' in logs:"
               echo "$matches" | while read -r line; do
                 file=$(echo "$line" | cut -d: -f1)
-                content=$(echo "$line" | cut -d: -f2-)
+                linenum=$(echo "$line" | cut -d: -f2)
+                content=$(echo "$line" | cut -d: -f3-)
                 echo "  File: $file"
-                echo "  Content: $content"
+                echo "  Line $linenum: $content"
+                # Show next 5 lines for context
+                tail -n +$((linenum + 1)) "$file" 2>/dev/null | head -n 5 | while read -r ctx; do
+                  echo "    $ctx"
+                done
               done
               FOUND_ISSUES=1
             fi
@@ -307,6 +312,13 @@ jobs:
                   $results | ForEach-Object {
                     Write-Host "  File: $($_.Path)"
                     Write-Host "  Line $($_.LineNumber): $($_.Line)"
+                    # Show next 5 lines for context
+                    $fileLines = Get-Content -Path $_.Path -ErrorAction SilentlyContinue
+                    $startLine = $_.LineNumber
+                    $endLine = [Math]::Min($startLine + 5, $fileLines.Count)
+                    for ($i = $startLine; $i -lt $endLine; $i++) {
+                      Write-Host "    $($fileLines[$i])"
+                    }
                   }
                   $foundIssues = $true
                 }
