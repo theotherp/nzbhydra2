@@ -11,7 +11,8 @@
       "mcp__jetbrains__search_in_files_by_text",
       "Bash(mvn compile:*)",
       "Bash(mvn test:*)",
-      "Bash(mvn help:describe:*)"
+      "Bash(mvn help:describe:*)",
+      "mcp__github__get_commit"
     ],
     "deny": [],
     "ask": []
