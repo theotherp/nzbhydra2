@@ -536,7 +536,6 @@
                                     <buildArg>-march=compatibility</buildArg>
                                     <buildArg>--no-fallback -J-Xmx13g</buildArg>
                                     <buildArg>--native-image-info</buildArg>
-                                    <buildArg>-H:ThrowMissingRegistrationErrors=org.nzbhydra</buildArg>
                             </buildArgs>
                                 <classesDirectory>${project.build.outputDirectory}</classesDirectory>
                                 <metadataRepository>
@@ -552,6 +551,24 @@
                                     </goals>
                                 </execution>
                             </executions>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
+        </profile>
+        <profile>
+            <id>strictReflection</id>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.graalvm.buildtools</groupId>
+                            <artifactId>native-maven-plugin</artifactId>
+                            <configuration>
+                                <buildArgs combine.children="append">
+                                    <buildArg>-H:ThrowMissingRegistrationErrors=org.nzbhydra</buildArg>
+                                </buildArgs>
+                            </configuration>
                         </plugin>
                     </plugins>
                 </pluginManagement>

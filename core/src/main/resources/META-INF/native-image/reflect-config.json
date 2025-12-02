@@ -178,9 +178,8 @@
 {
   "name":"ch.qos.logback.classic.joran.SerializedModelConfigurator",
   "allDeclaredFields":true,
-  "queryAllDeclaredMethods":true,
-  "queryAllPublicMethods":true,
-  "queryAllDeclaredConstructors":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true,
   "methods":[
     {
       "name":"configure",
