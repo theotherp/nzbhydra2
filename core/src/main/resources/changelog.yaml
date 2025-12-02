@@ -1,11 +1,13 @@
 #@formatter:off
 -   version: "v8.1.1"
-    date: "2025-12-01"
+    date: "2025-12-02"
     changes:
       -   type: "fix"
           text: "Scheduled restart didn't work (due to some complicated logic that causes installed instances behaving differently than on my developer system)."
       -   type: "fix"
           text: "Changelog entries were not prefixed with \"Feature\" or \"Fix\" lately."
+      -   type: "fix"
+          text: "Prevent excessive CPU usage caused by loop searching Binsearch. See #1026"
     final: true
 -   version: "v8.1.0"
     date: "2025-11-30"

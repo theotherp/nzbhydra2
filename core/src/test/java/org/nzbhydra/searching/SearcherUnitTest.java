@@ -280,5 +280,28 @@ public class SearcherUnitTest {
         return indexerSearchResult;
     }
 
+    @Test
+    void shouldStopSearchingIndexerAfterMaxQueries() throws Exception {
+        // This test verifies the circuit breaker prevents infinite loops
+        // when an indexer always claims to have more results
+        int maxQueries = 15; // MAX_QUERIES_UNTIL_BREAK constant value
+
+        // Set up indexer to always return results with hasMoreResults=true
+        when(indexer1.search(any(), anyInt(), anyInt())).thenAnswer(invocation -> {
+            int offset = invocation.getArgument(1);
+            return mockIndexerSearchResult(offset, 100, true, 10000, indexer1);
+        });
+
+        // Request many more results than the indexer will return per page
+        // This forces the searcher to make multiple calls
+        SearchRequest searchRequest = new SearchRequest(SearchSource.API, SearchType.SEARCH, 0, 2000);
+        searchRequest.setTitle("test query");
+
+        SearchResult result = searcher.search(searchRequest);
+
+        // Verify that the indexer was not called more than maxQueries times
+        verify(indexer1, atMost(maxQueries)).search(any(), anyInt(), anyInt());
+    }
+
 
 }

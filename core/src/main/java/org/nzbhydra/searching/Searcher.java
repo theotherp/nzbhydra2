@@ -133,7 +133,13 @@ public class Searcher {
 
                 indexersWithCachedResults = getIndexersWithCachedResults(searchCacheEntry);
                 if (!newestIndexerSearchCacheEntry.isMoreResultsInCache() && newestIndexerSearchCacheEntry.isMoreResultsAvailable()) {
-                    indexersToSearch.add(newestIndexerSearchCacheEntry);
+                    //Circuit breaker: Don't add indexer if it has already executed too many queries
+                    final int executedSearches = newestIndexerSearchCacheEntry.getIndexerSearchResults().size();
+                    if (!searchRequest.isLoadAll() && executedSearches >= MAX_QUERIES_UNTIL_BREAK) {
+                        logger.warn("Indexer {} executed {} queries without a load-all search. Will stop now", newestIndexerSearchCacheEntry.getIndexer().getName(), executedSearches);
+                    } else {
+                        indexersToSearch.add(newestIndexerSearchCacheEntry);
+                    }
                     //We need to make a new search for that indexer so we need to stop here. If we still haven't enough results the outer loop will cause more results to be loaded
                     break;
                 }
