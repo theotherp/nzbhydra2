@@ -535,7 +535,7 @@
                                     <buildArg>-march=compatibility</buildArg>
                                     <buildArg>--no-fallback -J-Xmx13g</buildArg>
                                     <buildArg>--native-image-info</buildArg>
-                                    <buildArg>-H:+ThrowMissingRegistrationErrors</buildArg>
+                                    <buildArg>-H:ThrowMissingRegistrationErrors=org.nzbhydra</buildArg>
                             </buildArgs>
                                 <classesDirectory>${project.build.outputDirectory}</classesDirectory>
                                 <metadataRepository>
