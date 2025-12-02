@@ -554,6 +554,16 @@
                         </plugin>
                     </plugins>
                 </pluginManagement>
+                <plugins>
+                    <plugin>
+                        <groupId>org.springframework.boot</groupId>
+                        <artifactId>spring-boot-maven-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.graalvm.buildtools</groupId>
+                        <artifactId>native-maven-plugin</artifactId>
+                    </plugin>
+                </plugins>
             </build>
         </profile>
         <profile>
@@ -566,7 +576,7 @@
                             <artifactId>native-maven-plugin</artifactId>
                             <configuration>
                                 <buildArgs combine.children="append">
-                                    <buildArg>-H:ThrowMissingRegistrationErrors=org.nzbhydra</buildArg>
+                                    <buildArg>-H:MissingRegistrationReportingMode=Warn</buildArg>
                                 </buildArgs>
                             </configuration>
                         </plugin>

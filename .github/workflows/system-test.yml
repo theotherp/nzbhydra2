@@ -140,6 +140,7 @@ jobs:
           for d in ./**/*.log ; do (truncate --size=1M $d); done
 
       - name: "Check logs for unwanted strings"
+        if: always()
         run: |
           # Add unwanted strings to this list (one per line)
           UNWANTED_STRINGS=(

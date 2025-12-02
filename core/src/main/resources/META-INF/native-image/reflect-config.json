@@ -188,6 +188,12 @@
   "allDeclaredConstructors":true
 },
 {
+  "name":"ch.qos.logback.classic.util.DefaultJoranConfigurator",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
   "name":"ch.qos.logback.classic.filter.ThresholdFilter",
   "queryAllPublicMethods":true,
   "methods":[

@@ -358,6 +358,8 @@ public class NzbHydra {
     }
 
     public static boolean isNativeBuild() {
-        return System.getenv("HYDRA_NATIVE_BUILD") != null;
+        String hydraNativeBuildEnv = System.getenv("HYDRA_NATIVE_BUILD");
+        String hydraNativeBuildProperty = System.getProperty("HYDRA_NATIVE_BUILD");
+        return hydraNativeBuildEnv != null || hydraNativeBuildProperty != null;
     }
 }
