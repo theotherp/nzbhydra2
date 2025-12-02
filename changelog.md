@@ -1,174 +1,186 @@
+### v8.1.1 (2025-12-02)
+
+**Fix** Scheduled restart didn't work (due to some complicated logic that causes installed instances behaving differently than on my developer system).
+
+**Fix** Changelog entries were not prefixed with "Feature" or "Fix" lately.
+
+**Fix** Prevent excessive CPU usage caused by loop searching Binsearch. See <a href="https://github.com/theotherp/nzbhydra2/issues/1026">#1026</a>
+
+**Fix** Searching wtfnzb without a query didn't work.
+
+
+
 ### v8.1.0 (2025-11-30)
 
-**Added** Allow configuring a daily restart time. See <a href="https://github.com/theotherp/nzbhydra2/issues/1002">#1002</a>
+**Feature** Allow configuring a daily restart time. See <a href="https://github.com/theotherp/nzbhydra2/issues/1002">#1002</a>
 
-**Added** Also search in archived entries when checking for download completion for sabnzbd downloads.
+**Feature** Also search in archived entries when checking for download completion for sabnzbd downloads.
 
-**Added** SVG as favicon. Also removes the black background on supported (basically any modern) browsers (so you may need to get used to a new-ish icon in your browser). See <a href="https://github.com/theotherp/nzbhydra2/issues/1019">#1019</a>
+**Feature** SVG as favicon. Also removes the black background on supported (basically any modern) browsers (so you may need to get used to a new-ish icon in your browser). See <a href="https://github.com/theotherp/nzbhydra2/issues/1019">#1019</a>
 
-**Fixed** Delete indexers and their related data from the database when removed from the config. See <a href="https://github.com/theotherp/nzbhydra2/issues/1022">#1022</a>
+**Fix** Delete indexers and their related data from the database when removed from the config. See <a href="https://github.com/theotherp/nzbhydra2/issues/1022">#1022</a>
 
-**Fixed** Remove old linux wrapper binary from list of files to update. See <a href="https://github.com/theotherp/nzbhydra2/issues/1020">#1020</a>
+**Fix** Remove old linux wrapper binary from list of files to update. See <a href="https://github.com/theotherp/nzbhydra2/issues/1020">#1020</a>
 
-**Fixed** Fix memory leak in downloader status footer causing browser tab to freeze over time. See <a href="https://github.com/theotherp/nzbhydra2/issues/982">#982</a>
+**Fix** Fix memory leak in downloader status footer causing browser tab to freeze over time. See <a href="https://github.com/theotherp/nzbhydra2/issues/982">#982</a>
 
 
 
 ### v8.0.0 (2025-11-16)
 
-**Added** Passwords for users are finally encrypted (and salted) and not stored in plaintext in the config. See <a href="https://github.com/theotherp/nzbhydra2/issues/908">#908</a>
+**Feature** Passwords for users are finally encrypted (and salted) and not stored in plaintext in the config. See <a href="https://github.com/theotherp/nzbhydra2/issues/908">#908</a>
 
-**Added** Sensitive data like proxy credentials and indexer API keys are now obfuscated in the config. They can still be read by any NZBHydra instance, but automated sniffing tools will no longer be able to read these values from the saved config. Making this more secure would make other features like backups much less convenient, so I decided to go with this middle ground approach.
+**Feature** Sensitive data like proxy credentials and indexer API keys are now obfuscated in the config. They can still be read by any NZBHydra instance, but automated sniffing tools will no longer be able to read these values from the saved config. Making this more secure would make other features like backups much less convenient, so I decided to go with this middle ground approach.
 
-**Fixed** NZBGeek queries will not be truncated to 6 words.
+**Fix** NZBGeek queries will not be truncated to 6 words.
 
-**Fixed** Properly encode characters in queries. See <a href="https://github.com/theotherp/nzbhydra2/issues/1023">#1023</a>
+**Fix** Properly encode characters in queries. See <a href="https://github.com/theotherp/nzbhydra2/issues/1023">#1023</a>
 
 
 
 ### v7.19.2 (2025-09-26)
 
-**Fixed** Actuator endpoint (for health checks and infos and so on) are only available to admin users
+**Fix** Actuator endpoint (for health checks and infos and so on) are only available to admin users
 
 
 
 ### v7.19.1 (2025-09-19)
 
-**Fixed** Fixed wrapper scripts failing to launch when customVmOptions is null in config. See <a href="https://github.com/theotherp/nzbhydra2/issues/1016">#1016</a>
+**Fix** Fixed wrapper scripts failing to launch when customVmOptions is null in config. See <a href="https://github.com/theotherp/nzbhydra2/issues/1016">#1016</a>
 
 
 
 ### v7.19.0 (2025-09-18)
 
-**Added** Configure external tools once. Sync your indexers to them manually and automatically whenever you change your indexer config. See <a href="https://github.com/theotherp/nzbhydra2/issues/1014">#1014</a>
+**Feature** Configure external tools once. Sync your indexers to them manually and automatically whenever you change your indexer config. See <a href="https://github.com/theotherp/nzbhydra2/issues/1014">#1014</a>
 
-**Fixed** Replace slash and quotation marks in download name sent to sabNZBd. See <a href="https://github.com/theotherp/nzbhydra2/issues/1015">#1015</a>
+**Fix** Replace slash and quotation marks in download name sent to sabNZBd. See <a href="https://github.com/theotherp/nzbhydra2/issues/1015">#1015</a>
 
 
 
 ### v7.18.0 (2025-09-17)
 
-**Added** When downloading results as ZIP is not possible show a button to copy links for selected results to the clipboard. See <a href="https://github.com/theotherp/nzbhydra2/issues/996">#996</a>
+**Feature** When downloading results as ZIP is not possible show a button to copy links for selected results to the clipboard. See <a href="https://github.com/theotherp/nzbhydra2/issues/996">#996</a>
 
-**Added** Add custom options to main process on startup. See <a href="https://github.com/theotherp/nzbhydra2/issues/985">#985</a>
+**Feature** Add custom options to main process on startup. See <a href="https://github.com/theotherp/nzbhydra2/issues/985">#985</a>
 
-**Fixed** Fixed configuration of Radarr v6. Removed distinction between v1/v2 and v3+ of *arr because v3 has been around long enough. See <a href="https://github.com/theotherp/nzbhydra2/issues/1012">#1012</a>
+**Fix** Fixed configuration of Radarr v6. Removed distinction between v1/v2 and v3+ of *arr because v3 has been around long enough. See <a href="https://github.com/theotherp/nzbhydra2/issues/1012">#1012</a>
 
-**Fixed** Made the checkmark in the torbox downloader icon better visible.
+**Fix** Made the checkmark in the torbox downloader icon better visible.
 
-**Fixed** Downloads to torbox should now be added to the history. This required a rewrite of the overall download handling so hopefully everything still works... See <a href="https://github.com/theotherp/nzbhydra2/issues/1007">#1007</a>
+**Fix** Downloads to torbox should now be added to the history. This required a rewrite of the overall download handling so hopefully everything still works... See <a href="https://github.com/theotherp/nzbhydra2/issues/1007">#1007</a>
 
-**Fixed** Downloads to torbox that were already cached are now shown as downloaded successfully.
+**Fix** Downloads to torbox that were already cached are now shown as downloaded successfully.
 
-**Fixed** When downloading multiple results using the UI each result will be handled individually so that errors will not affect the other downloads.
+**Fix** When downloading multiple results using the UI each result will be handled individually so that errors will not affect the other downloads.
 
-**Fixed** Fix regex in python wrapper. See <a href="https://github.com/theotherp/nzbhydra2/issues/998">#998</a>
+**Fix** Fix regex in python wrapper. See <a href="https://github.com/theotherp/nzbhydra2/issues/998">#998</a>
 
 
 
 ### v7.17.0 BETA (2025-09-13)
 
-**Added** NZBHydra will attempt to reduce the size of the database on shutdown. This is experimental which is why I'll release this version as a beta first.
+**Feature** NZBHydra will attempt to reduce the size of the database on shutdown. This is experimental which is why I'll release this version as a beta first.
 
-**Fixed** Do not warn about indexer access restrictions when using Torbox. It's up to you to keep in line with indexer restrictions.
+**Fix** Do not warn about indexer access restrictions when using Torbox. It's up to you to keep in line with indexer restrictions.
 
 
 
 ### v7.16.3 (2025-09-06)
 
-**Fixed** I did break something. NZB downloads via browser should have the correct media type again. See <a href="https://github.com/theotherp/nzbhydra2/issues/1011">#1011</a>
+**Fix** I did break something. NZB downloads via browser should have the correct media type again. See <a href="https://github.com/theotherp/nzbhydra2/issues/1011">#1011</a>
 
 
 
 ### v7.16.2 (2025-09-04)
 
-**Fixed** Hopefully fixed magnet handling for Torbox. I neither use Torbox nor Torrents myself and don't know much about magnet links. Hopefully I didn't break something else in the process. See <a href="https://github.com/theotherp/nzbhydra2/issues/1010">#1010</a>
+**Fix** Hopefully fixed magnet handling for Torbox. I neither use Torbox nor Torrents myself and don't know much about magnet links. Hopefully I didn't break something else in the process. See <a href="https://github.com/theotherp/nzbhydra2/issues/1010">#1010</a>
 
-**Fixed** Adapt indexer caps check to gingadaddy's responses. You may need to run a new caps check. They only support IMDB IDs you you should enable ID conversion in the searching config. See <a href="https://github.com/theotherp/nzbhydra2/issues/634">#634</a>
+**Fix** Adapt indexer caps check to gingadaddy's responses. You may need to run a new caps check. They only support IMDB IDs you you should enable ID conversion in the searching config. See <a href="https://github.com/theotherp/nzbhydra2/issues/634">#634</a>
 
 
 
 ### v7.16.1 (2025-09-03)
 
-**Fixed** Skip empty attributes, may fix gingadaddy issues. See <a href="https://github.com/theotherp/nzbhydra2/issues/634">#634</a>
+**Fix** Skip empty attributes, may fix gingadaddy issues. See <a href="https://github.com/theotherp/nzbhydra2/issues/634">#634</a>
 
 
 
 ### v7.16.0 (2025-07-27)
 
-**Added** Added newznab and torznab support for Torbox. You can add it as two separate indexers from the presets. It should now be possible to send any torrent or usenet results (from torbox or anywhere else) to Torbox. This may break some stuff (sorry, let me know). See <a href="https://github.com/theotherp/nzbhydra2/issues/1005">#1005</a>
+**Feature** Added newznab and torznab support for Torbox. You can add it as two separate indexers from the presets. It should now be possible to send any torrent or usenet results (from torbox or anywhere else) to Torbox. This may break some stuff (sorry, let me know). See <a href="https://github.com/theotherp/nzbhydra2/issues/1005">#1005</a>
 
-**Fixed** If an external URL for a downloader is set it's used as link target for the downloader icon in the lower left. See <a href="https://github.com/theotherp/nzbhydra2/issues/999">#999</a>
+**Fix** If an external URL for a downloader is set it's used as link target for the downloader icon in the lower left. See <a href="https://github.com/theotherp/nzbhydra2/issues/999">#999</a>
 
-**Fixed** Support results with type application/x-bittorrent;x-scheme-handler/magnet. See <a href="https://github.com/theotherp/nzbhydra2/issues/997">#997</a>
+**Fix** Support results with type application/x-bittorrent;x-scheme-handler/magnet. See <a href="https://github.com/theotherp/nzbhydra2/issues/997">#997</a>
 
 
 
 ### v7.15.3 (2025-07-04)
 
-**Fixed** External API stats requests should work again.
+**Fix** External API stats requests should work again.
 
 
 
 ### v7.15.2 (2025-06-19)
 
-**Fixed** Show webp covers. See <a href="https://github.com/theotherp/nzbhydra2/issues/995">#995</a>
+**Fix** Show webp covers. See <a href="https://github.com/theotherp/nzbhydra2/issues/995">#995</a>
 
 
 
 ### v7.15.1 (2025-06-17)
 
-**Fixed** Button to downloads results as zip file was gone. I wanted it to be hidden for torbox results and it never showed up. I don't understand my GUI code anymore so now it will be shown even if it doesn't work for Torbox. See <a href="https://github.com/theotherp/nzbhydra2/issues/994">#994</a>
+**Fix** Button to downloads results as zip file was gone. I wanted it to be hidden for torbox results and it never showed up. I don't understand my GUI code anymore so now it will be shown even if it doesn't work for Torbox. See <a href="https://github.com/theotherp/nzbhydra2/issues/994">#994</a>
 
 
 
 ### v7.15.0 (2025-06-14)
 
-**Added** Torbox can now be searched via the GUI. You can search by query or by ID (movies and TV shows) and send the results individually or in a batch to your Torbox downloader. The selected category will have no influence on the search results but Movies and TV will allow you to search using autocomplete.
+**Feature** Torbox can now be searched via the GUI. You can search by query or by ID (movies and TV shows) and send the results individually or in a batch to your Torbox downloader. The selected category will have no influence on the search results but Movies and TV will allow you to search using autocomplete.
 
 
 
 ### v7.14.2 (2025-06-09)
 
-**Fixed** Increased checking delay for nzb.su/life even more as some users were still rate limited. See <a href="https://github.com/theotherp/nzbhydra2/issues/990">#990</a>
+**Fix** Increased checking delay for nzb.su/life even more as some users were still rate limited. See <a href="https://github.com/theotherp/nzbhydra2/issues/990">#990</a>
 
-**Fixed** Increased timeout when sending NZBs to Torbox. The initial value was too low because I didn't consider that sending NZBs for huge files would take longer for a downloader that's not on the local network. The timeout is now a generous 90 seconds which should allow uploading an NZB for a 75GB result with 1MBit/s. If that's now enough what are you even doing?
+**Fix** Increased timeout when sending NZBs to Torbox. The initial value was too low because I didn't consider that sending NZBs for huge files would take longer for a downloader that's not on the local network. The timeout is now a generous 90 seconds which should allow uploading an NZB for a 75GB result with 1MBit/s. If that's now enough what are you even doing?
 
 
 
 ### v7.14.1 (2025-06-02)
 
-**Fixed** nzb.su / nzb.life caps check should now actually work. I previously didn't have VIP access and couldn't test it. See <a href="https://github.com/theotherp/nzbhydra2/issues/990">#990</a>
+**Fix** nzb.su / nzb.life caps check should now actually work. I previously didn't have VIP access and couldn't test it. See <a href="https://github.com/theotherp/nzbhydra2/issues/990">#990</a>
 
 
 
 ### v7.14.0 (2025-05-30)
 
-**Added** Extended "Replace umlauts" feature to also replace diacritics, e.g. "è" will be replaced with "e"
+**Feature** Extended "Replace umlauts" feature to also replace diacritics, e.g. "è" will be replaced with "e"
 
-**Fixed** With quick filter buttons to be preselected they would also be preselected if they weren't even shown, resulting in filtering unrelated result categories, e.g. filtering audiobooks for "1080p". See <a href="https://github.com/theotherp/nzbhydra2/issues/992">#992</a>
+**Fix** With quick filter buttons to be preselected they would also be preselected if they weren't even shown, resulting in filtering unrelated result categories, e.g. filtering audiobooks for "1080p". See <a href="https://github.com/theotherp/nzbhydra2/issues/992">#992</a>
 
 
 
 ### v7.13.2 (2025-05-28)
 
-**Fixed** Configuration of *arr should work again. Sorry for the version spam ;-)
+**Fix** Configuration of *arr should work again. Sorry for the version spam ;-)
 
 
 
 ### v7.13.1 (2025-05-28)
 
-**Fixed** Check for nzb.life in host. See <a href="https://github.com/theotherp/nzbhydra2/issues/990">#990</a>
+**Fix** Check for nzb.life in host. See <a href="https://github.com/theotherp/nzbhydra2/issues/990">#990</a>
 
-**Fixed** Send NZB to black hole via button in results list
+**Fix** Send NZB to black hole via button in results list
 
 
 
 ### v7.13.0 (2025-04-28)
 
-**Added** Support mass sending NZBs to black hole folder. See <a href="https://github.com/theotherp/nzbhydra2/issues/984">#984</a>
+**Feature** Support mass sending NZBs to black hole folder. See <a href="https://github.com/theotherp/nzbhydra2/issues/984">#984</a>
 
-**Added** Always redirect downloads to NZB Finder. See <a href="https://github.com/theotherp/nzbhydra2/issues/989">#989</a>
+**Feature** Always redirect downloads to NZB Finder. See <a href="https://github.com/theotherp/nzbhydra2/issues/989">#989</a>
 
 **Fix** Search or download history entries could contain wrong usernames. Existing history entries will not be fixed, this only affects new entries.
 
