@@ -8,6 +8,8 @@
           text: "Changelog entries were not prefixed with \"Feature\" or \"Fix\" lately."
       -   type: "fix"
           text: "Prevent excessive CPU usage caused by loop searching Binsearch. See #1026"
+      -   type: "fix"
+          text: "Searching wtfnzb without a query didn't work."
     final: true
 -   version: "v8.1.0"
     date: "2025-11-30"

@@ -35,7 +35,7 @@ public class WtfNzb extends Newznab {
     protected UriComponentsBuilder buildSearchUrl(SearchRequest searchRequest, Integer offset, Integer limit) throws IndexerSearchAbortedException {
 
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(config.getHost()).path("/api_fast");
-        String query = generateQueryIfApplicable(searchRequest, searchRequest.getQuery().get());
+        String query = generateQueryIfApplicable(searchRequest, searchRequest.getQuery().orElse(null));
         builder.queryParam("q", query)
                 .queryParam("apikey", config.getApiKey())
                 .queryParam("r", config.getApiKey())
