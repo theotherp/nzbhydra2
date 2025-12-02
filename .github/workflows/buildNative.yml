@@ -81,7 +81,7 @@ jobs:
 #                if: steps.changed-files-specific.outputs.any_changed == 'true'
                 working-directory: ./core
                 run: |
-                    mvn --batch-mode -Pnative,strictReflection clean native:compile -DskipTests
+                    mvn --batch-mode "-Pnative,strictReflection" clean native:compile -DskipTests
 
             -   name: "Upload linux artifact"
 #                if: steps.changed-files-specific.outputs.any_changed == 'true' && startsWith(matrix.os,'ubuntu')
