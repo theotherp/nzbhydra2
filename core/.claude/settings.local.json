@@ -19,7 +19,16 @@
       "Bash(timeout 120s npx playwright test external-tools.spec.ts --grep \"should save external tool configuration\")",
       "Bash(timeout 120s npx playwright test external-tools.spec.ts --grep \"should edit existing external tool\")",
       "Bash(timeout 120s npx playwright test external-tools.spec.ts --grep \"should delete external tool\")",
-      "Read(//c/Users/strat/IdeaProjects/**)"
+      "Read(//c/Users/strat/IdeaProjects/**)",
+      "mcp__chrome-webtools__new_page",
+      "mcp__chrome-webtools__list_pages",
+      "mcp__chrome-webtools__navigate_page",
+      "mcp__jetbrains__list_directory_tree",
+      "mcp__chrome-webtools__take_snapshot",
+      "mcp__chrome-webtools__fill",
+      "mcp__chrome-webtools__click",
+      "mcp__chrome-webtools__list_console_messages",
+      "mcp__chrome-webtools__list_network_requests"
     ],
     "deny": [],
     "ask": []

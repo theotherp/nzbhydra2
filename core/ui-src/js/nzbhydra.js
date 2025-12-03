@@ -769,7 +769,7 @@ nzbhydraapp.config(['growlProvider', function (growlProvider) {
 
 nzbhydraapp.directive('ngEnter', function () {
     return function (scope, element, attr) {
-        element.bind("keydown keypress", function (event) {
+        var keyHandler = function (event) {
             if (event.which === 13) {
                 scope.$apply(function () {
                     scope.$evalAsync(attr.ngEnter);
@@ -777,6 +777,13 @@ nzbhydraapp.directive('ngEnter', function () {
 
                 event.preventDefault();
             }
+        };
+
+        element.bind("keydown keypress", keyHandler);
+
+        // Clean up event handler to prevent memory leaks
+        scope.$on('$destroy', function () {
+            element.unbind("keydown keypress", keyHandler);
         });
     };
 });

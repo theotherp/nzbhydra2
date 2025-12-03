@@ -312,6 +312,22 @@ function hydraChecksFooter() {
                     showUnreadNotifications(JSON.parse(message.body), stompClient);
                 });
             });
+
+            // Clean up WebSocket connection to prevent memory leaks
+            $scope.$on('$destroy', function () {
+                if (stompClient !== null) {
+                    try {
+                        stompClient.disconnect();
+                    } catch (ignored) {
+                    }
+                }
+                if (socket !== null) {
+                    try {
+                        socket.close();
+                    } catch (ignored) {
+                    }
+                }
+            });
         }
 
     }

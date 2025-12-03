@@ -93,19 +93,19 @@ function dropdownMultiselectDirective() {
 
             //Close when clicked outside
 
-            $document.on('click', function (e) {
-                function contains(collection, target) {
-                    var containsTarget = false;
-                    collection.some(function (object) {
-                        if (object === target) {
-                            containsTarget = true;
-                            return true;
-                        }
-                        return false;
-                    });
-                    return containsTarget;
-                }
+            function contains(collection, target) {
+                var containsTarget = false;
+                collection.some(function (object) {
+                    if (object === target) {
+                        containsTarget = true;
+                        return true;
+                    }
+                    return false;
+                });
+                return containsTarget;
+            }
 
+            var clickHandler = function (e) {
                 if ($scope.open) {
                     var target = e.target.parentElement;
                     var parentFound = false;
@@ -125,8 +125,14 @@ function dropdownMultiselectDirective() {
                         });
                     }
                 }
-            });
+            };
 
+            $document.on('click', clickHandler);
+
+            // Clean up document click handler to prevent memory leaks
+            $scope.$on('$destroy', function () {
+                $document.off('click', clickHandler);
+            });
 
         }
 

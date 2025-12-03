@@ -469,6 +469,29 @@ function SearchUpdateModalInstanceCtrl($scope, $interval, SearchService, $uibMod
         return /^[^0]\d+.*/.test(message);
     };
 
+    // Clean up WebSocket connection to prevent memory leaks
+    function cleanupWebSocket() {
+        if (stompClient !== null) {
+            try {
+                stompClient.disconnect();
+            } catch (ignored) {
+            }
+            stompClient = null;
+        }
+        if (socket !== null) {
+            try {
+                socket.close();
+            } catch (ignored) {
+            }
+            socket = null;
+        }
+    }
+
+    $scope.$on('$destroy', cleanupWebSocket);
+
+    // Also cleanup when modal is closed/dismissed
+    $uibModalInstance.result.finally(cleanupWebSocket);
+
 }
 
 angular
@@ -476,10 +499,16 @@ angular
     return {
         restrict: 'A',
         link: function (scope, el, attrs, controller) {
-
-            el.bind("dragstart", function (e) {
+            var dragHandler = function (e) {
                 $rootScope.$emit("searchHistoryDrag", el.attr("data-request"));
                 $rootScope.$broadcast("searchHistoryDrag", el.attr("data-request"));
+            };
+
+            el.bind("dragstart", dragHandler);
+
+            // Clean up event handler to prevent memory leaks
+            scope.$on('$destroy', function () {
+                el.unbind("dragstart", dragHandler);
             });
         }
     }

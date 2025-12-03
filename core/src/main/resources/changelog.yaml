@@ -1,4 +1,9 @@
 #@formatter:off
+-   version: "v8.1.2"
+    changes:
+      -   type: "fix"
+          text: "Fix some more memory leaks in the frontend. See #982"
+    final: true
 -   version: "v8.1.1"
     date: "2025-12-02"
     changes:
