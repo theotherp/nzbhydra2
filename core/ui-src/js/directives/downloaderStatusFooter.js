@@ -32,6 +32,48 @@ function downloaderStatusFooter() {
         var socket = null;
         var downloadRateCounter = 0;
         var maxXValue = 10000; // Reset counter before it gets too large
+        var isTabVisible = !document.hidden;
+        var bufferedRates = []; // Buffer download rates while tab is in background
+        var maxBufferedRates = 200; // Limit buffer size to prevent memory issues
+
+        // Handle tab visibility changes to prevent memory buildup in background
+        function handleVisibilityChange() {
+            isTabVisible = !document.hidden;
+            if (isTabVisible && bufferedRates.length > 0 && downloaderStatus) {
+                // Tab became visible and we have buffered data - apply all buffered rates
+                console.log("Tab became visible - applying " + bufferedRates.length + " buffered download rates");
+                applyBufferedRates();
+                updateFooter();
+            } else if (isTabVisible && downloaderStatus) {
+                // Tab became visible but no buffered rates - just update footer
+                updateFooter();
+            }
+        }
+
+        function applyBufferedRates() {
+            var maxEntriesHistory = 200;
+            var chartValues = $scope.downloaderChart.data[0].values;
+
+            // Apply each buffered rate to the chart
+            for (var i = 0; i < bufferedRates.length; i++) {
+                if (chartValues.length >= maxEntriesHistory) {
+                    // Chart is full - remove first, add to end
+                    chartValues.splice(0, 1);
+                }
+                chartValues.push({x: getNextXValue(), y: bufferedRates[i]});
+            }
+
+            // Clear the buffer
+            bufferedRates = [];
+
+            // Update chart display
+            try {
+                $scope.api.update();
+            } catch (ignored) {
+            }
+        }
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
 
         function connectWebSocket() {
             console.log("websocket");
@@ -41,11 +83,27 @@ function downloaderStatusFooter() {
             stompClient.connect({}, function (frame) {
                 stompClient.subscribe('/topic/downloaderStatus', function (message) {
                     downloaderStatus = JSON.parse(message.body);
-                    updateFooter(downloaderStatus);
+                    if (isTabVisible) {
+                        updateFooter();
+                    } else {
+                        // Tab is in background - buffer the download rate for later
+                        // This prevents memory buildup from chart updates and digest cycles
+                        // while still preserving the download rate history
+                        if (bufferedRates.length < maxBufferedRates) {
+                            bufferedRates.push(downloaderStatus.lastDownloadRate);
+                        } else {
+                            // Buffer is full - shift out oldest, add newest (sliding window)
+                            bufferedRates.shift();
+                            bufferedRates.push(downloaderStatus.lastDownloadRate);
+                        }
+                    }
                 });
                 stompClient.send("/app/connectDownloaderStatus", function (message) {
                     downloaderStatus = JSON.parse(message.body);
-                    updateFooter(downloaderStatus);
+                    if (isTabVisible) {
+                        updateFooter();
+                    }
+                    // No need to buffer on initial connect - full history comes with downloaderStatus
                 })
             });
         }
@@ -54,6 +112,7 @@ function downloaderStatusFooter() {
 
         // Clean up on scope destroy to prevent memory leaks
         $scope.$on('$destroy', function () {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
             if (updateInterval !== null) {
                 $interval.cancel(updateInterval);
                 updateInterval = null;
