@@ -1,3 +1,11 @@
+### v8.1.2 (2025-12-04)
+
+**Fix** Fix some more memory leaks in the frontend. See <a href="https://github.com/theotherp/nzbhydra2/issues/982">#982</a>
+
+**Fix** Trying to get wtfnzb to work. Apparently they have been able to make their API even worse - searches will only return results if the query is a direct substring of the title, meaning "tv show" will not return "tv.show" results. So now I replace spaces with dots, FFS.
+
+
+
 ### v8.1.1 (2025-12-02)
 
 **Fix** Scheduled restart didn't work (due to some complicated logic that causes installed instances behaving differently than on my developer system).
