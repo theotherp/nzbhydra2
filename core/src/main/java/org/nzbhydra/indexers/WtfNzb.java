@@ -22,7 +22,6 @@ public class WtfNzb extends Newznab {
 
     private static final Logger logger = LoggerFactory.getLogger(WtfNzb.class);
 
-
     @Override
     public IndexerSearchResult search(SearchRequest searchRequest, int offset, Integer limit) {
         if (searchRequest.getQuery().isEmpty() && searchRequest.getIdentifiers().isEmpty()) {
@@ -36,6 +35,10 @@ public class WtfNzb extends Newznab {
 
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(config.getHost()).path("/api_fast");
         String query = generateQueryIfApplicable(searchRequest, searchRequest.getQuery().orElse(null));
+        if (query == null) {
+            throw new IndexerSearchAbortedException("Search without query and query generation not supported");
+        }
+        query = query.replace(" ", ".");
         builder.queryParam("q", query)
                 .queryParam("apikey", config.getApiKey())
                 .queryParam("r", config.getApiKey())

@@ -3,6 +3,8 @@
     changes:
       -   type: "fix"
           text: "Fix some more memory leaks in the frontend. See #982"
+      -   type: "fix"
+          text: "Trying to get wtfnzb to work. Apparently they have been able to make their API even worse - searches will only return results if the query is a direct substring of the title, meaning \"tv show\" will not return \"tv.show\" results. So now I replace spaces with dots, FFS."
     final: true
 -   version: "v8.1.1"
     date: "2025-12-02"
