@@ -2,6 +2,7 @@ package org.nzbhydra.searching;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Multiset;
+import org.apache.commons.lang3.ObjectUtils;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.downloading.FileDownloadEntity;
@@ -110,6 +111,7 @@ public class InternalSearchResultProcessor {
             SearchResultWebTOBuilder builder = SearchResultWebTO.builder()
                     .category(baseConfig.getSearching().isUseOriginalCategories() ? item.getOriginalCategory() : item.getCategory().getName())
                     .comments(item.getCommentsCount())
+                    .comments_link(ObjectUtils.firstNonNull(item.getCommentsLink(), item.getDetails()))
                     .cover(
                             item.getCover().map(originalUrl -> {
                                         if (!baseConfig.getMain().isProxyImages()) {

@@ -34,6 +34,7 @@ public class SearchResultWebTO {
     private String cover;
     private String date;
     private Integer comments;
+    private String comments_link;
     private String details_link;
     private String downloadType;
     private Long epoch;

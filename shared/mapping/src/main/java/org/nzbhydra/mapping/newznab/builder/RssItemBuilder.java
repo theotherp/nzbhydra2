@@ -17,7 +17,7 @@ public final class RssItemBuilder {
     private static Random random = new Random();
 
     private String category = "category";
-    private String comments = "http://some.comments";
+    private String comments = "http://some.comments/details#comments";
     private String description = "A description";
     private NewznabXmlEnclosure enclosure = null;
     private Integer grabs = 10;

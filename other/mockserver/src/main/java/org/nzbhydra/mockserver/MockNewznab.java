@@ -248,7 +248,9 @@ public class MockNewznab {
             if (params.getApikey().equals("1")) {
                 NewznabXmlItem result1 = RssItemBuilder.builder("indexer1-result1").pubDate(Instant.now().minus(1, ChronoUnit.DAYS)).hasNfo(false).grabs(1).size(mbToBytes(1)).newznabAttributes(new ArrayList<>(Arrays.asList(new NewznabAttribute("category", "5000")))).category("TV").build();
                 NewznabXmlItem result2 = RssItemBuilder.builder("indexer1-result2").pubDate(Instant.now().minus(2, ChronoUnit.DAYS)).hasNfo(true).grabs(2).size(mbToBytes(2)).newznabAttributes(new ArrayList<>(Arrays.asList(new NewznabAttribute("category", "5040")))).category("TV SD").build();
-                NewznabXmlItem result3 = RssItemBuilder.builder("indexer1-result3").pubDate(Instant.now().minus(3, ChronoUnit.DAYS)).comments("comments").grabs(3).size(mbToBytes(3)).newznabAttributes(new ArrayList<>(Arrays.asList(new NewznabAttribute("category", "5030")))).category("TV HD").build();
+                NewznabXmlItem result3 = RssItemBuilder.builder("indexer1-result3").pubDate(Instant.now().minus(3, ChronoUnit.DAYS)).comments("http://localhost/commentsLink#comments").grabs(3).size(mbToBytes(3))
+                        .newznabAttributes(new ArrayList<>(Arrays.asList(new NewznabAttribute("category", "5030"), new NewznabAttribute("comments", "5"))))
+                        .category("TV HD").build();
                 NewznabXmlRoot rssRoot = NewznabMockBuilder.getRssRoot(Arrays.asList(result1, result2, result3), 0, 3);
                 return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
             }
