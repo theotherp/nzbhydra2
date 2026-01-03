@@ -3848,7 +3848,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
             }
         });
     }
-    if ((indexerModel.searchModuleType === "NEWZNAB" || indexerModel.searchModuleType === "TORZNAB") && !isInitial && indexerModel.searchModuleType !== 'JACKETT_CONFIG') {
+    if ((indexerModel.searchModuleType === "NEWZNAB" || indexerModel.searchModuleType === "TORZNAB") && !isInitial && indexerModel.searchModuleType !== 'IMPORT_CONFIG') {
         var message;
         var cssClass;
         if (!indexerModel.configComplete) {
@@ -3913,7 +3913,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
             })
     }
 
-    if (indexerModel.searchModuleType !== 'JACKETT_CONFIG') {
+    if (indexerModel.searchModuleType !== 'IMPORT_CONFIG') {
         fieldset.push({
             key: 'state',
             type: 'horizontalIndexerStateSwitch',
@@ -3925,7 +3925,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
         });
     }
 
-    if (['WTFNZB', 'NEWZNAB', 'TORZNAB', 'JACKETT_CONFIG'].includes(indexerModel.searchModuleType)) {
+    if (['WTFNZB', 'NEWZNAB', 'TORZNAB', 'IMPORT_CONFIG'].includes(indexerModel.searchModuleType)) {
         var hostField = {
             key: 'host',
             type: 'horizontalInput',
@@ -3951,7 +3951,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
         );
     }
 
-    if (['WTFNZB', 'NEWZNAB', 'TORZNAB', 'JACKETT_CONFIG', 'NZBINDEX_API', 'TORBOX'].includes(indexerModel.searchModuleType) && indexerModel.host !== 'https://feed.animetosho.org') {
+    if (['WTFNZB', 'NEWZNAB', 'TORZNAB', 'IMPORT_CONFIG', 'NZBINDEX_API', 'TORBOX'].includes(indexerModel.searchModuleType) && indexerModel.host !== 'https://feed.animetosho.org') {
         fieldset.push(
             {
                 key: 'apiKey',
@@ -3994,7 +3994,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
         )
     }
 
-    if (['NEWZNAB', 'TORZNAB', 'JACKETT_CONFIG'].includes(indexerModel.searchModuleType)) {
+    if (['NEWZNAB', 'TORZNAB', 'IMPORT_CONFIG'].includes(indexerModel.searchModuleType)) {
         fieldset.push(
             {
                 key: 'username',
@@ -4052,7 +4052,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
     }
 
 
-    if (!['JACKETT_CONFIG', 'TORBOX'].includes(indexerModel.searchModuleType)) {
+    if (!['IMPORT_CONFIG', 'TORBOX'].includes(indexerModel.searchModuleType)) {
         fieldset.push(
             {
                 key: 'score',
@@ -4283,7 +4283,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
         }
     );
 
-    if (indexerModel.searchModuleType !== "ANIZB" && indexerModel.searchModuleType !== 'JACKETT_CONFIG') {
+    if (indexerModel.searchModuleType !== "ANIZB" && indexerModel.searchModuleType !== 'IMPORT_CONFIG') {
         var cats = CategoriesService.getWithoutAll();
         var options = _.map(cats, function (x) {
             return {id: x.name, label: x.name}
@@ -4307,7 +4307,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
     }
 
 
-    if ((['NEWZNAB', 'TORZNAB'].includes(indexerModel.searchModuleType)) && !isInitial && indexerModel.searchModuleType !== 'JACKETT_CONFIG') {
+    if ((['NEWZNAB', 'TORZNAB'].includes(indexerModel.searchModuleType)) && !isInitial && indexerModel.searchModuleType !== 'IMPORT_CONFIG') {
         fieldset.push(
             {
                 key: 'supportedSearchIds',
@@ -4413,6 +4413,9 @@ function _showBox(indexerModel, parentModel, isInitial, $uibModal, CategoriesSer
             ,
             info: function () {
                 return indexerModel.info;
+            },
+            mode: function () {
+                return mode;
             }
         }
     });
@@ -4421,11 +4424,11 @@ function _showBox(indexerModel, parentModel, isInitial, $uibModal, CategoriesSer
     modalInstance.result.then(function (returnedModel) {
         form.$setDirty(true);
         if (angular.isDefined(callback)) {
-            callback(true, returnedModel);
+            callback(true, returnedModel, modalInstance);
         }
     }, function () {
         if (angular.isDefined(callback)) {
-            callback(false);
+            callback(false, null, modalInstance);
         }
     });
 }
@@ -4484,39 +4487,59 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
 
     $scope.readJackettConfig = function () {
         var indexerModel = createIndexerModel();
-        indexerModel.searchModuleType = "JACKETT_CONFIG";
+        // IMPORT_CONFIG is a marker value that causes the modal to show only the host and API key fields.
+        // It's not an actual indexer type - the backend returns NEWZNAB or TORZNAB indexers.
+        indexerModel.searchModuleType = "IMPORT_CONFIG";
         indexerModel.isInitial = false;
         indexerModel.host = "http://127.0.0.1:9117";
         indexerModel.name = "Jackett config";
         _showBox(indexerModel, model, true, $uibModal, CategoriesService, "jackettConfig", form, function (isSubmitted, returnedModel) {
-            if (isSubmitted) {
-                //User pushed button, now we read the config
-                RequestsErrorHandler.specificallyHandled(function () {
-                    $http.post("internalapi/indexer/readJackettConfig", {existingIndexers: model, jackettConfig: returnedModel}, {
-                        headers: {
-                            "Accept": "application/json;charset=utf-8",
-                            "Accept-Charset": "charset=utf-8"
-                        }
-                    }).then(function (response) {
-                        //Replace model with new result
-                        model.splice(0, model.length);
-                        _.each(response.data.newIndexersConfig, function (x) {
-                            model.push(x);
-                        });
-                        growl.info("Added " + response.data.addedTrackers + " new trackers from Jackett");
-                        growl.info("Updated " + response.data.updatedTrackers + " trackers from Jackett");
-
-                    }, function (response) {
-                        ModalService.open("Error reading jackett config", response.data, {}, "md", "left");
-                    });
+            if (isSubmitted && returnedModel && returnedModel.type === 'jackett') {
+                // The HTTP request was already made in the modal controller and succeeded
+                var response = returnedModel.importResponse;
+                // Replace model with new result
+                model.splice(0, model.length);
+                _.each(response.newIndexersConfig, function (x) {
+                    model.push(x);
                 });
+                growl.info("Added " + response.addedTrackers + " new trackers from Jackett");
+                growl.info("Updated " + response.updatedTrackers + " trackers from Jackett");
+                // Close the parent modal on success
+                $timeout(function () {
+                    $uibModalInstance.close();
+                }, 200);
             }
         });
+    };
 
-        $timeout(function () {
-                $uibModalInstance.close();
-            },
-            200);
+    $scope.readProwlarrConfig = function () {
+        var indexerModel = createIndexerModel();
+        // IMPORT_CONFIG is a marker value that causes the modal to show only the host and API key fields.
+        // It's not an actual indexer type - the backend returns NEWZNAB or TORZNAB indexers.
+        indexerModel.searchModuleType = "IMPORT_CONFIG";
+        indexerModel.isInitial = false;
+        indexerModel.host = "http://127.0.0.1:9696";
+        indexerModel.name = "Prowlarr config";
+        _showBox(indexerModel, model, true, $uibModal, CategoriesService, "prowlarrConfig", form, function (isSubmitted, returnedModel, childModalInstance) {
+            if (isSubmitted && returnedModel && returnedModel.type === 'prowlarr') {
+                // The HTTP request was already made in the modal controller and succeeded
+                var response = returnedModel.importResponse;
+                // Replace model with new result
+                model.splice(0, model.length);
+                _.each(response.newIndexersConfig, function (x) {
+                    model.push(x);
+                });
+                growl.info("Added " + response.addedIndexers + " indexers from Prowlarr");
+                growl.info("Updated " + response.updatedIndexers + " indexers from Prowlarr");
+                if (response.removedIndexers > 0) {
+                    growl.info("Removed " + response.removedIndexers + " indexers no longer in Prowlarr");
+                }
+                // Close the parent modal on success
+                $timeout(function () {
+                    $uibModalInstance.close();
+                }, 200);
+            }
+        });
     };
 
     function showBox(indexerModel, model) {
@@ -4897,17 +4920,56 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
 }]);
 
 
-angular.module('nzbhydraApp').controller('IndexerConfigBoxInstanceController', ["$scope", "$q", "$uibModalInstance", "$http", "model", "form", "fields", "isInitial", "parentModel", "growl", "IndexerCheckBeforeCloseService", function ($scope, $q, $uibModalInstance, $http, model, form, fields, isInitial, parentModel, growl, IndexerCheckBeforeCloseService) {
+angular.module('nzbhydraApp').controller('IndexerConfigBoxInstanceController', ["$scope", "$q", "$uibModalInstance", "$http", "model", "form", "fields", "isInitial", "parentModel", "growl", "IndexerCheckBeforeCloseService", "RequestsErrorHandler", "mode", function ($scope, $q, $uibModalInstance, $http, model, form, fields, isInitial, parentModel, growl, IndexerCheckBeforeCloseService, RequestsErrorHandler, mode) {
 
     $scope.model = model;
     $scope.fields = fields;
     $scope.isInitial = isInitial;
     $scope.spinnerActive = false;
     $scope.needsConnectionTest = false;
+    $scope.importError = null;
 
     $scope.obSubmit = function () {
-        if (model.searchModuleType === 'JACKETT_CONFIG') {
-            $uibModalInstance.close(model);
+        if (model.searchModuleType === 'IMPORT_CONFIG') {
+
+            RequestsErrorHandler.specificallyHandled(function () {
+                if (mode === 'prowlarrConfig') {
+                    // For Prowlarr, make the request and only close on success
+                    $scope.spinnerActive = true;
+                    $scope.importError = null;
+                    $http.post("internalapi/indexer/readProwlarrConfig", {existingIndexers: parentModel, prowlarrConfig: model}, {
+                        headers: {
+                            "Accept": "application/json;charset=utf-8",
+                            "Accept-Charset": "charset=utf-8"
+                        }
+                    }).then(function (response) {
+                        $scope.spinnerActive = false;
+                        // Pass the response data so the parent can update the model
+                        $uibModalInstance.close({importResponse: response.data, type: 'prowlarr'});
+                    }, function (response) {
+                        $scope.spinnerActive = false;
+                        $scope.importError = (response.data && response.data.errorMessage) || response.statusText || "Unknown error occurred";
+                    });
+                } else if (mode === 'jackettConfig') {
+                    // For Jackett, make the request and only close on success
+                    $scope.spinnerActive = true;
+                    $scope.importError = null;
+                    $http.post("internalapi/indexer/readJackettConfig", {existingIndexers: parentModel, jackettConfig: model}, {
+                        headers: {
+                            "Accept": "application/json;charset=utf-8",
+                            "Accept-Charset": "charset=utf-8"
+                        }
+                    }).then(function (response) {
+                        $scope.spinnerActive = false;
+                        $uibModalInstance.close({importResponse: response.data, type: 'jackett'});
+                    }, function (response) {
+                        $scope.spinnerActive = false;
+                        $scope.importError = (response.data && response.data.errorMessage) || response.statusText || "Unknown error occurred";
+                    });
+                } else {
+                    $uibModalInstance.close(model);
+                }
+            });
         } else if (form.$valid) {
             var a = IndexerCheckBeforeCloseService.checkBeforeClose($scope, model).then(function (data) {
                 if (angular.isDefined(data)) {
@@ -5064,7 +5126,7 @@ function IndexerCheckBeforeCloseService($q, ModalService, IndexerConfigBoxServic
 
     function checkBeforeClose(scope, model) {
         var deferred = $q.defer();
-        if (model.searchModuleType === 'JACKETT_CONFIG') {
+        if (model.searchModuleType === 'IMPORT_CONFIG') {
             deferred.resolve(model);
         } else if (!scope.isInitial && (!scope.needsConnectionTest || scope.form.capsChecked)) {
             checkCapsWhenClosing(scope, model).then(function () {
@@ -13970,6 +14032,7 @@ nzbhydraapp.factory('RequestsErrorHandler', ["$q", "growl", "blockUI", "GeneralM
             }
             var shouldHandle = (rejection && rejection.config && rejection.status !== 403 && rejection.config.headers && rejection.config.headers[HEADER_NAME] && !rejection.config.url.contains("logerror") && !rejection.config.url.contains("/ping") && !rejection.config.alreadyHandled);
             if (shouldHandle) {
+                console.log("Handling error generically");
                 if (rejection.data) {
 
                     var message = "An error occurred:<br>" + rejection.data.status;

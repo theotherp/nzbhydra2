@@ -27,6 +27,7 @@ public enum SearchModuleType {
     NZBKING,
     TORZNAB,
     DEVONLY,
-    JACKETT_CONFIG,
+    //Not used in the backend sources but provided by the UI when indexers are imported from jackett or prowlarr or such. Must not be deleted or otherwise the mapping fails when the UI sends the request to the backend
+    IMPORT_CONFIG,
     TORBOX
 }

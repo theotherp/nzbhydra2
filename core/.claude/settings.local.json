@@ -28,7 +28,13 @@
       "mcp__chrome-webtools__fill",
       "mcp__chrome-webtools__click",
       "mcp__chrome-webtools__list_console_messages",
-      "mcp__chrome-webtools__list_network_requests"
+      "mcp__chrome-webtools__list_network_requests",
+      "WebFetch(domain:127.0.0.1)",
+      "Bash(curl:*)",
+      "Bash(python3:*)",
+      "Bash(/c/Programme/python312/python:*)",
+      "mcp__jetbrains__get_run_configurations",
+      "mcp__jetbrains__execute_run_configuration"
     ],
     "deny": [],
     "ask": []

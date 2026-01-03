@@ -26,12 +26,14 @@ import org.nzbhydra.config.indexer.CheckCapsResponse;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.indexers.capscheck.IndexerChecker.CheckerEvent;
+import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.springnative.ReflectionMarker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -60,6 +62,8 @@ public class IndexerWeb {
     private SimpleConnectionChecker simpleConnectionChecker;
     @Autowired
     private JacketConfigRetriever jacketConfigRetriever;
+    @Autowired
+    private ProwlarrConfigRetriever prowlarrConfigRetriever;
 
     Multimap<String, String> multimap = Multimaps.synchronizedMultimap(
             HashMultimap.create());
@@ -138,6 +142,77 @@ public class IndexerWeb {
         return aMatcher.group(1).equals(bMatcher.group(1));
     }
 
+    @Secured({"ROLE_ADMIN"})
+    @RequestMapping(value = "/internalapi/indexer/readProwlarrConfig", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> readProwlarrConfig(@RequestBody ProwlarrConfigReadRequest configReadRequest) {
+        ProwlarrConfigReadResponse response = new ProwlarrConfigReadResponse();
+        List<IndexerConfig> foundProwlarrConfigs;
+        try {
+            foundProwlarrConfigs = prowlarrConfigRetriever.retrieveIndexers(configReadRequest.prowlarrConfig);
+        } catch (IndexerAccessException e) {
+            logger.error("Error reading Prowlarr config", e);
+            ProwlarrConfigReadResponse errorResponse = new ProwlarrConfigReadResponse();
+            errorResponse.setErrorMessage(e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        } catch (Exception e) {
+            logger.error("Unexpected error reading Prowlarr config", e);
+            ProwlarrConfigReadResponse errorResponse = new ProwlarrConfigReadResponse();
+            errorResponse.setErrorMessage("Error reading Prowlarr config: " + e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+
+        // Get names of newly found Prowlarr indexers
+        List<String> foundProwlarrNames = foundProwlarrConfigs.stream()
+                .map(IndexerConfig::getName)
+                .toList();
+
+        // Remove existing "(Prowlarr)" indexers that are not in the new list
+        List<IndexerConfig> newConfigs = new ArrayList<>();
+        int countRemovedIndexers = 0;
+        for (IndexerConfig existing : configReadRequest.existingIndexers) {
+            if (existing.getName().endsWith("(Prowlarr)")) {
+                if (foundProwlarrNames.contains(existing.getName())) {
+                    // Keep it, will be updated below
+                    newConfigs.add(existing);
+                } else {
+                    // Remove - no longer in Prowlarr
+                    countRemovedIndexers++;
+                    logger.info("Removing Prowlarr indexer no longer found: {}", existing.getName());
+                }
+            } else {
+                newConfigs.add(existing);
+            }
+        }
+
+        int countUpdatedIndexers = 0;
+        int countAddedIndexers = 0;
+
+        // Update existing configs, add new ones
+        for (IndexerConfig foundProwlarrConfig : foundProwlarrConfigs) {
+            final Optional<IndexerConfig> existingIndexer = newConfigs.stream()
+                    .filter(x -> x.getName().equals(foundProwlarrConfig.getName()))
+                    .findFirst();
+            if (existingIndexer.isPresent()) {
+                existingIndexer.get().setHost(foundProwlarrConfig.getHost());
+                existingIndexer.get().setApiKey(foundProwlarrConfig.getApiKey());
+                existingIndexer.get().setSearchModuleType(foundProwlarrConfig.getSearchModuleType());
+                countUpdatedIndexers++;
+            } else {
+                newConfigs.add(foundProwlarrConfig);
+                countAddedIndexers++;
+            }
+        }
+
+        logger.info("Found {} new, {} updated and {} removed indexers from Prowlarr", countAddedIndexers, countUpdatedIndexers, countRemovedIndexers);
+
+        response.setNewIndexersConfig(newConfigs);
+        response.setAddedIndexers(countAddedIndexers);
+        response.setUpdatedIndexers(countUpdatedIndexers);
+        response.setRemovedIndexers(countRemovedIndexers);
+
+        return ResponseEntity.ok(response);
+    }
+
     @EventListener
     public void handleCheckerEvent(CheckerEvent event) {
         if (!multimap.get(event.getIndexerName()).contains(event.getMessage())) {
@@ -158,6 +233,23 @@ public class IndexerWeb {
         private List<IndexerConfig> newIndexersConfig;
         private int addedTrackers;
         private int updatedTrackers;
+    }
+
+    @Data
+    @ReflectionMarker
+    static class ProwlarrConfigReadRequest {
+        List<IndexerConfig> existingIndexers;
+        IndexerConfig prowlarrConfig;
+    }
+
+    @Data
+    @ReflectionMarker
+    static class ProwlarrConfigReadResponse {
+        private List<IndexerConfig> newIndexersConfig;
+        private int addedIndexers;
+        private int updatedIndexers;
+        private int removedIndexers;
+        private String errorMessage;
     }
 
 }

@@ -36,6 +36,10 @@
                 <li ng-repeat="preset in newznabPresets">
                   <a ng-click="select(preset)">{{ preset.name }}</a>
                 </li>
+                <li><a href="#">---</a></li>
+                <li>
+                  <a ng-click="readProwlarrConfig()">Read from Prowlarr (all)</a>
+                </li>
               </ul>
             </div>
             <button class="btn btn-info" ng-click="select()">
@@ -63,6 +67,9 @@
                 <li><a href="#">---</a></li>
                 <li>
                   <a ng-click="readJackettConfig()">Read from jackett config</a>
+                </li>
+                <li>
+                  <a ng-click="readProwlarrConfig()">Read from Prowlarr (all)</a>
                 </li>
               </ul>
             </div>

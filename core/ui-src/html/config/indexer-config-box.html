@@ -33,6 +33,9 @@
                      options="options"
         >
         </formly-form>
+        <div class="alert alert-danger" ng-if="importError">
+            <strong>Error:</strong> {{ importError }}
+        </div>
     </div>
     <div class="modal-footer">
         <button class="btn btn-danger pull-left" ng-click="deleteEntry()" ng-if="!isInitial"

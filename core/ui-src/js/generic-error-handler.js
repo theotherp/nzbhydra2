@@ -22,6 +22,7 @@ nzbhydraapp.factory('RequestsErrorHandler', function ($q, growl, blockUI, Genera
             }
             var shouldHandle = (rejection && rejection.config && rejection.status !== 403 && rejection.config.headers && rejection.config.headers[HEADER_NAME] && !rejection.config.url.contains("logerror") && !rejection.config.url.contains("/ping") && !rejection.config.alreadyHandled);
             if (shouldHandle) {
+                console.log("Handling error generically");
                 if (rejection.data) {
 
                     var message = "An error occurred:<br>" + rejection.data.status;

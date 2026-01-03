@@ -140,7 +140,7 @@ public class SearchRequest {
         query = matcher.replaceAll("");
         internalData.getForbiddenWords().addAll(exclusions);
         if (!exclusions.isEmpty()) {
-            logger.debug("Extracted excluded words \"{}\" from query, leaving \"{}\" as qeuery", Joiner.on(", ").join(exclusions), query);
+            logger.debug("Extracted excluded words \"{}\" from query, leaving \"{}\" as query", Joiner.on(", ").join(exclusions), query);
         }
         if (!Strings.isNullOrEmpty(query)) {
             internalData.setQueryWords(List.of(query.split(" ")));

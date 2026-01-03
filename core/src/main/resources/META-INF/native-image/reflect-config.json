@@ -16477,6 +16477,14 @@
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
+  "name":"org.nzbhydra.indexers.capscheck.ProwlarrConfigRetriever",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
   "name":"org.nzbhydra.indexers.capscheck.SimpleConnectionChecker",
   "allDeclaredFields":true,
   "queryAllDeclaredMethods":true,
