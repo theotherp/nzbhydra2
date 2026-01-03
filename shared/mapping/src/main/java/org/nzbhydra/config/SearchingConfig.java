@@ -59,6 +59,7 @@ public class SearchingConfig {
     private boolean ignorePassworded = false;
     private boolean ignoreTemporarilyDisabled = false;
     private boolean ignoreLoadLimitingForInternalSearches = false;
+    private boolean ignoreLoadLimitingForConcreteApiSearches = false;
     private int keepSearchResultsForDays = 3;
     private String language = "en";
     private List<String> languagesToKeep = new ArrayList<>();

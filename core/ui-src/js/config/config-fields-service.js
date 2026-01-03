@@ -782,6 +782,15 @@ function ConfigFields($injector) {
                             }
                         },
                         {
+                            key: 'ignoreLoadLimitingForConcreteApiSearches',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Ignore load limiting for concrete API searches',
+                                help: 'When enabled load limiting defined for indexers will be ignored for API searches that have identifiers or a query.',
+                            }
+                        },
+                        {
                             key: 'ignoreTemporarilyDisabled',
                             type: 'horizontalSwitch',
                             templateOptions: {

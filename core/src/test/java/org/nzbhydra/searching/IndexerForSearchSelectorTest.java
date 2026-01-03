@@ -179,6 +179,56 @@ public class IndexerForSearchSelectorTest {
     }
 
     @Test
+    void shouldIgnoreLoadLimitingForConcreteApiSearches() {
+        // Set load limit to a value that would always block (very high number means almost never picked)
+        indexerConfigMock.setLoadLimitOnRandom(1000000);
+
+        // Without the setting enabled, load limiting should block most searches
+        when(searchingConfig.isIgnoreLoadLimitingForConcreteApiSearches()).thenReturn(false);
+        when(searchRequest.getSource()).thenReturn(SearchSource.API);
+        when(searchRequest.getIdentifiers()).thenReturn(Map.of(MediaIdType.IMDB, "tt1234567"));
+        when(searchRequest.getQuery()).thenReturn(Optional.empty());
+
+        int countNotPicked = 0;
+        for (int i = 0; i < 100; i++) {
+            countNotPicked += testee.checkLoadLimiting(indexer) ? 0 : 1;
+        }
+        assertThat(countNotPicked).isGreaterThan(0);
+
+        // With the setting enabled and API source with identifiers, load limiting should be ignored
+        when(searchingConfig.isIgnoreLoadLimitingForConcreteApiSearches()).thenReturn(true);
+        for (int i = 0; i < 100; i++) {
+            assertThat(testee.checkLoadLimiting(indexer)).isTrue();
+        }
+
+        // With the setting enabled and API source with query, load limiting should be ignored
+        when(searchRequest.getIdentifiers()).thenReturn(Collections.emptyMap());
+        when(searchRequest.getQuery()).thenReturn(Optional.of("test query"));
+        for (int i = 0; i < 100; i++) {
+            assertThat(testee.checkLoadLimiting(indexer)).isTrue();
+        }
+
+        // With the setting enabled but no identifiers and no query, load limiting should NOT be ignored
+        when(searchRequest.getIdentifiers()).thenReturn(Collections.emptyMap());
+        when(searchRequest.getQuery()).thenReturn(Optional.empty());
+        countNotPicked = 0;
+        for (int i = 0; i < 100; i++) {
+            countNotPicked += testee.checkLoadLimiting(indexer) ? 0 : 1;
+        }
+        assertThat(countNotPicked).isGreaterThan(0);
+
+        // With the setting enabled but INTERNAL source, load limiting should NOT be ignored by this feature
+        when(searchRequest.getSource()).thenReturn(SearchSource.INTERNAL);
+        when(searchRequest.getIdentifiers()).thenReturn(Map.of(MediaIdType.IMDB, "tt1234567"));
+        when(searchingConfig.isIgnoreLoadLimitingForInternalSearches()).thenReturn(false);
+        countNotPicked = 0;
+        for (int i = 0; i < 100; i++) {
+            countNotPicked += testee.checkLoadLimiting(indexer) ? 0 : 1;
+        }
+        assertThat(countNotPicked).isGreaterThan(0);
+    }
+
+    @Test
     void shouldCheckContext() {
         when(searchModuleProviderMock.getIndexers()).thenReturn(Arrays.asList(indexer));
         when(searchRequest.getSource()).thenReturn(SearchSource.INTERNAL);

@@ -1,6 +1,8 @@
 #@formatter:off
 -   version: "v8.2.0"
     changes:
+      -   type: "feature"
+          text: "Option to ignore load limiting for conrete API searches. See #909"
       -   type: "fix"
           text: "Correctly preselect quickfilter buttons. See #1033"
       -   type: "fix"

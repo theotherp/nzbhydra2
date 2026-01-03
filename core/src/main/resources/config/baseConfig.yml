@@ -365,6 +365,7 @@ searching:
   ignorePassworded: false
   ignoreTemporarilyDisabled: false
   ignoreLoadLimitingForInternalSearches: false
+  ignoreLoadLimitingForConcreteApiSearches: false
   keepSearchResultsForDays: 14
   language: "en"
   languagesToKeep: []

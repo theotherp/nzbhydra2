@@ -188,9 +188,15 @@ public class IndexerForSearchSelector {
     protected boolean checkLoadLimiting(Indexer indexer) {
         boolean preventedByLoadLimiting = indexer.getConfig().getLoadLimitOnRandom().isPresent() && random.nextInt(indexer.getConfig().getLoadLimitOnRandom().get()) + 1 != 1;
         if (preventedByLoadLimiting) {
-            boolean loadLimitIgnored = configProvider.getBaseConfig().getSearching().isIgnoreLoadLimitingForInternalSearches() && searchRequest.getSource() == SearchSource.INTERNAL;
-            if (loadLimitIgnored) {
+            boolean loadLimitIgnoredForInternalSearch = configProvider.getBaseConfig().getSearching().isIgnoreLoadLimitingForInternalSearches() && searchRequest.getSource() == SearchSource.INTERNAL;
+            if (loadLimitIgnoredForInternalSearch) {
                 logger.debug("Ignoring load limiting for internal search");
+                return true;
+            }
+            boolean hasIdentifiersOrQuery = !searchRequest.getIdentifiers().isEmpty() || searchRequest.getQuery().isPresent();
+            boolean loadLimitIgnoredForConcreteApiSearch = configProvider.getBaseConfig().getSearching().isIgnoreLoadLimitingForConcreteApiSearches() && searchRequest.getSource() == SearchSource.API && hasIdentifiersOrQuery;
+            if (loadLimitIgnoredForConcreteApiSearch) {
+                logger.debug("Ignoring load limiting for concrete API search");
                 return true;
             }
             String message = String.format("Not using %s because load limiting prevented it. Chances of it being picked: 1/%d", indexer.getName(), indexer.getConfig().getLoadLimitOnRandom().get());

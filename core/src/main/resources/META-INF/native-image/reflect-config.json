@@ -12782,6 +12782,10 @@
           "parameterTypes": []
       },
       {
+          "name": "isIgnoreLoadLimitingForConcreteApiSearches",
+          "parameterTypes": []
+      },
+      {
           "name": "isIgnorePassworded",
           "parameterTypes": []
       },
@@ -46065,6 +46069,10 @@
       },
       {
         "name": "isIgnoreLoadLimitingForInternalSearches",
+        "parameterTypes": []
+      },
+      {
+        "name": "isIgnoreLoadLimitingForConcreteApiSearches",
         "parameterTypes": []
       },
       {
