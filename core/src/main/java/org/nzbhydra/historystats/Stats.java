@@ -280,14 +280,20 @@ public class Stats {
 
     List<IndexerScore> calculateIndexerScores(Set<String> indexersToInclude, List<IndexerUniquenessScoreEntity> scoreEntities) {
         List<IndexerScore> scores = new ArrayList<>();
+        // Group all entities by indexer, not filtering by hasResult yet
         Map<IndexerEntity, List<IndexerUniquenessScoreEntity>> entities = scoreEntities.stream()
             .filter(x -> indexersToInclude.contains(x.getIndexer().getName()))
-            .filter(IndexerUniquenessScoreEntity::isHasResult)
             .collect(Collectors.groupingBy(IndexerUniquenessScoreEntity::getIndexer));
         for (Entry<IndexerEntity, List<IndexerUniquenessScoreEntity>> indexerEntityListEntry : entities.entrySet()) {
+            List<IndexerUniquenessScoreEntity> allEntries = indexerEntityListEntry.getValue();
+            // Filter to only entries with results for score calculation
+            List<IndexerUniquenessScoreEntity> entriesWithResult = allEntries.stream()
+                    .filter(IndexerUniquenessScoreEntity::isHasResult)
+                    .toList();
+
             Integer averageScore;
-            if (!indexerEntityListEntry.getValue().isEmpty()) {
-                OptionalDouble average = indexerEntityListEntry.getValue().stream().mapToDouble(x -> (100D * (double) x.getInvolved() / (double) x.getHave())).average();
+            if (!entriesWithResult.isEmpty()) {
+                OptionalDouble average = entriesWithResult.stream().mapToDouble(x -> (100D * (double) x.getInvolved() / (double) x.getHave())).average();
                 averageScore = (int) average.getAsDouble();
             } else {
                 averageScore = null;
@@ -295,12 +301,14 @@ public class Stats {
             IndexerScore indexerScore = new IndexerScore();
             indexerScore.setIndexerName(indexerEntityListEntry.getKey().getName());
             indexerScore.setAverageUniquenessScore(averageScore);
-            indexerScore.setInvolvedSearches(indexerEntityListEntry.getValue().size());
-            long uniqueDownloads = indexerEntityListEntry.getValue().stream().filter(x -> x.getHave() == 1 && x.getInvolved() > 1).count();
+            // Count all searches where this indexer was involved, not just those with results
+            indexerScore.setInvolvedSearches(allEntries.size());
+            // Unique downloads only counted from entries with results
+            long uniqueDownloads = entriesWithResult.stream().filter(x -> x.getHave() == 1 && x.getInvolved() > 1).count();
             indexerScore.setUniqueDownloads(uniqueDownloads);
             scores.add(indexerScore);
         }
-        scores.sort(Comparator.comparing(IndexerScore::getAverageUniquenessScore).reversed());
+        scores.sort(Comparator.comparing(IndexerScore::getAverageUniquenessScore, Comparator.nullsLast(Comparator.reverseOrder())));
         return scores;
     }
 

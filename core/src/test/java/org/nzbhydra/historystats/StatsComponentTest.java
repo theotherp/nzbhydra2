@@ -16,6 +16,7 @@ import org.nzbhydra.historystats.stats.DownloadPerAge;
 import org.nzbhydra.historystats.stats.DownloadPerAgeStats;
 import org.nzbhydra.historystats.stats.IndexerApiAccessStatsEntry;
 import org.nzbhydra.historystats.stats.IndexerDownloadShare;
+import org.nzbhydra.historystats.stats.IndexerScore;
 import org.nzbhydra.historystats.stats.StatsRequest;
 import org.nzbhydra.indexers.IndexerAccessResult;
 import org.nzbhydra.indexers.IndexerApiAccessEntity;
@@ -29,6 +30,7 @@ import org.nzbhydra.searching.db.SearchEntity;
 import org.nzbhydra.searching.db.SearchRepository;
 import org.nzbhydra.searching.db.SearchResultEntity;
 import org.nzbhydra.searching.db.SearchResultRepository;
+import org.nzbhydra.searching.uniqueness.IndexerUniquenessScoreEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
@@ -38,6 +40,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
@@ -315,6 +318,52 @@ public class StatsComponentTest {
         assertThat(result).hasSize(2);
     }
 
+    @Test
+    void shouldCountAllInvolvedSearchesNotJustThoseWithResults() {
+        // Test for GitHub issue #1031: involvedSearches should count all participations,
+        // not just those where the indexer had results
+
+        // Create score entities for indexer1:
+        // - 3 entries with hasResult=true (involved=5, have=2)
+        // - 2 entries with hasResult=false (involved=5, have=2)
+        List<IndexerUniquenessScoreEntity> scoreEntities = Arrays.asList(
+                new IndexerUniquenessScoreEntity(indexer1, 5, 2, true),
+                new IndexerUniquenessScoreEntity(indexer1, 5, 2, true),
+                new IndexerUniquenessScoreEntity(indexer1, 5, 2, true),
+                new IndexerUniquenessScoreEntity(indexer1, 5, 2, false),
+                new IndexerUniquenessScoreEntity(indexer1, 5, 2, false)
+        );
+
+        List<IndexerScore> scores = stats.calculateIndexerScores(Set.of("indexer1"), scoreEntities);
+
+        assertThat(scores).hasSize(1);
+        IndexerScore score = scores.get(0);
+        assertThat(score.getIndexerName()).isEqualTo("indexer1");
+        // involvedSearches should count ALL 5 entries, not just the 3 with results
+        assertThat(score.getInvolvedSearches()).isEqualTo(5);
+        // averageUniquenessScore should be calculated only from entries with results
+        // Formula: 100 * involved / have = 100 * 5 / 2 = 250
+        assertThat(score.getAverageUniquenessScore()).isEqualTo(250);
+    }
+
+    @Test
+    void shouldHandleIndexerWithOnlyNoResultEntries() {
+        // Test edge case: indexer only has entries where hasResult=false
+        List<IndexerUniquenessScoreEntity> scoreEntities = Arrays.asList(
+                new IndexerUniquenessScoreEntity(indexer1, 5, 2, false),
+                new IndexerUniquenessScoreEntity(indexer1, 5, 2, false)
+        );
+
+        List<IndexerScore> scores = stats.calculateIndexerScores(Set.of("indexer1"), scoreEntities);
+
+        assertThat(scores).hasSize(1);
+        IndexerScore score = scores.get(0);
+        assertThat(score.getIndexerName()).isEqualTo("indexer1");
+        // involvedSearches should still count all entries
+        assertThat(score.getInvolvedSearches()).isEqualTo(2);
+        // averageUniquenessScore should be null since no entries with results
+        assertThat(score.getAverageUniquenessScore()).isNull();
+    }
 
 
 }
