@@ -4215,11 +4215,49 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
                     type: 'text',
                     required: false,
                     label: 'Custom parameters',
-                    help: 'Define custom parameters to be sent to the indexer when searching. Use the format "name=value"Apply values with return key.',
+                    help: 'Define custom parameters to be sent to the indexer when searching. Use the format "name=value". Apply values with return key.',
                     advanced: 'true'
                 }
             }
         )
+    }
+
+    if (['NEWZNAB', 'TORZNAB'].includes(indexerModel.searchModuleType)) {
+        fieldset.push(
+            {
+                key: 'attributeWhitelist',
+                type: 'horizontalChips',
+                templateOptions: {
+                    type: 'text',
+                    required: false,
+                    label: 'Attribute whitelist',
+                    help: 'Only accept results with matching attributes. Use format "name=value" (e.g., "subs=English"). Multiple entries use OR logic. Comma-separated values use AND logic (e.g., "subs=English,French" requires both). Apply values with return key. Results with no attributes will be rejected.',
+                    advanced: 'true'
+                }
+            }
+        );
+
+        var cats = CategoriesService.getWithoutAll();
+        var categoryOptions = _.map(cats, function (x) {
+            return {id: x.name, label: x.name}
+        });
+        fieldset.push(
+            {
+                key: 'attributeWhitelistCategories',
+                type: 'horizontalMultiselect',
+                hideExpression: '!model.attributeWhitelist || model.attributeWhitelist.length === 0',
+                templateOptions: {
+                    label: 'Whitelist categories',
+                    help: 'Apply attribute whitelist only to results in these categories. Selecting none applies the whitelist to all categories.',
+                    options: categoryOptions,
+                    settings: {
+                        showSelectedValues: false,
+                        noSelectedText: "All"
+                    },
+                    advanced: true
+                }
+            }
+        );
     }
 
     fieldset.push(

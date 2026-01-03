@@ -100,6 +100,9 @@ public class SearchResultAcceptor {
             if (!checkMinSeeders(indexerConfig, reasonsForRejection, item)) {
                 continue;
             }
+            if (!checkAttributeWhitelist(indexerConfig, reasonsForRejection, item)) {
+                continue;
+            }
 
             //Forbidden words from query
             if (!checkForForbiddenWords(indexerConfig, reasonsForRejection, searchRequest.getInternalData().getForbiddenWords(), item, "internal data")) {
@@ -394,6 +397,98 @@ public class SearchResultAcceptor {
             return false;
         }
         return true;
+    }
+
+    /**
+     * Checks if an item matches the configured attribute whitelist for the indexer.
+     * <p>
+     * The whitelist uses OR logic between different entries (e.g., ["subs=English", "subs=French"] accepts if EITHER matches).
+     * Comma-separated values within one entry use AND logic (e.g., "subs=English,French" requires BOTH to be present).
+     * Items without any attributes are rejected when a whitelist is configured.
+     * <p>
+     * The whitelist can be limited to specific categories. If no categories are configured, the whitelist applies to all results.
+     *
+     * @param indexerConfig       the indexer configuration containing the whitelist
+     * @param reasonsForRejection multiset to track rejection reasons
+     * @param item                the search result item to check
+     * @return true if the item should be accepted, false if it should be rejected
+     */
+    protected boolean checkAttributeWhitelist(IndexerConfig indexerConfig, Multiset<String> reasonsForRejection, SearchResultItem item) {
+        List<String> whitelist = indexerConfig.getAttributeWhitelist();
+        if (whitelist == null || whitelist.isEmpty()) {
+            return true;
+        }
+
+        // Check if the whitelist should apply to this item's category
+        List<String> whitelistCategories = indexerConfig.getAttributeWhitelistCategories();
+        if (whitelistCategories != null && !whitelistCategories.isEmpty()) {
+            String itemCategoryName = item.getCategory() != null ? item.getCategory().getName() : null;
+            if (itemCategoryName == null || !whitelistCategories.contains(itemCategoryName)) {
+                // Category not in the whitelist categories - skip attribute filtering for this item
+                return true;
+            }
+        }
+
+        Map<String, String> itemAttributes = item.getAttributes();
+        if (itemAttributes == null || itemAttributes.isEmpty()) {
+            logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "Rejecting '{}' because it has no attributes but attribute whitelist is configured", item.getTitle());
+            reasonsForRejection.add("No attributes but whitelist configured");
+            return false;
+        }
+
+        // Check each whitelist entry - OR logic between entries
+        for (String whitelistEntry : whitelist) {
+            if (matchesWhitelistEntry(whitelistEntry, itemAttributes)) {
+                return true;
+            }
+        }
+
+        logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "Rejecting '{}' because it doesn't match any attribute whitelist entry", item.getTitle());
+        reasonsForRejection.add("Attribute whitelist not matched");
+        return false;
+    }
+
+    /**
+     * Checks if item attributes match a single whitelist entry.
+     * For comma-separated values, ALL values must be present (AND logic).
+     */
+    private boolean matchesWhitelistEntry(String whitelistEntry, Map<String, String> itemAttributes) {
+        int equalsIndex = whitelistEntry.indexOf('=');
+        if (equalsIndex <= 0 || equalsIndex >= whitelistEntry.length() - 1) {
+            logger.error("Invalid whitelist entry format: '{}'", whitelistEntry);
+            return false;
+        }
+
+        String attributeName = whitelistEntry.substring(0, equalsIndex).trim().toLowerCase();
+        String requiredValuesStr = whitelistEntry.substring(equalsIndex + 1).trim();
+
+        // Get the item's value for this attribute (case-insensitive key lookup)
+        String itemValue = null;
+        for (Map.Entry<String, String> entry : itemAttributes.entrySet()) {
+            if (entry.getKey().equalsIgnoreCase(attributeName)) {
+                itemValue = entry.getValue();
+                break;
+            }
+        }
+
+        if (itemValue == null) {
+            return false;
+        }
+
+        // Check if the required values contain commas (AND logic for multiple values)
+        if (requiredValuesStr.contains(",")) {
+            String[] requiredValues = requiredValuesStr.split(",");
+            // ALL values must be present in the item's attribute value
+            for (String requiredValue : requiredValues) {
+                if (!itemValue.toLowerCase().contains(requiredValue.trim().toLowerCase())) {
+                    return false;
+                }
+            }
+            return true;
+        } else {
+            // Single value - simple case-insensitive comparison
+            return itemValue.equalsIgnoreCase(requiredValuesStr);
+        }
     }
 
     @Data

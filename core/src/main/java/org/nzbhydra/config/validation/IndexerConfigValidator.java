@@ -64,6 +64,12 @@ public class IndexerConfigValidator implements ConfigValidator<IndexerConfig> {
             }
         });
 
+        newConfig.getAttributeWhitelist().forEach(x -> {
+            if (Strings.isNullOrEmpty(x) || StringUtils.countMatches(x, '=') != 1) {
+                validationResult.getErrorMessages().add("The attribute whitelist entry '" + x + "' is invalid. You must use the format name=value or name=value1,value2.");
+            }
+        });
+
         return validationResult;
     }
 

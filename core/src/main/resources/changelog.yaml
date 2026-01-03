@@ -1,6 +1,8 @@
 #@formatter:off
--   version: "v8.2.0"
+-   version: "v8.3.0"
     changes:
+      -   type: "feature"
+          text: "Add attribute whitelist filtering for indexers. Allows filtering search results by newznab attributes (e.g., subtitles). Configure per-indexer with optional category restrictions. See #983"
       -   type: "feature"
           text: "Option to import prowlarr indexers. They will be added as separate entries with a (Prowlarr) suffix. This different than using the external tool configuration as the prowlarr indexers will be searched via prowlarr, i.e. when you search them in hydra it will call prowlarr which then calls the indexers. See #922"
       -   type: "feature"

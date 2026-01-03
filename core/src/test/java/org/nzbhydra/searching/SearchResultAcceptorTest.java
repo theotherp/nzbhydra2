@@ -313,5 +313,180 @@ public class SearchResultAcceptorTest {
 
     }
 
+    @Test
+    void shouldAcceptWhenNoWhitelistConfigured() {
+        when(indexerConfig.getAttributeWhitelist()).thenReturn(Collections.emptyList());
+        item.setTitle("Some result");
+
+        assertTrue(testee.checkAttributeWhitelist(indexerConfig, HashMultiset.create(), item));
+    }
+
+    @Test
+    void shouldRejectItemWithNoAttributesWhenWhitelistConfigured() {
+        when(indexerConfig.getAttributeWhitelist()).thenReturn(Arrays.asList("subs=English"));
+        item.setTitle("Some result");
+        // item has no attributes set (empty map by default)
+
+        assertThat(testee.checkAttributeWhitelist(indexerConfig, HashMultiset.create(), item)).isFalse();
+    }
+
+    @Test
+    void shouldAcceptItemMatchingSingleWhitelistEntry() {
+        when(indexerConfig.getAttributeWhitelist()).thenReturn(Arrays.asList("subs=English"));
+        item.setTitle("Some result");
+        item.getAttributes().put("subs", "English");
+
+        assertTrue(testee.checkAttributeWhitelist(indexerConfig, HashMultiset.create(), item));
+    }
+
+    @Test
+    void shouldAcceptItemMatchingWhitelistEntryCaseInsensitive() {
+        when(indexerConfig.getAttributeWhitelist()).thenReturn(Arrays.asList("subs=english"));
+        item.setTitle("Some result");
+        item.getAttributes().put("SUBS", "ENGLISH");
+
+        assertTrue(testee.checkAttributeWhitelist(indexerConfig, HashMultiset.create(), item));
+    }
+
+    @Test
+    void shouldRejectItemNotMatchingWhitelistEntry() {
+        when(indexerConfig.getAttributeWhitelist()).thenReturn(Arrays.asList("subs=English"));
+        item.setTitle("Some result");
+        item.getAttributes().put("subs", "French");
+
+        assertThat(testee.checkAttributeWhitelist(indexerConfig, HashMultiset.create(), item)).isFalse();
+    }
+
+    @Test
+    void shouldAcceptItemMatchingAnyWhitelistEntryOrLogic() {
+        // OR logic: accept if subs=English OR subs=French
+        when(indexerConfig.getAttributeWhitelist()).thenReturn(Arrays.asList("subs=English", "subs=French"));
+        item.setTitle("Some result");
+
+        // English matches first entry
+        item.getAttributes().put("subs", "English");
+        assertTrue(testee.checkAttributeWhitelist(indexerConfig, HashMultiset.create(), item));
+
+        // French matches second entry
+        item.getAttributes().clear();
+        item.getAttributes().put("subs", "French");
+        assertTrue(testee.checkAttributeWhitelist(indexerConfig, HashMultiset.create(), item));
+
+        // German doesn't match any
+        item.getAttributes().clear();
+        item.getAttributes().put("subs", "German");
+        assertThat(testee.checkAttributeWhitelist(indexerConfig, HashMultiset.create(), item)).isFalse();
+    }
+
+    @Test
+    void shouldRequireAllValuesForCommaSeparatedAndLogic() {
+        // AND logic for comma-separated: subs=English,French requires BOTH to be in the value
+        when(indexerConfig.getAttributeWhitelist()).thenReturn(Arrays.asList("subs=English,French"));
+        item.setTitle("Some result");
+
+        // Value contains both English and French
+        item.getAttributes().put("subs", "English French German");
+        assertTrue(testee.checkAttributeWhitelist(indexerConfig, HashMultiset.create(), item));
+
+        // Value contains only English
+        item.getAttributes().clear();
+        item.getAttributes().put("subs", "English");
+        assertThat(testee.checkAttributeWhitelist(indexerConfig, HashMultiset.create(), item)).isFalse();
+
+        // Value contains only French
+        item.getAttributes().clear();
+        item.getAttributes().put("subs", "French");
+        assertThat(testee.checkAttributeWhitelist(indexerConfig, HashMultiset.create(), item)).isFalse();
+    }
+
+    @Test
+    void shouldCombineOrAndAndLogicCorrectly() {
+        // Two entries: "subs=English,French" (requires both) OR "subs=Japanese"
+        when(indexerConfig.getAttributeWhitelist()).thenReturn(Arrays.asList("subs=English,French", "subs=Japanese"));
+        item.setTitle("Some result");
+
+        // Match first entry (both English and French)
+        item.getAttributes().put("subs", "English French");
+        assertTrue(testee.checkAttributeWhitelist(indexerConfig, HashMultiset.create(), item));
+
+        // Match second entry (Japanese)
+        item.getAttributes().clear();
+        item.getAttributes().put("subs", "Japanese");
+        assertTrue(testee.checkAttributeWhitelist(indexerConfig, HashMultiset.create(), item));
+
+        // Only English doesn't match either entry
+        item.getAttributes().clear();
+        item.getAttributes().put("subs", "English");
+        assertThat(testee.checkAttributeWhitelist(indexerConfig, HashMultiset.create(), item)).isFalse();
+    }
+
+    @Test
+    void shouldRejectItemWithWrongAttribute() {
+        when(indexerConfig.getAttributeWhitelist()).thenReturn(Arrays.asList("subs=English"));
+        item.setTitle("Some result");
+        // Item has a different attribute, not 'subs'
+        item.getAttributes().put("language", "English");
+
+        assertThat(testee.checkAttributeWhitelist(indexerConfig, HashMultiset.create(), item)).isFalse();
+    }
+
+    @Test
+    void shouldApplyWhitelistOnlyToConfiguredCategories() {
+        when(indexerConfig.getAttributeWhitelist()).thenReturn(Arrays.asList("subs=English"));
+        when(indexerConfig.getAttributeWhitelistCategories()).thenReturn(Arrays.asList("Movies"));
+        item.setTitle("Some result");
+
+        // Item in Movies category without matching attributes - should be rejected
+        Category moviesCategory = new Category();
+        moviesCategory.setName("Movies");
+        item.setCategory(moviesCategory);
+        item.getAttributes().put("subs", "French");
+        assertThat(testee.checkAttributeWhitelist(indexerConfig, HashMultiset.create(), item)).isFalse();
+
+        // Item in Movies category with matching attributes - should be accepted
+        item.getAttributes().clear();
+        item.getAttributes().put("subs", "English");
+        assertTrue(testee.checkAttributeWhitelist(indexerConfig, HashMultiset.create(), item));
+
+        // Item in TV category without matching attributes - should be accepted (category not in whitelist categories)
+        Category tvCategory = new Category();
+        tvCategory.setName("TV");
+        item.setCategory(tvCategory);
+        item.getAttributes().clear();
+        item.getAttributes().put("subs", "French");
+        assertTrue(testee.checkAttributeWhitelist(indexerConfig, HashMultiset.create(), item));
+    }
+
+    @Test
+    void shouldApplyWhitelistToAllCategoriesWhenNoCategoriesConfigured() {
+        when(indexerConfig.getAttributeWhitelist()).thenReturn(Arrays.asList("subs=English"));
+        when(indexerConfig.getAttributeWhitelistCategories()).thenReturn(Collections.emptyList());
+        item.setTitle("Some result");
+
+        // Item in any category without matching attributes - should be rejected
+        Category moviesCategory = new Category();
+        moviesCategory.setName("Movies");
+        item.setCategory(moviesCategory);
+        item.getAttributes().put("subs", "French");
+        assertThat(testee.checkAttributeWhitelist(indexerConfig, HashMultiset.create(), item)).isFalse();
+
+        // Item with matching attributes - should be accepted
+        item.getAttributes().clear();
+        item.getAttributes().put("subs", "English");
+        assertTrue(testee.checkAttributeWhitelist(indexerConfig, HashMultiset.create(), item));
+    }
+
+    @Test
+    void shouldAcceptItemWithNullCategoryWhenCategoriesConfigured() {
+        when(indexerConfig.getAttributeWhitelist()).thenReturn(Arrays.asList("subs=English"));
+        when(indexerConfig.getAttributeWhitelistCategories()).thenReturn(Arrays.asList("Movies"));
+        item.setTitle("Some result");
+        item.setCategory(null);
+        item.getAttributes().put("subs", "French");
+
+        // Item with null category should be accepted (skip filtering) when categories are configured
+        assertTrue(testee.checkAttributeWhitelist(indexerConfig, HashMultiset.create(), item));
+    }
+
 
 }

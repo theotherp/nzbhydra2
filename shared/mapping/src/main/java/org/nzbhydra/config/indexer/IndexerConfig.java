@@ -113,6 +113,8 @@ public class IndexerConfig {
     private String username = null;
     private String userAgent = null;
     private String vipExpirationDate;
+    private List<String> attributeWhitelist = new ArrayList<>();
+    private List<String> attributeWhitelistCategories = new ArrayList<>();
 
     public Optional<String> getApiPath() {
         return Optional.ofNullable(apiPath);
