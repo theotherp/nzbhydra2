@@ -822,4 +822,33 @@ public class NewznabTest {
         assertThat(uri).contains("imdbid=123");
     }
 
+    @Test
+    void shouldHandleEmptyNewznabResponseElement() throws Exception {
+        // Simulates empty response element from Bitmagnet:
+        // <response xmlns="http://www.newznab.com/DTD/2010/feeds/attributes/"></response>
+        // JAXB creates a NewznabXmlResponse object but both offset and total are null
+        NewznabXmlResponse emptyResponse = new NewznabXmlResponse();
+        // Both offset and total are null (default state after JAXB deserialization of empty element)
+
+        NewznabXmlChannel channel = new NewznabXmlChannel();
+        channel.setNewznabResponse(emptyResponse);
+        channel.getItems().add(RssItemBuilder.builder("title1").build());
+        channel.getItems().add(RssItemBuilder.builder("title2").build());
+
+        NewznabXmlRoot root = new NewznabXmlRoot();
+        root.setRssChannel(channel);
+
+        when(indexerWebAccessMock.get(any(), eq(testee.config), any())).thenReturn(root);
+
+        IndexerSearchResult indexerSearchResult = testee.buildSearchUrlAndCall(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
+
+        assertThat(indexerSearchResult.getSearchResultItems().size()).isEqualTo(2);
+        // When total is null, it falls back to actualNumberResults
+        assertThat(indexerSearchResult.getTotalResults()).isEqualTo(2);
+        // When offset is null, it should default to 0
+        assertThat(indexerSearchResult.getOffset()).isEqualTo(0);
+        assertThat(indexerSearchResult.isTotalResultsKnown()).isEqualTo(true);
+        assertThat(indexerSearchResult.isHasMoreResults()).isEqualTo(false);
+    }
+
 }

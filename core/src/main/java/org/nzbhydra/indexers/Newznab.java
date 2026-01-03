@@ -448,14 +448,15 @@ public class Newznab extends Indexer<Xml> {
         final int actualNumberResults = indexerSearchResult.getSearchResultItems().size();
         if (newznabResponse != null) {
             indexerSearchResult.setTotalResultsKnown(true);
+            final int responseOffset = newznabResponse.getOffset() != null ? newznabResponse.getOffset() : 0;
             if (newznabResponse.getTotal() != null) { //If an indexer doesn't provide a total number of results
                 indexerSearchResult.setTotalResults(newznabResponse.getTotal());
-                indexerSearchResult.setHasMoreResults(newznabResponse.getTotal() > newznabResponse.getOffset() + actualNumberResults + acceptorResult.getNumberOfRejectedResults());
+                indexerSearchResult.setHasMoreResults(newznabResponse.getTotal() > responseOffset + actualNumberResults + acceptorResult.getNumberOfRejectedResults());
             } else {
                 indexerSearchResult.setTotalResults(actualNumberResults);
                 indexerSearchResult.setHasMoreResults(false);
             }
-            indexerSearchResult.setOffset(newznabResponse.getOffset());
+            indexerSearchResult.setOffset(responseOffset);
             indexerSearchResult.setPageSize(((NewznabXmlRoot) response).getRssChannel().getItems().size());
         } else {
             indexerSearchResult.setTotalResultsKnown(false);

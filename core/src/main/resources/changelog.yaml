@@ -13,6 +13,8 @@
           text: "Remove obsolete reddit references. See #1028"
       -   type: "fix"
           text: "Indexer stats now correctly count all searches an indexer participated in, not just those where it returned results. See #1031"
+      -   type: "fix"
+          text: "Fix NPE when parsing Torznab responses with empty response element (e.g., from Bitmagnet). See #1030"
     final: true
 -   version: "v8.1.3"
     changes:
