@@ -10967,6 +10967,9 @@ function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $doc
     $scope.filterModel = {};
 
 
+    $scope.isShowFilterButtons = ConfigService.getSafe().searching.showQuickFilterButtons;
+    $scope.isShowFilterButtonsVideo = $scope.isShowFilterButtons && ($stateParams.category.toLowerCase().indexOf("tv") > -1 || $stateParams.category.toLowerCase().indexOf("movie") > -1 || ConfigService.getSafe().searching.alwaysShowQuickFilterButtons);
+    $scope.isShowCustomFilterButtons = ConfigService.getSafe().searching.customQuickFilterButtons.length > 0;
     $scope.filterButtonsModel = {
         source: {},
         quality: {},
@@ -11078,11 +11081,6 @@ function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $doc
         showResultsAsZipButton: localStorageService.get("showResultsAsZipButton") !== null ? localStorageService.get("showResultsAsZipButton") : true,
         alwaysShowTitles: localStorageService.get("alwaysShowTitles") !== null ? localStorageService.get("alwaysShowTitles") : true
     };
-
-
-    $scope.isShowFilterButtons = ConfigService.getSafe().searching.showQuickFilterButtons;
-    $scope.isShowFilterButtonsVideo = $scope.isShowFilterButtons && ($stateParams.category.toLowerCase().indexOf("tv") > -1 || $stateParams.category.toLowerCase().indexOf("movie") > -1 || ConfigService.getSafe().searching.alwaysShowQuickFilterButtons);
-    $scope.isShowCustomFilterButtons = ConfigService.getSafe().searching.customQuickFilterButtons.length > 0;
 
     $scope.shared = {
         isGroupEpisodes: $scope.foo.groupEpisodes && $stateParams.category.toLowerCase().indexOf("tv") > -1 && $stateParams.episode === undefined,
