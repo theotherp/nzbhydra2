@@ -3,6 +3,8 @@
     changes:
       -   type: "fix"
           text: "Correctly preselect quickfilter buttons. See #1033"
+      -   type: "fix"
+          text: "Remove obsolete reddit references. See #1028"
     final: true
 -   version: "v8.1.3"
     changes:

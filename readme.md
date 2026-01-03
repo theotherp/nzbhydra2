@@ -77,9 +77,10 @@ Please send merge requests to the develop branch!
 
 
 ## Contact
-I prefer "public" communication either via [Reddit](https://old.reddit.com/r/nzbhydra/) or [Discord](https://discord.gg/uh9W3rd).
 
-Otherwise send me an email at theotherp@posteo.net or a PM at https://www.reddit.com/user/TheOtherP
+I prefer "public" communication via [Discord](https://discord.gg/uh9W3rd).
+
+Otherwise send me an email at theotherp@posteo.net
 
 ## Donate
 
