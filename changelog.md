@@ -1249,7 +1249,7 @@ I don't plan to compile the wrapper for anything but windows as it makes more se
 
 **Feature** Use (bigger) buttons for downloader category selection.
 
-**Fix** Fix recognition of java version with recet OpenJDK update.
+**Fix** Fix recognition of java version with recent OpenJDK update.
 
 
 

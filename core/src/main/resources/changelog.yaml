@@ -1421,7 +1421,7 @@
       - type: "feature"
         text: "Use (bigger) buttons for downloader category selection."
       - type: "fix"
-        text: "Fix recognition of java version with recet OpenJDK update."
+        text: "Fix recognition of java version with recent OpenJDK update."
   final: true
 - version: "v3.4.3"
   date: "2020-10-31"

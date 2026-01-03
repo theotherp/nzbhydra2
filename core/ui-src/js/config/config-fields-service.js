@@ -1558,7 +1558,7 @@ function ConfigFields($injector) {
                             type: 'horizontalInput',
                             templateOptions: {
                                 type: 'number',
-                                label: 'Recet searches in search bar',
+                                label: 'recent searches in search bar',
                                 required: true,
                                 tooltip: 'The number of recent searches shown in the search bar dropdown (the <span class="glyphicon glyphicon-time"></span> icon).'
                             }
