@@ -1,5 +1,6 @@
 #@formatter:off
 -   version: "v8.2.0"
+    date: "2026-01-05"
     changes:
       -   type: "feature"
           text: "Add attribute whitelist filtering for indexers. Allows filtering search results by newznab attributes (e.g., subtitles). Configure per-indexer with optional category restrictions. See #983"
@@ -15,13 +16,10 @@
           text: "Indexer stats now correctly count all searches an indexer participated in, not just those where it returned results. See #1031"
       -   type: "fix"
           text: "Fix NPE when parsing Torznab responses with empty response element (e.g., from Bitmagnet). See #1030"
-      -   type: "note"
-          text: "Happy new year!"
-    final: true
--   version: "v8.1.3"
-    changes:
       -   type: "fix"
           text: "Link to comments when available instead of details page. See #1027"
+      -   type: "note"
+          text: "Happy new year!"
     final: true
 -   version: "v8.1.2"
     date: "2025-12-04"
@@ -2687,7 +2685,7 @@
 - version: "v2.6.12"
   date: "2019-08-04"
   changes:
-      - type: "features"
+      - type: "feature"
         text: "Allow limiting the indexers to be used via API. Use \"&indexers=<name1>,<name2>\"\
       ."
       - type: "fix"
@@ -3017,7 +3015,7 @@
       \ results from any indexer at first. Even if you sort by name then other results\
       \ which should be somewhere in that list may be 'hidden' because they were not\
       \ yet retrieved from the indexer."
-      - type: null
+      - type: "fix"
         text: "Delay writing of config file so that not too many concurrent writes occur.\
       \ This should hopefully reduce the risk of file corruption."
   final: true

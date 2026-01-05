@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @SuppressWarnings("unchecked")
@@ -28,7 +29,7 @@ import java.util.List;
 )
 public class ChangelogGeneratorMojo extends AbstractMojo {
 
-    public static final HashSet<String> ALLOWED_CHANGE_TYPES = Sets.newHashSet("fix", "feature", "note");
+    public static final HashSet<String> ALLOWED_CHANGE_TYPES = Sets.newHashSet("fix", "feature", "features", "note");
     @Parameter(property = "changelogYamlFile", required = true)
     protected File changelogYamlFile;
 
@@ -77,8 +78,9 @@ public class ChangelogGeneratorMojo extends AbstractMojo {
         if (entry.getDate() == null) {
             throw new MojoExecutionException("No date set for " + entry);
         }
-        if (entry.getChanges().stream().anyMatch(x -> !ALLOWED_CHANGE_TYPES.contains(x.getType()))) {
-            throw new MojoExecutionException("Change type must be any of " + ALLOWED_CHANGE_TYPES);
+        List<ChangelogChangeEntry> invalidEntries = entry.getChanges().stream().filter(x -> x.getType() == null || !ALLOWED_CHANGE_TYPES.contains(x.getType().toLowerCase())).collect(Collectors.toList());
+        if (!invalidEntries.isEmpty()) {
+            throw new MojoExecutionException("Change type must be any of " + ALLOWED_CHANGE_TYPES + "but is wrong for" + invalidEntries);
         }
         versionLine += " (" + entry.getDate() + ")";
         lines.add(versionLine);

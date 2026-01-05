@@ -16,10 +16,18 @@
         <module name="system" />
         <module name="classloader" />
         <module name="loadtest" />
-        <module name="github-release-plugin" />
-        <module name="discordreleaser" />
         <module name="updater" />
         <module name="mockserver" />
+      </profile>
+      <profile name="Annotation profile for nzbhydra2" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.30/lombok-1.18.30.jar" />
+        </processorPath>
+        <module name="discordreleaser" />
+        <module name="github-release-plugin" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel target="17">
