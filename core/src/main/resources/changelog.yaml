@@ -6,7 +6,7 @@
       -   type: "feature"
           text: "Option to import prowlarr indexers. They will be added as separate entries with a (Prowlarr) suffix. This different than using the external tool configuration as the prowlarr indexers will be searched via prowlarr, i.e. when you search them in hydra it will call prowlarr which then calls the indexers. See #922"
       -   type: "feature"
-          text: "Option to ignore load limiting for conrete API searches. See #909"
+          text: "Option to ignore load limiting for targeted API searches. See #909"
       -   type: "fix"
           text: "Correctly preselect quickfilter buttons. See #1033"
       -   type: "fix"
