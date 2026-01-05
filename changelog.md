@@ -1,3 +1,25 @@
+### v8.2.0 (2026-01-05)
+
+**Feature** Add attribute whitelist filtering for indexers. Allows filtering search results by newznab attributes (e.g., subtitles). Configure per-indexer with optional category restrictions. See <a href="https://github.com/theotherp/nzbhydra2/issues/983">#983</a>
+
+**Feature** Option to import prowlarr indexers. They will be added as separate entries with a (Prowlarr) suffix. This different than using the external tool configuration as the prowlarr indexers will be searched via prowlarr, i.e. when you search them in hydra it will call prowlarr which then calls the indexers. See <a href="https://github.com/theotherp/nzbhydra2/issues/922">#922</a>
+
+**Feature** Option to ignore load limiting for targeted API searches. See <a href="https://github.com/theotherp/nzbhydra2/issues/909">#909</a>
+
+**Fix** Correctly preselect quickfilter buttons. See <a href="https://github.com/theotherp/nzbhydra2/issues/1033">#1033</a>
+
+**Fix** Remove obsolete reddit references. See <a href="https://github.com/theotherp/nzbhydra2/issues/1028">#1028</a>
+
+**Fix** Indexer stats now correctly count all searches an indexer participated in, not just those where it returned results. See <a href="https://github.com/theotherp/nzbhydra2/issues/1031">#1031</a>
+
+**Fix** Fix NPE when parsing Torznab responses with empty response element (e.g., from Bitmagnet). See <a href="https://github.com/theotherp/nzbhydra2/issues/1030">#1030</a>
+
+**Fix** Link to comments when available instead of details page. See <a href="https://github.com/theotherp/nzbhydra2/issues/1027">#1027</a>
+
+**Note** Happy new year!
+
+
+
 ### v8.1.2 (2025-12-04)
 
 **Fix** Fix some more memory leaks in the frontend. See <a href="https://github.com/theotherp/nzbhydra2/issues/982">#982</a>
@@ -2285,7 +2307,7 @@ I don't plan to compile the wrapper for anything but windows as it makes more se
 
 ### v2.6.12 (2019-08-04)
 
-**Features** Allow limiting the indexers to be used via API. Use "&indexers=<name1>,<name2>".
+**Feature** Allow limiting the indexers to be used via API. Use "&indexers=<name1>,<name2>".
 
 **Fix** Reduce how long sessions are kept open, possible reducing memory usage in some cases
 
@@ -2553,7 +2575,7 @@ I don't plan to compile the wrapper for anything but windows as it makes more se
 
 **Note** I need to make something clear: If Hydra shows you 100 results on the GUI and says that x results are not yet loaded then that means that some results you're looking for may be missing. You will always only get the newest 100 results from any indexer at first. Even if you sort by name then other results which should be somewhere in that list may be 'hidden' because they were not yet retrieved from the indexer.
 
-**null** Delay writing of config file so that not too many concurrent writes occur. This should hopefully reduce the risk of file corruption.
+**Fix** Delay writing of config file so that not too many concurrent writes occur. This should hopefully reduce the risk of file corruption.
 
 
 

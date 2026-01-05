@@ -59,7 +59,7 @@
         <dependency>
             <groupId>org.nzbhydra</groupId>
             <artifactId>mapping</artifactId>
-            <version>8.1.3-SNAPSHOT</version>
+            <version>8.2.0</version>
             <exclusions>
                 <exclusion>
                     <artifactId>jaxb-impl</artifactId>
