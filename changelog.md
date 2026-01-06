@@ -1,3 +1,9 @@
+### v8.2.1 (2026-01-06)
+
+**Fix** Fix reading prowlarr config. I've extended the tests to ensure this kind of bug doesn't happen again (the one which only appears with the released binaries, not when developing). See <a href="https://github.com/theotherp/nzbhydra2/issues/1035">#1035</a>
+
+
+
 ### v8.2.0 (2026-01-05)
 
 **Feature** Add attribute whitelist filtering for indexers. Allows filtering search results by newznab attributes (e.g., subtitles). Configure per-indexer with optional category restrictions. See <a href="https://github.com/theotherp/nzbhydra2/issues/983">#983</a>

@@ -4,12 +4,12 @@
     <parent>
         <groupId>org.nzbhydra</groupId>
         <artifactId>nzbhydra2</artifactId>
-        <version>8.2.1-SNAPSHOT</version>
+        <version>8.2.1</version>
     </parent>
 
     <artifactId>releases</artifactId>
     <packaging>pom</packaging>
-    <version>8.2.1-SNAPSHOT</version>
+    <version>8.2.1</version>
 
     <modules>
         <module>generic-release</module>
