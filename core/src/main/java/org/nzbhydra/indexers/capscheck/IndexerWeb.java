@@ -221,14 +221,14 @@ public class IndexerWeb {
     }
 
     @Data
-@ReflectionMarker
+    @ReflectionMarker
     private static class JacketConfigReadRequest {
         private List<IndexerConfig> existingIndexers;
         private IndexerConfig jackettConfig;
     }
 
     @Data
-@ReflectionMarker
+    @ReflectionMarker
     private static class JacketConfigReadResponse {
         private List<IndexerConfig> newIndexersConfig;
         private int addedTrackers;

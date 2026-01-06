@@ -75,6 +75,7 @@ public class NzbIndexRoot implements IndexerResponseTypeHolder {
     }
 
     @Data
+    @ReflectionMarker
     public static class ResultFile {
         private long id;
         private String name;

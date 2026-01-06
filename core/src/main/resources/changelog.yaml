@@ -1,4 +1,9 @@
 #@formatter:off
+-   version: "v8.2.1"
+    date: "2026-01-06"
+    changes:
+      -   type: "fix"
+          text: "Fix reading prowlarr config. I've extended the tests to ensure this kind of bug doesn't happen again (the one which only appears with the released binaries, not when developing). See #1035"
 -   version: "v8.2.0"
     date: "2026-01-05"
     changes:

@@ -144,48 +144,5 @@ public class JacketConfigRetriever {
     }
 
 
-       /* private static class XmlHandler extends DefaultHandler {
-
-            private IndexerConfig currentConfig = new IndexerConfig();
-
-            String currentValue;
-
-            @Override
-            public void startElement(String uri, String localName, String elementName, Attributes attributes) throws SAXException {
-                logger.info("Start: " + elementName);
-                if (elementName.endsWith("search")) {
-                    final String supported = attributes.getValue("supported");
-                    if (!"yes".equals(supported)) {
-                        return;
-                    }
-                    final List<String> supportedParams = Arrays.asList(attributes.getValue("supportedParams").split(","));
-                    final List<MediaIdType> supportedIds = supportedParams.stream().map(this::getMediaIdTypeOrNull).filter(Objects::nonNull).collect(Collectors.toList());
-                    if (elementName.equals("tv-search") && supportedIds.contains(MediaIdType.IMDB)) {
-                        supportedIds.remove(MediaIdType.IMDB);
-                        supportedIds.add(MediaIdType.TVIMDB);
-                    }
-                    currentConfig.getSupportedSearchIds().addAll(supportedIds);
-
-                    switch (elementName) {
-                        case "search":
-                            currentConfig.getSupportedSearchTypes().add(ActionAttribute.SEARCH);
-                            break;
-                        case "tv-search":
-                            currentConfig.getSupportedSearchTypes().add(ActionAttribute.TVSEARCH);
-                            break;
-                        case "movie-search":
-                            currentConfig.getSupportedSearchTypes().add(ActionAttribute.MOVIE);
-                            break;
-                        case "audio-search":
-                            currentConfig.getSupportedSearchTypes().add(ActionAttribute.AUDIO);
-                            break;
-                    }
-
-
-                }
-            }
-
-}
-*/
 
 }

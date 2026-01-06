@@ -23,6 +23,7 @@ import org.nzbhydra.Jackson;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
+import org.nzbhydra.springnative.ReflectionMarker;
 import org.nzbhydra.webaccess.WebAccess;
 import org.nzbhydra.webaccess.WebAccessException;
 import org.slf4j.Logger;
@@ -99,6 +100,7 @@ public class ProwlarrConfigRetriever {
 
     @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @ReflectionMarker
     public static class ProwlarrIndexer {
         private int id;
         private String name;
