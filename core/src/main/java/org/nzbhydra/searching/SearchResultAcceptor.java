@@ -486,8 +486,8 @@ public class SearchResultAcceptor {
             }
             return true;
         } else {
-            // Single value - simple case-insensitive comparison
-            return itemValue.equalsIgnoreCase(requiredValuesStr);
+            // Single value - check if contained in item value (handles multi-value attributes like "English - French - German")
+            return itemValue.toLowerCase().contains(requiredValuesStr.toLowerCase());
         }
     }
 

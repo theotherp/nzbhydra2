@@ -488,5 +488,42 @@ public class SearchResultAcceptorTest {
         assertTrue(testee.checkAttributeWhitelist(indexerConfig, HashMultiset.create(), item));
     }
 
+    @Test
+    void shouldAcceptItemWithMultiValueAttributeSeparatedByDash() {
+        // Real-world example: subs attribute with multiple languages separated by " - "
+        when(indexerConfig.getAttributeWhitelist()).thenReturn(Arrays.asList("subs=English"));
+        item.setTitle("Some result");
+        item.getAttributes().put("subs", "English - Chinese - Czech - Danish - Dutch - Finnish - French - German - Hungarian - Italian - Norwegian - Polish - Portuguese - Romanian - Spanish - Swedish");
+
+        assertThat(testee.checkAttributeWhitelist(indexerConfig, HashMultiset.create(), item)).isTrue();
+
+        // Should also work for a value in the middle
+        when(indexerConfig.getAttributeWhitelist()).thenReturn(Arrays.asList("subs=German"));
+        assertThat(testee.checkAttributeWhitelist(indexerConfig, HashMultiset.create(), item)).isTrue();
+
+        // Should reject when the required value is not in the list
+        when(indexerConfig.getAttributeWhitelist()).thenReturn(Arrays.asList("subs=Japanese"));
+        assertThat(testee.checkAttributeWhitelist(indexerConfig, HashMultiset.create(), item)).isFalse();
+    }
+
+    @Test
+    void shouldRequireAllValuesForAndLogicWithDashSeparatedAttribute() {
+        // AND logic (comma-separated whitelist) with dash-separated attribute value
+        item.setTitle("Some result");
+        item.getAttributes().put("subs", "English - Chinese - French - German");
+
+        // Requires both English AND French - should match
+        when(indexerConfig.getAttributeWhitelist()).thenReturn(Arrays.asList("subs=English,French"));
+        assertThat(testee.checkAttributeWhitelist(indexerConfig, HashMultiset.create(), item)).isTrue();
+
+        // Requires both English AND Japanese - should reject (Japanese not in value)
+        when(indexerConfig.getAttributeWhitelist()).thenReturn(Arrays.asList("subs=English,Japanese"));
+        assertThat(testee.checkAttributeWhitelist(indexerConfig, HashMultiset.create(), item)).isFalse();
+
+        // Requires English, French AND German - should match (all present)
+        when(indexerConfig.getAttributeWhitelist()).thenReturn(Arrays.asList("subs=English,French,German"));
+        assertThat(testee.checkAttributeWhitelist(indexerConfig, HashMultiset.create(), item)).isTrue();
+    }
+
 
 }
