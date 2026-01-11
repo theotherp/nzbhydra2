@@ -1,6 +1,6 @@
 #@formatter:off
 -   version: "v8.2.2"
-    date: "2026-01-10"
+    date: "2026-01-11"
     changes:
       -   type: "fix"
           text: "Fix attribute whitelist not matching multi-value attributes (e.g., subs with values like \"English - French - German\"). See #983"
