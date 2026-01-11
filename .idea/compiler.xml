@@ -9,10 +9,11 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="classloader" />
-        <module name="loadtest" />
         <module name="github-release-maven-plugin" />
         <module name="sockslib" />
+        <module name="classloader" />
+        <module name="loadtest" />
+        <module name="github-release-plugin" />
         <module name="updater" />
         <module name="mockserver" />
       </profile>
@@ -24,14 +25,12 @@
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.30/lombok-1.18.30.jar" />
         </processorPath>
         <module name="discordreleaser" />
-        <module name="github-release-plugin" />
       </profile>
       <profile name="Annotation profile for mapping" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.42/lombok-1.18.42.jar" />
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.42/lombok-1.18.42.jar" />
         </processorPath>
         <module name="mapping" />
