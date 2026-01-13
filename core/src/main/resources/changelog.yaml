@@ -1,4 +1,8 @@
 #@formatter:off
+-   version: "v8.2.3"
+    changes:
+      -   type: "fix"
+          text: "Make filter icons and sort indicators visible in bright theme :-)"
 -   version: "v8.2.2"
     date: "2026-01-11"
     changes:
