@@ -1,3 +1,11 @@
+### v8.2.3 (2026-01-15)
+
+**Fix** Make filter icons and sort indicators visible in bright theme :-)
+
+**Fix** Send content to sabnzbd in correct format. See <a href="https://github.com/theotherp/nzbhydra2/issues/1037">#1037</a>
+
+
+
 ### v8.2.2 (2026-01-11)
 
 **Fix** Fix attribute whitelist not matching multi-value attributes (e.g., subs with values like "English - French - German"). See <a href="https://github.com/theotherp/nzbhydra2/issues/983">#983</a>
