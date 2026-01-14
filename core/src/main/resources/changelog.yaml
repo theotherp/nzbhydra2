@@ -1,8 +1,11 @@
 #@formatter:off
 -   version: "v8.2.3"
+    date: "2026-01-15"
     changes:
       -   type: "fix"
           text: "Make filter icons and sort indicators visible in bright theme :-)"
+      -   type: "fix"
+          text: "Send content to sabnzbd in correct format. See #1037"
 -   version: "v8.2.2"
     date: "2026-01-11"
     changes:
