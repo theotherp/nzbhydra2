@@ -29,7 +29,13 @@
         ng-if="(result.titleGroupIndex === 0 && result.duplicateGroupIndex === 0) || searchResultsControllerShared.isGroupEpisodes || foo.alwaysShowTitles"><img
         ng-if="result.cover && foo.showCovers" ng-src="{{::result.cover}}" width="{{::coverSize}}px" style="margin-right: 5px" ng-click="showCover(result.cover)"/><span
         ng-if="result.downloadedAt && searchResultsControllerShared.showDownloadedIndicator" class="fa fa-check" uib-tooltip="Already downloaded at {{::result.downloadedAt}}"
-        tooltip-placement="top" tooltip-trigger="mouseenter"></span>{{ ::result.title }}</span>
+        tooltip-placement="top" tooltip-trigger="mouseenter"></span><span
+        ng-if="::result.qualityRating"
+        class="quality-badge quality-{{::getQualityClass(result.qualityRating)}}"
+        uib-tooltip-html="::formatQualityWarnings(result.qualityWarnings)"
+        tooltip-placement="right"
+        tooltip-trigger="mouseenter"
+        tooltip-class="quality-tooltip">{{::result.qualityRating}}</span>{{ ::result.title }}</span>
       </span>
       <span class="badge" ng-if="result.torrentDownloadFactor">{{::result.torrentDownloadFactor}}</span>
     </div>

@@ -1,6 +1,9 @@
 package com.releaseparser.parser;
 
-import com.releaseparser.model.*;
+import com.releaseparser.model.Codec;
+import com.releaseparser.model.ReleaseInfo;
+import com.releaseparser.model.Resolution;
+import com.releaseparser.model.Source;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -21,7 +24,8 @@ public class ReleaseParser {
             "(?<bluray>M?Blu[-_. ]?Ray|HD[-_. ]?DVD|BD(?!$)|UHD2?BD|BDISO|BDMux|BD25|BD50|BR[-_. ]?DISK)|" +
             "(?<webdl>WEB[-_. ]?DL(?:mux)?|AmazonHD|AmazonSD|iTunesHD|MaxdomeHD|NetflixU?HD|WebHD|HBOMaxHD|DisneyHD|" +
                 "[. ]WEB[. ](?:[xh][ .]?26[45]|AVC|HEVC|DDP?5[. ]1)|[. ](?-i:WEB)$|(?:\\d{3,4}0p)[-. ](?:Hybrid[-_. ]?)?WEB[-. ]|" +
-                "[-. ]WEB[-. ]\\d{3,4}0p|\\b\\s/\\sWEB\\s/\\s\\b|(?:AMZN|NF|DP)[. -]WEB[. -](?!Rip))|" +
+            "[-. ]WEB[-. ]\\d{3,4}0p|\\b\\s/\\sWEB\\s/\\s\\b|(?:AMZN|NF|DP)[. -]WEB[. -](?!Rip)|" +
+            "[. ]WEB[. -](?=[xh]26|AV1))|" +
             "(?<webrip>WebRip|Web-Rip|WEBMux)|" +
             "(?<hdtv>HDTV)|" +
             "(?<bdrip>BDRip|BDLight|HD[-_. ]?DVDRip|UHDBDRip)|" +
@@ -30,8 +34,8 @@ public class ReleaseParser {
             "(?<dvd>DVDRip|xvidvd)|" +
             "(?<dvdr>\\d?x?M?DVD-?[R59]|DVD(?!SCR|SCREEN|Rip))|" +
             "(?<dsr>WS[-_. ]DSR|DSR)|" +
-            "(?<ts>TS[-_. ]|TELESYNCH?|HD-TS|HDTS|PDVD|TSRip|HDTSRip)|" +
-            "(?<tc>TC|TELECINE|HD-TC|HDTC)|" +
+            "(?<ts>(?<![a-z])TS[-_. ]|TELESYNCH?|HD-TS|HDTS|PDVD|TSRip|HDTSRip)|" +
+            "(?<tc>(?<![a-z])TC(?![a-z])|TELECINE|HD-TC|HDTC)|" +
             "(?<cam>CAMRIP|(?:NEW)?CAM|HD-?CAM(?:Rip)?|HQCAM)|" +
             "(?<wp>WORKPRINT|WP)|" +
             "(?<pdtv>PDTV)|" +
@@ -209,6 +213,9 @@ public class ReleaseParser {
 
     private String cleanTitle(String title) {
         String cleaned = title;
+
+        // Normalize underscores to dots for consistent parsing
+        cleaned = cleaned.replace('_', '.');
 
         // Remove website prefixes
         cleaned = WEBSITE_PREFIX_PATTERN.matcher(cleaned).replaceFirst("");

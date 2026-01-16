@@ -219,6 +219,54 @@ function searchResult() {
             };
         };
 
+        $scope.getQualityClass = function (rating) {
+            if (rating >= 7) return 'high';
+            if (rating >= 4) return 'medium';
+            return 'low';
+        };
+
+        $scope.formatQualityWarnings = function (warnings) {
+            if (!warnings || warnings.length === 0) {
+                return 'No quality information available';
+            }
+            var quality = [];
+            var critical = [];
+            var warning = [];
+            warnings.forEach(function (w) {
+                if (w.indexOf('[QUALITY]') === 0) {
+                    quality.push(w.replace('[QUALITY] ', ''));
+                } else if (w.indexOf('[CRITICAL]') === 0) {
+                    critical.push(w.replace('[CRITICAL] ', ''));
+                } else if (w.indexOf('[WARNING]') === 0) {
+                    warning.push(w.replace('[WARNING] ', ''));
+                }
+                // INFO items are skipped as they're redundant with quality factors
+            });
+            var html = '<div>';
+            if (quality.length > 0) {
+                html += '<div class="quality-section"><strong><i class="fa fa-film" style="color: #6c757d"></i> Quality factors:</strong>';
+                quality.forEach(function (msg) {
+                    html += '<div class="quality-item">' + msg + '</div>';
+                });
+                html += '</div>';
+            }
+            if (critical.length > 0) {
+                html += '<div class="quality-section"><strong><i class="fa fa-exclamation-circle" style="color: #dc3545"></i> Critical:</strong>';
+                critical.forEach(function (msg) {
+                    html += '<div class="quality-item">' + msg + '</div>';
+                });
+                html += '</div>';
+            }
+            if (warning.length > 0) {
+                html += '<div class="quality-section"><strong><i class="fa fa-exclamation-triangle" style="color: #ffc107"></i> Warning:</strong>';
+                warning.forEach(function (msg) {
+                    html += '<div class="quality-item">' + msg + '</div>';
+                });
+                html += '</div>';
+            }
+            html += '</div>';
+            return html;
+        };
 
         $scope.showCover = function (url) {
             console.log("Show " + url);

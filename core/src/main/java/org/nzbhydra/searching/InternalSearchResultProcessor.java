@@ -2,9 +2,13 @@ package org.nzbhydra.searching;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Multiset;
+import com.releaseparser.analyzer.QualityAnalyzer;
+import com.releaseparser.model.ReleaseInfo;
+import com.releaseparser.parser.ReleaseParser;
 import org.apache.commons.lang3.ObjectUtils;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.searching.SearchType;
 import org.nzbhydra.downloading.FileDownloadEntity;
 import org.nzbhydra.downloading.FileDownloadRepository;
 import org.nzbhydra.downloading.FileHandler;
@@ -43,6 +47,8 @@ import java.util.stream.Collectors;
 public class InternalSearchResultProcessor {
 
     private static final Logger logger = LoggerFactory.getLogger(InternalSearchResultProcessor.class);
+    private static final ReleaseParser releaseParser = new ReleaseParser();
+    private static final QualityAnalyzer qualityAnalyzer = new QualityAnalyzer();
 
     @Autowired
     private FileHandler nzbHandler;
@@ -110,6 +116,8 @@ public class InternalSearchResultProcessor {
             BaseConfig baseConfig = configProvider.getBaseConfig();
             SearchResultWebTOBuilder builder = SearchResultWebTO.builder()
                     .category(baseConfig.getSearching().isUseOriginalCategories() ? item.getOriginalCategory() : item.getCategory().getName())
+                    .categorySubtype(item.getCategory().getSubtype().name())
+                    .categorySearchType(item.getCategory().getSearchType() == null ? null : item.getCategory().getSearchType().name())
                     .comments(item.getCommentsCount())
                     .comments_link(ObjectUtils.firstNonNull(item.getCommentsLink(), item.getDetails()))
                     .cover(
@@ -169,6 +177,30 @@ public class InternalSearchResultProcessor {
             final Optional<FileDownloadEntity> matchingDownload = alreadyDownloaded.stream().filter(x -> x.getSearchResult().getId() == item.getSearchResultId()).findFirst();
             if (matchingDownload.isPresent()) {
                 builder.downloadedAt(DATE_TIME_FORMATTER.format(LocalDateTime.ofInstant(matchingDownload.get().getTime(), ZoneId.of("UTC"))));
+            }
+
+            // Add quality analysis for movie results if enabled
+            if (baseConfig.getSearching().isShowMovieQualityIndicator()
+                && item.getCategory().getSearchType() == SearchType.MOVIE) {
+                ReleaseInfo releaseInfo = releaseParser.parse(item.getTitle());
+                int rating = qualityAnalyzer.getQualityRating(releaseInfo);
+
+                // Combine quality factors and warnings into a single list with prefixes
+                List<String> qualityInfo = new ArrayList<>();
+
+                // Add rating explanation (what the release has)
+                List<String> explanations = qualityAnalyzer.getRatingExplanation(releaseInfo);
+                for (String explanation : explanations) {
+                    qualityInfo.add("[QUALITY] " + explanation);
+                }
+
+                // Add warnings/issues
+                qualityAnalyzer.analyze(releaseInfo).forEach(w ->
+                        qualityInfo.add("[" + w.severity().name() + "] " + w.message())
+                );
+
+                builder.qualityRating(rating);
+                builder.qualityWarnings(qualityInfo);
             }
 
             transformedSearchResults.add(builder.build());

@@ -1,6 +1,9 @@
 package com.releaseparser.analyzer;
 
-import com.releaseparser.model.*;
+import com.releaseparser.model.Codec;
+import com.releaseparser.model.ReleaseInfo;
+import com.releaseparser.model.Resolution;
+import com.releaseparser.model.Source;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,6 +61,7 @@ public class QualityAnalyzer {
 
     /**
      * Analyze a release and return any quality warnings.
+     * Only returns warnings for issues not already covered by getRatingExplanation().
      *
      * @param info the release info to analyze
      * @return list of quality warnings
@@ -65,123 +69,34 @@ public class QualityAnalyzer {
     public List<QualityWarning> analyze(ReleaseInfo info) {
         List<QualityWarning> warnings = new ArrayList<>();
 
-        // Check source quality
-        analyzeSource(info, warnings);
+        // Only flag truly problematic issues not covered by the quality explanation
 
-        // Check resolution
-        analyzeResolution(info, warnings);
-
-        // Check codec
-        analyzeCodec(info, warnings);
-
-        // Check hardcoded subs
-        analyzeHardcodedSubs(info, warnings);
-
-        // Check for positive indicators
-        analyzePositiveIndicators(info, warnings);
-
-        return warnings;
-    }
-
-    private void analyzeSource(ReleaseInfo info, List<QualityWarning> warnings) {
-        Source source = info.getSource();
-
-        switch (source) {
-            case CAM -> warnings.add(new QualityWarning(Severity.CRITICAL,
-                    "CAM source - extremely poor quality (camera recording from cinema)"));
-            case TELESYNC -> warnings.add(new QualityWarning(Severity.CRITICAL,
-                    "Telesync source - very poor video quality"));
-            case TELECINE -> warnings.add(new QualityWarning(Severity.CRITICAL,
-                    "Telecine source - poor quality (copied from film reel)"));
-            case WORKPRINT -> warnings.add(new QualityWarning(Severity.CRITICAL,
-                    "Workprint - unfinished version, may have missing scenes or effects"));
-            case SCREENER -> warnings.add(new QualityWarning(Severity.WARNING,
-                    "Screener source - may have watermarks or quality issues"));
-            case DVDSCR -> warnings.add(new QualityWarning(Severity.WARNING,
-                    "DVD Screener - pre-release copy, may have watermarks"));
-            case SDTV, PDTV, DSR, TVRIP -> warnings.add(new QualityWarning(Severity.INFO,
-                    source.getDisplayName() + " source - standard definition TV quality"));
-            case DVD -> warnings.add(new QualityWarning(Severity.INFO,
-                    "DVD source - standard definition (480p typical)"));
-            case UNKNOWN -> warnings.add(new QualityWarning(Severity.WARNING,
+        // Unknown source is a real issue - we can't determine quality
+        if (info.getSource() == Source.UNKNOWN) {
+            warnings.add(new QualityWarning(Severity.WARNING,
                     "Unknown source - quality cannot be determined"));
-            case REMUX -> warnings.add(new QualityWarning(Severity.INFO,
-                    "Remux - highest possible quality (untouched video/audio from disc)"));
-            case BLURAY -> warnings.add(new QualityWarning(Severity.INFO,
-                    "Blu-ray source - high quality"));
-            default -> {
-                // Good sources don't need warnings
-            }
-        }
-    }
-
-    private void analyzeResolution(ReleaseInfo info, List<QualityWarning> warnings) {
-        Resolution resolution = info.getResolution();
-
-        if (resolution == Resolution.UNKNOWN) {
-            warnings.add(new QualityWarning(Severity.INFO,
-                    "Resolution not detected in title"));
-            return;
         }
 
-        if (resolution.isSD()) {
-            warnings.add(new QualityWarning(Severity.WARNING,
-                    "Standard definition resolution (" + resolution.getDisplayName() + ") - consider HD alternatives"));
-        } else if (resolution.isUHD()) {
-            warnings.add(new QualityWarning(Severity.INFO,
-                    "4K UHD resolution - excellent quality (ensure your display supports it)"));
-        }
-    }
-
-    private void analyzeCodec(ReleaseInfo info, List<QualityWarning> warnings) {
-        Codec codec = info.getCodec();
-
-        if (codec.isLegacy()) {
-            warnings.add(new QualityWarning(Severity.WARNING,
-                    codec.getDisplayName() + " is a legacy codec - newer codecs (x264/x265) offer better quality"));
-        }
-    }
-
-    private void analyzeHardcodedSubs(ReleaseInfo info, List<QualityWarning> warnings) {
+        // Hardcoded subs are a functional issue not covered in explanation
         if (info.isHardcodedSubs()) {
-            String message = "Contains HARDCODED subtitles - these cannot be disabled";
+            String message = "Contains hardcoded subtitles that cannot be disabled";
             if (info.getHardcodedSubsLanguage() != null) {
-                message += " (Language: " + info.getHardcodedSubsLanguage() + ")";
+                message += " (" + info.getHardcodedSubsLanguage() + ")";
             }
             warnings.add(new QualityWarning(Severity.WARNING, message));
         }
-    }
 
-    private void analyzePositiveIndicators(ReleaseInfo info, List<QualityWarning> warnings) {
-        if (info.isProper()) {
-            warnings.add(new QualityWarning(Severity.INFO,
-                    "PROPER release - fixes issues from previous release"));
+        // Screeners/workprints may have watermarks or missing content - unique info
+        Source source = info.getSource();
+        if (source == Source.SCREENER || source == Source.DVDSCR) {
+            warnings.add(new QualityWarning(Severity.WARNING,
+                    "May contain watermarks or other artifacts"));
+        } else if (source == Source.WORKPRINT) {
+            warnings.add(new QualityWarning(Severity.WARNING,
+                    "Unfinished version - may have missing scenes or incomplete effects"));
         }
 
-        if (info.isRepack()) {
-            warnings.add(new QualityWarning(Severity.INFO,
-                    "REPACK release - fixes issues from initial release by same group"));
-        }
-
-        if (info.getVersion() > 1) {
-            warnings.add(new QualityWarning(Severity.INFO,
-                    "Version " + info.getVersion() + " - improved release"));
-        }
-
-        if (info.isHdr()) {
-            warnings.add(new QualityWarning(Severity.INFO,
-                    "HDR content - enhanced color/brightness (requires HDR display)"));
-        }
-
-        if (info.isDolbyVision()) {
-            warnings.add(new QualityWarning(Severity.INFO,
-                    "Dolby Vision - premium HDR format (requires compatible display)"));
-        }
-
-        if (info.getEdition() != null) {
-            warnings.add(new QualityWarning(Severity.INFO,
-                    "Special edition: " + info.getEdition()));
-        }
+        return warnings;
     }
 
     /**
@@ -336,5 +251,94 @@ public class QualityAnalyzer {
             case 9, 10 -> "Excellent - Premium quality release";
             default -> "Unknown";
         };
+    }
+
+    /**
+     * Get an explanation of what contributes to the quality rating.
+     * This helps users understand why a release has a certain rating.
+     *
+     * @param info the release info
+     * @return list of explanations for the rating
+     */
+    public List<String> getRatingExplanation(ReleaseInfo info) {
+        List<String> explanations = new ArrayList<>();
+
+        // Source explanation
+        Source source = info.getSource();
+        if (source != Source.UNKNOWN) {
+            String sourceDesc = switch (source) {
+                case REMUX -> "Remux source (untouched disc quality)";
+                case BLURAY -> "Blu-ray source (high quality)";
+                case WEBDL -> "WEB-DL source (streaming quality)";
+                case WEBRIP -> "WEBRip source (good streaming quality)";
+                case HDTV -> "HDTV source (broadcast quality)";
+                case BDRIP, BRRIP -> "Blu-ray rip (compressed from disc)";
+                case DVD, DVDR -> "DVD source (standard definition)";
+                case SCREENER, DVDSCR -> "Screener (pre-release copy)";
+                case TELESYNC -> "Telesync (low quality)";
+                case TELECINE -> "Telecine (low quality)";
+                case CAM -> "CAM (very low quality)";
+                default -> source.getDisplayName() + " source";
+            };
+            explanations.add(sourceDesc);
+        }
+
+        // Resolution explanation
+        Resolution res = info.getResolution();
+        if (res != Resolution.UNKNOWN) {
+            String resDesc = res.getDisplayName();
+            if (res.isUHD()) {
+                resDesc += " (4K Ultra HD)";
+            } else if (res.isFullHD()) {
+                resDesc += " (Full HD)";
+            } else if (res == Resolution.R720P) {
+                resDesc += " (HD)";
+            } else if (res.isSD()) {
+                resDesc += " (Standard Definition)";
+            }
+            explanations.add(resDesc);
+        }
+
+        // Codec explanation
+        Codec codec = info.getCodec();
+        if (codec != Codec.UNKNOWN) {
+            String codecDesc = codec.getDisplayName();
+            if (codec.isHEVC() || codec == Codec.AV1) {
+                codecDesc += " (modern efficient codec)";
+            } else if (codec == Codec.X264) {
+                codecDesc += " (widely compatible codec)";
+            } else if (codec.isLegacy()) {
+                codecDesc += " (legacy codec)";
+            }
+            explanations.add(codecDesc);
+        }
+
+        // HDR/DV
+        if (info.isDolbyVision()) {
+            explanations.add("Dolby Vision HDR");
+        } else if (info.isHdr()) {
+            explanations.add("HDR content");
+        }
+
+        // Special indicators
+        if (info.isRemux()) {
+            explanations.add("Remux (lossless quality)");
+        }
+        if (info.isProper()) {
+            explanations.add("PROPER release");
+        }
+        if (info.isRepack()) {
+            explanations.add("REPACK release");
+        }
+        if (info.getEdition() != null) {
+            explanations.add(info.getEdition());
+        }
+
+        // Languages
+        if (!info.getLanguages().isEmpty()) {
+            explanations.add("Languages: " + String.join(", ", info.getLanguages()));
+        }
+
+        return explanations;
     }
 }

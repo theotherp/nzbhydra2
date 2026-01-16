@@ -3,7 +3,7 @@ package com.releaseparser;
 import com.releaseparser.analyzer.QualityAnalyzer;
 import com.releaseparser.analyzer.QualityAnalyzer.QualityWarning;
 import com.releaseparser.analyzer.QualityAnalyzer.Severity;
-import com.releaseparser.model.*;
+import com.releaseparser.model.ReleaseInfo;
 import com.releaseparser.parser.ReleaseParser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -28,30 +28,39 @@ class QualityAnalyzerTest {
     class WarningGeneration {
 
         @Test
-        void shouldWarnAboutCAMSource() {
-            ReleaseInfo info = parser.parse("Movie.2024.CAM.x264-GROUP");
+        void shouldWarnAboutUnknownSource() {
+            ReleaseInfo info = parser.parse("Movie.2024.x264-GROUP");
             List<QualityWarning> warnings = analyzer.analyze(info);
 
             assertThat(warnings)
-                    .anyMatch(w -> w.severity() == Severity.CRITICAL && w.message().contains("CAM"));
+                    .anyMatch(w -> w.severity() == Severity.WARNING && w.message().toLowerCase().contains("unknown source"));
         }
 
         @Test
-        void shouldWarnAboutTelesync() {
-            ReleaseInfo info = parser.parse("Movie.2024.TS.x264-GROUP");
-            List<QualityWarning> warnings = analyzer.analyze(info);
-
-            assertThat(warnings)
-                    .anyMatch(w -> w.severity() == Severity.CRITICAL && w.message().toLowerCase().contains("telesync"));
-        }
-
-        @Test
-        void shouldWarnAboutScreener() {
+        void shouldWarnAboutScreenerWatermarks() {
             ReleaseInfo info = parser.parse("Movie.2024.DVDSCR.x264-GROUP");
             List<QualityWarning> warnings = analyzer.analyze(info);
 
             assertThat(warnings)
-                    .anyMatch(w -> w.severity() == Severity.WARNING && w.message().toLowerCase().contains("screener"));
+                    .anyMatch(w -> w.severity() == Severity.WARNING && w.message().toLowerCase().contains("watermarks"));
+        }
+
+        @Test
+        void shouldWarnAboutScreener() {
+            ReleaseInfo info = parser.parse("Movie.2024.SCREENER.x264-GROUP");
+            List<QualityWarning> warnings = analyzer.analyze(info);
+
+            assertThat(warnings)
+                    .anyMatch(w -> w.severity() == Severity.WARNING && w.message().toLowerCase().contains("watermarks"));
+        }
+
+        @Test
+        void shouldWarnAboutWorkprint() {
+            ReleaseInfo info = parser.parse("Movie.2024.WORKPRINT.x264-GROUP");
+            List<QualityWarning> warnings = analyzer.analyze(info);
+
+            assertThat(warnings)
+                    .anyMatch(w -> w.severity() == Severity.WARNING && w.message().toLowerCase().contains("unfinished"));
         }
 
         @Test
@@ -60,52 +69,26 @@ class QualityAnalyzerTest {
             List<QualityWarning> warnings = analyzer.analyze(info);
 
             assertThat(warnings)
-                    .anyMatch(w -> w.severity() == Severity.WARNING && w.message().contains("HARDCODED"));
+                    .anyMatch(w -> w.severity() == Severity.WARNING && w.message().toLowerCase().contains("hardcoded"));
         }
 
         @Test
-        void shouldWarnAboutSDResolution() {
-            ReleaseInfo info = parser.parse("Movie.2024.480p.BluRay.x264-GROUP");
+        void shouldNotWarnAboutHighQualityRelease() {
+            // High quality releases should have no warnings (quality info is in getRatingExplanation)
+            ReleaseInfo info = parser.parse("Movie.2024.2160p.UHD.BluRay.Remux.HDR.HEVC-GROUP");
             List<QualityWarning> warnings = analyzer.analyze(info);
 
-            assertThat(warnings)
-                    .anyMatch(w -> w.severity() == Severity.WARNING && w.message().contains("480p"));
+            assertThat(warnings).isEmpty();
         }
 
         @Test
-        void shouldWarnAboutLegacyCodec() {
-            ReleaseInfo info = parser.parse("Movie.2024.DVDRip.XviD-GROUP");
+        void shouldNotWarnAboutCAMInAnalyze() {
+            // CAM quality is explained in getRatingExplanation, not as a warning
+            ReleaseInfo info = parser.parse("Movie.2024.CAM.x264-GROUP");
             List<QualityWarning> warnings = analyzer.analyze(info);
 
-            assertThat(warnings)
-                    .anyMatch(w -> w.severity() == Severity.WARNING && w.message().contains("legacy"));
-        }
-
-        @Test
-        void shouldInfoAboutRemux() {
-            ReleaseInfo info = parser.parse("Movie.2024.2160p.UHD.BluRay.Remux.HEVC-GROUP");
-            List<QualityWarning> warnings = analyzer.analyze(info);
-
-            assertThat(warnings)
-                    .anyMatch(w -> w.severity() == Severity.INFO && w.message().toLowerCase().contains("remux"));
-        }
-
-        @Test
-        void shouldInfoAboutHDR() {
-            ReleaseInfo info = parser.parse("Movie.2024.2160p.UHD.BluRay.HDR.x265-GROUP");
-            List<QualityWarning> warnings = analyzer.analyze(info);
-
-            assertThat(warnings)
-                    .anyMatch(w -> w.severity() == Severity.INFO && w.message().contains("HDR"));
-        }
-
-        @Test
-        void shouldInfoAboutProper() {
-            ReleaseInfo info = parser.parse("Movie.2024.1080p.BluRay.PROPER.x264-GROUP");
-            List<QualityWarning> warnings = analyzer.analyze(info);
-
-            assertThat(warnings)
-                    .anyMatch(w -> w.severity() == Severity.INFO && w.message().contains("PROPER"));
+            // Should have no warnings (CAM source is in quality explanation)
+            assertThat(warnings).isEmpty();
         }
     }
 
@@ -280,16 +263,18 @@ class QualityAnalyzerTest {
             List<QualityWarning> warnings = analyzer.analyze(info);
             int rating = analyzer.getQualityRating(info);
 
-            // Should have positive info messages
-            assertThat(warnings)
-                    .anyMatch(w -> w.severity() == Severity.INFO && w.message().toLowerCase().contains("remux"));
-            assertThat(warnings)
-                    .anyMatch(w -> w.severity() == Severity.INFO && w.message().contains("HDR"));
-            assertThat(warnings)
-                    .anyMatch(w -> w.severity() == Severity.INFO && w.message().toLowerCase().contains("dolby"));
+            // Premium releases should have no warnings (quality info is in getRatingExplanation)
+            assertThat(warnings).isEmpty();
 
             // Should have high rating
             assertThat(rating).isGreaterThanOrEqualTo(9);
+
+            // Quality explanation should contain the relevant info
+            List<String> explanation = analyzer.getRatingExplanation(info);
+            assertThat(explanation)
+                    .anyMatch(e -> e.toLowerCase().contains("remux"));
+            assertThat(explanation)
+                    .anyMatch(e -> e.contains("HDR") || e.contains("Dolby Vision"));
         }
 
         @Test
@@ -298,14 +283,17 @@ class QualityAnalyzerTest {
             List<QualityWarning> warnings = analyzer.analyze(info);
             int rating = analyzer.getQualityRating(info);
 
-            // Should have critical/warning messages
+            // Should have warning about hardcoded subs (only unique warnings are in analyze())
             assertThat(warnings)
-                    .anyMatch(w -> w.severity() == Severity.CRITICAL);
-            assertThat(warnings)
-                    .anyMatch(w -> w.message().contains("HARDCODED"));
+                    .anyMatch(w -> w.message().toLowerCase().contains("hardcoded"));
 
             // Should have low rating
             assertThat(rating).isLessThanOrEqualTo(3);
+
+            // Quality explanation should contain source info
+            List<String> explanation = analyzer.getRatingExplanation(info);
+            assertThat(explanation)
+                    .anyMatch(e -> e.toLowerCase().contains("cam"));
         }
 
         @Test
@@ -325,6 +313,64 @@ class QualityAnalyzerTest {
             // Premium should beat poor
             var result3 = analyzer.compare(premium, poor);
             assertThat(result3.better()).isEqualTo(premium);
+        }
+    }
+
+    @Nested
+    class RatingExplanation {
+
+        @Test
+        void shouldExplainSourceQuality() {
+            ReleaseInfo info = parser.parse("Movie.2024.1080p.BluRay.x264-GROUP");
+            List<String> explanation = analyzer.getRatingExplanation(info);
+
+            assertThat(explanation)
+                    .anyMatch(e -> e.toLowerCase().contains("blu-ray"));
+        }
+
+        @Test
+        void shouldExplainResolution() {
+            ReleaseInfo info = parser.parse("Movie.2024.2160p.BluRay.x265-GROUP");
+            List<String> explanation = analyzer.getRatingExplanation(info);
+
+            assertThat(explanation)
+                    .anyMatch(e -> e.contains("2160p") || e.contains("4K"));
+        }
+
+        @Test
+        void shouldExplainCodec() {
+            ReleaseInfo info = parser.parse("Movie.2024.1080p.BluRay.x265-GROUP");
+            List<String> explanation = analyzer.getRatingExplanation(info);
+
+            assertThat(explanation)
+                    .anyMatch(e -> e.toLowerCase().contains("x265") || e.toLowerCase().contains("hevc"));
+        }
+
+        @Test
+        void shouldExplainHDR() {
+            ReleaseInfo info = parser.parse("Movie.2024.2160p.BluRay.HDR.x265-GROUP");
+            List<String> explanation = analyzer.getRatingExplanation(info);
+
+            assertThat(explanation)
+                    .anyMatch(e -> e.contains("HDR"));
+        }
+
+        @Test
+        void shouldExplainRemux() {
+            ReleaseInfo info = parser.parse("Movie.2024.1080p.BluRay.Remux.AVC-GROUP");
+            List<String> explanation = analyzer.getRatingExplanation(info);
+
+            assertThat(explanation)
+                    .anyMatch(e -> e.toLowerCase().contains("remux"));
+        }
+
+        @Test
+        void shouldExplainProper() {
+            ReleaseInfo info = parser.parse("Movie.2024.1080p.BluRay.PROPER.x264-GROUP");
+            List<String> explanation = analyzer.getRatingExplanation(info);
+
+            assertThat(explanation)
+                    .anyMatch(e -> e.contains("PROPER"));
         }
     }
 }

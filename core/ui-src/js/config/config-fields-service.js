@@ -1416,6 +1416,15 @@ function ConfigFields($injector) {
                                 required: true,
                                 help: 'Determines width of covers in search results (when enabled in display options).'
                             }
+                        },
+                        {
+                            key: 'showMovieQualityIndicator',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Show movie quality indicator',
+                                help: 'Analyze movie release titles and show a quality score (1-10) with details on hover.'
+                            }
                         }
                     ]
                 }, {

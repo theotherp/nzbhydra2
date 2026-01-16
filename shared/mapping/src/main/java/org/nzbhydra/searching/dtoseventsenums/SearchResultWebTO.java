@@ -7,16 +7,19 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.jackson.Jacksonized;
 
+import java.util.List;
+
 @Getter
 @Setter
 @Builder
 @Jacksonized
 public class SearchResultWebTO {
 
-
     private String age;
     private Boolean age_precise;
     private String category;
+    private String categorySubtype;
+    private String categorySearchType;
     private String cover;
     private String date;
     private Integer comments;
@@ -45,5 +48,7 @@ public class SearchResultWebTO {
     private String showtitle;
     private String downloadedAt;
     private String torrentDownloadFactor;
+    private Integer qualityRating;
+    private List<String> qualityWarnings;
 
 }

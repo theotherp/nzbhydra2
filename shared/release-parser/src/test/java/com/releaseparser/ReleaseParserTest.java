@@ -1,13 +1,13 @@
 package com.releaseparser;
 
-import com.releaseparser.analyzer.QualityAnalyzer;
-import com.releaseparser.model.*;
+import com.releaseparser.model.Codec;
+import com.releaseparser.model.ReleaseInfo;
+import com.releaseparser.model.Resolution;
+import com.releaseparser.model.Source;
 import com.releaseparser.parser.ReleaseParser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -223,22 +223,22 @@ class ReleaseParserTest {
 
         @Test
         void shouldParseMovieTitleWithYear() {
-            ReleaseInfo info = parser.parse("The.Matrix.1999.1080p.BluRay.x264-GROUP");
-            assertThat(info.getMovieTitle()).isEqualTo("The Matrix");
+            ReleaseInfo info = parser.parse("The.Thingy.1999.1080p.BluRay.x264-GROUP");
+            assertThat(info.getMovieTitle()).isEqualTo("The Thingy");
             assertThat(info.getYear()).isEqualTo(1999);
         }
 
         @Test
         void shouldParseMovieTitleWithSpaces() {
-            ReleaseInfo info = parser.parse("Guardians of the Galaxy Vol 3 2023 1080p BluRay x264-GROUP");
-            assertThat(info.getMovieTitle()).isEqualTo("Guardians of the Galaxy Vol 3");
+            ReleaseInfo info = parser.parse("Protectory of the Universe Vol 3 2023 1080p BluRay x264-GROUP");
+            assertThat(info.getMovieTitle()).isEqualTo("Protectory of the Universe Vol 3");
             assertThat(info.getYear()).isEqualTo(2023);
         }
 
         @Test
         void shouldParseMovieTitleWithDotsAndYear() {
-            ReleaseInfo info = parser.parse("Avengers.Endgame.2019.2160p.UHD.BluRay.x265-GROUP");
-            assertThat(info.getMovieTitle()).isEqualTo("Avengers Endgame");
+            ReleaseInfo info = parser.parse("Revengers.Startgame.2019.2160p.UHD.BluRay.x265-GROUP");
+            assertThat(info.getMovieTitle()).isEqualTo("Revengers Startgame");
             assertThat(info.getYear()).isEqualTo(2019);
         }
     }
@@ -403,9 +403,9 @@ class ReleaseParserTest {
 
         @Test
         void shouldParseComplexTitle1() {
-            ReleaseInfo info = parser.parse("Oppenheimer.2023.IMAX.2160p.UHD.BluRay.Remux.DV.HDR.HEVC.TrueHD.Atmos.7.1-FGT");
+            ReleaseInfo info = parser.parse("NuclearBombGuy.2023.IMAX.2160p.UHD.BluRay.Remux.DV.HDR.HEVC.TrueHD.Atmos.7.1-FGT");
 
-            assertThat(info.getMovieTitle()).isEqualTo("Oppenheimer");
+            assertThat(info.getMovieTitle()).isEqualTo("NuclearBombGuy");
             assertThat(info.getYear()).isEqualTo(2023);
             assertThat(info.getResolution()).isEqualTo(Resolution.R2160P);
             assertThat(info.getSource()).isEqualTo(Source.REMUX);
@@ -418,9 +418,9 @@ class ReleaseParserTest {
 
         @Test
         void shouldParseComplexTitle2() {
-            ReleaseInfo info = parser.parse("The.Godfather.1972.REMASTERED.1080p.BluRay.x264.DTS-HD.MA.5.1-FGT");
+            ReleaseInfo info = parser.parse("The.Uncle.1972.REMASTERED.1080p.BluRay.x264.DTS-HD.MA.5.1-FGT");
 
-            assertThat(info.getMovieTitle()).isEqualTo("The Godfather");
+            assertThat(info.getMovieTitle()).isEqualTo("The Uncle");
             assertThat(info.getYear()).isEqualTo(1972);
             assertThat(info.getResolution()).isEqualTo(Resolution.R1080P);
             assertThat(info.getSource()).isEqualTo(Source.BLURAY);
@@ -444,6 +444,94 @@ class ReleaseParserTest {
             assertThat(info.getResolution()).isEqualTo(Resolution.R1080P);
             assertThat(info.getCodec()).isEqualTo(Codec.X264);
             assertThat(info.getReleaseGroup()).isEqualTo("FLUX");
+        }
+    }
+
+    @Nested
+    class UnderscoreSeparators {
+
+        @Test
+        void shouldParseWithUnderscoreSeparators() {
+            ReleaseInfo info = parser.parse("Lies_and_Lorries_2025_BluRay_1080p_AVC_DD5_1-MTeam");
+
+            assertThat(info.getMovieTitle()).isEqualTo("Lies and Lorries");
+            assertThat(info.getYear()).isEqualTo(2025);
+            assertThat(info.getSource()).isEqualTo(Source.BLURAY);
+            assertThat(info.getResolution()).isEqualTo(Resolution.R1080P);
+            assertThat(info.getReleaseGroup()).isEqualTo("MTeam");
+        }
+
+        @Test
+        void shouldParseMixedSeparators() {
+            ReleaseInfo info = parser.parse("Some_Movie.2024.1080p_WEB-DL_x264-GROUP");
+
+            assertThat(info.getMovieTitle()).isEqualTo("Some Movie");
+            assertThat(info.getYear()).isEqualTo(2024);
+            assertThat(info.getSource()).isEqualTo(Source.WEBDL);
+            assertThat(info.getResolution()).isEqualTo(Resolution.R1080P);
+        }
+    }
+
+    @Nested
+    class StandaloneWebSource {
+
+        @Test
+        void shouldParseStandaloneWebAsWebDL() {
+            ReleaseInfo info = parser.parse("Words.2025.1080p.WEB.H264-CBFM");
+
+            assertThat(info.getSource()).isEqualTo(Source.WEBDL);
+            assertThat(info.getResolution()).isEqualTo(Resolution.R1080P);
+            assertThat(info.getCodec()).isEqualTo(Codec.X264);
+            assertThat(info.getReleaseGroup()).isEqualTo("CBFM");
+        }
+
+        @Test
+        void shouldNotMisparseWebAsTelesync() {
+            ReleaseInfo info = parser.parse("Limits.2025.1080P.WEB.H264-GRASHOPR");
+
+            assertThat(info.getSource()).isEqualTo(Source.WEBDL);
+            assertThat(info.getSource()).isNotEqualTo(Source.TELESYNC);
+            assertThat(info.getResolution()).isEqualTo(Resolution.R1080P);
+        }
+
+        @Test
+        void shouldParseWebWithMulti() {
+            ReleaseInfo info = parser.parse("Rip.2026.MULTI.1080p.WEB.X264-HiggsBoson");
+
+            assertThat(info.getSource()).isEqualTo(Source.WEBDL);
+            assertThat(info.getResolution()).isEqualTo(Resolution.R1080P);
+            assertThat(info.getCodec()).isEqualTo(Codec.X264);
+            assertThat(info.getLanguages()).contains("Multi");
+        }
+
+        @Test
+        void shouldParseWebDLWithBroadcaster() {
+            ReleaseInfo info = parser.parse("Enforcer.1976.1080p.ITV.WEB-DL.AAC.2.0.H.264-PiRaTeS");
+
+            assertThat(info.getSource()).isEqualTo(Source.WEBDL);
+            assertThat(info.getResolution()).isEqualTo(Resolution.R1080P);
+            assertThat(info.getCodec()).isEqualTo(Codec.X264);
+            assertThat(info.getReleaseGroup()).isEqualTo("PiRaTeS");
+        }
+    }
+
+    @Nested
+    class MultiLanguageDetection {
+
+        @Test
+        void shouldDetectMultiLanguageIndicator() {
+            ReleaseInfo info = parser.parse("Story.2024.MULTi.1080p.WEB.H264-FW");
+
+            assertThat(info.getLanguages()).contains("Multi");
+            assertThat(info.getSource()).isEqualTo(Source.WEBDL);
+            assertThat(info.getResolution()).isEqualTo(Resolution.R1080P);
+        }
+
+        @Test
+        void shouldDetectMultiWithMixedCase() {
+            ReleaseInfo info = parser.parse("Another.Film.2025.Multi.720p.BluRay.x264-GRP");
+
+            assertThat(info.getLanguages()).contains("Multi");
         }
     }
 }

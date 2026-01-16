@@ -69,6 +69,7 @@ public class SearchingConfig {
     private List<String> userAgents = new ArrayList<>(Arrays.asList("Mozilla", "Sonarr", "Radarr", "CouchPotato", "LazyLibrarian", "Lidarr", "Mylar", "NZBGet", "sabNZBd", "Readarr", "NZB360"));
     private boolean useOriginalCategories = false;
     private boolean wrapApiErrors = false;
+    private boolean showMovieQualityIndicator = false;
 
     public SearchingConfig() {
     }

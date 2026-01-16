@@ -959,21 +959,7 @@ nzbhydraapp.directive('eventFocus', ["focus", function (focus) {
 }]);
 
 
-/*
- *  (C) Copyright 2017 TheOtherP (theotherp@posteo.net)
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- */
+
 
 angular
     .module('nzbhydraApp')
@@ -1293,6 +1279,54 @@ function searchResult() {
             };
         };
 
+        $scope.getQualityClass = function (rating) {
+            if (rating >= 7) return 'high';
+            if (rating >= 4) return 'medium';
+            return 'low';
+        };
+
+        $scope.formatQualityWarnings = function (warnings) {
+            if (!warnings || warnings.length === 0) {
+                return 'No quality information available';
+            }
+            var quality = [];
+            var critical = [];
+            var warning = [];
+            warnings.forEach(function (w) {
+                if (w.indexOf('[QUALITY]') === 0) {
+                    quality.push(w.replace('[QUALITY] ', ''));
+                } else if (w.indexOf('[CRITICAL]') === 0) {
+                    critical.push(w.replace('[CRITICAL] ', ''));
+                } else if (w.indexOf('[WARNING]') === 0) {
+                    warning.push(w.replace('[WARNING] ', ''));
+                }
+                // INFO items are skipped as they're redundant with quality factors
+            });
+            var html = '<div>';
+            if (quality.length > 0) {
+                html += '<div class="quality-section"><strong><i class="fa fa-film" style="color: #6c757d"></i> Quality factors:</strong>';
+                quality.forEach(function (msg) {
+                    html += '<div class="quality-item">' + msg + '</div>';
+                });
+                html += '</div>';
+            }
+            if (critical.length > 0) {
+                html += '<div class="quality-section"><strong><i class="fa fa-exclamation-circle" style="color: #dc3545"></i> Critical:</strong>';
+                critical.forEach(function (msg) {
+                    html += '<div class="quality-item">' + msg + '</div>';
+                });
+                html += '</div>';
+            }
+            if (warning.length > 0) {
+                html += '<div class="quality-section"><strong><i class="fa fa-exclamation-triangle" style="color: #ffc107"></i> Warning:</strong>';
+                warning.forEach(function (msg) {
+                    html += '<div class="quality-item">' + msg + '</div>';
+                });
+                html += '</div>';
+            }
+            html += '</div>';
+            return html;
+        };
 
         $scope.showCover = function (url) {
             console.log("Show " + url);
@@ -1572,21 +1606,7 @@ angular
         }
     };
 }]);
-/*
- *  (C) Copyright 2017 TheOtherP (theotherp@posteo.net)
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- */
+
 
 angular
     .module('nzbhydraApp')
@@ -1634,21 +1654,7 @@ function indexerStateSwitch() {
         }
     }
 }
-/*
- *  (C) Copyright 2017 TheOtherP (theotherp@posteo.net)
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- */
+
 
 angular
     .module('nzbhydraApp')
@@ -2038,21 +2044,7 @@ function formatClassname() {
 
     }
 }
-/*
- *  (C) Copyright 2017 TheOtherP (theotherp@posteo.net)
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- */
+
 
 NewsModalInstanceCtrl.$inject = ["$scope", "$uibModalInstance", "news"];
 WelcomeModalInstanceCtrl.$inject = ["$scope", "$uibModalInstance", "$state", "MigrationService"];
@@ -2407,21 +2399,7 @@ function WelcomeModalInstanceCtrl($scope, $uibModalInstance, $state, MigrationSe
     }
 }
 
-/*
- *  (C) Copyright 2017 TheOtherP (theotherp@posteo.net)
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- */
+
 
 angular
     .module('nzbhydraApp')
@@ -2513,21 +2491,7 @@ function focusOn() {
     }
 }
 
-/*
- *  (C) Copyright 2017 TheOtherP (theotherp@posteo.net)
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- */
+
 
 angular
     .module('nzbhydraApp')
@@ -3796,21 +3760,7 @@ function addableNzb(DebugService) {
         };
     }
 }
-/*
- *  (C) Copyright 2017 TheOtherP (theotherp@posteo.net)
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- */
+
 
 CheckCapsModalInstanceCtrl.$inject = ["$scope", "$interval", "$http", "$timeout", "growl", "capsCheckRequest"];
 IndexerConfigBoxService.$inject = ["$http", "$q", "$uibModal"];
@@ -5236,21 +5186,7 @@ function IndexerCheckBeforeCloseService($q, ModalService, IndexerConfigBoxServic
     }
 }
 
-/*
- *  (C) Copyright 2023 TheOtherP (theotherp@posteo.net)
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- */
+
 angular
     .module('nzbhydraApp')
     .config(["formlyConfigProvider", function config(formlyConfigProvider) {
@@ -5902,21 +5838,7 @@ angular.module('nzbhydraApp').controller('ExternalToolConfigBoxInstanceControlle
         }
     });
 }]);
-/*
- *  (C) Copyright 2017 TheOtherP (theotherp@posteo.net)
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- */
+
 DownloaderConfigBoxService.$inject = ["$http", "$q", "$uibModal"];
 DownloaderCheckBeforeCloseService.$inject = ["$q", "DownloaderConfigBoxService", "growl", "ModalService", "blockUI"];
 angular
@@ -6345,21 +6267,7 @@ function DownloaderCheckBeforeCloseService($q, DownloaderConfigBoxService, growl
         return deferred.promise;
     }
 }
-/*
- *  (C) Copyright 2017 TheOtherP (theotherp@posteo.net)
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- */
+
 
 hashCode = function (s) {
     return s.split("").reduce(function (a, b) {
@@ -7346,21 +7254,7 @@ function ConfigService($http, $q, $cacheFactory, $uibModal, bootstrapped, Reques
     }
 }
 
-/*
- *  (C) Copyright 2017 TheOtherP (theotherp@posteo.net)
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- */
+
 
 ConfigFields.$inject = ["$injector"];
 angular
@@ -8778,6 +8672,15 @@ function ConfigFields($injector) {
                                 },
                                 required: true,
                                 help: 'Determines width of covers in search results (when enabled in display options).'
+                            }
+                        },
+                        {
+                            key: 'showMovieQualityIndicator',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Show movie quality indicator',
+                                help: 'Analyze movie release titles and show a quality score (1-10) with details on hover.'
                             }
                         }
                     ]
@@ -14007,21 +13910,7 @@ function HeaderController($scope, $state, growl, HydraAuthService, bootstrapped)
     };
 }
 
-/*
- *  (C) Copyright 2017 TheOtherP (theotherp@posteo.net)
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- */
+
 
 //
 GenericStorageService.$inject = ["$http"];
@@ -14552,21 +14441,7 @@ function reformatDateEpoch() {
     }
 }
 
-/*
- *  (C) Copyright 2017 TheOtherP (theotherp@posteo.net)
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- */
+
 
 DebugService.$inject = ["$filter"];
 angular
