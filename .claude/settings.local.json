@@ -12,7 +12,8 @@
       "Bash(mvn compile:*)",
       "Bash(mvn test:*)",
       "Bash(mvn help:describe:*)",
-      "mcp__github__get_commit"
+      "mcp__github__get_commit",
+      "Bash(findstr:*)"
     ],
     "deny": [],
     "ask": []
