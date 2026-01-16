@@ -15,7 +15,7 @@
                         <list>
                             <option value="-q"/>
                             <option value="-pl"/>
-                            <option value="org.nzbhydra:nzbhydra2,org.nzbhydra:shared,org.nzbhydra:mapping,org.nzbhydra:core"/>
+                            <option value="org.nzbhydra:nzbhydra2,org.nzbhydra:shared,org.nzbhydra:mapping,org.nzbhydra:release-parser,org.nzbhydra:core"/>
                             <option value="clean"/>
                             <option value="install"/>
                             <option value="-B"/>

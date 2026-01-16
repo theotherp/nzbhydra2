@@ -84,7 +84,7 @@ jobs:
           cache: 'maven'
 
       - name: "Install maven"
-        run: mvn --batch-mode clean install -DskipTests -pl org.nzbhydra:nzbhydra2,org.nzbhydra:shared,org.nzbhydra:mapping
+        run: mvn --batch-mode clean install -DskipTests -pl org.nzbhydra:nzbhydra2,org.nzbhydra:shared,org.nzbhydra:mapping,org.nzbhydra:release-parser
 
       - name: "Create docker network"
         run: docker network create systemtest
@@ -253,7 +253,7 @@ jobs:
           cache: 'maven'
 
       - name: "Install maven"
-        run: mvn --batch-mode clean install -DskipTests -pl org.nzbhydra:nzbhydra2,org.nzbhydra:shared,org.nzbhydra:mapping,org.nzbhydra:mockserver
+        run: mvn --batch-mode clean install -DskipTests -pl org.nzbhydra:nzbhydra2,org.nzbhydra:shared,org.nzbhydra:mapping,org.nzbhydra:release-parser,org.nzbhydra:mockserver
 
       - name: "Copy mockserver"
         run: |

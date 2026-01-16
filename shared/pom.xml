@@ -13,6 +13,7 @@
 
     <modules>
         <module>mapping</module>
+        <module>release-parser</module>
     </modules>
 
 </project>

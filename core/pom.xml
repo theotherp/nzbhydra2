@@ -102,6 +102,11 @@
             <artifactId>mapping</artifactId>
             <version>8.2.4-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>org.nzbhydra</groupId>
+            <artifactId>release-parser</artifactId>
+            <version>8.2.4-SNAPSHOT</version>
+        </dependency>
 
         <!-- spring (boot) -->
         <dependency>
