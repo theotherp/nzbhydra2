@@ -1,3 +1,9 @@
+### v8.3.0 (2026-01-16)
+
+**Feature** Added an option to show a quality indicator for movie releases. This helps identify release quality at a glance without needing to understand terms like HC, TS or DV. You can enable it in the searching section. The parser is adapted from Radarr. To comply with their GPL license, NZBHydra is now GPL as well. This doesn't change anything for you as a user.
+
+
+
 ### v8.2.3 (2026-01-15)
 
 **Fix** Make filter icons and sort indicators visible in bright theme :-)
