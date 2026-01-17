@@ -26,6 +26,8 @@ heapdump*
 !/.idea/vcs.xml
 !/.idea/misc.xml
 misc/rsyncToServers.sh
+misc/build-logs
+misc/.build-release-state.json
 /nzbhydra.yml
 /results
 other/wrapper/pyInstaller/windows/build
