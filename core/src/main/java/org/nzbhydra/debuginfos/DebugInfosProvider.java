@@ -286,7 +286,9 @@ public class DebugInfosProvider {
 
                 File servLogFile = new File(logsFolder, "nzbhydra2.serv.log");
                 if (servLogFile.exists()) {
-                    writeStringToZip(zos, "nzbhydra2.serv.log", logAnonymizer.getAnonymizedLog(IOUtils.toString(new FileReader(servLogFile))).getBytes());
+                    try (FileReader reader = new FileReader(servLogFile)) {
+                        writeStringToZip(zos, "nzbhydra2.serv.log", logAnonymizer.getAnonymizedLog(IOUtils.toString(reader)).getBytes());
+                    }
                 }
             }
         }
