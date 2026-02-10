@@ -115,8 +115,8 @@ public class UpdateManager implements InitializingBean {
 
     private void loadPackageInfoFile(File lsioPackageFile) {
         Properties properties = new Properties();
-        try {
-            properties.load(new FileReader(lsioPackageFile));
+        try (FileReader reader = new FileReader(lsioPackageFile)) {
+            properties.load(reader);
             packageInfo = new PackageInfo(properties.getProperty("ReleaseType"), properties.getProperty("PackageVersion"), properties.getProperty("PackageAuthor"));
         } catch (IOException e) {
             logger.error("Unable to read package info", e);
