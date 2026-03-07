@@ -88,6 +88,7 @@ You're welcome to donate:
   <ul>
     <li>Bitcoin via 1LPCUF9eKEXi58nHbxTbJyfxCJkcCXKzvm</li>
     <li>Regular money via PayPal to theotherp@posteo.net</li>
+    <li><a href="https://buymeacoffee.com/theotherp">Buy me a coffee</a>
     <li>Via <a href="https://github.com/sponsors/theotherp">GitHub sponsors</a> which involves a recurring donation similar to Patreon.</li>
   </ul>
 
