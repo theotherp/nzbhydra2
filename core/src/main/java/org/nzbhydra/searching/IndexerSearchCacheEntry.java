@@ -1,5 +1,3 @@
-
-
 package org.nzbhydra.searching;
 
 import com.google.common.collect.Iterables;
@@ -13,7 +11,9 @@ import org.nzbhydra.springnative.ReflectionMarker;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @ReflectionMarker
@@ -24,6 +24,11 @@ public class IndexerSearchCacheEntry {
     private IndexerSearchEntity indexerSearchEntity;
     private List<IndexerSearchResult> indexerSearchResults = new ArrayList<>();
     private int nextResultIndex = 0;
+    /**
+     * Tracks items already consumed via {@link #pop()} so they are not served again
+     * after the list is rebuilt and re-sorted in {@link #addIndexerSearchResult}.
+     */
+    private final Set<SearchResultItem> poppedItems = new HashSet<>();
 
     public IndexerSearchCacheEntry(Indexer indexer) {
         this.indexer = indexer;
@@ -54,6 +59,12 @@ public class IndexerSearchCacheEntry {
             }
             return searchResultItem.getBestDate().getEpochSecond();
         }).reversed());
+
+        // After rebuilding and re-sorting, remove items that were already consumed
+        // by the merge-sort loop and reset the index so only genuinely new items
+        // are available for popping.
+        searchResultItems.removeAll(poppedItems);
+        nextResultIndex = 0;
     }
 
     public List<SearchResultItem> getSearchResultItems() {
@@ -69,7 +80,9 @@ public class IndexerSearchCacheEntry {
     }
 
     public SearchResultItem pop() {
-        return searchResultItems.get(nextResultIndex++);
+        SearchResultItem item = searchResultItems.get(nextResultIndex++);
+        poppedItems.add(item);
+        return item;
     }
 
     public boolean isMoreResultsAvailable() {

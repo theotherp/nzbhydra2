@@ -1,4 +1,10 @@
 #@formatter:off
+-   version: "v8.5.2"
+    date: "2026-03-12"
+    final: true
+    changes:
+      -   type: "fix"
+          text: "\"Load more\" would not always work or only after many clicks. Now each click should load the expected next 100 results."
 -   version: "v8.5.1"
     date: "2026-02-15"
     final: true

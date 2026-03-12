@@ -1459,7 +1459,6 @@ function onFinishRender($timeout) {
     function linkFunction(scope, element, attr) {
 
         if (scope.$last === true) {
-            console.log("Render finished");
             // console.timeEnd("Presenting");
             // console.timeEnd("searchall");
             scope.$emit("onFinishRender")
@@ -11004,6 +11003,8 @@ function SearchService($http) {
         var numberOfProcessedResults = response.data.numberOfProcessedResults;
         var rejectedReasonsMap = response.data.rejectedReasonsMap;
         var notPickedIndexersWithReason = response.data.notPickedIndexersWithReason;
+        var offset = response.data.offset;
+        var limit = response.data.limit;
 
         lastResults = {
             "searchResults": searchResults,
@@ -11014,7 +11015,9 @@ function SearchService($http) {
             "numberOfProcessedResults": numberOfProcessedResults,
             "numberOfDuplicateResults": numberOfDuplicateResults,
             "rejectedReasonsMap": rejectedReasonsMap,
-            "notPickedIndexersWithReason": notPickedIndexersWithReason
+            "notPickedIndexersWithReason": notPickedIndexersWithReason,
+            "offset": offset,
+            "limit": limit
 
         };
         // console.timeEnd("searchonly");
@@ -11040,6 +11043,14 @@ function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $doc
 
     $scope.limitTo = ConfigService.getSafe().searching.loadLimitInternal;
     $scope.offset = 0;
+    // Track the backend's cache offset position separately from the number of unique
+    // results on the frontend. The backend returns results based on its internal cache
+    // offset, so we need to send the backend offset (not the frontend deduped count)
+    // when requesting more results. Otherwise, if many results are duplicates that the
+    // frontend already has, the frontend's allSearchResults.length stops growing while
+    // the backend still has more results beyond its current offset, causing an infinite
+    // loop where the same offset is sent repeatedly.
+    $scope.backendOffset = 0;
     $scope.allowZipDownload = ConfigService.getSafe().downloading.fileDownloadAccessType === 'PROXY';
 
     var indexerColors = {};
@@ -11882,6 +11893,7 @@ function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $doc
     function setDataFromSearchResult(data, previousSearchResults) {
         allSearchResults = previousSearchResults.concat(data.searchResults);
         allSearchResults = uniq(allSearchResults);
+
         [$scope.filteredResults, $scope.filterReasons] = sortAndFilter(allSearchResults);
 
         $scope.numberOfAvailableResults = data.numberOfAvailableResults;
@@ -11896,6 +11908,13 @@ function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $doc
         $scope.numberOfDuplicateResults = data.numberOfDuplicateResults;
         $scope.numberOfLoadedResults = allSearchResults.length;
         $scope.indexersearches = data.indexerSearchMetaDatas;
+
+        // Update the backend offset to track the backend's cache position.
+        // Use the maximum of our current offset and the backend's reported position
+        // to ensure we always move forward.
+        if (angular.isDefined(data.offset) && angular.isDefined(data.limit)) {
+            $scope.backendOffset = Math.max($scope.backendOffset, data.offset + data.limit);
+        }
 
         $scope.loadMoreEnabled = ($scope.numberOfLoadedResults + $scope.numberOfRejectedResults < $scope.numberOfAvailableResults) || _.any(data.indexerSearchMetaDatas, function (x) {
             return x.hasMoreResults;
@@ -11940,7 +11959,10 @@ function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $doc
         startBlocking(loadAll ? "Loading all results..." : "Loading more results...").then(function () {
             $scope.loadingMore = true;
             var limit = loadAll ? $scope.numberOfAvailableResults - $scope.numberOfProcessedResults : null;
-            SearchService.loadMore($scope.numberOfLoadedResults, limit, loadAll).then(function (data) {
+            // Use the backend's cache offset position (not the frontend's deduped count)
+            // to ensure we always request the next batch of results from where the backend
+            // left off, even when the frontend has fewer unique results due to deduplication.
+            SearchService.loadMore($scope.backendOffset, limit, loadAll).then(function (data) {
                 setDataFromSearchResult(data, allSearchResults);
                 $scope.loadingMore = false;
                 //stopBlocking();

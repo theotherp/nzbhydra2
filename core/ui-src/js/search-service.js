@@ -87,6 +87,8 @@ function SearchService($http) {
         var numberOfProcessedResults = response.data.numberOfProcessedResults;
         var rejectedReasonsMap = response.data.rejectedReasonsMap;
         var notPickedIndexersWithReason = response.data.notPickedIndexersWithReason;
+        var offset = response.data.offset;
+        var limit = response.data.limit;
 
         lastResults = {
             "searchResults": searchResults,
@@ -97,7 +99,9 @@ function SearchService($http) {
             "numberOfProcessedResults": numberOfProcessedResults,
             "numberOfDuplicateResults": numberOfDuplicateResults,
             "rejectedReasonsMap": rejectedReasonsMap,
-            "notPickedIndexersWithReason": notPickedIndexersWithReason
+            "notPickedIndexersWithReason": notPickedIndexersWithReason,
+            "offset": offset,
+            "limit": limit
 
         };
         // console.timeEnd("searchonly");
