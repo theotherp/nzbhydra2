@@ -1,3 +1,11 @@
+### v8.5.2 (2026-03-12)
+
+**Fix** "Load more" would not always work or only after many clicks. Now each click should load the expected next 100 results.
+
+**Note** I've had to disable Binsearch for now. The page format changed and I've been unable to parse the output. Looks like it take quite some work. You can leave it enabled, it will just not be shown for searches.
+
+
+
 ### v8.5.1 (2026-02-15)
 
 **Fix** Stupid bug in prowlarr indexer tracking.
