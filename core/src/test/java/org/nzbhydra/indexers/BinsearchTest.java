@@ -37,6 +37,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+
 @SuppressWarnings("ConstantConditions")
 @MockitoSettings(strictness = Strictness.LENIENT)
 public class BinsearchTest {
@@ -76,49 +77,60 @@ public class BinsearchTest {
     void shouldParseResultsCorrectly() throws Exception {
         String html = Resources.toString(Resources.getResource(BinsearchTest.class, "/org/nzbhydra/mapping/binsearch.html"), Charsets.UTF_8);
         List<SearchResultItem> searchResultItems = testee.getSearchResultItems(html, new SearchRequest());
-        assertThat(searchResultItems.size()).isEqualTo(1);
+        assertThat(searchResultItems).hasSize(1);
         SearchResultItem item = searchResultItems.get(0);
-        assertThat(item.getTitle()).isEqualTo("Some title");
-        assertThat(item.getLink()).isEqualTo("https://binsearch.info/nzb?mode=files&huaeF2kx34=on&name=Some title.rar.nzb");
-        assertThat(item.getDetails()).isEqualTo("https://binsearch.info/details/huaeF2kx34");
-        assertThat(item.getSize()).isEqualTo(408260L); //12.21 GB = 12.21 * 1000*1000*1000
-        assertThat(item.getIndexerGuid()).isEqualTo("huaeF2kx34");
-        assertThat(item.getPubDate().getEpochSecond()).isEqualTo(1696764428L);
-        assertThat(item.isAgePrecise()).isEqualTo(false);
-        assertThat(item.getPoster().get()).isEqualTo("[email protected]");
-        assertThat(item.getGroup().get()).isEqualTo("alt.binaries.e-book.flood");
+        assertThat(item.getTitle()).isEqualTo("Some.Title");
+        assertThat(item.getIndexerGuid()).isEqualTo("abc123");
+        assertThat(item.getLink()).isEqualTo("https://binsearch.info/nzb?mode=files&abc123=on&name=Some.Title.mkv.nzb");
+        assertThat(item.getDetails()).isEqualTo("https://binsearch.info/details/abc123");
+        assertThat(item.getSize()).isEqualTo(1460000000L);
+        assertThat(item.isAgePrecise()).isFalse();
+        assertThat(item.getGroup().get()).isEqualTo("alt.binaries.test");
+        assertThat(item.getPoster().get()).isEqualTo("poster@usenet.net");
     }
-
-
-    @Test
-    void shouldRecognizeIfSingleResultPage() throws Exception {
-        SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
-        String html = Resources.toString(Resources.getResource(BinsearchTest.class, "/org/nzbhydra/mapping/binsearch_singlepage.html"), Charsets.UTF_8);
-        IndexerSearchResult indexerSearchResult = new IndexerSearchResult(testee, "");
-        List<SearchResultItem> items = new ArrayList<>();
-        for (int i = 0; i < 4; i++) {
-            SearchResultItem searchResultItem = new SearchResultItem();
-            searchResultItem.setPubDate(Instant.now());
-            items.add(searchResultItem);
-        }
-        indexerSearchResult.setSearchResultItems(items);
-        testee.completeIndexerSearchResult(html, indexerSearchResult, null, searchRequest, 0, 100);
-        assertThat(indexerSearchResult.getOffset()).isEqualTo(0);
-        assertThat(indexerSearchResult.getPageSize()).isEqualTo(100);
-        assertThat(indexerSearchResult.getTotalResults()).isEqualTo(4);
-        assertThat(indexerSearchResult.isTotalResultsKnown()).isEqualTo(true);
-        assertThat(indexerSearchResult.isHasMoreResults()).isEqualTo(false);
-    }
-
 
     @Test
     void shouldRecognizeIfMoreResultsAvailable() throws Exception {
+        // binsearch.html has totalElements=265, totalPages=11
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         String html = Resources.toString(Resources.getResource(BinsearchTest.class, "/org/nzbhydra/mapping/binsearch.html"), Charsets.UTF_8);
         IndexerSearchResult indexerSearchResult = new IndexerSearchResult(testee, "");
+        indexerSearchResult.setSearchResultItems(createDummyItems(1));
         testee.completeIndexerSearchResult(html, indexerSearchResult, null, searchRequest, 0, 100);
-        assertThat(indexerSearchResult.isTotalResultsKnown()).isEqualTo(false);
-        assertThat(indexerSearchResult.isHasMoreResults()).isEqualTo(true);
+        assertThat(indexerSearchResult.isHasMoreResults()).isTrue();
+        assertThat(indexerSearchResult.isTotalResultsKnown()).isTrue();
+        assertThat(indexerSearchResult.getTotalResults()).isEqualTo(265);
+        assertThat(indexerSearchResult.getPageSize()).isEqualTo(25);
+        assertThat(indexerSearchResult.getOffset()).isEqualTo(0);
+    }
+
+    @Test
+    void shouldRecognizeNoMoreResultsOnLastPage() throws Exception {
+        // binsearch_nomoreresultsonpage17.html has totalElements=408, totalPages=17
+        // Page 16 (0-indexed) = offset 400
+        SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
+        String html = Resources.toString(Resources.getResource(BinsearchTest.class, "/org/nzbhydra/mapping/binsearch_nomoreresultsonpage17.html"), Charsets.UTF_8);
+        IndexerSearchResult indexerSearchResult = new IndexerSearchResult(testee, "");
+        indexerSearchResult.setSearchResultItems(createDummyItems(8));
+        testee.completeIndexerSearchResult(html, indexerSearchResult, null, searchRequest, 400, 100);
+        assertThat(indexerSearchResult.isHasMoreResults()).isFalse();
+        assertThat(indexerSearchResult.isTotalResultsKnown()).isTrue();
+        assertThat(indexerSearchResult.getTotalResults()).isEqualTo(408);
+        assertThat(indexerSearchResult.getPageSize()).isEqualTo(25);
+        assertThat(indexerSearchResult.getOffset()).isEqualTo(400);
+    }
+
+    @Test
+    void shouldFallBackToItemCountWhenNoStatsAvailable() throws Exception {
+        // HTML without any embedded stats JSON should fall back to item count
+        SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
+        String html = "<html><body>no stats here</body></html>";
+        IndexerSearchResult indexerSearchResult = new IndexerSearchResult(testee, "");
+        indexerSearchResult.setSearchResultItems(createDummyItems(4));
+        testee.completeIndexerSearchResult(html, indexerSearchResult, null, searchRequest, 0, 100);
+        assertThat(indexerSearchResult.isHasMoreResults()).isFalse();
+        assertThat(indexerSearchResult.isTotalResultsKnown()).isTrue();
+        assertThat(indexerSearchResult.getTotalResults()).isEqualTo(4);
     }
 
     @Test
@@ -133,7 +145,7 @@ public class BinsearchTest {
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         searchRequest.setQuery("query");
         UriComponentsBuilder builder = testee.buildSearchUrl(searchRequest, 0, 100);
-        assertThat(builder.toUriString()).isEqualTo("https://www.binsearch.info/?max=100&q=query");
+        assertThat(builder.toUriString()).isEqualTo("https://www.binsearch.info/?q=query");
     }
 
     @Test
@@ -142,15 +154,27 @@ public class BinsearchTest {
         searchRequest.getInternalData().setRequiredWords(Arrays.asList("a", "b"));
         searchRequest.setQuery("query");
         UriComponentsBuilder builder = testee.buildSearchUrl(searchRequest, 0, 100);
-        assertThat(builder.build().toString()).isEqualTo("https://www.binsearch.info/?max=100&q=query a b");
+        assertThat(builder.build().toString()).isEqualTo("https://www.binsearch.info/?q=query a b");
     }
 
     @Test
-    void shouldAbortIfSearchNotPossible() throws IndexerSearchAbortedException {
+    void shouldAbortIfSearchNotPossible() {
         assertThrows(IndexerSearchAbortedException.class, () -> {
             SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
             testee.buildSearchUrl(searchRequest, 0, 100);
         });
+    }
+
+    @Test
+    void shouldAddPageParameterForPagination() throws IndexerSearchAbortedException {
+        SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
+        searchRequest.setQuery("query");
+        // Offset 25 = page 1, offset 50 = page 2 (0-indexed, page size 25)
+        UriComponentsBuilder builder = testee.buildSearchUrl(searchRequest, 25, 100);
+        assertThat(builder.toUriString()).isEqualTo("https://www.binsearch.info/?q=query&p=1");
+
+        builder = testee.buildSearchUrl(searchRequest, 50, 100);
+        assertThat(builder.toUriString()).isEqualTo("https://www.binsearch.info/?q=query&p=2");
     }
 
     @Test
@@ -161,23 +185,27 @@ public class BinsearchTest {
 
         NfoResult nfoResult = testee.getNfo("1234");
 
-        assertThat(nfoResult.isHasNfo()).isEqualTo(true);
+        assertThat(nfoResult.isHasNfo()).isTrue();
         assertThat(nfoResult.getContent()).isEqualTo("nfocontent");
         assertThat(uriCaptor.getValue().toString()).isEqualTo("https://www.binsearch.info/viewNFO.php?oid=1234");
     }
 
     @Test
-    void shouldRetryOn503() throws Exception {
+    void shouldRetryOn503() {
         assertThrows(FailsafeException.class, () -> {
             testee = spy(testee);
-//        doReturn(nfoHtml).when(testee).getAndStoreResultToDatabase(uriCaptor.capture(), any(), any());
             doThrow(new IndexerAccessException("503")).when(testee).getAndStoreResultToDatabase(uriCaptor.capture(), any(), any());
-
             testee.getAndStoreResultToDatabase(null, IndexerApiAccessType.NFO);
-
         });
-
     }
 
-
+    private List<SearchResultItem> createDummyItems(int count) {
+        List<SearchResultItem> items = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            SearchResultItem item = new SearchResultItem();
+            item.setPubDate(Instant.now());
+            items.add(item);
+        }
+        return items;
+    }
 }

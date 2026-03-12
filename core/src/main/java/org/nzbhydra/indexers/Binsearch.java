@@ -61,6 +61,9 @@ public class Binsearch extends Indexer<String> {
     private static final Pattern PUBDATE_PATTERN = Pattern.compile("(\\d{1,2}\\-\\w{3}\\-\\d{4})", Pattern.CASE_INSENSITIVE);
     private static final DateTimeFormatter DATE_TIME_FORMATTER = new DateTimeFormatterBuilder().appendPattern("dd-MMM-yyyy").parseDefaulting(ChronoField.NANO_OF_DAY, 0).toFormatter().withZone(ZoneId.of("UTC")).withLocale(Locale.ENGLISH);
     private static final Pattern NFO_PATTERN = Pattern.compile("<pre>(?<nfo>.*)<\\/pre>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+    // Next.js embeds stats in flight data like: \"totalElements\":386,\"totalPages\":16
+    // The quotes are escaped because they're inside a JS string literal
+    private static final Pattern STATS_PATTERN = Pattern.compile("\\\\*\"totalElements\\\\*\":(\\d+),\\\\*\"totalPages\\\\*\":(\\d+)");
 
     private final RetryPolicy<Object> retry503policy = RetryPolicy.builder()
             .handleIf(x -> x instanceof IndexerAccessException && Throwables.getStackTraceAsString(x).contains("503"))
@@ -74,27 +77,26 @@ public class Binsearch extends Indexer<String> {
 
     @Override
     protected void completeIndexerSearchResult(String response, IndexerSearchResult indexerSearchResult, AcceptorResult acceptorResult, SearchRequest searchRequest, int offset, Integer limit) {
-        Document doc = Jsoup.parse(response);
-        Element navElement = getElementOrNone(doc, "div.justify-between:nth-child(2) > ul:nth-child(2)");
-        if (navElement != null) {
-            Elements pageLinks = navElement.select("li");
-            boolean hasMore = !pageLinks.isEmpty() && !pageLinks.get(2).classNames().contains("disabled");
-            boolean totalKnown = false;
-            indexerSearchResult.setOffset(searchRequest.getOffset());
-            int total = searchRequest.getOffset() + 100; //Must be at least as many as already loaded
-            if (!hasMore) { //Parsed page contains all the available results
-                total = searchRequest.getOffset() + indexerSearchResult.getSearchResultItems().size();
-                totalKnown = true;
-            }
+        int itemsSize = indexerSearchResult.getSearchResultItems().size();
+        int currentPage = offset / PAGE_SIZE; // 0-indexed
+
+        Matcher statsMatcher = STATS_PATTERN.matcher(response);
+        if (statsMatcher.find()) {
+            int totalElements = Integer.parseInt(statsMatcher.group(1));
+            int totalPages = Integer.parseInt(statsMatcher.group(2));
+            boolean hasMore = currentPage < totalPages - 1;
+            logger.debug("Binsearch stats: totalElements={}, totalPages={}, currentPage={}, hasMore={}", totalElements, totalPages, currentPage, hasMore);
             indexerSearchResult.setHasMoreResults(hasMore);
-            indexerSearchResult.setTotalResults(total);
-            indexerSearchResult.setTotalResultsKnown(totalKnown);
-        } else {
-            indexerSearchResult.setHasMoreResults(false);
-            indexerSearchResult.setTotalResults(indexerSearchResult.getSearchResultItems().size());
+            indexerSearchResult.setTotalResults(totalElements);
             indexerSearchResult.setTotalResultsKnown(true);
+        } else {
+            // Fallback: no stats found, assume single page of results
+            indexerSearchResult.setHasMoreResults(false);
+            indexerSearchResult.setTotalResults(itemsSize);
+            indexerSearchResult.setTotalResultsKnown(true);
+            logger.debug("Binsearch has no embedded stats JSON, assuming single page with {} results", itemsSize);
         }
-        indexerSearchResult.setPageSize(100);
+        indexerSearchResult.setPageSize(PAGE_SIZE);
         indexerSearchResult.setOffset(offset);
     }
 
@@ -212,6 +214,8 @@ public class Binsearch extends Indexer<String> {
         return selectionResult.size() == 0 ? null : selectionResult.get(0);
     }
 
+    private static final int PAGE_SIZE = 25;
+
     @Override
     protected UriComponentsBuilder buildSearchUrl(SearchRequest searchRequest, Integer offset, Integer limit) throws IndexerSearchAbortedException {
         String query = super.generateQueryIfApplicable(searchRequest, "");
@@ -222,9 +226,11 @@ public class Binsearch extends Indexer<String> {
         }
         query = cleanupQuery(query);
         UriComponentsBuilder queryBuilder = UriComponentsBuilder.fromHttpUrl("https://www.binsearch.info/")
-//                .queryParam("min", offset)
-                .queryParam("max", limit)
                 .queryParam("q", query);
+        if (offset != null && offset > 0) {
+            // Binsearch uses 0-indexed page numbers with a fixed page size of 25
+            queryBuilder = queryBuilder.queryParam("p", offset / PAGE_SIZE);
+        }
         if (getConfig().isBinsearchOtherGroups()) {
             queryBuilder = queryBuilder.queryParam("server", "2");
         }

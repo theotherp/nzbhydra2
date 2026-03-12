@@ -289,6 +289,27 @@ public class SearcherUnitTest {
     }
 
     @Test
+    void shouldLoadAllResultsWhenLoadAllIsTrue() throws Exception {
+        // Indexer reports 300 total results, returns 100 per page across 3 calls
+        when(indexer1.search(any(), anyInt(), anyInt())).thenAnswer(invocation -> {
+            int offset = invocation.getArgument(1);
+            boolean hasMore = offset < 200; // pages at offset 0 and 100 have more; offset 200 does not
+            return mockIndexerSearchResult(offset, 100, hasMore, 300, indexer1);
+        });
+
+        SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
+        searchRequest.setTitle("loadall test");
+        searchRequest.setLoadAll(true);
+
+        SearchResult result = searcher.search(searchRequest);
+
+        // All 300 results should be returned, not just the first 100
+        assertThat(result.getSearchResultItems()).hasSize(300);
+        // Indexer should have been called 3 times (offsets 0, 100, 200)
+        verify(indexer1, times(3)).search(any(), anyInt(), anyInt());
+    }
+
+    @Test
     void shouldStopSearchingIndexerAfterMaxQueries() throws Exception {
         // This test verifies the circuit breaker prevents infinite loops
         // when an indexer always claims to have more results

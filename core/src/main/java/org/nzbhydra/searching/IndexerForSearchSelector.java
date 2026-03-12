@@ -102,6 +102,9 @@ public class IndexerForSearchSelector {
             if (!checkIndexerSelected(indexer)) {
                 continue;
             }
+            if (!checkBinsearchNotSupported(indexer)) {
+                continue;
+            }
             if (!checkIndexerConfigComplete(indexer)) {
                 continue;
             }
@@ -154,6 +157,14 @@ public class IndexerForSearchSelector {
         if (!indexer.getConfig().isConfigComplete()) {
             String message = "Not using " + indexer.getName() + " because configuration is not complete. Please open it in the GUI and complete the config. Call the caps check manually to make sure everything is checked.";
             return handleIndexerNotSelected(indexer, message, "Configuration incomplete");
+        }
+        return true;
+    }
+
+    protected boolean checkBinsearchNotSupported(Indexer indexer) {
+        if (indexer.getConfig().getSearchModuleType() == SearchModuleType.BINSEARCH) {
+            String message = "Not using " + indexer.getName() + " because Binsearch is currently not supported";
+            return handleIndexerNotSelected(indexer, message, "Binsearch currently not supported");
         }
         return true;
     }

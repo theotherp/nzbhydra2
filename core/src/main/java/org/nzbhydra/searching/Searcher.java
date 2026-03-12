@@ -109,8 +109,7 @@ public class Searcher {
                 break;
             }
             if (searchRequest.isLoadAll()) {
-                logger.debug("Loading all {} results requested", searchCacheEntry.getNumberOfFoundResults());
-                int maxResultsToLoad = searchCacheEntry.getNumberOfAvailableResults();
+                int maxResultsToLoad = searchCacheEntry.getNumberOfTotalAvailableResults();
                 if (searchResultItems.size() > maxResultsToLoad) {
                     logger.info("Aborting loading all results because more than {} results were already loaded and we don't want to hammer the indexers too much", maxResultsToLoad);
                     break;

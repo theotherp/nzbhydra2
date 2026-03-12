@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charSet="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="/_next/static/css/b22f0bf051a80e3e.css" data-precedence="next" />
+    <link rel="preload" as="script" fetchPriority="low" href="/_next/static/chunks/webpack-cdf94508d0478589.js" />
+    <script src="/_next/static/chunks/fd9d1056-62561829c7c4dc48.js" async=""></script>
+    <script src="/_next/static/chunks/938-d58b77e873e4d6e6.js" async=""></script>
+    <script src="/_next/static/chunks/main-app-ce21ae34de19e667.js" async=""></script>
+    <script src="/_next/static/chunks/672-3d5367df3cb178f4.js" async=""></script>
+    <script src="/_next/static/chunks/app/layout-549e3bf6a186fade.js" async=""></script>
+    <script src="/_next/static/chunks/749-580a012cc4211848.js" async=""></script>
+    <script src="/_next/static/chunks/477-832073d28038f189.js" async=""></script>
+    <script src="/_next/static/chunks/74-95c4c9fbab1b40d4.js" async=""></script>
+    <script src="/_next/static/chunks/app/search/page-76b9f41ba1bc1651.js" async=""></script>
+    <title>Binsearch -- Usenet search engine</title>
+    <meta name="description" content="BinSearch.info Binary Usenet Search Engine - Binsearch -- Usenet search engine" />
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" sizes="16x16" />
+    <script src="/_next/static/chunks/polyfills-c67a75d1b6f99dc8.js" noModule=""></script>
+  </head>
+  <body class="font-sans">
+    <div class="Toastify"></div>
+    <div class="flex flex-col min-h-screen">
+      <div class="p-1 md:p-4 bg-gray-100 border-gray-300 border-b-2">
+        <a href="/">
+          <h1 class="text-3xl font-bold">binsearch.info</h1>
+        </a>
+      </div>
+      <div class="flex-grow flex flex-col ">
+        <div class="p-1 md:p-4">
+          <h2 class="text-2xl font-semibold mb-4">Search!</h2>
+          <form class="flex flex-col max-w-3xl" action="/search">
+            <input class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 block p-2.5" name="q" value="Griseli" />
+            <div class="flex flex-row space-x-2"></div>
+            <button class="bg-gray-200 hover:bg-gray-300 font-semibold py-1 px-3 rounded-sm focus:outline-none focus:shadow-outline mt-2 self-start" type="submit">search</button>
+            <a class="my-4" target="_blank" href="https://www.easyusenet.com/hello-usa.html?utm_source=partner&amp;utm_medium=banner&amp;utm_campaign=binsearch">
+              <img alt="EasyUsenet" loading="lazy" width="750" height="150" decoding="async" data-nimg="1" style="color:transparent;max-width:750px" srcSet="/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fbinsearch-bannerli.e32ce271.gif&amp;w=750&amp;q=75 1x, /_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fbinsearch-bannerli.e32ce271.gif&amp;w=1920&amp;q=75 2x" src="/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fbinsearch-bannerli.e32ce271.gif&amp;w=1920&amp;q=75" />
+            </a>
+          </form>
+          <hr class="my-4" />
+          <h3 class="text-xl font-semibold mb-4">Results</h3>
+          <form class="flex flex-col items-stretch" action="/nzb" method="GET">
+            <input type="hidden" name="q" value="Griseli" />
+            <div class="flex flex-row justify-between">
+              <button class="bg-gray-200 hover:bg-gray-300 font-semibold py-1 px-3 rounded-sm focus:outline-none focus:shadow-outline" type="submit">Create NZB</button>
+              <ul class="text-lg flex flex-row space-x-2" role="navigation" aria-label="Pagination">
+                <li class="previous">
+                  <a class="underline hover:text-blue-800 visited:text-gray-500" tabindex="0" role="button" aria-disabled="false" aria-label="Previous page" rel="prev">&lt;</a>
+                </li>
+                <li class="underline hover:text-blue-800 visited:text-gray-500">
+                  <a role="button" tabindex="0" aria-label="Page 1">1</a>
+                </li>
+                <li class="underline hover:text-blue-800 visited:text-gray-500">
+                  <a role="button" tabindex="0" aria-label="Page 2">2</a>
+                </li>
+                <li class="underline hover:text-blue-800 visited:text-gray-500">
+                  <a role="button" tabindex="0" aria-label="Page 3">3</a>
+                </li>
+                <li class="break">
+                  <a role="button" tabindex="0" aria-label="Jump backward">...</a>
+                </li>
+                <li class="underline hover:text-blue-800 visited:text-gray-500">
+                  <a role="button" tabindex="0" aria-label="Page 13">13</a>
+                </li>
+                <li class="underline hover:text-blue-800 visited:text-gray-500">
+                  <a role="button" tabindex="0" aria-label="Page 14">14</a>
+                </li>
+                <li class="underline hover:text-blue-800 visited:text-gray-500">
+                  <a role="button" tabindex="0" aria-label="Page 15">15</a>
+                </li>
+                <li class="underline hover:text-blue-800 visited:text-gray-500">
+                  <a rel="prev" role="button" tabindex="0" aria-label="Page 16">16</a>
+                </li>
+                <li class="underline hover:text-blue-800 visited:text-gray-500 no-underline">
+                  <a rel="canonical" role="button" tabindex="-1" aria-label="Page 17 is your current page" aria-current="page">17</a>
+                </li>
+                <li class="next disabled">
+                  <a class="underline hover:text-blue-800 visited:text-gray-500 disabled hover:text-black cursor-not-allowed no-underline" tabindex="-1" role="button" aria-disabled="true" aria-label="Next page" rel="next">&gt;</a>
+                </li>
+              </ul>
+            </div>
+            <table class="border text-left border-black my-2 w-full table-fixed result-table">
+              <tr>
+                <th class="w-[2rem]"></th>
+                <th class="w-[2rem]"></th>
+                <th>Subject</th>
+                <th class="w-[5rem]">Age</th>
+              </tr>
+              <tr>
+                <td class="break-keep">1
+                  <!-- -->.
+                </td>
+                <td>
+                  <input type="checkbox" class="mx-2" name="NWYwYjEyZjEtOTM4Zi0zYmM2LWIxNTQtNGMyZDY5Y2ZmMTYx" />
+                </td>
+                <td>
+                  <div class="flex flex-col">
+                    <a class="underline hover:text-blue-800 visited:text-gray-500 font-medium mb-1 text-ellipsis break-words line-clamp-2" href="/details/NWYwYjEyZjEtOTM4Zi0zYmM2LWIxNTQtNGMyZDY5Y2ZmMTYx">[SubsPlease] Griseli - Ghost Clicker - 06 (1080p) [072EFBE0].mkv [1/9] - &quot;[SubsPlease] Griseli - Ghost Clicker - 06 (1080p) [072EFBE0].mkv&quot; yEnc 1518603284</a>
+                    <div class="flex flex-row flex-wrap gap-1 items-center text-xs">
+                      <span class="rounded-lg px-2 border-gray-300 border bg-white">1.46GB</span>
+                      <span class="rounded-lg px-2 border-gray-300 border complete bg-gray-100">1
+                        <!-- -->
+                        <!-- -->complete
+                        <!-- -->File
+                      </span>
+                      <span class="rounded-lg px-2 border-gray-300 border bg-blue-100">
+                        <a class="underline hover:text-blue-800 visited:text-gray-500" href="/search?poster=Anime Tosho &lt;usenet.bot@animetosho.org&gt;">Anime Tosho &lt; <span class="__cf_email__" data-cfemail="047177616a61702a666b7044656a6d6961706b776c6b2a6b7663">[email&#160;protected]</span>&gt; </a>
+                      </span>
+                      <span class="rounded-lg px-2 border-gray-300 border bg-gray-100">
+                        <a class="underline hover:text-blue-800 visited:text-gray-500" href="/search?group=alt.binaries.multimedia.anime.highspeed">alt.binaries.multimedia.anime.highspeed</a>
+                      </span>
+                    </div>
+                  </div>
+                </td>
+                <td class="min-w-20">1 year</td>
+              </tr>
+              <tr>
+                <td class="break-keep">2
+                  <!-- -->.
+                </td>
+                <td>
+                  <input type="checkbox" class="mx-2" name="NGIzYTAwYzktODcwNi0zNGY0LWJmZDAtZDNjOTViZTJhMWRm" />
+                </td>
+                <td>
+                  <div class="flex flex-col">
+                    <a class="underline hover:text-blue-800 visited:text-gray-500 font-medium mb-1 text-ellipsis break-words line-clamp-2" href="/details/NGIzYTAwYzktODcwNi0zNGY0LWJmZDAtZDNjOTViZTJhMWRm">[SubsPlease] Griseli - Ghost Clicker - 06 (720p) [1B0B66C4].mkv [2/8] - &quot;[SubsPlease] Griseli - Ghost Clicker - 06 (720p) [1B0B66C4].par2&quot; yEnc 11260</a>
+                    <div class="flex flex-row flex-wrap gap-1 items-center text-xs">
+                      <span class="rounded-lg px-2 border-gray-300 border bg-white">76.47MB</span>
+                      <span class="rounded-lg px-2 border-gray-300 border complete bg-gray-100">7
+                        <!-- -->
+                        <!-- -->complete
+                        <!-- -->Files
+                      </span>
+                      <span class="rounded-lg px-2 border-gray-300 border bg-blue-100">
+                        <a class="underline hover:text-blue-800 visited:text-gray-500" href="/search?poster=Anime Tosho &lt;usenet.bot@animetosho.org&gt;">Anime Tosho &lt; <span class="__cf_email__" data-cfemail="dbaea8beb5beaff5b9b4af9bbab5b2b6beafb4a8b3b4f5b4a9bc">[email&#160;protected]</span>&gt; </a>
+                      </span>
+                      <span class="rounded-lg px-2 border-gray-300 border bg-gray-100">
+                        <a class="underline hover:text-blue-800 visited:text-gray-500" href="/search?group=alt.binaries.multimedia.anime.highspeed">alt.binaries.multimedia.anime.highspeed</a>
+                      </span>
+                    </div>
+                  </div>
+                </td>
+                <td class="min-w-20">1 year</td>
+              </tr>
+              <tr>
+                <td class="break-keep">3
+                  <!-- -->.
+                </td>
+                <td>
+                  <input type="checkbox" class="mx-2" name="NzAxNGI2NDMtNmE5Ni0zMjJmLTllNTAtYTg5OTIyNDg2NGE1" />
+                </td>
+                <td>
+                  <div class="flex flex-col">
+                    <a class="underline hover:text-blue-800 visited:text-gray-500 font-medium mb-1 text-ellipsis break-words line-clamp-2" href="/details/NzAxNGI2NDMtNmE5Ni0zMjJmLTllNTAtYTg5OTIyNDg2NGE1">[SubsPlease] Griseli - Ghost Clicker - 06 (720p) [1B0B66C4].mkv [1/8] - &quot;[SubsPlease] Griseli - Ghost Clicker - 06 (720p) [1B0B66C4].mkv&quot; yEnc 772195471</a>
+                    <div class="flex flex-row flex-wrap gap-1 items-center text-xs">
+                      <span class="rounded-lg px-2 border-gray-300 border bg-white">760.48MB</span>
+                      <span class="rounded-lg px-2 border-gray-300 border complete bg-gray-100">1
+                        <!-- -->
+                        <!-- -->complete
+                        <!-- -->File
+                      </span>
+                      <span class="rounded-lg px-2 border-gray-300 border bg-blue-100">
+                        <a class="underline hover:text-blue-800 visited:text-gray-500" href="/search?poster=Anime Tosho &lt;usenet.bot@animetosho.org&gt;">Anime Tosho &lt; <span class="__cf_email__" data-cfemail="abded8cec5cedf85c9c4dfebcac5c2c6cedfc4d8c3c485c4d9cc">[email&#160;protected]</span>&gt; </a>
+                      </span>
+                      <span class="rounded-lg px-2 border-gray-300 border bg-gray-100">
+                        <a class="underline hover:text-blue-800 visited:text-gray-500" href="/search?group=alt.binaries.multimedia.anime.highspeed">alt.binaries.multimedia.anime.highspeed</a>
+                      </span>
+                    </div>
+                  </div>
+                </td>
+                <td class="min-w-20">1 year</td>
+              </tr>
+              <tr>
+                <td class="break-keep">4
+                  <!-- -->.
+                </td>
+                <td>
+                  <input type="checkbox" class="mx-2" name="ZTBmNGM1YzMtMGJkMi0zODg3LTg4YzItZmIzMWEzMWY3OTlj" />
+                </td>
+                <td>
+                  <div class="flex flex-col">
+                    <a class="underline hover:text-blue-800 visited:text-gray-500 font-medium mb-1 text-ellipsis break-words line-clamp-2" href="/details/ZTBmNGM1YzMtMGJkMi0zODg3LTg4YzItZmIzMWEzMWY3OTlj">[SubsPlease] Griseli - Ghost Clicker - 06 (480p) [A893408E].mkv [3/7] - &quot;[SubsPlease] Griseli - Ghost Clicker - 06 (480p) [A893408E].vol00+01.par2&quot; yEnc 1439768</a>
+                    <div class="flex flex-row flex-wrap gap-1 items-center text-xs">
+                      <span class="rounded-lg px-2 border-gray-300 border bg-white">41MB</span>
+                      <span class="rounded-lg px-2 border-gray-300 border complete bg-gray-100">5
+                        <!-- -->
+                        <!-- -->complete
+                        <!-- -->Files
+                      </span>
+                      <span class="rounded-lg px-2 border-gray-300 border bg-blue-100">
+                        <a class="underline hover:text-blue-800 visited:text-gray-500" href="/search?poster=Anime Tosho &lt;usenet.bot@animetosho.org&gt;">Anime Tosho &lt; <span class="__cf_email__" data-cfemail="394c4a5c575c4d175b564d79585750545c4d564a515617564b5e">[email&#160;protected]</span>&gt; </a>
+                      </span>
+                      <span class="rounded-lg px-2 border-gray-300 border bg-gray-100">
+                        <a class="underline hover:text-blue-800 visited:text-gray-500" href="/search?group=alt.binaries.multimedia.anime.highspeed">alt.binaries.multimedia.anime.highspeed</a>
+                      </span>
+                    </div>
+                  </div>
+                </td>
+                <td class="min-w-20">1 year</td>
+              </tr>
+              <tr>
+                <td class="break-keep">5
+                  <!-- -->.
+                </td>
+                <td>
+                  <input type="checkbox" class="mx-2" name="ODk4MTMzMjUtOWRiOS0zZGZjLWEzZWQtZjNiOTgxMjBhNTVm" />
+                </td>
+                <td>
+                  <div class="flex flex-col">
+                    <a class="underline hover:text-blue-800 visited:text-gray-500 font-medium mb-1 text-ellipsis break-words line-clamp-2" href="/details/ODk4MTMzMjUtOWRiOS0zZGZjLWEzZWQtZjNiOTgxMjBhNTVm">[SubsPlease] Griseli - Ghost Clicker - 06 (480p) [A893408E].mkv [2/7] - &quot;[SubsPlease] Griseli - Ghost Clicker - 06 (480p) [A893408E].par2&quot; yEnc 6100</a>
+                    <div class="flex flex-row flex-wrap gap-1 items-center text-xs">
+                      <span class="rounded-lg px-2 border-gray-300 border bg-white">7.22KB</span>
+                      <span class="rounded-lg px-2 border-gray-300 border complete bg-gray-100">1
+                        <!-- -->
+                        <!-- -->complete
+                        <!-- -->File
+                      </span>
+                      <span class="rounded-lg px-2 border-gray-300 border bg-blue-100">
+                        <a class="underline hover:text-blue-800 visited:text-gray-500" href="/search?poster=Anime Tosho &lt;usenet.bot@animetosho.org&gt;">Anime Tosho &lt; <span class="__cf_email__" data-cfemail="087d7b6d666d7c266a677c48696661656d7c677b606726677a6f">[email&#160;protected]</span>&gt; </a>
+                      </span>
+                      <span class="rounded-lg px-2 border-gray-300 border bg-gray-100">
+                        <a class="underline hover:text-blue-800 visited:text-gray-500" href="/search?group=alt.binaries.multimedia.anime.highspeed">alt.binaries.multimedia.anime.highspeed</a>
+                      </span>
+                    </div>
+                  </div>
+                </td>
+                <td class="min-w-20">1 year</td>
+              </tr>
+              <tr>
+                <td class="break-keep">6
+                  <!-- -->.
+                </td>
+                <td>
+                  <input type="checkbox" class="mx-2" name="YzVlNDdlZTMtZjU3YS0zOGJmLTljOGUtOTZjZGQwOTY1MDZm" />
+                </td>
+                <td>
+                  <div class="flex flex-col">
+                    <a class="underline hover:text-blue-800 visited:text-gray-500 font-medium mb-1 text-ellipsis break-words line-clamp-2" href="/details/YzVlNDdlZTMtZjU3YS0zOGJmLTljOGUtOTZjZGQwOTY1MDZm">[SubsPlease] Griseli - Ghost Clicker - 06 (480p) [A893408E].mkv [1/7] - &quot;[SubsPlease] Griseli - Ghost Clicker - 06 (480p) [A893408E].mkv&quot; yEnc 401489891</a>
+                    <div class="flex flex-row flex-wrap gap-1 items-center text-xs">
+                      <span class="rounded-lg px-2 border-gray-300 border bg-white">395.29MB</span>
+                      <span class="rounded-lg px-2 border-gray-300 border complete bg-gray-100">1
+                        <!-- -->
+                        <!-- -->complete
+                        <!-- -->File
+                      </span>
+                      <span class="rounded-lg px-2 border-gray-300 border bg-blue-100">
+                        <a class="underline hover:text-blue-800 visited:text-gray-500" href="/search?poster=Anime Tosho &lt;usenet.bot@animetosho.org&gt;">Anime Tosho &lt; <span class="__cf_email__" data-cfemail="56232533383322783439221637383f3b332239253e3978392431">[email&#160;protected]</span>&gt; </a>
+                      </span>
+                      <span class="rounded-lg px-2 border-gray-300 border bg-gray-100">
+                        <a class="underline hover:text-blue-800 visited:text-gray-500" href="/search?group=alt.binaries.multimedia.anime.highspeed">alt.binaries.multimedia.anime.highspeed</a>
+                      </span>
+                    </div>
+                  </div>
+                </td>
+                <td class="min-w-20">1 year</td>
+              </tr>
+              <tr>
+                <td class="break-keep">7
+                  <!-- -->.
+                </td>
+                <td>
+                  <input type="checkbox" class="mx-2" name="ZmQxNWQwMDQtNWRiMC0zN2YyLWJjZGUtZjE5NjRiZDZkNzFl" />
+                </td>
+                <td>
+                  <div class="flex flex-col">
+                    <a class="underline hover:text-blue-800 visited:text-gray-500 font-medium mb-1 text-ellipsis break-words line-clamp-2" href="/details/ZmQxNWQwMDQtNWRiMC0zN2YyLWJjZGUtZjE5NjRiZDZkNzFl">[ASW] Griseli - Ghost Clicker - 06 [1080p HEVC x265 10Bit][AAC] [2/6] - &quot;[ASW] Griseli - Ghost Clicker - 06 [1080p HEVC][E9565771].par2&quot; yEnc 3056</a>
+                    <div class="flex flex-row flex-wrap gap-1 items-center text-xs">
+                      <span class="rounded-lg px-2 border-gray-300 border bg-white">4.17KB</span>
+                      <span class="rounded-lg px-2 border-gray-300 border complete bg-gray-100">1
+                        <!-- -->
+                        <!-- -->complete
+                        <!-- -->File
+                      </span>
+                      <span class="rounded-lg px-2 border-gray-300 border bg-blue-100">
+                        <a class="underline hover:text-blue-800 visited:text-gray-500" href="/search?poster=Anime Tosho &lt;usenet.bot@animetosho.org&gt;">Anime Tosho &lt; <span class="__cf_email__" data-cfemail="fe8b8d9b909b8ad09c918abe9f9097939b8a918d9691d0918c99">[email&#160;protected]</span>&gt; </a>
+                      </span>
+                      <span class="rounded-lg px-2 border-gray-300 border bg-gray-100">
+                        <a class="underline hover:text-blue-800 visited:text-gray-500" href="/search?group=alt.binaries.multimedia.anime.highspeed">alt.binaries.multimedia.anime.highspeed</a>
+                      </span>
+                    </div>
+                  </div>
+                </td>
+                <td class="min-w-20">1 year</td>
+              </tr>
+              <tr>
+                <td class="break-keep">8
+                  <!-- -->.
+                </td>
+                <td>
+                  <input type="checkbox" class="mx-2" name="ZDI0YTU2ZGMtNDdjMy0zYzAxLWJkZjgtMDdjNGY4NmQxZTEz" />
+                </td>
+                <td>
+                  <div class="flex flex-col">
+                    <a class="underline hover:text-blue-800 visited:text-gray-500 font-medium mb-1 text-ellipsis break-words line-clamp-2" href="/details/ZDI0YTU2ZGMtNDdjMy0zYzAxLWJkZjgtMDdjNGY4NmQxZTEz">[ASW] Griseli - Ghost Clicker - 06 [1080p HEVC x265 10Bit][AAC] [1/6] - &quot;[ASW] Griseli - Ghost Clicker - 06 [1080p HEVC][E9565771].mkv&quot; yEnc 184773141</a>
+                    <div class="flex flex-row flex-wrap gap-1 items-center text-xs">
+                      <span class="rounded-lg px-2 border-gray-300 border bg-white">198.92MB</span>
+                      <span class="rounded-lg px-2 border-gray-300 border complete bg-gray-100">5
+                        <!-- -->
+                        <!-- -->complete
+                        <!-- -->Files
+                      </span>
+                      <span class="rounded-lg px-2 border-gray-300 border bg-blue-100">
+                        <a class="underline hover:text-blue-800 visited:text-gray-500" href="/search?poster=Anime Tosho &lt;usenet.bot@animetosho.org&gt;">Anime Tosho &lt; <span class="__cf_email__" data-cfemail="9aefe9fff4ffeeb4f8f5eedafbf4f3f7ffeef5e9f2f5b4f5e8fd">[email&#160;protected]</span>&gt; </a>
+                      </span>
+                      <span class="rounded-lg px-2 border-gray-300 border bg-gray-100">
+                        <a class="underline hover:text-blue-800 visited:text-gray-500" href="/search?group=alt.binaries.multimedia.anime.highspeed">alt.binaries.multimedia.anime.highspeed</a>
+                      </span>
+                    </div>
+                  </div>
+                </td>
+                <td class="min-w-20">1 year</td>
+              </tr>
+            </table>
+            <div class="flex flex-row justify-between">
+              <button class="bg-gray-200 hover:bg-gray-300 font-semibold py-1 px-3 rounded-sm focus:outline-none focus:shadow-outline" type="submit">Create NZB</button>
+              <ul class="text-lg flex flex-row space-x-2" role="navigation" aria-label="Pagination">
+                <li class="previous">
+                  <a class="underline hover:text-blue-800 visited:text-gray-500" tabindex="0" role="button" aria-disabled="false" aria-label="Previous page" rel="prev">&lt;</a>
+                </li>
+                <li class="underline hover:text-blue-800 visited:text-gray-500">
+                  <a role="button" tabindex="0" aria-label="Page 1">1</a>
+                </li>
+                <li class="underline hover:text-blue-800 visited:text-gray-500">
+                  <a role="button" tabindex="0" aria-label="Page 2">2</a>
+                </li>
+                <li class="underline hover:text-blue-800 visited:text-gray-500">
+                  <a role="button" tabindex="0" aria-label="Page 3">3</a>
+                </li>
+                <li class="break">
+                  <a role="button" tabindex="0" aria-label="Jump backward">...</a>
+                </li>
+                <li class="underline hover:text-blue-800 visited:text-gray-500">
+                  <a role="button" tabindex="0" aria-label="Page 13">13</a>
+                </li>
+                <li class="underline hover:text-blue-800 visited:text-gray-500">
+                  <a role="button" tabindex="0" aria-label="Page 14">14</a>
+                </li>
+                <li class="underline hover:text-blue-800 visited:text-gray-500">
+                  <a role="button" tabindex="0" aria-label="Page 15">15</a>
+                </li>
+                <li class="underline hover:text-blue-800 visited:text-gray-500">
+                  <a rel="prev" role="button" tabindex="0" aria-label="Page 16">16</a>
+                </li>
+                <li class="underline hover:text-blue-800 visited:text-gray-500 no-underline">
+                  <a rel="canonical" role="button" tabindex="-1" aria-label="Page 17 is your current page" aria-current="page">17</a>
+                </li>
+                <li class="next disabled">
+                  <a class="underline hover:text-blue-800 visited:text-gray-500 disabled hover:text-black cursor-not-allowed no-underline" tabindex="-1" role="button" aria-disabled="true" aria-label="Next page" rel="next">&gt;</a>
+                </li>
+              </ul>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div class="p-1 md:p-4 bg-gray-100 border-gray-300 border-t-2 space-x-2">
+        <span>Copyright © 2006-
+          <!-- -->2026
+          <!-- --> binsearch -
+        </span>
+        <a class="underline hover:text-blue-800 visited:text-gray-500" href="/dmca">DMCA</a>
+      </div>
+    </div>
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
+    <script src="/_next/static/chunks/webpack-cdf94508d0478589.js" async=""></script>
+    <script>
+      (self.__next_f = self.__next_f || []).push([0]);
+      self.__next_f.push([2, null])
+    </script>
+    <script>
+      self.__next_f.push([1, "1:HL[\"/_next/static/css/b22f0bf051a80e3e.css\",\"style\"]\n0:\"$L2\"\n"])
+    </script>
+    <script>
+      self.__next_f.push([1, "3:I[7690,[],\"\"]\n6:I[5613,[],\"\"]\n7:I[1778,[],\"\"]\n8:I[171,[\"672\",\"static/chunks/672-3d5367df3cb178f4.js\",\"185\",\"static/chunks/app/layout-549e3bf6a186fade.js\"],\"ToastContainer\"]\n9:I[9320,[\"672\",\"static/chunks/672-3d5367df3cb178f4.js\",\"185\",\"static/chunks/app/layout-549e3bf6a186fade.js\"],\"Matomo\"]\na:I[5250,[\"672\",\"static/chunks/672-3d5367df3cb178f4.js\",\"749\",\"static/chunks/749-580a012cc4211848.js\",\"477\",\"static/chunks/477-832073d28038f189.js\",\"74\",\"static/chunks/74-95c4c9fbab1b40d4.js\",\"797\",\"static/chunks/app/"])
+    </script>
+    <script>
+      self.__next_f.push([1, "search/page-76b9f41ba1bc1651.js\"],\"\"]\nc:I[8955,[],\"\"]\n"])
+    </script>
+    <script>
+      self.__next_f.push([1, "2:[[[\"$\",\"link\",\"0\",{\"rel\":\"stylesheet\",\"href\":\"/_next/static/css/b22f0bf051a80e3e.css\",\"precedence\":\"next\",\"crossOrigin\":\"$undefined\"}]],[\"$\",\"$L3\",null,{\"buildId\":\"fjA8H08CvgMU9VaVLguxP\",\"assetPrefix\":\"\",\"initialCanonicalUrl\":\"/search?q=Griseli\u0026page=16\",\"initialTree\":[\"\",{\"children\":[\"search\",{\"children\":[\"__PAGE__?{\\\"q\\\":\\\"Griseli\\\",\\\"page\\\":\\\"16\\\"}\",{}]}]},\"$undefined\",\"$undefined\",true],\"initialSeedData\":[\"\",{\"children\":[\"search\",{\"children\":[\"__PAGE__\",{},[\"$L4\",\"$L5\",null]]},[\"$\",\"$L6\",null,{\"parallelRouterKey\":\"children\",\"segmentPath\":[\"children\",\"search\",\"children\"],\"loading\":\"$undefined\",\"loadingStyles\":\"$undefined\",\"loadingScripts\":\"$undefined\",\"hasLoading\":false,\"error\":\"$undefined\",\"errorStyles\":\"$undefined\",\"errorScripts\":\"$undefined\",\"template\":[\"$\",\"$L7\",null,{}],\"templateStyles\":\"$undefined\",\"templateScripts\":\"$undefined\",\"notFound\":\"$undefined\",\"notFoundStyles\":\"$undefined\",\"styles\":null}]]},[null,[\"$\",\"html\",null,{\"lang\":\"en\",\"children\":[\"$\",\"body\",null,{\"className\":\"font-sans\",\"children\":[[\"$\",\"$L8\",null,{}],[\"$\",\"$L9\",null,{}],[\"$\",\"div\",null,{\"className\":\"flex flex-col min-h-screen\",\"children\":[[\"$\",\"div\",null,{\"className\":\"p-1 md:p-4 bg-gray-100 border-gray-300 border-b-2\",\"children\":[\"$\",\"a\",null,{\"href\":\"/\",\"children\":[\"$\",\"h1\",null,{\"className\":\"text-3xl font-bold\",\"children\":\"binsearch.info\"}]}]}],[\"$\",\"div\",null,{\"className\":\"flex-grow flex flex-col \",\"children\":[\"$\",\"$L6\",null,{\"parallelRouterKey\":\"children\",\"segmentPath\":[\"children\"],\"loading\":\"$undefined\",\"loadingStyles\":\"$undefined\",\"loadingScripts\":\"$undefined\",\"hasLoading\":false,\"error\":\"$undefined\",\"errorStyles\":\"$undefined\",\"errorScripts\":\"$undefined\",\"template\":[\"$\",\"$L7\",null,{}],\"templateStyles\":\"$undefined\",\"templateScripts\":\"$undefined\",\"notFound\":[\"$\",\"div\",null,{\"className\":\"p-1 md:p-4\",\"children\":[\"$\",\"h1\",null,{\"children\":\"Page not found\"}]}],\"notFoundStyles\":[],\"styles\":null}]}],[\"$\",\"div\",null,{\"className\":\"p-1 md:p-4 bg-gray-100 border-gray-300 border-t-2 space-x-2\",\"children\":[[\"$\",\"span\",null,{\"children\":[\"Copyright © 2006-\",2026,\" binsearch -\"]}],[\"$\",\"$La\",null,{\"href\":\"/dmca\",\"className\":\"underline hover:text-blue-800 visited:text-gray-500\",\"children\":\"DMCA\"}]]}]]}]]}]}],null]],\"initialHead\":[false,\"$Lb\"],\"globalErrorComponent\":\"$c\"}]]\n"])
+    </script>
+    <script>
+      self.__next_f.push([1, "d:I[1749,[\"672\",\"static/chunks/672-3d5367df3cb178f4.js\",\"749\",\"static/chunks/749-580a012cc4211848.js\",\"477\",\"static/chunks/477-832073d28038f189.js\",\"74\",\"static/chunks/74-95c4c9fbab1b40d4.js\",\"797\",\"static/chunks/app/search/page-76b9f41ba1bc1651.js\"],\"Image\"]\ne:I[2074,[\"672\",\"static/chunks/672-3d5367df3cb178f4.js\",\"749\",\"static/chunks/749-580a012cc4211848.js\",\"477\",\"static/chunks/477-832073d28038f189.js\",\"74\",\"static/chunks/74-95c4c9fbab1b40d4.js\",\"797\",\"static/chunks/app/search/page-76b9f41ba1bc1651.js\"],\""])
+    </script>
+    <script>
+      self.__next_f.push([1, "CreateNzbForm\"]\nf:I[9667,[\"672\",\"static/chunks/672-3d5367df3cb178f4.js\",\"749\",\"static/chunks/749-580a012cc4211848.js\",\"477\",\"static/chunks/477-832073d28038f189.js\",\"74\",\"static/chunks/74-95c4c9fbab1b40d4.js\",\"797\",\"static/chunks/app/search/page-76b9f41ba1bc1651.js\"],\"Pagination\"]\n10:{\"size\":25,\"number\":16,\"totalElements\":408,\"totalPages\":17}\n11:{\"q\":\"Griseli\",\"page\":\"16\"}\n"])
+    </script>
+    <script>
+      self.__next_f.push([1, "5:[\"$\",\"div\",null,{\"className\":\"p-1 md:p-4\",\"children\":[[[\"$\",\"h2\",null,{\"className\":\"text-2xl font-semibold mb-4\",\"children\":\"Search!\"}],[\"$\",\"form\",null,{\"action\":\"/search\",\"className\":\"flex flex-col max-w-3xl\",\"children\":[[\"$\",\"input\",null,{\"className\":\"bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 block p-2.5\",\"name\":\"q\",\"defaultValue\":\"Griseli\"}],[\"$\",\"div\",null,{\"className\":\"flex flex-row space-x-2\",\"children\":[]}],[\"$\",\"button\",null,{\"className\":\"bg-gray-200 hover:bg-gray-300 font-semibold py-1 px-3 rounded-sm focus:outline-none focus:shadow-outline mt-2 self-start\",\"type\":\"submit\",\"children\":\"search\"}],[\"$\",\"$La\",null,{\"className\":\"my-4\",\"target\":\"_blank\",\"href\":\"https://www.easyusenet.com/hello-usa.html?utm_source=partner\u0026utm_medium=banner\u0026utm_campaign=binsearch\",\"children\":[\"$\",\"$Ld\",null,{\"src\":{\"src\":\"/_next/static/media/binsearch-bannerli.e32ce271.gif\",\"height\":210,\"width\":1050,\"blurWidth\":0,\"blurHeight\":0},\"width\":750,\"style\":{\"maxWidth\":750},\"alt\":\"EasyUsenet\"}]}]]}]],[\"$\",\"hr\",null,{\"className\":\"my-4\"}],[\"$\",\"h3\",null,{\"className\":\"text-xl font-semibold mb-4\",\"children\":\"Results\"}],[\"$\",\"$Le\",null,{\"eventName\":\"Search\",\"detail\":\"Griseli\",\"children\":[[\"$\",\"input\",null,{\"type\":\"hidden\",\"name\":\"q\",\"value\":\"Griseli\"}],[\"$\",\"div\",null,{\"className\":\"flex flex-row justify-between\",\"children\":[[\"$\",\"button\",null,{\"className\":\"bg-gray-200 hover:bg-gray-300 font-semibold py-1 px-3 rounded-sm focus:outline-none focus:shadow-outline\",\"type\":\"submit\",\"children\":\"Create NZB\"}],[\"$\",\"$Lf\",null,{\"stats\":{\"size\":25,\"number\":16,\"totalElements\":408,\"totalPages\":17},\"params\":{\"q\":\"Griseli\",\"page\":\"16\"}}]]}],[\"$\",\"table\",null,{\"className\":\"border text-left border-black my-2 w-full table-fixed result-table\",\"children\":[[\"$\",\"tr\",null,{\"children\":[[\"$\",\"th\",null,{\"className\":\"w-[2rem]\"}],[\"$\",\"th\",null,{\"className\":\"w-[2rem]\"}],[\"$\",\"th\",null,{\"children\":\"Subject\"}],[\"$\",\"th\",null,{\"className\":\"w-[5rem]\",\"children\":\"Age\"}]]}],[[\"$\",\"tr\",null,{\"children\":[[\"$\",\"td\",null,{\"className\":\"break-keep\",\"children\":[1,\".\"]}],[\"$\",\"td\",null,{\"children\":[\"$\",\"input\",null,{\"type\":\"checkbox\",\"name\":\"NWYwYjEyZjEtOTM4Zi0zYmM2LWIxNTQtNGMyZDY5Y2ZmMTYx\",\"className\":\"mx-2\"}]}],[\"$\",\"td\",null,{\"children\":[\"$\",\"div\",null,{\"className\":\"flex flex-col\",\"children\":[[\"$\",\"$La\",null,{\"href\":\"/details/NWYwYjEyZjEtOTM4Zi0zYmM2LWIxNTQtNGMyZDY5Y2ZmMTYx\",\"className\":\"underline hover:text-blue-800 visited:text-gray-500 font-medium mb-1 text-ellipsis break-words line-clamp-2\",\"prefetch\":false,\"children\":\"[SubsPlease] Griseli - Ghost Clicker - 06 (1080p) [072EFBE0].mkv [1/9] - \\\"[SubsPlease] Griseli - Ghost Clicker - 06 (1080p) [072EFBE0].mkv\\\" yEnc  1518603284\"}],[\"$\",\"div\",null,{\"className\":\"flex flex-row flex-wrap gap-1 items-center text-xs\",\"children\":[[\"$\",\"span\",null,{\"className\":\"rounded-lg px-2 border-gray-300 border bg-white\",\"children\":\"1.46GB\"}],[\"$\",\"span\",null,{\"className\":\"rounded-lg px-2 border-gray-300 border complete bg-gray-100\",\"children\":[1,\" \",\"complete \",\"File\"]}],[\"$\",\"span\",null,{\"className\":\"rounded-lg px-2 border-gray-300 border bg-blue-100\",\"children\":[\"$\",\"$La\",null,{\"href\":\"/search?poster=Anime Tosho \u003cusenet.bot@animetosho.org\u003e\",\"className\":\"underline hover:text-blue-800 visited:text-gray-500\",\"prefetch\":false,\"children\":\"Anime Tosho \u003cusenet.bot@animetosho.org\u003e\"}]}],[[\"$\",\"span\",null,{\"className\":\"rounded-lg px-2 border-gray-300 border bg-gray-100\",\"children\":[\"$\",\"$La\",null,{\"href\":\"/search?group=alt.binaries.multimedia.anime.highspeed\",\"className\":\"underline hover:text-blue-800 visited:text-gray-500\",\"prefetch\":false,\"children\":\"alt.binaries.multimedia.anime.highspeed\"}]}]]]}]]}]}],[\"$\",\"td\",null,{\"className\":\"min-w-20\",\"children\":\"1 year\"}]]}],[\"$\",\"tr\",null,{\"children\":[[\"$\",\"td\",null,{\"className\":\"break-keep\",\"children\":[2,\".\"]}],[\"$\",\"td\",null,{\"children\":[\"$\",\"input\",null,{\"type\":\"checkbox\",\"name\":\"NGIzYTAwYzktODcwNi0zNGY0LWJmZDAtZDNjOTViZTJhMWRm\",\"className\":\"mx-2\"}]}],[\"$\",\"td\",null,{\"children\":[\"$\",\"div\",null,{\"className\":\"flex flex-col\",\"children\":[[\"$\",\"$La\",null,{\"href\":\"/details/NGIzYTAwYzktODcwNi0zNGY0LWJmZDAtZDNjOTViZTJhMWRm\",\"className\":\"underline hover:text-blue-800 visited:text-gray-500 font-medium mb-1 text-ellipsis break-words line-clamp-2\",\"prefetch\":false,\"children\":\"[SubsPlease] Griseli - Ghost Clicker - 06 (720p) [1B0B66C4].mkv [2/8] - \\\"[SubsPlease] Griseli - Ghost Clicker - 06 (720p) [1B0B66C4].par2\\\" yEnc  11260\"}],[\"$\",\"div\",null,{\"className\":\"flex flex-row flex-wrap gap-1 items-center text-xs\",\"children\":[[\"$\",\"span\",null,{\"className\":\"rounded-lg px-2 border-gray-300 border bg-white\",\"children\":\"76.47MB\"}],[\"$\",\"span\",null,{\"className\":\"rounded-lg px-2 border-gray-300 border complete bg-gray-100\",\"children\":[7,\" \",\"complete \",\"Files\"]}],[\"$\",\"span\",null,{\"className\":\"rounded-lg px-2 border-gray-300 border bg-blue-100\",\"children\":[\"$\",\"$La\",null,{\"href\":\"/search?poster=Anime Tosho \u003cusenet.bot@animetosho.org\u003e\",\"className\":\"underline hover:text-blue-800 visited:text-gray-500\",\"prefetch\":false,\"children\":\"Anime Tosho \u003cusenet.bot@animetosho.org\u003e\"}]}],[[\"$\",\"span\",null,{\"className\":\"rounded-lg px-2 border-gray-300 border bg-gray-100\",\"children\":[\"$\",\"$La\",null,{\"href\":\"/search?group=alt.binaries.multimedia.anime.highspeed\",\"className\":\"underline hover:text-blue-800 visited:text-gray-500\",\"prefetch\":false,\"children\":\"alt.binaries.multimedia.anime.highspeed\"}]}]]]}]]}]}],[\"$\",\"td\",null,{\"className\":\"min-w-20\",\"children\":\"1 year\"}]]}],[\"$\",\"tr\",null,{\"children\":[[\"$\",\"td\",null,{\"className\":\"break-keep\",\"children\":[3,\".\"]}],[\"$\",\"td\",null,{\"children\":[\"$\",\"input\",null,{\"type\":\"checkbox\",\"name\":\"NzAxNGI2NDMtNmE5Ni0zMjJmLTllNTAtYTg5OTIyNDg2NGE1\",\"className\":\"mx-2\"}]}],[\"$\",\"td\",null,{\"children\":[\"$\",\"div\",null,{\"className\":\"flex flex-col\",\"children\":[[\"$\",\"$La\",null,{\"href\":\"/details/NzAxNGI2NDMtNmE5Ni0zMjJmLTllNTAtYTg5OTIyNDg2NGE1\",\"className\":\"underline hover:text-blue-800 visited:text-gray-500 font-medium mb-1 text-ellipsis break-words line-clamp-2\",\"prefetch\":false,\"children\":\"[SubsPlease] Griseli - Ghost Clicker - 06 (720p) [1B0B66C4].mkv [1/8] - \\\"[SubsPlease] Griseli - Ghost Clicker - 06 (720p) [1B0B66C4].mkv\\\" yEnc  772195471\"}],[\"$\",\"div\",null,{\"className\":\"flex flex-row flex-wrap gap-1 items-center text-xs\",\"children\":[[\"$\",\"span\",null,{\"className\":\"rounded-lg px-2 border-gray-300 border bg-white\",\"children\":\"760.48MB\"}],[\"$\",\"span\",null,{\"className\":\"rounded-lg px-2 border-gray-300 border complete bg-gray-100\",\"children\":[1,\" \",\"complete \",\"File\"]}],[\"$\",\"span\",null,{\"className\":\"rounded-lg px-2 border-gray-300 border bg-blue-100\",\"children\":[\"$\",\"$La\",null,{\"href\":\"/search?poster=Anime Tosho \u003cusenet.bot@animetosho.org\u003e\",\"className\":\"underline hover:text-blue-800 visited:text-gray-500\",\"prefetch\":false,\"children\":\"Anime Tosho \u003cusenet.bot@animetosho.org\u003e\"}]}],[[\"$\",\"span\",null,{\"className\":\"rounded-lg px-2 border-gray-300 border bg-gray-100\",\"children\":[\"$\",\"$La\",null,{\"href\":\"/search?group=alt.binaries.multimedia.anime.highspeed\",\"className\":\"underline hover:text-blue-800 visited:text-gray-500\",\"prefetch\":false,\"children\":\"alt.binaries.multimedia.anime.highspeed\"}]}]]]}]]}]}],[\"$\",\"td\",null,{\"className\":\"min-w-20\",\"children\":\"1 year\"}]]}],[\"$\",\"tr\",null,{\"children\":[[\"$\",\"td\",null,{\"className\":\"break-keep\",\"children\":[4,\".\"]}],[\"$\",\"td\",null,{\"children\":[\"$\",\"input\",null,{\"type\":\"checkbox\",\"name\":\"ZTBmNGM1YzMtMGJkMi0zODg3LTg4YzItZmIzMWEzMWY3OTlj\",\"className\":\"mx-2\"}]}],[\"$\",\"td\",null,{\"children\":[\"$\",\"div\",null,{\"className\":\"flex flex-col\",\"children\":[[\"$\",\"$La\",null,{\"href\":\"/details/ZTBmNGM1YzMtMGJkMi0zODg3LTg4YzItZmIzMWEzMWY3OTlj\",\"className\":\"underline hover:text-blue-800 visited:text-gray-500 font-medium mb-1 text-ellipsis break-words line-clamp-2\",\"prefetch\":false,\"children\":\"[SubsPlease] Griseli - Ghost Clicker - 06 (480p) [A893408E].mkv [3/7] - \\\"[SubsPlease] Griseli - Ghost Clicker - 06 (480p) [A893408E].vol00+01.par2\\\" yEnc  1439768\"}],[\"$\",\"div\",null,{\"className\":\"flex flex-row flex-wrap gap-1 items-center text-xs\",\"children\":[[\"$\",\"span\",null,{\"className\":\"rounded-lg px-2 border-gray-300 border bg-white\",\"children\":\"41MB\"}],[\"$\",\"span\",null,{\"className\":\"rounded-lg px-2 border-gray-300 border complete bg-gray-100\",\"children\":[5,\" \",\"complete \",\"Files\"]}],[\"$\",\"span\",null,{\"className\":\"rounded-lg px-2 border-gray-300 border bg-blue-100\",\"children\":[\"$\",\"$La\",null,{\"href\":\"/search?poster=Anime Tosho \u003cusenet.bot@animetosho.org\u003e\",\"className\":\"underline hover:text-blue-800 visited:text-gray-500\",\"prefetch\":false,\"children\":\"Anime Tosho \u003cusenet.bot@animetosho.org\u003e\"}]}],[[\"$\",\"span\",null,{\"className\":\"rounded-lg px-2 border-gray-300 border bg-gray-100\",\"children\":[\"$\",\"$La\",null,{\"href\":\"/search?group=alt.binaries.multimedia.anime.highspeed\",\"className\":\"underline hover:text-blue-800 visited:text-gray-500\",\"prefetch\":false,\"children\":\"alt.binaries.multimedia.anime.highspeed\"}]}]]]}]]}]}],[\"$\",\"td\",null,{\"className\":\"min-w-20\",\"children\":\"1 year\"}]]}],[\"$\",\"tr\",null,{\"children\":[[\"$\",\"td\",null,{\"className\":\"break-keep\",\"children\":[5,\".\"]}],[\"$\",\"td\",null,{\"children\":[\"$\",\"input\",null,{\"type\":\"checkbox\",\"name\":\"ODk4MTMzMjUtOWRiOS0zZGZjLWEzZWQtZjNiOTgxMjBhNTVm\",\"className\":\"mx-2\"}]}],[\"$\",\"td\",null,{\"children\":[\"$\",\"div\",null,{\"className\":\"flex flex-col\",\"children\":[[\"$\",\"$La\",null,{\"href\":\"/details/ODk4MTMzMjUtOWRiOS0zZGZjLWEzZWQtZjNiOTgxMjBhNTVm\",\"className\":\"underline hover:text-blue-800 visited:text-gray-500 font-medium mb-1 text-ellipsis break-words line-clamp-2\",\"prefetch\":false,\"children\":\"[SubsPlease] Griseli - Ghost Clicker - 06 (480p) [A893408E].mkv [2/7] - \\\"[SubsPlease] Griseli - Ghost Clicker - 06 (480p) [A893408E].par2\\\" yEnc  6100\"}],[\"$\",\"div\",null,{\"className\":\"flex flex-row flex-wrap gap-1 items-center text-xs\",\"children\":[[\"$\",\"span\",null,{\"className\":\"rounded-lg px-2 border-gray-300 border bg-white\",\"children\":\"7.22KB\"}],[\"$\",\"span\",null,{\"className\":\"rounded-lg px-2 border-gray-300 border complete bg-gray-100\",\"children\":[1,\" \",\"complete \",\"File\"]}],[\"$\",\"span\",null,{\"className\":\"rounded-lg px-2 border-gray-300 border bg-blue-100\",\"children\":[\"$\",\"$La\",null,{\"href\":\"/search?poster=Anime Tosho \u003cusenet.bot@animetosho.org\u003e\",\"className\":\"underline hover:text-blue-800 visited:text-gray-500\",\"prefetch\":false,\"children\":\"Anime Tosho \u003cusenet.bot@animetosho.org\u003e\"}]}],[[\"$\",\"span\",null,{\"className\":\"rounded-lg px-2 border-gray-300 border bg-gray-100\",\"children\":[\"$\",\"$La\",null,{\"href\":\"/search?group=alt.binaries.multimedia.anime.highspeed\",\"className\":\"underline hover:text-blue-800 visited:text-gray-500\",\"prefetch\":false,\"children\":\"alt.binaries.multimedia.anime.highspeed\"}]}]]]}]]}]}],[\"$\",\"td\",null,{\"className\":\"min-w-20\",\"children\":\"1 year\"}]]}],[\"$\",\"tr\",null,{\"children\":[[\"$\",\"td\",null,{\"className\":\"break-keep\",\"children\":[6,\".\"]}],[\"$\",\"td\",null,{\"children\":[\"$\",\"input\",null,{\"type\":\"checkbox\",\"name\":\"YzVlNDdlZTMtZjU3YS0zOGJmLTljOGUtOTZjZGQwOTY1MDZm\",\"className\":\"mx-2\"}]}],[\"$\",\"td\",null,{\"children\":[\"$\",\"div\",null,{\"className\":\"flex flex-col\",\"children\":[[\"$\",\"$La\",null,{\"href\":\"/details/YzVlNDdlZTMtZjU3YS0zOGJmLTljOGUtOTZjZGQwOTY1MDZm\",\"className\":\"underline hover:text-blue-800 visited:text-gray-500 font-medium mb-1 text-ellipsis break-words line-clamp-2\",\"prefetch\":false,\"children\":\"[SubsPlease] Griseli - Ghost Clicker - 06 (480p) [A893408E].mkv [1/7] - \\\"[SubsPlease] Griseli - Ghost Clicker - 06 (480p) [A893408E].mkv\\\" yEnc  401489891\"}],[\"$\",\"div\",null,{\"className\":\"flex flex-row flex-wrap gap-1 items-center text-xs\",\"children\":[[\"$\",\"span\",null,{\"className\":\"rounded-lg px-2 border-gray-300 border bg-white\",\"children\":\"395.29MB\"}],[\"$\",\"span\",null,{\"className\":\"rounded-lg px-2 border-gray-300 border complete bg-gray-100\",\"children\":[1,\" \",\"complete \",\"File\"]}],[\"$\",\"span\",null,{\"className\":\"rounded-lg px-2 border-gray-300 border bg-blue-100\",\"children\":[\"$\",\"$La\",null,{\"href\":\"/search?poster=Anime Tosho \u003cusenet.bot@animetosho.org\u003e\",\"className\":\"underline hover:text-blue-800 visited:text-gray-500\",\"prefetch\":false,\"children\":\"Anime Tosho \u003cusenet.bot@animetosho.org\u003e\"}]}],[[\"$\",\"span\",null,{\"className\":\"rounded-lg px-2 border-gray-300 border bg-gray-100\",\"children\":[\"$\",\"$La\",null,{\"href\":\"/search?group=alt.binaries.multimedia.anime.highspeed\",\"className\":\"underline hover:text-blue-800 visited:text-gray-500\",\"prefetch\":false,\"children\":\"alt.binaries.multimedia.anime.highspeed\"}]}]]]}]]}]}],[\"$\",\"td\",null,{\"className\":\"min-w-20\",\"children\":\"1 year\"}]]}],[\"$\",\"tr\",null,{\"children\":[[\"$\",\"td\",null,{\"className\":\"break-keep\",\"children\":[7,\".\"]}],[\"$\",\"td\",null,{\"children\":[\"$\",\"input\",null,{\"type\":\"checkbox\",\"name\":\"ZmQxNWQwMDQtNWRiMC0zN2YyLWJjZGUtZjE5NjRiZDZkNzFl\",\"className\":\"mx-2\"}]}],[\"$\",\"td\",null,{\"children\":[\"$\",\"div\",null,{\"className\":\"flex flex-col\",\"children\":[[\"$\",\"$La\",null,{\"href\":\"/details/ZmQxNWQwMDQtNWRiMC0zN2YyLWJjZGUtZjE5NjRiZDZkNzFl\",\"className\":\"underline hover:text-blue-800 visited:text-gray-500 font-medium mb-1 text-ellipsis break-words line-clamp-2\",\"prefetch\":false,\"children\":\"[ASW] Griseli - Ghost Clicker - 06 [1080p HEVC x265 10Bit][AAC] [2/6] - \\\"[ASW] Griseli - Ghost Clicker - 06 [1080p HEVC][E9565771].par2\\\" yEnc  3056\"}],[\"$\",\"div\",null,{\"className\":\"flex flex-row flex-wrap gap-1 items-center text-xs\",\"children\":[[\"$\",\"span\",null,{\"className\":\"rounded-lg px-2 border-gray-300 border bg-white\",\"children\":\"4.17KB\"}],[\"$\",\"span\",null,{\"className\":\"rounded-lg px-2 border-gray-300 border complete bg-gray-100\",\"children\":[1,\" \",\"complete \",\"File\"]}],[\"$\",\"span\",null,{\"className\":\"rounded-lg px-2 border-gray-300 border bg-blue-100\",\"children\":[\"$\",\"$La\",null,{\"href\":\"/search?poster=Anime Tosho \u003cusenet.bot@animetosho.org\u003e\",\"className\":\"underline hover:text-blue-800 visited:text-gray-500\",\"prefetch\":false,\"children\":\"Anime Tosho \u003cusenet.bot@animetosho.org\u003e\"}]}],[[\"$\",\"span\",null,{\"className\":\"rounded-lg px-2 border-gray-300 border bg-gray-100\",\"children\":[\"$\",\"$La\",null,{\"href\":\"/search?group=alt.binaries.multimedia.anime.highspeed\",\"className\":\"underline hover:text-blue-800 visited:text-gray-500\",\"prefetch\":false,\"children\":\"alt.binaries.multimedia.anime.highspeed\"}]}]]]}]]}]}],[\"$\",\"td\",null,{\"className\":\"min-w-20\",\"children\":\"1 year\"}]]}],[\"$\",\"tr\",null,{\"children\":[[\"$\",\"td\",null,{\"className\":\"break-keep\",\"children\":[8,\".\"]}],[\"$\",\"td\",null,{\"children\":[\"$\",\"input\",null,{\"type\":\"checkbox\",\"name\":\"ZDI0YTU2ZGMtNDdjMy0zYzAxLWJkZjgtMDdjNGY4NmQxZTEz\",\"className\":\"mx-2\"}]}],[\"$\",\"td\",null,{\"children\":[\"$\",\"div\",null,{\"className\":\"flex flex-col\",\"children\":[[\"$\",\"$La\",null,{\"href\":\"/details/ZDI0YTU2ZGMtNDdjMy0zYzAxLWJkZjgtMDdjNGY4NmQxZTEz\",\"className\":\"underline hover:text-blue-800 visited:text-gray-500 font-medium mb-1 text-ellipsis break-words line-clamp-2\",\"prefetch\":false,\"children\":\"[ASW] Griseli - Ghost Clicker - 06 [1080p HEVC x265 10Bit][AAC] [1/6] - \\\"[ASW] Griseli - Ghost Clicker - 06 [1080p HEVC][E9565771].mkv\\\" yEnc  184773141\"}],[\"$\",\"div\",null,{\"className\":\"flex flex-row flex-wrap gap-1 items-center text-xs\",\"children\":[[\"$\",\"span\",null,{\"className\":\"rounded-lg px-2 border-gray-300 border bg-white\",\"children\":\"198.92MB\"}],[\"$\",\"span\",null,{\"className\":\"rounded-lg px-2 border-gray-300 border complete bg-gray-100\",\"children\":[5,\" \",\"complete \",\"Files\"]}],[\"$\",\"span\",null,{\"className\":\"rounded-lg px-2 border-gray-300 border bg-blue-100\",\"children\":[\"$\",\"$La\",null,{\"href\":\"/search?poster=Anime Tosho \u003cusenet.bot@animetosho.org\u003e\",\"className\":\"underline hover:text-blue-800 visited:text-gray-500\",\"prefetch\":false,\"children\":\"Anime Tosho \u003cusenet.bot@animetosho.org\u003e\"}]}],[[\"$\",\"span\",null,{\"className\":\"rounded-lg px-2 border-gray-300 border bg-gray-100\",\"children\":[\"$\",\"$La\",null,{\"href\":\"/search?group=alt.binaries.multimedia.anime.highspeed\",\"className\":\"underline hover:text-blue-800 visited:text-gray-500\",\"prefetch\":false,\"children\":\"alt.binaries.multimedia.anime.highspeed\"}]}]]]}]]}]}],[\"$\",\"td\",null,{\"className\":\"min-w-20\",\"children\":\"1 year\"}]]}]]]}],[\"$\",\"div\",null,{\"className\":\"flex flex-row justify-between\",\"children\":[[\"$\",\"button\",null,{\"className\":\"bg-gray-200 hover:bg-gray-300 font-semibold py-1 px-3 rounded-sm focus:outline-none focus:shadow-outline\",\"type\":\"submit\",\"children\":\"Create NZB\"}],[\"$\",\"$Lf\",null,{\"stats\":\"$10\",\"params\":\"$11\"}]]}]]}]]}]\n"])
+    </script>
+    <script>
+      self.__next_f.push([1, "b:[[\"$\",\"meta\",\"0\",{\"name\":\"viewport\",\"content\":\"width=device-width, initial-scale=1\"}],[\"$\",\"meta\",\"1\",{\"charSet\":\"utf-8\"}],[\"$\",\"title\",\"2\",{\"children\":\"Binsearch -- Usenet search engine\"}],[\"$\",\"meta\",\"3\",{\"name\":\"description\",\"content\":\"BinSearch.info Binary Usenet Search Engine - Binsearch -- Usenet search engine\"}],[\"$\",\"link\",\"4\",{\"rel\":\"icon\",\"href\":\"/favicon.ico\",\"type\":\"image/x-icon\",\"sizes\":\"16x16\"}]]\n4:null\n"])
+    </script>
+    <script>
+      self.__next_f.push([1, ""])
+    </script>
+  </body>
+</html>

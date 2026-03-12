@@ -131,6 +131,16 @@ public class IndexerForSearchSelectorTest {
     }
 
     @Test
+    void shouldNotUseBinsearchBecauseItIsCurrentlyNotSupported() {
+        indexerConfigMock.setSearchModuleType(SearchModuleType.BINSEARCH);
+        assertThat(testee.checkBinsearchNotSupported(indexer)).isFalse();
+        assertThat(testee.notSelectedIndersWithReason).containsEntry(indexer, "Binsearch currently not supported");
+
+        indexerConfigMock.setSearchModuleType(SearchModuleType.NEWZNAB);
+        assertThat(testee.checkBinsearchNotSupported(indexer)).isTrue();
+    }
+
+    @Test
     void shouldCheckIfDisabledBySystem() {
         when(searchingConfig.isIgnoreTemporarilyDisabled()).thenReturn(false);
 
