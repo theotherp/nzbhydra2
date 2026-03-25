@@ -98,6 +98,7 @@ public class IndexerChecker {
     }
 
     public GenericResponse checkConnection(IndexerConfig indexerConfig) {
+        resolveUnchangedSensitiveFields(indexerConfig);
         Xml xmlResponse;
         try {
             URI uri = getBaseUri(indexerConfig).queryParam("t", "search").queryParam("q", "mp3").build().toUri();
@@ -140,6 +141,30 @@ public class IndexerChecker {
         return null;
     }
 
+    private void resolveUnchangedSensitiveFields(IndexerConfig indexerConfig) {
+        String unchangedMarker = "***UNCHANGED***";
+        boolean apiKeyUnchanged = unchangedMarker.equals(indexerConfig.getApiKey());
+        boolean usernameUnchanged = unchangedMarker.equals(indexerConfig.getUsername().orElse(null));
+        boolean passwordUnchanged = unchangedMarker.equals(indexerConfig.getPassword().orElse(null));
+        if (!apiKeyUnchanged && !usernameUnchanged && !passwordUnchanged) {
+            return;
+        }
+        configProvider.getBaseConfig().getIndexers().stream()
+                .filter(x -> x.getName().equals(indexerConfig.getName()))
+                .findFirst()
+                .ifPresent(stored -> {
+                    if (apiKeyUnchanged) {
+                        indexerConfig.setApiKey(stored.getApiKey());
+                    }
+                    if (usernameUnchanged) {
+                        indexerConfig.setUsername(stored.getUsername().orElse(null));
+                    }
+                    if (passwordUnchanged) {
+                        indexerConfig.setPassword(stored.getPassword().orElse(null));
+                    }
+                });
+    }
+
     static UriComponentsBuilder getBaseUri(IndexerConfig indexerConfig) {
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(indexerConfig.getHost()).path(indexerConfig.getApiPath().orElse("/api"));
         if (!Strings.isNullOrEmpty(indexerConfig.getApiKey())) {
@@ -162,6 +187,7 @@ public class IndexerChecker {
      * Executes a search for each of the known IDs. If enough returned results match the expected title the ID is probably supported.
      */
     public CheckCapsResponse checkCaps(IndexerConfig indexerConfig) {
+        resolveUnchangedSensitiveFields(indexerConfig);
         List<CheckCapsRequest> requests = Arrays.asList(
                 new CheckCapsRequest(indexerConfig, "tvsearch", MediaIdType.TVDB, "tvdbid", "121361", Arrays.asList("Thrones", "GOT")),
                 new CheckCapsRequest(indexerConfig, "tvsearch", MediaIdType.TVRAGE, "rid", "24493", Arrays.asList("Thrones", "GOT")),
