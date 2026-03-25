@@ -11,6 +11,7 @@ import org.nzbhydra.config.BaseConfigHandler;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.logging.LogContentProvider;
 import org.nzbhydra.logging.LogContentProvider.JsonLogResponse;
+import org.nzbhydra.logging.SensitiveDataRemovingPatternLayoutEncoder;
 import org.nzbhydra.springnative.ReflectionMarker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -146,6 +147,24 @@ public class DebugInfosWeb {
             list.add(new ThreadCpuUsageChartData(entry.getKey(), entry.getValue().stream().sorted(Comparator.comparing(x -> x.time)).collect(Collectors.toList())));
         }
         return list;
+    }
+
+    @Secured({"ROLE_ADMIN"})
+    @RequestMapping(value = "/internalapi/debuginfos/sensitiveDataLogging", method = RequestMethod.GET)
+    public boolean getSensitiveDataLoggingEnabled() {
+        return SensitiveDataRemovingPatternLayoutEncoder.isDisabled();
+    }
+
+    @Secured({"ROLE_ADMIN"})
+    @RequestMapping(value = "/internalapi/debuginfos/sensitiveDataLogging", method = RequestMethod.PUT)
+    public boolean setSensitiveDataLoggingEnabled(@RequestParam boolean enabled) {
+        SensitiveDataRemovingPatternLayoutEncoder.setDisabled(enabled);
+        if (enabled) {
+            logger.warn("Sensitive data logging enabled. API keys, passwords and usernames will appear unmasked in the log. Disable this when done debugging.");
+        } else {
+            logger.info("Sensitive data logging disabled. API keys, passwords and usernames will be masked in the log again.");
+        }
+        return SensitiveDataRemovingPatternLayoutEncoder.isDisabled();
     }
 
     @Secured({"ROLE_ADMIN"})

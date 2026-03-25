@@ -7,6 +7,16 @@ import java.nio.charset.Charset;
 
 public class SensitiveDataRemovingPatternLayoutEncoder extends PatternLayoutEncoder {
 
+    private static volatile boolean disabled = false;
+
+    public static boolean isDisabled() {
+        return disabled;
+    }
+
+    public static void setDisabled(boolean disabled) {
+        SensitiveDataRemovingPatternLayoutEncoder.disabled = disabled;
+    }
+
     private Charset charset;
 
     public Charset getCharset() {
@@ -32,6 +42,9 @@ public class SensitiveDataRemovingPatternLayoutEncoder extends PatternLayoutEnco
     }
 
     protected String removeSensitiveData(String txt) {
+        if (disabled) {
+            return txt;
+        }
         return txt.replaceAll("(?i)(r|username|apikey|password)(=|:|%3D)([^&\\s]{2,})", "$1$2<$1>")
                 //Format in requests to and responses from *arr:
                 /*

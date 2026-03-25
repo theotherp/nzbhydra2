@@ -128,6 +128,28 @@ function SystemController($scope, $state, activeTab, simpleInfos, $http, growl, 
         });
     };
 
+    $scope.sensitiveDataLoggingEnabled = false;
+
+    $http.get('internalapi/debuginfos/sensitiveDataLogging').then(function (response) {
+        $scope.sensitiveDataLoggingEnabled = response.data;
+    });
+
+    $scope.toggleSensitiveDataLogging = function () {
+        var enable = !$scope.sensitiveDataLoggingEnabled;
+        $http({
+            method: 'PUT',
+            url: 'internalapi/debuginfos/sensitiveDataLogging',
+            params: {enabled: enable}
+        }).then(function (response) {
+            $scope.sensitiveDataLoggingEnabled = response.data;
+            if ($scope.sensitiveDataLoggingEnabled) {
+                growl.warning("Sensitive data logging enabled. API keys, passwords and usernames will appear unmasked in the log!");
+            } else {
+                growl.info("Sensitive data logging disabled. Values will be masked in the log again.");
+            }
+        });
+    };
+
     $scope.executeSqlQuery = function () {
         $http.post('internalapi/debuginfos/executesqlquery', $scope.foo.sql).then(function (response) {
             if (response.data.successful) {

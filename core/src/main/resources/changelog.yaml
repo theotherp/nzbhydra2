@@ -5,6 +5,8 @@
     changes:
       -   type: "fix"
           text: "When triggering a caps check or connection check from the UI the API key (and username/password) would be sent as placeholder value instead of the actual configured value."
+      -   type: "feature"
+          text: "Added a button in the Bugreport / Debug section to temporarily disable sensitive data masking in the log. Useful for debugging connection issues where API keys etc. need to be visible. Resets on restart."
 -   version: "v8.5.2"
     date: "2026-03-12"
     final: true

@@ -53,6 +53,15 @@
         <br>
         <button class="btn btn-default" ng-click="logThreadDump()" style="margin-top: 15px">Log thread dump</button>
         <br>
+        <button class="btn" ng-class="sensitiveDataLoggingEnabled ? 'btn-warning' : 'btn-default'" ng-click="toggleSensitiveDataLogging()" style="margin-top: 15px">
+          <span ng-if="!sensitiveDataLoggingEnabled">Enable sensitive data in logs <span class="glyphicon glyphicon-question-sign"
+                                                                                         uib-tooltip="Temporarily disables masking of API keys, passwords and usernames in the log file. Useful for debugging connection issues. Will reset on restart."
+                                                                                         tooltip-placement="auto top"></span></span>
+          <span ng-if="sensitiveDataLoggingEnabled">Disable sensitive data in logs (currently enabled!) <span class="glyphicon glyphicon-question-sign"
+                                                                                                              uib-tooltip="Sensitive data logging is active. API keys, passwords and usernames appear unmasked in the log. Click to disable."
+                                                                                                              tooltip-placement="auto top"></span></span>
+        </button>
+        <br>
         <a href="actuator/heapdump" target="_blank">
           <button class="btn btn-default" style="margin-top: 15px">Create heap dump <span class="glyphicon glyphicon-question-sign" tooltip-placement="auto top"
                                                                                           uib-tooltip="Will not work on J9 based JREs (and possibly others as well)."></span></button>
