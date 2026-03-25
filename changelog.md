@@ -1,3 +1,11 @@
+### v8.5.3 (2026-03-25)
+
+**Fix** When triggering a caps check or connection check from the UI the API key (and username/password) would be sent as placeholder value instead of the actual configured value.
+
+**Feature** Added a button in the Bugreport / Debug section to temporarily disable sensitive data masking in the log. Useful for debugging connection issues where API keys etc. need to be visible. Resets on restart.
+
+
+
 ### v8.5.2 (2026-03-12)
 
 **Fix** "Load more" would not always work or only after many clicks. Now each click should load the expected next 100 results.
