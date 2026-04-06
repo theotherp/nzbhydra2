@@ -1,0 +1,11 @@
+<div class="modal-header">
+  <h3 class="modal-title">Duplicate movie download</h3>
+</div>
+<div class="modal-body">
+  <p>A recent download for this movie was already triggered. Please enter a reason why this needs to be downloaded again before continuing.</p>
+  <input type="text" class="form-control" ng-model="reason" placeholder="Reason (optional)" autofocus>
+</div>
+<div class="modal-footer">
+  <button class="btn btn-default" type="button" ng-click="cancel()">Cancel</button>
+  <button class="btn btn-primary" type="button" ng-click="confirm()">Continue</button>
+</div>

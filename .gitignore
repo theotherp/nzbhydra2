@@ -36,3 +36,10 @@ other/wrapper/pyInstaller/windows_console/build
 **/.DS_Store
 core/ui-src/hydra-ng
 nul
+.factorypath
+.classpath
+.project
+org.eclipse.core.resources.prefs
+org.eclipse.jdt.core.prefs
+org.eclipse.m2e.core.prefs
+org.eclipse.jdt.apt.core.prefs

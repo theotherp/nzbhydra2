@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -137,6 +138,22 @@ public class SearchResultAcceptorTest {
         assertTrue(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item, null));
         item.setTitle("def ghi");
         assertTrue(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item, null));
+
+        internalData.getForbiddenWords().clear();
+        internalData.getForbiddenWords().add(".DV.");
+        item.setTitle("Hello.DV.1080p");
+        assertFalse(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item, null));
+        item.setTitle("Hello.DVD.1080p");
+        assertTrue(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item, null));
+
+        internalData.getForbiddenWords().clear();
+        internalData.getForbiddenWords().add("DV");
+        item.setTitle("Hello.DV.1080p");
+        assertFalse(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item, null));
+        item.setTitle("Hello.DVD.1080p");
+        assertTrue(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item, null));
+
+
     }
 
     @Test

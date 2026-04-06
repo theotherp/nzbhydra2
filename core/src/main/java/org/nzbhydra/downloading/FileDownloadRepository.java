@@ -18,6 +18,10 @@ public interface FileDownloadRepository extends JpaRepository<FileDownloadEntity
 
     List<FileDownloadEntity> findBySearchResultTitleOrderByTimeDesc(String title);
 
+    List<FileDownloadEntity> findByUsernameAndTimeAfterOrderByTimeDesc(String username, Instant minTime);
+
+    List<FileDownloadEntity> findByTimeAfterOrderByTimeDesc(Instant minTime);
+
     List<FileDownloadEntity> findByStatusInAndTimeAfterOrderByTimeDesc(Collection<FileDownloadStatus> status, Instant minTime);
 
     Page<FileDownloadEntity> findBySearchResultIndexerOrderByTimeDesc(IndexerEntity indexerEntity, Pageable pageable);

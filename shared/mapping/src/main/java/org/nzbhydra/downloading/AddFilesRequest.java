@@ -17,6 +17,7 @@ public class AddFilesRequest {
     private String downloaderName;
     private List<SearchResult> searchResults = new ArrayList<>();
     private String category;
+    private String reason;
 
     @Data
 @ReflectionMarker
