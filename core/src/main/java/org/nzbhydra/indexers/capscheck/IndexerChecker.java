@@ -99,19 +99,30 @@ public class IndexerChecker {
 
     public GenericResponse checkConnection(IndexerConfig indexerConfig) {
         resolveUnchangedSensitiveFields(indexerConfig);
-        Xml xmlResponse;
         try {
-            URI uri = getBaseUri(indexerConfig).queryParam("t", "search").queryParam("q", "mp3").build().toUri();
-            xmlResponse = indexerWebAccess.get(uri, indexerConfig);
-            logger.debug("Checking connection to indexer {} using URI {}", indexerConfig.getName(), uri);
-            if (xmlResponse instanceof NewznabXmlError) {
-                logger.warn("Connection check with indexer {} failed with message: {}", indexerConfig.getName(), ((NewznabXmlError) xmlResponse).getDescription());
-                return GenericResponse.notOk("Indexer returned message: " + ((NewznabXmlError) xmlResponse).getDescription());
-            }
-            NewznabXmlRoot rssRoot = (NewznabXmlRoot) xmlResponse;
-            searchModuleProvider.registerApiHitLimits(indexerConfig.getName(), 1);
+            //Try multiple searches for indexers that only support certain search types
+            List<URI> uris = List.of(
+                    getBaseUri(indexerConfig).queryParam("t", "search").queryParam("q", "mp3").build().toUri(),
+                    getBaseUri(indexerConfig).queryParam("t", "movie").queryParam("imdbid", "26443597").build().toUri(),
+                    getBaseUri(indexerConfig).queryParam("t", "tvsearch").queryParam("tvdbid", "121361").build().toUri()
+            );
+            String errorMessage = null;
+            for (URI uri : uris) {
+                Xml xmlResponse = indexerWebAccess.get(uri, indexerConfig);
+                logger.debug("Checking connection to indexer {} using URI {}", indexerConfig.getName(), uri);
+                searchModuleProvider.registerApiHitLimits(indexerConfig.getName(), 1);
 
-            if (!rssRoot.getRssChannel().getItems().isEmpty()) {
+                if (xmlResponse instanceof NewznabXmlError) {
+                    errorMessage = "Indexer returned message: " + ((NewznabXmlError) xmlResponse).getDescription();
+                    logger.warn("Connection check with indexer {} failed with message: {}", indexerConfig.getName(), ((NewznabXmlError) xmlResponse).getDescription());
+                    continue;
+                }
+
+                NewznabXmlRoot rssRoot = (NewznabXmlRoot) xmlResponse;
+                if (rssRoot.getRssChannel().getItems().isEmpty()) {
+                    continue;
+                }
+
                 if (indexerConfig.getSearchModuleType() == SearchModuleType.NEWZNAB && isTorznabResult(rssRoot) && !indexerConfig.getHost().contains("animetosho")) {
                     logger.error("Indexer added as newznab but returns torznab results");
                     return GenericResponse.notOk("You added the indexer as newznab indexer but the results indicate a torznab indexer");
@@ -123,10 +134,14 @@ public class IndexerChecker {
 
                 logger.info("Connection to indexer {} successful", indexerConfig.getName());
                 return GenericResponse.ok();
-            } else {
-                logger.warn("Connection to indexer {} successful but search did not return any results", indexerConfig.getName());
-                return GenericResponse.notOk("Indexer did not return any results");
             }
+
+            if (errorMessage != null) {
+                return GenericResponse.notOk(errorMessage);
+            }
+
+            logger.warn("Connection to indexer {} successful but search did not return any results", indexerConfig.getName());
+            return GenericResponse.notOk("Indexer did not return any results");
         } catch (IndexerAccessException | IllegalArgumentException e) {
             logger.warn("Connection check with indexer {} failed with message: {}", indexerConfig.getName(), e.getMessage());
             return GenericResponse.notOk(e.getMessage());

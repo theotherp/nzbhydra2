@@ -1,4 +1,9 @@
 #@formatter:off
+-   version: "v8.5.4"
+    final: true
+    changes:
+      -   type: "fix"
+          text: "Connection check will work for an indexer that only supports movies or TV shows."
 -   version: "v8.5.3"
     date: "2026-03-25"
     final: true

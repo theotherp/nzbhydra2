@@ -17,6 +17,7 @@ import org.nzbhydra.config.indexer.BackendType;
 import org.nzbhydra.config.indexer.CheckCapsResponse;
 import org.nzbhydra.config.indexer.IndexerCategoryConfig;
 import org.nzbhydra.config.indexer.IndexerConfig;
+import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.fortests.NewznabResponseBuilder;
 import org.nzbhydra.indexers.BinsearchTest;
 import org.nzbhydra.indexers.IndexerWebAccess;
@@ -74,8 +75,10 @@ public class NewznabCheckerTest {
     public void setUp() throws Exception {
 
         indexerConfig = new IndexerConfig();
+        indexerConfig.setName("testindexer");
         indexerConfig.setHost("http://127.0.0.1:1234");
         indexerConfig.setApiKey("apikey");
+        indexerConfig.setSearchModuleType(SearchModuleType.NEWZNAB);
         when(searchingConfig.getTimeout()).thenReturn(1);
         when(configProviderMock.getBaseConfig()).thenReturn(baseConfig);
         when(baseConfig.getSearching()).thenReturn(searchingConfig);
@@ -85,6 +88,37 @@ public class NewznabCheckerTest {
         capsRoot.setLimits(capsLimits);
         when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=caps"), indexerConfig)).thenReturn(capsRoot);
         testee.PAUSE_BETWEEN_CALLS = 0;
+    }
+
+    @Test
+    void shouldCheckConnectionUsingMovieImdbFallback() throws Exception {
+        NewznabResponseBuilder builder = new NewznabResponseBuilder();
+        NewznabXmlRoot emptyResult = builder.getTestResult(1, 0, "none", 0, 0);
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=search&q=mp3"), indexerConfig))
+                .thenReturn(emptyResult);
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&imdbid=26443597"), indexerConfig))
+                .thenReturn(builder.getTestResult(1, 1, "Movie", 0, 1));
+
+        assertThat(testee.checkConnection(indexerConfig).isSuccessful()).isTrue();
+
+        verify(indexerWebAccess).get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=search&q=mp3"), indexerConfig);
+        verify(indexerWebAccess).get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&imdbid=26443597"), indexerConfig);
+        verify(searchModuleProviderMock, times(2)).registerApiHitLimits(indexerConfig.getName(), 1);
+    }
+
+    @Test
+    void shouldNotCheckConnectionWhenNeitherQueryReturnsResults() throws Exception {
+        NewznabResponseBuilder builder = new NewznabResponseBuilder();
+        NewznabXmlRoot emptyResult = builder.getTestResult(1, 0, "none", 0, 0);
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=search&q=mp3"), indexerConfig))
+                .thenReturn(emptyResult);
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&imdbid=26443597"), indexerConfig))
+                .thenReturn(emptyResult);
+
+        var response = testee.checkConnection(indexerConfig);
+
+        assertThat(response.isSuccessful()).isFalse();
+        assertThat(response.getMessage()).isEqualTo("Indexer did not return any results");
     }
 
     @Test
