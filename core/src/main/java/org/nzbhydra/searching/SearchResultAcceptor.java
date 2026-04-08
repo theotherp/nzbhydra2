@@ -329,7 +329,7 @@ public class SearchResultAcceptor {
 
     protected boolean checkForForbiddenWords(IndexerConfig indexerConfig, Multiset<String> reasonsForRejection, List<String> forbiddenWords, SearchResultItem item, String source) {
         for (String forbiddenWord : forbiddenWords) {
-            if (forbiddenWord.contains("-") || forbiddenWord.contains(".") || indexerConfig.getHost().toLowerCase().contains("nzbgeek")) {
+            if (forbiddenWord.contains("-") || forbiddenWord.contains(".")) {
                 if (item.getTitle().toLowerCase().contains(forbiddenWord.toLowerCase())) {
                     reasonsForRejection.add("Forbidden word");
                     logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "Found forbidden word {} (from {}) in title {}", forbiddenWord, source, item.getTitle());
