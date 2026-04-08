@@ -1,3 +1,13 @@
+### v8.5.4 (2026-04-08)
+
+**Fix** Connection check will work for an indexer that only supports movies or TV shows.
+
+**Fix** History timestamps and the in-app log viewer no longer show times one hour early in some time zones. See <a href="https://github.com/theotherp/nzbhydra2/issues/1051">#1051</a>
+
+**Fix** Creating a ZIP with NZBs whose titles contain non-ASCII Unicode characters (e.g. ⭐️ or accented letters) no longer fails with an error. See <a href="https://github.com/theotherp/nzbhydra2/issues/1052">#1052</a>
+
+
+
 ### v8.5.3 (2026-03-25)
 
 **Fix** When triggering a caps check or connection check from the UI the API key (and username/password) would be sent as placeholder value instead of the actual configured value.
