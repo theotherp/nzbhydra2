@@ -83,8 +83,7 @@ function reformatDate() {
         if (angular.isUndefined(format)) {
             format = "YYYY-MM-DD HH:mm";
         }
-        //Date in database is saved as UTC without timezone information
-        return moment.unix(date).local().format(format);
+        return parseAppTimestamp(date).format(format);
     }
 }
 
@@ -94,8 +93,24 @@ angular
 
 function reformatDateSeconds() {
     return function (date, format) {
-        return moment.unix(date).local().format("YYYY-MM-DD HH:mm:ss");
+        return parseAppTimestamp(date).format("YYYY-MM-DD HH:mm:ss");
     }
+}
+
+function parseAppTimestamp(date) {
+    if (typeof date === "number") {
+        return moment.unix(date);
+    }
+
+    if (/^\d+(\.\d+)?$/.test(date)) {
+        return moment.unix(parseFloat(date));
+    }
+
+    if (/Z$|[+-]\d\d(?::?\d\d)?$/.test(date)) {
+        return moment.parseZone(date).local();
+    }
+
+    return moment.utc(date).local();
 }
 
 

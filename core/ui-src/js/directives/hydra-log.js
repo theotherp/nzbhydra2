@@ -160,10 +160,26 @@ function formatTimestamp() {
         if (date === null || date === undefined) {
             return null;
         }
-        if (date < 1979374757) {
-            date *= 1000;
+        if (typeof date === "number") {
+            if (date < 1979374757) {
+                date *= 1000;
+            }
+            return moment(date).format("YYYY-MM-DD HH:mm");
         }
-        return moment(date).local().format("YYYY-MM-DD HH:mm");
+
+        if (/^\d+(\.\d+)?$/.test(date)) {
+            var numericDate = parseFloat(date);
+            if (numericDate < 1979374757) {
+                numericDate *= 1000;
+            }
+            return moment(numericDate).format("YYYY-MM-DD HH:mm");
+        }
+
+        if (/Z$|[+-]\d\d(?::?\d\d)?$/.test(date)) {
+            return moment.parseZone(date).local().format("YYYY-MM-DD HH:mm");
+        }
+
+        return moment.utc(date).local().format("YYYY-MM-DD HH:mm");
     }
 }
 

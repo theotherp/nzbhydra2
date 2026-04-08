@@ -16,7 +16,8 @@
       "Bash(findstr:*)",
       "Bash(dir \"c:\\\\temp\\\\hydrastats\")",
       "Bash(gh issue view:*)",
-      "Bash(gh api:*)"
+      "Bash(gh api:*)",
+      "Bash(mvn -pl core dependency:list -q)"
     ],
     "deny": [],
     "ask": []
