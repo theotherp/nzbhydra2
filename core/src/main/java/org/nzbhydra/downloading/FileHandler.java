@@ -37,6 +37,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -47,7 +48,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -222,12 +225,12 @@ public class FileHandler {
             throw new RuntimeException(e);
         }
         final NzbsDownload nzbsDownload = getNzbsAsFiles(guids, tempDirectory);
-        if (nzbsDownload.files.isEmpty()) {
+        if (nzbsDownload.fileToTitle.isEmpty()) {
             return new FileZipResponse(false, null, "No files could be retrieved", Collections.emptyList(), guids);
         }
-        File zip = createZip(nzbsDownload.files);
+        File zip = createZip(nzbsDownload.fileToTitle);
         zip.deleteOnExit();
-        logger.info("Successfully added {}/{} files to ZIP", nzbsDownload.files.size(), guids.size());
+        logger.info("Successfully added {}/{} files to ZIP", nzbsDownload.fileToTitle.size(), guids.size());
         if (nzbsDownload.tempDirectory != null) {
             nzbsDownload.tempDirectory.toFile().delete();
         }
@@ -237,8 +240,8 @@ public class FileHandler {
     }
 
     private NzbsDownload getNzbsAsFiles(Collection<Long> guids, Path targetDirectory) {
-        final NzbsDownload nzbsDownload;
-
+        // fileToTitle maps the temp file (ASCII-safe name) to the original Unicode title for use as ZIP entry name
+        final Map<File, String> fileToTitle = new LinkedHashMap<>();
         final List<File> files = new ArrayList<>();
         final List<Long> successfulIds = new ArrayList<>();
         final List<Long> failedIds = new ArrayList<>();
@@ -266,15 +269,20 @@ public class FileHandler {
             }
             try {
                 String title = result.getFileName().replaceAll("[\\\\/:*?\"<>|!]", "_");
-                File tempFile = new File(targetDirectory.toFile(), title);
+                // Use ASCII-safe name for the temp file to avoid InvalidPathException on systems where
+                // the native charset (sun.jnu.encoding) is not UTF-8, e.g. in GraalVM native images.
+                // The original Unicode title is preserved separately for use as the ZIP entry name.
+                String safeTitle = title.replaceAll("[^\\x20-\\x7E]", "_");
+                File tempFile = new File(targetDirectory.toFile(), safeTitle);
                 int counter = 1;
                 while (tempFile.exists()) {
-                    String newName = FilenameUtils.getBaseName(title) + "_" + counter + "." + FilenameUtils.getExtension(title);
+                    String newName = FilenameUtils.getBaseName(safeTitle) + "_" + counter + "." + FilenameUtils.getExtension(safeTitle);
                     tempFile = new File(targetDirectory.toFile(), newName);
                     counter++;
                 }
                 logger.debug("Writing content to temp file {}", tempFile.getAbsolutePath());
                 Files.write(tempFile.toPath(), result.getContent());
+                fileToTitle.put(tempFile, title);
                 files.add(tempFile);
                 successfulIds.add(guid);
             } catch (IOException e) {
@@ -283,10 +291,10 @@ public class FileHandler {
             }
         }
 
-        return new NzbsDownload(files, successfulIds, failedIds, targetDirectory);
+        return new NzbsDownload(fileToTitle, files, successfulIds, failedIds, targetDirectory);
     }
 
-    public File createZip(List<File> nzbFiles) throws Exception {
+    public File createZip(Map<File, String> fileToTitle) throws Exception {
         logger.info("Creating ZIP with files");
 
         File tempFile = tempFileProvider.getTempFile("nzbs", ".zip");
@@ -294,11 +302,12 @@ public class FileHandler {
         tempFile.deleteOnExit();
         logger.debug("Using temp file {}", tempFile.getAbsolutePath());
         FileOutputStream fos = new FileOutputStream(tempFile);
-        ZipOutputStream zos = new ZipOutputStream(fos);
+        // Use UTF-8 so ZIP entry names with non-ASCII characters are encoded correctly
+        ZipOutputStream zos = new ZipOutputStream(fos, StandardCharsets.UTF_8);
 
-        for (File file : nzbFiles) {
-            addToZipFile(file, zos);
-            file.delete();
+        for (Map.Entry<File, String> entry : fileToTitle.entrySet()) {
+            addToZipFile(entry.getKey(), entry.getValue(), zos);
+            entry.getKey().delete();
         }
 
         zos.close();
@@ -307,10 +316,10 @@ public class FileHandler {
         return tempFile;
     }
 
-    private static void addToZipFile(File file, ZipOutputStream zos) throws IOException {
+    private static void addToZipFile(File file, String entryName, ZipOutputStream zos) throws IOException {
         logger.debug("Adding file {} to temporary ZIP file", file.getAbsolutePath());
         FileInputStream fis = new FileInputStream(file);
-        ZipEntry zipEntry = new ZipEntry(file.getName());
+        ZipEntry zipEntry = new ZipEntry(entryName);
         zos.putNextEntry(zipEntry);
 
         byte[] bytes = new byte[1024];
@@ -406,13 +415,15 @@ public class FileHandler {
     }
 
     private static class NzbsDownload {
+        private final Map<File, String> fileToTitle;
         private final List<File> files;
         private final List<Long> successfulIds;
         private final List<Long> failedIds;
         private final Path tempDirectory;
 
 
-        private NzbsDownload(List<File> files, List<Long> successfulIds, List<Long> failedIds, Path tempDirectory) {
+        private NzbsDownload(Map<File, String> fileToTitle, List<File> files, List<Long> successfulIds, List<Long> failedIds, Path tempDirectory) {
+            this.fileToTitle = fileToTitle;
             this.files = files;
             this.successfulIds = successfulIds;
             this.failedIds = failedIds;

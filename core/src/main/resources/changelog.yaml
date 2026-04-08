@@ -4,6 +4,8 @@
     changes:
       -   type: "fix"
           text: "Connection check will work for an indexer that only supports movies or TV shows."
+      -   type: "fix"
+          text: "Creating a ZIP with NZBs whose titles contain non-ASCII Unicode characters (e.g. ⭐️ or accented letters) no longer fails with an error. See #1052"
 -   version: "v8.5.3"
     date: "2026-03-25"
     final: true
