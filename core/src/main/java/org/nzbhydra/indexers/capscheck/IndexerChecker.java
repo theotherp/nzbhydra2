@@ -118,8 +118,13 @@ public class IndexerChecker {
                     continue;
                 }
 
-                NewznabXmlRoot rssRoot = (NewznabXmlRoot) xmlResponse;
-                if (rssRoot.getRssChannel().getItems().isEmpty()) {
+                if (!(xmlResponse instanceof NewznabXmlRoot rssRoot)) {
+                    errorMessage = "Indexer returned an invalid RSS response";
+                    logger.warn("Connection check with indexer {} failed because the response was empty or invalid", indexerConfig.getName());
+                    continue;
+                }
+
+                if (hasNoItems(rssRoot)) {
                     continue;
                 }
 
@@ -194,6 +199,10 @@ public class IndexerChecker {
 
     protected boolean isNewznabResult(NewznabXmlRoot rssRoot) {
         return rssRoot.getRssChannel().getItems().stream().anyMatch(x -> x.getEnclosures().stream().anyMatch(enclosure -> "application/x-nzb".equals(enclosure.getType())));
+    }
+
+    private boolean hasNoItems(NewznabXmlRoot rssRoot) {
+        return rssRoot == null || rssRoot.getRssChannel() == null || rssRoot.getRssChannel().getItems() == null || rssRoot.getRssChannel().getItems().isEmpty();
     }
 
     /**
@@ -324,7 +333,7 @@ public class IndexerChecker {
         URI uri = getBaseUri(indexerConfig).queryParam("t", "search").queryParam("q", "Avengers --1080p").build().toUri();
         try {
             NewznabXmlRoot root = indexerWebAccess.get(uri, indexerConfig, NewznabXmlRoot.class);
-            if (!root.getRssChannel().getItems().isEmpty() && root.getRssChannel().getItems().stream().noneMatch(x -> x.getTitle().contains("1080p"))) {
+            if (!hasNoItems(root) && root.getRssChannel().getItems().stream().noneMatch(x -> x.getTitle().contains("1080p"))) {
                 logger.info("Determined forbidden word prefix \"--\" for indexer {}", indexerConfig.getName());
                 return IndexerConfig.ForbiddenWordPrefix.DOUBLE_DASH;
             }
@@ -336,7 +345,7 @@ public class IndexerChecker {
         uri = getBaseUri(indexerConfig).queryParam("t", "search").queryParam("q", "Avengers !1080p").build().toUri();
         try {
             NewznabXmlRoot root = indexerWebAccess.get(uri, indexerConfig, NewznabXmlRoot.class);
-            if (!root.getRssChannel().getItems().isEmpty() && root.getRssChannel().getItems().stream().noneMatch(x -> x.getTitle().contains("1080p"))) {
+            if (!hasNoItems(root) && root.getRssChannel().getItems().stream().noneMatch(x -> x.getTitle().contains("1080p"))) {
                 logger.info("Determined forbidden word prefix \"!\" for indexer {}", indexerConfig.getName());
                 return IndexerConfig.ForbiddenWordPrefix.EXCLAMATION_MARK;
             }
@@ -495,10 +504,11 @@ public class IndexerChecker {
         }
         NewznabXmlRoot rssRoot = (NewznabXmlRoot) response;
 
-        if (rssRoot.getRssChannel().getItems().isEmpty()) {
+        if (hasNoItems(rssRoot)) {
             logger.info("Indexer {} probably doesn't support the ID type {}. It returned no results.", request.indexerConfig.getName(), request.getIdType());
             eventPublisher.publishEvent(new CheckerEvent(indexerConfig.getName(), "Probably doesn't support " + request.getIdType()));
-            return new SingleCheckCapsResponse(request.getKey(), request.getIdType(), false, rssRoot.getRssChannel().getGenerator(), null, null);
+            String backend = rssRoot != null && rssRoot.getRssChannel() != null ? rssRoot.getRssChannel().getGenerator() : null;
+            return new SingleCheckCapsResponse(request.getKey(), request.getIdType(), false, backend, null, null);
         }
         long countCorrectResults = rssRoot.getRssChannel().getItems().stream().filter(x -> request.getTitleExpectedToContain().stream().anyMatch(y -> x.getTitle().toLowerCase().contains(y.toLowerCase()))).count();
         float percentCorrect = (100 * countCorrectResults) / (float) rssRoot.getRssChannel().getItems().size();

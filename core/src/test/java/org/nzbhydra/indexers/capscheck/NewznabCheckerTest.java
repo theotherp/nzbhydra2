@@ -114,11 +114,31 @@ public class NewznabCheckerTest {
                 .thenReturn(emptyResult);
         when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&imdbid=26443597"), indexerConfig))
                 .thenReturn(emptyResult);
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&tvdbid=121361"), indexerConfig))
+                .thenReturn(emptyResult);
 
         var response = testee.checkConnection(indexerConfig);
 
         assertThat(response.isSuccessful()).isFalse();
         assertThat(response.getMessage()).isEqualTo("Indexer did not return any results");
+    }
+
+    @Test
+    void shouldNotFailWhenConnectionCheckReturnsNullRoot() throws Exception {
+        NewznabResponseBuilder builder = new NewznabResponseBuilder();
+        NewznabXmlRoot emptyResult = builder.getTestResult(1, 0, "none", 0, 0);
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=search&q=mp3"), indexerConfig))
+                .thenReturn(null);
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&imdbid=26443597"), indexerConfig))
+                .thenReturn(emptyResult);
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&tvdbid=121361"), indexerConfig))
+                .thenReturn(emptyResult);
+
+        var response = testee.checkConnection(indexerConfig);
+
+        assertThat(response.isSuccessful()).isFalse();
+        assertThat(response.getMessage()).isEqualTo("Indexer returned an invalid RSS response");
+        verify(searchModuleProviderMock, times(3)).registerApiHitLimits(indexerConfig.getName(), 1);
     }
 
     @Test
