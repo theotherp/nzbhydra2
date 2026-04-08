@@ -1,5 +1,6 @@
 #@formatter:off
 -   version: "v8.5.4"
+    date: "2026-04-08"
     final: true
     changes:
       -   type: "fix"
