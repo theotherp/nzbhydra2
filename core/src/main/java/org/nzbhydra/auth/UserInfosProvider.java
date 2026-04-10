@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.security.Principal;
+import java.time.ZoneId;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -65,6 +66,7 @@ public class UserInfosProvider {
         bootstrappedData.setMaySeeDetailsDl(maySeeDetailsDl);
         bootstrappedData.setMaySeeSearch(!auth.isRestrictSearch() || !authConfigured || user.isPresent());
         bootstrappedData.setUsername(username);
+        bootstrappedData.setServerTimeZone(ZoneId.systemDefault().getId());
 
         return bootstrappedData;
     }

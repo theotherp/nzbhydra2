@@ -21,5 +21,6 @@ public class BootstrappedDataTO {
     private Boolean showIndexerSelection;
     private SafeConfig safeConfig;
     private String baseUrl;
+    private String serverTimeZone;
 
 }

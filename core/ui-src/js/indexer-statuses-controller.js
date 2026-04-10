@@ -75,7 +75,9 @@ angular
     .module('nzbhydraApp')
     .filter('reformatDate', reformatDate);
 
-function reformatDate() {
+reformatDate.$inject = ["bootstrapped"];
+
+function reformatDate(bootstrapped) {
     return function (date, format) {
         if (!date) {
             return "";
@@ -83,7 +85,7 @@ function reformatDate() {
         if (angular.isUndefined(format)) {
             format = "YYYY-MM-DD HH:mm";
         }
-        return parseAppTimestamp(date).format(format);
+        return parseAppTimestamp(date, bootstrapped).format(format);
     }
 }
 
@@ -91,26 +93,35 @@ angular
     .module('nzbhydraApp')
     .filter('reformatDateSeconds', reformatDateSeconds);
 
-function reformatDateSeconds() {
+reformatDateSeconds.$inject = ["bootstrapped"];
+
+function reformatDateSeconds(bootstrapped) {
     return function (date, format) {
-        return parseAppTimestamp(date).format("YYYY-MM-DD HH:mm:ss");
+        return parseAppTimestamp(date, bootstrapped).format("YYYY-MM-DD HH:mm:ss");
     }
 }
 
-function parseAppTimestamp(date) {
+function parseAppTimestamp(date, bootstrapped) {
     if (typeof date === "number") {
-        return moment.unix(date);
+        return formatAppMoment(moment.unix(date), bootstrapped);
     }
 
     if (/^\d+(\.\d+)?$/.test(date)) {
-        return moment.unix(parseFloat(date));
+        return formatAppMoment(moment.unix(parseFloat(date)), bootstrapped);
     }
 
     if (/Z$|[+-]\d\d(?::?\d\d)?$/.test(date)) {
-        return moment.parseZone(date).local();
+        return formatAppMoment(moment.parseZone(date), bootstrapped);
     }
 
-    return moment.utc(date).local();
+    return formatAppMoment(moment.utc(date), bootstrapped);
+}
+
+function formatAppMoment(date, bootstrapped) {
+    if (bootstrapped && bootstrapped.serverTimeZone && moment.tz) {
+        return date.clone().tz(bootstrapped.serverTimeZone);
+    }
+    return date.local();
 }
 
 
