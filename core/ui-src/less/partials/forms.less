@@ -78,15 +78,7 @@
   line-height: normal;
 }
 
-.episode-input {
-  border-left-width: 0 !important;
-  border-right-width: 0 !important;
-  border-radius: 0;
-}
 
-.season-input {
-  border-radius: 0;
-}
 
 .search-border {
   border-bottom-right-radius: @border-radius-base !important;
@@ -97,6 +89,201 @@
 .search-category-button {
   min-width: 105px; //Enough for "Movies HD"
   text-align: left;
+}
+
+.series-input-second-column {
+  margin-top: 0;
+}
+
+.series-input-column {
+  padding-right: 5px;
+}
+
+.series-input-second-column {
+  padding-left: 5px;
+}
+
+.series-input-row #seriesSearchS,
+.series-input-row #seriesSearchE {
+  border-left-width: 1px !important;
+  border-right-width: 1px !important;
+  border-top-right-radius: @border-radius-base !important;
+  border-bottom-right-radius: @border-radius-base !important;
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+  max-width: 72px;
+}
+
+.series-input-row .input-group-addon {
+  min-width: 62px;
+}
+
+@media (min-width: @screen-sm-min) {
+  .series-input-second-column {
+    margin-top: 0;
+  }
+
+  .series-input-column {
+    padding-right: 15px;
+  }
+
+  .series-input-second-column {
+    padding-left: 15px;
+  }
+}
+
+.search-form-layout {
+  display: block;
+}
+
+.search-primary-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+}
+
+.search-category-group {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.search-category-group .search-category-button {
+  min-width: 105px;
+  height: 36px;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.search-query-group {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.search-form-primary .search-query-input-wrap {
+  position: relative;
+}
+
+.search-form-primary .search-query-input {
+  padding-right: 28px;
+  height: 36px;
+  border-left-width: 0;
+  border-right-width: 0;
+  border-radius: 0;
+}
+
+.selected-item-addon {
+  display: block;
+  margin-top: 8px;
+  padding: 7px 10px;
+  border: 1px solid @input-border;
+  border-radius: @border-radius-base;
+  background-color: fade(@brand-primary, 8%);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.search-form-primary .clear-query-button {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  font-size: xx-small;
+  z-index: 1000;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background-color: unset;
+}
+
+.search-form-primary .clear-query-button.series-selected {
+  right: 10px;
+}
+
+.clear-autocomplete-button {
+  position: relative;
+  top: -1px;
+  float: right;
+  z-index: 1;
+  margin: 0 0 0 8px;
+  padding: 0;
+  border: none;
+  background-color: unset;
+}
+
+.search-series-fields {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.search-series-fields .form-control {
+  width: 100%;
+  min-width: 0;
+}
+
+.search-form-primary .search-action-buttons {
+  display: flex;
+  align-items: stretch;
+  flex: 0 0 auto;
+  gap: 0;
+}
+
+.search-form-primary .search-action-buttons > .btn-group,
+.search-form-primary .search-action-buttons > .btn {
+  flex: 0 0 auto;
+}
+
+.search-form-primary .search-history-group {
+  display: block;
+}
+
+.search-form-primary .search-history-group > .btn,
+.search-form-primary .search-submit-button {
+  height: 36px;
+}
+
+.search-form-primary .search-history-group > .btn {
+  min-width: 88px;
+  border-radius: 0;
+  border-left-width: 0;
+}
+
+.search-form-primary .search-submit-button {
+  min-width: 56px;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.history-button-icon {
+  margin-right: 3px;
+}
+
+.search-submit-button {
+  margin-left: 0;
+}
+
+.search-query-options {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-weight: normal;
+}
+
+.search-indexer-controls {
+  gap: 10px;
+}
+
+.search-indexer-label {
+  display: inline-flex;
+  align-items: center;
+}
+
+.search-secondary-filters {
+  margin-top: 10px;
+}
+
+.search-range-row {
+  margin-bottom: 0;
 }
 
 .by-id-checkbox {
@@ -190,6 +377,162 @@ input:focus + .input-group-addon {
 
 .input-group-addon {
   color: @input-group-addon-color;
+}
+
+@media (max-width: @screen-xs-max) {
+  .search-form-primary .search-form-label {
+    display: none !important;
+  }
+
+  .search-form-primary .form-group {
+    margin-bottom: 0;
+  }
+
+  .search-form-primary .control-label,
+  .search-indexers-form .control-label,
+  .search-secondary-filters .control-label {
+    text-align: left;
+    margin-bottom: 8px;
+  }
+
+  .search-form-controls {
+    width: 100%;
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+
+  .search-category-group,
+  .search-category-group > .btn,
+  .search-category-group > .dropdown-toggle {
+    display: block !important;
+    width: auto;
+  }
+
+  .search-primary-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .search-query-group {
+    order: 1;
+    width: 100%;
+    margin-bottom: 8px;
+  }
+
+  .search-form-primary .search-query-input {
+    width: 100%;
+    border: 1px solid @input-border;
+    border-radius: @border-radius-base;
+  }
+
+  .selected-item-addon {
+    max-width: none;
+  }
+
+  .search-category-group {
+    order: 2;
+    flex: 1 1 auto;
+    margin-bottom: 0;
+  }
+
+  .search-category-group .search-category-button {
+    width: 100%;
+    min-width: 0;
+    border-radius: @border-radius-base;
+  }
+
+  .search-form-primary .search-action-buttons {
+    order: 3;
+    flex: 0 0 auto;
+    display: flex;
+    width: auto;
+    gap: 8px;
+  }
+
+  .search-form-primary .search-action-buttons > .btn-group,
+  .search-form-primary .search-action-buttons > .btn {
+    flex: 0 0 auto;
+    display: block;
+  }
+
+  .search-form-primary .search-action-buttons > .btn-group > .btn,
+  .search-submit-button {
+    width: auto;
+  }
+
+  .search-form-primary .search-history-group > .btn,
+  .search-form-primary .search-submit-button {
+    min-width: 0;
+    padding-left: 12px;
+    padding-right: 12px;
+    border-radius: @border-radius-base;
+  }
+
+  #history-dropdown-button {
+    text-align: center;
+  }
+
+  #history-dropdown-button .history-button-text {
+    display: none !important;
+  }
+
+  .history-button-icon {
+    margin-right: 0;
+  }
+
+  .search-query-options {
+    display: flex;
+    order: 4;
+    width: 100%;
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 12px;
+  }
+
+  .search-series-fields {
+    flex-direction: column;
+  }
+
+  .search-indexer-controls {
+    display: block;
+  }
+
+  .search-indexer-controls .indexer-selection-button {
+    display: block;
+    margin-right: 0 !important;
+    margin-bottom: 10px;
+  }
+
+  .search-indexer-label {
+    width: 48%;
+    margin: 0 0 8px 0 !important;
+  }
+
+  .search-range-group {
+    margin-bottom: 12px;
+  }
+
+  .search-range-row .control-label,
+  .search-range-row > div {
+    width: 100%;
+    float: none;
+  }
+
+  .search-range-row .control-label {
+    padding-top: 0;
+    margin-bottom: 6px;
+  }
+
+  .search-range-row .pe-2,
+  .search-range-row .ps-0 {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+
+  .search-range-row .ps-0 {
+    margin-top: 8px;
+  }
 }
 
 .has-error {

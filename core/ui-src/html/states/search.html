@@ -25,8 +25,8 @@
         <div class="col-xs-20 col-sm-18 col-md-14">
             <form class="form-horizontal">
                 <div class="form-group">
-
-                    <label class="col-sm-2 control-label">Search</label>
+                  
+                  <label class="col-sm-2 control-label hidden-xs">Search</label>
 
                     <div class="col-sm-18">
                         <div class="input-group">
@@ -55,7 +55,8 @@
                             </span>
 
                             <div class="input-group-addon"
-                                 style="border-right-style: none; max-width: 250px; overflow: hidden; text-overflow: ellipsis; padding-right: 6px; width: {{selectedItemWidth}}"
+                                 style="border-right-style: none; max-width: 250px; overflow: hidden; text-overflow: ellipsis; padding-right: 6px"
+                                 ng-style="{width: selectedItemWidth}"
                                  ng-show="selectedItem.title">
                                 <button style="position: relative; top: -9px; right:-3px; font-size: xx-small; float: right; z-index: 1000; margin: 0; padding: 0; border: none; background-color: unset"
                                         ng-click="clearAutocomplete()" id="clear-autocomplete-button">
@@ -80,26 +81,10 @@
                                 tooltip-trigger="mouseenter"
                                 style="border-right: none"
                                 ng-on-drop="onDropOnQueryInput($event)">
-                            <button style="position: absolute; top: 2px; right:{{seriesSelected() ? 185 : 105}}px; font-size: xx-small; float: right; z-index: 1000; margin: 0; padding: 0; border: none; background-color: unset"
+                          <button style="position: absolute; top: 2px; right:105px; font-size: xx-small; float: right; z-index: 1000; margin: 0; padding: 0; border: none; background-color: unset"
                                 ng-click="clearQuery()" id="clear-query-button">
                                 <span class="glyphicon glyphicon-remove" style="font-size: xx-small;"></span>
                             </button>
-                            <span class="input-group-btn" style="width:40px; border-left: none" ng-show="seriesSelected()">
-                                <input type="text" class="form-control season-input" placeholder="S" name="season"
-                                     id="seriesSearchS" style="width:40px; " ng-model="season"
-                                     ng-enter="initiateSearch()"
-                                     uib-tooltip="Enter a season to search for."
-                                     tooltip-placement="top"
-                                     tooltip-trigger="mouseenter">
-                            </span>
-                            <span class="input-group-btn" style="width:40px;" ng-show="seriesSelected()">
-                                <input type="text" class="form-control episode-input" placeholder="E" name="episode"
-                                     id="seriesSearchE" style="width:40px;" ng-model="episode"
-                                     ng-enter="initiateSearch()"
-                                     uib-tooltip="Enter an episode to search for."
-                                     tooltip-placement="top"
-                                     tooltip-trigger="mouseenter">
-                            </span>
                             <span class="input-group-btn input-group-btn1" style="border-left-width: 1px">
                                 <div class="btn-group" uib-dropdown is-open="status.isopen">
                                     <button id="history-dropdown-button" type="button" class="btn btn-default"
@@ -124,7 +109,43 @@
                         </div>
                     </div>
                 </div>
-            </form>
+              
+              <div ng-show="seriesSelected()">
+                <form class="form-horizontal form-search">
+                  <div class="form-group">
+                    <div class="col-xs-20 col-sm-10">
+                      <div class="form-group">
+                        <label class="col-xs-4 control-label hidden-xs" style="margin-top:-9px">Season / Episode</label>
+                        <div class="col-xs-5 col-md-4 pe-2">
+                          <div class="input-group">
+                            <span class="input-group-addon">S</span>
+                            <input type="text" class="form-control season-input" name="season"
+                                   id="seriesSearchS" ng-model="season"
+                                   style="border-left-width: 1px; border-right-width: 1px; border-radius: 0 4px 4px 0;"
+                                   ng-enter="initiateSearch()"
+                                   uib-tooltip="Enter a season to search for."
+                                   tooltip-placement="top"
+                                   tooltip-trigger="mouseenter">
+                          </div>
+                        </div>
+                        <div class="col-xs-5 col-md-4 ps-0">
+                          <div class="input-group">
+                            <span class="input-group-addon">E</span>
+                            <input type="text" class="form-control episode-input" name="episode"
+                                   id="seriesSearchE" ng-model="episode"
+                                   style="border-left-width: 1px; border-right-width: 1px; border-radius: 0 4px 4px 0;"
+                                   ng-enter="initiateSearch()"
+                                   uib-tooltip="Enter an episode to search for."
+                                   tooltip-placement="top"
+                                   tooltip-trigger="mouseenter">
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  
+                  </div>
+                </form>
+              </div>
           
           <div class="text-center" style="margin-top: 5px;" ng-if="showTourButton">
             <div class="btn-group" uib-dropdown>
@@ -145,7 +166,7 @@
           <div ng-if="::showIndexerSelection">
                 <form class="form-horizontal">
                     <div class="form-group">
-                        <label class="col-sm-2 control-label">Indexers</label>
+                      <label class="col-sm-2 control-label hidden-xs">Indexers</label>
 
                         <div class="col-sm-18">
                             <div class="d-flex flex-wrap align-items-center">
