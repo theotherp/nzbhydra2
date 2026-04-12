@@ -30,7 +30,7 @@
 
                     <div class="col-sm-18">
                         <div class="input-group">
-                            <span class="input-group-btn input-group-btn2">
+                            <span class="input-group-btn input-group-btn2" style="padding-right: 1px;border-right-width: 0px;">
                                 <button type="button" class="btn btn-default dropdown-toggle search-category-button"
                                       data-toggle="dropdown" aria-expanded="false" id="searchCategoryDropdownButton"
                                       ng-cloak>
@@ -45,15 +45,6 @@
                                     </li>
                                 </ul>
                             </span>
-                            <span class="input-group-addon by-id-checkbox" ng-if="isAskById"
-                                  uib-tooltip="If enabled the search is done using an ID from TheTVDB or IMDB. The ID is retrieved using autocomplete."
-                                  tooltip-placement="top"
-                                  tooltip-trigger="mouseenter"
-                                  style="border-right-width: 0; width: 40px">
-                                <input type="checkbox" name="by-id" id="by-id" ng-model="isById.value"
-                                       style="margin-top:0;">
-                            </span>
-
                             <div class="input-group-addon"
                                  style="border-right-style: none; max-width: 250px; overflow: hidden; text-overflow: ellipsis; padding-right: 6px"
                                  ng-style="{width: selectedItemWidth}"

@@ -71,7 +71,6 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
 
     $scope.autocompleteLoading = false;
     $scope.isAskById = $scope.category.searchType === "TVSEARCH" || $scope.category.searchType === "MOVIE";
-    $scope.isById = {value: $scope.selectedItem !== null || angular.isUndefined($scope.mode) || $scope.mode === null}; //If true the user wants to search by id so we enable autosearch. Was unable to achieve this using a simple boolean. Set to false if last search was not by ID
     $scope.availableIndexers = [];
     $scope.selectedIndexers = [];
     $scope.autocompleteClass = "autocompletePosterMovies";
@@ -145,7 +144,6 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         $scope.selectedItem = null;
         $scope.category = CategoriesService.getDefault();
         $scope.isAskById = $scope.category.searchType === "TVSEARCH" || $scope.category.searchType === "MOVIE";
-        $scope.isById.value = false;
     });
 
     $scope.toggleCategory = function (searchCategory) {
@@ -155,10 +153,8 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         //Show checkbox to ask if the user wants to search by ID (using autocomplete)
         if ($scope.category.searchType === "TVSEARCH" || $scope.category.searchType === "MOVIE") {
             $scope.isAskById = true;
-            $scope.isById.value = true;
         } else {
             $scope.isAskById = false;
-            $scope.isById.value = false;
         }
 
         if (oldCategory.searchType !== searchCategory.searchType) {
@@ -200,8 +196,7 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         //value: Will be used as extraInfo (ttid oder tvdb id)
         //poster: url of poster to show
 
-        //Don't use autocomplete if checkbox is disabled
-        if (!$scope.isById.value || $scope.selectedItem) {
+        if (!$scope.isAskById || $scope.selectedItem) {
             return {};
         }
 
@@ -371,7 +366,7 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         if (!$scope.isAskById) {
             $scope.searchBoxTooltip = "Prefix terms with -- to exclude";
         } else if ($scope.selectedItem === null) {
-            $scope.searchBoxTooltip = "Enter search terms for autocomplete";
+            $scope.searchBoxTooltip = "Enter search terms. You can pick an autocomplete result or just search what you typed";
         } else {
             $scope.searchBoxTooltip = "Enter additional search terms to limit the query";
         }
