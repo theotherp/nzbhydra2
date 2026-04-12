@@ -58,7 +58,7 @@
                                 </span>
                             </div>
                             <input id="searchfield" type="search" ngtype="search" ng-model="query"
-                                ng-enter="onTypeAheadEnter()" placeholder="Search" typeahead-min-length="2"
+                                   ng-enter="onTypeAheadEnter()" placeholder="{{searchBoxPlaceholder}}" typeahead-min-length="2"
                                 typeahead-wait-ms="typeAheadWait" ng-keydown="onTypeAheadKeyDown($event)"
                                 uib-typeahead="item as item.label for item in getAutocomplete($viewValue)"
                                 typeahead-template-url="autocompleteTemplate.html"
@@ -72,11 +72,12 @@
                                 tooltip-trigger="mouseenter"
                                 style="border-right: none"
                                 ng-on-drop="onDropOnQueryInput($event)">
-                          <button style="position: absolute; top: 2px; right:105px; font-size: xx-small; float: right; z-index: 1000; margin: 0; padding: 0; border: none; background-color: unset"
+                          <button style="position: absolute; top: 2px; font-size: xx-small; float: right; z-index: 1000; margin: 0; padding: 0; border: none; background-color: unset"
+                                  ng-style="{right: selectedItem ? '54px' : '105px'}"
                                 ng-click="clearQuery()" id="clear-query-button">
                                 <span class="glyphicon glyphicon-remove" style="font-size: xx-small;"></span>
                             </button>
-                            <span class="input-group-btn input-group-btn1" style="border-left-width: 1px">
+                          <span class="input-group-btn input-group-btn1" style="border-left-width: 1px" id="search-history" ng-if="!selectedItem">
                                 <div class="btn-group" uib-dropdown is-open="status.isopen">
                                     <button id="history-dropdown-button" type="button" class="btn btn-default"
                                         uib-dropdown-toggle

@@ -12948,12 +12948,15 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
 
     $scope.searchBoxTooltip = "Prefix terms with -- to exclude'";
     $scope.$watchGroup(['isAskById', 'selectedItem'], function () {
+        $scope.searchBoxPlaceholder = "Search";
         if (!$scope.isAskById) {
             $scope.searchBoxTooltip = "Prefix terms with -- to exclude";
         } else if ($scope.selectedItem === null) {
             $scope.searchBoxTooltip = "Enter search terms. You can pick an autocomplete result or just search what you typed";
+            $scope.searchBoxPlaceholder = "Type for autocomplete";
         } else {
             $scope.searchBoxTooltip = "Enter additional search terms to limit the query";
+            $scope.searchBoxPlaceholder = "Additional query";
         }
     });
 
@@ -12979,6 +12982,9 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
     $scope.selectAutocompleteItem = function ($item) {
         $scope.selectedItem = $item;
         $scope.query = "";
+        if (angular.isDefined($scope.status)) {
+            $scope.status.isopen = false;
+        }
         epochEnter = (new Date).getTime();
         var width = calculateWidth($item.title) + 30;
         $scope.selectedItemWidth = width + "px";
