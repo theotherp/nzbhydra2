@@ -8683,6 +8683,9 @@ chip-tmpl:focus .default-chip {
   font-weight: 600;
   color: #31708f;
 }
+.torrent-download-factor {
+  margin-left: 5px;
+}
 @media (max-width: 767px) {
   .torrent-download-factor {
     height: 17px;
@@ -15594,6 +15597,9 @@ chip-tmpl:focus .default-chip {
     border-radius: 2px;
     font-weight: 600;
     color: #31708f;
+  }
+  .torrent-download-factor {
+    margin-left: 5px;
   }
   .nv-pieLabels > .nv-label > text {
     fill: #e6e6e6 !important;
