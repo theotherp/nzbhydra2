@@ -117,38 +117,6 @@
                     </div>
             </div>
             
-            <div class="row search-tools-row">
-              <div class="col-xs-20 col-sm-6 col-md-5 search-history-col">
-                <div class="dropdown search-history-dropdown" uib-dropdown is-open="status.isopen" id="search-history">
-                  <button id="history-dropdown-button" type="button" class="btn btn-default search-history-button btn-block"
-                          uib-dropdown-toggle
-                          ng-enter="initiateSearch()"
-                          uib-tooltip="Drag an entry onto the search input to refill the form, or open the list to run one again."
-                          tooltip-placement="top"
-                          tooltip-trigger="mouseenter">
-                    <span class="glyphicon glyphicon-time history-button-icon"></span>
-                    <span class="history-button-text" style="display: inline !important;">Search history</span>
-                    <span class="caret"></span>
-                  </button>
-                  <ul class="dropdown-menu" uib-dropdown-menu
-                      template-url="static/html/search-searchhistory-dropdown.html"
-                      aria-labelledby="button-template-url">
-                  </ul>
-                </div>
-              </div>
-              <div class="hidden-xs col-sm-6 col-md-8"></div>
-              <div class="col-xs-20 col-sm-8 col-md-7" ng-if="::showIndexerSelection">
-                <div class="search-indexer-wrap">
-                  <div multiselect-dropdown options="availableIndexerOptions"
-                       selected-model="selectedIndexers"
-                       settings="indexerSelectionSettings"
-                       actions="indexerSelectionActions"
-                       class="indexer-selection-dropdown">
-                  </div>
-                </div>
-              </div>
-            </div>
-            
             <div class="row search-filters-row form-search">
               <div class="col-xs-20 col-sm-10 search-filter-group">
                 <div class="row">
@@ -188,6 +156,38 @@
                         </div>
                     </div>
                 </div>
+            
+            <div class="row search-tools-row">
+              <div class="col-xs-20 col-sm-6 col-md-5 search-history-col">
+                <div class="dropdown search-history-dropdown" uib-dropdown is-open="status.isopen" id="search-history">
+                  <button id="history-dropdown-button" type="button" class="btn btn-default search-history-button btn-block"
+                          uib-dropdown-toggle
+                          ng-enter="initiateSearch()"
+                          uib-tooltip="Drag an entry onto the search input to refill the form, or open the list to run one again."
+                          tooltip-placement="top"
+                          tooltip-trigger="mouseenter">
+                    <span class="glyphicon glyphicon-time history-button-icon"></span>
+                    <span class="history-button-text" style="display: inline !important;">Search history</span>
+                    <span class="caret"></span>
+                  </button>
+                  <ul class="dropdown-menu" uib-dropdown-menu
+                      template-url="static/html/search-searchhistory-dropdown.html"
+                      aria-labelledby="button-template-url">
+                  </ul>
+                </div>
+              </div>
+              <div class="hidden-xs col-sm-6 col-md-8"></div>
+              <div class="col-xs-20 col-sm-8 col-md-7" ng-if="::showIndexerSelection">
+                <div class="search-indexer-wrap">
+                  <div multiselect-dropdown options="availableIndexerOptions"
+                       selected-model="selectedIndexers"
+                       settings="indexerSelectionSettings"
+                       actions="indexerSelectionActions"
+                       class="indexer-selection-dropdown">
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
           
           <div class="text-center" style="margin-top: 5px;" ng-if="showTourButton">
