@@ -8320,6 +8320,12 @@ input[type='radio']:checked {
   background-color: #232628 !important;
   color: #ffffff !important;
 }
+@media (max-width: 767px) {
+  .filter-button {
+    margin-right: 15px;
+    margin-bottom: 15px;
+  }
+}
 .category-button {
   min-width: 115px;
   margin: 6px;
@@ -8676,6 +8682,11 @@ chip-tmpl:focus .default-chip {
   border-radius: 2px;
   font-weight: 600;
   color: #31708f;
+}
+@media (max-width: 767px) {
+  .torrent-download-factor {
+    height: 17px;
+  }
 }
 .nv-pieLabels > .nv-label > text {
   fill: #e6e6e6 !important;

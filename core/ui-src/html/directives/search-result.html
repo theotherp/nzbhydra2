@@ -37,7 +37,7 @@
         tooltip-trigger="mouseenter"
         tooltip-class="quality-tooltip">{{::result.qualityRating}}</span>{{ ::result.title }}</span>
       </span>
-      <span class="badge" ng-if="result.torrentDownloadFactor">{{::result.torrentDownloadFactor}}</span>
+      <span class="badge torrent-download-factor" ng-if="result.torrentDownloadFactor">{{::result.torrentDownloadFactor}}</span>
     </div>
   </td>
   
