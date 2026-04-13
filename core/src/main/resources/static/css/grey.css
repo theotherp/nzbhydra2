@@ -7556,6 +7556,16 @@ pre {
 .search-indexer-wrap {
   text-align: right;
 }
+.search-indexer-wrap .indexer-selection-dropdown,
+.search-indexer-wrap .indexer-selection-dropdown > .multiselect-parent,
+.search-indexer-wrap .indexer-selection-dropdown .dropdown-toggle {
+  width: 100%;
+}
+.search-indexer-wrap .multiselect-parent,
+.search-indexer-wrap .dropdown-toggle {
+  display: block !important;
+  width: 100% !important;
+}
 .search-filter-group .input-group {
   width: 100%;
 }
@@ -8044,7 +8054,7 @@ input[type='radio']:checked {
     justify-content: flex-end;
   }
   .search-results-table .result-links > div a {
-    padding-left: 10px;
+    padding-left: 20px;
   }
   .search-results-cell.result-links {
     padding-right: 8px !important;

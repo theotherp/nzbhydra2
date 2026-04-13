@@ -69,7 +69,7 @@
   <td class="col-md-2 search-results-cell result-links" data-label="Links">
     <div>
       <a href ng-click="showNfo(result)" ng-class="::{'no-nfo': result.hasNfo === 'NO'}"
-         class="no-underline result-show-nfo-link"
+         class="no-underline result-show-nfo-link result-icon"
          uib-tooltip="{{ ::getNfoTooltip() }}"
          tooltip-placement="top"
          tooltip-trigger="mouseenter">
@@ -78,7 +78,7 @@
       </a>
       <span ng-if="::showDetailsDl">
         <a ng-if="result.source" target="_blank" href="{{ ::result.source | binsearch | dereferer}}"
-           style="vertical-align: middle" class="no-underline result-details-link"
+           style="vertical-align: middle" class="no-underline result-details-link result-icon"
            uib-tooltip="Search via Binsearch"
            tooltip-placement="top"
            tooltip-trigger="mouseenter">
@@ -86,7 +86,7 @@
         </a>
 
             <a ng-class="::{'no-nfo': !result.comments}" href="{{::result.comments_link | dereferer}}" target="_blank"
-               class="no-underline result-comments-link"
+               class="no-underline result-comments-link result-icon"
                uib-tooltip="Comments"
                tooltip-placement="top"
                tooltip-trigger="mouseenter">
@@ -94,7 +94,7 @@
         </a>
 
         <a target="_blank" href="{{ ::result.details_link | dereferer}}" ng-class="::{'no-nfo': !result.details_link}"
-           style="vertical-align: middle" class="no-underline result-details-link"
+           style="vertical-align: middle" class="no-underline result-details-link result-icon"
            uib-tooltip="Details"
            tooltip-placement="top"
            tooltip-trigger="mouseenter">
@@ -112,7 +112,7 @@
             <a target="_blank" href="gettorrent/user/{{ ::result.searchResultId }}"
                ng-click="markDownloaded()"
                style="vertical-align: middle; margin-left: 3px; margin-right: 3px"
-               class="no-underline result-torrent-download-link hidden-xs"
+               class="no-underline result-torrent-download-link hidden-xs result-icon"
                uib-tooltip="Download torrent"
                tooltip-placement="top"
                tooltip-trigger="mouseenter"><span class="glyphicon glyphicon-save"></span>
@@ -124,7 +124,7 @@
               <a target="_blank" href="getnzb/user/{{ ::result.searchResultId }}"
                  ng-click="markDownloaded()"
                  style="vertical-align: middle; margin-left: 3px; margin-right: 3px"
-                 class="no-underline result-nzb-download-link hidden-xs"
+                 class="no-underline result-nzb-download-link hidden-xs result-icon"
                  uib-tooltip="Download NZB"
                  tooltip-placement="top"
                  tooltip-trigger="mouseenter"><span class="glyphicon glyphicon-save"></span>
