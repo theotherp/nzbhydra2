@@ -118,7 +118,7 @@
             </div>
             
             <div class="row search-tools-row">
-              <div class="col-xs-20 col-sm-7 col-md-6 search-history-col">
+              <div class="col-xs-20 col-sm-6 col-md-5 search-history-col">
                 <div class="dropdown search-history-dropdown" uib-dropdown is-open="status.isopen" id="search-history">
                   <button id="history-dropdown-button" type="button" class="btn btn-default search-history-button btn-block"
                           uib-dropdown-toggle
@@ -136,7 +136,8 @@
                   </ul>
                 </div>
               </div>
-              <div class="col-xs-20 col-sm-13 col-md-14" ng-if="::showIndexerSelection">
+              <div class="hidden-xs col-sm-6 col-md-8"></div>
+              <div class="col-xs-20 col-sm-8 col-md-7" ng-if="::showIndexerSelection">
                 <div class="search-indexer-wrap">
                   <div multiselect-dropdown options="availableIndexerOptions"
                        selected-model="selectedIndexers"

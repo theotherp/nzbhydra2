@@ -19,8 +19,9 @@ function dropdownMultiselectDirective() {
             toggleDropdown: '?toggleDropdown'
         },
         templateUrl: 'static/html/directives/multiselect-dropdown.html',
-        controller: function dropdownMultiselectController($scope, $element, $filter, $document) {
+        controller: function dropdownMultiselectController($scope, $element, $filter, $document, $timeout, $window) {
             var $dropdownTrigger = $element.children()[0];
+            var $windowElement = angular.element($window);
 
             var settings = {
                 showSelectedValues: true,
@@ -63,40 +64,76 @@ function dropdownMultiselectDirective() {
 
             $scope.buttonText = "";
 
-            function updateButtonText() {
-                if (settings.buttonTextFunction) {
-                    $scope.buttonText = settings.buttonTextFunction($scope.selectedModel || [], $scope.options || []);
+            function getFallbackButtonText() {
+                var selectedCount = ($scope.selectedModel || []).length;
+                var totalCount = ($scope.options || []).length;
+                var selectionNoun = settings.selectionNoun ? " " + settings.selectionNoun : "";
+                return selectedCount + "/" + totalCount + selectionNoun + " selected";
+            }
+
+            function getSelectedLabels() {
+                var selected = [];
+                _.each($scope.options, function (x) {
+                    if ($scope.selectedModel.indexOf(x.id) > -1) {
+                        selected.push(x.label);
+                    }
+                });
+                return selected;
+            }
+
+            function textFitsButton(text) {
+                var button = $element[0].querySelector('button.dropdown-toggle');
+                if (!button) {
+                    return true;
+                }
+                var computedStyle = $window.getComputedStyle(button);
+                var paddingLeft = parseFloat(computedStyle.paddingLeft) || 0;
+                var paddingRight = parseFloat(computedStyle.paddingRight) || 0;
+                var availableWidth = button.clientWidth - paddingLeft - paddingRight - 30;
+                if (availableWidth <= 0) {
+                    return true;
+                }
+                var canvas = textFitsButton.canvas || (textFitsButton.canvas = document.createElement("canvas"));
+                var context = canvas.getContext("2d");
+                context.font = computedStyle.font;
+                return context.measureText(text).width <= availableWidth;
+            }
+
+            function updateAdaptiveButtonText() {
+                if (!(angular.isDefined($scope.selectedModel) && settings.showSelectedValues)) {
+                    if (angular.isUndefined($scope.selectedModel) || ($scope.settings.noSelectedText && $scope.selectedModel.length === 0)) {
+                        $scope.buttonText = $scope.settings.noSelectedText;
+                    } else {
+                        $scope.buttonText = getFallbackButtonText();
+                    }
                     return;
                 }
+
+                if ($scope.selectedModel.length === 0) {
+                    $scope.buttonText = $scope.settings.noSelectedText || "None selected";
+                    return;
+                }
+
+                if ($scope.selectedModel.length === $scope.options.length && !settings.selectionNoun) {
+                    $scope.buttonText = "All selected";
+                    return;
+                }
+
+                var selectedLabels = getSelectedLabels();
+                var labelText = selectedLabels.join(", ");
+                if (textFitsButton(labelText)) {
+                    $scope.buttonText = labelText;
+                } else {
+                    $scope.buttonText = getFallbackButtonText();
+                }
+            }
+
+            function updateButtonText() {
                 if (settings.buttonText) {
                     $scope.buttonText = settings.buttonText;
                     return;
                 }
-                if (angular.isDefined($scope.selectedModel) && settings.showSelectedValues) {
-                    if ($scope.selectedModel.length === 0) {
-                        if ($scope.settings.noSelectedText) {
-                            $scope.buttonText = $scope.settings.noSelectedText;
-                        } else {
-                            $scope.buttonText = "None selected";
-                        }
-                    } else if ($scope.selectedModel.length === $scope.options.length) {
-                        $scope.buttonText = "All selected";
-                    } else {
-                        var selected = [];
-                        _.each($scope.options, function (x) {
-                            if ($scope.selectedModel.indexOf(x.id) > -1) {
-                                selected.push(x.label);
-                            }
-                        });
-                        $scope.buttonText = selected.join(", ");
-                    }
-                } else {
-                    if (angular.isUndefined($scope.selectedModel) || ($scope.settings.noSelectedText && $scope.selectedModel.length === 0)) {
-                        $scope.buttonText = $scope.settings.noSelectedText;
-                    } else {
-                        $scope.buttonText = $scope.selectedModel.length + " / " + $scope.options.length + " selected";
-                    }
-                }
+                $timeout(updateAdaptiveButtonText);
             }
 
             $scope.$watchCollection("selectedModel", updateButtonText);
@@ -171,10 +208,12 @@ function dropdownMultiselectDirective() {
             };
 
             $document.on('click', clickHandler);
+            $windowElement.on('resize', updateButtonText);
 
             // Clean up document click handler to prevent memory leaks
             $scope.$on('$destroy', function () {
                 $document.off('click', clickHandler);
+                $windowElement.off('resize', updateButtonText);
             });
 
         }

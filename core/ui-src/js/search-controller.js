@@ -76,11 +76,10 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
     $scope.availableIndexerOptions = [];
     $scope.indexerSelectionActions = [];
     $scope.indexerSelectionSettings = {
-        showSelectedValues: false,
+        showSelectedValues: true,
         noSelectedText: 'Select indexers',
-        buttonTextFunction: function (selectedModel, options) {
-            return selectedModel.length + '/' + options.length + ' indexers selected';
-        }
+        selectionNoun: 'indexers',
+        fullWidth: true
     };
     $scope.autocompleteClass = "autocompletePosterMovies";
 
