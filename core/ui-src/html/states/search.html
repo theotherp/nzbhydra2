@@ -162,15 +162,12 @@
 
                         <div class="col-sm-18">
                             <div class="d-flex flex-wrap align-items-center">
-                                <div indexer-selection-button available-indexers="availableIndexers"
-                                    selected-indexers="selectedIndexers" class="indexer-selection-button" style="margin-right: 10px;">
+                              <div multiselect-dropdown options="availableIndexerOptions"
+                                   selected-model="selectedIndexers"
+                                   settings="indexerSelectionSettings"
+                                   actions="indexerSelectionActions"
+                                   class="indexer-selection-dropdown">
                                 </div>
-                                <label ng-repeat="indexer in availableIndexers" class="mb-0 mx-2 my-3">
-                                    <input type="checkbox" ng-class="{'indexer-checkbox': $index > 0}"
-                                        class="indexer-selection-checkbox" data-checklist-model="selectedIndexers"
-                                        data-checklist-value="indexer.name" indexer-name="{{indexer.name}}"> {{ indexer.name }}
-                                </label>
-
                             </div>
                         </div>
                     </div>

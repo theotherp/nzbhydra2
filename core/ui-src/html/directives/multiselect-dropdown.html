@@ -8,26 +8,37 @@
     </div>
     <ul class="dropdown-menu dropdown-menu-form" ng-if=open
         ng-style="{display: open ? 'block' : 'none', height : 'auto', overflow: 'auto' }">
+        <li ng-repeat="action in actions">
+            <a role=menuitem class=option tabindex=-1 ng-click="executeAction(action)" style="cursor: pointer;">
+                <span ng-if="action.iconClass" class="{{action.iconClass}}" style="margin-right: 6px;"></span>
+                {{action.label}}
+            </a>
+        </li>
         <li ng-if="settings.showSelectAll">
-            <a data-ng-click=selectAll() tabindex=-1 id=selectAll>
-                <span class="glyphicon glyphicon-ok"></span>
+            <a data-ng-click=selectAll() tabindex=-1 id=selectAll style="cursor: pointer;">
+                <span class="glyphicon glyphicon-ok" style="margin-right: 6px;"></span>
                 Select all
             </a>
         </li>
         <li ng-if="settings.showDeselectAll">
-            <a data-ng-click=deselectAll(); tabindex=-1 id=deselectAll>
-                <span class="glyphicon glyphicon-remove"></span>
+            <a data-ng-click=deselectAll(); tabindex=-1 id=deselectAll style="cursor: pointer;">
+                <span class="glyphicon glyphicon-remove" style="margin-right: 6px;"></span>
                 Deselect all
             </a>
         </li>
-
-        <li class=divider ng-if="settings.showSelectAll || settings.showDeselectAll"></li>
+        
+        <li class=divider ng-if="actions.length || settings.showSelectAll || settings.showDeselectAll"></li>
+        <li ng-repeat-start="group in groupedOptions track by $index" ng-if="0"></li>
+        <li class="dropdown-header" ng-if="group.name">{{group.name}}</li>
         <li ng-class="{'active': isChecked(option) && settings.styleActive}" role=presentation
-            ng-repeat="option in options">
-            <a role=menuitem class=option tabindex=-1 ng-click="toggleItem(option)">
-                <span data-ng-class="{'glyphicon glyphicon-ok': selectedModel.indexOf(option.id) > -1}"></span>
+            ng-repeat="option in group.options track by option.id">
+            <a role=menuitem class=option tabindex=-1 ng-click="toggleItem(option)" style="cursor: pointer;">
+                <span class="glyphicon glyphicon-ok"
+                      ng-style="{visibility: selectedModel.indexOf(option.id) > -1 ? 'visible' : 'hidden', 'margin-right': '6px'}"></span>
                 {{option.label}}
             </a>
         </li>
+        <li class="divider" ng-if="group.name && !$last"></li>
+        <li ng-repeat-end ng-if="0"></li>
     </ul>
 </div>

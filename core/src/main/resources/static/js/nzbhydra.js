@@ -1483,7 +1483,8 @@ function dropdownMultiselectDirective() {
             selectedModel: '=',
             options: '=',
             settings: '=?',
-            events: '=?'
+            events: '=?',
+            actions: '=?'
         },
         transclude: {
             toggleDropdown: '?toggleDropdown'
@@ -1504,6 +1505,32 @@ function dropdownMultiselectDirective() {
             angular.extend(events, $scope.events || []);
             angular.extend(settings, $scope.settings || []);
             angular.extend($scope, {settings: settings, events: events});
+            $scope.actions = $scope.actions || [];
+
+            function updateGroupedOptions() {
+                var groups = [];
+                var groupedByName = {};
+
+                _.each($scope.options || [], function (option) {
+                    var groupName = option.group || '';
+                    if (!groupedByName[groupName]) {
+                        groupedByName[groupName] = {
+                            name: groupName,
+                            options: []
+                        };
+                        groups.push(groupedByName[groupName]);
+                    }
+                    groupedByName[groupName].options.push(option);
+                });
+
+                $scope.groupedOptions = groups;
+            }
+
+            $scope.$watchCollection('options', updateGroupedOptions);
+            $scope.$watchCollection('actions', function (actions) {
+                $scope.actions = actions || [];
+            });
+            updateGroupedOptions();
 
             $scope.buttonText = "";
             if (settings.buttonText) {
@@ -1555,11 +1582,18 @@ function dropdownMultiselectDirective() {
             };
 
             $scope.selectAll = function () {
-                $scope.selectedModel = _.pluck($scope.options, "id");
+                $scope.deselectAll();
+                Array.prototype.push.apply($scope.selectedModel, _.pluck($scope.options, "id"));
             };
 
             $scope.deselectAll = function () {
                 $scope.selectedModel.splice(0, $scope.selectedModel.length);
+            };
+
+            $scope.executeAction = function (action) {
+                if (action && angular.isFunction(action.action)) {
+                    action.action();
+                }
             };
 
             //Close when clicked outside
@@ -1609,6 +1643,7 @@ function dropdownMultiselectDirective() {
 
     }
 }
+
 angular
     .module('nzbhydraApp').directive("keepFocus", ['$timeout', function ($timeout) {
     /*
@@ -12658,6 +12693,12 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
     $scope.isAskById = $scope.category.searchType === "TVSEARCH" || $scope.category.searchType === "MOVIE";
     $scope.availableIndexers = [];
     $scope.selectedIndexers = [];
+    $scope.availableIndexerOptions = [];
+    $scope.indexerSelectionActions = [];
+    $scope.indexerSelectionSettings = {
+        showSelectedValues: false,
+        noSelectedText: 'Select indexers'
+    };
     $scope.autocompleteClass = "autocompletePosterMovies";
 
     // ─── Guided Tour ────────────────────────────────────────────────
@@ -13037,6 +13078,86 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         $scope.availableIndexers[indexer.name].activated = !$scope.availableIndexers[indexer.name].activated;
     };
 
+    function selectIndexersByPredicate(predicate) {
+        $scope.selectedIndexers.splice(0, $scope.selectedIndexers.length);
+        Array.prototype.push.apply($scope.selectedIndexers,
+            _.pluck(_.filter($scope.availableIndexers, predicate), 'name'));
+    }
+
+    function buildIndexerDropdownOptions(availableIndexers) {
+        var hasTorznabIndexers = _.some(availableIndexers, function (indexer) {
+            return indexer.searchModuleType === 'TORZNAB';
+        });
+
+        var usenetIndexers = _.filter(availableIndexers, function (indexer) {
+            return indexer.searchModuleType !== 'TORZNAB';
+        });
+        var torznabIndexers = _.filter(availableIndexers, function (indexer) {
+            return indexer.searchModuleType === 'TORZNAB';
+        });
+
+        return _.map(usenetIndexers.concat(torznabIndexers), function (indexer) {
+            return {
+                id: indexer.name,
+                label: indexer.name,
+                group: hasTorznabIndexers ? (indexer.searchModuleType === 'TORZNAB' ? 'Torznab indexers' : 'Usenet indexers') : ''
+            };
+        });
+    }
+
+    function buildIndexerSelectionActions(availableIndexers) {
+        var actions = [
+            {
+                label: 'Reset to preselection',
+                iconClass: 'glyphicon glyphicon-repeat',
+                action: function () {
+                    selectIndexersByPredicate(function (indexer) {
+                        return indexer.preselect;
+                    });
+                }
+            },
+            {
+                label: 'Invert selection',
+                iconClass: 'glyphicon glyphicon-retweet',
+                action: function () {
+                    _.forEach(availableIndexers, function (indexer) {
+                        var index = _.indexOf($scope.selectedIndexers, indexer.name);
+                        if (index === -1) {
+                            $scope.selectedIndexers.push(indexer.name);
+                        } else {
+                            $scope.selectedIndexers.splice(index, 1);
+                        }
+                    });
+                }
+            }
+        ];
+
+        if (_.some(availableIndexers, function (indexer) {
+            return indexer.searchModuleType === 'TORZNAB';
+        })) {
+            actions.push({
+                label: 'Select all usenet indexers',
+                iconClass: 'glyphicon glyphicon-hdd',
+                action: function () {
+                    selectIndexersByPredicate(function (indexer) {
+                        return indexer.searchModuleType !== 'TORZNAB';
+                    });
+                }
+            });
+            actions.push({
+                label: 'Select all torznab indexers',
+                iconClass: 'glyphicon glyphicon-magnet',
+                action: function () {
+                    selectIndexersByPredicate(function (indexer) {
+                        return indexer.searchModuleType === 'TORZNAB';
+                    });
+                }
+            });
+        }
+
+        return actions;
+    }
+
     function isIndexerPreselected(indexer) {
         if (angular.isUndefined($scope.indexers)) {
             return indexer.preselect;
@@ -13048,7 +13169,7 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
     function getAvailableIndexers() {
         var alreadySelected = $scope.selectedIndexers;
         var previouslyAvailable = _.pluck($scope.availableIndexers, "name");
-        $scope.selectedIndexers = [];
+        $scope.selectedIndexers.splice(0, $scope.selectedIndexers.length);
         var availableIndexersList = _.chain(safeConfig.indexers).filter(function (indexer) {
             if (!indexer.showOnSearch) {
                 return false;
@@ -13074,6 +13195,8 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
                 $scope.selectedIndexers.push(x.name);
             }
         });
+        $scope.availableIndexerOptions = buildIndexerDropdownOptions(availableIndexersList);
+        $scope.indexerSelectionActions = buildIndexerSelectionActions(availableIndexersList);
         return availableIndexersList;
     }
 

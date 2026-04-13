@@ -12,7 +12,8 @@ function dropdownMultiselectDirective() {
             selectedModel: '=',
             options: '=',
             settings: '=?',
-            events: '=?'
+            events: '=?',
+            actions: '=?'
         },
         transclude: {
             toggleDropdown: '?toggleDropdown'
@@ -33,6 +34,32 @@ function dropdownMultiselectDirective() {
             angular.extend(events, $scope.events || []);
             angular.extend(settings, $scope.settings || []);
             angular.extend($scope, {settings: settings, events: events});
+            $scope.actions = $scope.actions || [];
+
+            function updateGroupedOptions() {
+                var groups = [];
+                var groupedByName = {};
+
+                _.each($scope.options || [], function (option) {
+                    var groupName = option.group || '';
+                    if (!groupedByName[groupName]) {
+                        groupedByName[groupName] = {
+                            name: groupName,
+                            options: []
+                        };
+                        groups.push(groupedByName[groupName]);
+                    }
+                    groupedByName[groupName].options.push(option);
+                });
+
+                $scope.groupedOptions = groups;
+            }
+
+            $scope.$watchCollection('options', updateGroupedOptions);
+            $scope.$watchCollection('actions', function (actions) {
+                $scope.actions = actions || [];
+            });
+            updateGroupedOptions();
 
             $scope.buttonText = "";
             if (settings.buttonText) {
@@ -84,11 +111,18 @@ function dropdownMultiselectDirective() {
             };
 
             $scope.selectAll = function () {
-                $scope.selectedModel = _.pluck($scope.options, "id");
+                $scope.deselectAll();
+                Array.prototype.push.apply($scope.selectedModel, _.pluck($scope.options, "id"));
             };
 
             $scope.deselectAll = function () {
                 $scope.selectedModel.splice(0, $scope.selectedModel.length);
+            };
+
+            $scope.executeAction = function (action) {
+                if (action && angular.isFunction(action.action)) {
+                    action.action();
+                }
             };
 
             //Close when clicked outside
