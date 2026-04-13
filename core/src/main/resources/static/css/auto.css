@@ -7506,7 +7506,7 @@ pre {
 }
 .clear-query-button {
   position: absolute !important;
-  top: 5px !important;
+  top: 6px !important;
   right: 10px !important;
   font-size: x-small;
   z-index: 1000;
@@ -8713,6 +8713,11 @@ chip-tmpl:focus .default-chip {
 @media (max-width: 767px) {
   .torrent-download-factor {
     height: 17px;
+  }
+}
+@media (max-width: 767px) {
+  #freetext-filter-input {
+    width: 240px !important;
   }
 }
 .nav-tabs > li > a:hover {
@@ -14685,7 +14690,7 @@ chip-tmpl:focus .default-chip {
   }
   .clear-query-button {
     position: absolute !important;
-    top: 5px !important;
+    top: 6px !important;
     right: 10px !important;
     font-size: x-small;
     z-index: 1000;
@@ -18073,6 +18078,11 @@ chip-tmpl:focus .default-chip {
 @media (prefers-color-scheme: dark) and (max-width: 767px) {
   .torrent-download-factor {
     height: 17px;
+  }
+}
+@media (prefers-color-scheme: dark) and (max-width: 767px) {
+  #freetext-filter-input {
+    width: 240px !important;
   }
 }
 
