@@ -7497,6 +7497,8 @@ pre {
 }
 .search-main-input-group {
   position: relative;
+  display: block;
+  width: 100%;
 }
 .search-main-query-input {
   padding-right: 30px;
@@ -7505,7 +7507,7 @@ pre {
 .clear-query-button {
   position: absolute !important;
   top: 5px !important;
-  right: 98px !important;
+  right: 10px !important;
   font-size: x-small;
   z-index: 1000;
   margin: 0;
@@ -7539,7 +7541,25 @@ pre {
 }
 .search-submit-button {
   min-width: 92px;
-  height: 36px;
+}
+.search-submit-button-row {
+  text-align: right;
+  margin-top: 5px;
+  padding-right: 30px;
+}
+@media (max-width: 767px) {
+  .search-submit-button-row {
+    max-width: 375px;
+    margin-left: 15px;
+  }
+}
+.search-actions-row {
+  margin-top: 12px;
+}
+.search-actions-row .search-submit-button {
+  display: inline-block;
+  margin-top: 15px;
+  margin-left: 0;
 }
 .search-category-menu {
   right: auto;

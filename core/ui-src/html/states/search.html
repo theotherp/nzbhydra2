@@ -47,7 +47,7 @@
             
             <div class="row search-main-row">
               <div class="col-xs-20">
-                <div class="input-group search-main-input-group">
+                <div class="search-main-input-group">
                   <input id="searchfield" type="search" ngtype="search" ng-model="titleQuery"
                                    ng-enter="onTypeAheadEnter()" placeholder="{{searchBoxPlaceholder}}" typeahead-min-length="2"
                          typeahead-wait-ms="typeAheadWait" ng-keydown="onTypeAheadKeyDown($event)"
@@ -67,10 +67,6 @@
                           ng-click="clearQuery()" id="clear-query-button">
                                 <span class="glyphicon glyphicon-remove" style="font-size: xx-small;"></span>
                             </button>
-                  <span class="input-group-btn">
-                                <button class="btn btn-default search-submit-button" type="button" id="startsearch"
-                                        ng-click="initiateSearch()">Go!</button>
-                            </span>
                         </div>
                     </div>
                 </div>
@@ -168,7 +164,7 @@
                           tooltip-trigger="mouseenter">
                     <span class="glyphicon glyphicon-time history-button-icon"></span>
                     <span class="history-button-text" style="display: inline !important;">Search history</span>
-                    <span class="caret"></span>
+                    <span class="caret" style="position: absolute; right: 5px; top: 45%;"></span>
                   </button>
                   <ul class="dropdown-menu" uib-dropdown-menu
                       template-url="static/html/search-searchhistory-dropdown.html"
@@ -185,6 +181,16 @@
                        actions="indexerSelectionActions"
                        class="indexer-selection-dropdown">
                   </div>
+                </div>
+              </div>
+              
+              <div class="row search-actions-row">
+                <div class="hidden-xs col-sm-6 col-md-5"></div>
+                <div class="hidden-xs col-sm-6 col-md-8"></div>
+                <div class="col-xs-20 col-sm-8 col-md-7 search-submit-button-row">
+                  <button class="btn btn-default search-submit-button" type="button" id="startsearch"
+                          ng-click="initiateSearch()"><span class="glyphicon glyphicon-search"></span> Go!
+                  </button>
                 </div>
               </div>
             </div>

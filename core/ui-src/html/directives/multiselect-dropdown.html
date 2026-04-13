@@ -6,7 +6,7 @@
     <div ng-transclude=toggleDropdown ng-click=toggleDropdown()>
       <button ng-disabled=disabled type=button class="btn btn-default dropdown-toggle"
               ng-style="settings.fullWidth ? {display: 'block', width: '100%'} : {}">{{buttonText}}&nbsp;<span
-                class=caret style="position: absolute; left: 90%; top: 45%;"></span></button>
+        class=caret style="position: absolute; right: 5px; top: 45%;"></span></button>
     </div>
     <ul class="dropdown-menu dropdown-menu-form" ng-if=open
         ng-style="{display: open ? 'block' : 'none', height : 'auto', overflow: 'auto' }">
