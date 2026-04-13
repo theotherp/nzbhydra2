@@ -249,12 +249,18 @@ public class Torbox extends Downloader {
     protected NzbAddingType getNzbAddingType(DownloadType downloadType, SearchResultEntity searchResult) {
         IndexerConfig indexer = configProvider.getIndexerByName(searchResult.getIndexer().getName());
         if (downloadType == DownloadType.TORBOX
-            || downloadType == DownloadType.TORRENT
             || indexer.getSearchModuleType() == SearchModuleType.TORBOX
             || indexer.getHost().contains("torbox.app")
         ) {
             //Torbox only allows downloading their results for themselves
             return NzbAddingType.SEND_LINK;
+        }
+        if (downloadType == DownloadType.TORRENT) {
+            //Magnet links can be sent directly, but HTTP URLs to .torrent files need to be downloaded and uploaded as file content
+            if (searchResult.isMagnetLink()) {
+                return NzbAddingType.SEND_LINK;
+            }
+            return NzbAddingType.UPLOAD;
         }
         return NzbAddingType.UPLOAD;
     }

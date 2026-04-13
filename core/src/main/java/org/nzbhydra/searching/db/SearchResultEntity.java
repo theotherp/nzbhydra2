@@ -136,6 +136,10 @@ public final class SearchResultEntity {
         this.indexerSearchEntityId = indexerSearchEntityId;
     }
 
+    public boolean isMagnetLink() {
+        return link != null && link.startsWith("magnet:");
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

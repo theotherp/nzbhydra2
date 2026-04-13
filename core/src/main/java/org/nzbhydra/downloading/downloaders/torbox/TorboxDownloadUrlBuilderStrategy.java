@@ -17,7 +17,7 @@ public class TorboxDownloadUrlBuilderStrategy implements DownloadUrlBuilderStrat
     @Override
     public Optional<DownloadLink> getDownloadLinkForSendingToDownloader(SearchResultEntity searchResult, boolean internal, DownloadType downloadType) {
         if (downloadType == DownloadType.TORBOX
-            || downloadType == DownloadType.TORRENT
+            || (downloadType == DownloadType.TORRENT && searchResult.isMagnetLink())
             //We may only send results from the torbox indexer to torbox
             || searchResult.getLink().contains("search-api.torbox.app")
             //We can only send an external link to torbox, they won't be able to reach us
