@@ -62,37 +62,46 @@ function dropdownMultiselectDirective() {
             updateGroupedOptions();
 
             $scope.buttonText = "";
-            if (settings.buttonText) {
-                $scope.buttonText = settings.buttonText;
-            } else {
-                $scope.$watch("selectedModel", function () {
-                    if (angular.isDefined($scope.selectedModel) && settings.showSelectedValues) {
-                        if ($scope.selectedModel.length === 0) {
-                            if ($scope.settings.noSelectedText) {
-                                $scope.buttonText = $scope.settings.noSelectedText;
-                            } else {
-                                $scope.buttonText = "None selected";
-                            }
-                        } else if ($scope.selectedModel.length === $scope.options.length) {
-                            $scope.buttonText = "All selected";
-                        } else {
-                            var selected = [];
-                            _.each($scope.options, function (x) {
-                                if ($scope.selectedModel.indexOf(x.id) > -1) {
-                                    selected.push(x.label);
-                                }
-                            })
-                            $scope.buttonText = selected.join(", ");
-                        }
-                    } else {
-                        if (angular.isUndefined($scope.selectedModel) || ($scope.settings.noSelectedText && $scope.selectedModel.length === 0)) {
+
+            function updateButtonText() {
+                if (settings.buttonTextFunction) {
+                    $scope.buttonText = settings.buttonTextFunction($scope.selectedModel || [], $scope.options || []);
+                    return;
+                }
+                if (settings.buttonText) {
+                    $scope.buttonText = settings.buttonText;
+                    return;
+                }
+                if (angular.isDefined($scope.selectedModel) && settings.showSelectedValues) {
+                    if ($scope.selectedModel.length === 0) {
+                        if ($scope.settings.noSelectedText) {
                             $scope.buttonText = $scope.settings.noSelectedText;
                         } else {
-                            $scope.buttonText = $scope.selectedModel.length + " / " + $scope.options.length + " selected";
+                            $scope.buttonText = "None selected";
                         }
+                    } else if ($scope.selectedModel.length === $scope.options.length) {
+                        $scope.buttonText = "All selected";
+                    } else {
+                        var selected = [];
+                        _.each($scope.options, function (x) {
+                            if ($scope.selectedModel.indexOf(x.id) > -1) {
+                                selected.push(x.label);
+                            }
+                        });
+                        $scope.buttonText = selected.join(", ");
                     }
-                }, true);
+                } else {
+                    if (angular.isUndefined($scope.selectedModel) || ($scope.settings.noSelectedText && $scope.selectedModel.length === 0)) {
+                        $scope.buttonText = $scope.settings.noSelectedText;
+                    } else {
+                        $scope.buttonText = $scope.selectedModel.length + " / " + $scope.options.length + " selected";
+                    }
+                }
             }
+
+            $scope.$watchCollection("selectedModel", updateButtonText);
+            $scope.$watchCollection("options", updateButtonText);
+            updateButtonText();
             $scope.open = false;
 
             $scope.toggleDropdown = function () {

@@ -23,6 +23,7 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
     //Fill the form with the search values we got from the state params (so that their values are the same as in the current url)
     $scope.mode = $stateParams.mode;
     $scope.query = "";
+    $scope.titleQuery = "";
     $scope.selectedItem = null;
     $scope.categories = _.filter(CategoriesService.getAllCategories(), function (c) {
         return c.mayBeSelected && !(c.ignoreResultsFrom === "INTERNAL" || c.ignoreResultsFrom === "BOTH");
@@ -39,7 +40,7 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
     $scope.category = _.isNullOrEmpty($stateParams.category) ? CategoriesService.getDefault() : CategoriesService.getByName($stateParams.category);
     $scope.season = $stateParams.season;
     $scope.episode = $stateParams.episode;
-    $scope.query = $stateParams.query;
+    $scope.titleQuery = $stateParams.query;
 
     $scope.minage = getNumberOrUndefined($stateParams.minage);
     $scope.maxage = getNumberOrUndefined($stateParams.maxage);
@@ -47,8 +48,8 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         $scope.indexers = decodeURIComponent($stateParams.indexers).split(",");
     }
     if (angular.isDefined($stateParams.title) || (angular.isDefined($stateParams.tmdbId) || angular.isDefined($stateParams.imdbId) || angular.isDefined($stateParams.tvmazeId) || angular.isDefined($stateParams.rid) || angular.isDefined($stateParams.tvdbId))) {
-        var width = calculateWidth($stateParams.title) + 30;
-        $scope.selectedItemWidth = width + "px";
+        $scope.query = $stateParams.query;
+        $scope.titleQuery = $stateParams.title;
         $scope.selectedItem = {
             tmdbId: $stateParams.tmdbId,
             imdbId: $stateParams.imdbId,
@@ -70,14 +71,16 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
     $scope.typeAheadWait = 300;
 
     $scope.autocompleteLoading = false;
-    $scope.isAskById = $scope.category.searchType === "TVSEARCH" || $scope.category.searchType === "MOVIE";
     $scope.availableIndexers = [];
     $scope.selectedIndexers = [];
     $scope.availableIndexerOptions = [];
     $scope.indexerSelectionActions = [];
     $scope.indexerSelectionSettings = {
         showSelectedValues: false,
-        noSelectedText: 'Select indexers'
+        noSelectedText: 'Select indexers',
+        buttonTextFunction: function (selectedModel, options) {
+            return selectedModel.length + '/' + options.length + ' indexers selected';
+        }
     };
     $scope.autocompleteClass = "autocompletePosterMovies";
 
@@ -147,24 +150,23 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
     $scope.$on('tourEnded', function () {
         $scope.tourActive = false;
         $scope.query = '';
+        $scope.titleQuery = '';
         $scope.selectedItem = null;
         $scope.category = CategoriesService.getDefault();
-        $scope.isAskById = $scope.category.searchType === "TVSEARCH" || $scope.category.searchType === "MOVIE";
     });
+
+    function supportsAutocomplete() {
+        return $scope.category.searchType === "TVSEARCH" || $scope.category.searchType === "MOVIE";
+    }
 
     $scope.toggleCategory = function (searchCategory) {
         var oldCategory = $scope.category;
         $scope.category = searchCategory;
 
-        //Show checkbox to ask if the user wants to search by ID (using autocomplete)
-        if ($scope.category.searchType === "TVSEARCH" || $scope.category.searchType === "MOVIE") {
-            $scope.isAskById = true;
-        } else {
-            $scope.isAskById = false;
-        }
-
         if (oldCategory.searchType !== searchCategory.searchType) {
             $scope.selectedItem = null;
+            $scope.query = "";
+            $scope.titleQuery = "";
         }
 
         focus('searchfield');
@@ -202,7 +204,7 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         //value: Will be used as extraInfo (ttid oder tvdb id)
         //poster: url of poster to show
 
-        if (!$scope.isAskById || $scope.selectedItem) {
+        if (!supportsAutocomplete() || $scope.selectedItem) {
             return {};
         }
 
@@ -237,7 +239,7 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
 
     $scope.onTypeAheadKeyDown = function (event) {
         if (event.keyCode === 8) {
-            if ($scope.query === "") {
+            if ($scope.titleQuery === "") {
                 $scope.clearAutocomplete();
             }
         }
@@ -251,12 +253,8 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         $scope.category = CategoriesService.getByName($scope.searchHistoryDragged.categoryName);
         $scope.season = $scope.searchHistoryDragged.season;
         $scope.episode = $scope.searchHistoryDragged.episode;
-        $scope.query = $scope.searchHistoryDragged.query;
-
-        if ($scope.searchHistoryDragged.title != null) {
-            var width = calculateWidth($scope.searchHistoryDragged.title) + 30;
-            $scope.selectedItemWidth = width + "px";
-        }
+        $scope.query = $scope.searchHistoryDragged.title != null ? $scope.searchHistoryDragged.query : "";
+        $scope.titleQuery = $scope.searchHistoryDragged.title != null ? $scope.searchHistoryDragged.title : $scope.searchHistoryDragged.query;
 
         var tvmaze = _.findWhere($scope.searchHistoryDragged.identifiers, {identifierKey: "TVMAZE"});
         var tmdb = _.findWhere($scope.searchHistoryDragged.identifiers, {identifierKey: "TMDB"});
@@ -288,7 +286,7 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         var modalInstance = $scope.openModal(searchRequestId);
 
         var indexers = angular.isUndefined($scope.indexers) ? undefined : $scope.indexers.join(",");
-        SearchService.search(searchRequestId, $scope.category.name, $scope.query, $scope.selectedItem, $scope.season, $scope.episode, $scope.minsize, $scope.maxsize, $scope.minage, $scope.maxage, indexers, $scope.mode).then(function () {
+        SearchService.search(searchRequestId, $scope.category.name, getSearchQuery(), getSelectedItemForSearch(), $scope.season, $scope.episode, $scope.minsize, $scope.maxsize, $scope.minage, $scope.maxage, indexers, $scope.mode).then(function () {
                 //modalInstance.close();
                 SearchService.setModalInstance(modalInstance);
                 if (!isSearchCancelled) {
@@ -342,16 +340,17 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
     $scope.goToSearchUrl = function () {
         //State params (query parameters) should all be lowercase
         var stateParams = {};
+        var selectedItemForSearch = getSelectedItemForSearch();
         stateParams.mode = $scope.category.searchType.toLowerCase();
-        stateParams.imdbId = $scope.selectedItem === null ? null : $scope.selectedItem.imdbId;
-        stateParams.tmdbId = $scope.selectedItem === null ? null : $scope.selectedItem.tmdbId;
-        stateParams.tvdbId = $scope.selectedItem === null ? null : $scope.selectedItem.tvdbId;
-        stateParams.tvrageId = $scope.selectedItem === null ? null : $scope.selectedItem.tvrageId;
-        stateParams.tvmazeId = $scope.selectedItem === null ? null : $scope.selectedItem.tvmazeId;
-        stateParams.title = $scope.selectedItem === null ? null : $scope.selectedItem.title;
+        stateParams.imdbId = selectedItemForSearch === null ? null : selectedItemForSearch.imdbId;
+        stateParams.tmdbId = selectedItemForSearch === null ? null : selectedItemForSearch.tmdbId;
+        stateParams.tvdbId = selectedItemForSearch === null ? null : selectedItemForSearch.tvdbId;
+        stateParams.tvrageId = selectedItemForSearch === null ? null : selectedItemForSearch.tvrageId;
+        stateParams.tvmazeId = selectedItemForSearch === null ? null : selectedItemForSearch.tvmazeId;
+        stateParams.title = selectedItemForSearch === null ? null : selectedItemForSearch.title;
         stateParams.season = $scope.season;
         stateParams.episode = $scope.episode;
-        stateParams.query = $scope.query;
+        stateParams.query = getSearchQuery();
         stateParams.minsize = $scope.minsize;
         stateParams.maxsize = $scope.maxsize;
         stateParams.minage = $scope.minage;
@@ -367,29 +366,28 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         $state.go("root.search", stateParams, {inherit: false, notify: true, reload: true});
     };
 
-    $scope.searchBoxTooltip = "Prefix terms with -- to exclude'";
-    $scope.$watchGroup(['isAskById', 'selectedItem'], function () {
-        $scope.searchBoxPlaceholder = "Search";
-        if (!$scope.isAskById) {
+    $scope.searchBoxTooltip = "Prefix terms with -- to exclude";
+    $scope.additionalQueryTooltip = "Add optional filter terms to narrow the selected title";
+    $scope.$watchGroup(['category.searchType', 'selectedItem'], function () {
+        $scope.searchBoxPlaceholder = supportsAutocomplete() ? "Type a title or pick a suggestion" : "Search";
+        if (!supportsAutocomplete()) {
             $scope.searchBoxTooltip = "Prefix terms with -- to exclude";
         } else if ($scope.selectedItem === null) {
-            $scope.searchBoxTooltip = "Enter search terms. You can pick an autocomplete result or just search what you typed";
-            $scope.searchBoxPlaceholder = "Type for autocomplete";
+            $scope.searchBoxTooltip = "Type a title, choose a suggestion for precise matching, or search the typed text directly";
         } else {
-            $scope.searchBoxTooltip = "Enter additional search terms to limit the query";
-            $scope.searchBoxPlaceholder = "Additional query";
+            $scope.searchBoxTooltip = "Search for another title or keep the selected one and refine it below";
         }
     });
 
     $scope.clearAutocomplete = function () {
         $scope.selectedItem = null;
-        $scope.query = ""; //Input is now for autocomplete and not for limiting the results
+        $scope.titleQuery = $scope.titleQuery || ($scope.selectedItem ? $scope.selectedItem.title : "");
+        $scope.query = "";
         focus('searchfield');
     };
 
     $scope.clearQuery = function () {
-        $scope.selectedItem = null;
-        $scope.query = "";
+        $scope.titleQuery = "";
         focus('searchfield');
     };
 
@@ -402,14 +400,37 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
 
     $scope.selectAutocompleteItem = function ($item) {
         $scope.selectedItem = $item;
-        $scope.query = "";
+        $scope.titleQuery = "";
         if (angular.isDefined($scope.status)) {
             $scope.status.isopen = false;
         }
+        $scope.titleQuery = $item.title;
         epochEnter = (new Date).getTime();
-        var width = calculateWidth($item.title) + 30;
-        $scope.selectedItemWidth = width + "px";
+        $timeout(function () {
+            focus('additional-query');
+        });
     };
+
+    function getSearchQuery() {
+        return getSelectedItemForSearch() ? $scope.query : $scope.titleQuery;
+    }
+
+    function getSelectedItemForSearch() {
+        if (!$scope.selectedItem) {
+            return null;
+        }
+        if ($scope.titleQuery !== $scope.selectedItem.title) {
+            return null;
+        }
+        return $scope.selectedItem;
+    }
+
+    $scope.$watch('titleQuery', function (newValue, oldValue) {
+        if ($scope.selectedItem && angular.isDefined(newValue) && newValue !== $scope.selectedItem.title) {
+            $scope.selectedItem = null;
+            $scope.query = "";
+        }
+    });
 
     $scope.initiateSearch = function () {
         if ($scope.selectedIndexers.length === 0 && !GuidedTourService.isTourActive()) {
@@ -446,8 +467,12 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         }
     };
 
-    $scope.autocompleteActive = function () {
-        return $scope.isAskById;
+    $scope.supportsAutocomplete = function () {
+        return supportsAutocomplete();
+    };
+
+    $scope.showRefinementPanel = function () {
+        return supportsAutocomplete() && ($scope.selectedItem !== null || $scope.category.searchType === "TVSEARCH");
     };
 
     $scope.seriesSelected = function () {
@@ -547,9 +572,8 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
     }
 
     function getAvailableIndexers() {
-        var alreadySelected = $scope.selectedIndexers;
+        var alreadySelected = angular.copy($scope.selectedIndexers);
         var previouslyAvailable = _.pluck($scope.availableIndexers, "name");
-        $scope.selectedIndexers.splice(0, $scope.selectedIndexers.length);
         var availableIndexersList = _.chain(safeConfig.indexers).filter(function (indexer) {
             if (!indexer.showOnSearch) {
                 return false;
@@ -568,13 +592,13 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
                     searchModuleType: indexer.searchModuleType
                 };
             }).value();
-        _.forEach(availableIndexersList, function (x) {
-            var deselectedBefore = (_.indexOf(previouslyAvailable, x.name) > -1 && _.indexOf(alreadySelected, x.name) === -1);
-            var selectedBefore = (_.indexOf(previouslyAvailable, x.name) > -1 && _.indexOf(alreadySelected, x.name) > -1);
-            if ((x.activated && !deselectedBefore) || selectedBefore) {
-                $scope.selectedIndexers.push(x.name);
-            }
-        });
+        if (alreadySelected.length === 0) {
+            $scope.selectedIndexers.splice(0, $scope.selectedIndexers.length);
+            Array.prototype.push.apply($scope.selectedIndexers,
+                _.pluck(_.filter(availableIndexersList, function (indexer) {
+                    return indexer.activated;
+                }), 'name'));
+        }
         $scope.availableIndexerOptions = buildIndexerDropdownOptions(availableIndexersList);
         $scope.indexerSelectionActions = buildIndexerSelectionActions(availableIndexersList);
         return availableIndexersList;
