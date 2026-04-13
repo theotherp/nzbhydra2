@@ -2,6 +2,7 @@
 
 package org.nzbhydra.searching.db;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import jakarta.persistence.Column;
@@ -136,6 +137,7 @@ public final class SearchResultEntity {
         this.indexerSearchEntityId = indexerSearchEntityId;
     }
 
+    @JsonIgnore
     public boolean isMagnetLink() {
         return link != null && link.startsWith("magnet:");
     }
