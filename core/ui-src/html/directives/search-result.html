@@ -112,7 +112,7 @@
             <a target="_blank" href="gettorrent/user/{{ ::result.searchResultId }}"
                ng-click="markDownloaded()"
                style="vertical-align: middle; margin-left: 3px; margin-right: 3px"
-               class="no-underline result-torrent-download-link"
+               class="no-underline result-torrent-download-link hidden-xs"
                uib-tooltip="Download torrent"
                tooltip-placement="top"
                tooltip-trigger="mouseenter"><span class="glyphicon glyphicon-save"></span>
@@ -124,7 +124,7 @@
               <a target="_blank" href="getnzb/user/{{ ::result.searchResultId }}"
                  ng-click="markDownloaded()"
                  style="vertical-align: middle; margin-left: 3px; margin-right: 3px"
-                 class="no-underline result-nzb-download-link"
+                 class="no-underline result-nzb-download-link hidden-xs"
                  uib-tooltip="Download NZB"
                  tooltip-placement="top"
                  tooltip-trigger="mouseenter"><span class="glyphicon glyphicon-save"></span>
