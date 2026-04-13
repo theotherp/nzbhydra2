@@ -478,6 +478,10 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         return $scope.category.searchType === "TVSEARCH";
     };
 
+    $scope.showResultsSeparator = function () {
+        return $state.includes("root.search.results");
+    };
+
     $scope.toggleIndexer = function (indexer) {
         $scope.availableIndexers[indexer.name].activated = !$scope.availableIndexers[indexer.name].activated;
     };

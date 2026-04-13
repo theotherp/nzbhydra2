@@ -7569,6 +7569,10 @@ pre {
 .search-filter-group .input-group {
   width: 100%;
 }
+.search-results-separator {
+  margin: 18px 0 14px;
+  border-top: 1px solid rgba(119, 119, 119, 0.35);
+}
 .search-query-options {
   display: inline-flex;
   align-items: center;
