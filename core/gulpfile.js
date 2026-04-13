@@ -24,6 +24,7 @@ var liveReloadActive = false;
 
 var staticFolder = process.env.STATIC_FOLDER || 'src/main/resources/static';
 var uiSrcFolder = process.env.UI_SRC_FOLDER || 'ui-src';
+var classesStaticFolder = process.env.CLASSES_STATIC_FOLDER || 'target/classes/static';
 
 gulp.task('vendor-scripts', function () {
     var dest = staticFolder + '/js';
@@ -308,12 +309,48 @@ gulp.task('delMainLessCache', function () {
     delete cached.caches["grey"];
     delete cached.caches["dark"];
     delete cached.caches["auto"];
+    delete cached.caches["bright-dev"];
+    delete cached.caches["grey-dev"];
+    delete cached.caches["dark-dev"];
+    delete cached.caches["auto-dev"];
 });
 
 gulp.task('copyStaticToClasses', function () {
     return gulp.src(staticFolder + '/**/*')
-        .pipe(cached("copyStatic"))
-        .pipe(gulp.dest('target/classes/static'));
+        .pipe(gulp.dest(classesStaticFolder));
+});
+
+gulp.task('styles-dev', function () {
+    runSequence(
+        ['delMainLessCache'],
+        ['less-dev'],
+        ['copyStaticToClasses'],
+        ['reload']
+    );
+});
+
+gulp.task('templates-dev', function () {
+    runSequence(
+        ['templates'],
+        ['copyStaticToClasses'],
+        ['reload']
+    );
+});
+
+gulp.task('scripts-dev-only', function () {
+    runSequence(
+        ['scripts'],
+        ['copyStaticToClasses'],
+        ['reload']
+    );
+});
+
+gulp.task('assets-dev', function () {
+    runSequence(
+        ['copy-assets'],
+        ['copyStaticToClasses'],
+        ['reload']
+    );
 });
 
 gulp.task('index', function () {
@@ -348,7 +385,11 @@ gulp.task('default', function () {
     liveReloadActive = true;
     log("Will watch '" + uiSrcFolder + "'");
     log("Will build files into folder '" + staticFolder + "'");
+    log("Will copy static files into '" + classesStaticFolder + "'");
     runSequence(["index-dev"]);
-    gulp.watch([uiSrcFolder + '/less/nzbhydra.less'], ['delMainLessCache']);
-    gulp.watch([uiSrcFolder + '/**/*', '!' + uiSrcFolder + '/hydra-ng/**'], ['index-dev']);
+    gulp.watch([uiSrcFolder + '/less/**/*.less'], ['styles-dev']);
+    gulp.watch([uiSrcFolder + '/html/**/*.html'], ['templates-dev']);
+    gulp.watch([uiSrcFolder + '/js/**/*.js', '!' + uiSrcFolder + '/hydra-ng/**'], ['scripts-dev-only']);
+    gulp.watch([uiSrcFolder + '/img/**/*'], ['assets-dev']);
+    gulp.watch([uiSrcFolder + '/img/**/favicon.ico'], ['assets-dev']);
 });
