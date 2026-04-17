@@ -304,9 +304,11 @@ public class FileHandler {
         FileOutputStream fos = new FileOutputStream(tempFile);
         // Use UTF-8 so ZIP entry names with non-ASCII characters are encoded correctly
         ZipOutputStream zos = new ZipOutputStream(fos, StandardCharsets.UTF_8);
+        Set<String> usedEntryNames = new HashSet<>();
 
         for (Map.Entry<File, String> entry : fileToTitle.entrySet()) {
-            addToZipFile(entry.getKey(), entry.getValue(), zos);
+            String uniqueEntryName = getUniqueEntryName(entry.getValue(), usedEntryNames);
+            addToZipFile(entry.getKey(), uniqueEntryName, zos);
             entry.getKey().delete();
         }
 
@@ -314,6 +316,23 @@ public class FileHandler {
         fos.close();
 
         return tempFile;
+    }
+
+    private static String getUniqueEntryName(String entryName, Set<String> usedEntryNames) {
+        if (usedEntryNames.add(entryName)) {
+            return entryName;
+        }
+
+        String baseName = FilenameUtils.getBaseName(entryName);
+        String extension = FilenameUtils.getExtension(entryName);
+        int counter = 1;
+        String candidateName;
+        do {
+            candidateName = extension.isEmpty() ? baseName + "_" + counter : baseName + "_" + counter + "." + extension;
+            counter++;
+        } while (!usedEntryNames.add(candidateName));
+
+        return candidateName;
     }
 
     private static void addToZipFile(File file, String entryName, ZipOutputStream zos) throws IOException {

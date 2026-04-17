@@ -1,12 +1,14 @@
 #@formatter:off
 -   version: "v8.6.0"
-    date: "2026-04-13"
+    date: "2026-04-18"
     final: true
     changes:
       -   type: "feature"
           text: "After some feedback from a user that the mobile view could be improved I restructured the search form and cleaned up the results (a bit)."
       -   type: "fix"
-          text: "Adding a magnet link to torbox works again. Thanks to Juice805. Closes #1049"
+          text: "Adding a magnet link to torbox works again. Thanks to Juice805. See #1049"
+      -   type: "fix"
+          text: "Do more to prevent duplicate names in ZIPs."
 -   version: "v8.5.4"
     date: "2026-04-08"
     final: true
