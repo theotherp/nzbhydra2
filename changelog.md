@@ -1,3 +1,13 @@
+### v8.6.0 (2026-04-18)
+
+**Feature** After some feedback from a user that the mobile view could be improved I restructured the search form and cleaned up the results (a bit).
+
+**Fix** Adding a magnet link to torbox works again. Thanks to Juice805. See <a href="https://github.com/theotherp/nzbhydra2/issues/1049">#1049</a>
+
+**Fix** Do more to prevent duplicate names in ZIPs.
+
+
+
 ### v8.5.4 (2026-04-08)
 
 **Fix** Connection check will work for an indexer that only supports movies or TV shows.
