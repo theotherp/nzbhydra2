@@ -1,4 +1,10 @@
 #@formatter:off
+-   version: "v8.7.1"
+    date: "2026-04-19"
+    final: true
+    changes:
+      -   type: "fix"
+          text: "Season and episode for TV queries were ignored / lost when searching in the UI"
 -   version: "v8.7.0"
     date: "2026-04-19"
     final: true

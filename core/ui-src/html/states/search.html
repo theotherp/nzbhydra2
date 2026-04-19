@@ -74,7 +74,7 @@
             <div class="row search-refinement-row" ng-if="supportsAutocomplete()">
               <div class="col-xs-20 col-sm-12 col-md-13" ng-class="{'search-refinement-placeholder': !selectedItem}">
                 <input id="additional-query" type="search" class="form-control"
-                       ng-model="query"
+                       ng-model="$parent.query"
                        placeholder="Additional filter terms"
                        ng-disabled="!selectedItem"
                        ng-style="{visibility: selectedItem ? 'visible' : 'hidden'}"
@@ -83,13 +83,13 @@
                        tooltip-placement="top"
                        tooltip-trigger="mouseenter">
               </div>
-              <div class="col-xs-20 col-sm-8 col-md-7" ng-if="seriesSelected()">
+              <div class="col-xs-20 col-sm-8 col-md-7" ng-show="seriesSelected()">
                 <div class="row search-series-row">
                   <div class="col-xs-10">
                     <div class="input-group search-series-group">
                       <span class="input-group-addon">S</span>
                       <input type="text" class="form-control season-input" name="season"
-                             id="seriesSearchS" ng-model="season"
+                             id="seriesSearchS" ng-model="$parent.season"
                              placeholder="Season"
                              ng-enter="initiateSearch()"
                              uib-tooltip="Enter a season to search for."
@@ -101,7 +101,7 @@
                     <div class="input-group search-series-group">
                       <span class="input-group-addon">E</span>
                       <input type="text" class="form-control episode-input" name="episode"
-                             id="seriesSearchE" ng-model="episode"
+                             id="seriesSearchE" ng-model="$parent.episode"
                              placeholder="Episode"
                              ng-enter="initiateSearch()"
                              uib-tooltip="Enter an episode to search for."
