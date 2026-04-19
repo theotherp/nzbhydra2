@@ -1,3 +1,9 @@
+### v8.7.1 (2026-04-19)
+
+**Fix** Season and episode for TV queries were ignored / lost when searching in the UI
+
+
+
 ### v8.7.0 (2026-04-19)
 
 **Feature** You can now assign an indexer to one or more groups. These groups will be shown in the indexer dropdown and change the selection to the indexer(s) in that group.
