@@ -1,3 +1,13 @@
+### v8.7.0 (2026-04-19)
+
+**Feature** You can now assign an indexer to one or more groups. These groups will be shown in the indexer dropdown and change the selection to the indexer(s) in that group.
+
+**Fix** Fix history timestamps and the in-app log viewer showing the wrong DST offset in some time zones by using more complete timezone data in the frontend. See <a href="https://github.com/theotherp/nzbhydra2/issues/1051">#1051</a>
+
+**Fix** Fix new search UI when indexer selection box is hidden.
+
+
+
 ### v8.6.0 (2026-04-18)
 
 **Feature** After some feedback from a user that the mobile view could be improved I restructured the search form and cleaned up the results (a bit).
