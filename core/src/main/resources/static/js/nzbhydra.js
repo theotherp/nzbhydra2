@@ -10380,12 +10380,13 @@ function UpdateModalInstanceCtrl($scope, $http, $interval, RequestsErrorHandler)
 
 }
 
-
-SystemController.$inject = ["$scope", "$state", "activeTab", "simpleInfos", "$http", "growl", "RestartService", "MigrationService", "ConfigService", "NzbHydraControlService", "RequestsErrorHandler"];angular
+angular
     .module('nzbhydraApp')
     .controller('SystemController', SystemController);
 
-function SystemController($scope, $state, activeTab, simpleInfos, $http, growl, RestartService, MigrationService, ConfigService, NzbHydraControlService, RequestsErrorHandler) {
+SystemController.$inject = ["$scope", "$state", "activeTab", "simpleInfos", "$http", "growl", "RestartService", "MigrationService", "ConfigService", "NzbHydraControlService", "RequestsErrorHandler", "bootstrapped"];
+
+function SystemController($scope, $state, activeTab, simpleInfos, $http, growl, RestartService, MigrationService, ConfigService, NzbHydraControlService, RequestsErrorHandler, bootstrapped) {
 
     $scope.activeTab = activeTab;
     $scope.foo = {
@@ -10575,7 +10576,7 @@ function SystemController($scope, $state, activeTab, simpleInfos, $http, growl, 
                     xAxis: {
                         axisLabel: 'Time',
                         tickFormat: function (d) {
-                            return moment.unix(d).local().format("HH:mm:ss");
+                            return formatSystemMoment(moment.unix(d), bootstrapped).format("HH:mm:ss");
                         },
                         showMaxMin: true
                     },
@@ -10625,6 +10626,13 @@ function SystemController($scope, $state, activeTab, simpleInfos, $http, growl, 
         }
     });
 
+}
+
+function formatSystemMoment(date, bootstrapped) {
+    if (bootstrapped && bootstrapped.serverTimeZone && moment.tz) {
+        return date.clone().tz(bootstrapped.serverTimeZone);
+    }
+    return date.local();
 }
 
 
