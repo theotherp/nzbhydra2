@@ -3,6 +3,8 @@
     date: "2026-04-19"
     final: true
     changes:
+      -   type: "feature"
+          text: "You can now assign an indexer to one or more groups. These groups will be shown in the indexer dropdown and change the selection to the indexer(s) in that group."
       -   type: "fix"
           text: "Fix history timestamps and the in-app log viewer showing the wrong DST offset in some time zones by using more complete timezone data in the frontend. See #1051"
       -   type: "fix"

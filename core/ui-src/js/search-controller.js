@@ -492,10 +492,42 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
             _.pluck(_.filter($scope.availableIndexers, predicate), 'name'));
     }
 
+    function selectIndexersByGroup(groupName) {
+        selectIndexersByPredicate(function (indexer) {
+            return _.contains(indexer.groupNames, groupName);
+        });
+    }
+
+    function buildGroupSelectionOptions(availableIndexers) {
+        var groupNames = _.chain(availableIndexers)
+            .pluck('groupNames')
+            .flatten()
+            .filter(function (groupName) {
+                return !_.isNullOrEmpty(groupName);
+            })
+            .uniq()
+            .sortBy(function (groupName) {
+                return groupName.toLowerCase();
+            })
+            .value();
+
+        return _.map(groupNames, function (groupName) {
+            return {
+                id: '__indexer_group__:' + groupName,
+                label: groupName,
+                group: 'Groups',
+                action: function () {
+                    selectIndexersByGroup(groupName);
+                }
+            };
+        });
+    }
+
     function buildIndexerDropdownOptions(availableIndexers) {
         var hasTorznabIndexers = _.some(availableIndexers, function (indexer) {
             return indexer.searchModuleType === 'TORZNAB';
         });
+        var groupSelectionOptions = buildGroupSelectionOptions(availableIndexers);
 
         var usenetIndexers = _.filter(availableIndexers, function (indexer) {
             return indexer.searchModuleType !== 'TORZNAB';
@@ -504,13 +536,15 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
             return indexer.searchModuleType === 'TORZNAB';
         });
 
-        return _.map(usenetIndexers.concat(torznabIndexers), function (indexer) {
+        var indexerOptions = _.map(usenetIndexers.concat(torznabIndexers), function (indexer) {
             return {
                 id: indexer.name,
                 label: indexer.name,
                 group: hasTorznabIndexers ? (indexer.searchModuleType === 'TORZNAB' ? 'Torznab indexers' : 'Usenet indexers') : ''
             };
         });
+
+        return groupSelectionOptions.concat(indexerOptions);
     }
 
     function buildIndexerSelectionActions(availableIndexers) {
@@ -592,6 +626,9 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
                     activated: isIndexerPreselected(indexer),
                     preselect: indexer.preselect,
                     categories: indexer.categories,
+                    groupNames: _.filter(indexer.groupNames || [], function (groupName) {
+                        return !_.isNullOrEmpty(groupName);
+                    }),
                     searchModuleType: indexer.searchModuleType
                 };
             }).value();

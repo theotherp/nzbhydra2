@@ -72,6 +72,7 @@ public class IndexerConfig {
     @JsonFormat(shape = Shape.STRING)
     private SearchSourceRestriction enabledForSearchSource = SearchSourceRestriction.BOTH;
     private Integer generalMinSize = null;
+    private List<String> groupNames = new ArrayList<>();
     private Integer hitLimit = null;
     private Integer hitLimitResetTime = null;
     private String host;

@@ -23,6 +23,28 @@ function regexValidator(regex, message, prefixViewValue, preventEmpty) {
 }
 
 function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesService) {
+    function getGroupNameSuggestions(viewValue) {
+        var currentGroups = indexerModel.groupNames || [];
+        var query = (viewValue || '').toLowerCase();
+
+        return _.chain(parentModel)
+            .filter(function (entry) {
+                return entry !== indexerModel;
+            })
+            .pluck('groupNames')
+            .flatten()
+            .filter(function (groupName) {
+                return !_.isNullOrEmpty(groupName)
+                    && currentGroups.indexOf(groupName) === -1
+                    && (query.length === 0 || groupName.toLowerCase().indexOf(query) > -1);
+            })
+            .uniq()
+            .sortBy(function (groupName) {
+                return groupName.toLowerCase();
+            })
+            .value();
+    }
+
     var fieldset = [];
     if (indexerModel.searchModuleType === "TORZNAB") {
         fieldset.push({
@@ -276,6 +298,19 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
                 label: 'Schedule',
                 help: 'Determines when an indexer should be selected. See <a href="https://github.com/theotherp/nzbhydra2/wiki/Indexer-schedules" target="_blank">wiki</a>. You can enter multiple time spans. Apply values with return key.',
                 advanced: true
+            }
+        }
+    );
+    fieldset.push(
+        {
+            key: 'groupNames',
+            type: 'horizontalChips',
+            templateOptions: {
+                type: 'text',
+                label: 'Indexer groups',
+                help: 'Assign this indexer to one or more groups. These can be selected from the search page. Apply values with return key.',
+                advanced: true,
+                typeaheadSource: getGroupNameSuggestions
             }
         }
     );

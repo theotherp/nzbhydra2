@@ -234,7 +234,10 @@ angular
                 '                    <span class="glyphicon glyphicon-remove remove-chip" remove-chip></span>' +
                 '                </div>' +
                 '            </chip-tmpl>' +
-                '            <input chip-control class="chip-control"></input>' +
+                '            <input chip-control ng-model="chipInputModel" ng-model-control class="chip-control" ' +
+                'uib-typeahead="suggestion for suggestion in (to.typeaheadSource && to.typeaheadSource($viewValue) || [])" ' +
+                'typeahead-min-length="to.typeaheadMinLength || 0" ' +
+                'typeahead-wait-ms="to.typeaheadWaitMs || 0"></input>' +
                 '        </chips>'
         });
 
@@ -718,4 +721,3 @@ angular
 
 
     });
-

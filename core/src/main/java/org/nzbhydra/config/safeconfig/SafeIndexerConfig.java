@@ -15,6 +15,7 @@ public class SafeIndexerConfig {
     private boolean preselect;
     private List<String> categories;
     private boolean showOnSearch;
+    private List<String> groupNames;
     private String enabledForSearchSource;
     private String searchModuleType;
     private String color;
@@ -25,6 +26,7 @@ public class SafeIndexerConfig {
         this.preselect = indexerConfig.isPreselect();
         this.categories = indexerConfig.getEnabledCategories();
         this.showOnSearch = indexerConfig.isEligibleForInternalSearch();
+        this.groupNames = indexerConfig.getGroupNames();
         this.enabledForSearchSource = indexerConfig.getEnabledForSearchSource().name();
         this.searchModuleType = indexerConfig.getSearchModuleType().name();
         this.color = indexerConfig.getColor();

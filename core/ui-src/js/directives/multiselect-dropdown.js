@@ -56,6 +56,12 @@ function dropdownMultiselectDirective() {
                 $scope.groupedOptions = groups;
             }
 
+            function getSelectableOptions() {
+                return _.filter($scope.options || [], function (option) {
+                    return !option.action;
+                });
+            }
+
             $scope.$watchCollection('options', updateGroupedOptions);
             $scope.$watchCollection('actions', function (actions) {
                 $scope.actions = actions || [];
@@ -66,14 +72,14 @@ function dropdownMultiselectDirective() {
 
             function getFallbackButtonText() {
                 var selectedCount = ($scope.selectedModel || []).length;
-                var totalCount = ($scope.options || []).length;
+                var totalCount = getSelectableOptions().length;
                 var selectionNoun = settings.selectionNoun ? " " + settings.selectionNoun : "";
                 return selectedCount + "/" + totalCount + selectionNoun + " selected";
             }
 
             function getSelectedLabels() {
                 var selected = [];
-                _.each($scope.options, function (x) {
+                _.each(getSelectableOptions(), function (x) {
                     if ($scope.selectedModel.indexOf(x.id) > -1) {
                         selected.push(x.label);
                     }
@@ -114,7 +120,7 @@ function dropdownMultiselectDirective() {
                     return;
                 }
 
-                if ($scope.selectedModel.length === $scope.options.length && !settings.selectionNoun) {
+                if ($scope.selectedModel.length === getSelectableOptions().length && !settings.selectionNoun) {
                     $scope.buttonText = "All selected";
                     return;
                 }
@@ -146,6 +152,10 @@ function dropdownMultiselectDirective() {
             };
 
             $scope.toggleItem = function (option) {
+                if (option.action) {
+                    option.action();
+                    return;
+                }
                 var index = $scope.selectedModel.indexOf(option.id);
                 var oldValue = index > -1;
                 if (oldValue) {
@@ -158,7 +168,7 @@ function dropdownMultiselectDirective() {
 
             $scope.selectAll = function () {
                 $scope.deselectAll();
-                Array.prototype.push.apply($scope.selectedModel, _.pluck($scope.options, "id"));
+                Array.prototype.push.apply($scope.selectedModel, _.pluck(getSelectableOptions(), "id"));
             };
 
             $scope.deselectAll = function () {
