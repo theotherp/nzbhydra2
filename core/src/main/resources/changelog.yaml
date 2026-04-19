@@ -1,4 +1,10 @@
 #@formatter:off
+-   version: "v8.6.1"
+    date: "2026-04-19"
+    final: true
+    changes:
+      -   type: "fix"
+          text: "Fix history timestamps and the in-app log viewer showing the wrong DST offset in some time zones by using more complete timezone data in the frontend. See #1051"
 -   version: "v8.6.0"
     date: "2026-04-18"
     final: true

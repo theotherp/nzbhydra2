@@ -43,6 +43,9 @@ gulp.task('vendor-scripts', function () {
                         "api-check": "*"
                     }
                 }
+                , "moment-timezone": {
+                    "main": "builds/moment-timezone-with-data-1970-2030.js"
+                }
             }
         }
     ).js)
@@ -70,6 +73,9 @@ gulp.task('vendor-scripts-dev', function () {
                         "angular": "*",
                         "api-check": "*"
                     }
+                }
+                , "moment-timezone": {
+                    "main": "builds/moment-timezone-with-data-1970-2030.js"
                 }
             }
         }
