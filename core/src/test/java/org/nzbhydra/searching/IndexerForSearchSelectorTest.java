@@ -432,6 +432,22 @@ public class IndexerForSearchSelectorTest {
     }
 
     @Test
+    void shouldPreferConfiguredDownloadLimitOverCachedApiLimit() {
+        Instant currentTime = Instant.parse("2026-04-20T04:00:00.000Z");
+        Instant oldestDownload = Instant.parse("2026-04-19T05:49:21.000Z");
+        testee.clock = Clock.fixed(currentTime, ZoneId.of("UTC"));
+        indexerConfigMock.setDownloadLimit(100);
+        indexerLimit.setDownloadLimit(2);
+        indexerLimit.setDownloads(2);
+        indexerLimit.setOldestDownload(oldestDownload);
+
+        boolean result = testee.checkIndexerHitLimit(indexer);
+
+        assertThat(result).isTrue();
+        verify(entityManagerMock, never()).createNativeQuery(anyString());
+    }
+
+    @Test
     void shouldCalculateNextHitWithRollingTimeWindows() throws Exception {
         //First access was at 05:38, hit limit reset time is 10:00, now it's 09:00, next possible hit tomorrow at 05:38
         Instant currentTime = Instant.parse("2021-01-13T09:00:00.000Z");

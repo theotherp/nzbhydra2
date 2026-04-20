@@ -1,4 +1,10 @@
 #@formatter:off
+-   version: "v8.7.2"
+    date: "2026-04-20"
+    final: true
+    changes:
+      -   type: "fix"
+          text: "Changing an indexer's configured download limit now takes effect immediately for search selection. See #1055"
 -   version: "v8.7.1"
     date: "2026-04-19"
     final: true

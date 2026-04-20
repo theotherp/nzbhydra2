@@ -341,10 +341,7 @@ public class IndexerForSearchSelector {
             IndexerLimit indexerStatus = indexerLimitRepository.findByIndexer(indexer.getIndexerEntity());
             logger.debug(LoggingMarkers.LIMITS, "Indexer {}. IndexerStatus: {}", indexer.getName(), indexerStatus);
             Instant oldestAccess = null;
-            Integer apiHitLimit = indexerStatus.getApiHitLimit();
-            if (apiHitLimit == null) {
-                apiHitLimit = indexerConfig.getHitLimit().orElse(null);
-            }
+            Integer apiHitLimit = indexerConfig.getHitLimit().orElse(indexerStatus.getApiHitLimit());
             if (indexerStatus.getApiHits() != null && accessType != IndexerApiAccessType.NZB && apiHitLimit != null && indexerStatus.getOldestApiHit() != null) {
                 logger.debug(LoggingMarkers.LIMITS, "Indexer {}. Current API hits: {}. Max API hits: {}. Oldest API hit: {}", indexer.getName(), indexerStatus.getApiHits(), apiHitLimit, indexerStatus.getOldestApiHit());
                 if (indexerStatus.getApiHits() >= apiHitLimit) {
@@ -353,10 +350,7 @@ public class IndexerForSearchSelector {
                     return false;
                 }
             } else {
-                Integer downloadLimit = indexerStatus.getDownloadLimit();
-                if (downloadLimit == null) {
-                    downloadLimit = indexerConfig.getDownloadLimit().orElse(null);
-                }
+                Integer downloadLimit = indexerConfig.getDownloadLimit().orElse(indexerStatus.getDownloadLimit());
                 if (indexerStatus.getDownloads() != null && accessType == IndexerApiAccessType.NZB && downloadLimit != null && indexerStatus.getOldestDownload() != null) {
                     logger.debug(LoggingMarkers.LIMITS, "Indexer {}. Current downloads: {}. Max downloads: {}. Oldest download: {}", indexer.getName(), indexerStatus.getDownloads(), downloadLimit, indexerStatus.getOldestDownload());
                     if (indexerStatus.getDownloads() >= downloadLimit) {
