@@ -434,7 +434,7 @@ public class DebugInfosProvider {
     }
 
     @Data
-@ReflectionMarker
+    @ReflectionMarker
     public static class TimeAndThreadCpuUsages {
         private final Instant time;
         private final List<ThreadCpuUsage> threadCpuUsages = new ArrayList<>();
@@ -445,7 +445,7 @@ public class DebugInfosProvider {
     }
 
     @Data
-@ReflectionMarker
+    @ReflectionMarker
     @AllArgsConstructor
     public static class ThreadCpuUsage {
         private final String threadName;

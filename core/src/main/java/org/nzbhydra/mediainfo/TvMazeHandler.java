@@ -16,6 +16,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -75,7 +76,13 @@ public class TvMazeHandler {
 
     List<TvMazeSearchResult> search(String title) throws InfoProviderException {
         logger.info("Searching TVMaze for shows with title '{}", title);
-        List<TvmazeShowSearch> shows = searchByTitle(title);
+        List<TvmazeShowSearch> shows;
+        try {
+            shows = searchByTitle(title);
+        } catch (InfoNotFoundException e) {
+            logger.debug("TVMaze found no shows for title '{}'", title);
+            return Collections.emptyList();
+        }
         logger.info("TVMaze found {} shows for title '{}'", shows.size(), title);
         return shows.stream().map(showSearch -> getSearchResultFromShow(showSearch.getShow())).collect(Collectors.toList());
     }
@@ -90,7 +97,7 @@ public class TvMazeHandler {
         }
         List<TvmazeShowSearch> shows = lookupResponse.getBody();
         if (shows == null || shows.isEmpty()) {
-            throw new InfoProviderException("TVMaze found no series with title " + title);
+            throw new InfoNotFoundException("TVMaze found no series with title " + title);
         }
         shows.forEach(x -> makePosterLinksSecure(x.getShow()));
         return shows;
