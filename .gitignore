@@ -45,3 +45,4 @@ org.eclipse.m2e.core.prefs
 org.eclipse.jdt.apt.core.prefs
 .playwright
 .playwright-mcp
+opencode.json
