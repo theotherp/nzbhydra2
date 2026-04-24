@@ -1,0 +1,153 @@
+.theme(dark-dyschromatopsia) {
+  @import (multiple) "../../../bower_components/bootstrap-less/less/variables.less";
+
+  @import (multiple) "vars-grey.less";
+
+  @body-bg: #000000;
+  @text-color: #BBBBBB;
+  @text-muted: @text-color;
+  @brand-primary: #303437;
+  @brand-success: #165E5B;
+  @brand-info: #1A5C6E;
+  @brand-warning: #7A4B00;
+  @brand-danger: #4A2D78;
+  @brand-danger-message: #B090C8;
+  @input-bg: rgb(15, 17, 19);
+  @input-color: @text-color;
+  @input-color-placeholder: @text-color;
+  @navbar-default-bg: @brand-primary;
+  @navbar-default-link-hover-bg: #242729;
+  @navbar-default-link-active-bg: #242729;
+  @navbar-inverse-bg: @brand-primary;
+  @navbar-inverse-link-hover-bg: #242729;
+  @navbar-inverse-link-active-bg: #242729;
+  @btn-default-bg: @brand-primary;
+  @btn-default-active-bg: #242729;
+  @btn-default-border: @btn-default-bg;
+  @btn-primary-bg: @brand-primary;
+  @btn-primary-border: @btn-primary-bg;
+  @chart-text-color: @text-color;
+  @chart-bar-color: #175987;
+  @chart-bar-color-alt: lighten(@chart-bar-color, 10%);
+  @pie-color-1: #D4A847;
+  @pie-color-2: #F0A830;
+  @pie-color-3: #EC8040;
+  @pie-color-4: #3AACCF;
+  @pie-color-5: #C870A8;
+  @pie-color-6: #9070BC;
+  @pie-color-7: #9A68D8;
+  @pie-color-8: #30B885;
+  @pie-color-9: #78C8E8;
+  @pie-color-10: #5ABCB8;
+  @pie-color-11: #3898D8;
+  @pie-color-12: #20A89A;
+  @pie-color-13: #E8D060;
+  @pie-color-14: #A8D880;
+  @pie-color-15: #2AB0A8;
+  @pie-color-16: #7862A8;
+  @pie-color-17: #4878D8;
+
+  @import (multiple) "../bootstrap.less";
+  @import (multiple) "../../../bower_components/bootstrap-switch/src/less/bootstrap3/bootstrap-switch.less";
+  @import (multiple) "../nzbhydra.less";
+
+  @import (multiple) "charts-dark.less";
+
+  .text-muted,
+  .text-primary,
+  h1 small,
+  h2 small,
+  h3 small,
+  h4 small,
+  h5 small,
+  h6 small,
+  .h1 small,
+  .h2 small,
+  .h3 small,
+  .h4 small,
+  .h5 small,
+  .h6 small,
+  h1 .small,
+  h2 .small,
+  h3 .small,
+  h4 .small,
+  h5 .small,
+  h6 .small,
+  .h1 .small,
+  .h2 .small,
+  .h3 .small,
+  .h4 .small,
+  .h5 .small,
+  .h6 .small,
+  blockquote footer,
+  blockquote small,
+  blockquote .small {
+    color: @text-color;
+  }
+
+  a.text-primary:hover {
+    color: @text-color;
+  }
+
+  a.bg-primary:hover {
+    background-color: #242729;
+  }
+
+  a.bg-success:hover {
+    background-color: #0E4240;
+  }
+
+  a.bg-info:hover {
+    background-color: #144858;
+  }
+
+  a.bg-warning:hover {
+    background-color: #5C3800;
+  }
+
+  a.bg-danger:hover {
+    background-color: #3A2060;
+  }
+
+  .chip-failed .default-chip {
+    color: @brand-danger-message;
+  }
+
+  .indexer-button.config-incomplete {
+    background-color: @brand-danger;
+    border-color: @brand-danger-message;
+  }
+
+  .indexer-button.not-all-checked {
+    background-color: @brand-warning;
+    border-color: #a96405;
+  }
+
+  g.nv-pieChart > g > g.nv-legendWrap.nvd3-svg > g > g > g:nth-child(4) > circle {
+    stroke: @brand-info !important;
+  }
+
+  g.nv-pieChart > g > g.nv-legendWrap.nvd3-svg > g > g > g:nth-child(7) > circle {
+    stroke: @brand-danger !important;
+  }
+
+  g.nv-pieChart > g > g.nv-legendWrap.nvd3-svg > g > g > g:nth-child(9) > circle {
+    stroke: @pie-color-3 !important;
+  }
+
+  g.nv-pieChart > g > g.nv-legendWrap.nvd3-svg > g > g > g:nth-child(12) > circle {
+    stroke: @brand-success !important;
+  }
+
+  g.nv-pieChart > g > g.nv-legendWrap.nvd3-svg > g > g > g:nth-child(14) > circle {
+    stroke: @pie-color-9 !important;
+  }
+
+  g.nv-pieChart > g > g.nv-legendWrap.nvd3-svg > g > g > g:nth-child(15) > circle {
+    stroke: #0E4240 !important;
+  }
+
+  g.nv-pieChart > g > g.nv-legendWrap.nvd3-svg > g > g > g:nth-child(17) > circle {
+    stroke: #1A3A8A !important;
+  }
+}

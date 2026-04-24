@@ -227,7 +227,8 @@ function ConfigFields($injector) {
                                     {name: 'Auto', value: 'auto'},
                                     {name: 'Grey', value: 'grey'},
                                     {name: 'Bright', value: 'bright'},
-                                    {name: 'Dark', value: 'dark'}
+                                    {name: 'Dark', value: 'dark'},
+                                    {name: 'Dark (Dyschromatopsia)', value: 'dark-dyschromatopsia'}
                                 ]
                             }
                         }

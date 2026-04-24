@@ -212,6 +212,18 @@ gulp.task('less', function () {
         .pipe(sourcemaps.write("."))
         .pipe(gulp.dest(dest));
 
+    var darkDyschromatopsiaTheme = gulp.src(uiSrcFolder + '/less/dark-dyschromatopsia.less')
+        .pipe(cached("dark-dyschromatopsia"))
+        .on('error', swallowError)
+        .pipe(sourcemaps.init())
+        .pipe(less({
+            relativeUrls: true
+        }))
+        .on('error', swallowError)
+        .pipe(cleancss())
+        .pipe(sourcemaps.write("."))
+        .pipe(gulp.dest(dest));
+
     var autoTheme = gulp.src(uiSrcFolder + '/less/auto.less')
         .pipe(cached("auto"))
         .on('error', swallowError)
@@ -224,7 +236,7 @@ gulp.task('less', function () {
         .pipe(sourcemaps.write("."))
         .pipe(gulp.dest(dest));
 
-    return merge(brightTheme, greyTheme, darkTheme, autoTheme);
+    return merge(brightTheme, greyTheme, darkTheme, darkDyschromatopsiaTheme, autoTheme);
 });
 
 gulp.task('less-dev', function () {
@@ -262,6 +274,17 @@ gulp.task('less-dev', function () {
         .pipe(sourcemaps.write("."))
         .pipe(gulp.dest(dest));
 
+    var darkDyschromatopsiaTheme = gulp.src(uiSrcFolder + '/less/dark-dyschromatopsia.less')
+        .pipe(cached("dark-dyschromatopsia-dev"))
+        .on('error', swallowError)
+        .pipe(sourcemaps.init())
+        .pipe(less({
+            relativeUrls: true
+        }))
+        .on('error', swallowError)
+        .pipe(sourcemaps.write("."))
+        .pipe(gulp.dest(dest));
+
     var autoTheme = gulp.src(uiSrcFolder + '/less/auto.less')
         .pipe(cached("auto-dev"))
         .on('error', swallowError)
@@ -273,7 +296,7 @@ gulp.task('less-dev', function () {
         .pipe(sourcemaps.write("."))
         .pipe(gulp.dest(dest));
 
-    return merge(brightTheme, greyTheme, darkTheme, autoTheme);
+    return merge(brightTheme, greyTheme, darkTheme, darkDyschromatopsiaTheme, autoTheme);
 });
 
 gulp.task('copy-assets', function () {
@@ -314,10 +337,12 @@ gulp.task('delMainLessCache', function () {
     delete cached.caches["bright"];
     delete cached.caches["grey"];
     delete cached.caches["dark"];
+    delete cached.caches["dark-dyschromatopsia"];
     delete cached.caches["auto"];
     delete cached.caches["bright-dev"];
     delete cached.caches["grey-dev"];
     delete cached.caches["dark-dev"];
+    delete cached.caches["dark-dyschromatopsia-dev"];
     delete cached.caches["auto-dev"];
 });
 
