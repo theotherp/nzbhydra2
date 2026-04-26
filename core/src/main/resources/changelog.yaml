@@ -4,6 +4,8 @@
     final: false
     changes:
       -   type: "feature"
+          text: "Again I've made the mistake of thinking that my workflow is the norm. I never change the indexers for a search (and still don't really see a reason to do so) but I understand that some of you do this often enough that one extra click compared to before was enough to generate the most feedback I've ever had on a change (for better or worse). I've added an option to switch back to the old indexer selection type with checkboxes. That said, it would help if, with any feedback, you would describe *why* you don't like something because otherwise it's hard for me to find a solution that works for everybody."
+      -   type: "feature"
           text: "Add dark theme for people with dyschromatopsia. See #1057"
       -   type: "fix"
           text: "TV autocomplete no longer repeatedly treats missing TVMaze results for NZB-style titles as errors, reducing log spam and unnecessary lookups. See #1058"

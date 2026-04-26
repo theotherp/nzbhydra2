@@ -100,6 +100,7 @@ public class MainConfig {
     private boolean welcomeShown = false;
     private boolean disableTour = false;
     protected String theme;
+    private boolean indexerSelectionAsCheckboxes = false;
 
 
     //Database settings

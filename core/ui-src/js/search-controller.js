@@ -66,6 +66,7 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
 
     var safeConfig = ConfigService.getSafe();
     $scope.showIndexerSelection = HydraAuthService.getUserInfos().showIndexerSelection;
+    $scope.showIndexerCheckboxes = safeConfig.indexerSelectionAsCheckboxes;
 
 
     $scope.typeAheadWait = 300;
@@ -75,8 +76,12 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
     $scope.selectedIndexers = [];
     $scope.availableIndexerOptions = [];
     $scope.indexerSelectionActions = [];
+    $scope.defaultIndexerSelectionAction = null;
+    $scope.additionalIndexerSelectionActions = [];
     $scope.indexerSelectionSettings = {
         showSelectedValues: true,
+        showSelectAll: false,
+        showDeselectAll: false,
         noSelectedText: 'Select indexers',
         selectionNoun: 'indexers',
         fullWidth: true
@@ -483,7 +488,22 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
     };
 
     $scope.toggleIndexer = function (indexer) {
-        $scope.availableIndexers[indexer.name].activated = !$scope.availableIndexers[indexer.name].activated;
+        var index = _.indexOf($scope.selectedIndexers, indexer.name);
+        if (index === -1) {
+            $scope.selectedIndexers.push(indexer.name);
+        } else {
+            $scope.selectedIndexers.splice(index, 1);
+        }
+    };
+
+    $scope.isIndexerSelected = function (indexer) {
+        return _.contains($scope.selectedIndexers, indexer.name);
+    };
+
+    $scope.executeIndexerSelectionAction = function (action) {
+        if (action && angular.isFunction(action.action)) {
+            action.action();
+        }
     };
 
     function selectIndexersByPredicate(predicate) {
@@ -498,7 +518,18 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         });
     }
 
-    function buildGroupSelectionOptions(availableIndexers) {
+    function invertIndexerSelection(availableIndexers) {
+        _.forEach(availableIndexers, function (indexer) {
+            var index = _.indexOf($scope.selectedIndexers, indexer.name);
+            if (index === -1) {
+                $scope.selectedIndexers.push(indexer.name);
+            } else {
+                $scope.selectedIndexers.splice(index, 1);
+            }
+        });
+    }
+
+    function buildGroupSelectionActions(availableIndexers) {
         var groupNames = _.chain(availableIndexers)
             .pluck('groupNames')
             .flatten()
@@ -513,9 +544,9 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
 
         return _.map(groupNames, function (groupName) {
             return {
-                id: '__indexer_group__:' + groupName,
-                label: groupName,
-                group: 'Groups',
+                label: 'Select group: ' + groupName,
+                iconClass: 'glyphicon glyphicon-folder-open',
+                isGroupAction: true,
                 action: function () {
                     selectIndexersByGroup(groupName);
                 }
@@ -527,8 +558,6 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         var hasTorznabIndexers = _.some(availableIndexers, function (indexer) {
             return indexer.searchModuleType === 'TORZNAB';
         });
-        var groupSelectionOptions = buildGroupSelectionOptions(availableIndexers);
-
         var usenetIndexers = _.filter(availableIndexers, function (indexer) {
             return indexer.searchModuleType !== 'TORZNAB';
         });
@@ -544,11 +573,18 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
             };
         });
 
-        return groupSelectionOptions.concat(indexerOptions);
+        return indexerOptions;
     }
 
     function buildIndexerSelectionActions(availableIndexers) {
         var actions = [
+            {
+                label: 'Invert selection',
+                iconClass: 'glyphicon glyphicon-retweet',
+                action: function () {
+                    invertIndexerSelection(availableIndexers);
+                }
+            },
             {
                 label: 'Reset to preselection',
                 iconClass: 'glyphicon glyphicon-repeat',
@@ -559,17 +595,19 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
                 }
             },
             {
-                label: 'Invert selection',
-                iconClass: 'glyphicon glyphicon-retweet',
+                label: 'Select all',
+                iconClass: 'glyphicon glyphicon-ok',
                 action: function () {
-                    _.forEach(availableIndexers, function (indexer) {
-                        var index = _.indexOf($scope.selectedIndexers, indexer.name);
-                        if (index === -1) {
-                            $scope.selectedIndexers.push(indexer.name);
-                        } else {
-                            $scope.selectedIndexers.splice(index, 1);
-                        }
+                    selectIndexersByPredicate(function () {
+                        return true;
                     });
+                }
+            },
+            {
+                label: 'Deselect all',
+                iconClass: 'glyphicon glyphicon-remove',
+                action: function () {
+                    $scope.selectedIndexers.splice(0, $scope.selectedIndexers.length);
                 }
             }
         ];
@@ -597,7 +635,7 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
             });
         }
 
-        return actions;
+        return actions.concat(buildGroupSelectionActions(availableIndexers));
     }
 
     function isIndexerPreselected(indexer) {
@@ -641,6 +679,8 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         }
         $scope.availableIndexerOptions = buildIndexerDropdownOptions(availableIndexersList);
         $scope.indexerSelectionActions = buildIndexerSelectionActions(availableIndexersList);
+        $scope.defaultIndexerSelectionAction = $scope.indexerSelectionActions[0] || null;
+        $scope.additionalIndexerSelectionActions = $scope.indexerSelectionActions.slice(1);
         return availableIndexersList;
     }
 

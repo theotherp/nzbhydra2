@@ -174,17 +174,53 @@
                 </div>
             
             <div class="row search-tools-row">
-              <div class="col-xs-20 col-sm-8 col-md-7">
-                <div class="search-indexer-wrap" ng-if="::showIndexerSelection">
-                  <div multiselect-dropdown options="availableIndexerOptions"
+              <div class="col-xs-20"
+                   ng-class="showIndexerCheckboxes ? 'col-sm-14 col-md-15' : 'col-sm-8 col-md-7'">
+                <div class="search-indexer-wrap"
+                     ng-class="{'search-indexer-wrap-checkboxes': showIndexerCheckboxes}"
+                     ng-if="::showIndexerSelection">
+                  <div ng-if="!showIndexerCheckboxes"
+                       multiselect-dropdown options="availableIndexerOptions"
                        selected-model="selectedIndexers"
                        settings="indexerSelectionSettings"
                        actions="indexerSelectionActions"
                        class="indexer-selection-dropdown">
                   </div>
+                  <div ng-if="showIndexerCheckboxes">
+                    <div class="search-indexer-checkboxes-wrap">
+                      <div class="btn-group search-indexer-checkbox-actions" uib-dropdown>
+                        <button id="search-indexer-split-button" type="button" class="btn btn-default"
+                                ng-click="executeIndexerSelectionAction(defaultIndexerSelectionAction)">
+                          <span ng-if="defaultIndexerSelectionAction.iconClass"
+                                class="{{defaultIndexerSelectionAction.iconClass}}"
+                                style="margin-right: 6px;"></span>
+                          {{defaultIndexerSelectionAction.label}}
+                        </button>
+                        <button type="button" class="btn btn-default" uib-dropdown-toggle
+                                aria-haspopup="true" aria-expanded="false">
+                          <span class="caret"></span>
+                          <span class="sr-only">Toggle Dropdown</span>
+                        </button>
+                        <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="search-indexer-split-button">
+                          <li ng-repeat="action in additionalIndexerSelectionActions" role="menuitem">
+                            <div class="divider" ng-if="action.isGroupAction && !$first"></div>
+                            <a href="" ng-click="executeIndexerSelectionAction(action)">
+                              <span ng-if="action.iconClass" class="{{action.iconClass}}" style="margin-right: 6px;"></span>
+                              {{action.label}}
+                            </a>
+                          </li>
+                        </ul>
+                      </div>
+                      <label ng-repeat="indexer in availableIndexers track by indexer.name"
+                             class="search-indexer-checkbox-label">
+                        <input type="checkbox" ng-checked="isIndexerSelected(indexer)" ng-click="toggleIndexer(indexer)">
+                        {{indexer.name}}
+                      </label>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div class="hidden-xs col-sm-6 col-md-8"></div>
+              <div class="hidden-xs col-sm-6 col-md-8" ng-if="!showIndexerCheckboxes"></div>
               <div class="col-xs-20 col-sm-6 col-md-5 search-history-col">
                 <div class="dropdown search-history-dropdown" uib-dropdown is-open="status.isopen" id="search-history">
                   <button id="history-dropdown-button" type="button" class="btn btn-default search-history-button btn-block"
@@ -203,6 +239,7 @@
                   </ul>
                 </div>
               </div>
+            </div>
               
               
               <div class="row search-actions-row">
@@ -214,7 +251,6 @@
                   </button>
                 </div>
               </div>
-            </div>
           </div>
           
           <div class="text-center" style="margin-top: 5px;" ng-if="showTourButton">

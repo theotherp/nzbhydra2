@@ -232,7 +232,6 @@
 .search-submit-button-row {
   text-align: right;
   margin-top: 5px;
-  padding-right: 30px;
   @media (max-width: @screen-xs-max) {
     max-width: 375px;
     margin-left: 15px;
@@ -274,10 +273,39 @@
   width: 100%;
 }
 
-.search-indexer-wrap .multiselect-parent,
-.search-indexer-wrap .dropdown-toggle {
+.search-indexer-wrap .indexer-selection-dropdown .multiselect-parent,
+.search-indexer-wrap .indexer-selection-dropdown .dropdown-toggle {
   display: block !important;
   width: 100% !important;
+}
+
+.search-indexer-wrap-checkboxes {
+  text-align: left;
+}
+
+.search-indexer-checkboxes-wrap {
+  line-height: 34px;
+}
+
+.search-indexer-checkbox-actions {
+  margin-right: 10px;
+  margin-bottom: 8px;
+  vertical-align: middle;
+}
+
+.search-indexer-checkbox-actions > .btn {
+  width: auto !important;
+}
+
+.search-indexer-checkbox-label {
+  display: inline-block;
+  margin: 0 12px 8px 0;
+  font-weight: normal;
+  vertical-align: middle;
+}
+
+.search-indexer-checkbox-label input {
+  margin-top: 0;
 }
 
 .search-filter-group .input-group {

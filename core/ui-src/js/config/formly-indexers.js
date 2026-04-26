@@ -301,19 +301,6 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
             }
         }
     );
-    fieldset.push(
-        {
-            key: 'groupNames',
-            type: 'horizontalChips',
-            templateOptions: {
-                type: 'text',
-                label: 'Indexer groups',
-                help: 'Assign this indexer to one or more groups. These can be selected from the search page. Apply values with return key.',
-                advanced: true,
-                typeaheadSource: getGroupNameSuggestions
-            }
-        }
-    );
 
     if (['NEWZNAB', 'TORZNAB'].includes(indexerModel.searchModuleType)) {
         fieldset.push(
@@ -522,6 +509,19 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
                 help: 'If set it will be used in the search results to mark the indexer\'s results.',
                 tooltip: 'To mark expanded results they\'re shown in a darker shade so it\'s recommended to use indexer colors which not only differ in lightness',
                 advanced: true
+            }
+        }
+    );
+    fieldset.push(
+        {
+            key: 'groupNames',
+            type: 'horizontalChips',
+            templateOptions: {
+                type: 'text',
+                label: 'Indexer groups',
+                help: 'Assign this indexer to one or more groups. These can be selected from the search page. Apply values with return key.',
+                advanced: true,
+                typeaheadSource: getGroupNameSuggestions
             }
         }
     );

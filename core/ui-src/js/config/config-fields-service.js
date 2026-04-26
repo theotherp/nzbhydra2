@@ -231,6 +231,16 @@ function ConfigFields($injector) {
                                     {name: 'Dark (Dyschromatopsia)', value: 'dark-dyschromatopsia'}
                                 ]
                             }
+                        },
+                        {
+                            key: 'indexerSelectionAsCheckboxes',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Indexer checkbox list',
+                                help: 'Show indexer selection on the search page as a checkbox list with a separate action menu instead of a multiselect dropdown.',
+                                advanced: true
+                            }
                         }
                     ]
                 },
