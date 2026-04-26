@@ -6,6 +6,25 @@
   </a>
 </script>
 
+<script type="text/ng-template" id="autocompletePopupTemplate.html">
+  <ul class="dropdown-menu"
+      ng-show="!moveInProgress && (isOpen() ? true : ((mouseSelectionQuery = null) || false))"
+      ng-style="{top: position().top+'px', left: position().left+'px'}"
+      role="listbox"
+      aria-hidden="{{!isOpen()}}">
+    <li class="uib-typeahead-match"
+        ng-repeat="match in matches track by $index"
+        ng-class="{active: isActive($index) }"
+        ng-mouseenter="mouseSelectionQuery === query && selectActive($index)"
+        ng-mousemove="mouseSelectionQuery = query; selectActive($index)"
+        ng-click="selectMatch($index, $event)"
+        role="option"
+        id="{{::match.id}}">
+      <div uib-typeahead-match index="$index" match="match" query="query" template-url="templateUrl"></div>
+    </li>
+  </ul>
+</script>
+
 <div ui-tour ui-tour-backdrop="true" ui-tour-backdrop-padding="5" ui-tour-append-to-body="true"
      ui-tour-on-end="onTourEnd()" ui-tour-on-ready="onTourReady()">
   
@@ -53,6 +72,7 @@
                          typeahead-wait-ms="typeAheadWait" ng-keydown="onTypeAheadKeyDown($event)"
                          uib-typeahead="item as item.label for item in getAutocomplete($viewValue)"
                          typeahead-template-url="autocompleteTemplate.html"
+                         typeahead-popup-template-url="autocompletePopupTemplate.html"
                          ng-class="{'autocompleteLoading': (loadingItems && supportsAutocomplete())}"
                          typeahead-loading="loadingItems"
                          typeahead-on-select="selectAutocompleteItem($item)" class="form-control search-main-query-input"

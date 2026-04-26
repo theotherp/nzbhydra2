@@ -7,6 +7,8 @@
           text: "Add dark theme for people with dyschromatopsia. See #1057"
       -   type: "fix"
           text: "TV autocomplete no longer repeatedly treats missing TVMaze results for NZB-style titles as errors, reducing log spam and unnecessary lookups. See #1058"
+      -   type: "fix"
+          text: "Ensure first autocomplete entry in search is preselected (regardless of mouse position)."
 -   version: "v8.7.2"
     date: "2026-04-20"
     final: true
