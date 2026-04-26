@@ -293,6 +293,7 @@ main:
   disableTour: false
   dereferer: null
   host: "0.0.0.0"
+  indexerSelectionAsCheckboxes: false
   instanceCounterDownloaded: false
   keepHistory: true
   keepHistoryForWeeks: null
