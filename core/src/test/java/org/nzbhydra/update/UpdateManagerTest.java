@@ -139,6 +139,44 @@ public class UpdateManagerTest {
         assertThat(changesSince.get(1).getVersion()).isEqualTo("1.0.1");
     }
 
+    @Test
+    void shouldParseMultilineAndFoldedYamlChangelogEntries() throws Exception {
+        when(webAccessMock.callUrl(eq("http:/127.0.0.1:7070/changelog"))).thenReturn("""
+                - version: 2.0.0
+                  changes:
+                    - type: note
+                      text: |-
+                        First line
+                        Second line
+                    - type: fix
+                      text: >-
+                        This entry is wrapped
+                        in the YAML file.
+                """);
+
+        List<ChangelogVersionEntry> changesSince = testee.getChangesBetweenCurrentVersionAnd(new SemanticVersion("2.0.0"));
+
+        assertThat(changesSince).hasSize(1);
+        assertThat(changesSince.get(0).getChanges()).extracting(ChangelogChangeEntry::getText)
+                .containsExactly("First line\nSecond line", "This entry is wrapped in the YAML file.");
+    }
+
+    @Test
+    void shouldNormalizeEscapedNewlinesInChangelogEntries() throws Exception {
+        when(webAccessMock.callUrl(eq("http:/127.0.0.1:7070/changelog"))).thenReturn("""
+                - version: 2.0.0
+                  changes:
+                    - type: note
+                      text: "First line\\nSecond line"
+                """);
+
+        List<ChangelogVersionEntry> changesSince = testee.getChangesBetweenCurrentVersionAnd(new SemanticVersion("2.0.0"));
+
+        assertThat(changesSince).hasSize(1);
+        assertThat(changesSince.get(0).getChanges()).extracting(ChangelogChangeEntry::getText)
+                .containsExactly("First line\nSecond line");
+    }
+
 
 
 }

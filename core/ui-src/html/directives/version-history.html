@@ -1,6 +1,4 @@
-
-
-<div class="panel panel-default " style="margin-top: 50px; text-align: left">
+<div class="panel panel-default " style="margin-top: 50px; text-align: left; margin-left: 200px; margin-right: 200px">
   <div class="panel-heading"><h3>Version history</h3></div>
   <div class="list-group">
     <li ng-repeat="entry in versionHistory" class="list-group-item text-break"
@@ -12,7 +10,7 @@
                   <span class="label label-warning" ng-switch-when="fix">Fix</span>
                   <span class="label label-success" ng-switch-when="feature">Feature</span>
               </span>
-        <span ng-bind-html="change.text  | unsafe"></span>
+        <span ng-bind-html="change.text | unsafe" style="white-space: pre-line"></span>
       </div>
     </li>
   </div>

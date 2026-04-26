@@ -1,10 +1,18 @@
 #@formatter:off
--   version: "v8.7.3"
+-   version: "v8.8.0"
     date: "2026-04-24"
-    final: false
+    final: true
     changes:
       -   type: "feature"
-          text: "Again I've made the mistake of thinking that my workflow is the norm. I never change the indexers for a search (and still don't really see a reason to do so) but I understand that some of you do this often enough that one extra click compared to before was enough to generate the most feedback I've ever had on a change (for better or worse). I've added an option to switch back to the old indexer selection type with checkboxes. That said, it would help if, with any feedback, you would describe *why* you don't like something because otherwise it's hard for me to find a solution that works for everybody."
+          text: >-
+            Again I've made the mistake of thinking that my workflow is the norm. I never change the indexers for a
+            search (and still don't really see a reason to do so) but I understand that some of you do this often
+            enough that one extra click compared to before was enough to generate the most feedback I've ever had on a
+            change (for better or worse). I've added an option to switch back to the old indexer selection type with
+            checkboxes.\nThat said, it would help if, with any feedback, you would describe *why* you don't like
+            something because otherwise it's hard for me to find a solution that works for everybody.
+      -   type: "feature"
+          text: "Allow linebreaks in the changelog for long-ass entries like the above."
       -   type: "feature"
           text: "Add dark theme for people with dyschromatopsia. See #1057"
       -   type: "fix"
@@ -28,9 +36,13 @@
     final: true
     changes:
       -   type: "feature"
-          text: "You can now assign an indexer to one or more groups. These groups will be shown in the indexer dropdown and change the selection to the indexer(s) in that group."
+          text: >-
+            You can now assign an indexer to one or more groups. These groups will be shown in the indexer dropdown
+            and change the selection to the indexer(s) in that group.
       -   type: "fix"
-          text: "Fix history timestamps and the in-app log viewer showing the wrong DST offset in some time zones by using more complete timezone data in the frontend. See #1051"
+          text: >-
+            Fix history timestamps and the in-app log viewer showing the wrong DST offset in some time zones by using
+            more complete timezone data in the frontend. See #1051
       -   type: "fix"
           text: "Fix new search UI when indexer selection box is hidden."
 -   version: "v8.6.0"
@@ -58,9 +70,13 @@
     final: true
     changes:
       -   type: "fix"
-          text: "When triggering a caps check or connection check from the UI the API key (and username/password) would be sent as placeholder value instead of the actual configured value."
+          text: >-
+            When triggering a caps check or connection check from the UI the API key (and username/password) would be
+            sent as placeholder value instead of the actual configured value.
       -   type: "feature"
-          text: "Added a button in the Bugreport / Debug section to temporarily disable sensitive data masking in the log. Useful for debugging connection issues where API keys etc. need to be visible. Resets on restart."
+          text: >-
+            Added a button in the Bugreport / Debug section to temporarily disable sensitive data masking in the log.
+            Useful for debugging connection issues where API keys etc. need to be visible. Resets on restart.
 -   version: "v8.5.2"
     date: "2026-03-12"
     final: true
@@ -68,7 +84,9 @@
       -   type: "fix"
           text: "\"Load more\" would not always work or only after many clicks. Now each click should load the expected next 100 results."
       -   type: "note"
-          text: "I've had to disable Binsearch for now. The page format changed and I've been unable to parse the output. Looks like it take quite some work. You can leave it enabled, it will just not be shown for searches."
+          text: >-
+            I've had to disable Binsearch for now. The page format changed and I've been unable to parse the output.
+            Looks like it take quite some work. You can leave it enabled, it will just not be shown for searches.
 -   version: "v8.5.1"
     date: "2026-02-15"
     final: true
@@ -82,7 +100,12 @@
     final: true
     changes:
       -   type: "feature"
-          text: "Added a guided tour. It highlights the most important search features and how results are presented. You can hide the tour or explicitly disable it in the config. Hydra will persist the tour state per user, i.e. every user can complete or ignore it on their own. This was a pain to implement but hopefully it will help users find features like ID based searching and categories which I always considered obvious. Feel free to tell me what else should be included in the tour and if it actually helps or is just a nuisance."
+          text: >-
+            Added a guided tour. It highlights the most important search features and how results are presented. You
+            can hide the tour or explicitly disable it in the config. Hydra will persist the tour state per user,
+            i.e. every user can complete or ignore it on their own. This was a pain to implement but hopefully it will
+            help users find features like ID based searching and categories which I always considered obvious. Feel
+            free to tell me what else should be included in the tour and if it actually helps or is just a nuisance.
       -   type: "feature"
           text: "Allow saving searches from the results view and re-running them from the new Saved searches tab. See #709"
       -   type: "fix"
@@ -90,7 +113,9 @@
       -   type: "fix"
           text: "Write magnet links with UTF-8 encoding when saving torrents to the black hole folder to avoid garbled non-ASCII titles. See #904"
       -   type: "fix"
-          text: "Track indexers imported from Prowlarr by their ID. That means that you can rename them in NZBHydra after the import and they will not be added again with their original name."
+          text: >-
+            Track indexers imported from Prowlarr by their ID. That means that you can rename them in NZBHydra after
+            the import and they will not be added again with their original name.
 -   version: "v8.4.1"
     date: "2026-02-01"
     final: true
@@ -121,7 +146,11 @@
     date: "2026-01-16"
     changes:
       -   type: "feature"
-          text: "Added an option to show a quality indicator for movie releases. This helps identify release quality at a glance without needing to understand terms like HC, TS or DV. You can enable it in the searching section. The parser is adapted from Radarr. To comply with their GPL license, NZBHydra is now GPL as well. This doesn't change anything for you as a user."
+          text: >-
+            Added an option to show a quality indicator for movie releases. This helps identify release quality at a
+            glance without needing to understand terms like HC, TS or DV. You can enable it in the searching section.
+            The parser is adapted from Radarr. To comply with their GPL license, NZBHydra is now GPL as well. This
+            doesn't change anything for you as a user.
     final: true
 -   version: "v8.2.3"
     date: "2026-01-15"
@@ -141,15 +170,23 @@
     date: "2026-01-06"
     changes:
       -   type: "fix"
-          text: "Fix reading prowlarr config. I've extended the tests to ensure this kind of bug doesn't happen again (the one which only appears with the released binaries, not when developing). See #1035"
+          text: >-
+            Fix reading prowlarr config. I've extended the tests to ensure this kind of bug doesn't happen again (the
+            one which only appears with the released binaries, not when developing). See #1035
     final: true
 -   version: "v8.2.0"
     date: "2026-01-05"
     changes:
       -   type: "feature"
-          text: "Add attribute whitelist filtering for indexers. Allows filtering search results by newznab attributes (e.g., subtitles). Configure per-indexer with optional category restrictions. See #983"
+          text: >-
+            Add attribute whitelist filtering for indexers. Allows filtering search results by newznab attributes
+            (e.g., subtitles). Configure per-indexer with optional category restrictions. See #983
       -   type: "feature"
-          text: "Option to import prowlarr indexers. They will be added as separate entries with a (Prowlarr) suffix. This different than using the external tool configuration as the prowlarr indexers will be searched via prowlarr, i.e. when you search them in hydra it will call prowlarr which then calls the indexers. See #922"
+          text: >-
+            Option to import prowlarr indexers. They will be added as separate entries with a (Prowlarr) suffix. This
+            different than using the external tool configuration as the prowlarr indexers will be searched via
+            prowlarr, i.e. when you search them in hydra it will call prowlarr which then calls the indexers. See
+            #922
       -   type: "feature"
           text: "Option to ignore load limiting for targeted API searches. See #909"
       -   type: "fix"
@@ -171,7 +208,10 @@
       -   type: "fix"
           text: "Fix some more memory leaks in the frontend. See #982"
       -   type: "fix"
-          text: "Trying to get wtfnzb to work. Apparently they have been able to make their API even worse - searches will only return results if the query is a direct substring of the title, meaning \"tv show\" will not return \"tv.show\" results. So now I replace spaces with dots, FFS."
+          text: >-
+            Trying to get wtfnzb to work. Apparently they have been able to make their API even worse - searches will
+            only return results if the query is a direct substring of the title, meaning "tv show" will not return
+            "tv.show" results. So now I replace spaces with dots, FFS.
     final: true
 -   version: "v8.1.1"
     date: "2025-12-02"
@@ -193,7 +233,9 @@
       -   type: "feature"
           text: "Also search in archived entries when checking for download completion for sabnzbd downloads."
       -   type: "feature"
-          text: "SVG as favicon. Also removes the black background on supported (basically any modern) browsers (so you may need to get used to a new-ish icon in your browser). See #1019"
+          text: >-
+            SVG as favicon. Also removes the black background on supported (basically any modern) browsers (so you may
+            need to get used to a new-ish icon in your browser). See #1019
       -   type: "fix"
           text: "Delete indexers and their related data from the database when removed from the config. See #1022"
       -   type: "fix"
@@ -207,7 +249,11 @@
       -   type: "feature"
           text: "Passwords for users are finally encrypted (and salted) and not stored in plaintext in the config. See #908"
       -   type: "feature"
-          text: "Sensitive data like proxy credentials and indexer API keys are now obfuscated in the config. They can still be read by any NZBHydra instance, but automated sniffing tools will no longer be able to read these values from the saved config. Making this more secure would make other features like backups much less convenient, so I decided to go with this middle ground approach."
+          text: >-
+            Sensitive data like proxy credentials and indexer API keys are now obfuscated in the config. They can
+            still be read by any NZBHydra instance, but automated sniffing tools will no longer be able to read these
+            values from the saved config. Making this more secure would make other features like backups much less
+            convenient, so I decided to go with this middle ground approach.
       -   type: "fix"
           text: "NZBGeek queries will not be truncated to 6 words."
       -   type: "fix"
@@ -244,7 +290,9 @@
       -   type: "fix"
           text: "Made the checkmark in the torbox downloader icon better visible."
       -   type: "fix"
-          text: "Downloads to torbox should now be added to the history. This required a rewrite of the overall download handling so hopefully everything still works... See #1007"
+          text: >-
+            Downloads to torbox should now be added to the history. This required a rewrite of the overall download
+            handling so hopefully everything still works... See #1007
       -   type: "fix"
           text: "Downloads to torbox that were already cached are now shown as downloaded successfully."
       -   type: "fix"
@@ -270,9 +318,13 @@
 -   version: "v7.16.2"
     changes:
       -   type: "fix"
-          text: "Hopefully fixed magnet handling for Torbox. I neither use Torbox nor Torrents myself and don't know much about magnet links. Hopefully I didn't break something else in the process. See #1010"
+          text: >-
+            Hopefully fixed magnet handling for Torbox. I neither use Torbox nor Torrents myself and don't know much
+            about magnet links. Hopefully I didn't break something else in the process. See #1010
       -   type: "fix"
-          text: "Adapt indexer caps check to gingadaddy's responses. You may need to run a new caps check. They only support IMDB IDs you you should enable ID conversion in the searching config. See #634"
+          text: >-
+            Adapt indexer caps check to gingadaddy's responses. You may need to run a new caps check. They only
+            support IMDB IDs you you should enable ID conversion in the searching config. See #634
     final: true
     date: "2025-09-04"
 -   version: "v7.16.1"
@@ -284,7 +336,10 @@
 -   version: "v7.16.0"
     changes:
       -   type: "feature"
-          text: "Added newznab and torznab support for Torbox. You can add it as two separate indexers from the presets. It should now be possible to send any torrent or usenet results (from torbox or anywhere else) to Torbox. This may break some stuff (sorry, let me know). See #1005"
+          text: >-
+            Added newznab and torznab support for Torbox. You can add it as two separate indexers from the presets.
+            It should now be possible to send any torrent or usenet results (from torbox or anywhere else) to Torbox.
+            This may break some stuff (sorry, let me know). See #1005
       -   type: "fix"
           text: "If an external URL for a downloader is set it's used as link target for the downloader icon in the lower left. See #999"
       -   type: "fix"
@@ -307,13 +362,19 @@
     date: "2025-06-17"
     changes:
       -   type: "fix"
-          text: "Button to downloads results as zip file was gone. I wanted it to be hidden for torbox results and it never showed up. I don't understand my GUI code anymore so now it will be shown even if it doesn't work for Torbox. See #994"
+          text: >-
+            Button to downloads results as zip file was gone. I wanted it to be hidden for torbox results and it never
+            showed up. I don't understand my GUI code anymore so now it will be shown even if it doesn't work for
+            Torbox. See #994
     final: true
 -   version: "v7.15.0"
     date: "2025-06-14"
     changes:
       -   type: "feature"
-          text: "Torbox can now be searched via the GUI. You can search by query or by ID (movies and TV shows) and send the results individually or in a batch to your Torbox downloader. The selected category will have no influence on the search results but Movies and TV will allow you to search using autocomplete."
+          text: >-
+            Torbox can now be searched via the GUI. You can search by query or by ID (movies and TV shows) and send
+            the results individually or in a batch to your Torbox downloader. The selected category will have no
+            influence on the search results but Movies and TV will allow you to search using autocomplete.
     final: true
 -   version: "v7.14.2"
     date: "2025-06-09"
@@ -321,7 +382,11 @@
       -   type: "fix"
           text: "Increased checking delay for nzb.su/life even more as some users were still rate limited. See #990"
       -   type: "fix"
-          text: "Increased timeout when sending NZBs to Torbox. The initial value was too low because I didn't consider that sending NZBs for huge files would take longer for a downloader that's not on the local network. The timeout is now a generous 90 seconds which should allow uploading an NZB for a 75GB result with 1MBit/s. If that's now enough what are you even doing?"
+          text: >-
+            Increased timeout when sending NZBs to Torbox. The initial value was too low because I didn't consider
+            that sending NZBs for huge files would take longer for a downloader that's not on the local network. The
+            timeout is now a generous 90 seconds which should allow uploading an NZB for a 75GB result with 1MBit/s.
+            If that's now enough what are you even doing?
     final: true
 -   version: "v7.14.1"
     date: "2025-06-02"
@@ -335,7 +400,9 @@
       -   type: "feature"
           text: "Extended \"Replace umlauts\" feature to also replace diacritics, e.g. \"è\" will be replaced with \"e\""
       -   type: "fix"
-          text: "With quick filter buttons to be preselected they would also be preselected if they weren't even shown, resulting in filtering unrelated result categories, e.g. filtering audiobooks for \"1080p\". See #992"
+          text: >-
+            With quick filter buttons to be preselected they would also be preselected if they weren't even shown,
+            resulting in filtering unrelated result categories, e.g. filtering audiobooks for "1080p". See #992
     final: true
 -   version: "v7.13.2"
     date: "2025-05-28"
@@ -369,7 +436,9 @@
       -   type: "fix"
           text: "Fix parsing when indexers return empty newznab attributes. This should fix searches for an indexer which you may know (or not)."
       -   type: "note"
-          text: "On a personal note: I had a heart attack a week ago and had to be reanimated. Without going into details bug fixes may take some more time in the near future. Take care."
+          text: >-
+            On a personal note: I had a heart attack a week ago and had to be reanimated. Without going into details
+            bug fixes may take some more time in the near future. Take care.
     final: true
 -   version: "v7.12.2"
     date: "2025-01-24"
@@ -381,13 +450,17 @@
     date: "2025-01-12"
     changes:
       -   type: "fix"
-          text: "Workaround for parsing of results for an indexer which had to restore from a backup lately. Results will show no category until they fix the issue on their side."
+          text: >-
+            Workaround for parsing of results for an indexer which had to restore from a backup lately. Results will
+            show no category until they fix the issue on their side.
     final: true
 -   version: "v7.12.0"
     date: "2025-01-10"
     changes:
       -   type: "feature"
-          text: "If enabled log and/or store username for NZB links. This way when sending a link to be downloaded from hydra the username that caused the download will be known. See #981"
+          text: >-
+            If enabled log and/or store username for NZB links. This way when sending a link to be downloaded from
+            hydra the username that caused the download will be known. See #981
       -   type: "fix"
           text: "Fix paging for search / download / notification history."
       -   type: "fix"
@@ -413,13 +486,19 @@
     date: "2024-12-29"
     changes:
       -   type: "fix"
-          text: "Another one of those times where I tried to improve something but broke it. For some users downloading results didn't work. This is hopefully fixed now. It worked fine for me locally and in the automated tests."
+          text: >-
+            Another one of those times where I tried to improve something but broke it. For some users downloading
+            results didn't work. This is hopefully fixed now. It worked fine for me locally and in the automated
+            tests.
     final: true
 -   version: "v7.11.0"
     date: "2024-12-29"
     changes:
       -   type: "feature"
-          text: "Support for torbox.app as a usenet downloader. They allow sending NZBs to them and you can access the downloaded stuff via web or multiple integrations like FTP, WebDAV, etc. Using them as a search engine or to download torrents will / may come later."
+          text: >-
+            Support for torbox.app as a usenet downloader. They allow sending NZBs to them and you can access the
+            downloaded stuff via web or multiple integrations like FTP, WebDAV, etc. Using them as a search engine or
+            to download torrents will / may come later.
       -   type: "feature"
           text: "Improve IPv6 support. Thanks @ Ruakij. See #975"
       -   type: "fix"
@@ -435,15 +514,22 @@
       -   type: "feature"
           text: "Improve error message when communication with an indexer fails."
       -   type: "fix"
-          text: "Mapping IP addresses to host names (enabled in the logging config) may cause a huge delay when accessing NZBHydra from inside a local network. The tooltip warning about this was probably too small. The mapping will now be aborted after a short timeout."
+          text: >-
+            Mapping IP addresses to host names (enabled in the logging config) may cause a huge delay when accessing
+            NZBHydra from inside a local network. The tooltip warning about this was probably too small. The mapping
+            will now be aborted after a short timeout.
     final: true
 -   version: "v7.10.1"
     date: "2024-11-13"
     changes:
       -   type: "fix"
-          text: "The status of downloads was not properly updated for sabnzbd downloads. Previously unmapped downloads will keep their wrong status in the history because it would be a pain to retroactively update them. See #968"
+          text: >-
+            The status of downloads was not properly updated for sabnzbd downloads. Previously unmapped downloads will
+            keep their wrong status in the history because it would be a pain to retroactively update them. See #968
       -   type: "fix"
-          text: "Do not use IMDB IDs for indexers that don't support them. This would happen when using the TV search function in the ID and selecting a result from the autocomplete."
+          text: >-
+            Do not use IMDB IDs for indexers that don't support them. This would happen when using the TV search
+            function in the ID and selecting a result from the autocomplete.
       -   type: "fix"
           text: "When autocomplete images were proxied they could not be loaded a second time."
       -   type: "fix"
@@ -453,7 +539,11 @@
     date: "2024-11-12"
     changes:
       -   type: "feature"
-          text: "Previously the way forbidden words would be excluded from queries depended on the backend and, to a certain degree, on the indexer but in some cases -- would be used as a prefix which is only supported by many indexers. NZBHydra will now attempt to automatically detect if and how certain words may be excluded from a query. This will either happen during a caps check or on the first search request where needed."
+          text: >-
+            Previously the way forbidden words would be excluded from queries depended on the backend and, to a
+            certain degree, on the indexer but in some cases -- would be used as a prefix which is only supported by
+            many indexers. NZBHydra will now attempt to automatically detect if and how certain words may be excluded
+            from a query. This will either happen during a caps check or on the first search request where needed.
       -   type: "note"
           text: "Added some more infos in the notifications section. Thanks, @pikeas. See #660"
     final: true
@@ -495,9 +585,15 @@
       -   type: "feature"
           text: "Filter NZBKing results for query words to get rid of some of the trash. See #960"
       -   type: "feature"
-          text: "Added SceneNZBs.com to indexer templates. If you want german or spanish results make sure to add the newznab IDs in the categories config. For example for german UHD movies add 2145. You can find out the IDs by browsing the categories on the indexer website."
+          text: >-
+            Added SceneNZBs.com to indexer templates. If you want german or spanish results make sure to add the
+            newznab IDs in the categories config. For example for german UHD movies add 2145. You can find out the IDs
+            by browsing the categories on the indexer website.
       -   type: "feature"
-          text: "The config box shown when you add an indexer can now show additional information about an indexer. In this first instance you'll find the note about SceneNZBs. If you can think of stuff which should be shown for individual indexers please let me know."
+          text: >-
+            The config box shown when you add an indexer can now show additional information about an indexer. In this
+            first instance you'll find the note about SceneNZBs. If you can think of stuff which should be shown for
+            individual indexers please let me know.
       -   type: "Fix"
           text: "Daniel Kastner fixed API access to NZBKing. See #965"
       -   type: "Fix"
@@ -537,7 +633,9 @@
     date: "2024-06-08"
     changes:
       -   type: "fix"
-          text: "Aaargh the UI changes made for the auto theme made most images disappear. I had to roll that feature back until fixed. Why do I only notice these things a couple of minutes after making a release?"
+          text: >-
+            Aaargh the UI changes made for the auto theme made most images disappear. I had to roll that feature back
+            until fixed. Why do I only notice these things a couple of minutes after making a release?
     final: true
 -   version: "v7.2.0"
     date: "2024-06-08"
@@ -551,29 +649,43 @@
       -   type: "fix"
           text: "Restore shift click functionality. See #954"
       -   type: "fix"
-          text: "Updated the windows build libraries. This requires DLL files to be installed (alongside the main `core.exe´ file). They were previously included in the exe but now need to be provided alongside."
+          text: >-
+            Updated the windows build libraries. This requires DLL files to be installed (alongside the main
+            `core.exe´ file). They were previously included in the exe but now need to be provided alongside.
       -   type: "fix"
-          text: "Fixed parsing of binsearch results. It's still a bit iffy (and I personally think the quality of results isn't worth it) but at least you get some results. See #920"
+          text: >-
+            Fixed parsing of binsearch results. It's still a bit iffy (and I personally think the quality of results
+            isn't worth it) but at least you get some results. See #920
     final: true
 -   version: "v7.1.0"
     date: "2024-05-23"
     changes:
       -   type: "feature"
-          text: "Saurori updated the CSS again. The search results table will now collapse its columns into rows on phones which should make the table actually usable there. See #947"
+          text: >-
+            Saurori updated the CSS again. The search results table will now collapse its columns into rows on phones
+            which should make the table actually usable there. See #947
     final: true
 -   version: "v7.0.0"
     date: "2024-05-19"
     changes:
       -   type: "feature"
-          text: "It tooks just five years (or eight if you want to count the release of v1) but NZBHydra finally got a responsive design! Huge thanks to saurori for updating the UI code! There's still room for improvement, of course, but it's a huge step up. See #947"
+          text: >-
+            It tooks just five years (or eight if you want to count the release of v1) but NZBHydra finally got a
+            responsive design! Huge thanks to saurori for updating the UI code! There's still room for improvement, of
+            course, but it's a huge step up. See #947
       -   type: "fix"
-          text: "With the update loop (see 6.2.1) for every update a new backup was created, in some cases filling the hard drive. I now make sure a backup is only created if the last one is old enough."
+          text: >-
+            With the update loop (see 6.2.1) for every update a new backup was created, in some cases filling the hard
+            drive. I now make sure a backup is only created if the last one is old enough.
     final: true
 -   version: "v6.2.1"
     date: "2024-05-12"
     changes:
       -   type: "fix"
-          text: "Unfortunately the automatic update is broken with the new wrappers introduced in 6.0.0. And I tested it so thoroughly (I thought). NZBHydra would shut down for an update but not actually update, with automatic updates resulting in a loop :-("
+          text: >-
+            Unfortunately the automatic update is broken with the new wrappers introduced in 6.0.0. And I tested it
+            so thoroughly (I thought). NZBHydra would shut down for an update but not actually update, with automatic
+            updates resulting in a loop :-(
       -   type: "fix"
           text: "Days without a buggy release: 0. Fix invalid link returned from DETAILS function. See #943"
       -   type: "fix"
@@ -587,7 +699,9 @@
       -   type: "feature"
           text: "Option to show user agent in search history. See #940"
       -   type: note
-          text: "I've removed the old binary of the linux wrapper. It was always a bit hard to get it running and it's easier to just run the python wrapper file directly."
+          text: >-
+            I've removed the old binary of the linux wrapper. It was always a bit hard to get it running and it's
+            easier to just run the python wrapper file directly.
     final: true
 -   version: "v6.1.1"
     date: "2024-04-03"
@@ -609,7 +723,12 @@
     date: "2024-04-01"
     changes:
       -   type: "feature"
-          text: "I've completely rewritten the wrapper for windows. It's not a packaged python script anymore but an actually compiled binary. This has a couple of benefits: No more false positives from virus scanners (VirusTotal shows 5/72). No more temporary files not being cleaned up after a crash. The files are (a bit) smaller.\nI don't plan to compile the wrapper for anything but windows as it makes more sense and is easier to run the python wrapper instead."
+          text: >-
+            I've completely rewritten the wrapper for windows. It's not a packaged python script anymore but an
+            actually compiled binary. This has a couple of benefits: No more false positives from virus scanners
+            (VirusTotal shows 5/72). No more temporary files not being cleaned up after a crash. The files are
+            (a bit) smaller. I don't plan to compile the wrapper for anything but windows as it makes more sense and
+            is easier to run the python wrapper instead.
       -   type: "feature"
           text: "The temp folder can be set using the environment variable NZBHYDRA_TEMP_FOLDER. See #894"
       -   type: "fix"
@@ -653,7 +772,10 @@
     date: "2024-01-22"
     changes:
       -   type: "feature"
-          text: "When you're making a search in the UI you can now choose to show the already received results. Until now you had to either wait, possibly until an indexer ran into a timeout or cancel without seeing any results at all. See #914"
+          text: >-
+            When you're making a search in the UI you can now choose to show the already received results. Until now
+            you had to either wait, possibly until an indexer ran into a timeout or cancel without seeing any results
+            at all. See #914
       -   type: "feature"
           text: "Add option to disable open port check. See #912"
       -   type: "fix"
@@ -675,7 +797,11 @@
     date: "2023-11-27"
     changes:
       -   type: "fix"
-          text: "The compiled python wrapper exes were unfortunately flagged as a virus / malware by some antivirus engines (wrongly, of course). Unfortunately I've been unable to find a solution that results in a flawless scan. The best I can achieve right now is getting the big ones to not flag it. I'll try to report the files as false positives. Sorry for the inconvenience. See #901"
+          text: >-
+            The compiled python wrapper exes were unfortunately flagged as a virus / malware by some antivirus engines
+            (wrongly, of course). Unfortunately I've been unable to find a solution that results in a flawless scan.
+            The best I can achieve right now is getting the big ones to not flag it. I'll try to report the files as
+            false positives. Sorry for the inconvenience. See #901
     final: true
 -   version: "v5.3.4"
     date: "2023-11-20"
@@ -695,11 +821,15 @@
         -   type: "feature"
             text: "Slightly changed the search results layout: Increased table width, increased title space, reduced row height. Let me know what you think."
         -   type: "fix"
-            text: "Windows release of 5.3.1 crashed on startup. I didn't catch that because my build pipeline only runs the linux executable and *usually* they behave the same. See #899"
+            text: >-
+              Windows release of 5.3.1 crashed on startup. I didn't catch that because my build pipeline only runs the
+              linux executable and *usually* they behave the same. See #899
         -   type: "fix"
             text: "Windows wrappers didn't run on Windows 7. As you can see getting everything to work properly on windows is a pain in the ass. See #899"
         -   type: "note"
-            text: "If you're on windows you will probably get some errors on startup related to DLLs that could not be loaded. You can ignore these. They should be gone after you've updated the wrapper exes."
+            text: >-
+              If you're on windows you will probably get some errors on startup related to DLLs that could not be
+              loaded. You can ignore these. They should be gone after you've updated the wrapper exes.
     final: true
 -   version: "v5.3.1"
     date: "2023-11-18"
@@ -719,7 +849,9 @@
     date: "2023-09-22"
     changes:
         -   type: "feature"
-            text: "In case of hard crashes of the main process it will automatically be restarted unless the last automatic restart was less than 15 seconds ago (to prevent loops)"
+            text: >-
+              In case of hard crashes of the main process it will automatically be restarted unless the last automatic
+              restart was less than 15 seconds ago (to prevent loops)
         -   type: "note"
             text: "Windows releases now only contain three exe files (and documents) and no more DLL files"
         -   type: "fix"
@@ -741,7 +873,9 @@
         -   type: "feature"
             text: "You can now ask Binsearch to search in all usenet groups instead of just the most popular ones. See #875"
         -   type: "feature"
-            text: "Custom mappings can now be configured to only match parts of a string. For example you can use them to remove all dots in a query with a space or just remove all numbers or whatever. See #879"
+            text: >-
+              Custom mappings can now be configured to only match parts of a string. For example you can use them to
+              remove all dots in a query with a space or just remove all numbers or whatever. See #879
         -   type: "fix"
             text: "Filter out \"no-cover.jpg\" covers returned by NZB Finder. See #872"
 
@@ -756,7 +890,10 @@
     date: "2023-03-18"
     changes:
         -   type: "fix"
-            text: "When making changes in the config that required a restart to be effective you wouldn't be asked to restart. This means that when enabling auth and not restarting, the UI would think auth was required but the backend wouldn't be able to process form logins, resulting in misleading error messages."
+            text: >-
+              When making changes in the config that required a restart to be effective you wouldn't be asked to
+              restart. This means that when enabling auth and not restarting, the UI would think auth was required but
+              the backend wouldn't be able to process form logins, resulting in misleading error messages.
     final: true
 -   version: "v5.1.7"
     date: "2023-03-04"
@@ -806,31 +943,50 @@
         -   type: "fix"
             text: "Improved handling of shutdown and unexpected errors in the windows wrapper executable."
         -   type: "fix"
-            text: "Fix 'undefined' error when trying to access various functions like sending URLs to your downloader. This was caused by a change in the framework where URLs with trailing slashes would not be matched anymore. See #844"
+            text: >-
+              Fix 'undefined' error when trying to access various functions like sending URLs to your downloader. This
+              was caused by a change in the framework where URLs with trailing slashes would not be matched anymore.
+              See #844
         -   type: "fix"
             text: "Provide better error messages when UI functions failed. Hopefully this time without fucking up authentication..."
         -   type: "fix"
-            text: "The ID search fix I added in 5.1.2? It only works for TV search. I had tested the indexers with query based TV searches and it worked and I had assumed it would work with movies as well.
-            But that would be too easy, wouldn't it? NZBGeek does supporty any keyword in the TV search, but not for movies. Dog and NZBGeek do support keywords in movies, but they keywords are only applied
-            to the title, so you can't provide the quality, i.e. you can's search for a movie by ID and filter it by quality (e.g. 1080p). As I can't properly determine if a query is to be part of the title
-            or of the rest I will switch to regular searches whenever TV or movie searches are used for these indexers with queries present. See #842"
+            text: >-
+              The ID search fix I added in 5.1.2? It only works for TV search. I had tested the indexers with query
+              based TV searches and it worked and I had assumed it would work with movies as well.
+
+              But that would be too easy, wouldn't it? NZBGeek does supporty any keyword in the TV search, but not
+              for movies. Dog and NZBGeek do support keywords in movies, but they keywords are only applied to the
+              title, so you can't provide the quality, i.e. you can's search for a movie by ID and filter it by
+              quality (e.g. 1080p). As I can't properly determine if a query is to be part of the title or of the
+              rest I will switch to regular searches whenever TV or movie searches are used for these indexers with
+              queries present. See #842
     final: true
 -   version: "v5.1.3"
     date: "2023-02-07"
     changes:
         -   type: "feature"
-            text: "Show better error message when results from indexers could not be parsed. Hopefully helps find out why some users can't load their sonarr config remotely."
+            text: >-
+              Show better error message when results from indexers could not be parsed. Hopefully helps find out why
+              some users can't load their sonarr config remotely.
         -   type: "fix"
-            text: "The ID search fix I added in 5.1.2? It only works for TV search. I had tested the indexers with query based TV searches and it worked and I had assumed it would work with movies as well.
-            But that would be too easy, wouldn't it? Actually, nzbgeek and dog support any query in a tvsearch but with a movie search the keywords are matched only against the title. So searching for 1080p releases from 2023 doesn't work,
-            but searching by the title of a movie instead of its ID will. As I can't properly determine if the keyword is a title or not I will for these indexers switch movie searches to keyword based searches when keywords are present.
-            I will make some more tests when I have time to properly determine for the indexers I have access to what they actually support and keep track of it."
+            text: >-
+              The ID search fix I added in 5.1.2? It only works for TV search. I had tested the indexers with query
+              based TV searches and it worked and I had assumed it would work with movies as well.
+
+              But that would be too easy, wouldn't it? Actually, nzbgeek and dog support any query in a tvsearch but
+              with a movie search the keywords are matched only against the title. So searching for 1080p releases
+              from 2023 doesn't work, but searching by the title of a movie instead of its ID will. As I can't
+              properly determine if the keyword is a title or not I will for these indexers switch movie searches to
+              keyword based searches when keywords are present. I will make some more tests when I have time to
+              properly determine for the indexers I have access to what they actually support and keep track of it.
     final: true
 -   version: "v5.1.2"
     date: "2023-02-05"
     changes:
         -   type: "feature"
-            text: "Package / docker image maintainers which make changes to the wrapper files can disable them by setting the environment variable NZBHYDRA_DISABLE_WRAPPER_CHECK. See #839"
+            text: >-
+              Package / docker image maintainers which make changes to the wrapper files can disable them by setting
+              the environment variable NZBHYDRA_DISABLE_WRAPPER_CHECK. See #839
         -   type: "feature"
             text: "You can call the endpoint /actuator/health/ping to check if NZBHydra2 is up. Authentication will not be required. See #837"
         -   type: "fix"
@@ -838,13 +994,18 @@
         -   type: "fix"
             text: "Don't show a notification was disabled when it actually wasn't because temporary errors are ignored. See #840"
         -   type: "fix"
-            text: "Previously some indexers did not support TV search without IDs. This seems to have been fixed so now TV / movie search will be used even with keyword based queries. See #842"
+            text: >-
+              Previously some indexers did not support TV search without IDs. This seems to have been fixed so now TV
+              / movie search will be used even with keyword based queries. See #842
     final: true
 -   version: "v5.1.1"
     date: "2023-01-23"
     changes:
         -   type: "fix"
-            text: "Due to a change in the framework for some users autocomplete for media searches would show an error and not return results. Even though the fix is easy (reset the website's cache in the browser) I added a fix on my side as it seems to affect more users than I initially thought."
+            text: >-
+              Due to a change in the framework for some users autocomplete for media searches would show an error and
+              not return results. Even though the fix is easy (reset the website's cache in the browser) I added a fix
+              on my side as it seems to affect more users than I initially thought.
         -   type: "fix"
             text: "For big databases the initial migration may fail because of not enough memory."
         -   type: "fix"
@@ -854,8 +1015,11 @@
     date: "2023-01-22"
     changes:
         -   type: "feature"
-            text: "I thought I couldn't provide an ARM binary but thanks to a hint by thespad I can now build them. So now you'll be able to run NZBHydra without Java on ARM64 machines. You still will need python to run the
-            wrapper because I was unable to compile the wrapper but that should be a minor problem because you couldn't execute it before either..."
+            text: >-
+              I thought I couldn't provide an ARM binary but thanks to a hint by thespad I can now build them. So now
+              you'll be able to run NZBHydra without Java on ARM64 machines. You still will need python to run the
+              wrapper because I was unable to compile the wrapper but that should be a minor problem because you
+              couldn't execute it before either...
     final: true
 -   version: "v5.0.8"
     date: "2023-01-22"

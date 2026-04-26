@@ -1,3 +1,21 @@
+### v8.7.3 (2026-04-24)
+
+**Feature** Again I've made the mistake of thinking that my workflow is the norm. I never change the indexers for a search (and still don't really see a reason to do so) but I understand that some of you do this often enough that one extra
+click compared to before was enough to generate the most feedback I've ever had on a change (for better or worse). I've added an option to switch back to the old indexer selection type with checkboxes.<br>
+That said, it would help if, with any feedback, you would describe *why* you don't like something because otherwise it's hard for me to find a solution that works for everybody.
+
+**Feature** Allow linebreaks in the changelog for long-ass entries like the above
+
+**Feature** Add dark theme for people with dyschromatopsia. See <a href="https://github.com/theotherp/nzbhydra2/issues/1057">#1057</a>
+
+**Fix** TV autocomplete no longer repeatedly treats missing TVMaze results for NZB-style titles as errors, reducing log spam and unnecessary lookups. See <a href="https://github.com/theotherp/nzbhydra2/issues/1058">#1058</a>
+
+**Fix** Ensure first autocomplete entry in search is preselected (regardless of mouse position).
+
+### v8.7.2 (2026-04-20)
+
+**Fix** Changing an indexer's configured download limit now takes effect immediately for search selection. See <a href="https://github.com/theotherp/nzbhydra2/issues/1055">#1055</a>
+
 ### v8.7.1 (2026-04-19)
 
 **Fix** Season and episode for TV queries were ignored / lost when searching in the UI
@@ -588,8 +606,8 @@
 
 ### v6.0.0 (2024-04-01)
 
-**Feature** I've completely rewritten the wrapper for windows. It's not a packaged python script anymore but an actually compiled binary. This has a couple of benefits: No more false positives from virus scanners (VirusTotal shows 5/72). No more temporary files not being cleaned up after a crash. The files are (a bit) smaller.
-I don't plan to compile the wrapper for anything but windows as it makes more sense and is easier to run the python wrapper instead.
+**Feature** I've completely rewritten the wrapper for windows. It's not a packaged python script anymore but an actually compiled binary. This has a couple of benefits: No more false positives from virus scanners (VirusTotal shows 5/72). No
+more temporary files not being cleaned up after a crash. The files are (a bit) smaller. I don't plan to compile the wrapper for anything but windows as it makes more sense and is easier to run the python wrapper instead.
 
 **Feature** The temp folder can be set using the environment variable NZBHYDRA_TEMP_FOLDER. See <a href="https://github.com/theotherp/nzbhydra2/issues/894">#894</a>
 
@@ -789,7 +807,10 @@ I don't plan to compile the wrapper for anything but windows as it makes more se
 
 **Fix** Provide better error messages when UI functions failed. Hopefully this time without fucking up authentication...
 
-**Fix** The ID search fix I added in 5.1.2? It only works for TV search. I had tested the indexers with query based TV searches and it worked and I had assumed it would work with movies as well. But that would be too easy, wouldn't it? NZBGeek does supporty any keyword in the TV search, but not for movies. Dog and NZBGeek do support keywords in movies, but they keywords are only applied to the title, so you can't provide the quality, i.e. you can's search for a movie by ID and filter it by quality (e.g. 1080p). As I can't properly determine if a query is to be part of the title or of the rest I will switch to regular searches whenever TV or movie searches are used for these indexers with queries present. See <a href="https://github.com/theotherp/nzbhydra2/issues/842">#842</a>
+**Fix** The ID search fix I added in 5.1.2? It only works for TV search. I had tested the indexers with query based TV searches and it worked and I had assumed it would work with movies as well.<br>
+But that would be too easy, wouldn't it? NZBGeek does supporty any keyword in the TV search, but not for movies. Dog and NZBGeek do support keywords in movies, but they keywords are only applied to the title, so you can't provide the
+quality, i.e. you can's search for a movie by ID and filter it by quality (e.g. 1080p). As I can't properly determine if a query is to be part of the title or of the rest I will switch to regular searches whenever TV or movie searches are
+used for these indexers with queries present. See <a href="https://github.com/theotherp/nzbhydra2/issues/842">#842</a>
 
 
 
@@ -797,7 +818,10 @@ I don't plan to compile the wrapper for anything but windows as it makes more se
 
 **Feature** Show better error message when results from indexers could not be parsed. Hopefully helps find out why some users can't load their sonarr config remotely.
 
-**Fix** The ID search fix I added in 5.1.2? It only works for TV search. I had tested the indexers with query based TV searches and it worked and I had assumed it would work with movies as well. But that would be too easy, wouldn't it? Actually, nzbgeek and dog support any query in a tvsearch but with a movie search the keywords are matched only against the title. So searching for 1080p releases from 2023 doesn't work, but searching by the title of a movie instead of its ID will. As I can't properly determine if the keyword is a title or not I will for these indexers switch movie searches to keyword based searches when keywords are present. I will make some more tests when I have time to properly determine for the indexers I have access to what they actually support and keep track of it.
+**Fix** The ID search fix I added in 5.1.2? It only works for TV search. I had tested the indexers with query based TV searches and it worked and I had assumed it would work with movies as well.<br>
+But that would be too easy, wouldn't it? Actually, nzbgeek and dog support any query in a tvsearch but with a movie search the keywords are matched only against the title. So searching for 1080p releases from 2023 doesn't work, but
+searching by the title of a movie instead of its ID will. As I can't properly determine if the keyword is a title or not I will for these indexers switch movie searches to keyword based searches when keywords are present. I will make some
+more tests when I have time to properly determine for the indexers I have access to what they actually support and keep track of it.
 
 
 

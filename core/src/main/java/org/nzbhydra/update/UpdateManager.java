@@ -229,6 +229,7 @@ public class UpdateManager implements InitializingBean {
             String response = webAccess.callUrl(changelogUrl);
             allChanges = Jackson.YAML_MAPPER.readValue(response, new TypeReference<>() {
             });
+            normalizeChangelogText(allChanges);
         } catch (IOException e) {
             throw new UpdateException("Error while getting changelog: " + e.getMessage());
         }
@@ -256,6 +257,7 @@ public class UpdateManager implements InitializingBean {
         } catch (IOException e) {
             throw new UpdateException("Error while getting changelog: " + e.getMessage());
         }
+        normalizeChangelogText(changelogVersionEntries);
         changelogVersionEntries.forEach(x -> x.getChanges().forEach(y -> y.setText(getGithubLinkedText(y))));
 
         Collections.sort(changelogVersionEntries);
@@ -264,7 +266,8 @@ public class UpdateManager implements InitializingBean {
     }
 
     private String getGithubLinkedText(org.nzbhydra.mapping.changelog.ChangelogChangeEntry entry) {
-        final Matcher matcher = GITHUB_ISSUE_PATTERN.matcher(entry.getText());
+        String text = normalizeChangelogText(entry.getText());
+        final Matcher matcher = GITHUB_ISSUE_PATTERN.matcher(text);
         if (matcher.find()) {
             String link = "https://github.com/theotherp/nzbhydra2/issues/" + matcher.group(1);
             if (configProvider.getBaseConfig().getMain().getDereferer().isPresent()) {
@@ -272,10 +275,21 @@ public class UpdateManager implements InitializingBean {
                         .replace("$s", UrlEscapers.urlFragmentEscaper().escape(link)
                                 .replace("$us", link));
             }
-            return entry.getText().replace(matcher.group(), "<a href=\"" + link + "\" target=\"_blank\">" + matcher.group() + "</a>");
+            return text.replace(matcher.group(), "<a href=\"" + link + "\" target=\"_blank\">" + matcher.group() + "</a>");
 
         }
-        return entry.getText();
+        return text;
+    }
+
+    private void normalizeChangelogText(List<ChangelogVersionEntry> changelogVersionEntries) {
+        changelogVersionEntries.forEach(x -> x.getChanges().forEach(y -> y.setText(normalizeChangelogText(y.getText()))));
+    }
+
+    private String normalizeChangelogText(String text) {
+        return text
+                .replace("\\n", "\n")
+                .replace("\r\n", "\n")
+                .replace("\r", "\n");
     }
 
 
@@ -296,6 +310,7 @@ public class UpdateManager implements InitializingBean {
         } catch (IOException e) {
             throw new UpdateException("Error while getting changelog: " + e.getMessage());
         }
+        normalizeChangelogText(changelogVersionEntries);
 
         Collections.sort(changelogVersionEntries);
         Collections.reverse(changelogVersionEntries);

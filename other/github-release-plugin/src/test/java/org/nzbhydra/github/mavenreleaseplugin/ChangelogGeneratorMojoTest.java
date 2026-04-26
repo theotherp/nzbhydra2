@@ -5,6 +5,7 @@ import org.apache.maven.plugin.testing.AbstractMojoTestCase;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.Arrays;
 
 
 public class ChangelogGeneratorMojoTest extends AbstractMojoTestCase {
@@ -22,6 +23,32 @@ public class ChangelogGeneratorMojoTest extends AbstractMojoTestCase {
         ));
 
         generatorMojo.execute();
+    }
+
+    public void testGetMarkdownLinesFromEntrySupportsMultilineText() throws Exception {
+        ChangelogVersionEntry entry = new ChangelogVersionEntry(
+                "v1.0.0",
+                "2019-11-15",
+                true,
+                Arrays.asList(new ChangelogChangeEntry("note", "First line\nSecond line"))
+        );
+
+        java.util.List<String> lines = ChangelogGeneratorMojo.getMarkdownLinesFromEntry(entry);
+
+        assertEquals("**Note** First line<br>\nSecond line", lines.get(1));
+    }
+
+    public void testGetMarkdownLinesFromEntrySupportsEscapedNewlineText() throws Exception {
+        ChangelogVersionEntry entry = new ChangelogVersionEntry(
+                "v1.0.0",
+                "2019-11-15",
+                true,
+                Arrays.asList(new ChangelogChangeEntry("note", "First line\\nSecond line"))
+        );
+
+        java.util.List<String> lines = ChangelogGeneratorMojo.getMarkdownLinesFromEntry(entry);
+
+        assertEquals("**Note** First line<br>\nSecond line", lines.get(1));
     }
 
 

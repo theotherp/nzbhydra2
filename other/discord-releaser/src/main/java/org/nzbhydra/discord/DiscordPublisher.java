@@ -86,12 +86,19 @@ public class DiscordPublisher {
         lines.add(versionLine);
 
         for (ChangelogChangeEntry changeEntry : entry.getChanges()) {
-            final String text = changeEntry.getText()
+            final String text = normalizeLineBreaks(changeEntry.getText())
                 .replaceAll("#(\\d{3,})", "https://github.com/theotherp/nzbhydra2/issues/$1");
             lines.add("**" + StringUtils.capitalize(changeEntry.getType()) + "** " + text);
         }
         lines.add("");
         return lines;
+    }
+
+    private static String normalizeLineBreaks(String text) {
+        return text
+                .replace("\\n", "\n")
+                .replace("\r\n", "\n")
+                .replace("\r", "\n");
     }
 
 
