@@ -2697,6 +2697,12 @@
       },
       {
           "pattern": "\\Qstatic/vendor.js\\E"
+      },
+      {
+          "pattern": "\\Qstatic/css/dark-dyschromatopsia.css\\E"
+      },
+      {
+          "pattern": "\\Qstatic/css/dark-dyschromatopsia.css.map\\E"
       }
   ]},
   "bundles": [
