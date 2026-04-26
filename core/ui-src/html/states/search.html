@@ -202,8 +202,9 @@
                           <span class="sr-only">Toggle Dropdown</span>
                         </button>
                         <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="search-indexer-split-button">
-                          <li ng-repeat="action in additionalIndexerSelectionActions" role="menuitem">
-                            <div class="divider" ng-if="action.isGroupAction && !$first"></div>
+                          <li ng-repeat="action in additionalIndexerSelectionActions track by $index" role="menuitem">
+                            <div class="divider" ng-if="action.group && $index > 0 && additionalIndexerSelectionActions[$index - 1].group !== action.group"></div>
+                            <div class="dropdown-header" ng-if="action.group && ($index === 0 || additionalIndexerSelectionActions[$index - 1].group !== action.group)">{{action.group}}</div>
                             <a href="" ng-click="executeIndexerSelectionAction(action)">
                               <span ng-if="action.iconClass" class="{{action.iconClass}}" style="margin-right: 6px;"></span>
                               {{action.label}}

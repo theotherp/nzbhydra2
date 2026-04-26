@@ -544,9 +544,10 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
 
         return _.map(groupNames, function (groupName) {
             return {
-                label: 'Select group: ' + groupName,
+                label: groupName,
                 iconClass: 'glyphicon glyphicon-folder-open',
                 isGroupAction: true,
+                group: 'Indexer groups',
                 action: function () {
                     selectIndexersByGroup(groupName);
                 }

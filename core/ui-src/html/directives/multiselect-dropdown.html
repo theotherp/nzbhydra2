@@ -10,7 +10,9 @@
     </div>
     <ul class="dropdown-menu dropdown-menu-form" ng-if=open
         ng-style="{display: open ? 'block' : 'none', height : 'auto', overflow: 'auto' }">
-        <li ng-repeat="action in actions">
+      <li ng-repeat="action in actions track by $index">
+        <div class="divider" ng-if="action.group && $index > 0 && actions[$index - 1].group !== action.group"></div>
+        <div class="dropdown-header" ng-if="action.group && ($index === 0 || actions[$index - 1].group !== action.group)">{{action.group}}</div>
             <a role=menuitem class=option tabindex=-1 ng-click="executeAction(action)" style="cursor: pointer;">
                 <span ng-if="action.iconClass" class="{{action.iconClass}}" style="margin-right: 6px;"></span>
                 {{action.label}}
