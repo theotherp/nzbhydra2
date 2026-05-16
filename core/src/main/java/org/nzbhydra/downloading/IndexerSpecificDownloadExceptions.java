@@ -48,6 +48,7 @@ public class IndexerSpecificDownloadExceptions {
         return host.contains("omgwtf")
                || host.contains("nzbs.in")
                || host.contains("nzbfinder")
+               || host.contains("abnzb")
                 ;
     }
 
