@@ -1,9 +1,12 @@
 #@formatter:off
--   version: "v8.0.0"
+-   version: "v8.8.2"
+    date: "2026-06-01"
     final: true
     changes:
       -   type: "feature"
           text: "Removed animetosho and added ameNZB and BlurayNZB. See #1059"
+      -   type: "feature"
+          text: "Made redirect the default for some more indexers"
 -   version: "v8.8.1"
     date: "2026-05-02"
     final: true
