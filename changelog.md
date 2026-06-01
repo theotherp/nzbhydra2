@@ -1,7 +1,10 @@
+### v8.8.2 (2026-06-01)
+
+**Feature** Made redirect instead of proxy the default for some indexers
+
 ### v8.8.1 (2026-05-02)
 
 **Fix** Fix bug in image cache causing high CPU usage
-
 
 
 ### v8.8.0 (2026-04-24)

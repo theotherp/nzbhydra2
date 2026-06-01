@@ -50,6 +50,7 @@ public class IndexerSpecificDownloadExceptions {
                || host.contains("nzbfinder")
                || host.contains("abnzb")
                || host.contains("digitalcarnage")
+               || host.contains("tabula-rasa")
                 ;
     }
 
