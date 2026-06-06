@@ -213,6 +213,10 @@ function downloaderStatusFooter() {
             }
 
             $scope.foo = downloaderStatus;
+            if (!downloaderStatus.downloaderType) {
+                //May sometimes happen when something goes wrong, no need to spam the console
+                return;
+            }
             $scope.foo.downloaderImage = downloaderStatus.downloaderType.toLowerCase() + "logo";
 
             $scope.foo.url = downloaderStatus.url;
