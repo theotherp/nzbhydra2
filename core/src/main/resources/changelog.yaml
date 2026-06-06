@@ -1,12 +1,14 @@
 #@formatter:off
 -   version: "v8.8.2"
-    date: "2026-06-01"
+    date: "2026-06-06"
     final: true
     changes:
       -   type: "feature"
           text: "Removed animetosho and added ameNZB and BlurayNZB. See #1059"
       -   type: "feature"
           text: "Made redirect the default for some more indexers"
+      -   type: "fix"
+          text: "Added min/max size/age to saved searches. You will need to save new searches, the values were never stored for old saved searches."
 -   version: "v8.8.1"
     date: "2026-05-02"
     final: true

@@ -155,6 +155,18 @@ function SearchHistoryService($filter, $http) {
         if (request.categoryName) {
             stateParams.category = request.categoryName;
         }
+        if (request.minSize) {
+            stateParams.minsize = request.minSize;
+        }
+        if (request.maxSize) {
+            stateParams.maxsize = request.maxSize;
+        }
+        if (request.minAge) {
+            stateParams.minage = request.minAge;
+        }
+        if (request.maxAge) {
+            stateParams.maxage = request.maxAge;
+        }
 
         return stateParams;
     }

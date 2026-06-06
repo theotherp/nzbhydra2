@@ -83,6 +83,10 @@ public class SavedSearchesWeb {
         savedSearch.setTitle(parameters.getTitle());
         savedSearch.setSearchType(resolveSearchType(parameters.getMode()));
         savedSearch.setIdentifiers(buildIdentifiers(parameters));
+        savedSearch.setMinAge(parameters.getMinage());
+        savedSearch.setMaxAge(parameters.getMaxage());
+        savedSearch.setMinSize(parameters.getMinsize());
+        savedSearch.setMaxSize(parameters.getMaxsize());
         return savedSearch;
     }
 

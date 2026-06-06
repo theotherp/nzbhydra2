@@ -66,10 +66,6 @@ function SearchService($http) {
     }
 
     function loadMore(offset, limit, loadAll) {
-        lastExecutedSearchRequestParameters.offset = offset;
-        lastExecutedSearchRequestParameters.limit = limit;
-        lastExecutedSearchRequestParameters.loadAll = angular.isDefined(loadAll) ? loadAll : false;
-
         return $http.post(lastExecutedQuery.toString(), lastExecutedSearchRequestParameters).then(processData);
     }
 

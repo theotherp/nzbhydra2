@@ -102,6 +102,7 @@ function SavedSearchesController($scope, $http, $sce, $filter, SearchHistoryServ
         if (request.author) {
             result.push("Author: " + request.author);
         }
+
         return $sce.trustAsHtml(result.join(", "));
     };
 

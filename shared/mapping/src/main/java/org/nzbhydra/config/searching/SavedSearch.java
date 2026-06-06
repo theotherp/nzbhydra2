@@ -42,4 +42,8 @@ public class SavedSearch implements Serializable {
     private String episode;
     private String title;
     private String author;
+    private Integer minSize;
+    private Integer maxSize;
+    private Integer minAge;
+    private Integer maxAge;
 }
