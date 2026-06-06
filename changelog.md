@@ -1,10 +1,17 @@
-### v8.8.2 (2026-06-01)
+### v8.8.2 (2026-06-06)
 
-**Feature** Made redirect instead of proxy the default for some indexers
+**Feature** Removed animetosho and added ameNZB and BlurayNZB. See <a href="https://github.com/theotherp/nzbhydra2/issues/1059">#1059</a>
+
+**Feature** Made redirect the default for some more indexers
+
+**Fix** Added min/max size/age to saved searches. You will need to save new searches, the values were never stored for old saved searches.
+
+
 
 ### v8.8.1 (2026-05-02)
 
 **Fix** Fix bug in image cache causing high CPU usage
+
 
 
 ### v8.8.0 (2026-04-24)
