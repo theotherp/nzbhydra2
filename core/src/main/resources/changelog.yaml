@@ -5,6 +5,8 @@
     changes:
       -   type: "feature"
           text: "Include version in user agent."
+      -   type: "feature"
+          text: "Show min/max size/age in the saved searches view."
       -   type: "note"
           text: "Made redirect the default for scenenzbs."
 -   version: "v8.8.2"

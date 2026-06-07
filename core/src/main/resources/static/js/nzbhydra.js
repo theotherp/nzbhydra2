@@ -13555,6 +13555,22 @@ angular
 function SavedSearchesController($scope, $http, $sce, $filter, SearchHistoryService, $httpParamSerializer, $window) {
     $scope.savedSearches = [];
 
+    function formatRange(min, max, unit, suffix) {
+        var formattedValue = function (value) {
+            return value + unit + (value === 1 ? "" : "s");
+        };
+
+        if (min && max) {
+            return min + "-" + max + unit + "s" + suffix;
+        }
+        if (min) {
+            return "Min " + formattedValue(min) + suffix;
+        }
+        if (max) {
+            return "Max " + formattedValue(max) + suffix;
+        }
+    }
+
     $http.get("internalapi/savedsearches").then(function (response) {
         $scope.savedSearches = response.data || [];
     });
@@ -13635,6 +13651,14 @@ function SavedSearchesController($scope, $http, $sce, $filter, SearchHistoryServ
         }
         if (request.author) {
             result.push("Author: " + request.author);
+        }
+        var ageRange = formatRange(request.minAge, request.maxAge, " day", " old");
+        if (ageRange) {
+            result.push(ageRange);
+        }
+        var sizeRange = formatRange(request.minSize, request.maxSize, "MB", "");
+        if (sizeRange) {
+            result.push(sizeRange);
         }
 
         return $sce.trustAsHtml(result.join(", "));
