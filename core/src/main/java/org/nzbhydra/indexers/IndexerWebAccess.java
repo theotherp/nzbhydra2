@@ -17,6 +17,7 @@ import org.nzbhydra.indexers.torbox.mapping.TorboxSearchResponse;
 import org.nzbhydra.logging.MdcThreadPoolExecutor;
 import org.nzbhydra.mapping.nzbindex.NzbIndexRoot;
 import org.nzbhydra.springnative.ReflectionMarker;
+import org.nzbhydra.update.UpdateManager;
 import org.nzbhydra.web.WebConfiguration;
 import org.nzbhydra.webaccess.WebAccess;
 import org.slf4j.Logger;
@@ -53,6 +54,8 @@ public class IndexerWebAccess {
     @Autowired
     protected WebAccess webAccess;
     protected Unmarshaller unmarshaller = new WebConfiguration().marshaller();
+    @Autowired
+    private UpdateManager updateManager;
 
 
     public <T> T get(URI uri, IndexerConfig indexerConfig) throws IndexerAccessException {
@@ -63,6 +66,9 @@ public class IndexerWebAccess {
     public <T> T get(URI uri, IndexerConfig indexerConfig, Class responseType) throws IndexerAccessException {
         int timeout = indexerConfig.getTimeout().orElse(configProvider.getBaseConfig().getSearching().getTimeout());
         String userAgent = indexerConfig.getUserAgent().orElse(configProvider.getBaseConfig().getSearching().getUserAgent().orElse("NZBHydra2"));
+        if (userAgent.equals("NZBHydra2")) {
+            userAgent += " " + updateManager.getCurrentVersionString();
+        }
 
         Map<String, String> headers = new HashMap<>();
         headers.put("User-Agent", userAgent);

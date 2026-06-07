@@ -13,6 +13,7 @@ import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.SearchingConfig;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
+import org.nzbhydra.update.UpdateManager;
 import org.nzbhydra.webaccess.WebAccess;
 import org.springframework.oxm.Unmarshaller;
 
@@ -38,6 +39,8 @@ public class IndexerWebAccessTest {
     private IndexerConfig indexerConfig = new IndexerConfig();
     @Mock
     private Unmarshaller unmarshallerMock;
+    @Mock
+    private UpdateManager updateManager;
     @Captor
     ArgumentCaptor<Map<String, String>> headersCaptor;
     @Captor
@@ -78,6 +81,30 @@ public class IndexerWebAccessTest {
 
         Map<String, String> headers = headersCaptor.getValue();
         assertThat(headers).contains(entry("User-Agent", "globalUa"));
+    }
+
+    @Test
+    void shouldIncludeVersionInDefaultUa() throws Exception {
+        indexerConfig.setUserAgent(null);
+        when(searchingConfigMock.getUserAgent()).thenReturn(Optional.empty());
+        when(updateManager.getCurrentVersionString()).thenReturn("1.2.3");
+
+        testee.get(new URI("http://127.0.0.1"), indexerConfig);
+
+        Map<String, String> headers = headersCaptor.getValue();
+        assertThat(headers).contains(entry("User-Agent", "NZBHydra2 1.2.3"));
+    }
+
+    @Test
+    void shouldIncludeVersionInCongiguredNzbhydra2Ua() throws Exception {
+        indexerConfig.setUserAgent(null);
+        when(searchingConfigMock.getUserAgent()).thenReturn(Optional.of("NZBHydra2"));
+        when(updateManager.getCurrentVersionString()).thenReturn("1.2.3");
+
+        testee.get(new URI("http://127.0.0.1"), indexerConfig);
+
+        Map<String, String> headers = headersCaptor.getValue();
+        assertThat(headers).contains(entry("User-Agent", "NZBHydra2 1.2.3"));
     }
 
     @Test

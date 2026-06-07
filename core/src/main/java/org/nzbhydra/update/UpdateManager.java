@@ -9,6 +9,7 @@ import com.google.common.io.Resources;
 import com.google.common.net.UrlEscapers;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.apache.commons.io.FileUtils;
 import org.nzbhydra.Jackson;
@@ -85,6 +86,7 @@ public class UpdateManager implements InitializingBean {
     @Autowired
     private SystemControl systemControl;
 
+    @Getter
     @Value("${build.version:0.0.1}")
     protected String currentVersionString;
 
@@ -204,11 +206,6 @@ public class UpdateManager implements InitializingBean {
                 throw new RuntimeException(e);
             }
         };
-    }
-
-
-    public String getCurrentVersionString() {
-        return currentVersionString;
     }
 
 

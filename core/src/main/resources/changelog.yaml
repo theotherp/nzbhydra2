@@ -3,8 +3,10 @@
     date: "2026-06-07"
     final: true
     changes:
+      -   type: "feature"
+          text: "Include version in user agent."
       -   type: "note"
-          text: "Made redirect the default for scenenzbs"
+          text: "Made redirect the default for scenenzbs."
 -   version: "v8.8.2"
     date: "2026-06-06"
     final: true
