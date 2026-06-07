@@ -1,3 +1,13 @@
+### v8.8.3 (2026-06-07)
+
+**Feature** Include version in user agent.
+
+**Feature** Show min/max size/age in the saved searches view.
+
+**Note** Made redirect the default for scenenzbs.
+
+
+
 ### v8.8.2 (2026-06-06)
 
 **Feature** Removed animetosho and added ameNZB and BlurayNZB. See <a href="https://github.com/theotherp/nzbhydra2/issues/1059">#1059</a>
