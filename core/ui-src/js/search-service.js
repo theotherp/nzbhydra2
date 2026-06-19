@@ -66,7 +66,12 @@ function SearchService($http) {
     }
 
     function loadMore(offset, limit, loadAll) {
-        return $http.post(lastExecutedQuery.toString(), lastExecutedSearchRequestParameters).then(processData);
+        var params = angular.extend({}, lastExecutedSearchRequestParameters);
+        params.offset = offset;
+        params.limit = limit;
+        params.loadAll = angular.isDefined(loadAll) ? loadAll : false;
+
+        return $http.post(lastExecutedQuery.toString(), params).then(processData);
     }
 
     function shortcutSearch(searchRequestId) {
