@@ -1,3 +1,9 @@
+### v8.8.5 (2026-06-29)
+
+**Fix** Load from sabnzbd entries from history (not archive) when updating result status. See <a href="https://github.com/theotherp/nzbhydra2/issues/1064">#1064</a>
+
+
+
 ### v8.8.4 (2026-06-19)
 
 **Fix** Fix Load more
