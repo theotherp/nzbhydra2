@@ -1,4 +1,9 @@
 #@formatter:off
+-   version: "v8.8.6"
+    final: true
+    changes:
+      -   type: "fix"
+          text: "Switch scenenzbs.com to treasure-maps.com"
 -   version: "v8.8.5"
     date: "2026-06-29"
     final: true

@@ -284,7 +284,7 @@ main:
   backupEveryXDays: 7
   backupBeforeUpdate: true
   checkOpenPort: true
-  configVersion: 23
+  configVersion: 24
   databaseCompactTime: 15000
   databaseRetentionTime: 1000
   databaseWriteDelay: 5000
