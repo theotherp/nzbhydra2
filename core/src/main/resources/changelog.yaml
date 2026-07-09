@@ -6,6 +6,8 @@
           text: "Added support for authentication via OIDC (e.g. authentik, keycloak)."
       -   type: "fix"
           text: "Switch scenenzbs.com to treasure-maps.com."
+      -   type: "fix"
+          text: "Ignore extension-prefixed NZBGet config entries when loading categories. See #1066"
 -   version: "v8.8.5"
     date: "2026-06-29"
     final: true

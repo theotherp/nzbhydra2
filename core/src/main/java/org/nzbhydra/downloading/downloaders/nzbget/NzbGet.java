@@ -34,6 +34,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @SuppressWarnings({"unchecked", "RedundantCast"})
@@ -69,6 +70,7 @@ public class NzbGet extends Downloader {
     }
 
     private final Ssl ssl;
+    private static final Pattern CATEGORY_NAME_CONFIG = Pattern.compile("^Category\\d+\\.Name$");
 
     public NzbGet(FileHandler nzbHandler, SearchResultRepository searchResultRepository, ApplicationEventPublisher applicationEventPublisher, IndexerSpecificDownloadExceptions indexerSpecificDownloadExceptions, ConfigProvider configProvider, Ssl ssl, DownloadUrlBuilder downloadUrlBuilder) {
         super(nzbHandler, searchResultRepository, applicationEventPublisher, indexerSpecificDownloadExceptions, configProvider, downloadUrlBuilder);
@@ -130,7 +132,11 @@ public class NzbGet extends Downloader {
             ArrayList<LinkedHashMap<String, Object>> config = callNzbget("config", null);
             //Returned is a list of HashMaps with two entries: "Name" -> "<ConfigOptionName>" and "Value" -> "<ConfigOptionValue>"
             //For categories the name of the config option looks like "Category1.Name"
-            categories = config.stream().filter(pair -> pair.containsKey("Name") && pair.get("Name").toString().contains("Category") && pair.get("Name").toString().contains("Name")).map(pair -> pair.get("Value").toString()).collect(Collectors.toList());
+            categories = config.stream()
+                    .filter(pair -> pair.containsKey("Name") && CATEGORY_NAME_CONFIG.matcher(pair.get("Name").toString()).matches())
+                    .map(pair -> pair.get("Value").toString())
+                    .distinct()
+                    .collect(Collectors.toList());
         } catch (DownloaderException throwable) {
             logger.error("Error while trying to get categories from NZBGet: {}", throwable.getMessage());
         }
