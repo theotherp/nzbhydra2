@@ -108,7 +108,7 @@ public class HeaderAuthenticationFilter extends BasicAuthenticationFilter {
             SecurityContextHolder.getContext().setAuthentication(auth);
             onSuccessfulAuthentication(request, response, auth);
         } catch (UsernameNotFoundException e) {
-            handleInvalidAuth(request, response, "Invalid username provided with auth header");
+            handleInvalidAuth(request, response, "Invalid username \"" + username + "\" provided with auth header");
             return;
         }
         chain.doFilter(request, response);
