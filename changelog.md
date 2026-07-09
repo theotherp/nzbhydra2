@@ -1,3 +1,13 @@
+### v8.9.0 (2026-07-09)
+
+**Feature** Added support for authentication via OIDC (e.g. authentik, keycloak).
+
+**Fix** Switch scenenzbs.com to treasure-maps.com.
+
+**Fix** Ignore extension-prefixed NZBGet config entries when loading categories. See <a href="https://github.com/theotherp/nzbhydra2/issues/1066">#1066</a>
+
+
+
 ### v8.8.5 (2026-06-29)
 
 **Fix** Load from sabnzbd entries from history (not archive) when updating result status. See <a href="https://github.com/theotherp/nzbhydra2/issues/1064">#1064</a>
