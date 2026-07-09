@@ -10,6 +10,7 @@ public class BootstrappedDataTO {
 
     private String username;
     private String authType;
+    private Boolean showLogout;
     private Boolean maySeeSearch;
     private Boolean adminRestricted;
     private Boolean statsRestricted;

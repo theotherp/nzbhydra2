@@ -9,6 +9,7 @@ import org.nzbhydra.config.auth.AuthType;
 import org.nzbhydra.config.auth.UserAuthConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -39,6 +40,9 @@ public class AuthConfigValidator implements ConfigValidator<AuthConfig> {
         } else if (newConfig.getAuthType() != AuthType.NONE && !newConfig.isRestrictSearch() && !newConfig.isRestrictAdmin()) {
             errors.add("You haven't enabled any access restrictions. Auth will not take any effect");
         }
+        if (newConfig.getAuthType() == AuthType.OIDC) {
+            validateOidcConfig(newConfig, errors);
+        }
         Set<String> usernames = new HashSet<>();
         List<String> duplicateUsernames = new ArrayList<>();
         for (UserAuthConfig user : newConfig.getUsers()) {
@@ -63,13 +67,35 @@ public class AuthConfigValidator implements ConfigValidator<AuthConfig> {
         return new ConfigValidationResult(errors.isEmpty(), ConfigValidationTools.isRestartNeeded(oldBaseConfig.getAuth(), newConfig), errors, warnings);
     }
 
+    private void validateOidcConfig(AuthConfig newConfig, List<String> errors) {
+        if (!StringUtils.hasText(newConfig.getOidcClientId())) {
+            errors.add("OIDC client ID is required");
+        }
+        if (!StringUtils.hasText(newConfig.getOidcClientSecret())) {
+            errors.add("OIDC client secret is required");
+        }
+        if (!StringUtils.hasText(newConfig.getOidcUsernameClaim())) {
+            errors.add("OIDC username claim is required");
+        }
+        if (!StringUtils.hasText(newConfig.getOidcRedirectUri())) {
+            errors.add("OIDC redirect URI is required");
+        }
+        if (newConfig.getOidcScopes() == null || newConfig.getOidcScopes().stream().noneMatch("openid"::equals)) {
+            errors.add("OIDC scopes must include openid");
+        }
+        if (!StringUtils.hasText(newConfig.getOidcIssuerUri()) &&
+            (!StringUtils.hasText(newConfig.getOidcAuthorizationUri()) ||
+             !StringUtils.hasText(newConfig.getOidcTokenUri()) ||
+             !StringUtils.hasText(newConfig.getOidcUserInfoUri()) ||
+             !StringUtils.hasText(newConfig.getOidcJwkSetUri()))) {
+            errors.add("OIDC issuer URI or all manual provider endpoints must be configured");
+        }
+    }
+
     @Override
     public AuthConfig prepareForSaving(BaseConfig oldBaseConfig, AuthConfig newAuthConfig) {
         // Need to update each user config and replace it with the result
-        for (int i = 0; i < newAuthConfig.getUsers().size(); i++) {
-            UserAuthConfig updated = userAuthConfigValidator.prepareForSaving(oldBaseConfig, newAuthConfig.getUsers().get(i));
-            newAuthConfig.getUsers().set(i, updated);
-        }
+        newAuthConfig.getUsers().replaceAll(newConfig -> userAuthConfigValidator.prepareForSaving(oldBaseConfig, newConfig));
         return newAuthConfig;
     }
 

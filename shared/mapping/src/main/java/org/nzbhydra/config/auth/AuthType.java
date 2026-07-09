@@ -9,5 +9,6 @@ import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 public enum AuthType {
     NONE,
     FORM,
-    BASIC
+    BASIC,
+    OIDC
 }

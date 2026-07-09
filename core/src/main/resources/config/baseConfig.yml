@@ -11,6 +11,19 @@ auth:
   restrictSearch: false
   restrictStats: false
   allowApiStats: true
+  oidcIssuerUri: null
+  oidcAuthorizationUri: null
+  oidcTokenUri: null
+  oidcUserInfoUri: null
+  oidcJwkSetUri: null
+  oidcClientId: null
+  oidcClientSecret: null
+  oidcUsernameClaim: "preferred_username"
+  oidcRedirectUri: "{baseUrl}/login/oauth2/code/{registrationId}"
+  oidcScopes:
+    - "openid"
+    - "profile"
+    - "email"
   users: []
 categoriesConfig:
   enableCategorySizes: true

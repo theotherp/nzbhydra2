@@ -22,7 +22,7 @@ function HeaderController($scope, $state, growl, HydraAuthService, bootstrapped)
                 $scope.showSearch = true;
                 $scope.showAdmin = $scope.userInfos.maySeeAdmin || !$scope.userInfos.adminRestricted;
                 $scope.showStats = $scope.userInfos.maySeeStats || !$scope.userInfos.statsRestricted;
-                $scope.showLoginout = true;
+                $scope.showLoginout = $scope.userInfos.showLogout;
                 $scope.username = $scope.userInfos.username;
                 $scope.loginlogoutText = "Logout " + $scope.username;
                 $scope.oldUserName = $scope.username;

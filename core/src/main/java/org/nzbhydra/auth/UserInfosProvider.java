@@ -6,6 +6,7 @@ import org.nzbhydra.config.auth.AuthType;
 import org.nzbhydra.config.auth.UserAuthConfig;
 import org.nzbhydra.web.BootstrappedDataTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Component;
 
 import java.security.Principal;
@@ -18,6 +19,8 @@ public class UserInfosProvider {
 
     @Autowired
     private ConfigProvider configProvider;
+    @Autowired
+    private HydraUserDetailsManager hydraUserDetailsManager;
 
     public BootstrappedDataTO getUserInfos(Principal principal) {
         BootstrappedDataTO bootstrappedData = new BootstrappedDataTO();
@@ -34,7 +37,14 @@ public class UserInfosProvider {
         boolean maySeeAdmin;
         boolean maySeeStats;
         boolean maySeeDetailsDl;
-        Optional<UserAuthConfig> user = principal == null ? Optional.empty() : auth.getUsers().stream().filter(x -> Objects.equals(x.getUsername(), principal.getName())).findFirst();
+        boolean showLogout = true;
+        Optional<UserAuthConfig> user;
+        if (principal instanceof OAuth2AuthenticationToken token) {
+            user = auth.getUsers().stream().filter(x -> token.getPrincipal().getAttribute("preferred_username").toString().equalsIgnoreCase(x.getUsername())).findFirst();
+            showLogout = false;
+        } else {
+            user = principal == null ? Optional.empty() : auth.getUsers().stream().filter(x -> Objects.equals(x.getUsername(), principal.getName())).findFirst();
+        }
         if (user.isPresent()) {
             maySeeAdmin = user.get().isMaySeeAdmin();
             maySeeStats = user.get().isMaySeeStats() || user.get().isMaySeeAdmin();
@@ -57,6 +67,7 @@ public class UserInfosProvider {
 
         bootstrappedData.setAuthType(auth.getAuthType().name());
         bootstrappedData.setAuthConfigured(authConfigured);
+        bootstrappedData.setShowLogout(showLogout);
         bootstrappedData.setAdminRestricted(adminRestricted);
         bootstrappedData.setSearchRestricted(searchRestricted);
         bootstrappedData.setStatsRestricted(statsRestricted);

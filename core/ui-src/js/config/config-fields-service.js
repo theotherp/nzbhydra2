@@ -2024,12 +2024,14 @@ function ConfigFields($injector) {
                                 options: [
                                     {name: 'None', value: 'NONE'},
                                     {name: 'HTTP Basic auth', value: 'BASIC'},
-                                    {name: 'Login form', value: 'FORM'}
+                                    {name: 'Login form', value: 'FORM'},
+                                    {name: 'OpenID Connect', value: 'OIDC'}
                                 ],
                                 tooltip: '<ul>' +
                                     '<li>With auth type "None" all areas are unrestricted.</li>' +
                                     '<li>With auth type "Form" the basic page is loaded and login is done via a form.</li>' +
                                     '<li>With auth type "Basic" you login via basic HTTP authentication. With all areas restricted this is the most secure as nearly no data is loaded from the server before you auth. Logging out is not supported with basic auth.</li>' +
+                                    '<li>With auth type "OpenID Connect" users login through an external OIDC provider. The configured username claim must match a Hydra user (case insensitive).</li>' +
                                     '</ul>'
                             }
                         },
@@ -2043,7 +2045,7 @@ function ConfigFields($injector) {
                                 advanced: true
                             },
                             hideExpression: function () {
-                                return rootModel.auth.authType === "NONE";
+                                return rootModel.auth.authType === "NONE" || rootModel.auth.authType === "OIDC";
                             }
                         },
                         {
@@ -2056,7 +2058,7 @@ function ConfigFields($injector) {
                                 advanced: true
                             },
                             hideExpression: function () {
-                                return rootModel.auth.authType === "NONE" || _.isNullOrEmpty(rootModel.auth.authHeader);
+                                return rootModel.auth.authType === "NONE" || rootModel.auth.authType === "OIDC" || _.isNullOrEmpty(rootModel.auth.authHeader);
                             }
                         },
                         {
@@ -2068,7 +2070,7 @@ function ConfigFields($injector) {
                                 help: 'Remember users with cookie for 14 days.'
                             },
                             hideExpression: function () {
-                                return rootModel.auth.authType === "NONE";
+                                return rootModel.auth.authType === "NONE" || rootModel.auth.authType === "OIDC";
                             }
                         },
                         {
@@ -2081,6 +2083,134 @@ function ConfigFields($injector) {
                                 addonRight: {
                                     text: 'days'
                                 },
+                                advanced: true
+                            },
+                            hideExpression: function () {
+                                return rootModel.auth.authType === "NONE" || rootModel.auth.authType === "OIDC";
+                            }
+                        }
+
+                    ]
+                },
+
+                {
+                    wrapper: 'fieldset',
+                    templateOptions: {
+                        label: 'OpenID Connect',
+                        tooltip: 'Use issuer discovery if your provider supports it. Otherwise configure all explicit provider endpoints.<br><br>The redirect URI registered at your provider must match the resolved Redirect URI below exactly. With the default value this is usually: &lt;your Hydra URL&gt;/login/oauth2/code/nzbhydra2<br> <br> The configured Username claim must match the username of an existing NZBHydra2 user (case insensitive). OIDC authenticates the user, but NZBHydra2 still uses the local user entry for permissions.'
+                    },
+                    hideExpression: function () {
+                        return rootModel.auth.authType !== "OIDC";
+                    },
+                    fieldGroup: [
+                        {
+                            key: 'oidcIssuerUri',
+                            type: 'horizontalInput',
+                            templateOptions: {
+                                type: 'text',
+                                label: 'Issuer URI',
+                                help: 'OIDC issuer URI used for provider discovery, for example https://idp.example.com/realms/master. Requires restart.'
+                            }
+                        },
+                        {
+                            key: 'oidcAuthorizationUri',
+                            type: 'horizontalInput',
+                            hideExpression: function () {
+                                return !_.isNullOrEmpty(rootModel.auth.oidcIssuerUri);
+                            },
+                            templateOptions: {
+                                type: 'text',
+                                label: 'Authorization URI',
+                                help: 'Manual provider authorization endpoint. Required only when issuer URI is empty. Requires restart.',
+                                advanced: true
+                            }
+                        },
+                        {
+                            key: 'oidcTokenUri',
+                            type: 'horizontalInput',
+                            hideExpression: function () {
+                                return !_.isNullOrEmpty(rootModel.auth.oidcIssuerUri);
+                            },
+                            templateOptions: {
+                                type: 'text',
+                                label: 'Token URI',
+                                help: 'Manual provider token endpoint. Required only when issuer URI is empty. Requires restart.',
+                                advanced: true
+                            }
+                        },
+                        {
+                            key: 'oidcUserInfoUri',
+                            type: 'horizontalInput',
+                            hideExpression: function () {
+                                return !_.isNullOrEmpty(rootModel.auth.oidcIssuerUri);
+                            },
+                            templateOptions: {
+                                type: 'text',
+                                label: 'User info URI',
+                                help: 'Manual provider user info endpoint. Required only when issuer URI is empty. Requires restart.',
+                                advanced: true
+                            }
+                        },
+                        {
+                            key: 'oidcJwkSetUri',
+                            type: 'horizontalInput',
+                            hideExpression: function () {
+                                return !_.isNullOrEmpty(rootModel.auth.oidcIssuerUri);
+                            },
+                            templateOptions: {
+                                type: 'text',
+                                label: 'JWK set URI',
+                                help: 'Manual provider JWK set endpoint. Required only when issuer URI is empty. Requires restart.',
+                                advanced: true
+                            }
+                        },
+                        {
+                            key: 'oidcClientId',
+                            type: 'horizontalInput',
+                            templateOptions: {
+                                type: 'text',
+                                label: 'Client ID',
+                                required: true,
+                                help: 'OIDC client ID. Requires restart.'
+                            }
+                        },
+                        {
+                            key: 'oidcClientSecret',
+                            type: 'passwordSwitch',
+                            templateOptions: {
+                                type: 'password',
+                                label: 'Client secret',
+                                required: true,
+                                help: 'OIDC client secret. Requires restart.'
+                            }
+                        },
+                        {
+                            key: 'oidcUsernameClaim',
+                            type: 'horizontalInput',
+                            templateOptions: {
+                                type: 'text',
+                                label: 'Username claim',
+                                required: true,
+                                help: 'Claim used to match OIDC users to Hydra users, for example preferred_username, email or sub. Requires restart.'
+                            }
+                        },
+                        {
+                            key: 'oidcScopes',
+                            type: 'horizontalChips',
+                            templateOptions: {
+                                type: 'text',
+                                label: 'Scopes',
+                                help: 'OIDC scopes. Must include openid. Apply with return key. Requires restart.'
+                            }
+                        },
+                        {
+                            key: 'oidcRedirectUri',
+                            type: 'horizontalInput',
+                            templateOptions: {
+                                type: 'text',
+                                label: 'Redirect URI',
+                                required: true,
+                                help: 'Redirect URI template. Register the resolved URL at the provider. The default is {baseUrl}/login/oauth2/code/{registrationId}. Requires restart.',
                                 advanced: true
                             }
                         }
@@ -2186,6 +2316,9 @@ function ConfigFields($injector) {
                             {
                                 key: 'password',
                                 type: 'passwordSwitch',
+                                hideExpression: function () {
+                                    return rootModel.auth.authType === "OIDC";
+                                },
                                 templateOptions: {
                                     type: 'password',
                                     label: 'Password',

@@ -18,16 +18,16 @@ import org.springframework.security.provisioning.UserDetailsManager;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 @Component
 public class HydraUserDetailsManager implements UserDetailsManager {
 
     private static final Logger logger = LoggerFactory.getLogger(HydraUserDetailsManager.class);
 
-    private final Map<String, UserDetails> users = new HashMap<>();
+    private final Map<String, UserDetails> users = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
     @Autowired
     private LoginAndAccessAttemptService attemptService;
@@ -60,7 +60,8 @@ public class HydraUserDetailsManager implements UserDetailsManager {
                 }
             }
             userRoles.add(new SimpleGrantedAuthority("ROLE_USER"));
-            User user = new User(userAuthConfig.getUsername(), userAuthConfig.getPassword(), userRoles);
+            String password = userAuthConfig.getPassword() == null ? "{noop}" : userAuthConfig.getPassword();
+            User user = new User(userAuthConfig.getUsername(), password, userRoles);
             users.put(userAuthConfig.getUsername(), user);
         }
     }
@@ -87,7 +88,7 @@ public class HydraUserDetailsManager implements UserDetailsManager {
 
     @Override
     public boolean userExists(String username) {
-        return users.containsKey(username.toLowerCase());
+        return users.containsKey(username);
     }
 
     @Override

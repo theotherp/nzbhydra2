@@ -36,6 +36,27 @@ public class AuthConfig {
     private boolean restrictSearch = false;
     private boolean restrictStats = false;
     private boolean allowApiStats = true;
+    @RestartRequired
+    private String oidcIssuerUri;
+    @RestartRequired
+    private String oidcAuthorizationUri;
+    @RestartRequired
+    private String oidcTokenUri;
+    @RestartRequired
+    private String oidcUserInfoUri;
+    @RestartRequired
+    private String oidcJwkSetUri;
+    @RestartRequired
+    private String oidcClientId;
+    @RestartRequired
+    @SensitiveData
+    private String oidcClientSecret;
+    @RestartRequired
+    private String oidcUsernameClaim = "preferred_username";
+    @RestartRequired
+    private String oidcRedirectUri = "{baseUrl}/login/oauth2/code/{registrationId}";
+    @RestartRequired
+    private List<String> oidcScopes = new ArrayList<>(List.of("openid", "profile", "email"));
 
     @DiffIgnore
     private List<UserAuthConfig> users = new ArrayList<>();

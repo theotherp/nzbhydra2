@@ -5,6 +5,7 @@ import org.nzbhydra.NzbHydra;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigChangedEvent;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.auth.AuthConfig;
 import org.nzbhydra.config.auth.AuthType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,10 +19,24 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.registration.ClientRegistrations;
+import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
+import org.springframework.security.oauth2.core.AuthorizationGrantType;
+import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.OAuth2Error;
+import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.channel.ChannelProcessingFilter;
+import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
@@ -29,7 +44,10 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.firewall.DefaultHttpFirewall;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.util.StringUtils;
 import org.springframework.web.filter.ForwardedHeaderFilter;
+
+import java.util.List;
 
 @SuppressWarnings("removal")
 @Configuration(proxyBeanMethods = false)
@@ -39,6 +57,7 @@ public class SecurityConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
     private static final int SECONDS_PER_DAY = 60 * 60 * 24;
+    private static final String OIDC_REGISTRATION_ID = "nzbhydra2";
 
     @Autowired
     private ConfigProvider configProvider;
@@ -99,11 +118,29 @@ public class SecurityConfig {
                         }
                     })
                     .and();
+        } else if (baseConfig.getAuth().getAuthType() == AuthType.OIDC) {
+            ClientRegistrationRepository clientRegistrationRepository = getOidcClientRegistrationRepository(baseConfig.getAuth());
+            String oidcAuthorizationUrl = "/oauth2/authorization/" + OIDC_REGISTRATION_ID;
+            http = http
+                    .oauth2Login()
+                    .clientRegistrationRepository(clientRegistrationRepository)
+                    .loginPage("/login")
+                    .failureHandler((request, response, exception) -> {
+                        logger.warn("OIDC login failed", exception);
+                        response.sendRedirect(request.getContextPath() + "/login?error");
+                    })
+                    .userInfoEndpoint()
+                    .oidcUserService(getOidcUserService(baseConfig.getAuth()))
+                    .and()
+                    .and();
+            http.exceptionHandling().authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint(oidcAuthorizationUrl));
         }
         if (baseConfig.getAuth().isAuthConfigured() || NzbHydra.isNativeBuild()) {
             http = http
                     .authorizeHttpRequests()
                     .requestMatchers("/actuator/health/ping")
+                    .permitAll()
+                    .requestMatchers("/login", "/oauth2/**", "/login/oauth2/**")
                     .permitAll()
                     .requestMatchers("/internalapi/")
                     .authenticated()
@@ -128,7 +165,7 @@ public class SecurityConfig {
             ;
             enableAnonymousAccessIfConfigured(http);
 
-            if (baseConfig.getAuth().isRememberUsers()) {
+            if (baseConfig.getAuth().isRememberUsers() && baseConfig.getAuth().getAuthType() != AuthType.OIDC) {
                 int rememberMeValidityDays = configProvider.getBaseConfig().getAuth().getRememberMeValidityDays();
                 if (rememberMeValidityDays == 0) {
                     rememberMeValidityDays = 1000; //Can't be disabled, three years should be enough
@@ -141,8 +178,10 @@ public class SecurityConfig {
                     .and();
             }
 
-            headerAuthenticationFilter = new HeaderAuthenticationFilter(authenticationManager, hydraUserDetailsManager, configProvider.getBaseConfig().getAuth());
-            http.addFilterAfter(headerAuthenticationFilter, BasicAuthenticationFilter.class);
+            if (baseConfig.getAuth().getAuthType() != AuthType.OIDC) {
+                headerAuthenticationFilter = new HeaderAuthenticationFilter(authenticationManager, hydraUserDetailsManager, configProvider.getBaseConfig().getAuth());
+                http.addFilterAfter(headerAuthenticationFilter, BasicAuthenticationFilter.class);
+            }
             http.addFilterAfter(asyncSupportFilter, BasicAuthenticationFilter.class);
 
         } else {
@@ -170,6 +209,66 @@ public class SecurityConfig {
         } catch (Exception e) {
             logger.error("Unable to configure anonymous access", e);
         }
+    }
+
+    private ClientRegistrationRepository getOidcClientRegistrationRepository(AuthConfig authConfig) {
+        return new InMemoryClientRegistrationRepository(getOidcClientRegistration(authConfig));
+    }
+
+    private ClientRegistration getOidcClientRegistration(AuthConfig authConfig) {
+        ClientRegistration.Builder builder;
+        if (StringUtils.hasText(authConfig.getOidcIssuerUri())) {
+            builder = ClientRegistrations.fromIssuerLocation(authConfig.getOidcIssuerUri());
+        } else {
+            builder = ClientRegistration.withRegistrationId(OIDC_REGISTRATION_ID)
+                    .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+                    .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+                    .authorizationUri(authConfig.getOidcAuthorizationUri())
+                    .tokenUri(authConfig.getOidcTokenUri())
+                    .jwkSetUri(authConfig.getOidcJwkSetUri())
+                    .userInfoUri(authConfig.getOidcUserInfoUri());
+        }
+        return builder
+                .registrationId(OIDC_REGISTRATION_ID)
+                .clientId(authConfig.getOidcClientId())
+                .clientSecret(authConfig.getOidcClientSecret())
+                .redirectUri(authConfig.getOidcRedirectUri())
+                .scope(getOidcScopes(authConfig))
+                .userNameAttributeName(authConfig.getOidcUsernameClaim())
+                .clientName("NZBHydra2")
+                .build();
+    }
+
+    private List<String> getOidcScopes(AuthConfig authConfig) {
+        if (authConfig.getOidcScopes() == null || authConfig.getOidcScopes().isEmpty()) {
+            return List.of("openid", "profile", "email");
+        }
+        return authConfig.getOidcScopes();
+    }
+
+    private OidcUserService getOidcUserService(AuthConfig authConfig) {
+        OidcUserService delegate = new OidcUserService();
+        return new OidcUserService() {
+            @Override
+            public OidcUser loadUser(OidcUserRequest userRequest) throws OAuth2AuthenticationException {
+                OidcUser oidcUser = delegate.loadUser(userRequest);
+                String usernameClaim = authConfig.getOidcUsernameClaim();
+                String username = StringUtils.hasText(usernameClaim) ? oidcUser.getClaimAsString(usernameClaim) : null;
+                if (!StringUtils.hasText(username)) {
+                    username = oidcUser.getName();
+                }
+                try {
+                    var hydraUser = hydraUserDetailsManager.loadUserByUsername(username);
+                    if (StringUtils.hasText(usernameClaim) && oidcUser.hasClaim(usernameClaim)) {
+                        return new DefaultOidcUser(hydraUser.getAuthorities(), oidcUser.getIdToken(), oidcUser.getUserInfo(), usernameClaim);
+                    }
+                    return new DefaultOidcUser(hydraUser.getAuthorities(), oidcUser.getIdToken(), oidcUser.getUserInfo());
+                } catch (UsernameNotFoundException e) {
+                    OAuth2Error error = new OAuth2Error("unauthorized_user", "OIDC user " + username + " is not configured in NZBHydra", null);
+                    throw new OAuth2AuthenticationException(error, e);
+                }
+            }
+        };
     }
 
     @EventListener
