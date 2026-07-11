@@ -37,7 +37,7 @@ appropriate way:
 * On any other OS or architecture or as a fallback:
   * You need to install [Java 17](https://adoptium.net/) (not lower, not higher).
   * Download the generic release. This contains python scripts and java libraries. Run either wrapper file (Python 2.7 / 3.x respectively). This should work basically everwhere.
-  * The Java executable is expected to be in the PATH. If it's not and you can't/won't put it there then you need to provide the full path using the `--java` paramater.
+  * The Java executable is expected to be in the PATH. If it's not and you can't/won't put it there then you need to provide the full path using the `--java` parameter.
 * Docker: You can choose between images by [hotio](https://hotio.dev/containers/nzbhydra2/) and [binhex's](https://hub.docker.com/r/binhex/arch-nzbhydra2/) or the one
   by [LinuxServer.io](https://github.com/linuxserver/docker-nzbhydra2).
 
