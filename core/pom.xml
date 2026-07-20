@@ -587,7 +587,7 @@
                             <artifactId>native-maven-plugin</artifactId>
                             <configuration>
                                 <buildArgs combine.children="append">
-                                    <buildArg>-H:MissingRegistrationReportingMode=Warn</buildArg>
+                                    <buildArg>--exact-reachability-metadata</buildArg>
                                 </buildArgs>
                             </configuration>
                         </plugin>

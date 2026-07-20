@@ -26,6 +26,7 @@
         <module name="system" />
         <module name="loadtest" />
         <module name="release-parser" />
+        <module name="github-release-plugin" />
         <module name="discordreleaser" />
         <module name="mockserver" />
       </profile>
