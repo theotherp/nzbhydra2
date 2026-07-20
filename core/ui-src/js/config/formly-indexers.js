@@ -606,6 +606,11 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
             host: "https://fastnzb.com"
         },
         {
+            name: "Hydracker",
+            host: "https://hydracker.com",
+            apiPath: "/api/v1/newznab"
+        },
+        {
             name: "LuluNZB",
             host: "https://lulunzb.com"
         },
