@@ -55,9 +55,8 @@ jobs:
                 uses: graalvm/setup-graalvm@v1
 #                if: steps.changed-files-specific.outputs.any_changed == 'true'
                 with:
-                    java-version: '25.1.3'
+                    version: '25.1'
                     distribution: 'graalvm-community'
-                    components: 'native-image'
                     cache: 'maven'
                     github-token: ${{ secrets.GITHUB_TOKEN }}
 

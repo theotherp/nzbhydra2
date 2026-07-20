@@ -37860,9 +37860,6 @@
   },
   {
     "name": "org.springframework.http.codec.support.DefaultClientCodecConfigurer",
-    "condition": {
-      "typeReachable": "org.springframework.http.codec.CodecConfigurerFactory"
-    },
     "allPublicConstructors": true
   },
   {
@@ -41863,9 +41860,6 @@
   },
   {
     "name": "com.fasterxml.jackson.datatype.jdk8.Jdk8Module",
-    "condition": {
-      "typeReachable": "org.springframework.http.converter.json.Jackson2ObjectMapperBuilder"
-    },
     "allDeclaredConstructors": true
   },
   {
@@ -49172,9 +49166,6 @@
   },
   {
     "name": "org.springframework.http.codec.support.DefaultServerCodecConfigurer",
-    "condition": {
-      "typeReachable": "org.springframework.http.codec.CodecConfigurerFactory"
-    },
     "allPublicConstructors": true
   },
   {
@@ -51113,9 +51104,6 @@
   },
   {
     "name": "jakarta.persistence.NamedEntityGraph",
-    "condition": {
-      "typeReachable": "org.springframework.data.jpa.repository.EntityGraph"
-    },
     "allPublicMethods": true
   },
   {
@@ -69070,9 +69058,6 @@
   },
   {
     "name": "com.fasterxml.jackson.datatype.jsr310.JavaTimeModule",
-    "condition": {
-      "typeReachable": "org.springframework.http.converter.json.Jackson2ObjectMapperBuilder"
-    },
     "allDeclaredConstructors": true
   },
   {

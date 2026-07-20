@@ -1,0 +1,30 @@
+{
+  "reflection": [
+    {
+      "type": "kotlin.jvm.JvmInline"
+    },
+    {
+      "type": "org.springframework.boot.context.config.ConfigDataNotFoundAction"
+    }
+  ],
+  "resources": [
+    {
+      "glob": "*"
+    },
+    {
+      "glob": "config/**"
+    },
+    {
+      "glob": "migration/**"
+    },
+    {
+      "glob": "static/**"
+    },
+    {
+      "glob": "templates/**"
+    },
+    {
+      "glob": "META-INF/**"
+    }
+  ]
+}
