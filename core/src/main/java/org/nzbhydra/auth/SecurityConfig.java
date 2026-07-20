@@ -129,8 +129,8 @@ public class SecurityConfig {
                     .loginPage("/login")
                     .failureHandler((request, response, exception) -> {
                         if (isAuthorizationRequestNotFound(exception)) {
-                            logger.debug("Ignoring stale OIDC callback without matching authorization request");
-                            response.sendRedirect(request.getContextPath() + "/");
+                            logger.warn("OIDC callback has no matching authorization request. Check that the browser accepts the session cookie and that the configured external URL, protocol, and host are consistent.");
+                            response.sendRedirect(request.getContextPath() + "/login?error");
                             return;
                         }
                         logger.warn("OIDC login failed", exception);
