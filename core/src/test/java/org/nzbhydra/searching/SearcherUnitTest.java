@@ -25,6 +25,7 @@ import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.indexers.IndexerEntity;
 import org.nzbhydra.indexers.IndexerSearchEntity;
 import org.nzbhydra.indexers.IndexerSearchRepository;
+import org.nzbhydra.indexers.IndexerSearchResultPersistor;
 import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.searching.IndexerForSearchSelector.IndexerForSearchSelection;
 import org.nzbhydra.searching.db.SearchRepository;
@@ -83,6 +84,8 @@ public class SearcherUnitTest {
     private IndexerForSearchSelector indexerPicker;
     @Mock
     private IndexerSearchRepository indexerSearchRepository;
+    @Mock
+    private IndexerSearchResultPersistor indexerSearchResultPersistor;
     @Mock
     private SearchRequest searchRequestMock;
     @Mock

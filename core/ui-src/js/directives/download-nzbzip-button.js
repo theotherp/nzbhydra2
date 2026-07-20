@@ -21,7 +21,7 @@ function downloadNzbzipButton() {
                 growl.info("You should select at least one result...");
             } else {
                 var values = _.map($scope.searchResults, function (value) {
-                    return value.searchResultId;
+                    return value.downloadId || value.searchResultId;
                 });
                 var link = "internalapi/nzbzip";
 

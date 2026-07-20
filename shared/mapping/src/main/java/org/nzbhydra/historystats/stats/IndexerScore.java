@@ -15,5 +15,12 @@ public class IndexerScore {
     private Integer averageUniquenessScore;
     private long involvedSearches;
     private long uniqueDownloads;
+    private long providedDownloads;
+    private Integer coveragePercent;
+    private Integer exclusivePercent;
+    private Double sharedContribution;
+    private Integer sharedContributionPercent;
+    private long legacyObservations;
+    private long correctedObservations;
 
 }

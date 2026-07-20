@@ -807,7 +807,7 @@ nzbhydraapp.directive('ngEnter', function () {
 
 nzbhydraapp.filter('nzblink', function () {
     return function (resultItem) {
-        var uri = new URI("internalapi/getnzb/user/" + resultItem.searchResultId);
+        var uri = new URI("internalapi/getnzb/user/" + (resultItem.downloadId || resultItem.searchResultId));
         return uri.toString();
     }
 });
@@ -974,4 +974,3 @@ nzbhydraapp.directive('eventFocus', function (focus) {
         });
     };
 });
-

@@ -25,6 +25,7 @@ import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -70,6 +71,7 @@ public class NewznabXmlTransformerTest {
     void shouldUseCorrectApplicationType() {
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         SearchResultItem searchResultItem = new SearchResultItem();
+        searchResultItem.setSearchResultId(1L);
         searchResultItem.setIndexer(indexerMock);
         searchResultItem.setCategory(new Category());
 
@@ -81,6 +83,21 @@ public class NewznabXmlTransformerTest {
         item = testee.buildRssItem(searchResultItem, searchRequest.getDownloadType() == DownloadType.NZB);
         assertThat(item.getEnclosure().getType()).isEqualTo("application/x-bittorrent");
 
+    }
+
+    @Test
+    void shouldUseContextualDownloadIdentifierForApiResults() {
+        SearchResultItem searchResultItem = new SearchResultItem();
+        searchResultItem.setSearchResultId(42L);
+        searchResultItem.setSearchId(7);
+        searchResultItem.setGuid(42L);
+        searchResultItem.setIndexer(indexerMock);
+        searchResultItem.setCategory(new Category());
+
+        testee.buildRssItem(searchResultItem, true);
+
+        verify(downloadUrlBuilder).getDownloadLinkForResults(42L, 7, false, DownloadType.NZB);
+        assertThat(searchResultItem.getAttributes().get("guid")).isEqualTo("42.7");
     }
 
 }

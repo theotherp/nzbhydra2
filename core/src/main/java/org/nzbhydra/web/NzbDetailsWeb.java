@@ -31,6 +31,7 @@ public class NzbDetailsWeb {
     @Secured({"ROLE_USER"})
     @RequestMapping(value = "/details/{guid}", method = RequestMethod.GET)
     public RedirectView details(@PathVariable("guid") long guid) {
+        // Details redirects do not create a download observation, so they intentionally keep the legacy result ID format.
         RedirectView redirectView = new RedirectView();
         String url = searchResultRepository.findById(guid).get().getDetails();
         Optional<String> derefererOptional = configProvider.getBaseConfig().getMain().getDereferer();

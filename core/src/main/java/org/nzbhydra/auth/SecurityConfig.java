@@ -18,6 +18,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
@@ -58,6 +59,7 @@ public class SecurityConfig {
     private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
     private static final int SECONDS_PER_DAY = 60 * 60 * 24;
     private static final String OIDC_REGISTRATION_ID = "nzbhydra2";
+    private static final String OIDC_AUTHORIZATION_REQUEST_NOT_FOUND = "authorization_request_not_found";
 
     @Autowired
     private ConfigProvider configProvider;
@@ -126,6 +128,11 @@ public class SecurityConfig {
                     .clientRegistrationRepository(clientRegistrationRepository)
                     .loginPage("/login")
                     .failureHandler((request, response, exception) -> {
+                        if (isAuthorizationRequestNotFound(exception)) {
+                            logger.debug("Ignoring stale OIDC callback without matching authorization request");
+                            response.sendRedirect(request.getContextPath() + "/");
+                            return;
+                        }
                         logger.warn("OIDC login failed", exception);
                         response.sendRedirect(request.getContextPath() + "/login?error");
                     })
@@ -209,6 +216,11 @@ public class SecurityConfig {
         } catch (Exception e) {
             logger.error("Unable to configure anonymous access", e);
         }
+    }
+
+    private boolean isAuthorizationRequestNotFound(AuthenticationException exception) {
+        return exception instanceof OAuth2AuthenticationException oauthException &&
+               OIDC_AUTHORIZATION_REQUEST_NOT_FOUND.equals(oauthException.getError().getErrorCode());
     }
 
     private ClientRegistrationRepository getOidcClientRegistrationRepository(AuthConfig authConfig) {

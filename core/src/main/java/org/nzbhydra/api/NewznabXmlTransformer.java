@@ -4,6 +4,7 @@ package org.nzbhydra.api;
 
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.downloading.DownloadType;
+import org.nzbhydra.downloading.DownloadIdentifier;
 import org.nzbhydra.downloading.FileHandler;
 import org.nzbhydra.downloading.downloadurls.DownloadUrlBuilder;
 import org.nzbhydra.mapping.newznab.NewznabResponse;
@@ -66,17 +67,18 @@ public class NewznabXmlTransformer {
 
     NewznabXmlItem buildRssItem(SearchResultItem searchResultItem, boolean isNzb) {
         NewznabXmlItem rssItem = new NewznabXmlItem();
-        String link = downloadUrlBuilder.getDownloadLinkForResults(searchResultItem.getSearchResultId(), false, isNzb ? DownloadType.NZB : DownloadType.TORRENT);
+        String downloadIdentifier = new DownloadIdentifier(searchResultItem.getSearchResultId(), searchResultItem.getSearchId()).toString();
+        String link = downloadUrlBuilder.getDownloadLinkForResults(searchResultItem.getSearchResultId(), searchResultItem.getSearchId(), false, isNzb ? DownloadType.NZB : DownloadType.TORRENT);
         rssItem.setLink(link);
         rssItem.setTitle(searchResultItem.getTitle());
-        rssItem.setRssGuid(new NewznabXmlGuid(String.valueOf(searchResultItem.getGuid()), false));
+        rssItem.setRssGuid(new NewznabXmlGuid(downloadIdentifier, false));
         rssItem.setSize(searchResultItem.getSize());
         if (searchResultItem.getPubDate() != null) {
             rssItem.setPubDate(searchResultItem.getPubDate());
         } else {
             rssItem.setPubDate(searchResultItem.getBestDate()); //Contain usenet date because results with neither should've been
         }
-        searchResultItem.getAttributes().put("guid", String.valueOf(searchResultItem.getSearchResultId()));
+        searchResultItem.getAttributes().put("guid", downloadIdentifier);
         List<NewznabAttribute> newznabAttributes = searchResultItem.getAttributes().entrySet().stream().map(attribute -> new NewznabAttribute(attribute.getKey(), attribute.getValue())).sorted(Comparator.comparing(NewznabAttribute::getName)).collect(Collectors.toList());
         if (searchResultItem.getIndexer() != null) {
             newznabAttributes.add(new NewznabAttribute("hydraIndexerScore", String.valueOf(searchResultItem.getIndexer().getConfig().getScore())));

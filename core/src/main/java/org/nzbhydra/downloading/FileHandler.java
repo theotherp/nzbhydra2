@@ -1,7 +1,6 @@
 package org.nzbhydra.downloading;
 
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.Sets;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -94,6 +93,15 @@ public class FileHandler {
         return getFileByResult(fileDownloadAccessType, accessSource, searchResult);
     }
 
+    public DownloadResult getFileByGuid(String identifier, SearchSource accessSource) throws InvalidSearchResultIdException {
+        DownloadIdentifier downloadIdentifier = DownloadIdentifier.parse(identifier, accessSource == SearchSource.INTERNAL);
+        SearchResultEntity searchResult = getResultFromGuid(downloadIdentifier.searchResultId(), accessSource);
+        searchResult.setDownloadSearchId(downloadIdentifier.searchId());
+        final IndexerConfig indexerConfig = configProvider.getIndexerByName(searchResult.getIndexer().getName());
+        FileDownloadAccessType accessType = indexerSpecificDownloadExceptions.getAccessTypeForIndexer(indexerConfig, configProvider.getBaseConfig().getDownloading().getNzbAccessType(), searchResult);
+        return getFileByResult(accessType, accessSource, searchResult);
+    }
+
     @Transactional
     public DownloadResult getFileByGuid(long guid, FileDownloadAccessType fileDownloadAccessType, SearchSource accessSource) throws InvalidSearchResultIdException {
         SearchResultEntity result = getResultFromGuid(guid, accessSource);
@@ -141,6 +149,7 @@ public class FileHandler {
                         .findFirst();
                 if (similarResult.isPresent()) {
                     logger.info("Falling back from failed download to similar result {}", similarResult.get());
+                    similarResult.get().setDownloadSearchId(result.getDownloadSearchId());
                     return getFileByResult(fileDownloadAccessType, accessSource, similarResult.get(), alreadyTriedDownloading);
                 }
                 logger.info("Unable to find similar result to fall back to. Returning download failure.");
@@ -217,7 +226,7 @@ public class FileHandler {
     }
 
 
-    public FileZipResponse getFilesAsZip(List<Long> guids) throws Exception {
+    public FileZipResponse getFilesAsZip(List<String> guids) throws Exception {
         Path tempDirectory;
         try {
             tempDirectory = Files.createTempDirectory("nzbhydra");
@@ -226,7 +235,7 @@ public class FileHandler {
         }
         final NzbsDownload nzbsDownload = getNzbsAsFiles(guids, tempDirectory);
         if (nzbsDownload.fileToTitle.isEmpty()) {
-            return new FileZipResponse(false, null, "No files could be retrieved", Collections.emptyList(), guids);
+            return new FileZipResponse(false, null, "No files could be retrieved", Collections.emptyList(), Collections.emptyList(), nzbsDownload.invalidIds);
         }
         File zip = createZip(nzbsDownload.fileToTitle);
         zip.deleteOnExit();
@@ -235,36 +244,42 @@ public class FileHandler {
             nzbsDownload.tempDirectory.toFile().delete();
         }
 
-        String message = nzbsDownload.failedIds.isEmpty() ? "All files successfully retrieved" : nzbsDownload.failedIds.size() + " files could not be loaded";
-        return new FileZipResponse(true, zip.getAbsolutePath(), message, nzbsDownload.successfulIds, nzbsDownload.failedIds);
+        int failedCount = nzbsDownload.failedIds.size() + nzbsDownload.invalidIds.size();
+        String message = failedCount == 0 ? "All files successfully retrieved" : failedCount + " files could not be loaded";
+        return new FileZipResponse(true, zip.getAbsolutePath(), message, nzbsDownload.successfulIds, nzbsDownload.failedIds, nzbsDownload.invalidIds);
     }
 
-    private NzbsDownload getNzbsAsFiles(Collection<Long> guids, Path targetDirectory) {
+    private NzbsDownload getNzbsAsFiles(Collection<String> guids, Path targetDirectory) {
         // fileToTitle maps the temp file (ASCII-safe name) to the original Unicode title for use as ZIP entry name
         final Map<File, String> fileToTitle = new LinkedHashMap<>();
         final List<File> files = new ArrayList<>();
         final List<Long> successfulIds = new ArrayList<>();
         final List<Long> failedIds = new ArrayList<>();
+        final List<String> invalidIds = new ArrayList<>();
 
-        for (Long guid : guids) {
+        for (String guid : guids) {
             DownloadResult result;
+            long searchResultId;
             try {
-                final SearchResultEntity searchResult = getResultFromGuid(guid, SearchSource.INTERNAL);
+                DownloadIdentifier downloadIdentifier = DownloadIdentifier.parse(guid, true);
+                searchResultId = downloadIdentifier.searchResultId();
+                final SearchResultEntity searchResult = getResultFromGuid(searchResultId, SearchSource.INTERNAL);
+                searchResult.setDownloadSearchId(downloadIdentifier.searchId());
                 final IndexerConfig indexerConfig = configProvider.getIndexerByName(searchResult.getIndexer().getName());
                 final FileDownloadAccessType accessType = indexerSpecificDownloadExceptions.getAccessTypeForIndexer(indexerConfig, FileDownloadAccessType.PROXY, searchResult);
                 if (accessType == FileDownloadAccessType.PROXY) {
-                    result = getFileByGuid(guid, FileDownloadAccessType.PROXY, SearchSource.INTERNAL);
+                    result = getFileByResult(FileDownloadAccessType.PROXY, SearchSource.INTERNAL, searchResult);
                 } else {
                     logger.info("Can't download NZB from indexer {} because it forbids direct access from NZBHydra", indexerConfig.getName());
-                    failedIds.add(guid);
+                    failedIds.add(searchResultId);
                     continue;
                 }
             } catch (InvalidSearchResultIdException e) {
-                failedIds.add(guid);
+                invalidIds.add(guid);
                 continue;
             }
             if (!result.isSuccessful()) {
-                failedIds.add(guid);
+                failedIds.add(searchResultId);
                 continue;
             }
             try {
@@ -284,14 +299,14 @@ public class FileHandler {
                 Files.write(tempFile.toPath(), result.getContent());
                 fileToTitle.put(tempFile, title);
                 files.add(tempFile);
-                successfulIds.add(guid);
+                successfulIds.add(searchResultId);
             } catch (IOException e) {
                 logger.error("Unable to write file content to temporary file: {}", e.getMessage());
-                failedIds.add(guid);
+                failedIds.add(searchResultId);
             }
         }
 
-        return new NzbsDownload(fileToTitle, files, successfulIds, failedIds, targetDirectory);
+        return new NzbsDownload(fileToTitle, files, successfulIds, failedIds, invalidIds, targetDirectory);
     }
 
     public File createZip(Map<File, String> fileToTitle) throws Exception {
@@ -417,16 +432,16 @@ public class FileHandler {
         throw new DownloadException(result.getLink(), 500, "Unable to handle redirect from URL " + result.getLink() + " because no redirection location is set");
     }
 
-    public SaveOrSendResultsResponse saveNzbToBlackhole(Set<Long> searchResultIds) {
+    public SaveOrSendResultsResponse saveNzbToBlackhole(Set<String> searchResultIds) {
         if (configProvider.getBaseConfig().getDownloading().getSaveNzbsTo().isEmpty()) {
             //Shouldn't happen
-            return SaveOrSendResultsResponse.notOk("Black hole folder not set", searchResultIds);
+            return SaveOrSendResultsResponse.notOk("Black hole folder not set", Collections.emptySet());
         }
-        final NzbsDownload nzbsAsFiles = getNzbsAsFiles(Sets.newHashSet(searchResultIds), Paths.get(configProvider.getBaseConfig().getDownloading().getSaveNzbsTo().get()));
+        final NzbsDownload nzbsAsFiles = getNzbsAsFiles(searchResultIds, Paths.get(configProvider.getBaseConfig().getDownloading().getSaveNzbsTo().get()));
         if (nzbsAsFiles.successfulIds.isEmpty()) {
-            return SaveOrSendResultsResponse.notOk("Unable to save file for download NZB for some reason", searchResultIds);
+            return new SaveOrSendResultsResponse(false, "Unable to save file for download NZB for some reason", Collections.emptySet(), nzbsAsFiles.failedIds, nzbsAsFiles.invalidIds);
         }
-        return new SaveOrSendResultsResponse(true, null, nzbsAsFiles.successfulIds, nzbsAsFiles.failedIds);
+        return new SaveOrSendResultsResponse(true, null, nzbsAsFiles.successfulIds, nzbsAsFiles.failedIds, nzbsAsFiles.invalidIds);
     }
 
     public Set<File> getTemporaryZipFiles() {
@@ -438,14 +453,16 @@ public class FileHandler {
         private final List<File> files;
         private final List<Long> successfulIds;
         private final List<Long> failedIds;
+        private final List<String> invalidIds;
         private final Path tempDirectory;
 
 
-        private NzbsDownload(Map<File, String> fileToTitle, List<File> files, List<Long> successfulIds, List<Long> failedIds, Path tempDirectory) {
+        private NzbsDownload(Map<File, String> fileToTitle, List<File> files, List<Long> successfulIds, List<Long> failedIds, List<String> invalidIds, Path tempDirectory) {
             this.fileToTitle = fileToTitle;
             this.files = files;
             this.successfulIds = successfulIds;
             this.failedIds = failedIds;
+            this.invalidIds = invalidIds;
             this.tempDirectory = tempDirectory;
         }
     }

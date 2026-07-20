@@ -7,6 +7,10 @@ public class InvalidSearchResultIdException extends Exception {
     private boolean internal;
 
     public InvalidSearchResultIdException(long searchResultId, boolean internal) {
+        this(String.valueOf(searchResultId), internal);
+    }
+
+    public InvalidSearchResultIdException(String searchResultId, boolean internal) {
         super("Unable to find search result with ID " + searchResultId);
         this.internal = internal;
     }

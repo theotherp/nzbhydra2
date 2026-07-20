@@ -32,14 +32,15 @@ function addableNzb(DebugService) {
 
         $scope.add = function () {
             var originalClass = $scope.cssClass;
+            var downloadIdentifier = $scope.searchresult.downloadId || $scope.searchresult.searchResultId || $scope.searchresult.id;
             $scope.cssClass = "nzb-spinning";
             NzbDownloadService.download($scope.downloader, [{
-                searchResultId: $scope.searchresult.searchResultId ? $scope.searchresult.searchResultId : $scope.searchresult.id,
+                searchResultId: downloadIdentifier,
                 originalCategory: $scope.searchresult.originalCategory,
                 mappedCategory: $scope.searchresult.category
             }], $scope.alwaysAsk).then(function (response) {
                 if (response !== "dismissed") {
-                    if (response.data.successful && (response.data.addedIds != null && response.data.addedIds.indexOf(Number($scope.searchresult.searchResultId)) > -1)) {
+                    if (response.data.successful && (response.data.addedIds != null && response.data.addedIds.indexOf(Number(String(downloadIdentifier).split('.')[0])) > -1)) {
                         $scope.cssClass = getCssClass($scope.downloader.downloaderType) + "-success";
                         $scope.searchresult.downloadedAt = moment().format("YYYY-MM-DD HH:mm");
                     } else {

@@ -21,6 +21,11 @@ public class SaveOrSendResultsResponse {
     private String message;
     private Collection<Long> addedIds;
     private Collection<Long> missedIds;
+    private Collection<String> invalidIds;
+
+    public SaveOrSendResultsResponse(boolean successful, String message, Collection<Long> addedIds, Collection<Long> missedIds) {
+        this(successful, message, addedIds, missedIds, Collections.emptyList());
+    }
 
     public static SaveOrSendResultsResponse notOk(String message, Set<Long> missedIds) {
         return new SaveOrSendResultsResponse(false, message, Collections.emptySet(), missedIds);

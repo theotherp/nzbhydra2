@@ -9,6 +9,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.searching.SearchType;
+import org.nzbhydra.downloading.DownloadIdentifier;
 import org.nzbhydra.downloading.FileDownloadEntity;
 import org.nzbhydra.downloading.FileDownloadRepository;
 import org.nzbhydra.downloading.FileHandler;
@@ -139,7 +140,7 @@ public class InternalSearchResultProcessor {
                     .indexer(item.getIndexer().getName())
                     .indexerguid(item.getIndexerGuid())
                     .indexerscore(item.getIndexer().getConfig().getScore())
-                    .link(downloadUrlBuilder.getDownloadLinkForResults(item.getSearchResultId(), true, item.getDownloadType()))
+                    .link(downloadUrlBuilder.getDownloadLinkForResults(item.getSearchResultId(), item.getSearchId(), true, item.getDownloadType()))
                     .originalCategory(item.getOriginalCategory())
                     .poster(item.getPoster().map(originalUrl -> {
                         if (!baseConfig.getMain().isProxyImages()) {
@@ -148,6 +149,7 @@ public class InternalSearchResultProcessor {
                         return "cache/" + URLEncoder.encode(originalUrl, StandardCharsets.UTF_8);
                     }).orElse(null))
                     .searchResultId(item.getSearchResultId().toString())
+                    .downloadId(new DownloadIdentifier(item.getSearchResultId(), item.getSearchId()).toString())
                     .size(item.getSize())
                     .title(item.getTitle())
                     .source(item.getSource().orElse(null));

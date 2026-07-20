@@ -122,7 +122,8 @@ public class IndexerWebAccess {
         }
     }
 
-    private <T> @NotNull T unmarshalXml(String response) throws IOException, HydraUnmarshallingFailureException {
+    @NotNull
+    private <T> T unmarshalXml(String response) throws IOException, HydraUnmarshallingFailureException {
         try {
             try (StringReader reader = new StringReader(response)) {
                 final StreamSource source = new StreamSource(reader);

@@ -23,14 +23,15 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class IndexerSearchResultPersistorTest {
 
     @Mock
     private SearchResultRepository searchResultRepository;
+    @Mock
+    private IndexerSearchResultOccurrenceRepository occurrenceRepository;
     @Mock
     private Indexer<?> indexer;
     @Mock
@@ -43,7 +44,7 @@ class IndexerSearchResultPersistorTest {
 
     @BeforeEach
     void setUp() {
-        when(indexer.getIndexerEntity()).thenReturn(indexerEntity);
+        lenient().when(indexer.getIndexerEntity()).thenReturn(indexerEntity);
     }
 
     @Test
@@ -53,7 +54,7 @@ class IndexerSearchResultPersistorTest {
         SearchResultItem item2 = getSearchResultItem("title2", "link2", "guid2");
         List<SearchResultItem> items = List.of(item1, item2);
         IndexerSearchResult indexerSearchResult = new IndexerSearchResult();
-        when(searchResultRepository.findAllIdsByIdIn(anyList())).thenReturn(Set.of());
+        when(searchResultRepository.findAllById(anyList())).thenReturn(List.of());
 
         // when
         List<SearchResultItem> result = testee.persistSearchResults(indexer, items, indexerSearchResult);
@@ -83,7 +84,9 @@ class IndexerSearchResultPersistorTest {
 
 
         long existingId = SearchResultIdCalculator.calculateSearchResultId(item1);
-        when(searchResultRepository.findAllIdsByIdIn(anyList())).thenReturn(Set.of(existingId));
+        SearchResultEntity existingEntity = new SearchResultEntity();
+        existingEntity.setId(existingId);
+        when(searchResultRepository.findAllById(anyList())).thenReturn(List.of(existingEntity));
 
         // when
         List<SearchResultItem> result = testee.persistSearchResults(indexer, items, indexerSearchResult);
@@ -96,6 +99,20 @@ class IndexerSearchResultPersistorTest {
 
         assertThat(result).hasSize(2);
         assertThat(result.get(0).getSearchResultId()).isEqualTo(existingId);
+    }
+
+    @Test
+    void shouldMergeSearchResultOccurrences() {
+        IndexerSearchEntity indexerSearch = new IndexerSearchEntity();
+        indexerSearch.setId(1);
+        SearchResultEntity existingResult = new SearchResultEntity();
+        existingResult.setId(1);
+        SearchResultEntity newResult = new SearchResultEntity();
+        newResult.setId(2);
+        testee.persistSearchResultOccurrences(indexerSearch, Set.of(existingResult, newResult));
+
+        verify(occurrenceRepository).merge(1, 1L);
+        verify(occurrenceRepository).merge(1, 2L);
     }
 
     private SearchResultItem getSearchResultItem(String title, String link, String guid) {

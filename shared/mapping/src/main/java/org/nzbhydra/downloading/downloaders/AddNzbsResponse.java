@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.util.Collection;
+import java.util.Collections;
 
 @Data
 @ReflectionMarker
@@ -21,4 +22,9 @@ public class AddNzbsResponse {
     private String message;
     private Collection<Long> addedIds;
     private Collection<Long> missedIds;
+    private Collection<String> invalidIds;
+
+    public AddNzbsResponse(boolean successful, String message, Collection<Long> addedIds, Collection<Long> missedIds) {
+        this(successful, message, addedIds, missedIds, Collections.emptyList());
+    }
 }
