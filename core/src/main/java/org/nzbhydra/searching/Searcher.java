@@ -12,6 +12,7 @@ import org.nzbhydra.config.SearchSource;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.indexers.IndexerSearchEntity;
 import org.nzbhydra.indexers.IndexerSearchRepository;
+import org.nzbhydra.indexers.IndexerSearchResultPersistor;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.logging.MdcThreadPoolExecutor;
 import org.nzbhydra.searching.IndexerForSearchSelector.IndexerForSearchSelection;
@@ -61,6 +62,8 @@ public class Searcher {
     protected DuplicateDetector duplicateDetector;
     @Autowired
     private IndexerSearchRepository indexerSearchRepository;
+    @Autowired
+    private IndexerSearchResultPersistor indexerSearchResultPersistor;
     @Autowired
     private SearchRepository searchRepository;
     @Autowired
@@ -184,6 +187,7 @@ public class Searcher {
         searchCacheEntry.setNumberOfRemovedDuplicates(searchResult.getNumberOfRemovedDuplicates());
 
         List<SearchResultItem> searchResultItemsToReturn = new ArrayList<>(searchResultItems);
+        searchResultItemsToReturn.forEach(item -> item.setSearchId(searchCacheEntry.getSearchEntity().getId()));
         searchResultItemsToReturn.sort(Comparator.comparingLong(x -> ((SearchResultItem) x).getBestDate().getEpochSecond()).reversed());
 
         spliceSearchResultItemsAccordingToOffsetAndLimit(searchRequest, searchResult, searchResultItemsToReturn);
@@ -281,8 +285,11 @@ public class Searcher {
                     if (configProvider.getBaseConfig().getMain().isKeepHistory()) {
                         savedEntity = indexerSearchRepository.save(finalEntity);
                         for (SearchResultEntity x : indexerSearchResult.getSearchResultEntities()) {
-                            x.setIndexerSearchEntityId(savedEntity.getId());
+                            if (x.getIndexerSearchEntityId() == null) {
+                                x.setIndexerSearchEntityId(savedEntity.getId());
+                            }
                         }
+                        indexerSearchResultPersistor.persistSearchResultOccurrences(savedEntity, indexerSearchResult.getSearchResultEntities());
                     }
                     searchResultRepository.saveAll(indexerSearchResult.getSearchResultEntities());
                     searchCacheEntry.getIndexerCacheEntries().get(indexerSearchResult.getIndexer().getName()).setIndexerSearchEntity(savedEntity);

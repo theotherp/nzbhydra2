@@ -1014,7 +1014,7 @@ function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $doc
             var downloadedAt = moment().format("YYYY-MM-DD HH:mm");
             growl.info("Removing downloaded results from selection");
             var toRemove = _.filter($scope.selected, function (x) {
-                return addedIds.indexOf(Number(x.searchResultId)) > -1;
+                return addedIds.indexOf(Number((x.downloadId || x.searchResultId).split('.')[0])) > -1;
             });
             var newSelected = $scope.selected;
             _.forEach(toRemove, function (x) {

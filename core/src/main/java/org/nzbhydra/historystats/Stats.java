@@ -273,7 +273,12 @@ public class Stats {
         List<SearchModuleType> typesToUse = Arrays.asList(SearchModuleType.NEWZNAB, SearchModuleType.TORZNAB, SearchModuleType.ANIZB);
         final Set<String> indexersToInclude = (statsRequest.isIncludeDisabled() ? searchModuleProvider.getIndexers() : searchModuleProvider.getEnabledIndexers().stream().filter(x -> typesToUse.contains(x.getConfig().getSearchModuleType())).toList()).stream().map(Indexer::getName).collect(Collectors.toSet());
 
-        List<IndexerScore> indexerUniquenessScores = calculateIndexerScores(indexersToInclude, uniquenessScoreEntityRepository.findAll());
+        List<IndexerUniquenessScoreEntity> scoreEntities = uniquenessScoreEntityRepository.findAll().stream()
+                // Versions 1 and 2 lack exact download context and are intentionally not comparable to corrected observations.
+                .filter(score -> score.getDataVersion() != null && score.getDataVersion() >= 3)
+                .filter(score -> isWithinScoreDateRange(score, statsRequest))
+                .toList();
+        List<IndexerScore> indexerUniquenessScores = calculateIndexerScores(indexersToInclude, scoreEntities);
         logger.debug(LoggingMarkers.PERFORMANCE, "Calculated indexer result uniqueness scores. Took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return indexerUniquenessScores;
     }
@@ -306,10 +311,27 @@ public class Stats {
             // Unique downloads only counted from entries with results
             long uniqueDownloads = entriesWithResult.stream().filter(x -> x.getHave() == 1 && x.getInvolved() > 1).count();
             indexerScore.setUniqueDownloads(uniqueDownloads);
+            indexerScore.setProvidedDownloads(entriesWithResult.size());
+            indexerScore.setCoveragePercent(toPercent(entriesWithResult.size(), allEntries.size()));
+            indexerScore.setExclusivePercent(toPercent(uniqueDownloads, allEntries.size()));
+            double sharedContribution = entriesWithResult.stream().mapToDouble(x -> 1D / x.getHave()).sum();
+            indexerScore.setSharedContribution(sharedContribution);
+            indexerScore.setSharedContributionPercent(toPercent(sharedContribution, allEntries.size()));
+            indexerScore.setLegacyObservations(allEntries.stream().filter(x -> x.getDataVersion() == null || x.getDataVersion() < 2).count());
+            indexerScore.setCorrectedObservations(allEntries.stream().filter(x -> x.getDataVersion() != null && x.getDataVersion() >= 3).count());
             scores.add(indexerScore);
         }
         scores.sort(Comparator.comparing(IndexerScore::getAverageUniquenessScore, Comparator.nullsLast(Comparator.reverseOrder())));
         return scores;
+    }
+
+    private Integer toPercent(double numerator, long denominator) {
+        return denominator == 0 ? null : (int) (100D * numerator / denominator);
+    }
+
+    private boolean isWithinScoreDateRange(IndexerUniquenessScoreEntity score, StatsRequest statsRequest) {
+        return (statsRequest.getAfter() == null || !score.getRecordedAt().isBefore(statsRequest.getAfter()))
+               && (statsRequest.getBefore() == null || !score.getRecordedAt().isAfter(statsRequest.getBefore()));
     }
 
 
@@ -664,11 +686,6 @@ public class Stats {
             int ageStep = (Integer) o2[0];
             int count = ((Long) o2[1]).intValue();
             agesAndCountsMap.put(ageStep, count);
-        }
-        for (int i = 0; i <= 34; i += 1) {
-            if (!agesAndCountsMap.containsKey(i)) {
-                agesAndCountsMap.put(i, 0);
-            }
         }
         for (Entry<Integer, Integer> entry : agesAndCountsMap.entrySet()) {
             results.add(new DownloadPerAge(entry.getKey() * 100, entry.getValue()));

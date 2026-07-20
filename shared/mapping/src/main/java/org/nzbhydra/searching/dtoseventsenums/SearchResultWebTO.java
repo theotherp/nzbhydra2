@@ -40,6 +40,7 @@ public class SearchResultWebTO {
     private String originalCategory;
     private String poster;
     private String searchResultId;
+    private String downloadId;
     private String source;
     private Long size;
     private String title;

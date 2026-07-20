@@ -25,15 +25,19 @@ public class IndexerSearchResultPersistor {
 
 
     private final SearchResultRepository searchResultRepository;
+    private final IndexerSearchResultOccurrenceRepository occurrenceRepository;
 
-    public IndexerSearchResultPersistor(SearchResultRepository searchResultRepository) {
+    public IndexerSearchResultPersistor(SearchResultRepository searchResultRepository, IndexerSearchResultOccurrenceRepository occurrenceRepository) {
         this.searchResultRepository = searchResultRepository;
+        this.occurrenceRepository = occurrenceRepository;
     }
 
     @Transactional
     public List<SearchResultItem> persistSearchResults(Indexer<?> indexer, List<SearchResultItem> searchResultItems, IndexerSearchResult indexerSearchResult) {
         ArrayList<SearchResultEntity> searchResultEntities = new ArrayList<>();
-        Set<Long> alreadySavedIds = searchResultRepository.findAllIdsByIdIn(searchResultItems.stream().map(SearchResultIdCalculator::calculateSearchResultId).collect(Collectors.toList()));
+        List<Long> resultIds = searchResultItems.stream().map(SearchResultIdCalculator::calculateSearchResultId).toList();
+        Set<SearchResultEntity> existingEntities = new HashSet<>(searchResultRepository.findAllById(resultIds));
+        Set<Long> alreadySavedIds = existingEntities.stream().map(SearchResultEntity::getId).collect(Collectors.toSet());
         for (SearchResultItem item : searchResultItems) {
             long guid = SearchResultIdCalculator.calculateSearchResultId(item);
             if (!alreadySavedIds.contains(guid)) {
@@ -56,12 +60,20 @@ public class IndexerSearchResultPersistor {
         }
         indexer.debug("Found {} results which were already in the database and {} new ones", alreadySavedIds.size(), searchResultEntities.size());
         try {
-            searchResultRepository.saveAll(searchResultEntities);
-            indexerSearchResult.setSearchResultEntities(new HashSet<>(searchResultEntities));
+            List<SearchResultEntity> savedEntities = searchResultRepository.saveAll(searchResultEntities);
+            existingEntities.addAll(savedEntities);
+            indexerSearchResult.setSearchResultEntities(existingEntities);
         } catch (EntityExistsException e) {
             indexer.error("Unable to save the search results to the database", e);
         }
 
         return searchResultItems;
+    }
+
+    @Transactional
+    public void persistSearchResultOccurrences(IndexerSearchEntity indexerSearchEntity, Set<SearchResultEntity> searchResultEntities) {
+        for (SearchResultEntity searchResult : searchResultEntities) {
+            occurrenceRepository.merge(indexerSearchEntity.getId(), searchResult.getId());
+        }
     }
 }

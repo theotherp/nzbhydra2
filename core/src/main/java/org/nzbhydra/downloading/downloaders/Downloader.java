@@ -18,11 +18,13 @@ import org.nzbhydra.config.downloading.FileDownloadAccessType;
 import org.nzbhydra.config.downloading.NzbAddingType;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.downloading.AddFilesRequest;
+import org.nzbhydra.downloading.DownloadIdentifier;
 import org.nzbhydra.downloading.DownloadResult;
 import org.nzbhydra.downloading.FileDownloadEntity;
 import org.nzbhydra.downloading.FileDownloadStatus;
 import org.nzbhydra.downloading.FileHandler;
 import org.nzbhydra.downloading.IndexerSpecificDownloadExceptions;
+import org.nzbhydra.downloading.InvalidSearchResultIdException;
 import org.nzbhydra.downloading.downloadurls.DownloadLink;
 import org.nzbhydra.downloading.downloadurls.DownloadUrlBuilder;
 import org.nzbhydra.downloading.exceptions.DownloaderException;
@@ -41,6 +43,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -101,10 +104,12 @@ public abstract class Downloader {
         Set<Long> addedNzbs = new HashSet<>();
         Set<SearchResultEntity> missedNzbs = new HashSet<>();
         Set<Long> failedSearchResultIds = new HashSet<>();
+        Set<String> invalidIds = new LinkedHashSet<>();
 
         for (AddFilesRequest.SearchResult entry : searchResults) {
             try {
-                Long guid = Long.valueOf(entry.getSearchResultId());
+                DownloadIdentifier downloadIdentifier = DownloadIdentifier.parse(entry.getSearchResultId(), true);
+                Long guid = downloadIdentifier.searchResultId();
                 String categoryToSend;
 
                 if ("Use original category".equals(category)) {
@@ -129,6 +134,7 @@ public abstract class Downloader {
                     continue;
                 }
                 final SearchResultEntity searchResult = optionalResult.get();
+                searchResult.setDownloadSearchId(downloadIdentifier.searchId());
                 final String searchResultTitle = optionalResult.get().getTitle();
                 final IndexerConfig indexerConfig = configProvider.getIndexerByName(optionalResult.get().getIndexer().getName());
                 try {
@@ -169,9 +175,9 @@ public abstract class Downloader {
                         missedNzbs.add(searchResult);
                     }
                 }
-            } catch (EntityNotFoundException e) {
+            } catch (InvalidSearchResultIdException | EntityNotFoundException e) {
                 logger.error("Unable to find the search result in the database for ID: {}", entry.getSearchResultId());
-                failedSearchResultIds.add(Long.valueOf(entry.getSearchResultId()));
+                addParsedSearchResultId(entry.getSearchResultId(), failedSearchResultIds, addedNzbs, invalidIds);
             } catch (DownloaderException e) {
                 // DownloaderException indicates a downloader-wide issue, so we stop processing
                 logger.error("Downloader error: {}", e.getMessage());
@@ -181,20 +187,17 @@ public abstract class Downloader {
                 }
                 // Add remaining unprocessed search results to failed list
                 for (AddFilesRequest.SearchResult remainingEntry : searchResults) {
-                    Long remainingGuid = Long.valueOf(remainingEntry.getSearchResultId());
-                    if (!addedNzbs.contains(remainingGuid) && !failedSearchResultIds.contains(remainingGuid)) {
-                        failedSearchResultIds.add(remainingGuid);
-                    }
+                    addParsedSearchResultId(remainingEntry.getSearchResultId(), failedSearchResultIds, addedNzbs, invalidIds);
                 }
                 failedSearchResultIds.addAll(missedNzbs.stream().map(SearchResultEntity::getId).collect(Collectors.toSet()));
-                return new AddNzbsResponse(false, message, addedNzbs, failedSearchResultIds);
+                return new AddNzbsResponse(false, message, addedNzbs, failedSearchResultIds, invalidIds);
             }
         }
 
         // Combine failedSearchResultIds with missedNzb IDs
         failedSearchResultIds.addAll(missedNzbs.stream().map(SearchResultEntity::getId).collect(Collectors.toSet()));
 
-        if (missedNzbs.isEmpty() && failedSearchResultIds.isEmpty()) {
+        if (missedNzbs.isEmpty() && failedSearchResultIds.isEmpty() && invalidIds.isEmpty()) {
             return new AddNzbsResponse(true, null, addedNzbs, Collections.emptyList());
         } else {
             logger.debug("At least one NZB was not downloaded successfully or could not be added to the downloader");
@@ -206,7 +209,22 @@ public abstract class Downloader {
             if (!failedSearchResultIds.isEmpty() && missedNzbs.isEmpty()) {
                 message = "Some search results could not be processed";
             }
-            return new AddNzbsResponse(true, message, addedNzbs, new ArrayList<>(failedSearchResultIds));
+            if (!invalidIds.isEmpty()) {
+                message = "Some download identifiers were invalid";
+            }
+            return new AddNzbsResponse(!addedNzbs.isEmpty(), message, addedNzbs, new ArrayList<>(failedSearchResultIds), invalidIds);
+        }
+    }
+
+    private void addParsedSearchResultId(String identifier, Set<Long> failedSearchResultIds, Set<Long> addedNzbs, Set<String> invalidIds) {
+        try {
+            long searchResultId = DownloadIdentifier.parse(identifier, true).searchResultId();
+            if (!addedNzbs.contains(searchResultId) && !failedSearchResultIds.contains(searchResultId)) {
+                failedSearchResultIds.add(searchResultId);
+            }
+        } catch (InvalidSearchResultIdException e) {
+            logger.error("Unable to parse download identifier {}", identifier);
+            invalidIds.add(identifier);
         }
     }
 

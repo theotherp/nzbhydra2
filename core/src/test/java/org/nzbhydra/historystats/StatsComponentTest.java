@@ -204,8 +204,10 @@ public class StatsComponentTest {
         downloadRepository.saveAll(Arrays.asList(download1, download2, download3, download4, download5, download6));
 
         List<DownloadPerAge> downloadPerAges = stats.downloadsPerAge();
-        assertThat(downloadPerAges.get(34).getAge()).isEqualTo(3400);
-        assertThat(downloadPerAges.get(34).getCount()).isEqualTo(2);
+        assertThat(downloadPerAges)
+                .extracting(DownloadPerAge::getAge)
+                .containsExactly(0, 1000, 1500, 2000, 3400);
+        assertThat(downloadPerAges.get(4).getCount()).isEqualTo(2);
 
         DownloadPerAgeStats downloadPerAgeStats = stats.downloadsPerAgeStats();
         assertThat(downloadPerAgeStats.getAverageAge()).isEqualTo(1901);

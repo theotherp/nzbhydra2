@@ -20,7 +20,7 @@ function copyLinksButton() {
             } else {
                 var baseUrl = $window.location.origin + $window.location.pathname.replace(/\/$/, '');
                 var links = _.map($scope.searchResults, function (result) {
-                    return baseUrl + '/getnzb/user/' + result.searchResultId;
+                    return baseUrl + '/getnzb/user/' + (result.downloadId || result.searchResultId);
                 });
                 var linkText = links.join('\n');
 

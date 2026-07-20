@@ -1,212 +1,136 @@
-
-
 package org.nzbhydra.downloading;
 
-import com.google.common.collect.Sets;
-import jakarta.persistence.EntityManagerFactory;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.ArgumentMatchers;
-import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
-import org.nzbhydra.config.BaseConfig;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.SearchSource;
+import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.config.downloading.FileDownloadAccessType;
 import org.nzbhydra.indexers.IndexerEntity;
 import org.nzbhydra.indexers.IndexerSearchEntity;
 import org.nzbhydra.indexers.IndexerSearchRepository;
+import org.nzbhydra.indexers.IndexerSearchResultOccurrenceEntity;
+import org.nzbhydra.indexers.IndexerSearchResultOccurrenceRepository;
 import org.nzbhydra.searching.db.SearchEntity;
 import org.nzbhydra.searching.db.SearchResultEntity;
-import org.nzbhydra.searching.db.SearchResultRepository;
 import org.nzbhydra.searching.uniqueness.IndexerUniquenessScoreEntity;
 import org.nzbhydra.searching.uniqueness.IndexerUniquenessScoreEntityRepository;
 
 import java.time.Instant;
-import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
-@MockitoSettings(strictness = Strictness.LENIENT)
-public class IndexerUniquenessScoreSaverTest {
+@ExtendWith(MockitoExtension.class)
+class IndexerUniquenessScoreSaverTest {
 
     @Mock
-    private SearchResultRepository searchResultRepository;
+    private ConfigProvider configProvider;
     @Mock
     private IndexerSearchRepository indexerSearchRepository;
     @Mock
-    private IndexerUniquenessScoreEntityRepository indexerUniquenessScoreEntityRepository;
-    @Captor
-    private ArgumentCaptor<List<IndexerUniquenessScoreEntity>> scoreCaptor;
-    @Captor
-    private ArgumentCaptor<String> searchCaptor;
+    private IndexerSearchResultOccurrenceRepository occurrenceRepository;
     @Mock
-    private ConfigProvider configProviderMock;
-    @Mock
-    private EntityManagerFactory entityManagerFactory;
-    @Mock
-    private SessionFactory sessionFactoryMock;
-    @Mock
-    private Session sessionMock;
-
-
+    private IndexerUniquenessScoreEntityRepository scoreRepository;
     @InjectMocks
-    private IndexerUniquenessScoreSaver testee = new IndexerUniquenessScoreSaver();
+    private IndexerUniquenessScoreSaver testee;
+
+    private SearchEntity search;
+    private IndexerEntity downloadedIndexer;
+    private IndexerEntity matchingIndexer;
+    private IndexerEntity missingIndexer;
+    private IndexerSearchEntity downloadedSearch;
+    private IndexerSearchEntity matchingSearch;
+    private IndexerSearchEntity missingSearch;
+    private SearchResultEntity downloadedResult;
 
     @BeforeEach
-    public void setUp() throws Exception {
-
-        final BaseConfig value = new BaseConfig();
-        value.getMain().setKeepHistory(true);
-        when(configProviderMock.getBaseConfig()).thenReturn(value);
-        when(entityManagerFactory.unwrap(any())).thenReturn(sessionFactoryMock);
-        when(sessionFactoryMock.openSession()).thenReturn(sessionMock);
-
+    void setUp() {
+        search = new SearchEntity();
+        search.setId(1);
+        downloadedIndexer = indexer("downloaded", 1);
+        matchingIndexer = indexer("matching", 2);
+        missingIndexer = indexer("missing", 3);
+        downloadedSearch = indexerSearch(downloadedIndexer, 1);
+        matchingSearch = indexerSearch(matchingIndexer, 2);
+        missingSearch = indexerSearch(missingIndexer, 3);
+        downloadedResult = result(downloadedIndexer, "A.Release-Name");
     }
 
-    // TODO Fix (sessionMock doesn't work)
-//    @Test
-    public void testWithTwoOutOfThree() {
-        SearchEntity searchEntity = new SearchEntity();
+    @Test
+    void shouldScoreOnlyMatchingResultsFromRelatedSearch() {
+        SearchResultEntity matchingResult = result(matchingIndexer, "a release_name");
+        downloadedResult.setDownloadSearchId(search.getId());
 
-        IndexerEntity indexerHasDownloaded = new IndexerEntity("indexerHasDownloaded");
-        indexerHasDownloaded.setName("indexerHasDownloaded");
-        indexerHasDownloaded.setId(1);
+        when(occurrenceRepository.findBySearchResultAndIndexerSearchSearchEntityId(downloadedResult, search.getId()))
+                .thenReturn(List.of(occurrence(downloadedSearch, downloadedResult)));
+        when(indexerSearchRepository.findBySearchEntity(search)).thenReturn(List.of(downloadedSearch, matchingSearch, missingSearch));
+        when(occurrenceRepository.findByIndexerSearchSearchEntityId(search.getId())).thenReturn(List.of(
+                occurrence(downloadedSearch, downloadedResult),
+                occurrence(matchingSearch, matchingResult)
+        ));
 
-        IndexerEntity indexerhasToo = new IndexerEntity("indexerhasToo");
-        indexerhasToo.setName("indexerHasDownloaded");
-        indexerhasToo.setId(2);
+        testee.handleDownloadEvent(event(FileDownloadStatus.NZB_DOWNLOAD_SUCCESSFUL));
 
-        IndexerEntity indexerHasNot = new IndexerEntity("indexerHasNot");
-        indexerHasNot.setName("indexerHasNot");
-        indexerHasNot.setId(3);
-
-        IndexerSearchEntity indexerSearchEntityHasDownloaded = new IndexerSearchEntity(indexerHasDownloaded, searchEntity, new Random().nextInt());
-        indexerSearchEntityHasDownloaded.setSuccessful(true);
-        IndexerSearchEntity indexerSearchEntityhasToo = new IndexerSearchEntity(indexerhasToo, searchEntity, new Random().nextInt());
-        indexerSearchEntityhasToo.setSuccessful(true);
-        IndexerSearchEntity indexerSearchEntityHasNot = new IndexerSearchEntity(indexerHasNot, searchEntity, new Random().nextInt());
-        indexerSearchEntityHasNot.setSuccessful(true);
-
-        SearchResultEntity searchResultEntityHasDownloaded = new SearchResultEntity(indexerHasDownloaded, Instant.now(), "Some.result-with_different.Characters", "", "", "", null, Instant.now());
-        searchResultEntityHasDownloaded.setIndexerSearchEntityId(indexerSearchEntityHasDownloaded.getId());
-        SearchResultEntity searchResultEntityhasToo = new SearchResultEntity(indexerhasToo, Instant.now(), "", "", "", "", null, null);
-        searchResultEntityhasToo.setIndexerSearchEntityId(indexerSearchEntityhasToo.getId());
-        SearchResultEntity searchResultEntityhasNot = new SearchResultEntity(indexerHasNot, Instant.now(), "", "", "", "", null, null);
-        searchResultEntityhasNot.setIndexerSearchEntityId(indexerSearchEntityHasNot.getId());
-
-        FileDownloadEntity fileDownloadEntity = new FileDownloadEntity(searchResultEntityHasDownloaded, FileDownloadAccessType.REDIRECT, SearchSource.API, FileDownloadStatus.NONE, null);
-        FileDownloadEvent downloadEvent = new FileDownloadEvent(fileDownloadEntity, searchResultEntityHasDownloaded);
-
-        when(searchResultRepository.findAllByTitleLikeIgnoreCase(anyString())).thenReturn(Sets.newHashSet(searchResultEntityHasDownloaded, searchResultEntityhasToo));
-        when(indexerSearchRepository.findBySearchEntity(searchEntity)).thenReturn(Sets.newHashSet(indexerSearchEntityHasDownloaded, indexerSearchEntityhasToo, indexerSearchEntityHasNot));
-        when(indexerSearchRepository.getReferenceById(indexerSearchEntityHasDownloaded.getId())).thenReturn(indexerSearchEntityHasDownloaded);
-        when(indexerSearchRepository.getReferenceById(indexerSearchEntityhasToo.getId())).thenReturn(indexerSearchEntityhasToo);
-        when(indexerSearchRepository.getReferenceById(indexerSearchEntityHasNot.getId())).thenReturn(indexerSearchEntityHasNot);
-
-        testee.onNzbDownloadEvent(downloadEvent);
-        when(sessionMock.load(ArgumentMatchers.eq(SearchResultEntity.class), any())).thenReturn(new SearchResultEntity());
-
-        verify(indexerUniquenessScoreEntityRepository).saveAll(scoreCaptor.capture());
-        assertThat(scoreCaptor.getValue()).hasSize(3);
-
-        IndexerUniquenessScoreEntity score1 = scoreCaptor.getValue().get(0);
-        assertThat(score1.getIndexer()).isEqualTo(indexerHasDownloaded);
-        assertThat(score1.getInvolved()).isEqualTo(3);
-        assertThat(score1.getHave()).isEqualTo(2);
-        assertTrue(score1.isHasResult());
-
-        IndexerUniquenessScoreEntity score2 = scoreCaptor.getValue().get(1);
-        assertThat(score2.getIndexer()).isEqualTo(indexerhasToo);
-        assertThat(score2.getInvolved()).isEqualTo(3);
-        assertThat(score2.getHave()).isEqualTo(2);
-        assertTrue(score2.isHasResult());
-
-        IndexerUniquenessScoreEntity score3 = scoreCaptor.getValue().get(2);
-        assertThat(score3.getIndexer()).isEqualTo(indexerHasNot);
-        assertThat(score3.getInvolved()).isEqualTo(3);
-        assertThat(score3.getHave()).isEqualTo(2);
-        assertThat(score3.isHasResult()).isFalse();
-
-        verify(searchResultRepository).findAllByTitleLikeIgnoreCase("Some_result_with_different_Characters");
+        ArgumentCaptor<Set<IndexerUniquenessScoreEntity>> captor = ArgumentCaptor.forClass(Set.class);
+        verify(scoreRepository).saveAll(captor.capture());
+        assertThat(captor.getValue()).hasSize(3);
+        assertThat(captor.getValue())
+                .allSatisfy(score -> assertThat(score.getInvolved()).isEqualTo(3));
+        assertThat(captor.getValue())
+                .filteredOn(IndexerUniquenessScoreEntity::isHasResult)
+                .extracting(score -> score.getIndexer().getName())
+                .containsExactlyInAnyOrder("downloaded", "matching");
+        assertThat(captor.getValue())
+                .filteredOn(score -> score.getIndexer().equals(missingIndexer))
+                .singleElement()
+                .satisfies(score -> assertThat(score.isHasResult()).isFalse());
     }
 
-    // TODO Fix (sessionMock doesn't work)
-//    @Test
-    public void testWithOneOutOfThree() {
-        SearchEntity searchEntity = new SearchEntity();
+    @Test
+    void shouldNotSaveScoreForFailedDownload() {
+        testee.handleDownloadEvent(event(FileDownloadStatus.NZB_DOWNLOAD_ERROR));
 
-        IndexerEntity indexerHasDownloaded = new IndexerEntity("indexerHasDownloaded");
-        indexerHasDownloaded.setId(1);
-        IndexerEntity indexerHasNot = new IndexerEntity("indexerHasNot");
-        indexerHasNot.setId(2);
-        IndexerEntity indexerHasNot2 = new IndexerEntity("indexerHasNot2");
-        indexerHasNot2.setId(3);
+        verify(scoreRepository, never()).saveAll(org.mockito.ArgumentMatchers.any());
+    }
 
-        IndexerSearchEntity indexerSearchEntityHasDownloaded = new IndexerSearchEntity(indexerHasDownloaded, searchEntity, new Random().nextInt());
-        indexerSearchEntityHasDownloaded.setSuccessful(true);
-        indexerSearchEntityHasDownloaded.setId(1);
-        IndexerSearchEntity indexerSearchEntityhasNot2 = new IndexerSearchEntity(indexerHasNot2, searchEntity, new Random().nextInt());
-        indexerSearchEntityhasNot2.setSuccessful(true);
-        indexerSearchEntityhasNot2.setId(2);
-        IndexerSearchEntity indexerSearchEntityHasNot = new IndexerSearchEntity(indexerHasNot, searchEntity, new Random().nextInt());
-        indexerSearchEntityHasNot.setSuccessful(true);
-        indexerSearchEntityHasNot.setId(3);
-        when(indexerSearchRepository.getReferenceById(indexerSearchEntityHasDownloaded.getId())).thenReturn(indexerSearchEntityHasDownloaded);
-        when(indexerSearchRepository.getReferenceById(indexerSearchEntityHasNot.getId())).thenReturn(indexerSearchEntityHasNot);
-        when(indexerSearchRepository.getReferenceById(indexerSearchEntityhasNot2.getId())).thenReturn(indexerSearchEntityhasNot2);
+    @Test
+    void shouldNotSaveScoreForLegacyDownloadIdentifier() {
+        testee.handleDownloadEvent(event(FileDownloadStatus.NZB_DOWNLOAD_SUCCESSFUL));
 
-        SearchResultEntity searchResultEntityHasDownloaded = new SearchResultEntity(indexerHasDownloaded, Instant.now(), "", "", "", "", null, Instant.now());
-        searchResultEntityHasDownloaded.setIndexerSearchEntityId(indexerSearchEntityHasDownloaded.getId());
-        SearchResultEntity searchResultEntityhasNot2 = new SearchResultEntity(indexerHasNot2, Instant.now(), "", "", "", "", null, null);
-        searchResultEntityhasNot2.setIndexerSearchEntityId(indexerSearchEntityhasNot2.getId());
-        SearchResultEntity searchResultEntityhasNot = new SearchResultEntity(indexerHasNot, Instant.now(), "", "", "", "", null, null);
-        searchResultEntityhasNot.setIndexerSearchEntityId(indexerSearchEntityHasNot.getId());
+        verify(scoreRepository, never()).saveAll(org.mockito.ArgumentMatchers.any());
+    }
 
+    private FileDownloadEvent event(FileDownloadStatus status) {
+        FileDownloadEntity download = new FileDownloadEntity(downloadedResult, FileDownloadAccessType.PROXY, SearchSource.INTERNAL, status, null);
+        download.setId(123);
+        return new FileDownloadEvent(download, downloadedResult);
+    }
 
-        FileDownloadEntity fileDownloadEntity = new FileDownloadEntity(searchResultEntityHasDownloaded, FileDownloadAccessType.REDIRECT, SearchSource.API, FileDownloadStatus.NONE, null);
-        FileDownloadEvent downloadEvent = new FileDownloadEvent(fileDownloadEntity, searchResultEntityHasDownloaded);
+    private IndexerEntity indexer(String name, int id) {
+        IndexerEntity indexer = new IndexerEntity(name);
+        indexer.setId(id);
+        return indexer;
+    }
 
-        when(searchResultRepository.findAllByTitleLikeIgnoreCase(anyString())).thenReturn(Sets.newHashSet(searchResultEntityHasDownloaded));
-        HashSet<IndexerSearchEntity> involvedIndexers = Sets.newHashSet(indexerSearchEntityHasDownloaded, indexerSearchEntityHasNot, indexerSearchEntityhasNot2);
-        when(indexerSearchRepository.findBySearchEntity(searchEntity)).thenReturn(involvedIndexers);
+    private IndexerSearchEntity indexerSearch(IndexerEntity indexer, int id) {
+        IndexerSearchEntity indexerSearch = new IndexerSearchEntity(indexer, search, id);
+        indexerSearch.setSuccessful(true);
+        return indexerSearch;
+    }
 
-        testee.onNzbDownloadEvent(downloadEvent);
+    private SearchResultEntity result(IndexerEntity indexer, String title) {
+        return new SearchResultEntity(indexer, Instant.now(), title, "guid", "link", "details", DownloadType.NZB, Instant.now());
+    }
 
-        verify(indexerUniquenessScoreEntityRepository).saveAll(scoreCaptor.capture());
-        List<IndexerUniquenessScoreEntity> scores = scoreCaptor.getValue();
-        scores.sort(Comparator.comparing(x -> x.getIndexer().getName()));
-        assertThat(scores).hasSize(3);
-
-        IndexerUniquenessScoreEntity score1 = scores.get(0);
-        assertThat(score1.getIndexer()).isEqualTo(indexerHasDownloaded);
-        assertThat(score1.getInvolved()).isEqualTo(3);
-        assertThat(score1.getHave()).isEqualTo(1);
-        assertTrue(score1.isHasResult());
-
-        IndexerUniquenessScoreEntity score2 = scores.get(1);
-        assertThat(score2.getIndexer()).isEqualTo(indexerHasNot);
-        assertThat(score2.getInvolved()).isEqualTo(3);
-        assertThat(score2.getHave()).isEqualTo(1);
-        assertThat(score2.isHasResult()).isFalse();
-
-        IndexerUniquenessScoreEntity score3 = scores.get(2);
-        assertThat(score3.getIndexer()).isEqualTo(indexerHasNot2);
-        assertThat(score3.getInvolved()).isEqualTo(3);
-        assertThat(score3.getHave()).isEqualTo(1);
-        assertThat(score3.isHasResult()).isFalse();
+    private IndexerSearchResultOccurrenceEntity occurrence(IndexerSearchEntity indexerSearch, SearchResultEntity result) {
+        return new IndexerSearchResultOccurrenceEntity(indexerSearch, result);
     }
 }

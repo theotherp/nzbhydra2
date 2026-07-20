@@ -46,7 +46,7 @@ function downloadNzbsButton() {
                 }
 
                 var tos = _.map(searchResults, function (entry) {
-                    return {searchResultId: entry.searchResultId, originalCategory: entry.originalCategory}
+                    return {searchResultId: entry.downloadId || entry.searchResultId, originalCategory: entry.originalCategory}
                 });
 
                 NzbDownloadService.download(downloader, tos).then(function (response) {
@@ -86,7 +86,9 @@ function downloadNzbsButton() {
                 }
             });
 
-            var torrentSearchResultIds = _.pluck(torrentSearchResults, "searchResultId");
+            var torrentSearchResultIds = _.map(torrentSearchResults, function (result) {
+                return result.downloadId || result.searchResultId;
+            });
             if (torrentSearchResultIds.length > 0) {
                 $http.put("internalapi/saveOrSendTorrents", torrentSearchResultIds).then(function (response) {
                     if (response.data.successful) {
@@ -99,7 +101,9 @@ function downloadNzbsButton() {
                     }
                 });
             }
-            var nzbSearchResultIds = _.pluck(nzbSearchResults, "searchResultId");
+            var nzbSearchResultIds = _.map(nzbSearchResults, function (result) {
+                return result.downloadId || result.searchResultId;
+            });
             if (nzbSearchResultIds.length > 0) {
                 $http.put("internalapi/saveNzbsToBlackhole", nzbSearchResultIds).then(function (response) {
                     if (response.data.successful) {

@@ -256,16 +256,16 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
             };
         }
 
-        if ($scope.stats.searchSharesPerIp !== null) {
+        if ($scope.stats.downloadSharesPerIp) {
             $scope.downloadSharesPerIpChart = getSharesPieChart($scope.stats.downloadSharesPerIp, 300, "key", "percentage");
         }
-        if ($scope.stats.searchSharesPerIpChart !== null) {
+        if ($scope.stats.searchSharesPerIp) {
             $scope.searchSharesPerIpChart = getSharesPieChart($scope.stats.searchSharesPerIp, 300, "key", "percentage");
         }
-        if ($scope.stats.searchSharesPerUser !== null) {
+        if ($scope.stats.downloadSharesPerUser) {
             $scope.downloadSharesPerUserChart = getSharesPieChart($scope.stats.downloadSharesPerUser, 300, "key", "percentage");
         }
-        if ($scope.stats.searchSharesPerUserChart !== null) {
+        if ($scope.stats.searchSharesPerUser) {
             $scope.searchSharesPerUserChart = getSharesPieChart($scope.stats.searchSharesPerUser, 300, "key", "percentage");
         }
 

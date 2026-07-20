@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.SearchSource;
 import org.nzbhydra.config.downloading.FileDownloadAccessType;
+import org.nzbhydra.downloading.DownloadIdentifier;
 import org.nzbhydra.downloading.DownloadResult;
 import org.nzbhydra.downloading.FileHandler;
 import org.nzbhydra.downloading.InvalidSearchResultIdException;
@@ -66,17 +67,46 @@ public class TorrentFileHandler {
         }
     }
 
-    public SaveOrSendResultsResponse saveOrSendTorrents(Set<Long> guids) {
+    @Transactional
+    public DownloadResult getTorrentByGuid(String identifier, FileDownloadAccessType accessType, SearchSource accessSource) throws InvalidSearchResultIdException {
+        DownloadIdentifier downloadIdentifier = DownloadIdentifier.parse(identifier, accessSource == SearchSource.INTERNAL);
+        Optional<SearchResultEntity> optionalResult = searchResultRepository.findById(downloadIdentifier.searchResultId());
+        if (optionalResult.isEmpty()) {
+            throw new InvalidSearchResultIdException(identifier, accessSource == SearchSource.INTERNAL);
+        }
+        SearchResultEntity result = optionalResult.get();
+        result.setDownloadSearchId(downloadIdentifier.searchId());
+        if (result.getLink().startsWith("magnet") || accessType == FileDownloadAccessType.REDIRECT) {
+            return fileHandler.handleRedirect(accessSource, result, null);
+        }
+        try {
+            return fileHandler.handleContentDownload(accessSource, result);
+        } catch (MagnetLinkRedirectException e) {
+            return fileHandler.handleRedirect(accessSource, result, e.getMagnetLink());
+        }
+    }
+
+    public SaveOrSendResultsResponse saveOrSendTorrents(Set<String> guids) {
         List<Long> successfulIds = new ArrayList<>();
         List<Long> failedIds = new ArrayList<>();
-        for (Long guid : guids) {
+        List<String> invalidIds = new ArrayList<>();
+        for (String guid : guids) {
             DownloadResult result;
             boolean successful = false;
+            DownloadIdentifier downloadIdentifier;
+            try {
+                downloadIdentifier = DownloadIdentifier.parse(guid, true);
+            } catch (InvalidSearchResultIdException e) {
+                logger.error("Unable to parse download identifier {}", guid);
+                invalidIds.add(guid);
+                continue;
+            }
+            long searchResultId = downloadIdentifier.searchResultId();
             try {
                 result = getTorrentByGuid(guid, FileDownloadAccessType.PROXY, SearchSource.INTERNAL);
             } catch (InvalidSearchResultIdException e) {
                 logger.error("Unable to find result with ID {}", guid);
-                failedIds.add(guid);
+                failedIds.add(searchResultId);
                 continue;
             }
             try {
@@ -89,16 +119,16 @@ public class TorrentFileHandler {
                 }
             } catch (Exception e) {
                 logger.error("Error while handling " + result, e);
-                failedIds.add(guid);
             }
             if (successful) {
-                successfulIds.add(guid);
+                successfulIds.add(searchResultId);
             } else {
-                failedIds.add(guid);
+                failedIds.add(searchResultId);
             }
         }
-        String message = failedIds.isEmpty() ? "All torrents successfully handled" : failedIds.size() + " torrents could not be handled";
-        return new SaveOrSendResultsResponse(!successfulIds.isEmpty(), message, successfulIds, failedIds);
+        int failedCount = failedIds.size() + invalidIds.size();
+        String message = failedCount == 0 ? "All torrents successfully handled" : failedCount + " torrents could not be handled";
+        return new SaveOrSendResultsResponse(!successfulIds.isEmpty(), message, successfulIds, failedIds, invalidIds);
     }
 
     private boolean handleMagnetLink(DownloadResult result) {

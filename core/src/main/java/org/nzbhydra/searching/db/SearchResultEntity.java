@@ -16,7 +16,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotNull;
+import lombok.AccessLevel;
 import lombok.Getter;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.OnDelete;
@@ -79,6 +81,10 @@ public final class SearchResultEntity {
     @Column(name = "INDEXERSEARCHENTITY")
     private Integer indexerSearchEntityId;
 
+    @Transient
+    @Getter(AccessLevel.NONE)
+    private Integer downloadSearchId;
+
     public SearchResultEntity() {
     }
 
@@ -135,6 +141,15 @@ public final class SearchResultEntity {
 
     public void setIndexerSearchEntityId(Integer indexerSearchEntityId) {
         this.indexerSearchEntityId = indexerSearchEntityId;
+    }
+
+    public void setDownloadSearchId(Integer downloadSearchId) {
+        this.downloadSearchId = downloadSearchId;
+    }
+
+    @JsonIgnore
+    public Integer getDownloadSearchId() {
+        return downloadSearchId;
     }
 
     @JsonIgnore

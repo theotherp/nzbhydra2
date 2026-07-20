@@ -60,6 +60,7 @@ public class SearchResultItem  {
     private String poster;
     private Instant pubDate;
     private Long searchResultId;
+    private Integer searchId;
     private Integer seeders;
     private Long size;
     private String source;

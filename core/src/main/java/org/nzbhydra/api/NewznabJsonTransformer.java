@@ -4,6 +4,7 @@ package org.nzbhydra.api;
 
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.downloading.DownloadType;
+import org.nzbhydra.downloading.DownloadIdentifier;
 import org.nzbhydra.downloading.FileHandler;
 import org.nzbhydra.downloading.downloadurls.DownloadUrlBuilder;
 import org.nzbhydra.mapping.newznab.NewznabResponse;
@@ -63,17 +64,18 @@ public class NewznabJsonTransformer {
 
     private NewznabJsonItem buildRssItem(SearchResultItem searchResultItem, boolean isNzb) {
         NewznabJsonItem rssItem = new NewznabJsonItem();
-        String link = downloadUrlBuilder.getDownloadLinkForResults(searchResultItem.getSearchResultId(), false, DownloadType.NZB);
+        String downloadIdentifier = new DownloadIdentifier(searchResultItem.getSearchResultId(), searchResultItem.getSearchId()).toString();
+        String link = downloadUrlBuilder.getDownloadLinkForResults(searchResultItem.getSearchResultId(), searchResultItem.getSearchId(), false, DownloadType.NZB);
         rssItem.setLink(link);
         rssItem.setTitle(searchResultItem.getTitle());
-        rssItem.setGuid(String.valueOf(searchResultItem.getGuid()));
-        rssItem.setId(String.valueOf(searchResultItem.getGuid()));
+        rssItem.setGuid(downloadIdentifier);
+        rssItem.setId(downloadIdentifier);
         if (searchResultItem.getPubDate() != null) {
             rssItem.setPubDate(searchResultItem.getPubDate());
         } else {
             rssItem.setPubDate(searchResultItem.getBestDate()); //Contain usenet date because results with neither should've been
         }
-        searchResultItem.getAttributes().put("guid", String.valueOf(searchResultItem.getSearchResultId()));
+        searchResultItem.getAttributes().put("guid", downloadIdentifier);
         List<NewznabJsonItemAttributes> attributes = searchResultItem.getAttributes().entrySet().stream().map(attribute -> new NewznabJsonItemAttributes(attribute.getKey(), attribute.getValue())).sorted(Comparator.comparing(NewznabJsonItemAttributes::getName)).collect(Collectors.toList());
         attributes.add(new NewznabJsonItemAttributes("hydraIndexerScore", String.valueOf(searchResultItem.getIndexer().getConfig().getScore())));
         attributes.add(new NewznabJsonItemAttributes("hydraIndexerHost", String.valueOf(searchResultItem.getIndexer().getConfig().getHost())));

@@ -249,7 +249,7 @@ public class ExternalApi {
         DownloadResult downloadResult;
         try {
             logger.debug("Download request for GUID {}", params.getId());
-            downloadResult = fileHandler.getFileByGuid(Long.parseLong(params.getId()), SearchSource.API);
+            downloadResult = fileHandler.getFileByGuid(params.getId(), SearchSource.API);
         } catch (InvalidSearchResultIdException e) {
             return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML).body("<error code=\"300\" description=\"Invalid or outdated search result ID\"/>");
         }

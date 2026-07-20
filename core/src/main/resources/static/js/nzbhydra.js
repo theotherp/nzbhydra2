@@ -807,7 +807,7 @@ nzbhydraapp.directive('ngEnter', function () {
 
 nzbhydraapp.filter('nzblink', function () {
     return function (resultItem) {
-        var uri = new URI("internalapi/getnzb/user/" + resultItem.searchResultId);
+        var uri = new URI("internalapi/getnzb/user/" + (resultItem.downloadId || resultItem.searchResultId));
         return uri.toString();
     }
 });
@@ -974,7 +974,6 @@ nzbhydraapp.directive('eventFocus', ["focus", function (focus) {
         });
     };
 }]);
-
 
 
 
@@ -2971,7 +2970,7 @@ function downloadNzbzipButton() {
                 growl.info("You should select at least one result...");
             } else {
                 var values = _.map($scope.searchResults, function (value) {
-                    return value.searchResultId;
+                    return value.downloadId || value.searchResultId;
                 });
                 var link = "internalapi/nzbzip";
 
@@ -3053,7 +3052,7 @@ function downloadNzbsButton() {
                 }
 
                 var tos = _.map(searchResults, function (entry) {
-                    return {searchResultId: entry.searchResultId, originalCategory: entry.originalCategory}
+                    return {searchResultId: entry.downloadId || entry.searchResultId, originalCategory: entry.originalCategory}
                 });
 
                 NzbDownloadService.download(downloader, tos).then(function (response) {
@@ -3093,7 +3092,9 @@ function downloadNzbsButton() {
                 }
             });
 
-            var torrentSearchResultIds = _.pluck(torrentSearchResults, "searchResultId");
+            var torrentSearchResultIds = _.map(torrentSearchResults, function (result) {
+                return result.downloadId || result.searchResultId;
+            });
             if (torrentSearchResultIds.length > 0) {
                 $http.put("internalapi/saveOrSendTorrents", torrentSearchResultIds).then(function (response) {
                     if (response.data.successful) {
@@ -3106,7 +3107,9 @@ function downloadNzbsButton() {
                     }
                 });
             }
-            var nzbSearchResultIds = _.pluck(nzbSearchResults, "searchResultId");
+            var nzbSearchResultIds = _.map(nzbSearchResults, function (result) {
+                return result.downloadId || result.searchResultId;
+            });
             if (nzbSearchResultIds.length > 0) {
                 $http.put("internalapi/saveNzbsToBlackhole", nzbSearchResultIds).then(function (response) {
                     if (response.data.successful) {
@@ -3525,7 +3528,7 @@ function copyLinksButton() {
             } else {
                 var baseUrl = $window.location.origin + $window.location.pathname.replace(/\/$/, '');
                 var links = _.map($scope.searchResults, function (result) {
-                    return baseUrl + '/getnzb/user/' + result.searchResultId;
+                    return baseUrl + '/getnzb/user/' + (result.downloadId || result.searchResultId);
                 });
                 var linkText = links.join('\n');
 
@@ -3557,6 +3560,7 @@ function copyLinksButton() {
         };
     }
 }
+
 angular
     .module('nzbhydraApp')
     .directive('connectionTest', connectionTest);
@@ -3935,14 +3939,15 @@ function addableNzb(DebugService) {
 
         $scope.add = function () {
             var originalClass = $scope.cssClass;
+            var downloadIdentifier = $scope.searchresult.downloadId || $scope.searchresult.searchResultId || $scope.searchresult.id;
             $scope.cssClass = "nzb-spinning";
             NzbDownloadService.download($scope.downloader, [{
-                searchResultId: $scope.searchresult.searchResultId ? $scope.searchresult.searchResultId : $scope.searchresult.id,
+                searchResultId: downloadIdentifier,
                 originalCategory: $scope.searchresult.originalCategory,
                 mappedCategory: $scope.searchresult.category
             }], $scope.alwaysAsk).then(function (response) {
                 if (response !== "dismissed") {
-                    if (response.data.successful && (response.data.addedIds != null && response.data.addedIds.indexOf(Number($scope.searchresult.searchResultId)) > -1)) {
+                    if (response.data.successful && (response.data.addedIds != null && response.data.addedIds.indexOf(Number(String(downloadIdentifier).split('.')[0])) > -1)) {
                         $scope.cssClass = getCssClass($scope.downloader.downloaderType) + "-success";
                         $scope.searchresult.downloadedAt = moment().format("YYYY-MM-DD HH:mm");
                     } else {
@@ -3959,6 +3964,7 @@ function addableNzb(DebugService) {
         };
     }
 }
+
 
 
 CheckCapsModalInstanceCtrl.$inject = ["$scope", "$interval", "$http", "$timeout", "growl", "capsCheckRequest"];
@@ -11128,16 +11134,16 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
             };
         }
 
-        if ($scope.stats.searchSharesPerIp !== null) {
+        if ($scope.stats.downloadSharesPerIp) {
             $scope.downloadSharesPerIpChart = getSharesPieChart($scope.stats.downloadSharesPerIp, 300, "key", "percentage");
         }
-        if ($scope.stats.searchSharesPerIpChart !== null) {
+        if ($scope.stats.searchSharesPerIp) {
             $scope.searchSharesPerIpChart = getSharesPieChart($scope.stats.searchSharesPerIp, 300, "key", "percentage");
         }
-        if ($scope.stats.searchSharesPerUser !== null) {
+        if ($scope.stats.downloadSharesPerUser) {
             $scope.downloadSharesPerUserChart = getSharesPieChart($scope.stats.downloadSharesPerUser, 300, "key", "percentage");
         }
-        if ($scope.stats.searchSharesPerUserChart !== null) {
+        if ($scope.stats.searchSharesPerUser) {
             $scope.searchSharesPerUserChart = getSharesPieChart($scope.stats.searchSharesPerUser, 300, "key", "percentage");
         }
 
@@ -12357,7 +12363,7 @@ function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $doc
             var downloadedAt = moment().format("YYYY-MM-DD HH:mm");
             growl.info("Removing downloaded results from selection");
             var toRemove = _.filter($scope.selected, function (x) {
-                return addedIds.indexOf(Number(x.searchResultId)) > -1;
+                return addedIds.indexOf(Number((x.downloadId || x.searchResultId).split('.')[0])) > -1;
             });
             var newSelected = $scope.selected;
             _.forEach(toRemove, function (x) {

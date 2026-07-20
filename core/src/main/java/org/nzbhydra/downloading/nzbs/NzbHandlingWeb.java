@@ -54,7 +54,7 @@ public class NzbHandlingWeb {
      */
     @RequestMapping(value = "/internalapi/nzb/{guid}")
     @Secured({"ROLE_USER"})
-    public ResponseEntity<Object> downloadNzbInternal(@PathVariable("guid") long guid) throws InvalidSearchResultIdException {
+    public ResponseEntity<Object> downloadNzbInternal(@PathVariable("guid") String guid) throws InvalidSearchResultIdException {
         logger.debug("downloadNzbInternal: {}", guid);
         return fileHandler.getFileByGuid(guid, SearchSource.INTERNAL).getAsResponseEntity();
     }
@@ -62,7 +62,7 @@ public class NzbHandlingWeb {
 
     @RequestMapping(value = "/internalapi/saveNzbsToBlackhole", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
     @Secured({"ROLE_USER"})
-    public SaveOrSendResultsResponse saveNzbToBlackhole(@RequestBody Set<Long> searchResultId) {
+    public SaveOrSendResultsResponse saveNzbToBlackhole(@RequestBody Set<String> searchResultId) {
         logger.debug("saveNzbToBlackhole searchResultId: {}", searchResultId);
         return fileHandler.saveNzbToBlackhole(searchResultId);
     }
@@ -74,13 +74,13 @@ public class NzbHandlingWeb {
      */
     @RequestMapping(value = "/internalapi/nzbzip", produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.POST)
     @Secured({"ROLE_USER"})
-    public FileZipResponse getNzbZipData(@RequestBody List<Long> guids) {
+    public FileZipResponse getNzbZipData(@RequestBody List<String> guids) {
         logger.debug("getNzbZipData: {}", guids);
         try {
             return fileHandler.getFilesAsZip(guids);
         } catch (Exception e) {
             logger.error("Error while creating ZIP with NZBs", e);
-            return new FileZipResponse(false, null, "Error while creating ZIP with NZBs: " + e.getMessage(), Collections.emptyList(), guids);
+            return new FileZipResponse(false, null, "Error while creating ZIP with NZBs: " + e.getMessage(), Collections.emptyList(), Collections.emptyList());
         }
     }
 
@@ -99,6 +99,7 @@ public class NzbHandlingWeb {
     @RequestMapping(value = "/internalapi/nfo/{guid}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Secured({"ROLE_USER"})
     public NfoResult getNfo(@PathVariable("guid") long guid) throws IndexerAccessException {
+        // NFO retrieval does not create a download observation, so it intentionally keeps the legacy result ID format.
         return fileHandler.getNfo(guid);
     }
 
@@ -109,7 +110,7 @@ public class NzbHandlingWeb {
      */
     @RequestMapping(value = "/getnzb/user/{guid}", produces = "application/x-nzb")
     @Secured({"ROLE_USER"})
-    public ResponseEntity<Object> downloadNzbForUsers(@PathVariable("guid") long guid) throws InvalidSearchResultIdException {
+    public ResponseEntity<Object> downloadNzbForUsers(@PathVariable("guid") String guid) throws InvalidSearchResultIdException {
         logger.debug("downloadNzbForUsers guid: {}", guid);
         return fileHandler.getFileByGuid(guid, SearchSource.INTERNAL).getAsResponseEntity();
     }
@@ -120,7 +121,7 @@ public class NzbHandlingWeb {
      * @return A {@link ResponseEntity} with the NZB content, a redirect to the actual indexer link or an error
      */
     @RequestMapping(value = "/getnzb/api/{guid}", produces = "application/x-nzb")
-    public ResponseEntity downloadNzbWithApikey(@PathVariable("guid") long guid, @RequestParam(required = false) String apikey) throws WrongApiKeyException {
+    public ResponseEntity downloadNzbWithApikey(@PathVariable("guid") String guid, @RequestParam(required = false) String apikey) throws WrongApiKeyException {
         logger.debug("downloadNzbWithApikey guid: {}", guid);
 
         BaseConfig baseConfig = configProvider.getBaseConfig();
