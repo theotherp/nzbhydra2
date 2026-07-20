@@ -195,10 +195,7 @@ public class NzbHydra {
             hydraApplication.setHeadless(true);
             applicationContext = hydraApplication.run(args);
         } catch (Exception e) {
-            //Is thrown by SpringApplicationAotProcessor
-            if (!(e instanceof SpringApplication.AbandonedRunException)) {
-                handleException(e);
-            }
+            handleException(e);
         }
     }
 

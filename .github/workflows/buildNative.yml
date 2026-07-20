@@ -82,6 +82,44 @@ jobs:
                 run: |
                     mvn --batch-mode "-Pnative,strictReflection" clean native:compile -DskipTests
 
+            -   name: "Check native startup on Linux"
+                if: startsWith(matrix.os,'ubuntu')
+                working-directory: ./core
+                run: |
+                    ./target/core -XX:MissingRegistrationReportingMode=Warn directstart --datafolder "$RUNNER_TEMP/native-startup" > native-startup.log 2>&1 &
+                    pid=$!
+                    sleep 30
+                    if ! kill -0 "$pid" 2>/dev/null; then
+                      cat native-startup.log
+                      exit 1
+                    fi
+                    kill "$pid"
+                    wait "$pid" || true
+                    if grep -E 'Missing[A-Za-z]*Registration' native-startup.log; then
+                      cat native-startup.log
+                      exit 1
+                    fi
+
+            -   name: "Check native startup on Windows"
+                if: startsWith(matrix.os,'windows')
+                working-directory: ./core
+                shell: pwsh
+                run: |
+                    $stdout = 'native-startup.log'
+                    $stderr = 'native-startup.err.log'
+                    $process = Start-Process -FilePath '.\target\core.exe' -ArgumentList '-XX:MissingRegistrationReportingMode=Warn', 'directstart', '--datafolder', "$env:RUNNER_TEMP\native-startup" -RedirectStandardOutput $stdout -RedirectStandardError $stderr -PassThru
+                    Start-Sleep -Seconds 30
+                    $process.Refresh()
+                    if ($process.HasExited) {
+                      Get-Content $stdout, $stderr
+                      exit 1
+                    }
+                    Stop-Process -Id $process.Id -Force
+                    if (Select-String -Path $stdout, $stderr -Pattern 'Missing[A-Za-z]*Registration') {
+                      Get-Content $stdout, $stderr
+                      exit 1
+                    }
+
             -   name: "Upload linux artifact"
 #                if: steps.changed-files-specific.outputs.any_changed == 'true' && startsWith(matrix.os,'ubuntu')
                 if: startsWith(matrix.os,'ubuntu')

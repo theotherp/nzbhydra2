@@ -62,14 +62,16 @@ public class BaseConfigHandler {
         //Always save config to keep it in sync with base config (remove obsolete settings and add new ones)
         configReaderWriter.save(baseConfig);
 
-        delayedSaveTimerTask = new TimerTask() {
-            @Override
-            public void run() {
-                saveToSave();
-            }
-        };
-        Timer delayedSaveTimer = new Timer("delayedConfigSave", false);
-        delayedSaveTimer.scheduleAtFixedRate(delayedSaveTimerTask, 10000, 10000);
+        if (!NzbHydra.isNativeBuild()) {
+            delayedSaveTimerTask = new TimerTask() {
+                @Override
+                public void run() {
+                    saveToSave();
+                }
+            };
+            Timer delayedSaveTimer = new Timer("delayedConfigSave", false);
+            delayedSaveTimer.scheduleAtFixedRate(delayedSaveTimerTask, 10000, 10000);
+        }
         initialized = true;
     }
 

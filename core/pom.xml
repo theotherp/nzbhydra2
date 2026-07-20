@@ -543,6 +543,7 @@
                                     <buildArg>-H:DeadlockWatchdogInterval=0</buildArg>
                                     <buildArg>--initialize-at-build-time=org.apache.commons.logging.LogFactoryService</buildArg>
                                     <buildArg>-H:+StaticExecutableWithDynamicLibC</buildArg>
+                                    <buildArg>-H:IncludeLocales=en</buildArg>
                                     <buildArg>-march=compatibility</buildArg>
                                     <buildArg>--no-fallback -J-Xmx13g</buildArg>
                                     <buildArg>--native-image-info</buildArg>
@@ -587,7 +588,7 @@
                             <artifactId>native-maven-plugin</artifactId>
                             <configuration>
                                 <buildArgs combine.children="append">
-                                    <buildArg>--exact-reachability-metadata</buildArg>
+                                    <buildArg>--exact-reachability-metadata=org.nzbhydra</buildArg>
                                 </buildArgs>
                             </configuration>
                         </plugin>

@@ -11131,49 +11131,6 @@
   ]
 },
 {
-  "name":"org.nzbhydra.NzbHydraNativeEntrypoint",
-  "allDeclaredFields":true,
-  "queryAllDeclaredMethods":true,
-  "methods": [
-      {
-          "name": "<init>",
-          "parameterTypes": []
-      },
-      {
-          "name": "main",
-          "parameterTypes": [
-              "java.lang.String[]"
-          ]
-      }
-  ]
-},
-{
-  "name":"org.nzbhydra.NzbHydraNativeEntrypoint$$SpringCGLIB$$0",
-  "allDeclaredFields":true,
-  "queryAllDeclaredMethods":true,
-  "queryAllPublicMethods":true,
-  "queryAllDeclaredConstructors":true,
-  "fields":[{"name":"CGLIB$FACTORY_DATA"}],
-  "methods": [
-      {
-          "name": "<init>",
-          "parameterTypes": []
-      },
-      {
-          "name": "CGLIB$SET_STATIC_CALLBACKS",
-          "parameterTypes": [
-              "org.springframework.cglib.proxy.Callback[]"
-          ]
-      },
-      {
-          "name": "CGLIB$SET_THREAD_CALLBACKS",
-          "parameterTypes": [
-              "org.springframework.cglib.proxy.Callback[]"
-          ]
-      }
-  ]
-},
-{
   "name":"org.nzbhydra.api.CapsGenerator",
   "allDeclaredFields":true,
   "queryAllDeclaredMethods":true,
@@ -46462,18 +46419,6 @@
     "allPublicMethods": true
   },
   {
-    "name": "org.nzbhydra.NzbHydraNativeEntrypoint$$SpringCGLIB$$0",
-    "allDeclaredFields": true,
-    "allDeclaredMethods": true,
-    "allDeclaredConstructors": true,
-    "queriedMethods": [
-      {
-        "name": "<init>",
-        "parameterTypes": []
-      }
-    ]
-  },
-  {
     "name": "org.springframework.data.domain.Example",
     "allPublicMethods": true
   },
@@ -59130,16 +59075,6 @@
         ]
       }
     ],
-    "queriedMethods": [
-      {
-        "name": "<init>",
-        "parameterTypes": []
-      }
-    ]
-  },
-  {
-    "name": "org.nzbhydra.NzbHydraNativeEntrypoint",
-    "allPublicMethods": true,
     "queriedMethods": [
       {
         "name": "<init>",

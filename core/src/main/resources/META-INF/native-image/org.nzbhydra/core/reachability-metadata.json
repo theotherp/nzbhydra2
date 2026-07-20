@@ -8657,9 +8657,6 @@
       "type": "org.hibernate.bytecode.enhance.spi.interceptor.BytecodeInterceptorLogging_$logger_en_US"
     },
     {
-      "type": "org.hibernate.bytecode.internal.bytebuddy.BytecodeProviderImpl"
-    },
-    {
       "type": "org.hibernate.bytecode.spi.ReflectionOptimizer$InstantiationOptimizer"
     },
     {
@@ -9716,13 +9713,7 @@
       ]
     },
     {
-      "type": "org.nzbhydra.NzbHydraNativeEntrypoint",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": []
-        }
-      ]
+      "type": "org.nzbhydra.NzbHydra__EnvironmentPostProcessor"
     },
     {
       "type": "org.nzbhydra.api.CapsGenerator",
@@ -26376,9 +26367,6 @@
       "glob": "META-INF/services/org.hibernate.boot.spi.SessionFactoryBuilderFactory"
     },
     {
-      "glob": "META-INF/services/org.hibernate.bytecode.spi.BytecodeProvider"
-    },
-    {
       "glob": "META-INF/services/org.hibernate.engine.jdbc.dialect.spi.DialectResolver"
     },
     {
@@ -26559,25 +26547,16 @@
       "glob": "config/application-default.properties"
     },
     {
-      "glob": "config/application-default.xml"
-    },
-    {
-      "glob": "config/application-default.yaml"
-    },
-    {
-      "glob": "config/application-default.yml"
-    },
-    {
       "glob": "config/application.properties"
     },
     {
-      "glob": "config/application.xml"
+      "glob": "config/application*.xml"
     },
     {
-      "glob": "config/application.yaml"
+      "glob": "config/application*.yaml"
     },
     {
-      "glob": "config/application.yml"
+      "glob": "config/application*.yml"
     },
     {
       "glob": "config/baseConfig.yml"
@@ -26902,9 +26881,6 @@
     },
     {
       "glob": "org/nzbhydra/NzbHydraException.class"
-    },
-    {
-      "glob": "org/nzbhydra/NzbHydraNativeEntrypoint.class"
     },
     {
       "glob": "org/nzbhydra/api/CapsGenerator.class"
