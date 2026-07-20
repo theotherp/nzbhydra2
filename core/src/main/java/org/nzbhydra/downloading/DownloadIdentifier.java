@@ -5,7 +5,7 @@ import java.util.regex.Pattern;
 
 public record DownloadIdentifier(long searchResultId, Integer searchId) {
 
-    private static final Pattern PATTERN = Pattern.compile("(-?\\d+)(?:\\.(\\d+))?");
+    private static final Pattern PATTERN = Pattern.compile("(-?\\d+)(?:\\.(-?\\d+))?");
 
     public static DownloadIdentifier parse(String value, boolean internal) throws InvalidSearchResultIdException {
         if (value == null) {
