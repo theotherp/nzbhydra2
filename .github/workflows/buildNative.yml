@@ -76,6 +76,11 @@ jobs:
                     path: "**/surefire-reports/*.xml"
                     reporter: java-junit
 
+            -   name: "Run focused native tests"
+                if: startsWith(matrix.os,'ubuntu')
+                working-directory: ./core
+                run: mvn --batch-mode "-Pnative,nativeTest,strictReflection" clean test
+
             -   name: "Build native image"
 #                if: steps.changed-files-specific.outputs.any_changed == 'true'
                 working-directory: ./core
