@@ -26565,6 +26565,27 @@
       "glob": "config/logback.xml"
     },
     {
+      "glob": "application-default.properties"
+    },
+    {
+      "glob": "application.properties"
+    },
+    {
+      "glob": "application*.xml"
+    },
+    {
+      "glob": "application*.yaml"
+    },
+    {
+      "glob": "application*.yml"
+    },
+    {
+      "glob": "baseConfig.yml"
+    },
+    {
+      "glob": "logback.xml"
+    },
+    {
       "glob": "data-all.sql"
     },
     {
