@@ -547,7 +547,8 @@
                                     <buildArg>-march=compatibility</buildArg>
                                     <buildArg>--no-fallback -J-Xmx13g</buildArg>
                                     <buildArg>--native-image-info</buildArg>
-                            </buildArgs>
+                                    <buildArg>-H:BuildOutputJSONFile=target/native-build-output.json</buildArg>
+                                </buildArgs>
                                 <classesDirectory>${project.build.outputDirectory}</classesDirectory>
                                 <metadataRepository>
                                     <enabled>true</enabled>

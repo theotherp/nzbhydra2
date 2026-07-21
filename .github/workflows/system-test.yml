@@ -4,6 +4,10 @@ on:
   push:
   workflow_dispatch:
 
+concurrency:
+  group: system-test-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   waitForNative:
     uses: ./.github/workflows/buildNative.yml
@@ -71,6 +75,7 @@ jobs:
       nzbhydra_name: ${{ matrix.test.name }}
       NZBHYDRANAME: ${{ matrix.test.name }}
       nzbhydra.name: ${{ matrix.test.name }}
+      HYDRA_IMAGE: ghcr.io/theotherp/hydradocker:${{ github.sha }}
     steps:
       - run: echo Running test ${{ matrix.test.name }} with port ${{ matrix.test.port }}
       - uses: actions/checkout@v4
@@ -145,6 +150,7 @@ jobs:
           # Add unwanted strings to this list (one per line)
           UNWANTED_STRINGS=(
             "Missing[A-Za-z]*Registration"
+            "Unable to complete startup initialization"
           )
 
           FOUND_ISSUES=0
@@ -292,11 +298,13 @@ jobs:
           url: "http://127.0.0.1:5080/actuator/shutdown"
 
       - name: "Check logs for unwanted strings"
+        if: always()
         shell: pwsh
         run: |
           # Add unwanted strings to this list (one per line)
           $unwantedStrings = @(
-            "Missing[A-Za-z]*Registration"
+            "Missing[A-Za-z]*Registration",
+            "Unable to complete startup initialization"
           )
 
           $foundIssues = $false

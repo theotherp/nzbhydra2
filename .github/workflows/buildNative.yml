@@ -7,6 +7,7 @@ on:
 
 jobs:
     build:
+        timeout-minutes: 45
         strategy:
             matrix:
                 os: [ ubuntu-24.04, windows-latest ]
@@ -93,14 +94,27 @@ jobs:
                 run: |
                     ./target/core -XX:MissingRegistrationReportingMode=Warn directstart --nobrowser --datafolder "$RUNNER_TEMP/native-startup" > native-startup.log 2>&1 &
                     pid=$!
-                    sleep 30
-                    if ! kill -0 "$pid" 2>/dev/null; then
+                    cleanup() {
+                      kill "$pid" 2>/dev/null || true
+                      wait "$pid" 2>/dev/null || true
+                    }
+                    trap cleanup EXIT
+                    ready=false
+                    for attempt in {1..60}; do
+                      if ! kill -0 "$pid" 2>/dev/null; then
+                        break
+                      fi
+                      if curl --fail --silent http://127.0.0.1:5076/actuator/health/ping > /dev/null; then
+                        ready=true
+                        break
+                      fi
+                      sleep 1
+                    done
+                    if [ "$ready" != true ]; then
                       cat native-startup.log
                       exit 1
                     fi
-                    kill "$pid"
-                    wait "$pid" || true
-                    if grep -E 'Missing[A-Za-z]*Registration' native-startup.log; then
+                    if grep -E 'Missing[A-Za-z]*Registration|Unable to complete startup initialization' native-startup.log; then
                       cat native-startup.log
                       exit 1
                     fi
@@ -113,17 +127,55 @@ jobs:
                     $stdout = 'native-startup.log'
                     $stderr = 'native-startup.err.log'
                     $process = Start-Process -FilePath '.\target\core.exe' -ArgumentList '-XX:MissingRegistrationReportingMode=Warn', 'directstart', '--nobrowser', '--datafolder', "$env:RUNNER_TEMP\native-startup" -RedirectStandardOutput $stdout -RedirectStandardError $stderr -PassThru
-                    Start-Sleep -Seconds 30
-                    $process.Refresh()
-                    if ($process.HasExited) {
+                    try {
+                      $ready = $false
+                      foreach ($attempt in 1..60) {
+                        $process.Refresh()
+                        if ($process.HasExited) {
+                          break
+                        }
+                        try {
+                          Invoke-WebRequest -Uri 'http://127.0.0.1:5076/actuator/health/ping' -UseBasicParsing | Out-Null
+                          $ready = $true
+                          break
+                        } catch {
+                          Start-Sleep -Seconds 1
+                        }
+                      }
+                      if (-not $ready) {
+                        Get-Content $stdout, $stderr
+                        exit 1
+                      }
+                    } finally {
+                      $process.Refresh()
+                      if (-not $process.HasExited) {
+                        Stop-Process -Id $process.Id -Force
+                        $process.WaitForExit()
+                      }
+                    }
+                    if (Select-String -Path $stdout, $stderr -Pattern 'Missing[A-Za-z]*Registration|Unable to complete startup initialization') {
                       Get-Content $stdout, $stderr
                       exit 1
                     }
-                    Stop-Process -Id $process.Id -Force
-                    if (Select-String -Path $stdout, $stderr -Pattern 'Missing[A-Za-z]*Registration') {
-                      Get-Content $stdout, $stderr
-                      exit 1
-                    }
+
+            -   name: "Report native image size"
+                shell: pwsh
+                working-directory: ./core
+                run: |
+                    $executable = if ($IsWindows) { 'target/core.exe' } else { 'target/core' }
+                    $size = (Get-Item $executable).Length
+                    "Native image size: $size bytes" | Tee-Object -FilePath $env:GITHUB_STEP_SUMMARY -Append
+
+            -   name: "Upload native build diagnostics"
+                if: always()
+                uses: actions/upload-artifact@v4
+                with:
+                    name: native-build-diagnostics-${{ matrix.os }}
+                    if-no-files-found: ignore
+                    retention-days: 14
+                    path: |
+                        core/target/native-build-output.json
+                        core/native-startup*.log
 
             -   name: "Upload linux artifact"
 #                if: steps.changed-files-specific.outputs.any_changed == 'true' && startsWith(matrix.os,'ubuntu')
@@ -168,5 +220,6 @@ jobs:
                 run: |
                     cp other/wrapper/nzbhydra2wrapperPy3.py ./docker/nativeTest/
                     cd ./docker/nativeTest/
-                    docker build -t hydradocker -t ghcr.io/theotherp/hydradocker:latest -t ghcr.io/theotherp/hydradocker:${{ github.ref_name}} . --label "version=${{ github.ref_name}}" --label "sha=${{ github.sha }}"
+                    docker build -t hydradocker -t ghcr.io/theotherp/hydradocker:latest -t ghcr.io/theotherp/hydradocker:${{ github.ref_name}} -t ghcr.io/theotherp/hydradocker:${{ github.sha }} . --label "version=${{ github.ref_name}}" --label "sha=${{ github.sha }}"
                     docker push ghcr.io/theotherp/hydradocker:latest
+                    docker push ghcr.io/theotherp/hydradocker:${{ github.sha }}
