@@ -86,7 +86,7 @@ jobs:
                 if: startsWith(matrix.os,'ubuntu')
                 working-directory: ./core
                 run: |
-                    ./target/core -XX:MissingRegistrationReportingMode=Warn directstart --datafolder "$RUNNER_TEMP/native-startup" > native-startup.log 2>&1 &
+                    ./target/core -XX:MissingRegistrationReportingMode=Warn directstart --nobrowser --datafolder "$RUNNER_TEMP/native-startup" > native-startup.log 2>&1 &
                     pid=$!
                     sleep 30
                     if ! kill -0 "$pid" 2>/dev/null; then
@@ -107,7 +107,7 @@ jobs:
                 run: |
                     $stdout = 'native-startup.log'
                     $stderr = 'native-startup.err.log'
-                    $process = Start-Process -FilePath '.\target\core.exe' -ArgumentList '-XX:MissingRegistrationReportingMode=Warn', 'directstart', '--datafolder', "$env:RUNNER_TEMP\native-startup" -RedirectStandardOutput $stdout -RedirectStandardError $stderr -PassThru
+                    $process = Start-Process -FilePath '.\target\core.exe' -ArgumentList '-XX:MissingRegistrationReportingMode=Warn', 'directstart', '--nobrowser', '--datafolder', "$env:RUNNER_TEMP\native-startup" -RedirectStandardOutput $stdout -RedirectStandardError $stderr -PassThru
                     Start-Sleep -Seconds 30
                     $process.Refresh()
                     if ($process.HasExited) {
