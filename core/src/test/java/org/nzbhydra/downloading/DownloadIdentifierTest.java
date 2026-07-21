@@ -26,6 +26,14 @@ class DownloadIdentifierTest {
     }
 
     @Test
+    void shouldParseNegativeSearchContext() throws Exception {
+        DownloadIdentifier identifier = DownloadIdentifier.parse("42.-12345", false);
+
+        assertThat(identifier.searchResultId()).isEqualTo(42L);
+        assertThat(identifier.searchId()).isEqualTo(-12345);
+    }
+
+    @Test
     void shouldRejectNullIdentifierAsInvalid() {
         assertThatThrownBy(() -> DownloadIdentifier.parse(null, false))
                 .isInstanceOf(InvalidSearchResultIdException.class);

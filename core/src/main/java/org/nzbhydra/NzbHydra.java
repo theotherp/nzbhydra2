@@ -195,10 +195,7 @@ public class NzbHydra {
             hydraApplication.setHeadless(true);
             applicationContext = hydraApplication.run(args);
         } catch (Exception e) {
-            //Is thrown by SpringApplicationAotProcessor
-            if (!(e instanceof SpringApplication.AbandonedRunException)) {
-                handleException(e);
-            }
+            handleException(e);
         }
     }
 
@@ -334,7 +331,9 @@ public class NzbHydra {
             if (DebugInfosProvider.isRunInDocker()) {
                 logger.info("You seem to be running NZBHydra 2 in docker. You can access Hydra using your local address and the IP you provided");
             } else {
-                if (configProvider.getBaseConfig().getMain().isStartupBrowser() && !"true".equals(System.getProperty(BROWSER_DISABLED))) {
+                if (!isNativeBuild()
+                        && configProvider.getBaseConfig().getMain().isStartupBrowser()
+                        && !"true".equals(System.getProperty(BROWSER_DISABLED))) {
                     if (wasRestarted) {
                         logger.info("Not opening browser after restart");
                         return;

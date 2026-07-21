@@ -341,9 +341,6 @@
           "pattern": "\\Qorg/nzbhydra/NzbHydraNative.class\\E"
       },
       {
-          "pattern": "\\Qorg/nzbhydra/NzbHydraNativeEntrypoint.class\\E"
-      },
-      {
           "pattern": "\\Qorg/nzbhydra/\\E"
       },
       {

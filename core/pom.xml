@@ -40,7 +40,7 @@
                 <plugin>
                     <groupId>org.graalvm.buildtools</groupId>
                     <artifactId>native-maven-plugin</artifactId>
-                    <version>0.9.27</version>
+                    <version>1.1.5</version>
                     <extensions>true</extensions>
                 </plugin>
             </plugins>
@@ -534,7 +534,7 @@
                         <plugin>
                             <groupId>org.graalvm.buildtools</groupId>
                             <!-- Fix Illegal char error on windows -->
-                            <version>0.9.27</version>
+                            <version>1.1.5</version>
                             <artifactId>native-maven-plugin</artifactId>
                             <configuration>
                                 <buildArgs>
@@ -543,15 +543,18 @@
                                     <buildArg>-H:DeadlockWatchdogInterval=0</buildArg>
                                     <buildArg>--initialize-at-build-time=org.apache.commons.logging.LogFactoryService</buildArg>
                                     <buildArg>-H:+StaticExecutableWithDynamicLibC</buildArg>
+                                    <buildArg>-H:IncludeLocales=en</buildArg>
                                     <buildArg>-march=compatibility</buildArg>
                                     <buildArg>--no-fallback -J-Xmx13g</buildArg>
                                     <buildArg>--native-image-info</buildArg>
-                            </buildArgs>
+                                    <buildArg>-H:BuildOutputJSONFile=target/native-build-output.json</buildArg>
+                                </buildArgs>
                                 <classesDirectory>${project.build.outputDirectory}</classesDirectory>
                                 <metadataRepository>
                                     <enabled>true</enabled>
+                                    <version>1.0.7</version>
                                 </metadataRepository>
-                                <requiredVersion>22.3</requiredVersion>
+                                <requiredVersion>25</requiredVersion>
                             </configuration>
                             <executions>
                                 <execution>
@@ -586,7 +589,7 @@
                             <artifactId>native-maven-plugin</artifactId>
                             <configuration>
                                 <buildArgs combine.children="append">
-                                    <buildArg>-H:MissingRegistrationReportingMode=Warn</buildArg>
+                                    <buildArg>--exact-reachability-metadata=org.nzbhydra</buildArg>
                                 </buildArgs>
                             </configuration>
                         </plugin>
@@ -598,6 +601,18 @@
             <id>nativeTest</id>
             <build>
                 <plugins>
+                    <plugin>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration>
+                            <testIncludes>
+                                <testInclude>**/nativeimage/**/*.java</testInclude>
+                            </testIncludes>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <version>3.5.4</version>
+                    </plugin>
                     <plugin>
                         <groupId>org.springframework.boot</groupId>
                         <artifactId>spring-boot-maven-plugin</artifactId>
@@ -617,8 +632,9 @@
                             <classesDirectory>${project.build.outputDirectory}</classesDirectory>
                             <metadataRepository>
                                 <enabled>true</enabled>
+                                <version>1.0.7</version>
                             </metadataRepository>
-                            <requiredVersion>22.3</requiredVersion>
+                            <requiredVersion>25</requiredVersion>
                         </configuration>
                         <executions>
                             <execution>
