@@ -144,7 +144,7 @@ jobs:
         run: |
           # Add unwanted strings to this list (one per line)
           UNWANTED_STRINGS=(
-            "MissingReflectionRegistrationError"
+            "Missing[A-Za-z]*Registration"
           )
 
           FOUND_ISSUES=0
@@ -272,7 +272,7 @@ jobs:
       - name: "Start mock server and hydra, run tests"
         uses: BerniWittmann/background-server-action@v1
         with:
-          start: ./core.exe directstart, java -jar ./exec.jar
+          start: ./core.exe -XX:MissingRegistrationReportingMode=Warn directstart, java -jar ./exec.jar
           command: mvn --batch-mode test -pl org.nzbhydra.tests:system -DtrimStackTrace=false
 
       - name: "Shutdown hydra"
@@ -296,7 +296,7 @@ jobs:
         run: |
           # Add unwanted strings to this list (one per line)
           $unwantedStrings = @(
-            "MissingReflectionRegistrationError"
+            "Missing[A-Za-z]*Registration"
           )
 
           $foundIssues = $false
