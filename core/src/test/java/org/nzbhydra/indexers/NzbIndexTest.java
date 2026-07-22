@@ -49,9 +49,10 @@ public class NzbIndexTest {
                 RssItemBuilder
                     .builder("Watchers.of.the.Universe.S02E09.1080p.WEB-DL.DD5.1.AAC2.0.H.264-YFN-0030-Watchers.of.the.Universe.S02E09.Cant.Get.You.out.of.My.Head.1080p.WEB-DL")
                     .link(link)
-                    .description("<![CDATA[\n" +
-                        "<p><font color=\"gray\">alt.binaries.hdtv.x264</font><br /> <b>1.01 GB</b><br /> 7 hours<br /> <font color=\"#3DA233\">31 files (1405 parts)</font> <font color=\"gray\">by s@nd.p (SP)</font><br /> <font color=\"#E2A910\"> 1 NFO | 9 PAR2 | 1 NZB | 19 ARCHIVE</font> - <a href=\"http://nzbindex.com/nfo/164950363/Watchers.of.the.Universe.S02E09.1080p.WEB-DL.DD5.1.AAC2.0.H.264-YFN-0030-Watchers.of.the.Universe.S02E09.Cant.Get.You.out.of.My.Head.1080p.WEB-DL.nzb/?q=\" target=\"_blank\">View NFO</a></p>\n" +
-                        "]]>")
+                        .description("""
+                                <![CDATA[
+                                <p><font color="gray">alt.binaries.hdtv.x264</font><br /> <b>1.01 GB</b><br /> 7 hours<br /> <font color="#3DA233">31 files (1405 parts)</font> <font color="gray">by s@nd.p (SP)</font><br /> <font color="#E2A910"> 1 NFO | 9 PAR2 | 1 NZB | 19 ARCHIVE</font> - <a href="http://nzbindex.com/nfo/164950363/Watchers.of.the.Universe.S02E09.1080p.WEB-DL.DD5.1.AAC2.0.H.264-YFN-0030-Watchers.of.the.Universe.S02E09.Cant.Get.You.out.of.My.Head.1080p.WEB-DL.nzb/?q=" target="_blank">View NFO</a></p>
+                                ]]>""")
                     .category("alt.binaries.hdtv.x264")
                     .pubDate(now)
                     .rssGuid(new NewznabXmlGuid(link, true))

@@ -197,7 +197,7 @@ public class NzbKing extends Indexer<String> {
             throw new IndexerSearchAbortedException("NZBKing cannot search without a query");
         }
         query = cleanupQuery(query);
-        UriComponentsBuilder queryBuilder = UriComponentsBuilder.fromHttpUrl("https://www.nzbking.com/search")
+        UriComponentsBuilder queryBuilder = UriComponentsBuilder.fromUriString("https://www.nzbking.com/search")
                 .queryParam("q", query);
         if (getConfig().isBinsearchOtherGroups()) {
             queryBuilder = queryBuilder.queryParam("server", "2");
@@ -219,7 +219,7 @@ public class NzbKing extends Indexer<String> {
 
     @Override
     public NfoResult getNfo(String guid) {
-        URI nfoUri = UriComponentsBuilder.fromHttpUrl(config.getHost()).pathSegment("viewNFO.php").queryParam("oid", guid).build().toUri();
+        URI nfoUri = UriComponentsBuilder.fromUriString(config.getHost()).pathSegment("viewNFO.php").queryParam("oid", guid).build().toUri();
         try {
             String html = getAndStoreResultToDatabase(nfoUri, String.class, IndexerApiAccessType.NFO);
             Matcher matcher = NFO_PATTERN.matcher(html);

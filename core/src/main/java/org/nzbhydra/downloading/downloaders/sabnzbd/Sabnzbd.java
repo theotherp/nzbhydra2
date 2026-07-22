@@ -44,6 +44,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.client.UnknownContentTypeException;
 import org.springframework.web.util.UriComponentsBuilder;
+import tools.jackson.core.JacksonException;
 
 import java.io.IOException;
 import java.net.ConnectException;
@@ -91,7 +92,7 @@ public class Sabnzbd extends Downloader {
     }
 
     private UriComponentsBuilder getBaseUrl() {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(downloaderConfig.getUrl()).pathSegment("api");
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(downloaderConfig.getUrl()).pathSegment("api");
         if (!Strings.isNullOrEmpty(downloaderConfig.getApiKey())) {
             builder.queryParam("apikey", downloaderConfig.getApiKey());
         }
@@ -165,7 +166,7 @@ public class Sabnzbd extends Downloader {
             String nzoId = addNzbResponse.getNzoIds().get(0);
             logger.info("Successfully added NZB \"{}\" to sabnzbd queue with ID {}", title, nzoId);
             return nzoId;
-        } catch (IOException e) {
+        } catch (JacksonException | IOException e) {
             throw new DownloaderException("Error while communicating with downloader: " + e.getMessage());
         }
 

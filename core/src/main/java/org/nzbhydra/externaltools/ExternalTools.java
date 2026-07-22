@@ -4,8 +4,6 @@ package org.nzbhydra.externaltools;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import joptsimple.internal.Strings;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -26,6 +24,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -301,7 +301,7 @@ public class ExternalTools {
         try {
             body = Jackson.JSON_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(xdarrAddRequest);
             logger.debug(LoggingMarkers.EXTERNAL_TOOLS, "Built request body: {}", body);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             logger.error("Unable to write request", e);
             throw new IOException("Unable to write request", e);
         }

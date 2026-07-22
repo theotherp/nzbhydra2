@@ -2,14 +2,14 @@
 
 package org.nzbhydra.searching.db;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.nzbhydra.config.downloading.DownloadType;
 import org.nzbhydra.indexers.IndexerEntityTO;
 import org.nzbhydra.springnative.ReflectionMarker;
+import tools.jackson.databind.annotation.JsonSerialize;
+import tools.jackson.databind.ser.std.ToStringSerializer;
 
 import java.time.Instant;
 

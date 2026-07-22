@@ -21,9 +21,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -60,7 +61,7 @@ public class NzbHandlingWeb {
     }
 
 
-    @RequestMapping(value = "/internalapi/saveNzbsToBlackhole", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/internalapi/saveNzbsToBlackhole", produces = MediaType.APPLICATION_JSON_VALUE)
     @Secured({"ROLE_USER"})
     public SaveOrSendResultsResponse saveNzbToBlackhole(@RequestBody Set<String> searchResultId) {
         logger.debug("saveNzbToBlackhole searchResultId: {}", searchResultId);
@@ -72,7 +73,7 @@ public class NzbHandlingWeb {
      *
      * @return The ZIP content or a generic response with an error
      */
-    @RequestMapping(value = "/internalapi/nzbzip", produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.POST)
+    @PostMapping(value = "/internalapi/nzbzip", produces = MediaType.APPLICATION_JSON_VALUE)
     @Secured({"ROLE_USER"})
     public FileZipResponse getNzbZipData(@RequestBody List<String> guids) {
         logger.debug("getNzbZipData: {}", guids);
@@ -84,7 +85,7 @@ public class NzbHandlingWeb {
         }
     }
 
-    @RequestMapping(value = "/internalapi/nzbzipDownload", produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.POST)
+    @PostMapping(value = "/internalapi/nzbzipDownload", produces = MediaType.APPLICATION_JSON_VALUE)
     @Secured({"ROLE_USER"})
     public FileSystemResource downloadNzbZip(@RequestBody String zipFilepath) {
         logger.debug("downloadNzbZip: {}", zipFilepath);

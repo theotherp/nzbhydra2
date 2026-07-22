@@ -20,6 +20,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.core.JacksonException;
 
 import java.io.IOException;
 import java.net.URI;
@@ -47,7 +48,7 @@ public class WebHooks {
                     response.close();
 
                     logger.debug("Called search web hook with response {}", response);
-                } catch (IOException e) {
+                } catch (JacksonException | IOException e) {
                     logger.error("Unable to execute webhook to {} on search event", searchHook);
                 }
             }
@@ -69,7 +70,7 @@ public class WebHooks {
                     response.close();
 
                     logger.debug("Called download web hook with response {}", response);
-                } catch (IOException e) {
+                } catch (JacksonException | IOException e) {
                     logger.error("Unable to execute webhook to {} on download event", downloadHook);
                 }
             }

@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
@@ -30,7 +32,7 @@ public class MainWeb {
         return new SafeConfig(configProvider.getBaseConfig());
     }
 
-    @RequestMapping(value = "/", method = RequestMethod.GET)
+    @GetMapping("/")
     @Secured({"ROLE_USER"})
     public String index(HttpSession session, Principal principal, HttpServletResponse response) {
         setSessionAttributes(session, principal);
@@ -45,35 +47,35 @@ public class MainWeb {
         return "login";
     }
 
-    @RequestMapping(value = "/config/**", method = RequestMethod.GET)
+    @GetMapping("/config/**")
     @Secured({"ROLE_ADMIN"})
     public String config(HttpSession session, Principal principal) {
         setSessionAttributes(session, principal);
         return "index";
     }
 
-    @RequestMapping(value = "/system/**", method = RequestMethod.GET)
+    @GetMapping("/system/**")
     @Secured({"ROLE_ADMIN"})
     public String system(HttpSession session, Principal principal) {
         setSessionAttributes(session, principal);
         return "index";
     }
 
-    @RequestMapping(value = "/stats/**", method = RequestMethod.GET)
+    @GetMapping("/stats/**")
     @Secured({"ROLE_STATS"})
     public String stats(HttpSession session, Principal principal) {
         setSessionAttributes(session, principal);
         return "index";
     }
 
-    @RequestMapping(value = "/logout", method = RequestMethod.POST)
+    @PostMapping("/logout")
     public String logout(HttpSession session, Principal principal, HttpServletResponse response) {
         session.setAttribute("LOGGEDOUT", true);
 
         return "index";
     }
 
-    @RequestMapping(value = "/loggedout", method = RequestMethod.POST)
+    @PostMapping("/loggedout")
     public String loggedOut(HttpSession session, Principal principal, HttpServletResponse response) {
         if (Boolean.TRUE.equals(session.getAttribute("LOGGEDOUT"))) {
             session.invalidate();

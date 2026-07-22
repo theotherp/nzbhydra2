@@ -1,7 +1,5 @@
 package org.nzbhydra.news;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -12,6 +10,8 @@ import org.nzbhydra.mapping.SemanticVersion;
 import org.nzbhydra.news.NewsProvider.NewsEntry;
 import org.nzbhydra.update.UpdateManager;
 import org.nzbhydra.webaccess.WebAccess;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
 
 import java.text.ParseException;
 import java.time.Instant;
@@ -86,7 +86,7 @@ public class NewsProviderTest {
         assertThat(entries.size()).isEqualTo(0);
     }
 
-    protected List<NewsEntry> getNewsJson() throws ParseException, JsonProcessingException {
+    protected List<NewsEntry> getNewsJson() throws ParseException, JacksonException {
         NewsEntry entry1 = new NewsEntry(new SemanticVersion("1.0.0"), "news1.0.0");
         NewsEntry entry2 = new NewsEntry(new SemanticVersion("2.0.0"), "news2.0.0");
         NewsEntry entry3 = new NewsEntry(new SemanticVersion("3.0.0"), "news3.0.0");

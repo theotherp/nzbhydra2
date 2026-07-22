@@ -1,7 +1,5 @@
 package org.nzbhydra.externaltools;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.ConfigReaderWriter;
 import org.nzbhydra.config.indexer.IndexerConfig;
@@ -14,10 +12,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.net.URI;
@@ -43,7 +44,7 @@ public class ExternalToolsWeb {
     private WebAccess webAccess;
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/externalTools/getDialogInfo", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/internalapi/externalTools/getDialogInfo", produces = MediaType.APPLICATION_JSON_VALUE)
     public AddDialogInfo getDialogInfo() {
         final List<IndexerConfig> indexers = configProvider.getBaseConfig().getIndexers();
         final boolean usenetIndexersConfigured = indexers.stream().anyMatch(x -> x.getSearchModuleType() != SearchModuleType.TORZNAB);
@@ -53,25 +54,25 @@ public class ExternalToolsWeb {
     }
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/externalTools/configure", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/internalapi/externalTools/configure", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public Boolean configureExternalTool(@RequestBody AddRequest addRequest) throws IOException {
         return externalTools.addNzbhydraAsIndexer(addRequest);
     }
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/externalTools/messages", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/internalapi/externalTools/messages", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<String> getMessages() {
         return externalTools.getMessages();
     }
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/externalTools/syncAll", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/internalapi/externalTools/syncAll", produces = MediaType.APPLICATION_JSON_VALUE)
     public ExternalToolsSyncService.SyncResult syncAllTools() {
         return externalToolsSyncService.syncAllTools();
     }
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/externalTools/testConnection", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/internalapi/externalTools/testConnection", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ConnectionTestResult testConnection(@RequestBody AddRequest addRequest) {
         try {
             return testSimpleConnection(addRequest.getXdarrHost(), addRequest.getXdarrApiKey());
@@ -94,7 +95,7 @@ public class ExternalToolsWeb {
             String response = webAccess.callUrl(URI.create(apiUrl).toString());
 
             // Parse response as JSON and check for "current" key
-            ObjectMapper mapper = new ObjectMapper();
+            ObjectMapper mapper = new JsonMapper();
             JsonNode jsonNode = mapper.readTree(response);
 
             if (jsonNode.has("current")) {

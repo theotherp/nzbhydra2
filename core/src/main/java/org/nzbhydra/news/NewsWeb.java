@@ -14,9 +14,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
 
@@ -38,20 +38,20 @@ public class NewsWeb {
     @Autowired
     private UserNewsProvider userNewsProvider;
 
-    @RequestMapping(value = "/internalapi/news", method = RequestMethod.GET)
+    @GetMapping("/internalapi/news")
     @Secured({"ROLE_USER"})
     public List<NewsEntryForWeb> getAllNews(HttpSession session, Principal principal) throws IOException {
             logger.debug("Getting all news ");
             return transform(newsProvider.getNews());
     }
 
-    @RequestMapping(value = "/internalapi/news/forcurrentversion", method = RequestMethod.GET)
+    @GetMapping("/internalapi/news/forcurrentversion")
     @Secured({"ROLE_USER"})
     public List<NewsEntryForWeb> getNewsForCurrentVersionAndAfter(Principal principal) throws IOException {
         return transform(newsProvider.getNewsForCurrentVersionAndAfter());
     }
 
-    @RequestMapping(value = "/internalapi/news/saveshown", method = RequestMethod.PUT)
+    @PutMapping("/internalapi/news/saveshown")
     @Secured({"ROLE_USER"})
     public GenericResponse saveShown() throws IOException {
         newsProvider.saveShownForCurrentVersion();
@@ -77,7 +77,7 @@ public class NewsWeb {
         return transformedEntries;
     }
 
-    @RequestMapping(value = "/internalapi/usernews", method = RequestMethod.GET)
+    @GetMapping("/internalapi/usernews")
     @Secured({"ROLE_USER"})
     public List<UserNewsEntryForWeb> getUnreadUserNews(Principal principal) {
         String username = principal != null ? principal.getName() : "anonymous";
@@ -90,7 +90,7 @@ public class NewsWeb {
                 .collect(Collectors.toList());
     }
 
-    @RequestMapping(value = "/internalapi/usernews/{id}/dismiss", method = RequestMethod.PUT)
+    @PutMapping("/internalapi/usernews/{id}/dismiss")
     @Secured({"ROLE_USER"})
     public GenericResponse dismissUserNews(@PathVariable String id, Principal principal) {
         String username = principal != null ? principal.getName() : "anonymous";

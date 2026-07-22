@@ -2,8 +2,6 @@
 
 package org.nzbhydra.config.category;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Strings;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,6 +9,8 @@ import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.searching.SearchType;
 import org.nzbhydra.springnative.ReflectionMarker;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import tools.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.databind.annotation.JsonSerialize;
 
 import java.util.ArrayList;
 import java.util.List;

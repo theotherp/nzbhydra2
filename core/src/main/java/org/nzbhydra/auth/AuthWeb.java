@@ -7,8 +7,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.security.Principal;
@@ -19,13 +18,13 @@ public class AuthWeb {
     @Autowired
     private UserInfosProvider userInfos;
 
-    @RequestMapping(value = "/internalapi/askadmin", method = RequestMethod.GET)
+    @GetMapping("/internalapi/askadmin")
     @Secured({"ROLE_ADMIN"})
     public String askForAdmin(HttpSession session, Principal principal) {
         return "index";
     }
 
-    @RequestMapping(value = "/internalapi/askpassword", method = RequestMethod.GET)
+    @GetMapping("/internalapi/askpassword")
     public ResponseEntity<BootstrappedDataTO> askForPassword(HttpSession session, Principal principal) {
         if (SecurityContextHolder.getContext().getAuthentication() != null && !"AnonymousUser".equals(SecurityContextHolder.getContext().getAuthentication().getPrincipal())) {
             return ResponseEntity.ok(userInfos.getUserInfos(principal));
@@ -33,7 +32,7 @@ public class AuthWeb {
         return ResponseEntity.status(401).header("WWW-Authenticate", "Basic realm=\"Ask for password\"").body(null);
     }
 
-    @RequestMapping(value = "/internalapi/userinfos", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/internalapi/userinfos", produces = MediaType.APPLICATION_JSON_VALUE)
     public BootstrappedDataTO userinfos(HttpSession session, Principal principal) {
         return userInfos.getUserInfos(principal);
     }

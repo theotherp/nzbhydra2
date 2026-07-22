@@ -1,7 +1,5 @@
 package org.nzbhydra.mapping;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,6 +16,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestTemplate;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -224,8 +224,7 @@ public class RssCustomQueryAndTitleMappingTest {
 
     @Test
     void shouldSerializeToJson() throws Exception {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
+        ObjectMapper objectMapper = new JsonMapper();
         NewznabXmlRoot rssRoot = getRssRootFromXml("newznab_3results.xml");
         String json = objectMapper.writeValueAsString(rssRoot);
         System.out.println(json);

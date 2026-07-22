@@ -180,7 +180,7 @@ public class NzbIndex extends Indexer<NewznabXmlRoot> {
     }
 
     protected UriComponentsBuilder getBaseUri() {
-        return UriComponentsBuilder.fromHttpUrl(config.getHost());
+        return UriComponentsBuilder.fromUriString(config.getHost());
     }
 
     @Component

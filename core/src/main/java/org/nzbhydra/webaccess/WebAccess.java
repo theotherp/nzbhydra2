@@ -1,6 +1,5 @@
 package org.nzbhydra.webaccess;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Stopwatch;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -19,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import tools.jackson.core.type.TypeReference;
 
 import java.io.File;
 import java.io.IOException;

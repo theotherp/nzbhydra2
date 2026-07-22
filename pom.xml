@@ -19,6 +19,19 @@
         <developerConnection>scm:git:git@github.com:theotherp/nzbhydra2.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>tools.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>3.1.5</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <build>
         <plugins>
             <plugin>
@@ -108,13 +121,12 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
 
-        <spring.boot.version>3.5.16</spring.boot.version>
-        <spring.boot.devtools.version>3.5.16</spring.boot.devtools.version>
-        <spring.boot.maven.version>3.5.16</spring.boot.maven.version>
-        <spring.oxm.version>6.2.19</spring.oxm.version>
-        <spring-data-commons.version>3.5.13</spring-data-commons.version>
+        <spring.boot.version>4.1.0</spring.boot.version>
+        <spring.boot.devtools.version>4.1.0</spring.boot.devtools.version>
+        <spring.boot.maven.version>4.1.0</spring.boot.maven.version>
+        <spring.oxm.version>7.0.8</spring.oxm.version>
+        <spring-data-commons.version>4.1.0</spring-data-commons.version>
         <jakarta.persistence-api.version>3.1.0</jakarta.persistence-api.version>
-        <jackson.version>2.15.0</jackson.version>
         <lombok.version>1.18.42</lombok.version>
         <logback.version>1.5.21</logback.version>
         <guava.version>23.0</guava.version>
@@ -123,7 +135,6 @@
         <logstash-logback-encoder.version>7.2</logstash-logback-encoder.version>
         <commons-lang3.version>3.12.0</commons-lang3.version>
         <commons-io.version>2.11.0</commons-io.version>
-        <flyway-core.version>11.7.2</flyway-core.version>
         <jaxb.sun.core.version>2.3.0.1</jaxb.sun.core.version>
         <jaxb.sun.impl.version>3.0.1</jaxb.sun.impl.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

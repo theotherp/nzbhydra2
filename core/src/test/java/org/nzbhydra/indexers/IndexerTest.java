@@ -129,7 +129,7 @@ public class IndexerTest {
 
             @Override
             protected UriComponentsBuilder buildSearchUrl(SearchRequest searchRequest, Integer offset, Integer limit) throws IndexerSearchAbortedException {
-                return UriComponentsBuilder.fromHttpUrl("http://127.0.0.1");
+                return UriComponentsBuilder.fromUriString("http://127.0.0.1");
             }
 
             @Override

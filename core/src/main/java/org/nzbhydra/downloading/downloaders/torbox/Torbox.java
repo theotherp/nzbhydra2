@@ -314,7 +314,7 @@ public class Torbox extends Downloader {
 
 
     private UriComponentsBuilder getBaseUrl() {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(BASE_API_URL);
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(BASE_API_URL);
         return builder;
     }
 

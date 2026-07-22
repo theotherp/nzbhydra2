@@ -2,7 +2,6 @@
 
 package org.nzbhydra.downloading;
 
-import com.fasterxml.jackson.databind.ObjectWriter;
 import org.junit.jupiter.api.Test;
 import org.nzbhydra.Jackson;
 import org.nzbhydra.config.SearchSource;
@@ -11,6 +10,7 @@ import org.nzbhydra.config.downloading.FileDownloadAccessType;
 import org.nzbhydra.indexers.IndexerEntity;
 import org.nzbhydra.searching.db.SearchEntity;
 import org.nzbhydra.searching.db.SearchResultEntity;
+import tools.jackson.databind.ObjectWriter;
 
 import java.time.Instant;
 
@@ -52,7 +52,7 @@ class FileDownloadEntityTest {
                 //Long value is serialized as string to prevent precision loss
                 .replace("\"1234\"", "1234");
         final String jsonEntity = printer.writeValueAsString(testee);
-        assertThat(jsonTO).isEqualTo(jsonEntity);
+        assertThat(Jackson.JSON_MAPPER.readTree(jsonTO)).isEqualTo(Jackson.JSON_MAPPER.readTree(jsonEntity));
     }
 
 }

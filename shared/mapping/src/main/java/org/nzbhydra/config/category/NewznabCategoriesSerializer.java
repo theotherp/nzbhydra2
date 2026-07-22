@@ -2,18 +2,18 @@
 
 package org.nzbhydra.config.category;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
 import com.google.common.base.Joiner;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ValueSerializer;
 
-import java.io.IOException;
 import java.util.List;
 
-public class NewznabCategoriesSerializer extends JsonSerializer<List<List<Integer>>> {
+public class NewznabCategoriesSerializer extends ValueSerializer<List<List<Integer>>> {
 
     @Override
-    public void serialize(List<List<Integer>> listOfLists, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+    public void serialize(List<List<Integer>> listOfLists, JsonGenerator gen, SerializationContext serializers) throws JacksonException {
         gen.writeStartArray();
         for (List<Integer> integerList : listOfLists) {
             gen.writeString(Joiner.on("&").join(integerList));

@@ -22,9 +22,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.text.Normalizer;
@@ -132,7 +131,7 @@ public class CustomQueryAndTitleMappingHandler {
 
     @SuppressWarnings("OptionalGetWithoutIsPresent")
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/customMapping/test", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/internalapi/customMapping/test", produces = MediaType.APPLICATION_JSON_VALUE)
     public TestResponse testMapping(@RequestBody TestRequest testRequest) {
         MetaData metaData = new MetaData();
         final String exampleInput = testRequest.exampleInput;

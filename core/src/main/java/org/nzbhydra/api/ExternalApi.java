@@ -165,7 +165,7 @@ public class ExternalApi {
                     response = new NewznabXmlError("100", details.getErrorMessage());
                 }
             }
-            return new ResponseEntity<>(response, null, HttpStatus.OK);
+            return ResponseEntity.ok(response);
         }
 
         if (Stream.of(ActionAttribute.SEARCH, ActionAttribute.BOOK, ActionAttribute.TVSEARCH, ActionAttribute.MOVIE).anyMatch(x -> x == params.getT())) {

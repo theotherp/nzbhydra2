@@ -15,9 +15,8 @@ import org.springframework.context.event.EventListener;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import org.springframework.web.socket.messaging.SessionSubscribeEvent;
@@ -81,7 +80,7 @@ public class NotificationsWeb {
 
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/notifications/test/{eventType}", method = RequestMethod.GET)
+    @GetMapping("/internalapi/notifications/test/{eventType}")
     public void testNotification(@PathVariable("eventType") String eventType) {
         final NotificationEventType notificationEventType = NotificationEventType.valueOf(eventType);
 

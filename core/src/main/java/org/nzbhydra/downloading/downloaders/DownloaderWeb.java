@@ -15,10 +15,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.security.Principal;
@@ -44,19 +46,19 @@ public class DownloaderWeb {
     private DuplicateMovieDownloadService duplicateMovieDownloadService;
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/downloader/checkConnection", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/internalapi/downloader/checkConnection", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public GenericResponse checkConnection(@RequestBody DownloaderConfig downloaderConfig) {
         return downloaderProvider.checkConnection(downloaderConfig);
     }
 
     @Secured({"ROLE_STATS"})
-    @RequestMapping(value = "/internalapi/downloader/getStatus", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/internalapi/downloader/getStatus", produces = MediaType.APPLICATION_JSON_VALUE)
     public DownloaderStatus getStatus() {
         return downloaderStatusRetrieval.getStatus();
     }
 
     @Secured({"ROLE_USER"})
-    @RequestMapping(value = "/internalapi/downloader/addNzbs", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/internalapi/downloader/addNzbs", produces = MediaType.APPLICATION_JSON_VALUE)
     public AddNzbsResponse addNzb(@RequestBody AddFilesRequest addNzbsRequest, Principal principal) {
         duplicateMovieDownloadService.logReasonIfEntered(addNzbsRequest, principal);
         if (DemoModeWeb.isDemoModeActive(principal)) {
@@ -68,7 +70,7 @@ public class DownloaderWeb {
     }
 
     @Secured({"ROLE_USER"})
-    @RequestMapping(value = "/internalapi/downloader/checkDuplicateMovieDownload", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/internalapi/downloader/checkDuplicateMovieDownload", produces = MediaType.APPLICATION_JSON_VALUE)
     public DuplicateMovieDownloadCheckResponse checkDuplicateMovieDownload(@RequestBody AddFilesRequest addNzbsRequest, Principal principal) {
         if (DemoModeWeb.isDemoModeActive(principal)) {
             return new DuplicateMovieDownloadCheckResponse(false);

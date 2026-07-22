@@ -3,7 +3,7 @@ package org.nzbhydra.mockserver;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import org.nzbhydra.downloading.downloaders.sabnzbd.mapping.History;
 import org.nzbhydra.downloading.downloaders.sabnzbd.mapping.HistoryResponse;
 import org.nzbhydra.downloading.downloaders.sabnzbd.mapping.Queue;
@@ -59,7 +59,7 @@ public class MockSabnzb {
             ObjectMapper mapper = new ObjectMapper();
             mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             mapper.configure(MapperFeature.DEFAULT_VIEW_INCLUSION, true);
-            mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+            mapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
 
             return mapper;
         }

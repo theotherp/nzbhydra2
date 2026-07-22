@@ -225,7 +225,7 @@ public class Binsearch extends Indexer<String> {
             throw new IndexerSearchAbortedException("Binsearch cannot search without a query");
         }
         query = cleanupQuery(query);
-        UriComponentsBuilder queryBuilder = UriComponentsBuilder.fromHttpUrl("https://www.binsearch.info/")
+        UriComponentsBuilder queryBuilder = UriComponentsBuilder.fromUriString("https://www.binsearch.info/")
                 .queryParam("q", query);
         if (offset != null && offset > 0) {
             // Binsearch uses 0-indexed page numbers with a fixed page size of 25
@@ -250,7 +250,7 @@ public class Binsearch extends Indexer<String> {
 
     @Override
     public NfoResult getNfo(String guid) {
-        URI nfoUri = UriComponentsBuilder.fromHttpUrl(config.getHost()).pathSegment("viewNFO.php").queryParam("oid", guid).build().toUri();
+        URI nfoUri = UriComponentsBuilder.fromUriString(config.getHost()).pathSegment("viewNFO.php").queryParam("oid", guid).build().toUri();
         try {
             String html = getAndStoreResultToDatabase(nfoUri, String.class, IndexerApiAccessType.NFO);
             Matcher matcher = NFO_PATTERN.matcher(html);

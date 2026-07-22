@@ -165,7 +165,7 @@ public class Torbox extends Indexer<Torbox.UsenetAndTorrentResponse> {
 
 
     private UriComponentsBuilder buildSearchUrl(SearchRequest searchRequest, TorboxResultType type) throws IndexerSearchAbortedException {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("https://search-api.torbox.app");
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString("https://search-api.torbox.app");
         if (type == TorboxResultType.TORRENT) {
             builder.pathSegment("torznab");
         } else {
