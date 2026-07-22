@@ -48,9 +48,14 @@ public class NativeHints implements RuntimeHintsRegistrar {
         for (String type : List.of(
                 "java.net.InetAddressEditor",
                 "java.time.DurationEditor",
+                "org.springframework.boot.http.client.autoconfigure.imperative.ImperativeHttpClientsProperties$FactoryEditor",
                 "org.springframework.boot.web.server.ShutdownEditor",
                 "org.springframework.boot.web.server.autoconfigure.ServerProperties$ForwardHeadersStrategyEditor",
+                "org.springframework.messaging.MessageHandlerEditor",
+                "org.springframework.messaging.simp.broker.AbstractBrokerMessageHandlerEditor",
                 "org.springframework.util.unit.DataSizeEditor",
+                "org.springframework.web.accept.ApiVersionStrategyEditor",
+                "org.springframework.web.servlet.HandlerMappingEditor",
                 "tools.jackson.databind.DeserializationFeatureEditor",
                 "tools.jackson.databind.cfg.DateTimeFeatureEditor",
                 "tools.jackson.dataformat.xml.XmlMapper")) {
