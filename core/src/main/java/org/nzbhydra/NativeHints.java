@@ -16,6 +16,7 @@ import org.springframework.aot.hint.ExecutableMode;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.RuntimeHintsRegistrar;
+import org.springframework.aot.hint.TypeReference;
 import org.springframework.boot.actuate.management.ThreadDumpEndpoint;
 import org.springframework.boot.micrometer.metrics.actuate.endpoint.MetricsEndpoint;
 import org.springframework.core.io.Resource;
@@ -44,6 +45,17 @@ public class NativeHints implements RuntimeHintsRegistrar {
         hints.resources().registerResourceBundle("joptsimple.ExceptionMessages");
         hints.resources().registerResourceBundle("org.apache.xerces.impl.msg.XMLMessages");
         hints.resources().registerPattern("config/logback-spring.xml");
+        for (String type : List.of(
+                "java.net.InetAddressEditor",
+                "java.time.DurationEditor",
+                "org.springframework.boot.web.server.ShutdownEditor",
+                "org.springframework.boot.web.server.autoconfigure.ServerProperties$ForwardHeadersStrategyEditor",
+                "org.springframework.util.unit.DataSizeEditor",
+                "tools.jackson.databind.DeserializationFeatureEditor",
+                "tools.jackson.databind.cfg.DateTimeFeatureEditor",
+                "tools.jackson.dataformat.xml.XmlMapper")) {
+            hints.reflection().registerType(TypeReference.of(type));
+        }
 
 
         final Set<Class<?>> classes = getClassesToRegister();
