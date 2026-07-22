@@ -1,6 +1,17 @@
 {
   "reflection": [
     {
+      "type": "org.hibernate.engine.jdbc.connections.internal.DataSourceConnectionProvider",
+      "methods": [
+        {
+          "name": "setJndiService",
+          "parameterTypes": [
+            "org.hibernate.engine.jndi.spi.JndiService"
+          ]
+        }
+      ]
+    },
+    {
       "type": "boolean"
     },
     {

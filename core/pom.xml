@@ -561,6 +561,7 @@
                                     <buildArg>--initialize-at-build-time=org.apache.commons.logging.LogFactoryService</buildArg>
                                     <buildArg>-H:+StaticExecutableWithDynamicLibC</buildArg>
                                     <buildArg>-H:IncludeLocales=en</buildArg>
+                                    <buildArg>-H:+AddAllCharsets</buildArg>
                                     <buildArg>-march=compatibility</buildArg>
                                     <buildArg>--no-fallback -J-Xmx13g</buildArg>
                                     <buildArg>--native-image-info</buildArg>
@@ -630,6 +631,11 @@
                     <plugin>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <version>3.5.6</version>
+                        <configuration>
+                            <includes>
+                                <include>**/nativeimage/**/*.java</include>
+                            </includes>
+                        </configuration>
                     </plugin>
                     <plugin>
                         <groupId>org.springframework.boot</groupId>
@@ -647,6 +653,9 @@
                         <groupId>org.graalvm.buildtools</groupId>
                         <artifactId>native-maven-plugin</artifactId>
                         <configuration>
+                            <buildArgs>
+                                <buildArg>-H:+AddAllCharsets</buildArg>
+                            </buildArgs>
                             <classesDirectory>${project.build.outputDirectory}</classesDirectory>
                             <metadataRepository>
                                 <enabled>true</enabled>

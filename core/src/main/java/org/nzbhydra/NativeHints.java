@@ -4,6 +4,8 @@ package org.nzbhydra;
 
 import org.apache.coyote.AbstractProtocol;
 import org.commonmark.renderer.html.HtmlRenderer;
+import org.hibernate.engine.jdbc.connections.internal.DataSourceConnectionProvider;
+import org.hibernate.engine.jndi.spi.JndiService;
 import org.nzbhydra.config.migration.ConfigMigrationStep;
 import org.nzbhydra.springnative.ReflectionMarker;
 import org.reflections.Reflections;
@@ -41,6 +43,7 @@ public class NativeHints implements RuntimeHintsRegistrar {
 
         hints.resources().registerResourceBundle("joptsimple.ExceptionMessages");
         hints.resources().registerResourceBundle("org.apache.xerces.impl.msg.XMLMessages");
+        hints.resources().registerPattern("config/logback-spring.xml");
 
 
         final Set<Class<?>> classes = getClassesToRegister();
@@ -68,6 +71,7 @@ public class NativeHints implements RuntimeHintsRegistrar {
             hints.reflection().registerMethod(MetricsEndpoint.MetricDescriptor.class.getMethod("getMeasurements"), ExecutableMode.INVOKE);
             hints.reflection().registerMethod(ThreadDumpEndpoint.class.getMethod("textThreadDump"), ExecutableMode.INVOKE);
             hints.reflection().registerMethod(AbstractProtocol.class.getMethod("getName"), ExecutableMode.INVOKE);
+            hints.reflection().registerMethod(DataSourceConnectionProvider.class.getMethod("setJndiService", JndiService.class), ExecutableMode.INVOKE);
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);
         }
