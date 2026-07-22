@@ -1,6 +1,21 @@
 {
   "reflection": [
     {
+      "type": "java.net.InetAddressEditor"
+    },
+    {
+      "type": "java.time.DurationEditor"
+    },
+    {
+      "type": "org.springframework.boot.web.server.ShutdownEditor"
+    },
+    {
+      "type": "org.springframework.boot.web.server.autoconfigure.ServerProperties$ForwardHeadersStrategyEditor"
+    },
+    {
+      "type": "org.springframework.util.unit.DataSizeEditor"
+    },
+    {
       "type": "org.hibernate.engine.jdbc.connections.internal.DataSourceConnectionProvider",
       "methods": [
         {
@@ -10,6 +25,12 @@
           ]
         }
       ]
+    },
+    {
+      "type": "tools.jackson.databind.cfg.DateTimeFeatureEditor"
+    },
+    {
+      "type": "tools.jackson.dataformat.xml.XmlMapper"
     },
     {
       "type": "boolean"
