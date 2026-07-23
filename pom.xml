@@ -74,17 +74,17 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>versions-maven-plugin</artifactId>
-                <version>2.8.1</version>
+                <version>2.21.0</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.0.0-M2</version>
+                <version>3.6.0-M1</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.14.1</version>
+                <version>3.15.0</version>
                 <configuration>
                     <compilerArgs>
                         <arg>-parameters</arg>
@@ -130,13 +130,10 @@
         <lombok.version>1.18.42</lombok.version>
         <logback.version>1.5.21</logback.version>
         <guava.version>23.0</guava.version>
-        <junit.version>4.13.2</junit.version>
         <okhttp.version>4.11.0</okhttp.version>
         <logstash-logback-encoder.version>9.0</logstash-logback-encoder.version>
         <commons-lang3.version>3.12.0</commons-lang3.version>
         <commons-io.version>2.11.0</commons-io.version>
-        <jaxb.sun.core.version>2.3.0.1</jaxb.sun.core.version>
-        <jaxb.sun.impl.version>3.0.1</jaxb.sun.impl.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <uri-scheme-handler.version>2.0.0</uri-scheme-handler.version>
         <javers-core.version>6.8.1</javers-core.version>
