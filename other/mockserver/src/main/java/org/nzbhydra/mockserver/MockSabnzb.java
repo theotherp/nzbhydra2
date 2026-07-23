@@ -1,9 +1,5 @@
 package org.nzbhydra.mockserver;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import org.nzbhydra.downloading.downloaders.sabnzbd.mapping.History;
 import org.nzbhydra.downloading.downloaders.sabnzbd.mapping.HistoryResponse;
 import org.nzbhydra.downloading.downloaders.sabnzbd.mapping.Queue;
@@ -14,6 +10,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.MapperFeature;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.PropertyNamingStrategies;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -56,12 +57,11 @@ public class MockSabnzb {
 
         @Bean
         public ObjectMapper objectMapper() {
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-            mapper.configure(MapperFeature.DEFAULT_VIEW_INCLUSION, true);
-            mapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
-
-            return mapper;
+            return JsonMapper.builder()
+                    .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                    .enable(MapperFeature.DEFAULT_VIEW_INCLUSION)
+                    .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+                    .build();
         }
     }
 }
