@@ -1,6 +1,15 @@
 {
   "reflection": [
     {
+      "type": "java.lang.Exception",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
       "type": "java.net.InetAddressEditor"
     },
     {
