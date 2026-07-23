@@ -104,7 +104,7 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
             RequestBody.create(contentType, content) : null);
 
         Request.Builder builder = new Request.Builder().url(uri.toURL()).method(method.name(), body);
-        for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
+        for (Map.Entry<String, List<String>> entry : headers.headerSet()) {
             String headerName = entry.getKey();
             for (String headerValue : entry.getValue()) {
                 builder.addHeader(headerName, headerValue);

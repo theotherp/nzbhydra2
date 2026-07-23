@@ -36,17 +36,17 @@ import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.access.channel.ChannelProcessingFilter;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.context.SecurityContextHolderFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.firewall.DefaultHttpFirewall;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.ForwardedHeaderFilter;
+import org.springframework.web.filter.UrlHandlerFilter;
 
 import java.util.List;
 
@@ -85,90 +85,84 @@ public class SecurityConfig {
             //https://docs.spring.io/spring-security/reference/5.8/migration/servlet/exploits.html#_i_am_using_angularjs_or_another_javascript_framework
             CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
             requestHandler.setCsrfRequestAttributeName(null);
-            http.csrf()
-                .csrfTokenRepository(csrfTokenRepository)
-                .csrfTokenRequestHandler(requestHandler);
+            http.csrf(csrf -> csrf
+                    .csrfTokenRepository(csrfTokenRepository)
+                    .csrfTokenRequestHandler(requestHandler));
         } else {
             logger.info("CSRF is disabled");
-            http.csrf().disable();
+            http.csrf(csrf -> csrf.disable());
         }
-        http.headers()
-            .httpStrictTransportSecurity().disable()
-            .frameOptions().disable();
+        http.headers(headers -> headers
+                .httpStrictTransportSecurity(security -> security.disable())
+                .frameOptions(options -> options.disable()));
 
         if (baseConfig.getAuth().getAuthType() == AuthType.BASIC || NzbHydra.isNativeBuild()) {
             http = http
-                    .httpBasic()
-                    .authenticationDetailsSource(new WebAuthenticationDetailsSource() {
-                        @Override
-                        public WebAuthenticationDetails buildDetails(HttpServletRequest context) {
-                            return new HydraWebAuthenticationDetails(context);
-                        }
-                    })
-                    .and();
+                    .httpBasic(basic -> basic
+                            .authenticationDetailsSource(new WebAuthenticationDetailsSource() {
+                                @Override
+                                public WebAuthenticationDetails buildDetails(HttpServletRequest context) {
+                                    return new HydraWebAuthenticationDetails(context);
+                                }
+                            }));
         } else if (baseConfig.getAuth().getAuthType() == AuthType.FORM) {
             http = http
-                .formLogin()
-                .loginPage("/login")
-                .loginProcessingUrl("/login")
-                    .defaultSuccessUrl("/")
-                    .permitAll()
-                    .authenticationDetailsSource(new WebAuthenticationDetailsSource() {
-                        @Override
-                        public WebAuthenticationDetails buildDetails(HttpServletRequest context) {
-                            return new HydraWebAuthenticationDetails(context);
-                        }
-                    })
-                    .and();
+                    .formLogin(login -> login
+                            .loginPage("/login")
+                            .loginProcessingUrl("/login")
+                            .defaultSuccessUrl("/")
+                            .permitAll()
+                            .authenticationDetailsSource(new WebAuthenticationDetailsSource() {
+                                @Override
+                                public WebAuthenticationDetails buildDetails(HttpServletRequest context) {
+                                    return new HydraWebAuthenticationDetails(context);
+                                }
+                            }));
         } else if (baseConfig.getAuth().getAuthType() == AuthType.OIDC) {
             ClientRegistrationRepository clientRegistrationRepository = getOidcClientRegistrationRepository(baseConfig.getAuth());
             String oidcAuthorizationUrl = "/oauth2/authorization/" + OIDC_REGISTRATION_ID;
             http = http
-                    .oauth2Login()
-                    .clientRegistrationRepository(clientRegistrationRepository)
-                    .loginPage("/login")
-                    .failureHandler((request, response, exception) -> {
-                        if (isAuthorizationRequestNotFound(exception)) {
-                            logger.warn("OIDC callback has no matching authorization request. Check that the browser accepts the session cookie and that the configured external URL, protocol, and host are consistent.");
-                            response.sendRedirect(request.getContextPath() + "/login?error");
-                            return;
-                        }
-                        logger.warn("OIDC login failed", exception);
-                        response.sendRedirect(request.getContextPath() + "/login?error");
-                    })
-                    .userInfoEndpoint()
-                    .oidcUserService(getOidcUserService(baseConfig.getAuth()))
-                    .and()
-                    .and();
-            http.exceptionHandling().authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint(oidcAuthorizationUrl));
+                    .oauth2Login(login -> login
+                            .clientRegistrationRepository(clientRegistrationRepository)
+                            .loginPage("/login")
+                            .failureHandler((request, response, exception) -> {
+                                if (isAuthorizationRequestNotFound(exception)) {
+                                    logger.warn("OIDC callback has no matching authorization request. Check that the browser accepts the session cookie and that the configured external URL, protocol, and host are consistent.");
+                                    response.sendRedirect(request.getContextPath() + "/login?error");
+                                    return;
+                                }
+                                logger.warn("OIDC login failed", exception);
+                                response.sendRedirect(request.getContextPath() + "/login?error");
+                            })
+                            .userInfoEndpoint(endpoint -> endpoint
+                                    .oidcUserService(getOidcUserService(baseConfig.getAuth()))));
+            http.exceptionHandling(handling -> handling.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint(oidcAuthorizationUrl)));
         }
         if (baseConfig.getAuth().isAuthConfigured() || NzbHydra.isNativeBuild()) {
             http = http
-                    .authorizeHttpRequests()
-                    .requestMatchers("/actuator/health/ping")
-                    .permitAll()
-                    .requestMatchers("/login", "/oauth2/**", "/login/oauth2/**")
-                    .permitAll()
-                    .requestMatchers("/internalapi/")
-                    .authenticated()
-                    .requestMatchers("/websocket/")
-                    .authenticated()
-                    .requestMatchers("/actuator/**")
-                    .hasRole("ADMIN")
-                    .requestMatchers(new AntPathRequestMatcher("/static/**"))
-                    .permitAll()
-                .anyRequest()
+                    .authorizeHttpRequests(requests -> requests
+                            .requestMatchers("/actuator/health/ping")
+                            .permitAll()
+                            .requestMatchers("/login", "/oauth2/**", "/login/oauth2/**")
+                            .permitAll()
+                            .requestMatchers("/internalapi/")
+                            .authenticated()
+                            .requestMatchers("/websocket/")
+                            .authenticated()
+                            .requestMatchers("/actuator/**")
+                            .hasRole("ADMIN")
+                            .requestMatchers("/static/**")
+                            .permitAll()
+                            .anyRequest()
 //                .authenticated() //Does not include anonymous
-                .hasAnyRole("ADMIN", "ANONYMOUS", "USER")
-                .and()
-                .logout()
-                .permitAll()
-                .logoutUrl("/logout")
-                .logoutSuccessUrl("/")
-                .deleteCookies("remember-me")
-                .invalidateHttpSession(true)
-                .clearAuthentication(true)
-                .and()
+                            .hasAnyRole("ADMIN", "ANONYMOUS", "USER"))
+                    .logout(logout -> logout
+                            .permitAll()
+                            .logoutUrl("/logout")
+                            .logoutSuccessUrl("/")
+                            .deleteCookies("remember-me")
+                            .invalidateHttpSession(true)
+                            .clearAuthentication(true))
             ;
             enableAnonymousAccessIfConfigured(http);
 
@@ -177,12 +171,12 @@ public class SecurityConfig {
                 if (rememberMeValidityDays == 0) {
                     rememberMeValidityDays = 1000; //Can't be disabled, three years should be enough
                 }
+                int rememberMeValiditySeconds = rememberMeValidityDays * SECONDS_PER_DAY;
                 http = http
-                    .rememberMe()
-                    .alwaysRemember(true)
-                    .tokenValiditySeconds(rememberMeValidityDays * SECONDS_PER_DAY)
-                    .userDetailsService(userDetailsService)
-                    .and();
+                        .rememberMe(me -> me
+                                .alwaysRemember(true)
+                                .tokenValiditySeconds(rememberMeValiditySeconds)
+                                .userDetailsService(userDetailsService));
             }
 
             if (baseConfig.getAuth().getAuthType() != AuthType.OIDC) {
@@ -192,13 +186,14 @@ public class SecurityConfig {
             http.addFilterAfter(asyncSupportFilter, BasicAuthenticationFilter.class);
 
         } else {
-            http.authorizeHttpRequests().anyRequest().permitAll();
+            http.authorizeHttpRequests(requests -> requests.anyRequest().permitAll());
         }
-        http.exceptionHandling().accessDeniedHandler(authAndAccessEventHandler);
+        http.exceptionHandling(handling -> handling.accessDeniedHandler(authAndAccessEventHandler));
 
-        http.addFilterBefore(new ForwardedForRecognizingFilter(), ChannelProcessingFilter.class);
+        http.addFilterBefore(new ForwardedForRecognizingFilter(), SecurityContextHolderFilter.class);
         //We need to extract the original IP before it's removed and not retrievable anymore by the ForwardedHeaderFilter
         http.addFilterAfter(new ForwardedHeaderFilter(), ForwardedForRecognizingFilter.class);
+        http.addFilterAfter(UrlHandlerFilter.trailingSlashHandler("/**").wrapRequest().build(), ForwardedHeaderFilter.class);
         return http.build();
     }
 
@@ -207,7 +202,7 @@ public class SecurityConfig {
         //Create an anonymous auth filter. If any of the areas are not restricted the anonymous user will get its role
         try {
             if (!hydraAnonymousAuthenticationFilter.getAuthorities().isEmpty()) {
-                http.anonymous().authenticationFilter(hydraAnonymousAuthenticationFilter);
+                http.anonymous(anonymous -> anonymous.authenticationFilter(hydraAnonymousAuthenticationFilter));
 
                 hydraAnonymousAuthenticationFilter.enable();
 
@@ -299,11 +294,9 @@ public class SecurityConfig {
     @Bean
     public AuthenticationManager authManager(HttpSecurity http, PasswordEncoder passwordEncoder)
         throws Exception {
-        return http.getSharedObject(AuthenticationManagerBuilder.class)
-            .userDetailsService(hydraUserDetailsManager)
-                .passwordEncoder(passwordEncoder)
-            .and()
-            .build();
+        AuthenticationManagerBuilder builder = http.getSharedObject(AuthenticationManagerBuilder.class);
+        builder.userDetailsService(hydraUserDetailsManager).passwordEncoder(passwordEncoder);
+        return builder.build();
     }
 
     @Bean

@@ -2,7 +2,6 @@
 
 package org.nzbhydra.emby;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import org.jetbrains.annotations.NotNull;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.mapping.emby.EmbyItemsResponse;
@@ -12,11 +11,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
+import tools.jackson.core.type.TypeReference;
 
 import java.io.IOException;
 
@@ -31,7 +30,7 @@ public class EmbyWeb {
     private ConfigProvider configProvider;
 
     @Secured({"ROLE_USER"})
-    @RequestMapping(value = "/internalapi/emby/isSeriesAvailable", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/internalapi/emby/isSeriesAvailable", produces = MediaType.APPLICATION_JSON_VALUE)
     public boolean isSeriesAvailable(@RequestParam String tvdbId) {
         final String uriString = getUriBuilder()
                 .queryParam("IncludeItemTypes", "Series")
@@ -47,7 +46,7 @@ public class EmbyWeb {
     }
 
     @Secured({"ROLE_USER"})
-    @RequestMapping(value = "/internalapi/emby/isMovieAvailable", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/internalapi/emby/isMovieAvailable", produces = MediaType.APPLICATION_JSON_VALUE)
     public boolean isMovieAvailable(@RequestParam String tmdbId) {
         final String uriString = getUriBuilder()
                 .queryParam("IncludeItemTypes", "Movies")
@@ -64,7 +63,7 @@ public class EmbyWeb {
 
     @NotNull
     private UriComponentsBuilder getUriBuilder() {
-        return UriComponentsBuilder.fromHttpUrl(configProvider.getBaseConfig().getEmby().getEmbyBaseUrl())
+        return UriComponentsBuilder.fromUriString(configProvider.getBaseConfig().getEmby().getEmbyBaseUrl())
                 .pathSegment("emby", "Items")
                 .queryParam("Recursive", "true")
                 .queryParam("api_key", configProvider.getBaseConfig().getEmby().getEmbyApiKey());

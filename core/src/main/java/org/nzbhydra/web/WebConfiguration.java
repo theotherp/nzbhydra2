@@ -1,8 +1,8 @@
 package org.nzbhydra.web;
 
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import jakarta.xml.bind.Marshaller;
 import lombok.SneakyThrows;
+import org.jspecify.annotations.Nullable;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.api.stats.HistoryRequestConverter;
 import org.nzbhydra.api.stats.StatsRequestConverter;
@@ -25,17 +25,20 @@ import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
+import org.springframework.web.accept.ApiVersionStrategy;
 import org.springframework.web.accept.ContentNegotiationManager;
 import org.springframework.web.filter.CharacterEncodingFilter;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 import org.springframework.web.servlet.resource.ResourceUrlProvider;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.module.SimpleModule;
 
 import javax.xml.transform.stream.StreamResult;
 import java.io.ByteArrayOutputStream;
@@ -106,11 +109,6 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
 
 
     @Override
-    protected void configurePathMatch(PathMatchConfigurer configurer) {
-        configurer.setUseTrailingSlashMatch(true);
-    }
-
-    @Override
     protected void addCorsMappings(CorsRegistry registry) {
         //registry.addMapping("/**").allowedOrigins("http://127.0.0.1:5076", "https://127.0.0.1:9091");
         //Later: Check when actually calling from other host, seems to work on server
@@ -118,8 +116,10 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
 
     @Bean
     public RequestMappingHandlerMapping requestMappingHandlerMapping(ContentNegotiationManager mvcContentNegotiationManager,
+                                                                     @Nullable ApiVersionStrategy mvcApiVersionStrategy,
                                                                      FormattingConversionService mvcConversionService, ResourceUrlProvider mvcResourceUrlProvider) {
-        RequestMappingHandlerMapping handler = super.requestMappingHandlerMapping(mvcContentNegotiationManager, mvcConversionService, mvcResourceUrlProvider);
+        RequestMappingHandlerMapping handler = super.requestMappingHandlerMapping(mvcContentNegotiationManager,
+                mvcApiVersionStrategy, mvcConversionService, mvcResourceUrlProvider);
         handler.setOrder(1);
         return handler;
     }
@@ -163,13 +163,16 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
      */
     @Override
     protected void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
-        for (HttpMessageConverter<?> converter : converters) {
-            if (converter instanceof MappingJackson2HttpMessageConverter jacksonConverter) {
-                jacksonConverter.setPrettyPrint(true);
+        for (int i = 0; i < converters.size(); i++) {
+            if (converters.get(i) instanceof JacksonJsonHttpMessageConverter jacksonConverter) {
                 SimpleModule simpleModule = new SimpleModule();
                 simpleModule.addDeserializer(String.class, new EmptyStringToNullDeserializer());
                 simpleModule.addSerializer(String.class, new EmptyStringToNullSerializer());
-                jacksonConverter.getObjectMapper().registerModule(simpleModule);
+                JsonMapper mapper = jacksonConverter.getMapper().rebuild()
+                        .addModule(simpleModule)
+                        .enable(SerializationFeature.INDENT_OUTPUT)
+                        .build();
+                converters.set(i, new JacksonJsonHttpMessageConverter(mapper));
             }
         }
         converters.add(0, new NewznabAndTorznabResponseNamespaceFixer(marshaller()));
@@ -179,7 +182,8 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
     private static class NewznabAndTorznabResponseNamespaceFixer implements HttpMessageConverter<Object> {
 
         private final Jaxb2Marshaller marshaller;
-        private final MappingJackson2HttpMessageConverter jacksonConverter = new MappingJackson2HttpMessageConverter();
+        private final JacksonJsonHttpMessageConverter jacksonConverter = new JacksonJsonHttpMessageConverter(
+                JsonMapper.builder().enable(SerializationFeature.INDENT_OUTPUT).build());
 
 
         public NewznabAndTorznabResponseNamespaceFixer(Jaxb2Marshaller marshaller) {
@@ -211,7 +215,6 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
         public void write(Object o, MediaType contentType, HttpOutputMessage outputMessage) throws IOException, HttpMessageNotWritableException {
             NewznabResponse newznabResponse = (NewznabResponse) o;
             if (determineOutputType((NewznabResponse) o) == OutputType.JSON) {
-                jacksonConverter.setPrettyPrint(true);
                 jacksonConverter.write(o, MediaType.APPLICATION_JSON, outputMessage);
             } else {
                 outputMessage.getHeaders().setContentType(MediaType.APPLICATION_XML);

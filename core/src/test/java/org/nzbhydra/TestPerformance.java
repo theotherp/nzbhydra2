@@ -20,17 +20,19 @@ public class TestPerformance {
 
     private static Random random = new Random();
 
-    private static final String CREATE_TABLE = "CREATE TABLE TESTTABLE\n" +
-            "(\n" +
-            "  ID         INTEGER PRIMARY KEY NOT NULL,\n" +
-            "  ERROR      VARCHAR(4000),\n" +
-            "  RESULT     VARCHAR(255),\n" +
-            "  SOME_ID    INTEGER,\n" +
-            "  TIME       TIMESTAMP\n" +
-            ");\n" +
-            "CREATE INDEX INDEX1 ON TESTTABLE (SOME_ID);\n" +
-            "CREATE INDEX INDEX2 ON TESTTABLE (TIME);\n" +
-            "CREATE INDEX INDEX3 ON TESTTABLE (SOME_ID, TIME);";
+    private static final String CREATE_TABLE = """
+            CREATE TABLE TESTTABLE
+            (
+              ID         INTEGER PRIMARY KEY NOT NULL,
+              ERROR      VARCHAR(4000),
+              RESULT     VARCHAR(255),
+              SOME_ID    INTEGER,
+              TIME       TIMESTAMP
+            );
+            CREATE INDEX INDEX1 ON TESTTABLE (SOME_ID);
+            CREATE INDEX INDEX2 ON TESTTABLE (TIME);
+            CREATE INDEX INDEX3 ON TESTTABLE (SOME_ID, TIME);\
+            """;
 
     public static void main(String[] args) throws Exception {
         //First query on fresh database takes about 1200ms
@@ -77,49 +79,50 @@ public class TestPerformance {
         Profiler prof = new Profiler();
         prof.startCollecting();
         //Warmup
-        statement.executeQuery("SELECT\n" +
-                "  INDEXER_ENTITY_ID,\n" +
-                "  INDEXERRESULTSSUM,\n" +
-                "  ALLRESULTSSUM,\n" +
-                "  INDEXERUNIQUERESULTSSUM,\n" +
-                "  ALLUNIQUERESULTSSUM\n" +
-                "FROM\n" +
-                "  (SELECT\n" +
-                "     SUM(INDEXERSEARCH.RESULTS_COUNT)  AS INDEXERRESULTSSUM,\n" +
-                "     SUM(INDEXERSEARCH.UNIQUE_RESULTS) AS INDEXERUNIQUERESULTSSUM,\n" +
-                "     INDEXERSEARCH.INDEXER_ENTITY_ID\n" +
-                "   FROM indexersearch\n" +
-                "   WHERE indexersearch.ID IN (SELECT INDEXERSEARCH.ID\n" +
-                "                              FROM indexersearch\n" +
-                "                                LEFT JOIN SEARCH ON INDEXERSEARCH.SEARCH_ENTITY_ID = SEARCH.ID\n" +
-                "                              WHERE indexersearch.INDEXER_ENTITY_ID IN (48,70,1013278,60,1013268,1013290,76,1013262,54,1013280,1013266,1013288,1013286,1013284,1013272,52,1013276,82,50,1013282,1013292,62,1013294,1013296,1013274,1013264,78,1013270)\n" +
-                "                                    AND INDEXERSEARCH.successful AND\n" +
-                "                                    INDEXERSEARCH.SEARCH_ENTITY_ID IN (SELECT SEARCH.ID\n" +
-                "                                                                       FROM SEARCH\n" +
-                "                                                                         LEFT JOIN SEARCH_IDENTIFIERS ON SEARCH.ID = SEARCH_IDENTIFIERS.SEARCH_ENTITY_ID\n" +
-                "                                                                       WHERE\n" +
-                "                                                                         (SEARCH.episode IS NOT NULL OR SEARCH.season IS NOT NULL OR SEARCH.query IS NOT NULL OR SEARCH_IDENTIFIERS.SEARCH_ENTITY_ID IS NOT NULL OR SEARCH.AUTHOR IS NOT NULL OR SEARCH.TITLE IS NOT NULL)\n" +
-                "                                                                         AND  TIME > DATEADD('SECOND', 1503650080, DATE '1970-01-01')  AND  TIME < DATEADD('SECOND', 1506328480, DATE '1970-01-01')                       )\n" +
-                "   )   GROUP BY INDEXER_ENTITY_ID) FORINDEXER,\n" +
-                "  (SELECT\n" +
-                "     sum(INDEXERSEARCH.RESULTS_COUNT)  AS ALLRESULTSSUM,\n" +
-                "     SUM(INDEXERSEARCH.UNIQUE_RESULTS) AS ALLUNIQUERESULTSSUM\n" +
-                "   FROM INDEXERSEARCH\n" +
-                "   WHERE INDEXERSEARCH.SEARCH_ENTITY_ID IN (SELECT SEARCH.ID\n" +
-                "                                            FROM indexersearch\n" +
-                "                                              LEFT JOIN SEARCH ON INDEXERSEARCH.SEARCH_ENTITY_ID = SEARCH.ID\n" +
-                "                                              LEFT JOIN SEARCH_IDENTIFIERS ON SEARCH.ID = SEARCH_IDENTIFIERS.SEARCH_ENTITY_ID\n" +
-                "                                            WHERE indexersearch.INDEXER_ENTITY_ID IN (48,70,1013278,60,1013268,1013290,76,1013262,54,1013280,1013266,1013288,1013286,1013284,1013272,52,1013276,82,50,1013282,1013292,62,1013294,1013296,1013274,1013264,78,1013270)\n" +
-                "                                                  AND INDEXERSEARCH.successful AND\n" +
-                "                                                  INDEXERSEARCH.SEARCH_ENTITY_ID IN (SELECT SEARCH.ID\n" +
-                "                                                                                     FROM SEARCH\n" +
-                "                                                                                       LEFT JOIN SEARCH_IDENTIFIERS ON SEARCH.ID = SEARCH_IDENTIFIERS.SEARCH_ENTITY_ID\n" +
-                "                                                                                     WHERE\n" +
-                "                                                                                       (SEARCH.episode IS NOT NULL OR SEARCH.season IS NOT NULL OR SEARCH.query IS NOT NULL OR\n" +
-                "                                                                                        SEARCH_IDENTIFIERS.SEARCH_ENTITY_ID IS NOT NULL OR SEARCH.AUTHOR IS NOT NULL OR SEARCH.TITLE IS NOT NULL)\n" +
-                "                                                                                       AND  TIME > DATEADD('SECOND', 1503650080, DATE '1970-01-01')  AND  TIME < DATEADD('SECOND', 1506328480, DATE '1970-01-01')                                                    )\n" +
-                "                                                  AND INDEXERSEARCH.successful)         AND INDEXERSEARCH.successful\n" +
-                "  ) FORALL");
+        statement.executeQuery("""
+                SELECT
+                  INDEXER_ENTITY_ID,
+                  INDEXERRESULTSSUM,
+                  ALLRESULTSSUM,
+                  INDEXERUNIQUERESULTSSUM,
+                  ALLUNIQUERESULTSSUM
+                FROM
+                  (SELECT
+                     SUM(INDEXERSEARCH.RESULTS_COUNT)  AS INDEXERRESULTSSUM,
+                     SUM(INDEXERSEARCH.UNIQUE_RESULTS) AS INDEXERUNIQUERESULTSSUM,
+                     INDEXERSEARCH.INDEXER_ENTITY_ID
+                   FROM indexersearch
+                   WHERE indexersearch.ID IN (SELECT INDEXERSEARCH.ID
+                                              FROM indexersearch
+                                                LEFT JOIN SEARCH ON INDEXERSEARCH.SEARCH_ENTITY_ID = SEARCH.ID
+                                              WHERE indexersearch.INDEXER_ENTITY_ID IN (48,70,1013278,60,1013268,1013290,76,1013262,54,1013280,1013266,1013288,1013286,1013284,1013272,52,1013276,82,50,1013282,1013292,62,1013294,1013296,1013274,1013264,78,1013270)
+                                                    AND INDEXERSEARCH.successful AND
+                                                    INDEXERSEARCH.SEARCH_ENTITY_ID IN (SELECT SEARCH.ID
+                                                                                       FROM SEARCH
+                                                                                         LEFT JOIN SEARCH_IDENTIFIERS ON SEARCH.ID = SEARCH_IDENTIFIERS.SEARCH_ENTITY_ID
+                                                                                       WHERE
+                                                                                         (SEARCH.episode IS NOT NULL OR SEARCH.season IS NOT NULL OR SEARCH.query IS NOT NULL OR SEARCH_IDENTIFIERS.SEARCH_ENTITY_ID IS NOT NULL OR SEARCH.AUTHOR IS NOT NULL OR SEARCH.TITLE IS NOT NULL)
+                                                                                         AND  TIME > DATEADD('SECOND', 1503650080, DATE '1970-01-01')  AND  TIME < DATEADD('SECOND', 1506328480, DATE '1970-01-01')                       )
+                   )   GROUP BY INDEXER_ENTITY_ID) FORINDEXER,
+                  (SELECT
+                     sum(INDEXERSEARCH.RESULTS_COUNT)  AS ALLRESULTSSUM,
+                     SUM(INDEXERSEARCH.UNIQUE_RESULTS) AS ALLUNIQUERESULTSSUM
+                   FROM INDEXERSEARCH
+                   WHERE INDEXERSEARCH.SEARCH_ENTITY_ID IN (SELECT SEARCH.ID
+                                                            FROM indexersearch
+                                                              LEFT JOIN SEARCH ON INDEXERSEARCH.SEARCH_ENTITY_ID = SEARCH.ID
+                                                              LEFT JOIN SEARCH_IDENTIFIERS ON SEARCH.ID = SEARCH_IDENTIFIERS.SEARCH_ENTITY_ID
+                                                            WHERE indexersearch.INDEXER_ENTITY_ID IN (48,70,1013278,60,1013268,1013290,76,1013262,54,1013280,1013266,1013288,1013286,1013284,1013272,52,1013276,82,50,1013282,1013292,62,1013294,1013296,1013274,1013264,78,1013270)
+                                                                  AND INDEXERSEARCH.successful AND
+                                                                  INDEXERSEARCH.SEARCH_ENTITY_ID IN (SELECT SEARCH.ID
+                                                                                                     FROM SEARCH
+                                                                                                       LEFT JOIN SEARCH_IDENTIFIERS ON SEARCH.ID = SEARCH_IDENTIFIERS.SEARCH_ENTITY_ID
+                                                                                                     WHERE
+                                                                                                       (SEARCH.episode IS NOT NULL OR SEARCH.season IS NOT NULL OR SEARCH.query IS NOT NULL OR
+                                                                                                        SEARCH_IDENTIFIERS.SEARCH_ENTITY_ID IS NOT NULL OR SEARCH.AUTHOR IS NOT NULL OR SEARCH.TITLE IS NOT NULL)
+                                                                                                       AND  TIME > DATEADD('SECOND', 1503650080, DATE '1970-01-01')  AND  TIME < DATEADD('SECOND', 1506328480, DATE '1970-01-01')                                                    )
+                                                                  AND INDEXERSEARCH.successful)         AND INDEXERSEARCH.successful
+                  ) FORALL""");
 
 
         prof.stopCollecting();

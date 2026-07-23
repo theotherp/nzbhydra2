@@ -109,8 +109,7 @@ public class ConfigMigrationStep022to023 implements ConfigMigrationStep {
 
     private int migrateField(Map<String, Object> config, String fieldName, String description) {
         Object value = config.get(fieldName);
-        if (value instanceof String) {
-            String stringValue = (String) value;
+        if (value instanceof String stringValue) {
             if (SensitiveDataObfuscator.needsEncryption(stringValue)) {
                 String encrypted = SensitiveDataObfuscator.encrypt(stringValue);
                 config.put(fieldName, encrypted);

@@ -39,7 +39,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -437,7 +436,7 @@ public class FileHandler {
             //Shouldn't happen
             return SaveOrSendResultsResponse.notOk("Black hole folder not set", Collections.emptySet());
         }
-        final NzbsDownload nzbsAsFiles = getNzbsAsFiles(searchResultIds, Paths.get(configProvider.getBaseConfig().getDownloading().getSaveNzbsTo().get()));
+        final NzbsDownload nzbsAsFiles = getNzbsAsFiles(searchResultIds, Path.of(configProvider.getBaseConfig().getDownloading().getSaveNzbsTo().get()));
         if (nzbsAsFiles.successfulIds.isEmpty()) {
             return new SaveOrSendResultsResponse(false, "Unable to save file for download NZB for some reason", Collections.emptySet(), nzbsAsFiles.failedIds, nzbsAsFiles.invalidIds);
         }

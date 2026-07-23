@@ -1,10 +1,5 @@
 package org.nzbhydra.config;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.collect.Sets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,6 +9,11 @@ import org.mockito.quality.Strictness;
 import org.nzbhydra.config.category.Category;
 import org.nzbhydra.config.validation.BaseConfigValidator;
 import org.nzbhydra.config.validation.ConfigValidationTools;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.dataformat.yaml.YAMLMapper;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -62,14 +62,12 @@ public class BaseConfigTest {
 
     @Test
     void applicationPropertiesShouldHaveTheSameKeysAsConfigClasses() throws Exception {
-        ObjectMapper jsonMapper = new ObjectMapper();
-        jsonMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
-
-        jsonMapper.registerModule(new Jdk8Module());
+        ObjectMapper jsonMapper = JsonMapper.builder()
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true)
+                .build();
         String jsonFromBaseConfig = jsonMapper.writeValueAsString(new BaseConfig());
 
-        ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
-        yamlMapper.registerModule(new Jdk8Module());
+        ObjectMapper yamlMapper = new YAMLMapper();
         BufferedReader reader = new BufferedReader(new InputStreamReader(BaseConfig.class.getResource("/config/baseConfig.yml").openStream()));
         String applicationYmlContent = reader.lines().collect(Collectors.joining("\n"));
         BaseConfig fromApplicationYml = yamlMapper.readValue(applicationYmlContent, BaseConfig.class);
@@ -89,10 +87,10 @@ public class BaseConfigTest {
 
 
     private void compare(Object left, Object right) {
-        if (left instanceof HashMap) {
-            compareMaps((HashMap) left, (HashMap) right);
-        } else if (left instanceof List) {
-            compareLists((List) left, (List) right);
+        if (left instanceof HashMap map) {
+            compareMaps(map, (HashMap) right);
+        } else if (left instanceof List list) {
+            compareLists(list, (List) right);
         } else {
             assertEquals(left, left, "Setting in baseConfig.yml is different than in base config");
         }
@@ -140,8 +138,8 @@ public class BaseConfigTest {
             for (int i = 0; i < left.size(); i++) {
                 Object l = left.get(i);
                 assertThat(right.getClass()).isEqualTo(l.getClass());
-                if (l instanceof Category) {
-                    assertTrue(((Category) l).deepEquals((Category) right.get(i)), "Both categories should be the same");
+                if (l instanceof Category category) {
+                    assertTrue(category.deepEquals((Category) right.get(i)), "Both categories should be the same");
                 } else {
                     assertEquals(l, right.get(i), "Setting in baseConfig.yml is different than in base config");
                 }

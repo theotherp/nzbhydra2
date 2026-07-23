@@ -18,9 +18,10 @@ import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.PropertySource;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -54,14 +55,14 @@ public class ConfigWeb {
     private final ConfigReaderWriter configReaderWriter = new ConfigReaderWriter();
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/config", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/internalapi/config", produces = MediaType.APPLICATION_JSON_VALUE)
     public BaseConfig getConfig(HttpSession session) throws IOException {
         final BaseConfig baseConfig = configReaderWriter.loadSavedConfig();
         return baseConfigValidator.updateAfterLoading(baseConfig);
     }
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/config", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/internalapi/config", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ConfigValidationResult setConfig(@RequestBody BaseConfig newConfig) throws IOException {
         for (PropertySource<?> source : environment.getPropertySources()) {
             Set propertyNames = new HashSet();
@@ -110,7 +111,7 @@ public class ConfigWeb {
     }
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/config/reload", method = RequestMethod.GET)
+    @GetMapping("/internalapi/config/reload")
     public GenericResponse reloadConfig() throws IOException {
         logger.info("Reloading config from file");
         try {
@@ -122,19 +123,19 @@ public class ConfigWeb {
     }
 
     @Secured({"ROLE_USER"})
-    @RequestMapping(value = "/internalapi/config/safe", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/internalapi/config/safe", produces = MediaType.APPLICATION_JSON_VALUE)
     public SafeConfig getSafeConfig() {
         return new SafeConfig(configProvider.getBaseConfig());
     }
 
     @Secured({"ROLE_USER"})
-    @RequestMapping(value = "/internalapi/config/folderlisting", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/internalapi/config/folderlisting", produces = MediaType.APPLICATION_JSON_VALUE)
     public FileSystemBrowser.FileSystemEntry getDirectoryListing(@RequestBody FileSystemBrowser.DirectoryListingRequest request) {
         return fileSystemBrowser.getDirectoryListing(request);
     }
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/config/apiHelp", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/internalapi/config/apiHelp", produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiHelpResponse getApiHelp(HttpSession session) throws IOException {
         UriComponentsBuilder requestBasedUriBuilder = urlCalculator.getRequestBasedUriBuilder();
         String newznabApi = requestBasedUriBuilder.cloneBuilder().toUriString();

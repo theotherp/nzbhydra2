@@ -11,9 +11,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.view.RedirectView;
 
 import java.util.Optional;
@@ -29,7 +28,7 @@ public class NzbDetailsWeb {
     private static final Logger logger = LoggerFactory.getLogger(NzbDetailsWeb.class);
 
     @Secured({"ROLE_USER"})
-    @RequestMapping(value = "/details/{guid}", method = RequestMethod.GET)
+    @GetMapping("/details/{guid}")
     public RedirectView details(@PathVariable("guid") long guid) {
         // Details redirects do not create a download observation, so they intentionally keep the legacy result ID format.
         RedirectView redirectView = new RedirectView();

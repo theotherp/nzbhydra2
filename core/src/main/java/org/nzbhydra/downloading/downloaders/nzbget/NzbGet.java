@@ -88,7 +88,7 @@ public class NzbGet extends Downloader {
     public void initialize(DownloaderConfig downloaderConfig) {
         super.initialize(downloaderConfig);
         try {
-            UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(downloaderConfig.getUrl());
+            UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(downloaderConfig.getUrl());
             builder.path("jsonrpc");
             Map<String, String> headers = new HashMap<>();
             if (downloaderConfig.getUsername().isPresent() && downloaderConfig.getPassword().isPresent()) {

@@ -1,6 +1,5 @@
 package org.nzbhydra.mapping;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import jakarta.xml.bind.JAXBException;
@@ -15,6 +14,7 @@ import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestTemplate;
+import tools.jackson.core.JacksonException;
 
 import javax.xml.transform.stream.StreamResult;
 import java.io.IOException;
@@ -39,7 +39,7 @@ public class RssCapsCustomQueryAndTitleMappingTest {
 
 
     @Test
-    void shouldGenerateCorrectXml() throws JsonProcessingException, JAXBException {
+    void shouldGenerateCorrectXml() throws JacksonException, JAXBException {
         CapsXmlRoot caps = new CapsXmlRoot();
         List<CapsXmlCategory> categories = new ArrayList<>();
         CapsXmlCategory capsCategory = new CapsXmlCategory(1000, "1000");
@@ -51,11 +51,12 @@ public class RssCapsCustomQueryAndTitleMappingTest {
 
         StreamResult streamResult = new StreamResult(writer);
         jaxb2Marshaller.marshal(caps, streamResult);
-        assertThat(writer.toString()).contains("<categories>\n" +
-            "        <category id=\"1000\" name=\"1000\">\n" +
-            "            <subcat id=\"1010\" name=\"1010\"/>\n" +
-            "        </category>\n" +
-            "    </categories>");
+        assertThat(writer.toString()).contains("""
+                <categories>
+                        <category id="1000" name="1000">
+                            <subcat id="1010" name="1010"/>
+                        </category>
+                    </categories>""");
     }
 
 

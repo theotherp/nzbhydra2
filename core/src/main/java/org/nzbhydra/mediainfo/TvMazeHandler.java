@@ -35,7 +35,7 @@ public class TvMazeHandler {
         }
         logger.info("Searching TVMaze for show with {} {}", idType, id);
 
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("https://api.tvmaze.com/");
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString("https://api.tvmaze.com/");
         builder = switch (idType) {
             case TVRAGE -> builder.pathSegment("lookup", "shows").queryParam("tvrage", id);
             case TVDB -> builder.pathSegment("lookup", "shows").queryParam("thetvdb", id);
@@ -88,7 +88,7 @@ public class TvMazeHandler {
     }
 
     private List<TvmazeShowSearch> searchByTitle(String title) throws InfoProviderException {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("https://api.tvmaze.com/search/shows").queryParam("q", title);
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString("https://api.tvmaze.com/search/shows").queryParam("q", title);
         ParameterizedTypeReference<List<TvmazeShowSearch>> typeRef = new ParameterizedTypeReference<>() {
         };
         ResponseEntity<List<TvmazeShowSearch>> lookupResponse = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, null, typeRef);

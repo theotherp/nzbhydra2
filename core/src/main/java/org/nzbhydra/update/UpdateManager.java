@@ -1,7 +1,6 @@
 package org.nzbhydra.update;
 
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Charsets;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -36,6 +35,8 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
 
 import java.io.File;
 import java.io.FileReader;
@@ -227,7 +228,7 @@ public class UpdateManager implements InitializingBean {
             allChanges = Jackson.YAML_MAPPER.readValue(response, new TypeReference<>() {
             });
             normalizeChangelogText(allChanges);
-        } catch (IOException e) {
+        } catch (JacksonException | IOException e) {
             throw new UpdateException("Error while getting changelog: " + e.getMessage());
         }
 
@@ -251,7 +252,7 @@ public class UpdateManager implements InitializingBean {
         try {
             String changelogYamlString = Resources.toString(Resources.getResource(UpdateManager.class, "/changelog.yaml"), Charsets.UTF_8);
             changelogVersionEntries = Jackson.YAML_MAPPER.readValue(changelogYamlString, changelogEntryListTypeReference);
-        } catch (IOException e) {
+        } catch (JacksonException | IOException e) {
             throw new UpdateException("Error while getting changelog: " + e.getMessage());
         }
         normalizeChangelogText(changelogVersionEntries);
@@ -304,7 +305,7 @@ public class UpdateManager implements InitializingBean {
         try {
             String changelogJsonString = Resources.toString(Resources.getResource(UpdateManager.class, "/changelog.yaml"), Charsets.UTF_8);
             changelogVersionEntries = Jackson.YAML_MAPPER.readValue(changelogJsonString, changelogEntryListTypeReference);
-        } catch (IOException e) {
+        } catch (JacksonException | IOException e) {
             throw new UpdateException("Error while getting changelog: " + e.getMessage());
         }
         normalizeChangelogText(changelogVersionEntries);
@@ -437,7 +438,7 @@ public class UpdateManager implements InitializingBean {
             String response = webAccess.callUrl(blockedVersionsUrl);
             blockedVersions = Jackson.YAML_MAPPER.readValue(response, new TypeReference<>() {
             });
-        } catch (IOException e) {
+        } catch (JacksonException | IOException e) {
             throw new UpdateException("Error while getting blocked versions: " + e.getMessage());
         }
         return blockedVersions;

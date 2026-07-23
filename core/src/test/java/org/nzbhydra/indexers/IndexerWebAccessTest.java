@@ -52,9 +52,10 @@ public class IndexerWebAccessTest {
     @BeforeEach
     public void setUp() throws Exception {
 
-        String xml = "<?xml version=\"1.0\" ?>\n" +
-                "<metadata>\n" +
-                "</metadata>";
+        String xml = """
+                <?xml version="1.0" ?>
+                <metadata>
+                </metadata>""";
         when(webAccessMock.callUrl(anyString(), headersCaptor.capture(), timeoutCaptor.capture())).thenReturn(xml);
         BaseConfig baseConfig = new BaseConfig();
         baseConfig.setSearching(searchingConfigMock);

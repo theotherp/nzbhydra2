@@ -5,8 +5,6 @@ package org.nzbhydra.config.indexer;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import lombok.Data;
@@ -19,6 +17,8 @@ import org.nzbhydra.mapping.newznab.json.JsonPubdateDeserializer;
 import org.nzbhydra.mapping.newznab.json.JsonPubdateSerializer;
 import org.nzbhydra.springnative.ReflectionMarker;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import tools.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.databind.annotation.JsonSerialize;
 
 import java.time.Instant;
 import java.util.ArrayList;

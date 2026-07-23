@@ -184,7 +184,7 @@ public class ExternalApiTest {
         parameters.setO(OutputType.JSON);
 
         ResponseEntity<?> responseEntity = testee.api(parameters, null, null);
-        assertThat(responseEntity.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON_UTF8);
+        assertThat(responseEntity.getHeaders().getContentType().toString()).isEqualTo(MediaType.APPLICATION_JSON + ";charset=UTF-8");
 
         NewznabXmlRoot xmlRoot = new NewznabXmlRoot();
         when(newznabXmlTransformerMock.getRssRoot(any(), any(), anyInt(), any(Boolean.class))).thenReturn(xmlRoot);

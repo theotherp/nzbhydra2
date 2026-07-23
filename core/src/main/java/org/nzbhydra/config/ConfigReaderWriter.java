@@ -2,8 +2,6 @@
 
 package org.nzbhydra.config;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Charsets;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
@@ -18,6 +16,8 @@ import org.nzbhydra.config.sensitive.SensitiveDataHandler;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -50,7 +50,7 @@ public class ConfigReaderWriter {
             // Encrypt sensitive data before saving
             sensitiveDataHandler.encryptSensitiveData(copy);
             save(buildConfigFileFile(), Jackson.YAML_MAPPER.writeValueAsString(copy));
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException("Unable to save config", e);
         }
     }
@@ -63,7 +63,7 @@ public class ConfigReaderWriter {
             // Encrypt sensitive data before saving
             sensitiveDataHandler.encryptSensitiveData(copy);
             save(targetFile, Jackson.YAML_MAPPER.writeValueAsString(copy));
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException("Unable to save config", e);
         } finally {
             logger.debug(LoggingMarkers.PERFORMANCE, "Writing config took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
@@ -121,7 +121,7 @@ public class ConfigReaderWriter {
 
         try {
             BaseConfig baseConfig = Jackson.YAML_MAPPER.readValue(tempFile, BaseConfig.class);
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             logger.warn("Written target config file corrupted", e);
             throw e;
         }
@@ -182,7 +182,7 @@ public class ConfigReaderWriter {
                 return;
             }
             Jackson.YAML_MAPPER.readValue(configFile, BaseConfig.class);
-        } catch (IOException e) {
+        } catch (JacksonException | IOException e) {
             logger.warn("Error while reading YAML from {}", configFile);
             File tempFile = new File(configFile.getAbsolutePath() + ".bak");
             logger.debug(LoggingMarkers.CONFIG_READ_WRITE, "Using temporary file {}", tempFile);
@@ -194,7 +194,7 @@ public class ConfigReaderWriter {
 
             try {
                 Jackson.YAML_MAPPER.readValue(tempFile, BaseConfig.class);
-            } catch (IOException e2) {
+            } catch (JacksonException e2) {
                 logger.error("Config backup file corrupted: {}", e.getMessage());
                 throw new RuntimeException("Config file " + configFile.getAbsolutePath() + " and its backup are corrupted. If you find a ZIP in your backup folder restore it from there. Otherwise you'll have to delete the file and start over. Please contact the developer when you have it running.");
             }
@@ -246,7 +246,7 @@ public class ConfigReaderWriter {
     public BaseConfig getCopy(BaseConfig toCopy) {
         try {
             return Jackson.YAML_MAPPER.readValue(Jackson.YAML_MAPPER.writeValueAsString(toCopy), BaseConfig.class);
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException("Unable to copy config", e);
         }
     }
@@ -254,7 +254,7 @@ public class ConfigReaderWriter {
     public String getAsYamlString(BaseConfig baseConfig) {
         try {
             return Jackson.YAML_WRITER.writeValueAsString(baseConfig);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException("Error while deserializing config", e);
         }
     }

@@ -2,7 +2,6 @@
 
 package org.nzbhydra;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.nzbhydra.config.indexer.CapsCheckRequest;
@@ -10,6 +9,7 @@ import org.nzbhydra.mediainfo.MediaInfoTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
+import tools.jackson.core.type.TypeReference;
 
 import java.util.List;
 

@@ -11,51 +11,53 @@ public class ExternalToolsTest {
 
     @Test
     void bla() throws Exception {
-        String json = "{\n" +
-            "  \"enableRss\" : true,\n" +
-            "  \"enableAutomaticSearch\" : true,\n" +
-            "  \"enableInteractiveSearch\" : true,\n" +
-            "  \"supportsRss\" : true,\n" +
-            "  \"supportsSearch\" : true,\n" +
-            "  \"protocol\" : \"torrent\",\n" +
-            "  \"name\" : \"NZBHydra2 (mocktorz1)\",\n" +
-            "  \"fields\" : [ {\n" +
-            "    \"name\" : \"apiKey\",\n" +
-                "    \"value\" : \"apikey\"\n" +
-                "  }, {\n" +
-                "    \"name\" : \"categories\",\n" +
-                "    \"value\" : [ \"2000\" ]\n" +
-                "  }, {\n" +
-                "    \"name\" : \"additionalParameters\",\n" +
-                "    \"value\" : \"&indexers=mocktorz1\"\n" +
-                "  }, {\n" +
-                "    \"name\" : \"seedCriteria.seedRatio\"\n" +
-                "  }, {\n" +
-                "    \"name\" : \"seedCriteria.seedTime\"\n" +
-                "  }, {\n" +
-                "    \"name\" : \"baseUrl\",\n" +
-                "    \"value\" : \"http://host.docker.internal:5076/torznab\"\n" +
-                "  }, {\n" +
-                "    \"name\" : \"minimumSeeders\",\n" +
-                "    \"value\" : 1\n" +
-                "  }, {\n" +
-                "    \"name\" : \"removeYear\",\n" +
-                "    \"value\" : false\n" +
-                "  }, {\n" +
-                "    \"name\" : \"multiLanguages\",\n" +
-                "    \"value\" : [ ]\n" +
-                "  }, {\n" +
-                "    \"name\" : \"apiPath\",\n" +
-                "    \"value\" : \"/api\"\n" +
-                "  } ],\n" +
-                "  \"implementationName\" : \"Torznab\",\n" +
-                "  \"implementation\" : \"Torznab\",\n" +
-                "  \"configContract\" : \"TorznabSettings\",\n" +
-                "  \"infoLink\" : \"https://github.com/Sonarr/Sonarr/wiki/Supported-Indexers#newznab\",\n" +
-                "  \"tags\" : [ ],\n" +
-                "  \"id\" : 0,\n" +
-                "  \"priority\" : 50\n" +
-                "}";
+        String json = """
+                {
+                  "enableRss" : true,
+                  "enableAutomaticSearch" : true,
+                  "enableInteractiveSearch" : true,
+                  "supportsRss" : true,
+                  "supportsSearch" : true,
+                  "protocol" : "torrent",
+                  "name" : "NZBHydra2 (mocktorz1)",
+                  "fields" : [ {
+                    "name" : "apiKey",
+                    "value" : "apikey"
+                  }, {
+                    "name" : "categories",
+                    "value" : [ "2000" ]
+                  }, {
+                    "name" : "additionalParameters",
+                    "value" : "&indexers=mocktorz1"
+                  }, {
+                    "name" : "seedCriteria.seedRatio"
+                  }, {
+                    "name" : "seedCriteria.seedTime"
+                  }, {
+                    "name" : "baseUrl",
+                    "value" : "http://host.docker.internal:5076/torznab"
+                  }, {
+                    "name" : "minimumSeeders",
+                    "value" : 1
+                  }, {
+                    "name" : "removeYear",
+                    "value" : false
+                  }, {
+                    "name" : "multiLanguages",
+                    "value" : [ ]
+                  }, {
+                    "name" : "apiPath",
+                    "value" : "/api"
+                  } ],
+                  "implementationName" : "Torznab",
+                  "implementation" : "Torznab",
+                  "configContract" : "TorznabSettings",
+                  "infoLink" : "https://github.com/Sonarr/Sonarr/wiki/Supported-Indexers#newznab",
+                  "tags" : [ ],
+                  "id" : 0,
+                  "priority" : 50
+                }\
+                """;
 
         final ExternalTools.XdarrIndexer xdarrIndexer = Jackson.JSON_MAPPER.readValue(json, ExternalTools.XdarrIndexer.class);
         xdarrIndexer.getFields().sort(Comparator.comparing(ExternalTools.XdarrAddRequestField::getName));

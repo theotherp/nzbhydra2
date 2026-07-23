@@ -1,6 +1,47 @@
 {
   "reflection": [
     {
+      "type": "java.lang.Exception",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "java.net.InetAddressEditor"
+    },
+    {
+      "type": "java.time.DurationEditor"
+    },
+    {
+      "type": "org.springframework.boot.web.server.ShutdownEditor"
+    },
+    {
+      "type": "org.springframework.boot.web.server.autoconfigure.ServerProperties$ForwardHeadersStrategyEditor"
+    },
+    {
+      "type": "org.springframework.util.unit.DataSizeEditor"
+    },
+    {
+      "type": "org.hibernate.engine.jdbc.connections.internal.DataSourceConnectionProvider",
+      "methods": [
+        {
+          "name": "setJndiService",
+          "parameterTypes": [
+            "org.hibernate.engine.jndi.spi.JndiService"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "tools.jackson.databind.cfg.DateTimeFeatureEditor"
+    },
+    {
+      "type": "tools.jackson.dataformat.xml.XmlMapper"
+    },
+    {
       "type": "boolean"
     },
     {

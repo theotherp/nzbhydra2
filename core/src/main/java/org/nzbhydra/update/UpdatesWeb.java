@@ -25,9 +25,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
@@ -55,7 +55,7 @@ public class UpdatesWeb {
     protected Supplier<VersionsInfo> versionsInfoCache = Suppliers.memoizeWithExpiration(versionsInfoSupplier(), UpdateManager.CACHE_DURATION_MINUTES, TimeUnit.MINUTES);
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/updates/infos", method = RequestMethod.GET)
+    @GetMapping("/internalapi/updates/infos")
     public VersionsInfo getVersions() {
         if (Boolean.parseBoolean(environment.getProperty("alwayscheckforupdates", "false"))) {
             updateManager.resetCache();
@@ -95,7 +95,7 @@ public class UpdatesWeb {
     }
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/updates/simpleInfos", method = RequestMethod.GET)
+    @GetMapping("/internalapi/updates/simpleInfos")
     public VersionsInfo getSimpleInfos() {
         VersionsInfo versionsInfo = new VersionsInfo();
         versionsInfo.setCurrentVersion(updateManager.getCurrentVersionString());
@@ -105,25 +105,25 @@ public class UpdatesWeb {
 
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/updates/changesSince/{version:.+}", method = RequestMethod.GET)
+    @GetMapping("/internalapi/updates/changesSince/{version:.+}")
     public List<ChangelogVersionEntry> getChangesSince(@PathVariable String version) throws Exception {
         return updateManager.getChangesBetweenCurrentVersionAnd(new SemanticVersion(version));
     }
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/updates/versionHistory", method = RequestMethod.GET)
+    @GetMapping("/internalapi/updates/versionHistory")
     public List<ChangelogVersionEntry> getVersionHistory() throws Exception {
         return updateManager.getAllVersionChangesUpToCurrentVersion();
     }
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/updates/automaticUpdateVersionHistory", method = RequestMethod.GET)
+    @GetMapping("/internalapi/updates/automaticUpdateVersionHistory")
     public List<ChangelogVersionEntry> getVersionHistoryForAutomaticUpdate() throws Exception {
         return updateManager.getAutomaticUpdateVersionHistory();
     }
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/updates/ackAutomaticUpdateVersionHistory", method = RequestMethod.GET)
+    @GetMapping("/internalapi/updates/ackAutomaticUpdateVersionHistory")
     public void ackHistoryForAutomaticUpdateShown() {
         genericStorage.remove(AutomaticUpdater.TO_NOTICE_KEY);
         //Reset cache
@@ -131,14 +131,14 @@ public class UpdatesWeb {
     }
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/updates/ignore/{version:.+}", method = RequestMethod.PUT, consumes = MediaType.ALL_VALUE)
+    @PutMapping(value = "/internalapi/updates/ignore/{version:.+}", consumes = MediaType.ALL_VALUE)
     public void ignore(@PathVariable String version) {
         updateManager.ignore(version);
     }
 
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/updates/installUpdate/{version:.+}", method = RequestMethod.PUT)
+    @PutMapping("/internalapi/updates/installUpdate/{version:.+}")
     public GenericResponse installUpdate(@PathVariable String version) throws Exception {
         updateMessages.clear();
         updateManager.installUpdate(version, false);
@@ -146,26 +146,26 @@ public class UpdatesWeb {
     }
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/updates/messages", method = RequestMethod.GET)
+    @GetMapping("/internalapi/updates/messages")
     public List<String> getUpdateMessages() {
         return updateMessages;
     }
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/updates/isDisplayWrapperOutdated", method = RequestMethod.GET)
+    @GetMapping("/internalapi/updates/isDisplayWrapperOutdated")
     public boolean isWrapperOutdated() {
         return outdatedWrapperDetector.isOutdatedWrapperDetected() && outdatedWrapperDetector.isOutdatedWrapperDetectedWarningNotYetShown();
     }
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/updates/resetCache", method = RequestMethod.GET)
+    @GetMapping("/internalapi/updates/resetCache")
     public void resetCache() {
         updateManager.resetCache();
         versionsInfoCache = Suppliers.memoizeWithExpiration(versionsInfoSupplier(), UpdateManager.CACHE_DURATION_MINUTES, TimeUnit.MINUTES);
     }
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/updates/setOutdatedWrapperDetectedWarningShown", method = RequestMethod.PUT)
+    @PutMapping("/internalapi/updates/setOutdatedWrapperDetectedWarningShown")
     public void setWrapperOutdatedWarningShown() {
         outdatedWrapperDetector.setOutdatedWrapperDetectedWarningShown();
     }

@@ -20,8 +20,8 @@ import org.nzbhydra.web.SessionStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.security.Principal;
@@ -54,7 +54,7 @@ public class DemoModeWeb {
     }
 
     @Secured({"ROLE_USER"})
-    @RequestMapping(value = "/internalapi/demomode", method = RequestMethod.PUT)
+    @PutMapping("/internalapi/demomode")
     public void activateDemoMode(Principal principal) {
         String username = resolveUsername(principal);
         usersInDemoMode.add(username);
@@ -63,7 +63,7 @@ public class DemoModeWeb {
     }
 
     @Secured({"ROLE_USER"})
-    @RequestMapping(value = "/internalapi/demomode", method = RequestMethod.DELETE)
+    @DeleteMapping("/internalapi/demomode")
     public void deactivateDemoMode(Principal principal) {
         String username = resolveUsername(principal);
         boolean wasActive = usersInDemoMode.remove(username);

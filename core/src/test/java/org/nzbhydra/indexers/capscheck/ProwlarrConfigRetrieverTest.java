@@ -2,7 +2,6 @@
 
 package org.nzbhydra.indexers.capscheck;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -15,6 +14,7 @@ import org.nzbhydra.indexers.capscheck.ProwlarrConfigRetriever.ProwlarrIndexer;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.webaccess.WebAccess;
 import org.nzbhydra.webaccess.WebAccessException;
+import tools.jackson.core.type.TypeReference;
 
 import java.util.Arrays;
 import java.util.Collections;

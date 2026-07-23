@@ -2,7 +2,6 @@
 
 package org.nzbhydra;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.Sets;
 import jakarta.annotation.PostConstruct;
 import okhttp3.Headers;
@@ -21,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
+import tools.jackson.core.JacksonException;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -113,7 +113,7 @@ public class HydraClient {
             } else {
                 try {
                     jsonRequestBody = Jackson.JSON_MAPPER.writeValueAsString(requestBody);
-                } catch (JsonProcessingException e) {
+                } catch (JacksonException e) {
                     throw new RuntimeException(e);
                 }
             }

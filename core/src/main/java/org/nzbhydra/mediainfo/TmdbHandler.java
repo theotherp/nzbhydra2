@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import tools.jackson.core.JacksonException;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -62,7 +63,7 @@ public class TmdbHandler {
                     return result;
                 }).toList();
 
-        } catch (IOException e) {
+        } catch (JacksonException | IOException e) {
             throw new InfoProviderException("Error loading details for movie with title " + title, e);
         }
     }
@@ -81,7 +82,7 @@ public class TmdbHandler {
             fillFromMap(list.get(0), result);
             result.setImdbId(correctImdbId);
             return result;
-        } catch (IOException e) {
+        } catch (JacksonException | IOException e) {
             throw new InfoProviderException("Error loading details for movie with IMDB ID " + imdbId, e);
         }
     }
@@ -96,7 +97,7 @@ public class TmdbHandler {
             fillFromMap(map, result);
             result.setImdbId(getImdbId(tmdbId));
             return result;
-        } catch (IOException e) {
+        } catch (JacksonException | IOException e) {
             throw new InfoProviderException("Error loading details for movie with TMDB ID " + tmdbId, e);
         }
 
@@ -115,7 +116,7 @@ public class TmdbHandler {
             final String json = webAccess.callUrl(url);
             final Map map = Jackson.JSON_MAPPER.readValue(json, Map.class);
             return Optional.ofNullable(map.get("imdb_id")).map(x -> String.valueOf(map.get("imdb_id"))).orElse(null);
-        } catch (IOException e) {
+        } catch (JacksonException | IOException e) {
             throw new InfoProviderException("Error loading details for movie with ID " + tmdbId, e);
         }
     }

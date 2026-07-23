@@ -2,7 +2,6 @@
 
 package org.nzbhydra.indexers.capscheck;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -15,6 +14,8 @@ import org.nzbhydra.indexers.capscheck.IndexerWeb.ProwlarrConfigReadRequest;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,7 +41,7 @@ public class IndexerWebProwlarrTest {
     @InjectMocks
     private IndexerWeb testee = new IndexerWeb();
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private ObjectMapper objectMapper = new JsonMapper();
 
     @BeforeEach
     public void setUp() {

@@ -1,6 +1,5 @@
 package org.nzbhydra;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -25,7 +24,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.aop.AopAutoConfiguration;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.boot.web.embedded.tomcat.ConnectorStartFailedException;
+import org.springframework.boot.tomcat.ConnectorStartFailedException;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.caffeine.CaffeineCacheManager;
@@ -42,6 +41,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.bind.annotation.RestController;
 import org.yaml.snakeyaml.error.YAMLException;
+import tools.jackson.core.JacksonException;
 
 import java.io.File;
 import java.io.IOException;
@@ -55,7 +55,9 @@ import java.util.Map;
 @ImportRuntimeHints(NativeHints.class)
 @Configuration(proxyBeanMethods = false)
 @EnableAutoConfiguration(exclude = {
-    AopAutoConfiguration.class, org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration.class})
+        AopAutoConfiguration.class,
+        org.springframework.boot.cache.autoconfigure.CacheAutoConfiguration.class},
+        excludeName = "org.springframework.boot.actuate.autoconfigure.endpoint.jackson.Jackson2EndpointAutoConfiguration")
 @ComponentScan
 @RestController
 @EnableCaching
@@ -260,7 +262,7 @@ public class NzbHydra {
         if (e.getClass().getName().contains("SilentExitException")) { //Sometimes thrown by spring boot devtools
             return;
         }
-        if (e instanceof YAMLException || e instanceof JsonProcessingException) {
+        if (e instanceof YAMLException || e instanceof JacksonException) {
             msg = "The file " + new File(dataFolder, "nzbhydra.yml").getAbsolutePath() + " could not be parsed properly. It might be corrupted. Try restoring it from a backup. Error message: " + e.getMessage();
             logger.error(msg);
         }

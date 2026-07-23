@@ -4,6 +4,8 @@ package org.nzbhydra;
 
 import org.apache.coyote.AbstractProtocol;
 import org.commonmark.renderer.html.HtmlRenderer;
+import org.hibernate.engine.jdbc.connections.internal.DataSourceConnectionProvider;
+import org.hibernate.engine.jndi.spi.JndiService;
 import org.nzbhydra.config.migration.ConfigMigrationStep;
 import org.nzbhydra.springnative.ReflectionMarker;
 import org.reflections.Reflections;
@@ -14,8 +16,9 @@ import org.springframework.aot.hint.ExecutableMode;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.RuntimeHintsRegistrar;
+import org.springframework.aot.hint.TypeReference;
 import org.springframework.boot.actuate.management.ThreadDumpEndpoint;
-import org.springframework.boot.actuate.metrics.MetricsEndpoint;
+import org.springframework.boot.micrometer.metrics.actuate.endpoint.MetricsEndpoint;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
@@ -41,6 +44,24 @@ public class NativeHints implements RuntimeHintsRegistrar {
 
         hints.resources().registerResourceBundle("joptsimple.ExceptionMessages");
         hints.resources().registerResourceBundle("org.apache.xerces.impl.msg.XMLMessages");
+        hints.resources().registerPattern("config/logback-spring.xml");
+        for (String type : List.of(
+                "java.net.InetAddressEditor",
+                "java.time.DurationEditor",
+                "org.springframework.boot.actuate.endpoint.ShowEditor",
+                "org.springframework.boot.http.client.autoconfigure.imperative.ImperativeHttpClientsProperties$FactoryEditor",
+                "org.springframework.boot.web.server.ShutdownEditor",
+                "org.springframework.boot.web.server.autoconfigure.ServerProperties$ForwardHeadersStrategyEditor",
+                "org.springframework.messaging.MessageHandlerEditor",
+                "org.springframework.messaging.simp.broker.AbstractBrokerMessageHandlerEditor",
+                "org.springframework.util.unit.DataSizeEditor",
+                "org.springframework.web.accept.ApiVersionStrategyEditor",
+                "org.springframework.web.servlet.HandlerMappingEditor",
+                "tools.jackson.databind.DeserializationFeatureEditor",
+                "tools.jackson.databind.cfg.DateTimeFeatureEditor",
+                "tools.jackson.dataformat.xml.XmlMapper")) {
+            hints.reflection().registerType(TypeReference.of(type));
+        }
 
 
         final Set<Class<?>> classes = getClassesToRegister();
@@ -68,6 +89,7 @@ public class NativeHints implements RuntimeHintsRegistrar {
             hints.reflection().registerMethod(MetricsEndpoint.MetricDescriptor.class.getMethod("getMeasurements"), ExecutableMode.INVOKE);
             hints.reflection().registerMethod(ThreadDumpEndpoint.class.getMethod("textThreadDump"), ExecutableMode.INVOKE);
             hints.reflection().registerMethod(AbstractProtocol.class.getMethod("getName"), ExecutableMode.INVOKE);
+            hints.reflection().registerMethod(DataSourceConnectionProvider.class.getMethod("setJndiService", JndiService.class), ExecutableMode.INVOKE);
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);
         }

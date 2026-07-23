@@ -1,12 +1,12 @@
 package org.nzbhydra.news;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import org.nzbhydra.Jackson;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.genericstorage.GenericStorage;
 import org.nzbhydra.springnative.ReflectionMarker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import tools.jackson.core.type.TypeReference;
 
 import java.io.File;
 import java.io.Serializable;

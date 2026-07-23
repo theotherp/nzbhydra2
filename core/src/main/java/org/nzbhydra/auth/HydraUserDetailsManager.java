@@ -32,7 +32,7 @@ public class HydraUserDetailsManager implements UserDetailsManager {
     @Autowired
     private LoginAndAccessAttemptService attemptService;
 
-    public HydraUserDetailsManager(@Autowired BaseConfig baseConfig) {
+    public HydraUserDetailsManager(BaseConfig baseConfig) {
         updateUsers(baseConfig.getAuth());
     }
 

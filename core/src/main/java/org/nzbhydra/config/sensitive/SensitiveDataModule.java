@@ -1,9 +1,9 @@
 package org.nzbhydra.config.sensitive;
 
-import com.fasterxml.jackson.core.Version;
-import com.fasterxml.jackson.databind.Module;
+import tools.jackson.core.Version;
+import tools.jackson.databind.JacksonModule;
 
-public class SensitiveDataModule extends Module {
+public class SensitiveDataModule extends JacksonModule {
     @Override
     public String getModuleName() {
         return "SensitiveDataHider";

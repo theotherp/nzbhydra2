@@ -6,17 +6,18 @@ import com.google.common.base.Joiner;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import okhttp3.OkHttpClient;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.flywaydb.core.Flyway;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.springnative.ReflectionMarker;
+import org.nzbhydra.webaccess.OkHttp3ClientHttpRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpRequest;
 import org.springframework.http.client.ClientHttpResponse;
-import org.springframework.http.client.OkHttp3ClientHttpRequestFactory;
 
 import java.io.File;
 import java.io.FileReader;
@@ -183,7 +184,7 @@ public class DatabaseRecreation {
     }
 
     private static File downloadJarFile(String url) throws IOException {
-        final ClientHttpRequest request = new OkHttp3ClientHttpRequestFactory().createRequest(URI.create(url), HttpMethod.GET);
+        final ClientHttpRequest request = new OkHttp3ClientHttpRequest(new OkHttpClient(), URI.create(url), HttpMethod.GET);
         final File jarFile;
         try (ClientHttpResponse response = request.execute()) {
             jarFile = Files.createTempFile("nzbhydra", ".jar").toFile();

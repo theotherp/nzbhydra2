@@ -34,7 +34,7 @@ public class DownloadUrlBuilder {
     public DownloadLink getDownloadLinkForSendingToDownloader(SearchResultEntity searchResult, boolean internal) {
         Optional<DownloadLink> specialUrl = downloadUrlBuilderStrategies
                 .stream().map(x -> x.getDownloadLinkForSendingToDownloader(searchResult, internal, searchResult.getDownloadType()))
-                .filter(Optional::isPresent).map(Optional::get).findFirst();
+                .flatMap(Optional::stream).findFirst();
         if (specialUrl.isPresent()) {
             return specialUrl.get();
         }
@@ -42,7 +42,7 @@ public class DownloadUrlBuilder {
         final Optional<String> externalUrl = configProvider.getBaseConfig().getDownloading().getExternalUrl();
         if (externalUrl.isPresent()) {
             log.debug(LoggingMarkers.URL_CALCULATION, "Using configured external URL: {}", externalUrl.get());
-            builder = UriComponentsBuilder.fromHttpUrl(externalUrl.get());
+            builder = UriComponentsBuilder.fromUriString(externalUrl.get());
         } else {
             builder = urlCalculator.getRequestBasedUriBuilder();
             log.debug(LoggingMarkers.URL_CALCULATION, "Using URL calculated from request: {}", builder.toUriString());

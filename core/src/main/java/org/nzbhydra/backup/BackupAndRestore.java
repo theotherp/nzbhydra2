@@ -30,7 +30,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -116,7 +115,7 @@ public class BackupAndRestore {
         URI uri = URI.create("jar:" + backupZip.toPath().toUri());
         try (FileSystem fs = FileSystems.newFileSystem(uri, env)) {
             Path nf = fs.getPath("nzbhydra.yml");
-            try (Writer writer = java.nio.file.Files.newBufferedWriter(nf, StandardCharsets.UTF_8, StandardOpenOption.CREATE)) {
+            try (Writer writer = java.nio.file.Files.newBufferedWriter(nf, StandardOpenOption.CREATE)) {
                 writer.write(configReaderWriter.getAsYamlString(configProvider.getBaseConfig()));
                 logger.debug("Successfully wrote config to backup ZIP");
                 backupCertificates(fs);

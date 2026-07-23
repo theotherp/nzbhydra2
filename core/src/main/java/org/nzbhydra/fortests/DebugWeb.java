@@ -6,8 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.web.UrlCalculator;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URL;
@@ -21,12 +20,12 @@ public class DebugWeb {
     @Autowired
     private ConfigProvider configProvider;
 
-    @RequestMapping(value = "/fortests/showCalculatedUrl", method = RequestMethod.GET)
+    @GetMapping("/fortests/showCalculatedUrl")
     public String testHostSTuff(HttpServletRequest request) throws Exception {
         return urlCalculator.getRequestBasedUriBuilder().toUriString();
     }
 
-    @RequestMapping(value = "/fortests/getHostData", method = RequestMethod.GET)
+    @GetMapping("/fortests/getHostData")
     public String getHostData(HttpServletRequest request) throws Exception {
         StringBuilder info = new StringBuilder();
         URL requestUrl = new URL(request.getRequestURL().toString());

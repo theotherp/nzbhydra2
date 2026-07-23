@@ -1,9 +1,5 @@
 package org.nzbhydra.update;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -20,6 +16,10 @@ import org.nzbhydra.mapping.changelog.ChangelogVersionEntry;
 import org.nzbhydra.mapping.github.Release;
 import org.nzbhydra.update.UpdateManager.BlockedVersion;
 import org.nzbhydra.webaccess.WebAccess;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.PropertyNamingStrategies;
+import tools.jackson.dataformat.yaml.YAMLMapper;
 
 import java.util.Arrays;
 import java.util.List;
@@ -30,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+
 @SuppressWarnings("unchecked")
 @MockitoSettings(strictness = Strictness.LENIENT)
 public class UpdateManagerTest {
@@ -51,8 +52,9 @@ public class UpdateManagerTest {
     @BeforeEach
     public void setUp() throws Exception {
 
-        objectMapper = new ObjectMapper(new YAMLFactory());
-        objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+        objectMapper = YAMLMapper.builder()
+                .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+                .build();
 
         baseConfig = new BaseConfig();
         MainConfig main = new MainConfig();
@@ -78,9 +80,10 @@ public class UpdateManagerTest {
 
         Release previousRelease = new Release();
         previousRelease.setTagName("v1.0.0");
-        previousRelease.setBody("A list:\n" +
-                "* a\n" +
-                "* b");
+        previousRelease.setBody("""
+                A list:
+                * a
+                * b""");
         previousRelease.setPrerelease(false);
 
         when(webAccessMock.callUrl(eq("http:/127.0.0.1:7070/repos/theotherp/apitests/releases"), any(TypeReference.class))).thenReturn(

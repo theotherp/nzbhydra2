@@ -110,7 +110,7 @@ public class Newznab extends Indexer<Xml> {
 
 
     protected UriComponentsBuilder getBaseUri() {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(config.getHost()).path(config.getApiPath().orElse("/api"));
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(config.getHost()).path(config.getApiPath().orElse("/api"));
         if (!Strings.isNullOrEmpty(config.getApiKey())) {
             builder.queryParam("apikey", config.getApiKey());
         }
@@ -336,9 +336,9 @@ public class Newznab extends Indexer<Xml> {
 
     protected Xml getAndStoreResultToDatabase(URI uri, IndexerApiAccessType apiAccessType) throws IndexerAccessException {
         Xml response = getAndStoreResultToDatabase(uri, Xml.class, apiAccessType);
-        if (response instanceof NewznabXmlError) {
+        if (response instanceof NewznabXmlError error) {
             //Base class doesn't know any RssErrors so we must handle this case specially
-            handleRssError((NewznabXmlError) response, uri.toString());
+            handleRssError(error, uri.toString());
         } else if (!(response instanceof NewznabXmlRoot)) {
             throw new UnknownResponseException("Indexer returned unknown response");
         }
@@ -365,8 +365,8 @@ public class Newznab extends Indexer<Xml> {
         }
         try {
             Xml xml = (Xml) unmarshaller.unmarshal(new StreamSource(new StringReader(result)));
-            if (xml instanceof NewznabXmlError) {
-                handleRssError((NewznabXmlError) xml, baseUri.toUriString());
+            if (xml instanceof NewznabXmlError error) {
+                handleRssError(error, baseUri.toUriString());
             }
             NewznabXmlRoot rssRoot = (NewznabXmlRoot) xml;
             if (rssRoot.getRssChannel().getNewznabResponse() == null || rssRoot.getRssChannel().getNewznabResponse().getTotal() == 0) {
@@ -388,8 +388,8 @@ public class Newznab extends Indexer<Xml> {
         } catch (IndexerAccessException e) {
             return DetailsResult.unsuccessful(e.getMessage());
         }
-        if (xml instanceof NewznabXmlError) {
-            handleRssError((NewznabXmlError) xml, baseUri.toUriString());
+        if (xml instanceof NewznabXmlError error) {
+            handleRssError(error, baseUri.toUriString());
         }
         NewznabXmlRoot rssRoot = (NewznabXmlRoot) xml;
         List<SearchResultItem> searchResultItems = getSearchResultItems(rssRoot, new SearchRequest());

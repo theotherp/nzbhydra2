@@ -16,9 +16,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -64,7 +64,7 @@ public class TorrentHandlingWeb {
      *
      * @return A {@link ResponseEntity} with the torrent content, a redirect to the actual indexer link or an error
      */
-    @RequestMapping(value = "/internalapi/saveOrSendTorrents", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/internalapi/saveOrSendTorrents", produces = MediaType.APPLICATION_JSON_VALUE)
     @Secured({"ROLE_USER"})
     public SaveOrSendResultsResponse saveOrSendTorrents(@RequestBody Set<String> searchResultIds) {
         return torrentHandler.saveOrSendTorrents(searchResultIds);
