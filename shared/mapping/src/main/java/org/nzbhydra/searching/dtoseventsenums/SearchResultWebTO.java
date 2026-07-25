@@ -3,6 +3,7 @@
 package org.nzbhydra.searching.dtoseventsenums;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.nzbhydra.springnative.ReflectionMarker;
@@ -13,6 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @ReflectionMarker
+@Builder
 public class SearchResultWebTO {
 
     private String age;

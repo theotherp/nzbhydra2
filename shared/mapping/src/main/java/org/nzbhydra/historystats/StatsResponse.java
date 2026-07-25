@@ -49,7 +49,7 @@ public class StatsResponse {
     private List<UserAgentShare> userAgentDownloadShares;
     private DownloadPerAgeStats downloadsPerAgeStats;
 
-    private int numberOfConfiguredIndexers;
-    private int numberOfEnabledIndexers;
+    private Integer numberOfConfiguredIndexers;
+    private Integer numberOfEnabledIndexers;
 
 }

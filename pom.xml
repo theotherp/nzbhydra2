@@ -118,8 +118,8 @@
 
     <properties>
         <maven.javadoc.skip>true</maven.javadoc.skip>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
+
+        <maven.compiler.release>17</maven.compiler.release>
 
         <spring.boot.version>4.1.0</spring.boot.version>
         <spring.boot.devtools.version>4.1.0</spring.boot.devtools.version>

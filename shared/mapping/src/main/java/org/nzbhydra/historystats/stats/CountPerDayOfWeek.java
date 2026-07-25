@@ -18,7 +18,10 @@ public class CountPerDayOfWeek {
     /**
      * @param dayIndex 1 for "Mon", 2 for "Tue", etc.
      */
-    public CountPerDayOfWeek(int dayIndex, Integer counter) {
+    public CountPerDayOfWeek(Integer dayIndex, Integer counter) {
+        if (dayIndex == null || counter == null) {
+            return;
+        }
         this.count = counter;
         day = DayOfWeek.of(dayIndex).getDisplayName(TextStyle.SHORT, Locale.US);
     }
