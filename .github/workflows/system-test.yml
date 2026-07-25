@@ -66,6 +66,7 @@ jobs:
     needs: [ waitForNative, buildMockserver ]
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         test: [ { port: 5076, name: core }, { port: 5077, name: v1Migration } ]
     env:
@@ -102,15 +103,33 @@ jobs:
       - name: "Run docker compose"
         run: |
           cd docker/docker-compose-systemtest/linux
-          docker compose up --quiet-pull -d
+          if ! docker compose up --quiet-pull -d; then
+            docker compose ps
+            docker compose logs --no-color
+            exit 1
+          fi
           cd ../../..
 
       - name: "Wait for healthy containers"
         run: |
+          wait_for_arr() {
+            local name="$1"
+            local port="$2"
+            for attempt in {1..30}; do
+              if curl --fail --silent --show-error --header "X-Api-Key: system-test-api-key-12345" "http://127.0.0.1:${port}/api/v3/system/status" > /dev/null; then
+                echo "${name} is ready"
+                return
+              fi
+              sleep 2
+            done
+            echo "${name} did not become ready"
+            docker compose logs --no-color "${name}"
+            exit 1
+          }
+
           docker ps
-          sleep 10
-          docker ps
-          sleep 10
+          wait_for_arr sonarr 8989
+          wait_for_arr radarr 7878
           docker ps
           echo "Core container mounts:"
           docker container inspect -f '{{ .Mounts}}' core
@@ -184,21 +203,23 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: dataLinux${{ matrix.test.name }}
+          name: dataLinux-${{ matrix.test.name }}-${{ github.sha }}
           path: /tmp/hydra
 
       - name: "Upload test logs artifact"
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: ${{ matrix.test.name }}-test-logs
-          path: tests/**/*.log
+          name: ${{ matrix.test.name }}-${{ github.sha }}-test-logs
+          path: |
+            tests/**/*.log
+            tests/**/target/surefire-reports/**
 
       - name: "Upload docker logs artifact"
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: ${{ matrix.test.name }}-docker-logs
+          name: ${{ matrix.test.name }}-${{ github.sha }}-docker-logs
           path: docker/docker-compose-systemtest/linux/*.log
 
       - name: "Create test Report"
@@ -206,7 +227,7 @@ jobs:
         if: always()
         continue-on-error: true
         with:
-          name: System test report ${{ matrix.test.name }}
+          name: System test report ${{ matrix.test.name }} ${{ github.sha }}
           path: "**/surefire-reports/*.xml"
           reporter: java-junit
 
@@ -345,21 +366,23 @@ jobs:
         if: always()
         continue-on-error: true
         with:
-          name: dataWindows
+          name: dataWindows-${{ github.sha }}
           path: data
 
       - name: "Upload test logs artifact"
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: windows-test-logs
-          path: tests/**/*.log
+          name: windows-test-logs-${{ github.sha }}
+          path: |
+            tests/**/*.log
+            tests/**/target/surefire-reports/**
 
       - name: "Upload docker logs artifact"
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: windows-docker-logs
+          name: windows-docker-logs-${{ github.sha }}
           path: docker/*.log
 
       - name: "Create test Report"

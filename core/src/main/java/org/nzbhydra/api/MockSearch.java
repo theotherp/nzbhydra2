@@ -25,6 +25,8 @@ public class MockSearch {
     public NewznabResponse mockSearch(NewznabParameters params, boolean isNzb) {
         final List<SearchResultItem> searchResultItems = new ArrayList<>();
         final SearchResultItem item = new SearchResultItem();
+        item.setSearchResultId(0L);
+        item.setSearchId(0);
         item.setTitle("Mocked result");
         item.setIndexerGuid("mockedResult");
         item.setIndexerScore(1);
