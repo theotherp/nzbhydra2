@@ -14,6 +14,7 @@ import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.MapperFeature;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.PropertyNamingStrategies;
+import tools.jackson.databind.SerializationFeature;
 import tools.jackson.databind.json.JsonMapper;
 
 import java.util.Arrays;
@@ -56,10 +57,11 @@ public class MockSabnzb {
     public class JacksonConfiguration {
 
         @Bean
-        public ObjectMapper objectMapper() {
+        public JsonMapper objectMapper() {
             return JsonMapper.builder()
                     .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
                     .enable(MapperFeature.DEFAULT_VIEW_INCLUSION)
+                    .enable(SerializationFeature.INDENT_OUTPUT)
                     .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
                     .build();
         }
