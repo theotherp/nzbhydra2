@@ -28,6 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DisabledOnOs(OS.WINDOWS)
 public class ExternalToolsTest {
 
+    private static final String EXTERNAL_TOOL_API_KEY = "system-test-api-key-12345";
 
     private static final Logger logger = LoggerFactory.getLogger(ExternalToolsTest.class);
 
@@ -57,7 +58,7 @@ public class ExternalToolsTest {
         addRequest.setNzbhydraName("NZBHydra2");
         addRequest.setExternalTool(AddRequest.ExternalTool.Sonarr);
         addRequest.setXdarrHost(sonarrHost);
-        addRequest.setXdarrApiKey("apikey");
+        addRequest.setXdarrApiKey(EXTERNAL_TOOL_API_KEY);
         addRequest.setNzbhydraHost(nzbhydraHostExternal);
         addRequest.setEnableRss(true);
         addRequest.setEnableInteractiveSearch(true);
@@ -67,7 +68,7 @@ public class ExternalToolsTest {
         addRequest.setPriority(1);
 
         final Boolean response = hydraClient.post("/internalapi/externalTools/configure", Jackson.JSON_MAPPER.writeValueAsString(addRequest)).as(Boolean.class);
-        assertThat(response).isTrue();
+        assertConfigurationSucceeded(response);
     }
 
     @Test
@@ -77,7 +78,7 @@ public class ExternalToolsTest {
         addRequest.setNzbhydraName("NZBHydra2");
         addRequest.setExternalTool(AddRequest.ExternalTool.Radarr);
         addRequest.setXdarrHost(radarrHost);
-        addRequest.setXdarrApiKey("apikey");
+        addRequest.setXdarrApiKey(EXTERNAL_TOOL_API_KEY);
         addRequest.setNzbhydraHost(nzbhydraHostExternal);
         addRequest.setEnableRss(true);
         addRequest.setEnableInteractiveSearch(true);
@@ -87,12 +88,18 @@ public class ExternalToolsTest {
         addRequest.setPriority(1);
 
         final Boolean response = hydraClient.post("/internalapi/externalTools/configure", Jackson.JSON_MAPPER.writeValueAsString(addRequest)).as(Boolean.class);
-        assertThat(response).isTrue();
+        assertConfigurationSucceeded(response);
     }
 
     @NotNull
     private String getIdFromConfiguredIndexer() {
         return String.valueOf(configManager.getCurrentConfig().getIndexers().get(0).getCategoryMapping().getCategories().get(0).getId());
+    }
+
+    private void assertConfigurationSucceeded(Boolean response) throws Exception {
+        List<String> messages = hydraClient.get("/internalapi/externalTools/messages").as(new TypeReference<>() {
+        });
+        assertThat(response).as("Configuration messages: %s", messages).isTrue();
     }
 
     @Test

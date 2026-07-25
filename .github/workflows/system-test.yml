@@ -66,6 +66,7 @@ jobs:
     needs: [ waitForNative, buildMockserver ]
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         test: [ { port: 5076, name: core }, { port: 5077, name: v1Migration } ]
     env:
@@ -102,7 +103,11 @@ jobs:
       - name: "Run docker compose"
         run: |
           cd docker/docker-compose-systemtest/linux
-          docker compose up --quiet-pull -d
+          if ! docker compose up --quiet-pull -d; then
+            docker compose ps
+            docker compose logs --no-color
+            exit 1
+          fi
           cd ../../..
 
       - name: "Wait for healthy containers"
@@ -111,7 +116,7 @@ jobs:
             local name="$1"
             local port="$2"
             for attempt in {1..30}; do
-              if curl --fail --silent --show-error --header "X-Api-Key: apikey" "http://127.0.0.1:${port}/api/v3/system/status" > /dev/null; then
+              if curl --fail --silent --show-error --header "X-Api-Key: system-test-api-key-12345" "http://127.0.0.1:${port}/api/v3/system/status" > /dev/null; then
                 echo "${name} is ready"
                 return
               fi
