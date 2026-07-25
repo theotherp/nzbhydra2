@@ -562,7 +562,7 @@
                                     <buildArg>-H:IncludeLocales=en</buildArg>
                                     <buildArg>-H:+AddAllCharsets</buildArg>
                                     <buildArg>-march=compatibility</buildArg>
-                                    <buildArg>--no-fallback -J-Xmx13g</buildArg>
+                                    <buildArg>-J-Xmx13g</buildArg>
                                     <buildArg>--native-image-info</buildArg>
                                     <buildArg>-H:BuildOutputJSONFile=target/native-build-output.json</buildArg>
                                 </buildArgs>
