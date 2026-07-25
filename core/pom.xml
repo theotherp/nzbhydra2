@@ -15,6 +15,7 @@
         <maven.build.timestamp2>${maven.build.timestamp}</maven.build.timestamp2>
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
         <version.roaster>2.28.0.Final</version.roaster>
+        <native-maven-plugin.xmx>13</native-maven-plugin.xmx>
     </properties>
 
 
@@ -386,9 +387,9 @@
             <version>${logback.version}</version>
         </dependency>
         <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-access</artifactId>
-            <version>${logback.version}</version>
+            <groupId>ch.qos.logback.access</groupId>
+            <artifactId>logback-access-common</artifactId>
+            <version>${logback-access.version}</version>
         </dependency>
         <!--  todo spring Only supports Spring 2.x      -->
         <!--        <dependency>-->
@@ -464,8 +465,6 @@
             <version>${spring.boot.version}</version>
             <scope>test</scope>
         </dependency>
-
-
         <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest-library</artifactId>
@@ -562,7 +561,7 @@
                                     <buildArg>-H:IncludeLocales=en</buildArg>
                                     <buildArg>-H:+AddAllCharsets</buildArg>
                                     <buildArg>-march=compatibility</buildArg>
-                                    <buildArg>--no-fallback -J-Xmx13g</buildArg>
+                                    <buildArg>-J-Xmx${native-maven-plugin.xmx}g</buildArg>
                                     <buildArg>--native-image-info</buildArg>
                                     <buildArg>-H:BuildOutputJSONFile=target/native-build-output.json</buildArg>
                                 </buildArgs>

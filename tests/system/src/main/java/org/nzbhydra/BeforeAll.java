@@ -39,7 +39,12 @@ public class BeforeAll {
             .map(x -> (MapPropertySource) x).toList();
         for (MapPropertySource source : propertySources) {
             logger.info("Property source: {}", source.getName());
-            source.getSource().forEach((key, value) -> logger.info("{}: {}", key, value));
+            source.getSource().forEach((key, value) -> {
+                if (source.getName().equals("systemEnvironment") && key.startsWith("INPUT_")) {
+                    return;
+                }
+                logger.info("{}: {}", key, value);
+            });
         }
 
         final BaseConfig config = configManager.getCurrentConfig();

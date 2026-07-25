@@ -2,6 +2,7 @@ package org.nzbhydra.historystats.stats;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.nzbhydra.historystats.FilterModel;
 import org.nzbhydra.historystats.SortModel;
@@ -11,6 +12,7 @@ import org.nzbhydra.springnative.ReflectionMarker;
 @AllArgsConstructor
 @NoArgsConstructor
 @ReflectionMarker
+@EqualsAndHashCode
 public class HistoryRequest {
 
     protected boolean distinct = false;

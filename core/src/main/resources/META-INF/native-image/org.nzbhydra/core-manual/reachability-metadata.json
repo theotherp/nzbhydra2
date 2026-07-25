@@ -10,6 +10,29 @@
       ]
     },
     {
+      "type": "org.thymeleaf.context.IContext",
+      "methods": [
+        {
+          "name": "getVariable",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "sun.net.www.protocol.http.Handler",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.slf4j.impl.StaticLoggerBinder"
+    },
+    {
       "type": "java.net.InetAddressEditor"
     },
     {

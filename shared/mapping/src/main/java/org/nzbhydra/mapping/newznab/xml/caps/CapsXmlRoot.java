@@ -7,6 +7,7 @@ import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.nzbhydra.mapping.newznab.xml.Xml;
 import org.nzbhydra.springnative.ReflectionMarker;
 
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "caps")
 @Data
+@EqualsAndHashCode(callSuper = true)
 @ReflectionMarker
 public class CapsXmlRoot extends Xml {
 

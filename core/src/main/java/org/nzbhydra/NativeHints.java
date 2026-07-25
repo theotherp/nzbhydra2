@@ -45,6 +45,7 @@ public class NativeHints implements RuntimeHintsRegistrar {
         hints.resources().registerResourceBundle("joptsimple.ExceptionMessages");
         hints.resources().registerResourceBundle("org.apache.xerces.impl.msg.XMLMessages");
         hints.resources().registerPattern("config/logback-spring.xml");
+        hints.reflection().registerType(Exception.class, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS);
         for (String type : List.of(
                 "java.net.InetAddressEditor",
                 "java.time.DurationEditor",

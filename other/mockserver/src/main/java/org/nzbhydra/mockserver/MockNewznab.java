@@ -71,7 +71,7 @@ public class MockNewznab {
     }
 
     @RequestMapping(value = "/nzb/{nzbId}", produces = MediaType.APPLICATION_XML_VALUE)
-    public ResponseEntity<String> nzbDownload(@PathVariable String nzbId) throws Exception {
+    public ResponseEntity<String> nzbDownload(@PathVariable("nzbId") String nzbId) throws Exception {
         if (nzbId.endsWith("91")) {
             logger.info("Returning 91 - too many requests");
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
@@ -92,12 +92,12 @@ public class MockNewznab {
     }
 
     @RequestMapping(value = "/details/{nzbId}", produces = MediaType.APPLICATION_XML_VALUE)
-    public String nzbDetails(@PathVariable String nzbId) throws Exception {
+    public String nzbDetails(@PathVariable("nzbId") String nzbId) throws Exception {
         return "Would show details for NZB with ID" + nzbId;
     }
 
     @RequestMapping(value = "/comments/{nzbId}", produces = MediaType.APPLICATION_XML_VALUE)
-    public String nzbComments(@PathVariable String nzbId) throws Exception {
+    public String nzbComments(@PathVariable("nzbId") String nzbId) throws Exception {
         return "Would show comments for NZB with ID" + nzbId;
     }
 
