@@ -30,6 +30,7 @@ NATIVE_CORE_EXE = PROJECT_ROOT / "core" / "target" / "core.exe"
 DEFAULT_MOCKSERVER_JAR = (
     PROJECT_ROOT / "other" / "mockserver" / "target" / "mockserver-3.1.0-exec.jar"
 )
+JACOCO_VERSION = "0.8.13"
 CORE_PORT = 5076
 MOCKSERVER_PORT = 5080
 TRACKED_PATHS = ("core", "shared")
@@ -101,6 +102,14 @@ def parse_args() -> argparse.Namespace:
         "--force-rebuild",
         action="store_true",
         help="run both regular and native builds even if tracked files are unchanged",
+    )
+    parser.add_argument(
+        "--jvm-coverage",
+        action="store_true",
+        help=(
+            "run the system tests against the Java core JAR with JaCoCo coverage instead "
+            "of the native executable"
+        ),
     )
     return parser.parse_args()
 
@@ -244,12 +253,17 @@ def terminate_process_tree(process: subprocess.Popen) -> None:
         process.kill()
 
 
-def run_command(command: list[str], log_path: Path, environment: dict[str, str]) -> int:
+def run_command(
+    command: list[str],
+    log_path: Path,
+    environment: dict[str, str],
+    cwd: Path = PROJECT_ROOT,
+) -> int:
     print(f"Running: {subprocess.list2cmdline(command)}")
     with log_path.open("w", encoding="utf-8") as log_file:
         process = subprocess.Popen(
             command,
-            cwd=PROJECT_ROOT,
+            cwd=cwd,
             env=environment,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
@@ -393,6 +407,78 @@ def start_native_core(
                 "native core", base_command, core_exe.parent, environment, log_path
             )
     return service
+
+
+def get_core_jar() -> Path:
+    core_jars = sorted((PROJECT_ROOT / "core" / "target").glob("core-*-exec.jar"))
+    if not core_jars:
+        raise RuntimeError("Core executable JAR is missing. Rebuild the core module first.")
+    return core_jars[-1]
+
+
+def prepare_jacoco_agent(
+    maven: str, environment: dict[str, str], coverage_dir: Path
+) -> Path:
+    coverage_dir.mkdir(exist_ok=True)
+    agent_dir = coverage_dir / "agent"
+    command = [
+        maven,
+        "--batch-mode",
+        "org.apache.maven.plugins:maven-dependency-plugin:3.8.1:copy",
+        f"-Dartifact=org.jacoco:org.jacoco.agent:{JACOCO_VERSION}:jar:runtime",
+        f"-DoutputDirectory={agent_dir}",
+        "-Dtransitive=false",
+    ]
+    exit_code = run_command(command, coverage_dir / "prepare-agent.log", environment)
+    if exit_code != 0:
+        raise RuntimeError(f"Unable to prepare the JaCoCo agent (exit code {exit_code})")
+    agent_jars = sorted(agent_dir.glob("org.jacoco.agent-*-runtime.jar"))
+    if len(agent_jars) != 1:
+        raise RuntimeError(f"Expected one JaCoCo agent JAR in {agent_dir}")
+    return agent_jars[0]
+
+
+def generate_coverage_report(
+    maven: str, environment: dict[str, str], coverage_dir: Path
+) -> tuple[int, Path]:
+    execution_data = coverage_dir / "jacoco.exec"
+    report_dir = coverage_dir / "report"
+    maven_report_dir = PROJECT_ROOT / "core" / "target" / "site" / "jacoco"
+    if not execution_data.is_file():
+        raise RuntimeError(f"JaCoCo did not write execution data to {execution_data}")
+    command = [
+        maven,
+        "--batch-mode",
+        f"org.jacoco:jacoco-maven-plugin:{JACOCO_VERSION}:report",
+        f"-Djacoco.dataFile={execution_data}",
+        "-Djacoco.formats=HTML,XML",
+    ]
+    exit_code = run_command(
+        command,
+        coverage_dir / "generate-report.log",
+        environment,
+        PROJECT_ROOT / "core",
+    )
+    if exit_code == 0:
+        if not (maven_report_dir / "index.html").is_file():
+            raise RuntimeError(f"JaCoCo did not generate {maven_report_dir / 'index.html'}")
+        shutil.rmtree(report_dir, ignore_errors=True)
+        shutil.copytree(maven_report_dir, report_dir)
+    return exit_code, report_dir / "index.html"
+
+
+def request_core_shutdown(service: Service) -> None:
+    try:
+        with urllib.request.urlopen(
+            f"http://127.0.0.1:{CORE_PORT}/internalapi/control/shutdown", timeout=5
+        ):
+            pass
+    except OSError:
+        pass
+    try:
+        service.process.wait(timeout=10)
+    except subprocess.TimeoutExpired:
+        pass
 
 
 def print_log_tail(service: Service, line_count: int = 100) -> None:
@@ -545,6 +631,7 @@ def run_locked(args: argparse.Namespace) -> int:
         "runDirectory": str(run_dir),
         "dataDirectory": str(data_dir),
         "requestedTest": args.test,
+        "jvmCoverage": args.jvm_coverage,
         "git": {
             "head": get_git_head(),
             "trackedStatus": get_tracked_status(),
@@ -563,6 +650,8 @@ def run_locked(args: argparse.Namespace) -> int:
     exit_code = 1
     error_message = None
     test_started_at = None
+    coverage_dir = run_dir / "coverage"
+    coverage_agent = None
     common_environment = os.environ.copy()
     common_environment.update(COMMON_ENVIRONMENT)
     core_environment = common_environment.copy()
@@ -600,13 +689,42 @@ def run_locked(args: argparse.Namespace) -> int:
                 else Path(previous_build["coreExecutable"])
             )
 
-        if not source_core_exe.is_file():
+        if not args.jvm_coverage and not source_core_exe.is_file():
             raise RuntimeError(f"Native core not found at {source_core_exe}")
         if not mockserver_jar.is_file():
             raise RuntimeError(f"Mockserver JAR not found at {mockserver_jar}")
 
         ensure_ports_available([CORE_PORT, MOCKSERVER_PORT])
-        run_record["coreExecutable"] = str(source_core_exe)
+        if args.jvm_coverage:
+            coverage_agent = prepare_jacoco_agent(maven, common_environment, coverage_dir)
+            core_jar = get_core_jar()
+            execution_data = coverage_dir / "jacoco.exec"
+            core_command = [
+                java,
+                f"-javaagent:{coverage_agent}=destfile={execution_data},append=false,includes=org.nzbhydra.*",
+                "-jar",
+                str(core_jar),
+                "directstart",
+                "--nobrowser",
+                "--host",
+                "127.0.0.1",
+                "--datafolder",
+                str(data_dir),
+            ]
+            run_record["coreJar"] = str(core_jar)
+            run_record["coverageExecutionData"] = str(execution_data)
+        else:
+            core_command = [
+                str(source_core_exe),
+                "-XX:MissingRegistrationReportingMode=Warn",
+                "directstart",
+                "--nobrowser",
+                "--host",
+                "127.0.0.1",
+                "--datafolder",
+                str(data_dir),
+            ]
+            run_record["coreExecutable"] = str(source_core_exe)
         run_record["status"] = "starting-services"
         write_json(history_file, run_record)
 
@@ -619,14 +737,25 @@ def run_locked(args: argparse.Namespace) -> int:
                 run_dir / "mockserver.log",
             )
         )
-        services.append(
-            start_native_core(
-                source_core_exe,
-                data_dir,
-                core_environment,
-                run_dir / "core.log",
+        if args.jvm_coverage:
+            services.append(
+                start_service(
+                    "Java core with JaCoCo",
+                    core_command,
+                    PROJECT_ROOT,
+                    core_environment,
+                    run_dir / "core.log",
+                )
             )
-        )
+        else:
+            services.append(
+                start_native_core(
+                    source_core_exe,
+                    data_dir,
+                    core_environment,
+                    run_dir / "core.log",
+                )
+            )
         wait_for_health(
             "mockserver",
             f"http://127.0.0.1:{MOCKSERVER_PORT}/actuator/health",
@@ -669,6 +798,8 @@ def run_locked(args: argparse.Namespace) -> int:
         raise
     finally:
         cleanup_errors = []
+        if args.jvm_coverage and coverage_agent is not None and len(services) > 1:
+            request_core_shutdown(services[-1])
         for service in reversed(services):
             try:
                 stop_service(service)
@@ -682,6 +813,23 @@ def run_locked(args: argparse.Namespace) -> int:
                 run_record["testResultFiles"] = copied_reports
             except Exception as error:
                 run_record["testResultsError"] = str(error)
+        if args.jvm_coverage and coverage_agent is not None:
+            try:
+                report_exit_code, report_path = generate_coverage_report(
+                    maven, common_environment, coverage_dir
+                )
+                run_record["coverage"] = {
+                    "agent": str(coverage_agent),
+                    "reportExitCode": report_exit_code,
+                    "htmlReport": str(report_path),
+                    "xmlReport": str(coverage_dir / "report" / "jacoco.xml"),
+                }
+                if report_exit_code != 0:
+                    cleanup_errors.append(
+                        f"JaCoCo report generation failed with exit code {report_exit_code}"
+                    )
+            except Exception as error:
+                cleanup_errors.append(f"Unable to generate JaCoCo report: {error}")
         if cleanup_errors:
             succeeded = False
             exit_code = 1
