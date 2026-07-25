@@ -10,6 +10,20 @@
       ]
     },
     {
+      "type": "org.thymeleaf.context.IContext",
+      "methods": [
+        {
+          "name": "getVariable",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "org.slf4j.impl.StaticLoggerBinder"
+    },
+    {
       "type": "java.net.InetAddressEditor"
     },
     {

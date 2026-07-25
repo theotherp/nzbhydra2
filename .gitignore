@@ -28,6 +28,10 @@ heapdump*
 misc/rsyncToServers.sh
 misc/build-logs
 misc/.build-release-state.json
+misc/.windows-systemtest-data-*
+misc/.windows-systemtest-history
+misc/.windows-systemtest-runs
+misc/windows-systemtest-logs
 /nzbhydra.yml
 /results
 other/wrapper/pyInstaller/windows/build

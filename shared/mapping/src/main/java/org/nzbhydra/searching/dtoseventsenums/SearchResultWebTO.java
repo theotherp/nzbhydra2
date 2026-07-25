@@ -2,15 +2,17 @@
 
 package org.nzbhydra.searching.dtoseventsenums;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.util.List;
 
-@Getter
-@Setter
-@Builder
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@ReflectionMarker
 public class SearchResultWebTO {
 
     private String age;

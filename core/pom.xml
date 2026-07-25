@@ -386,9 +386,9 @@
             <version>${logback.version}</version>
         </dependency>
         <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-access</artifactId>
-            <version>${logback.version}</version>
+            <groupId>ch.qos.logback.access</groupId>
+            <artifactId>logback-access-common</artifactId>
+            <version>${logback-access.version}</version>
         </dependency>
         <!--  todo spring Only supports Spring 2.x      -->
         <!--        <dependency>-->

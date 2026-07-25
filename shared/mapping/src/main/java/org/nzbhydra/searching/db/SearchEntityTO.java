@@ -2,6 +2,7 @@
 
 package org.nzbhydra.searching.db;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.nzbhydra.config.SearchSource;
@@ -14,8 +15,9 @@ import java.util.Set;
 
 
 @Data
-@ReflectionMarker
+@AllArgsConstructor
 @NoArgsConstructor
+@ReflectionMarker
 public class SearchEntityTO {
 
     private int id;
