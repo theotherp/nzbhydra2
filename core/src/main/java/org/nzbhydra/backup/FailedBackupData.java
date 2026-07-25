@@ -1,5 +1,7 @@
 package org.nzbhydra.backup;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.nzbhydra.springnative.ReflectionMarker;
 
 import java.io.Serializable;
@@ -7,6 +9,8 @@ import java.time.LocalDateTime;
 
 
 @ReflectionMarker
+@EqualsAndHashCode
+@Data
 public class FailedBackupData implements Serializable {
 
     private final LocalDateTime time = LocalDateTime.now();
@@ -20,26 +24,5 @@ public class FailedBackupData implements Serializable {
     public FailedBackupData(String message) {
         this.message = message;
     }
-
-    public boolean isShown() {
-        return shown;
-    }
-
-    public void setShown(boolean shown) {
-        this.shown = shown;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public LocalDateTime getTime() {
-        return time;
-    }
-
 
 }
