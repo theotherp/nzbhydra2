@@ -8,6 +8,7 @@ import org.nzbhydra.config.searching.SearchType;
 import org.nzbhydra.searching.db.IdentifierKeyValuePair;
 import org.nzbhydra.searching.db.SearchEntity;
 import org.nzbhydra.searching.db.SearchEntityTO;
+import org.skyscreamer.jsonassert.JSONAssert;
 
 import java.time.Instant;
 import java.util.HashSet;
@@ -60,7 +61,7 @@ public class SearchEntityTest {
         final SearchEntityTO to = Jackson.JSON_MAPPER.convertValue(testee, SearchEntityTO.class);
         final String jsonTO = Jackson.JSON_MAPPER.writeValueAsString(to);
         final String jsonEntity = Jackson.JSON_MAPPER.writeValueAsString(testee);
-        assertThat(jsonTO).isEqualTo(jsonEntity);
+        JSONAssert.assertEquals(jsonTO, jsonEntity, false);
     }
 
 }
