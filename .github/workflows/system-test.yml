@@ -203,21 +203,23 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: dataLinux${{ matrix.test.name }}
+          name: dataLinux-${{ matrix.test.name }}-${{ github.sha }}
           path: /tmp/hydra
 
       - name: "Upload test logs artifact"
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: ${{ matrix.test.name }}-test-logs
-          path: tests/**/*.log
+          name: ${{ matrix.test.name }}-${{ github.sha }}-test-logs
+          path: |
+            tests/**/*.log
+            tests/**/target/surefire-reports/**
 
       - name: "Upload docker logs artifact"
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: ${{ matrix.test.name }}-docker-logs
+          name: ${{ matrix.test.name }}-${{ github.sha }}-docker-logs
           path: docker/docker-compose-systemtest/linux/*.log
 
       - name: "Create test Report"
@@ -225,7 +227,7 @@ jobs:
         if: always()
         continue-on-error: true
         with:
-          name: System test report ${{ matrix.test.name }}
+          name: System test report ${{ matrix.test.name }} ${{ github.sha }}
           path: "**/surefire-reports/*.xml"
           reporter: java-junit
 
@@ -364,21 +366,23 @@ jobs:
         if: always()
         continue-on-error: true
         with:
-          name: dataWindows
+          name: dataWindows-${{ github.sha }}
           path: data
 
       - name: "Upload test logs artifact"
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: windows-test-logs
-          path: tests/**/*.log
+          name: windows-test-logs-${{ github.sha }}
+          path: |
+            tests/**/*.log
+            tests/**/target/surefire-reports/**
 
       - name: "Upload docker logs artifact"
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: windows-docker-logs
+          name: windows-docker-logs-${{ github.sha }}
           path: docker/*.log
 
       - name: "Create test Report"
