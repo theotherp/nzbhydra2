@@ -10,8 +10,6 @@ import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.ManyToOne;
@@ -20,7 +18,6 @@ import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Getter;
-import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.nzbhydra.config.downloading.DownloadType;
@@ -38,20 +35,8 @@ import java.time.Instant;
 public final class SearchResultEntity {
 
 
-    @GenericGenerator(
-        name = "search-result-sequence",
-        strategy = "org.nzbhydra.searching.db.SearchResultSequenceGenerator",
-        parameters = {@org.hibernate.annotations.Parameter(
-            name = "sequence_name",
-            value = "HIBERNATE_SEQUENCE"
-        ),
-            @org.hibernate.annotations.Parameter(
-                name = "increment_size",
-                value = "1"
-            )}
-    )
     @Id
-    @GeneratedValue(generator = "search-result-sequence", strategy = GenerationType.SEQUENCE)
+    @SearchResultId
     private long id;
 
     @ManyToOne
