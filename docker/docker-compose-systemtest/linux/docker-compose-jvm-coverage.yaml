@@ -8,9 +8,9 @@ services:
     command:
       - java
       - -javaagent:/app/jacoco-agent.jar=destfile=/data/jacoco-system.exec,append=false,includes=org.nzbhydra.*
-      - -jar
-      - /app/core-8.9.1-SNAPSHOT-exec.jar
-      - directstart
       - -DinternalApiKey=internalApiKey
       - -Dmain.useCsrf=false
       - -Dmain.logging.logfilelevel=DEBUG
+      - -jar
+      - /app/core-8.9.1-SNAPSHOT-exec.jar
+      - directstart
