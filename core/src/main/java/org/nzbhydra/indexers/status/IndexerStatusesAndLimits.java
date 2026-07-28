@@ -221,17 +221,27 @@ public class IndexerStatusesAndLimits {
                 if ("NZB".equals(array[4])) {
                     countDownloads += 1;
                     if (earliestDownload == null) {
-                        earliestDownload = ((Timestamp) array[2]).toInstant();
+                        earliestDownload = toInstant(array[2]);
                     }
                 } else {
                     countApiHits += 1;
                     if (earliestApiHit == null) {
-                        earliestApiHit = ((Timestamp) array[2]).toInstant();
+                        earliestApiHit = toInstant(array[2]);
                     }
                 }
             }
             logger.debug(LoggingMarkers.LIMITS, "Indexer {}. Found result in database: {}", indexerEntity.getName(), this);
             return this;
         }
+    }
+
+    static Instant toInstant(Object databaseTime) {
+        if (databaseTime instanceof Timestamp timestamp) {
+            return timestamp.toInstant();
+        }
+        if (databaseTime instanceof LocalDateTime localDateTime) {
+            return localDateTime.toInstant(ZoneOffset.UTC);
+        }
+        throw new IllegalArgumentException("Unsupported database time type: " + databaseTime.getClass());
     }
 }

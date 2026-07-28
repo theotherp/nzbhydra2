@@ -50,7 +50,7 @@ CORE_ENVIRONMENT = {
     "NZBHYDRA_NEWSURL": f"http://127.0.0.1:{MOCKSERVER_PORT}/static/news.json",
 }
 REGULAR_BUILD_MODULES = (
-    "org.nzbhydra:nzbhydra2,org.nzbhydra:shared,org.nzbhydra:mapping,"
+    "org.nzbhydra:nzbhydra2,org.nzbhydra:core,org.nzbhydra:shared,org.nzbhydra:mapping,"
     "org.nzbhydra:release-parser,org.nzbhydra:mockserver"
 )
 

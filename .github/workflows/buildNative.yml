@@ -66,7 +66,19 @@ jobs:
                 run: mvn --batch-mode clean install -pl !org.nzbhydra:linux-amd64-release,!org.nzbhydra:linux-arm64-release,!org.nzbhydra:windows-release,!org.nzbhydra:generic-release -DskipTests -T 1C
 
             -   name: "Run unit tests"
-                run: mvn --batch-mode test -T 1C -pl !org.nzbhydra:tests,!org.nzbhydra.tests:system --fail-at-end
+                run: mvn --batch-mode org.jacoco:jacoco-maven-plugin:0.8.13:prepare-agent test -T 1C -pl !org.nzbhydra:tests,!org.nzbhydra.tests:system --fail-at-end
+
+            -   name: "Generate unit test coverage"
+                if: always()
+                run: mvn --batch-mode org.jacoco:jacoco-maven-plugin:0.8.13:report -T 1C -pl !org.nzbhydra:tests,!org.nzbhydra.tests:system
+
+            -   name: "Upload unit test coverage"
+                if: always()
+                uses: actions/upload-artifact@v4
+                with:
+                    name: unit-test-coverage-${{ matrix.os }}-${{ github.sha }}
+                    path: "**/target/site/jacoco/**"
+                    if-no-files-found: warn
 
             -   name: "Create test Report"
                 uses: dorny/test-reporter@v1

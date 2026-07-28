@@ -77,6 +77,9 @@
       "type": "byte[]"
     },
     {
+      "type": "com.googlecode.jsonrpc4j.JsonRpcHttpClient"
+    },
+    {
       "type": "ch.qos.logback.classic.BasicConfigurator",
       "methods": [
         {
@@ -25783,6 +25786,14 @@
     },
     {
       "type": "zipkin2.reporter.Encoding"
+    },
+    {
+      "type": {
+        "proxy": [
+          "com.fasterxml.jackson.annotation.JsonIgnore",
+          "org.glassfish.jaxb.core.v2.model.annotation.Locatable"
+        ]
+      }
     },
     {
       "type": {

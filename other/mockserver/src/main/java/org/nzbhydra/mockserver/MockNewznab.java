@@ -125,6 +125,15 @@ public class MockNewznab {
             return ResponseEntity.ok(rssRoot);
         }
 
+        if (params.getQ() != null && params.getQ().startsWith("resilience-timeout") && "1".equals(params.getApikey())) {
+            Thread.sleep(2000);
+        }
+
+        if (params.getQ() != null && params.getQ().startsWith("resilience-malformed-xml") && "1".equals(params.getApikey())) {
+            String invalidXml = Resources.toString(Resources.getResource(MockNewznab.class, "invalidXml.xml"), Charsets.UTF_8);
+            return new ResponseEntity<Object>(invalidXml, HttpStatus.OK);
+        }
+
         String itemTitleBase = params.getApikey();
         if (params.getQ() != null && params.getQ().contains("groups")) {
             itemTitleBase = "";

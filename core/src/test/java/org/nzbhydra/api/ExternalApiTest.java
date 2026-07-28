@@ -8,6 +8,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.mockito.stubbing.Answer;
+import org.nzbhydra.Jackson;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.MainConfig;
@@ -15,10 +16,12 @@ import org.nzbhydra.config.SearchSource;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.searching.SearchType;
 import org.nzbhydra.downloading.FileHandler;
+import org.nzbhydra.downloading.InvalidSearchResultIdException;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mapping.newznab.NewznabParameters;
 import org.nzbhydra.mapping.newznab.OutputType;
+import org.nzbhydra.mapping.newznab.json.NewznabJsonError;
 import org.nzbhydra.mapping.newznab.json.NewznabJsonRoot;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.nzbhydra.misc.UserAgentMapper;
@@ -192,6 +195,27 @@ public class ExternalApiTest {
         parameters.setO(OutputType.XML);
         responseEntity = testee.api(parameters, null, null);
         assertThat(responseEntity.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_XML);
+    }
+
+    @Test
+    void shouldReturnJsonErrorForInvalidDownloadIdentifier() throws Exception {
+        NewznabParameters parameters = new NewznabParameters();
+        parameters.setApikey("apikey");
+        parameters.setT(ActionAttribute.GET);
+        parameters.setId("invalid");
+        parameters.setO(OutputType.JSON);
+        doThrow(new InvalidSearchResultIdException("invalid", false)).when(nzbHandler).getFileByGuid("invalid", SearchSource.API);
+
+        ResponseEntity<?> responseEntity = testee.api(parameters, null, null);
+
+        assertThat(responseEntity.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
+        NewznabJsonError error = (NewznabJsonError) responseEntity.getBody();
+        assertThat(error.getCode()).isEqualTo("300");
+        assertThat(error.getDescription()).isEqualTo("Invalid or outdated search result ID");
+        var errorJson = Jackson.JSON_MAPPER.readTree(Jackson.JSON_MAPPER.writeValueAsString(error));
+        assertThat(errorJson.size()).isEqualTo(2);
+        assertThat(errorJson.get("code").asString()).isEqualTo("300");
+        assertThat(errorJson.get("description").asString()).isEqualTo("Invalid or outdated search result ID");
     }
 
 
