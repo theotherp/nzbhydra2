@@ -37,25 +37,26 @@ These percentages should not be used as targets without interpretation:
 
 The following files already exist and provide the current deployment smoke suite:
 
-| Class                         | Main coverage                                                        |
-|-------------------------------|----------------------------------------------------------------------|
-| `AuthLoginTest`               | Basic authentication for an admin endpoint                           |
-| `BackupTest`                  | Backup creation, listing, and download                               |
-| `DebugInfosTest`              | Log and debug ZIP downloads                                          |
-| `DownloaderTest`              | SABnzbd connection, status, and NZB submission                       |
-| `ExternalApiJsonSystemTest`   | JSON Newznab search, attributes, enclosure download, and JSON errors |
-| `ExternalApiSearchingTest`    | XML Newznab search, API key check, and NZB download                  |
-| `ExternalToolsTest`           | Sonarr and Radarr configuration on Linux                             |
-| `GenericStorageTest`          | Generic storage GET and PUT                                          |
-| `HistoryTest`                 | Search and download history                                          |
-| `IndexerWebTest`              | Indexer capability detection                                         |
-| `MediaInfoTest`               | TV and movie autocomplete                                            |
-| `MediaSearchSystemTest`       | Movie, TV, book, and caps external API search contracts              |
-| `NewsTest`                    | News loading                                                         |
-| `NotificationsTest`           | Notification test and history storage                                |
-| `NzbHandlingTest`             | NZB retrieval, blackhole saving, and ZIP creation                    |
-| `StaticResourcesLoadableTest` | Static resource availability                                         |
-| `StatsTest`                   | Search and download statistics                                       |
+| Class                                | Main coverage                                                         |
+|--------------------------------------|-----------------------------------------------------------------------|
+| `AuthLoginTest`                      | Basic authentication for an admin endpoint                            |
+| `BackupTest`                         | Backup creation, listing, and download                                |
+| `DebugInfosTest`                     | Log and debug ZIP downloads                                           |
+| `DownloaderTest`                     | SABnzbd connection, status, and NZB submission                        |
+| `ExternalApiJsonSystemTest`          | JSON Newznab search, attributes, enclosure download, and JSON errors  |
+| `ExternalApiSearchingTest`           | XML Newznab search, API key check, and NZB download                   |
+| `ExternalToolsTest`                  | Sonarr and Radarr configuration on Linux                              |
+| `GenericStorageTest`                 | Generic storage GET and PUT                                           |
+| `HistoryTest`                        | Search and download history                                           |
+| `IndexerWebTest`                     | Indexer capability detection                                          |
+| `IndexerFailureResilienceSystemTest` | Partial results, failure history, and repeated-failure status updates |
+| `MediaInfoTest`                      | TV and movie autocomplete                                             |
+| `MediaSearchSystemTest`              | Movie, TV, book, and caps external API search contracts               |
+| `NewsTest`                           | News loading                                                          |
+| `NotificationsTest`                  | Notification test and history storage                                 |
+| `NzbHandlingTest`                    | NZB retrieval, blackhole saving, and ZIP creation                     |
+| `StaticResourcesLoadableTest`        | Static resource availability                                          |
+| `StatsTest`                          | Search and download statistics                                        |
 
 ## Proposed System Tests
 
@@ -377,3 +378,8 @@ For a proposed class to count as complete:
 - It runs in the JVM system-coverage job.
 - At least one corresponding scenario runs against a native binary.
 - Test artifacts contain Surefire XML and relevant application/service logs on failure.
+
+## Running tests
+
+cmd.exe /c "cd /d C:\Users\strat\IdeaProjects\nzbhydra2 && py misc\run_windows_systemtest.py --jvm-coverage --test <TestClass>"
+cmd.exe /c "cd /d C:\Users\strat\IdeaProjects\nzbhydra2 && py misc\run_windows_systemtest.py --test <TestClass>"
