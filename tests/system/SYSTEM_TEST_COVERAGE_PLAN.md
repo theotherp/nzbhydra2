@@ -43,6 +43,7 @@ The following files already exist and provide the current deployment smoke suite
 | `BackupTest`                         | Backup creation, listing, and download                                |
 | `DebugInfosTest`                     | Log and debug ZIP downloads                                           |
 | `DownloaderTest`                     | SABnzbd connection, status, and NZB submission                        |
+| `ExternalApiDownloadSystemTest`      | Newznab `t=get`, API-key enforcement, invalid-ID errors, and NFOs     |
 | `ExternalApiJsonSystemTest`          | JSON Newznab search, attributes, enclosure download, and JSON errors  |
 | `ExternalApiSearchingTest`           | XML Newznab search, API key check, and NZB download                   |
 | `ExternalToolsTest`                  | Sonarr and Radarr configuration on Linux                              |

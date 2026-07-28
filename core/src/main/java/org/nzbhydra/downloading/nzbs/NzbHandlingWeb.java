@@ -2,7 +2,6 @@
 
 package org.nzbhydra.downloading.nzbs;
 
-import org.nzbhydra.api.WrongApiKeyException;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.SearchSource;
@@ -12,6 +11,7 @@ import org.nzbhydra.downloading.InvalidSearchResultIdException;
 import org.nzbhydra.downloading.SaveOrSendResultsResponse;
 import org.nzbhydra.indexers.NfoResult;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -122,13 +122,13 @@ public class NzbHandlingWeb {
      * @return A {@link ResponseEntity} with the NZB content, a redirect to the actual indexer link or an error
      */
     @RequestMapping(value = "/getnzb/api/{guid}", produces = "application/x-nzb")
-    public ResponseEntity downloadNzbWithApikey(@PathVariable("guid") String guid, @RequestParam(required = false) String apikey) throws WrongApiKeyException {
+    public ResponseEntity downloadNzbWithApikey(@PathVariable("guid") String guid, @RequestParam(required = false) String apikey) {
         logger.debug("downloadNzbWithApikey guid: {}", guid);
 
         BaseConfig baseConfig = configProvider.getBaseConfig();
         if ((apikey == null || !apikey.equals(baseConfig.getMain().getApiKey())) && !noApiKeyNeeded) {
             logger.error("Received NZB API download call with wrong API key");
-            throw new WrongApiKeyException("Wrong api key");
+            return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML).body(new NewznabXmlError("100", "Wrong api key"));
         }
 
         try {
