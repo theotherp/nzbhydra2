@@ -253,7 +253,7 @@ jobs:
           cache: 'maven'
 
       - name: "Build JVM core and test dependencies"
-        run: mvn --batch-mode clean package -DskipTests -pl org.nzbhydra:nzbhydra2 -am
+        run: mvn --batch-mode clean package -DskipTests -pl org.nzbhydra:core -am
 
       - name: "Download JaCoCo agent"
         run: |
