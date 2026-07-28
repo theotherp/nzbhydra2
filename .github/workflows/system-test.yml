@@ -231,6 +231,106 @@ jobs:
           path: "**/surefire-reports/*.xml"
           reporter: java-junit
 
+  runSystemTestsJvmCoverage:
+    needs: buildMockserver
+    runs-on: ubuntu-latest
+    env:
+      spring_profiles_active: build,systemtest,testdocker,core
+      nzbhydra_port: 5076
+      nzbhydra.port: 5076
+      nzbhydra_name: core
+      NZBHYDRANAME: core
+      nzbhydra.name: core
+    steps:
+      - uses: actions/checkout@v4
+        name: "Check out source"
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'adopt'
+          cache: 'maven'
+
+      - name: "Build JVM core and test dependencies"
+        run: mvn --batch-mode clean package -DskipTests -pl org.nzbhydra:nzbhydra2 -am
+
+      - name: "Download JaCoCo agent"
+        run: |
+          mvn --batch-mode dependency:get -Dartifact=org.jacoco:org.jacoco.agent:0.8.13:jar:runtime
+          cp ~/.m2/repository/org/jacoco/org.jacoco.agent/0.8.13/org.jacoco.agent-0.8.13-runtime.jar core/target/jacoco-agent.jar
+
+      - name: "Create docker network"
+        run: docker network create systemtest
+
+      - name: "Run JVM core and supporting containers"
+        run: |
+          docker compose -f docker/docker-compose-systemtest/linux/docker-compose.yaml -f docker/docker-compose-systemtest/linux/docker-compose-jvm-coverage.yaml up --quiet-pull -d mockserver sonarr radarr core
+
+      - name: "Wait for JVM core"
+        run: |
+          wait_for_arr() {
+            local name="$1"
+            local port="$2"
+            for attempt in {1..30}; do
+              if curl --fail --silent --show-error --header "X-Api-Key: system-test-api-key-12345" "http://127.0.0.1:${port}/api/v3/system/status" > /dev/null; then
+                return
+              fi
+              sleep 2
+            done
+            docker compose -f docker/docker-compose-systemtest/linux/docker-compose.yaml -f docker/docker-compose-systemtest/linux/docker-compose-jvm-coverage.yaml logs --no-color "${name}"
+            exit 1
+          }
+
+          wait_for_arr sonarr 8989
+          wait_for_arr radarr 7878
+          for attempt in {1..60}; do
+            if curl --fail --silent http://127.0.0.1:5076/actuator/health/ping > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          docker compose -f docker/docker-compose-systemtest/linux/docker-compose.yaml -f docker/docker-compose-systemtest/linux/docker-compose-jvm-coverage.yaml logs --no-color
+          exit 1
+
+      - name: "Run system tests against JVM core"
+        run: mvn --batch-mode test -pl org.nzbhydra.tests:system -DtrimStackTrace=false
+
+      - name: "Stop JVM core"
+        if: always()
+        run: |
+          curl --fail --silent http://127.0.0.1:5076/internalapi/control/shutdown > /dev/null || true
+          for attempt in {1..30}; do
+            if [ -f /tmp/hydra/defaultDataFolder/jacoco-system.exec ]; then
+              exit 0
+            fi
+            sleep 1
+          done
+          exit 1
+
+      - name: "Generate system test coverage"
+        if: always()
+        run: mvn --batch-mode org.jacoco:jacoco-maven-plugin:0.8.13:report -pl org.nzbhydra:nzbhydra2 -Djacoco.dataFile=/tmp/hydra/defaultDataFolder/jacoco-system.exec
+
+      - name: "Upload JVM system test coverage"
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jvm-system-test-coverage-${{ github.sha }}
+          path: core/target/site/jacoco/**
+          if-no-files-found: warn
+
+      - name: "Write JVM coverage Docker logs"
+        if: always()
+        run: docker compose -f docker/docker-compose-systemtest/linux/docker-compose.yaml -f docker/docker-compose-systemtest/linux/docker-compose-jvm-coverage.yaml logs --no-color > jvm-system-coverage-docker.log
+
+      - name: "Upload JVM coverage logs"
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jvm-system-test-coverage-logs-${{ github.sha }}
+          path: jvm-system-coverage-docker.log
+
 
 
 

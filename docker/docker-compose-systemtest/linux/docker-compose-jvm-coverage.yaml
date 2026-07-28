@@ -1,0 +1,16 @@
+services:
+  core:
+    image: eclipse-temurin:17-jre
+    volumes:
+      - ../../../core/target:/app:ro
+      - /tmp/hydra/defaultDataFolder:/data
+      - /tmp/hydraBlackhole_core:/hydraBlackhole
+    command:
+      - java
+      - -javaagent:/app/jacoco-agent.jar=destfile=/data/jacoco-system.exec,append=false,includes=org.nzbhydra.*
+      - -jar
+      - /app/core-8.9.1-SNAPSHOT-exec.jar
+      - directstart
+      - -DinternalApiKey=internalApiKey
+      - -Dmain.useCsrf=false
+      - -Dmain.logging.logfilelevel=DEBUG
