@@ -94,7 +94,7 @@ public class HydraClient {
         logger.debug("Making request {}", request);
         try (Response response = getClient().newCall(request).execute()) {
             try (ResponseBody responseBody = response.body()) {
-                return new HydraResponse(responseBody.string(), response.code());
+                return new HydraResponse(responseBody.string(), response.code(), response.headers().toMultimap());
             }
         } catch (Exception e) {
             throw new RuntimeException(e);

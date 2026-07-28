@@ -7,17 +7,22 @@ import lombok.Data;
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.type.TypeReference;
 
+import java.util.List;
+import java.util.Map;
+
 @Data
 public class HydraResponse {
 
 
     private final String body;
     private final int status;
+    private final Map<String, List<String>> headers;
     private boolean throwExceptionOnErrorStatus = true;
 
-    public HydraResponse(String body, int status) {
+    public HydraResponse(String body, int status, Map<String, List<String>> headers) {
         this.body = body;
         this.status = status;
+        this.headers = headers;
     }
 
     public String body() {
@@ -38,6 +43,14 @@ public class HydraResponse {
     public HydraResponse dontRaiseIfUnsuccessful() {
         throwExceptionOnErrorStatus = false;
         return this;
+    }
+
+    public String header(String name) {
+        return headers.entrySet().stream()
+                .filter(entry -> entry.getKey().equalsIgnoreCase(name))
+                .findFirst()
+                .flatMap(entry -> entry.getValue().stream().findFirst())
+                .orElse(null);
     }
 
     public <T> T as(Class<T> clazz) {
