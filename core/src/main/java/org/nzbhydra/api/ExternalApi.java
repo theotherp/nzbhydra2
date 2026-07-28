@@ -4,6 +4,7 @@ import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.apache.catalina.connector.ClientAbortException;
@@ -132,8 +133,7 @@ public class ExternalApi {
 
         if (!params.getIndexers().isEmpty() && indexerName != null) {
             logger.error("Received call with parameters set in path and request variables");
-            NewznabXmlError error = new NewznabXmlError("200", "Received call with parameters set in path and request variables");
-            return new ResponseEntity<Object>(error, HttpStatus.OK);
+            return errorResponse(params.getO(), "200", "Received call with parameters set in path and request variables");
         } else if (indexerName != null) {
             if (indexerName.equals("api")) {
                 logger.warn("The URL to access the NZBHydra API is very likely wrong. Make sure that it does not end with /api");
@@ -189,8 +189,7 @@ public class ExternalApi {
 
 
         logger.error("Incorrect API request: {}", params);
-        NewznabXmlError error = new NewznabXmlError("200", "Unknown or incorrect parameter");
-        return new ResponseEntity<Object>(error, HttpStatus.OK);
+        return errorResponse(params.getO(), "200", "Unknown or incorrect parameter");
     }
 
     public static void setInMockingMode(boolean newValue) {
@@ -280,10 +279,21 @@ public class ExternalApi {
         return torznab ? NewznabResponse.SearchType.TORZNAB : NewznabResponse.SearchType.NEWZNAB;
     }
 
+    private ResponseEntity<Object> errorResponse(OutputType outputType, String code, String description) {
+        if (outputType == OutputType.JSON) {
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new NewznabJsonError(code, description));
+        }
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_XML)
+                .body(new NewznabXmlError(code, description));
+    }
+
     @ExceptionHandler(value = ExternalApiException.class)
-    public NewznabXmlError handler(ExternalApiException e) {
-        NewznabXmlError error = new NewznabXmlError(e.getStatusCode(), e.getMessage());
-        return error;
+    public ResponseEntity<Object> handler(ExternalApiException e, HttpServletRequest request) {
+        OutputType outputType = "json".equalsIgnoreCase(request.getParameter("o")) ? OutputType.JSON : OutputType.XML;
+        return errorResponse(outputType, e.getStatusCode(), e.getMessage());
     }
 
     @ExceptionHandler(value = Exception.class)

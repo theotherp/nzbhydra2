@@ -8,6 +8,7 @@ import org.nzbhydra.config.indexer.BackendType;
 import org.nzbhydra.config.indexer.IndexerCategoryConfig;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.mediainfo.MediaIdType;
+import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +53,7 @@ public class IndexerConfigurer {
         indexerConfig.setHost(mockUrl);
         indexerConfig.setAllCapsChecked(true);
         indexerConfig.setSupportedSearchIds(Arrays.asList(MediaIdType.IMDB, MediaIdType.TVMAZE));
+        indexerConfig.setSupportedSearchTypes(Arrays.asList(ActionAttribute.SEARCH, ActionAttribute.TVSEARCH, ActionAttribute.MOVIE, ActionAttribute.BOOK));
         indexerConfig.setBackend(BackendType.NEWZNAB);
         final IndexerCategoryConfig categoryMapping = new IndexerCategoryConfig();
         categoryMapping.setAnime(9090);
