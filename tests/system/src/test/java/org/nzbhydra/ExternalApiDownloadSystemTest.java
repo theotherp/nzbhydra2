@@ -1,14 +1,9 @@
 package org.nzbhydra;
 
-import okhttp3.HttpUrl;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 import org.junit.jupiter.api.Test;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import tools.jackson.core.type.TypeReference;
@@ -27,74 +22,53 @@ public class ExternalApiDownloadSystemTest {
     @Autowired
     private HydraClient hydraClient;
 
-    @Value("${nzbhydra.host}")
-    private String nzbhydraHost;
-
-    @Value("${nzbhydra.port}")
-    private int nzbhydraPort;
-
     @Test
-    public void shouldDownloadNzbUsingGetAction() throws Exception {
+    public void shouldDownloadNzbUsingGetAction() {
         String identifier = searchAndGetIdentifier();
 
-        try (Response response = executeRequest("api", Map.of(
+        HydraResponse response = executeRequest("api", Map.of(
                 "apikey", "apikey",
                 "t", "get",
                 "id", identifier
-        ))) {
-            assertThat(response.code()).isEqualTo(200);
-            assertThat(response.header("Content-Type")).startsWith("application/x-nzb");
-            assertThat(response.body().string()).contains("Would download NZB with ID");
-        }
+        ));
+        assertThat(response.status()).isEqualTo(200);
+        assertThat(response.header("Content-Type")).startsWith("application/x-nzb");
+        assertThat(response.body()).contains("Would download NZB with ID");
     }
 
     @Test
-    public void shouldRejectDownloadWithoutApiKey() throws Exception {
+    public void shouldRejectDownloadWithoutApiKey() {
         String identifier = searchAndGetIdentifier();
 
-        try (Response missingKeyResponse = executeRequest("api", Map.of("t", "get", "id", identifier))) {
-            assertNewznabXmlError(missingKeyResponse, "100", WRONG_API_KEY_DESCRIPTION);
-        }
-        try (Response wrongKeyResponse = executeRequest("api", Map.of(
+        assertNewznabXmlError(executeRequest("api", Map.of("t", "get", "id", identifier)), "100", WRONG_API_KEY_DESCRIPTION);
+        assertNewznabJsonError(executeRequest("api", Map.of(
                 "apikey", "wrong",
                 "t", "get",
                 "id", identifier,
                 "o", "json"
-        ))) {
-            assertNewznabJsonError(wrongKeyResponse, "100", WRONG_API_KEY_DESCRIPTION);
-        }
-        try (Response missingKeyResponse = executeRequest("getnzb/api/" + identifier, Map.of())) {
-            assertNewznabXmlError(missingKeyResponse, "100", WRONG_API_KEY_DESCRIPTION);
-        }
-        try (Response wrongKeyResponse = executeRequest("getnzb/api/" + identifier, Map.of("apikey", "wrong"))) {
-            assertNewznabXmlError(wrongKeyResponse, "100", WRONG_API_KEY_DESCRIPTION);
-        }
+        )), "100", WRONG_API_KEY_DESCRIPTION);
+        assertNewznabXmlError(executeRequest("getnzb/api/" + identifier, Map.of()), "100", WRONG_API_KEY_DESCRIPTION);
+        assertNewznabXmlError(executeRequest("getnzb/api/" + identifier, Map.of("apikey", "wrong")), "100", WRONG_API_KEY_DESCRIPTION);
     }
 
     @Test
-    public void shouldRejectInvalidOrExpiredDownloadIdentifier() throws Exception {
-        try (Response malformedResponse = executeRequest("api", Map.of(
+    public void shouldRejectInvalidOrExpiredDownloadIdentifier() {
+        assertNewznabXmlError(executeRequest("api", Map.of(
                 "apikey", "apikey",
                 "t", "get",
                 "id", "not-an-identifier"
-        ))) {
-            assertNewznabXmlError(malformedResponse, "300", INVALID_IDENTIFIER_DESCRIPTION);
-        }
-        try (Response nonexistentResponse = executeRequest("api", Map.of(
+        )), "300", INVALID_IDENTIFIER_DESCRIPTION);
+        assertNewznabXmlError(executeRequest("api", Map.of(
                 "apikey", "apikey",
                 "t", "get",
                 "id", "999999999"
-        ))) {
-            assertNewznabXmlError(nonexistentResponse, "300", INVALID_IDENTIFIER_DESCRIPTION);
-        }
-        try (Response jsonResponse = executeRequest("api", Map.of(
+        )), "300", INVALID_IDENTIFIER_DESCRIPTION);
+        assertNewznabJsonError(executeRequest("api", Map.of(
                 "apikey", "apikey",
                 "t", "get",
                 "id", "not-an-identifier",
                 "o", "json"
-        ))) {
-            assertNewznabJsonError(jsonResponse, "300", INVALID_IDENTIFIER_DESCRIPTION);
-        }
+        )), "300", INVALID_IDENTIFIER_DESCRIPTION);
     }
 
     @Test
@@ -121,20 +95,17 @@ public class ExternalApiDownloadSystemTest {
         return identifier;
     }
 
-    private Response executeRequest(String path, Map<String, String> parameters) throws Exception {
-        HttpUrl.Builder url = new HttpUrl.Builder()
-                .scheme("http")
-                .host(nzbhydraHost)
-                .port(nzbhydraPort)
-                .addPathSegments(path);
-        parameters.forEach(url::addQueryParameter);
-        return new OkHttpClient().newCall(new Request.Builder().url(url.build()).build()).execute();
+    private HydraResponse executeRequest(String path, Map<String, String> parameters) {
+        String[] requestParameters = parameters.entrySet().stream()
+                .map(entry -> entry.getKey() + "=" + entry.getValue())
+                .toArray(String[]::new);
+        return hydraClient.get("/" + path, requestParameters);
     }
 
-    private void assertNewznabXmlError(Response response, String code, String description) throws Exception {
-        assertThat(response.code()).isEqualTo(200);
+    private void assertNewznabXmlError(HydraResponse response, String code, String description) {
+        assertThat(response.status()).isEqualTo(200);
         assertThat(response.header("Content-Type")).startsWith("application/xml");
-        assertThat(response.body().string())
+        assertThat(response.body())
                 .startsWith("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>")
                 .contains("<error ")
                 .contains("code=\"" + code + "\"")
@@ -142,12 +113,16 @@ public class ExternalApiDownloadSystemTest {
                 .doesNotContain("contentHeader", "searchType");
     }
 
-    private void assertNewznabJsonError(Response response, String code, String description) throws Exception {
-        assertThat(response.code()).isEqualTo(200);
+    private void assertNewznabJsonError(HydraResponse response, String code, String description) {
+        assertThat(response.status()).isEqualTo(200);
         assertThat(response.header("Content-Type")).startsWith("application/json");
-        var error = Jackson.JSON_MAPPER.readTree(response.body().string());
-        assertThat(error.size()).isEqualTo(2);
-        assertThat(error.get("code").asString()).isEqualTo(code);
-        assertThat(error.get("description").asString()).isEqualTo(description);
+        try {
+            var error = Jackson.JSON_MAPPER.readTree(response.body());
+            assertThat(error.size()).isEqualTo(2);
+            assertThat(error.get("code").asString()).isEqualTo(code);
+            assertThat(error.get("description").asString()).isEqualTo(description);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }
