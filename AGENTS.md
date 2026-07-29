@@ -5,7 +5,6 @@ The project is a search aggregator for Usenet indexers, built with Spring Boot (
 
 ## CRITICAL RULES
 
-- **NEVER commit code to git.** Do not run `git add`, `git commit`, or `git push` under any circumstances.
 - **NEVER delete failing tests** unless explicitly told to do so by the user.
 - **NEVER ignore failing tests.** If tests fail after your changes, fix them. Do not claim they are unrelated unless they were already failing before you started.
 
@@ -141,7 +140,6 @@ Resolve the library ID first, then fetch the relevant docs. Do this automaticall
     - Use `intellij_execute_run_configuration` to run the relevant test. If no run config exists, **ask the user to create one**.
     - If a test fails, analyze the output, fix the code/test, and rerun.
     - Do not finish if tests are failing (unless they were failing before you started).
-6. **NEVER commit** -- leave all git operations to the user.
 
 ## 7. Common Patterns & Libraries
 
