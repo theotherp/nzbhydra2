@@ -51,33 +51,43 @@ public class HydraClient {
         logger.info("Using NZBHydra host " + nzbhydraHost + " and port " + nzbhydraPort);
     }
 
-    private OkHttpClient getClient() {
-        return new OkHttpClient.Builder().readTimeout(20, TimeUnit.SECONDS).build();
+    private OkHttpClient getClient(boolean followRedirects) {
+        return new OkHttpClient.Builder().followRedirects(followRedirects).readTimeout(20, TimeUnit.SECONDS).build();
     }
 
     public HydraResponse call(String method, String endpoint, Map<String, String> headers, Object requestBody, String... parameters) {
+        return call(method, endpoint, headers, requestBody, true, parameters);
+    }
 
-        final boolean v1Migration = Sets.newHashSet(environment.getActiveProfiles()).contains("v1Migration");
+    public HydraResponse call(String method, String endpoint, Map<String, String> headers, Object requestBody, boolean followRedirects, String... parameters) {
+
+        final boolean externalRequest = endpoint.startsWith("http://") || endpoint.startsWith("https://");
+        final boolean v1Migration = !externalRequest && Sets.newHashSet(environment.getActiveProfiles()).contains("v1Migration");
         if (v1Migration) {
             //Use URL base
             endpoint = "/nzbhydra2" + endpoint;
         }
 
 
-        final HttpUrl.Builder urlBuilder = new HttpUrl.Builder().scheme("http")
-                .host(nzbhydraHost)
-                .port(nzbhydraPort)
-                .addPathSegments(StringUtils.removeStart(endpoint, "/"));
+        final HttpUrl.Builder urlBuilder;
+        if (externalRequest) {
+            urlBuilder = HttpUrl.get(endpoint).newBuilder();
+        } else {
+            urlBuilder = new HttpUrl.Builder().scheme("http")
+                    .host(nzbhydraHost)
+                    .port(nzbhydraPort)
+                    .addPathSegments(StringUtils.removeStart(endpoint, "/"));
+        }
 
 
         for (String parameter : parameters) {
-            final String[] split = parameter.split("=");
+            final String[] split = parameter.split("=", 2);
             urlBuilder.addQueryParameter(split[0], split[1]);
         }
         if (v1Migration && !headers.containsKey("Authorization")) {
             headers = new HashMap<>(headers);
             headers.put("Authorization", "Basic " + new String(Base64.getEncoder().encode("test:test".getBytes(StandardCharsets.UTF_8))));
-        } else if (endpoint.contains("internalapi") && Arrays.stream(parameters).noneMatch(x -> x.startsWith("internalApiKey"))) {
+        } else if (!externalRequest && endpoint.contains("internalapi") && Arrays.stream(parameters).noneMatch(x -> x.startsWith("internalApiKey"))) {
             //Must be provided to instance in docker container
             if (!headers.containsKey(DISABLE_INTERNAL_APIKEY)) {
                 urlBuilder.addQueryParameter("internalApiKey", "internalApiKey");
@@ -92,7 +102,7 @@ public class HydraClient {
                 .url(urlBuilder.build())
                 .build();
         logger.debug("Making request {}", request);
-        try (Response response = getClient().newCall(request).execute()) {
+        try (Response response = getClient(followRedirects).newCall(request).execute()) {
             try (ResponseBody responseBody = response.body()) {
                 return new HydraResponse(responseBody.string(), response.code(), response.headers().toMultimap());
             }
@@ -128,6 +138,14 @@ public class HydraClient {
 
     public HydraResponse get(String endpoint, String... parameters) {
         return call("GET", endpoint, Collections.emptyMap(), null, parameters);
+    }
+
+    public HydraResponse getWithoutRedirects(String endpoint, String... parameters) {
+        return call("GET", endpoint, Collections.emptyMap(), null, false, parameters);
+    }
+
+    public HydraResponse getExternal(String endpoint, String... parameters) {
+        return get(endpoint, parameters);
     }
 
     public HydraResponse put(String endpoint, Object body, String... parameters) {
