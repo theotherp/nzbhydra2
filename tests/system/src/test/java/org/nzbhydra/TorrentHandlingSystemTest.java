@@ -25,8 +25,8 @@ import org.springframework.test.context.ContextConfiguration;
 import tools.jackson.core.type.TypeReference;
 
 import java.io.IOException;
-import java.nio.file.AccessDeniedException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -59,6 +59,9 @@ public class TorrentHandlingSystemTest {
 
     @Value("${nzbhydra.mockUrl}")
     private String mockUrl;
+
+    @Value("${nzbhydra.mockUrl.external:http://127.0.0.1:5080}")
+    private String mockUrlExternal;
 
     @Value("${blackholeFolder.nzbhydra}")
     private String blackholeFolderNzbhydra;
@@ -153,7 +156,7 @@ public class TorrentHandlingSystemTest {
         request.setSearchResults(Collections.singletonList(new AddFilesRequest.SearchResult(identifier, "TV", DOWNLOADER_CATEGORY)));
 
         AddNzbsResponse response = hydraClient.put("/internalapi/downloader/addNzbs", request).as(AddNzbsResponse.class);
-        Map<String, String> recordedRequest = hydraClient.getExternal(mockUrl + "/torbox/recording").as(new TypeReference<>() {
+        Map<String, String> recordedRequest = hydraClient.getExternal(mockUrlExternal + "/torbox/recording").as(new TypeReference<>() {
         });
 
         assertThat(response.isSuccessful()).isTrue();
