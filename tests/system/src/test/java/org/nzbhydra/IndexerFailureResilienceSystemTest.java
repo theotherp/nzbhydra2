@@ -1,5 +1,8 @@
 package org.nzbhydra;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,6 +31,8 @@ import static org.awaitility.Awaitility.await;
 public class IndexerFailureResilienceSystemTest {
 
     private static final String FAILED_INDEXER = "Mock1";
+    private static final String FAILED_INDEXER_API_KEY = "resilience-failure-indexer";
+    private static final String BASELINE_FAILED_INDEXER_API_KEY = "1";
     private static final String TIMEOUT_QUERY = "resilience-timeout-results";
     private static final String MALFORMED_XML_RESULTS_QUERY = "resilience-malformed-xml-results";
     private static final String MALFORMED_XML_HISTORY_QUERY = "resilience-malformed-xml-history";
@@ -48,6 +53,7 @@ public class IndexerFailureResilienceSystemTest {
 
     @AfterEach
     public void restoreConfiguration() {
+        getFailedIndexer(originalConfig).setApiKey(BASELINE_FAILED_INDEXER_API_KEY);
         configManager.setConfig(originalConfig);
     }
 
@@ -147,6 +153,7 @@ public class IndexerFailureResilienceSystemTest {
     private void configureFailedIndexer(int timeout) {
         BaseConfig config = configManager.getCurrentConfig();
         IndexerConfig failedIndexer = getFailedIndexer(config);
+        failedIndexer.setApiKey(FAILED_INDEXER_API_KEY);
         failedIndexer.setTimeout(timeout);
         failedIndexer.setState(IndexerConfig.State.ENABLED);
         failedIndexer.setDisabledUntil(null);
@@ -175,45 +182,19 @@ public class IndexerFailureResilienceSystemTest {
         }
     }
 
+    @Setter
+    @Getter
+    @ToString
     public static class IndexerSearchDetails {
         private String indexerName;
         private boolean successful;
         private int resultsCount;
         private String errorMessage;
 
-        public String getIndexerName() {
-            return indexerName;
-        }
-
-        public void setIndexerName(String indexerName) {
-            this.indexerName = indexerName;
-        }
-
-        public boolean isSuccessful() {
-            return successful;
-        }
-
-        public void setSuccessful(boolean successful) {
-            this.successful = successful;
-        }
-
-        public int getResultsCount() {
-            return resultsCount;
-        }
-
-        public void setResultsCount(int resultsCount) {
-            this.resultsCount = resultsCount;
-        }
-
-        public String getErrorMessage() {
-            return errorMessage;
-        }
-
-        public void setErrorMessage(String errorMessage) {
-            this.errorMessage = errorMessage;
-        }
     }
 
+    @Setter
+    @Getter
     public static class IndexerStatus {
         private String indexer;
         private String state;
@@ -221,44 +202,5 @@ public class IndexerFailureResilienceSystemTest {
         private Instant disabledUntil;
         private String lastError;
 
-        public String getIndexer() {
-            return indexer;
-        }
-
-        public void setIndexer(String indexer) {
-            this.indexer = indexer;
-        }
-
-        public String getState() {
-            return state;
-        }
-
-        public void setState(String state) {
-            this.state = state;
-        }
-
-        public int getLevel() {
-            return level;
-        }
-
-        public void setLevel(int level) {
-            this.level = level;
-        }
-
-        public Instant getDisabledUntil() {
-            return disabledUntil;
-        }
-
-        public void setDisabledUntil(Instant disabledUntil) {
-            this.disabledUntil = disabledUntil;
-        }
-
-        public String getLastError() {
-            return lastError;
-        }
-
-        public void setLastError(String lastError) {
-            this.lastError = lastError;
-        }
     }
 }
