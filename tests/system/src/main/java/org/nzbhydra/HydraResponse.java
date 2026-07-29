@@ -7,6 +7,7 @@ import lombok.Data;
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.type.TypeReference;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
@@ -15,12 +16,18 @@ public class HydraResponse {
 
 
     private final String body;
+    private final byte[] bodyBytes;
     private final int status;
     private final Map<String, List<String>> headers;
     private boolean throwExceptionOnErrorStatus = true;
 
     public HydraResponse(String body, int status, Map<String, List<String>> headers) {
-        this.body = body;
+        this(body.getBytes(StandardCharsets.UTF_8), status, headers);
+    }
+
+    public HydraResponse(byte[] bodyBytes, int status, Map<String, List<String>> headers) {
+        this.bodyBytes = bodyBytes;
+        this.body = new String(bodyBytes, StandardCharsets.UTF_8);
         this.status = status;
         this.headers = headers;
     }
@@ -30,6 +37,11 @@ public class HydraResponse {
             throw new RuntimeException("Unsuccessful HTTP call. Status: " + status + ". Body:\n" + body);
         }
         return body;
+    }
+
+    public byte[] bodyBytes() {
+        body();
+        return bodyBytes;
     }
 
     public int status() {

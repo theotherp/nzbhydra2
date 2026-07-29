@@ -25,6 +25,7 @@ import org.springframework.test.context.ContextConfiguration;
 import tools.jackson.core.type.TypeReference;
 
 import java.io.IOException;
+import java.nio.file.AccessDeniedException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -229,8 +230,16 @@ public class TorrentHandlingSystemTest {
     }
 
     private void deleteBlackholeArtifacts() throws IOException {
-        Files.deleteIfExists(testAccessibleBlackhole().resolve(FILE_TITLE + ".torrent"));
-        Files.deleteIfExists(testAccessibleBlackhole().resolve(MAGNET_TITLE + ".magnet"));
+        deleteBlackholeArtifact(FILE_TITLE + ".torrent");
+        deleteBlackholeArtifact(MAGNET_TITLE + ".magnet");
+    }
+
+    private void deleteBlackholeArtifact(String fileName) throws IOException {
+        try {
+            Files.deleteIfExists(testAccessibleBlackhole().resolve(fileName));
+        } catch (AccessDeniedException ignored) {
+            // Docker-created files in the shared blackhole can only be removed by the runner's volume teardown.
+        }
     }
 
     private void assertSuccessfulSave(BaseConfig config) {

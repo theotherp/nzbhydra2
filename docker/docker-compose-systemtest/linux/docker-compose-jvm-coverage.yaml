@@ -5,12 +5,21 @@ services:
       - ../../../core/target:/app:ro
       - /tmp/hydra/defaultDataFolder:/data
       - /tmp/hydraBlackhole_core:/hydraBlackhole
+    entrypoint: /bin/sh
     command:
-      - java
-      - -javaagent:/app/jacoco-agent.jar=destfile=/data/jacoco-system.exec,append=false,includes=org.nzbhydra.*
-      - -DinternalApiKey=internalApiKey
-      - -Dmain.useCsrf=false
-      - -Dmain.logging.logfilelevel=DEBUG
-      - -jar
-      - /app/core-8.9.1-SNAPSHOT-exec.jar
-      - directstart
+      - -c
+      - |
+        while true; do
+          java -javaagent:/app/jacoco-agent.jar=destfile=/data/jacoco-system.exec,append=true,includes=org.nzbhydra.* -DinternalApiKey=internalApiKey -Dmain.useCsrf=false -Dmain.logging.logfilelevel=DEBUG -jar /app/core-8.9.1-SNAPSHOT-exec.jar directstart --datafolder /data
+          code=$$?
+          if [ "$$code" -ne 33 ]; then exit "$$code"; fi
+          for source in /data/restore/*; do
+            [ -e "$$source" ] || continue
+            name=$${source##*/}
+            destination="/data/$$name"
+            if [ "$$name" = "nzbhydra.mv.db" ]; then destination="/data/database/$$name"; fi
+            rm -rf "$$destination"
+            mv "$$source" "$$destination"
+          done
+          rmdir /data/restore
+        done

@@ -10,6 +10,7 @@ import shutil
 import socket
 import subprocess
 import sys
+import threading
 import time
 import urllib.error
 import urllib.request
@@ -61,6 +62,12 @@ class Service:
     process: subprocess.Popen
     log_path: Path
     log_file: TextIO
+    command: list[str] | None = None
+    cwd: Path | None = None
+    environment: dict[str, str] | None = None
+    stop_supervisor: threading.Event | None = None
+    supervisor: threading.Thread | None = None
+    restart_exit_codes: list[int] | None = None
 
 
 def now_iso() -> str:
@@ -372,6 +379,56 @@ def start_service(
     return Service(name, process, log_path, log_file)
 
 
+def apply_restore_files(data_dir: Path) -> None:
+    restore_dir = data_dir / "restore"
+    if not restore_dir.is_dir():
+        raise RuntimeError(f"Core requested restore but {restore_dir} does not exist")
+    for source in restore_dir.iterdir():
+        destination = data_dir / "database" / source.name if source.name == "nzbhydra.mv.db" else data_dir / source.name
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        if destination.exists():
+            if destination.is_dir():
+                shutil.rmtree(destination)
+            else:
+                destination.unlink()
+        shutil.move(str(source), str(destination))
+    restore_dir.rmdir()
+
+
+def supervise_restartable_core(service: Service, data_dir: Path) -> None:
+    stop_supervisor = threading.Event()
+    restart_exit_codes: list[int] = []
+    service.stop_supervisor = stop_supervisor
+    service.restart_exit_codes = restart_exit_codes
+
+    def supervise() -> None:
+        while not stop_supervisor.is_set():
+            return_code = service.process.wait()
+            if stop_supervisor.is_set() or return_code != 33:
+                return
+            try:
+                print(f"{service.name} exited with restore code 33; applying restored files")
+                apply_restore_files(data_dir)
+                assert service.command is not None
+                assert service.cwd is not None
+                assert service.environment is not None
+                service.process = subprocess.Popen(
+                    service.command,
+                    cwd=service.cwd,
+                    env=service.environment,
+                    stdout=service.log_file,
+                    stderr=subprocess.STDOUT,
+                )
+                restart_exit_codes.append(return_code)
+                print(f"Restarted {service.name} (PID {service.process.pid}) after restore")
+            except Exception as error:
+                print(f"Unable to restore and restart {service.name}: {error}", file=sys.stderr)
+                return
+
+    service.supervisor = threading.Thread(target=supervise, name="core-restore-supervisor", daemon=True)
+    service.supervisor.start()
+
+
 def start_native_core(
     core_exe: Path,
     data_dir: Path,
@@ -387,9 +444,10 @@ def start_native_core(
         "--datafolder",
         str(data_dir),
     ]
+    core_command = [str(core_exe), "-XX:MissingRegistrationReportingMode=Warn", *base_command[1:]]
     service = start_service(
         "native core",
-        [str(core_exe), "-XX:MissingRegistrationReportingMode=Warn", *base_command[1:]],
+        core_command,
         core_exe.parent,
         environment,
         log_path,
@@ -406,6 +464,10 @@ def start_native_core(
             service = start_service(
                 "native core", base_command, core_exe.parent, environment, log_path
             )
+            core_command = base_command
+    service.command = core_command
+    service.cwd = core_exe.parent
+    service.environment = environment
     return service
 
 
@@ -519,6 +581,8 @@ def wait_for_health(
 
 def stop_service(service: Service) -> None:
     try:
+        if service.stop_supervisor is not None:
+            service.stop_supervisor.set()
         if service.process.poll() is None:
             service.process.terminate()
             try:
@@ -527,6 +591,8 @@ def stop_service(service: Service) -> None:
                 service.process.kill()
                 service.process.wait(timeout=5)
     finally:
+        if service.supervisor is not None:
+            service.supervisor.join(timeout=5)
         service.log_file.close()
 
 
@@ -701,7 +767,7 @@ def run_locked(args: argparse.Namespace) -> int:
             execution_data = coverage_dir / "jacoco.exec"
             core_command = [
                 java,
-                f"-javaagent:{coverage_agent}=destfile={execution_data},append=false,includes=org.nzbhydra.*",
+                f"-javaagent:{coverage_agent}=destfile={execution_data},append=true,includes=org.nzbhydra.*",
                 "-jar",
                 str(core_jar),
                 "directstart",
@@ -738,24 +804,26 @@ def run_locked(args: argparse.Namespace) -> int:
             )
         )
         if args.jvm_coverage:
-            services.append(
-                start_service(
+            core_service = start_service(
                     "Java core with JaCoCo",
                     core_command,
                     PROJECT_ROOT,
                     core_environment,
                     run_dir / "core.log",
                 )
-            )
         else:
-            services.append(
-                start_native_core(
+            core_service = start_native_core(
                     source_core_exe,
                     data_dir,
                     core_environment,
                     run_dir / "core.log",
                 )
-            )
+        if args.jvm_coverage:
+            core_service.command = core_command
+            core_service.cwd = PROJECT_ROOT
+            core_service.environment = core_environment
+        supervise_restartable_core(core_service, data_dir)
+        services.append(core_service)
         wait_for_health(
             "mockserver",
             f"http://127.0.0.1:{MOCKSERVER_PORT}/actuator/health",
@@ -776,6 +844,7 @@ def run_locked(args: argparse.Namespace) -> int:
             "-pl",
             "org.nzbhydra.tests:system",
             "-DtrimStackTrace=false",
+            f"-DdataFolder.testaccess={data_dir}",
         ]
         if args.test:
             test_command.append(f"-Dtest={args.test}")
@@ -834,6 +903,9 @@ def run_locked(args: argparse.Namespace) -> int:
             succeeded = False
             exit_code = 1
             run_record["cleanupErrors"] = cleanup_errors
+        if len(services) > 1 and services[-1].restart_exit_codes:
+            run_record["coreRestoreRestarts"] = len(services[-1].restart_exit_codes)
+            run_record["coreRestoreExitCodes"] = services[-1].restart_exit_codes
         run_record["status"] = "passed" if succeeded else "failed"
         run_record["exitCode"] = exit_code
         run_record["endedAt"] = now_iso()
