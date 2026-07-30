@@ -66,6 +66,21 @@ class DuplicateMovieDownloadServiceTest {
     }
 
     @Test
+    void shouldRequireReasonForCompositeDownloadIdentifier() {
+        SearchEntity currentSearch = movieSearch("123", "Avengers", null);
+        SearchEntity recentSearch = movieSearch("123", null, "different query");
+        SearchResultEntity currentResult = searchResult(1L, 11);
+        SearchResultEntity recentResult = searchResult(2L, 12);
+
+        mockRepositories(currentResult, download(recentResult, FileDownloadStatus.NZB_ADDED), currentSearch, recentSearch);
+
+        AddFilesRequest request = requestFor(currentResult);
+        request.getSearchResults().get(0).setSearchResultId("1.99");
+
+        assertThat(testee.checkIfReasonIsRequired(request, principal).isReasonRequired()).isTrue();
+    }
+
+    @Test
     void shouldNotRequireReasonWhenLatestMatchingMovieDownloadFailed() {
         SearchEntity currentSearch = movieSearch("123", "Avengers", null);
         SearchEntity latestFailedSearch = movieSearch("123", null, "ignored");

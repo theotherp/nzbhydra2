@@ -47,6 +47,11 @@ public class MockNewznab {
     public static final String DETERMINISTIC_MAGNET_TITLE = "Hydra Deterministic Magnet Link";
     public static final String DETERMINISTIC_TORRENT_CONTENT = "d4:infod4:name31:Hydra Deterministic Torrent Fileee";
     public static final String DETERMINISTIC_MAGNET_URI = "magnet:?xt=urn:btih:0123456789abcdef0123456789abcdef01234567&dn=Hydra Deterministic Magnet Link";
+    public static final String DETERMINISTIC_DOWNLOADER_QUERY = "downloader-integration-nzb";
+    public static final String DETERMINISTIC_DOWNLOADER_TITLE = "Hydra Downloader Integration NZB";
+    public static final String DETERMINISTIC_DOWNLOADER_CONTENT = "Would download NZB with IDdownloader-integration-1";
+    public static final String DETERMINISTIC_MOVIE_TMDB_ID = "424242";
+    public static final String DETERMINISTIC_MOVIE_TITLE = "Hydra Downloader Integration Movie";
 
     private static final Logger logger = LoggerFactory.getLogger(MockNewznab.class);
 
@@ -145,6 +150,18 @@ public class MockNewznab {
         if (params.getQ() != null && params.getQ().startsWith("resilience-malformed-xml") && "resilience-failure-indexer".equals(params.getApikey())) {
             String invalidXml = Resources.toString(Resources.getResource(MockNewznab.class, "invalidXml.xml"), Charsets.UTF_8);
             return new ResponseEntity<Object>(invalidXml, HttpStatus.OK);
+        }
+
+        if (DETERMINISTIC_DOWNLOADER_QUERY.equals(params.getQ())) {
+            return new ResponseEntity<Object>(NewznabMockBuilder.getRssRoot(Collections.singletonList(
+                    NewznabMockBuilder.buildItem(1, DETERMINISTIC_DOWNLOADER_TITLE, Instant.EPOCH, "12345", "poster", "group", "2040", "downloader-integration-", false, "deterministic downloader result")
+            ), 0, 1), HttpStatus.OK);
+        }
+
+        if (DETERMINISTIC_MOVIE_TMDB_ID.equals(params.getTmdbid())) {
+            return new ResponseEntity<Object>(NewznabMockBuilder.getRssRoot(Collections.singletonList(
+                    NewznabMockBuilder.buildItem(1, DETERMINISTIC_MOVIE_TITLE, Instant.EPOCH, "12345", "poster", "group", "2000", "downloader-movie-", false, "deterministic movie result")
+            ), 0, 1), HttpStatus.OK);
         }
 
         String itemTitleBase = params.getApikey();
