@@ -114,15 +114,15 @@ public class Torbox extends Downloader {
 
     @Override
     public String addLink(String link, String title, DownloadType downloadType, String category) throws DownloaderException {
-        return sendAddRequest(link.getBytes(StandardCharsets.UTF_8), title, "link", "link", downloadType);
+        return sendAddRequest(link.getBytes(StandardCharsets.UTF_8), title, "link", "link", downloadType, category);
     }
 
     @Override
     public String addContent(byte[] content, String title, DownloadType downloadType, String category) throws DownloaderException {
-        return sendAddRequest(content, title, "file", "data", downloadType);
+        return sendAddRequest(content, title, "file", "data", downloadType, category);
     }
 
-    private String sendAddRequest(byte[] value, String title, String addType, String descInLog, DownloadType downloadType) throws DownloaderException {
+    private String sendAddRequest(byte[] value, String title, String addType, String descInLog, DownloadType downloadType, String category) throws DownloaderException {
         log.debug("Sending {} for \"{}\" to torbox", descInLog, title);
         UriComponentsBuilder url;
         // We have no way of knowing if the original search result was a torrent or usenet result. Kinda hacky, I know...
@@ -151,7 +151,10 @@ public class Torbox extends Downloader {
             } else {
                 map.add(addType, value);
             }
-            map.add("name", title);
+        }
+        map.add("name", title);
+        if (category != null) {
+            map.add("category", category);
         }
         HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(map, headers);
         try {
@@ -313,9 +316,9 @@ public class Torbox extends Downloader {
     }
 
 
-    private UriComponentsBuilder getBaseUrl() {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(BASE_API_URL);
-        return builder;
+    UriComponentsBuilder getBaseUrl() {
+        String url = downloaderConfig.getUrl();
+        return UriComponentsBuilder.fromUriString(url == null || url.isBlank() ? BASE_API_URL : url);
     }
 
 

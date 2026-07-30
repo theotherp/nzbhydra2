@@ -25,6 +25,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
@@ -39,6 +40,13 @@ import java.util.Random;
 @SuppressWarnings("ALL")
 @RestController
 public class MockNewznab {
+
+    public static final String DETERMINISTIC_TORRENT_FILE_QUERY = "torrent-system-file";
+    public static final String DETERMINISTIC_MAGNET_QUERY = "torrent-system-magnet";
+    public static final String DETERMINISTIC_TORRENT_TITLE = "Hydra Deterministic Torrent File";
+    public static final String DETERMINISTIC_MAGNET_TITLE = "Hydra Deterministic Magnet Link";
+    public static final String DETERMINISTIC_TORRENT_CONTENT = "d4:infod4:name31:Hydra Deterministic Torrent Fileee";
+    public static final String DETERMINISTIC_MAGNET_URI = "magnet:?xt=urn:btih:0123456789abcdef0123456789abcdef01234567&dn=Hydra Deterministic Magnet Link";
 
     private static final Logger logger = LoggerFactory.getLogger(MockNewznab.class);
 
@@ -101,6 +109,11 @@ public class MockNewznab {
         return "Would show comments for NZB with ID" + nzbId;
     }
 
+    @RequestMapping(value = "/torrent/deterministic-file", method = RequestMethod.GET, produces = "application/x-bittorrent")
+    public byte[] deterministicTorrentFile() {
+        return DETERMINISTIC_TORRENT_CONTENT.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+    }
+
     @RequestMapping(value = {"/api", "/dognzb/api"}, produces = MediaType.APPLICATION_XML_VALUE)
     public ResponseEntity<? extends Object> api(NewznabParameters params, HttpServletRequest request) throws Exception {
         logger.info("Received API request {}", params);
@@ -125,11 +138,11 @@ public class MockNewznab {
             return ResponseEntity.ok(rssRoot);
         }
 
-        if (params.getQ() != null && params.getQ().startsWith("resilience-timeout") && "1".equals(params.getApikey())) {
+        if (params.getQ() != null && params.getQ().startsWith("resilience-timeout") && "resilience-failure-indexer".equals(params.getApikey())) {
             Thread.sleep(2000);
         }
 
-        if (params.getQ() != null && params.getQ().startsWith("resilience-malformed-xml") && "1".equals(params.getApikey())) {
+        if (params.getQ() != null && params.getQ().startsWith("resilience-malformed-xml") && "resilience-failure-indexer".equals(params.getApikey())) {
             String invalidXml = Resources.toString(Resources.getResource(MockNewznab.class, "invalidXml.xml"), Charsets.UTF_8);
             return new ResponseEntity<Object>(invalidXml, HttpStatus.OK);
         }
@@ -480,6 +493,14 @@ public class MockNewznab {
         if (params.getT() == ActionAttribute.CAPS) {
             return new ResponseEntity<Object>(NewznabMockBuilder.getCaps(), HttpStatus.OK);
         }
+        if (DETERMINISTIC_TORRENT_FILE_QUERY.equals(params.getQ())) {
+            return ResponseEntity.ok(deterministicTorznabResponse(DETERMINISTIC_TORRENT_TITLE,
+                    "http://" + host + ":" + port + "/torrent/deterministic-file", "deterministic-file-guid"));
+        }
+        if (DETERMINISTIC_MAGNET_QUERY.equals(params.getQ())) {
+            return ResponseEntity.ok(deterministicTorznabResponse(DETERMINISTIC_MAGNET_TITLE, DETERMINISTIC_MAGNET_URI,
+                    "deterministic-magnet-guid"));
+        }
         String titleBase = params.getQ() + "_" + params.getApikey();
         if (!params.getCat().isEmpty()) {
             titleBase += params.getCat().get(0);
@@ -514,6 +535,28 @@ public class MockNewznab {
         }
 
         return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
+    }
+
+    private NewznabXmlRoot deterministicTorznabResponse(String title, String link, String guid) {
+        NewznabXmlItem item = new NewznabXmlItem();
+        item.setTitle(title);
+        item.setLink(link);
+        item.setPubDate(Instant.parse("2026-01-01T00:00:00Z"));
+        item.setDescription("Deterministic torrent fixture");
+        item.setComments("http://" + host + ":" + port + "/details/" + guid);
+        item.setCategory("5000");
+        item.setRssGuid(new org.nzbhydra.mapping.newznab.xml.NewznabXmlGuid(guid, true));
+        item.setEnclosure(new org.nzbhydra.mapping.newznab.xml.NewznabXmlEnclosure(link, 12345L, "application/x-bittorrent"));
+        item.setNewznabAttributes(new ArrayList<>(Collections.singletonList(new NewznabAttribute("category", "5000"))));
+        item.setTorznabAttributes(new ArrayList<>(Arrays.asList(
+                new NewznabAttribute("guid", guid),
+                new NewznabAttribute("seeders", "42"),
+                new NewznabAttribute("peers", "7"),
+                new NewznabAttribute("size", "12345")
+        )));
+        NewznabXmlRoot root = NewznabMockBuilder.getRssRoot(Collections.singletonList(item), 0, 1);
+        root.getRssChannel().setNewznabResponse(null);
+        return root;
     }
 
 

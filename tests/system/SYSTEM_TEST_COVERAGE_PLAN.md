@@ -206,10 +206,9 @@ Proposed methods:
 
 Why this needs a system test:
 
-- The migration fixture uses `/nzbhydra2`, but URL-base behavior is mostly incidental rather than explicitly asserted.
 - Generated URLs, redirects, static resources, and security matchers must agree in the packaged application.
 
-### Priority 4: Backup, Restore, and Migration
+### Priority 4: Backup and Restore
 
 #### `BackupRestoreSystemTest`
 
@@ -229,26 +228,6 @@ Why this needs a system test:
 - Existing tests prove only backup creation and download.
 - Restore crosses ZIP handling, database replacement, configuration files, process restart, and startup initialization.
 - Successful restart after restore is especially important to prove against the native executable.
-
-#### `MigrationSystemTest`
-
-File: `tests/system/src/test/java/org/nzbhydra/MigrationSystemTest.java`
-
-Proposed methods:
-
-- `shouldMigrateLegacyConfigurationToCurrentVersion`
-- `shouldPreserveLegacyUsersIndexersAndDownloaders`
-- `shouldPreserveSearchAndDownloadHistory`
-- `shouldFailClearlyForMalformedLegacyConfiguration`
-
-Why this needs a system test:
-
-- The current `v1Migration` run is a startup smoke test without migration-specific assertions.
-- Historical configuration/database parsing, startup migration order, secret conversion, and native resource availability must be validated in the packaged application.
-
-Prerequisites:
-
-- Enrich the migration fixture with users, indexers, downloaders, external tools, encrypted values, and history records.
 
 ### Priority 5: Downloader and External Tool Lifecycles
 
@@ -366,9 +345,8 @@ torrent scenarios are sufficient to prove those components are connected correct
 5. `BackupRestoreSystemTest`
 6. `AuthorizationSystemTest`
 7. `DownloaderIntegrationSystemTest`
-8. `MigrationSystemTest`
-9. `ExternalToolsLifecycleSystemTest`
-10. Remaining lower-risk boundary tests
+8. `ExternalToolsLifecycleSystemTest`
+9. Remaining lower-risk boundary tests
 
 ## Completion Convention
 

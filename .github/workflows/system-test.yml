@@ -293,6 +293,8 @@ jobs:
           docker compose -f docker/docker-compose-systemtest/linux/docker-compose.yaml -f docker/docker-compose-systemtest/linux/docker-compose-jvm-coverage.yaml logs --no-color
           exit 1
 
+      - name: "Build"
+        run: mvn --batch-mode install -pl org.nzbhydra:core -am -DtrimStackTrace=false -DskipTests
       - name: "Run system tests against JVM core"
         run: mvn --batch-mode test -pl org.nzbhydra.tests:system -DtrimStackTrace=false
 

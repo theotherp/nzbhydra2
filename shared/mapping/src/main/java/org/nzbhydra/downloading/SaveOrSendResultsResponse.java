@@ -30,6 +30,4 @@ public class SaveOrSendResultsResponse {
     public static SaveOrSendResultsResponse notOk(String message, Set<Long> missedIds) {
         return new SaveOrSendResultsResponse(false, message, Collections.emptySet(), missedIds);
     }
-
-
 }

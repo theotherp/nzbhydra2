@@ -12,24 +12,23 @@ import java.nio.file.attribute.BasicFileAttributes;
  * @author hms
  */
 public class ExtractZipFileVisitor implements FileVisitor<Path> {
-    private Path destRoot;
+    private final Path destRoot;
 
     public ExtractZipFileVisitor(Path destRoot) {
-        this.destRoot = destRoot;
+        this.destRoot = destRoot.toAbsolutePath().normalize();
     }
 
     @Override
     public FileVisitResult preVisitDirectory(Path zipDir, BasicFileAttributes attrs) throws IOException {
-        // zipDir = unix-pfad
-        Path destDir = Path.of(destRoot.toString(), zipDir.toString());  // windowspfad
+        Path destDir = destinationFor(zipDir);
         Files.createDirectories(destDir);
         return FileVisitResult.CONTINUE;
     }
 
     @Override
     public FileVisitResult visitFile(Path zipFile, BasicFileAttributes attrs) throws IOException {
-        // zipFile = unix-pfad
-        Path dest = Path.of(destRoot.toString(), zipFile.toString());  // windowspfad
+        Path dest = destinationFor(zipFile);
+        Files.createDirectories(dest.getParent());
         Files.copy(zipFile, dest, StandardCopyOption.REPLACE_EXISTING);
         return FileVisitResult.CONTINUE;
     }
@@ -42,5 +41,17 @@ public class ExtractZipFileVisitor implements FileVisitor<Path> {
     @Override
     public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
         return FileVisitResult.CONTINUE;
+    }
+
+    Path destinationFor(Path zipPath) throws IOException {
+        String entryName = zipPath.toString().replace('\\', '/');
+        while (entryName.startsWith("/")) {
+            entryName = entryName.substring(1);
+        }
+        Path destination = destRoot.resolve(entryName).normalize();
+        if (!destination.startsWith(destRoot)) {
+            throw new IOException("ZIP entry escapes restore directory: " + zipPath);
+        }
+        return destination;
     }
 }
