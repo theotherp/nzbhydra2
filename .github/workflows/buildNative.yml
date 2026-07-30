@@ -230,8 +230,20 @@ jobs:
 #                if: steps.changed-files-specific.outputs.any_changed == 'true' && startsWith(matrix.os,'ubuntu')
                 if: startsWith(matrix.os,'ubuntu')
                 run: |
-                    cp other/wrapper/nzbhydra2wrapperPy3.py ./docker/nativeTest/
-                    cd ./docker/nativeTest/
-                    docker build -t hydradocker -t ghcr.io/theotherp/hydradocker:latest -t ghcr.io/theotherp/hydradocker:${{ github.ref_name}} -t ghcr.io/theotherp/hydradocker:${{ github.sha }} . --label "version=${{ github.ref_name}}" --label "sha=${{ github.sha }}"
-                    docker push ghcr.io/theotherp/hydradocker:latest
-                    docker push ghcr.io/theotherp/hydradocker:${{ github.sha }}
+                     cp other/wrapper/nzbhydra2wrapperPy3.py ./docker/nativeTest/
+                     cd ./docker/nativeTest/
+                     docker build -t hydradocker -t ghcr.io/theotherp/hydradocker:latest -t ghcr.io/theotherp/hydradocker:${{ github.ref_name}} -t ghcr.io/theotherp/hydradocker:${{ github.sha }} . --label "version=${{ github.ref_name}}" --label "sha=${{ github.sha }}"
+                     push_with_retry() {
+                         local image="$1"
+                         for attempt in 1 2 3; do
+                             if docker push "$image"; then
+                                 return 0
+                             fi
+                             if [ "$attempt" -lt 3 ]; then
+                                 sleep "$((attempt * 10))"
+                             fi
+                         done
+                         return 1
+                     }
+                     push_with_retry ghcr.io/theotherp/hydradocker:latest
+                     push_with_retry ghcr.io/theotherp/hydradocker:${{ github.sha }}
