@@ -182,6 +182,10 @@ public class HydraClient {
     }
 
     private HydraResponse callMultipart(String endpoint, RequestBody body, String... parameters) {
+        boolean v1Migration = Sets.newHashSet(environment.getActiveProfiles()).contains("v1Migration");
+        if (v1Migration) {
+            endpoint = "/nzbhydra2" + endpoint;
+        }
         final HttpUrl.Builder urlBuilder = new HttpUrl.Builder().scheme("http")
                 .host(nzbhydraHost)
                 .port(nzbhydraPort)
@@ -193,7 +197,11 @@ public class HydraClient {
         if (endpoint.contains("internalapi")) {
             urlBuilder.addQueryParameter("internalApiKey", "internalApiKey");
         }
-        Request request = new Request.Builder().post(body).url(urlBuilder.build()).build();
+        Request.Builder requestBuilder = new Request.Builder().post(body).url(urlBuilder.build());
+        if (v1Migration) {
+            requestBuilder.header("Authorization", "Basic " + Base64.getEncoder().encodeToString("test:test".getBytes(StandardCharsets.UTF_8)));
+        }
+        Request request = requestBuilder.build();
         try (Response response = getClient(true).newCall(request).execute(); ResponseBody responseBody = response.body()) {
             return new HydraResponse(responseBody.bytes(), response.code(), response.headers().toMultimap());
         } catch (Exception e) {
