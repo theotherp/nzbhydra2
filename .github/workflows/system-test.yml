@@ -384,13 +384,6 @@ jobs:
       - name: "Install maven"
         run: mvn --batch-mode clean install -DskipTests -pl org.nzbhydra:nzbhydra2,org.nzbhydra:shared,org.nzbhydra:mapping,org.nzbhydra:release-parser,org.nzbhydra:mockserver
 
-      - name: "Copy mockserver"
-        run: |
-          copy other/mockserver/target/*-exec.jar exec.jar
-
-      - name: "List files in folder"
-        run: ls
-
       - name: "Add mockserver to /etc/hosts"
         run: |
           $file = "C:\Windows\System32\drivers\etc\hosts"
@@ -398,27 +391,8 @@ jobs:
           $hostfile += "127.0.0.1 mockserver"
           Set-Content -Path $file -Value $hostfile -Force
 
-      - name: "Start mock server and hydra, run tests"
-        uses: BerniWittmann/background-server-action@v1
-        with:
-          start: ./core.exe -XX:MissingRegistrationReportingMode=Warn directstart, java -jar ./exec.jar
-          command: mvn --batch-mode test -pl org.nzbhydra.tests:system -DtrimStackTrace=false
-
-      - name: "Shutdown hydra"
-        uses: fjogeleit/http-request-action@v1
-        if: always()
-        continue-on-error: true
-        with:
-          method: "GET"
-          url: "http://127.0.0.1:5076/internalapi/control/shutdown"
-
-      - name: "Shutdown mockserver"
-        uses: fjogeleit/http-request-action@v1
-        if: always()
-        continue-on-error: true
-        with:
-          method: "POST"
-          url: "http://127.0.0.1:5080/actuator/shutdown"
+      - name: "Run native system tests with restore supervision"
+        run: py misc\run_windows_systemtest.py --skip-build --core-exe core.exe
 
       - name: "Check logs for unwanted strings"
         if: always()
@@ -431,7 +405,7 @@ jobs:
           )
 
           $foundIssues = $false
-          $logPaths = @("data", "tests")
+          $logPaths = @("misc\.windows-systemtest-runs", "tests")
 
           foreach ($pattern in $unwantedStrings) {
             Write-Host "Searching for: $pattern"
@@ -469,7 +443,7 @@ jobs:
         continue-on-error: true
         with:
           name: dataWindows-${{ github.sha }}
-          path: data
+          path: misc/.windows-systemtest-runs
 
       - name: "Upload test logs artifact"
         uses: actions/upload-artifact@v4

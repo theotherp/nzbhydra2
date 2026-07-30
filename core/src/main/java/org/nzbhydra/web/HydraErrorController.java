@@ -4,6 +4,7 @@ package org.nzbhydra.web;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.RequestDispatcher;
 import org.nzbhydra.misc.StackTraceFilter;
 import org.springframework.boot.webmvc.autoconfigure.error.AbstractErrorController;
 import org.springframework.boot.webmvc.error.ErrorAttributes;
@@ -28,6 +29,8 @@ public class HydraErrorController extends AbstractErrorController implements Err
         errorPage.addObject("error", ex.getMessage());
         errorPage.addObject("status", response.getStatus());
         errorPage.addObject("timestamp", Instant.now().toString());
+        errorPage.addObject("path", request.getAttribute(RequestDispatcher.FORWARD_REQUEST_URI));
+        errorPage.addObject("query", request.getAttribute(RequestDispatcher.FORWARD_QUERY_STRING));
         return errorPage;
     }
 }

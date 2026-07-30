@@ -95,6 +95,11 @@ public class SecurityConfig {
         http.headers(headers -> headers
                 .httpStrictTransportSecurity(security -> security.disable())
                 .frameOptions(options -> options.disable()));
+        if (baseConfig.getAuth().getAuthType() != AuthType.OIDC) {
+            headerAuthenticationFilter = new HeaderAuthenticationFilter(authenticationManager, hydraUserDetailsManager,
+                    baseConfig.getAuth());
+            http.addFilterAfter(headerAuthenticationFilter, BasicAuthenticationFilter.class);
+        }
 
         if (baseConfig.getAuth().getAuthType() == AuthType.BASIC || NzbHydra.isNativeBuild()) {
             http = http
@@ -179,10 +184,6 @@ public class SecurityConfig {
                                 .userDetailsService(userDetailsService));
             }
 
-            if (baseConfig.getAuth().getAuthType() != AuthType.OIDC) {
-                headerAuthenticationFilter = new HeaderAuthenticationFilter(authenticationManager, hydraUserDetailsManager, configProvider.getBaseConfig().getAuth());
-                http.addFilterAfter(headerAuthenticationFilter, BasicAuthenticationFilter.class);
-            }
             http.addFilterAfter(asyncSupportFilter, BasicAuthenticationFilter.class);
 
         } else {

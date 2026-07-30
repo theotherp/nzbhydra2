@@ -12,7 +12,6 @@ import org.nzbhydra.web.SessionStorage;
 import org.nzbhydra.webaccess.HydraOkHttp3ClientHttpRequestFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -52,7 +51,8 @@ public class HeaderAuthenticationFilter extends BasicAuthenticationFilter {
         if (sentInternalApiKey != null) {
             if (Objects.equals(sentInternalApiKey, internalApiKey)) {
 
-                final AnonymousAuthenticationToken token = new AnonymousAuthenticationToken("key", "internalApi", AuthorityUtils.createAuthorityList("ROLE_ADMIN"));
+                final UsernamePasswordAuthenticationToken token = UsernamePasswordAuthenticationToken.authenticated(
+                        "internalApi", null, AuthorityUtils.createAuthorityList("ROLE_ADMIN"));
                 token.setDetails(new HydraWebAuthenticationDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(token);
                 onSuccessfulAuthentication(request, response, token);
