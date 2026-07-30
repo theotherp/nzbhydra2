@@ -294,7 +294,7 @@ jobs:
           exit 1
 
       - name: "Build"
-        run: mvn --batch-mode package -pl org.nzbhydra:core,org.nzbhydra.tests:system -DtrimStackTrace=false
+        run: mvn --batch-mode install -pl org.nzbhydra:core -am -DtrimStackTrace=false -DskipTests
       - name: "Run system tests against JVM core"
         run: mvn --batch-mode test -pl org.nzbhydra.tests:system -DtrimStackTrace=false
 
