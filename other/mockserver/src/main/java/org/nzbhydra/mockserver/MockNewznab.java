@@ -52,6 +52,9 @@ public class MockNewznab {
     public static final String DETERMINISTIC_DOWNLOADER_CONTENT = "Would download NZB with IDdownloader-integration-1";
     public static final String DETERMINISTIC_MOVIE_TMDB_ID = "424242";
     public static final String DETERMINISTIC_MOVIE_TITLE = "Hydra Downloader Integration Movie";
+    public static final String DETERMINISTIC_NZBGET_QUERY_PREFIX = "nzbget-integration-";
+    public static final String DETERMINISTIC_NZBGET_TITLE = "Hydra NZBGet Integration NZB";
+    public static final String DETERMINISTIC_NZBGET_CONTENT = "Would download NZB with IDnzbget-integration-1";
 
     private static final Logger logger = LoggerFactory.getLogger(MockNewznab.class);
 
@@ -155,6 +158,12 @@ public class MockNewznab {
         if (DETERMINISTIC_DOWNLOADER_QUERY.equals(params.getQ())) {
             return new ResponseEntity<Object>(NewznabMockBuilder.getRssRoot(Collections.singletonList(
                     NewznabMockBuilder.buildItem(1, DETERMINISTIC_DOWNLOADER_TITLE, Instant.EPOCH, "12345", "poster", "group", "2040", "downloader-integration-", false, "deterministic downloader result")
+            ), 0, 1), HttpStatus.OK);
+        }
+
+        if (params.getQ() != null && params.getQ().startsWith(DETERMINISTIC_NZBGET_QUERY_PREFIX)) {
+            return new ResponseEntity<Object>(NewznabMockBuilder.getRssRoot(Collections.singletonList(
+                    NewznabMockBuilder.buildItem(1, DETERMINISTIC_NZBGET_TITLE, Instant.EPOCH, "12345", "poster", "group", "2040", "nzbget-integration-", false, "deterministic NZBGet result")
             ), 0, 1), HttpStatus.OK);
         }
 
