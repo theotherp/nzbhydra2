@@ -84,6 +84,9 @@
       ]
     },
     {
+      "type": "org.springframework.boot.ansi.AnsiOutput$EnabledEditor"
+    },
+    {
       "type": "tools.jackson.databind.cfg.DateTimeFeatureEditor"
     },
     {
