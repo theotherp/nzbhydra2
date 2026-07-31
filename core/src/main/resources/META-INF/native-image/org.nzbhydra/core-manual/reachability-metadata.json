@@ -1,6 +1,9 @@
 {
   "reflection": [
     {
+      "type": "oracle.jdbc.provider.oson.OsonFactory"
+    },
+    {
       "type": "org.nzbhydra.auth.HydraWebAuthenticationDetails",
       "methods": [
         {
