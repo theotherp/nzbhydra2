@@ -296,20 +296,10 @@ public class BackupAndRestore {
             Path root = zipFileSystem.getPath("/");
             Files.walkFileTree(root, new ExtractZipFileVisitor(dest));
         }
-        moveRestoredDatabase(targetFolder.toPath());
         try {
             restoreCertificates(targetFolder);
         } catch (IOException e) {
             logger.error("Unable to restore certificates", e);
-        }
-    }
-
-    static void moveRestoredDatabase(Path restoreFolder) throws IOException {
-        Path extractedDatabase = restoreFolder.resolve("nzbhydra.mv.db");
-        if (Files.exists(extractedDatabase)) {
-            Path databaseFolder = restoreFolder.resolve("database");
-            Files.createDirectories(databaseFolder);
-            Files.move(extractedDatabase, databaseFolder.resolve(extractedDatabase.getFileName()), StandardCopyOption.REPLACE_EXISTING);
         }
     }
 

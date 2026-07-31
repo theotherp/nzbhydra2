@@ -4,12 +4,16 @@ LABEL org.opencontainers.image.description="Image to test NZBHydra2 in a pipelin
 # See https://octopus.com/blog/using-ubuntu-docker-image
 RUN echo 'APT::Install-Suggests "0";' >> /etc/apt/apt.conf.d/00-docker
 RUN echo 'APT::Install-Recommends "0";' >> /etc/apt/apt.conf.d/00-docker
-# Python isn't needed for tests. But java is for the migration!!
-RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y libfreetype6 curl openjdk-17-jdk && rm -rf /var/lib/apt/lists/*
+# Java is needed for the migration and Python runs the production wrapper.
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y libfreetype6 curl openjdk-17-jdk python3 && rm -rf /var/lib/apt/lists/*
 COPY core /
+COPY nzbhydra2wrapperPy3.py /
 HEALTHCHECK --interval=5s --timeout=30s --retries=6 CMD curl --fail http://localhost:5076 || exit 1
 RUN ["chmod", "+x", "/core"]
-CMD ["/core", "-XX:MissingRegistrationReportingMode=Warn", "directstart", "-DinternalApiKey=internalApiKey", "-Dmain.useCsrf=false", "-Dmain.logging.logfilelevel=DEBUG"]
+ENV NZBHYDRA_SKIP_BASE_PATH_CHECK=true
+ENV main_useCsrf=false
+ENV main_logging_logfilelevel=DEBUG
+CMD ["python3", "/nzbhydra2wrapperPy3.py", "--datafolder", "/data", "--nobrowser", "--internalApiKey", "internalApiKey", "directstart"]
 
 # To debug docker run --rm -it --entrypoint bash <image-name-or-id>
 # or for a running container docker exec -it <container-name-or-id> bash

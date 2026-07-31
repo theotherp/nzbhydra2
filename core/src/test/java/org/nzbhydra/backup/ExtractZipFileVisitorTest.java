@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Files;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -33,15 +32,4 @@ public class ExtractZipFileVisitorTest {
                 .isEqualTo(destination.resolve("nzbhydra.yml"));
     }
 
-    @Test
-    void shouldPlaceRestoredDatabaseInDataFolderLayout() throws Exception {
-        Path restoreFolder = Files.createTempDirectory("backup-restore-test");
-        Path extractedDatabase = restoreFolder.resolve("nzbhydra.mv.db");
-        Files.writeString(extractedDatabase, "database");
-
-        BackupAndRestore.moveRestoredDatabase(restoreFolder);
-
-        assertThat(extractedDatabase).doesNotExist();
-        assertThat(restoreFolder.resolve("database/nzbhydra.mv.db")).hasContent("database");
-    }
 }
