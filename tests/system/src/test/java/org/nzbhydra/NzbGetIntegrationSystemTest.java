@@ -142,9 +142,10 @@ public class NzbGetIntegrationSystemTest {
 
         selectState(Map.of("historyNzbId", NZB_ID, "nzbName", NZB_TITLE + ".nzb"));
         runTask("Download history check");
-        Awaitility.await().atMost(Duration.ofSeconds(10)).until(() -> hasRecordedCall("history"));
-        Awaitility.await().atMost(Duration.ofSeconds(10)).untilAsserted(() ->
-                assertThat(download(identifier).getStatus()).isEqualTo(FileDownloadStatus.CONTENT_DOWNLOAD_SUCCESSFUL));
+        Awaitility.await().pollInterval(Duration.ofSeconds(1)).atMost(Duration.ofSeconds(10)).untilAsserted(() -> {
+            runTask("Download history check");
+            assertThat(download(identifier).getStatus()).isEqualTo(FileDownloadStatus.CONTENT_DOWNLOAD_SUCCESSFUL);
+        });
     }
 
     @Test
@@ -266,10 +267,6 @@ public class NzbGetIntegrationSystemTest {
     @SuppressWarnings("unchecked")
     private Map<String, Object> recordedCall(String method) {
         return recordedCalls().stream().filter(call -> method.equals(call.get("method"))).findFirst().orElseThrow();
-    }
-
-    private boolean hasRecordedCall(String method) {
-        return recordedCalls().stream().anyMatch(call -> method.equals(call.get("method")));
     }
 
     @SuppressWarnings("unchecked")

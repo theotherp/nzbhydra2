@@ -4,9 +4,9 @@ package org.nzbhydra;
 
 import com.google.common.collect.Sets;
 import jakarta.annotation.PostConstruct;
-import okhttp3.Headers;
 import okhttp3.Cookie;
 import okhttp3.CookieJar;
+import okhttp3.Headers;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -27,11 +27,11 @@ import tools.jackson.core.JacksonException;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -186,6 +186,10 @@ public class HydraClient {
 
     public HydraResponse getExternal(String endpoint, String... parameters) {
         return get(endpoint, parameters);
+    }
+
+    public HydraResponse delete(String endpoint, Map<String, String> headers, String... parameters) {
+        return call("DELETE", endpoint, headers, null, parameters);
     }
 
     public HydraResponse put(String endpoint, Object body, String... parameters) {
