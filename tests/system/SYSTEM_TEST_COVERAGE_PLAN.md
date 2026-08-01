@@ -46,6 +46,7 @@ The following files already exist and provide the current deployment smoke suite
 | `ExternalApiDownloadSystemTest`      | Newznab `t=get`, API-key enforcement, invalid-ID errors, and NFOs     |
 | `ExternalApiJsonSystemTest`          | JSON Newznab search, attributes, enclosure download, and JSON errors  |
 | `ExternalApiSearchingTest`           | XML Newznab search, API key check, and NZB download                   |
+| `ExternalToolsLifecycleSystemTest`   | Persisted Sonarr/Radarr indexer configuration and synchronization     |
 | `ExternalToolsTest`                  | Sonarr and Radarr configuration on Linux                              |
 | `GenericStorageTest`                 | Generic storage GET and PUT                                           |
 | `HistoryTest`                        | Search and download history                                           |
