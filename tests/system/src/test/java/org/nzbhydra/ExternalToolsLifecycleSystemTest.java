@@ -32,6 +32,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ExternalToolsLifecycleSystemTest {
 
     private static final String EXTERNAL_TOOL_API_KEY = "system-test-api-key-12345";
+    private static final String REDACTED_API_KEY = "********";
     private static final String TEST_PREFIX = "ExternalToolsLifecycleSystemTest-";
 
     @Autowired
@@ -223,7 +224,8 @@ public class ExternalToolsLifecycleSystemTest {
         assertThat(indexer.enableInteractiveSearch).isEqualTo(enableInteractiveSearch);
         assertThat(indexer.fieldsByName())
                 .containsEntry("baseUrl", nzbhydraHostExternal)
-                .containsEntry("apiKey", getConfig().getMain().getApiKey());
+                // Arr APIs redact persisted indexer API keys in their response.
+                .containsEntry("apiKey", REDACTED_API_KEY);
         assertThat(categoryValues(indexer.fieldsByName().get("categories")))
                 .containsExactlyElementsOf(expectedCategoryValues(categories));
     }

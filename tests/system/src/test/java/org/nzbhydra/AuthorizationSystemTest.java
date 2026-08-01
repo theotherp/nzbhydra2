@@ -13,6 +13,7 @@ import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.env.Environment;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.time.Duration;
@@ -38,9 +39,12 @@ public class AuthorizationSystemTest {
 
     @Autowired
     private HydraClient hydraClient;
+    @Autowired
+    private Environment environment;
 
     private BaseConfig originalConfig;
     private String externalApiKey;
+    private boolean basicAuthActive;
 
     @BeforeAll
     public void configureAuthentication() {
@@ -58,6 +62,7 @@ public class AuthorizationSystemTest {
                 user(USER_USERNAME, USER_PASSWORD, false, false)
         ));
         assertSuccessfulSave(securedConfig);
+        basicAuthActive = true;
         restartAndWait();
     }
 
@@ -169,7 +174,9 @@ public class AuthorizationSystemTest {
     }
 
     private void assertSuccessfulSave(BaseConfig config) {
-        HydraResponse response = hydraClient.put("/internalapi/config", config);
+        HydraResponse response = isV1Migration() && basicAuthActive
+                ? hydraClient.putWithBasicAuth("/internalapi/config", ADMIN_USERNAME, ADMIN_PASSWORD, config)
+                : hydraClient.put("/internalapi/config", config);
         ConfigValidationResult validationResult = response.as(ConfigValidationResult.class);
 
         assertThat(response.status()).isEqualTo(200);
@@ -178,7 +185,9 @@ public class AuthorizationSystemTest {
     }
 
     private void restartAndWait() {
-        HydraResponse response = hydraClient.get("/internalapi/control/restart");
+        HydraResponse response = isV1Migration()
+                ? hydraClient.getWithBasicAuth("/internalapi/control/restart", ADMIN_USERNAME, ADMIN_PASSWORD)
+                : hydraClient.get("/internalapi/control/restart");
         assertThat(response.status()).isEqualTo(200);
 
         AtomicBoolean becameUnavailable = new AtomicBoolean();
@@ -204,5 +213,9 @@ public class AuthorizationSystemTest {
 
     private HydraResponse apiRequest(String... parameters) {
         return hydraClient.getWithBasicAuth("/api", USER_USERNAME, USER_PASSWORD, parameters);
+    }
+
+    private boolean isV1Migration() {
+        return List.of(environment.getActiveProfiles()).contains("v1Migration");
     }
 }

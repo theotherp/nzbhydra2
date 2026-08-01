@@ -102,9 +102,10 @@ public class HydraClient {
         }
         if (options.username != null) {
             requestHeaders.put("Authorization", basicAuthorization(options.username, options.password));
-        } else if (v1Migration && !requestHeaders.containsKey("Authorization")) {
+        } else if (v1Migration && options.internalApiKey == null && !requestHeaders.containsKey("Authorization")) {
             requestHeaders.put("Authorization", basicAuthorization("test", "test"));
-        } else if (!externalRequest && endpoint.contains("internalapi") && Arrays.stream(parameters).noneMatch(x -> x.startsWith("internalApiKey"))) {
+        }
+        if (!externalRequest && endpoint.contains("internalapi") && Arrays.stream(parameters).noneMatch(x -> x.startsWith("internalApiKey"))) {
             if (options.internalApiKey != null) {
                 urlBuilder.addQueryParameter("internalApiKey", options.internalApiKey);
             } else if (!options.omitInternalApiKey) {
@@ -198,6 +199,10 @@ public class HydraClient {
 
     public HydraResponse put(String endpoint, Object body, Map<String, String> headers, String... parameters) {
         return call("PUT", endpoint, headers, body, parameters);
+    }
+
+    public HydraResponse putWithBasicAuth(String endpoint, String username, String password, Object body, String... parameters) {
+        return call("PUT", endpoint, Collections.emptyMap(), body, true, RequestOptions.withBasicAuth(username, password), parameters);
     }
 
     public HydraResponse post(String endpoint, Object body, String... parameters) {
