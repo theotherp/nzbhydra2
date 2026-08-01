@@ -82,6 +82,9 @@ jobs:
       - uses: actions/checkout@v4
         name: "Check out source"
 
+      - name: Set artifact timestamp
+        run: printf 'ARTIFACT_TIMESTAMP=%s\n' "$(date -u +'%Y%m%dT%H%M%SZ')" >> "$GITHUB_ENV"
+
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -203,14 +206,14 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: dataLinux-${{ matrix.test.name }}-${{ github.sha }}
+          name: system-test--linux-native--${{ matrix.test.name }}--data-folder--${{ env.ARTIFACT_TIMESTAMP }}
           path: /tmp/hydra
 
       - name: "Upload test logs artifact"
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: ${{ matrix.test.name }}-${{ github.sha }}-test-logs
+          name: system-test--linux-native--${{ matrix.test.name }}--test-logs--${{ env.ARTIFACT_TIMESTAMP }}
           path: |
             tests/**/*.log
             tests/**/target/surefire-reports/**
@@ -219,7 +222,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: ${{ matrix.test.name }}-${{ github.sha }}-docker-logs
+          name: system-test--linux-native--${{ matrix.test.name }}--docker-logs--${{ env.ARTIFACT_TIMESTAMP }}
           path: docker/docker-compose-systemtest/linux/*.log
 
       - name: "Create test Report"
@@ -244,6 +247,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         name: "Check out source"
+
+      - name: Set artifact timestamp
+        run: printf 'ARTIFACT_TIMESTAMP=%s\n' "$(date -u +'%Y%m%dT%H%M%SZ')" >> "$GITHUB_ENV"
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -318,7 +324,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: jvm-system-test-coverage-${{ github.sha }}
+          name: system-test--linux-jvm-coverage--core--coverage-report--${{ env.ARTIFACT_TIMESTAMP }}
           path: core/target/site/jacoco/**
           if-no-files-found: warn
 
@@ -330,7 +336,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: jvm-system-test-coverage-logs-${{ github.sha }}
+          name: system-test--linux-jvm-coverage--core--docker-logs--${{ env.ARTIFACT_TIMESTAMP }}
           path: jvm-system-coverage-docker.log
 
 
@@ -350,13 +356,18 @@ jobs:
       - name: "Check out source"
         uses: actions/checkout@v4
 
+      - name: Set artifact timestamp
+        shell: pwsh
+        run: '"ARTIFACT_TIMESTAMP=$((Get-Date).ToUniversalTime().ToString("yyyyMMddTHHmmssZ"))" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8'
+
       - name: "Download windows artifact from current workflow"
         id: "downloadArtifactThisBuild"
         continue-on-error: true
         uses: actions/download-artifact@v4
         with:
-          name: coreWindows
+          pattern: native-build--windows-latest--release-executable--*
           path: ./
+          merge-multiple: true
 
       - name: "Check if core.exe was downloaded"
         id: checkCoreExe
@@ -368,7 +379,8 @@ jobs:
         if: ${{steps.checkCoreExe.outputs.files_exists == 'false'}}
         uses: dawidd6/action-download-artifact@v6
         with:
-          name: coreWindows
+          name: ^native-build--windows-latest--release-executable--.*$
+          name_is_regexp: true
           #Search for matching artifact in any of the last completed workflows
           search_artifacts: true
           workflow_conclusion: 'completed'
@@ -442,14 +454,14 @@ jobs:
         if: always()
         continue-on-error: true
         with:
-          name: dataWindows-${{ github.sha }}
+          name: system-test--windows-native--restore-supervision--data-folder--${{ env.ARTIFACT_TIMESTAMP }}
           path: misc/.windows-systemtest-runs
 
       - name: "Upload test logs artifact"
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: windows-test-logs-${{ github.sha }}
+          name: system-test--windows-native--restore-supervision--test-logs--${{ env.ARTIFACT_TIMESTAMP }}
           path: |
             tests/**/*.log
             tests/**/target/surefire-reports/**
@@ -458,7 +470,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: windows-docker-logs-${{ github.sha }}
+          name: system-test--windows-native--restore-supervision--docker-logs--${{ env.ARTIFACT_TIMESTAMP }}
           path: docker/*.log
 
       - name: "Create test Report"
