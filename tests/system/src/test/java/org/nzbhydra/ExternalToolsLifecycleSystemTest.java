@@ -116,6 +116,7 @@ public class ExternalToolsLifecycleSystemTest {
         String initialApiKey = config.getIndexers().get(0).getApiKey();
         int initialScore = 12;
         int changedScore = 31;
+        config.getIndexers().get(0).setApiKey(initialApiKey + "-initial-synchronization");
         config.getIndexers().get(0).setScore(initialScore);
         config.getExternalTools().setSyncOnConfigChange(true);
         config.getExternalTools().setExternalTools(List.of(externalToolConfig()));
