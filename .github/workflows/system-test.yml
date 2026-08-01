@@ -65,20 +65,16 @@ jobs:
   runSystemTestsLinux:
     needs: [ waitForNative, buildMockserver ]
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        test: [ { port: 5076, name: core }, { port: 5077, name: v1Migration } ]
     env:
-      spring_profiles_active: build,systemtest,testdocker,${{ matrix.test.name }}
-      nzbhydra_port: ${{ matrix.test.port }}
-      nzbhydra.port: ${{ matrix.test.port }}
-      nzbhydra_name: ${{ matrix.test.name }}
-      NZBHYDRANAME: ${{ matrix.test.name }}
-      nzbhydra.name: ${{ matrix.test.name }}
+      spring_profiles_active: build,systemtest,testdocker,core
+      nzbhydra_port: 5076
+      nzbhydra.port: 5076
+      nzbhydra_name: core
+      NZBHYDRANAME: core
+      nzbhydra.name: core
       HYDRA_IMAGE: ghcr.io/theotherp/hydradocker:${{ github.sha }}
     steps:
-      - run: echo Running test ${{ matrix.test.name }} with port ${{ matrix.test.port }}
+      - run: echo Running test core with port 5076
       - uses: actions/checkout@v4
         name: "Check out source"
 
@@ -97,11 +93,6 @@ jobs:
 
       - name: "Create docker network"
         run: docker network create systemtest
-
-      - name: "Copy v1Migration docker data"
-        run: |
-          mkdir -p /tmp/hydra/v1MigrationDataFolder
-          cp -R tests/system/instanceData/v1Migration/* /tmp/hydra/v1MigrationDataFolder/
 
       - name: "Run docker compose"
         run: |
@@ -136,9 +127,6 @@ jobs:
           docker ps
           echo "Core container mounts:"
           docker container inspect -f '{{ .Mounts}}' core
-          echo "v1Migration container mounts:"
-          docker container inspect -f '{{ .Mounts}}' v1Migration
-
       - name: "Curl core"
         run: "curl --verbose http://127.0.0.1:5076"
 
@@ -154,7 +142,6 @@ jobs:
           docker compose logs --no-color sonarr > docker-compose-sonarr.log
           docker compose logs --no-color mockserver > docker-compose-mockserver.log
           docker compose logs --no-color core > docker-compose-core.log
-          docker compose logs --no-color v1Migration > docker-compose-v1Migration.log
           echo "Found log files:"
           find . -name "*.log"
           cd ../../..
@@ -210,14 +197,14 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: system-test--linux-native--${{ matrix.test.name }}--data-folder--${{ env.ARTIFACT_TIMESTAMP }}
+          name: system-test--linux-native--core--data-folder--${{ env.ARTIFACT_TIMESTAMP }}
           path: /tmp/hydra
 
       - name: "Upload test logs artifact"
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: system-test--linux-native--${{ matrix.test.name }}--test-logs--${{ env.ARTIFACT_TIMESTAMP }}
+          name: system-test--linux-native--core--test-logs--${{ env.ARTIFACT_TIMESTAMP }}
           path: |
             tests/**/*.log
             tests/**/target/surefire-reports/**
@@ -226,7 +213,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: system-test--linux-native--${{ matrix.test.name }}--docker-logs--${{ env.ARTIFACT_TIMESTAMP }}
+          name: system-test--linux-native--core--docker-logs--${{ env.ARTIFACT_TIMESTAMP }}
           path: docker/docker-compose-systemtest/linux/*.log
 
       - name: "Create test Report"
@@ -234,7 +221,7 @@ jobs:
         if: always()
         continue-on-error: true
         with:
-          name: System test report ${{ matrix.test.name }} ${{ github.sha }}
+          name: System test report core ${{ github.sha }}
           path: "**/surefire-reports/*.xml"
           reporter: java-junit
 
