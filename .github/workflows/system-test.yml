@@ -164,7 +164,11 @@ jobs:
         # If the logs are larger than 1MB there's probably something wrong
         run: |
           shopt -s globstar
-          for d in ./**/*.log ; do (truncate --size=1M $d); done
+          for d in ./**/*.log; do
+            if [ -f "$d" ] && [ "$(stat -c%s "$d")" -gt 1048576 ]; then
+              truncate --size=1M "$d"
+            fi
+          done
 
       - name: "Check logs for unwanted strings"
         if: always()
