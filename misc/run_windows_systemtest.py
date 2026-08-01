@@ -68,6 +68,7 @@ class Service:
     stop_supervisor: threading.Event | None = None
     supervisor: threading.Thread | None = None
     restart_exit_codes: list[int] | None = None
+    restore_restart_exit_codes: list[int] | None = None
 
 
 def now_iso() -> str:
@@ -109,6 +110,11 @@ def parse_args() -> argparse.Namespace:
         "--force-rebuild",
         action="store_true",
         help="run both regular and native builds even if tracked files are unchanged",
+    )
+    parser.add_argument(
+        "--skip-build",
+        action="store_true",
+        help="use the supplied native executable and existing Maven artifacts without rebuilding",
     )
     parser.add_argument(
         "--jvm-coverage",
@@ -398,17 +404,20 @@ def apply_restore_files(data_dir: Path) -> None:
 def supervise_restartable_core(service: Service, data_dir: Path) -> None:
     stop_supervisor = threading.Event()
     restart_exit_codes: list[int] = []
+    restore_restart_exit_codes: list[int] = []
     service.stop_supervisor = stop_supervisor
     service.restart_exit_codes = restart_exit_codes
+    service.restore_restart_exit_codes = restore_restart_exit_codes
 
     def supervise() -> None:
         while not stop_supervisor.is_set():
             return_code = service.process.wait()
-            if stop_supervisor.is_set() or return_code != 33:
+            if stop_supervisor.is_set() or return_code not in (22, 33):
                 return
             try:
-                print(f"{service.name} exited with restore code 33; applying restored files")
-                apply_restore_files(data_dir)
+                if return_code == 33:
+                    print(f"{service.name} exited with restore code 33; applying restored files")
+                    apply_restore_files(data_dir)
                 assert service.command is not None
                 assert service.cwd is not None
                 assert service.environment is not None
@@ -420,12 +429,16 @@ def supervise_restartable_core(service: Service, data_dir: Path) -> None:
                     stderr=subprocess.STDOUT,
                 )
                 restart_exit_codes.append(return_code)
-                print(f"Restarted {service.name} (PID {service.process.pid}) after restore")
+                if return_code == 33:
+                    restore_restart_exit_codes.append(return_code)
+                    print(f"Restarted {service.name} (PID {service.process.pid}) after restore")
+                else:
+                    print(f"Restarted {service.name} (PID {service.process.pid}) after ordinary restart")
             except Exception as error:
-                print(f"Unable to restore and restart {service.name}: {error}", file=sys.stderr)
+                print(f"Unable to restart {service.name}: {error}", file=sys.stderr)
                 return
 
-    service.supervisor = threading.Thread(target=supervise, name="core-restore-supervisor", daemon=True)
+    service.supervisor = threading.Thread(target=supervise, name="core-restart-supervisor", daemon=True)
     service.supervisor.start()
 
 
@@ -437,6 +450,7 @@ def start_native_core(
 ) -> Service:
     base_command = [
         str(core_exe),
+        "-DinternalApiKey=internalApiKey",
         "directstart",
         "--nobrowser",
         "--host",
@@ -668,11 +682,15 @@ def run_locked(args: argparse.Namespace) -> int:
     mockserver_jar = args.mockserver_jar.resolve()
     if not mockserver_jar.is_file():
         missing_artifacts.append(str(mockserver_jar))
-    rebuild_required = bool(
+    if args.skip_build and args.core_exe is None:
+        raise RuntimeError("--skip-build requires --core-exe")
+    rebuild_required = False if args.skip_build else bool(
         args.force_rebuild or not previous_build or changes or missing_artifacts
     )
     rebuild_reasons = []
-    if args.force_rebuild:
+    if args.skip_build:
+        rebuild_reasons.append("skipped by --skip-build")
+    elif args.force_rebuild:
         rebuild_reasons.append("forced by --force-rebuild")
     if not previous_build:
         rebuild_reasons.append("no successful build has been recorded")
@@ -748,12 +766,11 @@ def run_locked(args: argparse.Namespace) -> int:
             write_json(BUILD_STATE_FILE, build_state)
             source_core_exe = NATIVE_CORE_EXE
         else:
-            assert previous_build is not None
-            source_core_exe = (
-                args.core_exe.resolve()
-                if args.core_exe
-                else Path(previous_build["coreExecutable"])
-            )
+            if args.core_exe is not None:
+                source_core_exe = args.core_exe.resolve()
+            else:
+                assert previous_build is not None
+                source_core_exe = Path(previous_build["coreExecutable"])
 
         if not args.jvm_coverage and not source_core_exe.is_file():
             raise RuntimeError(f"Native core not found at {source_core_exe}")
@@ -768,6 +785,7 @@ def run_locked(args: argparse.Namespace) -> int:
             core_command = [
                 java,
                 f"-javaagent:{coverage_agent}=destfile={execution_data},append=true,includes=org.nzbhydra.*",
+                "-DinternalApiKey=internalApiKey",
                 "-jar",
                 str(core_jar),
                 "directstart",
@@ -904,8 +922,11 @@ def run_locked(args: argparse.Namespace) -> int:
             exit_code = 1
             run_record["cleanupErrors"] = cleanup_errors
         if len(services) > 1 and services[-1].restart_exit_codes:
-            run_record["coreRestoreRestarts"] = len(services[-1].restart_exit_codes)
-            run_record["coreRestoreExitCodes"] = services[-1].restart_exit_codes
+            run_record["coreRestarts"] = len(services[-1].restart_exit_codes)
+            run_record["coreRestartExitCodes"] = services[-1].restart_exit_codes
+        if len(services) > 1 and services[-1].restore_restart_exit_codes:
+            run_record["coreRestoreRestarts"] = len(services[-1].restore_restart_exit_codes)
+            run_record["coreRestoreExitCodes"] = services[-1].restore_restart_exit_codes
         run_record["status"] = "passed" if succeeded else "failed"
         run_record["exitCode"] = exit_code
         run_record["endedAt"] = now_iso()

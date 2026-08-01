@@ -31,4 +31,5 @@ public class ExtractZipFileVisitorTest {
         assertThat(visitor.destinationFor(Path.of("/").resolve("nzbhydra.yml")))
                 .isEqualTo(destination.resolve("nzbhydra.yml"));
     }
+
 }

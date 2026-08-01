@@ -13,6 +13,7 @@ import org.nzbhydra.searching.db.SearchEntityTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.env.Environment;
 import org.springframework.test.context.ContextConfiguration;
 import tools.jackson.core.type.TypeReference;
 
@@ -33,6 +34,7 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 @SpringBootTest
 @ContextConfiguration(classes = {TestConfig.class})
@@ -42,6 +44,8 @@ public class BackupRestoreSystemTest {
     private HydraClient hydraClient;
     @Autowired
     private Searcher searcher;
+    @Autowired
+    private Environment environment;
     @Value("${dataFolder.testaccess}")
     private Path dataFolder;
 
@@ -49,6 +53,8 @@ public class BackupRestoreSystemTest {
 
     @BeforeEach
     public void setUp() {
+        assumeFalse(List.of(environment.getActiveProfiles()).contains("v1Migration"),
+                "Backup restore is covered against the core deployment, not the legacy migration fixture");
         originalConfig = getConfig();
     }
 

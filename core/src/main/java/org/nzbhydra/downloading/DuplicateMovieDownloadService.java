@@ -172,8 +172,8 @@ public class DuplicateMovieDownloadService {
 
     private Long parseSearchResultId(String id) {
         try {
-            return Long.parseLong(id);
-        } catch (NumberFormatException e) {
+            return DownloadIdentifier.parse(id, true).searchResultId();
+        } catch (InvalidSearchResultIdException e) {
             return null;
         }
     }

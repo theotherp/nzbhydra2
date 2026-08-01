@@ -1,13 +1,18 @@
 package org.nzbhydra.downloading.downloaders.nzbget;
 
 import org.junit.jupiter.api.Test;
+import org.nzbhydra.config.downloading.DownloaderConfig;
 import org.nzbhydra.downloading.exceptions.DownloaderException;
+import org.nzbhydra.webaccess.Ssl;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class NzbGetTest {
 
@@ -48,6 +53,19 @@ class NzbGetTest {
         List<String> categories = nzbGet.getCategories();
 
         assertThat(categories).containsExactly("books", "movies");
+    }
+
+    @Test
+    void shouldInitializeJsonRpcClient() {
+        Ssl ssl = mock(Ssl.class);
+        when(ssl.getVerificationStateForHost("localhost")).thenReturn(Ssl.SslVerificationState.DISABLED_HOST);
+        when(ssl.getAllTrustingSslContext()).thenReturn(null);
+        DownloaderConfig config = new DownloaderConfig();
+        config.setUrl("http://localhost/nzbget/");
+
+        NzbGet nzbGet = new NzbGet(null, null, null, null, null, ssl, null);
+
+        assertThatCode(() -> nzbGet.initialize(config)).doesNotThrowAnyException();
     }
 
     private static LinkedHashMap<String, Object> configEntry(String name, String value) {

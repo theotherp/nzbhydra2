@@ -286,7 +286,7 @@ public class BackupAndRestore {
         systemControl.exitWithReturnCode(SystemControl.RESTORE_RETURN_CODE);
     }
 
-    private static void extractZip(File zipFile, File targetFolder) throws IOException {
+    static void extractZip(File zipFile, File targetFolder) throws IOException {
         logger.info("Extracting from file {} to folder {}", zipFile.getCanonicalPath(), targetFolder.getCanonicalPath());
         Path dest = targetFolder.toPath().toAbsolutePath().normalize();
         targetFolder.mkdir();

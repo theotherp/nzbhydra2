@@ -17,47 +17,29 @@ An error occurred. Check the logs.
 <table>
     <tr>
         <td>Path</td>
-        <td th:text="${#vars.getVariable('jakarta.servlet.forward.servlet_path')}"></td>
+      <td th:text="${path}"></td>
     </tr>
     <tr>
         <td>Query parameters</td>
-        <td th:text="${#vars.getVariable('jakarta.servlet.forward.query_string')}"></td>
+      <td th:text="${query}"></td>
     </tr>
     <tr>
         <td>Status</td>
-        <td th:text="${#vars.getVariable('status')}"></td>
+      <td th:text="${status}"></td>
     </tr>
     <tr>
         <td>Timestamp</td>
-        <td th:text="${#vars.getVariable('timestamp')}"></td>
+      <td th:text="${timestamp}"></td>
     </tr>
     <tr>
         <td>Error</td>
-        <td th:text="${#vars.getVariable('error')}"></td>
+      <td th:text="${error}"></td>
     </tr>
     <tr>
         <td>Exception</td>
-        <td th:text="${#vars.getVariable('exception')}"></td>
+      <td th:text="${exception}"></td>
     </tr>
 </table>
 
-<!--Print available variables-->
-<!--
-Session
-<table>
-    <tr th:each="var : ${session}">
-        <td th:text="${var.key}"></td>
-        <td th:text="${var.value}"></td>
-    </tr>
-</table>
-Vars
-<table>
-    <tr th:each="var : ${#vars.getVariableNames()}">
-        <td th:text="${var}"></td>
-        <td th:text="${#vars.getVariable(var)}"></td>
-    </tr>
-</table>
--->
 </body>
 </html>
-

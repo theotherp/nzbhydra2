@@ -1,6 +1,31 @@
 {
   "reflection": [
     {
+      "type": "oracle.jdbc.provider.oson.OsonFactory"
+    },
+    {
+      "type": "org.nzbhydra.auth.HydraWebAuthenticationDetails",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "jakarta.servlet.http.HttpServletRequest"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "org.springframework.security.web.authentication.WebAuthenticationDetails",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "jakarta.servlet.http.HttpServletRequest"
+          ]
+        }
+      ]
+    },
+    {
       "type": "java.lang.Exception",
       "methods": [
         {
@@ -57,6 +82,9 @@
           ]
         }
       ]
+    },
+    {
+      "type": "org.springframework.boot.ansi.AnsiOutput$EnabledEditor"
     },
     {
       "type": "tools.jackson.databind.cfg.DateTimeFeatureEditor"
