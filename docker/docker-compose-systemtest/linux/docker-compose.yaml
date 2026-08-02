@@ -52,17 +52,3 @@ services:
             - /tmp/hydraBlackhole_core:/hydraBlackhole
         networks: [ "systemtest" ]
         restart: unless-stopped
-    v1Migration:
-        depends_on:
-            - mockserver
-        image: ${HYDRA_IMAGE:-ghcr.io/theotherp/hydradocker:latest}
-        container_name: v1Migration
-        ports:
-            - "5077:5076"
-        environment:
-            - spring_profiles_active=build,systemtest
-        volumes:
-            - /tmp/hydra/v1MigrationDataFolder:/data
-            - /tmp/hydraBlackhole_v1Migration:/hydraBlackhole
-        networks: [ "systemtest" ]
-        restart: unless-stopped

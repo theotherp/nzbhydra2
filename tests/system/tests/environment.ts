@@ -13,6 +13,10 @@ export class TestEnvironment {
     readonly downloaderIntegrationQuery = "downloader-integration-nzb";
     readonly downloaderIntegrationNzbTitle = "Hydra Downloader Integration NZB";
     readonly downloaderIntegrationNzbContent = "Would download NZB with IDdownloader-integration-1";
+    readonly uiTestQuery = "uitest";
+    readonly uiTestResultTitles = ["indexer1-result1", "indexer1-result2", "indexer1-result3", "indexer2-result1", "indexer2-result2"];
+    readonly searchHistoryQueryPrefix = "nzbget-integration-ui-history-";
+    readonly searchHistoryResultTitle = "Hydra NZBGet Integration NZB";
 }
 
 export const testEnvironment = new TestEnvironment();

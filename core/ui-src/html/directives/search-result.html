@@ -1,4 +1,4 @@
-<tr ng-class="{'duplicate' : result.duplicateGroupIndex > 0, 'title-group-expanded': result.titleGroupIndex > 0} " data-testid="search-result-row" data-result-id="{{::result.searchResultId}}"
+<tr ng-class="{'duplicate' : result.duplicateGroupIndex > 0, 'title-group-expanded': result.titleGroupIndex > 0} " data-testid="search-result-row" data-result-id="{{::result.searchResultId}}" data-result-title="{{::result.title}}"
     style="margin:0; border-width: 0; padding: 0" ng-if="resultDisplayed" class="search-result-row">
   <td class="col-md-13 text-break search-results-cell result-title" style="margin:0;" data-label="Title">
     <div class="d-flex">
