@@ -52,7 +52,7 @@ test.describe("External Tools Configuration", () => {
 
         await expect(page.getByRole("heading", {name: "External Tool Configuration"})).toBeVisible();
         await expect(modalField(page, "Name")).toHaveValue("Sonarr");
-        await expect(modalField(page, "Host URL")).toHaveValue(testEnvironment.sonarrPresetUrl);
+        await expect(modalField(page, "Host URL")).toHaveValue("http://localhost:8989");
         await expect(modalField(page, "Categories")).toHaveValue("5030,5040");
         await expect(modalSwitch(page, "Enabled")).toBeChecked();
         await expect(modalSwitch(page, "Configure for Usenet")).toBeChecked();
@@ -167,7 +167,7 @@ async function saveConfiguration(page: Page, hydra: {
     const saveResponse = page.waitForResponse(response =>
         response.request().method() === "PUT" && new URL(response.url()).pathname === "/internalapi/config");
     const saveButton = page.getByRole("button", {name: "Save", exact: true});
-    await saveButton.dispatchEvent("click");
+    await saveButton.click({force: true});
     const response = await saveResponse;
     expect(response.status(), `Configuration save failed: ${await response.text()}`).toBe(200);
     const result = await response.json() as { ok?: boolean; errorMessages?: string[]; newConfig?: Record<string, unknown> };
