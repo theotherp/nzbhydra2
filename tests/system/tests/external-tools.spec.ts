@@ -164,13 +164,11 @@ async function closeModal(page: Page): Promise<void> {
 async function saveConfiguration(page: Page, hydra: {
     getConfig(): Promise<Record<string, unknown>>
 }, expectedName?: string): Promise<void> {
-    const saveResponse = page.waitForResponse(response =>
-        response.request().method() === "PUT" && new URL(response.url()).pathname === "/internalapi/config");
+    const saveResult = waitForConfigurationSave(page);
     const saveButton = page.getByRole("button", {name: "Save", exact: true});
     await saveButton.click({force: true});
-    const response = await saveResponse;
-    expect(response.status(), `Configuration save failed: ${await response.text()}`).toBe(200);
-    const result = await response.json() as { ok?: boolean; errorMessages?: string[]; newConfig?: Record<string, unknown> };
+    const {status, result} = await saveResult;
+    expect(status).toBe(200);
     expect(result.ok, `Configuration validation errors: ${(result.errorMessages || []).join(", ")}`).toBe(true);
     expect(result.errorMessages || []).toEqual([]);
     expect(result.newConfig, "Configuration save did not return the saved configuration").toBeTruthy();
@@ -179,6 +177,25 @@ async function saveConfiguration(page: Page, hydra: {
         const tools = (persisted.externalTools as { externalTools?: Array<{ name?: string }> }).externalTools || [];
         expect(tools.map(tool => tool.name)).toContain(expectedName);
     }
+}
+
+function waitForConfigurationSave(page: Page): Promise<{
+    status: number;
+    result: { ok?: boolean; errorMessages?: string[]; newConfig?: Record<string, unknown> };
+}> {
+    return new Promise((resolve, reject) => {
+        const listener = (response: Response) => {
+            if (response.request().method() !== "PUT" || new URL(response.url()).pathname !== "/internalapi/config") {
+                return;
+            }
+            page.off("response", listener);
+            void response.json().then(result => resolve({
+                status: response.status(),
+                result: result as { ok?: boolean; errorMessages?: string[]; newConfig?: Record<string, unknown> },
+            }), reject);
+        };
+        page.on("response", listener);
+    });
 }
 
 async function submitModal(page: Page, expectConnection: boolean): Promise<void> {
