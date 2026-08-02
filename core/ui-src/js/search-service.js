@@ -41,6 +41,8 @@ function SearchService($http) {
         searchRequestParameters.maxage = maxage;
         searchRequestParameters.category = category;
         searchRequestParameters.mode = mode;
+        searchRequestParameters.loadAll = false;
+
         if (!angular.isUndefined(indexers) && indexers !== null) {
             searchRequestParameters.indexers = indexers.split(",");
         }
