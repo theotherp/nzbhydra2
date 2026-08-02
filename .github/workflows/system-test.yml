@@ -81,7 +81,7 @@ jobs:
       MOCKSERVER_INTERNAL_URL: http://mockserver:5080
       RADARR_INTERNAL_URL: http://radarr:7878
       RADARR_API_KEY: system-test-api-key-12345
-      SONARR_PRESET_URL: http://localhost:8989
+      SONARR_PRESET_URL: http://localhost:18989
       SONARR_INTERNAL_URL: http://sonarr:8989
       SONARR_API_KEY: system-test-api-key-12345
       SABNZBD_MOCK_API_KEY: deterministic-sabnzbd-key
@@ -147,7 +147,7 @@ jobs:
           }
 
           docker ps
-          wait_for_arr sonarr 8989
+          wait_for_arr sonarr 18989
           wait_for_arr radarr 7878
           docker ps
           echo "Core container mounts:"
@@ -285,7 +285,7 @@ jobs:
       MOCKSERVER_INTERNAL_URL: http://mockserver:5080
       RADARR_INTERNAL_URL: http://radarr:7878
       RADARR_API_KEY: system-test-api-key-12345
-      SONARR_PRESET_URL: http://localhost:8989
+      SONARR_PRESET_URL: http://localhost:18989
       SONARR_INTERNAL_URL: http://sonarr:8989
       SONARR_API_KEY: system-test-api-key-12345
       SABNZBD_MOCK_API_KEY: deterministic-sabnzbd-key
@@ -346,7 +346,7 @@ jobs:
             exit 1
           }
 
-          wait_for_arr sonarr 8989
+          wait_for_arr sonarr 18989
           wait_for_arr radarr 7878
           for attempt in {1..60}; do
             if curl --fail --silent http://127.0.0.1:5076/actuator/health/ping > /dev/null; then

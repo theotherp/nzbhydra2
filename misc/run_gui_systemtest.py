@@ -31,7 +31,7 @@ RUNS_DIR = PROJECT_ROOT / "misc" / ".gui-systemtest-runs"
 CORE_PORT = 5076
 MOCKSERVER_PORT = 5080
 RADARR_PORT = 7878
-SONARR_PORT = 8989
+SONARR_PORT = 18989
 ARR_API_KEY = "system-test-api-key-12345"
 COMMAND_TIMEOUT = 600
 
@@ -527,6 +527,21 @@ def start_supporting_services(timeout: float) -> list[str]:
 def stop_supporting_services(services: list[str]) -> None:
     if services and run_command(compose_command("stop", *services)) != 0:
         raise RuntimeError("Unable to stop runner-owned Sonarr and Radarr containers")
+    for service in services:
+        reset_arr_data(service)
+
+
+def reset_arr_data(service: str) -> None:
+    data_dir = COMPOSE_FILE.parent.parent / service / "data"
+    if not data_dir.is_dir():
+        return
+    for path in data_dir.iterdir():
+        if path.name == "config.xml":
+            continue
+        if path.is_dir():
+            shutil.rmtree(path)
+        else:
+            path.unlink()
 
 
 def ensure_playwright_installed() -> None:

@@ -6,11 +6,13 @@
   <UrlBase></UrlBase>
   <BindAddress>*</BindAddress>
   <ApiKey>system-test-api-key-12345</ApiKey>
-  <AuthenticationMethod>None</AuthenticationMethod>
   <UpdateMechanism>Docker</UpdateMechanism>
   <LaunchBrowser>True</LaunchBrowser>
   <Branch>main</Branch>
   <InstanceName>Sonarr</InstanceName>
   <SyslogPort>514</SyslogPort>
-  <AuthenticationRequired>Enabled</AuthenticationRequired>
+  <AuthenticationRequired>DisabledForLocalAddresses</AuthenticationRequired>
+  <AuthenticationMethod>Forms</AuthenticationMethod>
+  <SslCertPath></SslCertPath>
+  <SslCertPassword></SslCertPassword>
 </Config>

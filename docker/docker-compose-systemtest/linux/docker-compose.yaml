@@ -23,7 +23,7 @@ services:
         volumes:
             - ../../sonarr/data:/config
         ports:
-            - "8989:8989"
+            - "18989:8989"
         networks: [ "systemtest" ]
         restart: unless-stopped
     radarr:

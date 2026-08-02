@@ -104,7 +104,7 @@ class PlaywrightEnvironmentTest(unittest.TestCase):
         self.assertEqual("http://windows-host:5076", environment["PLAYWRIGHT_BASE_URL"])
         self.assertEqual("http://windows-host:5080", environment["MOCKSERVER_EXTERNAL_URL"])
         self.assertEqual("http://127.0.0.1:5080", environment["MOCKSERVER_INTERNAL_URL"])
-        self.assertEqual("http://127.0.0.1:8989", environment["SONARR_INTERNAL_URL"])
+        self.assertEqual("http://127.0.0.1:18989", environment["SONARR_INTERNAL_URL"])
 
 
 class RunnerSafetyTest(unittest.TestCase):
@@ -157,6 +157,21 @@ class RunnerSafetyTest(unittest.TestCase):
     def test_should_fail_when_docker_cleanup_fails(self, compose_command, run_command):
         with self.assertRaisesRegex(RuntimeError, "Unable to stop"):
             runner.stop_supporting_services(["sonarr"])
+
+    def test_should_reset_arr_data_except_configuration(self):
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            data_dir = Path(temporary_directory) / "sonarr" / "data"
+            data_dir.mkdir(parents=True)
+            (data_dir / "config.xml").write_text("configuration", encoding="utf-8")
+            (data_dir / "old.db").write_text("stale", encoding="utf-8")
+            (data_dir / "MediaCover").mkdir()
+
+            with patch.object(runner, "COMPOSE_FILE", Path(temporary_directory) / "linux" / "docker-compose.yaml"):
+                runner.reset_arr_data("sonarr")
+
+            self.assertTrue((data_dir / "config.xml").is_file())
+            self.assertFalse((data_dir / "old.db").exists())
+            self.assertFalse((data_dir / "MediaCover").exists())
 
 
 class WslBaselineTest(unittest.TestCase):
