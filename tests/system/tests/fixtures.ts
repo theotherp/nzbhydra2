@@ -76,6 +76,17 @@ export async function dismissWelcomeDialog(page: Page): Promise<void> {
     }
 }
 
+export async function searchForResult(page: Page, query: string, resultTitle: string): Promise<void> {
+    await page.getByTestId("search-query").fill(query);
+    const searchResponse = page.waitForResponse(response =>
+        response.request().method() === "POST" && new URL(response.url()).pathname === "/internalapi/search");
+    await page.getByTestId("search-submit").click();
+
+    expect((await searchResponse).status()).toBe(200);
+    await expect(page.getByTestId("search-status-modal")).toBeHidden();
+    await expect(page.getByTestId("search-result-title").filter({hasText: resultTitle})).toBeVisible();
+}
+
 async function waitForHydra(request: APIRequestContext, baseURL: string): Promise<void> {
     const healthUrl = new URL("/actuator/health/ping", baseURL).toString();
     const attempts = 30;
@@ -138,6 +149,7 @@ function createHydraApi(request: APIRequestContext, baseURL: string): HydraApi {
             const config = await getConfig();
             const downloading = config.downloading as HydraConfig;
             downloading.nzbAccessType = "PROXY";
+            downloading.fallbackForFailed = "NONE";
             downloading.downloaders = [{
                 name: "Deterministic SABnzbd",
                 apiKey: testEnvironment.sabnzbdMockApiKey,
@@ -146,6 +158,7 @@ function createHydraApi(request: APIRequestContext, baseURL: string): HydraApi {
                 downloadType: "NZB",
                 nzbAddingType: "UPLOAD",
                 addPaused: true,
+                defaultCategory: testEnvironment.sabnzbdMockCategory,
                 enabled: true,
             }];
             await saveConfig(config);

@@ -9,6 +9,10 @@ export class TestEnvironment {
     readonly sonarrPresetUrl = process.env.SONARR_PRESET_URL || "http://localhost:8989";
     readonly sonarrApiKey = process.env.SONARR_API_KEY || "system-test-api-key-12345";
     readonly sabnzbdMockApiKey = process.env.SABNZBD_MOCK_API_KEY || "deterministic-sabnzbd-key";
+    readonly sabnzbdMockCategory = process.env.SABNZBD_MOCK_CATEGORY || "Deterministic Category";
+    readonly downloaderIntegrationQuery = "downloader-integration-nzb";
+    readonly downloaderIntegrationNzbTitle = "Hydra Downloader Integration NZB";
+    readonly downloaderIntegrationNzbContent = "Would download NZB with IDdownloader-integration-1";
 }
 
 export const testEnvironment = new TestEnvironment();

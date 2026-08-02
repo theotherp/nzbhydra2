@@ -121,9 +121,10 @@
         </span>
           <save-or-send-file ng-if="result.downloadType!='TORBOX'" search-result-id="result.downloadId || result.searchResultId" searchresult="result" type="result.downloadType"></save-or-send-file>
           <span ng-switch-default>
-              <a target="_blank" href="getnzb/user/{{ ::result.downloadId || result.searchResultId }}"
-                 ng-click="markDownloaded()"
-                 style="vertical-align: middle; margin-left: 3px; margin-right: 3px"
+               <a target="_blank" href="getnzb/user/{{ ::result.downloadId || result.searchResultId }}"
+                  ng-click="markDownloaded()"
+                  data-testid="download-nzb"
+                  style="vertical-align: middle; margin-left: 3px; margin-right: 3px"
                  class="no-underline result-nzb-download-link hidden-xs result-icon"
                  uib-tooltip="Download NZB"
                  tooltip-placement="top"
