@@ -7,12 +7,12 @@
 </script>
 
 <script type="text/ng-template" id="autocompletePopupTemplate.html">
-  <ul class="dropdown-menu"
+  <ul class="dropdown-menu" data-testid="autocomplete-popup"
       ng-show="!moveInProgress && (isOpen() ? true : ((mouseSelectionQuery = null) || false))"
       ng-style="{top: position().top+'px', left: position().left+'px'}"
       role="listbox"
       aria-hidden="{{!isOpen()}}">
-    <li class="uib-typeahead-match"
+    <li class="uib-typeahead-match" data-testid="autocomplete-option" data-tmdb-id="{{::match.model.tmdbId}}"
         ng-repeat="match in matches track by $index"
         ng-class="{active: isActive($index) }"
         ng-mouseenter="mouseSelectionQuery === query && selectActive($index)"
@@ -48,14 +48,14 @@
                 <div class="search-category-inline">
                   <span class="search-category-label">Category</span>
                   <div class="dropdown search-category-picker">
-                    <button type="button" class="btn btn-default dropdown-toggle search-category-button btn-block"
+                    <button type="button" class="btn btn-default dropdown-toggle search-category-button btn-block" data-testid="search-category-control"
                             data-toggle="dropdown" aria-expanded="false" id="searchCategoryDropdownButton"
                             ng-cloak>
                                     {{ category.name }} <span class="caret"></span>
                                 </button>
                     <ul class="dropdown-menu search-category-menu" role="menu">
                                     <li ng-repeat="category in categories">
-                                        <a href="" class="searchCategoryButton search-category-option"
+                                      <a href="" class="searchCategoryButton search-category-option" data-testid="search-category-option-{{category.name}}"
                                            ng-click="toggleCategory(category)">{{ category.name }}</a>
                                     </li>
                                 </ul>
@@ -67,7 +67,7 @@
             <div class="row search-main-row">
               <div class="col-xs-20">
                 <div class="search-main-input-group">
-                  <input id="searchfield" type="search" ngtype="search" ng-model="titleQuery"
+                  <input id="searchfield" data-testid="search-query" type="search" ngtype="search" ng-model="titleQuery"
                                    ng-enter="onTypeAheadEnter()" placeholder="{{searchBoxPlaceholder}}" typeahead-min-length="2"
                          typeahead-wait-ms="typeAheadWait" ng-keydown="onTypeAheadKeyDown($event)"
                          uib-typeahead="item as item.label for item in getAutocomplete($viewValue)"
@@ -93,7 +93,7 @@
             
             <div class="row search-refinement-row" ng-if="supportsAutocomplete()">
               <div class="col-xs-20 col-sm-12 col-md-13" ng-class="{'search-refinement-placeholder': !selectedItem}">
-                <input id="additional-query" type="search" class="form-control"
+                <input id="additional-query" data-testid="additional-query" type="search" class="form-control"
                        ng-model="$parent.query"
                        placeholder="Additional filter terms"
                        ng-disabled="!selectedItem"
@@ -247,7 +247,7 @@
                 <div class="hidden-xs col-sm-6 col-md-5"></div>
                 <div class="hidden-xs col-sm-6 col-md-8"></div>
                 <div class="col-xs-20 col-sm-8 col-md-7 search-submit-button-row">
-                  <button class="btn btn-default search-submit-button" type="button" id="startsearch"
+                  <button class="btn btn-default search-submit-button" data-testid="search-submit" type="button" id="startsearch"
                           ng-click="initiateSearch()"><span class="glyphicon glyphicon-search"></span> Go!
                   </button>
                 </div>

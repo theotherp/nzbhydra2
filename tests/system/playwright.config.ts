@@ -1,4 +1,5 @@
 import {defineConfig, devices} from "@playwright/test";
+import {testEnvironment} from "./tests/environment";
 
 export default defineConfig({
     testDir: "./tests",
@@ -14,7 +15,7 @@ export default defineConfig({
         ["junit", {outputFile: "test-results/junit.xml"}],
     ],
     use: {
-        baseURL: process.env.PLAYWRIGHT_BASE_URL || "http://127.0.0.1:5076",
+        baseURL: testEnvironment.playwrightBaseUrl,
         trace: "on-first-retry",
         screenshot: "only-on-failure",
     },

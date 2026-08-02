@@ -75,8 +75,14 @@ jobs:
       HYDRA_IMAGE: ghcr.io/theotherp/hydradocker:${{ github.sha }}
       PLAYWRIGHT_BASE_URL: http://127.0.0.1:5076
       HYDRA_INTERNAL_API_KEY: internalApiKey
+      HYDRA_EXTERNAL_URL: http://core:5076
       MOCKSERVER_EXTERNAL_URL: http://127.0.0.1:5080
       MOCKSERVER_INTERNAL_URL: http://mockserver:5080
+      RADARR_INTERNAL_URL: http://radarr:7878
+      RADARR_API_KEY: system-test-api-key-12345
+      SONARR_PRESET_URL: http://localhost:8989
+      SONARR_API_KEY: system-test-api-key-12345
+      SABNZBD_MOCK_API_KEY: deterministic-sabnzbd-key
     steps:
       - run: echo Running test core with port 5076
       - uses: actions/checkout@v4
@@ -269,8 +275,14 @@ jobs:
       nzbhydra.name: core
       PLAYWRIGHT_BASE_URL: http://127.0.0.1:5076
       HYDRA_INTERNAL_API_KEY: internalApiKey
+      HYDRA_EXTERNAL_URL: http://core:5076
       MOCKSERVER_EXTERNAL_URL: http://127.0.0.1:5080
       MOCKSERVER_INTERNAL_URL: http://mockserver:5080
+      RADARR_INTERNAL_URL: http://radarr:7878
+      RADARR_API_KEY: system-test-api-key-12345
+      SONARR_PRESET_URL: http://localhost:8989
+      SONARR_API_KEY: system-test-api-key-12345
+      SABNZBD_MOCK_API_KEY: deterministic-sabnzbd-key
     steps:
       - uses: actions/checkout@v4
         name: "Check out source"

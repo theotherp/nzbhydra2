@@ -1,4 +1,4 @@
-<span ng-show="doShowResults">
+<span ng-show="doShowResults" data-testid="search-results">
 <div class="row d-flex justify-content-center" ng-if="indexersearches.length" style="margin-top: 25px">
     <div class="col-xs-20 col-sm-18 col-md-14 col-lg-10">
         <uib-accordion close-others="oneAtATime" id="search-results-accordion">
@@ -161,7 +161,7 @@
 
 
             <div>
-                <span class="badge"
+                <span class="badge" data-testid="search-results-summary"
                     uib-tooltip-html="getRejectedReasonsTooltip()"
                     tooltip-class="rejected-tooltip"
                     tooltip-placement="top"

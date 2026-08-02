@@ -1,4 +1,5 @@
 import {APIRequestContext, APIResponse, expect, Page, Response, test as base} from "@playwright/test";
+import {testEnvironment} from "./environment";
 
 type HydraConfig = Record<string, unknown>;
 
@@ -12,7 +13,7 @@ type HydraApi = {
     baseURL: string;
     getConfig(): Promise<HydraConfig>;
     saveConfig(config: HydraConfig): Promise<HydraConfig>;
-    configureMockIndexers(): Promise<void>;
+    configureMockIndexers(apiKeys?: string[]): Promise<void>;
     configureSabnzbdMock(): Promise<void>;
     resetSabnzbdRecording(): Promise<void>;
     getSabnzbdRecording(): Promise<Record<string, unknown>>;
@@ -24,10 +25,6 @@ type HydraFixtures = {
     diagnostics: void;
 };
 
-const internalApiKey = process.env.HYDRA_INTERNAL_API_KEY || "internalApiKey";
-const mockserverExternalUrl = process.env.MOCKSERVER_EXTERNAL_URL || "http://127.0.0.1:5080";
-const mockserverInternalUrl = process.env.MOCKSERVER_INTERNAL_URL || "http://mockserver:5080";
-
 export const test = base.extend<HydraFixtures>({
     page: async ({page}, use) => {
         await page.addInitScript(() => window.localStorage.clear());
@@ -35,7 +32,7 @@ export const test = base.extend<HydraFixtures>({
     },
 
     hydra: async ({request, baseURL}, use) => {
-        const resolvedBaseURL = baseURL || "http://127.0.0.1:5076";
+        const resolvedBaseURL = baseURL || testEnvironment.playwrightBaseUrl;
         await waitForHydra(request, resolvedBaseURL);
 
         const hydra = createHydraApi(request, resolvedBaseURL);
@@ -69,6 +66,7 @@ export const test = base.extend<HydraFixtures>({
 });
 
 export {expect};
+export {testEnvironment};
 
 export async function dismissWelcomeDialog(page: Page): Promise<void> {
     const welcomeDialog = page.getByRole("dialog").filter({hasText: "Welcome to NZBHydra 2"});
@@ -100,7 +98,7 @@ async function waitForHydra(request: APIRequestContext, baseURL: string): Promis
 }
 
 function createHydraApi(request: APIRequestContext, baseURL: string): HydraApi {
-    const internalRequest = (data?: HydraConfig) => ({params: {internalApiKey}, data});
+    const internalRequest = (data?: HydraConfig) => ({params: {internalApiKey: testEnvironment.hydraInternalApiKey}, data});
 
     const getConfig = async (): Promise<HydraConfig> => {
         const response = await request.get("/internalapi/config", internalRequest());
@@ -122,11 +120,11 @@ function createHydraApi(request: APIRequestContext, baseURL: string): HydraApi {
         baseURL,
         getConfig,
         saveConfig,
-        async configureMockIndexers(): Promise<void> {
+        async configureMockIndexers(apiKeys = ["1", "2", "3"]): Promise<void> {
             const config = await getConfig();
-            config.indexers = ["1", "2", "3"].map(apiKey => ({
+            config.indexers = apiKeys.map(apiKey => ({
                 name: `UI Test Mock ${apiKey}`,
-                host: mockserverInternalUrl,
+                host: testEnvironment.mockserverInternalUrl,
                 apiPath: "/api",
                 apiKey,
                 backend: "NEWZNAB",
@@ -142,8 +140,8 @@ function createHydraApi(request: APIRequestContext, baseURL: string): HydraApi {
             downloading.nzbAccessType = "PROXY";
             downloading.downloaders = [{
                 name: "Deterministic SABnzbd",
-                apiKey: "deterministic-sabnzbd-key",
-                url: `${mockserverInternalUrl}/sabnzbd`,
+                apiKey: testEnvironment.sabnzbdMockApiKey,
+                url: `${testEnvironment.mockserverInternalUrl}/sabnzbd`,
                 downloaderType: "SABNZBD",
                 downloadType: "NZB",
                 nzbAddingType: "UPLOAD",
@@ -153,16 +151,16 @@ function createHydraApi(request: APIRequestContext, baseURL: string): HydraApi {
             await saveConfig(config);
         },
         async resetSabnzbdRecording(): Promise<void> {
-            const response = await request.post(`${mockserverExternalUrl}/sabnzbd/recording/reset`);
+            const response = await request.post(`${testEnvironment.mockserverExternalUrl}/sabnzbd/recording/reset`);
             await expectSuccessfulResponse(response, "POST /sabnzbd/recording/reset");
         },
         async getSabnzbdRecording(): Promise<Record<string, unknown>> {
-            const response = await request.get(`${mockserverExternalUrl}/sabnzbd/recording`);
+            const response = await request.get(`${testEnvironment.mockserverExternalUrl}/sabnzbd/recording`);
             await expectSuccessfulResponse(response, "GET /sabnzbd/recording");
             return await response.json() as Record<string, unknown>;
         },
         mockNzbUrl(nzbId: string): string {
-            return `${mockserverExternalUrl}/nzb/${encodeURIComponent(nzbId)}`;
+            return `${testEnvironment.mockserverExternalUrl}/nzb/${encodeURIComponent(nzbId)}`;
         },
     };
 }

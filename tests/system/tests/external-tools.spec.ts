@@ -1,5 +1,5 @@
 import {Locator, Page} from "@playwright/test";
-import {dismissWelcomeDialog, expect, test} from "./fixtures";
+import {dismissWelcomeDialog, expect, test, testEnvironment} from "./fixtures";
 
 test.describe("External Tools Configuration", () => {
     test.beforeEach(async ({page, hydra}) => {
@@ -39,7 +39,7 @@ test.describe("External Tools Configuration", () => {
 
         await expect(page.getByRole("heading", {name: "External Tool Configuration"})).toBeVisible();
         await expect(modalField(page, "Name")).toHaveValue("Sonarr");
-        await expect(modalField(page, "Host URL")).toHaveValue("http://localhost:8989");
+        await expect(modalField(page, "Host URL")).toHaveValue(testEnvironment.sonarrPresetUrl);
         await expect(modalField(page, "Categories")).toHaveValue("5030,5040");
         await expect(modalSwitch(page, "Enabled")).toBeChecked();
         await expect(modalSwitch(page, "Configure for Usenet")).toBeChecked();
@@ -65,13 +65,13 @@ test.describe("External Tools Configuration", () => {
         await saveConfiguration(page);
 
         await expect(page.getByRole("button", {name: "Radarr (RADARR)"})).toBeVisible();
-        await expect(page.getByText("http://radarr:7878", {exact: true})).toBeVisible();
+        await expect(page.getByText(testEnvironment.radarrInternalUrl, {exact: true})).toBeVisible();
         await expect(page.locator(".btn-danger .glyphicon-remove")).toBeVisible();
     });
 
     test("should test connection to external tool", async ({page}) => {
         await openPreset(page, "Sonarr");
-        await modalField(page, "API Key").fill("52a631c9cab346bca59c32bfffdd2669");
+        await modalField(page, "API Key").fill(testEnvironment.sonarrApiKey);
         await page.getByRole("button", {name: "Test connection"}).click();
 
         await expect(page.locator(".growl-message").first()).toBeVisible();
@@ -124,8 +124,9 @@ async function openPreset(page: Page, preset: string): Promise<void> {
 
 async function addRadarr(page: Page): Promise<void> {
     await openPreset(page, "Radarr");
-    await modalField(page, "Host URL").fill("http://radarr:7878");
-    await modalField(page, "API Key").fill("system-test-api-key-12345");
+    await modalField(page, "Host URL").fill(testEnvironment.radarrInternalUrl);
+    await modalField(page, "API Key").fill(testEnvironment.radarrApiKey);
+    await modalField(page, "NZBHydra Host").fill(testEnvironment.hydraExternalUrl);
     await modalOkButton(page).click();
     await expect(page.getByRole("heading", {name: "External Tool Configuration"})).toBeHidden();
     await expect(page.getByRole("button", {name: "Radarr (RADARR)"})).toBeVisible();

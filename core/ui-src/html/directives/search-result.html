@@ -1,4 +1,4 @@
-<tr ng-class="{'duplicate' : result.duplicateGroupIndex > 0, 'title-group-expanded': result.titleGroupIndex > 0} "
+<tr ng-class="{'duplicate' : result.duplicateGroupIndex > 0, 'title-group-expanded': result.titleGroupIndex > 0} " data-testid="search-result-row" data-result-id="{{::result.searchResultId}}"
     style="margin:0; border-width: 0; padding: 0" ng-if="resultDisplayed" class="search-result-row">
   <td class="col-md-13 text-break search-results-cell result-title" style="margin:0;" data-label="Title">
     <div class="d-flex">
@@ -25,7 +25,7 @@
         <!-- Formatting must be so weird because otherwise we'll have leading whitespaces in the titles   -->
         <span class="glyphicon" ng-class="{'glyphicon-minus': duplicatesExpanded, 'glyphicon-plus': !duplicatesExpanded}"></span>
       </a>
-      <span class="title">{{result.alwaysShowTitles}}<span
+      <span class="title" data-testid="search-result-title">{{result.alwaysShowTitles}}<span
         ng-if="(result.titleGroupIndex === 0 && result.duplicateGroupIndex === 0) || searchResultsControllerShared.isGroupEpisodes || foo.alwaysShowTitles"><img
         ng-if="result.cover && foo.showCovers" ng-src="{{::result.cover}}" width="{{::coverSize}}px" style="margin-right: 5px" ng-click="showCover(result.cover)"/><span
         ng-if="result.downloadedAt && searchResultsControllerShared.showDownloadedIndicator" class="fa fa-check" uib-tooltip="Already downloaded at {{result.downloadedAt}}"
