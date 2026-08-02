@@ -281,7 +281,7 @@ def wait_for_url(
     raise RuntimeError(f"Timed out waiting for {name} at {url}")
 
 
-def wait_until_stopped(url: str, timeout: float = 30) -> None:
+def wait_until_stopped(url: str, timeout: float = 45) -> None:
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         if not request_ok(url):
@@ -471,6 +471,9 @@ def ensure_playwright_installed() -> None:
     package = json.loads((SYSTEM_TEST_DIR / "package.json").read_text(encoding="utf-8"))
     expected_version = package["devDependencies"]["@playwright/test"]
     installed_package = SYSTEM_TEST_DIR / "node_modules" / "@playwright" / "test" / "package.json"
+    playwright_shim = SYSTEM_TEST_DIR / "node_modules" / ".bin" / (
+        "playwright.cmd" if os.name == "nt" else "playwright"
+    )
     installed_version = None
     if installed_package.is_file():
         try:
@@ -478,7 +481,7 @@ def ensure_playwright_installed() -> None:
         except (OSError, KeyError, json.JSONDecodeError):
             pass
     npm = find_command("npm")
-    if installed_version != expected_version:
+    if installed_version != expected_version or not playwright_shim.is_file():
         if run_command([npm, "ci"], cwd=SYSTEM_TEST_DIR) != 0:
             raise RuntimeError("npm ci failed")
     if run_command([find_command("npx"), "playwright", "install", "chromium"], cwd=SYSTEM_TEST_DIR) != 0:

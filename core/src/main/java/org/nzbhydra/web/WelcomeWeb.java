@@ -5,6 +5,7 @@ import org.nzbhydra.config.ConfigProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,13 +21,15 @@ public class WelcomeWeb {
     private ConfigProvider configProvider;
     @Autowired
     private BaseConfigHandler baseConfigHandler;
+    @Autowired
+    private Environment environment;
 
     private static final Logger logger = LoggerFactory.getLogger(WelcomeWeb.class);
 
     @Secured({"ROLE_USER"})
     @GetMapping("/internalapi/welcomeshown")
     public Boolean logfileContent() {
-        return configProvider.getBaseConfig().getMain().isWelcomeShown();
+        return configProvider.getBaseConfig().getMain().isWelcomeShown() || Boolean.parseBoolean(environment.getProperty("nzbhydra.welcomeShown"));
     }
 
     @Secured({"ROLE_USER"})

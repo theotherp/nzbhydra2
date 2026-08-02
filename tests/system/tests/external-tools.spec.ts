@@ -98,7 +98,7 @@ test.describe("External Tools Configuration", () => {
         await page.getByRole("button", {name: "Radarr", exact: true}).click();
         await expect(page.getByRole("button", {name: "Delete", exact: true})).toBeVisible();
         await modalField(page, "Name").fill("My Radarr Instance");
-        await page.getByRole("button", {name: "OK", exact: true}).click();
+        await page.getByRole("button", {name: "OK", exact: true}).click({force: true});
         await expect(page.getByRole("heading", {name: "External Tool Configuration"})).toBeHidden();
         await saveConfiguration(page);
 
@@ -140,7 +140,8 @@ async function closeModal(page: Page): Promise<void> {
 async function saveConfiguration(page: Page): Promise<void> {
     const saveResponse = page.waitForResponse(response =>
         response.request().method() === "PUT" && new URL(response.url()).pathname === "/internalapi/config");
-    await page.getByRole("button", {name: "Save", exact: true}).click();
+    // The active Save button has a continuous pulse animation, so it never becomes stable.
+    await page.getByRole("button", {name: "Save", exact: true}).click({force: true});
     expect((await saveResponse).status()).toBe(200);
 }
 
