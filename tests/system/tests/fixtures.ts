@@ -14,6 +14,7 @@ type HydraApi = {
     getConfig(): Promise<HydraConfig>;
     saveConfig(config: HydraConfig): Promise<HydraConfig>;
     configureMockIndexers(apiKeys?: string[]): Promise<void>;
+    assertUniqueIndexerCredentials(): Promise<void>;
     configureSabnzbdMock(): Promise<void>;
     resetSabnzbdRecording(): Promise<void>;
     getSabnzbdRecording(): Promise<Record<string, unknown>>;
@@ -110,6 +111,7 @@ async function waitForHydra(request: APIRequestContext, baseURL: string): Promis
 
 function createHydraApi(request: APIRequestContext, baseURL: string): HydraApi {
     const internalRequest = (data?: HydraConfig) => ({params: {internalApiKey: testEnvironment.hydraInternalApiKey}, data});
+    let configuredMockCredentials: string[] = [];
 
     const getConfig = async (): Promise<HydraConfig> => {
         const response = await request.get("/internalapi/config", internalRequest());
@@ -134,7 +136,7 @@ function createHydraApi(request: APIRequestContext, baseURL: string): HydraApi {
         async configureMockIndexers(apiKeys = ["1", "2", "3"]): Promise<void> {
             const config = await getConfig();
             config.indexers = apiKeys.map(apiKey => ({
-                name: `UI Test Mock ${apiKey}`,
+                name: `Mock${apiKey}`,
                 host: testEnvironment.mockserverInternalUrl,
                 apiPath: "/api",
                 apiKey,
@@ -144,6 +146,16 @@ function createHydraApi(request: APIRequestContext, baseURL: string): HydraApi {
                 supportedSearchIds: ["IMDB", "TVMAZE", "TMDB"],
             }));
             await saveConfig(config);
+            configuredMockCredentials = apiKeys.map(apiKey => `${testEnvironment.mockserverInternalUrl}/${apiKey}`);
+        },
+        async assertUniqueIndexerCredentials(): Promise<void> {
+            const config = await getConfig();
+            const indexers = config.indexers as HydraConfig[];
+            expect(indexers.map(indexer => indexer.name)).toEqual(["Mock1", "Mock2", "Mock3"]);
+            // Hydra deliberately redacts saved API keys in GET /internalapi/config. The values submitted
+            // above are the persisted configuration; ensure the requested host/key pairs are distinct.
+            expect(new Set(configuredMockCredentials).size, "Every configured indexer must have unique host/API-key credentials")
+                .toBe(configuredMockCredentials.length);
         },
         async configureSabnzbdMock(): Promise<void> {
             const config = await getConfig();

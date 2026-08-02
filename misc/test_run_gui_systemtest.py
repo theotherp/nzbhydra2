@@ -4,7 +4,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, call, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import run_gui_systemtest as runner
@@ -43,7 +43,7 @@ class SupportingServicesTest(unittest.TestCase):
 
         self.assertEqual(["sonarr", "radarr"], started)
         ensure_network.assert_called_once_with()
-        self.assertEqual(2, run_command.call_count)
+        self.assertEqual(6, run_command.call_count)
         self.assertEqual(2, wait_for_url.call_count)
 
 
@@ -87,9 +87,8 @@ class ExistingRuntimeTest(unittest.TestCase):
 class PlaywrightEnvironmentTest(unittest.TestCase):
 
     @patch.object(runner, "find_command", return_value="npx")
-    @patch.object(runner.subprocess, "run")
-    def test_should_configure_host_process_urls(self, subprocess_run, find_command):
-        subprocess_run.return_value.returncode = 0
+    @patch.object(runner, "run_command", return_value=0)
+    def test_should_configure_host_process_urls(self, run_command, find_command):
 
         exit_code = runner.run_playwright(
             "http://windows-host:5076",
@@ -99,12 +98,65 @@ class PlaywrightEnvironmentTest(unittest.TestCase):
         )
 
         self.assertEqual(0, exit_code)
-        command = subprocess_run.call_args.args[0]
-        environment = subprocess_run.call_args.kwargs["env"]
+        command = run_command.call_args.args[0]
+        environment = run_command.call_args.kwargs["environment"]
         self.assertEqual(["npx", "playwright", "test", "tests/smoke.spec.ts"], command)
         self.assertEqual("http://windows-host:5076", environment["PLAYWRIGHT_BASE_URL"])
         self.assertEqual("http://windows-host:5080", environment["MOCKSERVER_EXTERNAL_URL"])
         self.assertEqual("http://127.0.0.1:5080", environment["MOCKSERVER_INTERNAL_URL"])
+        self.assertEqual("http://127.0.0.1:8989", environment["SONARR_INTERNAL_URL"])
+
+
+class RunnerSafetyTest(unittest.TestCase):
+
+    @patch.object(runner.fcntl, "flock", side_effect=OSError("locked"))
+    def test_should_reject_lock_contention(self, flock):
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            with patch.object(runner, "RUNS_DIR", Path(temporary_directory)):
+                with self.assertRaisesRegex(RuntimeError, "already active"):
+                    runner.acquire_run_lock()
+
+    @patch.object(runner.os, "killpg")
+    def test_should_kill_process_group_after_timeout(self, killpg):
+        process = MagicMock()
+        process.poll.return_value = None
+        process.pid = 123
+        process.wait.side_effect = [runner.subprocess.TimeoutExpired("playwright", 1), None]
+
+        runner.terminate_process_group(process, grace_period=1)
+
+        self.assertEqual(
+            [call(123, runner.signal.SIGTERM), call(123, runner.signal.SIGKILL)],
+            killpg.call_args_list,
+        )
+
+    @patch.object(runner, "terminate_process_group")
+    @patch.object(runner.subprocess, "Popen")
+    def test_should_bound_setup_command_timeout(self, popen, terminate_process_group):
+        process = MagicMock()
+        process.wait.side_effect = runner.subprocess.TimeoutExpired("docker", 1)
+        popen.return_value = process
+
+        self.assertEqual(124, runner.run_command(["docker"], timeout=1))
+        terminate_process_group.assert_called_once_with(process)
+
+    @patch.object(runner.time, "sleep")
+    @patch("run_gui_systemtest.socket.socket")
+    def test_should_fail_when_shutdown_port_is_not_released(self, socket_factory, sleep):
+        probe = MagicMock()
+        probe.__enter__.return_value = probe
+        probe.connect_ex.return_value = 0
+        socket_factory.return_value = probe
+        monotonic = iter([0, 0, 1])
+        with patch.object(runner.time, "monotonic", side_effect=monotonic):
+            with self.assertRaisesRegex(RuntimeError, "remained in use"):
+                runner.wait_for_port_release(5080, timeout=1)
+
+    @patch.object(runner, "run_command", return_value=1)
+    @patch.object(runner, "compose_command", return_value=["docker", "compose"])
+    def test_should_fail_when_docker_cleanup_fails(self, compose_command, run_command):
+        with self.assertRaisesRegex(RuntimeError, "Unable to stop"):
+            runner.stop_supporting_services(["sonarr"])
 
 
 class WslBaselineTest(unittest.TestCase):

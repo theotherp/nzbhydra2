@@ -49,6 +49,8 @@ CORE_ENVIRONMENT = {
         f"http://127.0.0.1:{MOCKSERVER_PORT}/repos/theotherp/nzbhydra2"
     ),
     "NZBHYDRA_NEWSURL": f"http://127.0.0.1:{MOCKSERVER_PORT}/static/news.json",
+    "NZBHYDRA_TMDB_APIBASEURL": f"http://127.0.0.1:{MOCKSERVER_PORT}/3",
+    "NZBHYDRA_TMDB_APIKEY": "system-test-tmdb-api-key",
 }
 REGULAR_BUILD_MODULES = (
     "org.nzbhydra:nzbhydra2,org.nzbhydra:core,org.nzbhydra:shared,org.nzbhydra:mapping,"

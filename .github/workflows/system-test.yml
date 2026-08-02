@@ -65,6 +65,7 @@ jobs:
   runSystemTestsLinux:
     needs: [ waitForNative, buildMockserver ]
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     env:
       spring_profiles_active: build,systemtest,testdocker,core
       nzbhydra_port: 5076
@@ -81,6 +82,7 @@ jobs:
       RADARR_INTERNAL_URL: http://radarr:7878
       RADARR_API_KEY: system-test-api-key-12345
       SONARR_PRESET_URL: http://localhost:8989
+      SONARR_INTERNAL_URL: http://sonarr:8989
       SONARR_API_KEY: system-test-api-key-12345
       SABNZBD_MOCK_API_KEY: deterministic-sabnzbd-key
     steps:
@@ -160,6 +162,9 @@ jobs:
         working-directory: tests/system
         run: npm run test:full
 
+      - name: "Test GUI runner safety"
+        run: python3 -m unittest misc/test_run_gui_systemtest.py
+
       - name: "Upload Playwright artifacts"
         if: always()
         uses: actions/upload-artifact@v4
@@ -168,7 +173,6 @@ jobs:
           path: |
             tests/system/playwright-report/**
             tests/system/test-results/**
-            docker/docker-compose-systemtest/linux/*.log
           if-no-files-found: warn
 
       - name: "Write docker-compose logs"
@@ -266,6 +270,7 @@ jobs:
   runSystemTestsJvmCoverage:
     needs: buildMockserver
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     env:
       spring_profiles_active: build,systemtest,testdocker,core
       nzbhydra_port: 5076
@@ -281,6 +286,7 @@ jobs:
       RADARR_INTERNAL_URL: http://radarr:7878
       RADARR_API_KEY: system-test-api-key-12345
       SONARR_PRESET_URL: http://localhost:8989
+      SONARR_INTERNAL_URL: http://sonarr:8989
       SONARR_API_KEY: system-test-api-key-12345
       SABNZBD_MOCK_API_KEY: deterministic-sabnzbd-key
     steps:
@@ -368,7 +374,6 @@ jobs:
           path: |
             tests/system/playwright-report/**
             tests/system/test-results/**
-            jvm-system-coverage-docker.log
           if-no-files-found: warn
 
       - name: "Stop JVM core"

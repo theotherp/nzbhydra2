@@ -5,6 +5,8 @@ test.describe("Downloads", () => {
     test.beforeEach(async ({hydra, page}) => {
         await hydra.configureMockIndexers(["1"]);
         await hydra.configureSabnzbdMock();
+        // Download history is intentionally retained between runs. Make this scenario's display choice explicit.
+        await page.addInitScript(() => window.localStorage.setItem("nzbhydra.hideAlreadyDownloadedResults", "false"));
         await page.goto("/");
         await dismissWelcomeDialog(page);
     });
@@ -55,6 +57,7 @@ test.describe("Downloads", () => {
         await searchForResult(page, testEnvironment.downloaderIntegrationQuery, testEnvironment.downloaderIntegrationNzbTitle);
 
         const resultRow = page.getByTestId("search-result-row").filter({hasText: testEnvironment.downloaderIntegrationNzbTitle});
+        await expect(resultRow, "A prior download must not hide this deterministic result").toBeVisible();
         const downloadEvent = page.waitForEvent("download");
         const downloadRequest = context.waitForEvent("request", request =>
             request.method() === "GET" && /^\/getnzb\/user\/[^/]+$/.test(new URL(request.url()).pathname));

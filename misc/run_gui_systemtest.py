@@ -2,10 +2,12 @@
 """Run Playwright system tests against IntelliJ or locally managed JVM services."""
 
 import argparse
+import fcntl
 import json
 import os
 import shutil
 import signal
+import socket
 import subprocess
 import sys
 import time
@@ -14,7 +16,7 @@ import urllib.request
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import TextIO
+from typing import BinaryIO, TextIO
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 SYSTEM_TEST_DIR = PROJECT_ROOT / "tests" / "system"
@@ -31,6 +33,7 @@ MOCKSERVER_PORT = 5080
 RADARR_PORT = 7878
 SONARR_PORT = 8989
 ARR_API_KEY = "system-test-api-key-12345"
+COMMAND_TIMEOUT = 600
 
 
 @dataclass
@@ -195,12 +198,48 @@ def run_command(
         *,
         cwd: Path = PROJECT_ROOT,
         environment: dict[str, str] | None = None,
+        timeout: float = COMMAND_TIMEOUT,
 ) -> int:
     print(f"Running: {subprocess.list2cmdline(command)}")
+    process = subprocess.Popen(command, cwd=cwd, env=environment, start_new_session=True)
     try:
-        return subprocess.run(command, cwd=cwd, env=environment, check=False).returncode
+        return process.wait(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        print(f"Command exceeded the {timeout:g}-second timeout: {subprocess.list2cmdline(command)}", file=sys.stderr)
+        terminate_process_group(process)
+        return 124
     except KeyboardInterrupt:
+        terminate_process_group(process)
         return 130
+
+
+def terminate_process_group(process: subprocess.Popen, grace_period: float = 5) -> None:
+    if process.poll() is not None:
+        return
+    os.killpg(process.pid, signal.SIGTERM)
+    try:
+        process.wait(timeout=grace_period)
+    except subprocess.TimeoutExpired:
+        os.killpg(process.pid, signal.SIGKILL)
+        process.wait(timeout=grace_period)
+
+
+def acquire_run_lock() -> BinaryIO:
+    RUNS_DIR.mkdir(parents=True, exist_ok=True)
+    lock_file = (RUNS_DIR / "runner.lock").open("a+b")
+    try:
+        fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError as error:
+        lock_file.close()
+        raise RuntimeError("Another GUI system-test runner is already active") from error
+    return lock_file
+
+
+def release_run_lock(lock_file: BinaryIO) -> None:
+    try:
+        fcntl.flock(lock_file.fileno(), fcntl.LOCK_UN)
+    finally:
+        lock_file.close()
 
 
 def build_jvm_services() -> tuple[Path, Path]:
@@ -290,6 +329,16 @@ def wait_until_stopped(url: str, timeout: float = 45) -> None:
     raise RuntimeError(f"Service did not stop after shutdown request: {url}")
 
 
+def wait_for_port_release(port: int, timeout: float = 45) -> None:
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as probe:
+            if probe.connect_ex(("127.0.0.1", port)) != 0:
+                return
+        time.sleep(0.5)
+    raise RuntimeError(f"Port {port} remained in use after service shutdown")
+
+
 def stop_existing_services(core_url: str | None, mockserver_url: str | None) -> None:
     if core_url:
         print(f"Stopping existing Hydra at {core_url}")
@@ -310,8 +359,10 @@ def stop_existing_services(core_url: str | None, mockserver_url: str | None) -> 
         post_shutdown(f"{mockserver_url}/actuator/shutdown", required=True)
     if core_url:
         wait_until_stopped(f"{core_url}/actuator/health/ping")
+        wait_for_port_release(CORE_PORT)
     if mockserver_url:
         wait_until_stopped(f"{mockserver_url}/actuator/health")
+        wait_for_port_release(MOCKSERVER_PORT)
 
 
 def start_wsl_services(
@@ -349,6 +400,7 @@ def start_wsl_services(
             f"-Dnzbhydra.repositoryBaseUrl=http://127.0.0.1:{MOCKSERVER_PORT}/repos/theotherp/nzbhydra2",
             f"-Dnzbhydra.newsUrl=http://127.0.0.1:{MOCKSERVER_PORT}/static/news.json",
             f"-Dnzbhydra.tmdb.apiBaseUrl=http://127.0.0.1:{MOCKSERVER_PORT}/3",
+            "-Dnzbhydra.tmdb.apikey=system-test-tmdb-api-key",
             "-jar",
             str(core_jar),
             "directstart",
@@ -454,6 +506,16 @@ def start_supporting_services(timeout: float) -> list[str]:
                 compose_command("up", "--quiet-pull", "--force-recreate", "-d", *names)
         ) != 0:
             raise RuntimeError("Unable to start Sonarr and Radarr with Docker Compose")
+        for name in names:
+            if run_command([
+                find_command("docker"),
+                "exec",
+                name,
+                "sh",
+                "-c",
+                f"sed -i -E 's#<ApiKey>[^<]*</ApiKey>#<ApiKey>{ARR_API_KEY}</ApiKey>#' /config/config.xml",
+            ]) != 0 or run_command([find_command("docker"), "restart", name]) != 0:
+                raise RuntimeError(f"Unable to configure the API key for runner-owned {name}")
         for name, url in services:
             wait_for_url(name, url, timeout, headers=headers, accept_client_errors=True)
         return names
@@ -463,8 +525,8 @@ def start_supporting_services(timeout: float) -> list[str]:
 
 
 def stop_supporting_services(services: list[str]) -> None:
-    if services:
-        run_command(compose_command("stop", *services))
+    if services and run_command(compose_command("stop", *services)) != 0:
+        raise RuntimeError("Unable to stop runner-owned Sonarr and Radarr containers")
 
 
 def ensure_playwright_installed() -> None:
@@ -502,6 +564,7 @@ def run_playwright(
             "RADARR_INTERNAL_URL": f"http://127.0.0.1:{RADARR_PORT}",
             "RADARR_API_KEY": ARR_API_KEY,
             "SONARR_PRESET_URL": f"http://localhost:{SONARR_PORT}",
+            "SONARR_INTERNAL_URL": f"http://127.0.0.1:{SONARR_PORT}",
             "SONARR_API_KEY": ARR_API_KEY,
             "SABNZBD_MOCK_API_KEY": "deterministic-sabnzbd-key",
         }
@@ -509,19 +572,7 @@ def run_playwright(
     arguments = playwright_args[1:] if playwright_args[:1] == ["--"] else playwright_args
     command = [find_command("npx"), "playwright", "test", *arguments]
     print(f"Running: {subprocess.list2cmdline(command)}")
-    try:
-        return subprocess.run(
-            command,
-            cwd=SYSTEM_TEST_DIR,
-            env=environment,
-            check=False,
-            timeout=test_timeout,
-        ).returncode
-    except subprocess.TimeoutExpired:
-        print(
-            f"Playwright exceeded the {test_timeout:g}-second runner timeout", file=sys.stderr
-        )
-        return 124
+    return run_command(command, cwd=SYSTEM_TEST_DIR, environment=environment, timeout=test_timeout)
 
 
 def stop_process(managed: ManagedProcess) -> None:
@@ -531,12 +582,7 @@ def stop_process(managed: ManagedProcess) -> None:
             try:
                 managed.process.wait(timeout=10)
             except subprocess.TimeoutExpired:
-                os.killpg(managed.process.pid, signal.SIGTERM)
-                try:
-                    managed.process.wait(timeout=5)
-                except subprocess.TimeoutExpired:
-                    os.killpg(managed.process.pid, signal.SIGKILL)
-                    managed.process.wait(timeout=5)
+                terminate_process_group(managed.process)
     finally:
         managed.log_file.close()
 
@@ -596,12 +642,23 @@ def run(args: argparse.Namespace) -> int:
                 print_log_tail(managed)
         return exit_code
     finally:
+        cleanup_errors: list[str] = []
         if args.keep_services:
             print(f"Services left running; logs and data: {run_dir}")
         else:
-            stop_supporting_services(started_supporting_services)
+            try:
+                stop_supporting_services(started_supporting_services)
+            except RuntimeError as error:
+                cleanup_errors.append(str(error))
             for managed in reversed(managed_processes):
-                stop_process(managed)
+                try:
+                    stop_process(managed)
+                except (OSError, RuntimeError, subprocess.SubprocessError) as error:
+                    cleanup_errors.append(f"Unable to stop {managed.name}: {error}")
+            if cleanup_errors:
+                succeeded = False
+                print("; ".join(cleanup_errors), file=sys.stderr)
+                raise RuntimeError("Runner cleanup failed: " + "; ".join(cleanup_errors))
             if succeeded:
                 shutil.rmtree(run_dir, ignore_errors=True)
             elif managed_processes:
@@ -610,7 +667,11 @@ def run(args: argparse.Namespace) -> int:
 
 def main() -> int:
     try:
-        return run(parse_args())
+        lock_file = acquire_run_lock()
+        try:
+            return run(parse_args())
+        finally:
+            release_run_lock(lock_file)
     except KeyboardInterrupt:
         print("Interrupted", file=sys.stderr)
         return 130

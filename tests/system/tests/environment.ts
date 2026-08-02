@@ -7,6 +7,7 @@ export class TestEnvironment {
     readonly radarrInternalUrl = process.env.RADARR_INTERNAL_URL || "http://127.0.0.1:7878";
     readonly radarrApiKey = process.env.RADARR_API_KEY || "system-test-api-key-12345";
     readonly sonarrPresetUrl = process.env.SONARR_PRESET_URL || "http://localhost:8989";
+    readonly sonarrInternalUrl = process.env.SONARR_INTERNAL_URL || "http://sonarr:8989";
     readonly sonarrApiKey = process.env.SONARR_API_KEY || "system-test-api-key-12345";
     readonly sabnzbdMockApiKey = process.env.SABNZBD_MOCK_API_KEY || "deterministic-sabnzbd-key";
     readonly sabnzbdMockCategory = process.env.SABNZBD_MOCK_CATEGORY || "Deterministic Category";

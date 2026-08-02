@@ -19,6 +19,7 @@ services:
             - PUID=1000
             - PGID=1000
             - TZ=Europe/London
+            - SONARR__APIKEY=system-test-api-key-12345
         volumes:
             - ../../sonarr/data:/config
         ports:
@@ -32,6 +33,7 @@ services:
             - PUID=1000
             - PGID=1000
             - TZ=Europe/London
+            - RADARR__APIKEY=system-test-api-key-12345
         volumes:
             - ../../radarr/data:/config
         ports:
