@@ -64,7 +64,7 @@ test.describe("External Tools Configuration", () => {
         await addRadarr(page);
         await saveConfiguration(page);
 
-        await expect(page.getByRole("button", {name: "Radarr (RADARR)"})).toBeVisible();
+        await expect(page.getByRole("button", {name: "Radarr", exact: true})).toBeVisible();
         await expect(page.getByText(testEnvironment.radarrInternalUrl, {exact: true})).toBeVisible();
         await expect(page.locator(".btn-danger .glyphicon-remove")).toBeVisible();
     });
@@ -95,14 +95,14 @@ test.describe("External Tools Configuration", () => {
     test("should edit existing external tool", async ({page}) => {
         await addRadarr(page);
         await saveConfiguration(page);
-        await page.getByRole("button", {name: "Radarr (RADARR)"}).click();
+        await page.getByRole("button", {name: "Radarr", exact: true}).click();
         await expect(page.getByRole("button", {name: "Delete", exact: true})).toBeVisible();
         await modalField(page, "Name").fill("My Radarr Instance");
         await page.getByRole("button", {name: "OK", exact: true}).click();
         await expect(page.getByRole("heading", {name: "External Tool Configuration"})).toBeHidden();
         await saveConfiguration(page);
 
-        await expect(page.getByRole("button", {name: "My Radarr Instance (RADARR)"})).toBeVisible();
+        await expect(page.getByRole("button", {name: "My Radarr Instance", exact: true})).toBeVisible();
     });
 
     test("should delete external tool", async ({page}) => {
@@ -111,7 +111,7 @@ test.describe("External Tools Configuration", () => {
         await page.locator(".btn-danger .glyphicon-remove").click();
         await saveConfiguration(page);
 
-        await expect(page.getByRole("button", {name: "Radarr (RADARR)"})).toBeHidden();
+        await expect(page.getByRole("button", {name: "Radarr", exact: true})).toBeHidden();
         await expect(page.getByRole("heading", {name: "No external tools configured"})).toBeVisible();
     });
 });
@@ -129,7 +129,7 @@ async function addRadarr(page: Page): Promise<void> {
     await modalField(page, "NZBHydra Host").fill(testEnvironment.hydraExternalUrl);
     await modalOkButton(page).click();
     await expect(page.getByRole("heading", {name: "External Tool Configuration"})).toBeHidden();
-    await expect(page.getByRole("button", {name: "Radarr (RADARR)"})).toBeVisible();
+    await expect(page.getByRole("button", {name: "Radarr", exact: true})).toBeVisible();
 }
 
 async function closeModal(page: Page): Promise<void> {
