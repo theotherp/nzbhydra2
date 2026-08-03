@@ -36,6 +36,9 @@ function SearchHistoryService($filter, $http) {
         if (angular.isUndefined(filterModel)) {
             params.filterModel = {}
         }
+        if (angular.isUndefined(onlyCurrentUser)) {
+            params.onlyCurrentUser = false;
+        }
         if (!angular.isUndefined(sortModel)) {
             params.sortModel = sortModel;
         } else {
