@@ -577,9 +577,11 @@ def run_playwright(
             "MOCKSERVER_EXTERNAL_URL": mockserver_url,
             "MOCKSERVER_INTERNAL_URL": f"http://127.0.0.1:{MOCKSERVER_PORT}",
             "RADARR_INTERNAL_URL": f"http://127.0.0.1:{RADARR_PORT}",
+            "RADARR_EXTERNAL_URL": f"http://127.0.0.1:{RADARR_PORT}",
             "RADARR_API_KEY": ARR_API_KEY,
             "SONARR_PRESET_URL": f"http://localhost:{SONARR_PORT}",
             "SONARR_INTERNAL_URL": f"http://127.0.0.1:{SONARR_PORT}",
+            "SONARR_EXTERNAL_URL": f"http://127.0.0.1:{SONARR_PORT}",
             "SONARR_API_KEY": ARR_API_KEY,
             "SABNZBD_MOCK_API_KEY": "deterministic-sabnzbd-key",
         }

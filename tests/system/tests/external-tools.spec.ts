@@ -17,8 +17,8 @@ test.describe("External Tools Configuration", () => {
 
     test.afterEach(async ({request}) => {
         const results = await Promise.allSettled([
-            deleteTestOwnedIndexers(request, testEnvironment.sonarrInternalUrl),
-            deleteTestOwnedIndexers(request, testEnvironment.radarrInternalUrl),
+            deleteTestOwnedIndexers(request, testEnvironment.sonarrExternalUrl),
+            deleteTestOwnedIndexers(request, testEnvironment.radarrExternalUrl),
         ]);
         const failures = results.filter((result): result is PromiseRejectedResult => result.status === "rejected");
         expect(failures.map(failure => String(failure.reason)), "External-tool cleanup failures").toEqual([]);
@@ -104,7 +104,7 @@ test.describe("External Tools Configuration", () => {
         expect(syncResult.failureCount, `External-tools sync failed: ${JSON.stringify(syncResult)}`).toBe(0);
         expect(syncResult.successCount, `External-tools sync did not configure a tool: ${JSON.stringify(syncResult)}`).toBeGreaterThan(0);
         await expect(page.locator(".growl-message").filter({hasText: "Successfully synced to"})).toBeVisible();
-        await expectTestOwnedIndexer(page.request, testEnvironment.radarrInternalUrl);
+        await expectTestOwnedIndexer(page.request, testEnvironment.radarrExternalUrl);
     });
 
     test("should toggle sync on config change setting", async ({page}) => {

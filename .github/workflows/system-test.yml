@@ -80,9 +80,11 @@ jobs:
       MOCKSERVER_EXTERNAL_URL: http://127.0.0.1:5080
       MOCKSERVER_INTERNAL_URL: http://mockserver:5080
       RADARR_INTERNAL_URL: http://radarr:7878
+      RADARR_EXTERNAL_URL: http://127.0.0.1:7878
       RADARR_API_KEY: system-test-api-key-12345
       SONARR_PRESET_URL: http://localhost:18989
       SONARR_INTERNAL_URL: http://sonarr:8989
+      SONARR_EXTERNAL_URL: http://127.0.0.1:18989
       SONARR_API_KEY: system-test-api-key-12345
       SABNZBD_MOCK_API_KEY: deterministic-sabnzbd-key
     steps:
@@ -284,9 +286,11 @@ jobs:
       MOCKSERVER_EXTERNAL_URL: http://127.0.0.1:5080
       MOCKSERVER_INTERNAL_URL: http://mockserver:5080
       RADARR_INTERNAL_URL: http://radarr:7878
+      RADARR_EXTERNAL_URL: http://127.0.0.1:7878
       RADARR_API_KEY: system-test-api-key-12345
       SONARR_PRESET_URL: http://localhost:18989
       SONARR_INTERNAL_URL: http://sonarr:8989
+      SONARR_EXTERNAL_URL: http://127.0.0.1:18989
       SONARR_API_KEY: system-test-api-key-12345
       SABNZBD_MOCK_API_KEY: deterministic-sabnzbd-key
     steps:
