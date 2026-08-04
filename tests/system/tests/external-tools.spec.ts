@@ -164,10 +164,11 @@ async function closeModal(page: Page): Promise<void> {
 async function saveConfiguration(page: Page, hydra: {
     getConfig(): Promise<Record<string, unknown>>
 }, expectedName?: string): Promise<void> {
-    await page.locator("form").first().evaluate(form => form.addEventListener("submit", event => event.preventDefault()));
+    const saveButton = page.getByRole("button", {name: "Save", exact: true});
+    await saveButton.locator("xpath=ancestor::form[1]").evaluate(form =>
+        form.addEventListener("submit", event => event.preventDefault()));
     const saveResponse = page.waitForResponse(response =>
         response.request().method() === "PUT" && new URL(response.url()).pathname === "/internalapi/config");
-    const saveButton = page.getByRole("button", {name: "Save", exact: true});
     await saveButton.click({force: true});
     const response = await saveResponse;
     expect(response.status(), `Configuration save failed: ${await response.text()}`).toBe(200);
