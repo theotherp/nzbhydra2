@@ -165,8 +165,8 @@ async function saveConfiguration(page: Page, hydra: {
     getConfig(): Promise<Record<string, unknown>>
 }, expectedName?: string): Promise<void> {
     const saveButton = page.getByRole("button", {name: "Save", exact: true});
-    await saveButton.locator("xpath=ancestor::form[1]").evaluate(form =>
-        form.addEventListener("submit", event => event.preventDefault()));
+    await page.locator("form").evaluateAll(forms => forms.forEach(form =>
+        form.addEventListener("submit", event => event.preventDefault())));
     const saveResponse = page.waitForResponse(response =>
         response.request().method() === "PUT" && new URL(response.url()).pathname === "/internalapi/config");
     await saveButton.click({force: true});
