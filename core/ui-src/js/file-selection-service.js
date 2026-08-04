@@ -2,7 +2,7 @@ angular
     .module('nzbhydraApp')
     .factory('FileSelectionService', FileSelectionService);
 
-function FileSelectionService($http, $q, $uibModal) {
+function FileSelectionService($http, $q, $uibModal, DirectoryListingRequestFactory) {
 
     var categories = {};
     var selectedCategory = {};
@@ -23,11 +23,7 @@ function FileSelectionService($http, $q, $uibModal) {
             size: "md",
             resolve: {
                 data: function () {
-                    return $http.post("internalapi/config/folderlisting", {
-                        fullPath: angular.isDefined(fullPath) ? fullPath : null,
-                        goUp: false,
-                        type: type
-                    });
+                    return $http.post("internalapi/config/folderlisting", DirectoryListingRequestFactory.build(fullPath, type, false));
                 },
                 type: function () {
                     return type;
@@ -48,7 +44,7 @@ function FileSelectionService($http, $q, $uibModal) {
 }
 
 angular
-    .module('nzbhydraApp').controller('FileSelectionModalController', function ($scope, $http, $uibModalInstance, FileSelectionService, data, type) {
+    .module('nzbhydraApp').controller('FileSelectionModalController', function ($scope, $http, $uibModalInstance, FileSelectionService, DirectoryListingRequestFactory, data, type) {
 
     $scope.type = type;
     $scope.showType = type === "file" ? "File" : "Folder";
@@ -58,22 +54,14 @@ angular
         if (selectType === "file" && type === "file") {
             $uibModalInstance.close(fileOrFolder.fullPath);
         } else if (selectType === "folder") {
-            $http.post("internalapi/config/folderlisting", {
-                fullPath: fileOrFolder.fullPath,
-                type: type,
-                goUp: false
-            }).then(function (data) {
+            $http.post("internalapi/config/folderlisting", DirectoryListingRequestFactory.build(fileOrFolder.fullPath, type, false)).then(function (data) {
                 $scope.data = data.data;
             })
         }
     };
 
     $scope.goUp = function () {
-        $http.post("internalapi/config/folderlisting", {
-            fullPath: $scope.data.fullPath,
-            type: type,
-            goUp: true
-        }).then(function (data) {
+        $http.post("internalapi/config/folderlisting", DirectoryListingRequestFactory.build($scope.data.fullPath, type, true)).then(function (data) {
             $scope.data = data.data;
         })
     };

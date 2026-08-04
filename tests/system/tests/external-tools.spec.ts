@@ -2,6 +2,18 @@ import {APIRequestContext, Locator, Page, Response, Route} from "@playwright/tes
 import {dismissWelcomeDialog, expect, test, testEnvironment} from "./fixtures";
 
 const TEST_TOOL_PREFIX = "UI System Test";
+const addRequestBooleans = [
+    "configureForUsenet",
+    "configureForTorrents",
+    "enableRss",
+    "enableAutomaticSearch",
+    "enableInteractiveSearch",
+    "removeYearFromSearchString",
+    "addUsenet",
+    "addTorrent",
+    "addDisabledIndexers",
+    "useHydraPriorities",
+];
 
 test.describe("External Tools Configuration", () => {
     test.beforeEach(async ({page, hydra}) => {
@@ -89,12 +101,17 @@ test.describe("External Tools Configuration", () => {
         const connectionResponse = waitForExternalResponse(page, "testConnection");
         await page.getByRole("button", {name: "Test connection"}).click();
 
-        await expectConnectionSuccess(await connectionResponse);
+        const response = await connectionResponse;
+        await expectConnectionSuccess(response);
+        expectCompleteAddRequest(response);
         await expect(page.locator(".growl-message").filter({hasText: "Connection test successful"})).toBeVisible();
         await closeModal(page);
     });
 
     test("should trigger manual sync all", async ({hydra, page}) => {
+        await configurationSwitch(page, "Sync on config change")
+            .locator("xpath=ancestor::*[contains(@class, 'bootstrap-switch')][1]").click();
+        await expect(configurationSwitch(page, "Sync on config change")).toBeChecked();
         await addRadarr(page, "UI System Test Radarr Sync");
         await saveConfiguration(page, hydra, "UI System Test Radarr Sync");
         const syncResponse = waitForExternalResponse(page, "syncAll");
@@ -148,6 +165,7 @@ async function openPreset(page: Page, preset: string): Promise<void> {
 async function addRadarr(page: Page, name: string): Promise<void> {
     await openPreset(page, "Radarr");
     await modalField(page, "Name").fill(name);
+    await modalField(page, "NZBHydra Name").fill(name);
     await modalField(page, "Host URL").fill(testEnvironment.radarrInternalUrl);
     await modalField(page, "API Key").fill(testEnvironment.radarrApiKey);
     await modalField(page, "NZBHydra Host").fill(testEnvironment.hydraExternalUrl);
@@ -220,6 +238,7 @@ async function submitModal(page: Page, expectConnection: boolean): Promise<void>
     }
     const configure = await configureResponse;
     expect(await configure.json(), `External-tool configuration failed: ${await externalToolsMessages(page)}`).toBe(true);
+    expectCompleteAddRequest(configure);
     await expect(page.getByRole("heading", {name: "External Tool Configuration"}), await externalToolsMessages(page)).toBeHidden();
 }
 
@@ -234,6 +253,13 @@ async function expectConnectionSuccess(response: Response): Promise<void> {
     const result = await response.json() as { successful?: boolean; message?: string };
     expect(result.successful, `Connection test failed: ${result.message}`).toBe(true);
     expect(result.message).toBe("Connection successful");
+}
+
+function expectCompleteAddRequest(response: Response): void {
+    const requestBody = response.request().postDataJSON() as Record<string, unknown>;
+    for (const property of addRequestBooleans) {
+        expect(typeof requestBody[property], property).toBe("boolean");
+    }
 }
 
 async function externalToolsMessages(page: Page): Promise<string> {

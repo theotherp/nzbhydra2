@@ -481,7 +481,7 @@ angular
     });
 
 
-angular.module('nzbhydraApp').controller('ExternalToolConfigBoxInstanceController', function ($scope, $q, $uibModalInstance, $http, model, fields, isInitial, parentModel, data, growl, blockUI) {
+angular.module('nzbhydraApp').controller('ExternalToolConfigBoxInstanceController', function ($scope, $q, $uibModalInstance, $http, model, fields, isInitial, parentModel, data, growl, blockUI, ExternalToolRequestFactory) {
 
     $scope.model = model;
     $scope.fields = fields;
@@ -527,14 +527,7 @@ angular.module('nzbhydraApp').controller('ExternalToolConfigBoxInstanceControlle
         $scope.spinnerActive = true;
         blockUI.start("Testing connection...");
 
-        var testRequest = {
-            externalTool: model.type === 'SONARR' ? 'Sonarr' :
-                model.type === 'RADARR' ? 'Radarr' :
-                    model.type === 'LIDARR' ? 'Lidarr' : 'Readarr',
-            xdarrHost: model.host,
-            xdarrApiKey: model.apiKey,
-            addType: 'DELETE_ONLY' // Just test connection
-        };
+        var testRequest = ExternalToolRequestFactory.build(model, "DELETE_ONLY");
 
         $http.post("internalapi/externalTools/testConnection", testRequest).then(
             function (response) {
@@ -563,14 +556,7 @@ angular.module('nzbhydraApp').controller('ExternalToolConfigBoxInstanceControlle
             $scope.spinnerActive = true;
             blockUI.start("Testing connection...");
 
-            var testRequest = {
-                externalTool: model.type === 'SONARR' ? 'Sonarr' :
-                    model.type === 'RADARR' ? 'Radarr' :
-                        model.type === 'LIDARR' ? 'Lidarr' : 'Readarr',
-                xdarrHost: model.host,
-                xdarrApiKey: model.apiKey,
-                addType: 'DELETE_ONLY'
-            };
+            var testRequest = ExternalToolRequestFactory.build(model, "DELETE_ONLY");
 
             $http.post("internalapi/externalTools/testConnection", testRequest).then(
                 function (response) {
@@ -602,24 +588,7 @@ angular.module('nzbhydraApp').controller('ExternalToolConfigBoxInstanceControlle
         $scope.spinnerActive = true;
         blockUI.start("Configuring NZBHydra in " + model.type + "...");
 
-        var syncRequest = {
-            externalTool: model.type === 'SONARR' ? 'Sonarr' :
-                model.type === 'RADARR' ? 'Radarr' :
-                    model.type === 'LIDARR' ? 'Lidarr' : 'Readarr',
-            xdarrHost: model.host,
-            xdarrApiKey: model.apiKey,
-            addType: model.syncType === 'SINGLE' ? 'SINGLE' : 'PER_INDEXER',
-            nzbhydraName: model.nzbhydraName,
-            nzbhydraHost: model.nzbhydraHost,
-            configureForUsenet: model.configureForUsenet,
-            configureForTorrents: model.configureForTorrents,
-            enableRss: model.enableRss,
-            enableAutomaticSearch: model.enableAutomaticSearch,
-            enableInteractiveSearch: model.enableInteractiveSearch,
-            enableCategories: true,
-            categories: model.categories || '',
-            additionalParameters: model.additionalParameters
-        };
+        var syncRequest = ExternalToolRequestFactory.build(model, model.syncType === "SINGLE" ? "SINGLE" : "PER_INDEXER");
 
         $http.post("internalapi/externalTools/configure", syncRequest).then(
             function (response) {
