@@ -19,10 +19,11 @@ services:
             - PUID=1000
             - PGID=1000
             - TZ=Europe/London
+            - SONARR__APIKEY=system-test-api-key-12345
         volumes:
             - ../../sonarr/data:/config
         ports:
-            - "8989:8989"
+            - "18989:8989"
         networks: [ "systemtest" ]
         restart: unless-stopped
     radarr:
@@ -32,6 +33,7 @@ services:
             - PUID=1000
             - PGID=1000
             - TZ=Europe/London
+            - RADARR__APIKEY=system-test-api-key-12345
         volumes:
             - ../../radarr/data:/config
         ports:
@@ -50,19 +52,5 @@ services:
         volumes:
             - /tmp/hydra/defaultDataFolder:/data
             - /tmp/hydraBlackhole_core:/hydraBlackhole
-        networks: [ "systemtest" ]
-        restart: unless-stopped
-    v1Migration:
-        depends_on:
-            - mockserver
-        image: ${HYDRA_IMAGE:-ghcr.io/theotherp/hydradocker:latest}
-        container_name: v1Migration
-        ports:
-            - "5077:5076"
-        environment:
-            - spring_profiles_active=build,systemtest
-        volumes:
-            - /tmp/hydra/v1MigrationDataFolder:/data
-            - /tmp/hydraBlackhole_v1Migration:/hydraBlackhole
         networks: [ "systemtest" ]
         restart: unless-stopped

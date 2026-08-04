@@ -9,11 +9,11 @@
         <input type="checkbox" ng-model="foo.showUserAgentInHistory" ng-change="toggleShowUserAgentInHistory(foo.showUserAgentInHistory)">
         Show user agents
       </label>
-      <button class="btn btn-default" ng-click="update()"><span class="glyphicon glyphicon-refresh"></span></button>
+      <button class="btn btn-default" ng-click="update()" data-testid="search-history-refresh"><span class="glyphicon glyphicon-refresh"></span></button>
     </div>
   </div>
   <div class="table-responsive">
-  <table class="table">
+    <table class="table" data-testid="search-history-table">
     <thead>
     <tr>
       <th class="col-md-2" style="width: {{columnSizes.time}}%;">
@@ -72,10 +72,11 @@
     </thead>
     <tbody>
     <tr dir-paginate="request in searchRequests | itemsPerPage: limit" total-items="totalRequests"
-        current-page="pagination.current" pagination-id="searches">
+        current-page="pagination.current" pagination-id="searches" data-testid="search-history-row"
+        data-search-id="{{::request.id}}">
       <td class="narrow-row">{{ request.time | reformatDate }}</td>
       <td class="narrow-row">
-        <a href="" ng-click="openSearch(request)"
+        <a href="" ng-click="openSearch(request)" data-testid="search-history-repeat"
            uib-tooltip="Repeat this search with all currently enabled indexers." tooltip-placement="top"
            tooltip-trigger="mouseenter"
         ><span class="glyphicon glyphicon-search"></span></a>
@@ -84,12 +85,12 @@
                 </span>
       </td>
       <td class="narrow-row" ng-if="foo.showUserAgentInHistory">{{ ::request.userAgent }}</td>
-      <td class="narrow-row">{{ ::request.categoryName }}</td>
+      <td class="narrow-row" data-testid="search-history-category">{{ ::request.categoryName }}</td>
       <td class="narrow-row" ng-bind-html="formatAdditional(request)"></td>
-      <td class="narrow-row">{{ ::request.source === "INTERNAL" ? "Internal" : "API"}}</td>
+      <td class="narrow-row" data-testid="search-history-source">{{ ::request.source === "INTERNAL" ? "Internal" : "API"}}</td>
       <td class="narrow-row" ng-if="columnSizes.username > 0">{{ ::request.username }}</td>
       <td class="narrow-row" ng-if="columnSizes.ip > 0">{{ ::request.ip }}</td>
-      <td class="narrow-row"><span ng-click="showDetails(request.id)" class="glyphicon glyphicon-eye-open"></span>
+      <td class="narrow-row"><span ng-click="showDetails(request.id)" class="glyphicon glyphicon-eye-open" data-testid="search-history-details"></span>
       </td>
     </tr>
     </tbody>

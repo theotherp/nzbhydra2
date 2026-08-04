@@ -7,11 +7,11 @@
   <SslPort>9898</SslPort>
   <EnableSsl>False</EnableSsl>
   <LaunchBrowser>True</LaunchBrowser>
-    <ApiKey>system-test-api-key-12345</ApiKey>
-    <AuthenticationMethod>forms</AuthenticationMethod>
-    <Branch>master</Branch>
+  <ApiKey>system-test-api-key-12345</ApiKey>
+  <Branch>master</Branch>
   <SslCertPath></SslCertPath>
   <SslCertPassword></SslCertPassword>
   <InstanceName>Radarr</InstanceName>
-    <AuthenticationRequired>Enabled</AuthenticationRequired>
+  <AuthenticationRequired>DisabledForLocalAddresses</AuthenticationRequired>
+  <AuthenticationMethod>Forms</AuthenticationMethod>
 </Config>

@@ -49,6 +49,8 @@ CORE_ENVIRONMENT = {
         f"http://127.0.0.1:{MOCKSERVER_PORT}/repos/theotherp/nzbhydra2"
     ),
     "NZBHYDRA_NEWSURL": f"http://127.0.0.1:{MOCKSERVER_PORT}/static/news.json",
+    "NZBHYDRA_TMDB_APIBASEURL": f"http://127.0.0.1:{MOCKSERVER_PORT}/3",
+    "NZBHYDRA_TMDB_APIKEY": "system-test-tmdb-api-key",
 }
 REGULAR_BUILD_MODULES = (
     "org.nzbhydra:nzbhydra2,org.nzbhydra:core,org.nzbhydra:shared,org.nzbhydra:mapping,"
@@ -123,6 +125,28 @@ def parse_args() -> argparse.Namespace:
             "run the system tests against the Java core JAR with JaCoCo coverage instead "
             "of the native executable"
         ),
+    )
+    parser.add_argument(
+        "--gui-tests",
+        action="store_true",
+        help="run the Playwright GUI tests in WSL while the managed services are running",
+    )
+    parser.add_argument(
+        "--skip-system-tests",
+        action="store_true",
+        help="skip the Java system tests (requires --gui-tests)",
+    )
+    parser.add_argument(
+        "--playwright-args",
+        nargs=argparse.REMAINDER,
+        default=[],
+        help="arguments passed to Playwright; this option must be last",
+    )
+    parser.add_argument(
+        "--gui-test-timeout",
+        type=float,
+        default=300,
+        help="maximum seconds for the complete Playwright invocation (default: 300)",
     )
     return parser.parse_args()
 
@@ -665,6 +689,43 @@ def copy_test_reports(test_started_at: float, run_dir: Path) -> list[str]:
     return copied_reports
 
 
+def run_gui_tests_in_wsl(
+        environment: dict[str, str],
+        run_dir: Path,
+        playwright_args: list[str],
+        test_timeout: float,
+) -> tuple[int, list[str]]:
+    wsl = find_command("wsl.exe", "wsl")
+    path_result = subprocess.run(
+        [wsl, "wslpath", "-a", str(PROJECT_ROOT)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if path_result.returncode != 0 or not path_result.stdout.strip():
+        raise RuntimeError(
+            "Unable to resolve the project path in WSL: "
+            + (path_result.stderr.strip() or f"exit code {path_result.returncode}")
+        )
+    project_root_wsl = path_result.stdout.strip()
+    normalized_args = playwright_args[1:] if playwright_args[:1] == ["--"] else playwright_args
+    command = [
+        wsl,
+        "--cd",
+        project_root_wsl,
+        "python3",
+        "misc/run_gui_systemtest.py",
+        "--runtime",
+        "existing",
+        "--test-timeout",
+        str(test_timeout),
+    ]
+    if normalized_args:
+        command.extend(["--", *normalized_args])
+    exit_code = run_command(command, run_dir / "gui-system-test.log", environment)
+    return exit_code, command
+
+
 def run_locked(args: argparse.Namespace) -> int:
     maven = find_command("mvn.cmd", "mvn")
     java = find_command("java.exe", "java")
@@ -855,30 +916,53 @@ def run_locked(args: argparse.Namespace) -> int:
             args.startup_timeout,
         )
 
-        test_command = [
-            maven,
-            "--batch-mode",
-            "test",
-            "-pl",
-            "org.nzbhydra.tests:system",
-            "-DtrimStackTrace=false",
-            f"-DdataFolder.testaccess={data_dir}",
-        ]
-        if args.test:
-            test_command.append(f"-Dtest={args.test}")
-        run_record["status"] = "testing"
-        run_record["testCommand"] = test_command
-        write_json(history_file, run_record)
-        test_started_at = time.time()
-        test_duration_started = time.monotonic()
-        exit_code = run_command(test_command, run_dir / "system-test.log", common_environment)
-        run_record["testDurationSeconds"] = round(
-            time.monotonic() - test_duration_started, 3
-        )
-        run_record["testResults"] = collect_test_results(test_started_at)
-        copied_reports = copy_test_reports(test_started_at, run_dir)
-        run_record["testResultsDirectory"] = str(run_dir / "test-results")
-        run_record["testResultFiles"] = copied_reports
+        if not args.skip_system_tests:
+            test_command = [
+                maven,
+                "--batch-mode",
+                "test",
+                "-pl",
+                "org.nzbhydra.tests:system",
+                "-DtrimStackTrace=false",
+                f"-DdataFolder.testaccess={data_dir}",
+            ]
+            if args.test:
+                test_command.append(f"-Dtest={args.test}")
+            run_record["status"] = "testing"
+            run_record["testCommand"] = test_command
+            write_json(history_file, run_record)
+            test_started_at = time.time()
+            test_duration_started = time.monotonic()
+            exit_code = run_command(test_command, run_dir / "system-test.log", common_environment)
+            run_record["testDurationSeconds"] = round(
+                time.monotonic() - test_duration_started, 3
+            )
+            run_record["testResults"] = collect_test_results(test_started_at)
+            copied_reports = copy_test_reports(test_started_at, run_dir)
+            run_record["testResultsDirectory"] = str(run_dir / "test-results")
+            run_record["testResultFiles"] = copied_reports
+        else:
+            exit_code = 0
+            run_record["systemTestsSkipped"] = True
+
+        if exit_code == 0 and args.gui_tests:
+            run_record["status"] = "gui-testing"
+            write_json(history_file, run_record)
+            gui_started = time.monotonic()
+            exit_code, gui_command = run_gui_tests_in_wsl(
+                common_environment,
+                run_dir,
+                args.playwright_args,
+                args.gui_test_timeout,
+            )
+            run_record["guiTestCommand"] = gui_command
+            run_record["guiTestExitCode"] = exit_code
+            run_record["guiTestDurationSeconds"] = round(
+                time.monotonic() - gui_started, 3
+            )
+            run_record["playwrightReportDirectory"] = str(
+                PROJECT_ROOT / "tests" / "system" / "playwright-report"
+            )
         succeeded = exit_code == 0
     except Exception as error:
         error_message = str(error)
@@ -957,6 +1041,10 @@ def run() -> int:
         raise RuntimeError("This runner must be executed from Windows, not WSL or another OS")
     if args.startup_timeout <= 0:
         raise RuntimeError("--startup-timeout must be greater than zero")
+    if args.skip_system_tests and not args.gui_tests:
+        raise RuntimeError("--skip-system-tests requires --gui-tests")
+    if args.gui_test_timeout <= 0:
+        raise RuntimeError("--gui-test-timeout must be greater than zero")
 
     lock_file = acquire_run_lock()
     try:

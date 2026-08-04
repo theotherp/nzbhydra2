@@ -25,6 +25,8 @@ public class TmdbHandler {
 
     @Value("${nzbhydra.tmdb.apikey:}")
     protected String tmdbApiKey;
+    @Value("${nzbhydra.tmdb.apiBaseUrl:https://api.themoviedb.org/3}")
+    protected String tmdbApiBaseUrl;
     @Autowired
     private ConfigProvider configProvider;
     @Autowired
@@ -50,7 +52,7 @@ public class TmdbHandler {
     }
 
     public List<TmdbSearchResult> search(String title, Integer year) throws InfoProviderException {
-        String url = "https://api.themoviedb.org/3/search/movie?query=%s&year=%s&api_key=%s".formatted(title, year == null ? "null" : year, tmdbApiKey);
+        String url = "%s/search/movie?query=%s&year=%s&api_key=%s".formatted(tmdbApiBaseUrl, title, year == null ? "null" : year, tmdbApiKey);
         try {
             final String json = webAccess.callUrl(url);
             final Map map = Jackson.JSON_MAPPER.readValue(json, Map.class);
@@ -70,7 +72,7 @@ public class TmdbHandler {
 
     private TmdbSearchResult getMovieByImdbId(String imdbId) throws InfoProviderException {
         final String correctImdbId = imdbId.startsWith("tt") ? imdbId : "tt" + imdbId;
-        String url = "https://api.themoviedb.org/3/find/%s?external_source=imdb_id&api_key=%s".formatted(correctImdbId, tmdbApiKey);
+        String url = "%s/find/%s?external_source=imdb_id&api_key=%s".formatted(tmdbApiBaseUrl, correctImdbId, tmdbApiKey);
         try {
             final String json = webAccess.callUrl(url);
             final Map map = Jackson.JSON_MAPPER.readValue(json, Map.class);
@@ -89,7 +91,7 @@ public class TmdbHandler {
 
 
     private TmdbSearchResult getMovieByTmdbId(String tmdbId) throws InfoProviderException {
-        String url = "https://api.themoviedb.org/3/movie/%s?api_key=%s".formatted(tmdbId, tmdbApiKey);
+        String url = "%s/movie/%s?api_key=%s".formatted(tmdbApiBaseUrl, tmdbId, tmdbApiKey);
         try {
             final String json = webAccess.callUrl(url);
             final Map map = Jackson.JSON_MAPPER.readValue(json, Map.class);
@@ -111,7 +113,7 @@ public class TmdbHandler {
     }
 
     private String getImdbId(String tmdbId) throws InfoProviderException {
-        String url = "https://api.themoviedb.org/3/movie/%s/external_ids?api_key=%s".formatted(tmdbId, tmdbApiKey);
+        String url = "%s/movie/%s/external_ids?api_key=%s".formatted(tmdbApiBaseUrl, tmdbId, tmdbApiKey);
         try {
             final String json = webAccess.callUrl(url);
             final Map map = Jackson.JSON_MAPPER.readValue(json, Map.class);

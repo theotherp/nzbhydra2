@@ -65,6 +65,7 @@ jobs:
   runSystemTestsLinux:
     needs: [ waitForNative, buildMockserver ]
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     env:
       spring_profiles_active: build,systemtest,testdocker,core
       nzbhydra_port: 5076
@@ -73,6 +74,19 @@ jobs:
       NZBHYDRANAME: core
       nzbhydra.name: core
       HYDRA_IMAGE: ghcr.io/theotherp/hydradocker:${{ github.sha }}
+      PLAYWRIGHT_BASE_URL: http://127.0.0.1:5076
+      HYDRA_INTERNAL_API_KEY: internalApiKey
+      HYDRA_EXTERNAL_URL: http://core:5076
+      MOCKSERVER_EXTERNAL_URL: http://127.0.0.1:5080
+      MOCKSERVER_INTERNAL_URL: http://mockserver:5080
+      RADARR_INTERNAL_URL: http://radarr:7878
+      RADARR_EXTERNAL_URL: http://127.0.0.1:7878
+      RADARR_API_KEY: system-test-api-key-12345
+      SONARR_PRESET_URL: http://localhost:18989
+      SONARR_INTERNAL_URL: http://sonarr:8989
+      SONARR_EXTERNAL_URL: http://127.0.0.1:18989
+      SONARR_API_KEY: system-test-api-key-12345
+      SABNZBD_MOCK_API_KEY: deterministic-sabnzbd-key
     steps:
       - run: echo Running test core with port 5076
       - uses: actions/checkout@v4
@@ -87,6 +101,19 @@ jobs:
           java-version: '17'
           distribution: 'adopt'
           cache: 'maven'
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: tests/system/package-lock.json
+
+      - name: Install Playwright dependencies
+        working-directory: tests/system
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
 
       - name: "Install maven"
         run: mvn --batch-mode clean install -DskipTests -pl org.nzbhydra:nzbhydra2,org.nzbhydra:shared,org.nzbhydra:mapping,org.nzbhydra:release-parser
@@ -122,7 +149,7 @@ jobs:
           }
 
           docker ps
-          wait_for_arr sonarr 8989
+          wait_for_arr sonarr 18989
           wait_for_arr radarr 7878
           docker ps
           echo "Core container mounts:"
@@ -132,6 +159,23 @@ jobs:
 
       - name: "Run tests"
         run: mvn --batch-mode test -pl org.nzbhydra.tests:system -DtrimStackTrace=false
+
+      - name: "Run Playwright system tests"
+        working-directory: tests/system
+        run: npm run test:full
+
+      - name: "Test GUI runner safety"
+        run: python3 -m unittest misc/test_run_gui_systemtest.py
+
+      - name: "Upload Playwright artifacts"
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: system-test--linux-native--core--playwright--${{ env.ARTIFACT_TIMESTAMP }}
+          path: |
+            tests/system/playwright-report/**
+            tests/system/test-results/**
+          if-no-files-found: warn
 
       - name: "Write docker-compose logs"
         if: always()
@@ -228,6 +272,7 @@ jobs:
   runSystemTestsJvmCoverage:
     needs: buildMockserver
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     env:
       spring_profiles_active: build,systemtest,testdocker,core
       nzbhydra_port: 5076
@@ -235,6 +280,19 @@ jobs:
       nzbhydra_name: core
       NZBHYDRANAME: core
       nzbhydra.name: core
+      PLAYWRIGHT_BASE_URL: http://127.0.0.1:5076
+      HYDRA_INTERNAL_API_KEY: internalApiKey
+      HYDRA_EXTERNAL_URL: http://core:5076
+      MOCKSERVER_EXTERNAL_URL: http://127.0.0.1:5080
+      MOCKSERVER_INTERNAL_URL: http://mockserver:5080
+      RADARR_INTERNAL_URL: http://radarr:7878
+      RADARR_EXTERNAL_URL: http://127.0.0.1:7878
+      RADARR_API_KEY: system-test-api-key-12345
+      SONARR_PRESET_URL: http://localhost:18989
+      SONARR_INTERNAL_URL: http://sonarr:8989
+      SONARR_EXTERNAL_URL: http://127.0.0.1:18989
+      SONARR_API_KEY: system-test-api-key-12345
+      SABNZBD_MOCK_API_KEY: deterministic-sabnzbd-key
     steps:
       - uses: actions/checkout@v4
         name: "Check out source"
@@ -248,6 +306,19 @@ jobs:
           java-version: '17'
           distribution: 'adopt'
           cache: 'maven'
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: tests/system/package-lock.json
+
+      - name: Install Playwright dependencies
+        working-directory: tests/system
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
 
       - name: "Build JVM core and test dependencies"
         run: mvn --batch-mode clean package -DskipTests -pl org.nzbhydra:core -am
@@ -279,7 +350,7 @@ jobs:
             exit 1
           }
 
-          wait_for_arr sonarr 8989
+          wait_for_arr sonarr 18989
           wait_for_arr radarr 7878
           for attempt in {1..60}; do
             if curl --fail --silent http://127.0.0.1:5076/actuator/health/ping > /dev/null; then
@@ -294,6 +365,20 @@ jobs:
         run: mvn --batch-mode install -pl org.nzbhydra:core -am -DtrimStackTrace=false -DskipTests
       - name: "Run system tests against JVM core"
         run: mvn --batch-mode test -pl org.nzbhydra.tests:system -DtrimStackTrace=false
+
+      - name: "Run Playwright system tests against JVM core"
+        working-directory: tests/system
+        run: npm run test:full
+
+      - name: "Upload Playwright artifacts"
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: system-test--linux-jvm-coverage--core--playwright--${{ env.ARTIFACT_TIMESTAMP }}
+          path: |
+            tests/system/playwright-report/**
+            tests/system/test-results/**
+          if-no-files-found: warn
 
       - name: "Stop JVM core"
         if: always()

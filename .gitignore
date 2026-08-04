@@ -32,6 +32,7 @@ misc/.windows-systemtest-data-*
 misc/.windows-systemtest-history
 misc/.windows-systemtest-runs
 misc/windows-systemtest-logs
+misc/.gui-systemtest-runs
 /nzbhydra.yml
 /results
 other/wrapper/pyInstaller/windows/build

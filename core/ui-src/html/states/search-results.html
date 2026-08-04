@@ -1,4 +1,4 @@
-<span ng-show="doShowResults">
+<span ng-show="doShowResults" data-testid="search-results">
 <div class="row d-flex justify-content-center" ng-if="indexersearches.length" style="margin-top: 25px">
     <div class="col-xs-20 col-sm-18 col-md-14 col-lg-10">
         <uib-accordion close-others="oneAtATime" id="search-results-accordion">
@@ -161,7 +161,7 @@
 
 
             <div>
-                <span class="badge"
+                <span class="badge" data-testid="search-results-summary"
                     uib-tooltip-html="getRejectedReasonsTooltip()"
                     tooltip-class="rejected-tooltip"
                     tooltip-placement="top"
@@ -276,7 +276,7 @@
         </div>
     </div>
 
-    <table class="table table-hover search-results-table">
+    <table class="table table-hover search-results-table" data-testid="search-results-table">
         <thead class="search-results-header">
         <tr class="search-results-header-row">
             <th class="col-md-13 cursor-default search-results-cell result-title">
@@ -292,7 +292,7 @@
                 style="vertical-align: top; text-align: right">
                 <column-sortable column="indexer" reversed="false" start-mode="1">Indexer
                 </column-sortable>
-                <column-filter-wrapper>
+                <column-filter-wrapper data-testid="filter-toggle-indexer">
                     <checkboxes-filter column="indexer" entries="indexersForFiltering" preselect="true"
                                        show-invert="true" id="indexer-filter"/>
                 </column-filter-wrapper>
@@ -301,7 +301,7 @@
                 style="vertical-align: top; text-align: right">
                 <column-sortable column="category" reversed="false" start-mode="1">Category
                 </column-sortable>
-                <column-filter-wrapper>
+                <column-filter-wrapper data-testid="filter-toggle-category">
                     <checkboxes-filter column="category" entries="categoriesForFiltering" preselect="true"
                                        show-invert="true" id="category-filter"/>
                 </column-filter-wrapper>
@@ -310,7 +310,7 @@
                 style="vertical-align: top; text-align: right">
                 <column-sortable column="size" reversed="false" start-mode="2">Size
                 </column-sortable>
-                <column-filter-wrapper>
+                <column-filter-wrapper data-testid="filter-toggle-size">
                     <number-range-filter column="size" addon="MB" id="size-filter"/>
                 </column-filter-wrapper>
             </th>
@@ -324,7 +324,7 @@
 
                 <column-sortable column="grabs" reversed="false" start-mode="2">Details
                 </column-sortable>
-                <column-filter-wrapper>
+                <column-filter-wrapper data-testid="filter-toggle-grabs">
                     <number-range-filter column="grabs" id="grabs-filter"/>
                 </column-filter-wrapper>
             </th>
@@ -332,7 +332,7 @@
                 style="vertical-align: top; text-align: right">
                 <column-sortable column="epoch" reversed="true" start-mode="2">Age
                 </column-sortable>
-                <column-filter-wrapper>
+                <column-filter-wrapper data-testid="filter-toggle-age">
                     <number-range-filter column="epoch" addon="days" id="age-filter" tooltip="Suffix with h or m to filter by hours or minutes, respectively"/>
                 </column-filter-wrapper>
             </th>

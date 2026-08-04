@@ -10,7 +10,7 @@ services:
       - -c
       - |
         while true; do
-          java -javaagent:/app/jacoco-agent.jar=destfile=/data/jacoco-system.exec,append=true,includes=org.nzbhydra.* -DinternalApiKey=internalApiKey -Dmain.useCsrf=false -Dmain.logging.logfilelevel=DEBUG -jar /app/core-8.9.1-SNAPSHOT-exec.jar directstart --datafolder /data
+        java -javaagent:/app/jacoco-agent.jar=destfile=/data/jacoco-system.exec,append=true,includes=org.nzbhydra.* -DinternalApiKey=internalApiKey -Dmain.useCsrf=false -Dmain.logging.logfilelevel=DEBUG -jar /app/core-8.9.1-SNAPSHOT-exec.jar directstart --datafolder /data
           code=$$?
           if [ "$$code" -eq 22 ]; then continue; fi
           if [ "$$code" -ne 33 ]; then exit "$$code"; fi
