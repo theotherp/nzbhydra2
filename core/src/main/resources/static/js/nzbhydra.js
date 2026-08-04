@@ -10810,11 +10810,11 @@ function formatSystemMoment(date, bootstrapped) {
 }
 
 
-StatsService.$inject = ["$http"];angular
+StatsService.$inject = ["$http", "HistoryRequestFactory"];angular
     .module('nzbhydraApp')
     .factory('StatsService', StatsService);
 
-function StatsService($http) {
+function StatsService($http, HistoryRequestFactory) {
 
     return {
         get: getStats,
@@ -10830,30 +10830,8 @@ function StatsService($http) {
         });
     }
 
-    function buildParams(pageNumber, limit, filterModel, sortModel) {
-        var params = {page: pageNumber, limit: limit, filterModel: filterModel};
-        if (angular.isUndefined(pageNumber)) {
-            params.page = 1;
-        }
-        if (angular.isUndefined(limit)) {
-            params.limit = 100;
-        }
-        if (angular.isUndefined(filterModel)) {
-            params.filterModel = {}
-        }
-        if (!angular.isUndefined(sortModel)) {
-            params.sortModel = sortModel;
-        } else {
-            params.sortModel = {
-                column: "time",
-                sortMode: 2
-            };
-        }
-        return params;
-    }
-
     function getDownloadHistory(pageNumber, limit, filterModel, sortModel) {
-        var params = buildParams(pageNumber, limit, filterModel, sortModel);
+        var params = HistoryRequestFactory.build(pageNumber, limit, filterModel, sortModel);
         return $http.post("internalapi/history/downloads", params).then(function (response) {
             return {
                 nzbDownloads: response.data.content,
@@ -10864,7 +10842,7 @@ function StatsService($http) {
     }
 
     function getNotificationHistory(pageNumber, limit, filterModel, sortModel) {
-        var params = buildParams(pageNumber, limit, filterModel, sortModel);
+        var params = HistoryRequestFactory.build(pageNumber, limit, filterModel, sortModel);
         return $http.post("internalapi/history/notifications", params).then(function (response) {
             return {
                 notifications: response.data.content,
@@ -10875,6 +10853,7 @@ function StatsService($http) {
     }
 
 }
+
 
 StatsController.$inject = ["$scope", "$filter", "StatsService", "blockUI", "localStorageService", "$timeout", "$window", "ConfigService"];angular
     .module('nzbhydraApp')
@@ -12441,11 +12420,11 @@ function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $doc
 }
 
 
-SearchHistoryService.$inject = ["$filter", "$http"];angular
+SearchHistoryService.$inject = ["$filter", "$http", "HistoryRequestFactory"];angular
     .module('nzbhydraApp')
     .factory('SearchHistoryService', SearchHistoryService);
 
-function SearchHistoryService($filter, $http) {
+function SearchHistoryService($filter, $http, HistoryRequestFactory) {
 
     return {
         getSearchHistory: getSearchHistory,
@@ -12463,36 +12442,7 @@ function SearchHistoryService($filter, $http) {
     }
 
     function getSearchHistory(pageNumber, limit, filterModel, sortModel, distinct, onlyCurrentUser) {
-        var params = {
-            page: pageNumber,
-            limit: limit,
-            filterModel: filterModel,
-            distinct: distinct,
-            onlyCurrentUser: onlyCurrentUser
-        };
-        if (angular.isUndefined(pageNumber)) {
-            params.page = 1;
-        }
-        if (angular.isUndefined(limit)) {
-            params.limit = 100;
-        }
-        if (angular.isUndefined(filterModel)) {
-            params.filterModel = {}
-        }
-        if (angular.isUndefined(onlyCurrentUser)) {
-            params.onlyCurrentUser = false;
-        }
-        if (angular.isUndefined(distinct)) {
-            params.distinct = false;
-        }
-        if (!angular.isUndefined(sortModel)) {
-            params.sortModel = sortModel;
-        } else {
-            params.sortModel = {
-                column: "time",
-                sortMode: 2
-            };
-        }
+        var params = HistoryRequestFactory.build(pageNumber, limit, filterModel, sortModel, distinct, onlyCurrentUser);
         return $http.post("internalapi/history/searches", params).then(function (response) {
             return {
                 searchRequests: response.data.content,
@@ -14844,6 +14794,28 @@ function HydraAuthService($q, $rootScope, $http, bootstrapped, $httpParamSeriali
 
 
 }
+angular
+    .module('nzbhydraApp')
+    .factory('HistoryRequestFactory', HistoryRequestFactory);
+
+function HistoryRequestFactory() {
+    return {
+        build: build
+    };
+
+    // Keep this JSON shape aligned with org.nzbhydra.historystats.stats.HistoryRequest.
+    function build(page, limit, filterModel, sortModel, distinct, onlyCurrentUser) {
+        return {
+            page: angular.isUndefined(page) ? 1 : page,
+            limit: angular.isUndefined(limit) ? 100 : limit,
+            filterModel: angular.isUndefined(filterModel) ? {} : filterModel,
+            sortModel: angular.isUndefined(sortModel) ? {column: "time", sortMode: 2} : sortModel,
+            distinct: angular.isUndefined(distinct) ? false : distinct,
+            onlyCurrentUser: angular.isUndefined(onlyCurrentUser) ? false : onlyCurrentUser
+        };
+    }
+}
+
 
 HeaderController.$inject = ["$scope", "$state", "growl", "HydraAuthService", "bootstrapped"];angular
     .module('nzbhydraApp')

@@ -2,7 +2,7 @@ angular
     .module('nzbhydraApp')
     .factory('SearchHistoryService', SearchHistoryService);
 
-function SearchHistoryService($filter, $http) {
+function SearchHistoryService($filter, $http, HistoryRequestFactory) {
 
     return {
         getSearchHistory: getSearchHistory,
@@ -20,36 +20,7 @@ function SearchHistoryService($filter, $http) {
     }
 
     function getSearchHistory(pageNumber, limit, filterModel, sortModel, distinct, onlyCurrentUser) {
-        var params = {
-            page: pageNumber,
-            limit: limit,
-            filterModel: filterModel,
-            distinct: distinct,
-            onlyCurrentUser: onlyCurrentUser
-        };
-        if (angular.isUndefined(pageNumber)) {
-            params.page = 1;
-        }
-        if (angular.isUndefined(limit)) {
-            params.limit = 100;
-        }
-        if (angular.isUndefined(filterModel)) {
-            params.filterModel = {}
-        }
-        if (angular.isUndefined(onlyCurrentUser)) {
-            params.onlyCurrentUser = false;
-        }
-        if (angular.isUndefined(distinct)) {
-            params.distinct = false;
-        }
-        if (!angular.isUndefined(sortModel)) {
-            params.sortModel = sortModel;
-        } else {
-            params.sortModel = {
-                column: "time",
-                sortMode: 2
-            };
-        }
+        var params = HistoryRequestFactory.build(pageNumber, limit, filterModel, sortModel, distinct, onlyCurrentUser);
         return $http.post("internalapi/history/searches", params).then(function (response) {
             return {
                 searchRequests: response.data.content,
