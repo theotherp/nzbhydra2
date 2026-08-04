@@ -1,4 +1,4 @@
-import {APIRequestContext, Locator, Page, Response} from "@playwright/test";
+import {APIRequestContext, Locator, Page, Response, Route} from "@playwright/test";
 import {dismissWelcomeDialog, expect, test, testEnvironment} from "./fixtures";
 
 const TEST_TOOL_PREFIX = "UI System Test";
@@ -165,14 +165,10 @@ async function saveConfiguration(page: Page, hydra: {
     getConfig(): Promise<Record<string, unknown>>
 }, expectedName?: string): Promise<void> {
     const saveButton = page.getByRole("button", {name: "Save", exact: true});
-    await page.locator("form").evaluateAll(forms => forms.forEach(form =>
-        form.addEventListener("submit", event => event.preventDefault())));
-    const saveResponse = page.waitForResponse(response =>
-        response.request().method() === "PUT" && new URL(response.url()).pathname === "/internalapi/config");
+    const {result: saveResult} = await prepareConfigurationSave(page);
     await saveButton.click({force: true});
-    const response = await saveResponse;
-    expect(response.status(), `Configuration save failed: ${await response.text()}`).toBe(200);
-    const result = await response.json() as { ok?: boolean; errorMessages?: string[]; newConfig?: Record<string, unknown> };
+    const {status, result} = await saveResult;
+    expect(status).toBe(200);
     expect(result.ok, `Configuration validation errors: ${(result.errorMessages || []).join(", ")}`).toBe(true);
     expect(result.errorMessages || []).toEqual([]);
     expect(result.newConfig, "Configuration save did not return the saved configuration").toBeTruthy();
@@ -181,6 +177,38 @@ async function saveConfiguration(page: Page, hydra: {
         const tools = (persisted.externalTools as { externalTools?: Array<{ name?: string }> }).externalTools || [];
         expect(tools.map(tool => tool.name)).toContain(expectedName);
     }
+}
+
+async function prepareConfigurationSave(page: Page): Promise<{
+    result: Promise<{
+        status: number;
+        result: { ok?: boolean; errorMessages?: string[]; newConfig?: Record<string, unknown> };
+    }>
+}> {
+    let handler: (route: Route) => Promise<void>;
+    const result = new Promise<{
+        status: number;
+        result: { ok?: boolean; errorMessages?: string[]; newConfig?: Record<string, unknown> };
+    }>((resolve, reject) => {
+        handler = async route => {
+            if (route.request().method() !== "PUT") {
+                await route.continue();
+                return;
+            }
+            try {
+                const response = await route.fetch();
+                const body = await response.json() as { ok?: boolean; errorMessages?: string[]; newConfig?: Record<string, unknown> };
+                await route.fulfill({response});
+                await page.unroute("**/internalapi/config**", handler);
+                resolve({status: response.status(), result: body});
+            } catch (error) {
+                await page.unroute("**/internalapi/config**", handler);
+                reject(error);
+            }
+        };
+    });
+    await page.route("**/internalapi/config**", handler!);
+    return {result};
 }
 
 async function submitModal(page: Page, expectConnection: boolean): Promise<void> {
