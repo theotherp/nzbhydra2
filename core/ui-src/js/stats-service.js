@@ -2,7 +2,7 @@ angular
     .module('nzbhydraApp')
     .factory('StatsService', StatsService);
 
-function StatsService($http, HistoryRequestFactory) {
+function StatsService($http, HistoryRequestFactory, StatsRequestFactory) {
 
     return {
         get: getStats,
@@ -11,8 +11,7 @@ function StatsService($http, HistoryRequestFactory) {
     };
 
     function getStats(after, before, includeDisabled, switchState) {
-        var requestBody = {after: after, before: before, includeDisabled: includeDisabled};
-        requestBody = _.extend(requestBody, switchState);
+        var requestBody = StatsRequestFactory.build(after, before, includeDisabled, switchState);
         return $http.post("internalapi/stats", requestBody).then(function (response) {
             return response.data;
         });

@@ -3,7 +3,7 @@ angular
     .module('nzbhydraApp')
     .factory('SearchService', SearchService);
 
-function SearchService($http) {
+function SearchService($http, SearchRequestFactory) {
 
 
     var lastExecutedQuery;
@@ -32,16 +32,17 @@ function SearchService($http) {
     function search(searchRequestId, category, query, metaData, season, episode, minsize, maxsize, minage, maxage, indexers, mode) {
         // console.time("search");
         var uri = new URI("internalapi/search");
-        var searchRequestParameters = {};
-        searchRequestParameters.searchRequestId = searchRequestId;
-        searchRequestParameters.query = query;
-        searchRequestParameters.minsize = minsize;
-        searchRequestParameters.maxsize = maxsize;
-        searchRequestParameters.minage = minage;
-        searchRequestParameters.maxage = maxage;
-        searchRequestParameters.category = category;
-        searchRequestParameters.mode = mode;
-        searchRequestParameters.loadAll = false;
+        var searchRequestParameters = {
+            searchRequestId: searchRequestId,
+            query: query,
+            minsize: minsize,
+            maxsize: maxsize,
+            minage: minage,
+            maxage: maxage,
+            category: category,
+            mode: mode,
+            loadAll: false
+        };
 
         if (!angular.isUndefined(indexers) && indexers !== null) {
             searchRequestParameters.indexers = indexers.split(",");
@@ -62,16 +63,18 @@ function SearchService($http) {
             }
         }
 
+        searchRequestParameters = SearchRequestFactory.build(searchRequestParameters);
         lastExecutedQuery = uri;
         lastExecutedSearchRequestParameters = searchRequestParameters;
         return $http.post(uri.toString(), searchRequestParameters).then(processData);
     }
 
     function loadMore(offset, limit, loadAll) {
-        var params = angular.extend({}, lastExecutedSearchRequestParameters);
-        params.offset = offset;
-        params.limit = limit;
-        params.loadAll = angular.isDefined(loadAll) ? loadAll : false;
+        var params = SearchRequestFactory.build(angular.extend({}, lastExecutedSearchRequestParameters, {
+            offset: offset,
+            limit: limit,
+            loadAll: angular.isDefined(loadAll) ? loadAll : false
+        }));
 
         return $http.post(lastExecutedQuery.toString(), params).then(processData);
     }

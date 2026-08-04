@@ -10810,11 +10810,11 @@ function formatSystemMoment(date, bootstrapped) {
 }
 
 
-StatsService.$inject = ["$http", "HistoryRequestFactory"];angular
+StatsService.$inject = ["$http", "HistoryRequestFactory", "StatsRequestFactory"];angular
     .module('nzbhydraApp')
     .factory('StatsService', StatsService);
 
-function StatsService($http, HistoryRequestFactory) {
+function StatsService($http, HistoryRequestFactory, StatsRequestFactory) {
 
     return {
         get: getStats,
@@ -10823,8 +10823,7 @@ function StatsService($http, HistoryRequestFactory) {
     };
 
     function getStats(after, before, includeDisabled, switchState) {
-        var requestBody = {after: after, before: before, includeDisabled: includeDisabled};
-        requestBody = _.extend(requestBody, switchState);
+        var requestBody = StatsRequestFactory.build(after, before, includeDisabled, switchState);
         return $http.post("internalapi/stats", requestBody).then(function (response) {
             return response.data;
         });
@@ -10852,6 +10851,42 @@ function StatsService($http, HistoryRequestFactory) {
         });
     }
 
+}
+
+angular
+    .module('nzbhydraApp')
+    .factory('StatsRequestFactory', StatsRequestFactory);
+
+function StatsRequestFactory() {
+    return {
+        build: build
+    };
+
+    // Keep this JSON shape aligned with org.nzbhydra.historystats.stats.StatsRequest.
+    function build(after, before, includeDisabled, switchState) {
+        switchState = switchState || {};
+        return {
+            after: after,
+            before: before,
+            includeDisabled: includeDisabled === true,
+            indexerApiAccessStats: switchState.indexerApiAccessStats === true,
+            avgIndexerUniquenessScore: switchState.avgIndexerUniquenessScore === true,
+            avgResponseTimes: switchState.avgResponseTimes === true,
+            indexerDownloadShares: switchState.indexerDownloadShares === true,
+            downloadsPerDayOfWeek: switchState.downloadsPerDayOfWeek === true,
+            downloadsPerHourOfDay: switchState.downloadsPerHourOfDay === true,
+            searchesPerDayOfWeek: switchState.searchesPerDayOfWeek === true,
+            searchesPerHourOfDay: switchState.searchesPerHourOfDay === true,
+            downloadsPerAgeStats: switchState.downloadsPerAgeStats === true,
+            successfulDownloadsPerIndexer: switchState.successfulDownloadsPerIndexer === true,
+            downloadSharesPerUser: switchState.downloadSharesPerUser === true,
+            downloadSharesPerIp: switchState.downloadSharesPerIp === true,
+            searchSharesPerUser: switchState.searchSharesPerUser === true,
+            searchSharesPerIp: switchState.searchSharesPerIp === true,
+            userAgentSearchShares: switchState.userAgentSearchShares === true,
+            userAgentDownloadShares: switchState.userAgentDownloadShares === true
+        };
+    }
 }
 
 
@@ -11206,12 +11241,12 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
 }
 
 //
-SearchService.$inject = ["$http"];
+SearchService.$inject = ["$http", "SearchRequestFactory"];
 angular
     .module('nzbhydraApp')
     .factory('SearchService', SearchService);
 
-function SearchService($http) {
+function SearchService($http, SearchRequestFactory) {
 
 
     var lastExecutedQuery;
@@ -11240,16 +11275,17 @@ function SearchService($http) {
     function search(searchRequestId, category, query, metaData, season, episode, minsize, maxsize, minage, maxage, indexers, mode) {
         // console.time("search");
         var uri = new URI("internalapi/search");
-        var searchRequestParameters = {};
-        searchRequestParameters.searchRequestId = searchRequestId;
-        searchRequestParameters.query = query;
-        searchRequestParameters.minsize = minsize;
-        searchRequestParameters.maxsize = maxsize;
-        searchRequestParameters.minage = minage;
-        searchRequestParameters.maxage = maxage;
-        searchRequestParameters.category = category;
-        searchRequestParameters.mode = mode;
-        searchRequestParameters.loadAll = false;
+        var searchRequestParameters = {
+            searchRequestId: searchRequestId,
+            query: query,
+            minsize: minsize,
+            maxsize: maxsize,
+            minage: minage,
+            maxage: maxage,
+            category: category,
+            mode: mode,
+            loadAll: false
+        };
 
         if (!angular.isUndefined(indexers) && indexers !== null) {
             searchRequestParameters.indexers = indexers.split(",");
@@ -11270,16 +11306,18 @@ function SearchService($http) {
             }
         }
 
+        searchRequestParameters = SearchRequestFactory.build(searchRequestParameters);
         lastExecutedQuery = uri;
         lastExecutedSearchRequestParameters = searchRequestParameters;
         return $http.post(uri.toString(), searchRequestParameters).then(processData);
     }
 
     function loadMore(offset, limit, loadAll) {
-        var params = angular.extend({}, lastExecutedSearchRequestParameters);
-        params.offset = offset;
-        params.limit = limit;
-        params.loadAll = angular.isDefined(loadAll) ? loadAll : false;
+        var params = SearchRequestFactory.build(angular.extend({}, lastExecutedSearchRequestParameters, {
+            offset: offset,
+            limit: limit,
+            loadAll: angular.isDefined(loadAll) ? loadAll : false
+        }));
 
         return $http.post(lastExecutedQuery.toString(), params).then(processData);
     }
@@ -11328,12 +11366,13 @@ function SearchService($http) {
     }
 }
 
-SearchResultsController.$inject = ["$stateParams", "$scope", "$http", "$q", "$timeout", "$document", "blockUI", "growl", "localStorageService", "SearchService", "ConfigService", "CategoriesService", "DebugService", "GenericStorageService", "ModalService", "$uibModal", "GuidedTourService"];angular
+
+SearchResultsController.$inject = ["$stateParams", "$scope", "$http", "$q", "$timeout", "$document", "blockUI", "growl", "localStorageService", "SearchService", "SearchRequestFactory", "ConfigService", "CategoriesService", "DebugService", "GenericStorageService", "ModalService", "$uibModal", "GuidedTourService"];angular
     .module('nzbhydraApp')
     .controller('SearchResultsController', SearchResultsController);
 
 //SearchResultsController.$inject = ['blockUi'];
-function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $document, blockUI, growl, localStorageService, SearchService, ConfigService, CategoriesService, DebugService, GenericStorageService, ModalService, $uibModal, GuidedTourService) {
+function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $document, blockUI, growl, localStorageService, SearchService, SearchRequestFactory, ConfigService, CategoriesService, DebugService, GenericStorageService, ModalService, $uibModal, GuidedTourService) {
     // console.time("Presenting");
 
     $scope.limitTo = ConfigService.getSafe().searching.loadLimitInternal;
@@ -11712,7 +11751,7 @@ function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $doc
             growl.info("No search available to save");
             return;
         }
-        $http.post("internalapi/savedsearches", {request: searchRequest}).then(function () {
+        $http.post("internalapi/savedsearches", SearchRequestFactory.buildSavedSearch(searchRequest)).then(function () {
             growl.success("Saved search");
         }, function () {
             growl.error("Unable to save search");
@@ -12417,6 +12456,48 @@ function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $doc
     }, 3000);
 
 
+}
+
+angular
+    .module('nzbhydraApp')
+    .factory('SearchRequestFactory', SearchRequestFactory);
+
+function SearchRequestFactory() {
+    return {
+        build: build,
+        buildSavedSearch: buildSavedSearch
+    };
+
+    // Keep this JSON shape aligned with org.nzbhydra.searching.dtoseventsenums.SearchRequestParameters.
+    function build(parameters) {
+        parameters = parameters || {};
+        return {
+            query: parameters.query,
+            offset: parameters.offset,
+            limit: parameters.limit,
+            minsize: parameters.minsize,
+            maxsize: parameters.maxsize,
+            minage: parameters.minage,
+            maxage: parameters.maxage,
+            loadAll: parameters.loadAll === true,
+            category: parameters.category,
+            mode: parameters.mode,
+            indexers: parameters.indexers,
+            title: parameters.title,
+            imdbId: parameters.imdbId,
+            tmdbId: parameters.tmdbId,
+            tvrageId: parameters.tvrageId,
+            tvdbId: parameters.tvdbId,
+            tvmazeId: parameters.tvmazeId,
+            season: parameters.season,
+            episode: parameters.episode,
+            searchRequestId: isFinite(Number(parameters.searchRequestId)) ? Number(parameters.searchRequestId) : 0
+        };
+    }
+
+    function buildSavedSearch(parameters) {
+        return {request: build(parameters)};
+    }
 }
 
 
