@@ -978,7 +978,7 @@ nzbhydraapp.directive('eventFocus', ["focus", function (focus) {
 
 
 CheckCapsModalInstanceCtrl.$inject = ["$scope", "$interval", "$http", "$timeout", "growl", "capsCheckRequest"];
-IndexerConfigBoxService.$inject = ["$http", "$q", "$uibModal"];
+IndexerConfigBoxService.$inject = ["$http", "$q", "$uibModal", "CapsCheckRequestFactory"];
 IndexerCheckBeforeCloseService.$inject = ["$q", "ModalService", "IndexerConfigBoxService", "growl", "blockUI"];
 function regexValidator(regex, message, prefixViewValue, preventEmpty) {
     return {
@@ -2274,7 +2274,7 @@ angular
     .module('nzbhydraApp')
     .factory('IndexerConfigBoxService', IndexerConfigBoxService);
 
-function IndexerConfigBoxService($http, $q, $uibModal) {
+function IndexerConfigBoxService($http, $q, $uibModal, CapsCheckRequestFactory) {
 
     return {
         checkConnection: checkConnection,
@@ -2300,6 +2300,7 @@ function IndexerConfigBoxService($http, $q, $uibModal) {
 
     function checkCaps(capsCheckRequest) {
         var deferred = $q.defer();
+        capsCheckRequest = CapsCheckRequestFactory.build(capsCheckRequest.indexerConfig, capsCheckRequest.checkType);
 
         var result = $uibModal.open({
             templateUrl: 'static/html/checker-state.html',
@@ -13923,12 +13924,12 @@ function NzbHydraControlService($http) {
 }
 
 
-NzbDownloadService.$inject = ["$http", "$q", "$uibModal", "ConfigService", "DownloaderCategoriesService"];
+NzbDownloadService.$inject = ["$http", "$q", "$uibModal", "ConfigService", "DownloaderCategoriesService", "DownloaderRequestFactory"];
 DuplicateMovieDownloadReasonModalController.$inject = ["$scope", "$uibModalInstance"];angular
     .module('nzbhydraApp')
     .factory('NzbDownloadService', NzbDownloadService);
 
-function NzbDownloadService($http, $q, $uibModal, ConfigService, DownloaderCategoriesService) {
+function NzbDownloadService($http, $q, $uibModal, ConfigService, DownloaderCategoriesService, DownloaderRequestFactory) {
 
     var service = {
         download: download,
@@ -13937,22 +13938,13 @@ function NzbDownloadService($http, $q, $uibModal, ConfigService, DownloaderCateg
 
     return service;
 
-    function buildRequest(downloader, searchResults, category, reason) {
-        return {
-            downloaderName: downloader.name,
-            searchResults: searchResults,
-            category: category,
-            reason: reason
-        };
-    }
-
     function sendNzbAddCommand(downloader, searchResults, category, reason) {
-        var params = buildRequest(downloader, searchResults, category, reason);
+        var params = DownloaderRequestFactory.buildAddFilesRequest(downloader, searchResults, category, reason);
         return $http.put("internalapi/downloader/addNzbs", params);
     }
 
     function checkIfDuplicateMovieDownloadRequiresReason(downloader, searchResults) {
-        return $http.put("internalapi/downloader/checkDuplicateMovieDownload", buildRequest(downloader, searchResults, null, null))
+        return $http.put("internalapi/downloader/checkDuplicateMovieDownload", DownloaderRequestFactory.buildAddFilesRequest(downloader, searchResults, null, null))
             .then(function (response) {
                 return response.data.reasonRequired;
             });
@@ -16307,6 +16299,26 @@ function ExternalToolRequestFactory() {
     }
 }
 
+angular
+    .module('nzbhydraApp')
+    .factory('DownloaderRequestFactory', DownloaderRequestFactory);
+
+function DownloaderRequestFactory() {
+    return {
+        buildAddFilesRequest: buildAddFilesRequest
+    };
+
+    // Keep this JSON shape aligned with org.nzbhydra.downloading.AddFilesRequest.
+    function buildAddFilesRequest(downloader, searchResults, category, reason) {
+        return {
+            downloaderName: downloader.name,
+            searchResults: angular.isArray(searchResults) ? searchResults : [],
+            category: angular.isUndefined(category) ? null : category,
+            reason: angular.isUndefined(reason) ? null : reason
+        };
+    }
+}
+
 
 DownloaderCategoriesService.$inject = ["$http", "$q", "$uibModal"];angular
     .module('nzbhydraApp')
@@ -16653,6 +16665,24 @@ function CategoriesService(ConfigService) {
     }
 
 }
+angular
+    .module('nzbhydraApp')
+    .factory('CapsCheckRequestFactory', CapsCheckRequestFactory);
+
+function CapsCheckRequestFactory() {
+    return {
+        build: build
+    };
+
+    // Keep this JSON shape aligned with org.nzbhydra.config.indexer.CapsCheckRequest.
+    function build(indexerConfig, checkType) {
+        return {
+            indexerConfig: angular.isUndefined(indexerConfig) ? null : indexerConfig,
+            checkType: checkType
+        };
+    }
+}
+
 
 BackupService.$inject = ["$http"];angular
     .module('nzbhydraApp')

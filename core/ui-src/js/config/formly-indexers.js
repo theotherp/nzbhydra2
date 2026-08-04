@@ -1294,7 +1294,7 @@ angular
     .module('nzbhydraApp')
     .factory('IndexerConfigBoxService', IndexerConfigBoxService);
 
-function IndexerConfigBoxService($http, $q, $uibModal) {
+function IndexerConfigBoxService($http, $q, $uibModal, CapsCheckRequestFactory) {
 
     return {
         checkConnection: checkConnection,
@@ -1320,6 +1320,7 @@ function IndexerConfigBoxService($http, $q, $uibModal) {
 
     function checkCaps(capsCheckRequest) {
         var deferred = $q.defer();
+        capsCheckRequest = CapsCheckRequestFactory.build(capsCheckRequest.indexerConfig, capsCheckRequest.checkType);
 
         var result = $uibModal.open({
             templateUrl: 'static/html/checker-state.html',
