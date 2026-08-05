@@ -1151,7 +1151,7 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
 });
 
 
-angular.module('nzbhydraApp').controller('IndexerConfigBoxInstanceController', function ($scope, $q, $uibModalInstance, $http, model, form, fields, isInitial, parentModel, growl, IndexerCheckBeforeCloseService, RequestsErrorHandler, mode) {
+angular.module('nzbhydraApp').controller('IndexerConfigBoxInstanceController', function ($scope, $q, $uibModalInstance, $http, model, form, fields, isInitial, parentModel, growl, IndexerCheckBeforeCloseService, RequestsErrorHandler, mode, IndexerConfigImportRequestFactory) {
 
     $scope.model = model;
     $scope.fields = fields;
@@ -1168,7 +1168,7 @@ angular.module('nzbhydraApp').controller('IndexerConfigBoxInstanceController', f
                     // For Prowlarr, make the request and only close on success
                     $scope.spinnerActive = true;
                     $scope.importError = null;
-                    $http.post("internalapi/indexer/readProwlarrConfig", {existingIndexers: parentModel, prowlarrConfig: model}, {
+                    $http.post("internalapi/indexer/readProwlarrConfig", IndexerConfigImportRequestFactory.buildProwlarr(parentModel, model), {
                         headers: {
                             "Accept": "application/json;charset=utf-8",
                             "Accept-Charset": "charset=utf-8"
@@ -1185,7 +1185,7 @@ angular.module('nzbhydraApp').controller('IndexerConfigBoxInstanceController', f
                     // For Jackett, make the request and only close on success
                     $scope.spinnerActive = true;
                     $scope.importError = null;
-                    $http.post("internalapi/indexer/readJackettConfig", {existingIndexers: parentModel, jackettConfig: model}, {
+                    $http.post("internalapi/indexer/readJackettConfig", IndexerConfigImportRequestFactory.buildJackett(parentModel, model), {
                         headers: {
                             "Accept": "application/json;charset=utf-8",
                             "Accept-Charset": "charset=utf-8"
