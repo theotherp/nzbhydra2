@@ -42,6 +42,8 @@ public final class IndexerSearchEntity {
      */
     private Integer resultsCount;
 
+    private Long responseTime;
+
     private String errorMessage;
 
     public IndexerSearchEntity() {

@@ -178,7 +178,7 @@ public class History {
         Collection<IndexerSearchEntity> entities = indexerSearchRepository.findBySearchEntity(search);
         List<IndexerSearchTO> details = new ArrayList<>();
         for (IndexerSearchEntity entity : entities) {
-            details.add(new IndexerSearchTO(entity.getIndexerEntity().getName(), entity.getSuccessful(), entity.getResultsCount(), entity.getErrorMessage()));
+            details.add(new IndexerSearchTO(entity.getIndexerEntity().getName(), entity.getSuccessful(), entity.getResultsCount(), entity.getResponseTime(), entity.getErrorMessage()));
         }
         return new SearchDetails(search.getUsername(), search.getIp(), search.getUserAgent(), search.getSource().name(), details);
     }
@@ -203,6 +203,7 @@ public class History {
         private String indexerName;
         private boolean successful;
         private int resultsCount;
+        private Long responseTime;
         private String errorMessage;
     }
 }

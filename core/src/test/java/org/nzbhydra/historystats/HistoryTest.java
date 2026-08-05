@@ -40,6 +40,7 @@ class HistoryTest {
         indexerSearch.setIndexerEntity(indexer);
         indexerSearch.setSuccessful(false);
         indexerSearch.setResultsCount(0);
+        indexerSearch.setResponseTime(123L);
         indexerSearch.setErrorMessage("Read timed out");
 
         when(searchRepository.findById(42)).thenReturn(Optional.of(search));
@@ -50,6 +51,7 @@ class HistoryTest {
         assertThat(details.getIndexerSearches()).singleElement().satisfies(indexerSearchDetails -> {
             assertThat(indexerSearchDetails.getIndexerName()).isEqualTo("Mock1");
             assertThat(indexerSearchDetails.isSuccessful()).isFalse();
+            assertThat(indexerSearchDetails.getResponseTime()).isEqualTo(123L);
             assertThat(indexerSearchDetails.getErrorMessage()).isEqualTo("Read timed out");
         });
     }
