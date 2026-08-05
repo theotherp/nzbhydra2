@@ -2,9 +2,9 @@ angular
     .module('nzbhydraApp')
     .controller('SystemController', SystemController);
 
-SystemController.$inject = ["$scope", "$state", "activeTab", "simpleInfos", "$http", "growl", "RestartService", "MigrationService", "ConfigService", "NzbHydraControlService", "RequestsErrorHandler", "bootstrapped"];
+SystemController.$inject = ["$scope", "$state", "activeTab", "simpleInfos", "$http", "growl", "RestartService", "MigrationService", "ConfigService", "NzbHydraControlService", "RequestsErrorHandler", "bootstrapped", "DebugInfoRequestFactory"];
 
-function SystemController($scope, $state, activeTab, simpleInfos, $http, growl, RestartService, MigrationService, ConfigService, NzbHydraControlService, RequestsErrorHandler, bootstrapped) {
+function SystemController($scope, $state, activeTab, simpleInfos, $http, growl, RestartService, MigrationService, ConfigService, NzbHydraControlService, RequestsErrorHandler, bootstrapped, DebugInfoRequestFactory) {
 
     $scope.activeTab = activeTab;
     $scope.foo = {
@@ -141,7 +141,7 @@ function SystemController($scope, $state, activeTab, simpleInfos, $http, growl, 
         $http({
             method: 'PUT',
             url: 'internalapi/debuginfos/sensitiveDataLogging',
-            params: {enabled: enable}
+            params: DebugInfoRequestFactory.buildSensitiveDataLoggingParams(enable)
         }).then(function (response) {
             $scope.sensitiveDataLoggingEnabled = response.data;
             if ($scope.sensitiveDataLoggingEnabled) {

@@ -1975,13 +1975,13 @@ escapeHtml.$inject = ["$sanitize"];angular
     .directive('hydralog', hydralog);
 
 function hydralog() {
-    controller.$inject = ["$scope", "$http", "$interval", "$uibModal", "$sce", "localStorageService", "growl"];
+    controller.$inject = ["$scope", "$http", "$interval", "$uibModal", "$sce", "localStorageService", "growl", "DebugInfoRequestFactory"];
     return {
         templateUrl: "static/html/directives/log.html",
         controller: controller
     };
 
-    function controller($scope, $http, $interval, $uibModal, $sce, localStorageService, growl) {
+    function controller($scope, $http, $interval, $uibModal, $sce, localStorageService, growl, DebugInfoRequestFactory) {
         $scope.tailInterval = null;
         $scope.doUpdateLog = localStorageService.get("doUpdateLog") !== null ? localStorageService.get("doUpdateLog") : false;
         $scope.doTailLog = localStorageService.get("doTailLog") !== null ? localStorageService.get("doTailLog") : false;
@@ -1993,10 +1993,7 @@ function hydralog() {
         function getLog(index) {
             if ($scope.active === 0) {
                 return $http.get("internalapi/debuginfos/jsonlogs", {
-                    params: {
-                        offset: index,
-                        limit: 500
-                    }
+                    params: DebugInfoRequestFactory.buildJsonLogParams(index, 500)
                 }).then(function (response) {
                     var data = response.data;
                     $scope.jsonLogLines = angular.fromJson(data.lines);
@@ -10502,9 +10499,9 @@ angular
     .module('nzbhydraApp')
     .controller('SystemController', SystemController);
 
-SystemController.$inject = ["$scope", "$state", "activeTab", "simpleInfos", "$http", "growl", "RestartService", "MigrationService", "ConfigService", "NzbHydraControlService", "RequestsErrorHandler", "bootstrapped"];
+SystemController.$inject = ["$scope", "$state", "activeTab", "simpleInfos", "$http", "growl", "RestartService", "MigrationService", "ConfigService", "NzbHydraControlService", "RequestsErrorHandler", "bootstrapped", "DebugInfoRequestFactory"];
 
-function SystemController($scope, $state, activeTab, simpleInfos, $http, growl, RestartService, MigrationService, ConfigService, NzbHydraControlService, RequestsErrorHandler, bootstrapped) {
+function SystemController($scope, $state, activeTab, simpleInfos, $http, growl, RestartService, MigrationService, ConfigService, NzbHydraControlService, RequestsErrorHandler, bootstrapped, DebugInfoRequestFactory) {
 
     $scope.activeTab = activeTab;
     $scope.foo = {
@@ -10641,7 +10638,7 @@ function SystemController($scope, $state, activeTab, simpleInfos, $http, growl, 
         $http({
             method: 'PUT',
             url: 'internalapi/debuginfos/sensitiveDataLogging',
-            params: {enabled: enable}
+            params: DebugInfoRequestFactory.buildSensitiveDataLoggingParams(enable)
         }).then(function (response) {
             $scope.sensitiveDataLoggingEnabled = response.data;
             if ($scope.sensitiveDataLoggingEnabled) {
@@ -16020,15 +16017,16 @@ function GenericStorageService($http) {
     };
 
     function get(key, forUser) {
-        return $http.get("internalapi/genericstorage/" + key, {params: {forUser: forUser}, ignoreLoadingBar: true});
+        return $http.get("internalapi/genericstorage/" + key, {params: {forUser: forUser === true}, ignoreLoadingBar: true});
     }
 
     function put(key, forUser, value) {
-        return $http.put("internalapi/genericstorage/" + key, value, {params: {forUser: forUser}, ignoreLoadingBar: true});
+        return $http.put("internalapi/genericstorage/" + key, value, {params: {forUser: forUser === true}, ignoreLoadingBar: true});
     }
 
 
 }
+
 var HEADER_NAME = 'NzbHydra2-Handle-Errors-Generically';
 var specificallyHandleInProgress = false;
 
@@ -16653,6 +16651,38 @@ function DebugService($filter) {
 
 
 }
+angular
+    .module('nzbhydraApp')
+    .factory('DebugInfoRequestFactory', DebugInfoRequestFactory);
+
+function DebugInfoRequestFactory() {
+    return {
+        buildJsonLogParams: buildJsonLogParams,
+        buildSensitiveDataLoggingParams: buildSensitiveDataLoggingParams
+    };
+
+    function buildJsonLogParams(offset, limit) {
+        return {
+            offset: normalizeOffset(offset),
+            limit: normalizeLimit(limit)
+        };
+    }
+
+    function buildSensitiveDataLoggingParams(enabled) {
+        return {enabled: enabled === true};
+    }
+
+    function normalizeOffset(offset) {
+        offset = Number(offset);
+        return isFinite(offset) && offset >= 0 ? Math.floor(offset) : 0;
+    }
+
+    function normalizeLimit(limit) {
+        limit = Number(limit);
+        return isFinite(limit) && limit > 0 ? Math.floor(limit) : 500;
+    }
+}
+
 
 CategoriesService.$inject = ["ConfigService"];angular
     .module('nzbhydraApp')

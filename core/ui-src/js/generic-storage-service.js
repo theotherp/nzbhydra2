@@ -13,11 +13,11 @@ function GenericStorageService($http) {
     };
 
     function get(key, forUser) {
-        return $http.get("internalapi/genericstorage/" + key, {params: {forUser: forUser}, ignoreLoadingBar: true});
+        return $http.get("internalapi/genericstorage/" + key, {params: {forUser: forUser === true}, ignoreLoadingBar: true});
     }
 
     function put(key, forUser, value) {
-        return $http.put("internalapi/genericstorage/" + key, value, {params: {forUser: forUser}, ignoreLoadingBar: true});
+        return $http.put("internalapi/genericstorage/" + key, value, {params: {forUser: forUser === true}, ignoreLoadingBar: true});
     }
 
 
