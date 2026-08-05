@@ -3,7 +3,7 @@ angular
     .controller('SearchResultsController', SearchResultsController);
 
 //SearchResultsController.$inject = ['blockUi'];
-function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $document, blockUI, growl, localStorageService, SearchService, ConfigService, CategoriesService, DebugService, GenericStorageService, ModalService, $uibModal, GuidedTourService) {
+function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $document, blockUI, growl, localStorageService, SearchService, SearchRequestFactory, ConfigService, CategoriesService, DebugService, GenericStorageService, ModalService, $uibModal, GuidedTourService) {
     // console.time("Presenting");
 
     $scope.limitTo = ConfigService.getSafe().searching.loadLimitInternal;
@@ -382,7 +382,7 @@ function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $doc
             growl.info("No search available to save");
             return;
         }
-        $http.post("internalapi/savedsearches", {request: searchRequest}).then(function () {
+        $http.post("internalapi/savedsearches", SearchRequestFactory.buildSavedSearch(searchRequest)).then(function () {
             growl.success("Saved search");
         }, function () {
             growl.error("Unable to save search");

@@ -17,6 +17,9 @@ test.describe("Search", () => {
 
         const response = await searchResponse;
         expect(response.status()).toBe(200);
+        const requestBody = response.request().postDataJSON() as { searchRequestId?: unknown; loadAll?: unknown };
+        expect(typeof requestBody.searchRequestId).toBe("number");
+        expect(requestBody.loadAll).toBe(false);
         const body = await response.json() as { searchResults?: unknown[] };
         expect(Array.isArray(body.searchResults)).toBe(true);
 
@@ -26,6 +29,15 @@ test.describe("Search", () => {
         await expect(page.getByTestId("search-result-title").filter({hasText: "indexer2-result1"})).toBeVisible();
         await expect(page.getByTestId("search-results-summary")).toContainText("Loaded 5");
         await expect(page.getByTestId("search-results-summary")).toContainText("of 5 results");
+
+        const savedSearchResponse = page.waitForResponse(response =>
+            response.request().method() === "POST" && new URL(response.url()).pathname === "/internalapi/savedsearches");
+        await page.locator("#save-search").click();
+        const savedSearchBody = (await savedSearchResponse).request().postDataJSON() as {
+            request?: { searchRequestId?: unknown; loadAll?: unknown };
+        };
+        expect(typeof savedSearchBody.request?.searchRequestId).toBe("number");
+        expect(savedSearchBody.request?.loadAll).toBe(false);
     });
 
     test("should select a movie autocomplete result and search by TMDB identifier", async ({page}) => {

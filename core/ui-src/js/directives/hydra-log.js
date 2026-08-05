@@ -8,7 +8,7 @@ function hydralog() {
         controller: controller
     };
 
-    function controller($scope, $http, $interval, $uibModal, $sce, localStorageService, growl) {
+    function controller($scope, $http, $interval, $uibModal, $sce, localStorageService, growl, DebugInfoRequestFactory) {
         $scope.tailInterval = null;
         $scope.doUpdateLog = localStorageService.get("doUpdateLog") !== null ? localStorageService.get("doUpdateLog") : false;
         $scope.doTailLog = localStorageService.get("doTailLog") !== null ? localStorageService.get("doTailLog") : false;
@@ -20,10 +20,7 @@ function hydralog() {
         function getLog(index) {
             if ($scope.active === 0) {
                 return $http.get("internalapi/debuginfos/jsonlogs", {
-                    params: {
-                        offset: index,
-                        limit: 500
-                    }
+                    params: DebugInfoRequestFactory.buildJsonLogParams(index, 500)
                 }).then(function (response) {
                     var data = response.data;
                     $scope.jsonLogLines = angular.fromJson(data.lines);

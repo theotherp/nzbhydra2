@@ -1975,13 +1975,13 @@ escapeHtml.$inject = ["$sanitize"];angular
     .directive('hydralog', hydralog);
 
 function hydralog() {
-    controller.$inject = ["$scope", "$http", "$interval", "$uibModal", "$sce", "localStorageService", "growl"];
+    controller.$inject = ["$scope", "$http", "$interval", "$uibModal", "$sce", "localStorageService", "growl", "DebugInfoRequestFactory"];
     return {
         templateUrl: "static/html/directives/log.html",
         controller: controller
     };
 
-    function controller($scope, $http, $interval, $uibModal, $sce, localStorageService, growl) {
+    function controller($scope, $http, $interval, $uibModal, $sce, localStorageService, growl, DebugInfoRequestFactory) {
         $scope.tailInterval = null;
         $scope.doUpdateLog = localStorageService.get("doUpdateLog") !== null ? localStorageService.get("doUpdateLog") : false;
         $scope.doTailLog = localStorageService.get("doTailLog") !== null ? localStorageService.get("doTailLog") : false;
@@ -1993,10 +1993,7 @@ function hydralog() {
         function getLog(index) {
             if ($scope.active === 0) {
                 return $http.get("internalapi/debuginfos/jsonlogs", {
-                    params: {
-                        offset: index,
-                        limit: 500
-                    }
+                    params: DebugInfoRequestFactory.buildJsonLogParams(index, 500)
                 }).then(function (response) {
                     var data = response.data;
                     $scope.jsonLogLines = angular.fromJson(data.lines);
@@ -3968,7 +3965,7 @@ function addableNzb(DebugService) {
 
 
 CheckCapsModalInstanceCtrl.$inject = ["$scope", "$interval", "$http", "$timeout", "growl", "capsCheckRequest"];
-IndexerConfigBoxService.$inject = ["$http", "$q", "$uibModal"];
+IndexerConfigBoxService.$inject = ["$http", "$q", "$uibModal", "CapsCheckRequestFactory"];
 IndexerCheckBeforeCloseService.$inject = ["$q", "ModalService", "IndexerConfigBoxService", "growl", "blockUI"];
 function regexValidator(regex, message, prefixViewValue, preventEmpty) {
     return {
@@ -5121,7 +5118,7 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
 }]);
 
 
-angular.module('nzbhydraApp').controller('IndexerConfigBoxInstanceController', ["$scope", "$q", "$uibModalInstance", "$http", "model", "form", "fields", "isInitial", "parentModel", "growl", "IndexerCheckBeforeCloseService", "RequestsErrorHandler", "mode", function ($scope, $q, $uibModalInstance, $http, model, form, fields, isInitial, parentModel, growl, IndexerCheckBeforeCloseService, RequestsErrorHandler, mode) {
+angular.module('nzbhydraApp').controller('IndexerConfigBoxInstanceController', ["$scope", "$q", "$uibModalInstance", "$http", "model", "form", "fields", "isInitial", "parentModel", "growl", "IndexerCheckBeforeCloseService", "RequestsErrorHandler", "mode", "IndexerConfigImportRequestFactory", function ($scope, $q, $uibModalInstance, $http, model, form, fields, isInitial, parentModel, growl, IndexerCheckBeforeCloseService, RequestsErrorHandler, mode, IndexerConfigImportRequestFactory) {
 
     $scope.model = model;
     $scope.fields = fields;
@@ -5138,7 +5135,7 @@ angular.module('nzbhydraApp').controller('IndexerConfigBoxInstanceController', [
                     // For Prowlarr, make the request and only close on success
                     $scope.spinnerActive = true;
                     $scope.importError = null;
-                    $http.post("internalapi/indexer/readProwlarrConfig", {existingIndexers: parentModel, prowlarrConfig: model}, {
+                    $http.post("internalapi/indexer/readProwlarrConfig", IndexerConfigImportRequestFactory.buildProwlarr(parentModel, model), {
                         headers: {
                             "Accept": "application/json;charset=utf-8",
                             "Accept-Charset": "charset=utf-8"
@@ -5155,7 +5152,7 @@ angular.module('nzbhydraApp').controller('IndexerConfigBoxInstanceController', [
                     // For Jackett, make the request and only close on success
                     $scope.spinnerActive = true;
                     $scope.importError = null;
-                    $http.post("internalapi/indexer/readJackettConfig", {existingIndexers: parentModel, jackettConfig: model}, {
+                    $http.post("internalapi/indexer/readJackettConfig", IndexerConfigImportRequestFactory.buildJackett(parentModel, model), {
                         headers: {
                             "Accept": "application/json;charset=utf-8",
                             "Accept-Charset": "charset=utf-8"
@@ -5264,7 +5261,7 @@ angular
     .module('nzbhydraApp')
     .factory('IndexerConfigBoxService', IndexerConfigBoxService);
 
-function IndexerConfigBoxService($http, $q, $uibModal) {
+function IndexerConfigBoxService($http, $q, $uibModal, CapsCheckRequestFactory) {
 
     return {
         checkConnection: checkConnection,
@@ -5290,6 +5287,7 @@ function IndexerConfigBoxService($http, $q, $uibModal) {
 
     function checkCaps(capsCheckRequest) {
         var deferred = $q.defer();
+        capsCheckRequest = CapsCheckRequestFactory.build(capsCheckRequest.indexerConfig, capsCheckRequest.checkType);
 
         var result = $uibModal.open({
             templateUrl: 'static/html/checker-state.html',
@@ -5882,7 +5880,7 @@ angular
     }]);
 
 
-angular.module('nzbhydraApp').controller('ExternalToolConfigBoxInstanceController', ["$scope", "$q", "$uibModalInstance", "$http", "model", "fields", "isInitial", "parentModel", "data", "growl", "blockUI", function ($scope, $q, $uibModalInstance, $http, model, fields, isInitial, parentModel, data, growl, blockUI) {
+angular.module('nzbhydraApp').controller('ExternalToolConfigBoxInstanceController', ["$scope", "$q", "$uibModalInstance", "$http", "model", "fields", "isInitial", "parentModel", "data", "growl", "blockUI", "ExternalToolRequestFactory", function ($scope, $q, $uibModalInstance, $http, model, fields, isInitial, parentModel, data, growl, blockUI, ExternalToolRequestFactory) {
 
     $scope.model = model;
     $scope.fields = fields;
@@ -5928,14 +5926,7 @@ angular.module('nzbhydraApp').controller('ExternalToolConfigBoxInstanceControlle
         $scope.spinnerActive = true;
         blockUI.start("Testing connection...");
 
-        var testRequest = {
-            externalTool: model.type === 'SONARR' ? 'Sonarr' :
-                model.type === 'RADARR' ? 'Radarr' :
-                    model.type === 'LIDARR' ? 'Lidarr' : 'Readarr',
-            xdarrHost: model.host,
-            xdarrApiKey: model.apiKey,
-            addType: 'DELETE_ONLY' // Just test connection
-        };
+        var testRequest = ExternalToolRequestFactory.build(model, "DELETE_ONLY");
 
         $http.post("internalapi/externalTools/testConnection", testRequest).then(
             function (response) {
@@ -5964,14 +5955,7 @@ angular.module('nzbhydraApp').controller('ExternalToolConfigBoxInstanceControlle
             $scope.spinnerActive = true;
             blockUI.start("Testing connection...");
 
-            var testRequest = {
-                externalTool: model.type === 'SONARR' ? 'Sonarr' :
-                    model.type === 'RADARR' ? 'Radarr' :
-                        model.type === 'LIDARR' ? 'Lidarr' : 'Readarr',
-                xdarrHost: model.host,
-                xdarrApiKey: model.apiKey,
-                addType: 'DELETE_ONLY'
-            };
+            var testRequest = ExternalToolRequestFactory.build(model, "DELETE_ONLY");
 
             $http.post("internalapi/externalTools/testConnection", testRequest).then(
                 function (response) {
@@ -6003,24 +5987,7 @@ angular.module('nzbhydraApp').controller('ExternalToolConfigBoxInstanceControlle
         $scope.spinnerActive = true;
         blockUI.start("Configuring NZBHydra in " + model.type + "...");
 
-        var syncRequest = {
-            externalTool: model.type === 'SONARR' ? 'Sonarr' :
-                model.type === 'RADARR' ? 'Radarr' :
-                    model.type === 'LIDARR' ? 'Lidarr' : 'Readarr',
-            xdarrHost: model.host,
-            xdarrApiKey: model.apiKey,
-            addType: model.syncType === 'SINGLE' ? 'SINGLE' : 'PER_INDEXER',
-            nzbhydraName: model.nzbhydraName,
-            nzbhydraHost: model.nzbhydraHost,
-            configureForUsenet: model.configureForUsenet,
-            configureForTorrents: model.configureForTorrents,
-            enableRss: model.enableRss,
-            enableAutomaticSearch: model.enableAutomaticSearch,
-            enableInteractiveSearch: model.enableInteractiveSearch,
-            enableCategories: true,
-            categories: model.categories || '',
-            additionalParameters: model.additionalParameters
-        };
+        var syncRequest = ExternalToolRequestFactory.build(model, model.syncType === "SINGLE" ? "SINGLE" : "PER_INDEXER");
 
         $http.post("internalapi/externalTools/configure", syncRequest).then(
             function (response) {
@@ -6051,6 +6018,7 @@ angular.module('nzbhydraApp').controller('ExternalToolConfigBoxInstanceControlle
         }
     });
 }]);
+
 
 DownloaderConfigBoxService.$inject = ["$http", "$q", "$uibModal"];
 DownloaderCheckBeforeCloseService.$inject = ["$q", "DownloaderConfigBoxService", "growl", "ModalService", "blockUI"];
@@ -7205,11 +7173,11 @@ angular
     }]);
 
 
-ConfigService.$inject = ["$http", "$q", "$cacheFactory", "$uibModal", "bootstrapped", "RequestsErrorHandler"];angular
+ConfigService.$inject = ["$http", "$q", "$cacheFactory", "$uibModal", "bootstrapped", "RequestsErrorHandler", "ExternalToolRequestFactory"];angular
     .module('nzbhydraApp')
     .factory('ConfigService', ConfigService);
 
-function ConfigService($http, $q, $cacheFactory, $uibModal, bootstrapped, RequestsErrorHandler) {
+function ConfigService($http, $q, $cacheFactory, $uibModal, bootstrapped, RequestsErrorHandler, ExternalToolRequestFactory) {
 
     ConfigureInModalInstanceCtrl.$inject = ["$scope", "$uibModalInstance", "$http", "growl", "$interval", "RequestsErrorHandler", "localStorageService", "externalTool", "dialogInfo"];
     var cache = $cacheFactory("nzbhydra");
@@ -7400,34 +7368,7 @@ function ConfigService($http, $q, $cacheFactory, $uibModal, bootstrapped, Reques
             $scope.spinnerActive = true;
             $scope.working = true;
             $scope.showMessages = true;
-            var data = {
-
-                nzbhydraName: $scope.nzbhydraName,
-                externalTool: $scope.externalTool,
-                nzbhydraHost: $scope.nzbhydraHost,
-                addType: deleteOnly ? "DELETE_ONLY" : $scope.addType,
-                xdarrHost: $scope.xdarrHost,
-                xdarrApiKey: $scope.xdarrApiKey,
-                enableRss: $scope.enableRss,
-                enableAutomaticSearch: $scope.enableAutomaticSearch,
-                enableInteractiveSearch: $scope.enableInteractiveSearch,
-                categories: $scope.categories,
-                animeCategories: $scope.animeCategories,
-                removeYearFromSearchString: $scope.removeYearFromSearchString,
-                earlyDownloadLimit: $scope.earlyDownloadLimit,
-                multiLanguages: $scope.multiLanguages,
-                configureForUsenet: $scope.configureForUsenet,
-                configureForTorrents: $scope.configureForTorrents,
-                additionalParameters: $scope.additionalParameters,
-                minimumSeeders: $scope.minimumSeeders,
-                seedRatio: $scope.seedRatio,
-                seedTime: $scope.seedTime,
-                seasonPackSeedTime: $scope.seasonPackSeedTime,
-                discographySeedTime: $scope.discographySeedTime,
-                addDisabledIndexers: $scope.addDisabledIndexers,
-                priority: $scope.priority,
-                useHydraPriorities: $scope.useHydraPriorities
-            }
+            var data = ExternalToolRequestFactory.build($scope, deleteOnly ? "DELETE_ONLY" : $scope.addType);
 
             localStorageService.set(externalTool, data);
 
@@ -10558,9 +10499,9 @@ angular
     .module('nzbhydraApp')
     .controller('SystemController', SystemController);
 
-SystemController.$inject = ["$scope", "$state", "activeTab", "simpleInfos", "$http", "growl", "RestartService", "MigrationService", "ConfigService", "NzbHydraControlService", "RequestsErrorHandler", "bootstrapped"];
+SystemController.$inject = ["$scope", "$state", "activeTab", "simpleInfos", "$http", "growl", "RestartService", "MigrationService", "ConfigService", "NzbHydraControlService", "RequestsErrorHandler", "bootstrapped", "DebugInfoRequestFactory"];
 
-function SystemController($scope, $state, activeTab, simpleInfos, $http, growl, RestartService, MigrationService, ConfigService, NzbHydraControlService, RequestsErrorHandler, bootstrapped) {
+function SystemController($scope, $state, activeTab, simpleInfos, $http, growl, RestartService, MigrationService, ConfigService, NzbHydraControlService, RequestsErrorHandler, bootstrapped, DebugInfoRequestFactory) {
 
     $scope.activeTab = activeTab;
     $scope.foo = {
@@ -10697,7 +10638,7 @@ function SystemController($scope, $state, activeTab, simpleInfos, $http, growl, 
         $http({
             method: 'PUT',
             url: 'internalapi/debuginfos/sensitiveDataLogging',
-            params: {enabled: enable}
+            params: DebugInfoRequestFactory.buildSensitiveDataLoggingParams(enable)
         }).then(function (response) {
             $scope.sensitiveDataLoggingEnabled = response.data;
             if ($scope.sensitiveDataLoggingEnabled) {
@@ -10810,11 +10751,11 @@ function formatSystemMoment(date, bootstrapped) {
 }
 
 
-StatsService.$inject = ["$http", "HistoryRequestFactory"];angular
+StatsService.$inject = ["$http", "HistoryRequestFactory", "StatsRequestFactory"];angular
     .module('nzbhydraApp')
     .factory('StatsService', StatsService);
 
-function StatsService($http, HistoryRequestFactory) {
+function StatsService($http, HistoryRequestFactory, StatsRequestFactory) {
 
     return {
         get: getStats,
@@ -10823,8 +10764,7 @@ function StatsService($http, HistoryRequestFactory) {
     };
 
     function getStats(after, before, includeDisabled, switchState) {
-        var requestBody = {after: after, before: before, includeDisabled: includeDisabled};
-        requestBody = _.extend(requestBody, switchState);
+        var requestBody = StatsRequestFactory.build(after, before, includeDisabled, switchState);
         return $http.post("internalapi/stats", requestBody).then(function (response) {
             return response.data;
         });
@@ -10852,6 +10792,42 @@ function StatsService($http, HistoryRequestFactory) {
         });
     }
 
+}
+
+angular
+    .module('nzbhydraApp')
+    .factory('StatsRequestFactory', StatsRequestFactory);
+
+function StatsRequestFactory() {
+    return {
+        build: build
+    };
+
+    // Keep this JSON shape aligned with org.nzbhydra.historystats.stats.StatsRequest.
+    function build(after, before, includeDisabled, switchState) {
+        switchState = switchState || {};
+        return {
+            after: after,
+            before: before,
+            includeDisabled: includeDisabled === true,
+            indexerApiAccessStats: switchState.indexerApiAccessStats === true,
+            avgIndexerUniquenessScore: switchState.avgIndexerUniquenessScore === true,
+            avgResponseTimes: switchState.avgResponseTimes === true,
+            indexerDownloadShares: switchState.indexerDownloadShares === true,
+            downloadsPerDayOfWeek: switchState.downloadsPerDayOfWeek === true,
+            downloadsPerHourOfDay: switchState.downloadsPerHourOfDay === true,
+            searchesPerDayOfWeek: switchState.searchesPerDayOfWeek === true,
+            searchesPerHourOfDay: switchState.searchesPerHourOfDay === true,
+            downloadsPerAgeStats: switchState.downloadsPerAgeStats === true,
+            successfulDownloadsPerIndexer: switchState.successfulDownloadsPerIndexer === true,
+            downloadSharesPerUser: switchState.downloadSharesPerUser === true,
+            downloadSharesPerIp: switchState.downloadSharesPerIp === true,
+            searchSharesPerUser: switchState.searchSharesPerUser === true,
+            searchSharesPerIp: switchState.searchSharesPerIp === true,
+            userAgentSearchShares: switchState.userAgentSearchShares === true,
+            userAgentDownloadShares: switchState.userAgentDownloadShares === true
+        };
+    }
 }
 
 
@@ -11206,12 +11182,12 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
 }
 
 //
-SearchService.$inject = ["$http"];
+SearchService.$inject = ["$http", "SearchRequestFactory"];
 angular
     .module('nzbhydraApp')
     .factory('SearchService', SearchService);
 
-function SearchService($http) {
+function SearchService($http, SearchRequestFactory) {
 
 
     var lastExecutedQuery;
@@ -11240,16 +11216,17 @@ function SearchService($http) {
     function search(searchRequestId, category, query, metaData, season, episode, minsize, maxsize, minage, maxage, indexers, mode) {
         // console.time("search");
         var uri = new URI("internalapi/search");
-        var searchRequestParameters = {};
-        searchRequestParameters.searchRequestId = searchRequestId;
-        searchRequestParameters.query = query;
-        searchRequestParameters.minsize = minsize;
-        searchRequestParameters.maxsize = maxsize;
-        searchRequestParameters.minage = minage;
-        searchRequestParameters.maxage = maxage;
-        searchRequestParameters.category = category;
-        searchRequestParameters.mode = mode;
-        searchRequestParameters.loadAll = false;
+        var searchRequestParameters = {
+            searchRequestId: searchRequestId,
+            query: query,
+            minsize: minsize,
+            maxsize: maxsize,
+            minage: minage,
+            maxage: maxage,
+            category: category,
+            mode: mode,
+            loadAll: false
+        };
 
         if (!angular.isUndefined(indexers) && indexers !== null) {
             searchRequestParameters.indexers = indexers.split(",");
@@ -11270,16 +11247,18 @@ function SearchService($http) {
             }
         }
 
+        searchRequestParameters = SearchRequestFactory.build(searchRequestParameters);
         lastExecutedQuery = uri;
         lastExecutedSearchRequestParameters = searchRequestParameters;
         return $http.post(uri.toString(), searchRequestParameters).then(processData);
     }
 
     function loadMore(offset, limit, loadAll) {
-        var params = angular.extend({}, lastExecutedSearchRequestParameters);
-        params.offset = offset;
-        params.limit = limit;
-        params.loadAll = angular.isDefined(loadAll) ? loadAll : false;
+        var params = SearchRequestFactory.build(angular.extend({}, lastExecutedSearchRequestParameters, {
+            offset: offset,
+            limit: limit,
+            loadAll: angular.isDefined(loadAll) ? loadAll : false
+        }));
 
         return $http.post(lastExecutedQuery.toString(), params).then(processData);
     }
@@ -11328,12 +11307,13 @@ function SearchService($http) {
     }
 }
 
-SearchResultsController.$inject = ["$stateParams", "$scope", "$http", "$q", "$timeout", "$document", "blockUI", "growl", "localStorageService", "SearchService", "ConfigService", "CategoriesService", "DebugService", "GenericStorageService", "ModalService", "$uibModal", "GuidedTourService"];angular
+
+SearchResultsController.$inject = ["$stateParams", "$scope", "$http", "$q", "$timeout", "$document", "blockUI", "growl", "localStorageService", "SearchService", "SearchRequestFactory", "ConfigService", "CategoriesService", "DebugService", "GenericStorageService", "ModalService", "$uibModal", "GuidedTourService"];angular
     .module('nzbhydraApp')
     .controller('SearchResultsController', SearchResultsController);
 
 //SearchResultsController.$inject = ['blockUi'];
-function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $document, blockUI, growl, localStorageService, SearchService, ConfigService, CategoriesService, DebugService, GenericStorageService, ModalService, $uibModal, GuidedTourService) {
+function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $document, blockUI, growl, localStorageService, SearchService, SearchRequestFactory, ConfigService, CategoriesService, DebugService, GenericStorageService, ModalService, $uibModal, GuidedTourService) {
     // console.time("Presenting");
 
     $scope.limitTo = ConfigService.getSafe().searching.loadLimitInternal;
@@ -11712,7 +11692,7 @@ function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $doc
             growl.info("No search available to save");
             return;
         }
-        $http.post("internalapi/savedsearches", {request: searchRequest}).then(function () {
+        $http.post("internalapi/savedsearches", SearchRequestFactory.buildSavedSearch(searchRequest)).then(function () {
             growl.success("Saved search");
         }, function () {
             growl.error("Unable to save search");
@@ -12417,6 +12397,48 @@ function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $doc
     }, 3000);
 
 
+}
+
+angular
+    .module('nzbhydraApp')
+    .factory('SearchRequestFactory', SearchRequestFactory);
+
+function SearchRequestFactory() {
+    return {
+        build: build,
+        buildSavedSearch: buildSavedSearch
+    };
+
+    // Keep this JSON shape aligned with org.nzbhydra.searching.dtoseventsenums.SearchRequestParameters.
+    function build(parameters) {
+        parameters = parameters || {};
+        return {
+            query: parameters.query,
+            offset: parameters.offset,
+            limit: parameters.limit,
+            minsize: parameters.minsize,
+            maxsize: parameters.maxsize,
+            minage: parameters.minage,
+            maxage: parameters.maxage,
+            loadAll: parameters.loadAll === true,
+            category: parameters.category,
+            mode: parameters.mode,
+            indexers: parameters.indexers,
+            title: parameters.title,
+            imdbId: parameters.imdbId,
+            tmdbId: parameters.tmdbId,
+            tvrageId: parameters.tvrageId,
+            tvdbId: parameters.tvdbId,
+            tvmazeId: parameters.tvmazeId,
+            season: parameters.season,
+            episode: parameters.episode,
+            searchRequestId: isFinite(Number(parameters.searchRequestId)) ? Number(parameters.searchRequestId) : 0
+        };
+    }
+
+    function buildSavedSearch(parameters) {
+        return {request: build(parameters)};
+    }
 }
 
 
@@ -13899,12 +13921,12 @@ function NzbHydraControlService($http) {
 }
 
 
-NzbDownloadService.$inject = ["$http", "$q", "$uibModal", "ConfigService", "DownloaderCategoriesService"];
+NzbDownloadService.$inject = ["$http", "$q", "$uibModal", "ConfigService", "DownloaderCategoriesService", "DownloaderRequestFactory"];
 DuplicateMovieDownloadReasonModalController.$inject = ["$scope", "$uibModalInstance"];angular
     .module('nzbhydraApp')
     .factory('NzbDownloadService', NzbDownloadService);
 
-function NzbDownloadService($http, $q, $uibModal, ConfigService, DownloaderCategoriesService) {
+function NzbDownloadService($http, $q, $uibModal, ConfigService, DownloaderCategoriesService, DownloaderRequestFactory) {
 
     var service = {
         download: download,
@@ -13913,22 +13935,13 @@ function NzbDownloadService($http, $q, $uibModal, ConfigService, DownloaderCateg
 
     return service;
 
-    function buildRequest(downloader, searchResults, category, reason) {
-        return {
-            downloaderName: downloader.name,
-            searchResults: searchResults,
-            category: category,
-            reason: reason
-        };
-    }
-
     function sendNzbAddCommand(downloader, searchResults, category, reason) {
-        var params = buildRequest(downloader, searchResults, category, reason);
+        var params = DownloaderRequestFactory.buildAddFilesRequest(downloader, searchResults, category, reason);
         return $http.put("internalapi/downloader/addNzbs", params);
     }
 
     function checkIfDuplicateMovieDownloadRequiresReason(downloader, searchResults) {
-        return $http.put("internalapi/downloader/checkDuplicateMovieDownload", buildRequest(downloader, searchResults, null, null))
+        return $http.put("internalapi/downloader/checkDuplicateMovieDownload", DownloaderRequestFactory.buildAddFilesRequest(downloader, searchResults, null, null))
             .then(function (response) {
                 return response.data.reasonRequired;
             });
@@ -14682,6 +14695,32 @@ angular
 function humanizeDate() {
     return function (date) {
         return moment().to(moment.unix(date));
+    }
+}
+
+angular
+    .module('nzbhydraApp')
+    .factory('IndexerConfigImportRequestFactory', IndexerConfigImportRequestFactory);
+
+function IndexerConfigImportRequestFactory() {
+    return {
+        buildProwlarr: buildProwlarr,
+        buildJackett: buildJackett
+    };
+
+    // Keep these JSON shapes aligned with IndexerWeb's importer request DTOs.
+    function buildProwlarr(existingIndexers, prowlarrConfig) {
+        return {
+            existingIndexers: angular.isArray(existingIndexers) ? existingIndexers : [],
+            prowlarrConfig: angular.isUndefined(prowlarrConfig) ? null : prowlarrConfig
+        };
+    }
+
+    function buildJackett(existingIndexers, jackettConfig) {
+        return {
+            existingIndexers: angular.isArray(existingIndexers) ? existingIndexers : [],
+            jackettConfig: angular.isUndefined(jackettConfig) ? null : jackettConfig
+        };
     }
 }
 
@@ -15978,15 +16017,16 @@ function GenericStorageService($http) {
     };
 
     function get(key, forUser) {
-        return $http.get("internalapi/genericstorage/" + key, {params: {forUser: forUser}, ignoreLoadingBar: true});
+        return $http.get("internalapi/genericstorage/" + key, {params: {forUser: forUser === true}, ignoreLoadingBar: true});
     }
 
     function put(key, forUser, value) {
-        return $http.put("internalapi/genericstorage/" + key, value, {params: {forUser: forUser}, ignoreLoadingBar: true});
+        return $http.put("internalapi/genericstorage/" + key, value, {params: {forUser: forUser === true}, ignoreLoadingBar: true});
     }
 
 
 }
+
 var HEADER_NAME = 'NzbHydra2-Handle-Errors-Generically';
 var specificallyHandleInProgress = false;
 
@@ -16118,11 +16158,11 @@ filters
 
 
 
-FileSelectionService.$inject = ["$http", "$q", "$uibModal"];angular
+FileSelectionService.$inject = ["$http", "$q", "$uibModal", "DirectoryListingRequestFactory"];angular
     .module('nzbhydraApp')
     .factory('FileSelectionService', FileSelectionService);
 
-function FileSelectionService($http, $q, $uibModal) {
+function FileSelectionService($http, $q, $uibModal, DirectoryListingRequestFactory) {
 
     var categories = {};
     var selectedCategory = {};
@@ -16143,11 +16183,7 @@ function FileSelectionService($http, $q, $uibModal) {
             size: "md",
             resolve: {
                 data: function () {
-                    return $http.post("internalapi/config/folderlisting", {
-                        fullPath: angular.isDefined(fullPath) ? fullPath : null,
-                        goUp: false,
-                        type: type
-                    });
+                    return $http.post("internalapi/config/folderlisting", DirectoryListingRequestFactory.build(fullPath, type, false));
                 },
                 type: function () {
                     return type;
@@ -16168,7 +16204,7 @@ function FileSelectionService($http, $q, $uibModal) {
 }
 
 angular
-    .module('nzbhydraApp').controller('FileSelectionModalController', ["$scope", "$http", "$uibModalInstance", "FileSelectionService", "data", "type", function ($scope, $http, $uibModalInstance, FileSelectionService, data, type) {
+    .module('nzbhydraApp').controller('FileSelectionModalController', ["$scope", "$http", "$uibModalInstance", "FileSelectionService", "DirectoryListingRequestFactory", "data", "type", function ($scope, $http, $uibModalInstance, FileSelectionService, DirectoryListingRequestFactory, data, type) {
 
     $scope.type = type;
     $scope.showType = type === "file" ? "File" : "Folder";
@@ -16178,22 +16214,14 @@ angular
         if (selectType === "file" && type === "file") {
             $uibModalInstance.close(fileOrFolder.fullPath);
         } else if (selectType === "folder") {
-            $http.post("internalapi/config/folderlisting", {
-                fullPath: fileOrFolder.fullPath,
-                type: type,
-                goUp: false
-            }).then(function (data) {
+            $http.post("internalapi/config/folderlisting", DirectoryListingRequestFactory.build(fileOrFolder.fullPath, type, false)).then(function (data) {
                 $scope.data = data.data;
             })
         }
     };
 
     $scope.goUp = function () {
-        $http.post("internalapi/config/folderlisting", {
-            fullPath: $scope.data.fullPath,
-            type: type,
-            goUp: true
-        }).then(function (data) {
+        $http.post("internalapi/config/folderlisting", DirectoryListingRequestFactory.build($scope.data.fullPath, type, true)).then(function (data) {
             $scope.data = data.data;
         })
     };
@@ -16203,6 +16231,7 @@ angular
     }
 
 }]);
+
 
 FileDownloadService.$inject = ["$http", "growl"];angular
     .module('nzbhydraApp')
@@ -16240,6 +16269,79 @@ function FileDownloadService($http, growl) {
 
 }
 
+
+angular
+    .module('nzbhydraApp')
+    .factory('ExternalToolRequestFactory', ExternalToolRequestFactory);
+
+function ExternalToolRequestFactory() {
+    return {
+        build: build
+    };
+
+    // Keep this JSON shape aligned with org.nzbhydra.externaltools.AddRequest.
+    function build(model, addType) {
+        model = model || {};
+        return {
+            configureForUsenet: model.configureForUsenet === true,
+            configureForTorrents: model.configureForTorrents === true,
+            nzbhydraName: model.nzbhydraName,
+            externalTool: normalizeExternalTool(model.externalTool || model.type),
+            xdarrHost: model.xdarrHost || model.host,
+            xdarrApiKey: model.xdarrApiKey || model.apiKey,
+            nzbhydraHost: model.nzbhydraHost,
+            addType: addType || model.addType || "SINGLE",
+            enableRss: model.enableRss === true,
+            enableAutomaticSearch: model.enableAutomaticSearch === true,
+            enableInteractiveSearch: model.enableInteractiveSearch === true,
+            removeYearFromSearchString: model.removeYearFromSearchString === true,
+            earlyDownloadLimit: model.earlyDownloadLimit,
+            addUsenet: model.addUsenet === true,
+            addTorrent: model.addTorrent === true,
+            addDisabledIndexers: model.addDisabledIndexers === true,
+            additionalParameters: model.additionalParameters,
+            minimumSeeders: model.minimumSeeders,
+            seedRatio: model.seedRatio,
+            seedTime: model.seedTime,
+            seasonPackSeedTime: model.seasonPackSeedTime,
+            discographySeedTime: model.discographySeedTime,
+            categories: model.categories,
+            animeCategories: model.animeCategories,
+            priority: model.priority,
+            useHydraPriorities: model.useHydraPriorities === true
+        };
+    }
+
+    function normalizeExternalTool(externalTool) {
+        var tools = {
+            SONARR: "Sonarr",
+            RADARR: "Radarr",
+            LIDARR: "Lidarr",
+            READARR: "Readarr"
+        };
+        return tools[externalTool] || externalTool;
+    }
+}
+
+angular
+    .module('nzbhydraApp')
+    .factory('DownloaderRequestFactory', DownloaderRequestFactory);
+
+function DownloaderRequestFactory() {
+    return {
+        buildAddFilesRequest: buildAddFilesRequest
+    };
+
+    // Keep this JSON shape aligned with org.nzbhydra.downloading.AddFilesRequest.
+    function buildAddFilesRequest(downloader, searchResults, category, reason) {
+        return {
+            downloaderName: downloader.name,
+            searchResults: angular.isArray(searchResults) ? searchResults : [],
+            category: angular.isUndefined(category) ? null : category,
+            reason: angular.isUndefined(reason) ? null : reason
+        };
+    }
+}
 
 
 DownloaderCategoriesService.$inject = ["$http", "$q", "$uibModal"];angular
@@ -16493,6 +16595,25 @@ function reformatDateEpoch() {
     }
 }
 
+angular
+    .module('nzbhydraApp')
+    .factory('DirectoryListingRequestFactory', DirectoryListingRequestFactory);
+
+function DirectoryListingRequestFactory() {
+    return {
+        build: build
+    };
+
+    // Keep this JSON shape aligned with org.nzbhydra.config.FileSystemBrowser.DirectoryListingRequest.
+    function build(fullPath, type, goUp) {
+        return {
+            fullPath: angular.isUndefined(fullPath) ? null : fullPath,
+            type: type,
+            goUp: goUp === true
+        };
+    }
+}
+
 
 
 DebugService.$inject = ["$filter"];
@@ -16530,6 +16651,38 @@ function DebugService($filter) {
 
 
 }
+angular
+    .module('nzbhydraApp')
+    .factory('DebugInfoRequestFactory', DebugInfoRequestFactory);
+
+function DebugInfoRequestFactory() {
+    return {
+        buildJsonLogParams: buildJsonLogParams,
+        buildSensitiveDataLoggingParams: buildSensitiveDataLoggingParams
+    };
+
+    function buildJsonLogParams(offset, limit) {
+        return {
+            offset: normalizeOffset(offset),
+            limit: normalizeLimit(limit)
+        };
+    }
+
+    function buildSensitiveDataLoggingParams(enabled) {
+        return {enabled: enabled === true};
+    }
+
+    function normalizeOffset(offset) {
+        offset = Number(offset);
+        return isFinite(offset) && offset >= 0 ? Math.floor(offset) : 0;
+    }
+
+    function normalizeLimit(limit) {
+        limit = Number(limit);
+        return isFinite(limit) && limit > 0 ? Math.floor(limit) : 500;
+    }
+}
+
 
 CategoriesService.$inject = ["ConfigService"];angular
     .module('nzbhydraApp')
@@ -16568,6 +16721,24 @@ function CategoriesService(ConfigService) {
     }
 
 }
+angular
+    .module('nzbhydraApp')
+    .factory('CapsCheckRequestFactory', CapsCheckRequestFactory);
+
+function CapsCheckRequestFactory() {
+    return {
+        build: build
+    };
+
+    // Keep this JSON shape aligned with org.nzbhydra.config.indexer.CapsCheckRequest.
+    function build(indexerConfig, checkType) {
+        return {
+            indexerConfig: angular.isUndefined(indexerConfig) ? null : indexerConfig,
+            checkType: checkType
+        };
+    }
+}
+
 
 BackupService.$inject = ["$http"];angular
     .module('nzbhydraApp')

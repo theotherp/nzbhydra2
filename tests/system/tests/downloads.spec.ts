@@ -22,12 +22,26 @@ test.describe("Downloads", () => {
         await searchForResult(page, testEnvironment.downloaderIntegrationQuery, testEnvironment.downloaderIntegrationNzbTitle);
 
         const resultRow = page.getByTestId("search-result-row").filter({hasText: testEnvironment.downloaderIntegrationNzbTitle});
+        const duplicateCheckResponse = page.waitForResponse(response =>
+            response.request().method() === "PUT" && new URL(response.url()).pathname === "/internalapi/downloader/checkDuplicateMovieDownload");
         const addNzbResponse = page.waitForResponse(response =>
             response.request().method() === "PUT" && new URL(response.url()).pathname === "/internalapi/downloader/addNzbs");
         await resultRow.getByTestId("send-to-downloader").click();
 
+        const duplicateCheckRequest = (await duplicateCheckResponse).request().postDataJSON() as {
+            searchResults?: unknown[];
+            category?: unknown;
+            reason?: unknown;
+        };
+        expect(duplicateCheckRequest.searchResults).toHaveLength(1);
+        expect(duplicateCheckRequest.category).toBeNull();
+        expect(duplicateCheckRequest.reason).toBeNull();
+
         const response = await addNzbResponse;
         expect(response.status()).toBe(200);
+        const addNzbRequest = response.request().postDataJSON() as { searchResults?: unknown[]; category?: unknown };
+        expect(addNzbRequest.searchResults).toHaveLength(1);
+        expect(addNzbRequest.category).toBe(testEnvironment.sabnzbdMockCategory);
         const body = await response.json() as {
             successful?: boolean;
             addedIds?: unknown[];

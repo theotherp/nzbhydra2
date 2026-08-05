@@ -2,7 +2,7 @@ angular
     .module('nzbhydraApp')
     .factory('NzbDownloadService', NzbDownloadService);
 
-function NzbDownloadService($http, $q, $uibModal, ConfigService, DownloaderCategoriesService) {
+function NzbDownloadService($http, $q, $uibModal, ConfigService, DownloaderCategoriesService, DownloaderRequestFactory) {
 
     var service = {
         download: download,
@@ -11,22 +11,13 @@ function NzbDownloadService($http, $q, $uibModal, ConfigService, DownloaderCateg
 
     return service;
 
-    function buildRequest(downloader, searchResults, category, reason) {
-        return {
-            downloaderName: downloader.name,
-            searchResults: searchResults,
-            category: category,
-            reason: reason
-        };
-    }
-
     function sendNzbAddCommand(downloader, searchResults, category, reason) {
-        var params = buildRequest(downloader, searchResults, category, reason);
+        var params = DownloaderRequestFactory.buildAddFilesRequest(downloader, searchResults, category, reason);
         return $http.put("internalapi/downloader/addNzbs", params);
     }
 
     function checkIfDuplicateMovieDownloadRequiresReason(downloader, searchResults) {
-        return $http.put("internalapi/downloader/checkDuplicateMovieDownload", buildRequest(downloader, searchResults, null, null))
+        return $http.put("internalapi/downloader/checkDuplicateMovieDownload", DownloaderRequestFactory.buildAddFilesRequest(downloader, searchResults, null, null))
             .then(function (response) {
                 return response.data.reasonRequired;
             });

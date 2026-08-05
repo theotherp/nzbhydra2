@@ -2,7 +2,7 @@ angular
     .module('nzbhydraApp')
     .factory('ConfigService', ConfigService);
 
-function ConfigService($http, $q, $cacheFactory, $uibModal, bootstrapped, RequestsErrorHandler) {
+function ConfigService($http, $q, $cacheFactory, $uibModal, bootstrapped, RequestsErrorHandler, ExternalToolRequestFactory) {
 
     var cache = $cacheFactory("nzbhydra");
     var safeConfig = bootstrapped.safeConfig;
@@ -192,34 +192,7 @@ function ConfigService($http, $q, $cacheFactory, $uibModal, bootstrapped, Reques
             $scope.spinnerActive = true;
             $scope.working = true;
             $scope.showMessages = true;
-            var data = {
-
-                nzbhydraName: $scope.nzbhydraName,
-                externalTool: $scope.externalTool,
-                nzbhydraHost: $scope.nzbhydraHost,
-                addType: deleteOnly ? "DELETE_ONLY" : $scope.addType,
-                xdarrHost: $scope.xdarrHost,
-                xdarrApiKey: $scope.xdarrApiKey,
-                enableRss: $scope.enableRss,
-                enableAutomaticSearch: $scope.enableAutomaticSearch,
-                enableInteractiveSearch: $scope.enableInteractiveSearch,
-                categories: $scope.categories,
-                animeCategories: $scope.animeCategories,
-                removeYearFromSearchString: $scope.removeYearFromSearchString,
-                earlyDownloadLimit: $scope.earlyDownloadLimit,
-                multiLanguages: $scope.multiLanguages,
-                configureForUsenet: $scope.configureForUsenet,
-                configureForTorrents: $scope.configureForTorrents,
-                additionalParameters: $scope.additionalParameters,
-                minimumSeeders: $scope.minimumSeeders,
-                seedRatio: $scope.seedRatio,
-                seedTime: $scope.seedTime,
-                seasonPackSeedTime: $scope.seasonPackSeedTime,
-                discographySeedTime: $scope.discographySeedTime,
-                addDisabledIndexers: $scope.addDisabledIndexers,
-                priority: $scope.priority,
-                useHydraPriorities: $scope.useHydraPriorities
-            }
+            var data = ExternalToolRequestFactory.build($scope, deleteOnly ? "DELETE_ONLY" : $scope.addType);
 
             localStorageService.set(externalTool, data);
 

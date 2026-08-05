@@ -1,7 +1,19 @@
-import {APIRequestContext, Locator, Page, Response} from "@playwright/test";
+import {APIRequestContext, Locator, Page, Response, Route} from "@playwright/test";
 import {dismissWelcomeDialog, expect, test, testEnvironment} from "./fixtures";
 
 const TEST_TOOL_PREFIX = "UI System Test";
+const addRequestBooleans = [
+    "configureForUsenet",
+    "configureForTorrents",
+    "enableRss",
+    "enableAutomaticSearch",
+    "enableInteractiveSearch",
+    "removeYearFromSearchString",
+    "addUsenet",
+    "addTorrent",
+    "addDisabledIndexers",
+    "useHydraPriorities",
+];
 
 test.describe("External Tools Configuration", () => {
     test.beforeEach(async ({page, hydra}) => {
@@ -89,12 +101,17 @@ test.describe("External Tools Configuration", () => {
         const connectionResponse = waitForExternalResponse(page, "testConnection");
         await page.getByRole("button", {name: "Test connection"}).click();
 
-        await expectConnectionSuccess(await connectionResponse);
+        const response = await connectionResponse;
+        await expectConnectionSuccess(response);
+        expectCompleteAddRequest(response);
         await expect(page.locator(".growl-message").filter({hasText: "Connection test successful"})).toBeVisible();
         await closeModal(page);
     });
 
     test("should trigger manual sync all", async ({hydra, page}) => {
+        await configurationSwitch(page, "Sync on config change")
+            .locator("xpath=ancestor::*[contains(@class, 'bootstrap-switch')][1]").click();
+        await expect(configurationSwitch(page, "Sync on config change")).toBeChecked();
         await addRadarr(page, "UI System Test Radarr Sync");
         await saveConfiguration(page, hydra, "UI System Test Radarr Sync");
         const syncResponse = waitForExternalResponse(page, "syncAll");
@@ -148,6 +165,7 @@ async function openPreset(page: Page, preset: string): Promise<void> {
 async function addRadarr(page: Page, name: string): Promise<void> {
     await openPreset(page, "Radarr");
     await modalField(page, "Name").fill(name);
+    await modalField(page, "NZBHydra Name").fill(name);
     await modalField(page, "Host URL").fill(testEnvironment.radarrInternalUrl);
     await modalField(page, "API Key").fill(testEnvironment.radarrApiKey);
     await modalField(page, "NZBHydra Host").fill(testEnvironment.hydraExternalUrl);
@@ -165,14 +183,10 @@ async function saveConfiguration(page: Page, hydra: {
     getConfig(): Promise<Record<string, unknown>>
 }, expectedName?: string): Promise<void> {
     const saveButton = page.getByRole("button", {name: "Save", exact: true});
-    await page.locator("form").evaluateAll(forms => forms.forEach(form =>
-        form.addEventListener("submit", event => event.preventDefault())));
-    const saveResponse = page.waitForResponse(response =>
-        response.request().method() === "PUT" && new URL(response.url()).pathname === "/internalapi/config");
+    const {result: saveResult} = await prepareConfigurationSave(page);
     await saveButton.click({force: true});
-    const response = await saveResponse;
-    expect(response.status(), `Configuration save failed: ${await response.text()}`).toBe(200);
-    const result = await response.json() as { ok?: boolean; errorMessages?: string[]; newConfig?: Record<string, unknown> };
+    const {status, result} = await saveResult;
+    expect(status).toBe(200);
     expect(result.ok, `Configuration validation errors: ${(result.errorMessages || []).join(", ")}`).toBe(true);
     expect(result.errorMessages || []).toEqual([]);
     expect(result.newConfig, "Configuration save did not return the saved configuration").toBeTruthy();
@@ -181,6 +195,38 @@ async function saveConfiguration(page: Page, hydra: {
         const tools = (persisted.externalTools as { externalTools?: Array<{ name?: string }> }).externalTools || [];
         expect(tools.map(tool => tool.name)).toContain(expectedName);
     }
+}
+
+async function prepareConfigurationSave(page: Page): Promise<{
+    result: Promise<{
+        status: number;
+        result: { ok?: boolean; errorMessages?: string[]; newConfig?: Record<string, unknown> };
+    }>
+}> {
+    let handler: (route: Route) => Promise<void>;
+    const result = new Promise<{
+        status: number;
+        result: { ok?: boolean; errorMessages?: string[]; newConfig?: Record<string, unknown> };
+    }>((resolve, reject) => {
+        handler = async route => {
+            if (route.request().method() !== "PUT") {
+                await route.continue();
+                return;
+            }
+            try {
+                const response = await route.fetch();
+                const body = await response.json() as { ok?: boolean; errorMessages?: string[]; newConfig?: Record<string, unknown> };
+                await route.fulfill({response});
+                await page.unroute("**/internalapi/config**", handler);
+                resolve({status: response.status(), result: body});
+            } catch (error) {
+                await page.unroute("**/internalapi/config**", handler);
+                reject(error);
+            }
+        };
+    });
+    await page.route("**/internalapi/config**", handler!);
+    return {result};
 }
 
 async function submitModal(page: Page, expectConnection: boolean): Promise<void> {
@@ -192,6 +238,7 @@ async function submitModal(page: Page, expectConnection: boolean): Promise<void>
     }
     const configure = await configureResponse;
     expect(await configure.json(), `External-tool configuration failed: ${await externalToolsMessages(page)}`).toBe(true);
+    expectCompleteAddRequest(configure);
     await expect(page.getByRole("heading", {name: "External Tool Configuration"}), await externalToolsMessages(page)).toBeHidden();
 }
 
@@ -206,6 +253,13 @@ async function expectConnectionSuccess(response: Response): Promise<void> {
     const result = await response.json() as { successful?: boolean; message?: string };
     expect(result.successful, `Connection test failed: ${result.message}`).toBe(true);
     expect(result.message).toBe("Connection successful");
+}
+
+function expectCompleteAddRequest(response: Response): void {
+    const requestBody = response.request().postDataJSON() as Record<string, unknown>;
+    for (const property of addRequestBooleans) {
+        expect(typeof requestBody[property], property).toBe("boolean");
+    }
 }
 
 async function externalToolsMessages(page: Page): Promise<string> {
