@@ -11383,6 +11383,7 @@ function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $doc
     var allSearchResults = [];
     var sortModel = {};
     $scope.filterModel = {};
+    var titleGroupLimit = $scope.limitTo;
 
 
     $scope.isShowFilterButtons = ConfigService.getSafe().searching.showQuickFilterButtons;
@@ -11414,7 +11415,7 @@ function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $doc
         var split1 = entry.split("|");
         var category = split1[0];
         var id = split1[1];
-        if (category !== 'source' && $scope.isShowFilterButtonsVideo) {
+        if ($scope.isShowFilterButtonsVideo) {
             $scope.filterButtonsModel[category][id] = true;
         }
     })
@@ -11789,7 +11790,9 @@ function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $doc
 
     function sortAndFilter(results) {
         var query;
+        var titleRegex;
         var words;
+        var invalidQuickFilterRegexes = {};
         var filterReasons = {
             "tooSmall": 0,
             "tooLarge": 0,
@@ -11809,8 +11812,27 @@ function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $doc
 
         if ("title" in $scope.filterModel) {
             query = $scope.filterModel.title.filterValue;
-            if (!(query.startsWith("/") && query.endsWith("/"))) {
+            if (query.startsWith("/") && query.endsWith("/")) {
+                try {
+                    titleRegex = new RegExp(query.substr(1, query.length - 2), "i");
+                } catch (e) {
+                    console.error("Invalid title filter regex " + query, e);
+                    titleRegex = null;
+                }
+            } else {
                 words = query.toLowerCase().split(/[\s.\-]+/);
+            }
+        }
+
+        function matchesQuickFilterRegex(regex, title) {
+            try {
+                return new RegExp(regex.toLowerCase().slice(1, -1)).test(title.toLowerCase());
+            } catch (e) {
+                if (!invalidQuickFilterRegexes[regex]) {
+                    console.error("Invalid quick filter regex " + regex, e);
+                    invalidQuickFilterRegexes[regex] = true;
+                }
+                return false;
             }
         }
 
@@ -11818,6 +11840,8 @@ function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $doc
             if (item.title === null || item.title === undefined) {
                 //https://github.com/theotherp/nzbhydra2/issues/690
                 console.error("Item without title: " + JSON.stringify(item))
+                filterReasons["title"] = filterReasons["title"] + 1;
+                return false;
             }
             if ("size" in $scope.filterModel) {
                 var filterValue = $scope.filterModel.size.filterValue;
@@ -11891,7 +11915,7 @@ function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $doc
             if ("title" in $scope.filterModel) {
                 var ok;
                 if (query.startsWith("/") && query.endsWith("/")) {
-                    ok = item.title.toLowerCase().match(new RegExp(query.substr(1, query.length - 2), "gi"));
+                    ok = titleRegex !== null && titleRegex.test(item.title);
                 } else {
                     ok = _.every(words, function (word) {
                         if (word.startsWith("!")) {
@@ -11944,39 +11968,36 @@ function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $doc
                 var requiresAnyOf = _.keys(_.pick($scope.filterButtonsModel.quality, function (value, key) {
                     return value
                 }));
-                if (requiresAnyOf.length === 0) {
-                    return true;
-                }
-
-                var containsAtLeastOne = _.any(requiresAnyOf, function (required) {
-                    if (item.title.toLowerCase().indexOf(required.substring(1).toLowerCase()) > -1) {
-                        //We need to remove the "q" which is there because keys may not start with a digit
-                        return true;
+                if (requiresAnyOf.length > 0) {
+                    var containsAtLeastOne = _.any(requiresAnyOf, function (required) {
+                        var requiredText = required.startsWith("q") ? required.substring(1) : required;
+                        if (item.title.toLowerCase().indexOf(requiredText.toLowerCase()) > -1) {
+                            return true;
+                        }
+                    })
+                    if (!containsAtLeastOne) {
+                        console.debug(item.title + " does not contain any of the qualities " + JSON.stringify(requiresAnyOf));
+                        filterReasons["quickFilter"] = filterReasons["quickFilter"] + 1;
+                        return false;
                     }
-                })
-                if (!containsAtLeastOne) {
-                    console.debug(item.title + " does not contain any of the qualities " + JSON.stringify(requiresAnyOf));
-                    filterReasons["quickFilter"] = filterReasons["quickFilter"] + 1;
-                    return false;
                 }
             }
             if ($scope.filterButtonsModel.other !== null && !_.isEmpty($scope.filterButtonsModel.other)) {
                 var requiresAnyOf = _.keys(_.pick($scope.filterButtonsModel.other, function (value, key) {
                     return value
                 }));
-                if (requiresAnyOf.length === 0) {
-                    return true;
-                }
-                var containsAtLeastOne = _.any(requiresAnyOf, function (required) {
-                    if (item.title.toLowerCase().indexOf(required.substring(1).toLowerCase()) > -1) {
-                        //We need to remove the "q" which is there because keys may not start with a digit
-                        return true;
+                if (requiresAnyOf.length > 0) {
+                    var containsAtLeastOne = _.any(requiresAnyOf, function (required) {
+                        var requiredText = required.startsWith("q") ? required.substring(1) : required;
+                        if (item.title.toLowerCase().indexOf(requiredText.toLowerCase()) > -1) {
+                            return true;
+                        }
+                    })
+                    if (!containsAtLeastOne) {
+                        console.debug(item.title + " does not contain any of the 'other' values " + JSON.stringify(requiresAnyOf));
+                        filterReasons["quickFilter"] = filterReasons["quickFilter"] + 1;
+                        return false;
                     }
-                })
-                if (!containsAtLeastOne) {
-                    console.debug(item.title + " does not contain any of the 'other' values " + JSON.stringify(requiresAnyOf));
-                    filterReasons["quickFilter"] = filterReasons["quickFilter"] + 1;
-                    return false;
                 }
             }
             if ($scope.filterButtonsModel.custom !== null && !_.isEmpty($scope.filterButtonsModel.custom)) {
@@ -12013,7 +12034,7 @@ function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $doc
                 }
                 if (quickFilterRegexes.length !== 0) {
                     var allMatch = _.all(quickFilterRegexes, function (regex) {
-                        return new RegExp(regex.toLowerCase().slice(1, -1)).test(item.title.toLowerCase());
+                        return matchesQuickFilterRegex(regex, item.title);
                     })
 
                     if (!allMatch) {
@@ -12118,15 +12139,15 @@ function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $doc
         $scope.numberOfFilteredResults = results.length - filtered.length;
         $scope.allResultsFiltered = results.length > 0 && ($scope.numberOfFilteredResults === results.length);
         console.log("Filtered " + $scope.numberOfFilteredResults + " out of " + results.length);
-        var newSelected = $scope.selected;
-        _.forEach($scope.selected, function (x) {
+        var newSelected = _.filter($scope.selected, function (x) {
             if (x === undefined) {
-                return;
+                return false;
             }
             if (filtered.indexOf(x) === -1) {
                 $scope.$broadcast("toggleSelection", x, false);
-                newSelected.splice($scope.selected.indexOf(x), 1);
+                return false;
             }
+            return true;
         });
         $scope.selected = newSelected;
 
@@ -12156,7 +12177,7 @@ function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $doc
                         result.titlesLength = titleGroup.length;
                         filteredResults.push(result);
                         duplicateIndex += 1;
-                        if (countTitleGroups <= $scope.limitTo) {
+                        if (countTitleGroups <= titleGroupLimit) {
                             countResultsUntilTitleGroupLimitReached++;
                         }
                         if (duplicateGroup.length > 1)
@@ -12168,7 +12189,7 @@ function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $doc
                 titleGroupIndex += 1;
             });
         });
-        $scope.limitTo = Math.max($scope.limitTo, countResultsUntilTitleGroupLimitReached);
+        $scope.limitTo = Math.max(1, countResultsUntilTitleGroupLimitReached);
 
         $scope.$broadcast("calculateDisplayState");
 

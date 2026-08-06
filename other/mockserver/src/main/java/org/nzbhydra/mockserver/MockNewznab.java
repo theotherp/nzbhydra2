@@ -346,7 +346,7 @@ public class MockNewznab {
 
 
         if (params.getQ() != null && params.getQ().contains("movies")) {
-            NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, API_MAX, itemTitleBase, false, Arrays.asList("cam", "ts", "blu-ray 2160p", "web-dl 1080p", "bluray 1080p", "3d bluray"), false, 0);
+            NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, API_MAX, itemTitleBase, false, Arrays.asList("cam", "ts", "blu-ray 2160p", "web-dl 1080p", "bluray 1080p", "3d bluray", "x265", "h265", "hevc", "xevc"), false, 0);
             rssRoot.getRssChannel().getNewznabResponse().setTotal(API_MAX);
             rssRoot.getRssChannel().getItems().forEach(x -> {
                 x.getNewznabAttributes().clear();

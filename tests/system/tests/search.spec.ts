@@ -63,6 +63,59 @@ test.describe("Search", () => {
         await expect(warnings).toContainText(/Mock2 has \d+ downloads left\./);
     });
 
+    test("should preselect configured source quick filters", async ({hydra, page}) => {
+        const config = await hydra.getConfig();
+        const searching = config.searching as Record<string, unknown>;
+        searching.showQuickFilterButtons = true;
+        searching.alwaysShowQuickFilterButtons = true;
+        searching.preselectQuickFilterButtons = ["source|web"];
+        await hydra.saveConfig(config);
+        await page.reload();
+        await expect(page.getByTestId("search-query")).toBeVisible();
+
+        await page.getByTestId("search-query").fill("movies");
+        await page.getByTestId("search-submit").click();
+
+        await expect(page.getByTestId("search-status-modal")).toBeHidden();
+        await expect(page.getByRole("button", {name: "WEB", exact: true})).toHaveClass(/active/);
+
+        const resultTitles = page.getByTestId("search-result-title");
+        await expect(resultTitles.first()).toBeVisible();
+        const titles = await resultTitles.allTextContents();
+        expect(titles).not.toEqual([]);
+        expect(titles.every(title => title.toLowerCase().includes("web-dl"))).toBe(true);
+    });
+
+    test("should apply later quick filters after deselecting quality and other filters", async ({hydra, page}) => {
+        const config = await hydra.getConfig();
+        const searching = config.searching as Record<string, unknown>;
+        searching.showQuickFilterButtons = true;
+        searching.alwaysShowQuickFilterButtons = true;
+        searching.customQuickFilterButtons = ["BLURAY=bluray"];
+        searching.preselectQuickFilterButtons = ["quality|q720p", "other|q3d", "custom|BLURAY"];
+        await hydra.saveConfig(config);
+        await page.reload();
+        await expect(page.getByTestId("search-query")).toBeVisible();
+
+        await page.getByTestId("search-query").fill("movies");
+        await page.getByTestId("search-submit").click();
+
+        await expect(page.getByTestId("search-status-modal")).toBeHidden();
+        await page.getByRole("button", {name: "720p", exact: true}).click();
+
+        const resultTitles = page.getByTestId("search-result-title");
+        await expect.poll(async () => {
+            const titles = await resultTitles.allTextContents();
+            return titles.length > 0 && titles.every(title => title.toLowerCase().includes("3d bluray"));
+        }).toBe(true);
+
+        await page.getByRole("button", {name: "3D", exact: true}).click();
+        await expect.poll(async () => {
+            const titles = await resultTitles.allTextContents();
+            return titles.length > 0 && titles.every(title => title.toLowerCase().includes("bluray"));
+        }).toBe(true);
+    });
+
     test("should select a movie autocomplete result and search by TMDB identifier", async ({page}) => {
         await page.getByTestId("search-category-control").click();
         await page.getByTestId("search-category-option-Movies").click();
