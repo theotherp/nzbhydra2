@@ -124,6 +124,7 @@
         <spring.boot.version>4.1.0</spring.boot.version>
         <spring.boot.devtools.version>4.1.0</spring.boot.devtools.version>
         <spring.boot.maven.version>4.1.0</spring.boot.maven.version>
+        <springdoc-openapi.version>3.1.0</springdoc-openapi.version>
         <spring.oxm.version>7.0.8</spring.oxm.version>
         <spring-data-commons.version>4.1.0</spring-data-commons.version>
         <jakarta.persistence-api.version>3.1.0</jakarta.persistence-api.version>
@@ -133,7 +134,7 @@
         <guava.version>23.0</guava.version>
         <okhttp.version>4.11.0</okhttp.version>
         <logstash-logback-encoder.version>9.0</logstash-logback-encoder.version>
-        <commons-lang3.version>3.12.0</commons-lang3.version>
+        <commons-lang3.version>3.20.0</commons-lang3.version>
         <commons-io.version>2.11.0</commons-io.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <uri-scheme-handler.version>2.0.0</uri-scheme-handler.version>

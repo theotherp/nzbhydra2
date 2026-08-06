@@ -44,6 +44,17 @@
                     <version>1.1.5</version>
                     <extensions>true</extensions>
                 </plugin>
+                <plugin>
+                    <groupId>org.springdoc</groupId>
+                    <artifactId>springdoc-openapi-maven-plugin</artifactId>
+                    <version>1.5</version>
+                    <configuration>
+                        <apiDocsUrl>http://127.0.0.1:5076/v3/api-docs</apiDocsUrl>
+                        <outputDir>${project.basedir}</outputDir>
+                        <outputFileName>openapi.json</outputFileName>
+                    </configuration>
+
+                </plugin>
             </plugins>
         </pluginManagement>
         <plugins>
@@ -147,6 +158,11 @@
             <version>${spring.boot.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>${springdoc-openapi.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security-oauth2-client</artifactId>
             <version>${spring.boot.version}</version>
@@ -208,7 +224,6 @@
         </dependency>
 
 
-
         <!-- database -->
         <dependency>
             <groupId>com.h2database</groupId>
@@ -252,7 +267,7 @@
             <artifactId>lombok</artifactId>
             <version>${lombok.version}</version>
             <scope>provided</scope>
-<!--            <optional>true</optional>-->
+            <!--            <optional>true</optional>-->
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -372,14 +387,6 @@
             <artifactId>javers-core</artifactId>
             <version>${javers-core.version}</version>
         </dependency>
-
-        <!--        todo spring only supports spring 2.x-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.springdoc</groupId>-->
-        <!--            <artifactId>springdoc-openapi-ui</artifactId>-->
-        <!--            &lt;!&ndash; When updating make sure the resource path in WebConfiguration is correct            &ndash;&gt;-->
-        <!--            <version>1.6.12</version>-->
-        <!--        </dependency>-->
 
         <!--logging-->
         <dependency>
