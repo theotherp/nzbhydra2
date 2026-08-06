@@ -84,7 +84,7 @@ function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $doc
         var split1 = entry.split("|");
         var category = split1[0];
         var id = split1[1];
-        if (category !== 'source' && $scope.isShowFilterButtonsVideo) {
+        if ($scope.isShowFilterButtonsVideo) {
             $scope.filterButtonsModel[category][id] = true;
         }
     })
@@ -614,39 +614,36 @@ function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $doc
                 var requiresAnyOf = _.keys(_.pick($scope.filterButtonsModel.quality, function (value, key) {
                     return value
                 }));
-                if (requiresAnyOf.length === 0) {
-                    return true;
-                }
-
-                var containsAtLeastOne = _.any(requiresAnyOf, function (required) {
-                    if (item.title.toLowerCase().indexOf(required.substring(1).toLowerCase()) > -1) {
-                        //We need to remove the "q" which is there because keys may not start with a digit
-                        return true;
+                if (requiresAnyOf.length > 0) {
+                    var containsAtLeastOne = _.any(requiresAnyOf, function (required) {
+                        if (item.title.toLowerCase().indexOf(required.substring(1).toLowerCase()) > -1) {
+                            //We need to remove the "q" which is there because keys may not start with a digit
+                            return true;
+                        }
+                    })
+                    if (!containsAtLeastOne) {
+                        console.debug(item.title + " does not contain any of the qualities " + JSON.stringify(requiresAnyOf));
+                        filterReasons["quickFilter"] = filterReasons["quickFilter"] + 1;
+                        return false;
                     }
-                })
-                if (!containsAtLeastOne) {
-                    console.debug(item.title + " does not contain any of the qualities " + JSON.stringify(requiresAnyOf));
-                    filterReasons["quickFilter"] = filterReasons["quickFilter"] + 1;
-                    return false;
                 }
             }
             if ($scope.filterButtonsModel.other !== null && !_.isEmpty($scope.filterButtonsModel.other)) {
                 var requiresAnyOf = _.keys(_.pick($scope.filterButtonsModel.other, function (value, key) {
                     return value
                 }));
-                if (requiresAnyOf.length === 0) {
-                    return true;
-                }
-                var containsAtLeastOne = _.any(requiresAnyOf, function (required) {
-                    if (item.title.toLowerCase().indexOf(required.substring(1).toLowerCase()) > -1) {
-                        //We need to remove the "q" which is there because keys may not start with a digit
-                        return true;
+                if (requiresAnyOf.length > 0) {
+                    var containsAtLeastOne = _.any(requiresAnyOf, function (required) {
+                        if (item.title.toLowerCase().indexOf(required.substring(1).toLowerCase()) > -1) {
+                            //We need to remove the "q" which is there because keys may not start with a digit
+                            return true;
+                        }
+                    })
+                    if (!containsAtLeastOne) {
+                        console.debug(item.title + " does not contain any of the 'other' values " + JSON.stringify(requiresAnyOf));
+                        filterReasons["quickFilter"] = filterReasons["quickFilter"] + 1;
+                        return false;
                     }
-                })
-                if (!containsAtLeastOne) {
-                    console.debug(item.title + " does not contain any of the 'other' values " + JSON.stringify(requiresAnyOf));
-                    filterReasons["quickFilter"] = filterReasons["quickFilter"] + 1;
-                    return false;
                 }
             }
             if ($scope.filterButtonsModel.custom !== null && !_.isEmpty($scope.filterButtonsModel.custom)) {
