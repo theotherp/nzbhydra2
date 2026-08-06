@@ -27,6 +27,7 @@ function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $doc
     //Handle incoming data
 
     $scope.indexersearches = SearchService.getLastResults().indexerSearchMetaDatas;
+    $scope.indexerLimitWarnings = SearchService.getLastResults().indexerLimitWarnings;
     $scope.notPickedIndexersWithReason = [];
     _.forEach(SearchService.getLastResults().notPickedIndexersWithReason, function (k, v) {
         $scope.notPickedIndexersWithReason.push({"indexer": v, "reason": k});

@@ -19,6 +19,7 @@ import java.util.Map;
 public class SearchResponse {
 
     private List<IndexerSearchMetaData> indexerSearchMetaDatas = new ArrayList<>();
+    private List<String> indexerLimitWarnings = new ArrayList<>();
     private Map<String, Integer> rejectedReasonsMap = new HashMap<>();
     private Map<String, String> notPickedIndexersWithReason;
     private List<SearchResultWebTO> searchResults = new ArrayList<>();

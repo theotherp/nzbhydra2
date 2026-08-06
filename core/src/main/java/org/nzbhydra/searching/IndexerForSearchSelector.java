@@ -21,6 +21,7 @@ import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.indexers.IndexerApiAccessType;
 import org.nzbhydra.indexers.status.IndexerLimit;
 import org.nzbhydra.indexers.status.IndexerLimitRepository;
+import org.nzbhydra.indexers.status.IndexerStatusesAndLimits;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.searching.dtoseventsenums.IndexerSelectionEvent;
@@ -34,7 +35,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.annotation.RequestScope;
 
-import java.sql.Timestamp;
 import java.time.Clock;
 import java.time.DayOfWeek;
 import java.time.Instant;
@@ -319,7 +319,7 @@ public class IndexerForSearchSelector {
             logger.debug(LoggingMarkers.LIMITS, "Indexer {}. No recent hits found", indexer.getName());
             return true;
         }
-        Instant oldestAccess = ((Timestamp) Iterables.getLast(recentHitsFromShortHistory)).toInstant();
+        Instant oldestAccess = IndexerStatusesAndLimits.toInstant(Iterables.getLast(recentHitsFromShortHistory));
         long oldestSecondsAgo = Instant.now(clock).getEpochSecond() - oldestAccess.getEpochSecond();
         logger.debug(LoggingMarkers.LIMITS, "Indexer {}. Oldest of {} hits was {} seconds ago while only {} hits are allowed in {} seconds", indexer.getName(), limitHits, oldestSecondsAgo, limitHits, timespanSeconds);
         if (oldestAccess.isBefore(Instant.now(clock).minusSeconds(timespanSeconds))) {
@@ -406,7 +406,7 @@ public class IndexerForSearchSelector {
                 logger.debug(LoggingMarkers.LIMITS, "Indexer {}. Current hits {} exceeds limit {} but we have no results in list. We'll have to allow it", indexer.getName(), currentHits, limit);
                 return true;
             } else if (!resultList.isEmpty() && oldestAccess == null) {
-                oldestAccess = ((Timestamp) Iterables.getLast(resultList)).toInstant();
+                oldestAccess = IndexerStatusesAndLimits.toInstant(Iterables.getLast(resultList));
                 logger.debug(LoggingMarkers.LIMITS, "Got oldest access ({}) from database", oldestAccess);
             }
             oldestAccessFromApi = (oldestAccess != null);

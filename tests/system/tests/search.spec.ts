@@ -40,6 +40,29 @@ test.describe("Search", () => {
         expect(savedSearchBody.request?.loadAll).toBe(false);
     });
 
+    test("should warn when indexer API hit or download limits are nearly exhausted", async ({hydra, page}) => {
+        const config = await hydra.getConfig();
+        const indexers = config.indexers as Array<Record<string, unknown>>;
+        const notificationConfig = config.notificationConfig as Record<string, unknown>;
+        notificationConfig.indexerHitLimitWarningThreshold = 100;
+        notificationConfig.indexerDownloadLimitWarningThreshold = 100;
+        for (const indexer of indexers) {
+            indexer.hitLimit = 100;
+            indexer.downloadLimit = 100;
+        }
+        await hydra.saveConfig(config);
+
+        await page.getByTestId("search-query").fill("uitest");
+        await page.getByTestId("search-submit").click();
+
+        const warnings = page.getByTestId("indexer-limit-warnings");
+        await expect(warnings).toBeVisible();
+        await expect(warnings).toContainText(/Mock1 has \d+ API hits left\./);
+        await expect(warnings).toContainText(/Mock1 has \d+ downloads left\./);
+        await expect(warnings).toContainText(/Mock2 has \d+ API hits left\./);
+        await expect(warnings).toContainText(/Mock2 has \d+ downloads left\./);
+    });
+
     test("should select a movie autocomplete result and search by TMDB identifier", async ({page}) => {
         await page.getByTestId("search-category-control").click();
         await page.getByTestId("search-category-option-Movies").click();

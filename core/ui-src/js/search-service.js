@@ -86,6 +86,7 @@ function SearchService($http, SearchRequestFactory) {
     function processData(response) {
         var searchResults = response.data.searchResults;
         var indexerSearchMetaDatas = response.data.indexerSearchMetaDatas;
+        var indexerLimitWarnings = response.data.indexerLimitWarnings;
         var numberOfAvailableResults = response.data.numberOfAvailableResults;
         var numberOfRejectedResults = response.data.numberOfRejectedResults;
         var numberOfDuplicateResults = response.data.numberOfDuplicateResults;
@@ -99,6 +100,7 @@ function SearchService($http, SearchRequestFactory) {
         lastResults = {
             "searchResults": searchResults,
             "indexerSearchMetaDatas": indexerSearchMetaDatas,
+            "indexerLimitWarnings": indexerLimitWarnings,
             "numberOfAvailableResults": numberOfAvailableResults,
             "numberOfAcceptedResults": numberOfAcceptedResults,
             "numberOfRejectedResults": numberOfRejectedResults,
