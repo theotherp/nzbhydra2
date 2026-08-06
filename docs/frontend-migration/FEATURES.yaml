@@ -1,99 +1,502 @@
 schema_version: 1
 features:
   - id: F-PLATFORM-SHELL
-    name: Application shell and navigation
-    routes:
-      - "/*"
-    roles:
-      - anonymous
-      - user
-      - stats
-      - admin
-    legacy_sources:
-      - core/src/main/resources/templates/index.html
-      - core/ui-src/js/nzbhydra.js
-      - core/ui-src/html/states/header.html
-    tests:
-      - tests/system/tests/smoke.spec.ts
+    name: Application shell, navigation, footer, and permission-aware links
+    route_states: [ root ]
+    routes: [ "/*" ]
+    roles: [ anonymous, user, stats, admin ]
+    legacy_sources: [ core/ui-src/js/nzbhydra.js, core/ui-src/js/header-controller.js, core/ui-src/html/states/header.html, core/ui-src/js/directives/footer.js ]
+    tests: [ tests/system/tests/smoke.spec.ts ]
+    selectors: [ ]
     target: core/ui-react/src/app
-    parity: inventory_pending
+    parity: inventoried
+    task: FM-001
+
+  - id: F-AUTH-LOGIN
+    name: Form login, logout, password confirmation, and session refresh
+    route_states: [ root.login ]
+    routes: [ /login ]
+    roles: [ anonymous, user, stats, admin ]
+    legacy_sources: [ core/ui-src/js/login-controller.js, core/ui-src/js/hydra-auth-service.js, core/ui-src/html/states/login.html ]
+    tests: [ ]
+    selectors: [ ]
+    target: core/ui-react/src/features/auth
+    parity: inventoried
     task: FM-001
 
   - id: F-SEARCH-FORM
-    name: Search form and progress
-    routes:
-      - "/"
-    roles:
-      - user
-    legacy_sources:
-      - core/ui-src/js/search-controller.js
-      - core/ui-src/html/states/search.html
-      - core/ui-src/html/search-state.html
-    tests:
-      - tests/system/tests/search.spec.ts
+    name: Search workspace, URL criteria, categories, limits, and submission
+    route_states: [ root.search ]
+    routes: [ / ]
+    roles: [ user ]
+    legacy_sources: [ core/ui-src/js/search-controller.js, core/ui-src/js/search-request-service.js, core/ui-src/html/states/search.html ]
+    tests: [ tests/system/tests/smoke.spec.ts, tests/system/tests/search.spec.ts ]
+    selectors: [ search-query, search-submit, search-category-control, "search-category-option-{{category.name}}", additional-query, autocomplete-popup, autocomplete-option ]
     target: core/ui-react/src/features/search
-    parity: inventory_pending
+    parity: inventoried
+    task: FM-001
+
+  - id: F-SEARCH-MEDIA
+    name: Movie and TV autocomplete, identifiers, title refinement, season, and episode
+    route_states: [ root.search ]
+    routes: [ / ]
+    roles: [ user ]
+    legacy_sources: [ core/ui-src/js/search-controller.js, core/ui-src/html/states/search.html ]
+    tests: [ tests/system/tests/search.spec.ts ]
+    selectors: [ additional-query, autocomplete-popup, autocomplete-option ]
+    target: core/ui-react/src/features/search
+    parity: partial
+    gaps: [ TV autocomplete, season and episode, IMDb, TVDB, TVMaze, and non-TMDB identifier searches ]
+    task: FM-001
+
+  - id: F-SEARCH-INDEXERS
+    name: Indexer selection by individual source, type, group, and preselection
+    route_states: [ root.search ]
+    routes: [ / ]
+    roles: [ user ]
+    legacy_sources: [ core/ui-src/js/search-controller.js, core/ui-src/js/directives/multiselect-dropdown.js, core/ui-src/html/states/search.html ]
+    tests: [ tests/system/tests/search.spec.ts ]
+    selectors: [ ]
+    target: core/ui-react/src/features/search
+    parity: partial
+    gaps: [ selection controls, groups, disabled indexers, select all, invert selection ]
+    task: FM-001
+
+  - id: F-SEARCH-RECENT
+    name: Recent-search dropdown, refill, repeat, and drag-to-search
+    route_states: [ root.search ]
+    routes: [ / ]
+    roles: [ user ]
+    legacy_sources: [ core/ui-src/js/search-controller.js, core/ui-src/js/search-history-service.js, core/ui-src/html/search-searchhistory-dropdown.html ]
+    tests: [ tests/system/tests/search-history.spec.ts ]
+    selectors: [ ]
+    target: core/ui-react/src/features/search
+    parity: partial
+    gaps: [ search-page dropdown and drag behavior ]
+    task: FM-001
+
+  - id: F-SEARCH-PROGRESS
+    name: Live search progress, cancellation, and early result display
+    route_states: [ root.search ]
+    routes: [ / ]
+    roles: [ user ]
+    legacy_sources: [ core/ui-src/js/search-controller.js, core/ui-src/js/search-service.js, core/ui-src/html/search-state.html ]
+    tests: [ tests/system/tests/search.spec.ts ]
+    selectors: [ search-status-modal ]
+    target: core/ui-react/src/features/search
+    parity: partial
+    gaps: [ STOMP progress, cancellation, early result shortcut ]
     task: FM-001
 
   - id: F-SEARCH-RESULTS
-    name: Search result processing, display, selection, and actions
-    routes:
-      - "/"
-    roles:
-      - user
-    legacy_sources:
-      - core/ui-src/js/search-results-controller.js
-      - core/ui-src/js/directives/search-result.js
-      - core/ui-src/html/states/search-results.html
-    tests:
-      - tests/system/tests/results.spec.ts
-      - tests/system/tests/downloads.spec.ts
+    name: Result processing, display, indexer outcomes, and malformed-result resilience
+    route_states: [ root.search.results ]
+    routes: [ / ]
+    roles: [ user ]
+    legacy_sources: [ core/ui-src/js/search-results-controller.js, core/ui-src/js/directives/search-result.js, core/ui-src/html/states/search-results.html, core/ui-src/html/directives/search-result.html ]
+    tests: [ tests/system/tests/search.spec.ts, tests/system/tests/results.spec.ts ]
+    selectors: [ search-results, indexer-limit-warnings, search-results-summary, search-results-table, search-result-row, search-result-title ]
     target: core/ui-react/src/features/search/results
-    parity: inventory_pending
+    parity: partial
+    gaps: [ no-result and all-failed states, partial failures, rejection details ]
     task: FM-001
 
-  - id: F-CONFIG
-    name: Configuration editing and workflows
-    routes:
-      - "/config/*"
-    roles:
-      - admin
-    legacy_sources:
-      - core/ui-src/js/config/config-controller.js
-      - core/ui-src/js/config/config-fields-service.js
-      - core/ui-src/js/config/formly-config.js
-    tests:
-      - tests/system/tests/external-tools.spec.ts
-    target: core/ui-react/src/features/config
-    parity: inventory_pending
+  - id: F-SEARCH-SORT-FILTER
+    name: Result sorting, column filters, quick filters, and persisted choices
+    route_states: [ root.search.results ]
+    routes: [ / ]
+    roles: [ user ]
+    legacy_sources: [ core/ui-src/js/search-results-controller.js, core/ui-src/js/directives/dataTableDirectives.js, core/ui-src/html/states/search-results.html ]
+    tests: [ tests/system/tests/search.spec.ts, tests/system/tests/results.spec.ts ]
+    selectors: [ "sort-{{column}}", "freetext-filter-{{column}}", "number-filter-min-{{column}}", "number-filter-max-{{column}}", "number-filter-apply-{{column}}", "number-filter-clear-{{column}}", filter-toggle-indexer, filter-toggle-category, filter-toggle-size, filter-toggle-grabs, filter-toggle-age ]
+    target: core/ui-react/src/features/search/results
+    parity: partial
+    gaps: [ sort columns other than title, indexer/category/grabs/age filters, numeric-filter clearing ]
     task: FM-001
 
-  - id: F-STATS-HISTORY
-    name: Statistics, history, and saved searches
-    routes:
-      - "/stats/*"
-    roles:
-      - stats
-    legacy_sources:
-      - core/ui-src/js/stats-controller.js
-      - core/ui-src/js/search-history-controller.js
-    tests:
-      - tests/system/tests/stats.spec.ts
-      - tests/system/tests/search-history.spec.ts
-    target: core/ui-react/src/features/stats
-    parity: inventory_pending
+  - id: F-SEARCH-GROUP-SELECTION
+    name: Duplicate, title, and episode grouping with selection and shift-selection
+    route_states: [ root.search.results ]
+    routes: [ / ]
+    roles: [ user ]
+    legacy_sources: [ core/ui-src/js/search-results-controller.js, core/ui-src/js/directives/search-result.js, core/ui-src/js/directives/selection-button.js ]
+    tests: [ tests/system/tests/results.spec.ts ]
+    selectors: [ search-result-row ]
+    target: core/ui-react/src/features/search/results
+    parity: partial
+    gaps: [ duplicate and episode grouping, group expansion, invert and shift selection ]
     task: FM-001
 
-  - id: F-SYSTEM
-    name: System administration
-    routes:
-      - "/system/*"
-    roles:
-      - admin
-    legacy_sources:
-      - core/ui-src/js/system-controller.js
-      - core/ui-src/html/states/system.html
+  - id: F-SEARCH-DOWNLOADS
+    name: Single and bulk browser, downloader, ZIP, black-hole, torrent, magnet, and copy-link actions
+    route_states: [ root.search.results ]
+    routes: [ / ]
+    roles: [ user ]
+    legacy_sources: [ core/ui-src/js/nzb-download-service.js, core/ui-src/js/directives/addable-nzb.js, core/ui-src/js/directives/download-nzbs-button.js, core/ui-src/js/directives/download-nzbzip-button.js, core/ui-src/js/directives/copy-links-button.js, core/ui-src/js/directives/save-or-send-torrent.js ]
+    tests: [ tests/system/tests/downloads.spec.ts ]
+    selectors: [ send-to-downloader, download-nzb ]
+    target: core/ui-react/src/features/search/results
+    parity: partial
+    gaps: [ bulk actions, ZIP, black hole, copy links, torrent and magnet, duplicate-movie reason ]
+    task: FM-001
+
+  - id: F-SEARCH-PAGING
+    name: Load next batch or all remaining indexer results without repeating offsets
+    route_states: [ root.search.results ]
+    routes: [ / ]
+    roles: [ user ]
+    legacy_sources: [ core/ui-src/js/search-results-controller.js, core/ui-src/js/search-service.js, core/ui-src/html/states/search-results.html ]
     tests: [ ]
+    selectors: [ ]
+    target: core/ui-react/src/features/search/results
+    parity: inventoried
+    task: FM-001
+
+  - id: F-SEARCH-SAVED
+    name: Save an executed search for later reuse
+    route_states: [ root.search.results, root.stats.savedSearches ]
+    routes: [ /, /stats/saved-searches ]
+    roles: [ user, stats ]
+    legacy_sources: [ core/ui-src/js/search-results-controller.js, core/ui-src/js/saved-searches-controller.js, core/ui-src/html/states/saved-searches.html ]
+    tests: [ tests/system/tests/search.spec.ts ]
+    selectors: [ ]
+    target: core/ui-react/src/features/search
+    parity: partial
+    gaps: [ saved-search listing, reopen, and deletion ]
+    task: FM-001
+
+  - id: F-SEARCH-TOUR
+    name: Guided search tour and demo-mode lifecycle
+    route_states: [ root.search, root.search.results ]
+    routes: [ / ]
+    roles: [ user ]
+    legacy_sources: [ core/ui-src/js/search-controller.js, core/ui-src/js/guided-tour-service.js, core/ui-src/js/angular-ui-tour.js ]
+    tests: [ ]
+    selectors: [ ]
+    target: core/ui-react/src/features/search/tour
+    parity: inventoried
+    task: FM-001
+
+  - id: F-CONFIG-SHELL
+    name: Configuration tabs, advanced fields, whole-config save, validation, dirty state, and API help
+    route_states: [ root.config ]
+    routes: [ /config ]
+    roles: [ admin ]
+    legacy_sources: [ core/ui-src/js/nzbhydra.js, core/ui-src/js/config/config-controller.js, core/ui-src/js/config/config-service.js, core/ui-src/html/states/config.html ]
+    tests: [ tests/system/tests/external-tools.spec.ts ]
+    selectors: [ ]
+    target: core/ui-react/src/features/config
+    parity: partial
+    gaps: [ stable data-testid selectors, advanced toggle, unsaved navigation, warnings, restart, API help, full round trip ]
+    task: FM-001
+
+  - id: F-CONFIG-MAIN
+    name: Main hosting, proxy, UI, security, logging, backup, update, history, database, and runtime settings
+    route_states: [ root.config.main ]
+    routes: [ /config/main ]
+    roles: [ admin ]
+    legacy_sources: [ core/ui-src/js/config/config-fields-service.js, core/ui-src/js/config/formly-config.js, core/ui-src/js/file-selection-service.js ]
+    tests: [ tests/system/tests/external-tools.spec.ts ]
+    selectors: [ ]
+    target: core/ui-react/src/features/config/main
+    parity: partial
+    gaps: [ all field workflows; current test only opens the route ]
+    task: FM-001
+
+  - id: F-CONFIG-AUTH
+    name: Authentication modes, OIDC, restrictions, users, roles, and secret semantics
+    route_states: [ root.config.auth ]
+    routes: [ /config/auth ]
+    roles: [ admin ]
+    legacy_sources: [ core/ui-src/js/config/config-fields-service.js, core/ui-src/js/config/formly-config.js ]
+    tests: [ ]
+    selectors: [ ]
+    target: core/ui-react/src/features/config/auth
+    parity: inventoried
+    task: FM-001
+
+  - id: F-CONFIG-SEARCHING
+    name: Search execution, filtering, title processing, mappings, display, duplicates, and cache settings
+    route_states: [ root.config.searching ]
+    routes: [ /config/searching ]
+    roles: [ admin ]
+    legacy_sources: [ core/ui-src/js/config/config-fields-service.js, core/ui-src/js/config/formly-config.js, core/ui-src/html/custom-mapping-help.html ]
+    tests: [ tests/system/tests/search.spec.ts, tests/system/tests/results.spec.ts ]
+    selectors: [ ]
+    target: core/ui-react/src/features/config/searching
+    parity: partial
+    gaps: [ configuration UI; current tests cover runtime effects only ]
+    task: FM-001
+
+  - id: F-CONFIG-CATEGORIES
+    name: Category CRUD, mappings, presets, restrictions, and size limits
+    route_states: [ root.config.categories ]
+    routes: [ /config/categories ]
+    roles: [ admin ]
+    legacy_sources: [ core/ui-src/js/config/config-fields-service.js ]
+    tests: [ ]
+    selectors: [ ]
+    target: core/ui-react/src/features/config/categories
+    parity: inventoried
+    task: FM-001
+
+  - id: F-CONFIG-DOWNLOADING
+    name: Download behavior, black holes, downloader CRUD, validation, and connection checks
+    route_states: [ root.config.downloading ]
+    routes: [ /config/downloading ]
+    roles: [ admin ]
+    legacy_sources: [ core/ui-src/js/config/config-fields-service.js, core/ui-src/js/config/formly-downloaders.js, core/ui-src/html/config/downloader-config.html ]
+    tests: [ tests/system/tests/downloads.spec.ts ]
+    selectors: [ ]
+    target: core/ui-react/src/features/config/downloading
+    parity: partial
+    gaps: [ configuration UI; current tests configure through API fixtures ]
+    task: FM-001
+
+  - id: F-CONFIG-EXTERNAL-TOOLS
+    name: External-tool CRUD, validation, connection tests, sync options, and manual sync
+    route_states: [ root.config.externalTools ]
+    routes: [ /config/externalTools ]
+    roles: [ admin ]
+    legacy_sources: [ core/ui-src/js/config/formly-external-tools.js, core/ui-src/js/external-tool-request-service.js, core/ui-src/html/config/external-tool-config.html ]
+    tests: [ tests/system/tests/external-tools.spec.ts ]
+    selectors: [ ]
+    target: core/ui-react/src/features/config/external-tools
+    parity: partial
+    gaps: [ stable data-testid selectors, failure and partial-failure feedback, full preset coverage ]
+    task: FM-001
+
+  - id: F-CONFIG-INDEXERS
+    name: Indexer CRUD, policy, capabilities, connection checks, and Jackett/Prowlarr imports
+    route_states: [ root.config.indexers ]
+    routes: [ /config/indexers ]
+    roles: [ admin ]
+    legacy_sources: [ core/ui-src/js/config/formly-indexers.js, core/ui-src/js/caps-check-request-service.js, core/ui-src/js/indexer-config-import-request-service.js, core/ui-src/html/config/indexer-config.html ]
+    tests: [ ]
+    selectors: [ ]
+    target: core/ui-react/src/features/config/indexers
+    parity: inventoried
+    task: FM-001
+
+  - id: F-CONFIG-NOTIFICATIONS
+    name: Notification transports, GUI filtering, event rules, templates, and tests
+    route_states: [ root.config.notifications ]
+    routes: [ /config/notifications ]
+    roles: [ admin ]
+    legacy_sources: [ core/ui-src/js/config/config-fields-service.js, core/ui-src/js/config/formly-config.js, core/ui-src/js/notifications-service.js ]
+    tests: [ tests/system/tests/search.spec.ts ]
+    selectors: [ ]
+    target: core/ui-react/src/features/config/notifications
+    parity: partial
+    gaps: [ configuration UI; current test covers quota warning display only ]
+    task: FM-001
+
+  - id: F-STATS-SHELL
+    name: Statistics and history tab shell with keep-history visibility rules
+    route_states: [ root.stats ]
+    routes: [ /stats ]
+    roles: [ stats ]
+    legacy_sources: [ core/ui-src/js/nzbhydra.js, core/ui-src/html/states/stats.html ]
+    tests: [ tests/system/tests/stats.spec.ts, tests/system/tests/search-history.spec.ts ]
+    selectors: [ ]
+    target: core/ui-react/src/features/stats
+    parity: partial
+    gaps: [ visibility rules ]
+    task: FM-001
+
+  - id: F-STATS-MAIN
+    name: Aggregate statistics, date ranges, switches, and charts
+    route_states: [ root.stats.main ]
+    routes: [ /stats/stats ]
+    roles: [ stats ]
+    legacy_sources: [ core/ui-src/js/stats-controller.js, core/ui-src/js/stats-service.js, core/ui-src/js/stats-request-service.js, core/ui-src/html/states/main-stats.html ]
+    tests: [ tests/system/tests/stats.spec.ts ]
+    selectors: [ ]
+    target: core/ui-react/src/features/stats
+    parity: partial
+    gaps: [ rendered statistics, charts, date ranges, include-disabled behavior ]
+    task: FM-001
+
+  - id: F-STATS-INDEXERS
+    name: Indexer status, errors, counters, and VIP expiry
+    route_states: [ root.stats.indexers ]
+    routes: [ /stats/indexers ]
+    roles: [ stats ]
+    legacy_sources: [ core/ui-src/js/indexer-statuses-controller.js, core/ui-src/html/states/indexer-statuses.html ]
+    tests: [ tests/system/tests/stats.spec.ts, tests/system/tests/search-history.spec.ts ]
+    selectors: [ ]
+    target: core/ui-react/src/features/stats/indexers
+    parity: partial
+    gaps: [ visible status behavior ]
+    task: FM-001
+
+  - id: F-HISTORY-SEARCHES
+    name: Search-history paging, filtering, details, and repeat
+    route_states: [ root.stats.searches ]
+    routes: [ /stats/searches ]
+    roles: [ stats ]
+    legacy_sources: [ core/ui-src/js/search-history-controller.js, core/ui-src/js/search-history-service.js, core/ui-src/html/states/search-history.html ]
+    tests: [ tests/system/tests/search-history.spec.ts ]
+    selectors: [ search-history-refresh, search-history-table, search-history-row, search-history-repeat, search-history-category, search-history-source, search-history-details ]
+    target: core/ui-react/src/features/stats/history
+    parity: partial
+    gaps: [ paging and all filter combinations ]
+    task: FM-001
+
+  - id: F-HISTORY-SAVED-SEARCHES
+    name: Saved-search listing, links, reuse, and deletion
+    route_states: [ root.stats.savedSearches ]
+    routes: [ /stats/saved-searches ]
+    roles: [ stats ]
+    legacy_sources: [ core/ui-src/js/saved-searches-controller.js, core/ui-src/html/states/saved-searches.html ]
+    tests: [ tests/system/tests/search.spec.ts ]
+    selectors: [ ]
+    target: core/ui-react/src/features/stats/history
+    parity: partial
+    gaps: [ route UI lifecycle ]
+    task: FM-001
+
+  - id: F-HISTORY-DOWNLOADS
+    name: Download-history paging, filtering, links, and repeat actions
+    route_states: [ root.stats.downloads ]
+    routes: [ /stats/downloads ]
+    roles: [ stats ]
+    legacy_sources: [ core/ui-src/js/download-history-controller.js, core/ui-src/js/stats-service.js, core/ui-src/html/states/download-history.html ]
+    tests: [ ]
+    selectors: [ ]
+    target: core/ui-react/src/features/stats/history
+    parity: inventoried
+    task: FM-001
+
+  - id: F-HISTORY-NOTIFICATIONS
+    name: Notification-history paging and filtering
+    route_states: [ root.stats.notifications ]
+    routes: [ /stats/notifications ]
+    roles: [ stats ]
+    legacy_sources: [ core/ui-src/js/notification-history-controller.js, core/ui-src/js/stats-service.js, core/ui-src/html/states/notification-history.html ]
+    tests: [ ]
+    selectors: [ ]
+    target: core/ui-react/src/features/stats/history
+    parity: inventoried
+    task: FM-001
+
+  - id: F-SYSTEM-SHELL
+    name: System administration tab shell
+    route_states: [ root.system ]
+    routes: [ /system ]
+    roles: [ admin ]
+    legacy_sources: [ core/ui-src/js/nzbhydra.js, core/ui-src/js/system-controller.js, core/ui-src/html/states/system.html ]
+    tests: [ ]
+    selectors: [ ]
     target: core/ui-react/src/features/system
-    parity: inventory_pending
+    parity: inventoried
+    task: FM-001
+
+  - id: F-SYSTEM-CONTROL
+    name: Restart, shutdown, configuration reload, and legacy migration
+    route_states: [ root.system.control ]
+    routes: [ /system/control ]
+    roles: [ admin ]
+    legacy_sources: [ core/ui-src/js/system-controller.js, core/ui-src/js/nzbhydra-control-service.js, core/ui-src/js/restart-service.js, core/ui-src/js/migration-service.js ]
+    tests: [ ]
+    selectors: [ ]
+    target: core/ui-react/src/features/system/control
+    parity: unverified_legacy_api
+    gaps: [ migration API has no verified backend mapping ]
+    task: FM-001
+
+  - id: F-SYSTEM-UPDATES
+    name: Update status, history, ignore, install, and restart handoff
+    route_states: [ root.system.updates ]
+    routes: [ /system/updates ]
+    roles: [ admin ]
+    legacy_sources: [ core/ui-src/js/update-service.js, core/ui-src/js/directives/hydra-updates.js ]
+    tests: [ ]
+    selectors: [ ]
+    target: core/ui-react/src/features/system/updates
+    parity: inventoried
+    task: FM-001
+
+  - id: F-SYSTEM-LOG
+    name: Raw and structured log viewing, filtering, tailing, and downloads
+    route_states: [ root.system.log ]
+    routes: [ /system/log ]
+    roles: [ admin ]
+    legacy_sources: [ core/ui-src/js/directives/hydra-log.js, core/ui-src/html/directives/log.html ]
+    tests: [ ]
+    selectors: [ ]
+    target: core/ui-react/src/features/system/logs
+    parity: inventoried
+    task: FM-001
+
+  - id: F-SYSTEM-TASKS
+    name: Scheduled task list and manual execution
+    route_states: [ root.system.tasks ]
+    routes: [ /system/tasks ]
+    roles: [ admin ]
+    legacy_sources: [ core/ui-src/js/directives/tasks.js ]
+    tests: [ ]
+    selectors: [ ]
+    target: core/ui-react/src/features/system/tasks
+    parity: inventoried
+    task: FM-001
+
+  - id: F-SYSTEM-BACKUP
+    name: Backup listing, creation, download, upload, and restore
+    route_states: [ root.system.backup ]
+    routes: [ /system/backup ]
+    roles: [ admin ]
+    legacy_sources: [ core/ui-src/js/backup-service.js, core/ui-src/js/directives/backup.js, core/ui-src/html/directives/backup.html ]
+    tests: [ ]
+    selectors: [ ]
+    target: core/ui-react/src/features/system/backups
+    parity: inventoried
+    task: FM-001
+
+  - id: F-SYSTEM-BUGREPORT
+    name: Debug archive, upload, sensitive logging, thread diagnostics, heap dump, and SQL tools
+    route_states: [ root.system.bugreport ]
+    routes: [ /system/bugreport ]
+    roles: [ admin ]
+    legacy_sources: [ core/ui-src/js/system-controller.js, core/ui-src/html/bugreport.html ]
+    tests: [ ]
+    selectors: [ ]
+    target: core/ui-react/src/features/system/diagnostics
+    parity: inventoried
+    task: FM-001
+
+  - id: F-SYSTEM-NEWS
+    name: News list and version news acknowledgements
+    route_states: [ root.system.news ]
+    routes: [ /system/news ]
+    roles: [ admin ]
+    legacy_sources: [ core/ui-src/js/directives/hydra-news.js, core/ui-src/js/directives/hydra-checks-footer.js ]
+    tests: [ ]
+    selectors: [ ]
+    target: core/ui-react/src/features/system/news
+    parity: inventoried
+    task: FM-001
+
+  - id: F-SYSTEM-ABOUT
+    name: Version, update, and runtime information
+    route_states: [ root.system.about ]
+    routes: [ /system/about ]
+    roles: [ admin ]
+    legacy_sources: [ core/ui-src/js/nzbhydra.js, core/ui-src/html/about.html ]
+    tests: [ ]
+    selectors: [ ]
+    target: core/ui-react/src/features/system/about
+    parity: inventoried
+    task: FM-001
+
+  - id: F-PLATFORM-LIVE-STATUS
+    name: Cross-route downloader status, notifications, welcome, warnings, and startup checks
+    route_states: [ root ]
+    routes: [ "/*" ]
+    roles: [ user, stats, admin ]
+    legacy_sources: [ core/ui-src/js/directives/downloaderStatusFooter.js, core/ui-src/js/directives/hydra-checks-footer.js ]
+    tests: [ ]
+    selectors: [ ]
+    target: core/ui-react/src/app/status
+    parity: inventoried
     task: FM-001

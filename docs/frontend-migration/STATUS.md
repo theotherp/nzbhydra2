@@ -14,9 +14,7 @@ None.
 
 ## Next
 
-| Task     | Outcome                                              | Depends on |
-|----------|------------------------------------------------------|------------|
-| `FM-001` | Establish the parity and contract inventory baseline | `FM-000`   |
+None.
 
 ## Upcoming
 

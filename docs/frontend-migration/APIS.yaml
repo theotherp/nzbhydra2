@@ -1,109 +1,125 @@
 schema_version: 1
 apis:
-  - id: API-BOOTSTRAP-INITIAL
-    method: template_bootstrap
-    path: null
-    auth: shell_role_dependent
-    java_contract: core/src/main/java/org/nzbhydra/web/BootstrappedDataTO.java
-    legacy_callers:
-      - core/src/main/resources/templates/index.html
-    target: core/ui-react/src/app/bootstrap.ts
-    contract_state: assess
-    test: null
-    task: FM-005
+  - { id: API-BOOTSTRAP-INITIAL, method: template_bootstrap, path: null, auth: shell_role_dependent, legacy_callers: [ core/src/main/resources/templates/index.html ], target: core/ui-react/src/app/bootstrap.ts, contract_state: assess, test: null, task: FM-005 }
+  - { id: API-AUTH-LOGIN, method: POST, path: /login, auth: anonymous, legacy_callers: [ core/ui-src/js/hydra-auth-service.js ], target: core/ui-react/src/features/auth, contract_state: not_in_openapi, test: null, task: FM-005 }
+  - { id: API-AUTH-LOGOUT, method: POST, path: /logout, auth: authenticated, legacy_callers: [ core/ui-src/js/hydra-auth-service.js ], target: core/ui-react/src/features/auth, contract_state: not_in_openapi, test: null, task: FM-005 }
+  - { id: API-AUTH-USER-INFOS, method: GET, path: /internalapi/userinfos, auth: session, legacy_callers: [ core/ui-src/js/hydra-auth-service.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-AUTH-ASK-PASSWORD, method: GET, path: /internalapi/askpassword, auth: session, legacy_callers: [ core/ui-src/js/hydra-auth-service.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
 
-  - id: API-AUTH-LOGIN
-    method: POST
-    path: /login
-    auth: anonymous
-    java_contract: core/src/main/java/org/nzbhydra/auth/SecurityConfig.java
-    legacy_callers:
-      - core/ui-src/js/hydra-auth-service.js
-    target: core/ui-react/src/features/auth
-    contract_state: not_in_openapi
-    test: null
-    task: FM-005
+  - { id: API-SEARCH-EXECUTE, method: POST, path: /internalapi/search, auth: search, legacy_callers: [ core/ui-src/js/search-service.js ], target: null, contract_state: generated_weak, test: tests/system/tests/search.spec.ts, task: FM-001 }
+  - { id: API-SEARCH-SHORTCUT, method: POST, path: "/internalapi/shortcutSearch/{searchRequestId}", auth: search, legacy_callers: [ core/ui-src/js/search-service.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-SEARCH-AUTOCOMPLETE, method: GET, path: "/internalapi/autocomplete/{type}", auth: search, legacy_callers: [ core/ui-src/js/search-controller.js ], target: null, contract_state: generated_weak, test: tests/system/tests/search.spec.ts, task: FM-001 }
+  - { id: API-SEARCH-EMBY-SERIES, method: GET, path: /internalapi/emby/isSeriesAvailable, params: [ tvdbId ], auth: search, legacy_callers: [ core/ui-src/js/search-results-controller.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-SEARCH-EMBY-MOVIE, method: GET, path: /internalapi/emby/isMovieAvailable, params: [ tmdbId ], auth: search, legacy_callers: [ core/ui-src/js/search-results-controller.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-SEARCH-NFO, method: GET, path: "/internalapi/nfo/{searchResultId}", auth: details, legacy_callers: [ core/ui-src/js/directives/search-result.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-SEARCH-SAVED-CREATE, method: POST, path: /internalapi/savedsearches, auth: search, legacy_callers: [ core/ui-src/js/search-results-controller.js ], target: null, contract_state: generated_weak, test: tests/system/tests/search.spec.ts, task: FM-001 }
+  - { id: API-SEARCH-SAVED-LIST, method: GET, path: /internalapi/savedsearches, auth: stats, legacy_callers: [ core/ui-src/js/saved-searches-controller.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-SEARCH-SAVED-DELETE, method: DELETE, path: "/internalapi/savedsearches/{index}", auth: stats, legacy_callers: [ core/ui-src/js/saved-searches-controller.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-SEARCH-REDIRECT-RID, method: GET, path: "/internalapi/redirectRid/{rid}", auth: session, legacy_callers: [ core/ui-src/js/search-history-controller.js, core/ui-src/js/saved-searches-controller.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
 
-  - id: API-AUTH-LOGOUT
-    method: POST
-    path: /logout
-    auth: authenticated
-    java_contract: core/src/main/java/org/nzbhydra/auth/SecurityConfig.java
-    legacy_callers:
-      - core/ui-src/js/hydra-auth-service.js
-    target: core/ui-react/src/features/auth
-    contract_state: not_in_openapi
-    test: null
-    task: FM-005
+  - { id: API-HISTORY-RECENT-SEARCHES, method: POST, path: /internalapi/history/searches/forsearching, auth: search, legacy_callers: [ core/ui-src/js/search-history-service.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-HISTORY-SEARCHES, method: POST, path: /internalapi/history/searches, auth: stats, legacy_callers: [ core/ui-src/js/search-history-service.js ], target: null, contract_state: generated_weak, test: tests/system/tests/search-history.spec.ts, task: FM-001 }
+  - { id: API-HISTORY-SEARCH-DETAILS, method: GET, path: "/internalapi/history/searches/details/{searchId}", auth: stats, legacy_callers: [ core/ui-src/js/search-history-controller.js ], target: null, contract_state: generated_weak, test: tests/system/tests/search-history.spec.ts, task: FM-001 }
+  - { id: API-HISTORY-DOWNLOADS, method: POST, path: /internalapi/history/downloads, auth: stats, legacy_callers: [ core/ui-src/js/stats-service.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-HISTORY-NOTIFICATIONS, method: POST, path: /internalapi/history/notifications, auth: stats, legacy_callers: [ core/ui-src/js/stats-service.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-STATS-QUERY, method: POST, path: /internalapi/stats, auth: stats, legacy_callers: [ core/ui-src/js/stats-service.js ], target: null, contract_state: generated_weak, test: tests/system/tests/stats.spec.ts, task: FM-001 }
+  - { id: API-STATS-INDEXER-STATUSES, method: GET, path: /internalapi/indexerstatuses, auth: stats, legacy_callers: [ core/ui-src/js/nzbhydra.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
 
-  - id: API-CONFIG-GET
-    method: GET
-    path: /internalapi/config
-    auth: admin
-    java_contract: core/src/main/java/org/nzbhydra/config/ConfigWeb.java
-    legacy_callers:
-      - core/ui-src/js/config/config-service.js
-    target: null
-    contract_state: generated_weak
-    test: null
-    task: FM-001
+  - { id: API-DOWNLOAD-NZB, method: GET, path: "/getnzb/user/{id}", auth: download, legacy_callers: [ core/ui-src/html/directives/search-result.html, core/ui-src/html/states/download-history.html, core/ui-src/js/directives/copy-links-button.js ], target: null, contract_state: generated_weak, test: tests/system/tests/downloads.spec.ts, task: FM-001 }
+  - { id: API-DOWNLOAD-TORRENT, method: GET, path: "/gettorrent/user/{id}", auth: download, legacy_callers: [ core/ui-src/html/directives/search-result.html, core/ui-src/html/states/download-history.html ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-DOWNLOAD-ADD-NZBS, method: PUT, path: /internalapi/downloader/addNzbs, auth: download, legacy_callers: [ core/ui-src/js/nzb-download-service.js ], target: null, contract_state: generated_weak, test: tests/system/tests/downloads.spec.ts, task: FM-001 }
+  - { id: API-DOWNLOAD-CHECK-DUPLICATE, method: PUT, path: /internalapi/downloader/checkDuplicateMovieDownload, auth: download, legacy_callers: [ core/ui-src/js/nzb-download-service.js ], target: null, contract_state: generated_weak, test: tests/system/tests/downloads.spec.ts, task: FM-001 }
+  - { id: API-DOWNLOAD-CATEGORIES, method: GET, path: "/internalapi/downloader/{downloaderName}/categories", auth: session, legacy_callers: [ core/ui-src/js/downloader-categories-service.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-DOWNLOAD-CHECK-CONNECTION, method: POST, path: /internalapi/downloader/checkConnection, auth: admin, legacy_callers: [ core/ui-src/js/config/formly-downloaders.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-DOWNLOAD-SAVE-SEND-TORRENTS, method: PUT, path: /internalapi/saveOrSendTorrents, auth: download, legacy_callers: [ core/ui-src/js/directives/save-or-send-torrent.js, core/ui-src/js/directives/download-nzbs-button.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-DOWNLOAD-SAVE-NZBS, method: PUT, path: /internalapi/saveNzbsToBlackhole, auth: download, legacy_callers: [ core/ui-src/js/directives/save-or-send-torrent.js, core/ui-src/js/directives/download-nzbs-button.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-DOWNLOAD-ZIP-PREPARE, method: POST, path: /internalapi/nzbzip, auth: download, legacy_callers: [ core/ui-src/js/directives/download-nzbzip-button.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-DOWNLOAD-ZIP-FILE, method: POST, path: /internalapi/nzbzipDownload, auth: download, legacy_callers: [ core/ui-src/js/directives/download-nzbzip-button.js, core/ui-src/js/file-download-service.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
 
-  - id: API-CONFIG-PUT
-    method: PUT
-    path: /internalapi/config
-    auth: admin
-    java_contract: core/src/main/java/org/nzbhydra/config/ConfigWeb.java
-    legacy_callers:
-      - core/ui-src/js/config/config-service.js
-    target: null
-    contract_state: generated_weak
-    test: tests/system/tests/external-tools.spec.ts
-    task: FM-001
+  - { id: API-CONFIG-GET, method: GET, path: /internalapi/config, auth: admin, legacy_callers: [ core/ui-src/js/config/config-service.js ], target: null, contract_state: generated_weak, test: tests/system/tests/external-tools.spec.ts, task: FM-001 }
+  - { id: API-CONFIG-PUT, method: PUT, path: /internalapi/config, auth: admin, legacy_callers: [ core/ui-src/js/config/config-service.js ], target: null, contract_state: generated_weak, test: tests/system/tests/external-tools.spec.ts, task: FM-001 }
+  - { id: API-CONFIG-SAFE, method: GET, path: /internalapi/config/safe, auth: session, legacy_callers: [ core/ui-src/js/config/config-service.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-CONFIG-RELOAD, method: GET, path: /internalapi/config/reload, auth: admin, legacy_callers: [ core/ui-src/js/config/config-service.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-CONFIG-API-HELP, method: GET, path: /internalapi/config/apiHelp, auth: admin, legacy_callers: [ core/ui-src/js/config/config-service.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-CONFIG-FOLDER-LISTING, method: POST, path: /internalapi/config/folderlisting, auth: admin, legacy_callers: [ core/ui-src/js/file-selection-service.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-CONFIG-CUSTOM-MAPPING-TEST, method: POST, path: /internalapi/customMapping/test, auth: admin, legacy_callers: [ core/ui-src/js/config/formly-config.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-CONFIG-INDEXER-CONNECTION, method: POST, path: /internalapi/indexer/checkConnection, auth: admin, legacy_callers: [ core/ui-src/js/config/formly-indexers.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-CONFIG-INDEXER-CAPS, method: POST, path: /internalapi/indexer/checkCaps, auth: admin, legacy_callers: [ core/ui-src/js/config/formly-indexers.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-CONFIG-INDEXER-CAPS-MESSAGES, method: GET, path: /internalapi/indexer/checkCapsMessages, auth: admin, legacy_callers: [ core/ui-src/js/config/formly-indexers.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-CONFIG-INDEXER-PROWLARR, method: POST, path: /internalapi/indexer/readProwlarrConfig, auth: admin, legacy_callers: [ core/ui-src/js/config/formly-indexers.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-CONFIG-INDEXER-JACKETT, method: POST, path: /internalapi/indexer/readJackettConfig, auth: admin, legacy_callers: [ core/ui-src/js/config/formly-indexers.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-CONFIG-EXTERNAL-DIALOG, method: GET, path: /internalapi/externalTools/getDialogInfo, auth: admin, legacy_callers: [ core/ui-src/js/config/config-service.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-CONFIG-EXTERNAL-MESSAGES, method: GET, path: /internalapi/externalTools/messages, auth: admin, legacy_callers: [ core/ui-src/js/config/config-service.js ], target: null, contract_state: generated_weak, test: tests/system/tests/external-tools.spec.ts, task: FM-001 }
+  - { id: API-CONFIG-EXTERNAL-CONFIGURE, method: POST, path: /internalapi/externalTools/configure, auth: admin, legacy_callers: [ core/ui-src/js/config/config-service.js, core/ui-src/js/config/formly-external-tools.js ], target: null, contract_state: generated_weak, test: tests/system/tests/external-tools.spec.ts, task: FM-001 }
+  - { id: API-CONFIG-EXTERNAL-CONNECTION, method: POST, path: /internalapi/externalTools/testConnection, auth: admin, legacy_callers: [ core/ui-src/js/config/formly-external-tools.js ], target: null, contract_state: generated_weak, test: tests/system/tests/external-tools.spec.ts, task: FM-001 }
+  - { id: API-CONFIG-EXTERNAL-SYNC, method: POST, path: /internalapi/externalTools/syncAll, auth: admin, legacy_callers: [ core/ui-src/js/config/formly-external-tools.js ], target: null, contract_state: generated_weak, test: tests/system/tests/external-tools.spec.ts, task: FM-001 }
+  - { id: API-PREFERENCES-GET, method: GET, path: "/internalapi/genericstorage/{key}", params: [ forUser ], auth: session, legacy_callers: [ core/ui-src/js/generic-storage-service.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-PREFERENCES-PUT, method: PUT, path: "/internalapi/genericstorage/{key}", params: [ forUser ], auth: session, legacy_callers: [ core/ui-src/js/generic-storage-service.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
 
-  - id: API-SEARCH-EXECUTE
-    method: POST
-    path: /internalapi/search
-    auth: user
-    java_contract: core/src/main/java/org/nzbhydra/searching/SearchWeb.java
-    legacy_callers:
-      - core/ui-src/js/search-service.js
-    target: null
-    contract_state: generated_weak
-    test: tests/system/tests/search.spec.ts
-    task: FM-001
+  - { id: API-SYSTEM-BACKUP-LIST, method: GET, path: /internalapi/backup/list, auth: admin, legacy_callers: [ core/ui-src/js/backup-service.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-SYSTEM-BACKUP-RESTORE, method: GET, path: /internalapi/backup/restore, params: [ filename ], auth: admin, legacy_callers: [ core/ui-src/js/backup-service.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-SYSTEM-BACKUP-CREATE, method: GET, path: /internalapi/backup/backuponly, params: [ dontdownload ], auth: admin, legacy_callers: [ core/ui-src/js/directives/backup.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-SYSTEM-BACKUP-CREATE-DOWNLOAD, method: GET, path: /internalapi/backup/backup, auth: admin, legacy_callers: [ core/ui-src/js/directives/backup.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-SYSTEM-BACKUP-UPLOAD, method: POST, path: /internalapi/backup/restorefile, auth: admin, legacy_callers: [ core/ui-src/js/directives/backup.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-SYSTEM-BACKUP-DOWNLOAD, method: GET, path: /internalapi/backup/download, params: [ filename ], auth: admin, legacy_callers: [ core/ui-src/html/directives/backup.html ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-SYSTEM-LOG-CURRENT, method: GET, path: /internalapi/debuginfos/currentlogfile, auth: admin, legacy_callers: [ core/ui-src/js/directives/hydra-log.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-SYSTEM-LOG-FILES, method: GET, path: /internalapi/debuginfos/logfilenames, auth: admin, legacy_callers: [ core/ui-src/js/directives/hydra-log.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-SYSTEM-LOG-JSON, method: GET, path: /internalapi/debuginfos/jsonlogs, params: [ offset, limit ], auth: admin, legacy_callers: [ core/ui-src/js/directives/hydra-log.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-SYSTEM-LOG-DOWNLOAD, method: GET, path: /internalapi/debuginfos/downloadlog, params: [ logfilename ], auth: admin, legacy_callers: [ core/ui-src/html/directives/log.html ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-SYSTEM-DEBUG-ZIP, method: GET, path: /internalapi/debuginfos/createAndProvideZipAsBytes, auth: admin, legacy_callers: [ core/ui-src/js/system-controller.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-SYSTEM-DEBUG-UPLOAD, method: GET, path: /internalapi/debuginfos/createAndUploadDebugInfos, auth: admin, legacy_callers: [ core/ui-src/js/system-controller.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-SYSTEM-THREAD-DUMP, method: GET, path: /internalapi/debuginfos/logThreadDump, auth: admin, legacy_callers: [ core/ui-src/js/system-controller.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-SYSTEM-SENSITIVE-GET, method: GET, path: /internalapi/debuginfos/sensitiveDataLogging, auth: admin, legacy_callers: [ core/ui-src/js/system-controller.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-SYSTEM-SENSITIVE-PUT, method: PUT, path: /internalapi/debuginfos/sensitiveDataLogging, params: [ enabled ], auth: admin, legacy_callers: [ core/ui-src/js/system-controller.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-SYSTEM-SQL-QUERY, method: POST, path: /internalapi/debuginfos/executesqlquery, auth: admin, legacy_callers: [ core/ui-src/js/system-controller.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-SYSTEM-SQL-UPDATE, method: POST, path: /internalapi/debuginfos/executesqlupdate, auth: admin, legacy_callers: [ core/ui-src/js/system-controller.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-SYSTEM-THREAD-CPU, method: GET, path: /internalapi/debuginfos/threadCpuUsage, auth: admin, legacy_callers: [ core/ui-src/js/system-controller.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-SYSTEM-ENDPOINTS, method: GET, path: /internalapi/debuginfos/endpoints, auth: admin, legacy_callers: [ core/ui-src/html/bugreport.html ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-SYSTEM-HEAP-DUMP, method: GET, path: /actuator/heapdump, auth: admin, legacy_callers: [ core/ui-src/html/bugreport.html ], target: null, contract_state: not_in_openapi, test: null, task: FM-001 }
+  - { id: API-SYSTEM-RESTART, method: GET, path: /internalapi/control/restart, auth: admin, legacy_callers: [ core/ui-src/js/nzbhydra-control-service.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-SYSTEM-SHUTDOWN, method: GET, path: /internalapi/control/shutdown, auth: admin, legacy_callers: [ core/ui-src/js/nzbhydra-control-service.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-SYSTEM-PING, method: GET, path: /internalapi/control/ping, auth: session, legacy_callers: [ core/ui-src/js/restart-service.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-SYSTEM-TASKS, method: GET, path: /internalapi/tasks, auth: admin, legacy_callers: [ core/ui-src/js/directives/tasks.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-SYSTEM-TASK-RUN, method: PUT, path: "/internalapi/tasks/{taskName}", auth: admin, legacy_callers: [ core/ui-src/js/directives/tasks.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
 
-  - id: API-LIVE-SEARCH-STATE
-    method: STOMP_SUBSCRIBE
-    path: /topic/searchState
-    auth: user
-    java_contract: core/src/main/java/org/nzbhydra/web/WebSocketConfig.java
-    legacy_callers:
-      - core/ui-src/js/search-controller.js
-    target: null
-    contract_state: not_in_openapi
-    test: null
-    task: FM-001
+  - { id: API-UPDATES-INFOS, method: GET, path: /internalapi/updates/infos, auth: admin, legacy_callers: [ core/ui-src/js/update-service.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-UPDATES-SIMPLE-INFOS, method: GET, path: /internalapi/updates/simpleInfos, auth: admin, legacy_callers: [ core/ui-src/js/nzbhydra.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-UPDATES-VERSION-HISTORY, method: GET, path: /internalapi/updates/versionHistory, auth: admin, legacy_callers: [ core/ui-src/js/update-service.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-UPDATES-CHANGES, method: GET, path: "/internalapi/updates/changesSince/{version}", auth: admin, legacy_callers: [ core/ui-src/js/update-service.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-UPDATES-AUTOMATIC-HISTORY, method: GET, path: /internalapi/updates/automaticUpdateVersionHistory, auth: admin, legacy_callers: [ core/ui-src/js/update-service.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-UPDATES-ACK-HISTORY, method: GET, path: /internalapi/updates/ackAutomaticUpdateVersionHistory, auth: admin, legacy_callers: [ core/ui-src/js/update-service.js, core/ui-src/js/directives/hydra-checks-footer.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-UPDATES-MESSAGES, method: GET, path: /internalapi/updates/messages, auth: admin, legacy_callers: [ core/ui-src/js/update-service.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-UPDATES-WRAPPER-STATUS, method: GET, path: /internalapi/updates/isDisplayWrapperOutdated, auth: session, legacy_callers: [ core/ui-src/js/directives/hydra-checks-footer.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-UPDATES-IGNORE, method: PUT, path: "/internalapi/updates/ignore/{version}", auth: admin, legacy_callers: [ core/ui-src/js/update-service.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-UPDATES-INSTALL, method: PUT, path: "/internalapi/updates/installUpdate/{version}", auth: admin, legacy_callers: [ core/ui-src/js/update-service.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-UPDATES-ACK-WRAPPER, method: PUT, path: /internalapi/updates/setOutdatedWrapperDetectedWarningShown, auth: session, legacy_callers: [ core/ui-src/js/directives/hydra-checks-footer.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-NEWS-LIST, method: GET, path: /internalapi/news, auth: admin, legacy_callers: [ core/ui-src/js/directives/hydra-news.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-NEWS-CURRENT-VERSION, method: GET, path: /internalapi/news/forcurrentversion, auth: session, legacy_callers: [ core/ui-src/js/directives/hydra-checks-footer.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-NEWS-SAVE-SHOWN, method: PUT, path: /internalapi/news/saveshown, auth: session, legacy_callers: [ core/ui-src/js/directives/hydra-checks-footer.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-WELCOME-GET, method: GET, path: /internalapi/welcomeshown, auth: session, legacy_callers: [ core/ui-src/js/directives/hydra-checks-footer.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-WELCOME-PUT, method: PUT, path: /internalapi/welcomeshown, auth: session, legacy_callers: [ core/ui-src/js/directives/hydra-checks-footer.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-USER-NEWS-LIST, method: GET, path: /internalapi/usernews, auth: session, legacy_callers: [ core/ui-src/js/directives/hydra-checks-footer.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-USER-NEWS-DISMISS, method: PUT, path: "/internalapi/usernews/{id}/dismiss", auth: session, legacy_callers: [ core/ui-src/js/directives/hydra-checks-footer.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-NOTIFICATIONS-TEST, method: GET, path: "/internalapi/notifications/test/{eventType}", auth: admin, legacy_callers: [ core/ui-src/js/notifications-service.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-TOUR-HIDDEN, method: GET, path: /internalapi/guidedtour/hidden, auth: search, legacy_callers: [ core/ui-src/js/search-controller.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-TOUR-HIDE, method: PUT, path: /internalapi/guidedtour/hide, auth: search, legacy_callers: [ core/ui-src/js/search-controller.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-DEMO-START, method: PUT, path: /internalapi/demomode, auth: search, legacy_callers: [ core/ui-src/js/guided-tour-service.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
+  - { id: API-DEMO-STOP, method: DELETE, path: /internalapi/demomode, auth: search, legacy_callers: [ core/ui-src/js/guided-tour-service.js, core/ui-src/js/search-controller.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }
 
-  - id: API-LIVE-NOTIFICATIONS
-    method: STOMP_SUBSCRIBE
-    path: /topic/notifications
-    auth: session
-    java_contract: core/src/main/java/org/nzbhydra/web/WebSocketConfig.java
-    legacy_callers:
-      - core/ui-src/js/directives/hydra-checks-footer.js
-    target: null
-    contract_state: not_in_openapi
-    test: null
-    task: FM-001
+  - { id: API-LIVE-SOCKJS, method: SOCKJS_CONNECT, path: /websocket, auth: session, legacy_callers: [ core/ui-src/js/search-controller.js, core/ui-src/js/directives/downloaderStatusFooter.js, core/ui-src/js/directives/hydra-checks-footer.js ], target: null, contract_state: not_in_openapi, test: null, task: FM-001 }
+  - { id: API-LIVE-SEARCH-STATE, method: STOMP_SUBSCRIBE, path: /topic/searchState, auth: search, legacy_callers: [ core/ui-src/js/search-controller.js ], target: null, contract_state: not_in_openapi, test: null, task: FM-001 }
+  - { id: API-LIVE-DOWNLOADER-STATUS, method: STOMP_SUBSCRIBE, path: /topic/downloaderStatus, auth: session, legacy_callers: [ core/ui-src/js/directives/downloaderStatusFooter.js ], target: null, contract_state: not_in_openapi, test: null, task: FM-001 }
+  - { id: API-LIVE-DOWNLOADER-CONNECT, method: STOMP_SEND, path: /app/connectDownloaderStatus, auth: session, legacy_callers: [ core/ui-src/js/directives/downloaderStatusFooter.js ], target: null, contract_state: not_in_openapi, note: legacy caller passes a callback where STOMP headers are expected, test: null, task: FM-001 }
+  - { id: API-LIVE-NOTIFICATIONS, method: STOMP_SUBSCRIBE, path: /topic/notifications, auth: session, legacy_callers: [ core/ui-src/js/directives/hydra-checks-footer.js ], target: null, contract_state: not_in_openapi, test: null, task: FM-001 }
+  - { id: API-LIVE-NOTIFICATION-READ, method: STOMP_SEND, path: /app/markNotificationRead, auth: session, legacy_callers: [ core/ui-src/js/directives/hydra-checks-footer.js ], target: null, contract_state: not_in_openapi, test: null, task: FM-001 }
 
-  - id: API-LIVE-DOWNLOADER-STATUS
-    method: STOMP_SUBSCRIBE
-    path: /topic/downloaderStatus
-    auth: session
-    java_contract: core/src/main/java/org/nzbhydra/web/WebSocketConfig.java
-    legacy_callers:
-      - core/ui-src/js/directives/downloaderStatusFooter.js
-    target: null
-    contract_state: not_in_openapi
-    test: null
-    task: FM-001
+unverified_legacy_calls:
+  - { id: API-LEGACY-MIGRATION-URL, method: GET, path: /internalapi/migration/url, legacy_callers: [ core/ui-src/js/migration-service.js ], reachability: active_system_and_welcome_ui, reason: No current backend mapping found }
+  - { id: API-LEGACY-MIGRATION-FILES, method: GET, path: /internalapi/migration/files, legacy_callers: [ core/ui-src/js/migration-service.js ], reachability: active_system_and_welcome_ui, reason: No current backend mapping found }
+  - { id: API-LEGACY-MIGRATION-MESSAGES, method: GET, path: /internalapi/migration/messages, legacy_callers: [ core/ui-src/js/migration-service.js ], reachability: active_system_and_welcome_ui, reason: No current backend mapping found }
+  - { id: API-LEGACY-TEST-DOWNLOADER, method: GET, path: /internalapi/test_downloader, legacy_callers: [ core/ui-src/js/directives/connection-test.js ], reachability: unused_directive, reason: No current backend mapping or active directive consumer found }
+  - { id: API-LEGACY-TEST-NEWZNAB, method: GET, path: /internalapi/test_newznab, legacy_callers: [ core/ui-src/js/directives/connection-test.js ], reachability: unused_directive, reason: No current backend mapping or active directive consumer found }
+  - { id: API-LEGACY-MAY-SEE-ADMIN, method: GET, path: /internalapi/mayseeadminarea, legacy_callers: [ core/ui-src/js/config/config-service.js ], reachability: unused_service_method, reason: No current backend mapping or active caller found }
+  - { id: API-LEGACY-NZB-LINK, method: GET, path: "/internalapi/getnzb/user/{id}", legacy_callers: [ core/ui-src/js/nzbhydra.js ], reachability: unused_filter, reason: "No matching backend mapping; active route is /getnzb/user/{id}" }
+  - { id: API-LEGACY-REDIRECT-RID, method: GET, path: /internalapi/redirect_rid, params: [ rid ], legacy_callers: [ core/ui-src/js/search-history-service.js ], reachability: calculated_but_not_emitted, reason: "Backend route is /internalapi/redirectRid/{rid}" }
+  - { id: API-LEGACY-LOG-ERROR, method: PUT, path: /internalapi/logerror, legacy_callers: [ core/ui-src/js/nzbhydra.js ], reachability: commented_out, reason: Disabled code and no current backend mapping found }

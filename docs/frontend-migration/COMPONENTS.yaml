@@ -1,68 +1,226 @@
 schema_version: 1
 components:
   - id: C-APP-SHELL
-    responsibility: Responsive application frame, navigation, permissions, and route outlet
-    legacy:
-      - core/ui-src/html/states/header.html
-      - core/ui-src/js/header-controller.js
+    responsibility: Responsive application frame, navigation, permissions, route outlet, and footer
+    legacy: [ core/ui-src/html/states/header.html, core/ui-src/js/header-controller.js, core/ui-src/js/directives/footer.js ]
     target: core/ui-react/src/app
-    consumers:
-      - F-PLATFORM-SHELL
+    consumers: [ F-PLATFORM-SHELL, F-PLATFORM-LIVE-STATUS ]
+    classification: shared_hydra
     state: planned
     task: FM-006
 
   - id: C-API-TRANSPORT
-    responsibility: Base-URL-aware fetch transport with credentials, CSRF, and common errors
-    legacy:
-      - core/ui-src/js/generic-error-handler.js
-      - core/ui-src/js/nzbhydra.js
+    responsibility: Base-URL-aware HTTP and binary transport with credentials, CSRF, session headers, and common errors
+    legacy: [ core/ui-src/js/generic-error-handler.js, core/ui-src/js/file-download-service.js, core/ui-src/js/nzbhydra.js ]
     target: core/ui-react/src/api
-    consumers:
-      - F-PLATFORM-SHELL
-      - F-SEARCH-FORM
-      - F-SEARCH-RESULTS
-      - F-CONFIG
-      - F-STATS-HISTORY
-      - F-SYSTEM
+    consumers: [ F-PLATFORM-SHELL, F-AUTH-LOGIN, F-SEARCH-FORM, F-SEARCH-RESULTS, F-CONFIG-SHELL, F-STATS-SHELL, F-SYSTEM-SHELL ]
+    classification: shared_hydra
     state: planned
     task: FM-005
 
+  - id: C-BOOTSTRAP-CONTEXT
+    responsibility: Typed base URL, safe configuration, permissions, username, and server timezone bootstrap context
+    legacy: [ core/src/main/resources/templates/index.html, core/ui-src/js/config/config-service.js, core/ui-src/js/nzbhydra.js ]
+    target: core/ui-react/src/app/bootstrap
+    consumers: [ F-PLATFORM-SHELL, F-AUTH-LOGIN, F-SEARCH-FORM, F-CONFIG-SHELL, F-STATS-SHELL, F-SYSTEM-SHELL ]
+    classification: shared_hydra
+    state: planned
+    task: FM-005
+
+  - id: C-AUTH-SESSION
+    responsibility: Login, logout, password challenge, current-session transitions, permissions, and route guards
+    legacy: [ core/ui-src/js/hydra-auth-service.js, core/ui-src/js/nzbhydra.js ]
+    target: core/ui-react/src/auth
+    consumers: [ F-PLATFORM-SHELL, F-AUTH-LOGIN, F-SEARCH-FORM, F-CONFIG-SHELL, F-STATS-SHELL, F-SYSTEM-SHELL ]
+    classification: shared_hydra
+    state: planned
+    task: null
+
   - id: C-DIALOG-SERVICE
-    responsibility: Accessible alerts, confirmations, and application dialogs
-    legacy:
-      - core/ui-src/js/modal.js
-      - core/ui-src/js/modal-service.js
+    responsibility: Accessible alerts, confirmations, and application dialogs with feature-owned bodies
+    legacy: [ core/ui-src/js/modal.js, core/ui-src/js/modal-service.js ]
     target: core/ui-react/src/components/dialogs
-    consumers: [ ]
+    consumers: [ F-SEARCH-RESULTS, F-SEARCH-DOWNLOADS, F-CONFIG-SHELL, F-SYSTEM-CONTROL, F-SYSTEM-BACKUP ]
+    classification: shared_hydra
     state: planned
     task: FM-006
 
   - id: C-TOAST-SERVICE
     responsibility: Consistent transient notifications and severity mapping
-    legacy:
-      - core/ui-src/js/nzbhydra.js
+    legacy: [ core/ui-src/js/nzbhydra.js ]
     target: core/ui-react/src/components/toasts
-    consumers: [ ]
+    consumers: [ F-PLATFORM-LIVE-STATUS, F-SEARCH-RESULTS, F-SEARCH-DOWNLOADS, F-CONFIG-SHELL, F-SYSTEM-SHELL ]
+    classification: shared_hydra
     state: planned
     task: FM-006
 
+  - id: C-DATE-TIME
+    responsibility: Server-timezone-aware date parsing, formatting, and relative-time display
+    legacy: [ core/ui-src/js/indexer-statuses-controller.js, core/ui-src/js/directives/hydra-log.js ]
+    target: core/ui-react/src/domain/date-time
+    consumers: [ F-STATS-INDEXERS, F-HISTORY-SEARCHES, F-HISTORY-DOWNLOADS, F-HISTORY-NOTIFICATIONS, F-SYSTEM-LOG, F-SYSTEM-TASKS, F-SYSTEM-BACKUP ]
+    classification: shared_hydra
+    state: planned
+    task: null
+
+  - id: C-SERVER-PREFERENCES
+    responsibility: Server-backed per-user and global acknowledgements and UI preferences
+    legacy: [ core/ui-src/js/generic-storage-service.js ]
+    target: core/ui-react/src/services/preferences
+    consumers: [ F-PLATFORM-LIVE-STATUS, F-SEARCH-RESULTS ]
+    classification: shared_hydra
+    state: planned
+    task: null
+
+  - id: C-RESTART-COORDINATOR
+    responsibility: Restart command, progress dialog, readiness polling, and safe reload
+    legacy: [ core/ui-src/js/restart-service.js, core/ui-src/js/nzbhydra-control-service.js ]
+    target: core/ui-react/src/services/restart
+    consumers: [ F-CONFIG-SHELL, F-SYSTEM-CONTROL, F-SYSTEM-UPDATES, F-SYSTEM-BACKUP ]
+    classification: shared_hydra
+    state: planned
+    task: null
+
+  - id: C-CATEGORY-CATALOG
+    responsibility: Typed Hydra category catalog, default category, and lookup semantics
+    legacy: [ core/ui-src/js/categories-service.js ]
+    target: core/ui-react/src/domain/categories
+    consumers: [ F-SEARCH-FORM, F-CONFIG-CATEGORIES ]
+    classification: shared_hydra
+    state: planned
+    task: null
+
+  - id: C-DOWNLOAD-ACTIONS
+    responsibility: Downloader selection, category choice, duplicate reason, black-hole, torrent, and magnet operations
+    legacy: [ core/ui-src/js/nzb-download-service.js, core/ui-src/js/downloader-categories-service.js, core/ui-src/js/downloader-request-service.js, core/ui-src/js/directives/save-or-send-torrent.js ]
+    target: core/ui-react/src/domain/downloads
+    consumers: [ F-SEARCH-DOWNLOADS, F-HISTORY-DOWNLOADS ]
+    classification: shared_hydra
+    state: planned
+    task: null
+
+  - id: C-DOWNLOADER-STATUS
+    responsibility: Cross-route live downloader state, pause and offline state, URL, and rate history
+    legacy: [ core/ui-src/js/directives/downloaderStatusFooter.js ]
+    target: core/ui-react/src/app/status
+    consumers: [ F-PLATFORM-LIVE-STATUS ]
+    classification: shared_hydra
+    state: planned
+    task: null
+
+  - id: C-UPDATE-COORDINATOR
+    responsibility: Update metadata, install and ignore actions, changelog, global warnings, and restart handoff
+    legacy: [ core/ui-src/js/update-service.js, core/ui-src/js/directives/hydra-checks-footer.js ]
+    target: core/ui-react/src/services/updates
+    consumers: [ F-PLATFORM-LIVE-STATUS, F-SYSTEM-UPDATES, F-SYSTEM-ABOUT ]
+    classification: shared_hydra
+    state: planned
+    task: null
+
+  - id: C-SAFE-RICH-CONTENT
+    responsibility: Boundary-specific sanitization and rendering of trusted server-authored HTML without an unrestricted HTML-trust helper
+    legacy: [ core/ui-src/js/filters.js, core/ui-src/html/modal.html, core/ui-src/html/config/indexer-config-box.html, core/ui-src/html/changelog-modal.html ]
+    target: core/ui-react/src/components/content
+    consumers: [ F-CONFIG-SHELL, F-SEARCH-RESULTS, F-SYSTEM-UPDATES ]
+    classification: shared_hydra
+    state: planned
+    task: null
+
+  - id: C-EXTERNAL-LINKS
+    responsibility: Safe-configuration-aware external-link dereferer transformation for URLs and embedded help text
+    legacy: [ core/ui-src/js/nzbhydra.js, core/ui-src/html/about.html, core/ui-src/html/states/config.html, core/ui-src/html/directives/search-result.html ]
+    target: core/ui-react/src/domain/links
+    consumers: [ F-CONFIG-SHELL, F-SEARCH-RESULTS, F-HISTORY-DOWNLOADS, F-SYSTEM-ABOUT ]
+    classification: shared_hydra
+    state: planned
+    task: null
+
   - id: C-RESULT-TABLE
-    responsibility: Search-result table presentation backed by explicit Hydra result processing
-    legacy:
-      - core/ui-src/html/states/search-results.html
-      - core/ui-src/js/search-results-controller.js
+    responsibility: Hydra-specific search result processing, grouping, filtering, sorting, selection, and presentation using TanStack primitives
+    legacy: [ core/ui-src/html/states/search-results.html, core/ui-src/js/search-results-controller.js, core/ui-src/js/directives/dataTableDirectives.js ]
     target: core/ui-react/src/features/search/results
-    consumers:
-      - F-SEARCH-RESULTS
+    consumers: [ F-SEARCH-RESULTS, F-SEARCH-SORT-FILTER, F-SEARCH-GROUP-SELECTION ]
+    classification: feature_specific
     state: planned
     task: null
 
   - id: C-SECRET-INPUT
     responsibility: Masked secret editing with unchanged-secret semantics
-    legacy:
-      - core/ui-src/js/config/formly-config.js
+    legacy: [ core/ui-src/js/config/formly-config.js ]
     target: core/ui-react/src/features/config/components/SecretInput.tsx
-    consumers:
-      - F-CONFIG
+    consumers: [ F-CONFIG-AUTH, F-CONFIG-DOWNLOADING, F-CONFIG-EXTERNAL-TOOLS, F-CONFIG-INDEXERS ]
+    classification: feature_specific
     state: planned
     task: null
+
+legacy_classifications:
+  shared_hydra:
+    - names: [ unsafe ]
+      component: C-SAFE-RICH-CONTENT
+      responsibility: Active modal, configuration, result, changelog, and version-history HTML rendering
+      replacement: Sanitize and render content at each approved boundary; never recreate unrestricted AngularJS trust behavior
+      legacy: [ core/ui-src/js/filters.js, core/ui-src/html/modal.html, core/ui-src/html/config/indexer-config-box.html, core/ui-src/html/changelog-modal.html, core/ui-src/html/directives/version-history.html ]
+    - names: [ dereferer, derefererExtracting ]
+      component: C-EXTERNAL-LINKS
+      responsibility: Active external-link rewriting through the configured dereferer, including URLs embedded in configuration help
+      replacement: Typed URL and text transformations using safe bootstrap configuration
+      legacy: [ core/ui-src/js/nzbhydra.js, core/ui-src/html/about.html, core/ui-src/html/states/config.html, core/ui-src/html/directives/search-result.html, core/ui-src/html/states/download-history.html ]
+
+  mui_or_target_primitives:
+    - names: [ ngEnter, autoFocus, eventFocus, focusOn, keepFocus, onFinishRender ]
+      responsibility: Keyboard, focus, and render lifecycle behavior
+      replacement: React events, refs, and effects
+      legacy: [ core/ui-src/js/nzbhydra.js, core/ui-src/js/directives/focus-on.js, core/ui-src/js/directives/keep-focus.js, core/ui-src/js/directives/on-finish-render.js ]
+    - names: [ clickOutside, selectionButton, multiselectDropdown ]
+      responsibility: Popover dismissal, selection menus, and multi-select controls
+      replacement: MUI Popover, Menu, Select, and controlled state
+      legacy: [ core/ui-src/js/directives/click-outside.js, core/ui-src/js/directives/selection-button.js, core/ui-src/js/directives/multiselect-dropdown.js ]
+    - names: [ columnFilterWrapper, freetextFilter, checkboxesFilter, booleanFilter, timeFilter, numberRangeFilter, columnSortable ]
+      responsibility: Table sorting and filter controls
+      replacement: MUI controls and TanStack Table primitives; keep Hydra request transformations feature-local
+      legacy: [ core/ui-src/js/directives/dataTableDirectives.js ]
+    - names: [ tabOrChart ]
+      responsibility: Responsive statistics layout
+      replacement: MUI tabs and responsive layout
+      legacy: [ core/ui-src/js/directives/tab-or-chart.js ]
+    - names: [ duSmoothScroll, duSpyContext, duScrollContainer, duScrollspy, polyfill, requestAnimation, cancelAnimation, spyAPI, scrollContainerAPI ]
+      responsibility: Vendored scrolling support
+      replacement: Browser scrolling and observation APIs; do not port vendored Angular internals
+      legacy: [ core/ui-src/js/angular-scroll.js ]
+
+  feature_specific:
+    - names: [ indexerInput, indexerStateSwitch ]
+      feature: F-CONFIG-INDEXERS
+      legacy: [ core/ui-src/js/directives/indexer-input.js, core/ui-src/js/directives/indexer-state-switch.js ]
+    - names: [ draggable, uiTour, tourStep, TourConfig, uiTourBackdrop, TourHelpers, uiTourService, TourStepService, GuidedTourService ]
+      feature: F-SEARCH-TOUR
+      legacy: [ core/ui-src/js/search-controller.js, core/ui-src/js/angular-ui-tour.js, core/ui-src/js/guided-tour-service.js ]
+    - names: [ SearchService, SearchRequestFactory, SearchHistoryService ]
+      feature: F-SEARCH-FORM
+      legacy: [ core/ui-src/js/search-service.js, core/ui-src/js/search-request-service.js, core/ui-src/js/search-history-service.js ]
+    - names: [ searchResult, addableNzb, addableNzbs, downloadNzbsButton, downloadNzbzipButton, copyLinksButton, saveOrSendFile ]
+      feature: F-SEARCH-DOWNLOADS
+      legacy: [ core/ui-src/js/directives/search-result.js, core/ui-src/js/directives/addable-nzb.js, core/ui-src/js/directives/addable-nzbs.js, core/ui-src/js/directives/download-nzbs-button.js, core/ui-src/js/directives/download-nzbzip-button.js, core/ui-src/js/directives/copy-links-button.js, core/ui-src/js/directives/save-or-send-torrent.js ]
+    - names: [ StatsService, StatsRequestFactory, HistoryRequestFactory, NotificationService ]
+      feature: F-STATS-SHELL
+      legacy: [ core/ui-src/js/stats-service.js, core/ui-src/js/stats-request-service.js, core/ui-src/js/history-request-service.js, core/ui-src/js/notifications-service.js ]
+    - names: [ ConfigService, ConfigFields, ConfigModel, IndexerConfigBoxService, IndexerCheckBeforeCloseService, CapsCheckRequestFactory, IndexerConfigImportRequestFactory, DownloaderConfigBoxService, DownloaderCheckBeforeCloseService, ExternalToolRequestFactory, FileSelectionService, DirectoryListingRequestFactory ]
+      feature: F-CONFIG-SHELL
+      legacy: [ core/ui-src/js/config/config-service.js, core/ui-src/js/config/config-fields-service.js, core/ui-src/js/config/formly-indexers.js, core/ui-src/js/config/formly-downloaders.js, core/ui-src/js/config/formly-external-tools.js, core/ui-src/js/file-selection-service.js ]
+    - names: [ hydraupdates, hydralog, hydraTasks, hydrabackup, hydraNews, BackupService, MigrationService, DebugInfoRequestFactory ]
+      feature: F-SYSTEM-SHELL
+      legacy: [ core/ui-src/js/directives/hydra-updates.js, core/ui-src/js/directives/hydra-log.js, core/ui-src/js/directives/tasks.js, core/ui-src/js/directives/backup.js, core/ui-src/js/directives/hydra-news.js, core/ui-src/js/backup-service.js, core/ui-src/js/migration-service.js, core/ui-src/js/debug-info-request-service.js ]
+    - names: [ kify, binsearch ]
+      feature: F-SEARCH-RESULTS
+      legacy: [ core/ui-src/js/filters.js, core/ui-src/js/nzbhydra.js ]
+    - names: [ formatClassname ]
+      feature: F-SYSTEM-LOG
+      legacy: [ core/ui-src/js/directives/hydra-log.js ]
+
+  obsolete_or_unverified:
+    - names: [ cfgFormEntry, connectionTest, indexerSelectionButton, ConfigWatcher, DebugService ]
+      reason: No active consumer or superseded implementation; do not port without renewed evidence
+      legacy: [ core/ui-src/js/directives/cfg-form-entry.js, core/ui-src/js/directives/connection-test.js, core/ui-src/js/directives/indexer-selection-button.js, core/ui-src/js/config/config-controller.js, core/ui-src/js/debug-service.js ]
+    - names: [ nzblink, bytes, escapeHtml, formatDate, reformatDateEpoch ]
+      reason: No active template consumer found; nzblink also points to a stale path
+      legacy: [ core/ui-src/js/nzbhydra.js, core/ui-src/js/filters.js, core/ui-src/js/download-history-controller.js, core/ui-src/js/notification-history-controller.js ]
