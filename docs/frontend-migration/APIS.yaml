@@ -1,0 +1,109 @@
+schema_version: 1
+apis:
+  - id: API-BOOTSTRAP-INITIAL
+    method: template_bootstrap
+    path: null
+    auth: shell_role_dependent
+    java_contract: core/src/main/java/org/nzbhydra/web/BootstrappedDataTO.java
+    legacy_callers:
+      - core/src/main/resources/templates/index.html
+    target: core/ui-react/src/app/bootstrap.ts
+    contract_state: assess
+    test: null
+    task: FM-005
+
+  - id: API-AUTH-LOGIN
+    method: POST
+    path: /login
+    auth: anonymous
+    java_contract: core/src/main/java/org/nzbhydra/auth/SecurityConfig.java
+    legacy_callers:
+      - core/ui-src/js/hydra-auth-service.js
+    target: core/ui-react/src/features/auth
+    contract_state: not_in_openapi
+    test: null
+    task: FM-005
+
+  - id: API-AUTH-LOGOUT
+    method: POST
+    path: /logout
+    auth: authenticated
+    java_contract: core/src/main/java/org/nzbhydra/auth/SecurityConfig.java
+    legacy_callers:
+      - core/ui-src/js/hydra-auth-service.js
+    target: core/ui-react/src/features/auth
+    contract_state: not_in_openapi
+    test: null
+    task: FM-005
+
+  - id: API-CONFIG-GET
+    method: GET
+    path: /internalapi/config
+    auth: admin
+    java_contract: core/src/main/java/org/nzbhydra/config/ConfigWeb.java
+    legacy_callers:
+      - core/ui-src/js/config/config-service.js
+    target: null
+    contract_state: generated_weak
+    test: null
+    task: FM-001
+
+  - id: API-CONFIG-PUT
+    method: PUT
+    path: /internalapi/config
+    auth: admin
+    java_contract: core/src/main/java/org/nzbhydra/config/ConfigWeb.java
+    legacy_callers:
+      - core/ui-src/js/config/config-service.js
+    target: null
+    contract_state: generated_weak
+    test: tests/system/tests/external-tools.spec.ts
+    task: FM-001
+
+  - id: API-SEARCH-EXECUTE
+    method: POST
+    path: /internalapi/search
+    auth: user
+    java_contract: core/src/main/java/org/nzbhydra/searching/SearchWeb.java
+    legacy_callers:
+      - core/ui-src/js/search-service.js
+    target: null
+    contract_state: generated_weak
+    test: tests/system/tests/search.spec.ts
+    task: FM-001
+
+  - id: API-LIVE-SEARCH-STATE
+    method: STOMP_SUBSCRIBE
+    path: /topic/searchState
+    auth: user
+    java_contract: core/src/main/java/org/nzbhydra/web/WebSocketConfig.java
+    legacy_callers:
+      - core/ui-src/js/search-controller.js
+    target: null
+    contract_state: not_in_openapi
+    test: null
+    task: FM-001
+
+  - id: API-LIVE-NOTIFICATIONS
+    method: STOMP_SUBSCRIBE
+    path: /topic/notifications
+    auth: session
+    java_contract: core/src/main/java/org/nzbhydra/web/WebSocketConfig.java
+    legacy_callers:
+      - core/ui-src/js/directives/hydra-checks-footer.js
+    target: null
+    contract_state: not_in_openapi
+    test: null
+    task: FM-001
+
+  - id: API-LIVE-DOWNLOADER-STATUS
+    method: STOMP_SUBSCRIBE
+    path: /topic/downloaderStatus
+    auth: session
+    java_contract: core/src/main/java/org/nzbhydra/web/WebSocketConfig.java
+    legacy_callers:
+      - core/ui-src/js/directives/downloaderStatusFooter.js
+    target: null
+    contract_state: not_in_openapi
+    test: null
+    task: FM-001

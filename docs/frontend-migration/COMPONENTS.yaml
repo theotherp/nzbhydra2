@@ -1,0 +1,68 @@
+schema_version: 1
+components:
+  - id: C-APP-SHELL
+    responsibility: Responsive application frame, navigation, permissions, and route outlet
+    legacy:
+      - core/ui-src/html/states/header.html
+      - core/ui-src/js/header-controller.js
+    target: core/ui-react/src/app
+    consumers:
+      - F-PLATFORM-SHELL
+    state: planned
+    task: FM-006
+
+  - id: C-API-TRANSPORT
+    responsibility: Base-URL-aware fetch transport with credentials, CSRF, and common errors
+    legacy:
+      - core/ui-src/js/generic-error-handler.js
+      - core/ui-src/js/nzbhydra.js
+    target: core/ui-react/src/api
+    consumers:
+      - F-PLATFORM-SHELL
+      - F-SEARCH-FORM
+      - F-SEARCH-RESULTS
+      - F-CONFIG
+      - F-STATS-HISTORY
+      - F-SYSTEM
+    state: planned
+    task: FM-005
+
+  - id: C-DIALOG-SERVICE
+    responsibility: Accessible alerts, confirmations, and application dialogs
+    legacy:
+      - core/ui-src/js/modal.js
+      - core/ui-src/js/modal-service.js
+    target: core/ui-react/src/components/dialogs
+    consumers: [ ]
+    state: planned
+    task: FM-006
+
+  - id: C-TOAST-SERVICE
+    responsibility: Consistent transient notifications and severity mapping
+    legacy:
+      - core/ui-src/js/nzbhydra.js
+    target: core/ui-react/src/components/toasts
+    consumers: [ ]
+    state: planned
+    task: FM-006
+
+  - id: C-RESULT-TABLE
+    responsibility: Search-result table presentation backed by explicit Hydra result processing
+    legacy:
+      - core/ui-src/html/states/search-results.html
+      - core/ui-src/js/search-results-controller.js
+    target: core/ui-react/src/features/search/results
+    consumers:
+      - F-SEARCH-RESULTS
+    state: planned
+    task: null
+
+  - id: C-SECRET-INPUT
+    responsibility: Masked secret editing with unchanged-secret semantics
+    legacy:
+      - core/ui-src/js/config/formly-config.js
+    target: core/ui-react/src/features/config/components/SecretInput.tsx
+    consumers:
+      - F-CONFIG
+    state: planned
+    task: null

@@ -1,0 +1,99 @@
+schema_version: 1
+features:
+  - id: F-PLATFORM-SHELL
+    name: Application shell and navigation
+    routes:
+      - "/*"
+    roles:
+      - anonymous
+      - user
+      - stats
+      - admin
+    legacy_sources:
+      - core/src/main/resources/templates/index.html
+      - core/ui-src/js/nzbhydra.js
+      - core/ui-src/html/states/header.html
+    tests:
+      - tests/system/tests/smoke.spec.ts
+    target: core/ui-react/src/app
+    parity: inventory_pending
+    task: FM-001
+
+  - id: F-SEARCH-FORM
+    name: Search form and progress
+    routes:
+      - "/"
+    roles:
+      - user
+    legacy_sources:
+      - core/ui-src/js/search-controller.js
+      - core/ui-src/html/states/search.html
+      - core/ui-src/html/search-state.html
+    tests:
+      - tests/system/tests/search.spec.ts
+    target: core/ui-react/src/features/search
+    parity: inventory_pending
+    task: FM-001
+
+  - id: F-SEARCH-RESULTS
+    name: Search result processing, display, selection, and actions
+    routes:
+      - "/"
+    roles:
+      - user
+    legacy_sources:
+      - core/ui-src/js/search-results-controller.js
+      - core/ui-src/js/directives/search-result.js
+      - core/ui-src/html/states/search-results.html
+    tests:
+      - tests/system/tests/results.spec.ts
+      - tests/system/tests/downloads.spec.ts
+    target: core/ui-react/src/features/search/results
+    parity: inventory_pending
+    task: FM-001
+
+  - id: F-CONFIG
+    name: Configuration editing and workflows
+    routes:
+      - "/config/*"
+    roles:
+      - admin
+    legacy_sources:
+      - core/ui-src/js/config/config-controller.js
+      - core/ui-src/js/config/config-fields-service.js
+      - core/ui-src/js/config/formly-config.js
+    tests:
+      - tests/system/tests/external-tools.spec.ts
+    target: core/ui-react/src/features/config
+    parity: inventory_pending
+    task: FM-001
+
+  - id: F-STATS-HISTORY
+    name: Statistics, history, and saved searches
+    routes:
+      - "/stats/*"
+    roles:
+      - stats
+    legacy_sources:
+      - core/ui-src/js/stats-controller.js
+      - core/ui-src/js/search-history-controller.js
+    tests:
+      - tests/system/tests/stats.spec.ts
+      - tests/system/tests/search-history.spec.ts
+    target: core/ui-react/src/features/stats
+    parity: inventory_pending
+    task: FM-001
+
+  - id: F-SYSTEM
+    name: System administration
+    routes:
+      - "/system/*"
+    roles:
+      - admin
+    legacy_sources:
+      - core/ui-src/js/system-controller.js
+      - core/ui-src/html/states/system.html
+    tests: [ ]
+    target: core/ui-react/src/features/system
+    parity: inventory_pending
+    task: FM-001
