@@ -2446,6 +2446,24 @@ function ConfigFields($injector) {
                             hideExpression: '!model.displayNotifications'
                         },
                         {
+                            key: 'indexerHitLimitWarningThreshold',
+                            type: 'horizontalInput',
+                            templateOptions: {
+                                type: 'number',
+                                label: 'Warn when API hits left',
+                                help: 'Show a warning with search results when an indexer has this many API hits or fewer remaining.'
+                            }
+                        },
+                        {
+                            key: 'indexerDownloadLimitWarningThreshold',
+                            type: 'horizontalInput',
+                            templateOptions: {
+                                type: 'number',
+                                label: 'Warn when downloads left',
+                                help: 'Show a warning with search results when an indexer has this many downloads or fewer remaining.'
+                            }
+                        },
+                        {
                             key: 'filterOuts',
                             type: 'horizontalChips',
                             templateOptions: {

@@ -14,6 +14,7 @@ import org.nzbhydra.downloading.FileDownloadEntity;
 import org.nzbhydra.downloading.FileDownloadRepository;
 import org.nzbhydra.downloading.FileHandler;
 import org.nzbhydra.downloading.downloadurls.DownloadUrlBuilder;
+import org.nzbhydra.indexers.status.IndexerStatusesAndLimits;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.searching.dtoseventsenums.IndexerSearchMetaData;
 import org.nzbhydra.searching.dtoseventsenums.IndexerSearchResult;
@@ -41,6 +42,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -62,6 +64,8 @@ public class InternalSearchResultProcessor {
     private UrlCalculator urlCalculator;
     @Autowired
     private DownloadUrlBuilder downloadUrlBuilder;
+    @Autowired
+    private IndexerStatusesAndLimits indexerStatusesAndLimits;
 
     public SearchResponse createSearchResponse(org.nzbhydra.searching.SearchResult searchResult) {
         Stopwatch stopwatch = Stopwatch.createStarted();
@@ -71,6 +75,7 @@ public class InternalSearchResultProcessor {
         searchResponse.setNumberOfRejectedResults(searchResult.getNumberOfRejectedResults());
         searchResponse.setRejectedReasonsMap(searchResult.getReasonsForRejection().entrySet().stream().collect(Collectors.toMap(Multiset.Entry::getElement, Multiset.Entry::getCount)));
         searchResponse.setIndexerSearchMetaDatas(createIndexerSearchMetaDatas(searchResult));
+        searchResponse.setIndexerLimitWarnings(createIndexerLimitWarnings(searchResponse.getIndexerSearchMetaDatas()));
         searchResponse.setNotPickedIndexersWithReason(searchResult.getIndexerSelectionResult().getNotPickedIndexersWithReason().entrySet().stream().collect(Collectors.toMap(x -> x.getKey().getName(), Entry::getValue)));
         searchResponse.setNumberOfProcessedResults(searchResult.getNumberOfProcessedResults());
         searchResponse.setNumberOfAcceptedResults(searchResult.getNumberOfAcceptedResults());
@@ -83,6 +88,35 @@ public class InternalSearchResultProcessor {
 
         logger.debug(LoggingMarkers.PERFORMANCE, "Creating web response for search results took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return searchResponse;
+    }
+
+    private List<String> createIndexerLimitWarnings(List<IndexerSearchMetaData> indexerSearchMetaDatas) {
+        BaseConfig baseConfig = configProvider.getBaseConfig();
+        Set<String> searchedIndexerNames = indexerSearchMetaDatas.stream()
+                .map(IndexerSearchMetaData::getIndexerName)
+                .collect(Collectors.toSet());
+
+        List<String> warnings = new ArrayList<>();
+        for (IndexerStatusesAndLimits.IndexerStatus status : indexerStatusesAndLimits.getSortedStatuses()) {
+            if (!searchedIndexerNames.contains(status.getIndexer())) {
+                continue;
+            }
+            addLimitWarning(warnings, status.getIndexer(), status.getApiHitLimit(), status.getApiHits(),
+                    baseConfig.getNotificationConfig().getIndexerHitLimitWarningThreshold(), "API hits");
+            addLimitWarning(warnings, status.getIndexer(), status.getDownloadHitLimit(), status.getDownloadHits(),
+                    baseConfig.getNotificationConfig().getIndexerDownloadLimitWarningThreshold(), "downloads");
+        }
+        return warnings;
+    }
+
+    private void addLimitWarning(List<String> warnings, String indexerName, Integer limit, Integer used, int threshold, String limitType) {
+        if (limit == null || used == null) {
+            return;
+        }
+        int remaining = limit - used;
+        if (remaining >= 0 && remaining <= threshold) {
+            warnings.add(String.format("%s has %d %s left.", indexerName, remaining, limitType));
+        }
     }
 
     private List<IndexerSearchMetaData> createIndexerSearchMetaDatas(org.nzbhydra.searching.SearchResult searchResult) {

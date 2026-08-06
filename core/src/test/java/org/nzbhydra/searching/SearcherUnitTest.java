@@ -28,6 +28,7 @@ import org.nzbhydra.indexers.IndexerSearchRepository;
 import org.nzbhydra.indexers.IndexerSearchResultPersistor;
 import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.searching.IndexerForSearchSelector.IndexerForSearchSelection;
+import org.nzbhydra.searching.db.SearchEntity;
 import org.nzbhydra.searching.db.SearchRepository;
 import org.nzbhydra.searching.db.SearchResultEntity;
 import org.nzbhydra.searching.db.SearchResultRepository;
@@ -310,6 +311,29 @@ public class SearcherUnitTest {
         assertThat(result.getSearchResultItems()).hasSize(300);
         // Indexer should have been called 3 times (offsets 0, 100, 200)
         verify(indexer1, times(3)).search(any(), anyInt(), anyInt());
+    }
+
+    @Test
+    void shouldStoreIndexerSearchResponseTime() {
+        BaseConfig config = new BaseConfig();
+        config.getMain().setKeepHistory(true);
+        when(configProviderMock.getBaseConfig()).thenReturn(config);
+        when(indexerSearchRepository.save(any(IndexerSearchEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        SearchEntity searchEntity = new SearchEntity();
+        SearchCacheEntry searchCacheEntry = new SearchCacheEntry(searchRequestMock, pickingResultMock, searchEntity);
+        IndexerSearchCacheEntry indexerSearchCacheEntry = new IndexerSearchCacheEntry(indexer1);
+        IndexerSearchResult indexerSearchResult = new IndexerSearchResult();
+        indexerSearchResult.setIndexer(indexer1);
+        indexerSearchResult.setResponseTime(123L);
+        indexerSearchCacheEntry.addIndexerSearchResult(indexerSearchResult);
+        searchCacheEntry.getIndexerCacheEntries().put("indexer1", indexerSearchCacheEntry);
+
+        searcher.createOrUpdateIndexerSearchEnties(searchCacheEntry);
+
+        ArgumentCaptor<IndexerSearchEntity> entityCaptor = ArgumentCaptor.forClass(IndexerSearchEntity.class);
+        verify(indexerSearchRepository).save(entityCaptor.capture());
+        assertThat(entityCaptor.getValue().getResponseTime()).isEqualTo(123L);
     }
 
     @Test

@@ -235,7 +235,7 @@ public class IndexerStatusesAndLimits {
         }
     }
 
-    static Instant toInstant(Object databaseTime) {
+    public static Instant toInstant(Object databaseTime) {
         if (databaseTime instanceof Timestamp timestamp) {
             return timestamp.toInstant();
         }

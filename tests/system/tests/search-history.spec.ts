@@ -32,6 +32,23 @@ test.describe("Search history", () => {
         await expect(page.getByTestId("search-status-modal")).toBeHidden();
         await expect(page.getByTestId("search-result-title").filter({hasText: testEnvironment.searchHistoryResultTitle})).toBeVisible();
     });
+
+    test("should show indexer response times in search details", async ({page}) => {
+        const query = `${testEnvironment.searchHistoryQueryPrefix}${randomUUID()}`;
+        await searchForResult(page, query, testEnvironment.searchHistoryResultTitle);
+
+        await page.getByRole("link", {name: "History & Stats", exact: true}).click();
+        await page.getByRole("tab", {name: "Search history", exact: true}).click();
+
+        const historyRow = page.getByTestId("search-history-table").getByTestId("search-history-row").filter({hasText: query});
+        await refreshUntilHistoryRowIsVisible(page, historyRow);
+        await historyRow.getByTestId("search-history-details").click();
+
+        const detailsModal = page.locator(".modal-content").filter({hasText: "Related indexer searches"});
+        await expect(detailsModal).toBeVisible();
+        const responseTimes = detailsModal.locator("table").filter({hasText: "Related indexer searches"}).locator("tbody tr td:nth-child(4)");
+        await expect(responseTimes).toHaveText([/^\d+ms$/, /^\d+ms$/]);
+    });
 });
 
 async function refreshUntilHistoryRowIsVisible(

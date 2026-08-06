@@ -360,6 +360,8 @@ notificationConfig:
     filterOuts: [ ]
     displayNotifications: true
     displayNotificationsMax: 5
+    indexerDownloadLimitWarningThreshold: 10
+    indexerHitLimitWarningThreshold: 10
 searching:
   alwaysConvertIds: "NONE"
   alwaysShowQuickFilterButtons: false

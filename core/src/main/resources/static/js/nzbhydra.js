@@ -9859,6 +9859,24 @@ function ConfigFields($injector) {
                             hideExpression: '!model.displayNotifications'
                         },
                         {
+                            key: 'indexerHitLimitWarningThreshold',
+                            type: 'horizontalInput',
+                            templateOptions: {
+                                type: 'number',
+                                label: 'Warn when API hits left',
+                                help: 'Show a warning with search results when an indexer has this many API hits or fewer remaining.'
+                            }
+                        },
+                        {
+                            key: 'indexerDownloadLimitWarningThreshold',
+                            type: 'horizontalInput',
+                            templateOptions: {
+                                type: 'number',
+                                label: 'Warn when downloads left',
+                                help: 'Show a warning with search results when an indexer has this many downloads or fewer remaining.'
+                            }
+                        },
+                        {
                             key: 'filterOuts',
                             type: 'horizontalChips',
                             templateOptions: {
@@ -11270,6 +11288,7 @@ function SearchService($http, SearchRequestFactory) {
     function processData(response) {
         var searchResults = response.data.searchResults;
         var indexerSearchMetaDatas = response.data.indexerSearchMetaDatas;
+        var indexerLimitWarnings = response.data.indexerLimitWarnings;
         var numberOfAvailableResults = response.data.numberOfAvailableResults;
         var numberOfRejectedResults = response.data.numberOfRejectedResults;
         var numberOfDuplicateResults = response.data.numberOfDuplicateResults;
@@ -11283,6 +11302,7 @@ function SearchService($http, SearchRequestFactory) {
         lastResults = {
             "searchResults": searchResults,
             "indexerSearchMetaDatas": indexerSearchMetaDatas,
+            "indexerLimitWarnings": indexerLimitWarnings,
             "numberOfAvailableResults": numberOfAvailableResults,
             "numberOfAcceptedResults": numberOfAcceptedResults,
             "numberOfRejectedResults": numberOfRejectedResults,
@@ -11337,6 +11357,7 @@ function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $doc
     //Handle incoming data
 
     $scope.indexersearches = SearchService.getLastResults().indexerSearchMetaDatas;
+    $scope.indexerLimitWarnings = SearchService.getLastResults().indexerLimitWarnings;
     $scope.notPickedIndexersWithReason = [];
     _.forEach(SearchService.getLastResults().notPickedIndexersWithReason, function (k, v) {
         $scope.notPickedIndexersWithReason.push({"indexer": v, "reason": k});

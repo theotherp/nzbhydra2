@@ -1,4 +1,14 @@
 <span ng-show="doShowResults" data-testid="search-results">
+<div class="row" ng-if="indexerLimitWarnings.length" data-testid="indexer-limit-warnings">
+    <div class="col-md-12 col-md-offset-4">
+        <div class="alert alert-warning" role="alert">
+            <strong>Indexer quota warning</strong>
+            <ul>
+                <li ng-repeat="warning in indexerLimitWarnings">{{ warning }}</li>
+            </ul>
+        </div>
+    </div>
+</div>
 <div class="row d-flex justify-content-center" ng-if="indexersearches.length" style="margin-top: 25px">
     <div class="col-xs-20 col-sm-18 col-md-14 col-lg-10">
         <uib-accordion close-others="oneAtATime" id="search-results-accordion">

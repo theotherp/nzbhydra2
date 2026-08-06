@@ -277,6 +277,7 @@ public class Searcher {
                     entity.setSearchEntity(searchCacheEntry.getSearchEntity());
                     entity.setResultsCount(indexerSearchResult.getTotalResults());
                     entity.setSuccessful(indexerSearchResult.isWasSuccessful());
+                    entity.setResponseTime(indexerSearchResult.getResponseTime());
                     entity.setErrorMessage(indexerSearchResult.getErrorMessage());
                     indexerSearchCacheEntry.setIndexerSearchEntity(entity);
                 }
