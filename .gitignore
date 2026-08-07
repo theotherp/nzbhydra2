@@ -25,6 +25,7 @@ heapdump*
 !/.idea/compiler.xml
 !/.idea/vcs.xml
 !/.idea/misc.xml
+.idea/codeStyles/
 misc/rsyncToServers.sh
 misc/build-logs
 misc/.build-release-state.json

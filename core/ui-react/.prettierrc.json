@@ -1,5 +1,20 @@
 {
   "singleQuote": false,
   "tabWidth": 4,
-  "trailingComma": "all"
+  "trailingComma": "all",
+  "bracketSpacing": false,
+  "overrides": [
+    {
+      "files": ["*.json", "*.json5"],
+      "options": {
+        "tabWidth": 2
+      }
+    },
+    {
+      "files": ["*.html"],
+      "options": {
+        "tabWidth": 2
+      }
+    }
+  ]
 }
