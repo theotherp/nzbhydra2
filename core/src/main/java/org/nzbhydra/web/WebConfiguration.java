@@ -69,8 +69,8 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
             try {
                 if (staticFolderFile.exists()) {
                     String fileStatic = staticFolderFile.toURI().toURL().toString();
-                    locations = new String[]{fileStatic};
-                    logger.warn("Found folder {}. Will load UI resources from there instead", staticFolderFile.getAbsolutePath());
+                    locations = new String[]{fileStatic, "classpath:/static/"};
+                    logger.warn("Found folder {}. Will load overridden UI resources from there before packaged resources", staticFolderFile.getAbsolutePath());
                 } else {
                     logger.debug("Static resources folder {} does not exist - using baked in resources", staticFolderFile);
                 }

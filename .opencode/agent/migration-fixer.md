@@ -6,6 +6,7 @@ variant: medium
 permission:
   edit: allow
   bash: allow
+  intellij*: allow
   skill:
     "*": deny
     migration-task-implement: allow

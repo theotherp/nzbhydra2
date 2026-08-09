@@ -2,10 +2,16 @@ import react from "@vitejs/plugin-react";
 import {defineConfig} from "vitest/config";
 
 export default defineConfig({
-    base: process.env.VITE_BASE_PATH ?? "/static/react/",
+    base: process.env.VITE_BASE_PATH ?? "./",
     plugins: [react()],
     build: {
-        outDir: "dist",
+        outDir: process.env.VITE_OUT_DIR ?? "dist",
+        emptyOutDir: true,
+        rollupOptions: {
+            output: {
+                entryFileNames: "assets/[name].js",
+            },
+        },
     },
     test: {
         environment: "jsdom",

@@ -1,6 +1,6 @@
 schema_version: 1
 apis:
-  - { id: API-BOOTSTRAP-INITIAL, method: template_bootstrap, path: null, auth: shell_role_dependent, legacy_callers: [ core/src/main/resources/templates/index.html ], target: core/ui-react/src/app/bootstrap.ts, contract_state: assess, test: null, task: FM-005 }
+  - { id: API-BOOTSTRAP-INITIAL, method: template_bootstrap, path: null, auth: shell_role_dependent, legacy_callers: [ core/src/main/resources/templates/index.html ], target: core/ui-react/src/bootstrap.ts, contract_state: partial, test: core/ui-react/src/App.test.tsx, task: FM-004 }
   - { id: API-AUTH-LOGIN, method: POST, path: /login, auth: anonymous, legacy_callers: [ core/ui-src/js/hydra-auth-service.js ], target: core/ui-react/src/features/auth, contract_state: not_in_openapi, test: null, task: FM-005 }
   - { id: API-AUTH-LOGOUT, method: POST, path: /logout, auth: authenticated, legacy_callers: [ core/ui-src/js/hydra-auth-service.js ], target: core/ui-react/src/features/auth, contract_state: not_in_openapi, test: null, task: FM-005 }
   - { id: API-AUTH-USER-INFOS, method: GET, path: /internalapi/userinfos, auth: session, legacy_callers: [ core/ui-src/js/hydra-auth-service.js ], target: null, contract_state: generated_weak, test: null, task: FM-001 }

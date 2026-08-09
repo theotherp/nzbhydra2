@@ -57,6 +57,7 @@ When calling the IntelliJ MCP map `projectPath=/mnt/c/Users/<user>/IdeaProjects/
 
 Use these **only** when IntelliJ MCP tools are unavailable. Run from the project root.
 
+
 ### Build
 
 - **Full Build**: `mvn clean install`
@@ -90,6 +91,26 @@ Always use the **Context7 MCP tools** when you need:
 - Correct syntax or usage patterns for any dependency
 
 Resolve the library ID first, then fetch the relevant docs. Do this automatically without the user needing to ask.
+
+### Maven dependency/source lookup
+
+`maven-indexer-cli` is available for searching Maven Central and inspecting published Maven artifacts.
+
+Use `maven-indexer-cli` when you need to:
+
+- find which Maven artifact contains a class or package;
+- determine available versions of a dependency or plugin;
+- inspect or locate published artifacts when the exact coordinates are unknown;
+- research Maven dependencies that are not already present in this repository.
+
+Prefer local/project information first:
+
+- use `pom.xml` files for dependencies and versions already defined by the project;
+- use `mvn dependency:tree` for the project's resolved dependency graph;
+- use the local Maven repository (`~/.m2/repository`) when inspecting artifacts that are already downloaded.
+
+Do not guess Maven coordinates or versions when they can be verified with
+`maven-indexer-cli`.
 
 ## 5. Code Style & Conventions
 

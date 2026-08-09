@@ -21,11 +21,11 @@ components:
   - id: C-BOOTSTRAP-CONTEXT
     responsibility: Typed base URL, safe configuration, permissions, username, and server timezone bootstrap context
     legacy: [ core/src/main/resources/templates/index.html, core/ui-src/js/config/config-service.js, core/ui-src/js/nzbhydra.js ]
-    target: core/ui-react/src/app/bootstrap
+    target: core/ui-react/src/bootstrap.ts
     consumers: [ F-PLATFORM-SHELL, F-AUTH-LOGIN, F-SEARCH-FORM, F-CONFIG-SHELL, F-STATS-SHELL, F-SYSTEM-SHELL ]
     classification: shared_hydra
-    state: planned
-    task: FM-005
+    state: partial
+    task: FM-004
 
   - id: C-AUTH-SESSION
     responsibility: Login, logout, password challenge, current-session transitions, permissions, and route guards

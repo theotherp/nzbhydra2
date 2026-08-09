@@ -9,8 +9,9 @@ features:
     tests: [ tests/system/tests/smoke.spec.ts ]
     selectors: [ ]
     target: core/ui-react/src/app
-    parity: inventoried
-    task: FM-001
+    parity: partial
+    gaps: [ navigation, footer, permission-aware links, live status ]
+    task: FM-004
 
   - id: F-AUTH-LOGIN
     name: Form login, logout, password confirmation, and session refresh

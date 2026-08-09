@@ -14,9 +14,9 @@ None.
 
 ## Next
 
-| Task     | Outcome                      | Depends on         |
-|----------|------------------------------|--------------------|
-| `FM-004` | Add the React shell selector | `FM-001`, `FM-002` |
+| Task     | Outcome                       | Depends on                  |
+|----------|-------------------------------|-----------------------------|
+| `FM-005` | Bootstrap, auth and transport | `FM-001`, `FM-002`, FM-004` |
 
 ## Upcoming
 

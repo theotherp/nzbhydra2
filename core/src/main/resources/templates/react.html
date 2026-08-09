@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>NZBHydra 2</title>
+    <base th:href="${session.baseUrl}" />
+    <meta name="robots" content="noindex" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="shortcut icon" type="image/x-icon" href="static/img/favicon.ico" />
+    <meta charset="utf-8" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script th:inline="javascript">
+        window.__NZBHYDRA_BOOTSTRAP__ = /*[[${session.bootstrap}]]*/ null;
+    </script>
+    <script type="module" th:src="@{static/react/assets/index.js}"></script>
+  </body>
+</html>
