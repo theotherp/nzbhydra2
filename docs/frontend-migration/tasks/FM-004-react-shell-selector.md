@@ -1,6 +1,6 @@
 # FM-004: React Shell Selector
 
-Status: planned Owner:
+Status: ready Owner:
 Feature IDs: F-PLATFORM-SHELL Component IDs: C-APP-SHELL API IDs: API-BOOTSTRAP-INITIAL Depends on: FM-001, FM-002 Blocks: FM-005, FM-006, FM-008, FM-009
 
 ## Outcome

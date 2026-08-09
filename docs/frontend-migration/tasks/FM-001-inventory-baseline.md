@@ -1,6 +1,6 @@
 # FM-001: Inventory Baseline
 
-Status: review Owner: OpenCode
+Status: done Owner: OpenCode
 Feature IDs: all Component IDs: all API IDs: all Depends on: FM-000 Blocks: FM-002, FM-004, FM-005, FM-006, FM-007, FM-008
 
 ## Outcome

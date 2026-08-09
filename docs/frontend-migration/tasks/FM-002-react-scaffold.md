@@ -1,6 +1,6 @@
 # FM-002: React Scaffold
 
-Status: in_progress Owner:
+Status: done Owner:
 Feature IDs: F-PLATFORM-SHELL Component IDs: C-APP-SHELL API IDs: none Depends on: FM-001 Blocks: FM-003, FM-004, FM-005, FM-006, FM-007
 
 ## Outcome
