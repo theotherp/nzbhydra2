@@ -24,11 +24,9 @@ export class ApiError extends Error {
     }
 }
 
-export class UnauthorizedError extends ApiError {
-}
+export class UnauthorizedError extends ApiError {}
 
-export class ForbiddenError extends ApiError {
-}
+export class ForbiddenError extends ApiError {}
 
 export class ApiTransport {
     private readonly base: URL;

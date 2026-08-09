@@ -27,7 +27,7 @@ describe("App", () => {
         render(<App bootstrap={bootstrap} />);
 
         expect(
-            screen.getByRole("heading", {name: "NZBHydra2"}),
+            screen.getByRole("heading", {name: "React migration placeholder"}),
         ).toBeInTheDocument();
         expect(
             screen.getByRole("link", {name: "Switch to legacy UI"}),
@@ -35,5 +35,14 @@ describe("App", () => {
             "href",
             "http://localhost:3000/hydra/ui/legacy?redirect=%2Fstats%2Fstats%3Fperiod%3Dday",
         );
+    });
+
+    it("should render the application loading convention", () => {
+        render(<App bootstrap={bootstrap} isLoading />);
+
+        const status = screen.getByRole("status");
+        expect(status).toHaveTextContent("Loading…");
+        expect(status).toContainElement(screen.getByRole("progressbar"));
+        expect(screen.getByText("Loading…")).toBeVisible();
     });
 });

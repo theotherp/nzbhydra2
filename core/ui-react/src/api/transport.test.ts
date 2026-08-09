@@ -34,14 +34,14 @@ describe("ApiTransport", () => {
         expect((request.headers as Headers).get("X-XSRF-TOKEN")).toBe(
             "csrf-value",
         );
-        expect(request.body).toBe("{\"enabled\":true}");
+        expect(request.body).toBe('{"enabled":true}');
     });
 
     it("should keep unauthorized and forbidden responses distinguishable", async () => {
         const unauthorized = new ApiTransport(
             "/hydra/",
             vi.fn().mockResolvedValue(
-                new Response("{\"message\":\"login\"}", {
+                new Response('{"message":"login"}', {
                     status: 401,
                     headers: {"Content-Type": "application/json"},
                 }),
@@ -50,7 +50,7 @@ describe("ApiTransport", () => {
         const forbidden = new ApiTransport(
             "/hydra/",
             vi.fn().mockResolvedValue(
-                new Response("{\"message\":\"denied\"}", {
+                new Response('{"message":"denied"}', {
                     status: 403,
                     headers: {"Content-Type": "application/json"},
                 }),

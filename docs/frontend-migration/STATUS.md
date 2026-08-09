@@ -12,12 +12,6 @@ None.
 
 None.
 
-## Next
-
-| Task     | Outcome       | Depends on                   |
-|----------|---------------|------------------------------|
-| `FM-006` | UI foundation | `FM-001`, `FM-002`, `FM-004` |
-
 ## Upcoming
 
 | Task     | Outcome                          | Depends on                   |

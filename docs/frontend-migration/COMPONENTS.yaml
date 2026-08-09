@@ -6,7 +6,7 @@ components:
     target: core/ui-react/src/app
     consumers: [ F-PLATFORM-SHELL, F-PLATFORM-LIVE-STATUS ]
     classification: shared_hydra
-    state: planned
+    state: partial
     task: FM-006
 
   - id: C-API-TRANSPORT
@@ -42,7 +42,7 @@ components:
     target: core/ui-react/src/components/dialogs
     consumers: [ F-SEARCH-RESULTS, F-SEARCH-DOWNLOADS, F-CONFIG-SHELL, F-SYSTEM-CONTROL, F-SYSTEM-BACKUP ]
     classification: shared_hydra
-    state: planned
+    state: partial
     task: FM-006
 
   - id: C-TOAST-SERVICE
@@ -51,7 +51,7 @@ components:
     target: core/ui-react/src/components/toasts
     consumers: [ F-PLATFORM-LIVE-STATUS, F-SEARCH-RESULTS, F-SEARCH-DOWNLOADS, F-CONFIG-SHELL, F-SYSTEM-SHELL ]
     classification: shared_hydra
-    state: planned
+    state: partial
     task: FM-006
 
   - id: C-DATE-TIME
