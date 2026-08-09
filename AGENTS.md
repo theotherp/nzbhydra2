@@ -10,7 +10,7 @@ The project is a search aggregator for Usenet indexers, built with Spring Boot (
 
 ## 1. Project Structure & Environment
 
-- **Root Directory**: `C:\Users\strat\IdeaProjects\nzbhydra2`
+- **Root Directory**: `C:\Users\<user>\IdeaProjects\nzbhydra2`
 - **Core Logic**: `core/src/main/java`
 - **Tests**: `core/src/test/java`
 - **Frontend**: `core/ui-src` (Legacy Gulp/Bower/AngularJS)
@@ -28,6 +28,8 @@ The project is a search aggregator for Usenet indexers, built with Spring Boot (
 **Always prefer IntelliJ MCP tools over Maven CLI commands.** Maven is only a fallback when MCP tools are unavailable or insufficient.
 
 DO NOT USE intellij_search_in_files_by_text AS IT'S BUGGY
+
+When calling the IntelliJ MCP map `projectPath=/mnt/c/Users/<user>/IdeaProjects/nzbhydra2` to `projectPath=C:/Users/<user>/IdeaProjects/nzbhydra2`
 
 ### Building & Compiling
 
