@@ -23,4 +23,5 @@ sql notes.sql
 *.dmp
 *.trc
 package-lock.json
+!ui-react/package-lock.json
 afile.txt

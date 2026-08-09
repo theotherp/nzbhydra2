@@ -16,6 +16,8 @@
     "test": "vitest",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "generate:api": "openapi-typescript ../openapi.json -o src/api/generated/openapi.ts && prettier --config .prettierrc.json --write src/api/generated/openapi.ts",
+    "check:api": "node scripts/check-openapi-types.mjs",
     "validate:migration": "node scripts/validate-migration.mjs"
   },
   "dependencies": {
@@ -39,6 +41,7 @@
     "eslint-plugin-react-refresh": "0.4.24",
     "globals": "16.5.0",
     "jsdom": "27.2.0",
+    "openapi-typescript": "7.13.0",
     "prettier": "3.7.4",
     "typescript": "5.9.3",
     "typescript-eslint": "8.47.0",
