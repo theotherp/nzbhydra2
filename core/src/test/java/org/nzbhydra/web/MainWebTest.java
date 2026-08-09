@@ -19,6 +19,8 @@ import org.springframework.security.access.annotation.Secured;
 import java.security.Principal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -45,7 +47,8 @@ class MainWebTest {
     private void prepareShellRendering() {
         BaseConfig baseConfig = new BaseConfig();
         when(configProvider.getBaseConfig()).thenReturn(baseConfig);
-        when(userInfos.getUserInfos(principal)).thenReturn(new BootstrappedDataTO());
+        when(userInfos.getBootstrapData(eq(principal), anyString()))
+                .thenReturn(new BootstrappedDataTO());
     }
 
     @Test

@@ -1,6 +1,6 @@
 # FM-005: Bootstrap, Auth, And Transport
 
-Status: planned Owner:
+Status: done Owner: OpenCode
 Feature IDs: F-PLATFORM-SHELL Component IDs: C-API-TRANSPORT API IDs: API-BOOTSTRAP-INITIAL, API-AUTH-LOGIN, API-AUTH-LOGOUT Depends on: FM-001, FM-002, FM-004 Blocks: FM-007, FM-008
 
 ## Outcome
@@ -10,7 +10,7 @@ Provide one typed runtime bootstrap and HTTP transport with base URL, credential
 ## Files Allowed To Modify
 
 - `core/ui-react/src/api/**`
-- `core/ui-react/src/app/bootstrap*`
+- `core/ui-react/src/bootstrap*`
 - `core/ui-react/src/features/auth/**`
 - Focused backend changes required to make bootstrap semantics coherent
 - Focused tests
@@ -55,4 +55,59 @@ Do not modify files outside Files Allowed To Modify.
 
 ## Handoff
 
-Record public transport API, backend contract changes, verification, and deferred file/STOMP requirements. Mark this task `review` when complete.
+### Outcome
+
+- Added `ApiTransport`, which accepts only application-base-relative paths and centralizes same-origin credentials, JSON request/response handling, Hydra CSRF, and typed 401/403 errors.
+- Added FORM `loginWithForm`, `logout`, and `currentSession` operations. Each refreshes the complete typed bootstrap and returns its current permissions.
+- Normalized React bootstrap bases to same-origin path bases. `/internalapi/userinfos` now returns the same safe configuration and normalized base URL bootstrap semantics as the shell, so FORM session refreshes remain complete.
+
+### Public Transport API
+
+- `new ApiTransport(baseUrl, fetchImplementation?)` and `request<T>(path, options)`; paths must not begin with `/` or escape `baseUrl`.
+- `TransportRequest` supports raw, form, or JSON bodies (one only); unsafe requests copy `HYDRA-XSRF-TOKEN` to `X-XSRF-TOKEN` when present.
+- `ApiError`, `UnauthorizedError`, and `ForbiddenError` preserve parsed response data and distinguish 401 from 403.
+
+### Files Modified
+
+- `core/ui-react/src/{api,bootstrap*,features/auth}` and focused React tests.
+- Focused bootstrap/auth backend sources and tests, `COMPONENTS.yaml`, `APIS.yaml`, `STATUS.md`, and this task packet.
+- Scope confirmation: all task-owned modifications are within `Files Allowed To Modify`.
+
+### Toolchain
+
+- Node: `v26.6.0`
+- Package manager: `npm 11.18.0`
+- Other material tools: IntelliJ build/test runner; Maven `3.9.16` through the required system-test runner.
+
+### Verification Evidence
+
+| Working directory | Command                                                                                                                                      | Result                                                                                                                                |
+|-------------------|----------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------|
+| `core/ui-react`   | `npm ci`                                                                                                                                     | Passed; 347 packages installed, no vulnerabilities.                                                                                   |
+| `core/ui-react`   | `npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run validate:migration`          | Passed; 4 test files / 12 tests; migration registry validation passed.                                                                |
+| `core/ui-react`   | `npm run typecheck && npm run lint && npm run format:check && npm run test -- --run src/api/transport.test.ts && npm run validate:migration` | Passed; 1 test file / 7 tests; migration registry validation passed.                                                                  |
+| IntelliJ          | build focused `UserInfosProvider`, `AuthWeb`, `MainWeb`, and auth/web tests                                                                  | Passed with no problems.                                                                                                              |
+| IntelliJ          | `AuthWebTest`                                                                                                                                | Passed: 1 test.                                                                                                                       |
+| IntelliJ          | `MainWebTest`                                                                                                                                | Passed: 5 tests.                                                                                                                      |
+| repository root   | `python3 misc/run_gui_systemtest.py --runtime wsl -- tests/shell-selector.spec.ts`                                                           | Passed: Maven package succeeded and 1 Playwright base-path/shell-selection test passed. No dedicated Playwright auth scenario exists. |
+
+### Dependency Decisions
+
+- Runtime dependencies: None.
+- Development dependencies: None.
+
+### Assumptions
+
+- The server bootstrap `baseUrl` represents the configured context path and is intentionally restricted to same-origin paths by the React runtime.
+
+### Temporary Exceptions And Debt
+
+- None.
+
+### Registry And Documentation Updates
+
+- `C-API-TRANSPORT` and `C-AUTH-SESSION` now record their delivered partial implementations. `API-BOOTSTRAP-INITIAL`, `API-AUTH-LOGIN`, and `API-AUTH-LOGOUT` point to their concrete source and focused tests.
+
+### Follow-Up Work
+
+- File-transfer/binary response handling and SockJS/STOMP abstractions remain deferred as explicitly out of scope for FM-005.

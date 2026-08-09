@@ -6,7 +6,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.nzbhydra.auth.UserInfosProvider;
 import org.nzbhydra.config.ConfigProvider;
-import org.nzbhydra.config.safeconfig.SafeConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.security.access.annotation.Secured;
@@ -34,10 +33,6 @@ public class MainWeb {
     private ConfigurableEnvironment environment;
     @Autowired
     private UserInfosProvider userInfos;
-
-    private SafeConfig getSafeConfig() {
-        return new SafeConfig(configProvider.getBaseConfig());
-    }
 
     @GetMapping("/")
     @Secured({"ROLE_USER"})
@@ -115,16 +110,13 @@ public class MainWeb {
 
 
     private void setSessionAttributes(HttpSession session, Principal principal) {
-        BootstrappedDataTO bootstrappedData = userInfos.getUserInfos(principal);
-        bootstrappedData.setSafeConfig(getSafeConfig());
-
         String urlBase = environment.getProperty("server.servlet.context-path");
         if (urlBase == null) {
             urlBase = "";
         }
         final String baseUrl = (urlBase + "/").replace("//", "/");
+        BootstrappedDataTO bootstrappedData = userInfos.getBootstrapData(principal, baseUrl);
         session.setAttribute("baseUrl", baseUrl);
-        bootstrappedData.setBaseUrl(baseUrl);
         session.setAttribute("bootstrap", bootstrappedData);
         String theme = configProvider.getBaseConfig().getMain().getTheme();
         session.setAttribute("cssUrl", "static/css/" + theme + ".css");

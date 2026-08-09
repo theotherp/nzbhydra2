@@ -1,5 +1,6 @@
 package org.nzbhydra.auth;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.nzbhydra.web.BootstrappedDataTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,8 +34,8 @@ public class AuthWeb {
     }
 
     @GetMapping(value = "/internalapi/userinfos", produces = MediaType.APPLICATION_JSON_VALUE)
-    public BootstrappedDataTO userinfos(HttpSession session, Principal principal) {
-        return userInfos.getUserInfos(principal);
+    public BootstrappedDataTO userinfos(HttpSession session, Principal principal, HttpServletRequest request) {
+        return userInfos.getBootstrapData(principal, request.getContextPath());
     }
 
 }

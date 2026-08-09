@@ -15,7 +15,7 @@ components:
     target: core/ui-react/src/api
     consumers: [ F-PLATFORM-SHELL, F-AUTH-LOGIN, F-SEARCH-FORM, F-SEARCH-RESULTS, F-CONFIG-SHELL, F-STATS-SHELL, F-SYSTEM-SHELL ]
     classification: shared_hydra
-    state: planned
+    state: partial
     task: FM-005
 
   - id: C-BOOTSTRAP-CONTEXT
@@ -30,11 +30,11 @@ components:
   - id: C-AUTH-SESSION
     responsibility: Login, logout, password challenge, current-session transitions, permissions, and route guards
     legacy: [ core/ui-src/js/hydra-auth-service.js, core/ui-src/js/nzbhydra.js ]
-    target: core/ui-react/src/auth
+    target: core/ui-react/src/features/auth
     consumers: [ F-PLATFORM-SHELL, F-AUTH-LOGIN, F-SEARCH-FORM, F-CONFIG-SHELL, F-STATS-SHELL, F-SYSTEM-SHELL ]
     classification: shared_hydra
-    state: planned
-    task: null
+    state: partial
+    task: FM-005
 
   - id: C-DIALOG-SERVICE
     responsibility: Accessible alerts, confirmations, and application dialogs with feature-owned bodies
