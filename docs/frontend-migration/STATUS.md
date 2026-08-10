@@ -8,10 +8,6 @@ None.
 
 None.
 
-## Blocked
-
-None.
-
 ## Upcoming
 
 None.

@@ -5,7 +5,10 @@ model: openai/gpt-5.6-terra
 variant: medium
 permission:
   edit: allow
-  bash: allow
+  bash:
+    "*": allow
+    "git add*": deny
+    "git commit*": deny
   intellij*: allow
   skill:
     "*": deny
@@ -27,9 +30,13 @@ The orchestrator may provide:
 
 - the task baseline Git revision;
 - the pre-existing working-tree state;
+- resumed task-attributable paths from an earlier invocation;
 - paths identified as unrelated user changes.
 
 Treat these as authoritative for task attribution.
+
+The supplied attribution classification is the ownership boundary. Resumed task-attributable paths remain task work across invocations. Changes absent from the snapshot are task-attributable unless there is positive evidence of an external
+writer. Current staged versus unstaged state does not establish ownership.
 
 Do not modify, revert, stage, discard, or otherwise incorporate unrelated pre-existing user changes.
 
@@ -37,9 +44,10 @@ Do not consider an unrelated pre-existing change a task scope violation.
 
 Only changes introduced for the current FM task are subject to the task's Files Allowed To Modify rules.
 
-If task-attributable work overlaps with a pre-existing user modification and the changes cannot be safely separated, report the conflict rather than overwriting or reverting the user's work.
+If task-attributable work overlaps with a path explicitly present in the pre-invocation snapshot and the changes cannot be safely separated, report the concrete conflicting hunks and positive evidence rather than overwriting or reverting
+the user's work.
 
-Do not create Git commits. Task commits are owned by the orchestrator after independent review passes.
+Do not stage files or create Git commits. Task staging and commits are owned by the orchestrator after independent review passes.
 
 Before completing, report:
 

@@ -31,10 +31,14 @@ Invoke only:
 For each task in dependency order:
 
 1. Verify its prerequisites are `done`.
-2. Record the current Git HEAD and pre-existing working-tree changes.
-3. If a predecessor or specialized agent explicitly identifies the task packet as stale, incomplete, or ambiguous, invoke `migration-task-designer`.
-4. If the task is not already in `review`, invoke a fresh `migration-implementer`.
-5. When the task reaches `review`, invoke a fresh `migration-reviewer` with:
+2. Record the current Git HEAD and a complete pre-invocation working-tree snapshot, including staged, unstaged, and untracked paths and both staged and unstaged diffs. Preserve this snapshot in the invocation prompt; do not rely on a
+   summary such as "dirty files exist."
+3. If the task is already `blocked`, `in_progress`, or `review`, inspect its packet and prior handoff for unfinished changed-path and attribution evidence. Classify matching current changes as resumed task work when they are within the task
+   allowlist and content-coherent with its outcome. Keep them separate from unrelated pre-existing user changes and pass both lists explicitly to the next worker. If the prior blocker was attribution-only and the recorded changes are
+   coherent, clear that blocker operationally and resume without requiring the human to edit status files first.
+4. If a predecessor or specialized agent explicitly identifies the task packet as stale, incomplete, or ambiguous, invoke `migration-task-designer`.
+5. If the task is not already in `review`, invoke a fresh `migration-implementer`.
+6. When the task reaches `review`, invoke a fresh `migration-reviewer` with:
    - the task ID and migration contracts;
    - the Git baseline;
    - pre-existing working-tree state;
@@ -77,17 +81,31 @@ After two correction cycles, stop if substantive findings remain.
 
 If the blocker is an incomplete or ambiguous task packet, route it to `migration-task-designer`.
 
-Stop and report only when resolution requires human architecture/contract input, unavailable credentials or infrastructure, destructive action, or an authoritative boundary that cannot be satisfied.
+If a worker reports concurrent changes or attribution ambiguity, compare every reported path with the pre-invocation snapshot before stopping:
+
+- A path absent from the snapshot but changed after invocation is task-attributable unless there is positive evidence that an external writer changed it.
+- Staged versus unstaged state, a package manager updating its lockfile, formatter output, generated output, or mutually dependent edits within the task allowlist are not by themselves evidence of concurrent ownership.
+- If the resulting ownership is determinable and the paths are allowed, invoke a fresh implementer or fixer with the clarified attribution and continue.
+- Stop only when file contents provide a concrete conflict with pre-existing work or another writer is positively identified and safe separation is impossible.
+
+Stop and report only when resolution requires human architecture/contract input, unavailable credentials or infrastructure, destructive action, a positively evidenced concurrent conflict, or an authoritative boundary that cannot be
+satisfied.
 
 ## Task attribution
 
 Pre-existing user changes are not FM-task changes and must not be reviewed, modified, reverted, staged, or committed as part of the task.
 
+The pre-invocation snapshot, not later index state, defines what was pre-existing. All worker prompts must identify the invocation start point and explicitly list pre-existing paths. When there are none, say `Pre-existing paths: none`.
+
+For a resumed task, the snapshot must distinguish `resumed task-attributable paths` from `unrelated pre-existing paths`. Command restart does not transfer task-owned work to the user-work category. Prior packet or handoff evidence is
+sufficient when its changed paths match the current diff, remain allowed, and are coherent with the task; a commit is not required for continuity.
+
 A reviewer must judge scope only against changes attributable to the FM task.
 
 Unrelated dirty files may remain in the working tree if they do not overlap with task-attributable changes.
 
-If task work overlaps pre-existing user changes and attribution cannot be made safely, stop and report the conflicting paths.
+If task work overlaps pre-existing user changes and attribution cannot be made safely after comparing content against the snapshot, stop and report the conflicting paths and concrete conflicting hunks. Do not report concurrency based only
+on when a path was first noticed.
 
 ## Coordinator writes
 

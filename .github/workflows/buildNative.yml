@@ -35,6 +35,13 @@ jobs:
                     distribution: 'adopt'
                     cache: 'maven'
 
+            -   name: Set up Node 26
+                uses: actions/setup-node@v4
+                with:
+                    node-version: 26
+                    cache: npm
+                    cache-dependency-path: core/ui-react/package-lock.json
+
 ## Disabled for now because of compromised security: https://github.com/tj-actions/changed-files/issues/2463
 
 #            -   name: "Get changed files in core module"
@@ -134,6 +141,7 @@ jobs:
                       cat native-startup.log
                       exit 1
                     fi
+                    curl --fail --silent http://127.0.0.1:5076/static/react/assets/index.js > /dev/null
 
             -   name: "Check native startup on Windows"
                 if: startsWith(matrix.os,'windows')
@@ -162,6 +170,7 @@ jobs:
                         Get-Content $stdout, $stderr
                         exit 1
                       }
+                      Invoke-WebRequest -Uri 'http://127.0.0.1:5076/static/react/assets/index.js' -UseBasicParsing | Out-Null
                     } finally {
                       $process.Refresh()
                       if (-not $process.HasExited) {

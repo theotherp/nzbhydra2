@@ -78,8 +78,8 @@ Use these **only** when IntelliJ MCP tools are unavailable. Run from the project
 - Force current JVM code in WSL with `python3 misc/run_gui_systemtest.py --runtime wsl`. This shuts down Hydra or mockserver already using the test ports through their actuator shutdown endpoints.
 - Pass Playwright arguments after `--`, for example `python3 misc/run_gui_systemtest.py -- tests/search.spec.ts --grep "should search"`. The complete Playwright command times out after five minutes by default; override it with
   `--test-timeout <seconds>` when needed.
-- Run Windows native Java system tests from WSL with `cmd.exe /c "cd /d C:\Users\strat\IdeaProjects\nzbhydra2 && py misc\run_windows_systemtest.py --skip-build --core-exe core.exe"`.
-- Add `--gui-tests` to also run Playwright against the managed Windows native processes, or add both `--gui-tests --skip-system-tests` for GUI tests only. Put optional Playwright arguments last using `--playwright-args`; override its
+- Run native Java system tests from WSL with `python3 misc/run_systemtest.py`. It rebuilds the Linux native executable when core or shared code changes; `native-image` must be on `PATH`.
+- Add `--gui-tests` to also run Playwright against the managed native processes, or add both `--gui-tests --skip-system-tests` for GUI tests only. Put optional Playwright arguments last using `--playwright-args`; override its
   five-minute default with `--gui-test-timeout <seconds>`.
 
 ## 4. Documentation Lookup (Context7 MCP)

@@ -1,6 +1,7 @@
 ---
 # Provides an instance of NZBHydra for UI development.
-# The UI source is located on the host in /app/data/ui-src
+# The legacy and React UI sources are mounted from the host. React dependencies use
+# a named volume so the source mount does not hide container-managed node_modules.
 # When you run this file two folders will be created:
 # - "data" contains the regular NZBHydra config data.
 # - "ui-src" contains the UI sources. Any changes in this folder will be automatically be built into "static"
@@ -8,14 +9,22 @@
 version: "2.1"
 services:
   nzbhydra-ui-dev:
-    image: ghcr.io/theotherp/nzbhydra-ui-dev:latest
+    image: nzbhydra-ui-dev:local
+    build:
+      context: ../..
+      dockerfile: docker/uiDev/Dockerfile
     container_name: nzbhydra-ui-dev
     volumes:
       - ./data:/app/data
       - ../../core/ui-src:/app/ui-src
+      - ../../core/ui-react:/app/ui-react
+      - react_node_modules:/app/ui-react/node_modules
     ports:
       # NZBHydra port
       - "5076:5076"
       # Livereload port, I use https://chromewebstore.google.com/detail/livereload++/ciehpookapcdlakedibajeccomagbfab?pli=1
       - "1234:1234"
     restart: unless-stopped
+
+volumes:
+  react_node_modules:

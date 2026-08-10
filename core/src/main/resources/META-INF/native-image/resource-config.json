@@ -20,7 +20,7 @@
           "pattern": ".*migration.*$"
       },
       {
-          "pattern": "\\Qstatic/*\\E"
+          "pattern": "static/.*"
       },
       {
           "pattern": "\\Qbanner.txt\\E"

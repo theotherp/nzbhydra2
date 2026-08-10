@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-"""Build when needed and run the native Windows system tests locally."""
+"""Build when needed and run the native system tests locally."""
 
 import argparse
 import hashlib
 import json
 import os
-import platform
 import shutil
 import socket
 import subprocess
@@ -20,28 +19,31 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, BinaryIO, TextIO
 
-
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 MISC_DIR = PROJECT_ROOT / "misc"
-HISTORY_DIR = MISC_DIR / ".windows-systemtest-history"
+HISTORY_DIR = MISC_DIR / ".systemtest-history"
 HISTORY_RUNS_DIR = HISTORY_DIR / "runs"
 BUILD_STATE_FILE = HISTORY_DIR / "build-state.json"
-RUNS_DIR = MISC_DIR / ".windows-systemtest-runs"
-NATIVE_CORE_EXE = PROJECT_ROOT / "core" / "target" / "core.exe"
+RUNS_DIR = MISC_DIR / ".systemtest-runs"
+NATIVE_CORE_EXECUTABLE = PROJECT_ROOT / "core" / "target" / (
+    "core.exe" if os.name == "nt" else "core"
+)
 DEFAULT_MOCKSERVER_JAR = (
-    PROJECT_ROOT / "other" / "mockserver" / "target" / "mockserver-3.1.0-exec.jar"
+        PROJECT_ROOT / "other" / "mockserver" / "target" / "mockserver-3.1.0-exec.jar"
 )
 JACOCO_VERSION = "0.8.13"
 CORE_PORT = 5076
 MOCKSERVER_PORT = 5080
 TRACKED_PATHS = ("core", "shared")
 COMMON_ENVIRONMENT = {
-    "spring_profiles_active": "build,systemtest,core,testwindows",
+    "spring_profiles_active": (
+        "build,systemtest,core,testwindows" if os.name == "nt" else "build,systemtest,core"
+    ),
     "nzbhydra_port": str(CORE_PORT),
     "nzbhydra.port": str(CORE_PORT),
-    "nzbhydra_name": "windows",
-    "NZBHYDRANAME": "windows",
-    "nzbhydra.name": "windows",
+    "nzbhydra_name": "windows" if os.name == "nt" else "linux",
+    "NZBHYDRANAME": "windows" if os.name == "nt" else "linux",
+    "nzbhydra.name": "windows" if os.name == "nt" else "linux",
 }
 CORE_ENVIRONMENT = {
     "NZBHYDRA_CHANGELOGURL": f"http://127.0.0.1:{MOCKSERVER_PORT}/changelog",
@@ -81,15 +83,15 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
             "Rebuild changed core/shared code when needed, then run the native "
-            "Windows NZBHydra system test."
+            "NZBHydra system test."
         )
     )
     parser.add_argument(
-        "--core-exe",
+        "--core-executable",
         type=Path,
         help=(
             "native executable to stage when no rebuild is needed; automatic rebuilds "
-            f"use {NATIVE_CORE_EXE}"
+            f"use {NATIVE_CORE_EXECUTABLE}"
         ),
     )
     parser.add_argument(
@@ -203,7 +205,7 @@ def snapshot_fingerprint(snapshot: dict[str, str | None]) -> str:
 
 
 def compare_snapshots(
-    previous: dict[str, str | None], current: dict[str, str | None]
+        previous: dict[str, str | None], current: dict[str, str | None]
 ) -> list[dict[str, str]]:
     changes = []
     for path in sorted(previous.keys() | current.keys()):
@@ -243,32 +245,38 @@ def write_json(path: Path, value: dict[str, Any]) -> None:
 
 
 def acquire_run_lock() -> BinaryIO:
-    import msvcrt
-
     HISTORY_DIR.mkdir(parents=True, exist_ok=True)
     lock_file = (HISTORY_DIR / "runner.lock").open("a+b")
-    if lock_file.tell() == 0:
-        lock_file.write(b"\0")
-        lock_file.flush()
-    lock_file.seek(0)
     try:
-        getattr(msvcrt, "locking")(
-            lock_file.fileno(), getattr(msvcrt, "LK_NBLCK"), 1
-        )
+        if os.name == "nt":
+            import msvcrt
+
+            if lock_file.tell() == 0:
+                lock_file.write(b"\0")
+                lock_file.flush()
+            lock_file.seek(0)
+            msvcrt.locking(lock_file.fileno(), msvcrt.LK_NBLCK, 1)
+        else:
+            import fcntl
+
+            fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
     except OSError as error:
         lock_file.close()
-        raise RuntimeError("Another Windows system-test runner is already active") from error
+        raise RuntimeError("Another native system-test runner is already active") from error
     return lock_file
 
 
 def release_run_lock(lock_file: BinaryIO) -> None:
-    import msvcrt
-
     try:
-        lock_file.seek(0)
-        getattr(msvcrt, "locking")(
-            lock_file.fileno(), getattr(msvcrt, "LK_UNLCK"), 1
-        )
+        if os.name == "nt":
+            import msvcrt
+
+            lock_file.seek(0)
+            msvcrt.locking(lock_file.fileno(), msvcrt.LK_UNLCK, 1)
+        else:
+            import fcntl
+
+            fcntl.flock(lock_file.fileno(), fcntl.LOCK_UN)
     finally:
         lock_file.close()
 
@@ -276,7 +284,7 @@ def release_run_lock(lock_file: BinaryIO) -> None:
 def terminate_process_tree(process: subprocess.Popen) -> None:
     if process.poll() is not None:
         return
-    if platform.system() == "Windows":
+    if os.name == "nt":
         subprocess.run(
             ["taskkill", "/PID", str(process.pid), "/T", "/F"],
             capture_output=True,
@@ -291,10 +299,10 @@ def terminate_process_tree(process: subprocess.Popen) -> None:
 
 
 def run_command(
-    command: list[str],
-    log_path: Path,
-    environment: dict[str, str],
-    cwd: Path = PROJECT_ROOT,
+        command: list[str],
+        log_path: Path,
+        environment: dict[str, str],
+        cwd: Path = PROJECT_ROOT,
 ) -> int:
     print(f"Running: {subprocess.list2cmdline(command)}")
     with log_path.open("w", encoding="utf-8") as log_file:
@@ -321,11 +329,11 @@ def run_command(
 
 
 def run_builds(
-    maven: str,
-    command_shell: str,
-    environment: dict[str, str],
-    run_dir: Path,
-    run_record: dict[str, Any],
+        maven: str,
+        shell: str,
+        environment: dict[str, str],
+        run_dir: Path,
+        run_record: dict[str, Any],
 ) -> None:
     regular_command = [
         maven,
@@ -351,7 +359,11 @@ def run_builds(
     if regular_exit_code != 0:
         raise RuntimeError(f"Regular Maven build failed with exit code {regular_exit_code}")
 
-    native_command = [command_shell, "/c", "buildCore.cmd"]
+    native_command = (
+        [shell, "/c", "buildCore.cmd"]
+        if os.name == "nt"
+        else [shell, "buildCore.sh"]
+    )
     native_started = time.monotonic()
     native_exit_code = run_command(
         native_command, run_dir / "native-build.log", environment
@@ -364,8 +376,8 @@ def run_builds(
     write_json(Path(run_record["historyFile"]), run_record)
     if native_exit_code != 0:
         raise RuntimeError(f"Native core build failed with exit code {native_exit_code}")
-    if not NATIVE_CORE_EXE.is_file():
-        raise RuntimeError(f"Native build did not create {NATIVE_CORE_EXE}")
+    if not NATIVE_CORE_EXECUTABLE.is_file():
+        raise RuntimeError(f"Native build did not create {NATIVE_CORE_EXECUTABLE}")
 
 
 def ensure_ports_available(ports: list[int]) -> None:
@@ -387,11 +399,11 @@ def ensure_ports_available(ports: list[int]) -> None:
 
 
 def start_service(
-    name: str,
-    command: list[str],
-    cwd: Path,
-    environment: dict[str, str],
-    log_path: Path,
+        name: str,
+        command: list[str],
+        cwd: Path,
+        environment: dict[str, str],
+        log_path: Path,
 ) -> Service:
     log_file = log_path.open("w", encoding="utf-8")
     try:
@@ -467,10 +479,10 @@ def supervise_restartable_core(service: Service, data_dir: Path) -> None:
 
 
 def start_native_core(
-    core_exe: Path,
-    data_dir: Path,
-    environment: dict[str, str],
-    log_path: Path,
+        core_exe: Path,
+        data_dir: Path,
+        environment: dict[str, str],
+        log_path: Path,
 ) -> Service:
     base_command = [
         str(core_exe),
@@ -517,7 +529,7 @@ def get_core_jar() -> Path:
 
 
 def prepare_jacoco_agent(
-    maven: str, environment: dict[str, str], coverage_dir: Path
+        maven: str, environment: dict[str, str], coverage_dir: Path
 ) -> Path:
     coverage_dir.mkdir(exist_ok=True)
     agent_dir = coverage_dir / "agent"
@@ -539,7 +551,7 @@ def prepare_jacoco_agent(
 
 
 def generate_coverage_report(
-    maven: str, environment: dict[str, str], coverage_dir: Path
+        maven: str, environment: dict[str, str], coverage_dir: Path
 ) -> tuple[int, Path]:
     execution_data = coverage_dir / "jacoco.exec"
     report_dir = coverage_dir / "report"
@@ -570,7 +582,7 @@ def generate_coverage_report(
 def request_core_shutdown(service: Service) -> None:
     try:
         with urllib.request.urlopen(
-            f"http://127.0.0.1:{CORE_PORT}/internalapi/control/shutdown", timeout=5
+                f"http://127.0.0.1:{CORE_PORT}/internalapi/control/shutdown", timeout=5
         ):
             pass
     except OSError:
@@ -593,7 +605,7 @@ def print_log_tail(service: Service, line_count: int = 100) -> None:
 
 
 def wait_for_health(
-    name: str, url: str, services: list[Service], timeout: float
+        name: str, url: str, services: list[Service], timeout: float
 ) -> None:
     deadline = time.monotonic() + timeout
     last_error = "not requested yet"
@@ -689,37 +701,36 @@ def copy_test_reports(test_started_at: float, run_dir: Path) -> list[str]:
     return copied_reports
 
 
-def run_gui_tests_in_wsl(
+def run_gui_tests(
         environment: dict[str, str],
         run_dir: Path,
         playwright_args: list[str],
         test_timeout: float,
 ) -> tuple[int, list[str]]:
-    wsl = find_command("wsl.exe", "wsl")
-    path_result = subprocess.run(
-        [wsl, "wslpath", "-a", str(PROJECT_ROOT)],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    if path_result.returncode != 0 or not path_result.stdout.strip():
-        raise RuntimeError(
-            "Unable to resolve the project path in WSL: "
-            + (path_result.stderr.strip() or f"exit code {path_result.returncode}")
-        )
-    project_root_wsl = path_result.stdout.strip()
     normalized_args = playwright_args[1:] if playwright_args[:1] == ["--"] else playwright_args
-    command = [
-        wsl,
-        "--cd",
-        project_root_wsl,
-        "python3",
-        "misc/run_gui_systemtest.py",
-        "--runtime",
-        "existing",
-        "--test-timeout",
-        str(test_timeout),
-    ]
+    if os.name == "nt":
+        wsl = find_command("wsl.exe", "wsl")
+        path_result = subprocess.run(
+            [wsl, "wslpath", "-a", str(PROJECT_ROOT)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if path_result.returncode != 0 or not path_result.stdout.strip():
+            raise RuntimeError(
+                "Unable to resolve the project path in WSL: "
+                + (path_result.stderr.strip() or f"exit code {path_result.returncode}")
+            )
+        command = [
+            wsl,
+            "--cd",
+            path_result.stdout.strip(),
+            "python3",
+            "misc/run_gui_systemtest.py",
+        ]
+    else:
+        command = [find_command("python3"), "misc/run_gui_systemtest.py"]
+    command.extend(["--runtime", "existing", "--test-timeout", str(test_timeout)])
     if normalized_args:
         command.extend(["--", *normalized_args])
     exit_code = run_command(command, run_dir / "gui-system-test.log", environment)
@@ -727,9 +738,9 @@ def run_gui_tests_in_wsl(
 
 
 def run_locked(args: argparse.Namespace) -> int:
-    maven = find_command("mvn.cmd", "mvn")
-    java = find_command("java.exe", "java")
-    command_shell = find_command("cmd.exe", "cmd")
+    maven = find_command("mvn.cmd", "mvn") if os.name == "nt" else find_command("mvn")
+    java = find_command("java.exe", "java") if os.name == "nt" else find_command("java")
+    shell = find_command("cmd.exe", "cmd") if os.name == "nt" else find_command("bash")
     current_snapshot = create_tracked_snapshot()
     current_fingerprint = snapshot_fingerprint(current_snapshot)
     build_state = load_json(BUILD_STATE_FILE)
@@ -738,13 +749,13 @@ def run_locked(args: argparse.Namespace) -> int:
     changes = compare_snapshots(previous_snapshot, current_snapshot) if previous_build else []
 
     missing_artifacts = []
-    if not NATIVE_CORE_EXE.is_file() and args.core_exe is None:
-        missing_artifacts.append(str(NATIVE_CORE_EXE))
+    if not NATIVE_CORE_EXECUTABLE.is_file() and args.core_executable is None:
+        missing_artifacts.append(str(NATIVE_CORE_EXECUTABLE))
     mockserver_jar = args.mockserver_jar.resolve()
     if not mockserver_jar.is_file():
         missing_artifacts.append(str(mockserver_jar))
-    if args.skip_build and args.core_exe is None:
-        raise RuntimeError("--skip-build requires --core-exe")
+    if args.skip_build and args.core_executable is None:
+        raise RuntimeError("--skip-build requires --core-executable")
     rebuild_required = False if args.skip_build else bool(
         args.force_rebuild or not previous_build or changes or missing_artifacts
     )
@@ -811,7 +822,7 @@ def run_locked(args: argparse.Namespace) -> int:
             print("Rebuild required: " + "; ".join(rebuild_reasons))
             run_record["status"] = "building"
             write_json(history_file, run_record)
-            run_builds(maven, command_shell, common_environment, run_dir, run_record)
+            run_builds(maven, shell, common_environment, run_dir, run_record)
             build_state = {
                 "schemaVersion": 1,
                 "lastSuccessfulBuild": {
@@ -819,16 +830,16 @@ def run_locked(args: argparse.Namespace) -> int:
                     "gitHead": run_record["git"]["head"],
                     "fingerprint": current_fingerprint,
                     "files": current_snapshot,
-                    "coreExecutable": str(NATIVE_CORE_EXE),
+                    "coreExecutable": str(NATIVE_CORE_EXECUTABLE),
                     "mockserverJar": str(mockserver_jar),
                     "runId": run_id,
                 },
             }
             write_json(BUILD_STATE_FILE, build_state)
-            source_core_exe = NATIVE_CORE_EXE
+            source_core_exe = NATIVE_CORE_EXECUTABLE
         else:
-            if args.core_exe is not None:
-                source_core_exe = args.core_exe.resolve()
+            if args.core_executable is not None:
+                source_core_exe = args.core_executable.resolve()
             else:
                 assert previous_build is not None
                 source_core_exe = Path(previous_build["coreExecutable"])
@@ -884,19 +895,19 @@ def run_locked(args: argparse.Namespace) -> int:
         )
         if args.jvm_coverage:
             core_service = start_service(
-                    "Java core with JaCoCo",
-                    core_command,
-                    PROJECT_ROOT,
-                    core_environment,
-                    run_dir / "core.log",
-                )
+                "Java core with JaCoCo",
+                core_command,
+                PROJECT_ROOT,
+                core_environment,
+                run_dir / "core.log",
+            )
         else:
             core_service = start_native_core(
-                    source_core_exe,
-                    data_dir,
-                    core_environment,
-                    run_dir / "core.log",
-                )
+                source_core_exe,
+                data_dir,
+                core_environment,
+                run_dir / "core.log",
+            )
         if args.jvm_coverage:
             core_service.command = core_command
             core_service.cwd = PROJECT_ROOT
@@ -949,7 +960,7 @@ def run_locked(args: argparse.Namespace) -> int:
             run_record["status"] = "gui-testing"
             write_json(history_file, run_record)
             gui_started = time.monotonic()
-            exit_code, gui_command = run_gui_tests_in_wsl(
+            exit_code, gui_command = run_gui_tests(
                 common_environment,
                 run_dir,
                 args.playwright_args,
@@ -1037,8 +1048,6 @@ def run_locked(args: argparse.Namespace) -> int:
 
 def run() -> int:
     args = parse_args()
-    if platform.system() != "Windows":
-        raise RuntimeError("This runner must be executed from Windows, not WSL or another OS")
     if args.startup_timeout <= 0:
         raise RuntimeError("--startup-timeout must be greater than zero")
     if args.skip_system_tests and not args.gui_tests:

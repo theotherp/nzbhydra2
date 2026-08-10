@@ -28,9 +28,13 @@ The orchestrator may provide:
 
 - the task baseline Git revision;
 - the pre-existing working-tree state;
+- resumed task-attributable paths from an earlier invocation;
 - paths identified as unrelated user changes.
 
 Treat these as authoritative for task attribution.
+
+The supplied attribution classification is the ownership boundary. Resumed task-attributable paths remain part of the review diff even though they existed at invocation start. Do not use current staged versus unstaged state to infer
+authorship. Changes absent from the snapshot are task-attributable unless the caller supplies positive evidence of an external writer.
 
 Do not modify, revert, stage, discard, or otherwise incorporate unrelated pre-existing user changes.
 
@@ -38,7 +42,8 @@ Do not consider an unrelated pre-existing change a task scope violation.
 
 Only changes introduced for the current FM task are subject to the task's Files Allowed To Modify rules.
 
-If task-attributable work overlaps with a pre-existing user modification and the changes cannot be safely separated, report the conflict rather than overwriting or reverting the user's work.
+If task-attributable work overlaps with a path explicitly present in the pre-invocation snapshot and the changes cannot be safely separated, report the conflict. An attribution blocker must identify concrete conflicting hunks or positive
+evidence of an external writer; timing or index state alone is insufficient.
 
 Do not create Git commits. Task commits are owned by the orchestrator after independent review passes.
 
@@ -48,4 +53,5 @@ Use the baseline and pre-existing working-tree state supplied by the orchestrato
 
 Scope findings must be based only on changes attributable to the reviewed task.
 
-If attribution cannot be determined reliably, report the ambiguity as BLOCKED or NOT VERIFIED as appropriate; do not assume that every current working-tree change belongs to the task.
+If attribution cannot be determined reliably after content comparison with the supplied snapshot, report the ambiguity as BLOCKED or NOT VERIFIED as appropriate. State the exact evidence preventing attribution; do not block merely because a
+task-allowed path changed after implementation began.

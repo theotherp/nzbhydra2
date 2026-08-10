@@ -36,3 +36,6 @@ jobs:
 
       - name: Build production assets
         run: npm run build
+
+      - name: Validate production assets
+        run: npm run validate:production-assets

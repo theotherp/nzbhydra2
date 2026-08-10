@@ -5,7 +5,10 @@ model: openai/gpt-5.6-terra
 variant: medium
 permission:
   edit: allow
-  bash: allow
+  bash:
+    "*": allow
+    "git add*": deny
+    "git commit*": deny
   intellij*: allow
   skill:
     "*": deny
@@ -31,9 +34,14 @@ The orchestrator may provide:
 
 - the task baseline Git revision;
 - the pre-existing working-tree state;
+- resumed task-attributable paths from an earlier invocation;
 - paths identified as unrelated user changes.
 
 Treat these as authoritative for task attribution.
+
+The supplied attribution classification is the ownership boundary. Preserve resumed task-attributable changes from earlier invocations as task work; do not treat them as user changes because they existed when this invocation started.
+Changes absent from the snapshot and created during your invocation are also attributable to this task, including package-lock updates, formatter output, generated files, and edits made by commands you run. Do not infer another owner merely
+because a path first appears in a later `git status`, or because some task files are staged while others are unstaged.
 
 Do not modify, revert, stage, discard, or otherwise incorporate unrelated pre-existing user changes.
 
@@ -41,6 +49,7 @@ Do not consider an unrelated pre-existing change a task scope violation.
 
 Only changes introduced for the current FM task are subject to the task's Files Allowed To Modify rules.
 
-If task-attributable work overlaps with a pre-existing user modification and the changes cannot be safely separated, report the conflict rather than overwriting or reverting the user's work.
+If task-attributable work overlaps with a path explicitly present in the pre-invocation snapshot and the changes cannot be safely separated, report the conflict rather than overwriting or reverting the user's work. A concurrent-change
+blocker requires positive evidence of an external write, such as content changing unexpectedly after you last read or wrote it. Report the concrete conflicting hunks and evidence; timing inference is insufficient.
 
-Do not create Git commits. Task commits are owned by the orchestrator after independent review passes.
+Do not stage files or create Git commits. Task staging and commits are owned by the orchestrator after independent review passes.

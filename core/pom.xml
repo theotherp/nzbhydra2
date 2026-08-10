@@ -95,6 +95,24 @@
                             </environmentVariables>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>validate-react-assets</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>npm</executable>
+                            <workingDirectory>${project.basedir}/ui-react</workingDirectory>
+                            <arguments>
+                                <argument>run</argument>
+                                <argument>validate:production-assets</argument>
+                            </arguments>
+                            <environmentVariables>
+                                <VITE_OUT_DIR>../target/classes/static/react</VITE_OUT_DIR>
+                            </environmentVariables>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>

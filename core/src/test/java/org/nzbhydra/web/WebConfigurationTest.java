@@ -62,6 +62,31 @@ class WebConfigurationTest {
         assertThat(response.getContentAsByteArray()).isNotEmpty();
     }
 
+    @Test
+    void shouldServeExternalReactAssetsBeforePackagedAssets() throws Exception {
+        Path externalAsset = tempDir.resolve("static/react/assets/index.js");
+        Files.createDirectories(externalAsset.getParent());
+        Files.writeString(externalAsset, "external React asset");
+
+        WebConfiguration configuration = new WebConfiguration();
+        StaticApplicationContext applicationContext = new StaticApplicationContext();
+        applicationContext.refresh();
+        TestResourceHandlerRegistry registry = new TestResourceHandlerRegistry(applicationContext, new MockServletContext());
+        configuration.addResourceHandlers(registry);
+
+        AbstractUrlHandlerMapping mapping = registry.handlerMapping();
+        mapping.setApplicationContext(applicationContext);
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/static/react/assets/index.js");
+        request.setServletPath("/static/react/assets/index.js");
+        request.setAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE, "/react/assets/index.js");
+        ServletRequestPathUtils.parseAndCache(request);
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        HandlerExecutionChain handler = mapping.getHandler(request);
+        ((HttpRequestHandler) handler.getHandler()).handleRequest(request, response);
+
+        assertThat(response.getContentAsString()).isEqualTo("external React asset");
+    }
+
     private static class TestResourceHandlerRegistry extends ResourceHandlerRegistry {
 
         private TestResourceHandlerRegistry(StaticApplicationContext applicationContext, MockServletContext servletContext) {
