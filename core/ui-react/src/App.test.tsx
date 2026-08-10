@@ -22,12 +22,14 @@ const bootstrap = {
 };
 
 describe("App", () => {
-    it("should render the migration scaffold", () => {
+    it("should render the migration scaffold", async () => {
         window.history.pushState({}, "", "/hydra/stats/stats?period=day");
         render(<App bootstrap={bootstrap} />);
 
         expect(
-            screen.getByRole("heading", {name: "React migration placeholder"}),
+            await screen.findByRole("heading", {
+                name: "React migration placeholder",
+            }),
         ).toBeInTheDocument();
         expect(
             screen.getByRole("link", {name: "Switch to legacy UI"}),

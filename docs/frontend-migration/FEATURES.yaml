@@ -467,16 +467,16 @@ features:
     task: FM-001
 
   - id: F-SYSTEM-NEWS
-    name: News list and version news acknowledgements
+    name: Read-only news list
     route_states: [ root.system.news ]
     routes: [ /system/news ]
     roles: [ admin ]
     legacy_sources: [ core/ui-src/js/directives/hydra-news.js, core/ui-src/js/directives/hydra-checks-footer.js ]
-    tests: [ ]
+    tests: [ core/ui-react/src/features/system/news/NewsPage.test.tsx, tests/system/tests/news.spec.ts ]
     selectors: [ ]
     target: core/ui-react/src/features/system/news
-    parity: inventoried
-    task: FM-001
+    parity: partial
+    task: FM-008
 
   - id: F-SYSTEM-ABOUT
     name: Version, update, and runtime information

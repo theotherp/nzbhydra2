@@ -118,13 +118,13 @@ components:
     task: null
 
   - id: C-SAFE-RICH-CONTENT
-    responsibility: Boundary-specific sanitization and rendering of trusted server-authored HTML without an unrestricted HTML-trust helper
-    legacy: [ core/ui-src/js/filters.js, core/ui-src/html/modal.html, core/ui-src/html/config/indexer-config-box.html, core/ui-src/html/changelog-modal.html ]
+    responsibility: Boundary-specific sanitization and rendering of trusted server-authored news HTML without an unrestricted HTML-trust helper
+    legacy: [ core/ui-src/js/filters.js, core/ui-src/html/modal.html, core/ui-src/html/config/indexer-config-box.html, core/ui-src/html/changelog-modal.html, core/ui-src/html/directives/news.html ]
     target: core/ui-react/src/components/content
-    consumers: [ F-CONFIG-SHELL, F-SEARCH-RESULTS, F-SYSTEM-UPDATES ]
+    consumers: [ F-SYSTEM-NEWS ]
     classification: shared_hydra
-    state: planned
-    task: null
+    state: partial
+    task: FM-008
 
   - id: C-EXTERNAL-LINKS
     responsibility: Safe-configuration-aware external-link dereferer transformation for URLs and embedded help text
