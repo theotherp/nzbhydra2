@@ -1,1 +1,5 @@
 __pycache__/
+.systemtest-history
+.systemtest-runs
+.gui-systemtest-runs
+build-logs

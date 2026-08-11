@@ -11,6 +11,6 @@ set HYDRA_NATIVE_BUILD=true
 set PROFILES=native
 if "%1"=="checkReflection" set PROFILES=native,strictReflection
 echo "Using profiles: %PROFILES%"
-call mvn -pl org.nzbhydra:core -P%PROFILES% clean native:compile -DskipTests -Dnative-maven-plugin.xmx=30
+call mvn -pl org.nzbhydra:core -P%PROFILES% clean native:compile -DskipTests -Dnative-maven-plugin.xmx=16
 
 endlocal

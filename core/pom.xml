@@ -15,7 +15,7 @@
         <maven.build.timestamp2>${maven.build.timestamp}</maven.build.timestamp2>
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
         <version.roaster>2.28.0.Final</version.roaster>
-        <native-maven-plugin.xmx>13</native-maven-plugin.xmx>
+        <native-maven-plugin.xmx>8</native-maven-plugin.xmx>
     </properties>
 
 

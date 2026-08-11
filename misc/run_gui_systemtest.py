@@ -2,7 +2,6 @@
 """Run Playwright system tests against IntelliJ or locally managed JVM services."""
 
 import argparse
-import fcntl
 import json
 import os
 import shutil
@@ -17,6 +16,9 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import BinaryIO, TextIO
+
+if os.name != "nt":
+    import fcntl
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 SYSTEM_TEST_DIR = PROJECT_ROOT / "tests" / "system"
@@ -228,7 +230,16 @@ def acquire_run_lock() -> BinaryIO:
     RUNS_DIR.mkdir(parents=True, exist_ok=True)
     lock_file = (RUNS_DIR / "runner.lock").open("a+b")
     try:
-        fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        if os.name == "nt":
+            import msvcrt
+
+            if lock_file.tell() == 0:
+                lock_file.write(b"\0")
+                lock_file.flush()
+            lock_file.seek(0)
+            msvcrt.locking(lock_file.fileno(), msvcrt.LK_NBLCK, 1)
+        else:
+            fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
     except OSError as error:
         lock_file.close()
         raise RuntimeError("Another GUI system-test runner is already active") from error
@@ -237,7 +248,13 @@ def acquire_run_lock() -> BinaryIO:
 
 def release_run_lock(lock_file: BinaryIO) -> None:
     try:
-        fcntl.flock(lock_file.fileno(), fcntl.LOCK_UN)
+        if os.name == "nt":
+            import msvcrt
+
+            lock_file.seek(0)
+            msvcrt.locking(lock_file.fileno(), msvcrt.LK_UNLCK, 1)
+        else:
+            fcntl.flock(lock_file.fileno(), fcntl.LOCK_UN)
     finally:
         lock_file.close()
 

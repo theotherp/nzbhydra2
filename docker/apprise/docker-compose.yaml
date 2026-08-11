@@ -1,5 +1,4 @@
 ---
-version: "2.1"
 services:
     apprise-api:
         image: lscr.io/linuxserver/apprise-api:latest

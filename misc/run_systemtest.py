@@ -19,6 +19,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, BinaryIO, TextIO
 
+import run_gui_systemtest
+
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 MISC_DIR = PROJECT_ROOT / "misc"
 HISTORY_DIR = MISC_DIR / ".systemtest-history"
@@ -161,6 +163,17 @@ def find_command(*names: str) -> str:
     raise RuntimeError(f"Unable to find {' or '.join(names)} on PATH")
 
 
+def get_graalvm_environment() -> dict[str, str]:
+    graalvm_home = os.environ.get("GRAALVM_HOME")
+    if not graalvm_home:
+        raise RuntimeError("GRAALVM_HOME environment variable is not set")
+
+    environment = os.environ.copy()
+    environment["JAVA_HOME"] = graalvm_home
+    environment["PATH"] = str(Path(graalvm_home) / "bin") + os.pathsep + environment.get("PATH", "")
+    return environment
+
+
 def run_git(arguments: list[str], *, text: bool = True) -> subprocess.CompletedProcess:
     return subprocess.run(
         ["git", *arguments],
@@ -242,6 +255,17 @@ def write_json(path: Path, value: dict[str, Any]) -> None:
     temporary_path = path.with_suffix(path.suffix + ".tmp")
     temporary_path.write_text(json.dumps(value, indent=2) + "\n", encoding="utf-8")
     temporary_path.replace(path)
+
+
+def write_hosts_file(run_dir: Path) -> Path:
+    hosts_file = run_dir / "hosts"
+    hosts_file.write_text(
+        "127.0.0.1 localhost mockserver core radarr sonarr\n"
+        "94.16.110.194 api.tvmaze.com\n"
+        "::1 localhost\n",
+        encoding="utf-8",
+    )
+    return hosts_file
 
 
 def acquire_run_lock() -> BinaryIO:
@@ -385,9 +409,13 @@ def ensure_ports_available(ports: list[int]) -> None:
     for port in ports:
         probe = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
-            exclusive_address_use = getattr(socket, "SO_EXCLUSIVEADDRUSE", None)
-            if exclusive_address_use is not None:
-                probe.setsockopt(socket.SOL_SOCKET, exclusive_address_use, 1)
+            if os.name == "nt":
+                exclusive_address_use = getattr(socket, "SO_EXCLUSIVEADDRUSE", None)
+                if exclusive_address_use is not None:
+                    probe.setsockopt(socket.SOL_SOCKET, exclusive_address_use, 1)
+            else:
+                # Do not mistake a just-closed test server's TIME_WAIT sockets for a listener.
+                probe.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             probe.bind(("127.0.0.1", port))
         except OSError as error:
             unavailable.append(f"127.0.0.1:{port} ({error})")
@@ -481,16 +509,18 @@ def supervise_restartable_core(service: Service, data_dir: Path) -> None:
 def start_native_core(
         core_exe: Path,
         data_dir: Path,
+        hosts_file: Path,
         environment: dict[str, str],
         log_path: Path,
 ) -> Service:
     base_command = [
         str(core_exe),
+        f"-Djdk.net.hosts.file={hosts_file}",
         "-DinternalApiKey=internalApiKey",
         "directstart",
         "--nobrowser",
         "--host",
-        "127.0.0.1",
+        "0.0.0.0",
         "--datafolder",
         str(data_dir),
     ]
@@ -737,7 +767,7 @@ def run_gui_tests(
     return exit_code, command
 
 
-def run_locked(args: argparse.Namespace) -> int:
+def run_locked(args: argparse.Namespace, graalvm_environment: dict[str, str]) -> int:
     maven = find_command("mvn.cmd", "mvn") if os.name == "nt" else find_command("mvn")
     java = find_command("java.exe", "java") if os.name == "nt" else find_command("java")
     shell = find_command("cmd.exe", "cmd") if os.name == "nt" else find_command("bash")
@@ -774,8 +804,11 @@ def run_locked(args: argparse.Namespace) -> int:
     run_id = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
     run_dir = RUNS_DIR / run_id
     data_dir = run_dir / "data"
+    blackhole_dir = run_dir / "blackhole"
     run_dir.mkdir(parents=True)
     data_dir.mkdir()
+    blackhole_dir.mkdir()
+    hosts_file = write_hosts_file(run_dir)
     history_file = HISTORY_RUNS_DIR / f"{run_id}.json"
     started_at = time.monotonic()
     run_record: dict[str, Any] = {
@@ -786,6 +819,8 @@ def run_locked(args: argparse.Namespace) -> int:
         "historyFile": str(history_file),
         "runDirectory": str(run_dir),
         "dataDirectory": str(data_dir),
+        "blackholeDirectory": str(blackhole_dir),
+        "hostsFile": str(hosts_file),
         "requestedTest": args.test,
         "jvmCoverage": args.jvm_coverage,
         "git": {
@@ -808,10 +843,18 @@ def run_locked(args: argparse.Namespace) -> int:
     test_started_at = None
     coverage_dir = run_dir / "coverage"
     coverage_agent = None
-    common_environment = os.environ.copy()
+    common_environment = graalvm_environment
     common_environment.update(COMMON_ENVIRONMENT)
     core_environment = common_environment.copy()
     core_environment.update(CORE_ENVIRONMENT)
+    supporting_services: list[str] = []
+    local_test_properties = {
+        "blackholeFolder.nzbhydra": str(blackhole_dir),
+        "blackholeFolder.testaccess": str(blackhole_dir),
+        "sonarr.host": "http://127.0.0.1:18989",
+        "radarr.host": "http://127.0.0.1:7878",
+        "nzbhydra.host.external": "http://host.docker.internal:5076",
+    } if os.name != "nt" else {}
 
     try:
         if changes:
@@ -857,13 +900,14 @@ def run_locked(args: argparse.Namespace) -> int:
             core_command = [
                 java,
                 f"-javaagent:{coverage_agent}=destfile={execution_data},append=true,includes=org.nzbhydra.*",
+                f"-Djdk.net.hosts.file={hosts_file}",
                 "-DinternalApiKey=internalApiKey",
                 "-jar",
                 str(core_jar),
                 "directstart",
                 "--nobrowser",
                 "--host",
-                "127.0.0.1",
+                "0.0.0.0",
                 "--datafolder",
                 str(data_dir),
             ]
@@ -876,7 +920,7 @@ def run_locked(args: argparse.Namespace) -> int:
                 "directstart",
                 "--nobrowser",
                 "--host",
-                "127.0.0.1",
+                "0.0.0.0",
                 "--datafolder",
                 str(data_dir),
             ]
@@ -905,6 +949,7 @@ def run_locked(args: argparse.Namespace) -> int:
             core_service = start_native_core(
                 source_core_exe,
                 data_dir,
+                hosts_file,
                 core_environment,
                 run_dir / "core.log",
             )
@@ -926,6 +971,11 @@ def run_locked(args: argparse.Namespace) -> int:
             services,
             args.startup_timeout,
         )
+        if os.name != "nt":
+            supporting_services = run_gui_systemtest.start_supporting_services(
+                args.startup_timeout
+            )
+            run_record["supportingServices"] = supporting_services
 
         if not args.skip_system_tests:
             test_command = [
@@ -937,14 +987,23 @@ def run_locked(args: argparse.Namespace) -> int:
                 "-DtrimStackTrace=false",
                 f"-DdataFolder.testaccess={data_dir}",
             ]
+            test_command.extend(
+                f"-D{name}={value}" for name, value in local_test_properties.items()
+            )
             if args.test:
                 test_command.append(f"-Dtest={args.test}")
+            test_environment = common_environment.copy()
+            test_environment["JAVA_TOOL_OPTIONS"] = " ".join(filter(None, [
+                test_environment.get("JAVA_TOOL_OPTIONS"),
+                f"-Djdk.net.hosts.file={hosts_file}",
+            ]))
             run_record["status"] = "testing"
             run_record["testCommand"] = test_command
+            run_record["testProperties"] = local_test_properties
             write_json(history_file, run_record)
             test_started_at = time.time()
             test_duration_started = time.monotonic()
-            exit_code = run_command(test_command, run_dir / "system-test.log", common_environment)
+            exit_code = run_command(test_command, run_dir / "system-test.log", test_environment)
             run_record["testDurationSeconds"] = round(
                 time.monotonic() - test_duration_started, 3
             )
@@ -982,6 +1041,10 @@ def run_locked(args: argparse.Namespace) -> int:
         cleanup_errors = []
         if args.jvm_coverage and coverage_agent is not None and len(services) > 1:
             request_core_shutdown(services[-1])
+        try:
+            run_gui_systemtest.stop_supporting_services(supporting_services)
+        except RuntimeError as error:
+            cleanup_errors.append(f"Unable to stop supporting services: {error}")
         for service in reversed(services):
             try:
                 stop_service(service)
@@ -1041,6 +1104,7 @@ def run_locked(args: argparse.Namespace) -> int:
         print(f"Run files: {run_dir}")
         if succeeded:
             shutil.rmtree(data_dir, ignore_errors=True)
+            shutil.rmtree(blackhole_dir, ignore_errors=True)
         else:
             print(f"Core data retained for diagnosis: {data_dir}")
     return exit_code
@@ -1048,6 +1112,7 @@ def run_locked(args: argparse.Namespace) -> int:
 
 def run() -> int:
     args = parse_args()
+    graalvm_environment = get_graalvm_environment()
     if args.startup_timeout <= 0:
         raise RuntimeError("--startup-timeout must be greater than zero")
     if args.skip_system_tests and not args.gui_tests:
@@ -1057,7 +1122,7 @@ def run() -> int:
 
     lock_file = acquire_run_lock()
     try:
-        return run_locked(args)
+        return run_locked(args, graalvm_environment)
     finally:
         release_run_lock(lock_file)
 

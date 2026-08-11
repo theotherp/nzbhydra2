@@ -4,6 +4,19 @@
       "type": "oracle.jdbc.provider.oson.OsonFactory"
     },
     {
+      "type": "sun.net.www.protocol.http.Handler",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {"type": "org.springdoc.core.customizers.OperationCustomizerEditor"},
+    {
+      "type": "org.springdoc.core.customizers.GlobalOperationCustomizerEditor"
+    },
+    {
       "type": "org.nzbhydra.auth.HydraWebAuthenticationDetails",
       "methods": [
         {

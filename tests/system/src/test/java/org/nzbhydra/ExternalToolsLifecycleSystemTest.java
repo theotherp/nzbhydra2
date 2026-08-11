@@ -2,8 +2,11 @@ package org.nzbhydra;
 
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
 import org.nzbhydra.config.BaseConfig;
@@ -29,6 +32,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 @ContextConfiguration(classes = {TestConfig.class})
 @EnabledOnOs(OS.LINUX)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ExternalToolsLifecycleSystemTest {
 
     private static final String EXTERNAL_TOOL_API_KEY = "system-test-api-key-12345";
@@ -56,12 +60,16 @@ public class ExternalToolsLifecycleSystemTest {
     private BaseConfig originalConfig;
     private String testName;
 
+    @BeforeAll
+    public void abortWhenArrIsNotReady() {
+        Assumptions.assumeTrue(isArrReady(sonarrHostExternal), "Sonarr is not ready");
+        Assumptions.assumeTrue(isArrReady(radarrHostExternal), "Radarr is not ready");
+    }
+
     @BeforeEach
     public void setUp() {
         originalConfig = getConfig();
         testName = TEST_PREFIX + UUID.randomUUID();
-        waitForArrReady(sonarrHostExternal);
-        waitForArrReady(radarrHostExternal);
         removeOwnedIndexers(sonarrHostExternal);
         removeOwnedIndexers(radarrHostExternal);
     }
@@ -246,9 +254,12 @@ public class ExternalToolsLifecycleSystemTest {
         });
     }
 
-    private void waitForArrReady(String host) {
-        Awaitility.await().ignoreExceptions().atMost(Duration.ofMinutes(1)).untilAsserted(() ->
-                assertThat(getIndexersResponse(host).dontRaiseIfUnsuccessful().status()).isEqualTo(200));
+    private boolean isArrReady(String host) {
+        try {
+            return getIndexersResponse(host).dontRaiseIfUnsuccessful().status() == 200;
+        } catch (RuntimeException e) {
+            return false;
+        }
     }
 
     private HydraResponse getIndexersResponse(String host) {

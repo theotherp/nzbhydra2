@@ -1,4 +1,3 @@
-version: '3'
 networks:
     systemtest:
         external: true
@@ -24,6 +23,8 @@ services:
             - ../../sonarr/data:/config
         ports:
             - "18989:8989"
+        extra_hosts:
+          - "host.docker.internal:host-gateway"
         networks: [ "systemtest" ]
         restart: unless-stopped
     radarr:
@@ -38,6 +39,8 @@ services:
             - ../../radarr/data:/config
         ports:
             - "7878:7878"
+        extra_hosts:
+          - "host.docker.internal:host-gateway"
         networks: [ "systemtest" ]
         restart: unless-stopped
     core:

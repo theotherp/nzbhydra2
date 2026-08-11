@@ -55,7 +55,7 @@ test.describe("Search results", () => {
         const searching = config.searching as Record<string, unknown>;
         searching.showQuickFilterButtons = true;
         searching.alwaysShowQuickFilterButtons = true;
-        searching.preselectQuickFilterButtons = ["other|x265"];
+        searching.preselectQuickFilterButtons = [];
         await hydra.saveConfig(config);
         await page.reload();
 
@@ -63,6 +63,7 @@ test.describe("Search results", () => {
         await page.getByTestId("search-submit").click();
         await expect(page.getByTestId("search-status-modal")).toBeHidden();
         const resultTitles = page.getByTestId("search-result-title");
+        await page.getByRole("button", {name: "x265", exact: true}).click();
         await expect.poll(async () => {
             const titles = await resultTitles.allTextContents();
             return titles.length > 0 && titles.every(title => title.toLowerCase().includes("x265"));

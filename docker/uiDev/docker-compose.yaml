@@ -6,7 +6,6 @@
 # - "data" contains the regular NZBHydra config data.
 # - "ui-src" contains the UI sources. Any changes in this folder will be automatically be built into "static"
 #   which is where NZBHydra loads its UI data from.
-version: "2.1"
 services:
   nzbhydra-ui-dev:
     image: nzbhydra-ui-dev:local
