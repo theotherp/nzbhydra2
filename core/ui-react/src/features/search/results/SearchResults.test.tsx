@@ -1,5 +1,11 @@
-import {render, screen} from "@testing-library/react";
-import {describe, expect, it} from "vitest";
+import {
+    cleanup,
+    fireEvent,
+    render,
+    screen,
+    within,
+} from "@testing-library/react";
+import {afterEach, describe, expect, it} from "vitest";
 
 import {SearchResults} from "./SearchResults";
 
@@ -15,6 +21,12 @@ const response = {
 };
 
 describe("SearchResults", () => {
+    afterEach(() => {
+        cleanup();
+        window.localStorage?.clear();
+        delete window.__NZBHYDRA_BOOTSTRAP__;
+    });
+
     it("should render no-picked, all-failed, empty, warning, and rejected states", () => {
         const {rerender} = render(
             <SearchResults
@@ -85,5 +97,182 @@ describe("SearchResults", () => {
         expect(
             screen.getByText("1 malformed result entries were not displayed."),
         ).toBeVisible();
+    });
+
+    it("should sort and filter rows with accessible controls", () => {
+        render(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 2,
+                    searchResults: [
+                        {
+                            searchResultId: "1",
+                            title: "Zulu WEB",
+                            indexer: "One",
+                            category: "Movies",
+                            size: 5 * 1024 * 1024,
+                            grabs: 3,
+                            epoch: 1_700_000_000,
+                            age: "2 days",
+                        },
+                        {
+                            searchResultId: "2",
+                            title: "Alpha BluRay",
+                            indexer: "Two",
+                            category: "TV",
+                            size: 2 * 1024 * 1024,
+                            seeders: 8,
+                            epoch: 1_600_000_000,
+                            age: "3 years",
+                        },
+                    ],
+                }}
+            />,
+        );
+        const titleSort = screen.getByTestId("sort-title");
+        expect(titleSort).toHaveAttribute("data-sort-direction", "none");
+        fireEvent.click(titleSort);
+        expect(titleSort).toHaveAttribute("data-sort-direction", "asc");
+        expect(titleSort).toHaveTextContent("Title (ascending)");
+        expect(
+            screen.getAllByTestId("search-result-title")[0],
+        ).toHaveTextContent("Alpha BluRay");
+        fireEvent.click(titleSort);
+        expect(titleSort).toHaveTextContent("Title (descending)");
+        fireEvent.click(titleSort);
+
+        fireEvent.change(screen.getByTestId("freetext-filter-title"), {
+            target: {value: "!web"},
+        });
+        expect(screen.getByTestId("search-result-row")).toHaveTextContent(
+            "Alpha BluRay",
+        );
+        fireEvent.change(screen.getByTestId("freetext-filter-title"), {
+            target: {value: "/[/"},
+        });
+        expect(
+            screen.queryByTestId("search-result-row"),
+        ).not.toBeInTheDocument();
+
+        fireEvent.change(screen.getByTestId("freetext-filter-title"), {
+            target: {value: ""},
+        });
+        fireEvent.change(screen.getByTestId("number-filter-min-size"), {
+            target: {value: "4"},
+        });
+        expect(screen.getByTestId("search-result-row")).toHaveTextContent(
+            "Zulu WEB",
+        );
+        fireEvent.click(screen.getByTestId("number-filter-clear-size"));
+        expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
+
+        const indexerFilter = within(
+            screen.getByTestId("filter-toggle-indexer"),
+        );
+        fireEvent.click(indexerFilter.getByLabelText("One"));
+        expect(screen.getByTestId("search-result-row")).toHaveTextContent(
+            "Alpha BluRay",
+        );
+    });
+
+    it("should visibly sort every sortable column", () => {
+        render(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 3,
+                    searchResults: [
+                        {
+                            searchResultId: "1",
+                            title: "Alpha",
+                            indexer: "Beta",
+                            category: "TV",
+                            size: 5 * 1024 * 1024,
+                            seeders: 10,
+                            epoch: 3,
+                        },
+                        {
+                            searchResultId: "2",
+                            title: "Bravo",
+                            indexer: "Alpha",
+                            category: "Movies",
+                            size: 2 * 1024 * 1024,
+                            grabs: 3,
+                            epoch: 1,
+                        },
+                        {
+                            searchResultId: "3",
+                            title: "Charlie",
+                            indexer: "Gamma",
+                            category: "Movies",
+                            size: 7 * 1024 * 1024,
+                            seeders: 7,
+                            epoch: 2,
+                        },
+                    ],
+                }}
+            />,
+        );
+
+        for (const [column, direction, firstTitle] of [
+            ["title", "asc", "Alpha"],
+            ["indexer", "asc", "Bravo"],
+            ["category", "asc", "Bravo"],
+            ["size", "desc", "Charlie"],
+            ["grabs", "desc", "Alpha"],
+            ["epoch", "desc", "Alpha"],
+        ]) {
+            const sort = screen.getByTestId(`sort-${column}`);
+            fireEvent.click(sort);
+            expect(sort).toHaveAttribute("data-sort-direction", direction);
+            expect(sort).toHaveTextContent(
+                `(${direction === "asc" ? "ascending" : "descending"})`,
+            );
+            expect(
+                screen.getAllByTestId("search-result-title")[0],
+            ).toHaveTextContent(firstTitle);
+        }
+    });
+
+    it("should render configured preselected quick filters", () => {
+        window.__NZBHYDRA_BOOTSTRAP__ = {
+            safeConfig: {
+                searching: {
+                    showQuickFilterButtons: true,
+                    preselectQuickFilterButtons: ["source|web"],
+                },
+            },
+        };
+        render(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 2,
+                    searchResults: [
+                        {
+                            searchResultId: "1",
+                            title: "WEB-DL release",
+                            indexer: "One",
+                            category: "Movies",
+                        },
+                        {
+                            searchResultId: "2",
+                            title: "BluRay release",
+                            indexer: "Two",
+                            category: "Movies",
+                        },
+                    ],
+                }}
+            />,
+        );
+
+        expect(screen.getByRole("button", {name: "WEB"})).toHaveAttribute(
+            "aria-pressed",
+            "true",
+        );
+        expect(screen.getByTestId("search-result-row")).toHaveTextContent(
+            "WEB-DL release",
+        );
     });
 });

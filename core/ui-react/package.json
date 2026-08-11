@@ -27,6 +27,7 @@
     "@mui/material": "7.3.9",
     "@tanstack/react-query": "^5.90.20",
     "@tanstack/react-router": "^1.162.4",
+    "@tanstack/react-table": "^8.21.3",
     "dompurify": "^3.3.3",
     "react": "19.2.4",
     "react-dom": "19.2.4",

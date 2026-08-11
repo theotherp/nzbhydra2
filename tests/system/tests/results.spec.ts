@@ -144,6 +144,158 @@ test.describe("Search results", () => {
         await page.getByTestId("sort-title").click();
         await expect(rows).toHaveCount(1);
     });
+
+    test("should sort and filter deterministic results in the React shell", async ({page}) => {
+        await page.goto("ui/react?redirect=/");
+        await page.getByTestId("search-query").fill(testEnvironment.uiTestQuery);
+        await page.getByTestId("search-submit").click();
+        await expectVisibleResultTitles(page, testEnvironment.uiTestResultTitles);
+
+        const titleSort = page.getByTestId("sort-title");
+        await titleSort.click();
+        await expect(titleSort).toHaveAttribute("data-sort-direction", "asc");
+        await expectVisibleResultTitles(page, [...testEnvironment.uiTestResultTitles].sort());
+
+        await page.getByTestId("freetext-filter-title").fill("indexer2 !result3");
+        await expectVisibleResultTitles(page, testEnvironment.uiTestResultTitles.slice(3, 5));
+        await page.getByTestId("freetext-filter-title").fill("/[/");
+        await expect(page.getByTestId("search-result-row")).toHaveCount(0);
+        await page.getByTestId("freetext-filter-title").fill("");
+
+        await page.getByTestId("number-filter-min-size").fill("4");
+        await expectVisibleResultTitles(page, testEnvironment.uiTestResultTitles.slice(3));
+        await page.getByTestId("number-filter-clear-size").click();
+        await expectVisibleResultTitles(page, [...testEnvironment.uiTestResultTitles].sort());
+    });
+
+    test("should sort every column and filter deterministic React results", async ({hydra, page}) => {
+        const config = await hydra.getConfig();
+        const searching = config.searching as Record<string, unknown>;
+        searching.showQuickFilterButtons = true;
+        searching.alwaysShowQuickFilterButtons = true;
+        searching.customQuickFilterButtons = ["Preferred=x265"];
+        searching.preselectQuickFilterButtons = [
+            "source|web",
+            "quality|q1080p",
+            "other|x265",
+            "custom|Preferred",
+        ];
+        await hydra.saveConfig(config);
+
+        const now = Math.floor(Date.now() / 1_000);
+        await page.route("**/internalapi/search", route =>
+            route.fulfill({
+                json: {
+                    searchResults: [
+                        {
+                            searchResultId: "1",
+                            title: "Alpha WEB-DL 1080p x265",
+                            indexer: "Beta",
+                            category: "TV",
+                            size: 5 * 1024 * 1024,
+                            seeders: 10,
+                            epoch: now - 86_400,
+                            age: "1 day",
+                        },
+                        {
+                            searchResultId: "2",
+                            title: "Bravo BluRay 720p HEVC",
+                            indexer: "Alpha",
+                            category: "Movies",
+                            size: 2 * 1024 * 1024,
+                            grabs: 3,
+                            epoch: now - 5 * 86_400,
+                            age: "5 days",
+                        },
+                        {
+                            searchResultId: "3",
+                            title: "Charlie WEB 2160p x265",
+                            indexer: "Gamma",
+                            category: "Movies",
+                            size: 7 * 1024 * 1024,
+                            seeders: 7,
+                            epoch: now - 3 * 86_400,
+                            age: "3 days",
+                        },
+                    ],
+                    indexerSearchMetaDatas: [],
+                    indexerLimitWarnings: [],
+                    rejectedReasonsMap: {},
+                    notPickedIndexersWithReason: {},
+                    numberOfAvailableResults: 3,
+                    numberOfRejectedResults: 0,
+                },
+            }),
+        );
+        await page.goto("ui/react?redirect=/");
+        await page.getByTestId("search-query").fill("deterministic filters");
+        await page.getByTestId("search-submit").click();
+        await expect(page.getByTestId("search-status-modal")).toBeHidden();
+
+        for (const name of ["WEB", "1080p", "x265", "Preferred"]) {
+            await expect(page.getByRole("button", {name, exact: true})).toHaveAttribute(
+                "aria-pressed",
+                "true",
+            );
+        }
+        await expectVisibleResultTitles(page, ["Alpha WEB-DL 1080p x265"]);
+        for (const name of ["WEB", "1080p", "x265", "Preferred"]) {
+            await page.getByRole("button", {name, exact: true}).click();
+        }
+        await expectVisibleResultTitles(page, [
+            "Alpha WEB-DL 1080p x265",
+            "Charlie WEB 2160p x265",
+            "Bravo BluRay 720p HEVC",
+        ]);
+
+        for (const [column, direction, firstTitle] of [
+            ["title", "asc", "Alpha WEB-DL 1080p x265"],
+            ["indexer", "asc", "Bravo BluRay 720p HEVC"],
+            ["category", "asc", "Bravo BluRay 720p HEVC"],
+            ["size", "desc", "Charlie WEB 2160p x265"],
+            ["grabs", "desc", "Alpha WEB-DL 1080p x265"],
+            ["epoch", "desc", "Alpha WEB-DL 1080p x265"],
+        ]) {
+            const sort = page.getByTestId(`sort-${column}`);
+            await sort.click();
+            await expect(sort).toContainText(
+                `(${direction === "asc" ? "ascending" : "descending"})`,
+            );
+            await expect(sort).toHaveAttribute("data-sort-direction", direction);
+            await expect(page.getByTestId("search-result-title").first()).toHaveText(
+                firstTitle,
+            );
+        }
+
+        const indexerFilter = page.getByTestId("filter-toggle-indexer");
+        await indexerFilter.getByLabel("Beta").uncheck();
+        await expectVisibleResultTitles(page, [
+            "Charlie WEB 2160p x265",
+            "Bravo BluRay 720p HEVC",
+        ]);
+        await indexerFilter.getByLabel("Beta").check();
+
+        const categoryFilter = page.getByTestId("filter-toggle-category");
+        await categoryFilter.getByLabel("TV").uncheck();
+        await expectVisibleResultTitles(page, [
+            "Charlie WEB 2160p x265",
+            "Bravo BluRay 720p HEVC",
+        ]);
+        await categoryFilter.getByLabel("TV").check();
+
+        await page.getByTestId("number-filter-min-grabs").fill("8");
+        await expectVisibleResultTitles(page, ["Alpha WEB-DL 1080p x265"]);
+        await page.getByTestId("number-filter-clear-grabs").click();
+
+        await page.getByTestId("number-filter-max-age").fill("2");
+        await expectVisibleResultTitles(page, ["Alpha WEB-DL 1080p x265"]);
+        await page.getByTestId("number-filter-clear-age").click();
+        await expectVisibleResultTitles(page, [
+            "Alpha WEB-DL 1080p x265",
+            "Charlie WEB 2160p x265",
+            "Bravo BluRay 720p HEVC",
+        ]);
+    });
 });
 
 async function searchForUiTestResults(page: import("@playwright/test").Page): Promise<void> {

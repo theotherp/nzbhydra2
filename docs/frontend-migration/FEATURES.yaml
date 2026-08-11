@@ -113,7 +113,7 @@ features:
     selectors: [ "sort-{{column}}", "freetext-filter-{{column}}", "number-filter-min-{{column}}", "number-filter-max-{{column}}", "number-filter-apply-{{column}}", "number-filter-clear-{{column}}", filter-toggle-indexer, filter-toggle-category, filter-toggle-size, filter-toggle-grabs, filter-toggle-age ]
     target: core/ui-react/src/features/search/results
     parity: partial
-    gaps: [ sort columns other than title, indexer/category/grabs/age filters, numeric-filter clearing ]
+    gaps: [ server-backed preferences ]
     task: FM-011
 
   - id: F-SEARCH-GROUP-SELECTION

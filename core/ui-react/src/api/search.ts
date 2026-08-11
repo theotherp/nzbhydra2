@@ -21,6 +21,9 @@ export type SearchResult = {
     category: string;
     size?: number;
     age?: string;
+    epoch?: number;
+    grabs?: number;
+    seeders?: number;
 };
 
 export type SearchResponse = {
@@ -97,7 +100,28 @@ const resultSchema = z.object({
     indexer: z.string().min(1).default("Unknown"),
     category: z.string().min(1).default("Unknown"),
     size: z.number().finite().optional(),
-    age: z.string().optional(),
+    age: z
+        .string()
+        .nullish()
+        .transform((value) => value ?? undefined),
+    epoch: z
+        .number()
+        .finite()
+        .nonnegative()
+        .nullish()
+        .transform((value) => value ?? undefined),
+    grabs: z
+        .number()
+        .finite()
+        .nonnegative()
+        .nullish()
+        .transform((value) => value ?? undefined),
+    seeders: z
+        .number()
+        .finite()
+        .nonnegative()
+        .nullish()
+        .transform((value) => value ?? undefined),
 });
 
 const metadataSchema = z.object({

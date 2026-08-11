@@ -59,6 +59,40 @@ describe("search API", () => {
         expect(response.malformedResultCount).toBe(1);
     });
 
+    it("should preserve sortable fields while treating optional counts as unavailable", () => {
+        const response = parseSearchResponse({
+            ...responseEnvelope,
+            searchResults: [
+                {
+                    searchResultId: "valid",
+                    title: "A result",
+                    age: "2 days",
+                    epoch: 1_700_000_000,
+                    grabs: null,
+                    seeders: 4,
+                },
+                {
+                    searchResultId: "missing-counts",
+                    title: "Another result",
+                    grabs: null,
+                    seeders: null,
+                },
+            ],
+        });
+        expect(response.searchResults).toEqual([
+            expect.objectContaining({
+                age: "2 days",
+                epoch: 1_700_000_000,
+                seeders: 4,
+            }),
+            expect.objectContaining({
+                searchResultId: "missing-counts",
+                grabs: undefined,
+                seeders: undefined,
+            }),
+        ]);
+    });
+
     it("should reject empty response envelopes", () => {
         expect(() => parseSearchResponse({})).toThrow(
             MalformedSearchResponseError,
