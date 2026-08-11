@@ -23,8 +23,13 @@ Read the task packet and all required migration context before implementation. R
 Mark the task `in_progress` before changing implementation files. Make routine, reversible implementation decisions without blocking unnecessarily. Follow the ADRs and declared project toolchain. Never downgrade dependencies to accommodate
 an outdated local environment, weaken linting, tests, type checking, build settings, or verification, skip required checks, or introduce an undocumented workaround.
 
-Run all required verification, inspect the complete task-owned diff, update the handoff truthfully, and mark the task `review` only when every acceptance criterion is satisfied. Report a genuine `BLOCKED` condition only for an architecture,
-contract, prohibited-write, destructive-action, concurrent-change, or unavailable-infrastructure issue that cannot be resolved conventionally.
+Run all required verification once against the final implementation, inspect the complete task-owned diff, update the handoff truthfully, and mark the task `review` only when every acceptance criterion is satisfied. Complete all
+non-verification handoff sections before expensive verification where practical. After verification, record the `Verification Basis` required by the handoff template. Do not change a task-owned implementation or test file after recording
+that basis; if you do, rerun every affected command and replace its evidence. Report a genuine `BLOCKED` condition only for an architecture, contract, prohibited-write, destructive-action, concurrent-change, or unavailable-infrastructure
+issue that cannot be resolved conventionally.
+
+When an unresolved fundamental choice has materially different alternatives for a shared architecture or runtime boundary, API/authentication/transport contract, rollout/deployment, persistence/security, or project-wide quality strategy, do
+not select one. Report `BLOCKED: ADR REQUIRED` with the decision question, repository evidence, viable options, affected task/registry IDs, and recommendation. Continue to make task-local and already-ADR-permitted choices autonomously.
 
 Do not review your own implementation and do not commit or push unless repository instructions explicitly authorize it.
 

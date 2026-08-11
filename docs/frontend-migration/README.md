@@ -15,15 +15,16 @@ Agents editing `core/ui-react` also read `/core/ui-react/AGENTS.md`.
 
 ## Sources Of Truth
 
-| Information                                | Authoritative file   |
-|--------------------------------------------|----------------------|
-| Durable product and deployment constraints | `CONTEXT.md`         |
-| Active and next work                       | `STATUS.md`          |
-| User-visible parity                        | `FEATURES.yaml`      |
-| Shared target components                   | `COMPONENTS.yaml`    |
-| Frontend API adoption                      | `APIS.yaml`          |
-| Consequential decisions                    | `decisions/ADR-*.md` |
-| Task scope, acceptance, and handoff        | `tasks/FM-*.md`      |
+| Information                                | Authoritative file    |
+|--------------------------------------------|-----------------------|
+| Durable product and deployment constraints | `CONTEXT.md`          |
+| Active and next work                       | `STATUS.md`           |
+| User-visible parity                        | `FEATURES.yaml`       |
+| Shared target components                   | `COMPONENTS.yaml`     |
+| Frontend API adoption                      | `APIS.yaml`           |
+| Consequential decisions                    | `decisions/ADR-*.md`  |
+| ADR lifecycle and proposal rules           | `decisions/README.md` |
+| Task scope, acceptance, and handoff        | `tasks/FM-*.md`       |
 
 Do not duplicate an authoritative fact in another document. Link its stable ID instead.
 
@@ -41,7 +42,19 @@ Task states are `planned`, `ready`, `in_progress`, `review`, `blocked`, and `don
 8. A fresh agent reviews the change against the task and linked feature records.
 9. The coordinator marks the task `done` after review findings are resolved.
 
-Only the coordinator creates tasks or changes task dependencies. Implementation agents add a follow-up proposal to their handoff instead of expanding scope.
+When an agent encounters an unresolved fundamental decision, it reports `ADR REQUIRED`. The coordinator automatically has a fresh proposer draft an evidence-based ADR and presents it to the human. The task remains blocked until the human
+explicitly accepts or rejects the proposal; after acceptance, the task designer links the ADR and refines the affected task before work resumes. See `decisions/README.md`.
+
+Only the migration task designer creates or refines task packets and dependencies. The coordinator promotes and completes task lifecycle states. Implementation agents add a follow-up proposal to their handoff instead of expanding scope.
+
+## Creating Task Batches
+
+Use `/create-next-tasks <count>` to create the next consecutive planned FM packets. For example, `/create-next-tasks 3` creates the three IDs after the highest existing `FM-NNN` packet. `STATUS.md` lists only the earliest dependency-ready
+packet under `Upcoming`; later batch members remain planned task packets until they become immediately next work.
+
+New tasks default to substantial vertical capabilities: keep the route, UI state, API/transport adaptation, necessary shared code, focused tests, and registry evidence together when they are necessary for one user-observable result. Split
+only at genuine dependencies, independent product capabilities, separate runtime boundaries, or unresolved contracts. Do not split a feature by source file or layer merely to create smaller tasks, and do not combine unrelated features
+simply to increase task size.
 
 ## Agent Autonomy And Escalation
 
@@ -53,7 +66,7 @@ Stop and escalate only when:
 - requirements or accepted decisions genuinely conflict;
 - satisfying the task requires modifying a file outside `Files Allowed To Modify`;
 - unavailable external access, credentials, services, or user action are required;
-- a consequential architectural choice is not covered by an ADR;
+- a consequential architectural choice is not covered by an ADR; report `ADR REQUIRED` with the decision question, evidence, viable options, affected work, and recommendation so the coordinator can start the proposal process;
 - unexpected concurrent changes directly conflict with the task's implementation.
 
 Do not escalate ordinary naming, file organization, test arrangement, or tooling details that have a clear conventional answer. When escalating, state the blocker, evidence, and smallest viable options. Keep the task `in_progress` or mark
@@ -85,6 +98,11 @@ Generated or temporary files count as modifications. Keep them inside allowed pa
 - A temporary workaround must be unavoidable, explicit in code or configuration where appropriate, and recorded under `Temporary Exceptions And Debt` with its reason, impact, removal condition, and follow-up.
 - Verification instructions must identify the working directory, exact command, and expected successful outcome. Record skipped or blocked commands as such; never imply they passed.
 - Before handoff, compare task-owned changed files with `Files Allowed To Modify` and explicitly confirm scope compliance.
+- Full system, browser, native, packaging, and similarly expensive verification runs once for each relevant task-owned implementation revision. The implementation handoff records command results and a verification basis that identifies the
+  tested files and their SHA-256 contents.
+- A fresh reviewer independently audits the verification basis, command result, test coverage, and current diff. Matching evidence is valid without rerunning the command. The reviewer reruns an expensive command only when evidence is
+  missing, failed, inconsistent, stale, nondeterministic, insufficient to establish critical behavior, or does not credibly cover the claimed criterion.
+- A correction reruns only commands affected by files it changes. Unchanged command evidence remains valid when the recorded verification basis still matches the task-owned implementation and test files.
 
 ## Registry Rules
 

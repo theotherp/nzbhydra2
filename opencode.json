@@ -34,7 +34,8 @@
           "migration-implementer": "allow",
           "migration-reviewer": "allow",
           "migration-fixer": "allow",
-          "migration-task-designer": "allow"
+          "migration-task-designer": "allow",
+          "migration-adr-proposer": "allow"
         }
       }
     }

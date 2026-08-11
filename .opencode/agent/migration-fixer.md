@@ -22,7 +22,12 @@ Read the task packet, relevant contracts, current implementation, complete findi
 Fix only required findings. Do not implement optional suggestions, redesign the task, expand scope, or write outside `Files Allowed To Modify`. Preserve the declared architecture and quality gates. Escalate if a required correction needs a
 prohibited write or a new architectural decision.
 
-Run verification affected by the fixes, inspect the resulting task-attributable diff, and update the handoff when fixes introduce material decisions or new verification evidence. Do not review your own fixes, commit, or push.
+When a required correction needs an unresolved fundamental choice, report `BLOCKED: ADR REQUIRED` with the decision question, repository evidence, viable options, affected task/registry IDs, and recommendation. Do not choose an
+architecture, contract, runtime boundary, security/persistence approach, rollout/deployment boundary, or project-wide quality policy on the human's behalf.
+
+Before running verification, compare the fix with the prior `Verification Basis` and classify each required command as affected or reusable. Reuse evidence only when every task-owned implementation and test file it covers is unchanged. Run
+each affected command once against the corrected implementation; a runtime, packaging, configuration, or test change makes its relevant system test affected. Inspect the resulting task-attributable diff and update the handoff with the
+classification and new evidence. Do not review your own fixes, commit, or push.
 
 ## Git Attribution
 

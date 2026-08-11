@@ -11,6 +11,15 @@ Blocks:
 
 One externally observable or architecturally complete result.
 
+## Boundary Rationale
+
+Explain why this is a substantial independently reviewable capability and why its included work must be delivered together. State the concrete dependency or product boundary that justifies every split from adjacent work.
+
+## Decision Dependencies
+
+- Accepted ADR IDs governing this task, or `None`.
+- Proposed/rejected ADR IDs that currently block this task, or `None`. Replace or remove the entry when an accepted ADR resolves it. A task cannot become `ready` while an unresolved entry remains.
+
 ## Files Allowed To Modify
 
 - Exact files or narrow path globs
