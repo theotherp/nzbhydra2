@@ -18,6 +18,15 @@ components:
     state: partial
     task: FM-005
 
+  - id: C-LIVE-TRANSPORT
+    responsibility: Base-URL-aware SockJS and STOMP connection lifecycle, subscription cleanup, and typed message delivery
+    legacy: [ core/ui-src/js/search-controller.js, core/ui-src/js/directives/downloaderStatusFooter.js, core/ui-src/js/directives/hydra-checks-footer.js ]
+    target: core/ui-react/src/api/live
+    consumers: [ F-SEARCH-PROGRESS, F-PLATFORM-LIVE-STATUS ]
+    classification: shared_hydra
+    state: planned
+    task: FM-014
+
   - id: C-BOOTSTRAP-CONTEXT
     responsibility: Typed base URL, safe configuration, permissions, username, and server timezone bootstrap context
     legacy: [ core/src/main/resources/templates/index.html, core/ui-src/js/config/config-service.js, core/ui-src/js/nzbhydra.js ]
@@ -87,8 +96,8 @@ components:
     target: core/ui-react/src/domain/categories
     consumers: [ F-SEARCH-FORM, F-CONFIG-CATEGORIES ]
     classification: shared_hydra
-    state: planned
-    task: null
+    state: partial
+    task: FM-010
 
   - id: C-DOWNLOAD-ACTIONS
     responsibility: Downloader selection, category choice, duplicate reason, black-hole, torrent, and magnet operations
@@ -97,7 +106,7 @@ components:
     consumers: [ F-SEARCH-DOWNLOADS, F-HISTORY-DOWNLOADS ]
     classification: shared_hydra
     state: planned
-    task: null
+    task: FM-013
 
   - id: C-DOWNLOADER-STATUS
     responsibility: Cross-route live downloader state, pause and offline state, URL, and rate history
@@ -139,10 +148,10 @@ components:
     responsibility: Hydra-specific search result processing, grouping, filtering, sorting, selection, and presentation using TanStack primitives
     legacy: [ core/ui-src/html/states/search-results.html, core/ui-src/js/search-results-controller.js, core/ui-src/js/directives/dataTableDirectives.js ]
     target: core/ui-react/src/features/search/results
-    consumers: [ F-SEARCH-RESULTS, F-SEARCH-SORT-FILTER, F-SEARCH-GROUP-SELECTION ]
+    consumers: [ F-SEARCH-RESULTS, F-SEARCH-SORT-FILTER, F-SEARCH-GROUP-SELECTION, F-SEARCH-DOWNLOADS ]
     classification: feature_specific
-    state: planned
-    task: null
+    state: partial
+    task: FM-010
 
   - id: C-SECRET-INPUT
     responsibility: Masked secret editing with unchanged-secret semantics

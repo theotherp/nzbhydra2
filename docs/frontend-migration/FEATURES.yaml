@@ -34,8 +34,9 @@ features:
     tests: [ tests/system/tests/smoke.spec.ts, tests/system/tests/search.spec.ts ]
     selectors: [ search-query, search-submit, search-category-control, "search-category-option-{{category.name}}", additional-query, autocomplete-popup, autocomplete-option ]
     target: core/ui-react/src/features/search
-    parity: inventoried
-    task: FM-001
+    parity: partial
+    gaps: [ autocomplete/identifier refinement, selectable indexers, recent searches, guided tour ]
+    task: FM-010
 
   - id: F-SEARCH-MEDIA
     name: Movie and TV autocomplete, identifiers, title refinement, season, and episode
@@ -87,7 +88,7 @@ features:
     target: core/ui-react/src/features/search
     parity: partial
     gaps: [ STOMP progress, cancellation, early result shortcut ]
-    task: FM-001
+    task: FM-014
 
   - id: F-SEARCH-RESULTS
     name: Result processing, display, indexer outcomes, and malformed-result resilience
@@ -99,8 +100,8 @@ features:
     selectors: [ search-results, indexer-limit-warnings, search-results-summary, search-results-table, search-result-row, search-result-title ]
     target: core/ui-react/src/features/search/results
     parity: partial
-    gaps: [ no-result and all-failed states, partial failures, rejection details ]
-    task: FM-001
+    gaps: [ autocomplete/identifier refinement, indexer-selection controls, search history, live progress, paging, sorting/filtering, grouping/selection, downloads ]
+    task: FM-010
 
   - id: F-SEARCH-SORT-FILTER
     name: Result sorting, column filters, quick filters, and persisted choices
@@ -113,7 +114,7 @@ features:
     target: core/ui-react/src/features/search/results
     parity: partial
     gaps: [ sort columns other than title, indexer/category/grabs/age filters, numeric-filter clearing ]
-    task: FM-001
+    task: FM-011
 
   - id: F-SEARCH-GROUP-SELECTION
     name: Duplicate, title, and episode grouping with selection and shift-selection
@@ -126,7 +127,7 @@ features:
     target: core/ui-react/src/features/search/results
     parity: partial
     gaps: [ duplicate and episode grouping, group expansion, invert and shift selection ]
-    task: FM-001
+    task: FM-012
 
   - id: F-SEARCH-DOWNLOADS
     name: Single and bulk browser, downloader, ZIP, black-hole, torrent, magnet, and copy-link actions
@@ -139,7 +140,7 @@ features:
     target: core/ui-react/src/features/search/results
     parity: partial
     gaps: [ bulk actions, ZIP, black hole, copy links, torrent and magnet, duplicate-movie reason ]
-    task: FM-001
+    task: FM-013
 
   - id: F-SEARCH-PAGING
     name: Load next batch or all remaining indexer results without repeating offsets

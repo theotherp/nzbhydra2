@@ -29,7 +29,9 @@
     "@tanstack/react-router": "^1.162.4",
     "dompurify": "^3.3.3",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "react-hook-form": "7.85.0",
+    "zod": "4.4.3"
   },
   "devDependencies": {
     "@eslint/js": "9.39.1",

@@ -10,6 +10,7 @@ import {AppShell} from "./app/AppShell";
 import type {BootstrapData} from "./bootstrap";
 import {ApiTransport} from "./api/transport";
 import {NewsPage} from "./features/system/news/NewsPage";
+import {SearchPage} from "./features/search/SearchPage";
 
 export function createAppRouter(bootstrap: BootstrapData) {
     const transport = new ApiTransport(bootstrap.baseUrl);
@@ -30,7 +31,14 @@ export function createAppRouter(bootstrap: BootstrapData) {
         path: "system/news",
         component: () => <NewsPage transport={transport} />,
     });
-    const routeTree = rootRoute.addChildren([newsRoute]);
+    const searchRoute = createRoute({
+        getParentRoute: () => rootRoute,
+        path: "/",
+        component: () => (
+            <SearchPage bootstrap={bootstrap} transport={transport} />
+        ),
+    });
+    const routeTree = rootRoute.addChildren([searchRoute, newsRoute]);
 
     return createRouter({
         basepath: routerBasePath(bootstrap.baseUrl),

@@ -40,6 +40,29 @@ test.describe("Search", () => {
         expect(savedSearchBody.request?.loadAll).toBe(false);
     });
 
+    test("should render the React search workspace and preserved result selectors at desktop and mobile widths", async ({page}) => {
+        await page.getByTestId("search-query").fill("uitest");
+        await page.getByTestId("search-submit").click();
+        await expect(page.getByTestId("search-results")).toBeVisible();
+        const selectorCounts = await Promise.all(["search-query", "search-submit", "search-category-control", "search-results", "search-results-summary", "search-results-table", "search-result-row", "search-result-title"].map(selector => page.getByTestId(selector).count()));
+        await page.goto("ui/react?redirect=/");
+        await expect(page).toHaveURL(/\/$/);
+        await expect(page.getByTestId("search-query")).toBeVisible();
+        await page.getByTestId("search-query").fill("uitest");
+        const searchResponse = page.waitForResponse(response => isSearchResponse(response));
+        await page.getByTestId("search-submit").click();
+        expect((await searchResponse).status()).toBe(200);
+        await expect(page.getByTestId("search-results")).toBeVisible();
+        await expect(page.getByTestId("search-results-summary")).toContainText("Loaded");
+        await expect(page.getByTestId("search-results-table")).toBeVisible();
+        await expect(page.getByTestId("search-result-row").first()).toBeVisible();
+        await expect(page.getByTestId("search-result-title").first()).toBeVisible();
+        const reactSelectorCounts = await Promise.all(["search-query", "search-submit", "search-category-control", "search-results", "search-results-summary", "search-results-table", "search-result-row", "search-result-title"].map(selector => page.getByTestId(selector).count()));
+        expect(reactSelectorCounts.map(count => count > 0)).toEqual(selectorCounts.map(count => count > 0));
+        await page.setViewportSize({width: 390, height: 844});
+        expect(await page.locator("html").evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true);
+    });
+
     test("should warn when indexer API hit or download limits are nearly exhausted", async ({hydra, page}) => {
         const config = await hydra.getConfig();
         const indexers = config.indexers as Array<Record<string, unknown>>;
