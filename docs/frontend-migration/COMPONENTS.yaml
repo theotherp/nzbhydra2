@@ -151,7 +151,7 @@ components:
     consumers: [ F-SEARCH-RESULTS, F-SEARCH-SORT-FILTER, F-SEARCH-GROUP-SELECTION, F-SEARCH-DOWNLOADS ]
     classification: feature_specific
     state: partial
-    task: FM-011
+    task: FM-012
 
   - id: C-SECRET-INPUT
     responsibility: Masked secret editing with unchanged-secret semantics

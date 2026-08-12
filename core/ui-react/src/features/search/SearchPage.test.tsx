@@ -129,6 +129,54 @@ describe("SearchPage", () => {
         expect(fetchImplementation).not.toHaveBeenCalled();
     });
 
+    it("should preserve a requested episode in canonical navigation and disable episode grouping", async () => {
+        router.search = {episode: "3"};
+        const fetchImplementation = vi.fn().mockResolvedValue(
+            new Response(
+                JSON.stringify({
+                    ...responseEnvelope,
+                    numberOfAvailableResults: 2,
+                    searchResults: [
+                        {
+                            searchResultId: "one",
+                            title: "Example Show S01E03 WEB",
+                            indexer: "One",
+                            category: "TV",
+                            showtitle: "Example Show",
+                            season: "1",
+                            episode: "3",
+                        },
+                        {
+                            searchResultId: "two",
+                            title: "Example Show S01E03 BluRay",
+                            indexer: "Two",
+                            category: "TV",
+                            showtitle: "Example Show",
+                            season: "1",
+                            episode: "3",
+                        },
+                    ],
+                }),
+                {headers: {"Content-Type": "application/json"}},
+            ),
+        );
+        render(
+            <SearchPage
+                bootstrap={bootstrap}
+                transport={new ApiTransport("/hydra/", fetchImplementation)}
+            />,
+        );
+
+        fireEvent.click(screen.getByTestId("search-submit"));
+
+        await waitFor(() => expect(fetchImplementation).toHaveBeenCalledOnce());
+        expect(router.navigate).toHaveBeenCalledWith({
+            to: "/",
+            search: {category: "All", episode: "3"},
+        });
+        expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
+    });
+
     it("should render request failures", async () => {
         const fetchImplementation = vi
             .fn()

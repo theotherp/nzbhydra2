@@ -126,7 +126,7 @@ features:
     selectors: [ search-result-row ]
     target: core/ui-react/src/features/search/results
     parity: partial
-    gaps: [ duplicate and episode grouping, group expansion, invert and shift selection ]
+    gaps: [ ]
     task: FM-012
 
   - id: F-SEARCH-DOWNLOADS

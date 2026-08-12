@@ -2,10 +2,14 @@ import {describe, expect, it} from "vitest";
 
 import {
     defaultFilters,
+    groupResults,
     filterResults,
     preselectedQuickFilters,
     quickFilterKey,
     quickFiltersFromSafeConfig,
+    selectionAfterClick,
+    selectVisibleResults,
+    visibleGroupedResults,
 } from "./resultTable";
 
 const results = [
@@ -156,5 +160,150 @@ describe("result table transformations", () => {
                 (result) => result.searchResultId,
             ),
         ).toEqual(["1", "2"]);
+    });
+
+    it("should group normalized titles and duplicates while retaining torrent grouping choices", () => {
+        const grouped = groupResults(
+            [
+                {
+                    ...results[0],
+                    searchResultId: "a",
+                    title: "Example.Show",
+                    hash: 1,
+                },
+                {
+                    ...results[0],
+                    searchResultId: "b",
+                    title: "Example Show",
+                    hash: 1,
+                },
+                {
+                    ...results[0],
+                    searchResultId: "c",
+                    title: "Example_Show",
+                    hash: 2,
+                    downloadType: "TORRENT",
+                },
+                {
+                    ...results[0],
+                    searchResultId: "d",
+                    title: "",
+                    hash: undefined,
+                },
+            ],
+            {
+                groupTorrentAndUsenet: false,
+                groupEpisodes: false,
+                episodeRequested: false,
+            },
+        );
+        expect(
+            grouped.map((group) =>
+                group.duplicateGroups.map((duplicates) =>
+                    duplicates.map((result) => result.searchResultId),
+                ),
+            ),
+        ).toEqual([[["a", "b"]], [["c"]], [["d"]]]);
+        expect(
+            groupResults(
+                grouped.flatMap((group) => group.duplicateGroups.flat()),
+                {
+                    groupTorrentAndUsenet: true,
+                    groupEpisodes: false,
+                    episodeRequested: false,
+                },
+            ),
+        ).toHaveLength(2);
+    });
+
+    it("should group eligible TV episodes only when no episode was requested", () => {
+        const tvResults = [
+            {
+                ...results[0],
+                searchResultId: "one",
+                title: "Show S01E01 WEB",
+                category: "TV",
+                showtitle: "Show",
+                season: "1",
+                episode: "1",
+            },
+            {
+                ...results[0],
+                searchResultId: "two",
+                title: "Different release",
+                category: "TV",
+                showtitle: "Show",
+                season: "1",
+                episode: "1",
+            },
+            {
+                ...results[0],
+                searchResultId: "three",
+                title: "No metadata",
+                category: "TV",
+            },
+        ];
+        expect(
+            groupResults(tvResults, {
+                groupTorrentAndUsenet: false,
+                groupEpisodes: true,
+                episodeRequested: false,
+            }),
+        ).toHaveLength(2);
+        expect(
+            groupResults(tvResults, {
+                groupTorrentAndUsenet: false,
+                groupEpisodes: true,
+                episodeRequested: true,
+            }),
+        ).toHaveLength(3);
+    });
+
+    it("should expose expanded group rows and select only current visible ordering", () => {
+        const grouped = groupResults(
+            [
+                {...results[0], searchResultId: "one", hash: 1},
+                {...results[0], searchResultId: "two", hash: 1},
+                {
+                    ...results[1],
+                    searchResultId: "three",
+                    title: "Another title",
+                    hash: 2,
+                },
+            ],
+            {
+                groupTorrentAndUsenet: false,
+                groupEpisodes: false,
+                episodeRequested: false,
+            },
+        );
+        const collapsed = visibleGroupedResults(grouped, new Set(), new Set());
+        expect(collapsed.map((result) => result.searchResultId)).toEqual([
+            "one",
+            "three",
+        ]);
+        const expanded = visibleGroupedResults(
+            grouped,
+            new Set(),
+            new Set([`${grouped[0].key}|hash:1`]),
+        );
+        expect(expanded.map((result) => result.searchResultId)).toEqual([
+            "one",
+            "two",
+            "three",
+        ]);
+        expect(
+            selectVisibleResults(new Set(["one"]), collapsed, "invert"),
+        ).toEqual(new Set(["three"]));
+        expect(
+            selectionAfterClick(
+                new Set(),
+                expanded,
+                "three",
+                true,
+                "one",
+                true,
+            ),
+        ).toEqual(new Set(["one", "two", "three"]));
     });
 });

@@ -275,4 +275,60 @@ describe("SearchResults", () => {
             "WEB-DL release",
         );
     });
+
+    it("should expand groups and support keyboard bulk and shift selection", () => {
+        render(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 3,
+                    searchResults: [
+                        {
+                            searchResultId: "one",
+                            title: "Example release",
+                            indexer: "One",
+                            category: "TV",
+                            hash: 1,
+                        },
+                        {
+                            searchResultId: "two",
+                            title: "Example release",
+                            indexer: "Two",
+                            category: "TV",
+                            hash: 1,
+                        },
+                        {
+                            searchResultId: "three",
+                            title: "Other release",
+                            indexer: "Three",
+                            category: "TV",
+                            hash: 2,
+                        },
+                    ],
+                }}
+            />,
+        );
+        expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
+        const expandDuplicates = screen.getByRole("button", {
+            name: "Expand duplicates",
+        });
+        expandDuplicates.focus();
+        fireEvent.keyDown(expandDuplicates, {key: "Enter"});
+        expect(screen.getAllByTestId("search-result-row")).toHaveLength(3);
+        const checkboxes = screen.getAllByRole("checkbox", {name: /Select/});
+        checkboxes[0].focus();
+        fireEvent.keyDown(checkboxes[0], {code: "Space", key: " "});
+        checkboxes[2].focus();
+        fireEvent.keyDown(checkboxes[2], {
+            code: "Space",
+            key: " ",
+            shiftKey: true,
+        });
+        expect(checkboxes).toHaveLength(3);
+        checkboxes.forEach((checkbox) => expect(checkbox).toBeChecked());
+        const deselectAll = screen.getByRole("button", {name: "Deselect all"});
+        deselectAll.focus();
+        fireEvent.keyDown(deselectAll, {key: "Enter"});
+        checkboxes.forEach((checkbox) => expect(checkbox).not.toBeChecked());
+    });
 });

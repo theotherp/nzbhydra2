@@ -27,6 +27,9 @@ export function SearchPage({
     const search = useSearch({strict: false});
     const catalog = createCategoryCatalog(bootstrap.safeConfig);
     const initialValues = valuesFromSearch(search, catalog);
+    const requestedEpisode =
+        typeof search.episode === "string" ? search.episode : undefined;
+    const episodeRequested = requestedEpisode !== undefined;
     const [state, setState] = useState<{
         data?: SearchResponse;
         error?: Error;
@@ -37,7 +40,13 @@ export function SearchPage({
         if (indexers.length === 0) {
             return;
         }
-        await navigate({to: "/", search: canonicalSearch(values)});
+        await navigate({
+            to: "/",
+            search: {
+                ...canonicalSearch(values),
+                ...(episodeRequested ? {episode: requestedEpisode} : {}),
+            },
+        });
         setState({loading: true});
         const request: SearchRequest = {
             query: values.query || undefined,
@@ -82,7 +91,12 @@ export function SearchPage({
             {state.error && (
                 <Alert severity="error">Unable to execute search.</Alert>
             )}
-            {state.data && <SearchResults data={state.data} />}
+            {state.data && (
+                <SearchResults
+                    data={state.data}
+                    episodeRequested={episodeRequested}
+                />
+            )}
         </Stack>
     );
 }

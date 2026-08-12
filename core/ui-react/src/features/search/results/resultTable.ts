@@ -19,6 +19,143 @@ export type QuickFilter = {
     terms: string[];
 };
 
+export type GroupingOptions = {
+    groupTorrentAndUsenet: boolean;
+    groupEpisodes: boolean;
+    episodeRequested: boolean;
+};
+
+export type ResultGroup = {
+    key: string;
+    duplicateGroups: SearchResult[][];
+};
+
+export function groupResults(
+    results: SearchResult[],
+    options: GroupingOptions,
+): ResultGroup[] {
+    const titleGroups = new Map<string, SearchResult[]>();
+    for (const result of results) {
+        const key = groupingKey(result, options);
+        titleGroups.set(key, [...(titleGroups.get(key) ?? []), result]);
+    }
+    return [...titleGroups.entries()].map(([key, groupedResults]) => {
+        const duplicates = new Map<string, SearchResult[]>();
+        for (const result of groupedResults) {
+            const duplicateKey =
+                result.hash === undefined
+                    ? `result:${result.searchResultId}`
+                    : `hash:${result.hash}`;
+            duplicates.set(duplicateKey, [
+                ...(duplicates.get(duplicateKey) ?? []),
+                result,
+            ]);
+        }
+        return {key, duplicateGroups: [...duplicates.values()]};
+    });
+}
+
+export function visibleGroupedResults(
+    groups: ResultGroup[],
+    expandedTitles: ReadonlySet<string>,
+    expandedDuplicates: ReadonlySet<string>,
+): SearchResult[] {
+    return groups.flatMap((group) =>
+        group.duplicateGroups.flatMap((duplicates, duplicateIndex) => {
+            const duplicateKey = duplicateGroupKey(group.key, duplicates[0]);
+            const titleVisible =
+                duplicateIndex === 0 || expandedTitles.has(group.key);
+            if (!titleVisible) {
+                return [];
+            }
+            return duplicates.filter(
+                (_, index) =>
+                    index === 0 || expandedDuplicates.has(duplicateKey),
+            );
+        }),
+    );
+}
+
+export function duplicateGroupKey(
+    groupKey: string,
+    result: SearchResult,
+): string {
+    return `${groupKey}|${result.hash === undefined ? `result:${result.searchResultId}` : `hash:${result.hash}`}`;
+}
+
+export function selectVisibleResults(
+    selected: ReadonlySet<string>,
+    visible: SearchResult[],
+    action: "all" | "none" | "invert",
+): Set<string> {
+    const visibleIds = visible.map((result) => result.searchResultId);
+    if (action === "all") {
+        return new Set(visibleIds);
+    }
+    if (action === "none") {
+        return new Set();
+    }
+    return new Set(visibleIds.filter((id) => !selected.has(id)));
+}
+
+export function selectionAfterClick(
+    selected: ReadonlySet<string>,
+    visible: SearchResult[],
+    resultId: string,
+    checked: boolean,
+    previousResultId?: string,
+    shiftKey = false,
+): Set<string> {
+    const next = new Set(selected);
+    const clickedIndex = visible.findIndex(
+        (result) => result.searchResultId === resultId,
+    );
+    const previousIndex = visible.findIndex(
+        (result) => result.searchResultId === previousResultId,
+    );
+    if (shiftKey && clickedIndex >= 0 && previousIndex >= 0) {
+        for (const result of visible.slice(
+            Math.min(clickedIndex, previousIndex),
+            Math.max(clickedIndex, previousIndex) + 1,
+        )) {
+            if (checked) {
+                next.add(result.searchResultId);
+            } else {
+                next.delete(result.searchResultId);
+            }
+        }
+        return next;
+    }
+    if (checked) {
+        next.add(resultId);
+    } else {
+        next.delete(resultId);
+    }
+    return next;
+}
+
+function groupingKey(result: SearchResult, options: GroupingOptions): string {
+    const episodeKey = `${result.showtitle ?? ""}|${result.season ?? ""}|${result.episode ?? ""}`;
+    if (
+        options.groupEpisodes &&
+        !options.episodeRequested &&
+        result.category.toLowerCase().includes("tv") &&
+        result.showtitle !== undefined &&
+        result.season !== undefined &&
+        result.episode !== undefined
+    ) {
+        return `episode:${normalizeGroupingValue(episodeKey)}`;
+    }
+    const downloadType = options.groupTorrentAndUsenet
+        ? ""
+        : `|${result.downloadType ?? "unknown"}`;
+    return `title:${normalizeGroupingValue(result.title)}${downloadType}`;
+}
+
+function normalizeGroupingValue(value: string): string {
+    return value.toLocaleLowerCase().replace(/[\s._-]+/g, "");
+}
+
 export function quickFilterKey(
     filter: Pick<QuickFilter, "group" | "id">,
 ): string {

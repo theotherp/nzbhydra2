@@ -24,6 +24,11 @@ export type SearchResult = {
     epoch?: number;
     grabs?: number;
     seeders?: number;
+    hash?: number;
+    downloadType?: string;
+    showtitle?: string;
+    season?: string;
+    episode?: string;
 };
 
 export type SearchResponse = {
@@ -120,6 +125,31 @@ const resultSchema = z.object({
         .number()
         .finite()
         .nonnegative()
+        .nullish()
+        .transform((value) => value ?? undefined),
+    hash: z
+        .number()
+        .finite()
+        .nullish()
+        .transform((value) => value ?? undefined),
+    downloadType: z
+        .string()
+        .min(1)
+        .nullish()
+        .transform((value) => value ?? undefined),
+    showtitle: z
+        .string()
+        .min(1)
+        .nullish()
+        .transform((value) => value ?? undefined),
+    season: z
+        .string()
+        .min(1)
+        .nullish()
+        .transform((value) => value ?? undefined),
+    episode: z
+        .string()
+        .min(1)
         .nullish()
         .transform((value) => value ?? undefined),
 });

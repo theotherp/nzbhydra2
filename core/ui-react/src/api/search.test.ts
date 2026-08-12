@@ -93,6 +93,48 @@ describe("search API", () => {
         ]);
     });
 
+    it("should preserve valid optional grouping fields without rejecting the result", () => {
+        const response = parseSearchResponse({
+            ...responseEnvelope,
+            searchResults: [
+                {
+                    searchResultId: "grouped",
+                    title: "Example.Show.S01E02",
+                    hash: 123,
+                    downloadType: "TORRENT",
+                    showtitle: "Example Show",
+                    season: "1",
+                    episode: "2",
+                },
+                {
+                    searchResultId: "without-grouping-metadata",
+                    title: "Ordinary result",
+                    hash: null,
+                    downloadType: null,
+                    showtitle: null,
+                    season: null,
+                    episode: null,
+                },
+            ],
+        });
+        expect(response.searchResults).toEqual([
+            expect.objectContaining({
+                hash: 123,
+                downloadType: "TORRENT",
+                showtitle: "Example Show",
+                season: "1",
+                episode: "2",
+            }),
+            expect.objectContaining({
+                hash: undefined,
+                downloadType: undefined,
+                showtitle: undefined,
+                season: undefined,
+                episode: undefined,
+            }),
+        ]);
+    });
+
     it("should reject empty response envelopes", () => {
         expect(() => parseSearchResponse({})).toThrow(
             MalformedSearchResponseError,

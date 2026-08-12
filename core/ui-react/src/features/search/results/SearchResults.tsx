@@ -25,10 +25,15 @@ import {useEffect, useMemo, useState} from "react";
 import type {SearchResponse, SearchResult} from "../../../api/search";
 import {
     defaultFilters,
+    duplicateGroupKey,
     filterResults,
+    groupResults,
     preselectedQuickFilters,
     quickFilterKey,
     quickFiltersFromSafeConfig,
+    selectionAfterClick,
+    selectVisibleResults,
+    visibleGroupedResults,
 } from "./resultTable";
 import type {NumericRange, ResultFilters} from "./resultTable";
 
@@ -36,7 +41,13 @@ const STORAGE_KEY = "hydra.search-results.table";
 
 type StoredChoices = {sorting?: SortingState; filters?: Partial<ResultFilters>};
 
-export function SearchResults({data}: {data: SearchResponse}) {
+export function SearchResults({
+    data,
+    episodeRequested = false,
+}: {
+    data: SearchResponse;
+    episodeRequested?: boolean;
+}) {
     const safeConfig =
         window.__NZBHYDRA_BOOTSTRAP__ && isRecord(window.__NZBHYDRA_BOOTSTRAP__)
             ? window.__NZBHYDRA_BOOTSTRAP__.safeConfig
@@ -60,6 +71,16 @@ export function SearchResults({data}: {data: SearchResponse}) {
             ...choices.filters?.quickFilters,
         },
     }));
+    const [groupTorrentAndUsenet, setGroupTorrentAndUsenet] = useState(false);
+    const [groupEpisodes, setGroupEpisodes] = useState(true);
+    const [expandedTitles, setExpandedTitles] = useState<Set<string>>(
+        new Set(),
+    );
+    const [expandedDuplicates, setExpandedDuplicates] = useState<Set<string>>(
+        new Set(),
+    );
+    const [selected, setSelected] = useState<Set<string>>(new Set());
+    const [lastSelectedId, setLastSelectedId] = useState<string>();
     const filteredResults = useMemo(
         () => filterResults(data.searchResults, filters, quickFilters),
         [data.searchResults, filters, quickFilters],
@@ -96,10 +117,34 @@ export function SearchResults({data}: {data: SearchResponse}) {
         onSortingChange: setSorting,
         state: {sorting},
     });
+    const sortedResults = table.getRowModel().rows.map((row) => row.original);
+    const groups = useMemo(
+        () =>
+            groupResults(sortedResults, {
+                groupTorrentAndUsenet,
+                groupEpisodes,
+                episodeRequested,
+            }),
+        [episodeRequested, groupEpisodes, groupTorrentAndUsenet, sortedResults],
+    );
+    const visibleResults = useMemo(
+        () => visibleGroupedResults(groups, expandedTitles, expandedDuplicates),
+        [expandedDuplicates, expandedTitles, groups],
+    );
 
     useEffect(() => {
         getStorage()?.setItem(STORAGE_KEY, JSON.stringify({sorting, filters}));
     }, [filters, sorting]);
+
+    useEffect(() => {
+        const filteredIds = new Set(
+            filteredResults.map((result) => result.searchResultId),
+        );
+        setSelected(
+            (current) =>
+                new Set([...current].filter((id) => filteredIds.has(id))),
+        );
+    }, [filteredResults]);
 
     const allIndexersFailed =
         data.indexerSearchMetaDatas.length > 0 &&
@@ -179,6 +224,100 @@ export function SearchResults({data}: {data: SearchResponse}) {
                         (rejected {data.numberOfRejectedResults})
                     </Typography>
                     <Stack direction="row" flexWrap="wrap" gap={1}>
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={groupTorrentAndUsenet}
+                                    onChange={(event) =>
+                                        setGroupTorrentAndUsenet(
+                                            event.target.checked,
+                                        )
+                                    }
+                                />
+                            }
+                            label="Group torrent and Usenet results"
+                        />
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={groupEpisodes}
+                                    onChange={(event) =>
+                                        setGroupEpisodes(event.target.checked)
+                                    }
+                                />
+                            }
+                            label="Group TV episodes"
+                        />
+                        <Button
+                            onClick={() =>
+                                setSelected((current) =>
+                                    selectVisibleResults(
+                                        current,
+                                        visibleResults,
+                                        "all",
+                                    ),
+                                )
+                            }
+                            onKeyDown={(event) => {
+                                if (
+                                    event.key === "Enter" ||
+                                    event.key === " "
+                                ) {
+                                    event.preventDefault();
+                                    setSelected((current) =>
+                                        selectVisibleResults(
+                                            current,
+                                            visibleResults,
+                                            "all",
+                                        ),
+                                    );
+                                }
+                            }}
+                        >
+                            Select all
+                        </Button>
+                        <Button
+                            onClick={() => setSelected(new Set())}
+                            onKeyDown={(event) => {
+                                if (
+                                    event.key === "Enter" ||
+                                    event.key === " "
+                                ) {
+                                    event.preventDefault();
+                                    setSelected(new Set());
+                                }
+                            }}
+                        >
+                            Deselect all
+                        </Button>
+                        <Button
+                            onClick={() =>
+                                setSelected((current) =>
+                                    selectVisibleResults(
+                                        current,
+                                        visibleResults,
+                                        "invert",
+                                    ),
+                                )
+                            }
+                            onKeyDown={(event) => {
+                                if (
+                                    event.key === "Enter" ||
+                                    event.key === " "
+                                ) {
+                                    event.preventDefault();
+                                    setSelected((current) =>
+                                        selectVisibleResults(
+                                            current,
+                                            visibleResults,
+                                            "invert",
+                                        ),
+                                    );
+                                }
+                            }}
+                        >
+                            Invert selection
+                        </Button>
                         <TextField
                             label="Filter titles"
                             size="small"
@@ -291,6 +430,7 @@ export function SearchResults({data}: {data: SearchResponse}) {
                             <TableHead>
                                 {table.getHeaderGroups().map((headerGroup) => (
                                     <TableRow key={headerGroup.id}>
+                                        <TableCell padding="checkbox" />
                                         {headerGroup.headers.map((header) => (
                                             <TableCell
                                                 aria-sort={
@@ -334,29 +474,235 @@ export function SearchResults({data}: {data: SearchResponse}) {
                                 ))}
                             </TableHead>
                             <TableBody>
-                                {table.getRowModel().rows.map((row) => (
-                                    <TableRow
-                                        data-result-title={row.original.title}
-                                        data-testid="search-result-row"
-                                        key={row.id}
-                                    >
-                                        {row.getVisibleCells().map((cell) => (
-                                            <TableCell
-                                                data-testid={
-                                                    cell.column.id === "title"
-                                                        ? "search-result-title"
-                                                        : undefined
-                                                }
-                                                key={cell.id}
-                                            >
-                                                {flexRender(
-                                                    cell.column.columnDef.cell,
-                                                    cell.getContext(),
-                                                )}
-                                            </TableCell>
-                                        ))}
-                                    </TableRow>
-                                ))}
+                                {groups.flatMap((group) =>
+                                    group.duplicateGroups.flatMap(
+                                        (duplicates, duplicateIndex) => {
+                                            const first = duplicates[0];
+                                            const duplicateKey =
+                                                duplicateGroupKey(
+                                                    group.key,
+                                                    first,
+                                                );
+                                            const titleExpanded =
+                                                expandedTitles.has(group.key);
+                                            const duplicateExpanded =
+                                                expandedDuplicates.has(
+                                                    duplicateKey,
+                                                );
+                                            if (
+                                                duplicateIndex > 0 &&
+                                                !titleExpanded
+                                            ) {
+                                                return [];
+                                            }
+                                            return duplicates
+                                                .filter(
+                                                    (_, index) =>
+                                                        index === 0 ||
+                                                        duplicateExpanded,
+                                                )
+                                                .map((result, index) => {
+                                                    const row = table
+                                                        .getRowModel()
+                                                        .rows.find(
+                                                            (candidate) =>
+                                                                candidate
+                                                                    .original
+                                                                    .searchResultId ===
+                                                                result.searchResultId,
+                                                        );
+                                                    if (!row) return null;
+                                                    return (
+                                                        <TableRow
+                                                            data-result-id={
+                                                                result.searchResultId
+                                                            }
+                                                            data-result-title={
+                                                                result.title
+                                                            }
+                                                            data-testid="search-result-row"
+                                                            key={
+                                                                result.searchResultId
+                                                            }
+                                                        >
+                                                            <TableCell padding="checkbox">
+                                                                <Checkbox
+                                                                    checked={selected.has(
+                                                                        result.searchResultId,
+                                                                    )}
+                                                                    inputProps={{
+                                                                        "aria-label": `Select ${result.title}`,
+                                                                    }}
+                                                                    onChange={(
+                                                                        event,
+                                                                    ) => {
+                                                                        updateSelection(
+                                                                            result.searchResultId,
+                                                                            event
+                                                                                .target
+                                                                                .checked,
+                                                                            (
+                                                                                event.nativeEvent as MouseEvent
+                                                                            )
+                                                                                .shiftKey,
+                                                                        );
+                                                                    }}
+                                                                    onKeyDown={(
+                                                                        event,
+                                                                    ) => {
+                                                                        if (
+                                                                            event.key ===
+                                                                            " "
+                                                                        ) {
+                                                                            event.preventDefault();
+                                                                            updateSelection(
+                                                                                result.searchResultId,
+                                                                                !selected.has(
+                                                                                    result.searchResultId,
+                                                                                ),
+                                                                                event.shiftKey,
+                                                                            );
+                                                                        }
+                                                                    }}
+                                                                />
+                                                            </TableCell>
+                                                            {row
+                                                                .getVisibleCells()
+                                                                .map((cell) => (
+                                                                    <TableCell
+                                                                        data-testid={
+                                                                            cell
+                                                                                .column
+                                                                                .id ===
+                                                                            "title"
+                                                                                ? "search-result-title"
+                                                                                : undefined
+                                                                        }
+                                                                        key={
+                                                                            cell.id
+                                                                        }
+                                                                    >
+                                                                        {cell
+                                                                            .column
+                                                                            .id ===
+                                                                            "title" &&
+                                                                            index ===
+                                                                                0 &&
+                                                                            duplicateIndex ===
+                                                                                0 &&
+                                                                            group
+                                                                                .duplicateGroups
+                                                                                .length >
+                                                                                1 && (
+                                                                                <Button
+                                                                                    aria-expanded={
+                                                                                        titleExpanded
+                                                                                    }
+                                                                                    onClick={() =>
+                                                                                        setExpandedTitles(
+                                                                                            (
+                                                                                                current,
+                                                                                            ) =>
+                                                                                                toggleSet(
+                                                                                                    current,
+                                                                                                    group.key,
+                                                                                                ),
+                                                                                        )
+                                                                                    }
+                                                                                    onKeyDown={(
+                                                                                        event,
+                                                                                    ) => {
+                                                                                        if (
+                                                                                            event.key ===
+                                                                                                "Enter" ||
+                                                                                            event.key ===
+                                                                                                " "
+                                                                                        ) {
+                                                                                            event.preventDefault();
+                                                                                            setExpandedTitles(
+                                                                                                (
+                                                                                                    current,
+                                                                                                ) =>
+                                                                                                    toggleSet(
+                                                                                                        current,
+                                                                                                        group.key,
+                                                                                                    ),
+                                                                                            );
+                                                                                        }
+                                                                                    }}
+                                                                                    size="small"
+                                                                                >
+                                                                                    {titleExpanded
+                                                                                        ? "Collapse group"
+                                                                                        : "Expand group"}
+                                                                                </Button>
+                                                                            )}
+                                                                        {cell
+                                                                            .column
+                                                                            .id ===
+                                                                            "title" &&
+                                                                            index ===
+                                                                                0 &&
+                                                                            duplicates.length >
+                                                                                1 && (
+                                                                                <Button
+                                                                                    aria-expanded={
+                                                                                        duplicateExpanded
+                                                                                    }
+                                                                                    onClick={() =>
+                                                                                        setExpandedDuplicates(
+                                                                                            (
+                                                                                                current,
+                                                                                            ) =>
+                                                                                                toggleSet(
+                                                                                                    current,
+                                                                                                    duplicateKey,
+                                                                                                ),
+                                                                                        )
+                                                                                    }
+                                                                                    onKeyDown={(
+                                                                                        event,
+                                                                                    ) => {
+                                                                                        if (
+                                                                                            event.key ===
+                                                                                                "Enter" ||
+                                                                                            event.key ===
+                                                                                                " "
+                                                                                        ) {
+                                                                                            event.preventDefault();
+                                                                                            setExpandedDuplicates(
+                                                                                                (
+                                                                                                    current,
+                                                                                                ) =>
+                                                                                                    toggleSet(
+                                                                                                        current,
+                                                                                                        duplicateKey,
+                                                                                                    ),
+                                                                                            );
+                                                                                        }
+                                                                                    }}
+                                                                                    size="small"
+                                                                                >
+                                                                                    {duplicateExpanded
+                                                                                        ? "Collapse duplicates"
+                                                                                        : "Expand duplicates"}
+                                                                                </Button>
+                                                                            )}
+                                                                        {flexRender(
+                                                                            cell
+                                                                                .column
+                                                                                .columnDef
+                                                                                .cell,
+                                                                            cell.getContext(),
+                                                                        )}
+                                                                    </TableCell>
+                                                                ))}
+                                                        </TableRow>
+                                                    );
+                                                });
+                                        },
+                                    ),
+                                )}
                             </TableBody>
                         </Table>
                     </Box>
@@ -364,6 +710,24 @@ export function SearchResults({data}: {data: SearchResponse}) {
             )}
         </Stack>
     );
+
+    function updateSelection(
+        resultId: string,
+        checked: boolean,
+        shiftKey: boolean,
+    ) {
+        setSelected((current) =>
+            selectionAfterClick(
+                current,
+                visibleResults,
+                resultId,
+                checked,
+                lastSelectedId,
+                shiftKey,
+            ),
+        );
+        setLastSelectedId(resultId);
+    }
 }
 
 function MultiFilter({
@@ -474,6 +838,16 @@ function getStorage(): Storage | undefined {
     } catch {
         return undefined;
     }
+}
+
+function toggleSet(values: ReadonlySet<string>, value: string): Set<string> {
+    const next = new Set(values);
+    if (next.has(value)) {
+        next.delete(value);
+    } else {
+        next.add(value);
+    }
+    return next;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
