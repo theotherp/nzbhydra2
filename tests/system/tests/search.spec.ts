@@ -63,6 +63,24 @@ test.describe("Search", () => {
         expect(await page.locator("html").evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true);
     });
 
+    test("should render deterministic STOMP progress in the React search modal", async ({page}) => {
+        await page.goto("ui/react?redirect=/");
+        await expect(page).toHaveURL(/\/$/);
+        const enableDemo = await page.request.put("/internalapi/demomode");
+        expect(enableDemo.status()).toBe(200);
+        try {
+            await page.getByTestId("search-query").fill("deterministic progress");
+            await page.getByTestId("search-submit").click();
+            const modal = page.getByTestId("search-status-modal");
+            await expect(modal).toBeVisible();
+            await expect(modal).toContainText("DemoIndexer1 returned results");
+            await expect(modal).toContainText("Indexers finished: 1 / 3");
+        } finally {
+            const disableDemo = await page.request.delete("/internalapi/demomode");
+            expect(disableDemo.status()).toBe(200);
+        }
+    });
+
     test("should warn when indexer API hit or download limits are nearly exhausted", async ({hydra, page}) => {
         const config = await hydra.getConfig();
         const indexers = config.indexers as Array<Record<string, unknown>>;

@@ -24,7 +24,7 @@ components:
     target: core/ui-react/src/api/live
     consumers: [ F-SEARCH-PROGRESS, F-PLATFORM-LIVE-STATUS ]
     classification: shared_hydra
-    state: planned
+    state: partial
     task: FM-014
 
   - id: C-BOOTSTRAP-CONTEXT

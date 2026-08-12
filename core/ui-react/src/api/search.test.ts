@@ -4,6 +4,7 @@ import {
     executeSearch,
     MalformedSearchResponseError,
     parseSearchResponse,
+    shortcutSearch,
 } from "./search";
 import {ApiTransport} from "./transport";
 
@@ -42,6 +43,20 @@ describe("search API", () => {
                     searchRequestId: 42,
                 }),
             }),
+        );
+    });
+
+    it("should request the search shortcut through the base-aware transport", async () => {
+        const fetchImplementation = vi
+            .fn()
+            .mockResolvedValue(new Response(null, {status: 200}));
+        await shortcutSearch(
+            new ApiTransport("/hydra/", fetchImplementation),
+            42,
+        );
+        expect(fetchImplementation).toHaveBeenCalledWith(
+            expect.stringMatching(/hydra\/internalapi\/shortcutSearch\/42$/),
+            expect.objectContaining({method: "POST"}),
         );
     });
 

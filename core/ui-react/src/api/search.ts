@@ -75,6 +75,15 @@ export async function executeSearch(
     return parseSearchResponse(response);
 }
 
+export async function shortcutSearch(
+    transport: ApiTransport,
+    searchRequestId: number,
+): Promise<void> {
+    await transport.request(`internalapi/shortcutSearch/${searchRequestId}`, {
+        method: "POST",
+    });
+}
+
 export function parseSearchResponse(response: unknown): SearchResponse {
     const parsed = responseSchema.safeParse(response);
     if (!parsed.success) {

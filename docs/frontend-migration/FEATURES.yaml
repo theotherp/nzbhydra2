@@ -87,7 +87,7 @@ features:
     selectors: [ search-status-modal ]
     target: core/ui-react/src/features/search
     parity: partial
-    gaps: [ STOMP progress, cancellation, early result shortcut ]
+    gaps: [ cancellation ]
     task: FM-014
 
   - id: F-SEARCH-RESULTS

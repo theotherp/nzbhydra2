@@ -1,6 +1,6 @@
 # FM-014: Search Live Progress
 
-Status: planned Owner:
+Status: done Owner: OpenCode
 Feature IDs: F-SEARCH-PROGRESS Component IDs: C-LIVE-TRANSPORT API IDs: API-SEARCH-SHORTCUT, API-LIVE-SOCKJS, API-LIVE-SEARCH-STATE Depends on: FM-010 Blocks: F-PLATFORM-LIVE-STATUS
 
 ## Outcome
@@ -60,28 +60,43 @@ The agent may read and search the entire repository. Context To Read is mandator
 
 ### Result
 
-Record delivered progress behavior and exclusions.
+- Delivered a base-aware SockJS/STOMP live transport and request-scoped `/topic/searchState` parsing for React search. The request ID is allocated and its subscription is ready before `API-SEARCH-EXECUTE`; connection/subscribe timeout or errors visibly fall back to the authoritative HTTP result.
+- The accessible `search-status-modal` renders live messages and indexer progress, including connection, parse, timeout, and shortcut failure alerts while the modal is open. It offers the shortcut only for a legacy-format positive result-count message, isolates other request IDs, and releases the matching subscription exactly once after completion, replacement, or unmount. Cancellation, downloader status, and notification channels remain excluded.
 
 ### Verification
 
-Use `templates/handoff.md`; record commands, results, scope check, and SHA-256 verification basis.
+| Working directory | Command | Result |
+|---|---|---|
+| `core/ui-react` | `npm ci && npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run check:api && npm run validate:migration` | Passed after correction cycle 3: 21 files / 88 tests. `npm ci` reported 3 audit vulnerabilities (1 moderate, 2 high). Existing lint warnings only; Vite emitted its existing chunk-size warning. |
+| repository root | `python3 misc/run_gui_systemtest.py --runtime wsl -- tests/search.spec.ts` | Passed after correction cycle 3: 7 Playwright tests, including deterministic React progress modal coverage and retained legacy coverage. |
+| repository root | `git diff --check` | Passed. |
+| repository root | `git status --short` | Only FM-014 allowed paths plus the three supplied unrelated external/user paths; no unexpected generated artifacts. |
+
+### Verification Basis
+
+- Baseline: `3069ef420c92945bd245d90c1e1ce75a6458c6a8`.
+- Classification: the prior React quality-chain and GUI evidence are affected because `SearchPage.tsx` and `SearchPage.test.tsx` changed; both commands were rerun once after the final correction. `git diff --check` is affected and was rerun. `git status --short` is an inspection and was rerun. The React quality chain covers `package.json`, `package-lock.json`, `src/api/live/{transport,transport.test,searchState,searchState.test}.ts`, `src/api/{search,search.test}.ts`, and `src/features/search/{SearchPage,SearchPage.test}.tsx`; GUI covers `src/api/live/{transport,searchState}.ts`, `src/api/search.ts`, `src/features/search/SearchPage.tsx`, and `tests/system/tests/search.spec.ts`.
+- File-content manifest: `core/ui-react/package.json: d5e3858d6491f80e69edad065f3b07826abca9a06a760c5a0c837c8140855862`; `core/ui-react/package-lock.json: d783a8486666e3e91cfa50074dae93fd2d63e4ecf045609299356474ba4edd36`; `core/ui-react/src/api/live/transport.ts: ac3d8151630dba4b1e5a47c14b002b9f17fe4f766df10785d55eb30792caeb06`; `core/ui-react/src/api/live/transport.test.ts: 7ea5bc3447c39e49f8ba661ff45efc3fa906c5a469768e79fb9c322cc4c7a0d5`; `core/ui-react/src/api/live/searchState.ts: ea8553d3dd05884f6975ffd437b0094beffd19ef4b5a157f01aeaee636592978`; `core/ui-react/src/api/live/searchState.test.ts: b81ecaa4d877051a67ebbb11a0fd19e03b0dc7186826123678ef930f45d5c1e7`; `core/ui-react/src/api/search.ts: 5bd348f0f2717bb6af6343a3b0d2f2961653ab987d9e5ac581a4b6594d8ba2b2`; `core/ui-react/src/api/search.test.ts: 176bcd670e839daf9dba43c8d0b78ec4fa803b30e91b97dfe44594421abb3b79`; `core/ui-react/src/features/search/SearchPage.tsx: 11959e748ed36880559a7f5af26321d4ccfc4433768686777b70b60b379f1cb0`; `core/ui-react/src/features/search/SearchPage.test.tsx: 29f69e1362a75496583b0946e73d27894dc41e2d6796e016145cef8bc6a243c6`; `tests/system/tests/search.spec.ts: f31a6dcdce14e7fa2500024bb594e4b3257c0906d8222df6f692998cf5ac3eca`.
+- Completed after the last change to every listed implementation/test file: yes. The only post-quality-chain task-owned change is this handoff documentation; no implementation or test file changed afterward.
 
 ### Decisions
 
-Record connection lifecycle and request-state decisions.
+- Used a narrow registered `C-LIVE-TRANSPORT`, with one STOMP client per scoped subscription and a 1.5-second ready bound. STOMP reconnection is enabled while active; closure unsubscribes and force-deactivates exactly once.
+- Parsed and filtered live state at the API boundary before feature delivery. The early-results condition matches the legacy modal's `/^[^0]\d+.*/` positive-count message rule; completed indexers alone, zero-result messages, and errors do not enable it. HTTP completion remains the source of truth; parse, connection, timeout, and shortcut failures leave the page usable with visible feedback.
 
 ### Dependency/toolchain decisions
 
-Record dependencies, versions, and actual Node/npm versions, or `None`.
+- Runtime: exact `sockjs-client 1.6.1` and `@stomp/stompjs 7.3.0`, required by ADR-0002 and this transport. Development: exact `@types/sockjs-client 1.5.4`, required because SockJS does not ship usable declarations.
+- Node `v26.6.0`; npm `11.18.0`; Maven `3.9.16`; Playwright Chromium.
 
 ### Assumptions
 
-Record material assumptions, or `None`.
+- The existing `/topic/searchState` payload fields and `{baseUrl}websocket` endpoint are the contract evidenced by `SearchWeb` and `WebSocketConfig`.
 
 ### Unresolved issues
 
-Record deferred or blocked work, or `None`.
+- None.
 
 ### Follow-up
 
-Record bounded follow-up proposals, or `None`.
+- Add cancellation only with the owning backend contract; reuse `C-LIVE-TRANSPORT` for downloader status and notifications in their respective tasks without expanding this task's scope.
