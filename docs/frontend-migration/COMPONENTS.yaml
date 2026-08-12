@@ -105,7 +105,7 @@ components:
     target: core/ui-react/src/domain/downloads
     consumers: [ F-SEARCH-DOWNLOADS, F-HISTORY-DOWNLOADS ]
     classification: shared_hydra
-    state: planned
+    state: partial
     task: FM-013
 
   - id: C-DOWNLOADER-STATUS

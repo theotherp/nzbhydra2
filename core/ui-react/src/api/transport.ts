@@ -79,6 +79,43 @@ export class ApiTransport {
         return data as T;
     }
 
+    async requestBlob(
+        path: string,
+        options: TransportRequest = {},
+    ): Promise<Blob> {
+        const {
+            body: configuredBody,
+            form,
+            headers: configuredHeaders,
+            json,
+            method = "GET",
+            ...init
+        } = options;
+        const headers = new Headers(configuredHeaders);
+        const body = requestBody(configuredBody, form, json, headers);
+        const csrfToken = unsafeMethod(method)
+            ? cookieValue(CSRF_COOKIE_NAME)
+            : undefined;
+        if (csrfToken !== undefined) {
+            headers.set(CSRF_HEADER_NAME, csrfToken);
+        }
+        const response = await this.fetchImplementation(this.url(path), {
+            ...init,
+            body,
+            credentials: "same-origin",
+            headers,
+            method,
+        });
+        if (!response.ok) {
+            throw responseError(response.status, await responseData(response));
+        }
+        return response.blob();
+    }
+
+    browserTransferUrl(path: string): string {
+        return this.url(path);
+    }
+
     private url(path: string): string {
         if (!path || path.startsWith("/")) {
             throw new Error("API paths must be application-base-relative");

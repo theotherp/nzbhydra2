@@ -139,7 +139,7 @@ features:
     selectors: [ send-to-downloader, download-nzb ]
     target: core/ui-react/src/features/search/results
     parity: partial
-    gaps: [ bulk actions, ZIP, black hole, copy links, torrent and magnet, duplicate-movie reason ]
+    gaps: [ download-history route migration ]
     task: FM-013
 
   - id: F-SEARCH-PAGING

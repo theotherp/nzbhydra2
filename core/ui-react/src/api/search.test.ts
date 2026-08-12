@@ -135,6 +135,40 @@ describe("search API", () => {
         ]);
     });
 
+    it("should preserve optional download action fields and treat absent or null values as unavailable", () => {
+        const response = parseSearchResponse({
+            ...responseEnvelope,
+            searchResults: [
+                {
+                    searchResultId: "present",
+                    title: "Downloaded",
+                    downloadId: "12.3",
+                    originalCategory: "Movies",
+                    downloadedAt: "2026-08-12 12:00",
+                },
+                {
+                    searchResultId: "absent",
+                    title: "Not downloaded",
+                    downloadId: null,
+                    originalCategory: null,
+                    downloadedAt: null,
+                },
+            ],
+        });
+        expect(response.searchResults).toEqual([
+            expect.objectContaining({
+                downloadId: "12.3",
+                originalCategory: "Movies",
+                downloadedAt: "2026-08-12 12:00",
+            }),
+            expect.objectContaining({
+                downloadId: undefined,
+                originalCategory: undefined,
+                downloadedAt: undefined,
+            }),
+        ]);
+    });
+
     it("should reject empty response envelopes", () => {
         expect(() => parseSearchResponse({})).toThrow(
             MalformedSearchResponseError,

@@ -20,7 +20,7 @@ import {
     useReactTable,
 } from "@tanstack/react-table";
 import type {ColumnDef, SortingState} from "@tanstack/react-table";
-import {useEffect, useMemo, useState} from "react";
+import {useContext, useEffect, useMemo, useState} from "react";
 
 import type {SearchResponse, SearchResult} from "../../../api/search";
 import {
@@ -36,6 +36,9 @@ import {
     visibleGroupedResults,
 } from "./resultTable";
 import type {NumericRange, ResultFilters} from "./resultTable";
+import {DirectDownloadActions, DownloadActions} from "./DownloadActions";
+import {DialogContext} from "../../../components/dialogs/dialogs";
+import {ToastContext} from "../../../components/toasts/toasts";
 
 const STORAGE_KEY = "hydra.search-results.table";
 
@@ -81,6 +84,9 @@ export function SearchResults({
     );
     const [selected, setSelected] = useState<Set<string>>(new Set());
     const [lastSelectedId, setLastSelectedId] = useState<string>();
+    const [downloadedIds, setDownloadedIds] = useState<Set<string>>(new Set());
+    const dialogs = useContext(DialogContext);
+    const toasts = useContext(ToastContext);
     const filteredResults = useMemo(
         () => filterResults(data.searchResults, filters, quickFilters),
         [data.searchResults, filters, quickFilters],
@@ -224,6 +230,40 @@ export function SearchResults({
                         (rejected {data.numberOfRejectedResults})
                     </Typography>
                     <Stack direction="row" flexWrap="wrap" gap={1}>
+                        {dialogs !== null && toasts !== null && (
+                            <DownloadActions
+                                onDownloaded={(ids) => {
+                                    const affected = data.searchResults
+                                        .filter((result) =>
+                                            ids.includes(
+                                                Number(
+                                                    downloadIdFor(result).split(
+                                                        ".",
+                                                    )[0],
+                                                ),
+                                            ),
+                                        )
+                                        .map((result) => result.searchResultId);
+                                    setDownloadedIds(
+                                        (current) =>
+                                            new Set([...current, ...affected]),
+                                    );
+                                    setSelected(
+                                        (current) =>
+                                            new Set(
+                                                [...current].filter(
+                                                    (id) =>
+                                                        !affected.includes(id),
+                                                ),
+                                            ),
+                                    );
+                                }}
+                                results={data.searchResults.filter((result) =>
+                                    selected.has(result.searchResultId),
+                                )}
+                                safeConfig={safeConfig}
+                            />
+                        )}
                         <FormControlLabel
                             control={
                                 <Checkbox
@@ -511,7 +551,9 @@ export function SearchResults({
                                                                     .searchResultId ===
                                                                 result.searchResultId,
                                                         );
-                                                    if (!row) return null;
+                                                    if (!row) {
+                                                        return null;
+                                                    }
                                                     return (
                                                         <TableRow
                                                             data-result-id={
@@ -695,6 +737,39 @@ export function SearchResults({
                                                                                 .cell,
                                                                             cell.getContext(),
                                                                         )}
+                                                                        {cell
+                                                                            .column
+                                                                            .id ===
+                                                                            "title" && (
+                                                                            <>
+                                                                                <DirectDownloadActions
+                                                                                    onDownloaded={() =>
+                                                                                        setDownloadedIds(
+                                                                                            (
+                                                                                                current,
+                                                                                            ) =>
+                                                                                                new Set(
+                                                                                                    [
+                                                                                                        ...current,
+                                                                                                        result.searchResultId,
+                                                                                                    ],
+                                                                                                ),
+                                                                                        )
+                                                                                    }
+                                                                                    result={
+                                                                                        result
+                                                                                    }
+                                                                                />
+                                                                                {downloadedIds.has(
+                                                                                    result.searchResultId,
+                                                                                ) && (
+                                                                                    <Typography component="span">
+                                                                                        {" "}
+                                                                                        Downloaded
+                                                                                    </Typography>
+                                                                                )}
+                                                                            </>
+                                                                        )}
                                                                     </TableCell>
                                                                 ))}
                                                         </TableRow>
@@ -852,4 +927,8 @@ function toggleSet(values: ReadonlySet<string>, value: string): Set<string> {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === "object" && value !== null;
+}
+
+function downloadIdFor(result: SearchResult): string {
+    return result.downloadId ?? result.searchResultId;
 }

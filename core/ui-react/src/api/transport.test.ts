@@ -129,4 +129,34 @@ describe("ApiTransport", () => {
 
         expect(fetchImplementation).not.toHaveBeenCalled();
     });
+
+    it("should retrieve binary downloads through the configured base and CSRF contract", async () => {
+        document.cookie = "HYDRA-XSRF-TOKEN=csrf-value";
+        const fetchImplementation = vi
+            .fn()
+            .mockResolvedValue(new Response("zip bytes"));
+        const transport = new ApiTransport("/hydra/", fetchImplementation);
+        await expect(
+            transport.requestBlob("internalapi/nzbzipDownload", {
+                method: "POST",
+                json: "/tmp/file.zip",
+            }),
+        ).resolves.toBeInstanceOf(Blob);
+        expect(fetchImplementation).toHaveBeenCalledWith(
+            "http://localhost:3000/hydra/internalapi/nzbzipDownload",
+            expect.objectContaining({method: "POST"}),
+        );
+        expect(
+            (fetchImplementation.mock.calls[0][1].headers as Headers).get(
+                "X-XSRF-TOKEN",
+            ),
+        ).toBe("csrf-value");
+    });
+
+    it("should resolve browser transfer URLs through the configured application base", () => {
+        const transport = new ApiTransport("/hydra/");
+        expect(transport.browserTransferUrl("getnzb/user/1.2")).toBe(
+            "http://localhost:3000/hydra/getnzb/user/1.2",
+        );
+    });
 });

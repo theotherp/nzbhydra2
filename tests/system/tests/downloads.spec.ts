@@ -86,4 +86,29 @@ test.describe("Downloads", () => {
         expect(path).not.toBeNull();
         expect(await readFile(path as string, "utf8")).toBe(testEnvironment.downloaderIntegrationNzbContent);
     });
+
+    test("should provide the React downloader workflow", async ({hydra, page}) => {
+        await page.goto("ui/react?redirect=/");
+        await dismissWelcomeDialog(page);
+        await searchForResult(page, testEnvironment.downloaderIntegrationQuery, testEnvironment.downloaderIntegrationNzbTitle);
+        const resultRow = page.getByTestId("search-result-row").filter({hasText: testEnvironment.downloaderIntegrationNzbTitle});
+        await resultRow.getByRole("checkbox", {name: `Select ${testEnvironment.downloaderIntegrationNzbTitle}`}).check();
+        const duplicate = page.waitForResponse(response => response.request().method() === "PUT" && new URL(response.url()).pathname === "/internalapi/downloader/checkDuplicateMovieDownload");
+        const add = page.waitForResponse(response => response.request().method() === "PUT" && new URL(response.url()).pathname === "/internalapi/downloader/addNzbs");
+        await page.getByRole("button", {name: "Send selected to downloader"}).click();
+        expect((await duplicate).status()).toBe(200);
+        expect((await add).status()).toBe(200);
+        expect((await hydra.getSabnzbdRecording()).method).toBe("POST");
+    });
+
+    test("should provide the React direct NZB browser transfer", async ({page}) => {
+        await page.goto("ui/react?redirect=/");
+        await dismissWelcomeDialog(page);
+        await searchForResult(page, testEnvironment.downloaderIntegrationQuery, testEnvironment.downloaderIntegrationNzbTitle);
+        const resultRow = page.getByTestId("search-result-row").filter({hasText: testEnvironment.downloaderIntegrationNzbTitle});
+        const downloadEvent = page.waitForEvent("download");
+        await resultRow.getByTestId("download-nzb").click();
+        const download = await downloadEvent;
+        expect(await download.failure()).toBeNull();
+    });
 });

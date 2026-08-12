@@ -29,6 +29,9 @@ export type SearchResult = {
     showtitle?: string;
     season?: string;
     episode?: string;
+    downloadId?: string;
+    originalCategory?: string;
+    downloadedAt?: string;
 };
 
 export type SearchResponse = {
@@ -148,6 +151,21 @@ const resultSchema = z.object({
         .nullish()
         .transform((value) => value ?? undefined),
     episode: z
+        .string()
+        .min(1)
+        .nullish()
+        .transform((value) => value ?? undefined),
+    downloadId: z
+        .string()
+        .min(1)
+        .nullish()
+        .transform((value) => value ?? undefined),
+    originalCategory: z
+        .string()
+        .min(1)
+        .nullish()
+        .transform((value) => value ?? undefined),
+    downloadedAt: z
         .string()
         .min(1)
         .nullish()
