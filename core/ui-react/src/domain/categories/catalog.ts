@@ -2,6 +2,11 @@ import {z} from "zod";
 
 const categorySchema = z.object({
     name: z.string().min(1),
+    searchType: z
+        .enum(["BOOK", "MOVIE", "MUSIC", "SEARCH", "TVSEARCH"])
+        .nullable()
+        .optional()
+        .transform((value) => value ?? "SEARCH"),
     mayBeSelected: z
         .boolean()
         .nullable()
@@ -110,6 +115,7 @@ export function createCategoryCatalog(safeConfig: unknown): CategoryCatalog {
 function emptyCatalog(): CategoryCatalog {
     const all = {
         name: "All",
+        searchType: "SEARCH" as const,
         mayBeSelected: true,
         minSizePreset: undefined,
         maxSizePreset: undefined,

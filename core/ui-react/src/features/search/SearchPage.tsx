@@ -15,6 +15,7 @@ import {useEffect, useRef, useState} from "react";
 
 import {executeSearch, shortcutSearch} from "../../api/search";
 import type {SearchRequest, SearchResponse} from "../../api/search";
+import {getAutocomplete, getEmbyAvailability} from "../../api/media";
 import {createSearchLiveTransport} from "../../api/live/searchState";
 import type {
     SearchLiveTransport,
@@ -62,11 +63,17 @@ export function SearchPage({
     }>({loading: false});
     const [progress, setProgress] = useState<SearchProgress>();
     const [liveUnavailable, setLiveUnavailable] = useState<string>();
+    const [embyAvailability, setEmbyAvailability] = useState<
+        "available" | "unavailable" | "error" | undefined
+    >();
     const activeSubmission = useRef<
         {cancelled: boolean; subscription?: LiveSubscription} | undefined
     >(undefined);
+    const embyGeneration = useRef(0);
     const releaseSubmission = (submission = activeSubmission.current) => {
-        if (!submission || submission.cancelled) return;
+        if (!submission || submission.cancelled) {
+            return;
+        }
         submission.cancelled = true;
         if (activeSubmission.current === submission) {
             activeSubmission.current = undefined;
@@ -74,8 +81,18 @@ export function SearchPage({
         submission.subscription?.close();
         submission.subscription = undefined;
     };
-    useEffect(() => () => releaseSubmission(), []);
+    useEffect(
+        () => () => {
+            embyGeneration.current++;
+            releaseSubmission();
+        },
+        [],
+    );
     const submit = async (values: SearchFormValues) => {
+        const selectedCategory = catalog.categories.find(
+            (category) => category.name === values.category,
+        );
+        const isTvSearch = selectedCategory?.searchType === "TVSEARCH";
         const indexers = catalog.preselectedIndexerNames(values.category);
         if (indexers.length === 0) {
             return;
@@ -88,19 +105,29 @@ export function SearchPage({
             cancelled: false,
         };
         activeSubmission.current = submission;
+        const currentEmbyGeneration = ++embyGeneration.current;
+        setEmbyAvailability(undefined);
         await navigate({
             to: "/",
             search: {
                 ...canonicalSearch(values),
-                ...(episodeRequested ? {episode: requestedEpisode} : {}),
+                ...(episodeRequested && !values.episode
+                    ? {episode: requestedEpisode}
+                    : {}),
             },
         });
-        if (submission.cancelled) return;
+        if (submission.cancelled) {
+            return;
+        }
         setProgress(undefined);
         setLiveUnavailable(undefined);
         setState({loading: true});
         const request: SearchRequest = {
-            query: values.query || undefined,
+            query:
+                values.additionalQuery ||
+                (hasMediaIdentifiers(values)
+                    ? undefined
+                    : values.title || values.query || undefined),
             category: values.category,
             minage: numberOrUndefined(values.minage),
             maxage: numberOrUndefined(values.maxage),
@@ -109,6 +136,23 @@ export function SearchPage({
             indexers,
             loadAll: false,
             searchRequestId: numericRequestId(),
+            ...(hasMediaIdentifiers(values)
+                ? {
+                      title: values.title,
+                      imdbId: values.imdbId || undefined,
+                      tmdbId: values.tmdbId || undefined,
+                      tvdbId: values.tvdbId || undefined,
+                      tvmazeId: values.tvmazeId || undefined,
+                      tvrageId: values.tvrageId || undefined,
+                      season: numberOrUndefined(values.season),
+                      episode: values.episode || undefined,
+                  }
+                : isTvSearch
+                  ? {
+                        season: numberOrUndefined(values.season),
+                        episode: values.episode || undefined,
+                    }
+                  : {}),
         };
         try {
             const subscribed = await liveTransport.subscribeSearchState(
@@ -142,6 +186,20 @@ export function SearchPage({
             const data = await executeSearch(transport, request);
             if (activeSubmission.current === submission) {
                 setState({loading: false, data});
+                if (isEmbyConfigured(bootstrap.safeConfig)) {
+                    void checkEmbyAvailability(
+                        transport,
+                        values,
+                        selectedCategory?.searchType,
+                        (availability) => {
+                            if (
+                                embyGeneration.current === currentEmbyGeneration
+                            ) {
+                                setEmbyAvailability(availability);
+                            }
+                        },
+                    );
+                }
             }
         } catch (error) {
             if (activeSubmission.current === submission) {
@@ -158,7 +216,9 @@ export function SearchPage({
         }
     };
     const showEarlyResults = async () => {
-        if (!progress) return;
+        if (!progress) {
+            return;
+        }
         try {
             await shortcutSearch(transport, progress.searchRequestId);
         } catch {
@@ -174,7 +234,21 @@ export function SearchPage({
                 catalog={catalog}
                 initialValues={initialValues}
                 onSubmit={submit}
+                autocomplete={(type, input) =>
+                    getAutocomplete(transport, type, input)
+                }
             />
+            {embyAvailability === "available" && (
+                <Alert severity="success">Available in Emby.</Alert>
+            )}
+            {embyAvailability === "unavailable" && (
+                <Alert severity="info">Not available in Emby.</Alert>
+            )}
+            {embyAvailability === "error" && (
+                <Alert severity="warning">
+                    Unable to check Emby availability.
+                </Alert>
+            )}
             {state.loading && (
                 <Stack alignItems="center" role="status">
                     <CircularProgress />
@@ -253,6 +327,64 @@ export function SearchPage({
 function numberOrUndefined(value: string): number | undefined {
     return value === "" ? undefined : Number(value);
 }
+
 function numericRequestId(): number {
     return Math.floor(Math.random() * 1000000000);
+}
+
+function hasMediaIdentifiers(values: SearchFormValues): boolean {
+    return Boolean(
+        values.imdbId ||
+        values.tmdbId ||
+        values.tvdbId ||
+        values.tvmazeId ||
+        values.tvrageId,
+    );
+}
+
+async function checkEmbyAvailability(
+    transport: ApiTransport,
+    values: SearchFormValues,
+    searchType: "BOOK" | "MOVIE" | "MUSIC" | "SEARCH" | "TVSEARCH" | undefined,
+    setAvailability: (value: "available" | "unavailable" | "error") => void,
+): Promise<void> {
+    const type =
+        searchType === "MOVIE"
+            ? "MOVIE"
+            : searchType === "TVSEARCH"
+              ? "TV"
+              : undefined;
+    const id =
+        type === "MOVIE"
+            ? values.tmdbId
+            : type === "TV"
+              ? values.tvdbId
+              : undefined;
+    if (!type || !id) {
+        return;
+    }
+    try {
+        setAvailability(
+            (await getEmbyAvailability(transport, type, id))
+                ? "available"
+                : "unavailable",
+        );
+    } catch {
+        setAvailability("error");
+    }
+}
+
+function isEmbyConfigured(safeConfig: unknown): boolean {
+    if (!safeConfig || typeof safeConfig !== "object") {
+        return false;
+    }
+    const emby = (safeConfig as {emby?: unknown}).emby;
+    if (!emby || typeof emby !== "object") {
+        return false;
+    }
+    const {embyBaseUrl, embyApiKey} = emby as {
+        embyBaseUrl?: unknown;
+        embyApiKey?: unknown;
+    };
+    return typeof embyBaseUrl === "string" && typeof embyApiKey === "string";
 }

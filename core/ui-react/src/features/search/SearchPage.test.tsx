@@ -69,6 +69,29 @@ const immediatelyUnavailableLiveTransport: SearchLiveTransport = {
         .mockRejectedValue(new Error("Live progress is unavailable")),
 };
 
+const embyBootstrap = {
+    ...bootstrap,
+    safeConfig: {
+        ...bootstrap.safeConfig,
+        categoriesConfig: {
+            ...bootstrap.safeConfig.categoriesConfig,
+            categories: [{name: "Movies", searchType: "MOVIE"}],
+            defaultCategory: "Movies",
+        },
+        emby: {embyBaseUrl: "http://emby", embyApiKey: "key"},
+    },
+};
+
+function embySearch(): void {
+    router.search = {category: "Movies", title: "Movie", tmdbId: "42"};
+}
+
+function searchResponse(): Response {
+    return new Response(JSON.stringify(responseEnvelope), {
+        headers: {"Content-Type": "application/json"},
+    });
+}
+
 describe("SearchPage", () => {
     afterEach(() => {
         cleanup();
@@ -116,15 +139,61 @@ describe("SearchPage", () => {
             },
         });
         const request = JSON.parse(fetchImplementation.mock.calls[0][1].body);
-        expect(request).toMatchObject({
+        expect(request).toEqual({
             query: "query",
             category: "All",
             minage: 2,
             maxsize: 50,
             indexers: ["Configured"],
             loadAll: false,
+            searchRequestId: expect.any(Number),
         });
-        expect(typeof request.searchRequestId).toBe("number");
+    });
+
+    it("should submit typed TV season and episode criteria without an identifier", async () => {
+        router.search = {category: "Series"};
+        const fetchImplementation = vi.fn().mockResolvedValue(searchResponse());
+        render(
+            <SearchPage
+                bootstrap={{
+                    ...bootstrap,
+                    safeConfig: {
+                        ...bootstrap.safeConfig,
+                        categoriesConfig: {
+                            ...bootstrap.safeConfig.categoriesConfig,
+                            categories: [
+                                {name: "Series", searchType: "TVSEARCH"},
+                            ],
+                            defaultCategory: "Series",
+                        },
+                    },
+                }}
+                transport={new ApiTransport("/hydra/", fetchImplementation)}
+                liveTransport={immediatelyUnavailableLiveTransport}
+            />,
+        );
+
+        fireEvent.change(screen.getByLabelText("Search"), {
+            target: {value: "Example Show"},
+        });
+        fireEvent.change(screen.getByLabelText("Season"), {
+            target: {value: "2"},
+        });
+        fireEvent.change(screen.getByLabelText("Episode"), {
+            target: {value: "5"},
+        });
+        fireEvent.click(screen.getByTestId("search-submit"));
+
+        await waitFor(() => expect(fetchImplementation).toHaveBeenCalledOnce());
+        expect(JSON.parse(fetchImplementation.mock.calls[0][1].body)).toEqual({
+            query: "Example Show",
+            category: "Series",
+            indexers: ["Configured"],
+            loadAll: false,
+            searchRequestId: expect.any(Number),
+            season: 2,
+            episode: "5",
+        });
     });
 
     it("should not request when no configured indexers are selected", () => {
@@ -230,6 +299,141 @@ describe("SearchPage", () => {
         expect(
             await screen.findByText("Unable to execute search."),
         ).toBeVisible();
+    });
+
+    it.each([
+        [true, "Available in Emby."],
+        [false, "Not available in Emby."],
+    ])("should show Emby availability %s", async (available, message) => {
+        embySearch();
+        const fetchImplementation = vi.fn((url: RequestInfo | URL) =>
+            Promise.resolve(
+                new Response(
+                    String(url).includes("isMovieAvailable")
+                        ? JSON.stringify(available)
+                        : JSON.stringify(responseEnvelope),
+                    {headers: {"Content-Type": "application/json"}},
+                ),
+            ),
+        );
+        render(
+            <SearchPage
+                bootstrap={embyBootstrap}
+                transport={new ApiTransport("/hydra/", fetchImplementation)}
+                liveTransport={immediatelyUnavailableLiveTransport}
+            />,
+        );
+        fireEvent.click(screen.getByTestId("search-submit"));
+        expect(await screen.findByText(message)).toBeVisible();
+    });
+
+    it("should show an Emby availability error", async () => {
+        embySearch();
+        const fetchImplementation = vi.fn((url: RequestInfo | URL) =>
+            String(url).includes("isMovieAvailable")
+                ? Promise.reject(new Error("Embry unavailable"))
+                : Promise.resolve(searchResponse()),
+        );
+        render(
+            <SearchPage
+                bootstrap={embyBootstrap}
+                transport={new ApiTransport("/hydra/", fetchImplementation)}
+                liveTransport={immediatelyUnavailableLiveTransport}
+            />,
+        );
+        fireEvent.click(screen.getByTestId("search-submit"));
+        expect(
+            await screen.findByText("Unable to check Emby availability."),
+        ).toBeVisible();
+    });
+
+    it("should use the TV Emby endpoint and TVDB ID for a dual-ID TV selection", async () => {
+        router.search = {
+            category: "Series",
+            title: "Example Series",
+            tmdbId: "42",
+            tvdbId: "7",
+        };
+        const fetchImplementation = vi.fn((url: RequestInfo | URL) =>
+            Promise.resolve(
+                new Response(
+                    String(url).includes("isSeriesAvailable")
+                        ? "false"
+                        : JSON.stringify(responseEnvelope),
+                    {headers: {"Content-Type": "application/json"}},
+                ),
+            ),
+        );
+        render(
+            <SearchPage
+                bootstrap={{
+                    ...embyBootstrap,
+                    safeConfig: {
+                        ...embyBootstrap.safeConfig,
+                        categoriesConfig: {
+                            ...embyBootstrap.safeConfig.categoriesConfig,
+                            categories: [
+                                {name: "Series", searchType: "TVSEARCH"},
+                            ],
+                            defaultCategory: "Series",
+                        },
+                    },
+                }}
+                transport={new ApiTransport("/hydra/", fetchImplementation)}
+                liveTransport={immediatelyUnavailableLiveTransport}
+            />,
+        );
+
+        fireEvent.click(screen.getByTestId("search-submit"));
+
+        expect(await screen.findByText("Not available in Emby.")).toBeVisible();
+        expect(fetchImplementation).toHaveBeenCalledWith(
+            "http://localhost:3000/hydra/internalapi/emby/isSeriesAvailable?tvdbId=7",
+            expect.anything(),
+        );
+    });
+
+    it("should ignore stale Emby availability from an earlier submission", async () => {
+        embySearch();
+        let resolveFirstAvailability: (response: Response) => void = () =>
+            undefined;
+        let availabilityCalls = 0;
+        const fetchImplementation = vi.fn((url: RequestInfo | URL) => {
+            if (!String(url).includes("isMovieAvailable")) {
+                return Promise.resolve(searchResponse());
+            }
+            availabilityCalls++;
+            return availabilityCalls === 1
+                ? new Promise<Response>(
+                      (resolve) => (resolveFirstAvailability = resolve),
+                  )
+                : Promise.resolve(
+                      new Response("false", {
+                          headers: {"Content-Type": "application/json"},
+                      }),
+                  );
+        });
+        render(
+            <SearchPage
+                bootstrap={embyBootstrap}
+                transport={new ApiTransport("/hydra/", fetchImplementation)}
+                liveTransport={immediatelyUnavailableLiveTransport}
+            />,
+        );
+        fireEvent.click(screen.getByTestId("search-submit"));
+        await waitFor(() => expect(availabilityCalls).toBe(1));
+        fireEvent.click(screen.getByTestId("search-submit"));
+        expect(await screen.findByText("Not available in Emby.")).toBeVisible();
+        resolveFirstAvailability(
+            new Response("true", {
+                headers: {"Content-Type": "application/json"},
+            }),
+        );
+        await waitFor(() =>
+            expect(
+                screen.queryByText("Available in Emby."),
+            ).not.toBeInTheDocument(),
+        );
     });
 
     it("should show scoped progress, offer early results, and release the subscription", async () => {

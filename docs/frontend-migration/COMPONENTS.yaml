@@ -70,7 +70,7 @@ components:
     consumers: [ F-STATS-INDEXERS, F-HISTORY-SEARCHES, F-HISTORY-DOWNLOADS, F-HISTORY-NOTIFICATIONS, F-SYSTEM-LOG, F-SYSTEM-TASKS, F-SYSTEM-BACKUP ]
     classification: shared_hydra
     state: planned
-    task: null
+    task: FM-020
 
   - id: C-SERVER-PREFERENCES
     responsibility: Server-backed per-user and global acknowledgements and UI preferences
@@ -142,7 +142,7 @@ components:
     consumers: [ F-CONFIG-SHELL, F-SEARCH-RESULTS, F-HISTORY-DOWNLOADS, F-SYSTEM-ABOUT ]
     classification: shared_hydra
     state: planned
-    task: null
+    task: FM-019
 
   - id: C-RESULT-TABLE
     responsibility: Hydra-specific search result processing, grouping, filtering, sorting, selection, and presentation using TanStack primitives

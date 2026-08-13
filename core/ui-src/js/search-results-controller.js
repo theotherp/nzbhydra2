@@ -716,7 +716,8 @@ function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $doc
 
             }
 
-            if ($scope.foo.hideAlreadyDownloadedResults && item.downloadedAt !== null) {
+            if ($scope.foo.hideAlreadyDownloadedResults && angular.isDefined(item.downloadedAt) && item.downloadedAt !== null) {
+                console.debug(item.title + " was filtered because it was already downloaded at " + item.downloadedAt);
                 filterReasons["alreadyDownloaded"] = filterReasons["alreadyDownloaded"] + 1;
                 return false;
             }

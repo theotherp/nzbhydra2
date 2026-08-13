@@ -35,8 +35,8 @@ features:
     selectors: [ search-query, search-submit, search-category-control, "search-category-option-{{category.name}}", additional-query, autocomplete-popup, autocomplete-option ]
     target: core/ui-react/src/features/search
     parity: partial
-    gaps: [ autocomplete/identifier refinement, selectable indexers, recent searches, guided tour ]
-    task: FM-010
+    gaps: [ selectable indexers, recent searches, guided tour ]
+    task: FM-025
 
   - id: F-SEARCH-MEDIA
     name: Movie and TV autocomplete, identifiers, title refinement, season, and episode
@@ -48,8 +48,8 @@ features:
     selectors: [ additional-query, autocomplete-popup, autocomplete-option ]
     target: core/ui-react/src/features/search
     parity: partial
-    gaps: [ TV autocomplete, season and episode, IMDb, TVDB, TVMaze, and non-TMDB identifier searches ]
-    task: FM-001
+    gaps: [ ]
+    task: FM-025
 
   - id: F-SEARCH-INDEXERS
     name: Indexer selection by individual source, type, group, and preselection
@@ -62,7 +62,7 @@ features:
     target: core/ui-react/src/features/search
     parity: partial
     gaps: [ selection controls, groups, disabled indexers, select all, invert selection ]
-    task: FM-001
+    task: FM-016
 
   - id: F-SEARCH-RECENT
     name: Recent-search dropdown, refill, repeat, and drag-to-search
@@ -75,7 +75,7 @@ features:
     target: core/ui-react/src/features/search
     parity: partial
     gaps: [ search-page dropdown and drag behavior ]
-    task: FM-001
+    task: FM-017
 
   - id: F-SEARCH-PROGRESS
     name: Live search progress, cancellation, and early result display
@@ -152,7 +152,7 @@ features:
     selectors: [ ]
     target: core/ui-react/src/features/search/results
     parity: inventoried
-    task: FM-001
+    task: FM-018
 
   - id: F-SEARCH-SAVED
     name: Save an executed search for later reuse
@@ -165,7 +165,7 @@ features:
     target: core/ui-react/src/features/search
     parity: partial
     gaps: [ saved-search listing, reopen, and deletion ]
-    task: FM-001
+    task: FM-019
 
   - id: F-SEARCH-TOUR
     name: Guided search tour and demo-mode lifecycle
@@ -304,7 +304,7 @@ features:
     target: core/ui-react/src/features/stats
     parity: partial
     gaps: [ visibility rules ]
-    task: FM-001
+    task: FM-020
 
   - id: F-STATS-MAIN
     name: Aggregate statistics, date ranges, switches, and charts
@@ -317,7 +317,7 @@ features:
     target: core/ui-react/src/features/stats
     parity: partial
     gaps: [ rendered statistics, charts, date ranges, include-disabled behavior ]
-    task: FM-001
+    task: FM-024
 
   - id: F-STATS-INDEXERS
     name: Indexer status, errors, counters, and VIP expiry
@@ -330,7 +330,7 @@ features:
     target: core/ui-react/src/features/stats/indexers
     parity: partial
     gaps: [ visible status behavior ]
-    task: FM-001
+    task: FM-020
 
   - id: F-HISTORY-SEARCHES
     name: Search-history paging, filtering, details, and repeat
@@ -343,7 +343,7 @@ features:
     target: core/ui-react/src/features/stats/history
     parity: partial
     gaps: [ paging and all filter combinations ]
-    task: FM-001
+    task: FM-021
 
   - id: F-HISTORY-SAVED-SEARCHES
     name: Saved-search listing, links, reuse, and deletion
@@ -356,7 +356,7 @@ features:
     target: core/ui-react/src/features/stats/history
     parity: partial
     gaps: [ route UI lifecycle ]
-    task: FM-001
+    task: FM-019
 
   - id: F-HISTORY-DOWNLOADS
     name: Download-history paging, filtering, links, and repeat actions
@@ -368,7 +368,7 @@ features:
     selectors: [ ]
     target: core/ui-react/src/features/stats/history
     parity: inventoried
-    task: FM-001
+    task: FM-022
 
   - id: F-HISTORY-NOTIFICATIONS
     name: Notification-history paging and filtering
@@ -380,7 +380,7 @@ features:
     selectors: [ ]
     target: core/ui-react/src/features/stats/history
     parity: inventoried
-    task: FM-001
+    task: FM-023
 
   - id: F-SYSTEM-SHELL
     name: System administration tab shell

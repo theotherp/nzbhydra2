@@ -11847,10 +11847,12 @@ function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $doc
                 var filterValue = $scope.filterModel.size.filterValue;
                 if (angular.isDefined(filterValue.min) && item.size / 1024 / 1024 < filterValue.min) {
                     filterReasons["tooSmall"] = filterReasons["tooSmall"] + 1;
+                    console.debug("Item too small", item.title);
                     return false;
                 }
                 if (angular.isDefined(filterValue.max) && item.size / 1024 / 1024 > filterValue.max) {
                     filterReasons["tooLarge"] = filterReasons["tooLarge"] + 1;
+                    console.debug("Item too large", item.title);
                     return false;
                 }
             }
@@ -11872,6 +11874,7 @@ function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $doc
                     min = Number(min);
                     if (age < min) {
                         filterReasons["tooYoung"] = filterReasons["tooYoung"] + 1;
+                        console.debug("Item too young", item.title);
                         return false;
                     }
                 }
@@ -11890,6 +11893,7 @@ function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $doc
                     max = Number(max);
                     if (age > max) {
                         filterReasons["tooOld"] = filterReasons["tooOld"] + 1;
+                        console.debug("Item too old", item.title);
                         return false;
                     }
                 }
@@ -11901,12 +11905,14 @@ function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $doc
                 if (angular.isDefined(filterValue.min)) {
                     if ((item.seeders !== null && item.seeders < filterValue.min) || (item.seeders === null && item.grabs !== null && item.grabs < filterValue.min)) {
                         filterReasons["tooFewGrabs"] = filterReasons["tooFewGrabs"] + 1;
+                        console.debug("Item too few grabs", item.title);
                         return false;
                     }
                 }
                 if (angular.isDefined(filterValue.max)) {
                     if ((item.seeders !== null && item.seeders > filterValue.max) || (item.seeders === null && item.grabs !== null && item.grabs > filterValue.max)) {
                         filterReasons["tooManyGrabs"] = filterReasons["tooManyGrabs"] + 1;
+                        console.debug("Item too many grabs", item.title);
                         return false;
                     }
                 }
@@ -11930,18 +11936,21 @@ function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $doc
 
                 if (!ok) {
                     filterReasons["title"] = filterReasons["title"] + 1;
+                    console.debug("Item title wrong ", item.title);
                     return false;
                 }
             }
             if ("indexer" in $scope.filterModel) {
                 if (_.indexOf($scope.filterModel.indexer.filterValue, item.indexer) === -1) {
                     filterReasons["title"] = filterReasons["title"] + 1;
+                    console.debug("Item indexer filter", item.title);
                     return false;
                 }
             }
             if ("category" in $scope.filterModel) {
                 if (_.indexOf($scope.filterModel.category.filterValue, item.category) === -1) {
                     filterReasons["category"] = filterReasons["category"] + 1;
+                    console.debug("Item category filter", item.title);
                     return false;
                 }
             }
@@ -11959,6 +11968,7 @@ function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $doc
                     if (!containsAtLeastOne) {
                         console.debug(item.title + " does not contain any of the words " + JSON.stringify(mustContain));
                         filterReasons["quickFilter"] = filterReasons["quickFilter"] + 1;
+                        console.debug("Item quick filtered ", item.title);
                         return false;
                     }
                 }
@@ -11978,6 +11988,7 @@ function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $doc
                     if (!containsAtLeastOne) {
                         console.debug(item.title + " does not contain any of the qualities " + JSON.stringify(requiresAnyOf));
                         filterReasons["quickFilter"] = filterReasons["quickFilter"] + 1;
+                        console.debug("Item quality filtered ", item.title);
                         return false;
                     }
                 }
@@ -11996,6 +12007,7 @@ function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $doc
                     if (!containsAtLeastOne) {
                         console.debug(item.title + " does not contain any of the 'other' values " + JSON.stringify(requiresAnyOf));
                         filterReasons["quickFilter"] = filterReasons["quickFilter"] + 1;
+                        console.debug("Item quick filtered 2 ", item.title);
                         return false;
                     }
                 }
@@ -12029,6 +12041,7 @@ function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $doc
                     if (!allMatch) {
                         console.debug(item.title + " does not match all the terms of " + JSON.stringify(quickFilterWords));
                         filterReasons["quickFilter"] = filterReasons["quickFilter"] + 1;
+                        console.debug("Item quick filtered 3 ", item.title);
                         return false;
                     }
                 }
@@ -12040,13 +12053,15 @@ function SearchResultsController($stateParams, $scope, $http, $q, $timeout, $doc
                     if (!allMatch) {
                         console.debug(item.title + " does not match all the regexes of " + JSON.stringify(quickFilterRegexes));
                         filterReasons["quickFilter"] = filterReasons["quickFilter"] + 1;
+                        console.debug("Item quick filtered 4 ", item.title);
                         return false;
                     }
                 }
 
             }
 
-            if ($scope.foo.hideAlreadyDownloadedResults && item.downloadedAt !== null) {
+            if ($scope.foo.hideAlreadyDownloadedResults && angular.isDefined(item.downloadedAt) && item.downloadedAt !== null) {
+                console.debug(item.title + " was filtered because it was already downloaded at " + item.downloadedAt);
                 filterReasons["alreadyDownloaded"] = filterReasons["alreadyDownloaded"] + 1;
                 return false;
             }

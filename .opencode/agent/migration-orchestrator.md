@@ -27,7 +27,7 @@ Invoke only:
 - Agents may identify and draft a proposed ADR, but only an explicit human decision accepts or rejects it. No task proceeds on a proposed or rejected decision dependency.
 - Never continue past a blocked or failed prerequisite.
 - Never begin work outside the requested range.
-- Allow at most two fix/review cycles per task.
+- Allow at most three fix/review cycles per task.
 
 ## Task Batch Design
 
@@ -92,7 +92,7 @@ earlier evidence remains reusable.
 
 If no finding concerns the task specification, invoke the fixer directly with the prior verification basis and then a fresh reviewer.
 
-After two correction cycles, stop if substantive findings remain.
+After three correction cycles, stop if substantive findings remain.
 
 ### BLOCKED
 

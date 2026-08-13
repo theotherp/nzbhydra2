@@ -192,6 +192,28 @@ test.describe("Search", () => {
         await expect(page.getByTestId("search-status-modal")).toBeHidden();
         await expect(page.getByTestId("search-result-title").filter({hasText: "Hydra Downloader Integration Movie"})).toBeVisible();
     });
+
+    test("should select a TV autocomplete result with the keyboard and search by TVDB identifier", async ({page}) => {
+        await page.goto("ui/react?redirect=/");
+        await expect(page).toHaveURL(/\/$/);
+        await page.getByTestId("search-category-control").click();
+        await page.getByTestId("search-category-option-TV").click();
+        await page.route("**/internalapi/autocomplete/TV?input=Hydra+TV", route =>
+            route.fulfill({json: [{title: "Hydra TV", tvdbId: "31337"}]}),
+        );
+        const searchQuery = page.getByTestId("search-query");
+        await searchQuery.fill("Hydra TV");
+        await expect(page.getByTestId("autocomplete-option")).toBeVisible();
+        await searchQuery.press("ArrowDown");
+        await searchQuery.press("Enter");
+        await expect(page.getByTestId("additional-query")).toBeEnabled();
+        await page.getByLabel("Season").fill("1");
+        await page.getByLabel("Episode").fill("2");
+        const searchResponse = page.waitForResponse(response => isSearchResponse(response));
+        await page.getByTestId("search-submit").click();
+        const request = (await searchResponse).request().postDataJSON() as Record<string, unknown>;
+        expect(request).toMatchObject({title: "Hydra TV", tvdbId: "31337", season: 1, episode: "2"});
+    });
 });
 
 function isSearchResponse(response: import("@playwright/test").Response): boolean {
