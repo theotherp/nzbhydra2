@@ -81,6 +81,38 @@ test.describe("Search", () => {
         }
     });
 
+    test("should submit the explicit React indexer selection in both presentations", async ({hydra, page}) => {
+        const config = await hydra.getConfig();
+        const indexers = config.indexers as Array<Record<string, unknown>>;
+        indexers[0].preselect = true;
+        indexers[0].groupNames = ["Primary"];
+        indexers[1].preselect = false;
+        indexers[1].groupNames = ["Secondary"];
+        const main = config.main as Record<string, unknown>;
+        await hydra.saveConfig(config);
+
+        await page.goto("ui/react?redirect=/");
+        await expect(page).toHaveURL(/\/$/);
+        const indexerSelect = page.getByRole("combobox", {name: "Indexers"});
+        await indexerSelect.click();
+        await page.getByRole("option", {name: "Mock1"}).click();
+        await page.getByRole("option", {name: "Mock2"}).click();
+        await page.keyboard.press("Escape");
+        const dropdownRequest = page.waitForResponse(response => isSearchResponse(response));
+        await page.getByTestId("search-submit").click();
+        expect((await dropdownRequest).request().postDataJSON()).toMatchObject({indexers: ["Mock2"]});
+
+        main.indexerSelectionAsCheckboxes = true;
+        await hydra.saveConfig(config);
+        await page.reload();
+        await expect(page.getByRole("checkbox", {name: "Mock1"})).not.toBeChecked();
+        await page.getByRole("button", {name: "Deselect all"}).click();
+        await page.getByRole("button", {name: "Select group Secondary"}).click();
+        const checkboxRequest = page.waitForResponse(response => isSearchResponse(response));
+        await page.getByTestId("search-submit").click();
+        expect((await checkboxRequest).request().postDataJSON()).toMatchObject({indexers: ["Mock2"]});
+    });
+
     test("should warn when indexer API hit or download limits are nearly exhausted", async ({hydra, page}) => {
         const config = await hydra.getConfig();
         const indexers = config.indexers as Array<Record<string, unknown>>;

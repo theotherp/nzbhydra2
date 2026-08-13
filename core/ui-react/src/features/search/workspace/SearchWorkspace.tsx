@@ -1,4 +1,13 @@
-import {Alert, Box, Button, MenuItem, Stack, TextField} from "@mui/material";
+import {
+    Alert,
+    Box,
+    Button,
+    Checkbox,
+    FormControlLabel,
+    MenuItem,
+    Stack,
+    TextField,
+} from "@mui/material";
 import {Controller, useForm} from "react-hook-form";
 import {useEffect, useId, useRef, useState} from "react";
 import {z} from "zod";
@@ -7,6 +16,8 @@ import type {MediaSuggestion} from "../../../api/media";
 import type {CategoryCatalog} from "../../../domain/categories/catalog";
 
 const numericString = z.string().regex(/^\d*$/);
+const defaultAutocomplete = async (): Promise<MediaSuggestion[]> => [];
+
 export const searchFormSchema = z.object({
     query: z.string(),
     category: z.string().min(1),
@@ -23,6 +34,7 @@ export const searchFormSchema = z.object({
     tvdbId: z.string(),
     tvmazeId: z.string(),
     tvrageId: z.string(),
+    indexers: z.array(z.string()),
 });
 
 export type SearchFormValues = z.infer<typeof searchFormSchema>;
@@ -68,7 +80,22 @@ export function valuesFromSearch(
         tvdbId: fieldValue(search, "tvdbId"),
         tvmazeId: fieldValue(search, "tvmazeId"),
         tvrageId: fieldValue(search, "tvrageId"),
+        indexers: indexersFromSearch(search, catalog, category),
     };
+}
+
+function indexersFromSearch(
+    search: Record<string, unknown>,
+    catalog: CategoryCatalog,
+    category: string,
+): string[] {
+    const eligible = new Set(
+        catalog.eligibleIndexers(category).map((indexer) => indexer.name),
+    );
+    if (typeof search.indexers !== "string") {
+        return catalog.preselectedIndexerNames(category);
+    }
+    return search.indexers.split(",").filter((name) => eligible.has(name));
 }
 
 function fieldValue(search: Record<string, unknown>, name: string): string {
@@ -96,6 +123,7 @@ export function canonicalSearch(
             tvdbId: values.tvdbId,
             tvmazeId: values.tvmazeId,
             tvrageId: values.tvrageId,
+            indexers: values.indexers.join(","),
         }).filter(([, value]) => value !== ""),
     );
 }
@@ -104,7 +132,9 @@ export function SearchWorkspace({
     catalog,
     initialValues,
     onSubmit,
-    autocomplete = async () => [],
+    autocomplete = defaultAutocomplete,
+    showIndexerSelection = false,
+    indexerSelectionAsCheckboxes = false,
 }: {
     catalog: CategoryCatalog;
     initialValues: SearchFormValues;
@@ -113,6 +143,8 @@ export function SearchWorkspace({
         type: "MOVIE" | "TV",
         input: string,
     ): Promise<MediaSuggestion[]>;
+    showIndexerSelection?: boolean;
+    indexerSelectionAsCheckboxes?: boolean;
 }) {
     const {
         register,
@@ -201,15 +233,20 @@ export function SearchWorkspace({
             setValue("maxsize", selected?.maxSizePreset?.toString() ?? "");
         }
     };
-    const noIndexers =
-        catalog.preselectedIndexerNames(selectedCategory).length === 0;
+    const eligibleIndexers = catalog.eligibleIndexers(selectedCategory);
+    const selectedIndexers = watch("indexers");
+    const noIndexers = selectedIndexers.length === 0;
+    const selectIndexers = (names: string[]) => setValue("indexers", names);
+    const resetIndexers = (category = selectedCategory) =>
+        selectIndexers(catalog.preselectedIndexerNames(category));
     return (
         <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{mt: 3}}>
             <Stack spacing={2}>
                 {noIndexers && (
                     <Alert severity="info">
-                        No indexers are configured or enabled. Configure an
-                        indexer before searching.
+                        {eligibleIndexers.length === 0
+                            ? "No indexers are configured or enabled. Configure an indexer before searching."
+                            : "You didn't select any indexers."}
                     </Alert>
                 )}
                 {mediaType ? (
@@ -370,9 +407,20 @@ export function SearchWorkspace({
                             label="Category"
                             select
                             {...field}
-                            onChange={(event) =>
-                                categoryChanged(event.target.value)
-                            }
+                            onChange={(event) => {
+                                const category = event.target.value;
+                                categoryChanged(category);
+                                const eligible = new Set(
+                                    catalog
+                                        .eligibleIndexers(category)
+                                        .map((indexer) => indexer.name),
+                                );
+                                selectIndexers(
+                                    selectedIndexers.filter((name) =>
+                                        eligible.has(name),
+                                    ),
+                                );
+                            }}
                         >
                             {catalog.categories.map((category) => (
                                 <MenuItem
@@ -386,6 +434,156 @@ export function SearchWorkspace({
                         </TextField>
                     )}
                 />
+                {showIndexerSelection && eligibleIndexers.length > 0 && (
+                    <Box aria-label="Indexer selection">
+                        {!indexerSelectionAsCheckboxes && (
+                            <TextField
+                                label="Indexers"
+                                select
+                                SelectProps={{
+                                    multiple: true,
+                                    value: selectedIndexers,
+                                    onChange: (event) =>
+                                        selectIndexers(
+                                            typeof event.target.value ===
+                                                "string"
+                                                ? event.target.value.split(",")
+                                                : (event.target
+                                                      .value as string[]),
+                                        ),
+                                }}
+                                fullWidth
+                            >
+                                {eligibleIndexers.map((indexer) => (
+                                    <MenuItem
+                                        key={indexer.name}
+                                        value={indexer.name}
+                                    >
+                                        {indexer.name}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
+                        )}
+                        {indexerSelectionAsCheckboxes &&
+                            eligibleIndexers.map((indexer) => (
+                                <FormControlLabel
+                                    key={indexer.name}
+                                    control={
+                                        <Checkbox
+                                            checked={selectedIndexers.includes(
+                                                indexer.name,
+                                            )}
+                                            onChange={() =>
+                                                selectIndexers(
+                                                    selectedIndexers.includes(
+                                                        indexer.name,
+                                                    )
+                                                        ? selectedIndexers.filter(
+                                                              (name) =>
+                                                                  name !==
+                                                                  indexer.name,
+                                                          )
+                                                        : [
+                                                              ...selectedIndexers,
+                                                              indexer.name,
+                                                          ],
+                                                )
+                                            }
+                                        />
+                                    }
+                                    label={indexer.name}
+                                />
+                            ))}
+                        <Stack
+                            direction="row"
+                            flexWrap="wrap"
+                            spacing={1}
+                            sx={{mt: 1}}
+                        >
+                            <Button
+                                onClick={() =>
+                                    selectIndexers(
+                                        eligibleIndexers.map(
+                                            (indexer) => indexer.name,
+                                        ),
+                                    )
+                                }
+                            >
+                                Select all
+                            </Button>
+                            <Button onClick={() => selectIndexers([])}>
+                                Deselect all
+                            </Button>
+                            <Button
+                                onClick={() =>
+                                    selectIndexers(
+                                        eligibleIndexers
+                                            .filter(
+                                                (indexer) =>
+                                                    !selectedIndexers.includes(
+                                                        indexer.name,
+                                                    ),
+                                            )
+                                            .map((indexer) => indexer.name),
+                                    )
+                                }
+                            >
+                                Invert selection
+                            </Button>
+                            <Button onClick={() => resetIndexers()}>
+                                Reset to preselection
+                            </Button>
+                            {(["Usenet", "Torznab"] as const).map((type) => {
+                                const names = eligibleIndexers
+                                    .filter((indexer) =>
+                                        type === "Torznab"
+                                            ? indexer.searchModuleType ===
+                                              "TORZNAB"
+                                            : indexer.searchModuleType !==
+                                              "TORZNAB",
+                                    )
+                                    .map((indexer) => indexer.name);
+                                return names.length > 0 ? (
+                                    <Button
+                                        key={type}
+                                        onClick={() => selectIndexers(names)}
+                                    >
+                                        Select all {type.toLowerCase()} indexers
+                                    </Button>
+                                ) : null;
+                            })}
+                            {[
+                                ...new Set(
+                                    eligibleIndexers.flatMap(
+                                        (indexer) => indexer.groupNames,
+                                    ),
+                                ),
+                            ]
+                                .sort()
+                                .map((group) => (
+                                    <Button
+                                        key={group}
+                                        onClick={() =>
+                                            selectIndexers(
+                                                eligibleIndexers
+                                                    .filter((indexer) =>
+                                                        indexer.groupNames.includes(
+                                                            group,
+                                                        ),
+                                                    )
+                                                    .map(
+                                                        (indexer) =>
+                                                            indexer.name,
+                                                    ),
+                                            )
+                                        }
+                                    >
+                                        Select group {group}
+                                    </Button>
+                                ))}
+                        </Stack>
+                    </Box>
+                )}
                 <Stack direction={{sm: "row"}} spacing={2}>
                     <TextField
                         label="Minimum age (days)"
@@ -414,7 +612,6 @@ export function SearchWorkspace({
                 </Stack>
                 <Button
                     data-testid="search-submit"
-                    disabled={noIndexers}
                     type="submit"
                     variant="contained"
                 >

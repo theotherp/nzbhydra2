@@ -35,8 +35,8 @@ features:
     selectors: [ search-query, search-submit, search-category-control, "search-category-option-{{category.name}}", additional-query, autocomplete-popup, autocomplete-option ]
     target: core/ui-react/src/features/search
     parity: partial
-    gaps: [ selectable indexers, recent searches, guided tour ]
-    task: FM-025
+    gaps: [ recent searches, guided tour ]
+    task: FM-016
 
   - id: F-SEARCH-MEDIA
     name: Movie and TV autocomplete, identifiers, title refinement, season, and episode
@@ -61,7 +61,7 @@ features:
     selectors: [ ]
     target: core/ui-react/src/features/search
     parity: partial
-    gaps: [ selection controls, groups, disabled indexers, select all, invert selection ]
+    gaps: [ ]
     task: FM-016
 
   - id: F-SEARCH-RECENT

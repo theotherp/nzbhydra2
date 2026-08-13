@@ -10,10 +10,10 @@ None.
 
 ## Blocked
 
-- FM-017: Recent Search Reuse — blocked by FM-016
+None.
 
 ## Upcoming
 
-- FM-016: Search Indexer Selection
+- FM-017: Recent Search Reuse
 
 Completed work is recorded in its task packet and Git history, not listed here.

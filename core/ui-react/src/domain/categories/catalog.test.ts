@@ -39,4 +39,42 @@ describe("createCategoryCatalog", () => {
             searchType: "SEARCH",
         });
     });
+
+    it("should expose only eligible search indexers with their selection metadata", () => {
+        const catalog = createCategoryCatalog({
+            categoriesConfig: {
+                categories: [{name: "All"}, {name: "Movies"}],
+                defaultCategory: "All",
+            },
+            indexers: [
+                {
+                    name: "Movies only",
+                    categories: ["Movies"],
+                    groupNames: ["Movies", ""],
+                    searchModuleType: "TORZNAB",
+                },
+                {name: "Hidden", showOnSearch: false, preselect: true},
+                {name: "General", preselect: true},
+            ],
+        });
+
+        expect(catalog.eligibleIndexers("All")).toEqual([
+            {
+                name: "General",
+                preselect: true,
+                groupNames: [],
+                searchModuleType: "NEWZNAB",
+            },
+            {
+                name: "Movies only",
+                preselect: false,
+                groupNames: ["Movies"],
+                searchModuleType: "TORZNAB",
+            },
+        ]);
+        expect(
+            catalog.eligibleIndexers("Movies").map((indexer) => indexer.name),
+        ).toEqual(["General", "Movies only"]);
+        expect(catalog.preselectedIndexerNames("Movies")).toEqual(["General"]);
+    });
 });

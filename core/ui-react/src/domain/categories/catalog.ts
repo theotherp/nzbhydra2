@@ -58,6 +58,18 @@ const safeConfigSchema = z.object({
                     .nullable()
                     .optional()
                     .transform((value) => value ?? undefined),
+                groupNames: z
+                    .array(z.string())
+                    .nullable()
+                    .optional()
+                    .transform((value) =>
+                        (value ?? []).filter((group) => group.length > 0),
+                    ),
+                searchModuleType: z
+                    .string()
+                    .nullable()
+                    .optional()
+                    .transform((value) => value ?? "NEWZNAB"),
             }),
         )
         .default([]),
@@ -70,6 +82,14 @@ export type CategoryCatalog = {
     defaultCategory: Category;
     enableCategorySizes: boolean;
     preselectedIndexerNames(category: string): string[];
+    eligibleIndexers(category: string): SearchIndexer[];
+};
+
+export type SearchIndexer = {
+    name: string;
+    preselect: boolean;
+    groupNames: string[];
+    searchModuleType: string;
 };
 
 export function createCategoryCatalog(safeConfig: unknown): CategoryCatalog {
@@ -96,17 +116,27 @@ export function createCategoryCatalog(safeConfig: unknown): CategoryCatalog {
         categories: selectable,
         defaultCategory: configuredDefault,
         enableCategorySizes,
-        preselectedIndexerNames(category) {
+        eligibleIndexers(category) {
             return parsed.data.indexers
                 .filter(
                     (indexer) =>
                         indexer.showOnSearch &&
-                        indexer.preselect &&
                         (!indexer.categories ||
                             indexer.categories.length === 0 ||
                             category.toLowerCase() === "all" ||
                             indexer.categories.includes(category)),
                 )
+                .map(({name, preselect, groupNames, searchModuleType}) => ({
+                    name,
+                    preselect,
+                    groupNames,
+                    searchModuleType,
+                }))
+                .sort((left, right) => left.name.localeCompare(right.name));
+        },
+        preselectedIndexerNames(category) {
+            return this.eligibleIndexers(category)
+                .filter((indexer) => indexer.preselect)
                 .map((indexer) => indexer.name);
         },
     };
@@ -125,5 +155,6 @@ function emptyCatalog(): CategoryCatalog {
         defaultCategory: all,
         enableCategorySizes: false,
         preselectedIndexerNames: () => [],
+        eligibleIndexers: () => [],
     };
 }

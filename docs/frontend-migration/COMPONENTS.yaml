@@ -94,10 +94,10 @@ components:
     responsibility: Typed Hydra category catalog, default category, and lookup semantics
     legacy: [ core/ui-src/js/categories-service.js ]
     target: core/ui-react/src/domain/categories
-    consumers: [ F-SEARCH-FORM, F-CONFIG-CATEGORIES ]
+    consumers: [ F-SEARCH-FORM, F-SEARCH-INDEXERS, F-CONFIG-CATEGORIES ]
     classification: shared_hydra
     state: partial
-    task: FM-010
+    task: FM-016
 
   - id: C-DOWNLOAD-ACTIONS
     responsibility: Downloader selection, category choice, duplicate reason, black-hole, torrent, and magnet operations

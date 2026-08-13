@@ -70,8 +70,9 @@ describe("SearchWorkspace", () => {
                 tvdbId: "",
                 tvmazeId: "",
                 tvrageId: "",
+                indexers: ["Mock"],
             }),
-        ).toEqual({query: "hello", category: "Cinema"});
+        ).toEqual({query: "hello", category: "Cinema", indexers: "Mock"});
     });
 
     it("should restore and repeat identifier-backed media criteria", () => {
@@ -121,6 +122,121 @@ describe("SearchWorkspace", () => {
             expect(submitted.mock.calls[0]?.[0]).toEqual(
                 expect.objectContaining({query: "hello", minage: "3"}),
             ),
+        );
+    });
+
+    it("should reconcile URL selections and support checkbox bulk selection actions", async () => {
+        const indexerCatalog = createCategoryCatalog({
+            categoriesConfig: {
+                defaultCategory: "All",
+                categories: [{name: "All"}, {name: "Movies"}, {name: "Series"}],
+            },
+            indexers: [
+                {name: "Usenet", preselect: true, groupNames: ["Primary"]},
+                {
+                    name: "Torrent",
+                    searchModuleType: "TORZNAB",
+                    groupNames: ["Secondary"],
+                },
+                {name: "Movies only", categories: ["Movies"]},
+            ],
+        });
+        const submitted = vi.fn();
+        const indexerNames = ["Movies only", "Torrent", "Usenet"];
+        const expectSelectedIndexerNames = (names: string[]) => {
+            for (const name of indexerNames) {
+                const checkbox = expect(screen.getByRole("checkbox", {name}));
+                if (names.includes(name)) {
+                    checkbox.toBeChecked();
+                } else {
+                    checkbox.not.toBeChecked();
+                }
+            }
+        };
+        expect(
+            valuesFromSearch(
+                {category: "All", indexers: "Torrent,missing"},
+                indexerCatalog,
+            ).indexers,
+        ).toEqual(["Torrent"]);
+        render(
+            <SearchWorkspace
+                catalog={indexerCatalog}
+                initialValues={valuesFromSearch(
+                    {category: "Movies", indexers: "Movies only,Usenet"},
+                    indexerCatalog,
+                )}
+                onSubmit={submitted}
+                showIndexerSelection
+                indexerSelectionAsCheckboxes
+            />,
+        );
+
+        expectSelectedIndexerNames(["Movies only", "Usenet"]);
+        fireEvent.click(screen.getByRole("button", {name: "Select all"}));
+        expectSelectedIndexerNames(["Movies only", "Torrent", "Usenet"]);
+        fireEvent.click(screen.getByRole("button", {name: "Deselect all"}));
+        expectSelectedIndexerNames([]);
+        fireEvent.click(screen.getByRole("button", {name: "Invert selection"}));
+        expectSelectedIndexerNames(["Movies only", "Torrent", "Usenet"]);
+        fireEvent.click(
+            screen.getByRole("button", {name: "Reset to preselection"}),
+        );
+        expectSelectedIndexerNames(["Usenet"]);
+        fireEvent.click(
+            screen.getByRole("button", {name: "Select all usenet indexers"}),
+        );
+        expectSelectedIndexerNames(["Movies only", "Usenet"]);
+        fireEvent.click(
+            screen.getByRole("button", {name: "Select all torznab indexers"}),
+        );
+        expectSelectedIndexerNames(["Torrent"]);
+        fireEvent.click(
+            screen.getByRole("button", {name: "Select group Primary"}),
+        );
+        expectSelectedIndexerNames(["Usenet"]);
+
+        fireEvent.click(screen.getByRole("button", {name: "Select all"}));
+        expectSelectedIndexerNames(["Movies only", "Torrent", "Usenet"]);
+        fireEvent.mouseDown(screen.getByRole("combobox", {name: "Category"}));
+        fireEvent.click(screen.getByTestId("search-category-option-Series"));
+        expect(
+            screen.queryByRole("checkbox", {name: "Movies only"}),
+        ).toBeNull();
+        expect(screen.getByRole("checkbox", {name: "Torrent"})).toBeChecked();
+        expect(screen.getByRole("checkbox", {name: "Usenet"})).toBeChecked();
+        fireEvent.click(screen.getByTestId("search-submit"));
+        await waitFor(() =>
+            expect(submitted.mock.calls[0]?.[0]).toEqual(
+                expect.objectContaining({indexers: ["Torrent", "Usenet"]}),
+            ),
+        );
+    });
+
+    it("should present and update an accessible dropdown selection", () => {
+        const indexerCatalog = createCategoryCatalog({
+            categoriesConfig: {
+                defaultCategory: "All",
+                categories: [{name: "All"}],
+            },
+            indexers: [{name: "First", preselect: true}, {name: "Second"}],
+        });
+        render(
+            <SearchWorkspace
+                catalog={indexerCatalog}
+                initialValues={valuesFromSearch({}, indexerCatalog)}
+                onSubmit={vi.fn()}
+                showIndexerSelection
+            />,
+        );
+
+        fireEvent.mouseDown(screen.getByRole("combobox", {name: "Indexers"}));
+        const second = screen.getByRole("option", {name: "Second"});
+        expect(second).toHaveAttribute("aria-selected", "false");
+        fireEvent.click(second);
+        expect(screen.getByRole("option", {name: "Second"})).toHaveAttribute(
+            "aria-selected",
+            "true",
         );
     });
 

@@ -136,6 +136,7 @@ describe("SearchPage", () => {
                 category: "All",
                 minage: "2",
                 maxsize: "50",
+                indexers: "Configured",
             },
         });
         const request = JSON.parse(fetchImplementation.mock.calls[0][1].body);
@@ -196,7 +197,7 @@ describe("SearchPage", () => {
         });
     });
 
-    it("should not request when no configured indexers are selected", () => {
+    it("should not request and should announce feedback when no indexers are selected", () => {
         const fetchImplementation = vi.fn();
         render(
             <SearchPage
@@ -209,9 +210,33 @@ describe("SearchPage", () => {
             />,
         );
 
-        expect(screen.getByTestId("search-submit")).toBeDisabled();
+        expect(screen.getByRole("alert")).toHaveTextContent(
+            "No indexers are configured or enabled.",
+        );
         fireEvent.click(screen.getByTestId("search-submit"));
         expect(fetchImplementation).not.toHaveBeenCalled();
+    });
+
+    it("should show indexer controls only when the bootstrap permission permits them", () => {
+        const {rerender} = render(
+            <SearchPage
+                bootstrap={bootstrap}
+                transport={new ApiTransport("/hydra/", vi.fn())}
+                liveTransport={immediatelyUnavailableLiveTransport}
+            />,
+        );
+
+        expect(
+            screen.queryByLabelText("Indexer selection"),
+        ).not.toBeInTheDocument();
+        rerender(
+            <SearchPage
+                bootstrap={{...bootstrap, showIndexerSelection: true}}
+                transport={new ApiTransport("/hydra/", vi.fn())}
+                liveTransport={immediatelyUnavailableLiveTransport}
+            />,
+        );
+        expect(screen.getByLabelText("Indexer selection")).toBeVisible();
     });
 
     it("should preserve a requested episode in canonical navigation and disable episode grouping", async () => {
@@ -258,7 +283,7 @@ describe("SearchPage", () => {
         await waitFor(() => expect(fetchImplementation).toHaveBeenCalledOnce());
         expect(router.navigate).toHaveBeenCalledWith({
             to: "/",
-            search: {category: "All", episode: "3"},
+            search: {category: "All", episode: "3", indexers: "Configured"},
         });
         expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
     });

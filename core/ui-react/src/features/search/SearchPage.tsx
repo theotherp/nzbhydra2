@@ -93,7 +93,7 @@ export function SearchPage({
             (category) => category.name === values.category,
         );
         const isTvSearch = selectedCategory?.searchType === "TVSEARCH";
-        const indexers = catalog.preselectedIndexerNames(values.category);
+        const indexers = values.indexers;
         if (indexers.length === 0) {
             return;
         }
@@ -237,6 +237,10 @@ export function SearchPage({
                 autocomplete={(type, input) =>
                     getAutocomplete(transport, type, input)
                 }
+                showIndexerSelection={bootstrap.showIndexerSelection === true}
+                indexerSelectionAsCheckboxes={isCheckboxIndexerSelection(
+                    bootstrap.safeConfig,
+                )}
             />
             {embyAvailability === "available" && (
                 <Alert severity="success">Available in Emby.</Alert>
@@ -387,4 +391,13 @@ function isEmbyConfigured(safeConfig: unknown): boolean {
         embyApiKey?: unknown;
     };
     return typeof embyBaseUrl === "string" && typeof embyApiKey === "string";
+}
+
+function isCheckboxIndexerSelection(safeConfig: unknown): boolean {
+    return Boolean(
+        safeConfig &&
+        typeof safeConfig === "object" &&
+        (safeConfig as {indexerSelectionAsCheckboxes?: unknown})
+            .indexerSelectionAsCheckboxes === true,
+    );
 }
