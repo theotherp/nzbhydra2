@@ -104,10 +104,17 @@ describe("SearchPage", () => {
     });
 
     it("should update the URL and construct a numeric configured-indexer request", async () => {
-        const fetchImplementation = vi.fn().mockResolvedValue(
-            new Response(JSON.stringify(responseEnvelope), {
-                headers: {"Content-Type": "application/json"},
-            }),
+        const fetchImplementation = vi.fn((url: RequestInfo | URL) =>
+            Promise.resolve(
+                new Response(
+                    JSON.stringify(
+                        String(url).includes("forsearching")
+                            ? []
+                            : responseEnvelope,
+                    ),
+                    {headers: {"Content-Type": "application/json"}},
+                ),
+            ),
         );
         render(
             <SearchPage
@@ -139,7 +146,7 @@ describe("SearchPage", () => {
                 indexers: "Configured",
             },
         });
-        const request = JSON.parse(fetchImplementation.mock.calls[0][1].body);
+        const request = searchRequestBody(fetchImplementation);
         expect(request).toEqual({
             query: "query",
             category: "All",
@@ -153,7 +160,15 @@ describe("SearchPage", () => {
 
     it("should submit typed TV season and episode criteria without an identifier", async () => {
         router.search = {category: "Series"};
-        const fetchImplementation = vi.fn().mockResolvedValue(searchResponse());
+        const fetchImplementation = vi.fn((url: RequestInfo | URL) =>
+            Promise.resolve(
+                String(url).includes("forsearching")
+                    ? new Response(JSON.stringify([]), {
+                          headers: {"Content-Type": "application/json"},
+                      })
+                    : searchResponse(),
+            ),
+        );
         render(
             <SearchPage
                 bootstrap={{
@@ -186,7 +201,7 @@ describe("SearchPage", () => {
         fireEvent.click(screen.getByTestId("search-submit"));
 
         await waitFor(() => expect(fetchImplementation).toHaveBeenCalledOnce());
-        expect(JSON.parse(fetchImplementation.mock.calls[0][1].body)).toEqual({
+        expect(searchRequestBody(fetchImplementation)).toEqual({
             query: "Example Show",
             category: "Series",
             indexers: ["Configured"],
@@ -214,7 +229,106 @@ describe("SearchPage", () => {
             "No indexers are configured or enabled.",
         );
         fireEvent.click(screen.getByTestId("search-submit"));
-        expect(fetchImplementation).not.toHaveBeenCalled();
+        expect(searchRequestCalls(fetchImplementation)).toHaveLength(0);
+    });
+
+    it("should refill and repeat complete recent criteria while reconciling unavailable indexers", async () => {
+        const requests: RequestInit[] = [];
+        const fetchImplementation = vi.fn(
+            (url: RequestInfo | URL, init?: RequestInit) => {
+                if (String(url).endsWith("/internalapi/search") && init) {
+                    requests.push(init);
+                }
+                return Promise.resolve(
+                    new Response(
+                        JSON.stringify(
+                            String(url).includes("forsearching")
+                                ? [
+                                      {
+                                          categoryName: "All",
+                                          source: "INTERNAL",
+                                          query: "recent query",
+                                          minAge: 1,
+                                          maxAge: 2,
+                                          minSize: 3,
+                                          maxSize: 4,
+                                          selectedIndexers: [
+                                              "Configured",
+                                              "Unavailable",
+                                          ],
+                                          identifiers: [],
+                                      },
+                                      {categoryName: 3},
+                                  ]
+                                : responseEnvelope,
+                        ),
+                        {headers: {"Content-Type": "application/json"}},
+                    ),
+                );
+            },
+        );
+        render(
+            <SearchPage
+                bootstrap={bootstrap}
+                transport={new ApiTransport("/hydra/", fetchImplementation)}
+                liveTransport={immediatelyUnavailableLiveTransport}
+            />,
+        );
+
+        await screen.findByRole("button", {name: "Refill"});
+        expect(screen.getByText(/Source: Internal/)).toBeVisible();
+        fireEvent.click(screen.getByRole("button", {name: "Refill"}));
+        expect(screen.getByLabelText("Search")).toHaveValue("recent query");
+        expect(screen.getByLabelText("Minimum age (days)")).toHaveValue(1);
+        expect(screen.getByLabelText("Maximum age (days)")).toHaveValue(2);
+        expect(screen.getByLabelText("Minimum size (MB)")).toHaveValue(3);
+        expect(screen.getByLabelText("Maximum size (MB)")).toHaveValue(4);
+        fireEvent.click(screen.getByRole("button", {name: "Repeat"}));
+        await waitFor(() => expect(requests).toHaveLength(1));
+        expect(JSON.parse(requests[0].body as string)).toEqual({
+            query: "recent query",
+            category: "All",
+            minage: 1,
+            maxage: 2,
+            minsize: 3,
+            maxsize: 4,
+            indexers: ["Configured"],
+            loadAll: false,
+            searchRequestId: expect.any(Number),
+        });
+    });
+
+    it("should leave absent recent criteria to canonical defaults", async () => {
+        const fetchImplementation = vi.fn((url: RequestInfo | URL) =>
+            Promise.resolve(
+                new Response(
+                    JSON.stringify(
+                        String(url).includes("forsearching")
+                            ? [
+                                  {
+                                      categoryName: "All",
+                                      query: "default",
+                                      identifiers: [],
+                                  },
+                              ]
+                            : responseEnvelope,
+                    ),
+                    {headers: {"Content-Type": "application/json"}},
+                ),
+            ),
+        );
+        render(
+            <SearchPage
+                bootstrap={bootstrap}
+                transport={new ApiTransport("/hydra/", fetchImplementation)}
+                liveTransport={immediatelyUnavailableLiveTransport}
+            />,
+        );
+
+        await screen.findByRole("button", {name: "Refill"});
+        fireEvent.click(screen.getByRole("button", {name: "Refill"}));
+        expect(screen.getByLabelText("Minimum age (days)")).toHaveValue(null);
+        expect(screen.getByLabelText("Maximum size (MB)")).toHaveValue(null);
     });
 
     it("should show indexer controls only when the bootstrap permission permits them", () => {
@@ -241,33 +355,39 @@ describe("SearchPage", () => {
 
     it("should preserve a requested episode in canonical navigation and disable episode grouping", async () => {
         router.search = {episode: "3"};
-        const fetchImplementation = vi.fn().mockResolvedValue(
-            new Response(
-                JSON.stringify({
-                    ...responseEnvelope,
-                    numberOfAvailableResults: 2,
-                    searchResults: [
-                        {
-                            searchResultId: "one",
-                            title: "Example Show S01E03 WEB",
-                            indexer: "One",
-                            category: "TV",
-                            showtitle: "Example Show",
-                            season: "1",
-                            episode: "3",
-                        },
-                        {
-                            searchResultId: "two",
-                            title: "Example Show S01E03 BluRay",
-                            indexer: "Two",
-                            category: "TV",
-                            showtitle: "Example Show",
-                            season: "1",
-                            episode: "3",
-                        },
-                    ],
-                }),
-                {headers: {"Content-Type": "application/json"}},
+        const fetchImplementation = vi.fn((url: RequestInfo | URL) =>
+            Promise.resolve(
+                new Response(
+                    JSON.stringify(
+                        String(url).includes("forsearching")
+                            ? []
+                            : {
+                                  ...responseEnvelope,
+                                  numberOfAvailableResults: 2,
+                                  searchResults: [
+                                      {
+                                          searchResultId: "one",
+                                          title: "Example Show S01E03 WEB",
+                                          indexer: "One",
+                                          category: "TV",
+                                          showtitle: "Example Show",
+                                          season: "1",
+                                          episode: "3",
+                                      },
+                                      {
+                                          searchResultId: "two",
+                                          title: "Example Show S01E03 BluRay",
+                                          indexer: "Two",
+                                          category: "TV",
+                                          showtitle: "Example Show",
+                                          season: "1",
+                                          episode: "3",
+                                      },
+                                  ],
+                              },
+                    ),
+                    {headers: {"Content-Type": "application/json"}},
+                ),
             ),
         );
         render(
@@ -285,7 +405,9 @@ describe("SearchPage", () => {
             to: "/",
             search: {category: "All", episode: "3", indexers: "Configured"},
         });
-        expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
+        expect(await screen.findAllByTestId("search-result-row")).toHaveLength(
+            2,
+        );
     });
 
     it("should render request failures", async () => {
@@ -505,7 +627,7 @@ describe("SearchPage", () => {
         expect(earlyResults).toBeEnabled();
         fireEvent.click(earlyResults);
         await waitFor(() =>
-            expect(fetchImplementation).toHaveBeenCalledTimes(2),
+            expect(fetchImplementation).toHaveBeenCalledTimes(3),
         );
         resolveSearch(
             new Response(JSON.stringify(responseEnvelope), {
@@ -537,7 +659,9 @@ describe("SearchPage", () => {
         expect(
             await screen.findByText("Live progress connection timed out"),
         ).toBeVisible();
-        await waitFor(() => expect(fetchImplementation).toHaveBeenCalledOnce());
+        await waitFor(() =>
+            expect(searchRequestCalls(fetchImplementation)).toHaveLength(1),
+        );
     });
 
     it("should report parser failures without preventing the search", async () => {
@@ -570,7 +694,9 @@ describe("SearchPage", () => {
         expect(screen.getByRole("alert")).toHaveTextContent(
             "Live progress message was invalid",
         );
-        await waitFor(() => expect(fetchImplementation).toHaveBeenCalledOnce());
+        await waitFor(() =>
+            expect(searchRequestCalls(fetchImplementation)).toHaveLength(1),
+        );
     });
 
     it("should report early-results shortcut failures", async () => {
@@ -746,3 +872,16 @@ describe("SearchPage", () => {
         expect(secondClose).not.toHaveBeenCalled();
     });
 });
+
+function searchRequestCalls(mock: ReturnType<typeof vi.fn>) {
+    return mock.mock.calls.filter(([url]) =>
+        String(url).endsWith("/internalapi/search"),
+    );
+}
+
+function searchRequestBody(mock: ReturnType<typeof vi.fn>): unknown {
+    const request = searchRequestCalls(mock)[0];
+    return JSON.parse(
+        (request?.[1] as RequestInit | undefined)?.body as string,
+    );
+}

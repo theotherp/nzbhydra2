@@ -31,6 +31,11 @@ public class SearchEntityTO {
     private String episode;
     private String title;
     private String author;
+    private Integer minAge;
+    private Integer maxAge;
+    private Integer minSize;
+    private Integer maxSize;
+    private Set<String> selectedIndexers;
     private String username;
     private String ip;
     private String userAgent;

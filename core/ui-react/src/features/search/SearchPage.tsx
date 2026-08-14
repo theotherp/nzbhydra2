@@ -10,12 +10,14 @@ import {
     Stack,
     Typography,
 } from "@mui/material";
+import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 import {useNavigate, useSearch} from "@tanstack/react-router";
 import {useEffect, useRef, useState} from "react";
 
 import {executeSearch, shortcutSearch} from "../../api/search";
 import type {SearchRequest, SearchResponse} from "../../api/search";
 import {getAutocomplete, getEmbyAvailability} from "../../api/media";
+import type {RecentSearch} from "../../api/recentSearches";
 import {createSearchLiveTransport} from "../../api/live/searchState";
 import type {
     SearchLiveTransport,
@@ -33,6 +35,8 @@ import {
     valuesFromSearch,
 } from "./workspace/SearchWorkspace";
 import type {SearchFormValues} from "./workspace/SearchWorkspace";
+import {RecentSearches} from "./history/RecentSearches";
+import {recentSearchCriteria} from "./history/recentSearchCriteria";
 
 export function SearchPage({
     bootstrap,
@@ -44,6 +48,7 @@ export function SearchPage({
     liveTransport?: SearchLiveTransport;
 }) {
     const transport = suppliedTransport ?? new ApiTransport(bootstrap.baseUrl);
+    const [recentSearchQueryClient] = useState(() => new QueryClient());
     const liveTransport =
         suppliedLiveTransport ??
         createSearchLiveTransport(
@@ -52,7 +57,12 @@ export function SearchPage({
     const navigate = useNavigate({from: "/"});
     const search = useSearch({strict: false});
     const catalog = createCategoryCatalog(bootstrap.safeConfig);
-    const initialValues = valuesFromSearch(search, catalog);
+    const [refillCriteria, setRefillCriteria] =
+        useState<Record<string, string>>();
+    const [draggedRecentSearch, setDraggedRecentSearch] =
+        useState<RecentSearch>();
+    const [recentRefreshKey, setRecentRefreshKey] = useState(0);
+    const initialValues = valuesFromSearch(refillCriteria ?? search, catalog);
     const requestedEpisode =
         typeof search.episode === "string" ? search.episode : undefined;
     const episodeRequested = requestedEpisode !== undefined;
@@ -89,6 +99,7 @@ export function SearchPage({
         [],
     );
     const submit = async (values: SearchFormValues) => {
+        setRefillCriteria(undefined);
         const selectedCategory = catalog.categories.find(
             (category) => category.name === values.category,
         );
@@ -186,6 +197,7 @@ export function SearchPage({
             const data = await executeSearch(transport, request);
             if (activeSubmission.current === submission) {
                 setState({loading: false, data});
+                setRecentRefreshKey((key) => key + 1);
                 if (isEmbyConfigured(bootstrap.safeConfig)) {
                     void checkEmbyAvailability(
                         transport,
@@ -215,6 +227,17 @@ export function SearchPage({
             releaseSubmission(submission);
         }
     };
+    const refill = (recentSearch: RecentSearch) => {
+        setRefillCriteria(recentSearchCriteria(recentSearch, catalog));
+    };
+    const repeat = (recentSearch: RecentSearch) => {
+        void submit(
+            valuesFromSearch(
+                recentSearchCriteria(recentSearch, catalog),
+                catalog,
+            ),
+        );
+    };
     const showEarlyResults = async () => {
         if (!progress) {
             return;
@@ -231,6 +254,7 @@ export function SearchPage({
                 Search
             </Typography>
             <SearchWorkspace
+                key={JSON.stringify(initialValues)}
                 catalog={catalog}
                 initialValues={initialValues}
                 onSubmit={submit}
@@ -241,7 +265,23 @@ export function SearchPage({
                 indexerSelectionAsCheckboxes={isCheckboxIndexerSelection(
                     bootstrap.safeConfig,
                 )}
+                onSearchDrop={() => {
+                    if (draggedRecentSearch) {
+                        refill(draggedRecentSearch);
+                        setDraggedRecentSearch(undefined);
+                    }
+                }}
             />
+            <QueryClientProvider client={recentSearchQueryClient}>
+                <RecentSearches
+                    enabled={!state.loading}
+                    onDragStart={setDraggedRecentSearch}
+                    onRefill={refill}
+                    onRepeat={repeat}
+                    refreshKey={recentRefreshKey}
+                    transport={transport}
+                />
+            </QueryClientProvider>
             {embyAvailability === "available" && (
                 <Alert severity="success">Available in Emby.</Alert>
             )}

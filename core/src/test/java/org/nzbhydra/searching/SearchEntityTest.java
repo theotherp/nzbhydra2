@@ -12,6 +12,7 @@ import org.skyscreamer.jsonassert.JSONAssert;
 
 import java.time.Instant;
 import java.util.HashSet;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -57,11 +58,32 @@ public class SearchEntityTest {
         testee.setAuthor("author");
         testee.setIp("ip");
         testee.setUserAgent("userAgent");
+        testee.setMinAge(1);
+        testee.setMaxAge(2);
+        testee.setMinSize(3);
+        testee.setMaxSize(4);
+        testee.setSelectedIndexers(Set.of("one", "two"));
 
         final SearchEntityTO to = Jackson.JSON_MAPPER.convertValue(testee, SearchEntityTO.class);
         final String jsonTO = Jackson.JSON_MAPPER.writeValueAsString(to);
         final String jsonEntity = Jackson.JSON_MAPPER.writeValueAsString(testee);
         JSONAssert.assertEquals(jsonTO, jsonEntity, false);
+        assertThat(to.getMinAge()).isEqualTo(1);
+        assertThat(to.getMaxAge()).isEqualTo(2);
+        assertThat(to.getMinSize()).isEqualTo(3);
+        assertThat(to.getMaxSize()).isEqualTo(4);
+        assertThat(to.getSelectedIndexers()).containsExactlyInAnyOrder("one", "two");
+    }
+
+    @Test
+    void shouldKeepAbsentRecentCriteriaNullWhenConvertedToTO() {
+        final SearchEntityTO to = Jackson.JSON_MAPPER.convertValue(testee, SearchEntityTO.class);
+
+        assertThat(to.getMinAge()).isNull();
+        assertThat(to.getMaxAge()).isNull();
+        assertThat(to.getMinSize()).isNull();
+        assertThat(to.getMaxSize()).isNull();
+        assertThat(to.getSelectedIndexers()).isNull();
     }
 
 }

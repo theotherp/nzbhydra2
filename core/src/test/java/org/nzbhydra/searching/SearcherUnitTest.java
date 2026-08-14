@@ -337,6 +337,32 @@ public class SearcherUnitTest {
     }
 
     @Test
+    void shouldPersistRecentSearchCriteria() {
+        BaseConfig config = new BaseConfig();
+        config.getMain().setKeepHistory(true);
+        when(configProviderMock.getBaseConfig()).thenReturn(config);
+        SearchRequest request = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
+        Category category = new Category();
+        category.setName("cat");
+        request.setCategory(category);
+        request.setMinage(1);
+        request.setMaxage(2);
+        request.setMinsize(3);
+        request.setMaxsize(4);
+        request.setIndexers(Set.of("one", "two"));
+
+        searcher.getSearchCacheEntry(request);
+
+        ArgumentCaptor<SearchEntity> entityCaptor = ArgumentCaptor.forClass(SearchEntity.class);
+        verify(searchRepositoryMock).save(entityCaptor.capture());
+        assertThat(entityCaptor.getValue().getMinAge()).isEqualTo(1);
+        assertThat(entityCaptor.getValue().getMaxAge()).isEqualTo(2);
+        assertThat(entityCaptor.getValue().getMinSize()).isEqualTo(3);
+        assertThat(entityCaptor.getValue().getMaxSize()).isEqualTo(4);
+        assertThat(entityCaptor.getValue().getSelectedIndexers()).containsExactlyInAnyOrder("one", "two");
+    }
+
+    @Test
     void shouldStopSearchingIndexerAfterMaxQueries() throws Exception {
         // This test verifies the circuit breaker prevents infinite loops
         // when an indexer always claims to have more results

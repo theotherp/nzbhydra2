@@ -2705,15 +2705,15 @@ export interface components {
             empty?: boolean;
         };
         PageableObject: {
-            /** Format: int64 */
-            offset?: number;
-            sort?: components["schemas"]["SortObject"];
-            unpaged?: boolean;
             paged?: boolean;
             /** Format: int32 */
             pageNumber?: number;
             /** Format: int32 */
             pageSize?: number;
+            /** Format: int64 */
+            offset?: number;
+            sort?: components["schemas"]["SortObject"];
+            unpaged?: boolean;
         };
         SearchEntityTO: {
             /** Format: int32 */
@@ -2732,14 +2732,23 @@ export interface components {
             episode?: string;
             title?: string;
             author?: string;
+            /** Format: int32 */
+            minAge?: number;
+            /** Format: int32 */
+            maxAge?: number;
+            /** Format: int32 */
+            minSize?: number;
+            /** Format: int32 */
+            maxSize?: number;
+            selectedIndexers?: string[];
             username?: string;
             ip?: string;
             userAgent?: string;
         };
         SortObject: {
+            sorted?: boolean;
             empty?: boolean;
             unsorted?: boolean;
-            sorted?: boolean;
         };
         NotificationEntityTO: {
             /** Format: int32 */
@@ -3119,8 +3128,8 @@ export interface components {
             lastUpdateForNow?: boolean;
             remainingTimeFormatted?: string;
             downloadRateFormatted?: string;
-            downloadingTitleRemainingTimeFormatted?: string;
             remainingSizeFormatted?: string;
+            downloadingTitleRemainingTimeFormatted?: string;
         };
         ThreadCpuUsageChartData: {
             key?: string;
@@ -3448,6 +3457,15 @@ export interface components {
             episode?: string;
             title?: string;
             author?: string;
+            /** Format: int32 */
+            minAge?: number;
+            /** Format: int32 */
+            maxAge?: number;
+            /** Format: int32 */
+            minSize?: number;
+            /** Format: int32 */
+            maxSize?: number;
+            selectedIndexers?: string[];
             username?: string;
             ip?: string;
             userAgent?: string;

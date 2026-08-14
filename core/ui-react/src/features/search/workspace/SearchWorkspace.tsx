@@ -135,6 +135,7 @@ export function SearchWorkspace({
     autocomplete = defaultAutocomplete,
     showIndexerSelection = false,
     indexerSelectionAsCheckboxes = false,
+    onSearchDrop,
 }: {
     catalog: CategoryCatalog;
     initialValues: SearchFormValues;
@@ -145,6 +146,7 @@ export function SearchWorkspace({
     ): Promise<MediaSuggestion[]>;
     showIndexerSelection?: boolean;
     indexerSelectionAsCheckboxes?: boolean;
+    onSearchDrop?(): void;
 }) {
     const {
         register,
@@ -274,6 +276,8 @@ export function SearchWorkspace({
                                     }
                                 },
                             })}
+                            onDrop={onSearchDrop}
+                            onDragOver={(event) => event.preventDefault()}
                             onKeyDown={(event) => {
                                 if (
                                     event.key === "ArrowDown" &&
@@ -396,6 +400,8 @@ export function SearchWorkspace({
                         slotProps={{htmlInput: {"data-testid": "search-query"}}}
                         type="search"
                         {...register("query")}
+                        onDrop={onSearchDrop}
+                        onDragOver={(event) => event.preventDefault()}
                     />
                 )}
                 <Controller

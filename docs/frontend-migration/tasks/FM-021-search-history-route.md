@@ -13,7 +13,7 @@ The paged list, request filters, detail dialog, and repeat action operate on one
 
 ## Decision Dependencies
 
-- Accepted: ADR-0001, ADR-0002, ADR-0003, ADR-0004.
+- Accepted: ADR-0001, ADR-0002, ADR-0003, ADR-0004, ADR-0005.
 - Blocking proposed/rejected: None.
 
 ## Files Allowed To Modify
@@ -42,7 +42,7 @@ The agent may read/search the repository. Context To Read is mandatory starting 
 - The route preserves stats authorization and stable `search-history-*` selectors; loading, empty, malformed, partial, and failure states are accessible.
 - Server paging/sorting/filtering covers time, query, category, source, optional user agent, username, and IP according to safe-config visibility, with refresh retaining current controls.
 - Rows render complete criteria and safe identifier links; date/time uses `C-DATE-TIME` and no server content is trusted as HTML.
-- Repeat maps all supported criteria into canonical search state and executes with currently eligible indexers; details validate and show related indexer searches including response times.
+- Repeat maps all supported criteria into canonical search state and executes with currently eligible indexers; history rows lacking ADR-0005 criteria use canonical default indexers and age/size values. Details validate and show related indexer searches including response times.
 - Focused tests cover request transformation, visibility rules, paging/filter combinations, details, and repeat; Playwright extends existing deterministic row/repeat/details flows to React and legacy comparison.
 - Registry evidence records full route adoption.
 

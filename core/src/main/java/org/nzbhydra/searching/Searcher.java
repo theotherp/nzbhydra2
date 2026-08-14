@@ -317,6 +317,11 @@ public class Searcher {
             searchEntity.setSearchType(searchRequest.getSearchType());
             searchEntity.setTitle(searchRequest.getTitle().orElse(null));
             searchEntity.setAuthor(searchRequest.getAuthor().orElse(null));
+            searchEntity.setMinAge(searchRequest.getMinage().orElse(null));
+            searchEntity.setMaxAge(searchRequest.getMaxage().orElse(null));
+            searchEntity.setMinSize(searchRequest.getMinsize().orElse(null));
+            searchEntity.setMaxSize(searchRequest.getMaxsize().orElse(null));
+            searchEntity.setSelectedIndexers(searchRequest.getIndexers().orElse(null));
 
             //Extend search request
             searchRequest.extractQueryAndForbiddenWords();

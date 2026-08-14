@@ -4,7 +4,10 @@ package org.nzbhydra.searching.db;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -13,6 +16,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.Data;
@@ -54,6 +58,15 @@ public final class SearchEntity {
     private String episode;
     private String title;
     private String author;
+    private Integer minAge;
+    private Integer maxAge;
+    private Integer minSize;
+    private Integer maxSize;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "SEARCH_SELECTED_INDEXERS", joinColumns = @JoinColumn(name = "SEARCH_ENTITY_ID"))
+    @Column(name = "SELECTED_INDEXERS")
+    private Set<String> selectedIndexers;
 
     private String username;
     private String ip;
