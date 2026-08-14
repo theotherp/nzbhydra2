@@ -10,13 +10,19 @@ permission:
     "git add*": deny
     "git commit*": deny
   intellij*: allow
+  mnemosyne_mnemosyne_*: deny
+  mnemosyne_mnemosyne_shared_recall: allow
   skill:
     "*": deny
+    mnemosyne-memory: allow
     migration-task-implement: allow
 ---
 
 Implement exactly one FM task supplied by the caller. Load and follow the
 `migration-task-implement` skill.
+
+Follow `docs/frontend-migration/README.md`'s Mnemosyne Coordination protocol before substantive work. Do not write project shared memory; report a qualifying, repository-verified durable-memory candidate separately to the coordinator in
+your final result, not the task handoff.
 
 Read the task packet and all required migration context before implementation. Repository-wide reads and searches are allowed, but writes, including generated files, are restricted to the task's `Files Allowed To Modify`.
 

@@ -2,10 +2,11 @@
 
 setlocal
 
-call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" x64
+call "C:\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" x64
 
-set path=c:\Programme\graalvm\graalvm-community-25.1.3+9.1\bin\;%PATH%;c:\Programme\graalvm\graalvm-community-25.1.3+9.1\bin\
-set java_home=c:\Programme\graalvm\graalvm-community-25.1.3+9.1\
+set GRAALVM_HOME=C:\Programme\graalvm\graalvm-community-jdk-25i1-25.0.3
+set path=%GRAALVM_HOME%\bin;C:\tools\apache-maven-3.9.12\bin;%PATH%
+set java_home=%GRAALVM_HOME%
 set HYDRA_NATIVE_BUILD=true
 
 set PROFILES=native

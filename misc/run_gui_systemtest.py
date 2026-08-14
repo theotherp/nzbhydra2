@@ -51,12 +51,12 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
             "Run Playwright tests. Auto mode attaches to healthy IntelliJ services or "
-            "builds and starts the current JVM code in WSL."
+            "builds and starts the current JVM code locally."
         )
     )
     parser.add_argument(
         "--runtime",
-        choices=("auto", "existing", "wsl"),
+        choices=("auto", "existing", "local"),
         default="auto",
         help="service source (default: auto)",
     )
@@ -136,7 +136,7 @@ def post_shutdown(url: str, *, required: bool = False) -> None:
             raise RuntimeError(f"Unable to shut down service at {url}: {error}") from error
 
 
-def wsl_host_candidates() -> list[str]:
+def local_host_candidates() -> list[str]:
     hosts = ["127.0.0.1"]
     try:
         result = subprocess.run(
@@ -166,8 +166,8 @@ def discover_existing_urls(
             resolved_mock if request_ok(f"{resolved_mock}/actuator/health") else None,
         )
 
-    core_candidates = [f"http://{host}:{CORE_PORT}" for host in wsl_host_candidates()]
-    mock_candidates = [f"http://{host}:{MOCKSERVER_PORT}" for host in wsl_host_candidates()]
+    core_candidates = [f"http://{host}:{CORE_PORT}" for host in local_host_candidates()]
+    mock_candidates = [f"http://{host}:{MOCKSERVER_PORT}" for host in local_host_candidates()]
     found_core = next(
         (url for url in core_candidates if request_ok(f"{url}/actuator/health/ping")), None
     )
@@ -182,16 +182,16 @@ def choose_runtime(runtime: str, core_available: bool, mockserver_available: boo
         if not core_available or not mockserver_available:
             raise RuntimeError("Existing runtime requires healthy Hydra and mockserver processes")
         return "existing"
-    if runtime == "wsl":
-        return "wsl"
+    if runtime == "local":
+        return "local"
     if core_available and mockserver_available:
         return "existing"
     if not core_available and not mockserver_available:
-        return "wsl"
+        return "local"
     running = "Hydra" if core_available else "mockserver"
     missing = "mockserver" if core_available else "Hydra"
     raise RuntimeError(
-        f"Only {running} is healthy. Start {missing}, stop {running}, or select --runtime wsl."
+        f"Only {running} is healthy. Start {missing}, stop {running}, or select --runtime local."
     )
 
 
@@ -217,6 +217,13 @@ def run_command(
 
 def terminate_process_group(process: subprocess.Popen, grace_period: float = 5) -> None:
     if process.poll() is not None:
+        return
+    if os.name == "nt":
+        subprocess.run(
+            ["taskkill", "/PID", str(process.pid), "/T", "/F"],
+            capture_output=True,
+            check=False,
+        )
         return
     os.killpg(process.pid, signal.SIGTERM)
     try:
@@ -382,7 +389,7 @@ def stop_existing_services(core_url: str | None, mockserver_url: str | None) -> 
         wait_for_port_release(MOCKSERVER_PORT)
 
 
-def start_wsl_services(
+def start_local_services(
         core_jar: Path, mockserver_jar: Path, run_dir: Path, timeout: float
 ) -> list[ManagedProcess]:
     java = find_command("java")
@@ -423,7 +430,7 @@ def start_wsl_services(
             "directstart",
             "--nobrowser",
             "--host",
-            "127.0.0.1",
+            "0.0.0.0",
             "--datafolder",
             str(data_dir),
         ]
@@ -456,7 +463,7 @@ def start_wsl_services(
         raise
 
 
-def configure_wsl_baseline() -> None:
+def configure_local_baseline() -> None:
     config_url = f"http://127.0.0.1:{CORE_PORT}/internalapi/config?internalApiKey=internalApiKey"
     try:
         with urllib.request.urlopen(config_url, timeout=10) as response:
@@ -483,11 +490,11 @@ def configure_wsl_baseline() -> None:
             result = json.loads(response.read().decode("utf-8"))
         if not result.get("ok"):
             raise RuntimeError(
-                "Unable to configure the WSL GUI baseline: "
+                "Unable to configure the local GUI baseline: "
                 + ", ".join(result.get("errorMessages", []))
             )
     except (OSError, urllib.error.URLError, json.JSONDecodeError) as error:
-        raise RuntimeError(f"Unable to configure the WSL GUI baseline: {error}") from error
+        raise RuntimeError(f"Unable to configure the local GUI baseline: {error}") from error
 
 
 def compose_command(*arguments: str) -> list[str]:
@@ -506,8 +513,18 @@ def ensure_systemtest_network() -> None:
         raise RuntimeError("Unable to create Docker network systemtest")
 
 
+def get_container_host_address() -> str:
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as probe:
+        try:
+            probe.connect(("8.8.8.8", 80))
+            return probe.getsockname()[0]
+        except OSError as error:
+            raise RuntimeError("Unable to determine an address reachable by Docker containers") from error
+
+
 def start_supporting_services(timeout: float) -> list[str]:
     ensure_systemtest_network()
+    os.environ["SYSTEMTEST_HOST_ADDRESS"] = get_container_host_address()
     services = [
         ("sonarr", f"http://127.0.0.1:{SONARR_PORT}/api/v3/system/status"),
         ("radarr", f"http://127.0.0.1:{RADARR_PORT}/api/v3/system/status"),
@@ -657,12 +674,12 @@ def run(args: argparse.Namespace) -> int:
             core_jar, mockserver_jar = build_jvm_services()
             if existing_core or existing_mock:
                 stop_existing_services(existing_core, existing_mock)
-            managed_processes = start_wsl_services(
+            managed_processes = start_local_services(
                 core_jar, mockserver_jar, run_dir, args.startup_timeout
             )
             core_url = f"http://127.0.0.1:{CORE_PORT}"
             mockserver_url = f"http://127.0.0.1:{MOCKSERVER_PORT}"
-            configure_wsl_baseline()
+            configure_local_baseline()
 
         started_supporting_services = start_supporting_services(args.startup_timeout)
         if not args.skip_install:

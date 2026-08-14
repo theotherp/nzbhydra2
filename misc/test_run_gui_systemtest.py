@@ -15,15 +15,15 @@ class ChooseRuntimeTest(unittest.TestCase):
     def test_should_attach_when_both_services_are_healthy(self):
         self.assertEqual("existing", runner.choose_runtime("auto", True, True))
 
-    def test_should_start_wsl_services_when_neither_service_is_healthy(self):
-        self.assertEqual("wsl", runner.choose_runtime("auto", False, False))
+    def test_should_start_local_services_when_neither_service_is_healthy(self):
+        self.assertEqual("local", runner.choose_runtime("auto", False, False))
 
     def test_should_reject_partially_running_services(self):
         with self.assertRaisesRegex(RuntimeError, "Only Hydra is healthy"):
             runner.choose_runtime("auto", True, False)
 
-    def test_should_honor_explicit_wsl_runtime(self):
-        self.assertEqual("wsl", runner.choose_runtime("wsl", True, True))
+    def test_should_honor_explicit_local_runtime(self):
+        self.assertEqual("local", runner.choose_runtime("local", True, True))
 
 
 class SupportingServicesTest(unittest.TestCase):
@@ -174,7 +174,7 @@ class RunnerSafetyTest(unittest.TestCase):
             self.assertFalse((data_dir / "MediaCover").exists())
 
 
-class WslBaselineTest(unittest.TestCase):
+class LocalBaselineTest(unittest.TestCase):
 
     @patch.object(runner.urllib.request, "urlopen")
     def test_should_add_api_enabled_mock_indexer(self, urlopen):
@@ -186,7 +186,7 @@ class WslBaselineTest(unittest.TestCase):
         update_response.__enter__.return_value = update_response
         urlopen.side_effect = [config_response, update_response]
 
-        runner.configure_wsl_baseline()
+        runner.configure_local_baseline()
 
         update_request = urlopen.call_args_list[1].args[0]
         updated_config = json.loads(update_request.data.decode("utf-8"))

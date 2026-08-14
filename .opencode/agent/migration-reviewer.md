@@ -6,13 +6,19 @@ variant: medium
 permission:
   edit: deny
   bash: allow
+  mnemosyne_mnemosyne_*: deny
+  mnemosyne_mnemosyne_shared_recall: allow
   skill:
     "*": deny
+    mnemosyne-memory: allow
     migration-implementation-review: allow
 ---
 
 Review exactly one FM implementation supplied by the caller. This must be a fresh review context. Load and follow the `migration-implementation-review`
 skill. Never modify repository files or implement fixes.
+
+Follow `docs/frontend-migration/README.md`'s Mnemosyne Coordination protocol before substantive review. Do not write project shared memory; report a qualifying, independently confirmed durable-memory candidate separately to the coordinator
+in the review result.
 
 Inspect the task packet, relevant ADRs and registries, repository state, complete task-attributable diff from the supplied baseline, modified files, tests, and verification evidence. Judge strictly against the written task rather than
 personal implementation preferences. Independently verify handoff claims by auditing their command results, coverage, and `Verification Basis`; matching evidence is valid even though this reviewer did not execute the command.

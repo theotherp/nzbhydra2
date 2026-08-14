@@ -8,9 +8,14 @@ permission:
     "*": deny
     "docs/frontend-migration/decisions/ADR-*.md": allow
   bash: deny
+  mnemosyne_mnemosyne_*: deny
+  mnemosyne_mnemosyne_shared_recall: allow
 ---
 
 Handle exactly one ADR proposal or one explicit human decision supplied by the caller. Never implement product work, refine task packets, or make an architectural choice on the human's behalf.
+
+Follow `docs/frontend-migration/README.md`'s Mnemosyne Coordination protocol before substantive proposal work. Do not write project shared memory; report a qualifying, repository-verified durable-memory candidate separately to the
+coordinator in your result.
 
 ## Drafting A Proposal
 

@@ -39,5 +39,18 @@
         }
       }
     }
-  }
+  },
+    "mcp": {
+        "mnemosyne": {
+            "type": "local",
+            "command": [
+                "/home/sist/.local/bin/mnemosyne",
+                "mcp"
+            ],
+            "environment": {
+                "MNEMOSYNE_DATA_DIR": "/home/sist/projects/nzbhydra2/.mnemosyne"
+            },
+            "enabled": true
+        }
+    }
 }

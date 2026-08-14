@@ -18,7 +18,6 @@ import org.nzbhydra.logging.MdcThreadPoolExecutor;
 import org.nzbhydra.mapping.nzbindex.NzbIndexRoot;
 import org.nzbhydra.springnative.ReflectionMarker;
 import org.nzbhydra.update.UpdateManager;
-import org.nzbhydra.web.WebConfiguration;
 import org.nzbhydra.webaccess.WebAccess;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +52,8 @@ public class IndexerWebAccess {
     protected ConfigProvider configProvider;
     @Autowired
     protected WebAccess webAccess;
-    protected Unmarshaller unmarshaller = new WebConfiguration().marshaller();
+    @Autowired
+    protected Unmarshaller unmarshaller;
     @Autowired
     private UpdateManager updateManager;
 

@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlCategory;
 import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlRoot;
-import org.nzbhydra.web.WebConfiguration;
+import org.nzbhydra.web.JaxbConfiguration;
 import org.springframework.http.MediaType;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -30,7 +30,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 public class RssCapsCustomQueryAndTitleMappingTest {
 
 
-    private Jaxb2Marshaller jaxb2Marshaller = new WebConfiguration().marshaller();
+    private final Jaxb2Marshaller jaxb2Marshaller = new JaxbConfiguration().marshaller();
 
     @BeforeEach
     public void setUp() throws Exception {

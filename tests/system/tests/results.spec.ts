@@ -1,10 +1,4 @@
-import {
-    dismissWelcomeDialog,
-    expect,
-    searchForResult,
-    test,
-    testEnvironment,
-} from "./fixtures";
+import {dismissWelcomeDialog, expect, searchForResult, test, testEnvironment,} from "./fixtures";
 
 test.describe("Search results", () => {
     test.beforeEach(async ({ hydra, page }) => {
@@ -394,8 +388,11 @@ test.describe("Search results", () => {
                 direction,
             );
             await expect(
-                page.getByTestId("search-result-title").first(),
-            ).toHaveText(firstTitle);
+                page
+                    .getByTestId("search-results-table")
+                    .getByTestId("search-result-row")
+                    .first(),
+            ).toHaveAttribute("data-result-title", firstTitle);
         }
 
         const indexerFilter = page.getByTestId("filter-toggle-indexer");
@@ -528,7 +525,10 @@ async function assertGroupExpansionAndBulkSelection(
     await expect(rows).toHaveCount(2);
     await page.getByRole("button", { name: "Expand duplicates" }).click();
     await expect(rows).toHaveCount(3);
-    await page.getByRole("button", { name: "Select all", exact: true }).click();
+    await page
+        .getByTestId("search-results")
+        .getByRole("button", {name: "Select all", exact: true})
+        .click();
     await expect(rows.locator("input[type=checkbox]")).toHaveCount(3);
     await expect
         .poll(() =>
@@ -541,7 +541,10 @@ async function assertGroupExpansionAndBulkSelection(
                 ),
         )
         .toBe(true);
-    await page.getByRole("button", { name: "Invert selection" }).click();
+    await page
+        .getByTestId("search-results")
+        .getByRole("button", {name: "Invert selection"})
+        .click();
     await expect
         .poll(() =>
             rows

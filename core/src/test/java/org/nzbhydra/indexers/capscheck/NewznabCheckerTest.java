@@ -29,7 +29,7 @@ import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlRoot;
 import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlSearch;
 import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlSearching;
 import org.nzbhydra.searching.SearchModuleProvider;
-import org.nzbhydra.web.WebConfiguration;
+import org.nzbhydra.web.JaxbConfiguration;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.oxm.Unmarshaller;
 
@@ -66,7 +66,7 @@ public class NewznabCheckerTest {
     private SearchModuleProvider searchModuleProviderMock;
     @InjectMocks
     private IndexerChecker testee = new IndexerChecker();
-    private Unmarshaller unmarshaller = new WebConfiguration().marshaller();
+    private Unmarshaller unmarshaller = new JaxbConfiguration().marshaller();
 
 
     private IndexerConfig indexerConfig;

@@ -133,7 +133,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--gui-tests",
         action="store_true",
-        help="run the Playwright GUI tests in WSL while the managed services are running",
+        help="run the Playwright GUI tests while the managed services are running",
     )
     parser.add_argument(
         "--skip-system-tests",
@@ -982,9 +982,11 @@ def run_locked(args: argparse.Namespace, graalvm_environment: dict[str, str]) ->
                 maven,
                 "--batch-mode",
                 "test",
+                "-DskipTests=false",
                 "-pl",
                 "org.nzbhydra.tests:system",
                 "-DtrimStackTrace=false",
+                f"-DargLine=-Djdk.net.hosts.file={hosts_file}",
                 f"-DdataFolder.testaccess={data_dir}",
             ]
             test_command.extend(
@@ -993,10 +995,6 @@ def run_locked(args: argparse.Namespace, graalvm_environment: dict[str, str]) ->
             if args.test:
                 test_command.append(f"-Dtest={args.test}")
             test_environment = common_environment.copy()
-            test_environment["JAVA_TOOL_OPTIONS"] = " ".join(filter(None, [
-                test_environment.get("JAVA_TOOL_OPTIONS"),
-                f"-Djdk.net.hosts.file={hosts_file}",
-            ]))
             run_record["status"] = "testing"
             run_record["testCommand"] = test_command
             run_record["testProperties"] = local_test_properties
@@ -1112,7 +1110,7 @@ def run_locked(args: argparse.Namespace, graalvm_environment: dict[str, str]) ->
 
 def run() -> int:
     args = parse_args()
-    graalvm_environment = get_graalvm_environment()
+    graalvm_environment = os.environ.copy() if args.skip_build else get_graalvm_environment()
     if args.startup_timeout <= 0:
         raise RuntimeError("--startup-timeout must be greater than zero")
     if args.skip_system_tests and not args.gui_tests:

@@ -728,47 +728,21 @@ def _build_windows_executable(ctx: BuildContext, log_file: Path) -> str | None:
     build_ctx.log_file = log_file
 
     try:
-        if not ctx.is_windows:
-            console.print("  [yellow]⚠[/yellow] Skipping Windows build on non-Windows platform")
-            return None
-
-        # Build with 10 minute timeout
+        # The helper starts win11-ltsc only when needed and copies its artifacts back.
         run_command(
             build_ctx,
-            ["cmd", "/c", "buildCore.cmd"],
-            "Building Windows executable",
+            ["python3", str(PROJECT_ROOT / "misc" / "build_windows_vm.py"), "--version", ctx.version],
+            "Building Windows executable in VM",
             cwd=PROJECT_ROOT,
-            timeout_seconds=600,  # 10 minutes
+            timeout_seconds=1800,  # 30 minutes
         )
 
-        # Copy executable and DLLs
         if ctx.dry_run.should_execute_local():
-            import shutil
-
             windows_include = PROJECT_ROOT / "releases" / "windows-release" / "include"
             core_exe = PROJECT_ROOT / "core" / "target" / "core.exe"
-            if core_exe.exists():
-                shutil.copy(core_exe, windows_include)
-                console.print(f"  [green]✓[/green] Copied core.exe to windows-release/include")
-            else:
+            if not (windows_include / "core.exe").exists():
                 return f"Windows executable not found: {core_exe}"
-
-            for dll in (PROJECT_ROOT / "core" / "target").glob("*.dll"):
-                shutil.copy(dll, windows_include)
-            console.print(f"  [green]✓[/green] Copied DLLs to windows-release/include")
-
-            # Verify version
-            exe_path = windows_include / "core.exe"
-            result = run_command(
-                build_ctx,
-                [str(exe_path), "-version"],
-                "Verifying Windows executable version",
-            )
-            if result:
-                actual_version = result.stdout.strip()
-                if actual_version != ctx.version:
-                    return f"Windows version mismatch: expected {ctx.version}, got {actual_version}"
-                console.print(f"  [green]✓[/green] Windows version verified: {actual_version}")
+            console.print("  [green]✓[/green] Copied Windows executable and DLLs to windows-release/include")
 
         return None
     except Exception as e:

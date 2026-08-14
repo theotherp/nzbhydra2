@@ -1,6 +1,6 @@
 # Frontend Migration
 
-This directory is the durable coordination point for replacing the AngularJS UI with React. Conversation history is not part of the migration context.
+This directory is the durable coordination point for replacing the AngularJS UI with React. Conversation history and Mnemosyne memory are not part of the migration's authoritative context.
 
 ## Reading Order
 
@@ -27,6 +27,22 @@ Agents editing `core/ui-react` also read `/core/ui-react/AGENTS.md`.
 | Task scope, acceptance, and handoff        | `tasks/FM-*.md`       |
 
 Do not duplicate an authoritative fact in another document. Link its stable ID instead.
+
+## Mnemosyne Coordination
+
+Mnemosyne's shared surface is a supplementary cross-agent discovery index, not a task log or source of truth. At the start of each assigned task, proposal, review, or fix, make one scoped `mnemosyne_mnemosyne_shared_recall` using the task
+or ADR ID and its main domain terms. Use a result to identify useful leads, then verify it against the current task packet, migration documents, source, tests, and Git state before relying on it.
+
+- Task packets, registries, accepted ADRs, handoffs, `STATUS.md`, repository instructions, and an explicit user instruction always override memory.
+- Do not store task state, task scope, acceptance results, diffs, command output, test results, source excerpts, secrets, credentials, or unverified conclusions in Mnemosyne. Record those in their designated repository source of truth
+  instead.
+- Do not write shared memory for routine discoveries or duplicate an existing migration record. Shared memories must be compact, non-sensitive, durable across tasks, and useful outside the task that discovered them.
+- A reproducible tool workaround or environment prerequisite may be shared when it is operational knowledge rather than a task fact. It must state its trigger, safe workaround or setup, verification date, and source path, tool, or command
+  that verified it.
+- Before a shared write, recall for the same topic to avoid duplicates. Use `veracity: tool` for directly verified facts or `veracity: stated` for an explicit user preference.
+- Only the coordinator writes project shared memories. Implementers, reviewers, fixers, designers, and ADR proposers report a qualifying candidate to the coordinator rather than writing it themselves. The coordinator writes it after
+  independent review, an explicit human decision, or direct reproducible operational verification.
+- For an explicit, durable user preference that applies beyond this migration, the coordinator may record it with `mnemosyne_mnemosyne_remember_canonical`; the current user instruction remains authoritative.
 
 ## Workflow
 

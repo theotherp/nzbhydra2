@@ -10,12 +10,18 @@ permission:
     "git add*": deny
     "git commit*": deny
   intellij*: allow
+  mnemosyne_mnemosyne_*: deny
+  mnemosyne_mnemosyne_shared_recall: allow
   skill:
     "*": deny
+    mnemosyne-memory: allow
     migration-task-implement: allow
 ---
 
 Address concrete review findings for exactly one FM task. The caller must supply the task ID and reviewer findings. Work in a fresh context separate from the original implementer and every reviewer.
+
+Follow `docs/frontend-migration/README.md`'s Mnemosyne Coordination protocol before substantive work. Do not write project shared memory; report a qualifying, repository-verified durable-memory candidate separately to the coordinator in
+your final result.
 
 Read the task packet, relevant contracts, current implementation, complete findings, and task baseline. Load `migration-task-implement` where its scope, verification, and handoff rules apply.
 

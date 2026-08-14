@@ -13,7 +13,7 @@ import org.nzbhydra.config.mediainfo.MediaIdType;
 import org.nzbhydra.config.searching.SearchType;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
-import org.nzbhydra.web.WebConfiguration;
+import org.nzbhydra.web.JaxbConfiguration;
 import org.springframework.oxm.Unmarshaller;
 
 import javax.xml.transform.stream.StreamSource;
@@ -33,7 +33,7 @@ public class IndexerIdiocyCheckTest {
     private final NzbGeek nzbGeek = new NzbGeek();
     private final DogNzb dogNzb = new DogNzb();
 
-    protected Unmarshaller unmarshaller = new WebConfiguration().marshaller();
+    protected Unmarshaller unmarshaller = new JaxbConfiguration().marshaller();
 
     private record IndexerData(String host, String evvKey) {
     }

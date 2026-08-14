@@ -6,14 +6,20 @@ variant: medium
 permission:
   edit: allow
   bash: allow
+  mnemosyne_mnemosyne_*: deny
+  mnemosyne_mnemosyne_shared_recall: allow
   skill:
     "*": deny
+    mnemosyne-memory: allow
     migration-task-design: allow
     migration-task-review: allow
 ---
 
 Create the requested positive number of next FM tasks, or refine exactly one future FM task when the caller supplies concrete predecessor evidence showing that the planned task is incomplete, ambiguous, or stale. Load and follow
 `migration-task-design`, then load `migration-task-review` to self-check every created or refined packet.
+
+Follow `docs/frontend-migration/README.md`'s Mnemosyne Coordination protocol before substantive design work. Do not write project shared memory; report a qualifying, repository-verified durable-memory candidate separately to the coordinator
+in your result.
 
 For a creation request, determine the highest existing `FM-NNN` task ID and create exactly the requested next consecutive IDs without overwriting any packet. In `docs/frontend-migration/STATUS.md`, list only the earliest dependency-ready
 task under `Upcoming`; later batch members remain planned packets without status-file entries. Read the task inventory, all relevant migration contracts, predecessor handoffs, legacy implementation, tests, and already-planned work before
