@@ -51,7 +51,7 @@ public class IndexerSpecificDownloadExceptions {
                || host.contains("abnzb")
                || host.contains("digitalcarnage")
                || host.contains("tabula-rasa")
-               || host.contains("scenenzb")
+               || host.contains("treasure-maps")
                 ;
     }
 
