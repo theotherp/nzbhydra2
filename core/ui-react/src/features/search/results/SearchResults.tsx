@@ -48,11 +48,15 @@ export function SearchResults({
     data,
     episodeRequested = false,
     onLoadMore,
+    onSaveSearch,
+    savingSearch = false,
     searchRequestId,
 }: {
     data: SearchResponse;
     episodeRequested?: boolean;
     onLoadMore?: (loadAll: boolean) => Promise<void>;
+    onSaveSearch?: () => Promise<void>;
+    savingSearch?: boolean;
     searchRequestId?: number;
 }) {
     const safeConfig =
@@ -325,6 +329,17 @@ export function SearchResults({
                         {data.numberOfRejectedResults})
                     </Typography>
                     <Stack direction="row" flexWrap="wrap" gap={1}>
+                        {onSaveSearch && (
+                            <Button
+                                disabled={savingSearch}
+                                id="save-search"
+                                onClick={() => void onSaveSearch()}
+                            >
+                                {savingSearch
+                                    ? "Saving search…"
+                                    : "Save search"}
+                            </Button>
+                        )}
                         {dialogs !== null && toasts !== null && (
                             <DownloadActions
                                 onDownloaded={(ids) => {

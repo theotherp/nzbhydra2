@@ -1,7 +1,11 @@
 # FM-009: Packaging And Deployment Validation
 
 Status: done Owner: OpenCode
-Feature IDs: F-PLATFORM-SHELL Component IDs: C-APP-SHELL API IDs: API-BOOTSTRAP-INITIAL Depends on: FM-003, FM-004, FM-008 Blocks: later feature migration
+Feature IDs: F-PLATFORM-SHELL Component IDs: C-APP-SHELL API IDs: API-BOOTSTRAP-INITIAL Depends on: FM-003, FM-004, FM-008 Blocks: None
+
+## Dependency Notes
+
+Packaging validation is a prerequisite for later feature migration, but does not have a single direct successor task.
 
 ## Outcome
 
@@ -111,3 +115,7 @@ Do not modify files outside Files Allowed To Modify.
 ### Blocker
 
 - None. All acceptance criteria are satisfied; ready for independent review.
+
+### Historical Evidence Limitation
+
+This completed task predates the current structured handoff template. Its recorded outcome and command evidence are retained as historical evidence; no retrospective SHA-256 verification basis, fresh-review record, or unrecorded command result is asserted.

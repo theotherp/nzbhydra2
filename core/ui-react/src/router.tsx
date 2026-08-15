@@ -11,6 +11,9 @@ import type {BootstrapData} from "./bootstrap";
 import {ApiTransport} from "./api/transport";
 import {NewsPage} from "./features/system/news/NewsPage";
 import {SearchPage} from "./features/search/SearchPage";
+import {StatsShell} from "./features/stats/StatsShell";
+import {IndexerStatusesPage} from "./features/stats/indexers/IndexerStatusesPage";
+import {SavedSearchesPage} from "./features/stats/history/SavedSearchesPage";
 
 export function createAppRouter(bootstrap: BootstrapData) {
     const transport = new ApiTransport(bootstrap.baseUrl);
@@ -38,12 +41,68 @@ export function createAppRouter(bootstrap: BootstrapData) {
             <SearchPage bootstrap={bootstrap} transport={transport} />
         ),
     });
-    const routeTree = rootRoute.addChildren([searchRoute, newsRoute]);
+    const savedSearchesRoute = createRoute({
+        getParentRoute: () => rootRoute,
+        path: "stats/saved-searches",
+        component: () => (
+            <StatsShell bootstrap={bootstrap}>
+                <SavedSearchesPage
+                    bootstrap={bootstrap}
+                    transport={transport}
+                />
+            </StatsShell>
+        ),
+    });
+    const statsRoute = createRoute({
+        getParentRoute: () => rootRoute,
+        path: "stats",
+        component: () => (
+            <StatsPage bootstrap={bootstrap} transport={transport} />
+        ),
+    });
+    const indexerStatusesRoute = createRoute({
+        getParentRoute: () => rootRoute,
+        path: "stats/indexers",
+        component: () => (
+            <StatsPage bootstrap={bootstrap} transport={transport} />
+        ),
+    });
+    const statsFallbackRoute = createRoute({
+        getParentRoute: () => rootRoute,
+        path: "stats/$tab",
+        component: () => (
+            <StatsShell bootstrap={bootstrap}>
+                <MigrationPlaceholder baseUrl={bootstrap.baseUrl} />
+            </StatsShell>
+        ),
+    });
+    const routeTree = rootRoute.addChildren([
+        searchRoute,
+        newsRoute,
+        statsRoute,
+        indexerStatusesRoute,
+        savedSearchesRoute,
+        statsFallbackRoute,
+    ]);
 
     return createRouter({
         basepath: routerBasePath(bootstrap.baseUrl),
         routeTree,
     });
+}
+
+function StatsPage({
+    bootstrap,
+    transport,
+}: {
+    bootstrap: BootstrapData;
+    transport: ApiTransport;
+}) {
+    return (
+        <StatsShell bootstrap={bootstrap}>
+            <IndexerStatusesPage bootstrap={bootstrap} transport={transport} />
+        </StatsShell>
+    );
 }
 
 export function MigrationPlaceholder({baseUrl}: {baseUrl: string}) {

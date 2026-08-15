@@ -71,3 +71,7 @@ Record inventory totals, unresolved legacy calls, known coverage gaps, verificat
   inspections and project build passed; diff is documentation-only and limited to allowed files.
 - Follow-up proposals: add focused parity coverage for authentication/deployment, search behaviors, configuration transactions, history/statistics, and system/live workflows; resolve or remove the legacy migration UI before adopting its
   calls.
+
+### Historical Evidence Limitation
+
+This completed task predates the current structured handoff template. Its recorded outcome and command evidence are retained as historical evidence; no retrospective SHA-256 verification basis, fresh-review record, or unrecorded command result is asserted.

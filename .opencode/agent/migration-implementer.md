@@ -15,11 +15,9 @@ permission:
   skill:
     "*": deny
     mnemosyne-memory: allow
-    migration-task-implement: allow
 ---
 
-Implement exactly one FM task supplied by the caller. Load and follow the
-`migration-task-implement` skill.
+Implement exactly one FM task supplied by the caller.
 
 Follow `docs/frontend-migration/README.md`'s Mnemosyne Coordination protocol before substantive work. Do not write project shared memory; report a qualifying, repository-verified durable-memory candidate separately to the coordinator in
 your final result, not the task handoff.

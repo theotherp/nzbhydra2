@@ -39,6 +39,30 @@ describe("SearchResults", () => {
         delete window.__NZBHYDRA_BOOTSTRAP__;
     });
 
+    it("should expose a disabled save action only for an executed search", async () => {
+        const onSaveSearch = vi.fn().mockResolvedValue(undefined);
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    searchResults: [
+                        {
+                            searchResultId: "saved",
+                            title: "Saved result",
+                            indexer: "Mock",
+                            category: "All",
+                        },
+                    ],
+                }}
+                onSaveSearch={onSaveSearch}
+            />,
+        );
+        const save = screen.getByRole("button", {name: "Save search"});
+        fireEvent.click(save);
+        expect(save).toBeEnabled();
+        expect(onSaveSearch).toHaveBeenCalledTimes(1);
+    });
+
     it("should render no-picked, all-failed, empty, warning, and rejected states", () => {
         const {rerender} = renderResults(
             <SearchResults

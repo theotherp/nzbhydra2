@@ -54,9 +54,9 @@ Task states are `planned`, `ready`, `in_progress`, `review`, `blocked`, and `don
 4. The agent stays within the task's modification scope and acceptance criteria.
 5. The agent searches `COMPONENTS.yaml` and `APIS.yaml` before introducing shared code.
 6. The agent runs the task's verification and records structured evidence in its handoff.
-7. The agent updates affected registries and marks the task `review` in the same change.
-8. A fresh agent reviews the change against the task and linked feature records.
-9. The coordinator marks the task `done` after review findings are resolved.
+7. The agent reconciles every linked registry record and marks the task `review` in the same change.
+8. A fresh agent records the independent review using `templates/review.md`.
+9. Only the coordinator marks the task `done`, after the review disposition is accepted and findings are resolved.
 
 When an agent encounters an unresolved fundamental decision, it reports `ADR REQUIRED`. The coordinator automatically has a fresh proposer draft an evidence-based ADR and presents it to the human. The task remains blocked until the human
 explicitly accepts or rejects the proposal; after acceptance, the task designer links the ADR and refines the affected task before work resumes. See `decisions/README.md`.
@@ -130,6 +130,9 @@ Generated or temporary files count as modifications. Keep them inside allowed pa
 - IDs are permanent. Superseded records remain present and point to their replacement.
 - A shared component or API wrapper must have a registry ID before it is implemented.
 - Existing `data-testid` values are compatibility contracts unless a task explicitly replaces them.
+- `Depends on` and `Blocks` contain only comma-separated task IDs or `None`. Put explanatory prose under `Dependency Notes`.
+- An implementation handoff reconciles every registry record linked by its task: current target, tests, state, task ownership, gaps, selector contracts, and backlog ownership must be updated or explicitly confirmed unchanged.
+- An unfinished feature or component without a non-done task owner must carry `backlog: { status: deferred, rationale: "..." }`, or name its next task or blocking ADR. `deferred` is intentional planning state, not a claim of completion.
 
 ## Context Discipline
 

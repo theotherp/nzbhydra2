@@ -65,6 +65,91 @@ test.describe("Search", () => {
         expect(savedSearchBody.request?.loadAll).toBe(false);
     });
 
+    test("should save, reopen, rerun, and delete a React saved search with legacy comparison", async ({
+        page,
+    }) => {
+        await page.goto("ui/react?redirect=/");
+        await expect(page).toHaveURL(/\/$/);
+        await page.getByTestId("search-query").fill("saved React criteria");
+        const initialSearch = page.waitForResponse((response) =>
+            isSearchResponse(response),
+        );
+        await page.getByTestId("search-submit").click();
+        await initialSearch;
+
+        const saveResponse = page.waitForResponse(
+            (response) =>
+                response.request().method() === "POST" &&
+                new URL(response.url()).pathname ===
+                    "/internalapi/savedsearches",
+        );
+        await page.locator("#save-search").click();
+        expect((await saveResponse).status()).toBe(200);
+
+        await page.goto("/stats/saved-searches");
+        await expect(
+            page.getByRole("heading", { name: "Saved searches" }),
+        ).toBeVisible();
+        await expect(
+            page.getByRole("cell", { name: "saved React criteria" }),
+        ).toBeVisible();
+
+        await page.goto("ui/legacy?redirect=/stats/saved-searches");
+        await expect(page).toHaveURL(/\/stats\/saved-searches$/);
+        await expect(page.getByText("saved React criteria")).toBeVisible();
+
+        await page.goto("ui/react?redirect=/stats/saved-searches");
+        await expect(
+            page.getByRole("heading", { name: "Saved searches" }),
+        ).toBeVisible();
+        await page.getByRole("button", { name: "Search" }).click();
+        await expect(page.getByTestId("search-query")).toHaveValue(
+            "saved React criteria",
+        );
+        const rerun = page.waitForResponse((response) =>
+            isSearchResponse(response),
+        );
+        await page.getByTestId("search-submit").click();
+        expect((await rerun).request().postDataJSON()).toMatchObject({
+            query: "saved React criteria",
+        });
+
+        await page.goto("/stats/saved-searches");
+        await page.getByRole("button", { name: "Delete" }).click();
+        await page
+            .getByRole("dialog")
+            .getByRole("button", { name: "Delete" })
+            .click();
+        await expect(page.getByText("saved React criteria")).not.toBeVisible();
+    });
+
+    test("should retain Spring stats-role protection for saved-searches", async ({
+        hydra,
+        page,
+    }) => {
+        const config = await hydra.getConfig();
+        config.auth = {
+            authType: "FORM",
+            restrictAdmin: true,
+            restrictStats: true,
+            restrictSearch: false,
+            users: [
+                {
+                    username: "admin",
+                    password: "{noop}password",
+                    maySeeAdmin: true,
+                    maySeeStats: true,
+                },
+            ],
+        };
+        await hydra.saveConfig(config);
+
+        const response = await page.request.get("/stats/saved-searches", {
+            maxRedirects: 0,
+        });
+        expect(response.status()).toBe(403);
+    });
+
     test("should render the React search workspace and preserved result selectors at desktop and mobile widths", async ({
         page,
     }) => {

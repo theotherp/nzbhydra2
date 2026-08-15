@@ -1,4 +1,4 @@
-import {readdir, readFile} from "node:fs/promises";
+import {access, readdir, readFile} from "node:fs/promises";
 import path from "node:path";
 import {fileURLToPath} from "node:url";
 
@@ -16,6 +16,14 @@ const registries = [
 ];
 
 const errors = [];
+const taskStatuses = new Set([
+    "planned",
+    "ready",
+    "in_progress",
+    "review",
+    "blocked",
+    "done",
+]);
 
 function report(message) {
     errors.push(message);
@@ -88,17 +96,176 @@ function referencedIds(contents, label, prefix) {
     return match?.[1].match(new RegExp(`${prefix}-[A-Z0-9-]+`, "g")) ?? [];
 }
 
+function taskField(contents, label, nextLabel) {
+    const match = contents.match(
+        new RegExp(`${label}:\\s*(.*?)(?=\\s+${nextLabel}:|$)`, "m"),
+    );
+    return match?.[1].trim() ?? null;
+}
+
+function taskIds(value) {
+    return value === "None" ? [] : value.split(",").map((id) => id.trim());
+}
+
+function validateTaskIdList(taskFile, label, value, taskFiles) {
+    if (value === null) {
+        report(`${taskFile} is missing ${label}`);
+        return [];
+    }
+
+    if (value === "None") {
+        return [];
+    }
+
+    const ids = taskIds(value);
+    if (ids.length === 0 || ids.some((id) => !/^FM-\d{3}$/.test(id))) {
+        report(
+            `${taskFile} ${label} must contain only comma-separated FM-NNN IDs or None`,
+        );
+        return [];
+    }
+
+    for (const id of ids) {
+        if (!taskFiles.has(id)) {
+            report(`${taskFile} ${label} references unknown task ${id}`);
+        }
+    }
+    return ids;
+}
+
+function statusSections(contents) {
+    const sections = new Map();
+    let section = null;
+    for (const line of contents.split("\n")) {
+        const heading = line.match(
+            /^## (Active|Review|Blocked|Upcoming)$/,
+        )?.[1];
+        if (heading) {
+            section = heading;
+            sections.set(section, []);
+            continue;
+        }
+        if (section) {
+            sections.get(section).push(...(line.match(/FM-\d{3}/g) ?? []));
+        }
+    }
+    return sections;
+}
+
+function pathsFor(value) {
+    if (typeof value === "string") {
+        return value
+            .split(";")
+            .map((path) => path.trim())
+            .filter(Boolean);
+    }
+    if (Array.isArray(value)) {
+        return value.flatMap(pathsFor);
+    }
+    return [];
+}
+
+async function validateRecordPaths(records, registryName) {
+    for (const record of records) {
+        for (const field of ["target", "test"]) {
+            if (field === "target" && record.backlog) {
+                continue;
+            }
+            for (const recordPath of pathsFor(record[field])) {
+                const resolvedPath = path.resolve(projectRoot, recordPath);
+                if (
+                    path.isAbsolute(recordPath) ||
+                    (resolvedPath !== projectRoot &&
+                        !resolvedPath.startsWith(`${projectRoot}${path.sep}`))
+                ) {
+                    report(
+                        `${registryName} ${record.id} ${field} must be contained in the project: ${recordPath}`,
+                    );
+                    continue;
+                }
+                try {
+                    await access(resolvedPath);
+                } catch {
+                    report(
+                        `${registryName} ${record.id} ${field} path does not exist: ${recordPath}`,
+                    );
+                }
+            }
+        }
+    }
+}
+
+function recordNeedsBacklog(record, tasks) {
+    const state = record.parity ?? record.state;
+    return (
+        ["inventoried", "partial", "planned", "unverified_legacy_api"].includes(
+            state,
+        ) &&
+        (!record.task || tasks.get(record.task)?.status === "done") &&
+        !record.backlog
+    );
+}
+
+function validateBacklog(records, registryName, tasks) {
+    for (const record of records) {
+        if (recordNeedsBacklog(record, tasks)) {
+            report(
+                `${registryName} ${record.id} is unfinished without backlog ownership`,
+            );
+        }
+        if (record.backlog?.task && !tasks.has(record.backlog.task)) {
+            report(
+                `${registryName} ${record.id} backlog references unknown task ${record.backlog.task}`,
+            );
+        }
+        if (record.backlog?.adr && !/^ADR-\d{4}$/.test(record.backlog.adr)) {
+            report(
+                `${registryName} ${record.id} backlog adr must use ADR-NNNN`,
+            );
+        }
+        if (record.backlog && !record.backlog.rationale) {
+            report(`${registryName} ${record.id} backlog requires a rationale`);
+        }
+    }
+}
+
+function validateAdoptedApiEvidence(records) {
+    for (const record of records) {
+        if (
+            !["generated_weak_validated", "generated_typed"].includes(
+                record.contract_state,
+            )
+        ) {
+            continue;
+        }
+        if (pathsFor(record.target).length === 0) {
+            report(`${record.id} is adopted but has no target evidence`);
+        }
+        if (pathsFor(record.test).length === 0) {
+            report(`${record.id} is adopted but has no test evidence`);
+        }
+    }
+}
+
 async function validateTaskReferences(ids) {
     const tasksDirectory = path.join(migrationDirectory, "tasks");
     const taskFiles = (await readdir(tasksDirectory)).filter((file) =>
         /^FM-\d+.*\.md$/.test(file),
     );
 
+    const tasks = new Map();
     for (const taskFile of taskFiles) {
         const contents = await readFile(
             path.join(tasksDirectory, taskFile),
             "utf8",
         );
+        const taskId = taskFile.match(/^(FM-\d{3})/)?.[1];
+        const status = taskField(contents, "Status", "Owner");
+        if (!taskId || !taskStatuses.has(status)) {
+            report(`${taskFile} has an invalid Status`);
+        } else {
+            tasks.set(taskId, {file: taskFile, status, contents});
+        }
         for (const [label, prefix, validIds] of [
             ["Feature IDs", "F", ids.features],
             ["Component IDs", "C", ids.components],
@@ -111,6 +278,61 @@ async function validateTaskReferences(ids) {
                     );
                 }
             }
+        }
+    }
+
+    for (const [taskId, task] of tasks) {
+        const dependsOn = validateTaskIdList(
+            task.file,
+            "Depends on",
+            taskField(task.contents, "Depends on", "Blocks"),
+            tasks,
+        );
+        validateTaskIdList(
+            task.file,
+            "Blocks",
+            taskField(task.contents, "Blocks", "Decision Dependencies"),
+            tasks,
+        );
+        task.dependsOn = dependsOn;
+    }
+    return tasks;
+}
+
+async function validateStatus(tasks) {
+    const contents = await readFile(
+        path.join(migrationDirectory, "STATUS.md"),
+        "utf8",
+    );
+    const sections = statusSections(contents);
+    const expectedSection = {
+        in_progress: "Active",
+        review: "Review",
+        blocked: "Blocked",
+        ready: "Upcoming",
+    };
+    for (const [taskId, task] of tasks) {
+        const section = expectedSection[task.status];
+        if (section && !sections.get(section)?.includes(taskId)) {
+            report(
+                `${task.file} is ${task.status} but absent from STATUS.md ${section}`,
+            );
+        }
+        if (
+            !section &&
+            [...sections.values()].some((ids) => ids.includes(taskId))
+        ) {
+            report(`${task.file} is ${task.status} but listed in STATUS.md`);
+        }
+        if (
+            task.status === "planned" &&
+            task.dependsOn.length > 0 &&
+            task.dependsOn.every((id) => tasks.get(id)?.status === "done") &&
+            !sections.get("Upcoming")?.includes(taskId)
+        ) {
+            report(
+                `${task.file} is dependency-ready but missing from STATUS.md Upcoming`,
+            );
         }
     }
 }
@@ -127,7 +349,21 @@ for (const [index, registry] of registries.entries()) {
 }
 
 validateActiveApiPaths(records[2]);
-await validateTaskReferences(ids);
+validateAdoptedApiEvidence(records[2]);
+const tasks = await validateTaskReferences(ids);
+for (const [index, registry] of registries.entries()) {
+    for (const record of records[index]) {
+        if (record.task !== null && !tasks.has(record.task)) {
+            report(
+                `${registry.file} ${record.id} references unknown task ${record.task}`,
+            );
+        }
+    }
+    await validateRecordPaths(records[index], registry.file);
+}
+validateBacklog(records[0], "FEATURES.yaml", tasks);
+validateBacklog(records[1], "COMPONENTS.yaml", tasks);
+await validateStatus(tasks);
 
 if (errors.length > 0) {
     console.error("Migration registry validation failed:");

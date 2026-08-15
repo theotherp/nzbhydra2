@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 import {useNavigate, useSearch} from "@tanstack/react-router";
-import {useEffect, useRef, useState} from "react";
+import {useContext, useEffect, useRef, useState} from "react";
 
 import {
     continuationRequest,
@@ -31,6 +31,8 @@ import type {
 import {SockJsStompLiveTransport} from "../../api/live/transport";
 import type {LiveSubscription} from "../../api/live/transport";
 import {ApiTransport} from "../../api/transport";
+import {createSavedSearch} from "../../api/savedSearches";
+import {ToastContext} from "../../components/toasts/toasts";
 import {createCategoryCatalog} from "../../domain/categories/catalog";
 import type {BootstrapData} from "../../bootstrap";
 import {SearchResults} from "./results/SearchResults";
@@ -53,6 +55,7 @@ export function SearchPage({
     liveTransport?: SearchLiveTransport;
 }) {
     const transport = suppliedTransport ?? new ApiTransport(bootstrap.baseUrl);
+    const toasts = useContext(ToastContext);
     const [recentSearchQueryClient] = useState(() => new QueryClient());
     const liveTransport =
         suppliedLiveTransport ??
@@ -82,6 +85,7 @@ export function SearchPage({
     const [embyAvailability, setEmbyAvailability] = useState<
         "available" | "unavailable" | "error" | undefined
     >();
+    const [savingSearch, setSavingSearch] = useState(false);
     const activeSubmission = useRef<
         {cancelled: boolean; subscription?: LiveSubscription} | undefined
     >(undefined);
@@ -308,6 +312,26 @@ export function SearchPage({
                 : current,
         );
     };
+    const saveSearch = async () => {
+        if (!state.request || savingSearch) {
+            return;
+        }
+        setSavingSearch(true);
+        try {
+            await createSavedSearch(transport, state.request);
+            toasts?.showToast({
+                severity: "success",
+                message: "Search saved.",
+            });
+        } catch {
+            toasts?.showToast({
+                severity: "error",
+                message: "Unable to save search.",
+            });
+        } finally {
+            setSavingSearch(false);
+        }
+    };
     return (
         <Stack component="main" spacing={2}>
             <Typography component="h1" variant="h4">
@@ -370,6 +394,8 @@ export function SearchPage({
                     data={state.data}
                     episodeRequested={episodeRequested}
                     onLoadMore={loadMore}
+                    onSaveSearch={saveSearch}
+                    savingSearch={savingSearch}
                     searchRequestId={state.request.searchRequestId}
                 />
             )}

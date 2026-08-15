@@ -79,3 +79,7 @@ From a clean dependency state:
 ## Handoff
 
 Record tool versions, commands, generated-output policy, verification results, and any build integration assumptions. Mark this task `review` when complete.
+
+### Historical Evidence Limitation
+
+This completed task predates the current structured handoff template. Its recorded outcome and command evidence are retained as historical evidence; no retrospective SHA-256 verification basis, fresh-review record, or unrecorded command result is asserted.

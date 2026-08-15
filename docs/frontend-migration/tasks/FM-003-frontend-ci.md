@@ -89,6 +89,10 @@ Do not modify files outside Files Allowed To Modify.
 
 - None.
 
+### Historical Evidence Limitation
+
+This completed task predates the current structured handoff template. Its recorded outcome and command evidence are retained as historical evidence; no retrospective SHA-256 verification basis, fresh-review record, or unrecorded command result is asserted.
+
 ### Registry And Documentation Updates
 
 - Updated `STATUS.md` to place FM-003 in review.

@@ -15,7 +15,6 @@ permission:
   skill:
     "*": deny
     mnemosyne-memory: allow
-    migration-task-implement: allow
 ---
 
 Address concrete review findings for exactly one FM task. The caller must supply the task ID and reviewer findings. Work in a fresh context separate from the original implementer and every reviewer.
@@ -23,7 +22,7 @@ Address concrete review findings for exactly one FM task. The caller must supply
 Follow `docs/frontend-migration/README.md`'s Mnemosyne Coordination protocol before substantive work. Do not write project shared memory; report a qualifying, repository-verified durable-memory candidate separately to the coordinator in
 your final result.
 
-Read the task packet, relevant contracts, current implementation, complete findings, and task baseline. Load `migration-task-implement` where its scope, verification, and handoff rules apply.
+Read the task packet, relevant contracts, current implementation, complete findings, and task baseline.
 
 Fix only required findings. Do not implement optional suggestions, redesign the task, expand scope, or write outside `Files Allowed To Modify`. Preserve the declared architecture and quality gates. Escalate if a required correction needs a
 prohibited write or a new architectural decision.

@@ -111,3 +111,7 @@ Do not modify files outside Files Allowed To Modify.
 ### Follow-Up Work
 
 - File-transfer/binary response handling and SockJS/STOMP abstractions remain deferred as explicitly out of scope for FM-005.
+
+### Historical Evidence Limitation
+
+This completed task predates the current structured handoff template. Its recorded outcome and command evidence are retained as historical evidence; no retrospective SHA-256 verification basis, fresh-review record, or unrecorded command result is asserted.

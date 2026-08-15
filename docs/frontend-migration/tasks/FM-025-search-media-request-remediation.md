@@ -1,7 +1,11 @@
 # FM-025: Search Media Request Remediation
 
 Status: done Owner: OpenCode
-Feature IDs: F-SEARCH-FORM, F-SEARCH-MEDIA Component IDs: C-CATEGORY-CATALOG API IDs: API-SEARCH-EXECUTE, API-SEARCH-EMBY-SERIES, API-SEARCH-EMBY-MOVIE Depends on: FM-014; consumes the failed FM-015 implementation candidate at baseline `b9462723efd9a23866d1db96a4a374dad527f1d1` Blocks: FM-016, FM-017
+Feature IDs: F-SEARCH-FORM, F-SEARCH-MEDIA Component IDs: C-CATEGORY-CATALOG API IDs: API-SEARCH-EXECUTE, API-SEARCH-EMBY-SERIES, API-SEARCH-EMBY-MOVIE Depends on: FM-014 Blocks: FM-016, FM-017
+
+## Dependency Notes
+
+This task consumed the failed FM-015 implementation candidate at baseline `b9462723efd9a23866d1db96a4a374dad527f1d1`.
 
 ## Outcome
 

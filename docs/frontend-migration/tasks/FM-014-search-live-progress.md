@@ -1,7 +1,11 @@
 # FM-014: Search Live Progress
 
 Status: done Owner: OpenCode
-Feature IDs: F-SEARCH-PROGRESS Component IDs: C-LIVE-TRANSPORT API IDs: API-SEARCH-SHORTCUT, API-LIVE-SOCKJS, API-LIVE-SEARCH-STATE Depends on: FM-010 Blocks: F-PLATFORM-LIVE-STATUS
+Feature IDs: F-SEARCH-PROGRESS Component IDs: C-LIVE-TRANSPORT API IDs: API-SEARCH-SHORTCUT, API-LIVE-SOCKJS, API-LIVE-SEARCH-STATE Depends on: FM-010 Blocks: None
+
+## Dependency Notes
+
+The future platform-live-status work reuses C-LIVE-TRANSPORT; no implementation task has been created for that feature yet.
 
 ## Outcome
 
@@ -100,3 +104,7 @@ The agent may read and search the entire repository. Context To Read is mandator
 ### Follow-up
 
 - Add cancellation only with the owning backend contract; reuse `C-LIVE-TRANSPORT` for downloader status and notifications in their respective tasks without expanding this task's scope.
+
+### Historical Evidence Limitation
+
+This completed task predates the current structured handoff template. Its recorded outcome and command evidence are retained as historical evidence; no retrospective SHA-256 verification basis, fresh-review record, or unrecorded command result is asserted.

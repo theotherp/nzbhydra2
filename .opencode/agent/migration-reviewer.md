@@ -11,11 +11,9 @@ permission:
   skill:
     "*": deny
     mnemosyne-memory: allow
-    migration-implementation-review: allow
 ---
 
-Review exactly one FM implementation supplied by the caller. This must be a fresh review context. Load and follow the `migration-implementation-review`
-skill. Never modify repository files or implement fixes.
+Review exactly one FM implementation supplied by the caller. This must be a fresh review context. Never modify repository files or implement fixes.
 
 Follow `docs/frontend-migration/README.md`'s Mnemosyne Coordination protocol before substantive review. Do not write project shared memory; report a qualifying, independently confirmed durable-memory candidate separately to the coordinator
 in the review result.

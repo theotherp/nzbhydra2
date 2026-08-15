@@ -1,6 +1,6 @@
 # FM-000: Migration Control Plane
 
-Status: done Owner: OpenCode bootstrap session Feature IDs: all initial records Component IDs: all initial records API IDs: all initial records Depends on: none Blocks: FM-001
+Status: done Owner: OpenCode bootstrap session Feature IDs: all initial records Component IDs: all initial records API IDs: all initial records Depends on: None Blocks: FM-001
 
 ## Outcome
 
@@ -23,3 +23,7 @@ Provide durable, checked-in migration context so future agents do not depend on 
 ## Handoff
 
 Created the control plane only. No React scaffold, backend route, generated API code, legacy UI code, or static output was changed. `FM-001` is the first task for a fresh agent.
+
+### Historical Evidence Limitation
+
+This completed task predates the current structured handoff template. Its recorded outcome and command evidence are retained as historical evidence; no retrospective SHA-256 verification basis, fresh-review record, or unrecorded command result is asserted.

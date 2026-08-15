@@ -12,6 +12,7 @@ features:
     parity: partial
     gaps: [ navigation, footer, permission-aware links, live status ]
     task: FM-004
+    backlog: { status: deferred, rationale: "Remaining shell parity needs a dedicated follow-up task after the current review queue." }
 
   - id: F-AUTH-LOGIN
     name: Form login, logout, password confirmation, and session refresh
@@ -24,6 +25,7 @@ features:
     target: core/ui-react/src/features/auth
     parity: inventoried
     task: FM-001
+    backlog: { status: deferred, rationale: "No implementation task has been designed for authentication lifecycle parity." }
 
   - id: F-SEARCH-FORM
     name: Search workspace, URL criteria, categories, limits, and submission
@@ -35,8 +37,9 @@ features:
     selectors: [ search-query, search-submit, search-category-control, "search-category-option-{{category.name}}", additional-query, autocomplete-popup, autocomplete-option ]
     target: core/ui-react/src/features/search
     parity: partial
-    gaps: [ recent searches, guided tour ]
+    gaps: [ guided tour ]
     task: FM-016
+    backlog: { status: deferred, rationale: "The remaining guided-tour integration has no implementation task yet." }
 
   - id: F-SEARCH-MEDIA
     name: Movie and TV autocomplete, identifiers, title refinement, season, and episode
@@ -44,12 +47,13 @@ features:
     routes: [ / ]
     roles: [ user ]
     legacy_sources: [ core/ui-src/js/search-controller.js, core/ui-src/html/states/search.html ]
-    tests: [ tests/system/tests/search.spec.ts ]
+    tests: [ core/ui-react/src/api/media.test.ts, core/ui-react/src/features/search/workspace/SearchWorkspace.test.tsx, core/ui-react/src/features/search/SearchPage.test.tsx, tests/system/tests/search.spec.ts ]
     selectors: [ additional-query, autocomplete-popup, autocomplete-option ]
     target: core/ui-react/src/features/search
     parity: partial
     gaps: [ ]
     task: FM-025
+    backlog: { status: deferred, rationale: "The record remains partial pending a dedicated full-parity reconciliation." }
 
   - id: F-SEARCH-INDEXERS
     name: Indexer selection by individual source, type, group, and preselection
@@ -63,6 +67,7 @@ features:
     parity: partial
     gaps: [ ]
     task: FM-016
+    backlog: { status: deferred, rationale: "The record remains partial pending a dedicated full-parity reconciliation." }
 
   - id: F-SEARCH-RECENT
     name: Recent-search dropdown, refill, repeat, and drag-to-search
@@ -70,12 +75,13 @@ features:
     routes: [ / ]
     roles: [ user ]
     legacy_sources: [ core/ui-src/js/search-controller.js, core/ui-src/js/search-history-service.js, core/ui-src/html/search-searchhistory-dropdown.html ]
-    tests: [ tests/system/tests/search-history.spec.ts ]
+    tests: [ core/ui-react/src/api/recentSearches.test.ts, core/ui-react/src/features/search/SearchPage.test.tsx, tests/system/tests/search.spec.ts ]
     selectors: [ ]
     target: core/ui-react/src/features/search
     parity: partial
     gaps: [ search-page dropdown and drag behavior ]
     task: FM-017
+    backlog: { status: deferred, rationale: "Remaining search-page dropdown and drag behavior has no implementation task yet." }
 
   - id: F-SEARCH-PROGRESS
     name: Live search progress, cancellation, and early result display
@@ -89,6 +95,7 @@ features:
     parity: partial
     gaps: [ cancellation ]
     task: FM-014
+    backlog: { status: deferred, rationale: "Remaining cancellation behavior has no implementation task yet." }
 
   - id: F-SEARCH-RESULTS
     name: Result processing, display, indexer outcomes, and malformed-result resilience
@@ -100,8 +107,9 @@ features:
     selectors: [ search-results, indexer-limit-warnings, search-results-summary, search-results-table, search-result-row, search-result-title ]
     target: core/ui-react/src/features/search/results
     parity: partial
-    gaps: [ autocomplete/identifier refinement, indexer-selection controls, search history, live progress, sorting/filtering, grouping/selection, downloads ]
+    gaps: [ ]
     task: FM-010
+    backlog: { status: deferred, rationale: "The record remains partial pending a dedicated full-parity reconciliation." }
 
   - id: F-SEARCH-SORT-FILTER
     name: Result sorting, column filters, quick filters, and persisted choices
@@ -115,6 +123,7 @@ features:
     parity: partial
     gaps: [ server-backed preferences ]
     task: FM-011
+    backlog: { status: deferred, rationale: "Server-backed preference adoption has no implementation task yet." }
 
   - id: F-SEARCH-GROUP-SELECTION
     name: Duplicate, title, and episode grouping with selection and shift-selection
@@ -128,6 +137,7 @@ features:
     parity: partial
     gaps: [ ]
     task: FM-012
+    backlog: { status: deferred, rationale: "The record remains partial pending a dedicated full-parity reconciliation." }
 
   - id: F-SEARCH-DOWNLOADS
     name: Single and bulk browser, downloader, ZIP, black-hole, torrent, magnet, and copy-link actions
@@ -141,6 +151,7 @@ features:
     parity: partial
     gaps: [ download-history route migration ]
     task: FM-013
+    backlog: { status: deferred, rationale: "Download-history route migration is separately deferred." }
 
   - id: F-SEARCH-PAGING
     name: Load next batch or all remaining indexer results without repeating offsets
@@ -153,6 +164,7 @@ features:
     target: core/ui-react/src/features/search/results
     parity: partial
     task: FM-018
+    backlog: { status: deferred, rationale: "The record remains partial pending a dedicated full-parity reconciliation." }
 
   - id: F-SEARCH-SAVED
     name: Save an executed search for later reuse
@@ -160,12 +172,13 @@ features:
     routes: [ /, /stats/saved-searches ]
     roles: [ user, stats ]
     legacy_sources: [ core/ui-src/js/search-results-controller.js, core/ui-src/js/saved-searches-controller.js, core/ui-src/html/states/saved-searches.html ]
-    tests: [ tests/system/tests/search.spec.ts ]
+    tests: [ core/ui-react/src/api/savedSearches.test.ts, core/ui-react/src/features/search/history/savedSearchCriteria.test.ts, tests/system/tests/search.spec.ts ]
     selectors: [ ]
     target: core/ui-react/src/features/search
     parity: partial
-    gaps: [ saved-search listing, reopen, and deletion ]
+    gaps: [ ]
     task: FM-019
+    backlog: { status: deferred, rationale: "Remaining saved-search parity is future work." }
 
   - id: F-SEARCH-TOUR
     name: Guided search tour and demo-mode lifecycle
@@ -178,6 +191,7 @@ features:
     target: core/ui-react/src/features/search/tour
     parity: inventoried
     task: FM-001
+    backlog: { status: deferred, rationale: "No implementation task has been designed for guided tour and demo-mode parity." }
 
   - id: F-CONFIG-SHELL
     name: Configuration tabs, advanced fields, whole-config save, validation, dirty state, and API help
@@ -191,6 +205,7 @@ features:
     parity: partial
     gaps: [ stable data-testid selectors, advanced toggle, unsaved navigation, warnings, restart, API help, full round trip ]
     task: FM-001
+    backlog: { status: deferred, rationale: "Configuration migration needs a dedicated task batch before implementation begins." }
 
   - id: F-CONFIG-MAIN
     name: Main hosting, proxy, UI, security, logging, backup, update, history, database, and runtime settings
@@ -204,6 +219,7 @@ features:
     parity: partial
     gaps: [ all field workflows; current test only opens the route ]
     task: FM-001
+    backlog: { status: deferred, rationale: "Configuration migration needs a dedicated task batch before implementation begins." }
 
   - id: F-CONFIG-AUTH
     name: Authentication modes, OIDC, restrictions, users, roles, and secret semantics
@@ -216,6 +232,7 @@ features:
     target: core/ui-react/src/features/config/auth
     parity: inventoried
     task: FM-001
+    backlog: { status: deferred, rationale: "Configuration migration needs a dedicated task batch before implementation begins." }
 
   - id: F-CONFIG-SEARCHING
     name: Search execution, filtering, title processing, mappings, display, duplicates, and cache settings
@@ -229,6 +246,7 @@ features:
     parity: partial
     gaps: [ configuration UI; current tests cover runtime effects only ]
     task: FM-001
+    backlog: { status: deferred, rationale: "Configuration migration needs a dedicated task batch before implementation begins." }
 
   - id: F-CONFIG-CATEGORIES
     name: Category CRUD, mappings, presets, restrictions, and size limits
@@ -241,6 +259,7 @@ features:
     target: core/ui-react/src/features/config/categories
     parity: inventoried
     task: FM-001
+    backlog: { status: deferred, rationale: "Configuration migration needs a dedicated task batch before implementation begins." }
 
   - id: F-CONFIG-DOWNLOADING
     name: Download behavior, black holes, downloader CRUD, validation, and connection checks
@@ -254,6 +273,7 @@ features:
     parity: partial
     gaps: [ configuration UI; current tests configure through API fixtures ]
     task: FM-001
+    backlog: { status: deferred, rationale: "Configuration migration needs a dedicated task batch before implementation begins." }
 
   - id: F-CONFIG-EXTERNAL-TOOLS
     name: External-tool CRUD, validation, connection tests, sync options, and manual sync
@@ -267,6 +287,7 @@ features:
     parity: partial
     gaps: [ stable data-testid selectors, failure and partial-failure feedback, full preset coverage ]
     task: FM-001
+    backlog: { status: deferred, rationale: "Configuration migration needs a dedicated task batch before implementation begins." }
 
   - id: F-CONFIG-INDEXERS
     name: Indexer CRUD, policy, capabilities, connection checks, and Jackett/Prowlarr imports
@@ -279,6 +300,7 @@ features:
     target: core/ui-react/src/features/config/indexers
     parity: inventoried
     task: FM-001
+    backlog: { status: deferred, rationale: "Configuration migration needs a dedicated task batch before implementation begins." }
 
   - id: F-CONFIG-NOTIFICATIONS
     name: Notification transports, GUI filtering, event rules, templates, and tests
@@ -292,6 +314,7 @@ features:
     parity: partial
     gaps: [ configuration UI; current test covers quota warning display only ]
     task: FM-001
+    backlog: { status: deferred, rationale: "Configuration migration needs a dedicated task batch before implementation begins." }
 
   - id: F-STATS-SHELL
     name: Statistics and history tab shell with keep-history visibility rules
@@ -303,7 +326,7 @@ features:
     selectors: [ ]
     target: core/ui-react/src/features/stats
     parity: partial
-    gaps: [ visibility rules ]
+    gaps: [ remaining history and aggregate-stat content ]
     task: FM-020
 
   - id: F-STATS-MAIN
@@ -329,7 +352,7 @@ features:
     selectors: [ ]
     target: core/ui-react/src/features/stats/indexers
     parity: partial
-    gaps: [ visible status behavior ]
+    gaps: [ ]
     task: FM-020
 
   - id: F-HISTORY-SEARCHES
@@ -351,12 +374,13 @@ features:
     routes: [ /stats/saved-searches ]
     roles: [ stats ]
     legacy_sources: [ core/ui-src/js/saved-searches-controller.js, core/ui-src/html/states/saved-searches.html ]
-    tests: [ tests/system/tests/search.spec.ts ]
+    tests: [ core/ui-react/src/api/savedSearches.test.ts, core/ui-react/src/features/stats/history/SavedSearchesPage.test.tsx, tests/system/tests/search.spec.ts ]
     selectors: [ ]
     target: core/ui-react/src/features/stats/history
     parity: partial
-    gaps: [ route UI lifecycle ]
+    gaps: [ ]
     task: FM-019
+    backlog: { status: deferred, rationale: "Remaining saved-search parity is future work." }
 
   - id: F-HISTORY-DOWNLOADS
     name: Download-history paging, filtering, links, and repeat actions
@@ -393,6 +417,7 @@ features:
     target: core/ui-react/src/features/system
     parity: inventoried
     task: FM-001
+    backlog: { status: deferred, rationale: "System administration migration needs a dedicated task batch before implementation begins." }
 
   - id: F-SYSTEM-CONTROL
     name: Restart, shutdown, configuration reload, and legacy migration
@@ -406,6 +431,7 @@ features:
     parity: unverified_legacy_api
     gaps: [ migration API has no verified backend mapping ]
     task: FM-001
+    backlog: { status: deferred, rationale: "System administration migration needs a dedicated task batch before implementation begins." }
 
   - id: F-SYSTEM-UPDATES
     name: Update status, history, ignore, install, and restart handoff
@@ -418,6 +444,7 @@ features:
     target: core/ui-react/src/features/system/updates
     parity: inventoried
     task: FM-001
+    backlog: { status: deferred, rationale: "System administration migration needs a dedicated task batch before implementation begins." }
 
   - id: F-SYSTEM-LOG
     name: Raw and structured log viewing, filtering, tailing, and downloads
@@ -430,6 +457,7 @@ features:
     target: core/ui-react/src/features/system/logs
     parity: inventoried
     task: FM-001
+    backlog: { status: deferred, rationale: "System administration migration needs a dedicated task batch before implementation begins." }
 
   - id: F-SYSTEM-TASKS
     name: Scheduled task list and manual execution
@@ -442,6 +470,7 @@ features:
     target: core/ui-react/src/features/system/tasks
     parity: inventoried
     task: FM-001
+    backlog: { status: deferred, rationale: "System administration migration needs a dedicated task batch before implementation begins." }
 
   - id: F-SYSTEM-BACKUP
     name: Backup listing, creation, download, upload, and restore
@@ -454,6 +483,7 @@ features:
     target: core/ui-react/src/features/system/backups
     parity: inventoried
     task: FM-001
+    backlog: { status: deferred, rationale: "System administration migration needs a dedicated task batch before implementation begins." }
 
   - id: F-SYSTEM-BUGREPORT
     name: Debug archive, upload, sensitive logging, thread diagnostics, heap dump, and SQL tools
@@ -466,6 +496,7 @@ features:
     target: core/ui-react/src/features/system/diagnostics
     parity: inventoried
     task: FM-001
+    backlog: { status: deferred, rationale: "System administration migration needs a dedicated task batch before implementation begins." }
 
   - id: F-SYSTEM-NEWS
     name: Read-only news list
@@ -478,6 +509,7 @@ features:
     target: core/ui-react/src/features/system/news
     parity: partial
     task: FM-008
+    backlog: { status: deferred, rationale: "The record remains partial pending a dedicated full-parity reconciliation." }
 
   - id: F-SYSTEM-ABOUT
     name: Version, update, and runtime information
@@ -490,6 +522,7 @@ features:
     target: core/ui-react/src/features/system/about
     parity: inventoried
     task: FM-001
+    backlog: { status: deferred, rationale: "System administration migration needs a dedicated task batch before implementation begins." }
 
   - id: F-PLATFORM-LIVE-STATUS
     name: Cross-route downloader status, notifications, welcome, warnings, and startup checks
@@ -502,3 +535,4 @@ features:
     target: core/ui-react/src/app/status
     parity: inventoried
     task: FM-001
+    backlog: { status: deferred, rationale: "No implementation task has been designed for cross-route live status parity." }

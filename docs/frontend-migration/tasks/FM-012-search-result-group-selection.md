@@ -164,23 +164,31 @@ Record bounded follow-up proposals, or `None`.
 - Focused SearchPage coverage proves that an episode request is retained and leaves same-episode TV rows ungrouped. Result-table interaction coverage now uses keyboard Enter/Space and includes keyboard shift-range selection.
 - The Playwright spec uses a deterministic intercepted grouped response for React and legacy group-expansion/bulk-selection flows. The legacy fixture remains unable to produce the required duplicate-expansion control.
 
-### Verification Correction
+### Superseded Verification Correction
 
 - Affected and passed: `npm ci && npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run check:api && npm run validate:migration` (18 files / 57 tests). Existing lint warnings, npm audit findings, and Vite chunk-size warning remain.
 - Affected and blocked: `python3 misc/run_gui_systemtest.py --runtime local -- tests/results.spec.ts`. Ten of eleven Playwright tests pass, including React group expansion/bulk selection. The final legacy test intercepts the same
   deterministic grouped response but times out waiting for `.duplicate-expand-toggle`; its page snapshot reports `No indexers were picked for this search`. The response now includes the required `indexerSearchMetaDatas`, so the prior
   field-name mismatch is not the remaining cause. See the final run at `misc/.gui-systemtest-runs/20260812_144221_109788`.
 - Affected and passed: `git diff --check fdead85a0acf0b78b26223d69ef98cf48c93f2b1`.
-- Reusable prior evidence: `npm ci && npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run check:api && npm run validate:migration` remains reusable: every React implementation/test file covered by it is byte-identical to the prior passed 18-file/57-test basis. API/search-result transformation evidence is also unchanged. `git status --short` was re-inspected and lists only allowed task-owned paths.
+- Historical reusable-evidence record: the quality-chain evidence recorded byte-identical covered React implementation/test files and unchanged API/search-result transformations at that correction baseline. It is baseline-bound historical evidence only; it does not assert that current repository content is byte-identical or currently verified. `git status --short` was re-inspected at that time and listed only allowed task-owned paths.
 
 ### Verification Basis
 
 - Baseline: `fdead85a0acf0b78b26223d69ef98cf48c93f2b1`.
-- Affected quality-chain files: `core/ui-react/src/features/search/SearchPage.tsx`, `core/ui-react/src/features/search/SearchPage.test.tsx`, `core/ui-react/src/features/search/results/SearchResults.tsx`, and `core/ui-react/src/features/search/results/SearchResults.test.tsx`; all were verified before this handoff update.
-- Affected GUI files: the preceding React runtime files and `tests/system/tests/results.spec.ts`; GUI verification remains blocked as recorded above.
-- SHA-256: `api/search.ts 0c27fa93bc0e020ddd6bfb94e138d9e062ec29908ac661aeff4ccbc73a2ab0dd`; `api/search.test.ts e017c2ba3e8b5d34e1483cd5a3a7c6867228ff7c9c937e4001b208b20ffec8b9`; `SearchPage.tsx f850bb2666f53c9d92397c8c2a3b39741b352fcee9bfe17d2fdb109b20d7bb84`; `SearchPage.test.tsx af452a1f5a0e87b9625dce42b874aee2f48aa4a4e1188d9455738f91beda6548`; `SearchResults.tsx 86d522205d0f757b9331caf08a9afe940eee5307f80f159cfce78515ba2f3e0e`; `SearchResults.test.tsx 7c1304f114ee06c190e1e06c5a2b41810298d0698e534186c023a3a7307886dd`; `resultTable.ts 4012a056299eb2dd0310942bd099afd39d32fc1d71f8f1b4d50389f836c0b615`; `resultTable.test.ts 45befef5e3ec5f566bd928c399dde7139fae4da73483530df8cfdd99fee9c63c`; `results.spec.ts dc7ab8f6689c925789581173f566e9097c66c0b421d8ff7f1e653934da86e288`.
-- Completed after the last change to each command's covered implementation/test files: React quality chain yes; GUI no (failed final required run); diff check yes. Task-owned changes after the final GUI run: this handoff only.
+- Affected quality-chain files: `core/ui-react/src/features/search/SearchPage.tsx`, `core/ui-react/src/features/search/SearchPage.test.tsx`, `core/ui-react/src/features/search/results/SearchResults.tsx`, and `core/ui-react/src/features/search/results/SearchResults.test.tsx`; the historical basis records them as verified before this handoff update.
+- Affected GUI files: the preceding React runtime files and `tests/system/tests/results.spec.ts`; the recorded local GUI result remains blocked at ten of eleven tests.
+- Historical baseline SHA-256 manifest: `api/search.ts 0c27fa93bc0e020ddd6bfb94e138d9e062ec29908ac661aeff4ccbc73a2ab0dd`; `api/search.test.ts e017c2ba3e8b5d34e1483cd5a3a7c6867228ff7c9c937e4001b208b20ffec8b9`; `SearchPage.tsx f850bb2666f53c9d92397c8c2a3b39741b352fcee9bfe17d2fdb109b20d7bb84`; `SearchPage.test.tsx af452a1f5a0e87b9625dce42b874aee2f48aa4a4e1188d9455738f91beda6548`; `SearchResults.tsx 86d522205d0f757b9331caf08a9afe940eee5307f80f159cfce78515ba2f3e0e`; `SearchResults.test.tsx 7c1304f114ee06c190e1e06c5a2b41810298d0698e534186c023a3a7307886dd`; `resultTable.ts 4012a056299eb2dd0310942bd099afd39d32fc1d71f8f1b4d50389f836c0b615`; `resultTable.test.ts 45befef5e3ec5f566bd928c399dde7139fae4da73483530df8cfdd99fee9c63c`; `results.spec.ts dc7ab8f6689c925789581173f566e9097c66c0b421d8ff7f1e653934da86e288`. It is historical, baseline-bound evidence only and does not assert current file identity or verification.
+- Historical completion state: React quality chain yes; GUI was blocked in the recorded local run; diff check yes. Required legacy-shell Playwright evidence remains blocked at ten of eleven tests, the task remains blocked, and the correction cycle is exhausted. Task-owned changes after the final GUI run: this handoff only.
 
-### Unresolved Issues
+### Historical Issue
 
-- BLOCKED: required legacy-shell Playwright expansion/bulk-selection evidence does not pass. This correction cycle is exhausted. No architecture decision or ADR is required; the remaining fixture/rendering failure must be investigated in a new authorized correction cycle while staying within `tests/system/tests/results.spec.ts`.
+- Required legacy-shell Playwright evidence remains blocked in the recorded historical local run (ten of eleven tests); the task remains blocked and the correction cycle is exhausted.
+
+## Fresh Review Result (2026-08-15)
+
+- Reviewer result: PASS. The reviewer ran `python3 misc/run_gui_systemtest.py --runtime local -- tests/results.spec.ts` once under the evidence-reuse exception; it passed 13/13 Playwright tests (exit 0).
+- Focused coverage was confirmed for grouping, optional API fields, requested-episode route behavior, keyboard selection, and selector contracts, including deterministic React and legacy grouped-result expansion, select-all, and invert-selection flows.
+- The historical 10/11 failure remains preserved above as historic evidence but is superseded for the task lifecycle by this successful current review.
+- No source files changed during the audit. The prior React quality-chain evidence is reusable because its covered implementation and test files are unchanged; this documentation-only correction affects `git diff --check` and migration validation.
+- Affected correction verification passed: `git diff --check`; `node core/ui-react/scripts/validate-migration.mjs` reported valid migration registries and task metadata.

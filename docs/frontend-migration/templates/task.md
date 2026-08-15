@@ -4,8 +4,12 @@ Status: planned Owner:
 Feature IDs:
 Component IDs:
 API IDs:
-Depends on:
-Blocks:
+Depends on: None
+Blocks: None
+
+## Dependency Notes
+
+Explain dependency or sequencing rationale here. `Depends on` and `Blocks` contain only comma-separated `FM-NNN` IDs or `None`.
 
 ## Outcome
 
@@ -59,4 +63,8 @@ Do not modify files outside Files Allowed To Modify. If a required change falls 
 
 ## Handoff
 
-At handoff, use `templates/handoff.md`. Fill every section, writing `None` where appropriate, and mark the task `review` only after required verification succeeds.
+At handoff, use `templates/handoff.md`. Fill every section, writing `None` where appropriate, and mark the task `review` only after required verification succeeds. An implementer must never mark a task `done`.
+
+## Fresh Review
+
+Use `templates/review.md` after the implementation handoff. A fresh reviewer records the review before the coordinator may mark the task `done`.

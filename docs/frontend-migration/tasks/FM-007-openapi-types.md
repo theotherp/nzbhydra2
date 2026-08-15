@@ -108,3 +108,7 @@ Do not modify files outside Files Allowed To Modify.
 ### Follow-Up Work
 
 - No FM-007 follow-up. The independent review passed with a minor retained finding: restore unrelated line-ending churn in `core/.gitignore` in a future appropriate change.
+
+### Historical Evidence Limitation
+
+This completed task predates the current structured handoff template. Its recorded outcome and command evidence are retained as historical evidence; no retrospective SHA-256 verification basis, fresh-review record, or unrecorded command result is asserted.

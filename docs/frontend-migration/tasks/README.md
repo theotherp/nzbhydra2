@@ -10,6 +10,6 @@ separate.
 parity is required.
 
 Implementation agents may update their assigned task, linked registry records, and allowed implementation files. They must not create new tasks or silently broaden allowed paths. Routine reversible choices should be made autonomously; true
-blockers follow the escalation policy in `../README.md`. Proposed follow-up work belongs in the handoff.
+blockers follow the escalation policy in `../README.md`. Proposed follow-up work belongs in the handoff. `Depends on` and `Blocks` accept task IDs only; record rationale under `Dependency Notes`.
 
-The implementation agent uses `../templates/handoff.md` and marks a completed, fully verified implementation `review`. Only the coordinator marks it `done` after review findings are resolved.
+The implementation agent uses `../templates/handoff.md` and marks a completed, fully verified implementation `review`. A fresh reviewer records `../templates/review.md`; only the coordinator marks it `done` after an accepted review resolves its findings.

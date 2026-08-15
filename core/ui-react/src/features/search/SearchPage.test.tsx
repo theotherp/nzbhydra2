@@ -23,6 +23,7 @@ import type {
     SearchProgress,
 } from "../../api/live/searchState";
 import type {LiveSubscription} from "../../api/live/transport";
+import {ToastProvider} from "../../components/toasts/ToastProvider";
 import {SearchPage} from "./SearchPage";
 
 const responseEnvelope = {
@@ -101,6 +102,51 @@ describe("SearchPage", () => {
     beforeEach(() => {
         router.navigate.mockReset();
         router.search = {};
+    });
+
+    it("should provide accessible feedback when saving an executed search fails", async () => {
+        const fetchImplementation = vi.fn((url: RequestInfo | URL) => {
+            if (String(url).includes("forsearching")) {
+                return Promise.resolve(new Response(JSON.stringify([])));
+            }
+            if (String(url).includes("savedsearches")) {
+                return Promise.resolve(new Response("failed", {status: 500}));
+            }
+            return Promise.resolve(
+                new Response(
+                    JSON.stringify({
+                        ...responseEnvelope,
+                        searchResults: [
+                            {
+                                searchResultId: "saved",
+                                title: "Saved result",
+                                indexer: "Mock",
+                                category: "All",
+                            },
+                        ],
+                    }),
+                    {headers: {"Content-Type": "application/json"}},
+                ),
+            );
+        });
+        render(
+            <ToastProvider>
+                <SearchPage
+                    bootstrap={bootstrap}
+                    transport={new ApiTransport("/hydra/", fetchImplementation)}
+                    liveTransport={immediatelyUnavailableLiveTransport}
+                />
+            </ToastProvider>,
+        );
+
+        fireEvent.change(screen.getByLabelText("Search"), {
+            target: {value: "saved"},
+        });
+        fireEvent.click(screen.getByTestId("search-submit"));
+        fireEvent.click(
+            await screen.findByRole("button", {name: "Save search"}),
+        );
+        expect(await screen.findByText("Unable to save search.")).toBeVisible();
     });
 
     it("should update the URL and construct a numeric configured-indexer request", async () => {

@@ -2,8 +2,12 @@
 
 Status: done Owner: OpenCode
 Feature IDs: F-SEARCH-DOWNLOADS Component IDs: C-DOWNLOAD-ACTIONS, C-RESULT-TABLE API IDs: API-SEARCH-EXECUTE, API-DOWNLOAD-NZB, API-DOWNLOAD-TORRENT, API-DOWNLOAD-ADD-NZBS, API-DOWNLOAD-CHECK-DUPLICATE, API-DOWNLOAD-CATEGORIES,
-API-DOWNLOAD-SAVE-SEND-TORRENTS, API-DOWNLOAD-SAVE-NZBS, API-DOWNLOAD-ZIP-PREPARE, API-DOWNLOAD-ZIP-FILE Depends on: FM-012 Blocks: F-HISTORY-DOWNLOADS migration
+API-DOWNLOAD-SAVE-SEND-TORRENTS, API-DOWNLOAD-SAVE-NZBS, API-DOWNLOAD-ZIP-PREPARE, API-DOWNLOAD-ZIP-FILE Depends on: FM-012 Blocks: FM-022
 Decision Dependencies: ADR-0002, ADR-0003, ADR-0004
+
+## Dependency Notes
+
+FM-022 reuses these download actions for the download-history route.
 
 ## Outcome
 
@@ -95,7 +99,7 @@ Record bounded follow-up proposals, or `None`.
 - Decision source: FM-013 Outcome and existing transformation/state acceptance; accepted ADR-0003 and ADR-0004; server `SearchResultWebTO` fields `downloadId`, `originalCategory`, and `downloadedAt`; `AddFilesRequest.SearchResult`; `DownloadIdentifier`; and legacy `addable-nzb.js` identifier/category/state behavior. The server response has `category`, not `mappedCategory`; legacy evidence authoritatively maps that value into the operation's `mappedCategory` field.
 - FM-012 is done, so the refined task is dependency-ready. No product, UX, architecture, or external API decision changed, and no ADR is required.
 - Review-failure refinement: the existing Outcome, ADR-0003 boundary-validation/base-aware file-transfer decision, ADR-0004 exhaustive domain/component/Playwright strategy, `C-API-TRANSPORT`, the task-listed API records, and legacy direct/copy/category/duplicate workflows require the clarified one-action rendering, transport-owned browser-transfer URL resolution, runtime validation/error feedback, and workflow-by-workflow test evidence above. These changes add no endpoint, product behavior, or shared runtime boundary.
-- `C-LIVE-TRANSPORT` remains `planned` under FM-014. Its post-baseline `planned` to `partial` hunk had no corresponding FM-014 implementation, is outside this packet's allowed records, and is excluded from FM-013 corrective scope.
+- Historical scope note: `C-LIVE-TRANSPORT` was outside this packet's allowed records. It is now correctly recorded as `partial` under FM-014.
 
 ## Handoff
 
@@ -184,7 +188,7 @@ Record bounded follow-up proposals, or `None`.
 
 ### Scope And Attribution
 
-- Task-owned files remain within the packet allowlist; `C-DOWNLOAD-ACTIONS` is partial and `C-LIVE-TRANSPORT` remains baseline `planned`/FM-014.
+- Task-owned files remain within the packet allowlist; `C-DOWNLOAD-ACTIONS` is partial and `C-LIVE-TRANSPORT` is partial under FM-014.
 - Pre-existing unrelated files encountered and untouched: `core/ui-src/js/search-results-controller.js`; `core/src/main/resources/static/js/nzbhydra.js`.
 - No attribution overlap or ambiguity; no files were staged, committed, or pushed.
 

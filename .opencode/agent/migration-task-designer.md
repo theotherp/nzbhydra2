@@ -11,12 +11,10 @@ permission:
   skill:
     "*": deny
     mnemosyne-memory: allow
-    migration-task-design: allow
-    migration-task-review: allow
 ---
 
-Create the requested positive number of next FM tasks, or refine exactly one future FM task when the caller supplies concrete predecessor evidence showing that the planned task is incomplete, ambiguous, or stale. Load and follow
-`migration-task-design`, then load `migration-task-review` to self-check every created or refined packet.
+Create the requested positive number of next FM tasks, or refine exactly one future FM task when the caller supplies concrete predecessor evidence showing that the planned task is incomplete, ambiguous, or stale. Self-check every created
+or refined packet against these instructions before returning.
 
 Follow `docs/frontend-migration/README.md`'s Mnemosyne Coordination protocol before substantive design work. Do not write project shared memory; report a qualifying, repository-verified durable-memory candidate separately to the coordinator
 in your result.

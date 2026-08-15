@@ -25,4 +25,54 @@ describe("createAppRouter", () => {
         await router.navigate({to: "/"});
         expect(router.state.matches.at(-1)?.routeId).toBe("/");
     });
+
+    it("should match the stats-protected saved searches route", async () => {
+        window.history.replaceState({}, "", "/hydra/stats/saved-searches");
+        const router = createAppRouter({
+            baseUrl: "/hydra/",
+            username: "stats",
+            authType: null,
+            showLogout: true,
+            maySeeSearch: true,
+            adminRestricted: false,
+            statsRestricted: true,
+            maySeeStats: true,
+            searchRestricted: false,
+            maySeeDetailsDl: false,
+            maySeeAdmin: false,
+            authConfigured: true,
+            showIndexerSelection: false,
+            safeConfig: null,
+            serverTimeZone: null,
+        });
+        await router.navigate({to: "/stats/saved-searches"});
+        expect(router.state.matches.at(-1)?.routeId).toContain(
+            "saved-searches",
+        );
+    });
+
+    it("should match the base-aware stats default and indexer routes", async () => {
+        window.history.replaceState({}, "", "/hydra/stats/indexers");
+        const router = createAppRouter({
+            baseUrl: "/hydra/",
+            username: "stats",
+            authType: null,
+            showLogout: true,
+            maySeeSearch: true,
+            adminRestricted: true,
+            statsRestricted: true,
+            maySeeStats: true,
+            searchRestricted: true,
+            maySeeDetailsDl: false,
+            maySeeAdmin: false,
+            authConfigured: true,
+            showIndexerSelection: false,
+            safeConfig: {keepHistory: true},
+            serverTimeZone: "UTC",
+        });
+        await router.navigate({to: "/stats"});
+        expect(router.state.matches.at(-1)?.routeId).toContain("stats");
+        await router.navigate({to: "/stats/indexers"});
+        expect(router.state.matches.at(-1)?.routeId).toContain("indexers");
+    });
 });

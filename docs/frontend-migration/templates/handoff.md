@@ -50,6 +50,7 @@
 ### Registry And Documentation Updates
 
 - IDs or shared guidance updated, or `None`.
+- For every linked `FEATURES.yaml`, `COMPONENTS.yaml`, and `APIS.yaml` record: state whether target, tests, state, task owner, gaps, selector contracts, and backlog ownership were updated or intentionally unchanged.
 
 ### Follow-Up Work
 

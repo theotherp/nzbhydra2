@@ -4,10 +4,11 @@ components:
     responsibility: Responsive application frame, navigation, permissions, route outlet, and footer
     legacy: [ core/ui-src/html/states/header.html, core/ui-src/js/header-controller.js, core/ui-src/js/directives/footer.js ]
     target: core/ui-react/src/app
-    consumers: [ F-PLATFORM-SHELL, F-PLATFORM-LIVE-STATUS ]
+    consumers: [ F-PLATFORM-SHELL, F-PLATFORM-LIVE-STATUS, F-STATS-SHELL ]
     classification: shared_hydra
     state: partial
     task: FM-006
+    backlog: { status: deferred, rationale: "Remaining navigation, footer, and live-status integration needs a dedicated follow-up task." }
 
   - id: C-API-TRANSPORT
     responsibility: Base-URL-aware HTTP and binary transport with credentials, CSRF, session headers, and common errors
@@ -17,6 +18,7 @@ components:
     classification: shared_hydra
     state: partial
     task: FM-005
+    backlog: { status: deferred, rationale: "Additional endpoint adoption remains feature-owned and has no shared follow-up task." }
 
   - id: C-LIVE-TRANSPORT
     responsibility: Base-URL-aware SockJS and STOMP connection lifecycle, subscription cleanup, and typed message delivery
@@ -26,6 +28,7 @@ components:
     classification: shared_hydra
     state: partial
     task: FM-014
+    backlog: { status: deferred, rationale: "Additional downloader-status and notification channels have no implementation task yet." }
 
   - id: C-BOOTSTRAP-CONTEXT
     responsibility: Typed base URL, safe configuration, permissions, username, and server timezone bootstrap context
@@ -35,6 +38,7 @@ components:
     classification: shared_hydra
     state: partial
     task: FM-004
+    backlog: { status: deferred, rationale: "Additional authentication and configuration bootstrap adoption remains unplanned." }
 
   - id: C-AUTH-SESSION
     responsibility: Login, logout, password challenge, current-session transitions, permissions, and route guards
@@ -44,6 +48,7 @@ components:
     classification: shared_hydra
     state: partial
     task: FM-005
+    backlog: { status: deferred, rationale: "Authentication lifecycle parity has no implementation task yet." }
 
   - id: C-DIALOG-SERVICE
     responsibility: Accessible alerts, confirmations, and application dialogs with feature-owned bodies
@@ -53,6 +58,7 @@ components:
     classification: shared_hydra
     state: partial
     task: FM-006
+    backlog: { status: deferred, rationale: "Remaining feature dialog adoption is deferred with its owning features." }
 
   - id: C-TOAST-SERVICE
     responsibility: Consistent transient notifications and severity mapping
@@ -62,14 +68,16 @@ components:
     classification: shared_hydra
     state: partial
     task: FM-006
+    backlog: { status: deferred, rationale: "Remaining feature toast adoption is deferred with its owning features." }
 
   - id: C-DATE-TIME
     responsibility: Server-timezone-aware date parsing, formatting, and relative-time display
     legacy: [ core/ui-src/js/indexer-statuses-controller.js, core/ui-src/js/directives/hydra-log.js ]
     target: core/ui-react/src/domain/date-time
+    test: core/ui-react/src/domain/date-time/dateTime.test.ts
     consumers: [ F-STATS-INDEXERS, F-HISTORY-SEARCHES, F-HISTORY-DOWNLOADS, F-HISTORY-NOTIFICATIONS, F-SYSTEM-LOG, F-SYSTEM-TASKS, F-SYSTEM-BACKUP ]
     classification: shared_hydra
-    state: planned
+    state: partial
     task: FM-020
 
   - id: C-SERVER-PREFERENCES
@@ -80,6 +88,7 @@ components:
     classification: shared_hydra
     state: planned
     task: null
+    backlog: { status: deferred, rationale: "No task has been designed for server-backed preference migration." }
 
   - id: C-RESTART-COORDINATOR
     responsibility: Restart command, progress dialog, readiness polling, and safe reload
@@ -89,6 +98,7 @@ components:
     classification: shared_hydra
     state: planned
     task: null
+    backlog: { status: deferred, rationale: "No task has been designed for restart coordination." }
 
   - id: C-CATEGORY-CATALOG
     responsibility: Typed Hydra category catalog, default category, and lookup semantics
@@ -98,6 +108,7 @@ components:
     classification: shared_hydra
     state: partial
     task: FM-016
+    backlog: { status: deferred, rationale: "Configuration-category adoption has no implementation task yet." }
 
   - id: C-DOWNLOAD-ACTIONS
     responsibility: Downloader selection, category choice, duplicate reason, black-hole, torrent, and magnet operations
@@ -107,6 +118,7 @@ components:
     classification: shared_hydra
     state: partial
     task: FM-013
+    backlog: { status: deferred, rationale: "Download-history adoption is deferred with its route migration." }
 
   - id: C-DOWNLOADER-STATUS
     responsibility: Cross-route live downloader state, pause and offline state, URL, and rate history
@@ -116,6 +128,7 @@ components:
     classification: shared_hydra
     state: planned
     task: null
+    backlog: { status: deferred, rationale: "No task has been designed for cross-route downloader status." }
 
   - id: C-UPDATE-COORDINATOR
     responsibility: Update metadata, install and ignore actions, changelog, global warnings, and restart handoff
@@ -125,6 +138,7 @@ components:
     classification: shared_hydra
     state: planned
     task: null
+    backlog: { status: deferred, rationale: "No task has been designed for update coordination." }
 
   - id: C-SAFE-RICH-CONTENT
     responsibility: Boundary-specific sanitization and rendering of trusted server-authored news HTML without an unrestricted HTML-trust helper
@@ -134,15 +148,17 @@ components:
     classification: shared_hydra
     state: partial
     task: FM-008
+    backlog: { status: deferred, rationale: "Additional approved server-authored HTML boundaries have no implementation task yet." }
 
   - id: C-EXTERNAL-LINKS
     responsibility: Safe-configuration-aware external-link dereferer transformation for URLs and embedded help text
     legacy: [ core/ui-src/js/nzbhydra.js, core/ui-src/html/about.html, core/ui-src/html/states/config.html, core/ui-src/html/directives/search-result.html ]
     target: core/ui-react/src/domain/links
-    consumers: [ F-CONFIG-SHELL, F-SEARCH-RESULTS, F-HISTORY-DOWNLOADS, F-SYSTEM-ABOUT ]
+    consumers: [ F-CONFIG-SHELL, F-SEARCH-RESULTS, F-HISTORY-SAVED-SEARCHES, F-HISTORY-DOWNLOADS, F-SYSTEM-ABOUT ]
     classification: shared_hydra
-    state: planned
+    state: partial
     task: FM-019
+    backlog: { status: deferred, rationale: "External-link parity for remaining consumers is future work." }
 
   - id: C-RESULT-TABLE
     responsibility: Hydra-specific search result processing, paging, grouping, filtering, sorting, selection, and presentation using TanStack primitives
@@ -152,6 +168,7 @@ components:
     classification: feature_specific
     state: partial
     task: FM-012
+    backlog: { status: deferred, rationale: "The component remains partial pending a dedicated full-parity reconciliation." }
 
   - id: C-SECRET-INPUT
     responsibility: Masked secret editing with unchanged-secret semantics
@@ -161,6 +178,7 @@ components:
     classification: feature_specific
     state: planned
     task: null
+    backlog: { status: deferred, rationale: "No task has been designed for unchanged-secret editing semantics." }
 
 legacy_classifications:
   shared_hydra:

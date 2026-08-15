@@ -108,3 +108,7 @@ Do not modify files outside Files Allowed To Modify.
 ### Follow-Up Work
 
 - FM-005 can extend the bootstrap context into API transport and session behavior; FM-006 owns complete navigation, footer, and permission-aware application shell work.
+
+### Historical Evidence Limitation
+
+This completed task predates the current structured handoff template. Its recorded outcome and command evidence are retained as historical evidence; no retrospective SHA-256 verification basis, fresh-review record, or unrecorded command result is asserted.
