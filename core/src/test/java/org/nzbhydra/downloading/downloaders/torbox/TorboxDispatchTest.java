@@ -43,6 +43,15 @@ class TorboxDispatchTest {
             exchange.getResponseBody().write(response);
             exchange.close();
         });
+        server.createContext("/configured/usenet/createusenetdownload", exchange -> {
+            requestPath.set(exchange.getRequestURI().getPath());
+            requestBody.set(new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
+            byte[] response = "{\"success\":true,\"error\":null,\"detail\":\"Usenet Download Added Successfully\",\"data\":{\"usenetdownload_id\":\"456\",\"auth_id\":\"auth\"}}".getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, response.length);
+            exchange.getResponseBody().write(response);
+            exchange.close();
+        });
         server.start();
     }
 
@@ -68,11 +77,40 @@ class TorboxDispatchTest {
     }
 
     @Test
+    void shouldNameUploadedTorrentFileTorrent() throws Exception {
+        Torbox torbox = newConfiguredTorbox();
+
+        torbox.addContent("torrent-content".getBytes(StandardCharsets.UTF_8), "Torrent title", DownloadType.TORRENT, null);
+
+        assertThat(requestBody.get()).contains("filename=\"Torrent title.torrent\"").doesNotContain(".nzb");
+    }
+
+    @Test
+    void shouldNameUploadedNzbFileNzb() throws Exception {
+        Torbox torbox = newConfiguredTorbox();
+
+        String downloadId = torbox.addContent("nzb-content".getBytes(StandardCharsets.UTF_8), "Nzb title", DownloadType.NZB, null);
+
+        assertThat(downloadId).isEqualTo("456");
+        assertThat(requestPath.get()).isEqualTo("/configured/usenet/createusenetdownload");
+        assertThat(requestBody.get()).contains("filename=\"Nzb title.nzb\"");
+    }
+
+    @Test
     void shouldUseDefaultUrlWhenNoUrlIsConfigured() {
         Torbox torbox = newTorbox();
         torbox.initialize(DownloaderConfig.builder().apiKey("test-key").build());
 
         assertThat(torbox.getBaseUrl().toUriString()).isEqualTo("https://api.torbox.app/v1/api");
+    }
+
+    private Torbox newConfiguredTorbox() {
+        Torbox torbox = newTorbox();
+        torbox.initialize(DownloaderConfig.builder()
+                .apiKey("test-key")
+                .url("http://127.0.0.1:" + server.getAddress().getPort() + "/configured")
+                .build());
+        return torbox;
     }
 
     private Torbox newTorbox() {
