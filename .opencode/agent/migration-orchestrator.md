@@ -71,13 +71,13 @@ Handle the review result as follows.
 
 ### PASS
 
-Mark the task `done`, reconcile `docs/frontend-migration/STATUS.md`, then create the task-boundary commit.
+Before marking the task `done`, reconcile `docs/frontend-migration/GUI-STATUS.md` when the accepted result affects user-observable React availability or GUI selection instructions. Then mark the task `done`, reconcile `docs/frontend-migration/STATUS.md`, and create the task-boundary commit.
 
 ### PASS WITH MINOR FINDINGS
 
 Treat the task as passed. Record the minor findings in the final report; do not start a correction cycle merely for optional improvements.
 
-Then mark the task `done`, reconcile `STATUS.md`, and commit.
+Before marking the task `done`, reconcile `docs/frontend-migration/GUI-STATUS.md` when the accepted result affects user-observable React availability or GUI selection instructions. Then mark the task `done`, reconcile `STATUS.md`, and commit.
 
 ### FAIL
 
@@ -141,6 +141,7 @@ Your only direct file edits are post-review lifecycle bookkeeping in:
 
 - the passed FM task packet;
 - `docs/frontend-migration/STATUS.md`.
+- `docs/frontend-migration/GUI-STATUS.md`, when reconciling the accepted result.
 
 Do not alter task scope, acceptance criteria, handoff evidence, implementation, or architecture yourself.
 
@@ -152,7 +153,7 @@ After final review passes and coordinator bookkeeping is complete:
 
 1. Confirm required verification passed.
 2. Determine the complete task-attributable changes since the recorded baseline.
-3. Stage only those changes.
+3. Stage only those changes, including the reconciled `docs/frontend-migration/GUI-STATUS.md` when affected. Do not require a summary content change when the accepted result does not affect it.
 4. Inspect the staged diff and confirm it contains no unrelated user changes.
 5. Create one local commit:
    `FM-xxx: <task title>`

@@ -28,6 +28,8 @@ Agents editing `core/ui-react` also read `/core/ui-react/AGENTS.md`.
 
 Do not duplicate an authoritative fact in another document. Link its stable ID instead.
 
+`GUI-STATUS.md` is the intentionally concise, human-facing view of how to select the React GUI and which user-observable capabilities are currently available. It is a derived convenience summary, not a source of truth: selector decisions and accepted task handoffs govern access behavior, `FEATURES.yaml` governs feature detail and parity, and `STATUS.md` remains limited to task lifecycle. Keep the summary readable without parsing YAML; do not copy task queues, parity matrices, gap inventories, registry IDs, or detailed verification evidence into it. If it conflicts with an authoritative source above, the authoritative source wins.
+
 ## Mnemosyne Coordination
 
 Mnemosyne's shared surface is a supplementary cross-agent discovery index, not a task log or source of truth. At the start of each assigned task, proposal, review, or fix, make one scoped `mnemosyne_mnemosyne_shared_recall` using the task
@@ -56,7 +58,8 @@ Task states are `planned`, `ready`, `in_progress`, `review`, `blocked`, and `don
 6. The agent runs the task's verification and records structured evidence in its handoff.
 7. The agent reconciles every linked registry record and marks the task `review` in the same change.
 8. A fresh agent records the independent review using `templates/review.md`.
-9. Only the coordinator marks the task `done`, after the review disposition is accepted and findings are resolved.
+9. After the review disposition is accepted and findings are resolved, the coordinator reconciles `GUI-STATUS.md` with the accepted result. This is a permitted direct coordinator write. Any change to user-observable React availability or GUI selection instructions must be reflected there before the task is marked `done`; capabilities unaffected by the task remain a concise summary rather than a copied registry inventory.
+10. Only the coordinator marks the task `done`, and the reconciled `GUI-STATUS.md`, task lifecycle update, and any corresponding registry reconciliation are included in the same completion commit.
 
 When an agent encounters an unresolved fundamental decision, it reports `ADR REQUIRED`. The coordinator automatically has a fresh proposer draft an evidence-based ADR and presents it to the human. The task remains blocked until the human
 explicitly accepts or rejects the proposal; after acceptance, the task designer links the ADR and refines the affected task before work resumes. See `decisions/README.md`.
