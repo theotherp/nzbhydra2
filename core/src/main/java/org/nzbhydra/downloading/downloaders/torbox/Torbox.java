@@ -141,7 +141,7 @@ public class Torbox extends Downloader {
             ByteArrayResource fileResource = new ByteArrayResource(value) {
                 @Override
                 public String getFilename() {
-                    return suffixNzbToTitle(title);
+                    return suffixTitleToResultType(title, resultType);
                 }
             };
             map.add("file", fileResource);
@@ -186,6 +186,19 @@ public class Torbox extends Downloader {
             throw new DownloaderException("Unable to determine type of download for " + title + " from type " + downloadType + " and content " + valueString);
         }
         return resultType;
+    }
+
+    /**
+     * Append the file extension matching the result type. Torrents must not be named .nzb,
+     * otherwise Torbox's torrent endpoint rejects the upload.
+     */
+    private static String suffixTitleToResultType(String title, ResultType resultType) {
+        boolean isNzb = resultType == ResultType.NZB || resultType == ResultType.TORBOX_USENET;
+        String suffix = isNzb ? ".nzb" : ".torrent";
+        if (!title.toLowerCase().endsWith(suffix)) {
+            title += suffix;
+        }
+        return title;
     }
 
     @Override
