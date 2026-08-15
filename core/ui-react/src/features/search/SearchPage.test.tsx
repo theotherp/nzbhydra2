@@ -377,6 +377,55 @@ describe("SearchPage", () => {
         expect(screen.getByLabelText("Maximum size (MB)")).toHaveValue(null);
     });
 
+    it("should execute history repeat criteria through the canonical submission lifecycle", async () => {
+        router.search = {
+            repeat: "history",
+            category: "All",
+            query: "history query",
+            minage: "2",
+            indexers: "Configured",
+        };
+        const fetchImplementation = vi.fn((url: RequestInfo | URL) =>
+            Promise.resolve(
+                new Response(
+                    JSON.stringify(
+                        String(url).includes("forsearching")
+                            ? []
+                            : responseEnvelope,
+                    ),
+                    {headers: {"Content-Type": "application/json"}},
+                ),
+            ),
+        );
+        render(
+            <SearchPage
+                bootstrap={bootstrap}
+                transport={new ApiTransport("/hydra/", fetchImplementation)}
+                liveTransport={immediatelyUnavailableLiveTransport}
+            />,
+        );
+        await waitFor(() =>
+            expect(searchRequestCalls(fetchImplementation)).toHaveLength(1),
+        );
+        expect(searchRequestBody(fetchImplementation)).toEqual({
+            query: "history query",
+            category: "All",
+            minage: 2,
+            indexers: ["Configured"],
+            loadAll: false,
+            searchRequestId: expect.any(Number),
+        });
+        expect(router.navigate).toHaveBeenCalledWith({
+            to: "/",
+            search: {
+                query: "history query",
+                category: "All",
+                minage: "2",
+                indexers: "Configured",
+            },
+        });
+    });
+
     it("should show indexer controls only when the bootstrap permission permits them", () => {
         const {rerender} = render(
             <SearchPage
@@ -765,7 +814,11 @@ describe("SearchPage", () => {
 
         fireEvent.click(screen.getByTestId("search-submit"));
         await waitFor(() => expect(searchRequests).toBe(3));
-        expect(screen.getByRole("button", {name: "Load more"})).toBeEnabled();
+        await waitFor(() =>
+            expect(
+                screen.getByRole("button", {name: "Load more"}),
+            ).toBeEnabled(),
+        );
     });
 
     it.each([

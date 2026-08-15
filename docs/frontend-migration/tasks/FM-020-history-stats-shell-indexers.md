@@ -216,3 +216,28 @@ The agent may read/search the repository. Context To Read is mandatory starting 
 
 - Task-attributable modifications remain limited to `core/ui-react/src/domain/date-time/{dateTime.ts,dateTime.test.ts}`, `core/ui-react/src/features/stats/indexers/IndexerStatusesPage.test.tsx`, and this allowed task packet. No generated production assets are tracked.
 - Required review finding addressed. Status remains `review`; no self-review was performed.
+
+## Validator Reconciliation Handoff
+
+### Result
+
+- Reopened to `review` solely to reconcile validator-required deferred backlog ownership for `F-STATS-SHELL` and `F-STATS-INDEXERS`.
+- No source or test file changed.
+
+### Verification Evidence
+
+| Working directory | Command | Classification | Result |
+|---|---|---|---|
+| repository root | `node core/ui-react/scripts/validate-migration.mjs` | Affected: the two linked feature registry records changed. | Passed. |
+| repository root | `git diff --check` | Affected: task packet, linked feature records, and status changed. | Passed. |
+
+### Verification Basis
+
+- Baseline: `14f7e409cb25c1917c040f9a6943bb5a986d07ce`.
+- The prior React quality/build/API chain and GUI evidence are reusable: this reconciliation changes no task-owned implementation, test, runtime, packaging, configuration, or system-test file.
+- The direct validator run replaces the registry-validation portion of the prior aggregate chain for the changed feature records. `git diff --check` was rerun for the corrected task-attributable documentation diff.
+
+### Scope And Status
+
+- Task-attributable modifications are limited to `docs/frontend-migration/FEATURES.yaml`, `docs/frontend-migration/STATUS.md`, and this task packet, all within `Files Allowed To Modify`.
+- Required validator finding addressed. Status is `review`; no self-review was performed.

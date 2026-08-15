@@ -328,6 +328,7 @@ features:
     parity: partial
     gaps: [ remaining history and aggregate-stat content ]
     task: FM-020
+    backlog: { status: deferred, rationale: "Remaining history and aggregate-stat content is deferred to FM-021 through FM-024." }
 
   - id: F-STATS-MAIN
     name: Aggregate statistics, date ranges, switches, and charts
@@ -354,6 +355,7 @@ features:
     parity: partial
     gaps: [ ]
     task: FM-020
+    backlog: { status: deferred, rationale: "Remaining indexer-status parity is deferred until a dedicated follow-up task is designed." }
 
   - id: F-HISTORY-SEARCHES
     name: Search-history paging, filtering, details, and repeat
@@ -361,11 +363,11 @@ features:
     routes: [ /stats/searches ]
     roles: [ stats ]
     legacy_sources: [ core/ui-src/js/search-history-controller.js, core/ui-src/js/search-history-service.js, core/ui-src/html/states/search-history.html ]
-    tests: [ tests/system/tests/search-history.spec.ts ]
+    tests: [ core/ui-react/src/api/searchHistory.test.ts, core/ui-react/src/features/stats/history/SearchHistoryPage.test.tsx, core/ui-react/src/features/search/SearchPage.test.tsx, core/ui-react/src/router.test.tsx, tests/system/tests/search-history.spec.ts ]
     selectors: [ search-history-refresh, search-history-table, search-history-row, search-history-repeat, search-history-category, search-history-source, search-history-details ]
     target: core/ui-react/src/features/stats/history
     parity: partial
-    gaps: [ paging and all filter combinations ]
+    gaps: [ ]
     task: FM-021
 
   - id: F-HISTORY-SAVED-SEARCHES

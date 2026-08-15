@@ -14,6 +14,7 @@ import {SearchPage} from "./features/search/SearchPage";
 import {StatsShell} from "./features/stats/StatsShell";
 import {IndexerStatusesPage} from "./features/stats/indexers/IndexerStatusesPage";
 import {SavedSearchesPage} from "./features/stats/history/SavedSearchesPage";
+import {SearchHistoryPage} from "./features/stats/history/SearchHistoryPage";
 
 export function createAppRouter(bootstrap: BootstrapData) {
     const transport = new ApiTransport(bootstrap.baseUrl);
@@ -53,6 +54,18 @@ export function createAppRouter(bootstrap: BootstrapData) {
             </StatsShell>
         ),
     });
+    const searchHistoryRoute = createRoute({
+        getParentRoute: () => rootRoute,
+        path: "stats/searches",
+        component: () => (
+            <StatsShell bootstrap={bootstrap}>
+                <SearchHistoryPage
+                    bootstrap={bootstrap}
+                    transport={transport}
+                />
+            </StatsShell>
+        ),
+    });
     const statsRoute = createRoute({
         getParentRoute: () => rootRoute,
         path: "stats",
@@ -82,6 +95,7 @@ export function createAppRouter(bootstrap: BootstrapData) {
         statsRoute,
         indexerStatusesRoute,
         savedSearchesRoute,
+        searchHistoryRoute,
         statsFallbackRoute,
     ]);
 

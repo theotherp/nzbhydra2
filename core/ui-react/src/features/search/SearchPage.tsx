@@ -34,6 +34,7 @@ import {ApiTransport} from "../../api/transport";
 import {createSavedSearch} from "../../api/savedSearches";
 import {ToastContext} from "../../components/toasts/toasts";
 import {createCategoryCatalog} from "../../domain/categories/catalog";
+import type {CategoryCatalog} from "../../domain/categories/catalog";
 import type {BootstrapData} from "../../bootstrap";
 import {SearchResults} from "./results/SearchResults";
 import {
@@ -356,6 +357,11 @@ export function SearchPage({
                     }
                 }}
             />
+            <HistoryRepeatSubmission
+                catalog={catalog}
+                criteria={search.repeat === "history" ? search : undefined}
+                onSubmit={submit}
+            />
             <QueryClientProvider client={recentSearchQueryClient}>
                 <RecentSearches
                     enabled={!state.loading}
@@ -454,6 +460,30 @@ export function SearchPage({
             </Dialog>
         </Stack>
     );
+}
+
+function HistoryRepeatSubmission({
+    catalog,
+    criteria,
+    onSubmit,
+}: {
+    catalog: CategoryCatalog;
+    criteria: Record<string, unknown> | undefined;
+    onSubmit(values: SearchFormValues): Promise<void>;
+}) {
+    const submittedCriteria = useRef<string | undefined>(undefined);
+    useEffect(() => {
+        if (!criteria) {
+            return;
+        }
+        const serialized = JSON.stringify(criteria);
+        if (submittedCriteria.current === serialized) {
+            return;
+        }
+        submittedCriteria.current = serialized;
+        void onSubmit(valuesFromSearch(criteria, catalog));
+    }, [catalog, criteria, onSubmit]);
+    return null;
 }
 
 function numberOrUndefined(value: string): number | undefined {

@@ -1,6 +1,6 @@
 # FM-022: Download History Route
 
-Status: planned Owner:
+Status: ready Owner:
 Feature IDs: F-HISTORY-DOWNLOADS Component IDs: C-DATE-TIME, C-DOWNLOAD-ACTIONS, C-EXTERNAL-LINKS API IDs: API-HISTORY-DOWNLOADS, API-DOWNLOAD-NZB, API-DOWNLOAD-TORRENT Depends on: FM-013, FM-020 Blocks: None
 
 ## Outcome

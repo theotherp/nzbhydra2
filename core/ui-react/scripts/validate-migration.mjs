@@ -319,20 +319,21 @@ async function validateStatus(tasks) {
             );
         }
         if (
+            section &&
+            [...sections.entries()].some(
+                ([sectionName, ids]) =>
+                    sectionName !== section && ids.includes(taskId),
+            )
+        ) {
+            report(
+                `${task.file} is ${task.status} but listed in an incompatible STATUS.md section`,
+            );
+        }
+        if (
             !section &&
             [...sections.values()].some((ids) => ids.includes(taskId))
         ) {
             report(`${task.file} is ${task.status} but listed in STATUS.md`);
-        }
-        if (
-            task.status === "planned" &&
-            task.dependsOn.length > 0 &&
-            task.dependsOn.every((id) => tasks.get(id)?.status === "done") &&
-            !sections.get("Upcoming")?.includes(taskId)
-        ) {
-            report(
-                `${task.file} is dependency-ready but missing from STATUS.md Upcoming`,
-            );
         }
     }
 }
