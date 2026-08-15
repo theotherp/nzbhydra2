@@ -54,7 +54,7 @@ The agent may read and search the entire repository. Context To Read is mandator
 ## Verification
 
 - In `core/ui-react`: `npm ci && npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run check:api && npm run validate:migration` succeeds.
-- From repository root: `python3 misc/run_gui_systemtest.py --runtime wsl -- tests/results.spec.ts` succeeds with deterministic legacy-shell and React-shell group-expansion and bulk-selection coverage.
+- From repository root: `python3 misc/run_gui_systemtest.py --runtime local -- tests/results.spec.ts` succeeds with deterministic legacy-shell and React-shell group-expansion and bulk-selection coverage.
 - From repository root: `git diff --check` and `git status --short`; confirm all changed/generated paths are allowed and report unexpected artifacts.
 
 ## Handoff
@@ -115,12 +115,12 @@ Record bounded follow-up proposals, or `None`.
 
 ### Verification Evidence
 
-| Working directory | Command | Result |
-|---|---|---|
-| `core/ui-react` | `npm ci && npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run check:api && npm run validate:migration` | Passed: 18 files / 56 tests, production build, API check, and migration validation. Lint has only the existing React Compiler Fast Refresh/RHF/TanStack compatibility warnings; `npm ci` reports 3 audit vulnerabilities (1 moderate, 2 high); Vite reports the existing chunk-size warning. |
-| repository root | `python3 misc/run_gui_systemtest.py --runtime wsl -- tests/results.spec.ts` | Passed: 10 Playwright tests, including legacy coverage plus React duplicate expansion and visible bulk selection. |
-| repository root | `git diff --check` | Passed. |
-| repository root | `git status --short` | Inspected; all 12 task-attributable paths are allowed and no unexpected artifacts are tracked. |
+| Working directory | Command                                                                                                                                                            | Result                                                                                                                                                                                                                                                                                       |
+|-------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `core/ui-react`   | `npm ci && npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run check:api && npm run validate:migration` | Passed: 18 files / 56 tests, production build, API check, and migration validation. Lint has only the existing React Compiler Fast Refresh/RHF/TanStack compatibility warnings; `npm ci` reports 3 audit vulnerabilities (1 moderate, 2 high); Vite reports the existing chunk-size warning. |
+| repository root   | `python3 misc/run_gui_systemtest.py --runtime local -- tests/results.spec.ts`                                                                                      | Passed: 10 Playwright tests, including legacy coverage plus React duplicate expansion and visible bulk selection.                                                                                                                                                                            |
+| repository root   | `git diff --check`                                                                                                                                                 | Passed.                                                                                                                                                                                                                                                                                      |
+| repository root   | `git status --short`                                                                                                                                               | Inspected; all 12 task-attributable paths are allowed and no unexpected artifacts are tracked.                                                                                                                                                                                               |
 
 ### Verification Basis
 
@@ -167,7 +167,9 @@ Record bounded follow-up proposals, or `None`.
 ### Verification Correction
 
 - Affected and passed: `npm ci && npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run check:api && npm run validate:migration` (18 files / 57 tests). Existing lint warnings, npm audit findings, and Vite chunk-size warning remain.
-- Affected and blocked: `python3 misc/run_gui_systemtest.py --runtime wsl -- tests/results.spec.ts`. Ten of eleven Playwright tests pass, including React group expansion/bulk selection. The final legacy test intercepts the same deterministic grouped response but times out waiting for `.duplicate-expand-toggle`; its page snapshot reports `No indexers were picked for this search`. The response now includes the required `indexerSearchMetaDatas`, so the prior field-name mismatch is not the remaining cause. See the final run at `misc/.gui-systemtest-runs/20260812_144221_109788`.
+- Affected and blocked: `python3 misc/run_gui_systemtest.py --runtime local -- tests/results.spec.ts`. Ten of eleven Playwright tests pass, including React group expansion/bulk selection. The final legacy test intercepts the same
+  deterministic grouped response but times out waiting for `.duplicate-expand-toggle`; its page snapshot reports `No indexers were picked for this search`. The response now includes the required `indexerSearchMetaDatas`, so the prior
+  field-name mismatch is not the remaining cause. See the final run at `misc/.gui-systemtest-runs/20260812_144221_109788`.
 - Affected and passed: `git diff --check fdead85a0acf0b78b26223d69ef98cf48c93f2b1`.
 - Reusable prior evidence: `npm ci && npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run check:api && npm run validate:migration` remains reusable: every React implementation/test file covered by it is byte-identical to the prior passed 18-file/57-test basis. API/search-result transformation evidence is also unchanged. `git status --short` was re-inspected and lists only allowed task-owned paths.
 

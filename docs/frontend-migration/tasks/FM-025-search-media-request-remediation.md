@@ -83,12 +83,12 @@ At handoff, use `templates/handoff.md` and fill every section. Additionally reco
 
 ### Verification Evidence
 
-| Working directory | Command | Result |
-|---|---|---|
-| `core/ui-react` | `npm ci && npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run check:api && npm run validate:migration` | Passed: 23 files / 105 tests. Existing lint warnings (Fast Refresh/React Hook Form), npm audit findings (1 moderate, 2 high), Node localStorage experimental warnings, and Vite chunk-size warning remain. |
-| repository root | `python3 misc/run_gui_systemtest.py --runtime wsl -- tests/search.spec.ts` | Passed: Maven package build and 8 Playwright search tests, including retained movie/TV autocomplete flows. |
-| repository root | `git diff --no-ext-diff --check` | Passed. |
-| repository root | `git status --short` and `git diff --no-ext-diff --name-only b9462723efd9a23866d1db96a4a374dad527f1d1` | Inspected: only supplied resumed FM-015/planning paths and FM-025 allowlisted paths; no unexpected generated files. |
+| Working directory | Command                                                                                                                                                            | Result                                                                                                                                                                                                     |
+|-------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `core/ui-react`   | `npm ci && npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run check:api && npm run validate:migration` | Passed: 23 files / 105 tests. Existing lint warnings (Fast Refresh/React Hook Form), npm audit findings (1 moderate, 2 high), Node localStorage experimental warnings, and Vite chunk-size warning remain. |
+| repository root   | `python3 misc/run_gui_systemtest.py --runtime local -- tests/search.spec.ts`                                                                                       | Passed: Maven package build and 8 Playwright search tests, including retained movie/TV autocomplete flows.                                                                                                 |
+| repository root   | `git diff --no-ext-diff --check`                                                                                                                                   | Passed.                                                                                                                                                                                                    |
+| repository root   | `git status --short` and `git diff --no-ext-diff --name-only b9462723efd9a23866d1db96a4a374dad527f1d1`                                                             | Inspected: only supplied resumed FM-015/planning paths and FM-025 allowlisted paths; no unexpected generated files.                                                                                        |
 
 ### Verification Basis
 

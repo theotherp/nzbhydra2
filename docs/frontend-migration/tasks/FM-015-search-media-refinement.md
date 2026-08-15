@@ -51,7 +51,7 @@ The agent may read and search the entire repository. Context To Read is mandator
 ## Verification
 
 - In `core/ui-react`: `npm ci && npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run check:api && npm run validate:migration` succeeds.
-- From repository root: `python3 misc/run_gui_systemtest.py --runtime wsl -- tests/search.spec.ts` succeeds.
+- From repository root: `python3 misc/run_gui_systemtest.py --runtime local -- tests/search.spec.ts` succeeds.
 - Run `git diff --check` and inspect `git status --short`; confirm only allowed paths and no unexpected generated files.
 
 ## Task Designer Refinement
@@ -82,12 +82,12 @@ At handoff, use `templates/handoff.md`, fill every section, and mark this task `
 
 ### Verification Evidence
 
-| Working directory | Command | Result |
-|---|---|---|
-| `core/ui-react` | `npm ci && npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run check:api && npm run validate:migration` | Passed: 22 files / 92 tests. Existing ESLint Fast Refresh/RHF warnings, npm audit findings (1 moderate, 2 high), and Vite chunk-size warning remain. |
-| repository root | `python3 misc/run_gui_systemtest.py --runtime wsl -- tests/search.spec.ts` | Passed: 8 Playwright tests, including retained legacy coverage and deterministic React movie/TV media flows. |
-| repository root | `git diff --check` | Passed before documentation-only handoff update. |
-| repository root | `git status --short` | Inspected before documentation-only handoff update; only task-owned allowed paths. |
+| Working directory | Command                                                                                                                                                            | Result                                                                                                                                               |
+|-------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `core/ui-react`   | `npm ci && npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run check:api && npm run validate:migration` | Passed: 22 files / 92 tests. Existing ESLint Fast Refresh/RHF warnings, npm audit findings (1 moderate, 2 high), and Vite chunk-size warning remain. |
+| repository root   | `python3 misc/run_gui_systemtest.py --runtime local -- tests/search.spec.ts`                                                                                       | Passed: 8 Playwright tests, including retained legacy coverage and deterministic React movie/TV media flows.                                         |
+| repository root   | `git diff --check`                                                                                                                                                 | Passed before documentation-only handoff update.                                                                                                     |
+| repository root   | `git status --short`                                                                                                                                               | Inspected before documentation-only handoff update; only task-owned allowed paths.                                                                   |
 
 ### Verification Basis
 
@@ -133,12 +133,12 @@ At handoff, use `templates/handoff.md`, fill every section, and mark this task `
 
 ### Verification Evidence
 
-| Working directory | Command | Classification | Result |
-|---|---|---|---|
-| `core/ui-react` | `npm ci && npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run check:api && npm run validate:migration` | Affected: `SearchPage.{tsx,test.tsx}` and `workspace/SearchWorkspace.{tsx,test.tsx}` changed. | Passed: 22 files / 98 tests. Existing ESLint Fast Refresh/RHF warnings, npm audit findings (1 moderate, 2 high), and Vite chunk-size warning remain. |
-| repository root | `python3 misc/run_gui_systemtest.py --runtime wsl -- tests/search.spec.ts` | Affected: corrected runtime files changed. | Passed: 8 Playwright tests. |
-| repository root | `git diff --check` | Affected: task-owned implementation, test, and registry files changed. | Passed before this documentation-only correction handoff update. |
-| repository root | `git status --short` | Re-inspected. | Only supplied FM-015 task-attributable allowed paths; no unexpected generated files. |
+| Working directory | Command                                                                                                                                                            | Classification                                                                                | Result                                                                                                                                               |
+|-------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `core/ui-react`   | `npm ci && npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run check:api && npm run validate:migration` | Affected: `SearchPage.{tsx,test.tsx}` and `workspace/SearchWorkspace.{tsx,test.tsx}` changed. | Passed: 22 files / 98 tests. Existing ESLint Fast Refresh/RHF warnings, npm audit findings (1 moderate, 2 high), and Vite chunk-size warning remain. |
+| repository root   | `python3 misc/run_gui_systemtest.py --runtime local -- tests/search.spec.ts`                                                                                       | Affected: corrected runtime files changed.                                                    | Passed: 8 Playwright tests.                                                                                                                          |
+| repository root   | `git diff --check`                                                                                                                                                 | Affected: task-owned implementation, test, and registry files changed.                        | Passed before this documentation-only correction handoff update.                                                                                     |
+| repository root   | `git status --short`                                                                                                                                               | Re-inspected.                                                                                 | Only supplied FM-015 task-attributable allowed paths; no unexpected generated files.                                                                 |
 
 ### Verification Basis
 
@@ -161,12 +161,12 @@ At handoff, use `templates/handoff.md`, fill every section, and mark this task `
 
 ### Verification Evidence
 
-| Working directory | Command | Classification | Result |
-|---|---|---|---|
-| `core/ui-react` | `npm ci && npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run check:api && npm run validate:migration` | Affected: catalog runtime/test and SearchWorkspace runtime/test changed; registry validation also covers updated `APIS.yaml`. | Passed: 23 files / 103 tests. Existing ESLint Fast Refresh/RHF warnings, npm audit findings (1 moderate, 2 high), Node localStorage experimental warnings, and Vite chunk-size warning remain. |
-| repository root | `python3 misc/run_gui_systemtest.py --runtime wsl -- tests/search.spec.ts` | Affected: corrected React runtime files are packaged and exercised by the required search system test. | Passed: 8 Playwright tests. |
-| repository root | `git diff --check` | Affected: task-owned implementation, tests, registry, and handoff changed. | Passed after all corrections and handoff update. |
-| repository root | `git status --short` | Re-inspected. | Only supplied FM-015 task-attributable allowed paths; no unexpected generated files. |
+| Working directory | Command                                                                                                                                                            | Classification                                                                                                                | Result                                                                                                                                                                                         |
+|-------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `core/ui-react`   | `npm ci && npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run check:api && npm run validate:migration` | Affected: catalog runtime/test and SearchWorkspace runtime/test changed; registry validation also covers updated `APIS.yaml`. | Passed: 23 files / 103 tests. Existing ESLint Fast Refresh/RHF warnings, npm audit findings (1 moderate, 2 high), Node localStorage experimental warnings, and Vite chunk-size warning remain. |
+| repository root   | `python3 misc/run_gui_systemtest.py --runtime local -- tests/search.spec.ts`                                                                                       | Affected: corrected React runtime files are packaged and exercised by the required search system test.                        | Passed: 8 Playwright tests.                                                                                                                                                                    |
+| repository root   | `git diff --check`                                                                                                                                                 | Affected: task-owned implementation, tests, registry, and handoff changed.                                                    | Passed after all corrections and handoff update.                                                                                                                                               |
+| repository root   | `git status --short`                                                                                                                                               | Re-inspected.                                                                                                                 | Only supplied FM-015 task-attributable allowed paths; no unexpected generated files.                                                                                                           |
 
 ### Verification Basis
 

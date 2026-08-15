@@ -47,9 +47,13 @@ type StoredChoices = {sorting?: SortingState; filters?: Partial<ResultFilters>};
 export function SearchResults({
     data,
     episodeRequested = false,
+    onLoadMore,
+    searchRequestId,
 }: {
     data: SearchResponse;
     episodeRequested?: boolean;
+    onLoadMore?: (loadAll: boolean) => Promise<void>;
+    searchRequestId?: number;
 }) {
     const safeConfig =
         window.__NZBHYDRA_BOOTSTRAP__ && isRecord(window.__NZBHYDRA_BOOTSTRAP__)
@@ -85,6 +89,9 @@ export function SearchResults({
     const [selected, setSelected] = useState<Set<string>>(new Set());
     const [lastSelectedId, setLastSelectedId] = useState<string>();
     const [downloadedIds, setDownloadedIds] = useState<Set<string>>(new Set());
+    const [pagingLoading, setPagingLoading] = useState(false);
+    const [pagingError, setPagingError] = useState<string>();
+    const [pagingExhausted, setPagingExhausted] = useState(false);
     const dialogs = useContext(DialogContext);
     const toasts = useContext(ToastContext);
     const filteredResults = useMemo(
@@ -152,9 +159,56 @@ export function SearchResults({
         );
     }, [filteredResults]);
 
+    useEffect(() => {
+        setPagingLoading(false);
+        setPagingError(undefined);
+        setPagingExhausted(false);
+    }, [searchRequestId]);
+
     const allIndexersFailed =
         data.indexerSearchMetaDatas.length > 0 &&
         data.indexerSearchMetaDatas.every((indexer) => !indexer.wasSuccessful);
+    const hasMoreResults = data.indexerSearchMetaDatas.some(
+        (indexer) => indexer.hasMoreResults === true,
+    );
+    const hasRemainingKnownResults =
+        data.numberOfProcessedResults !== undefined &&
+        data.numberOfProcessedResults < data.numberOfAvailableResults;
+    const hasInvalidPagingCursor =
+        data.pagingState === "ready" &&
+        data.offset === 0 &&
+        data.limit === 0 &&
+        (hasMoreResults || hasRemainingKnownResults);
+    const pagingAvailable =
+        onLoadMore !== undefined &&
+        data.pagingState === "ready" &&
+        (hasMoreResults || hasRemainingKnownResults) &&
+        !hasInvalidPagingCursor &&
+        !pagingExhausted;
+    const requestContinuation = async (loadAll: boolean) => {
+        if (!onLoadMore || pagingLoading || !pagingAvailable) {
+            return;
+        }
+        setPagingLoading(true);
+        setPagingError(undefined);
+        try {
+            await onLoadMore(loadAll);
+            if (loadAll) {
+                setPagingExhausted(true);
+            }
+        } catch (error) {
+            const message =
+                error instanceof Error
+                    ? error.message
+                    : "Unable to load more results.";
+            setPagingError(message);
+            if (message.includes("did not advance")) {
+                setPagingExhausted(true);
+            }
+        } finally {
+            setPagingLoading(false);
+        }
+    };
     const updateRange = (
         name: "size" | "grabs" | "age",
         bound: keyof NumericRange,
@@ -221,13 +275,54 @@ export function SearchResults({
                     Rejected {data.numberOfRejectedResults} results.
                 </Alert>
             )}
+            {data.pagingState === "partial" && (
+                <Alert role="status" severity="warning">
+                    More results cannot be loaded because the server returned
+                    incomplete paging information.
+                </Alert>
+            )}
+            {hasInvalidPagingCursor && (
+                <Alert role="status" severity="warning">
+                    More results cannot be loaded because the server returned an
+                    invalid paging cursor.
+                </Alert>
+            )}
+            {pagingError && (
+                <Alert role="alert" severity="error">
+                    {pagingError}
+                </Alert>
+            )}
+            {onLoadMore && (
+                <Stack direction="row" flexWrap="wrap" gap={1}>
+                    <Button
+                        aria-busy={pagingLoading}
+                        disabled={!pagingAvailable || pagingLoading}
+                        onClick={() => void requestContinuation(false)}
+                    >
+                        {pagingLoading ? "Loading more results…" : "Load more"}
+                    </Button>
+                    <Button
+                        disabled={!pagingAvailable || pagingLoading}
+                        onClick={() => void requestContinuation(true)}
+                    >
+                        Load all results
+                    </Button>
+                </Stack>
+            )}
             {data.searchResults.length > 0 && (
                 <>
                     <Typography data-testid="search-results-summary">
                         Loaded {data.searchResults.length} (
                         {data.searchResults.length - filteredResults.length}{" "}
-                        filtered) of {data.numberOfAvailableResults} results
-                        (rejected {data.numberOfRejectedResults})
+                        filtered) of{" "}
+                        {hasMoreResults &&
+                        data.indexerSearchMetaDatas.some(
+                            (indexer) => indexer.totalResultsKnown === false,
+                        )
+                            ? ">"
+                            : ""}
+                        {data.numberOfAvailableResults} results (rejected{" "}
+                        {data.numberOfRejectedResults})
                     </Typography>
                     <Stack direction="row" flexWrap="wrap" gap={1}>
                         {dialogs !== null && toasts !== null && (

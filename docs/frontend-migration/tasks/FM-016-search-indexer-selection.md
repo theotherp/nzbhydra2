@@ -50,7 +50,7 @@ The agent may read/search the repository. Context To Read is mandatory starting 
 ## Verification
 
 - In `core/ui-react`: full quality chain `npm ci && npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run check:api && npm run validate:migration` succeeds.
-- From repository root: `python3 misc/run_gui_systemtest.py --runtime wsl -- tests/search.spec.ts` succeeds.
+- From repository root: `python3 misc/run_gui_systemtest.py --runtime local -- tests/search.spec.ts` succeeds.
 - Run `git diff --check`; inspect status for allowed scope and unexpected generated files.
 
 ## Handoff
@@ -76,12 +76,12 @@ The agent may read/search the repository. Context To Read is mandatory starting 
 
 ### Verification Evidence
 
-| Working directory | Command | Result |
-|---|---|---|
-| `core/ui-react` | `npm ci && npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run check:api && npm run validate:migration` | Affected by the `SearchWorkspace` component-test correction; rerun and passed: 23 files / 109 tests. Existing React Hook Form/Fast Refresh lint warnings, Node localStorage experimental warnings, Vite chunk-size warning, and `npm ci` audit report (1 moderate, 2 high) remain non-failing. |
-| repository root | `python3 misc/run_gui_systemtest.py --runtime wsl -- tests/search.spec.ts` | Reusable prior evidence: passed 9 Playwright tests, including explicit React dropdown and checkbox selection submissions. The correction changes only a component test; all packaged runtime files and `tests/system/tests/search.spec.ts` remain byte-identical to the prior GUI verification basis. |
-| repository root | `git diff --check` | Affected by the correction and handoff update; rerun and passed. |
-| IDE | inspections for task implementation/test files | Passed: no errors. |
+| Working directory | Command                                                                                                                                                            | Result                                                                                                                                                                                                                                                                                                |
+|-------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `core/ui-react`   | `npm ci && npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run check:api && npm run validate:migration` | Affected by the `SearchWorkspace` component-test correction; rerun and passed: 23 files / 109 tests. Existing React Hook Form/Fast Refresh lint warnings, Node localStorage experimental warnings, Vite chunk-size warning, and `npm ci` audit report (1 moderate, 2 high) remain non-failing.        |
+| repository root   | `python3 misc/run_gui_systemtest.py --runtime local -- tests/search.spec.ts`                                                                                       | Reusable prior evidence: passed 9 Playwright tests, including explicit React dropdown and checkbox selection submissions. The correction changes only a component test; all packaged runtime files and `tests/system/tests/search.spec.ts` remain byte-identical to the prior GUI verification basis. |
+| repository root   | `git diff --check`                                                                                                                                                 | Affected by the correction and handoff update; rerun and passed.                                                                                                                                                                                                                                      |
+| IDE               | inspections for task implementation/test files                                                                                                                     | Passed: no errors.                                                                                                                                                                                                                                                                                    |
 
 ### Verification Basis
 

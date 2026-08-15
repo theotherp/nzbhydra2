@@ -40,12 +40,19 @@ export type SearchResponse = {
     indexerSearchMetaDatas: Array<{
         indexerName: string;
         wasSuccessful: boolean;
+        hasMoreResults?: boolean;
+        totalResultsKnown?: boolean;
     }>;
     indexerLimitWarnings: string[];
     rejectedReasonsMap: Record<string, number>;
     notPickedIndexersWithReason: Record<string, string>;
     numberOfAvailableResults: number;
     numberOfRejectedResults: number;
+    numberOfProcessedResults?: number;
+    numberOfAcceptedResults?: number;
+    offset?: number;
+    limit?: number;
+    pagingState: "ready" | "partial";
 };
 
 export class MalformedSearchResponseError extends Error {
@@ -62,6 +69,10 @@ const responseSchema = z.object({
     notPickedIndexersWithReason: z.record(z.string(), z.string()),
     numberOfAvailableResults: z.number().int().nonnegative(),
     numberOfRejectedResults: z.number().int().nonnegative(),
+    numberOfProcessedResults: z.number().int().nonnegative().optional(),
+    numberOfAcceptedResults: z.number().int().nonnegative().optional(),
+    offset: z.number().int().nonnegative().optional(),
+    limit: z.number().int().nonnegative().optional(),
 });
 
 export async function executeSearch(
@@ -103,11 +114,18 @@ export function parseSearchResponse(response: unknown): SearchResponse {
         const result = metadataSchema.safeParse(entry);
         return result.success ? [result.data] : [];
     });
+    const pagingState =
+        parsed.data.offset === undefined ||
+        parsed.data.limit === undefined ||
+        parsed.data.numberOfProcessedResults === undefined
+            ? "partial"
+            : "ready";
     return {
         ...parsed.data,
         searchResults: validResults,
         malformedResultCount,
         indexerSearchMetaDatas: metadata,
+        pagingState,
     };
 }
 
@@ -184,4 +202,40 @@ const resultSchema = z.object({
 const metadataSchema = z.object({
     indexerName: z.string().min(1),
     wasSuccessful: z.boolean().default(false),
+    hasMoreResults: z.boolean().optional(),
+    totalResultsKnown: z.boolean().optional(),
 });
+
+export function continuationRequest(
+    request: SearchRequest,
+    offset: number,
+    limit: number | undefined,
+    loadAll: boolean,
+): SearchRequest {
+    return {...request, offset, limit, loadAll};
+}
+
+export function mergeSearchResponses(
+    previous: SearchResponse,
+    next: SearchResponse,
+): SearchResponse {
+    const results = new Map<string, SearchResult>();
+    for (const result of previous.searchResults) {
+        results.set(result.searchResultId, result);
+    }
+    for (const result of next.searchResults) {
+        results.set(result.searchResultId, result);
+    }
+    return {
+        ...next,
+        searchResults: [...results.values()],
+        malformedResultCount:
+            previous.malformedResultCount + next.malformedResultCount,
+        offset: Math.max(previous.offset ?? 0, next.offset ?? 0),
+        limit: next.limit,
+        pagingState:
+            previous.pagingState === "ready" && next.pagingState === "ready"
+                ? "ready"
+                : "partial",
+    };
+}

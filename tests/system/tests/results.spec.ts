@@ -424,6 +424,126 @@ test.describe("Search results", () => {
             "Bravo BluRay 720p HEVC",
         ]);
     });
+
+    test("should load more and all React results from advancing cache offsets", async ({page}) => {
+        const requests: Array<Record<string, unknown>> = [];
+        await page.route("**/internalapi/search", async (route) => {
+            const request = route.request().postDataJSON() as Record<string, unknown>;
+            requests.push(request);
+            const offset = request.offset ?? 0;
+            const result = (id: string) => ({
+                searchResultId: id,
+                title: `Paged result ${id}`,
+                indexer: "Mock",
+                category: "All",
+            });
+            await route.fulfill({
+                json: {
+                    searchResults: request.loadAll
+                        ? [result("one"), result("two"), result("three")]
+                        : offset === 0
+                          ? [result("one")]
+                          : [result("one"), result("two")],
+                    indexerSearchMetaDatas: [
+                        {
+                            indexerName: "Mock",
+                            wasSuccessful: true,
+                            hasMoreResults: request.loadAll ? true : offset < 1,
+                            totalResultsKnown: true,
+                        },
+                    ],
+                    indexerLimitWarnings: [],
+                    rejectedReasonsMap: {},
+                    notPickedIndexersWithReason: {},
+                    numberOfAvailableResults: 3,
+                    numberOfRejectedResults: 0,
+                    numberOfProcessedResults: request.loadAll
+                        ? 3
+                        : Number(offset) + 1,
+                    numberOfAcceptedResults: request.loadAll
+                        ? 3
+                        : Number(offset) + 1,
+                    offset: request.loadAll ? 0 : offset,
+                    limit: request.loadAll ? 0 : 1,
+                },
+            });
+        });
+        await page.goto("ui/react?redirect=/");
+        await page.getByTestId("search-query").fill("paging");
+        await page.getByTestId("search-submit").click();
+        await expectVisibleResultTitles(page, ["Paged result one"]);
+
+        await page.getByRole("button", {name: "Load more"}).click();
+        await expectVisibleResultTitles(page, [
+            "Paged result one",
+            "Paged result two",
+        ]);
+        await page.getByRole("button", {name: "Load all results"}).click();
+        await expectVisibleResultTitles(page, [
+            "Paged result one",
+            "Paged result two",
+            "Paged result three",
+        ]);
+        expect(requests.slice(1)).toEqual([
+            expect.objectContaining({offset: 1, loadAll: false}),
+            expect.objectContaining({offset: 2, limit: 1, loadAll: true}),
+        ]);
+    });
+
+    test("should stop React load-more after a non-advancing terminal cursor", async ({page}) => {
+        const requests: Array<Record<string, unknown>> = [];
+        await page.route("**/internalapi/search", async (route) => {
+            const request = route.request().postDataJSON() as Record<string, unknown>;
+            requests.push(request);
+            const continuation = request.offset === 1;
+            await route.fulfill({
+                json: {
+                    searchResults: [
+                        {
+                            searchResultId: "one",
+                            title: "Paged result one",
+                            indexer: "Mock",
+                            category: "All",
+                        },
+                    ],
+                    indexerSearchMetaDatas: [
+                        {
+                            indexerName: "Mock",
+                            wasSuccessful: true,
+                            hasMoreResults: true,
+                            totalResultsKnown: true,
+                        },
+                    ],
+                    indexerLimitWarnings: [],
+                    rejectedReasonsMap: {},
+                    notPickedIndexersWithReason: {},
+                    numberOfAvailableResults: 2,
+                    numberOfRejectedResults: 0,
+                    numberOfProcessedResults: 1,
+                    numberOfAcceptedResults: 1,
+                    offset: 0,
+                    limit: continuation ? 0 : 1,
+                },
+            });
+        });
+        await page.goto("ui/react?redirect=/");
+        await page.getByTestId("search-query").fill("non-advancing paging");
+        await page.getByTestId("search-submit").click();
+        await expectVisibleResultTitles(page, ["Paged result one"]);
+
+        await page.getByRole("button", {name: "Load more"}).click();
+        await expect(
+            page.getByText("The server did not advance the search cache position."),
+        ).toBeVisible();
+        const loadMore = page.getByRole("button", {name: "Load more"});
+        const loadAll = page.getByRole("button", {name: "Load all results"});
+        await expect(loadMore).toBeDisabled();
+        await expect(loadAll).toBeDisabled();
+        await loadMore.click({force: true});
+        await loadAll.click({force: true});
+        expect(requests).toHaveLength(2);
+        expect(requests[1]).toMatchObject({offset: 1, loadAll: false});
+    });
 });
 
 async function searchForUiTestResults(

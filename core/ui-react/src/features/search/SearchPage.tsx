@@ -14,7 +14,12 @@ import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 import {useNavigate, useSearch} from "@tanstack/react-router";
 import {useEffect, useRef, useState} from "react";
 
-import {executeSearch, shortcutSearch} from "../../api/search";
+import {
+    continuationRequest,
+    executeSearch,
+    mergeSearchResponses,
+    shortcutSearch,
+} from "../../api/search";
 import type {SearchRequest, SearchResponse} from "../../api/search";
 import {getAutocomplete, getEmbyAvailability} from "../../api/media";
 import type {RecentSearch} from "../../api/recentSearches";
@@ -69,6 +74,7 @@ export function SearchPage({
     const [state, setState] = useState<{
         data?: SearchResponse;
         error?: Error;
+        request?: SearchRequest;
         loading: boolean;
     }>({loading: false});
     const [progress, setProgress] = useState<SearchProgress>();
@@ -196,7 +202,7 @@ export function SearchPage({
         try {
             const data = await executeSearch(transport, request);
             if (activeSubmission.current === submission) {
-                setState({loading: false, data});
+                setState({loading: false, data, request});
                 setRecentRefreshKey((key) => key + 1);
                 if (isEmbyConfigured(bootstrap.safeConfig)) {
                     void checkEmbyAvailability(
@@ -247,6 +253,60 @@ export function SearchPage({
         } catch {
             setLiveUnavailable("Unable to show early results.");
         }
+    };
+    const loadMore = async (loadAll: boolean) => {
+        if (!state.data || !state.request) {
+            throw new Error("Search continuation is unavailable.");
+        }
+        const {data, request} = state;
+        if (
+            data.pagingState !== "ready" ||
+            data.offset === undefined ||
+            data.limit === undefined
+        ) {
+            throw new Error(
+                "The server returned incomplete paging information.",
+            );
+        }
+        const offset = data.offset + data.limit;
+        const remaining =
+            data.numberOfProcessedResults === undefined
+                ? undefined
+                : Math.max(
+                      0,
+                      data.numberOfAvailableResults -
+                          data.numberOfProcessedResults,
+                  );
+        const next = await executeSearch(
+            transport,
+            continuationRequest(
+                request,
+                offset,
+                loadAll ? remaining : undefined,
+                loadAll,
+            ),
+        );
+        const terminalLoadAllResponse =
+            loadAll && next.offset === 0 && next.limit === 0;
+        if (
+            !terminalLoadAllResponse &&
+            (next.offset === undefined ||
+                next.limit === undefined ||
+                next.offset + next.limit <= offset)
+        ) {
+            throw new Error(
+                "The server did not advance the search cache position.",
+            );
+        }
+        setState((current) =>
+            current.data === data && current.request === request
+                ? {
+                      loading: false,
+                      request,
+                      data: mergeSearchResponses(data, next),
+                  }
+                : current,
+        );
     };
     return (
         <Stack component="main" spacing={2}>
@@ -305,10 +365,12 @@ export function SearchPage({
             {liveUnavailable && !state.loading && (
                 <Alert severity="warning">{liveUnavailable}</Alert>
             )}
-            {state.data && (
+            {state.data && state.request && (
                 <SearchResults
                     data={state.data}
                     episodeRequested={episodeRequested}
+                    onLoadMore={loadMore}
+                    searchRequestId={state.request.searchRequestId}
                 />
             )}
             <Dialog

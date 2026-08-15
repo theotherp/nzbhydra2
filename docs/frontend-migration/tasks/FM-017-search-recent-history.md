@@ -84,17 +84,17 @@ Use `templates/handoff.md`; fill every section and mark `review` only after veri
 
 ### Verification Evidence
 
-| Working directory | Command | Result |
-|---|---|---|
-| `core/ui-react` | `npm run typecheck && npm run test -- --run` | Passed before later test-formatting corrections: 25 files / 114 tests. Not final evidence. |
-| IDE | `Run all tests in core` | Blocked: existing configuration exceeded the 300-second MCP wait and left a Java test process running; no focused existing `Searcher`/`SearchEntity` configuration is available. |
-| IDE | `SearcherUnitTest` | Passed: 5 passed, 3 skipped, 0 failed. |
-| IDE | `SearchEntityTest` | Passed: 3 passed, 0 failed. |
-| repository root | `mvn -pl core org.springdoc:springdoc-openapi-maven-plugin:generate` | Passed; `core/openapi.json` regenerated and includes all five criteria fields. |
-| `core/ui-react` | `npm run generate:api` twice, then `git diff --exit-code -- src/api/generated/openapi.ts` | Passed; generated types contain all five fields and are reproducible. |
-| `core/ui-react` | `npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run check:api && npm run validate:migration` | Passed: 25 files / 114 tests; existing non-failing warnings remain. |
-| repository root | `python3 misc/run_gui_systemtest.py --runtime wsl -- tests/search.spec.ts tests/search-history.spec.ts` | Failed three times: 11/12 passed; the new recent-search test cannot find Refill. The endpoint response is 200 but does not contain the newly executed search. |
-| repository root | `git diff --check` | Passed after the latest task-owned edit. |
+| Working directory | Command                                                                                                                                                  | Result                                                                                                                                                                           |
+|-------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `core/ui-react`   | `npm run typecheck && npm run test -- --run`                                                                                                             | Passed before later test-formatting corrections: 25 files / 114 tests. Not final evidence.                                                                                       |
+| IDE               | `Run all tests in core`                                                                                                                                  | Blocked: existing configuration exceeded the 300-second MCP wait and left a Java test process running; no focused existing `Searcher`/`SearchEntity` configuration is available. |
+| IDE               | `SearcherUnitTest`                                                                                                                                       | Passed: 5 passed, 3 skipped, 0 failed.                                                                                                                                           |
+| IDE               | `SearchEntityTest`                                                                                                                                       | Passed: 3 passed, 0 failed.                                                                                                                                                      |
+| repository root   | `mvn -pl core org.springdoc:springdoc-openapi-maven-plugin:generate`                                                                                     | Passed; `core/openapi.json` regenerated and includes all five criteria fields.                                                                                                   |
+| `core/ui-react`   | `npm run generate:api` twice, then `git diff --exit-code -- src/api/generated/openapi.ts`                                                                | Passed; generated types contain all five fields and are reproducible.                                                                                                            |
+| `core/ui-react`   | `npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run check:api && npm run validate:migration` | Passed: 25 files / 114 tests; existing non-failing warnings remain.                                                                                                              |
+| repository root   | `python3 misc/run_gui_systemtest.py --runtime local -- tests/search.spec.ts tests/search-history.spec.ts`                                                | Failed three times: 11/12 passed; the new recent-search test cannot find Refill. The endpoint response is 200 but does not contain the newly executed search.                    |
+| repository root   | `git diff --check`                                                                                                                                       | Passed after the latest task-owned edit.                                                                                                                                         |
 
 ### Verification Basis
 
@@ -145,18 +145,18 @@ Use `templates/handoff.md`; fill every section and mark `review` only after veri
 
 ### Verification Evidence
 
-| Working directory | Command | Result |
-|---|---|---|
-| IDE | `SearchEntityTest` | Passed: 3 passed, 0 failed. |
-| IDE | `SearcherUnitTest` | Passed: 5 passed, 3 skipped, 0 failed. |
-| repository root | `python3 misc/run_gui_systemtest.py --runtime wsl -- tests/search.spec.ts tests/search-history.spec.ts` | Blocked before tests: the current runner accepts only `auto`, `existing`, or `local` for `--runtime`; it rejects required `wsl`. |
-| repository root | `node --version && npm --version` | Blocked for React verification: `v22.22.1` / `9.2.0`, while `core/ui-react/package.json` declares Node `>=26.0.0 <27` and npm `11.18.0`. |
-| repository root | `git diff --check` | Passed after the blocked-handoff update. |
+| Working directory | Command                                                                                                   | Result                                                                                                                                   |
+|-------------------|-----------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------|
+| IDE               | `SearchEntityTest`                                                                                        | Passed: 3 passed, 0 failed.                                                                                                              |
+| IDE               | `SearcherUnitTest`                                                                                        | Passed: 5 passed, 3 skipped, 0 failed.                                                                                                   |
+| repository root   | `python3 misc/run_gui_systemtest.py --runtime local -- tests/search.spec.ts tests/search-history.spec.ts` | Blocked before tests: the current runner accepts only `auto`, `existing`, or `local` for `--runtime`; it rejects required `wsl`.         |
+| repository root   | `node --version && npm --version`                                                                         | Blocked for React verification: `v22.22.1` / `9.2.0`, while `core/ui-react/package.json` declares Node `>=26.0.0 <27` and npm `11.18.0`. |
+| repository root   | `git diff --check`                                                                                        | Passed after the blocked-handoff update.                                                                                                 |
 
 ### Blocker
 
 - **BLOCKED: unavailable verification infrastructure.** The exact packet GUI command is rejected by the current unallowlisted runner interface, and no declared Node/npm toolchain is installed locally for the required React quality/build/API/migration chain. Changing `misc/run_gui_systemtest.py`, bypassing the packet command with another runtime mode, or running the npm chain under Node 22 would violate the packet and toolchain rules.
-- Resolution: restore a runner that accepts the required `--runtime wsl` command and provide Node 26 with npm 11.18.0, then rerun the complete packet verification. No ADR is required.
+- Resolution: restore a runner that accepts the required `--runtime local` command and provide Node 26 with npm 11.18.0, then rerun the complete packet verification. No ADR is required.
 
 ## Task Designer Verification Refinement
 

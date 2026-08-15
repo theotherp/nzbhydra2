@@ -51,7 +51,7 @@ The agent may read and search the entire repository. Context To Read is mandator
 ## Verification
 
 - In `core/ui-react`: `npm ci && npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run check:api && npm run validate:migration` succeeds.
-- From repository root: `python3 misc/run_gui_systemtest.py --runtime wsl -- tests/results.spec.ts` succeeds with React coverage for every accepted filter/sort behavior.
+- From repository root: `python3 misc/run_gui_systemtest.py --runtime local -- tests/results.spec.ts` succeeds with React coverage for every accepted filter/sort behavior.
 - From repository root: `git diff --check` and `git status --short`; confirm all changed/generated paths are allowed and report unexpected artifacts.
 
 ## Handoff
@@ -74,12 +74,12 @@ The agent may read and search the entire repository. Context To Read is mandator
 
 ### Verification
 
-| Working directory | Command | Result |
-|---|---|---|
-| `core/ui-react` | `npm ci && npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run check:api && npm run validate:migration` | Refreshed after the custom-filter correction: passed 18 files / 51 tests, production build, API check, and migration validation. Lint reported only existing Fast Refresh/RHF warnings plus TanStack Table's incompatible-library warning; `npm ci` reported 3 audit vulnerabilities (1 moderate, 2 high); Vite reported the existing chunk-size warning. |
-| repository root | `python3 misc/run_gui_systemtest.py --runtime wsl -- tests/results.spec.ts` | Refreshed after the custom-filter correction: passed 9 Playwright tests. The deterministic React flow covers every sortable column, visible ascending/descending state, indexer/category/grabs/age filters, and configured/preselected quick filters. |
-| repository root | `git diff --check` | Passed. |
-| repository root | `git status --short` | Inspected; all 13 task-attributable paths are allowed, including two new result-table source/test files. |
+| Working directory | Command                                                                                                                                                            | Result                                                                                                                                                                                                                                                                                                                                                    |
+|-------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `core/ui-react`   | `npm ci && npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run check:api && npm run validate:migration` | Refreshed after the custom-filter correction: passed 18 files / 51 tests, production build, API check, and migration validation. Lint reported only existing Fast Refresh/RHF warnings plus TanStack Table's incompatible-library warning; `npm ci` reported 3 audit vulnerabilities (1 moderate, 2 high); Vite reported the existing chunk-size warning. |
+| repository root   | `python3 misc/run_gui_systemtest.py --runtime local -- tests/results.spec.ts`                                                                                      | Refreshed after the custom-filter correction: passed 9 Playwright tests. The deterministic React flow covers every sortable column, visible ascending/descending state, indexer/category/grabs/age filters, and configured/preselected quick filters.                                                                                                     |
+| repository root   | `git diff --check`                                                                                                                                                 | Passed.                                                                                                                                                                                                                                                                                                                                                   |
+| repository root   | `git status --short`                                                                                                                                               | Inspected; all 13 task-attributable paths are allowed, including two new result-table source/test files.                                                                                                                                                                                                                                                  |
 
 ### Verification Basis
 

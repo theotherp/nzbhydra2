@@ -56,7 +56,7 @@ The agent may read and search the entire repository. Context To Read is mandator
 ## Verification
 
 - In `core/ui-react`: `npm ci && npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run check:api && npm run validate:migration` succeeds.
-- From repository root: `python3 misc/run_gui_systemtest.py --runtime wsl -- tests/downloads.spec.ts` succeeds with React workflow coverage.
+- From repository root: `python3 misc/run_gui_systemtest.py --runtime local -- tests/downloads.spec.ts` succeeds with React workflow coverage.
 - From repository root: `git diff --check` and `git status --short`; confirm all changed/generated paths are allowed and report unexpected artifacts.
 
 ## Handoff
@@ -118,12 +118,12 @@ Record bounded follow-up proposals, or `None`.
 
 ### Verification Evidence
 
-| Working directory | Command | Result |
-|---|---|---|
-| `core/ui-react` | `npm ci && npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run check:api && npm run validate:migration` | Passed: 19 files / 62 tests; existing lint warnings, 3 npm audit findings, and Vite chunk-size warning remain. |
-| repository root | `python3 misc/run_gui_systemtest.py --runtime wsl -- tests/downloads.spec.ts` | Passed: 3 Playwright workflows, including React selected-result SABnzbd send. |
-| repository root | `git diff --check` | Passed. |
-| repository root | `git status --short` | Inspected; task-owned paths allowed and no unexpected task artifacts. |
+| Working directory | Command                                                                                                                                                            | Result                                                                                                         |
+|-------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------|
+| `core/ui-react`   | `npm ci && npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run check:api && npm run validate:migration` | Passed: 19 files / 62 tests; existing lint warnings, 3 npm audit findings, and Vite chunk-size warning remain. |
+| repository root   | `python3 misc/run_gui_systemtest.py --runtime local -- tests/downloads.spec.ts`                                                                                    | Passed: 3 Playwright workflows, including React selected-result SABnzbd send.                                  |
+| repository root   | `git diff --check`                                                                                                                                                 | Passed.                                                                                                        |
+| repository root   | `git status --short`                                                                                                                                               | Inspected; task-owned paths allowed and no unexpected task artifacts.                                          |
 
 ### Verification Basis
 
@@ -170,7 +170,7 @@ Record bounded follow-up proposals, or `None`.
 ### Verification Correction
 
 - Affected and passed: React quality chain from `core/ui-react` (`npm ci && npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run check:api && npm run validate:migration`): 19 files / 68 tests. Existing five lint warnings, three npm audit findings, and Vite chunk-size warning remain.
-- Affected and passed: `python3 misc/run_gui_systemtest.py --runtime wsl -- tests/downloads.spec.ts`: 4 Playwright workflows, including React selected SABnzbd send and React direct NZB browser transfer.
+- Affected and passed: `python3 misc/run_gui_systemtest.py --runtime local -- tests/downloads.spec.ts`: 4 Playwright workflows, including React selected SABnzbd send and React direct NZB browser transfer.
 - Affected and passed: `git diff --check`; `git status --short` was inspected for scope.
 - Deterministic system-test configuration supplies one NZB result and SABnzbd only. It has no configured black-hole, ZIP, torrent, or magnet endpoint/result fixture, so direct torrent, ZIP, black-hole, torrent/magnet save-or-send, and copy-link cannot be exercised by this Playwright fixture. They are covered at domain/component tier where deterministic configuration is not required; no workflow is skipped.
 
@@ -200,7 +200,7 @@ Record bounded follow-up proposals, or `None`.
 
 - Superseded: the prior correction's React quality and GUI evidence covered implementation/test content changed in this cycle.
 - Affected and passed: `npm ci && npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run check:api && npm run validate:migration` from `core/ui-react`: 19 files / 74 tests. Existing five lint warnings, three npm audit findings, and Vite chunk-size warning remain.
-- Affected and passed: `python3 misc/run_gui_systemtest.py --runtime wsl -- tests/downloads.spec.ts`: 4 Playwright workflows, including React selected SABnzbd send and React direct NZB browser transfer.
+- Affected and passed: `python3 misc/run_gui_systemtest.py --runtime local -- tests/downloads.spec.ts`: 4 Playwright workflows, including React selected SABnzbd send and React direct NZB browser transfer.
 - Affected and passed after all task-owned changes: `git diff --check`; `git status --short` inspected for scope.
 - The deterministic GUI fixture provides an NZB result and SABnzbd only; it has no black-hole, ZIP, torrent/magnet, or TORBOX endpoint/result fixture. Those workflows are credibly covered by focused React component tests; the GUI command retains every genuinely available workflow.
 
@@ -228,7 +228,8 @@ Record bounded follow-up proposals, or `None`.
 ### Verification Correction
 
 - Affected and passed once: `npm ci && npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run check:api && npm run validate:migration` from `core/ui-react`: 19 files / 74 tests. Existing five lint warnings, three npm audit findings, and Vite chunk-size warning remain.
-- Reused GUI evidence: `python3 misc/run_gui_systemtest.py --runtime wsl -- tests/downloads.spec.ts` previously passed 4 workflows. All runtime files and `tests/system/tests/downloads.spec.ts` covered by its prior basis are byte-identical; this correction changes only the component test.
+- Reused GUI evidence: `python3 misc/run_gui_systemtest.py --runtime local -- tests/downloads.spec.ts` previously passed 4 workflows. All runtime files and `tests/system/tests/downloads.spec.ts` covered by its prior basis are
+  byte-identical; this correction changes only the component test.
 - Affected and passed after this correction: `git diff --check`; `git status --short` inspected for scope.
 
 ### Verification Basis
@@ -255,7 +256,7 @@ Record bounded follow-up proposals, or `None`.
 
 - Superseded: Correction Cycle 3 React and GUI evidence because the results action runtime and component test changed.
 - Affected and passed once: `npm ci && npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run check:api && npm run validate:migration` from `core/ui-react`: 19 files / 75 tests. Existing five lint warnings, three npm audit findings, and Vite chunk-size warning remain.
-- Affected and passed once: `python3 misc/run_gui_systemtest.py --runtime wsl -- tests/downloads.spec.ts`: 4 Playwright workflows, including React selected SABnzbd send and React direct NZB browser transfer.
+- Affected and passed once: `python3 misc/run_gui_systemtest.py --runtime local -- tests/downloads.spec.ts`: 4 Playwright workflows, including React selected SABnzbd send and React direct NZB browser transfer.
 - Affected and passed after all task-owned changes: `git diff --check`; `git status --short` inspected for scope.
 - The deterministic GUI fixture provides an NZB result and SABnzbd only; it has no black-hole, ZIP, torrent/magnet, or TORBOX endpoint/result fixture. The TORBOX exclusion is covered by the focused React component test; GUI retains every genuinely available workflow.
 

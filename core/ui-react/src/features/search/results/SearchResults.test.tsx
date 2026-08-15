@@ -20,6 +20,7 @@ const response = {
     notPickedIndexersWithReason: {},
     numberOfAvailableResults: 0,
     numberOfRejectedResults: 0,
+    pagingState: "partial" as const,
 };
 
 function renderResults(ui: React.ReactNode) {
@@ -78,6 +79,121 @@ describe("SearchResults", () => {
         ).toBeVisible();
         expect(screen.getByTestId("indexer-limit-warnings")).toBeVisible();
         expect(screen.getByText("Rejected 2 results.")).toBeVisible();
+    });
+
+    it("should disable incomplete paging and report continuation failures without concurrent requests", async () => {
+        const loadMore = vi.fn().mockRejectedValue(new Error("request failed"));
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    pagingState: "ready",
+                    offset: 0,
+                    limit: 1,
+                    numberOfProcessedResults: 1,
+                    numberOfAvailableResults: 2,
+                    searchResults: [
+                        {
+                            searchResultId: "one",
+                            title: "First result",
+                            indexer: "Mock",
+                            category: "All",
+                        },
+                    ],
+                    indexerSearchMetaDatas: [
+                        {
+                            indexerName: "Mock",
+                            wasSuccessful: true,
+                            hasMoreResults: true,
+                        },
+                    ],
+                }}
+                onLoadMore={loadMore}
+            />,
+        );
+
+        fireEvent.click(screen.getByRole("button", {name: "Load more"}));
+        fireEvent.click(screen.getByRole("button", {name: /Loading more/}));
+        await screen.findByRole("alert");
+        expect(loadMore).toHaveBeenCalledOnce();
+        expect(screen.getByText("request failed")).toBeVisible();
+    });
+
+    it("should render paging feedback and safe controls without valid result rows", async () => {
+        const loadMore = vi.fn().mockRejectedValue(new Error("request failed"));
+        const {rerender} = renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    pagingState: "partial",
+                    malformedResultCount: 1,
+                }}
+                onLoadMore={loadMore}
+            />,
+        );
+
+        expect(
+            screen.getByText("1 malformed result entries were not displayed."),
+        ).toBeVisible();
+        expect(screen.getByText(/incomplete paging information/)).toBeVisible();
+        expect(screen.getByRole("button", {name: "Load more"})).toBeDisabled();
+
+        rerender(
+            <SearchResults
+                data={{
+                    ...response,
+                    pagingState: "ready",
+                    offset: 0,
+                    limit: 1,
+                    numberOfProcessedResults: 1,
+                    indexerSearchMetaDatas: [
+                        {
+                            indexerName: "Unknown total",
+                            wasSuccessful: true,
+                            hasMoreResults: true,
+                            totalResultsKnown: false,
+                        },
+                    ],
+                }}
+                onLoadMore={loadMore}
+            />,
+        );
+        fireEvent.click(screen.getByRole("button", {name: "Load more"}));
+        expect(await screen.findByText("request failed")).toBeVisible();
+        expect(loadMore).toHaveBeenCalledOnce();
+    });
+
+    it("should disable an initial zero paging cursor that claims more results", () => {
+        const loadMore = vi.fn();
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    pagingState: "ready",
+                    offset: 0,
+                    limit: 0,
+                    numberOfProcessedResults: 0,
+                    indexerSearchMetaDatas: [
+                        {
+                            indexerName: "Mock",
+                            wasSuccessful: true,
+                            hasMoreResults: true,
+                        },
+                    ],
+                }}
+                onLoadMore={loadMore}
+            />,
+        );
+
+        expect(screen.getByRole("status")).toHaveTextContent(
+            "invalid paging cursor",
+        );
+        const loadMoreButton = screen.getByRole("button", {
+            name: "Load more",
+        });
+        expect(loadMoreButton).toBeDisabled();
+        fireEvent.click(loadMoreButton);
+        expect(loadMore).not.toHaveBeenCalled();
     });
 
     it("should preserve result selectors for valid entries", () => {
@@ -343,6 +459,86 @@ describe("SearchResults", () => {
         deselectAll.focus();
         fireEvent.keyDown(deselectAll, {key: "Enter"});
         checkboxes.forEach((checkbox) => expect(checkbox).not.toBeChecked());
+    });
+
+    it("should reconcile merged rows without losing active sort, filter, grouping, or valid selection", () => {
+        const initial = {
+            ...response,
+            numberOfAvailableResults: 3,
+            searchResults: [
+                {
+                    searchResultId: "alpha-one",
+                    title: "Alpha release",
+                    indexer: "One",
+                    category: "TV",
+                    hash: 1,
+                },
+                {
+                    searchResultId: "alpha-two",
+                    title: "Alpha release",
+                    indexer: "Two",
+                    category: "TV",
+                    hash: 1,
+                },
+                {
+                    searchResultId: "zulu",
+                    title: "Zulu release",
+                    indexer: "Three",
+                    category: "TV",
+                    hash: 2,
+                },
+            ],
+        };
+        const {rerender} = renderResults(<SearchResults data={initial} />);
+
+        fireEvent.click(screen.getByTestId("sort-title"));
+        fireEvent.change(screen.getByTestId("freetext-filter-title"), {
+            target: {value: "Alpha"},
+        });
+        fireEvent.click(
+            screen.getByRole("button", {name: "Expand duplicates"}),
+        );
+        fireEvent.click(
+            screen.getAllByRole("checkbox", {name: "Select Alpha release"})[0],
+        );
+
+        rerender(
+            <DialogProvider>
+                <ToastProvider>
+                    <SearchResults
+                        data={{
+                            ...initial,
+                            numberOfAvailableResults: 4,
+                            searchResults: [
+                                ...initial.searchResults,
+                                {
+                                    searchResultId: "alpha-three",
+                                    title: "Alpha release",
+                                    indexer: "One",
+                                    category: "TV",
+                                    hash: 1,
+                                },
+                            ],
+                        }}
+                    />
+                </ToastProvider>
+            </DialogProvider>,
+        );
+
+        expect(screen.getByTestId("sort-title")).toHaveAttribute(
+            "data-sort-direction",
+            "asc",
+        );
+        expect(screen.getByTestId("freetext-filter-title")).toHaveValue(
+            "Alpha",
+        );
+        expect(
+            screen.getByRole("button", {name: "Collapse duplicates"}),
+        ).toBeVisible();
+        expect(screen.getAllByTestId("search-result-row")).toHaveLength(3);
+        expect(
+            screen.getAllByRole("checkbox", {name: "Select Alpha release"})[0],
+        ).toBeChecked();
     });
 
     it("should confirm duplicate downloader sends before causing the send side effect", async () => {

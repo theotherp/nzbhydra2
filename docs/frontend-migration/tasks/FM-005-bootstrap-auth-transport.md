@@ -89,7 +89,7 @@ Do not modify files outside Files Allowed To Modify.
 | IntelliJ          | build focused `UserInfosProvider`, `AuthWeb`, `MainWeb`, and auth/web tests                                                                  | Passed with no problems.                                                                                                              |
 | IntelliJ          | `AuthWebTest`                                                                                                                                | Passed: 1 test.                                                                                                                       |
 | IntelliJ          | `MainWebTest`                                                                                                                                | Passed: 5 tests.                                                                                                                      |
-| repository root   | `python3 misc/run_gui_systemtest.py --runtime wsl -- tests/shell-selector.spec.ts`                                                           | Passed: Maven package succeeded and 1 Playwright base-path/shell-selection test passed. No dedicated Playwright auth scenario exists. |
+| repository root   | `python3 misc/run_gui_systemtest.py --runtime local -- tests/shell-selector.spec.ts`                                                         | Passed: Maven package succeeded and 1 Playwright base-path/shell-selection test passed. No dedicated Playwright auth scenario exists. |
 
 ### Dependency Decisions
 

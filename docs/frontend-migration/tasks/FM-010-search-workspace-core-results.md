@@ -55,7 +55,7 @@ The agent may read and search the entire repository. Context To Read is mandator
 ## Verification
 
 - In `core/ui-react`: `npm ci && npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run check:api && npm run validate:migration` succeeds.
-- From repository root: `python3 misc/run_gui_systemtest.py --runtime wsl -- tests/search.spec.ts` succeeds after its React coverage is added.
+- From repository root: `python3 misc/run_gui_systemtest.py --runtime local -- tests/search.spec.ts` succeeds after its React coverage is added.
 - From repository root: `git diff --check` and `git status --short`; inspect all task-owned paths, confirm scope compliance, and report unexpected generated files.
 
 ## Handoff
@@ -76,11 +76,11 @@ The agent may read and search the entire repository. Context To Read is mandator
 
 ### Verification Evidence
 
-| Working directory | Command | Result |
-|---|---|---|
-| `core/ui-react` | `npm ci && npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run check:api && npm run validate:migration` | Passed after correction: 17 files / 42 tests. Non-failing Fast Refresh/RHF compiler and Vite chunk-size warnings only. `npm ci` reported 3 audit vulnerabilities (1 moderate, 2 high). |
-| repository root | `python3 misc/run_gui_systemtest.py --runtime wsl -- tests/search.spec.ts` | Passed: 6 tests, including React selected-shell mocked indexers, legacy selector comparison, and 390px overflow. |
-| repository root | `git diff --check` | Passed. |
+| Working directory | Command                                                                                                                                                            | Result                                                                                                                                                                                 |
+|-------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `core/ui-react`   | `npm ci && npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run check:api && npm run validate:migration` | Passed after correction: 17 files / 42 tests. Non-failing Fast Refresh/RHF compiler and Vite chunk-size warnings only. `npm ci` reported 3 audit vulnerabilities (1 moderate, 2 high). |
+| repository root   | `python3 misc/run_gui_systemtest.py --runtime local -- tests/search.spec.ts`                                                                                       | Passed: 6 tests, including React selected-shell mocked indexers, legacy selector comparison, and 390px overflow.                                                                       |
+| repository root   | `git diff --check`                                                                                                                                                 | Passed.                                                                                                                                                                                |
 
 ### Verification Basis
 

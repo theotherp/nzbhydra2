@@ -53,7 +53,7 @@ The agent may read and search the entire repository. Context To Read is mandator
 ## Verification
 
 - In `core/ui-react`: `npm ci && npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run check:api && npm run validate:migration` succeeds.
-- From repository root: `python3 misc/run_gui_systemtest.py --runtime wsl -- tests/search.spec.ts` succeeds with deterministic React STOMP progress coverage.
+- From repository root: `python3 misc/run_gui_systemtest.py --runtime local -- tests/search.spec.ts` succeeds with deterministic React STOMP progress coverage.
 - From repository root: `git diff --check` and `git status --short`; confirm all changed/generated paths are allowed and report unexpected artifacts.
 
 ## Handoff
@@ -65,12 +65,12 @@ The agent may read and search the entire repository. Context To Read is mandator
 
 ### Verification
 
-| Working directory | Command | Result |
-|---|---|---|
-| `core/ui-react` | `npm ci && npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run check:api && npm run validate:migration` | Passed after correction cycle 3: 21 files / 88 tests. `npm ci` reported 3 audit vulnerabilities (1 moderate, 2 high). Existing lint warnings only; Vite emitted its existing chunk-size warning. |
-| repository root | `python3 misc/run_gui_systemtest.py --runtime wsl -- tests/search.spec.ts` | Passed after correction cycle 3: 7 Playwright tests, including deterministic React progress modal coverage and retained legacy coverage. |
-| repository root | `git diff --check` | Passed. |
-| repository root | `git status --short` | Only FM-014 allowed paths plus the three supplied unrelated external/user paths; no unexpected generated artifacts. |
+| Working directory | Command                                                                                                                                                            | Result                                                                                                                                                                                           |
+|-------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `core/ui-react`   | `npm ci && npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run check:api && npm run validate:migration` | Passed after correction cycle 3: 21 files / 88 tests. `npm ci` reported 3 audit vulnerabilities (1 moderate, 2 high). Existing lint warnings only; Vite emitted its existing chunk-size warning. |
+| repository root   | `python3 misc/run_gui_systemtest.py --runtime local -- tests/search.spec.ts`                                                                                       | Passed after correction cycle 3: 7 Playwright tests, including deterministic React progress modal coverage and retained legacy coverage.                                                         |
+| repository root   | `git diff --check`                                                                                                                                                 | Passed.                                                                                                                                                                                          |
+| repository root   | `git status --short`                                                                                                                                               | Only FM-014 allowed paths plus the three supplied unrelated external/user paths; no unexpected generated artifacts.                                                                              |
 
 ### Verification Basis
 

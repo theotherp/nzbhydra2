@@ -48,7 +48,7 @@ The agent may read/search the repository. Context To Read is mandatory starting 
 ## Verification
 
 - In `core/ui-react`: the complete npm quality/build/API/migration chain succeeds.
-- From repository root: `python3 misc/run_gui_systemtest.py --runtime wsl -- tests/stats.spec.ts tests/search-history.spec.ts` succeeds.
+- From repository root: `python3 misc/run_gui_systemtest.py --runtime local -- tests/stats.spec.ts tests/search-history.spec.ts` succeeds.
 - Run `git diff --check`; inspect status, scope, and generated artifacts.
 
 ## Handoff

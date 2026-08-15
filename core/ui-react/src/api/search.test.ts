@@ -3,6 +3,7 @@ import {describe, expect, it, vi} from "vitest";
 import {
     executeSearch,
     MalformedSearchResponseError,
+    mergeSearchResponses,
     parseSearchResponse,
     shortcutSearch,
 } from "./search";
@@ -182,6 +183,96 @@ describe("search API", () => {
                 downloadedAt: undefined,
             }),
         ]);
+    });
+
+    it("should preserve paging metadata and replace duplicate result identities with newer data", () => {
+        const first = parseSearchResponse({
+            ...responseEnvelope,
+            searchResults: [{searchResultId: "same", title: "Older"}],
+            offset: 0,
+            limit: 10,
+            numberOfProcessedResults: 10,
+            numberOfAcceptedResults: 10,
+            numberOfAvailableResults: 30,
+            indexerSearchMetaDatas: [
+                {
+                    indexerName: "Mock",
+                    hasMoreResults: true,
+                    totalResultsKnown: false,
+                },
+            ],
+        });
+        const next = parseSearchResponse({
+            ...first,
+            searchResults: [
+                {searchResultId: "same", title: "Updated"},
+                {searchResultId: "new", title: "New result"},
+            ],
+            offset: 10,
+            limit: 10,
+            numberOfProcessedResults: 20,
+        });
+
+        expect(mergeSearchResponses(first, next)).toMatchObject({
+            pagingState: "ready",
+            offset: 10,
+            limit: 10,
+            numberOfProcessedResults: 20,
+            searchResults: [
+                {searchResultId: "same", title: "Updated"},
+                {searchResultId: "new", title: "New result"},
+            ],
+        });
+    });
+
+    it("should preserve unknown-total continuation state while reconciling merged metadata", () => {
+        const first = parseSearchResponse({
+            ...responseEnvelope,
+            searchResults: [{searchResultId: "one", title: "First"}],
+            offset: 0,
+            limit: 1,
+            numberOfProcessedResults: 1,
+            numberOfAcceptedResults: 1,
+            numberOfAvailableResults: 0,
+            indexerSearchMetaDatas: [
+                {
+                    indexerName: "Unknown total",
+                    wasSuccessful: true,
+                    hasMoreResults: true,
+                    totalResultsKnown: false,
+                },
+            ],
+        });
+        const next = parseSearchResponse({
+            ...first,
+            searchResults: [{searchResultId: "two", title: "Second"}],
+            offset: 1,
+            limit: 1,
+            numberOfProcessedResults: 2,
+            numberOfAcceptedResults: 2,
+            indexerSearchMetaDatas: [
+                {
+                    indexerName: "Unknown total",
+                    wasSuccessful: true,
+                    hasMoreResults: false,
+                    totalResultsKnown: false,
+                },
+            ],
+        });
+
+        expect(mergeSearchResponses(first, next)).toMatchObject({
+            offset: 1,
+            limit: 1,
+            numberOfProcessedResults: 2,
+            numberOfAcceptedResults: 2,
+            indexerSearchMetaDatas: [
+                {
+                    hasMoreResults: false,
+                    totalResultsKnown: false,
+                },
+            ],
+            searchResults: [{searchResultId: "one"}, {searchResultId: "two"}],
+        });
     });
 
     it("should reject empty response envelopes", () => {

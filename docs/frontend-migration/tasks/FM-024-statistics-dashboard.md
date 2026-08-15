@@ -50,7 +50,7 @@ The agent may read/search the repository. Context To Read is mandatory starting 
 ## Verification
 
 - In `core/ui-react`: `npm ci && npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run check:api && npm run validate:migration` succeeds.
-- From repository root: `python3 misc/run_gui_systemtest.py --runtime wsl -- tests/stats.spec.ts` succeeds.
+- From repository root: `python3 misc/run_gui_systemtest.py --runtime local -- tests/stats.spec.ts` succeeds.
 - Run `git diff --check`; inspect status, dependency lock consistency, allowed scope, and generated artifacts.
 
 ## Handoff

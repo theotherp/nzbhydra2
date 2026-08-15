@@ -48,7 +48,7 @@ The agent may read/search the repository. Context To Read is mandatory starting 
 ## Verification
 
 - In `core/ui-react`: the complete npm quality/build/API/migration chain succeeds.
-- From repository root: run the focused notification-history Playwright spec through `python3 misc/run_gui_systemtest.py --runtime wsl -- <spec>` successfully.
+- From repository root: run the focused notification-history Playwright spec through `python3 misc/run_gui_systemtest.py --runtime local -- <spec>` successfully.
 - Run `git diff --check`; inspect status, allowed scope, and generated artifacts.
 
 ## Handoff

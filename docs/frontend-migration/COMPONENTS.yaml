@@ -145,7 +145,7 @@ components:
     task: FM-019
 
   - id: C-RESULT-TABLE
-    responsibility: Hydra-specific search result processing, grouping, filtering, sorting, selection, and presentation using TanStack primitives
+    responsibility: Hydra-specific search result processing, paging, grouping, filtering, sorting, selection, and presentation using TanStack primitives
     legacy: [ core/ui-src/html/states/search-results.html, core/ui-src/js/search-results-controller.js, core/ui-src/js/directives/dataTableDirectives.js ]
     target: core/ui-react/src/features/search/results
     consumers: [ F-SEARCH-RESULTS, F-SEARCH-SORT-FILTER, F-SEARCH-GROUP-SELECTION, F-SEARCH-DOWNLOADS ]

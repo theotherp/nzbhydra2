@@ -75,7 +75,7 @@ Use these **only** when IntelliJ MCP tools are unavailable. Run from the project
 - Run Playwright from WSL with `python3 misc/run_gui_systemtest.py`. It reuses healthy IntelliJ Hydra and mockserver processes; if neither is running, it builds and starts the current JVM code in WSL. It also manages Sonarr and Radarr as
   needed.
 - Require already-running IntelliJ services with `python3 misc/run_gui_systemtest.py --runtime existing`.
-- Force current JVM code in WSL with `python3 misc/run_gui_systemtest.py --runtime wsl`. This shuts down Hydra or mockserver already using the test ports through their actuator shutdown endpoints.
+- Force current JVM code in WSL with `python3 misc/run_gui_systemtest.py --runtime local`. This shuts down Hydra or mockserver already using the test ports through their actuator shutdown endpoints.
 - Pass Playwright arguments after `--`, for example `python3 misc/run_gui_systemtest.py -- tests/search.spec.ts --grep "should search"`. The complete Playwright command times out after five minutes by default; override it with
   `--test-timeout <seconds>` when needed.
 - Run native Java system tests from WSL with `python3 misc/run_systemtest.py`. It rebuilds the Linux native executable when core or shared code changes; `native-image` must be on `PATH`.

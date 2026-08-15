@@ -59,7 +59,8 @@ The agent may read and search the entire repository. Context To Read is mandator
 ## Verification
 
 - In `core/ui-react`: `npm ci && npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run check:api && npm run validate:migration`.
-- From the repository root: `python3 misc/run_gui_systemtest.py --runtime wsl -- tests/news.spec.ts`; the spec must exercise both shells at the canonical route with deterministic network data and must not depend on the external news service.
+- From the repository root: `python3 misc/run_gui_systemtest.py --runtime local -- tests/news.spec.ts`; the spec must exercise both shells at the canonical route with deterministic network data and must not depend on the external news
+  service.
 - From the repository root: `git diff --check` and `git status --short`; inspect every changed/generated path and confirm it is listed under Files Allowed To Modify. Any unexpected generated file or change fails scope verification.
 - No backend test is required because backend/API-contract changes are prohibited; report rather than broaden scope if the existing contract proves insufficient.
 
@@ -81,12 +82,12 @@ The agent may read and search the entire repository. Context To Read is mandator
 
 ### Verification Evidence
 
-| Working directory | Command | Result |
-|---|---|---|
-| `core/ui-react` | `npm ci && npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run check:api && npm run validate:migration` | Passed: 12 files / 28 tests; lint reports a non-failing router Fast Refresh warning and build reports Vite's non-failing chunk-size warning. |
-| repository root | `python3 misc/run_gui_systemtest.py --runtime wsl -- tests/news.spec.ts` | Passed: 1 Playwright test exercises deterministic mocked news in both shells, desktop/390 px overflow checks, and keyboard link activation. |
-| repository root | `git diff --check` | Passed. |
-| IntelliJ | focused React files build | Passed with no problems. |
+| Working directory | Command                                                                                                                                                            | Result                                                                                                                                       |
+|-------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------|
+| `core/ui-react`   | `npm ci && npm run typecheck && npm run lint && npm run format:check && npm run test -- --run && npm run build && npm run check:api && npm run validate:migration` | Passed: 12 files / 28 tests; lint reports a non-failing router Fast Refresh warning and build reports Vite's non-failing chunk-size warning. |
+| repository root   | `python3 misc/run_gui_systemtest.py --runtime local -- tests/news.spec.ts`                                                                                         | Passed: 1 Playwright test exercises deterministic mocked news in both shells, desktop/390 px overflow checks, and keyboard link activation.  |
+| repository root   | `git diff --check`                                                                                                                                                 | Passed.                                                                                                                                      |
+| IntelliJ          | focused React files build                                                                                                                                          | Passed with no problems.                                                                                                                     |
 
 ### Dependency Decisions
 

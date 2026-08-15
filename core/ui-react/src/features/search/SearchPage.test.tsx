@@ -405,8 +405,8 @@ describe("SearchPage", () => {
             to: "/",
             search: {category: "All", episode: "3", indexers: "Configured"},
         });
-        expect(await screen.findAllByTestId("search-result-row")).toHaveLength(
-            2,
+        await waitFor(() =>
+            expect(screen.getAllByTestId("search-result-row")).toHaveLength(2),
         );
     });
 
@@ -446,6 +446,280 @@ describe("SearchPage", () => {
         expect(
             await screen.findByText("Unable to execute search."),
         ).toBeVisible();
+    });
+
+    it("should stop a non-load-all continuation that resets the paging cursor", async () => {
+        const initial = {
+            ...responseEnvelope,
+            searchResults: [
+                {
+                    searchResultId: "duplicate",
+                    title: "Existing result",
+                    indexer: "Mock",
+                    category: "All",
+                },
+            ],
+            indexerSearchMetaDatas: [
+                {
+                    indexerName: "Mock",
+                    wasSuccessful: true,
+                    hasMoreResults: true,
+                },
+            ],
+            numberOfAvailableResults: 3,
+            numberOfProcessedResults: 1,
+            offset: 0,
+            limit: 1,
+        };
+        let searchRequests = 0;
+        const fetchImplementation = vi.fn((url: RequestInfo | URL) => {
+            const isSearch = String(url).includes("/internalapi/search");
+            if (isSearch) {
+                searchRequests++;
+            }
+            return Promise.resolve(
+                new Response(
+                    JSON.stringify(
+                        String(url).includes("forsearching")
+                            ? []
+                            : searchRequests === 1
+                              ? initial
+                              : {
+                                    ...initial,
+                                    offset: 0,
+                                    limit: 0,
+                                    numberOfProcessedResults: 1,
+                                },
+                    ),
+                    {headers: {"Content-Type": "application/json"}},
+                ),
+            );
+        });
+        render(
+            <SearchPage
+                bootstrap={bootstrap}
+                transport={new ApiTransport("/hydra/", fetchImplementation)}
+                liveTransport={immediatelyUnavailableLiveTransport}
+            />,
+        );
+
+        fireEvent.click(screen.getByTestId("search-submit"));
+        await screen.findByRole("button", {name: "Load more"});
+        fireEvent.click(screen.getByRole("button", {name: "Load more"}));
+
+        await screen.findByText(
+            "The server did not advance the search cache position.",
+        );
+        const continuation = searchRequestCalls(fetchImplementation)[1];
+        expect(
+            JSON.parse((continuation[1] as RequestInit).body as string),
+        ).toMatchObject({
+            offset: 1,
+            loadAll: false,
+        });
+        const loadMore = screen.getByRole("button", {name: "Load more"});
+        const loadAll = screen.getByRole("button", {
+            name: "Load all results",
+        });
+        expect(loadMore).toBeDisabled();
+        expect(loadAll).toBeDisabled();
+        fireEvent.click(loadMore);
+        fireEvent.click(loadAll);
+        expect(searchRequestCalls(fetchImplementation)).toHaveLength(2);
+    });
+
+    it("should accept the Searcher load-all terminal response with default paging values", async () => {
+        const initial = {
+            ...responseEnvelope,
+            searchResults: [
+                {
+                    searchResultId: "one",
+                    title: "First result",
+                    indexer: "Mock",
+                    category: "All",
+                },
+            ],
+            indexerSearchMetaDatas: [
+                {
+                    indexerName: "Mock",
+                    wasSuccessful: true,
+                    hasMoreResults: true,
+                },
+            ],
+            numberOfAvailableResults: 2,
+            numberOfProcessedResults: 1,
+            offset: 0,
+            limit: 1,
+        };
+        let searchRequests = 0;
+        const fetchImplementation = vi.fn((url: RequestInfo | URL) => {
+            if (String(url).includes("/internalapi/search")) {
+                searchRequests++;
+            }
+            return Promise.resolve(
+                new Response(
+                    JSON.stringify(
+                        String(url).includes("forsearching")
+                            ? []
+                            : searchRequests === 1
+                              ? initial
+                              : {
+                                    ...initial,
+                                    searchResults: [
+                                        ...initial.searchResults,
+                                        {
+                                            searchResultId: "two",
+                                            title: "Second result",
+                                            indexer: "Mock",
+                                            category: "All",
+                                        },
+                                    ],
+                                    numberOfProcessedResults: 2,
+                                    offset: 0,
+                                    limit: 0,
+                                },
+                    ),
+                    {headers: {"Content-Type": "application/json"}},
+                ),
+            );
+        });
+        render(
+            <SearchPage
+                bootstrap={bootstrap}
+                transport={new ApiTransport("/hydra/", fetchImplementation)}
+                liveTransport={immediatelyUnavailableLiveTransport}
+            />,
+        );
+
+        fireEvent.click(screen.getByTestId("search-submit"));
+        await screen.findByRole("button", {name: "Load all results"});
+        fireEvent.click(screen.getByRole("button", {name: "Load all results"}));
+
+        await waitFor(() =>
+            expect(screen.getAllByTestId("search-result-row")).toHaveLength(2),
+        );
+        expect(searchRequestCalls(fetchImplementation)).toHaveLength(2);
+        expect(searchRequestBodyAt(fetchImplementation, 1)).toMatchObject({
+            offset: 1,
+            limit: 1,
+            loadAll: true,
+        });
+        expect(screen.getByRole("button", {name: "Load more"})).toBeDisabled();
+    });
+
+    it("should not repeat offset zero for an initial zero paging cursor with more results", async () => {
+        const fetchImplementation = vi.fn((url: RequestInfo | URL) =>
+            Promise.resolve(
+                new Response(
+                    JSON.stringify(
+                        String(url).includes("forsearching")
+                            ? []
+                            : {
+                                  ...responseEnvelope,
+                                  numberOfAvailableResults: 2,
+                                  numberOfProcessedResults: 0,
+                                  offset: 0,
+                                  limit: 0,
+                                  indexerSearchMetaDatas: [
+                                      {
+                                          indexerName: "Mock",
+                                          wasSuccessful: true,
+                                          hasMoreResults: true,
+                                      },
+                                  ],
+                              },
+                    ),
+                    {headers: {"Content-Type": "application/json"}},
+                ),
+            ),
+        );
+        render(
+            <SearchPage
+                bootstrap={bootstrap}
+                transport={new ApiTransport("/hydra/", fetchImplementation)}
+                liveTransport={immediatelyUnavailableLiveTransport}
+            />,
+        );
+
+        fireEvent.click(screen.getByTestId("search-submit"));
+
+        const loadMore = await screen.findByRole("button", {
+            name: "Load more",
+        });
+        expect(screen.getByRole("status")).toHaveTextContent(
+            "invalid paging cursor",
+        );
+        expect(loadMore).toBeDisabled();
+        fireEvent.click(loadMore);
+        expect(searchRequestCalls(fetchImplementation)).toHaveLength(1);
+    });
+
+    it("should re-enable continuation for a second search after a terminal load-all response", async () => {
+        const initial = {
+            ...responseEnvelope,
+            searchResults: [
+                {
+                    searchResultId: "one",
+                    title: "First result",
+                    indexer: "Mock",
+                    category: "All",
+                },
+            ],
+            indexerSearchMetaDatas: [
+                {
+                    indexerName: "Mock",
+                    wasSuccessful: true,
+                    hasMoreResults: true,
+                },
+            ],
+            numberOfAvailableResults: 2,
+            numberOfProcessedResults: 1,
+            offset: 0,
+            limit: 1,
+        };
+        let searchRequests = 0;
+        const fetchImplementation = vi.fn((url: RequestInfo | URL) => {
+            if (String(url).includes("/internalapi/search")) {
+                searchRequests++;
+            }
+            return Promise.resolve(
+                new Response(
+                    JSON.stringify(
+                        String(url).includes("forsearching")
+                            ? []
+                            : searchRequests === 2
+                              ? {
+                                    ...initial,
+                                    numberOfProcessedResults: 2,
+                                    offset: 0,
+                                    limit: 0,
+                                }
+                              : initial,
+                    ),
+                    {headers: {"Content-Type": "application/json"}},
+                ),
+            );
+        });
+        render(
+            <SearchPage
+                bootstrap={bootstrap}
+                transport={new ApiTransport("/hydra/", fetchImplementation)}
+                liveTransport={immediatelyUnavailableLiveTransport}
+            />,
+        );
+
+        fireEvent.click(screen.getByTestId("search-submit"));
+        await screen.findByRole("button", {name: "Load all results"});
+        fireEvent.click(screen.getByRole("button", {name: "Load all results"}));
+        await waitFor(() =>
+            expect(
+                screen.getByRole("button", {name: "Load more"}),
+            ).toBeDisabled(),
+        );
+
+        fireEvent.click(screen.getByTestId("search-submit"));
+        await waitFor(() => expect(searchRequests).toBe(3));
+        expect(screen.getByRole("button", {name: "Load more"})).toBeEnabled();
     });
 
     it.each([
@@ -880,7 +1154,14 @@ function searchRequestCalls(mock: ReturnType<typeof vi.fn>) {
 }
 
 function searchRequestBody(mock: ReturnType<typeof vi.fn>): unknown {
-    const request = searchRequestCalls(mock)[0];
+    return searchRequestBodyAt(mock, 0);
+}
+
+function searchRequestBodyAt(
+    mock: ReturnType<typeof vi.fn>,
+    index: number,
+): unknown {
+    const request = searchRequestCalls(mock)[index];
     return JSON.parse(
         (request?.[1] as RequestInit | undefined)?.body as string,
     );
