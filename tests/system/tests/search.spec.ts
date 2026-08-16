@@ -355,7 +355,7 @@ test.describe("Search", () => {
             region: "recent-search-menu-desktop",
             locator: historyMenu,
             minimumWidth: 240,
-            maximumWidth: 420,
+            maximumWidth: visualViewports.desktop.width - 32,
         });
         await expect(
             page.getByTestId("recent-search-entry").first(),

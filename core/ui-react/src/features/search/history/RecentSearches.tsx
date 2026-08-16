@@ -1,13 +1,17 @@
 import {useQuery} from "@tanstack/react-query";
 import {
     Alert,
+    Box,
     Button,
     CircularProgress,
+    IconButton,
     Menu,
     MenuItem,
     Stack,
+    Tooltip,
     Typography,
 } from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
 import {useState} from "react";
 
 import {getRecentSearches} from "../../../api/recentSearches";
@@ -65,12 +69,7 @@ export function RecentSearches({
                 onClose={() => setAnchor(null)}
                 open={open}
                 slotProps={{
-                    paper: {
-                        sx: {
-                            maxWidth: "min(420px, calc(100vw - 32px))",
-                            width: {xs: "calc(100vw - 32px)", sm: 420},
-                        },
-                    },
+                    paper: {sx: {maxWidth: "calc(100vw - 32px)"}},
                 }}
                 transformOrigin={{horizontal: "left", vertical: "top"}}
             >
@@ -92,79 +91,91 @@ export function RecentSearches({
                         No recent searches.
                     </Typography>
                 )}
-                {recentSearches.data?.flatMap((search, index) => {
-                    const description = describeSearch(search);
+                {recentSearches.data?.map((search, index) => {
+                    const parts = searchDescriptionParts(search);
+                    const description = plainTextDescription(parts);
                     const key = `${search.categoryName}-${search.query}-${search.title}-${index}`;
-                    return [
-                        <MenuItem
-                            aria-label={`Refill: ${description}`}
-                            data-testid="recent-search-entry"
-                            draggable
-                            key={`${key}-refill`}
-                            onClick={() => {
-                                onRefill(search);
-                                setAnchor(null);
-                            }}
-                            onDragStart={() => onDragStart(search)}
-                            sx={{
-                                alignItems: "flex-start",
-                                flexDirection: "column",
-                            }}
-                        >
-                            <Typography aria-hidden variant="body2">
-                                {description}
-                            </Typography>
-                            <Typography aria-hidden variant="button">
-                                Refill
-                            </Typography>
-                        </MenuItem>,
+                    return (
                         <MenuItem
                             aria-label={`Repeat: ${description}`}
+                            data-testid="recent-search-entry"
                             draggable
-                            key={`${key}-repeat`}
+                            key={key}
                             onClick={() => {
                                 onRepeat(search);
                                 setAnchor(null);
                             }}
                             onDragStart={() => onDragStart(search)}
-                            sx={{
-                                alignItems: "flex-start",
-                                flexDirection: "column",
-                            }}
+                            sx={{alignItems: "center", gap: 1, pr: 4}}
                         >
-                            <Typography aria-hidden variant="body2">
-                                {description}
+                            <Tooltip title="Refill the search form without searching">
+                                <IconButton
+                                    aria-label={`Refill: ${description}`}
+                                    edge="start"
+                                    onClick={(event) => {
+                                        event.stopPropagation();
+                                        onRefill(search);
+                                        setAnchor(null);
+                                    }}
+                                    size="small"
+                                >
+                                    <EditIcon fontSize="small" />
+                                </IconButton>
+                            </Tooltip>
+                            <Typography
+                                component="span"
+                                sx={{whiteSpace: "nowrap"}}
+                            >
+                                {parts.map((part, partIndex) => (
+                                    <Box
+                                        component="span"
+                                        key={`${part.label}-${partIndex}`}
+                                    >
+                                        {partIndex > 0 ? ", " : ""}
+                                        <Box
+                                            component="span"
+                                            sx={{
+                                                color: "text.secondary",
+                                                fontStyle: "italic",
+                                            }}
+                                        >
+                                            {part.label}:
+                                        </Box>{" "}
+                                        {part.value}
+                                    </Box>
+                                ))}
                             </Typography>
-                            <Typography aria-hidden variant="button">
-                                Repeat
-                            </Typography>
-                        </MenuItem>,
-                    ];
+                        </MenuItem>
+                    );
                 })}
             </Menu>
         </>
     );
 }
 
-function describeSearch(search: RecentSearch): string {
-    const identifiers = search.identifiers
-        .map(
-            ({identifierKey, identifierValue}) =>
-                `${identifierKey}: ${identifierValue}`,
-        )
-        .join(", ");
-    return [
-        `Category: ${search.categoryName}`,
-        `Source: ${describeSource(search.source)}`,
-        search.query ? `Query: ${search.query}` : undefined,
-        search.title ? `Title: ${search.title}` : undefined,
-        identifiers || undefined,
-        search.season !== undefined ? `Season: ${search.season}` : undefined,
-        search.episode ? `Episode: ${search.episode}` : undefined,
-        search.author ? `Author: ${search.author}` : undefined,
-    ]
-        .filter((value): value is string => value !== undefined)
-        .join(", ");
+type DescriptionPart = {label: string; value: string};
+
+function searchDescriptionParts(search: RecentSearch): DescriptionPart[] {
+    const parts: (DescriptionPart | undefined)[] = [
+        {label: "Category", value: search.categoryName},
+        {label: "Source", value: describeSource(search.source)},
+        search.query ? {label: "Query", value: search.query} : undefined,
+        search.title ? {label: "Title", value: search.title} : undefined,
+        ...search.identifiers.map(({identifierKey, identifierValue}) => ({
+            label: identifierKey,
+            value: identifierValue,
+        })),
+        search.season !== undefined
+            ? {label: "Season", value: search.season.toString()}
+            : undefined,
+        search.episode ? {label: "Episode", value: search.episode} : undefined,
+        search.author ? {label: "Author", value: search.author} : undefined,
+    ];
+    return parts.filter((part): part is DescriptionPart => part !== undefined);
+}
+
+function plainTextDescription(parts: DescriptionPart[]): string {
+    return parts.map(({label, value}) => `${label}: ${value}`).join(", ");
 }
 
 function describeSource(source: RecentSearch["source"]): string {
