@@ -1,10 +1,4 @@
-import {
-    cleanup,
-    fireEvent,
-    render,
-    screen,
-    within,
-} from "@testing-library/react";
+import {cleanup, fireEvent, render, screen, within,} from "@testing-library/react";
 import {afterEach, describe, expect, it, vi} from "vitest";
 
 import {DialogProvider} from "../../../components/dialogs/DialogProvider";
@@ -324,6 +318,77 @@ describe("SearchResults", () => {
             screen.getByTestId("filter-toggle-indexer"),
         );
         fireEvent.click(indexerFilter.getByLabelText("One"));
+        expect(screen.getByTestId("search-result-row")).toHaveTextContent(
+            "Alpha BluRay",
+        );
+    });
+
+    it("should filter rows via the inline column-header filters", () => {
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 2,
+                    searchResults: [
+                        {
+                            searchResultId: "1",
+                            title: "Zulu WEB",
+                            indexer: "One",
+                            category: "Movies",
+                            size: 5 * 1024 * 1024,
+                            grabs: 3,
+                            epoch: 1_700_000_000,
+                            age: "2 days",
+                        },
+                        {
+                            searchResultId: "2",
+                            title: "Alpha BluRay",
+                            indexer: "Two",
+                            category: "TV",
+                            size: 2 * 1024 * 1024,
+                            seeders: 8,
+                            epoch: 1_600_000_000,
+                            age: "3 years",
+                        },
+                    ],
+                }}
+            />,
+        );
+
+        fireEvent.change(screen.getByTestId("header-filter-title"), {
+            target: {value: "!web"},
+        });
+        expect(screen.getByTestId("search-result-row")).toHaveTextContent(
+            "Alpha BluRay",
+        );
+        fireEvent.change(screen.getByTestId("header-filter-title"), {
+            target: {value: ""},
+        });
+        expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
+
+        const sizeToggle = screen.getByTestId("header-filter-size-toggle");
+        expect(sizeToggle).toHaveAttribute("aria-pressed", "false");
+        fireEvent.click(sizeToggle);
+        fireEvent.change(screen.getByTestId("number-filter-min-header-size"), {
+            target: {value: "4"},
+        });
+        expect(sizeToggle).toHaveAttribute("aria-pressed", "true");
+        expect(screen.getByTestId("search-result-row")).toHaveTextContent(
+            "Zulu WEB",
+        );
+        fireEvent.click(screen.getByTestId("number-filter-clear-header-size"));
+        expect(sizeToggle).toHaveAttribute("aria-pressed", "false");
+        expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
+
+        const indexerToggle = screen.getByTestId(
+            "header-filter-indexer-toggle",
+        );
+        fireEvent.click(indexerToggle);
+        const indexerFilter = within(
+            screen.getByTestId("header-filter-indexer-options"),
+        );
+        fireEvent.click(indexerFilter.getByLabelText("One"));
+        expect(indexerToggle).toHaveAttribute("aria-pressed", "true");
         expect(screen.getByTestId("search-result-row")).toHaveTextContent(
             "Alpha BluRay",
         );

@@ -54,3 +54,4 @@ org.eclipse.jdt.apt.core.prefs
 .agentbridge
 .mcp
 .mnemosyne/
+.playwright-cli

@@ -188,7 +188,8 @@ features:
     parity: partial
     visual:
       applicability: applicable
-      status: accepted
+      status: proposed
+      note: "Supersedes the prior 2026-08-16 human acceptance of this record (removed here; still recoverable from Git history) because it evidenced a narrower, now-changed layout: FM-034 widened the shared page container from the FM-026/FM-028-accepted ~900-1040px cap to a 1700px legacy-matching cap (`core/ui-react/src/router.tsx`, `core/ui-react/src/features/search/SearchPage.tsx`), materially changing the reviewed geometry. Pending fresh human review; see the FM-034 handoff for what changed and why re-verification via `tests/system/tests/results.spec.ts` did not run (a pre-existing, unrelated backend config validation failure blocks the full system-test suite in this environment)."
       contract:
         setup: "React-selected `ui/react?redirect=/` with a deterministic mocked `internalapi/search` response (two same-title/hash NZB duplicates plus one distinct-title NZB release) submitted through the real search form, in `tests/system/tests/results.spec.ts`."
         states: [ populated-toolbar-and-table, title-dominant-column, filtered-result-narrowing ]
@@ -199,10 +200,6 @@ features:
           - "after a free-text title filter narrows visible rows, the results summary reflects the updated filtered count and the table/toolbar remain overflow-free"
       evidence: [ tests/system/tests/results.spec.ts ]
       variances: []
-      acceptance:
-        decision: "Accepted as proposed. Reviewed desktop/mobile screenshots of a populated results table under the branded theme; toolbar-then-table hierarchy, title-dominant column, and overall legibility are comparable to legacy."
-        accepted_by: "Repository owner (stratmann.simon@gmail.com)"
-        accepted_on: "2026-08-16"
     gaps: [ ]
     task: FM-010
     backlog: { status: deferred, rationale: "The record remains partial pending a dedicated full-parity reconciliation." }
@@ -214,27 +211,25 @@ features:
     roles: [ user ]
     legacy_sources: [ core/ui-src/js/search-results-controller.js, core/ui-src/js/directives/dataTableDirectives.js, core/ui-src/html/states/search-results.html ]
     tests: [ tests/system/tests/search.spec.ts, tests/system/tests/results.spec.ts ]
-    selectors: [ "sort-{{column}}", "freetext-filter-{{column}}", "number-filter-min-{{column}}", "number-filter-max-{{column}}", "number-filter-apply-{{column}}", "number-filter-clear-{{column}}", filter-toggle-indexer, filter-toggle-category, filter-toggle-size, filter-toggle-grabs, filter-toggle-age ]
+    selectors: [ "sort-{{column}}", "freetext-filter-{{column}}", "number-filter-min-{{column}}", "number-filter-max-{{column}}", "number-filter-apply-{{column}}", "number-filter-clear-{{column}}", filter-toggle-indexer, filter-toggle-category, filter-toggle-size, filter-toggle-grabs, filter-toggle-age, header-filter-title, "header-filter-{{column}}", "header-filter-{{column}}-toggle", "header-filter-{{column}}-options", "number-filter-min-header-{{column}}", "number-filter-max-header-{{column}}", "number-filter-apply-header-{{column}}", "number-filter-clear-header-{{column}}" ]
     target: core/ui-react/src/features/search/results
     parity: partial
     visual:
       applicability: applicable
-      status: accepted
+      status: proposed
+      note: "Supersedes the prior 2026-08-16 human acceptance of this record (removed here; still recoverable from Git history) because it evidenced a narrower, now-changed layout: FM-034 replaced the desktop toolbar filter row with inline per-column-header filters (a free-text field for Title; a popover-toggle button opening the existing indexer/category checkbox list or size/grabs/age min-max range for the other columns) and widened the shared page container to a 1700px legacy-matching cap. The toolbar's `results-filters` region is now desktop-hidden (`display: none` at the `sm` breakpoint) and remains only as the mobile filter surface. Pending fresh human review; see the FM-034 handoff for what changed and why re-verification via `tests/system/tests/results.spec.ts` did not run (a pre-existing, unrelated backend config validation failure blocks the full system-test suite in this environment)."
       contract:
         setup: "React-selected `ui/react?redirect=/` with a deterministic mocked `internalapi/search` response (two same-title/hash NZB duplicates plus one distinct-title NZB release) submitted through the real search form, in `tests/system/tests/results.spec.ts`."
-        states: [ compact-toolbar-filters-row, right-aligned-sortable-header, quick-filter-row ]
+        states: [ inline-column-header-filters, right-aligned-sortable-header, quick-filter-row ]
         viewports: [ { name: desktop, width: 1280, height: 800 }, { name: mobile, width: 390, height: 844 } ]
         geometry_checks:
-          - "the toolbar's dedicated results-filters and results-quick-filters regions render within the compact results-toolbar without page or region horizontal overflow at either viewport"
+            - "at desktop, each sortable column header renders its sort control and filter control (a free-text field for Title; a compact popover-toggle button for Indexer, Category, Size, Grabs, and Age) inline on one row with no scrollWidth overflow of the header cell"
+            - "the toolbar's results-quick-filters region renders within the compact results-toolbar without page or region horizontal overflow at either viewport; the toolbar's results-filters region has a computed display of none at desktop and reappears with no horizontal overflow at 390x844"
           - "a numeric metadata column header (Size) has a computed text-align of right at desktop, matching its right-aligned data cells"
-          - "the title header column's bounding-box width exceeds twice the indexer header column's width at desktop, keeping the free-text/column filters and quick filters visually secondary to the dominant title/sort hierarchy"
+            - "the title header column's bounding-box width exceeds twice the indexer header column's width at desktop, keeping the inline filters and quick filters visually secondary to the dominant title/sort hierarchy"
           - "every sortable column header (title, indexer, category, size, grabs/details, age) renders its full label at desktop with no scrollWidth overflow of its own box, and its ascending/descending state is conveyed by a compact visible indicator plus an `aria-sort` attribute and an `aria-label` accessible name rather than a header-width-consuming visible text suffix"
       evidence: [ tests/system/tests/results.spec.ts ]
       variances: []
-      acceptance:
-        decision: "Accepted as proposed. Reviewed desktop screenshot confirming all sortable column headers (Title, Indexer, Category, Size, Details, Age) render fully legible with a compact sort indicator, no clipped text."
-        accepted_by: "Repository owner (stratmann.simon@gmail.com)"
-        accepted_on: "2026-08-16"
     gaps: [ server-backed preferences ]
     task: FM-011
     backlog: { status: deferred, rationale: "Server-backed preference adoption has no implementation task yet." }

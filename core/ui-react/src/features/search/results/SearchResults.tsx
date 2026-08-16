@@ -6,6 +6,7 @@ import {
     Chip,
     FormControlLabel,
     Paper,
+    Popover,
     Stack,
     Table,
     TableBody,
@@ -15,16 +16,16 @@ import {
     TextField,
     Typography,
 } from "@mui/material";
-import {
-    flexRender,
-    getCoreRowModel,
-    getSortedRowModel,
-    useReactTable,
-} from "@tanstack/react-table";
 import type {ColumnDef, SortingState} from "@tanstack/react-table";
-import {useContext, useEffect, useMemo, useState} from "react";
+import {flexRender, getCoreRowModel, getSortedRowModel, useReactTable,} from "@tanstack/react-table";
+import type {ReactNode} from "react";
+import {memo, useCallback, useContext, useEffect, useMemo, useRef, useState,} from "react";
 
 import type {SearchResponse, SearchResult} from "../../../api/search";
+import {DialogContext} from "../../../components/dialogs/dialogs";
+import {ToastContext} from "../../../components/toasts/toasts";
+import {DirectDownloadActions, DownloadActions} from "./DownloadActions";
+import type {NumericRange, ResultFilters} from "./resultTable";
 import {
     defaultFilters,
     duplicateGroupKey,
@@ -37,10 +38,6 @@ import {
     selectVisibleResults,
     visibleGroupedResults,
 } from "./resultTable";
-import type {NumericRange, ResultFilters} from "./resultTable";
-import {DirectDownloadActions, DownloadActions} from "./DownloadActions";
-import {DialogContext} from "../../../components/dialogs/dialogs";
-import {ToastContext} from "../../../components/toasts/toasts";
 
 const STORAGE_KEY = "hydra.search-results.table";
 
@@ -104,6 +101,14 @@ export function SearchResults({
         () => filterResults(data.searchResults, filters, quickFilters),
         [data.searchResults, filters, quickFilters],
     );
+    const indexerOptions = useMemo(
+        () => [...new Set(data.searchResults.map((result) => result.indexer))],
+        [data.searchResults],
+    );
+    const categoryOptions = useMemo(
+        () => [...new Set(data.searchResults.map((result) => result.category))],
+        [data.searchResults],
+    );
     const columns = useMemo<ColumnDef<SearchResult>[]>(
         () => [
             {accessorKey: "title", header: "Title"},
@@ -132,11 +137,16 @@ export function SearchResults({
         columns,
         data: filteredResults,
         getCoreRowModel: getCoreRowModel(),
+        getRowId: (result) => result.searchResultId,
         getSortedRowModel: getSortedRowModel(),
         onSortingChange: setSorting,
         state: {sorting},
     });
-    const sortedResults = table.getRowModel().rows.map((row) => row.original);
+    const sortedRows = table.getRowModel().rows;
+    const sortedResults = useMemo(
+        () => sortedRows.map((row) => row.original),
+        [sortedRows],
+    );
     const groups = useMemo(
         () =>
             groupResults(sortedResults, {
@@ -150,6 +160,35 @@ export function SearchResults({
         () => visibleGroupedResults(groups, expandedTitles, expandedDuplicates),
         [expandedDuplicates, expandedTitles, groups],
     );
+    const visibleResultsRef = useRef(visibleResults);
+    visibleResultsRef.current = visibleResults;
+    const lastSelectedIdRef = useRef(lastSelectedId);
+    lastSelectedIdRef.current = lastSelectedId;
+    const updateSelection = useCallback(
+        (resultId: string, checked: boolean, shiftKey: boolean) => {
+            setSelected((current) =>
+                selectionAfterClick(
+                    current,
+                    visibleResultsRef.current,
+                    resultId,
+                    checked,
+                    lastSelectedIdRef.current,
+                    shiftKey,
+                ),
+            );
+            setLastSelectedId(resultId);
+        },
+        [],
+    );
+    const handleDownloaded = useCallback((resultId: string) => {
+        setDownloadedIds((current) => new Set([...current, resultId]));
+    }, []);
+    const handleToggleTitleExpansion = useCallback((key: string) => {
+        setExpandedTitles((current) => toggleSet(current, key));
+    }, []);
+    const handleToggleDuplicateExpansion = useCallback((key: string) => {
+        setExpandedDuplicates((current) => toggleSet(current, key));
+    }, []);
 
     useEffect(() => {
         getStorage()?.setItem(STORAGE_KEY, JSON.stringify({sorting, filters}));
@@ -227,6 +266,141 @@ export function SearchResults({
     };
     const clearRange = (name: "size" | "grabs" | "age") => {
         setFilters((current) => ({...current, [name]: {min: "", max: ""}}));
+    };
+    const renderHeaderFilter = (columnId: string) => {
+        switch (columnId) {
+            case "title":
+                return (
+                    <TextField
+                        aria-label="Filter titles"
+                        onChange={(event) =>
+                            setFilters((current) => ({
+                                ...current,
+                                title: event.target.value,
+                            }))
+                        }
+                        placeholder="Filter titles"
+                        size="small"
+                        slotProps={{
+                            htmlInput: {
+                                "data-testid": "header-filter-title",
+                            },
+                        }}
+                        sx={{flexGrow: 1, minWidth: 0}}
+                        value={filters.title}
+                        variant="standard"
+                    />
+                );
+            case "indexer":
+                return (
+                    <HeaderFilterMenu
+                        active={
+                            filters.indexers.length !== indexerOptions.length
+                        }
+                        label="Indexer"
+                        testId="header-filter-indexer"
+                    >
+                        <MultiFilter
+                            entries={data.searchResults.map(
+                                (result) => result.indexer,
+                            )}
+                            label="Indexer"
+                            onChange={(indexers) =>
+                                setFilters((current) => ({
+                                    ...current,
+                                    indexers,
+                                }))
+                            }
+                            selected={filters.indexers}
+                            testId="header-filter-indexer-options"
+                        />
+                    </HeaderFilterMenu>
+                );
+            case "category":
+                return (
+                    <HeaderFilterMenu
+                        active={
+                            filters.categories.length !== categoryOptions.length
+                        }
+                        label="Category"
+                        testId="header-filter-category"
+                    >
+                        <MultiFilter
+                            entries={data.searchResults.map(
+                                (result) => result.category,
+                            )}
+                            label="Category"
+                            onChange={(categories) =>
+                                setFilters((current) => ({
+                                    ...current,
+                                    categories,
+                                }))
+                            }
+                            selected={filters.categories}
+                            testId="header-filter-category-options"
+                        />
+                    </HeaderFilterMenu>
+                );
+            case "size":
+                return (
+                    <HeaderFilterMenu
+                        active={
+                            filters.size.min !== "" || filters.size.max !== ""
+                        }
+                        label="Size"
+                        testId="header-filter-size"
+                    >
+                        <NumericFilter
+                            label="Size (MB)"
+                            name="size"
+                            onChange={updateRange}
+                            onClear={clearRange}
+                            range={filters.size}
+                            testIdPrefix="header-size"
+                        />
+                    </HeaderFilterMenu>
+                );
+            case "grabs":
+                return (
+                    <HeaderFilterMenu
+                        active={
+                            filters.grabs.min !== "" || filters.grabs.max !== ""
+                        }
+                        label="Grabs"
+                        testId="header-filter-grabs"
+                    >
+                        <NumericFilter
+                            label="Grabs / seeders"
+                            name="grabs"
+                            onChange={updateRange}
+                            onClear={clearRange}
+                            range={filters.grabs}
+                            testIdPrefix="header-grabs"
+                        />
+                    </HeaderFilterMenu>
+                );
+            case "epoch":
+                return (
+                    <HeaderFilterMenu
+                        active={
+                            filters.age.min !== "" || filters.age.max !== ""
+                        }
+                        label="Age"
+                        testId="header-filter-age"
+                    >
+                        <NumericFilter
+                            label="Age (days)"
+                            name="age"
+                            onChange={updateRange}
+                            onClear={clearRange}
+                            range={filters.age}
+                            testIdPrefix="header-age"
+                        />
+                    </HeaderFilterMenu>
+                );
+            default:
+                return null;
+        }
     };
     return (
         <Stack data-testid="search-results" spacing={2} sx={{mt: 4}}>
@@ -523,6 +697,7 @@ export function SearchResults({
                                 direction="row"
                                 flexWrap="wrap"
                                 gap={1}
+                                sx={{display: {xs: "flex", sm: "none"}}}
                             >
                                 <TextField
                                     label="Filter titles"
@@ -650,6 +825,14 @@ export function SearchResults({
                             sx={(theme) => ({
                                 tableLayout: "fixed",
                                 width: "100%",
+                                "& tbody > tr > td": {
+                                    paddingBottom: "6px",
+                                    paddingTop: "6px",
+                                },
+                                "& td, & th": {fontSize: "12px"},
+                                "& [data-label=\"Title\"]": {
+                                    fontSize: "13px",
+                                },
                                 [theme.breakpoints.down("sm")]: {
                                     display: "block",
                                     "& thead": {display: "none"},
@@ -690,13 +873,13 @@ export function SearchResults({
                         >
                             <colgroup>
                                 <col style={{width: 40}} />
-                                <col style={{width: "27%"}} />
-                                <col style={{width: "11%"}} />
-                                <col style={{width: "13%"}} />
+                                <col style={{width: "54%"}} />
+                                <col style={{width: "9%"}} />
                                 <col style={{width: "8%"}} />
+                                <col style={{width: "7%"}} />
+                                <col style={{width: "6.5%"}} />
+                                <col style={{width: "5.5%"}} />
                                 <col style={{width: "10%"}} />
-                                <col style={{width: "10%"}} />
-                                <col style={{width: "16%"}} />
                             </colgroup>
                             <TableHead>
                                 {table.getHeaderGroups().map((headerGroup) => (
@@ -742,62 +925,79 @@ export function SearchResults({
                                                     }}
                                                 >
                                                     {header.isPlaceholder ? null : (
-                                                        <Button
-                                                            aria-label={`${
-                                                                label ?? ""
-                                                            }${
-                                                                sortDirection ===
-                                                                "asc"
-                                                                    ? " (ascending)"
-                                                                    : sortDirection ===
-                                                                        "desc"
-                                                                      ? " (descending)"
-                                                                      : ""
-                                                            }`}
-                                                            data-sort-direction={
-                                                                sortDirection ||
-                                                                "none"
+                                                        <Stack
+                                                            alignItems="center"
+                                                            direction="row"
+                                                            gap={0.5}
+                                                            justifyContent={
+                                                                isTitle
+                                                                    ? undefined
+                                                                    : "flex-end"
                                                             }
-                                                            data-testid={`sort-${header.column.id}`}
-                                                            onClick={header.column.getToggleSortingHandler()}
-                                                            size="small"
-                                                            sx={{
-                                                                display:
-                                                                    "block",
-                                                                maxWidth:
-                                                                    "100%",
-                                                                minWidth: 0,
-                                                                overflow:
-                                                                    "hidden",
-                                                                px: 0.5,
-                                                                textAlign:
-                                                                    isTitle
-                                                                        ? "left"
-                                                                        : "right",
-                                                                textOverflow:
-                                                                    "ellipsis",
-                                                                whiteSpace:
-                                                                    "nowrap",
-                                                            }}
                                                         >
-                                                            {flexRender(
-                                                                header.column
-                                                                    .columnDef
-                                                                    .header,
-                                                                header.getContext(),
-                                                            )}
-                                                            {sortDirection && (
-                                                                <Box
-                                                                    aria-hidden="true"
-                                                                    component="span"
-                                                                >
-                                                                    {sortDirection ===
+                                                            <Button
+                                                                aria-label={`${
+                                                                    label ?? ""
+                                                                }${
+                                                                    sortDirection ===
                                                                     "asc"
-                                                                        ? " ▲"
-                                                                        : " ▼"}
-                                                                </Box>
+                                                                        ? " (ascending)"
+                                                                        : sortDirection ===
+                                                                        "desc"
+                                                                            ? " (descending)"
+                                                                            : ""
+                                                                }`}
+                                                                data-sort-direction={
+                                                                    sortDirection ||
+                                                                    "none"
+                                                                }
+                                                                data-testid={`sort-${header.column.id}`}
+                                                                onClick={header.column.getToggleSortingHandler()}
+                                                                size="small"
+                                                                sx={{
+                                                                    display:
+                                                                        "block",
+                                                                    flexShrink: 0,
+                                                                    maxWidth:
+                                                                        "100%",
+                                                                    minWidth: 0,
+                                                                    overflow:
+                                                                        "hidden",
+                                                                    px: 0.5,
+                                                                    textAlign:
+                                                                        isTitle
+                                                                            ? "left"
+                                                                            : "right",
+                                                                    textOverflow:
+                                                                        "ellipsis",
+                                                                    whiteSpace:
+                                                                        "nowrap",
+                                                                }}
+                                                            >
+                                                                {flexRender(
+                                                                    header
+                                                                        .column
+                                                                        .columnDef
+                                                                        .header,
+                                                                    header.getContext(),
+                                                                )}
+                                                                {sortDirection && (
+                                                                    <Box
+                                                                        aria-hidden="true"
+                                                                        component="span"
+                                                                    >
+                                                                        {sortDirection ===
+                                                                        "asc"
+                                                                            ? " ▲"
+                                                                            : " ▼"}
+                                                                    </Box>
+                                                                )}
+                                                            </Button>
+                                                            {renderHeaderFilter(
+                                                                header.column
+                                                                    .id,
                                                             )}
-                                                        </Button>
+                                                        </Stack>
                                                     )}
                                                 </TableCell>
                                             );
@@ -841,18 +1041,6 @@ export function SearchResults({
                                                         duplicateExpanded,
                                                 )
                                                 .map((result, index) => {
-                                                    const row = table
-                                                        .getRowModel()
-                                                        .rows.find(
-                                                            (candidate) =>
-                                                                candidate
-                                                                    .original
-                                                                    .searchResultId ===
-                                                                result.searchResultId,
-                                                        );
-                                                    if (!row) {
-                                                        return null;
-                                                    }
                                                     const nestingLevel =
                                                         (duplicateIndex > 0
                                                             ? 1
@@ -863,311 +1051,61 @@ export function SearchResults({
                                                         duplicateIndex === 0 &&
                                                         index === 0;
                                                     return (
-                                                        <TableRow
-                                                            data-result-id={
-                                                                result.searchResultId
+                                                        <ResultRow
+                                                            downloaded={downloadedIds.has(
+                                                                result.searchResultId,
+                                                            )}
+                                                            duplicateExpanded={
+                                                                duplicateExpanded
                                                             }
-                                                            data-result-title={
-                                                                result.title
+                                                            duplicateKey={
+                                                                duplicateKey
                                                             }
-                                                            data-nesting-level={
-                                                                nestingLevel
+                                                            isNewGroup={
+                                                                isNewGroup
                                                             }
-                                                            data-testid="search-result-row"
                                                             key={
                                                                 result.searchResultId
                                                             }
-                                                            sx={{
-                                                                bgcolor:
-                                                                    nestingLevel >
-                                                                    0
-                                                                        ? "action.hover"
-                                                                        : undefined,
-                                                                borderTopColor:
-                                                                    isNewGroup
-                                                                        ? "divider"
-                                                                        : undefined,
-                                                                borderTopStyle:
-                                                                    isNewGroup
-                                                                        ? "solid"
-                                                                        : undefined,
-                                                                borderTopWidth:
-                                                                    isNewGroup
-                                                                        ? 2
-                                                                        : undefined,
-                                                            }}
-                                                        >
-                                                            <TableCell
-                                                                data-label="Select"
-                                                                padding="checkbox"
-                                                            >
-                                                                <Checkbox
-                                                                    checked={selected.has(
-                                                                        result.searchResultId,
-                                                                    )}
-                                                                    inputProps={{
-                                                                        "aria-label": `Select ${result.title}`,
-                                                                    }}
-                                                                    onChange={(
-                                                                        event,
-                                                                    ) => {
-                                                                        updateSelection(
-                                                                            result.searchResultId,
-                                                                            event
-                                                                                .target
-                                                                                .checked,
-                                                                            (
-                                                                                event.nativeEvent as MouseEvent
-                                                                            )
-                                                                                .shiftKey,
-                                                                        );
-                                                                    }}
-                                                                    onKeyDown={(
-                                                                        event,
-                                                                    ) => {
-                                                                        if (
-                                                                            event.key ===
-                                                                            " "
-                                                                        ) {
-                                                                            event.preventDefault();
-                                                                            updateSelection(
-                                                                                result.searchResultId,
-                                                                                !selected.has(
-                                                                                    result.searchResultId,
-                                                                                ),
-                                                                                event.shiftKey,
-                                                                            );
-                                                                        }
-                                                                    }}
-                                                                    size="small"
-                                                                />
-                                                            </TableCell>
-                                                            {row
-                                                                .getVisibleCells()
-                                                                .map((cell) => {
-                                                                    const isTitle =
-                                                                        cell
-                                                                            .column
-                                                                            .id ===
-                                                                        "title";
-                                                                    const label =
-                                                                        typeof cell
-                                                                            .column
-                                                                            .columnDef
-                                                                            .header ===
-                                                                        "string"
-                                                                            ? cell
-                                                                                  .column
-                                                                                  .columnDef
-                                                                                  .header
-                                                                            : undefined;
-                                                                    return (
-                                                                        <TableCell
-                                                                            align={
-                                                                                isTitle
-                                                                                    ? "left"
-                                                                                    : "right"
-                                                                            }
-                                                                            data-label={
-                                                                                label
-                                                                            }
-                                                                            data-testid={
-                                                                                isTitle
-                                                                                    ? "search-result-title"
-                                                                                    : undefined
-                                                                            }
-                                                                            key={
-                                                                                cell.id
-                                                                            }
-                                                                            sx={{
-                                                                                pl: isTitle
-                                                                                    ? 2 +
-                                                                                      nestingLevel *
-                                                                                          2
-                                                                                    : undefined,
-                                                                                whiteSpace:
-                                                                                    isTitle
-                                                                                        ? "normal"
-                                                                                        : "nowrap",
-                                                                            }}
-                                                                        >
-                                                                            {isTitle ? (
-                                                                                <Stack
-                                                                                    alignItems="center"
-                                                                                    direction="row"
-                                                                                    flexWrap="wrap"
-                                                                                    gap={
-                                                                                        0.5
-                                                                                    }
-                                                                                >
-                                                                                    {index ===
-                                                                                        0 &&
-                                                                                        duplicateIndex ===
-                                                                                            0 &&
-                                                                                        group
-                                                                                            .duplicateGroups
-                                                                                            .length >
-                                                                                            1 && (
-                                                                                            <Button
-                                                                                                aria-expanded={
-                                                                                                    titleExpanded
-                                                                                                }
-                                                                                                onClick={() =>
-                                                                                                    setExpandedTitles(
-                                                                                                        (
-                                                                                                            current,
-                                                                                                        ) =>
-                                                                                                            toggleSet(
-                                                                                                                current,
-                                                                                                                group.key,
-                                                                                                            ),
-                                                                                                    )
-                                                                                                }
-                                                                                                onKeyDown={(
-                                                                                                    event,
-                                                                                                ) => {
-                                                                                                    if (
-                                                                                                        event.key ===
-                                                                                                            "Enter" ||
-                                                                                                        event.key ===
-                                                                                                            " "
-                                                                                                    ) {
-                                                                                                        event.preventDefault();
-                                                                                                        setExpandedTitles(
-                                                                                                            (
-                                                                                                                current,
-                                                                                                            ) =>
-                                                                                                                toggleSet(
-                                                                                                                    current,
-                                                                                                                    group.key,
-                                                                                                                ),
-                                                                                                        );
-                                                                                                    }
-                                                                                                }}
-                                                                                                size="small"
-                                                                                            >
-                                                                                                {titleExpanded
-                                                                                                    ? "Collapse group"
-                                                                                                    : "Expand group"}
-                                                                                            </Button>
-                                                                                        )}
-                                                                                    {index ===
-                                                                                        0 &&
-                                                                                        duplicates.length >
-                                                                                            1 && (
-                                                                                            <Button
-                                                                                                aria-expanded={
-                                                                                                    duplicateExpanded
-                                                                                                }
-                                                                                                onClick={() =>
-                                                                                                    setExpandedDuplicates(
-                                                                                                        (
-                                                                                                            current,
-                                                                                                        ) =>
-                                                                                                            toggleSet(
-                                                                                                                current,
-                                                                                                                duplicateKey,
-                                                                                                            ),
-                                                                                                    )
-                                                                                                }
-                                                                                                onKeyDown={(
-                                                                                                    event,
-                                                                                                ) => {
-                                                                                                    if (
-                                                                                                        event.key ===
-                                                                                                            "Enter" ||
-                                                                                                        event.key ===
-                                                                                                            " "
-                                                                                                    ) {
-                                                                                                        event.preventDefault();
-                                                                                                        setExpandedDuplicates(
-                                                                                                            (
-                                                                                                                current,
-                                                                                                            ) =>
-                                                                                                                toggleSet(
-                                                                                                                    current,
-                                                                                                                    duplicateKey,
-                                                                                                                ),
-                                                                                                        );
-                                                                                                    }
-                                                                                                }}
-                                                                                                size="small"
-                                                                                            >
-                                                                                                {duplicateExpanded
-                                                                                                    ? "Collapse duplicates"
-                                                                                                    : "Expand duplicates"}
-                                                                                            </Button>
-                                                                                        )}
-                                                                                    <Box>
-                                                                                        {flexRender(
-                                                                                            cell
-                                                                                                .column
-                                                                                                .columnDef
-                                                                                                .cell,
-                                                                                            cell.getContext(),
-                                                                                        )}
-                                                                                    </Box>
-                                                                                </Stack>
-                                                                            ) : (
-                                                                                flexRender(
-                                                                                    cell
-                                                                                        .column
-                                                                                        .columnDef
-                                                                                        .cell,
-                                                                                    cell.getContext(),
-                                                                                )
-                                                                            )}
-                                                                        </TableCell>
-                                                                    );
-                                                                })}
-                                                            <TableCell
-                                                                align="right"
-                                                                data-label="Actions"
-                                                            >
-                                                                <Stack
-                                                                    alignItems={{
-                                                                        xs: "center",
-                                                                        sm: "flex-end",
-                                                                    }}
-                                                                    direction={{
-                                                                        xs: "row",
-                                                                        sm: "column",
-                                                                    }}
-                                                                    flexWrap="wrap"
-                                                                    gap={0.5}
-                                                                    justifyContent="flex-end"
-                                                                >
-                                                                    <DirectDownloadActions
-                                                                        onDownloaded={() =>
-                                                                            setDownloadedIds(
-                                                                                (
-                                                                                    current,
-                                                                                ) =>
-                                                                                    new Set(
-                                                                                        [
-                                                                                            ...current,
-                                                                                            result.searchResultId,
-                                                                                        ],
-                                                                                    ),
-                                                                            )
-                                                                        }
-                                                                        result={
-                                                                            result
-                                                                        }
-                                                                    />
-                                                                    {downloadedIds.has(
-                                                                        result.searchResultId,
-                                                                    ) && (
-                                                                        <Chip
-                                                                            color="success"
-                                                                            label="Downloaded"
-                                                                            size="small"
-                                                                            variant="outlined"
-                                                                        />
-                                                                    )}
-                                                                </Stack>
-                                                            </TableCell>
-                                                        </TableRow>
+                                                            nestingLevel={
+                                                                nestingLevel
+                                                            }
+                                                            onDownloaded={
+                                                                handleDownloaded
+                                                            }
+                                                            onSelectionChange={
+                                                                updateSelection
+                                                            }
+                                                            onToggleDuplicateExpansion={
+                                                                handleToggleDuplicateExpansion
+                                                            }
+                                                            onToggleTitleExpansion={
+                                                                handleToggleTitleExpansion
+                                                            }
+                                                            result={result}
+                                                            selected={selected.has(
+                                                                result.searchResultId,
+                                                            )}
+                                                            showDuplicateExpand={
+                                                                index === 0 &&
+                                                                duplicates.length >
+                                                                1
+                                                            }
+                                                            showTitleExpand={
+                                                                index === 0 &&
+                                                                duplicateIndex ===
+                                                                0 &&
+                                                                group
+                                                                    .duplicateGroups
+                                                                    .length > 1
+                                                            }
+                                                            titleExpanded={
+                                                                titleExpanded
+                                                            }
+                                                            titleGroupKey={
+                                                                group.key
+                                                            }
+                                                        />
                                                     );
                                                 });
                                         },
@@ -1180,24 +1118,274 @@ export function SearchResults({
             )}
         </Stack>
     );
+}
 
-    function updateSelection(
+type ResultColumn = {
+    align: "left" | "right";
+    id: string;
+    label: string;
+    testId?: string;
+    value: (result: SearchResult) => ReactNode;
+};
+
+const resultColumns: ResultColumn[] = [
+    {
+        align: "left",
+        id: "title",
+        label: "Title",
+        testId: "search-result-title",
+        value: (result) => result.title,
+    },
+    {
+        align: "right",
+        id: "indexer",
+        label: "Indexer",
+        value: (result) => result.indexer,
+    },
+    {
+        align: "right",
+        id: "category",
+        label: "Category",
+        value: (result) => result.category,
+    },
+    {
+        align: "right",
+        id: "size",
+        label: "Size",
+        value: (result) => result.size ?? "",
+    },
+    {
+        align: "right",
+        id: "grabs",
+        label: "Details",
+        value: (result) => result.seeders ?? result.grabs ?? "",
+    },
+    {
+        align: "right",
+        id: "epoch",
+        label: "Age",
+        value: (result) => result.age ?? "",
+    },
+];
+
+const ResultRow = memo(function ResultRow({
+                                              downloaded,
+                                              duplicateExpanded,
+                                              duplicateKey,
+                                              isNewGroup,
+                                              nestingLevel,
+                                              onDownloaded,
+                                              onSelectionChange,
+                                              onToggleDuplicateExpansion,
+                                              onToggleTitleExpansion,
+                                              result,
+                                              selected,
+                                              showDuplicateExpand,
+                                              showTitleExpand,
+                                              titleExpanded,
+                                              titleGroupKey,
+                                          }: {
+    downloaded: boolean;
+    duplicateExpanded: boolean;
+    duplicateKey: string;
+    isNewGroup: boolean;
+    nestingLevel: number;
+    onDownloaded: (resultId: string) => void;
+    onSelectionChange: (
         resultId: string,
         checked: boolean,
         shiftKey: boolean,
-    ) {
-        setSelected((current) =>
-            selectionAfterClick(
-                current,
-                visibleResults,
-                resultId,
-                checked,
-                lastSelectedId,
-                shiftKey,
-            ),
-        );
-        setLastSelectedId(resultId);
-    }
+    ) => void;
+    onToggleDuplicateExpansion: (key: string) => void;
+    onToggleTitleExpansion: (key: string) => void;
+    result: SearchResult;
+    selected: boolean;
+    showDuplicateExpand: boolean;
+    showTitleExpand: boolean;
+    titleExpanded: boolean;
+    titleGroupKey: string;
+}) {
+    return (
+        <TableRow
+            data-result-id={result.searchResultId}
+            data-result-title={result.title}
+            data-nesting-level={nestingLevel}
+            data-testid="search-result-row"
+            sx={{
+                bgcolor: nestingLevel > 0 ? "action.hover" : undefined,
+                borderTopColor: isNewGroup ? "divider" : undefined,
+                borderTopStyle: isNewGroup ? "solid" : undefined,
+                borderTopWidth: isNewGroup ? 2 : undefined,
+            }}
+        >
+            <TableCell data-label="Select" padding="checkbox">
+                <Checkbox
+                    checked={selected}
+                    inputProps={{
+                        "aria-label": `Select ${result.title}`,
+                    }}
+                    onChange={(event) => {
+                        onSelectionChange(
+                            result.searchResultId,
+                            event.target.checked,
+                            (event.nativeEvent as MouseEvent).shiftKey,
+                        );
+                    }}
+                    onKeyDown={(event) => {
+                        if (event.key === " ") {
+                            event.preventDefault();
+                            onSelectionChange(
+                                result.searchResultId,
+                                !selected,
+                                event.shiftKey,
+                            );
+                        }
+                    }}
+                    size="small"
+                />
+            </TableCell>
+            {resultColumns.map((column) => {
+                const isTitle = column.id === "title";
+                return (
+                    <TableCell
+                        align={column.align}
+                        data-label={column.label}
+                        data-testid={column.testId}
+                        key={column.id}
+                        sx={{
+                            pl: isTitle ? 2 + nestingLevel * 2 : undefined,
+                            whiteSpace: isTitle ? "normal" : "nowrap",
+                        }}
+                    >
+                        {isTitle ? (
+                            <Stack
+                                alignItems="center"
+                                direction="row"
+                                flexWrap="wrap"
+                                gap={0.5}
+                            >
+                                {showTitleExpand && (
+                                    <Button
+                                        aria-expanded={titleExpanded}
+                                        onClick={() =>
+                                            onToggleTitleExpansion(
+                                                titleGroupKey,
+                                            )
+                                        }
+                                        onKeyDown={(event) => {
+                                            if (
+                                                event.key === "Enter" ||
+                                                event.key === " "
+                                            ) {
+                                                event.preventDefault();
+                                                onToggleTitleExpansion(
+                                                    titleGroupKey,
+                                                );
+                                            }
+                                        }}
+                                        size="small"
+                                    >
+                                        {titleExpanded
+                                            ? "Collapse group"
+                                            : "Expand group"}
+                                    </Button>
+                                )}
+                                {showDuplicateExpand && (
+                                    <Button
+                                        aria-expanded={duplicateExpanded}
+                                        onClick={() =>
+                                            onToggleDuplicateExpansion(
+                                                duplicateKey,
+                                            )
+                                        }
+                                        onKeyDown={(event) => {
+                                            if (
+                                                event.key === "Enter" ||
+                                                event.key === " "
+                                            ) {
+                                                event.preventDefault();
+                                                onToggleDuplicateExpansion(
+                                                    duplicateKey,
+                                                );
+                                            }
+                                        }}
+                                        size="small"
+                                    >
+                                        {duplicateExpanded
+                                            ? "Collapse duplicates"
+                                            : "Expand duplicates"}
+                                    </Button>
+                                )}
+                                <Box>{column.value(result)}</Box>
+                            </Stack>
+                        ) : (
+                            column.value(result)
+                        )}
+                    </TableCell>
+                );
+            })}
+            <TableCell align="right" data-label="Actions">
+                <Stack
+                    alignItems={{xs: "center", sm: "flex-end"}}
+                    direction={{xs: "row", sm: "column"}}
+                    flexWrap="wrap"
+                    gap={0.5}
+                    justifyContent="flex-end"
+                >
+                    <DirectDownloadActions
+                        onDownloaded={() => onDownloaded(result.searchResultId)}
+                        result={result}
+                    />
+                    {downloaded && (
+                        <Chip
+                            color="success"
+                            label="Downloaded"
+                            size="small"
+                            variant="outlined"
+                        />
+                    )}
+                </Stack>
+            </TableCell>
+        </TableRow>
+    );
+});
+
+function HeaderFilterMenu({
+                              active,
+                              children,
+                              label,
+                              testId,
+                          }: {
+    active: boolean;
+    children: ReactNode;
+    label: string;
+    testId: string;
+}) {
+    const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+    return (
+        <>
+            <Button
+                aria-label={`Filter ${label}`}
+                aria-pressed={active}
+                data-testid={`${testId}-toggle`}
+                onClick={(event) => setAnchorEl(event.currentTarget)}
+                size="small"
+                sx={{minWidth: 0, px: 0.75}}
+                variant={active ? "contained" : "outlined"}
+            >
+                ▾
+            </Button>
+            <Popover
+                anchorEl={anchorEl}
+                anchorOrigin={{horizontal: "right", vertical: "bottom"}}
+                onClose={() => setAnchorEl(null)}
+                open={Boolean(anchorEl)}
+                slotProps={{paper: {sx: {minWidth: 220, p: 1.5}}}}
+            >
+                <Box data-testid={testId}>{children}</Box>
+            </Popover>
+        </>
+    );
 }
 
 function MultiFilter({
@@ -1248,6 +1436,7 @@ function NumericFilter({
     range,
     onChange,
     onClear,
+                           testIdPrefix,
 }: {
     label: string;
     name: "size" | "grabs" | "age";
@@ -1258,15 +1447,17 @@ function NumericFilter({
         value: string,
     ) => void;
     onClear: (name: "size" | "grabs" | "age") => void;
+    testIdPrefix?: string;
 }) {
+    const prefix = testIdPrefix ?? name;
     return (
-        <Stack data-testid={`filter-toggle-${name}`} direction="row" gap={1}>
+        <Stack data-testid={`filter-toggle-${prefix}`} direction="row" gap={1}>
             <TextField
                 label={`${label} minimum`}
                 onChange={(event) => onChange(name, "min", event.target.value)}
                 size="small"
                 slotProps={{
-                    htmlInput: {"data-testid": `number-filter-min-${name}`},
+                    htmlInput: {"data-testid": `number-filter-min-${prefix}`},
                 }}
                 type="number"
                 value={range.min}
@@ -1276,16 +1467,16 @@ function NumericFilter({
                 onChange={(event) => onChange(name, "max", event.target.value)}
                 size="small"
                 slotProps={{
-                    htmlInput: {"data-testid": `number-filter-max-${name}`},
+                    htmlInput: {"data-testid": `number-filter-max-${prefix}`},
                 }}
                 type="number"
                 value={range.max}
             />
-            <Button data-testid={`number-filter-apply-${name}`} size="small">
+            <Button data-testid={`number-filter-apply-${prefix}`} size="small">
                 Apply
             </Button>
             <Button
-                data-testid={`number-filter-clear-${name}`}
+                data-testid={`number-filter-clear-${prefix}`}
                 onClick={() => onClear(name)}
                 size="small"
             >

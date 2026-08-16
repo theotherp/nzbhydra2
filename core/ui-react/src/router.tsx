@@ -1,27 +1,22 @@
 import {Button, Container, Stack, Typography} from "@mui/material";
-import {
-    createRootRoute,
-    createRoute,
-    createRouter,
-    Outlet,
-} from "@tanstack/react-router";
+import {createRootRoute, createRoute, createRouter, Outlet,} from "@tanstack/react-router";
+import {ApiTransport} from "./api/transport";
 
 import {AppShell} from "./app/AppShell";
 import type {BootstrapData} from "./bootstrap";
-import {ApiTransport} from "./api/transport";
-import {NewsPage} from "./features/system/news/NewsPage";
 import {SearchPage} from "./features/search/SearchPage";
-import {StatsShell} from "./features/stats/StatsShell";
-import {IndexerStatusesPage} from "./features/stats/indexers/IndexerStatusesPage";
 import {SavedSearchesPage} from "./features/stats/history/SavedSearchesPage";
 import {SearchHistoryPage} from "./features/stats/history/SearchHistoryPage";
+import {IndexerStatusesPage} from "./features/stats/indexers/IndexerStatusesPage";
+import {StatsShell} from "./features/stats/StatsShell";
+import {NewsPage} from "./features/system/news/NewsPage";
 
 export function createAppRouter(bootstrap: BootstrapData) {
     const transport = new ApiTransport(bootstrap.baseUrl);
     const rootRoute = createRootRoute({
         component: () => (
             <AppShell bootstrap={bootstrap}>
-                <Container maxWidth="md">
+                <Container maxWidth={false} sx={{maxWidth: 1700}}>
                     <Outlet />
                 </Container>
             </AppShell>

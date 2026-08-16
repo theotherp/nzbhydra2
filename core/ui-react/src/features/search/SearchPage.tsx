@@ -13,38 +13,26 @@ import {
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 import {useNavigate, useSearch} from "@tanstack/react-router";
 import {useContext, useEffect, useRef, useState} from "react";
-
-import {
-    continuationRequest,
-    executeSearch,
-    mergeSearchResponses,
-    shortcutSearch,
-} from "../../api/search";
-import type {SearchRequest, SearchResponse} from "../../api/search";
+import type {SearchLiveTransport, SearchProgress,} from "../../api/live/searchState";
+import {createSearchLiveTransport} from "../../api/live/searchState";
+import type {LiveSubscription} from "../../api/live/transport";
+import {SockJsStompLiveTransport} from "../../api/live/transport";
 import {getAutocomplete, getEmbyAvailability} from "../../api/media";
 import type {RecentSearch} from "../../api/recentSearches";
-import {createSearchLiveTransport} from "../../api/live/searchState";
-import type {
-    SearchLiveTransport,
-    SearchProgress,
-} from "../../api/live/searchState";
-import {SockJsStompLiveTransport} from "../../api/live/transport";
-import type {LiveSubscription} from "../../api/live/transport";
-import {ApiTransport} from "../../api/transport";
 import {createSavedSearch} from "../../api/savedSearches";
-import {ToastContext} from "../../components/toasts/toasts";
-import {createCategoryCatalog} from "../../domain/categories/catalog";
-import type {CategoryCatalog} from "../../domain/categories/catalog";
+
+import type {SearchRequest, SearchResponse} from "../../api/search";
+import {continuationRequest, executeSearch, mergeSearchResponses, shortcutSearch,} from "../../api/search";
+import {ApiTransport} from "../../api/transport";
 import type {BootstrapData} from "../../bootstrap";
-import {SearchResults} from "./results/SearchResults";
-import {
-    canonicalSearch,
-    SearchWorkspace,
-    valuesFromSearch,
-} from "./workspace/SearchWorkspace";
-import type {SearchFormValues} from "./workspace/SearchWorkspace";
-import {RecentSearches} from "./history/RecentSearches";
+import {ToastContext} from "../../components/toasts/toasts";
+import type {CategoryCatalog} from "../../domain/categories/catalog";
+import {createCategoryCatalog} from "../../domain/categories/catalog";
 import {recentSearchCriteria} from "./history/recentSearchCriteria";
+import {RecentSearches} from "./history/RecentSearches";
+import {SearchResults} from "./results/SearchResults";
+import type {SearchFormValues} from "./workspace/SearchWorkspace";
+import {canonicalSearch, SearchWorkspace, valuesFromSearch,} from "./workspace/SearchWorkspace";
 
 export function SearchPage({
     bootstrap,
@@ -349,7 +337,7 @@ export function SearchPage({
         <Stack
             component="main"
             spacing={2}
-            sx={{maxWidth: 1040, mx: "auto", px: {xs: 1, sm: 2}, width: "100%"}}
+            sx={{px: {xs: 1, sm: 2}, width: "100%"}}
         >
             <Typography component="h1" variant="h4">
                 Search
