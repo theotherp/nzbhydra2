@@ -1,4 +1,5 @@
 import {dismissWelcomeDialog, expect, searchForResult, test, testEnvironment,} from "./fixtures";
+import {expectVisualGeometry, prepareVisualEvidence, visualViewports,} from "./visualEvidence";
 
 test.describe("Search results", () => {
     test.beforeEach(async ({ hydra, page }) => {
@@ -380,8 +381,12 @@ test.describe("Search results", () => {
         ]) {
             const sort = page.getByTestId(`sort-${column}`);
             await sort.click();
-            await expect(sort).toContainText(
-                `(${direction === "asc" ? "ascending" : "descending"})`,
+            const headerCell = sort.locator(
+                "xpath=ancestor::*[self::th or self::td][1]",
+            );
+            await expect(headerCell).toHaveAttribute(
+                "aria-sort",
+                direction === "asc" ? "ascending" : "descending",
             );
             await expect(sort).toHaveAttribute(
                 "data-sort-direction",
@@ -544,6 +549,234 @@ test.describe("Search results", () => {
         await loadAll.click({force: true});
         expect(requests).toHaveLength(2);
         expect(requests[1]).toMatchObject({offset: 1, loadAll: false});
+    });
+
+    test("should provide deterministic React results visual evidence across desktop and mobile", async ({
+        page,
+    }) => {
+        const now = Math.floor(Date.now() / 1_000);
+        await page.route("**/internalapi/search", (route) =>
+            route.fulfill({
+                json: {
+                    searchResults: [
+                        {
+                            searchResultId: "one",
+                            title: "Visual Evidence Example Show S01E01",
+                            indexer: "Alpha",
+                            category: "TV",
+                            size: 4 * 1024 * 1024,
+                            seeders: 12,
+                            epoch: now - 86_400,
+                            age: "1 day",
+                            hash: 1,
+                            downloadType: "NZB",
+                        },
+                        {
+                            searchResultId: "two",
+                            title: "Visual Evidence Example Show S01E01",
+                            indexer: "Beta",
+                            category: "TV",
+                            size: 3 * 1024 * 1024,
+                            seeders: 8,
+                            epoch: now - 2 * 86_400,
+                            age: "2 days",
+                            hash: 1,
+                            downloadType: "NZB",
+                        },
+                        {
+                            searchResultId: "three",
+                            title: "Visual Evidence Another Release",
+                            indexer: "Gamma",
+                            category: "Movies",
+                            size: 6 * 1024 * 1024,
+                            seeders: 5,
+                            epoch: now - 3 * 86_400,
+                            age: "3 days",
+                            downloadType: "NZB",
+                        },
+                    ],
+                    indexerSearchMetaDatas: [
+                        {indexerName: "Alpha", wasSuccessful: true},
+                        {indexerName: "Beta", wasSuccessful: true},
+                        {indexerName: "Gamma", wasSuccessful: true},
+                    ],
+                    indexerLimitWarnings: [],
+                    rejectedReasonsMap: {},
+                    notPickedIndexersWithReason: {},
+                    numberOfAvailableResults: 3,
+                    numberOfRejectedResults: 0,
+                },
+            }),
+        );
+
+        for (const [viewport, minimumWidth] of Object.entries({
+            desktop: 600,
+            mobile: 300,
+        }) as Array<[keyof typeof visualViewports, number]>) {
+            await prepareVisualEvidence(page, viewport, async () => {
+                await page.goto("ui/react?redirect=/");
+                await page
+                    .getByTestId("search-query")
+                    .fill("visual evidence results");
+                await page.getByTestId("search-submit").click();
+                await expect(
+                    page.getByTestId("search-status-modal"),
+                ).toBeHidden();
+                await expect(
+                    page.getByTestId("search-results-table"),
+                ).toBeVisible();
+            });
+
+            const toolbar = page.getByTestId("results-toolbar");
+            const resultsTable = page.getByTestId("search-results-table");
+            await expectVisualGeometry(page, {
+                region: `results-toolbar-${viewport}`,
+                locator: toolbar,
+                minimumWidth,
+            });
+            await expectVisualGeometry(page, {
+                region: `search-results-table-${viewport}`,
+                locator: resultsTable,
+                minimumWidth,
+            });
+
+            const [toolbarBox, tableBox] = await Promise.all([
+                toolbar.boundingBox(),
+                resultsTable.boundingBox(),
+            ]);
+            expect(toolbarBox).not.toBeNull();
+            expect(tableBox).not.toBeNull();
+            if (!toolbarBox || !tableBox) {
+                throw new Error(
+                    "Toolbar and table require deterministic geometry",
+                );
+            }
+            expect(toolbarBox.y + toolbarBox.height).toBeLessThanOrEqual(
+                tableBox.y + 1,
+            );
+
+            const directDownload = page
+                .getByTestId("search-result-row")
+                .first()
+                .getByTestId("download-nzb");
+            await expect(directDownload).toBeVisible();
+
+            if (viewport === "desktop") {
+                const titleCell = page
+                    .getByTestId("sort-title")
+                    .locator("xpath=ancestor::*[self::th or self::td][1]");
+                const indexerCell = page
+                    .getByTestId("sort-indexer")
+                    .locator("xpath=ancestor::*[self::th or self::td][1]");
+                const [titleCellBox, indexerCellBox] = await Promise.all([
+                    titleCell.boundingBox(),
+                    indexerCell.boundingBox(),
+                ]);
+                expect(titleCellBox).not.toBeNull();
+                expect(indexerCellBox).not.toBeNull();
+                if (!titleCellBox || !indexerCellBox) {
+                    throw new Error(
+                        "Header cells require deterministic geometry",
+                    );
+                }
+                expect(titleCellBox.width).toBeGreaterThan(
+                    indexerCellBox.width * 2,
+                );
+
+                const sizeHeaderCell = page
+                    .getByTestId("sort-size")
+                    .locator("xpath=ancestor::*[self::th or self::td][1]");
+                const sizeHeaderAlign = await sizeHeaderCell.evaluate(
+                    (element) => getComputedStyle(element).textAlign,
+                );
+                expect(sizeHeaderAlign).toBe("right");
+
+                for (const column of [
+                    "title",
+                    "indexer",
+                    "category",
+                    "size",
+                    "grabs",
+                    "epoch",
+                ]) {
+                    const noHeaderOverflow = await page
+                        .getByTestId(`sort-${column}`)
+                        .evaluate(
+                            (element) =>
+                                element.scrollWidth <=
+                                element.clientWidth + 1,
+                        );
+                    expect(noHeaderOverflow).toBe(true);
+                }
+
+                const [download] = await Promise.all([
+                    page.waitForEvent("download"),
+                    directDownload.click(),
+                ]);
+                void download;
+                const downloadedChip = page
+                    .getByTestId("search-result-row")
+                    .first()
+                    .getByText("Downloaded");
+                await expect(downloadedChip).toBeVisible();
+                const chipNotClipped = await downloadedChip.evaluate(
+                    (element) =>
+                        element.scrollWidth <= element.clientWidth + 1,
+                );
+                expect(chipNotClipped).toBe(true);
+            } else {
+                const cellDisplay = await directDownload
+                    .locator("xpath=ancestor::td[1]")
+                    .evaluate(
+                        (element) => getComputedStyle(element).display,
+                    );
+                expect(cellDisplay).toBe("flex");
+            }
+        }
+
+        await page.setViewportSize(visualViewports.desktop);
+        const rows = page.getByTestId("search-result-row");
+        await expect(rows).toHaveCount(2);
+        await page.getByRole("button", {name: "Expand duplicates"}).click();
+        await expect(rows).toHaveCount(3);
+
+        const [parentPaddingLeft, childPaddingLeft] = await Promise.all([
+            rows
+                .nth(0)
+                .getByTestId("search-result-title")
+                .evaluate(
+                    (element) =>
+                        parseFloat(getComputedStyle(element).paddingLeft),
+                ),
+            rows
+                .nth(1)
+                .getByTestId("search-result-title")
+                .evaluate(
+                    (element) =>
+                        parseFloat(getComputedStyle(element).paddingLeft),
+                ),
+        ]);
+        expect(childPaddingLeft).toBeGreaterThan(parentPaddingLeft);
+
+        const [parentBackground, childBackground] = await Promise.all([
+            rows
+                .nth(0)
+                .evaluate(
+                    (element) => getComputedStyle(element).backgroundColor,
+                ),
+            rows
+                .nth(1)
+                .evaluate(
+                    (element) => getComputedStyle(element).backgroundColor,
+                ),
+        ]);
+        expect(childBackground).not.toBe(parentBackground);
+
+        await page.getByTestId("freetext-filter-title").fill("Another");
+        await expect(page.getByTestId("search-result-row")).toHaveCount(1);
+        await expect(
+            page.getByTestId("search-results-summary"),
+        ).toContainText("2 filtered");
     });
 });
 

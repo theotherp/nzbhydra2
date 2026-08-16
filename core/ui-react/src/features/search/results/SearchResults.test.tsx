@@ -287,12 +287,12 @@ describe("SearchResults", () => {
         expect(titleSort).toHaveAttribute("data-sort-direction", "none");
         fireEvent.click(titleSort);
         expect(titleSort).toHaveAttribute("data-sort-direction", "asc");
-        expect(titleSort).toHaveTextContent("Title (ascending)");
+        expect(titleSort).toHaveAttribute("aria-label", "Title (ascending)");
         expect(
             screen.getAllByTestId("search-result-title")[0],
         ).toHaveTextContent("Alpha BluRay");
         fireEvent.click(titleSort);
-        expect(titleSort).toHaveTextContent("Title (descending)");
+        expect(titleSort).toHaveAttribute("aria-label", "Title (descending)");
         fireEvent.click(titleSort);
 
         fireEvent.change(screen.getByTestId("freetext-filter-title"), {
@@ -379,7 +379,7 @@ describe("SearchResults", () => {
             const sort = screen.getByTestId(`sort-${column}`);
             fireEvent.click(sort);
             expect(sort).toHaveAttribute("data-sort-direction", direction);
-            expect(sort).toHaveTextContent(
+            expect(sort.getAttribute("aria-label")).toContain(
                 `(${direction === "asc" ? "ascending" : "descending"})`,
             );
             expect(
@@ -679,6 +679,132 @@ describe("SearchResults", () => {
             "href",
             "http://localhost:3000/hydra/gettorrent/user/torrent-result-id",
         );
+    });
+
+    it("should present a compact toolbar region before the results table with a dedicated actions column", () => {
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 1,
+                    searchResults: [
+                        {
+                            searchResultId: "1",
+                            title: "Result",
+                            indexer: "Mock",
+                            category: "All",
+                        },
+                    ],
+                }}
+            />,
+        );
+        const toolbar = screen.getByTestId("results-toolbar");
+        const table = screen.getByTestId("search-results-table");
+        expect(toolbar).toBeVisible();
+        expect(
+            toolbar.compareDocumentPosition(table) &
+                Node.DOCUMENT_POSITION_FOLLOWING,
+        ).toBeTruthy();
+        expect(
+            within(toolbar).getByTestId("results-selection-actions"),
+        ).toBeVisible();
+        expect(
+            within(toolbar).getByTestId("results-download-actions"),
+        ).toBeVisible();
+        expect(within(toolbar).getByTestId("results-filters")).toBeVisible();
+        expect(
+            within(table).getByText("Actions", {selector: "th"}),
+        ).toBeVisible();
+    });
+
+    it("should pair every result cell with a metadata label for responsive presentation", () => {
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 1,
+                    searchResults: [
+                        {
+                            searchResultId: "1",
+                            title: "Result",
+                            indexer: "Mock",
+                            category: "All",
+                        },
+                    ],
+                }}
+            />,
+        );
+        const row = screen.getByTestId("search-result-row");
+        const labels = within(row)
+            .getAllByRole("cell")
+            .map((cell) => cell.getAttribute("data-label"));
+        expect(labels).toEqual([
+            "Select",
+            "Title",
+            "Indexer",
+            "Category",
+            "Size",
+            "Details",
+            "Age",
+            "Actions",
+        ]);
+    });
+
+    it("should indent and mark nested duplicate rows distinctly from their parent", () => {
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 2,
+                    searchResults: [
+                        {
+                            searchResultId: "one",
+                            title: "Duplicated release",
+                            indexer: "One",
+                            category: "TV",
+                            hash: 1,
+                        },
+                        {
+                            searchResultId: "two",
+                            title: "Duplicated release",
+                            indexer: "Two",
+                            category: "TV",
+                            hash: 1,
+                        },
+                    ],
+                }}
+            />,
+        );
+        fireEvent.click(
+            screen.getByRole("button", {name: "Expand duplicates"}),
+        );
+        const rows = screen.getAllByTestId("search-result-row");
+        expect(rows).toHaveLength(2);
+        expect(rows[0]).toHaveAttribute("data-nesting-level", "0");
+        expect(rows[1]).toHaveAttribute("data-nesting-level", "1");
+    });
+
+    it("should render a perceivable downloaded indicator distinct from the direct-download control", () => {
+        window.__NZBHYDRA_BOOTSTRAP__ = {baseUrl: "/"};
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 1,
+                    searchResults: [
+                        {
+                            searchResultId: "1",
+                            title: "Result",
+                            indexer: "Mock",
+                            category: "All",
+                        },
+                    ],
+                }}
+            />,
+        );
+        expect(screen.queryByText("Downloaded")).not.toBeInTheDocument();
+        fireEvent.click(screen.getByTestId("download-nzb"));
+        expect(screen.getByText("Downloaded")).toBeVisible();
     });
 
     it("should preserve state and avoid sending when duplicate confirmation is cancelled", async () => {

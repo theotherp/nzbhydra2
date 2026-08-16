@@ -3,7 +3,9 @@ import {
     Box,
     Button,
     Checkbox,
+    Chip,
     FormControlLabel,
+    Paper,
     Stack,
     Table,
     TableBody,
@@ -302,12 +304,14 @@ export function SearchResults({
                         aria-busy={pagingLoading}
                         disabled={!pagingAvailable || pagingLoading}
                         onClick={() => void requestContinuation(false)}
+                        size="small"
                     >
                         {pagingLoading ? "Loading more results…" : "Load more"}
                     </Button>
                     <Button
                         disabled={!pagingAvailable || pagingLoading}
                         onClick={() => void requestContinuation(true)}
+                        size="small"
                     >
                         Load all results
                     </Button>
@@ -315,316 +319,501 @@ export function SearchResults({
             )}
             {data.searchResults.length > 0 && (
                 <>
-                    <Typography data-testid="search-results-summary">
-                        Loaded {data.searchResults.length} (
-                        {data.searchResults.length - filteredResults.length}{" "}
-                        filtered) of{" "}
-                        {hasMoreResults &&
-                        data.indexerSearchMetaDatas.some(
-                            (indexer) => indexer.totalResultsKnown === false,
-                        )
-                            ? ">"
-                            : ""}
-                        {data.numberOfAvailableResults} results (rejected{" "}
-                        {data.numberOfRejectedResults})
-                    </Typography>
-                    <Stack direction="row" flexWrap="wrap" gap={1}>
-                        {onSaveSearch && (
-                            <Button
-                                disabled={savingSearch}
-                                id="save-search"
-                                onClick={() => void onSaveSearch()}
+                    <Paper
+                        data-testid="results-toolbar"
+                        elevation={1}
+                        sx={{p: {xs: 1.5, sm: 2}}}
+                    >
+                        <Stack spacing={1.5}>
+                            <Typography
+                                data-testid="search-results-summary"
+                                variant="subtitle2"
                             >
-                                {savingSearch
-                                    ? "Saving search…"
-                                    : "Save search"}
-                            </Button>
-                        )}
-                        {dialogs !== null && toasts !== null && (
-                            <DownloadActions
-                                onDownloaded={(ids) => {
-                                    const affected = data.searchResults
-                                        .filter((result) =>
-                                            ids.includes(
-                                                Number(
-                                                    downloadIdFor(result).split(
-                                                        ".",
-                                                    )[0],
-                                                ),
-                                            ),
-                                        )
-                                        .map((result) => result.searchResultId);
-                                    setDownloadedIds(
-                                        (current) =>
-                                            new Set([...current, ...affected]),
-                                    );
-                                    setSelected(
-                                        (current) =>
-                                            new Set(
-                                                [...current].filter(
-                                                    (id) =>
-                                                        !affected.includes(id),
-                                                ),
-                                            ),
-                                    );
-                                }}
-                                results={data.searchResults.filter((result) =>
-                                    selected.has(result.searchResultId),
-                                )}
-                                safeConfig={safeConfig}
-                            />
-                        )}
-                        <FormControlLabel
-                            control={
-                                <Checkbox
-                                    checked={groupTorrentAndUsenet}
-                                    onChange={(event) =>
-                                        setGroupTorrentAndUsenet(
-                                            event.target.checked,
-                                        )
-                                    }
-                                />
-                            }
-                            label="Group torrent and Usenet results"
-                        />
-                        <FormControlLabel
-                            control={
-                                <Checkbox
-                                    checked={groupEpisodes}
-                                    onChange={(event) =>
-                                        setGroupEpisodes(event.target.checked)
-                                    }
-                                />
-                            }
-                            label="Group TV episodes"
-                        />
-                        <Button
-                            onClick={() =>
-                                setSelected((current) =>
-                                    selectVisibleResults(
-                                        current,
-                                        visibleResults,
-                                        "all",
-                                    ),
+                                Loaded {data.searchResults.length} (
+                                {data.searchResults.length -
+                                    filteredResults.length}{" "}
+                                filtered) of{" "}
+                                {hasMoreResults &&
+                                data.indexerSearchMetaDatas.some(
+                                    (indexer) =>
+                                        indexer.totalResultsKnown === false,
                                 )
-                            }
-                            onKeyDown={(event) => {
-                                if (
-                                    event.key === "Enter" ||
-                                    event.key === " "
-                                ) {
-                                    event.preventDefault();
-                                    setSelected((current) =>
-                                        selectVisibleResults(
-                                            current,
-                                            visibleResults,
-                                            "all",
-                                        ),
-                                    );
-                                }
-                            }}
-                        >
-                            Select all
-                        </Button>
-                        <Button
-                            onClick={() => setSelected(new Set())}
-                            onKeyDown={(event) => {
-                                if (
-                                    event.key === "Enter" ||
-                                    event.key === " "
-                                ) {
-                                    event.preventDefault();
-                                    setSelected(new Set());
-                                }
-                            }}
-                        >
-                            Deselect all
-                        </Button>
-                        <Button
-                            onClick={() =>
-                                setSelected((current) =>
-                                    selectVisibleResults(
-                                        current,
-                                        visibleResults,
-                                        "invert",
-                                    ),
-                                )
-                            }
-                            onKeyDown={(event) => {
-                                if (
-                                    event.key === "Enter" ||
-                                    event.key === " "
-                                ) {
-                                    event.preventDefault();
-                                    setSelected((current) =>
-                                        selectVisibleResults(
-                                            current,
-                                            visibleResults,
-                                            "invert",
-                                        ),
-                                    );
-                                }
-                            }}
-                        >
-                            Invert selection
-                        </Button>
-                        <TextField
-                            label="Filter titles"
-                            size="small"
-                            slotProps={{
-                                htmlInput: {
-                                    "data-testid": "freetext-filter-title",
-                                },
-                            }}
-                            value={filters.title}
-                            onChange={(event) =>
-                                setFilters((current) => ({
-                                    ...current,
-                                    title: event.target.value,
-                                }))
-                            }
-                        />
-                        <MultiFilter
-                            label="Indexer"
-                            testId="filter-toggle-indexer"
-                            entries={data.searchResults.map(
-                                (result) => result.indexer,
-                            )}
-                            selected={filters.indexers}
-                            onChange={(indexers) =>
-                                setFilters((current) => ({
-                                    ...current,
-                                    indexers,
-                                }))
-                            }
-                        />
-                        <MultiFilter
-                            label="Category"
-                            testId="filter-toggle-category"
-                            entries={data.searchResults.map(
-                                (result) => result.category,
-                            )}
-                            selected={filters.categories}
-                            onChange={(categories) =>
-                                setFilters((current) => ({
-                                    ...current,
-                                    categories,
-                                }))
-                            }
-                        />
-                        <NumericFilter
-                            label="Size (MB)"
-                            name="size"
-                            range={filters.size}
-                            onChange={updateRange}
-                            onClear={clearRange}
-                        />
-                        <NumericFilter
-                            label="Grabs / seeders"
-                            name="grabs"
-                            range={filters.grabs}
-                            onChange={updateRange}
-                            onClear={clearRange}
-                        />
-                        <NumericFilter
-                            label="Age (days)"
-                            name="age"
-                            range={filters.age}
-                            onChange={updateRange}
-                            onClear={clearRange}
-                        />
-                    </Stack>
-                    {quickFilters.length > 0 && (
-                        <Stack direction="row" flexWrap="wrap" gap={1}>
-                            {quickFilters.map((filter) => (
+                                    ? ">"
+                                    : ""}
+                                {data.numberOfAvailableResults} results
+                                (rejected {data.numberOfRejectedResults})
+                            </Typography>
+                            <Stack
+                                alignItems="center"
+                                data-testid="results-selection-actions"
+                                direction="row"
+                                flexWrap="wrap"
+                                gap={1}
+                            >
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox
+                                            checked={groupTorrentAndUsenet}
+                                            onChange={(event) =>
+                                                setGroupTorrentAndUsenet(
+                                                    event.target.checked,
+                                                )
+                                            }
+                                            size="small"
+                                        />
+                                    }
+                                    label="Group torrent and Usenet results"
+                                />
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox
+                                            checked={groupEpisodes}
+                                            onChange={(event) =>
+                                                setGroupEpisodes(
+                                                    event.target.checked,
+                                                )
+                                            }
+                                            size="small"
+                                        />
+                                    }
+                                    label="Group TV episodes"
+                                />
                                 <Button
-                                    aria-pressed={
-                                        filters.quickFilters[
-                                            quickFilterKey(filter)
-                                        ] ?? false
-                                    }
-                                    key={`${filter.group}-${filter.id}`}
                                     onClick={() =>
+                                        setSelected((current) =>
+                                            selectVisibleResults(
+                                                current,
+                                                visibleResults,
+                                                "all",
+                                            ),
+                                        )
+                                    }
+                                    onKeyDown={(event) => {
+                                        if (
+                                            event.key === "Enter" ||
+                                            event.key === " "
+                                        ) {
+                                            event.preventDefault();
+                                            setSelected((current) =>
+                                                selectVisibleResults(
+                                                    current,
+                                                    visibleResults,
+                                                    "all",
+                                                ),
+                                            );
+                                        }
+                                    }}
+                                    size="small"
+                                >
+                                    Select all
+                                </Button>
+                                <Button
+                                    onClick={() => setSelected(new Set())}
+                                    onKeyDown={(event) => {
+                                        if (
+                                            event.key === "Enter" ||
+                                            event.key === " "
+                                        ) {
+                                            event.preventDefault();
+                                            setSelected(new Set());
+                                        }
+                                    }}
+                                    size="small"
+                                >
+                                    Deselect all
+                                </Button>
+                                <Button
+                                    onClick={() =>
+                                        setSelected((current) =>
+                                            selectVisibleResults(
+                                                current,
+                                                visibleResults,
+                                                "invert",
+                                            ),
+                                        )
+                                    }
+                                    onKeyDown={(event) => {
+                                        if (
+                                            event.key === "Enter" ||
+                                            event.key === " "
+                                        ) {
+                                            event.preventDefault();
+                                            setSelected((current) =>
+                                                selectVisibleResults(
+                                                    current,
+                                                    visibleResults,
+                                                    "invert",
+                                                ),
+                                            );
+                                        }
+                                    }}
+                                    size="small"
+                                >
+                                    Invert selection
+                                </Button>
+                            </Stack>
+                            <Stack
+                                alignItems="center"
+                                data-testid="results-download-actions"
+                                direction="row"
+                                flexWrap="wrap"
+                                gap={1}
+                            >
+                                {onSaveSearch && (
+                                    <Button
+                                        disabled={savingSearch}
+                                        id="save-search"
+                                        onClick={() => void onSaveSearch()}
+                                        size="small"
+                                    >
+                                        {savingSearch
+                                            ? "Saving search…"
+                                            : "Save search"}
+                                    </Button>
+                                )}
+                                {dialogs !== null && toasts !== null && (
+                                    <DownloadActions
+                                        onDownloaded={(ids) => {
+                                            const affected = data.searchResults
+                                                .filter((result) =>
+                                                    ids.includes(
+                                                        Number(
+                                                            downloadIdFor(
+                                                                result,
+                                                            ).split(".")[0],
+                                                        ),
+                                                    ),
+                                                )
+                                                .map(
+                                                    (result) =>
+                                                        result.searchResultId,
+                                                );
+                                            setDownloadedIds(
+                                                (current) =>
+                                                    new Set([
+                                                        ...current,
+                                                        ...affected,
+                                                    ]),
+                                            );
+                                            setSelected(
+                                                (current) =>
+                                                    new Set(
+                                                        [...current].filter(
+                                                            (id) =>
+                                                                !affected.includes(
+                                                                    id,
+                                                                ),
+                                                        ),
+                                                    ),
+                                            );
+                                        }}
+                                        results={data.searchResults.filter(
+                                            (result) =>
+                                                selected.has(
+                                                    result.searchResultId,
+                                                ),
+                                        )}
+                                        safeConfig={safeConfig}
+                                    />
+                                )}
+                            </Stack>
+                            <Stack
+                                alignItems="flex-end"
+                                data-testid="results-filters"
+                                direction="row"
+                                flexWrap="wrap"
+                                gap={1}
+                            >
+                                <TextField
+                                    label="Filter titles"
+                                    size="small"
+                                    slotProps={{
+                                        htmlInput: {
+                                            "data-testid":
+                                                "freetext-filter-title",
+                                        },
+                                    }}
+                                    value={filters.title}
+                                    onChange={(event) =>
                                         setFilters((current) => ({
                                             ...current,
-                                            quickFilters: {
-                                                ...current.quickFilters,
-                                                [quickFilterKey(filter)]:
-                                                    !current.quickFilters[
-                                                        quickFilterKey(filter)
-                                                    ],
-                                            },
+                                            title: event.target.value,
                                         }))
                                     }
-                                    size="small"
-                                    variant={
-                                        filters.quickFilters[
-                                            quickFilterKey(filter)
-                                        ]
-                                            ? "contained"
-                                            : "outlined"
+                                />
+                                <MultiFilter
+                                    label="Indexer"
+                                    testId="filter-toggle-indexer"
+                                    entries={data.searchResults.map(
+                                        (result) => result.indexer,
+                                    )}
+                                    selected={filters.indexers}
+                                    onChange={(indexers) =>
+                                        setFilters((current) => ({
+                                            ...current,
+                                            indexers,
+                                        }))
                                     }
+                                />
+                                <MultiFilter
+                                    label="Category"
+                                    testId="filter-toggle-category"
+                                    entries={data.searchResults.map(
+                                        (result) => result.category,
+                                    )}
+                                    selected={filters.categories}
+                                    onChange={(categories) =>
+                                        setFilters((current) => ({
+                                            ...current,
+                                            categories,
+                                        }))
+                                    }
+                                />
+                                <NumericFilter
+                                    label="Size (MB)"
+                                    name="size"
+                                    range={filters.size}
+                                    onChange={updateRange}
+                                    onClear={clearRange}
+                                />
+                                <NumericFilter
+                                    label="Grabs / seeders"
+                                    name="grabs"
+                                    range={filters.grabs}
+                                    onChange={updateRange}
+                                    onClear={clearRange}
+                                />
+                                <NumericFilter
+                                    label="Age (days)"
+                                    name="age"
+                                    range={filters.age}
+                                    onChange={updateRange}
+                                    onClear={clearRange}
+                                />
+                            </Stack>
+                            {quickFilters.length > 0 && (
+                                <Stack
+                                    data-testid="results-quick-filters"
+                                    direction="row"
+                                    flexWrap="wrap"
+                                    gap={1}
                                 >
-                                    {filter.label}
-                                </Button>
-                            ))}
+                                    {quickFilters.map((filter) => (
+                                        <Button
+                                            aria-pressed={
+                                                filters.quickFilters[
+                                                    quickFilterKey(filter)
+                                                ] ?? false
+                                            }
+                                            key={`${filter.group}-${filter.id}`}
+                                            onClick={() =>
+                                                setFilters((current) => ({
+                                                    ...current,
+                                                    quickFilters: {
+                                                        ...current.quickFilters,
+                                                        [quickFilterKey(
+                                                            filter,
+                                                        )]:
+                                                            !current
+                                                                .quickFilters[
+                                                                quickFilterKey(
+                                                                    filter,
+                                                                )
+                                                            ],
+                                                    },
+                                                }))
+                                            }
+                                            size="small"
+                                            variant={
+                                                filters.quickFilters[
+                                                    quickFilterKey(filter)
+                                                ]
+                                                    ? "contained"
+                                                    : "outlined"
+                                            }
+                                        >
+                                            {filter.label}
+                                        </Button>
+                                    ))}
+                                </Stack>
+                            )}
                         </Stack>
-                    )}
+                    </Paper>
                     {filteredResults.length === 0 && (
                         <Typography component="h2" variant="h6">
                             All results are currently filtered
                         </Typography>
                     )}
                     <Box sx={{maxWidth: "100%", overflowX: "auto"}}>
-                        <Table data-testid="search-results-table">
+                        <Table
+                            data-testid="search-results-table"
+                            sx={(theme) => ({
+                                tableLayout: "fixed",
+                                width: "100%",
+                                [theme.breakpoints.down("sm")]: {
+                                    display: "block",
+                                    "& thead": {display: "none"},
+                                    "& tbody": {display: "block"},
+                                    "& tr": {
+                                        borderTop: `2px solid ${theme.palette.divider}`,
+                                        display: "block",
+                                        "&:first-of-type": {
+                                            borderTop: "none",
+                                        },
+                                    },
+                                    "& td": {
+                                        alignItems: "center",
+                                        border: "none",
+                                        display: "flex",
+                                        flexDirection: "row",
+                                        gap: 1,
+                                        justifyContent: "space-between",
+                                        textAlign: "right",
+                                        "&::before": {
+                                            color: theme.palette.text.secondary,
+                                            content: "attr(data-label)",
+                                            fontSize: "0.7rem",
+                                            fontWeight: 700,
+                                            textAlign: "left",
+                                            textTransform: "uppercase",
+                                        },
+                                    },
+                                    '& td[data-label="Title"]': {
+                                        display: "block",
+                                        textAlign: "left",
+                                    },
+                                    '& td[data-label="Title"]::before': {
+                                        content: "none",
+                                    },
+                                },
+                            })}
+                        >
+                            <colgroup>
+                                <col style={{width: 40}} />
+                                <col style={{width: "27%"}} />
+                                <col style={{width: "11%"}} />
+                                <col style={{width: "13%"}} />
+                                <col style={{width: "8%"}} />
+                                <col style={{width: "10%"}} />
+                                <col style={{width: "10%"}} />
+                                <col style={{width: "16%"}} />
+                            </colgroup>
                             <TableHead>
                                 {table.getHeaderGroups().map((headerGroup) => (
                                     <TableRow key={headerGroup.id}>
-                                        <TableCell padding="checkbox" />
-                                        {headerGroup.headers.map((header) => (
-                                            <TableCell
-                                                aria-sort={
-                                                    header.column.getIsSorted() ===
-                                                    "asc"
-                                                        ? "ascending"
-                                                        : header.column.getIsSorted() ===
-                                                            "desc"
-                                                          ? "descending"
-                                                          : "none"
-                                                }
-                                                key={header.id}
-                                            >
-                                                {header.isPlaceholder ? null : (
-                                                    <Button
-                                                        data-sort-direction={
-                                                            header.column.getIsSorted() ||
-                                                            "none"
-                                                        }
-                                                        data-testid={`sort-${header.column.id}`}
-                                                        onClick={header.column.getToggleSortingHandler()}
-                                                    >
-                                                        {flexRender(
-                                                            header.column
-                                                                .columnDef
-                                                                .header,
-                                                            header.getContext(),
-                                                        )}
-                                                        {header.column.getIsSorted() ===
-                                                        "asc"
-                                                            ? " (ascending)"
-                                                            : header.column.getIsSorted() ===
+                                        <TableCell
+                                            data-label="Select"
+                                            padding="checkbox"
+                                        />
+                                        {headerGroup.headers.map((header) => {
+                                            const isTitle =
+                                                header.column.id === "title";
+                                            const label =
+                                                typeof header.column.columnDef
+                                                    .header === "string"
+                                                    ? header.column.columnDef
+                                                          .header
+                                                    : undefined;
+                                            const sortDirection =
+                                                header.column.getIsSorted();
+                                            return (
+                                                <TableCell
+                                                    align={
+                                                        isTitle
+                                                            ? "left"
+                                                            : "right"
+                                                    }
+                                                    aria-sort={
+                                                        sortDirection === "asc"
+                                                            ? "ascending"
+                                                            : sortDirection ===
                                                                 "desc"
-                                                              ? " (descending)"
-                                                              : ""}
-                                                    </Button>
-                                                )}
-                                            </TableCell>
-                                        ))}
+                                                              ? "descending"
+                                                              : "none"
+                                                    }
+                                                    data-label={label}
+                                                    key={header.id}
+                                                    sx={{
+                                                        overflow: "hidden",
+                                                        px: 1,
+                                                        textOverflow:
+                                                            "ellipsis",
+                                                        whiteSpace: "nowrap",
+                                                    }}
+                                                >
+                                                    {header.isPlaceholder ? null : (
+                                                        <Button
+                                                            aria-label={`${
+                                                                label ?? ""
+                                                            }${
+                                                                sortDirection ===
+                                                                "asc"
+                                                                    ? " (ascending)"
+                                                                    : sortDirection ===
+                                                                        "desc"
+                                                                      ? " (descending)"
+                                                                      : ""
+                                                            }`}
+                                                            data-sort-direction={
+                                                                sortDirection ||
+                                                                "none"
+                                                            }
+                                                            data-testid={`sort-${header.column.id}`}
+                                                            onClick={header.column.getToggleSortingHandler()}
+                                                            size="small"
+                                                            sx={{
+                                                                display:
+                                                                    "block",
+                                                                maxWidth:
+                                                                    "100%",
+                                                                minWidth: 0,
+                                                                overflow:
+                                                                    "hidden",
+                                                                px: 0.5,
+                                                                textAlign:
+                                                                    isTitle
+                                                                        ? "left"
+                                                                        : "right",
+                                                                textOverflow:
+                                                                    "ellipsis",
+                                                                whiteSpace:
+                                                                    "nowrap",
+                                                            }}
+                                                        >
+                                                            {flexRender(
+                                                                header.column
+                                                                    .columnDef
+                                                                    .header,
+                                                                header.getContext(),
+                                                            )}
+                                                            {sortDirection && (
+                                                                <Box
+                                                                    aria-hidden="true"
+                                                                    component="span"
+                                                                >
+                                                                    {sortDirection ===
+                                                                    "asc"
+                                                                        ? " ▲"
+                                                                        : " ▼"}
+                                                                </Box>
+                                                            )}
+                                                        </Button>
+                                                    )}
+                                                </TableCell>
+                                            );
+                                        })}
+                                        <TableCell
+                                            align="right"
+                                            data-label="Actions"
+                                            sx={{whiteSpace: "nowrap"}}
+                                        >
+                                            Actions
+                                        </TableCell>
                                     </TableRow>
                                 ))}
                             </TableHead>
                             <TableBody>
-                                {groups.flatMap((group) =>
+                                {groups.flatMap((group, groupIndex) =>
                                     group.duplicateGroups.flatMap(
                                         (duplicates, duplicateIndex) => {
                                             const first = duplicates[0];
@@ -664,6 +853,15 @@ export function SearchResults({
                                                     if (!row) {
                                                         return null;
                                                     }
+                                                    const nestingLevel =
+                                                        (duplicateIndex > 0
+                                                            ? 1
+                                                            : 0) +
+                                                        (index > 0 ? 1 : 0);
+                                                    const isNewGroup =
+                                                        groupIndex > 0 &&
+                                                        duplicateIndex === 0 &&
+                                                        index === 0;
                                                     return (
                                                         <TableRow
                                                             data-result-id={
@@ -672,12 +870,37 @@ export function SearchResults({
                                                             data-result-title={
                                                                 result.title
                                                             }
+                                                            data-nesting-level={
+                                                                nestingLevel
+                                                            }
                                                             data-testid="search-result-row"
                                                             key={
                                                                 result.searchResultId
                                                             }
+                                                            sx={{
+                                                                bgcolor:
+                                                                    nestingLevel >
+                                                                    0
+                                                                        ? "action.hover"
+                                                                        : undefined,
+                                                                borderTopColor:
+                                                                    isNewGroup
+                                                                        ? "divider"
+                                                                        : undefined,
+                                                                borderTopStyle:
+                                                                    isNewGroup
+                                                                        ? "solid"
+                                                                        : undefined,
+                                                                borderTopWidth:
+                                                                    isNewGroup
+                                                                        ? 2
+                                                                        : undefined,
+                                                            }}
                                                         >
-                                                            <TableCell padding="checkbox">
+                                                            <TableCell
+                                                                data-label="Select"
+                                                                padding="checkbox"
+                                                            >
                                                                 <Checkbox
                                                                     checked={selected.has(
                                                                         result.searchResultId,
@@ -716,172 +939,234 @@ export function SearchResults({
                                                                             );
                                                                         }
                                                                     }}
+                                                                    size="small"
                                                                 />
                                                             </TableCell>
                                                             {row
                                                                 .getVisibleCells()
-                                                                .map((cell) => (
-                                                                    <TableCell
-                                                                        data-testid={
-                                                                            cell
-                                                                                .column
-                                                                                .id ===
-                                                                            "title"
-                                                                                ? "search-result-title"
-                                                                                : undefined
-                                                                        }
-                                                                        key={
-                                                                            cell.id
-                                                                        }
-                                                                    >
-                                                                        {cell
+                                                                .map((cell) => {
+                                                                    const isTitle =
+                                                                        cell
                                                                             .column
                                                                             .id ===
-                                                                            "title" &&
-                                                                            index ===
-                                                                                0 &&
-                                                                            duplicateIndex ===
-                                                                                0 &&
-                                                                            group
-                                                                                .duplicateGroups
-                                                                                .length >
-                                                                                1 && (
-                                                                                <Button
-                                                                                    aria-expanded={
-                                                                                        titleExpanded
+                                                                        "title";
+                                                                    const label =
+                                                                        typeof cell
+                                                                            .column
+                                                                            .columnDef
+                                                                            .header ===
+                                                                        "string"
+                                                                            ? cell
+                                                                                  .column
+                                                                                  .columnDef
+                                                                                  .header
+                                                                            : undefined;
+                                                                    return (
+                                                                        <TableCell
+                                                                            align={
+                                                                                isTitle
+                                                                                    ? "left"
+                                                                                    : "right"
+                                                                            }
+                                                                            data-label={
+                                                                                label
+                                                                            }
+                                                                            data-testid={
+                                                                                isTitle
+                                                                                    ? "search-result-title"
+                                                                                    : undefined
+                                                                            }
+                                                                            key={
+                                                                                cell.id
+                                                                            }
+                                                                            sx={{
+                                                                                pl: isTitle
+                                                                                    ? 2 +
+                                                                                      nestingLevel *
+                                                                                          2
+                                                                                    : undefined,
+                                                                                whiteSpace:
+                                                                                    isTitle
+                                                                                        ? "normal"
+                                                                                        : "nowrap",
+                                                                            }}
+                                                                        >
+                                                                            {isTitle ? (
+                                                                                <Stack
+                                                                                    alignItems="center"
+                                                                                    direction="row"
+                                                                                    flexWrap="wrap"
+                                                                                    gap={
+                                                                                        0.5
                                                                                     }
-                                                                                    onClick={() =>
-                                                                                        setExpandedTitles(
-                                                                                            (
-                                                                                                current,
-                                                                                            ) =>
-                                                                                                toggleSet(
-                                                                                                    current,
-                                                                                                    group.key,
-                                                                                                ),
-                                                                                        )
-                                                                                    }
-                                                                                    onKeyDown={(
-                                                                                        event,
-                                                                                    ) => {
-                                                                                        if (
-                                                                                            event.key ===
-                                                                                                "Enter" ||
-                                                                                            event.key ===
-                                                                                                " "
-                                                                                        ) {
-                                                                                            event.preventDefault();
-                                                                                            setExpandedTitles(
-                                                                                                (
-                                                                                                    current,
-                                                                                                ) =>
-                                                                                                    toggleSet(
-                                                                                                        current,
-                                                                                                        group.key,
-                                                                                                    ),
-                                                                                            );
-                                                                                        }
-                                                                                    }}
-                                                                                    size="small"
                                                                                 >
-                                                                                    {titleExpanded
-                                                                                        ? "Collapse group"
-                                                                                        : "Expand group"}
-                                                                                </Button>
+                                                                                    {index ===
+                                                                                        0 &&
+                                                                                        duplicateIndex ===
+                                                                                            0 &&
+                                                                                        group
+                                                                                            .duplicateGroups
+                                                                                            .length >
+                                                                                            1 && (
+                                                                                            <Button
+                                                                                                aria-expanded={
+                                                                                                    titleExpanded
+                                                                                                }
+                                                                                                onClick={() =>
+                                                                                                    setExpandedTitles(
+                                                                                                        (
+                                                                                                            current,
+                                                                                                        ) =>
+                                                                                                            toggleSet(
+                                                                                                                current,
+                                                                                                                group.key,
+                                                                                                            ),
+                                                                                                    )
+                                                                                                }
+                                                                                                onKeyDown={(
+                                                                                                    event,
+                                                                                                ) => {
+                                                                                                    if (
+                                                                                                        event.key ===
+                                                                                                            "Enter" ||
+                                                                                                        event.key ===
+                                                                                                            " "
+                                                                                                    ) {
+                                                                                                        event.preventDefault();
+                                                                                                        setExpandedTitles(
+                                                                                                            (
+                                                                                                                current,
+                                                                                                            ) =>
+                                                                                                                toggleSet(
+                                                                                                                    current,
+                                                                                                                    group.key,
+                                                                                                                ),
+                                                                                                        );
+                                                                                                    }
+                                                                                                }}
+                                                                                                size="small"
+                                                                                            >
+                                                                                                {titleExpanded
+                                                                                                    ? "Collapse group"
+                                                                                                    : "Expand group"}
+                                                                                            </Button>
+                                                                                        )}
+                                                                                    {index ===
+                                                                                        0 &&
+                                                                                        duplicates.length >
+                                                                                            1 && (
+                                                                                            <Button
+                                                                                                aria-expanded={
+                                                                                                    duplicateExpanded
+                                                                                                }
+                                                                                                onClick={() =>
+                                                                                                    setExpandedDuplicates(
+                                                                                                        (
+                                                                                                            current,
+                                                                                                        ) =>
+                                                                                                            toggleSet(
+                                                                                                                current,
+                                                                                                                duplicateKey,
+                                                                                                            ),
+                                                                                                    )
+                                                                                                }
+                                                                                                onKeyDown={(
+                                                                                                    event,
+                                                                                                ) => {
+                                                                                                    if (
+                                                                                                        event.key ===
+                                                                                                            "Enter" ||
+                                                                                                        event.key ===
+                                                                                                            " "
+                                                                                                    ) {
+                                                                                                        event.preventDefault();
+                                                                                                        setExpandedDuplicates(
+                                                                                                            (
+                                                                                                                current,
+                                                                                                            ) =>
+                                                                                                                toggleSet(
+                                                                                                                    current,
+                                                                                                                    duplicateKey,
+                                                                                                                ),
+                                                                                                        );
+                                                                                                    }
+                                                                                                }}
+                                                                                                size="small"
+                                                                                            >
+                                                                                                {duplicateExpanded
+                                                                                                    ? "Collapse duplicates"
+                                                                                                    : "Expand duplicates"}
+                                                                                            </Button>
+                                                                                        )}
+                                                                                    <Box>
+                                                                                        {flexRender(
+                                                                                            cell
+                                                                                                .column
+                                                                                                .columnDef
+                                                                                                .cell,
+                                                                                            cell.getContext(),
+                                                                                        )}
+                                                                                    </Box>
+                                                                                </Stack>
+                                                                            ) : (
+                                                                                flexRender(
+                                                                                    cell
+                                                                                        .column
+                                                                                        .columnDef
+                                                                                        .cell,
+                                                                                    cell.getContext(),
+                                                                                )
                                                                             )}
-                                                                        {cell
-                                                                            .column
-                                                                            .id ===
-                                                                            "title" &&
-                                                                            index ===
-                                                                                0 &&
-                                                                            duplicates.length >
-                                                                                1 && (
-                                                                                <Button
-                                                                                    aria-expanded={
-                                                                                        duplicateExpanded
-                                                                                    }
-                                                                                    onClick={() =>
-                                                                                        setExpandedDuplicates(
-                                                                                            (
-                                                                                                current,
-                                                                                            ) =>
-                                                                                                toggleSet(
-                                                                                                    current,
-                                                                                                    duplicateKey,
-                                                                                                ),
-                                                                                        )
-                                                                                    }
-                                                                                    onKeyDown={(
-                                                                                        event,
-                                                                                    ) => {
-                                                                                        if (
-                                                                                            event.key ===
-                                                                                                "Enter" ||
-                                                                                            event.key ===
-                                                                                                " "
-                                                                                        ) {
-                                                                                            event.preventDefault();
-                                                                                            setExpandedDuplicates(
-                                                                                                (
-                                                                                                    current,
-                                                                                                ) =>
-                                                                                                    toggleSet(
-                                                                                                        current,
-                                                                                                        duplicateKey,
-                                                                                                    ),
-                                                                                            );
-                                                                                        }
-                                                                                    }}
-                                                                                    size="small"
-                                                                                >
-                                                                                    {duplicateExpanded
-                                                                                        ? "Collapse duplicates"
-                                                                                        : "Expand duplicates"}
-                                                                                </Button>
-                                                                            )}
-                                                                        {flexRender(
-                                                                            cell
-                                                                                .column
-                                                                                .columnDef
-                                                                                .cell,
-                                                                            cell.getContext(),
-                                                                        )}
-                                                                        {cell
-                                                                            .column
-                                                                            .id ===
-                                                                            "title" && (
-                                                                            <>
-                                                                                <DirectDownloadActions
-                                                                                    onDownloaded={() =>
-                                                                                        setDownloadedIds(
-                                                                                            (
-                                                                                                current,
-                                                                                            ) =>
-                                                                                                new Set(
-                                                                                                    [
-                                                                                                        ...current,
-                                                                                                        result.searchResultId,
-                                                                                                    ],
-                                                                                                ),
-                                                                                        )
-                                                                                    }
-                                                                                    result={
-                                                                                        result
-                                                                                    }
-                                                                                />
-                                                                                {downloadedIds.has(
-                                                                                    result.searchResultId,
-                                                                                ) && (
-                                                                                    <Typography component="span">
-                                                                                        {" "}
-                                                                                        Downloaded
-                                                                                    </Typography>
-                                                                                )}
-                                                                            </>
-                                                                        )}
-                                                                    </TableCell>
-                                                                ))}
+                                                                        </TableCell>
+                                                                    );
+                                                                })}
+                                                            <TableCell
+                                                                align="right"
+                                                                data-label="Actions"
+                                                            >
+                                                                <Stack
+                                                                    alignItems={{
+                                                                        xs: "center",
+                                                                        sm: "flex-end",
+                                                                    }}
+                                                                    direction={{
+                                                                        xs: "row",
+                                                                        sm: "column",
+                                                                    }}
+                                                                    flexWrap="wrap"
+                                                                    gap={0.5}
+                                                                    justifyContent="flex-end"
+                                                                >
+                                                                    <DirectDownloadActions
+                                                                        onDownloaded={() =>
+                                                                            setDownloadedIds(
+                                                                                (
+                                                                                    current,
+                                                                                ) =>
+                                                                                    new Set(
+                                                                                        [
+                                                                                            ...current,
+                                                                                            result.searchResultId,
+                                                                                        ],
+                                                                                    ),
+                                                                            )
+                                                                        }
+                                                                        result={
+                                                                            result
+                                                                        }
+                                                                    />
+                                                                    {downloadedIds.has(
+                                                                        result.searchResultId,
+                                                                    ) && (
+                                                                        <Chip
+                                                                            color="success"
+                                                                            label="Downloaded"
+                                                                            size="small"
+                                                                            variant="outlined"
+                                                                        />
+                                                                    )}
+                                                                </Stack>
+                                                            </TableCell>
                                                         </TableRow>
                                                     );
                                                 });
@@ -946,6 +1231,7 @@ function MultiFilter({
                                           ),
                                 )
                             }
+                            size="small"
                         />
                     }
                     key={entry}
@@ -995,10 +1281,13 @@ function NumericFilter({
                 type="number"
                 value={range.max}
             />
-            <Button data-testid={`number-filter-apply-${name}`}>Apply</Button>
+            <Button data-testid={`number-filter-apply-${name}`} size="small">
+                Apply
+            </Button>
             <Button
                 data-testid={`number-filter-clear-${name}`}
                 onClick={() => onClear(name)}
+                size="small"
             >
                 Clear
             </Button>

@@ -197,6 +197,7 @@ export function DownloadActions({
         }, "Prepared NZB ZIP download.");
     return (
         <Stack
+            alignItems="center"
             direction="row"
             flexWrap="wrap"
             gap={1}
@@ -248,6 +249,8 @@ export function DownloadActions({
                         data-testid="send-to-downloader"
                         disabled={busy || Boolean(categoryError)}
                         onClick={send}
+                        size="small"
+                        variant="contained"
                     >
                         Send selected to downloader
                     </Button>
@@ -257,6 +260,7 @@ export function DownloadActions({
                 <Button
                     disabled={busy || selectedNzbs.length === 0}
                     onClick={zip}
+                    size="small"
                 >
                     Download selected NZBs as ZIP
                 </Button>
@@ -287,11 +291,14 @@ export function DownloadActions({
                                 : undefined,
                         ])
                     }
+                    size="small"
                 >
                     Send selected to black hole
                 </Button>
             )}
-            <Button onClick={copy}>Copy selected links</Button>
+            <Button onClick={copy} size="small">
+                Copy selected links
+            </Button>
         </Stack>
     );
 }
@@ -307,6 +314,7 @@ export function DirectDownloadActions({
     const transport = useMemo(() => new ApiTransport(bootstrapBase()), []);
     return (
         <Button
+            aria-label={`Download ${type.toUpperCase()}`}
             component="a"
             data-testid={type === "nzb" ? "download-nzb" : "download-torrent"}
             download
@@ -314,8 +322,11 @@ export function DirectDownloadActions({
                 `get${type}/user/${downloadId(result)}`,
             )}
             onClick={onDownloaded}
+            size="small"
+            sx={{minWidth: 0, whiteSpace: "nowrap"}}
+            variant="outlined"
         >
-            Download {type.toUpperCase()}
+            {type === "nzb" ? "NZB" : "Torrent"}
         </Button>
     );
 }

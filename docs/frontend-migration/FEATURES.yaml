@@ -186,7 +186,23 @@ features:
     selectors: [ search-results, indexer-limit-warnings, search-results-summary, search-results-table, search-result-row, search-result-title ]
     target: core/ui-react/src/features/search/results
     parity: partial
-    visual: { applicability: applicable, status: unassessed }
+    visual:
+      applicability: applicable
+      status: accepted
+      contract:
+        setup: "React-selected `ui/react?redirect=/` with a deterministic mocked `internalapi/search` response (two same-title/hash NZB duplicates plus one distinct-title NZB release) submitted through the real search form, in `tests/system/tests/results.spec.ts`."
+        states: [ populated-toolbar-and-table, title-dominant-column, filtered-result-narrowing ]
+        viewports: [ { name: desktop, width: 1280, height: 800 }, { name: mobile, width: 390, height: 844 } ]
+        geometry_checks:
+          - "the results-toolbar and search-results-table regions each render with no horizontal overflow at 1280x800 and 390x844, and the toolbar's bottom edge sits at or above the table's top edge"
+          - "the title header column's bounding-box width exceeds twice the indexer header column's width at desktop"
+          - "after a free-text title filter narrows visible rows, the results summary reflects the updated filtered count and the table/toolbar remain overflow-free"
+      evidence: [ tests/system/tests/results.spec.ts ]
+      variances: []
+      acceptance:
+        decision: "Accepted as proposed. Reviewed desktop/mobile screenshots of a populated results table under the branded theme; toolbar-then-table hierarchy, title-dominant column, and overall legibility are comparable to legacy."
+        accepted_by: "Repository owner (stratmann.simon@gmail.com)"
+        accepted_on: "2026-08-16"
     gaps: [ ]
     task: FM-010
     backlog: { status: deferred, rationale: "The record remains partial pending a dedicated full-parity reconciliation." }
@@ -201,7 +217,24 @@ features:
     selectors: [ "sort-{{column}}", "freetext-filter-{{column}}", "number-filter-min-{{column}}", "number-filter-max-{{column}}", "number-filter-apply-{{column}}", "number-filter-clear-{{column}}", filter-toggle-indexer, filter-toggle-category, filter-toggle-size, filter-toggle-grabs, filter-toggle-age ]
     target: core/ui-react/src/features/search/results
     parity: partial
-    visual: { applicability: applicable, status: unassessed }
+    visual:
+      applicability: applicable
+      status: accepted
+      contract:
+        setup: "React-selected `ui/react?redirect=/` with a deterministic mocked `internalapi/search` response (two same-title/hash NZB duplicates plus one distinct-title NZB release) submitted through the real search form, in `tests/system/tests/results.spec.ts`."
+        states: [ compact-toolbar-filters-row, right-aligned-sortable-header, quick-filter-row ]
+        viewports: [ { name: desktop, width: 1280, height: 800 }, { name: mobile, width: 390, height: 844 } ]
+        geometry_checks:
+          - "the toolbar's dedicated results-filters and results-quick-filters regions render within the compact results-toolbar without page or region horizontal overflow at either viewport"
+          - "a numeric metadata column header (Size) has a computed text-align of right at desktop, matching its right-aligned data cells"
+          - "the title header column's bounding-box width exceeds twice the indexer header column's width at desktop, keeping the free-text/column filters and quick filters visually secondary to the dominant title/sort hierarchy"
+          - "every sortable column header (title, indexer, category, size, grabs/details, age) renders its full label at desktop with no scrollWidth overflow of its own box, and its ascending/descending state is conveyed by a compact visible indicator plus an `aria-sort` attribute and an `aria-label` accessible name rather than a header-width-consuming visible text suffix"
+      evidence: [ tests/system/tests/results.spec.ts ]
+      variances: []
+      acceptance:
+        decision: "Accepted as proposed. Reviewed desktop screenshot confirming all sortable column headers (Title, Indexer, Category, Size, Details, Age) render fully legible with a compact sort indicator, no clipped text."
+        accepted_by: "Repository owner (stratmann.simon@gmail.com)"
+        accepted_on: "2026-08-16"
     gaps: [ server-backed preferences ]
     task: FM-011
     backlog: { status: deferred, rationale: "Server-backed preference adoption has no implementation task yet." }
@@ -216,7 +249,23 @@ features:
     selectors: [ search-result-row ]
     target: core/ui-react/src/features/search/results
     parity: partial
-    visual: { applicability: applicable, status: unassessed }
+    visual:
+      applicability: applicable
+      status: accepted
+      contract:
+        setup: "React-selected `ui/react?redirect=/` with a deterministic mocked `internalapi/search` response (two same-title/hash NZB duplicates plus one distinct-title NZB release) submitted through the real search form; the duplicate group is expanded, in `tests/system/tests/results.spec.ts`."
+        states: [ collapsed-duplicate-group, expanded-duplicate-indentation, selection-actions-region ]
+        viewports: [ { name: desktop, width: 1280, height: 800 }, { name: mobile, width: 390, height: 844 } ]
+        geometry_checks:
+          - "expanding a duplicate group increases visible row count from 2 to 3, and the nested row's title cell computed padding-left exceeds its parent's, giving a consistent indentation step"
+          - "the expanded nested row's computed background-color differs from its parent row's background-color, giving a distinguishable group/duplicate treatment"
+          - "the toolbar's dedicated results-selection-actions region (grouping toggles, select all/deselect all/invert selection) renders within the compact results-toolbar without overflow at either viewport, visually separate from results-download-actions"
+      evidence: [ tests/system/tests/results.spec.ts ]
+      variances: []
+      acceptance:
+        decision: "Accepted as proposed. Group indentation/background treatment verified by the reviewer's independent manual check; unchanged from the original passing implementation."
+        accepted_by: "Repository owner (stratmann.simon@gmail.com)"
+        accepted_on: "2026-08-16"
     gaps: [ ]
     task: FM-012
     backlog: { status: deferred, rationale: "The record remains partial pending a dedicated full-parity reconciliation." }
@@ -231,7 +280,26 @@ features:
     selectors: [ send-to-downloader, download-nzb ]
     target: core/ui-react/src/features/search/results
     parity: partial
-    visual: { applicability: applicable, status: unassessed }
+    visual:
+      applicability: applicable
+      status: accepted
+      contract:
+        setup: "React-selected `ui/react?redirect=/` with a deterministic mocked `internalapi/search` response (NZB-eligible results) submitted through the real search form, in `tests/system/tests/results.spec.ts`."
+        states: [ direct-download-per-row, bulk-download-toolbar-region, mobile-primary-row-action ]
+        viewports: [ { name: desktop, width: 1280, height: 800 }, { name: mobile, width: 390, height: 844 } ]
+        geometry_checks:
+          - "every visible row's direct-download control (download-nzb) is visible at both the 1280x800 desktop and 390x844 mobile viewports"
+          - "at mobile, the direct-download control's containing cell has a computed display of flex, confirming the responsive per-row action layout is active rather than being hidden or clipped"
+          - "the toolbar's results-download-actions region (save search, selected-result bulk downloader/ZIP/black-hole/copy actions) renders within the compact results-toolbar without overflow, a distinct region from the per-row actions column and from results-selection-actions"
+          - "after a direct download, the per-row 'Downloaded' indicator renders in the desktop Actions column with no scrollWidth overflow of its own box (no text clipping/truncation)"
+      evidence: [ tests/system/tests/results.spec.ts ]
+      variances:
+        - description: "Unlike legacy, which hides its row Links/actions column entirely below the xs breakpoint (`core/ui-src/less/partials/tables.less` `.search-results-table .result-links { display: none !important; }`), the React direct-download action remains visible per row at the 390px mobile viewport. This is an intentional usability improvement over a legacy gap, not a semantic loss."
+          status: accepted
+      acceptance:
+        decision: "Accepted as proposed, including the mobile-visible-download-action variance (an intentional usability improvement over a legacy gap). Reviewed desktop/mobile screenshots confirming the direct-download button and 'Downloaded' chip are both fully legible after a real download."
+        accepted_by: "Repository owner (stratmann.simon@gmail.com)"
+        accepted_on: "2026-08-16"
     gaps: [ download-history route migration ]
     task: FM-013
     backlog: { status: deferred, rationale: "Download-history route migration is separately deferred." }
@@ -246,7 +314,21 @@ features:
     selectors: [ ]
     target: core/ui-react/src/features/search/results
     parity: partial
-    visual: { applicability: applicable, status: unassessed }
+    visual:
+      applicability: applicable
+      status: accepted
+      contract:
+        setup: "React-selected `ui/react?redirect=/` with a deterministic mocked `internalapi/search` response submitted through the real search form, where the load-more/load-all continuation controls always render immediately above the compact results-toolbar, in `tests/system/tests/results.spec.ts`."
+        states: [ load-controls-above-toolbar ]
+        viewports: [ { name: desktop, width: 1280, height: 800 }, { name: mobile, width: 390, height: 844 } ]
+        geometry_checks:
+          - "the load-more/load-all continuation controls, always rendered immediately above the compact results-toolbar, introduce no page-level horizontal overflow at either viewport (verified by the page-wide overflow assertion covering the whole rendered page in the same deterministic evidence run)"
+      evidence: [ tests/system/tests/results.spec.ts ]
+      variances: []
+      acceptance:
+        decision: "Accepted as proposed. Load-more/load-all placement unchanged by the review-fix round; verified overflow-free at both viewports."
+        accepted_by: "Repository owner (stratmann.simon@gmail.com)"
+        accepted_on: "2026-08-16"
     task: FM-018
     backlog: { status: deferred, rationale: "The record remains partial pending a dedicated full-parity reconciliation." }
 
@@ -260,7 +342,21 @@ features:
     selectors: [ ]
     target: core/ui-react/src/features/search
     parity: partial
-    visual: { applicability: applicable, status: unassessed }
+    visual:
+      applicability: applicable
+      status: accepted
+      contract:
+        setup: "React-selected `ui/react?redirect=/` with a deterministic mocked `internalapi/search` response submitted through the real search form, where the Save search control always renders inside the compact results-toolbar's results-download-actions region, in `tests/system/tests/results.spec.ts`."
+        states: [ save-search-toolbar-placement ]
+        viewports: [ { name: desktop, width: 1280, height: 800 }, { name: mobile, width: 390, height: 844 } ]
+        geometry_checks:
+          - "the save-search control is contained within the toolbar's results-download-actions region alongside the bulk download actions, and the whole results-toolbar renders without horizontal overflow at either viewport"
+      evidence: [ tests/system/tests/results.spec.ts ]
+      variances: []
+      acceptance:
+        decision: "Accepted as proposed. Save-search placement within the toolbar's download-actions region unchanged by the review-fix round; verified overflow-free at both viewports."
+        accepted_by: "Repository owner (stratmann.simon@gmail.com)"
+        accepted_on: "2026-08-16"
     gaps: [ ]
     task: FM-019
     backlog: { status: deferred, rationale: "Remaining saved-search parity is future work." }
