@@ -640,6 +640,59 @@ test.describe("Search", () => {
         ).toBeVisible();
     });
 
+    test("should select a movie autocomplete result through the React route and search by TMDB identifier", async ({
+        page,
+    }) => {
+        await page.goto("ui/react?redirect=/");
+        await expect(page).toHaveURL(/\/$/);
+        await page.getByTestId("search-category-control").click();
+        await page.getByTestId("search-category-option-Movies").click();
+
+        const searchQuery = page.getByTestId("search-query");
+        const autocompleteResponse = page.waitForResponse(
+            (response) =>
+                response.request().method() === "GET" &&
+                new URL(response.url()).pathname ===
+                    "/internalapi/autocomplete/MOVIE",
+        );
+        await searchQuery.fill(movieQuery);
+
+        const response = await autocompleteResponse;
+        expect(response.status()).toBe(200);
+        const autocomplete = (await response.json()) as Array<
+            Record<string, unknown>
+        >;
+        const match = autocomplete.find(
+            (entry) => entry.tmdbId === "424242",
+        );
+        expect(match).toBeDefined();
+        // Confirms this test exercises the real backend's explicit-null
+        // serialization of absent optional fields, not a coincidentally
+        // complete payload.
+        expect(match).toMatchObject({
+            imdbId: null,
+            tvmazeId: null,
+            tvrageId: null,
+            tvdbId: null,
+            posterUrl: null,
+        });
+
+        const movieOption = page.locator(
+            '[data-testid="autocomplete-option"][data-tmdb-id="424242"]',
+        );
+        await expect(movieOption).toBeVisible();
+        await movieOption.click();
+        await expect(searchQuery).toHaveValue(movieQuery);
+        await expect(page.getByTestId("additional-query")).toBeVisible();
+
+        const searchResponse = page.waitForResponse((response) =>
+            isSearchResponse(response),
+        );
+        await page.getByTestId("search-submit").click();
+        const searchRequest = (await searchResponse).request();
+        expect(searchRequest.postData()).toContain('"tmdbId":"424242"');
+    });
+
     test("should select a TV autocomplete result with the keyboard and search by TVDB identifier", async ({
         page,
     }) => {

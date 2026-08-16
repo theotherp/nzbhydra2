@@ -29,6 +29,39 @@ describe("media API", () => {
         );
     });
 
+    it("should accept explicit null optional identifier fields as the real backend serializes them", async () => {
+        const fetchImplementation = vi.fn().mockResolvedValue(
+            new Response(
+                JSON.stringify([
+                    {
+                        imdbId: null,
+                        tmdbId: "424242",
+                        tvmazeId: null,
+                        tvrageId: null,
+                        tvdbId: null,
+                        title: "Hydra Browser Movie",
+                        year: 2000,
+                        posterUrl: null,
+                    },
+                ]),
+                {headers: {"Content-Type": "application/json"}},
+            ),
+        );
+        const suggestions = await getAutocomplete(
+            new ApiTransport("/", fetchImplementation),
+            "MOVIE",
+            "Hydra Browser Movie",
+        );
+        expect(suggestions).toEqual([
+            {title: "Hydra Browser Movie", tmdbId: "424242", year: 2000},
+        ]);
+        expect(suggestions[0].imdbId).toBeUndefined();
+        expect(suggestions[0].tvmazeId).toBeUndefined();
+        expect(suggestions[0].tvrageId).toBeUndefined();
+        expect(suggestions[0].tvdbId).toBeUndefined();
+        expect(suggestions[0].posterUrl).toBeUndefined();
+    });
+
     it("should reject malformed autocomplete payloads", async () => {
         const transport = new ApiTransport(
             "/",

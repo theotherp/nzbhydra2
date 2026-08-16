@@ -15,13 +15,41 @@ export type MediaSuggestion = {
 
 const suggestionSchema = z.object({
     title: z.string().min(1),
-    year: z.number().int().optional(),
-    posterUrl: z.string().min(1).optional(),
-    imdbId: z.string().min(1).optional(),
-    tmdbId: z.string().min(1).optional(),
-    tvdbId: z.string().min(1).optional(),
-    tvmazeId: z.string().min(1).optional(),
-    tvrageId: z.string().min(1).optional(),
+    year: z
+        .number()
+        .int()
+        .nullish()
+        .transform((value) => value ?? undefined),
+    posterUrl: z
+        .string()
+        .min(1)
+        .nullish()
+        .transform((value) => value ?? undefined),
+    imdbId: z
+        .string()
+        .min(1)
+        .nullish()
+        .transform((value) => value ?? undefined),
+    tmdbId: z
+        .string()
+        .min(1)
+        .nullish()
+        .transform((value) => value ?? undefined),
+    tvdbId: z
+        .string()
+        .min(1)
+        .nullish()
+        .transform((value) => value ?? undefined),
+    tvmazeId: z
+        .string()
+        .min(1)
+        .nullish()
+        .transform((value) => value ?? undefined),
+    tvrageId: z
+        .string()
+        .min(1)
+        .nullish()
+        .transform((value) => value ?? undefined),
 });
 
 export class MalformedAutocompleteResponseError extends Error {
