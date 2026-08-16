@@ -1,4 +1,5 @@
 import {
+    act,
     cleanup,
     fireEvent,
     render,
@@ -321,15 +322,19 @@ describe("SearchPage", () => {
             />,
         );
 
-        await screen.findByRole("button", {name: "Refill"});
-        expect(screen.getByText(/Source: Internal/)).toBeVisible();
-        fireEvent.click(screen.getByRole("button", {name: "Refill"}));
+        await screen.findByTestId("recent-searches-trigger");
+        fireEvent.click(screen.getByTestId("recent-searches-trigger"));
+        await screen.findByRole("menuitem", {name: /^Refill:/});
+        expect(screen.getAllByText(/Source: Internal/).at(0)).toBeVisible();
+        fireEvent.click(screen.getByRole("menuitem", {name: /^Refill:/}));
         expect(screen.getByLabelText("Search")).toHaveValue("recent query");
         expect(screen.getByLabelText("Minimum age (days)")).toHaveValue(1);
         expect(screen.getByLabelText("Maximum age (days)")).toHaveValue(2);
         expect(screen.getByLabelText("Minimum size (MB)")).toHaveValue(3);
         expect(screen.getByLabelText("Maximum size (MB)")).toHaveValue(4);
-        fireEvent.click(screen.getByRole("button", {name: "Repeat"}));
+        fireEvent.click(screen.getByTestId("recent-searches-trigger"));
+        await screen.findByRole("menuitem", {name: /^Repeat:/});
+        fireEvent.click(screen.getByRole("menuitem", {name: /^Repeat:/}));
         await waitFor(() => expect(requests).toHaveLength(1));
         expect(JSON.parse(requests[0].body as string)).toEqual({
             query: "recent query",
@@ -342,6 +347,135 @@ describe("SearchPage", () => {
             loadAll: false,
             searchRequestId: expect.any(Number),
         });
+    });
+
+    it("should open, focus, and close the recent-search menu", async () => {
+        const fetchImplementation = vi.fn(() =>
+            Promise.resolve(
+                new Response(
+                    JSON.stringify([
+                        {
+                            categoryName: "All",
+                            source: "INTERNAL",
+                            query: "focus query",
+                            identifiers: [],
+                        },
+                    ]),
+                    {headers: {"Content-Type": "application/json"}},
+                ),
+            ),
+        );
+        render(
+            <SearchPage
+                bootstrap={bootstrap}
+                transport={new ApiTransport("/hydra/", fetchImplementation)}
+                liveTransport={immediatelyUnavailableLiveTransport}
+            />,
+        );
+
+        const trigger = await screen.findByTestId("recent-searches-trigger");
+        trigger.focus();
+        fireEvent.click(trigger);
+        const refill = await screen.findByRole("menuitem", {
+            name: /^Refill:/,
+        });
+        await waitFor(() => expect(refill).toHaveFocus());
+        fireEvent.keyDown(screen.getByRole("menu"), {key: "Escape"});
+        await waitFor(() =>
+            expect(screen.queryByRole("menu")).not.toBeInTheDocument(),
+        );
+        expect(trigger).toHaveFocus();
+    });
+
+    it("should present loading and empty recent-search menu states", async () => {
+        let resolveHistory: (response: Response) => void = () => undefined;
+        const fetchImplementation = vi.fn(
+            () =>
+                new Promise<Response>((resolve) => {
+                    resolveHistory = resolve;
+                }),
+        );
+        render(
+            <SearchPage
+                bootstrap={bootstrap}
+                transport={new ApiTransport("/hydra/", fetchImplementation)}
+                liveTransport={immediatelyUnavailableLiveTransport}
+            />,
+        );
+
+        fireEvent.click(await screen.findByTestId("recent-searches-trigger"));
+        await waitFor(() => expect(fetchImplementation).toHaveBeenCalledOnce());
+        expect(screen.getByLabelText("Loading recent searches")).toBeVisible();
+        await act(async () => {
+            resolveHistory(
+                new Response(JSON.stringify([]), {
+                    headers: {"Content-Type": "application/json"},
+                }),
+            );
+        });
+        expect(await screen.findByText("No recent searches.")).toBeVisible();
+    });
+
+    it("should present recent-search loading failures", async () => {
+        let rejectHistory: (error: Error) => void = () => undefined;
+        render(
+            <SearchPage
+                bootstrap={bootstrap}
+                transport={
+                    new ApiTransport(
+                        "/hydra/",
+                        vi.fn(
+                            () =>
+                                new Promise<Response>((_resolve, reject) => {
+                                    rejectHistory = reject;
+                                }),
+                        ),
+                    )
+                }
+                liveTransport={immediatelyUnavailableLiveTransport}
+            />,
+        );
+
+        fireEvent.click(await screen.findByTestId("recent-searches-trigger"));
+        expect(screen.getByLabelText("Loading recent searches")).toBeVisible();
+        await act(async () => {
+            rejectHistory(new Error("unavailable"));
+        });
+        expect(
+            await screen.findByText("Unable to load recent searches."),
+        ).toBeVisible();
+    });
+
+    it("should refill a dragged recent search", async () => {
+        const fetchImplementation = vi.fn(() =>
+            Promise.resolve(
+                new Response(
+                    JSON.stringify([
+                        {
+                            categoryName: "All",
+                            source: "INTERNAL",
+                            query: "dragged query",
+                            identifiers: [],
+                        },
+                    ]),
+                    {headers: {"Content-Type": "application/json"}},
+                ),
+            ),
+        );
+        render(
+            <SearchPage
+                bootstrap={bootstrap}
+                transport={new ApiTransport("/hydra/", fetchImplementation)}
+                liveTransport={immediatelyUnavailableLiveTransport}
+            />,
+        );
+
+        fireEvent.click(await screen.findByTestId("recent-searches-trigger"));
+        fireEvent.dragStart(
+            await screen.findByRole("menuitem", {name: /^Refill:/}),
+        );
+        fireEvent.drop(screen.getByLabelText("Search"));
+        expect(screen.getByLabelText("Search")).toHaveValue("dragged query");
     });
 
     it("should leave absent recent criteria to canonical defaults", async () => {
@@ -371,8 +505,10 @@ describe("SearchPage", () => {
             />,
         );
 
-        await screen.findByRole("button", {name: "Refill"});
-        fireEvent.click(screen.getByRole("button", {name: "Refill"}));
+        await screen.findByTestId("recent-searches-trigger");
+        fireEvent.click(screen.getByTestId("recent-searches-trigger"));
+        await screen.findByRole("menuitem", {name: /^Refill:/});
+        fireEvent.click(screen.getByRole("menuitem", {name: /^Refill:/}));
         expect(screen.getByLabelText("Minimum age (days)")).toHaveValue(null);
         expect(screen.getByLabelText("Maximum size (MB)")).toHaveValue(null);
     });

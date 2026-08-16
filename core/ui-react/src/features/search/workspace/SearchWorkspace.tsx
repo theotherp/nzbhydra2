@@ -5,9 +5,12 @@ import {
     Checkbox,
     FormControlLabel,
     MenuItem,
+    Paper,
     Stack,
     TextField,
+    Typography,
 } from "@mui/material";
+import type {ReactNode} from "react";
 import {Controller, useForm} from "react-hook-form";
 import {useEffect, useId, useRef, useState} from "react";
 import {z} from "zod";
@@ -136,6 +139,7 @@ export function SearchWorkspace({
     showIndexerSelection = false,
     indexerSelectionAsCheckboxes = false,
     onSearchDrop,
+    historyTool,
 }: {
     catalog: CategoryCatalog;
     initialValues: SearchFormValues;
@@ -147,6 +151,7 @@ export function SearchWorkspace({
     showIndexerSelection?: boolean;
     indexerSelectionAsCheckboxes?: boolean;
     onSearchDrop?(): void;
+    historyTool?: ReactNode;
 }) {
     const {
         register,
@@ -241,9 +246,128 @@ export function SearchWorkspace({
     const selectIndexers = (names: string[]) => setValue("indexers", names);
     const resetIndexers = (category = selectedCategory) =>
         selectIndexers(catalog.preselectedIndexerNames(category));
+    const searchField = mediaType ? (
+        <>
+            <TextField
+                label="Search"
+                slotProps={{
+                    htmlInput: {
+                        "data-testid": "search-query",
+                        "aria-controls": suggestions.length
+                            ? listboxId
+                            : undefined,
+                        "aria-activedescendant":
+                            activeOption >= 0
+                                ? `${listboxId}-${activeOption}`
+                                : undefined,
+                    },
+                }}
+                type="search"
+                {...register("title", {
+                    onChange: () => {
+                        request.current++;
+                        if (selected) {
+                            clearSelection();
+                        }
+                    },
+                })}
+                onDrop={onSearchDrop}
+                onDragOver={(event) => event.preventDefault()}
+                onKeyDown={(event) => {
+                    if (event.key === "ArrowDown" && suggestions.length) {
+                        event.preventDefault();
+                        setActiveOption((current) =>
+                            Math.min(current + 1, suggestions.length - 1),
+                        );
+                    } else if (event.key === "ArrowUp" && suggestions.length) {
+                        event.preventDefault();
+                        setActiveOption((current) => Math.max(current - 1, 0));
+                    } else if (event.key === "Enter" && activeOption >= 0) {
+                        event.preventDefault();
+                        chooseSuggestion(suggestions[activeOption]);
+                    } else if (event.key === "Escape") {
+                        setSuggestions([]);
+                    }
+                }}
+            />
+            {suggestions.length > 0 && (
+                <Paper
+                    component="ul"
+                    data-testid="autocomplete-popup"
+                    id={listboxId}
+                    role="listbox"
+                    elevation={4}
+                    sx={{m: 0, overflow: "hidden", p: 0, listStyle: "none"}}
+                >
+                    {suggestions.map((suggestion, index) => (
+                        <Box
+                            component="li"
+                            data-testid="autocomplete-option"
+                            data-tmdb-id={suggestion.tmdbId}
+                            id={`${listboxId}-${index}`}
+                            key={`${suggestion.title}-${index}`}
+                            role="option"
+                            aria-selected={activeOption === index}
+                            tabIndex={-1}
+                            onMouseDown={(event) => event.preventDefault()}
+                            onClick={() => chooseSuggestion(suggestion)}
+                            sx={{
+                                cursor: "pointer",
+                                px: 1.5,
+                                py: 1,
+                                bgcolor:
+                                    activeOption === index
+                                        ? "action.selected"
+                                        : undefined,
+                            }}
+                        >
+                            {suggestion.title}
+                            {suggestion.year ? ` (${suggestion.year})` : ""}
+                        </Box>
+                    ))}
+                </Paper>
+            )}
+            {autocompleteState === "loading" && (
+                <Alert role="status" severity="info">
+                    Loading title suggestions…
+                </Alert>
+            )}
+            {autocompleteState === "empty" && (
+                <Alert role="status" severity="info">
+                    No title suggestions found.
+                </Alert>
+            )}
+            {autocompleteState === "malformed" && (
+                <Alert severity="warning">
+                    Title suggestions were unavailable because the response was
+                    invalid.
+                </Alert>
+            )}
+            {autocompleteState === "error" && (
+                <Alert severity="warning">
+                    Title suggestions are currently unavailable.
+                </Alert>
+            )}
+        </>
+    ) : (
+        <TextField
+            label="Search"
+            slotProps={{htmlInput: {"data-testid": "search-query"}}}
+            type="search"
+            {...register("query")}
+            onDrop={onSearchDrop}
+            onDragOver={(event) => event.preventDefault()}
+        />
+    );
     return (
-        <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{mt: 3}}>
-            <Stack spacing={2}>
+        <Paper
+            component="form"
+            data-testid="search-workspace"
+            elevation={1}
+            onSubmit={handleSubmit(onSubmit)}
+            sx={{mt: 3, p: {xs: 2, sm: 3}}}
+        >
+            <Stack spacing={2.5}>
                 {noIndexers && (
                     <Alert severity="info">
                         {eligibleIndexers.length === 0
@@ -251,126 +375,70 @@ export function SearchWorkspace({
                             : "You didn't select any indexers."}
                     </Alert>
                 )}
-                {mediaType ? (
-                    <>
-                        <TextField
-                            label="Search"
-                            slotProps={{
-                                htmlInput: {
-                                    "data-testid": "search-query",
-                                    "aria-controls": suggestions.length
-                                        ? listboxId
-                                        : undefined,
-                                    "aria-activedescendant":
-                                        activeOption >= 0
-                                            ? `${listboxId}-${activeOption}`
-                                            : undefined,
-                                },
-                            }}
-                            type="search"
-                            {...register("title", {
-                                onChange: () => {
-                                    request.current++;
-                                    if (selected) {
-                                        clearSelection();
-                                    }
-                                },
-                            })}
-                            onDrop={onSearchDrop}
-                            onDragOver={(event) => event.preventDefault()}
-                            onKeyDown={(event) => {
-                                if (
-                                    event.key === "ArrowDown" &&
-                                    suggestions.length
-                                ) {
-                                    event.preventDefault();
-                                    setActiveOption((current) =>
-                                        Math.min(
-                                            current + 1,
-                                            suggestions.length - 1,
+                <Box
+                    data-testid="workspace-primary"
+                    sx={{
+                        display: "grid",
+                        gridTemplateColumns: {
+                            xs: "1fr",
+                            sm: "minmax(180px, 0.35fr) minmax(0, 1fr)",
+                        },
+                        gap: 2,
+                    }}
+                >
+                    <Controller
+                        control={control}
+                        name="category"
+                        render={({field}) => (
+                            <TextField
+                                data-testid="search-category-control"
+                                label="Category"
+                                select
+                                {...field}
+                                onChange={(event) => {
+                                    const category = event.target.value;
+                                    categoryChanged(category);
+                                    const eligible = new Set(
+                                        catalog
+                                            .eligibleIndexers(category)
+                                            .map((indexer) => indexer.name),
+                                    );
+                                    selectIndexers(
+                                        selectedIndexers.filter((name) =>
+                                            eligible.has(name),
                                         ),
                                     );
-                                } else if (
-                                    event.key === "ArrowUp" &&
-                                    suggestions.length
-                                ) {
-                                    event.preventDefault();
-                                    setActiveOption((current) =>
-                                        Math.max(current - 1, 0),
-                                    );
-                                } else if (
-                                    event.key === "Enter" &&
-                                    activeOption >= 0
-                                ) {
-                                    event.preventDefault();
-                                    chooseSuggestion(suggestions[activeOption]);
-                                } else if (event.key === "Escape") {
-                                    setSuggestions([]);
-                                }
-                            }}
-                        />
-                        {suggestions.length > 0 && (
-                            <Box
-                                component="ul"
-                                data-testid="autocomplete-popup"
-                                id={listboxId}
-                                role="listbox"
-                                sx={{m: 0, p: 0, listStyle: "none"}}
+                                }}
                             >
-                                {suggestions.map((suggestion, index) => (
-                                    <Box
-                                        component="li"
-                                        data-testid="autocomplete-option"
-                                        data-tmdb-id={suggestion.tmdbId}
-                                        id={`${listboxId}-${index}`}
-                                        key={`${suggestion.title}-${index}`}
-                                        role="option"
-                                        aria-selected={activeOption === index}
-                                        tabIndex={-1}
-                                        onMouseDown={(event) =>
-                                            event.preventDefault()
-                                        }
-                                        onClick={() =>
-                                            chooseSuggestion(suggestion)
-                                        }
-                                        sx={{
-                                            cursor: "pointer",
-                                            p: 1,
-                                            bgcolor:
-                                                activeOption === index
-                                                    ? "action.selected"
-                                                    : undefined,
-                                        }}
+                                {catalog.categories.map((category) => (
+                                    <MenuItem
+                                        data-testid={`search-category-option-${category.name}`}
+                                        key={category.name}
+                                        value={category.name}
                                     >
-                                        {suggestion.title}
-                                        {suggestion.year
-                                            ? ` (${suggestion.year})`
-                                            : ""}
-                                    </Box>
+                                        {category.name}
+                                    </MenuItem>
                                 ))}
-                            </Box>
+                            </TextField>
                         )}
-                        {autocompleteState === "loading" && (
-                            <Alert role="status" severity="info">
-                                Loading title suggestions…
-                            </Alert>
-                        )}
-                        {autocompleteState === "empty" && (
-                            <Alert role="status" severity="info">
-                                No title suggestions found.
-                            </Alert>
-                        )}
-                        {autocompleteState === "malformed" && (
-                            <Alert severity="warning">
-                                Title suggestions were unavailable because the
-                                response was invalid.
-                            </Alert>
-                        )}
-                        {autocompleteState === "error" && (
-                            <Alert severity="warning">
-                                Title suggestions are currently unavailable.
-                            </Alert>
-                        )}
+                    />
+                    {searchField}
+                </Box>
+                {mediaType && (
+                    <Box
+                        data-testid="workspace-media-refinement"
+                        sx={{
+                            display: "grid",
+                            gridTemplateColumns: {
+                                xs: "1fr",
+                                md:
+                                    mediaType === "TV"
+                                        ? "minmax(0, 1fr) minmax(260px, 0.45fr)"
+                                        : "minmax(0, 1fr)",
+                            },
+                            gap: 2,
+                        }}
+                    >
                         <TextField
                             id="additional-query"
                             label="Additional filter terms"
@@ -381,7 +449,14 @@ export function SearchWorkspace({
                             {...register("additionalQuery")}
                         />
                         {mediaType === "TV" && (
-                            <Stack direction={{sm: "row"}} spacing={2}>
+                            <Box
+                                sx={{
+                                    display: "grid",
+                                    gridTemplateColumns:
+                                        "repeat(2, minmax(0, 1fr))",
+                                    gap: 1,
+                                }}
+                            >
                                 <TextField
                                     label="Season"
                                     type="number"
@@ -391,57 +466,15 @@ export function SearchWorkspace({
                                     label="Episode"
                                     {...register("episode")}
                                 />
-                            </Stack>
+                            </Box>
                         )}
-                    </>
-                ) : (
-                    <TextField
-                        label="Search"
-                        slotProps={{htmlInput: {"data-testid": "search-query"}}}
-                        type="search"
-                        {...register("query")}
-                        onDrop={onSearchDrop}
-                        onDragOver={(event) => event.preventDefault()}
-                    />
+                    </Box>
                 )}
-                <Controller
-                    control={control}
-                    name="category"
-                    render={({field}) => (
-                        <TextField
-                            data-testid="search-category-control"
-                            label="Category"
-                            select
-                            {...field}
-                            onChange={(event) => {
-                                const category = event.target.value;
-                                categoryChanged(category);
-                                const eligible = new Set(
-                                    catalog
-                                        .eligibleIndexers(category)
-                                        .map((indexer) => indexer.name),
-                                );
-                                selectIndexers(
-                                    selectedIndexers.filter((name) =>
-                                        eligible.has(name),
-                                    ),
-                                );
-                            }}
-                        >
-                            {catalog.categories.map((category) => (
-                                <MenuItem
-                                    data-testid={`search-category-option-${category.name}`}
-                                    key={category.name}
-                                    value={category.name}
-                                >
-                                    {category.name}
-                                </MenuItem>
-                            ))}
-                        </TextField>
-                    )}
-                />
                 {showIndexerSelection && eligibleIndexers.length > 0 && (
-                    <Box aria-label="Indexer selection">
+                    <Box
+                        aria-label="Indexer selection"
+                        data-testid="workspace-indexers"
+                    >
                         {!indexerSelectionAsCheckboxes && (
                             <TextField
                                 label="Indexers"
@@ -590,41 +623,103 @@ export function SearchWorkspace({
                         </Stack>
                     </Box>
                 )}
-                <Stack direction={{sm: "row"}} spacing={2}>
-                    <TextField
-                        label="Minimum age (days)"
-                        type="number"
-                        {...register("minage", {pattern: /^\d*$/})}
-                        error={Boolean(errors.minage)}
-                    />
-                    <TextField
-                        label="Maximum age (days)"
-                        type="number"
-                        {...register("maxage", {pattern: /^\d*$/})}
-                        error={Boolean(errors.maxage)}
-                    />
-                    <TextField
-                        label="Minimum size (MB)"
-                        type="number"
-                        {...register("minsize", {pattern: /^\d*$/})}
-                        error={Boolean(errors.minsize)}
-                    />
-                    <TextField
-                        label="Maximum size (MB)"
-                        type="number"
-                        {...register("maxsize", {pattern: /^\d*$/})}
-                        error={Boolean(errors.maxsize)}
-                    />
-                </Stack>
-                <Button
-                    data-testid="search-submit"
-                    type="submit"
-                    variant="contained"
+                <Box
+                    data-testid="workspace-ranges"
+                    sx={{
+                        display: "grid",
+                        gridTemplateColumns: {
+                            xs: "1fr",
+                            md: "repeat(2, minmax(0, 1fr))",
+                        },
+                        gap: 2,
+                    }}
                 >
-                    Search
-                </Button>
+                    <Box>
+                        <Typography
+                            component="h2"
+                            variant="subtitle2"
+                            sx={{mb: 1}}
+                        >
+                            Age
+                        </Typography>
+                        <Box
+                            sx={{
+                                display: "grid",
+                                gridTemplateColumns:
+                                    "repeat(2, minmax(0, 1fr))",
+                                gap: 1,
+                            }}
+                        >
+                            <TextField
+                                label="Minimum age (days)"
+                                type="number"
+                                {...register("minage", {pattern: /^\d*$/})}
+                                error={Boolean(errors.minage)}
+                            />
+                            <TextField
+                                label="Maximum age (days)"
+                                type="number"
+                                {...register("maxage", {pattern: /^\d*$/})}
+                                error={Boolean(errors.maxage)}
+                            />
+                        </Box>
+                    </Box>
+                    <Box>
+                        <Typography
+                            component="h2"
+                            variant="subtitle2"
+                            sx={{mb: 1}}
+                        >
+                            Size
+                        </Typography>
+                        <Box
+                            sx={{
+                                display: "grid",
+                                gridTemplateColumns:
+                                    "repeat(2, minmax(0, 1fr))",
+                                gap: 1,
+                            }}
+                        >
+                            <TextField
+                                label="Minimum size (MB)"
+                                type="number"
+                                {...register("minsize", {pattern: /^\d*$/})}
+                                error={Boolean(errors.minsize)}
+                            />
+                            <TextField
+                                label="Maximum size (MB)"
+                                type="number"
+                                {...register("maxsize", {pattern: /^\d*$/})}
+                                error={Boolean(errors.maxsize)}
+                            />
+                        </Box>
+                    </Box>
+                </Box>
+                <Box
+                    data-testid="workspace-actions"
+                    sx={{
+                        display: "flex",
+                        flexDirection: {xs: "column", sm: "row"},
+                        justifyContent: "space-between",
+                        alignItems: {sm: "center"},
+                        gap: 2,
+                    }}
+                >
+                    {historyTool}
+                    <Button
+                        data-testid="search-submit"
+                        type="submit"
+                        variant="contained"
+                        sx={{
+                            minWidth: {sm: 160},
+                            width: {xs: "100%", sm: "auto"},
+                        }}
+                    >
+                        Search
+                    </Button>
+                </Box>
             </Stack>
-        </Box>
+        </Paper>
     );
 }
 

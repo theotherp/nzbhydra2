@@ -1,9 +1,14 @@
-import { dismissWelcomeDialog, expect, test } from "./fixtures";
+import {dismissWelcomeDialog, expect, test} from "./fixtures";
+import {
+    expectVisualGeometry,
+    prepareVisualEvidence,
+    visualViewports,
+} from "./visualEvidence";
 
 const movieQuery = "Hydra Browser Movie";
 
 test.describe("Search", () => {
-    test.beforeEach(async ({ hydra, page }) => {
+    test.beforeEach(async ({hydra, page}) => {
         await hydra.configureMockIndexers(["1", "2"]);
         await page.goto("/");
         await dismissWelcomeDialog(page);
@@ -27,7 +32,7 @@ test.describe("Search", () => {
         };
         expect(typeof requestBody.searchRequestId).toBe("number");
         expect(requestBody.loadAll).toBe(false);
-        const body = (await response.json()) as { searchResults?: unknown[] };
+        const body = (await response.json()) as {searchResults?: unknown[]};
         expect(Array.isArray(body.searchResults)).toBe(true);
 
         await expect(page.getByTestId("search-status-modal")).toBeHidden();
@@ -35,12 +40,12 @@ test.describe("Search", () => {
         await expect(
             page
                 .getByTestId("search-result-title")
-                .filter({ hasText: "indexer1-result1" }),
+                .filter({hasText: "indexer1-result1"}),
         ).toBeVisible();
         await expect(
             page
                 .getByTestId("search-result-title")
-                .filter({ hasText: "indexer2-result1" }),
+                .filter({hasText: "indexer2-result1"}),
         ).toBeVisible();
         await expect(page.getByTestId("search-results-summary")).toContainText(
             "Loaded 5",
@@ -59,7 +64,7 @@ test.describe("Search", () => {
         const savedSearchBody = (await savedSearchResponse)
             .request()
             .postDataJSON() as {
-            request?: { searchRequestId?: unknown; loadAll?: unknown };
+            request?: {searchRequestId?: unknown; loadAll?: unknown};
         };
         expect(typeof savedSearchBody.request?.searchRequestId).toBe("number");
         expect(savedSearchBody.request?.loadAll).toBe(false);
@@ -88,10 +93,10 @@ test.describe("Search", () => {
 
         await page.goto("/stats/saved-searches");
         await expect(
-            page.getByRole("heading", { name: "Saved searches" }),
+            page.getByRole("heading", {name: "Saved searches"}),
         ).toBeVisible();
         await expect(
-            page.getByRole("cell", { name: "saved React criteria" }),
+            page.getByRole("cell", {name: "saved React criteria"}),
         ).toBeVisible();
 
         await page.goto("ui/legacy?redirect=/stats/saved-searches");
@@ -100,9 +105,9 @@ test.describe("Search", () => {
 
         await page.goto("ui/react?redirect=/stats/saved-searches");
         await expect(
-            page.getByRole("heading", { name: "Saved searches" }),
+            page.getByRole("heading", {name: "Saved searches"}),
         ).toBeVisible();
-        await page.getByRole("button", { name: "Search" }).click();
+        await page.getByRole("button", {name: "Search"}).click();
         await expect(page.getByTestId("search-query")).toHaveValue(
             "saved React criteria",
         );
@@ -115,10 +120,10 @@ test.describe("Search", () => {
         });
 
         await page.goto("/stats/saved-searches");
-        await page.getByRole("button", { name: "Delete" }).click();
+        await page.getByRole("button", {name: "Delete"}).click();
         await page
             .getByRole("dialog")
-            .getByRole("button", { name: "Delete" })
+            .getByRole("button", {name: "Delete"})
             .click();
         await expect(page.getByText("saved React criteria")).not.toBeVisible();
     });
@@ -203,7 +208,7 @@ test.describe("Search", () => {
         expect(reactSelectorCounts.map((count) => count > 0)).toEqual(
             selectorCounts.map((count) => count > 0),
         );
-        await page.setViewportSize({ width: 390, height: 844 });
+        await page.setViewportSize({width: 390, height: 844});
         expect(
             await page
                 .locator("html")
@@ -211,6 +216,130 @@ test.describe("Search", () => {
                     (element) => element.scrollWidth <= element.clientWidth,
                 ),
         ).toBe(true);
+    });
+
+    test("should provide deterministic React workspace visual evidence across desktop and mobile", async ({
+        hydra,
+        page,
+    }) => {
+        const config = await hydra.getConfig();
+        (config.main as Record<string, unknown>).keepHistory = true;
+        (config.searching as Record<string, unknown>).historyForSearching = 5;
+        await hydra.saveConfig(config);
+
+        for (const [viewport, minimumWidth] of Object.entries({
+            desktop: 600,
+            mobile: 300,
+        }) as Array<[keyof typeof visualViewports, number]>) {
+            await prepareVisualEvidence(page, viewport, async () => {
+                await page.goto("ui/react?redirect=/");
+                await expect(page).toHaveURL(/\/$/);
+                await expect(
+                    page.getByTestId("search-workspace"),
+                ).toBeVisible();
+            });
+            const workspace = page.getByTestId("search-workspace");
+            const primary = page.getByTestId("workspace-primary");
+            const ranges = page.getByTestId("workspace-ranges");
+            const actions = page.getByTestId("workspace-actions");
+            await expectVisualGeometry(page, {
+                region: `search-workspace-${viewport}`,
+                locator: workspace,
+                minimumWidth,
+            });
+            await expectVisualGeometry(page, {
+                region: `workspace-primary-${viewport}`,
+                locator: primary,
+                minimumWidth,
+            });
+            await expectVisualGeometry(page, {
+                region: `workspace-ranges-${viewport}`,
+                locator: ranges,
+                minimumWidth,
+            });
+            await expectVisualGeometry(page, {
+                region: `workspace-actions-${viewport}`,
+                locator: actions,
+                minimumWidth,
+            });
+            await expectVisualGeometry(page, {
+                region: `dropdown-indexers-${viewport}`,
+                locator: page.getByRole("combobox", {name: "Indexers"}),
+                minimumWidth,
+            });
+            const category = page.getByTestId("search-category-control");
+            const query = page.getByTestId("search-query");
+            const [categoryBox, queryBox, submitBox] = await Promise.all([
+                category.boundingBox(),
+                query.boundingBox(),
+                page.getByTestId("search-submit").boundingBox(),
+            ]);
+            expect(categoryBox).not.toBeNull();
+            expect(queryBox).not.toBeNull();
+            expect(submitBox).not.toBeNull();
+            if (!categoryBox || !queryBox || !submitBox) {
+                throw new Error(
+                    "Workspace controls require deterministic geometry",
+                );
+            }
+            expect(submitBox.height).toBeGreaterThanOrEqual(36);
+            if (viewport === "desktop") {
+                expect(
+                    Math.abs(categoryBox.y - queryBox.y),
+                ).toBeLessThanOrEqual(2);
+            } else {
+                expect(categoryBox.y).toBeLessThan(queryBox.y);
+                expect(submitBox.width).toBeGreaterThanOrEqual(300);
+            }
+        }
+
+        await page.setViewportSize(visualViewports.desktop);
+        await page.getByTestId("search-query").fill("visual recent history");
+        const recentSearches = page.waitForResponse(
+            (response) =>
+                new URL(response.url()).pathname ===
+                    "/internalapi/history/searches/forsearching" &&
+                response.request().method() === "POST",
+        );
+        await page.getByTestId("search-submit").click();
+        expect((await recentSearches).status()).toBe(200);
+        await page.getByTestId("recent-searches-trigger").click();
+        const historyMenu = page.getByRole("menu", {name: "Recent searches"});
+        await expect(historyMenu).toBeVisible();
+        await expectVisualGeometry(page, {
+            region: "recent-search-menu-desktop",
+            locator: historyMenu,
+            minimumWidth: 240,
+            maximumWidth: 420,
+        });
+        await expect(
+            page.getByTestId("recent-search-entry").first(),
+        ).toBeVisible();
+
+        (config.main as Record<string, unknown>).indexerSelectionAsCheckboxes =
+            true;
+        await hydra.saveConfig(config);
+        await page.reload();
+        await expect(page.getByRole("checkbox").first()).toBeVisible();
+        await expectVisualGeometry(page, {
+            region: "checkbox-indexers-desktop",
+            locator: page.getByTestId("workspace-indexers"),
+            minimumWidth: 600,
+        });
+
+        for (const viewport of ["desktop", "mobile"] as const) {
+            await prepareVisualEvidence(page, viewport, async () => {
+                await page.goto("ui/react?redirect=/");
+                await page.getByTestId("search-category-control").click();
+                await page.getByTestId("search-category-option-TV").click();
+                await expect(page.getByLabel("Season")).toBeVisible();
+            });
+            await expectVisualGeometry(page, {
+                region: `media-refinement-${viewport}`,
+                locator: page.getByTestId("workspace-media-refinement"),
+                minimumWidth: viewport === "desktop" ? 600 : 300,
+            });
+        }
     });
 
     test("should render deterministic STOMP progress in the React search modal", async ({
@@ -252,10 +381,10 @@ test.describe("Search", () => {
 
         await page.goto("ui/react?redirect=/");
         await expect(page).toHaveURL(/\/$/);
-        const indexerSelect = page.getByRole("combobox", { name: "Indexers" });
+        const indexerSelect = page.getByRole("combobox", {name: "Indexers"});
         await indexerSelect.click();
-        await page.getByRole("option", { name: "Mock1" }).click();
-        await page.getByRole("option", { name: "Mock2" }).click();
+        await page.getByRole("option", {name: "Mock1"}).click();
+        await page.getByRole("option", {name: "Mock2"}).click();
         await page.keyboard.press("Escape");
         const dropdownRequest = page.waitForResponse((response) =>
             isSearchResponse(response),
@@ -269,11 +398,11 @@ test.describe("Search", () => {
         await hydra.saveConfig(config);
         await page.reload();
         await expect(
-            page.getByRole("checkbox", { name: "Mock1" }),
+            page.getByRole("checkbox", {name: "Mock1"}),
         ).not.toBeChecked();
-        await page.getByRole("button", { name: "Deselect all" }).click();
+        await page.getByRole("button", {name: "Deselect all"}).click();
         await page
-            .getByRole("button", { name: "Select group Secondary" })
+            .getByRole("button", {name: "Select group Secondary"})
             .click();
         const checkboxRequest = page.waitForResponse((response) =>
             isSearchResponse(response),
@@ -292,10 +421,17 @@ test.describe("Search", () => {
         (config.main as Record<string, unknown>).keepHistory = true;
         (config.searching as Record<string, unknown>).historyForSearching = 5;
         await hydra.saveConfig(config);
+        const initialRecentSearches = page.waitForResponse(
+            (response) =>
+                response.request().method() === "POST" &&
+                new URL(response.url()).pathname ===
+                    "/internalapi/history/searches/forsearching",
+        );
         await page.goto("ui/react?redirect=/");
         await expect(page).toHaveURL(/\/$/);
-        await page.getByRole("combobox", { name: "Indexers" }).click();
-        await page.getByRole("option", { name: "Mock1" }).click();
+        await initialRecentSearches;
+        await page.getByRole("combobox", {name: "Indexers"}).click();
+        await page.getByRole("option", {name: "Mock1"}).click();
         await page.keyboard.press("Escape");
         await page.getByTestId("search-query").fill("recent criteria");
         await page.getByLabel("Minimum age (days)").fill("2");
@@ -303,40 +439,27 @@ test.describe("Search", () => {
         const firstSearch = page.waitForResponse((response) =>
             isSearchResponse(response),
         );
-        const recentSearches = page.waitForResponse(
-            (response) =>
-                response.request().method() === "POST" &&
-                new URL(response.url()).pathname ===
-                    "/internalapi/history/searches/forsearching",
-        );
         await page.getByTestId("search-submit").click();
         expect((await firstSearch).request().postDataJSON()).toMatchObject({
             minage: 2,
             maxsize: 50,
             indexers: ["Mock2"],
         });
-        const recentSearchResponse = await recentSearches;
-        expect(recentSearchResponse.status()).toBe(200);
-        expect(await recentSearchResponse.json()).toEqual(
-            expect.arrayContaining([
-                expect.objectContaining({
-                    query: "recent criteria",
-                    minAge: 2,
-                    maxSize: 50,
-                    selectedIndexers: ["Mock2"],
-                }),
-            ]),
-        );
+        await page.getByTestId("recent-searches-trigger").click();
         await expect(
-            page.getByRole("button", { name: "Refill" }).first(),
+            page.getByText(/Query: recent criteria/).first(),
         ).toBeVisible();
-        await page.getByRole("button", { name: "Refill" }).first().click();
+        await expect(
+            page.getByRole("menuitem", {name: "Refill"}).first(),
+        ).toBeVisible();
+        await page.getByRole("menuitem", {name: "Refill"}).first().click();
         await expect(page.getByLabel("Minimum age (days)")).toHaveValue("2");
         await expect(page.getByLabel("Maximum size (MB)")).toHaveValue("50");
+        await page.getByTestId("recent-searches-trigger").click();
         const repeatedSearch = page.waitForResponse((response) =>
             isSearchResponse(response),
         );
-        await page.getByRole("button", { name: "Repeat" }).first().click();
+        await page.getByRole("menuitem", {name: "Repeat"}).first().click();
         expect((await repeatedSearch).request().postDataJSON()).toMatchObject({
             query: "recent criteria",
             minage: 2,
@@ -392,7 +515,7 @@ test.describe("Search", () => {
 
         await expect(page.getByTestId("search-status-modal")).toBeHidden();
         await expect(
-            page.getByRole("button", { name: "WEB", exact: true }),
+            page.getByRole("button", {name: "WEB", exact: true}),
         ).toHaveClass(/active/);
 
         const resultTitles = page.getByTestId("search-result-title");
@@ -426,7 +549,7 @@ test.describe("Search", () => {
         await page.getByTestId("search-submit").click();
 
         await expect(page.getByTestId("search-status-modal")).toBeHidden();
-        await page.getByRole("button", { name: "720p", exact: true }).click();
+        await page.getByRole("button", {name: "720p", exact: true}).click();
 
         const resultTitles = page.getByTestId("search-result-title");
         await expect
@@ -441,7 +564,7 @@ test.describe("Search", () => {
             })
             .toBe(true);
 
-        await page.getByRole("button", { name: "3D", exact: true }).click();
+        await page.getByRole("button", {name: "3D", exact: true}).click();
         await expect
             .poll(async () => {
                 const titles = await resultTitles.allTextContents();
@@ -513,7 +636,7 @@ test.describe("Search", () => {
         await expect(
             page
                 .getByTestId("search-result-title")
-                .filter({ hasText: "Hydra Downloader Integration Movie" }),
+                .filter({hasText: "Hydra Downloader Integration Movie"}),
         ).toBeVisible();
     });
 
@@ -528,7 +651,7 @@ test.describe("Search", () => {
             "**/internalapi/autocomplete/TV?input=Hydra+TV",
             (route) =>
                 route.fulfill({
-                    json: [{ title: "Hydra TV", tvdbId: "31337" }],
+                    json: [{title: "Hydra TV", tvdbId: "31337"}],
                 }),
         );
         const searchQuery = page.getByTestId("search-query");

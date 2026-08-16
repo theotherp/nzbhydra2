@@ -3,9 +3,12 @@ import {
     Alert,
     Button,
     CircularProgress,
+    Menu,
+    MenuItem,
     Stack,
     Typography,
 } from "@mui/material";
+import {useState} from "react";
 
 import {getRecentSearches} from "../../../api/recentSearches";
 import type {RecentSearch} from "../../../api/recentSearches";
@@ -30,42 +33,116 @@ export function RecentSearches({
         queryKey: ["recent-searches", refreshKey],
         queryFn: () => getRecentSearches(transport),
         enabled,
+        retry: false,
     });
+    const [anchor, setAnchor] = useState<HTMLElement | null>(null);
+    const open = Boolean(anchor);
 
-    if (!enabled || recentSearches.isPending) {
-        return enabled ? (
-            <CircularProgress aria-label="Loading recent searches" size={24} />
-        ) : null;
-    }
-    if (recentSearches.isError) {
-        return (
-            <Alert severity="warning">Unable to load recent searches.</Alert>
-        );
-    }
-    if (recentSearches.data.length === 0) {
-        return <Typography role="status">No recent searches.</Typography>;
+    const trigger = (
+        <Button
+            aria-controls={open ? "recent-searches-menu" : undefined}
+            aria-expanded={open}
+            aria-haspopup="menu"
+            data-testid="recent-searches-trigger"
+            onClick={(event) => setAnchor(event.currentTarget)}
+            variant="outlined"
+        >
+            Recent searches
+        </Button>
+    );
+
+    if (!enabled) {
+        return null;
     }
     return (
-        <Stack aria-label="Recent searches" spacing={1}>
-            <Typography component="h2" variant="h6">
-                Recent searches
-            </Typography>
-            {recentSearches.data.map((search, index) => (
-                <Stack
-                    direction="row"
-                    draggable
-                    key={`${search.categoryName}-${search.query}-${search.title}-${index}`}
-                    onDragStart={() => onDragStart(search)}
-                    spacing={1}
-                >
-                    <Typography sx={{flexGrow: 1}}>
-                        {describeSearch(search)}
+        <>
+            {trigger}
+            <Menu
+                anchorEl={anchor}
+                anchorOrigin={{horizontal: "left", vertical: "bottom"}}
+                id="recent-searches-menu"
+                MenuListProps={{"aria-label": "Recent searches"}}
+                onClose={() => setAnchor(null)}
+                open={open}
+                slotProps={{
+                    paper: {
+                        sx: {
+                            maxWidth: "min(420px, calc(100vw - 32px))",
+                            width: {xs: "calc(100vw - 32px)", sm: 420},
+                        },
+                    },
+                }}
+                transformOrigin={{horizontal: "left", vertical: "top"}}
+            >
+                {recentSearches.isPending && (
+                    <Stack alignItems="center" role="status" sx={{p: 2}}>
+                        <CircularProgress
+                            aria-label="Loading recent searches"
+                            size={24}
+                        />
+                    </Stack>
+                )}
+                {recentSearches.isError && (
+                    <Alert severity="warning" sx={{m: 1}}>
+                        Unable to load recent searches.
+                    </Alert>
+                )}
+                {recentSearches.data?.length === 0 && (
+                    <Typography role="status" sx={{p: 2}}>
+                        No recent searches.
                     </Typography>
-                    <Button onClick={() => onRefill(search)}>Refill</Button>
-                    <Button onClick={() => onRepeat(search)}>Repeat</Button>
-                </Stack>
-            ))}
-        </Stack>
+                )}
+                {recentSearches.data?.flatMap((search, index) => {
+                    const description = describeSearch(search);
+                    const key = `${search.categoryName}-${search.query}-${search.title}-${index}`;
+                    return [
+                        <MenuItem
+                            aria-label={`Refill: ${description}`}
+                            data-testid="recent-search-entry"
+                            draggable
+                            key={`${key}-refill`}
+                            onClick={() => {
+                                onRefill(search);
+                                setAnchor(null);
+                            }}
+                            onDragStart={() => onDragStart(search)}
+                            sx={{
+                                alignItems: "flex-start",
+                                flexDirection: "column",
+                            }}
+                        >
+                            <Typography aria-hidden variant="body2">
+                                {description}
+                            </Typography>
+                            <Typography aria-hidden variant="button">
+                                Refill
+                            </Typography>
+                        </MenuItem>,
+                        <MenuItem
+                            aria-label={`Repeat: ${description}`}
+                            draggable
+                            key={`${key}-repeat`}
+                            onClick={() => {
+                                onRepeat(search);
+                                setAnchor(null);
+                            }}
+                            onDragStart={() => onDragStart(search)}
+                            sx={{
+                                alignItems: "flex-start",
+                                flexDirection: "column",
+                            }}
+                        >
+                            <Typography aria-hidden variant="body2">
+                                {description}
+                            </Typography>
+                            <Typography aria-hidden variant="button">
+                                Repeat
+                            </Typography>
+                        </MenuItem>,
+                    ];
+                })}
+            </Menu>
+        </>
     );
 }
 

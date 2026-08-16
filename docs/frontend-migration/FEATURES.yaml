@@ -61,7 +61,7 @@ features:
     parity: partial
     visual:
       applicability: applicable
-      status: proposed
+      status: accepted
       contract:
         setup: React-selected `/` with deterministic mock indexers and the category catalog in `tests/system/tests/search.spec.ts`.
         states: [ plain-query-workspace, category-transition, paired-age-size-ranges, terminal-submission ]
@@ -69,6 +69,10 @@ features:
         geometry_checks: [ category precedes the primary query in the responsive hierarchy, primary/range/action regions meet the declared minimum widths without horizontal overflow, mobile submission is at least 300px wide and 36px high ]
       evidence: [ tests/system/tests/search.spec.ts ]
       variances: []
+      acceptance:
+        decision: "Accepted as proposed. Reviewed desktop/mobile screenshots of the search workspace under the FM-031 branded theme; hierarchy, density, and responsive reflow read as comparable to legacy."
+        accepted_by: "Repository owner (stratmann.simon@gmail.com)"
+        accepted_on: "2026-08-16"
     gaps: [ guided tour ]
     task: FM-016
     backlog: { status: deferred, rationale: "The remaining guided-tour integration has no implementation task yet." }
@@ -85,7 +89,7 @@ features:
     parity: partial
     visual:
       applicability: applicable
-      status: proposed
+      status: accepted
       contract:
         setup: React-selected `/` with deterministic mock indexers; select the configured TV category in `tests/system/tests/search.spec.ts`.
         states: [ tv-title-refinement, season-episode-pair ]
@@ -93,6 +97,10 @@ features:
         geometry_checks: [ media refinement is visible after its category transition, season and episode remain paired in readable equal-width controls, media region has no control or page horizontal overflow ]
       evidence: [ tests/system/tests/search.spec.ts ]
       variances: []
+      acceptance:
+        decision: "Accepted as proposed. Reviewed desktop screenshot of TV media refinement (season/episode) under the FM-031 branded theme."
+        accepted_by: "Repository owner (stratmann.simon@gmail.com)"
+        accepted_on: "2026-08-16"
     gaps: [ ]
     task: FM-025
     backlog: { status: deferred, rationale: "The record remains partial pending a dedicated full-parity reconciliation." }
@@ -109,7 +117,7 @@ features:
     parity: partial
     visual:
       applicability: applicable
-      status: proposed
+      status: accepted
       contract:
         setup: React-selected `/` with deterministic mock indexers, first using dropdown selection then saved safe configuration checkbox selection in `tests/system/tests/search.spec.ts`.
         states: [ dropdown-indexers, checkbox-indexers, bulk-indexer-actions ]
@@ -117,6 +125,10 @@ features:
         geometry_checks: [ dropdown indexer control spans its workspace region, checkbox indexer region is visible at desktop, indexer controls and page have no horizontal overflow ]
       evidence: [ tests/system/tests/search.spec.ts ]
       variances: []
+      acceptance:
+        decision: "Accepted as proposed. Reviewed desktop screenshots of both dropdown and checkbox indexer presentations under the FM-031 branded theme."
+        accepted_by: "Repository owner (stratmann.simon@gmail.com)"
+        accepted_on: "2026-08-16"
     gaps: [ ]
     task: FM-016
     backlog: { status: deferred, rationale: "The record remains partial pending a dedicated full-parity reconciliation." }
@@ -133,7 +145,7 @@ features:
     parity: partial
     visual:
       applicability: applicable
-      status: proposed
+      status: accepted
       contract:
         setup: React-selected `/` with deterministic mock indexers and search history enabled; submit `visual recent history` then open the recent-search trigger in `tests/system/tests/search.spec.ts`.
         states: [ history-trigger, populated-anchored-menu, refill-repeat-actions, pointer-drag-refill ]
@@ -141,6 +153,10 @@ features:
         geometry_checks: [ trigger is contained in workspace actions, populated menu is anchored and 240px to 420px wide at desktop, menu and page have no horizontal overflow ]
       evidence: [ tests/system/tests/search.spec.ts ]
       variances: []
+      acceptance:
+        decision: "Accepted as proposed. Reviewed desktop screenshot of the populated recent-search menu under the FM-031 branded theme; legible and legacy-comparable."
+        accepted_by: "Repository owner (stratmann.simon@gmail.com)"
+        accepted_on: "2026-08-16"
     gaps: [ search-page dropdown and drag behavior ]
     task: FM-017
     backlog: { status: deferred, rationale: "Remaining search-page dropdown and drag behavior has no implementation task yet." }

@@ -333,8 +333,24 @@ export function SearchPage({
             setSavingSearch(false);
         }
     };
+    const recentSearchTool = (
+        <QueryClientProvider client={recentSearchQueryClient}>
+            <RecentSearches
+                enabled={!state.loading}
+                onDragStart={setDraggedRecentSearch}
+                onRefill={refill}
+                onRepeat={repeat}
+                refreshKey={recentRefreshKey}
+                transport={transport}
+            />
+        </QueryClientProvider>
+    );
     return (
-        <Stack component="main" spacing={2}>
+        <Stack
+            component="main"
+            spacing={2}
+            sx={{maxWidth: 1040, mx: "auto", px: {xs: 1, sm: 2}, width: "100%"}}
+        >
             <Typography component="h1" variant="h4">
                 Search
             </Typography>
@@ -356,22 +372,13 @@ export function SearchPage({
                         setDraggedRecentSearch(undefined);
                     }
                 }}
+                historyTool={recentSearchTool}
             />
             <HistoryRepeatSubmission
                 catalog={catalog}
                 criteria={search.repeat === "history" ? search : undefined}
                 onSubmit={submit}
             />
-            <QueryClientProvider client={recentSearchQueryClient}>
-                <RecentSearches
-                    enabled={!state.loading}
-                    onDragStart={setDraggedRecentSearch}
-                    onRefill={refill}
-                    onRepeat={repeat}
-                    refreshKey={recentRefreshKey}
-                    transport={transport}
-                />
-            </QueryClientProvider>
             {embyAvailability === "available" && (
                 <Alert severity="success">Available in Emby.</Alert>
             )}
