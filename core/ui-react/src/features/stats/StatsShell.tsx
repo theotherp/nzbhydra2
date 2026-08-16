@@ -1,5 +1,5 @@
 import {Box, Tab, Tabs} from "@mui/material";
-import {useLocation} from "@tanstack/react-router";
+import {Link, useLocation} from "@tanstack/react-router";
 
 import type {BootstrapData} from "../../bootstrap";
 
@@ -20,18 +20,10 @@ export function StatsShell({bootstrap, children}: StatsShellProps) {
             >
                 {tabs.map((tab) => (
                     <Tab
-                        component="a"
-                        href={
-                            new URL(
-                                `stats/${tab.path}`,
-                                new URL(
-                                    bootstrap.baseUrl,
-                                    window.location.origin,
-                                ),
-                            ).pathname
-                        }
+                        component={Link}
                         key={tab.path}
                         label={tab.label}
+                        to={`/stats/${tab.path}`}
                         value={tab.path}
                     />
                 ))}

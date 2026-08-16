@@ -8,6 +8,19 @@ import {createHydraTheme} from "./theme";
 let mockPathname = "/hydra/";
 
 vi.mock("@tanstack/react-router", () => ({
+    Link: ({
+        to,
+        children,
+        ...rest
+    }: {
+        to: string;
+        children?: React.ReactNode;
+        href?: string;
+    }) => (
+        <a {...rest} href={to === "/" ? "/hydra/" : `/hydra${to}`}>
+            {children}
+        </a>
+    ),
     useLocation: ({
         select,
     }: {
@@ -124,5 +137,64 @@ describe("AppShell", () => {
         expect(
             window.getComputedStyle(inactiveLink).borderBottomColor,
         ).not.toMatch(/rgb\(\s*15,\s*171,\s*75\s*\)/);
+    });
+
+    it("should reserve identical border and label geometry for a nav item whether it is active or inactive", () => {
+        mockPathname = "/hydra/stats/indexers";
+        render(
+            <AppShell
+                bootstrap={{
+                    ...bootstrap,
+                    adminRestricted: false,
+                    statsRestricted: false,
+                }}
+            >
+                <p>Page content</p>
+            </AppShell>,
+        );
+
+        const activeLink = screen.getByRole("link", {name: "History & Stats"});
+        const inactiveLink = screen.getByRole("link", {name: "Search"});
+
+        // The border is always rendered at the same width/style for every
+        // item; only its color toggles between active and inactive, which
+        // is what keeps selecting an item from resizing its own box or
+        // shoving its neighbors sideways (the old bug this replaces would
+        // have added/removed the border, changing the box size).
+        const activeStyle = window.getComputedStyle(activeLink);
+        const inactiveStyle = window.getComputedStyle(inactiveLink);
+        expect(activeStyle.borderBottomWidth).toBe(
+            inactiveStyle.borderBottomWidth,
+        );
+        expect(activeStyle.borderBottomStyle).toBe(
+            inactiveStyle.borderBottomStyle,
+        );
+        expect(activeStyle.borderBottomColor).not.toBe(
+            inactiveStyle.borderBottomColor,
+        );
+
+        // Every item, active or not, renders a hidden copy of its own
+        // label at the bold font-weight to reserve the wider of the two
+        // widths, so the visible copy's font-weight can change (regular
+        // <-> bold) without resizing the box. This is a real, non-tautological
+        // check: the hidden copy must equal the item's own accessible name
+        // (not a fixed stand-in string), must actually be bold, and must be
+        // excluded from the accessible name (aria-hidden) rather than
+        // duplicating it.
+        for (const [link, name] of [
+            [activeLink, "History & Stats"],
+            [inactiveLink, "Search"],
+        ] as const) {
+            const hiddenReservation = link.querySelector(
+                '[aria-hidden="true"]',
+            );
+            expect(hiddenReservation).not.toBeNull();
+            expect(hiddenReservation).toHaveTextContent(name);
+            expect(
+                window.getComputedStyle(hiddenReservation as Element)
+                    .fontWeight,
+            ).toBe("700");
+            expect(link).toHaveAccessibleName(name);
+        }
     });
 });

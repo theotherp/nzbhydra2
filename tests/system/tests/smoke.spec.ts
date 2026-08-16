@@ -90,6 +90,44 @@ test.describe("Branded app shell visual evidence", () => {
                         window.getComputedStyle(element).borderBottomColor,
                 );
                 expect(borderBottomColor).toBe("rgb(15, 171, 75)");
+
+                // Width-stability regression coverage (FM-035): selecting a
+                // different destination must only toggle the previously
+                // active item's border color, never resize its own box or
+                // shift its neighbors sideways — this is what makes
+                // navigating between nav items (now client-side via the
+                // router) safe to exercise repeatedly. Capture "Search"'s
+                // width while it is the active item (the default route),
+                // click a different top-level destination, then assert
+                // Search's own box width is unchanged now that it is
+                // inactive.
+                const searchLink = nav.getByRole("link", {name: "Search"});
+                const searchWidthActive = (
+                    await searchLink.boundingBox()
+                )?.width;
+                expect(
+                    searchWidthActive,
+                    "Search nav item must have a bounding box while active",
+                ).not.toBeUndefined();
+
+                const otherLink = navLinks.filter({hasNotText: "Search"}).first();
+                await otherLink.click();
+                await expect(searchLink).not.toHaveAttribute(
+                    "aria-current",
+                    "page",
+                );
+
+                const searchWidthInactive = (
+                    await searchLink.boundingBox()
+                )?.width;
+                expect(
+                    searchWidthInactive,
+                    "Search nav item must have a bounding box while inactive",
+                ).not.toBeUndefined();
+                expect(
+                    searchWidthInactive,
+                    "Search nav item's box width must stay constant whether it is the active item or not",
+                ).toBeCloseTo(searchWidthActive ?? 0, 0);
             }
         });
     }

@@ -12,25 +12,27 @@ features:
     parity: partial
     visual:
       applicability: applicable
-      status: accepted
+      status: proposed
+      note: "Supersedes the prior 2026-08-16 human acceptance of this record (removed here; still recoverable from Git history) because FM-035 changed the reviewed navigation geometry: AppBar nav items and stats tabs now render through
+        TanStack Router's `Link` for client-side navigation, and the active-item indicator border is now always reserved (transparent when inactive, colored when active) with the label's bold width also always reserved via a hidden
+        aria-hidden copy, so a nav item's bounding-box width no longer changes when it becomes active or inactive. The primary-green variance below is unaffected by this change in substance and is demoted to `proposed` alongside the record
+        only because `validate-migration.mjs` rejects an accepted variance on a non-accepted visual record; ADR-0007's own acceptance of the `primary` = logo-green `#0fab4b` token itself is not reopened or in question. Pending fresh human
+        review; see the FM-035 handoff for what changed and why."
       contract:
         setup: React-selected `ui/react?redirect=/` app shell rendered under the branded default theme (ADR-0007) in `tests/system/tests/smoke.spec.ts`.
-        states: [ branded-app-bar-with-logo, horizontal-desktop-navigation, mobile-collapsed-navigation, current-route-nav-item-primary-green-indicator ]
+        states: [ branded-app-bar-with-logo, horizontal-desktop-navigation, mobile-collapsed-navigation, current-route-nav-item-primary-green-indicator, nav-item-width-stable-across-active-state ]
         viewports: [ { name: desktop, width: 1280, height: 800 }, { name: mobile, width: 390, height: 844 } ]
         geometry_checks:
           - AppBar and page have no horizontal overflow at either viewport
           - desktop navigation region has no horizontal overflow
           - each desktop navigation item's bounding box is horizontally aligned with its neighbors rather than vertically stacked
           - "the current route's own desktop nav item (aria-current=page) has a computed border-bottom-color equal to the theme's primary.main (#0fab4b / rgb(15, 171, 75))"
+          - "a desktop nav item's own bounding-box width is unchanged after it transitions from active to inactive via a real client-side navigation click"
       evidence: [ tests/system/tests/smoke.spec.ts ]
       snapshots: [ tests/system/test-results/visual-evidence/F-PLATFORM-SHELL/app-bar-desktop.png, tests/system/test-results/visual-evidence/F-PLATFORM-SHELL/app-bar-mobile.png ]
       variances:
         - description: "MUI `primary` uses the logo-green `#0fab4b` rather than legacy's own muted-gray `@brand-primary` (`@gray-light`, ~`#7a8288`). ADR-0007's Human Decision accepted this token choice: MUI's `primary` drives materially more interactive affordances (links, focus rings, selected/active states) than legacy's own muted-gray brand color did. Concretely, this affordance is the current-route nav item's green underline/text in the AppBar's desktop nav (not the AppBar's own background: MUI's `AppBar` defaults `enableColorOnDark` to `false`, so `color=\"primary\"` on the `AppBar` itself does not render green under `palette.mode: \"dark\"`)."
-          status: accepted
-      acceptance:
-        decision: "Accepted as proposed, including the primary-color variance. Reviewed full-page desktop/mobile screenshots (search workspace and History & Stats page) in addition to the task's narrow AppBar evidence; dark background, logo, and green accent read as a substantial improvement over the prior unbranded stock-MUI look and comparable in quality to legacy."
-        accepted_by: "Repository owner (stratmann.simon@gmail.com)"
-        accepted_on: "2026-08-16"
+          status: proposed
     gaps: [ navigation, footer, permission-aware links, live status ]
     task: FM-004
     backlog: { status: deferred, rationale: "Remaining shell parity needs a dedicated follow-up task after the current review queue." }
@@ -508,7 +510,7 @@ features:
     routes: [ /stats ]
     roles: [ stats ]
     legacy_sources: [ core/ui-src/js/nzbhydra.js, core/ui-src/html/states/stats.html ]
-    tests: [ tests/system/tests/stats.spec.ts, tests/system/tests/search-history.spec.ts ]
+    tests: [ tests/system/tests/stats.spec.ts, tests/system/tests/search-history.spec.ts, core/ui-react/src/features/stats/StatsShell.test.tsx ]
     selectors: [ ]
     target: core/ui-react/src/features/stats
     parity: partial

@@ -5,11 +5,10 @@ import {
     IconButton,
     List,
     ListItemButton,
-    ListItemText,
     Toolbar,
     Typography,
 } from "@mui/material";
-import {useLocation} from "@tanstack/react-router";
+import {Link, useLocation} from "@tanstack/react-router";
 import {useState} from "react";
 
 import type {BootstrapData} from "../bootstrap";
@@ -58,31 +57,15 @@ export function AppShell({bootstrap, children}: AppShellProps) {
                     return (
                         <ListItemButton
                             aria-current={active ? "page" : undefined}
-                            component="a"
-                            href={applicationPath(bootstrap.baseUrl, item.path)}
+                            component={Link}
                             key={item.path}
+                            to={navigationTo(item.path)}
                             onClick={onNavigate}
-                            sx={{
-                                ...(horizontal ? {width: "auto"} : undefined),
-                                ...(active
-                                    ? activeNavigationItemSx(horizontal)
-                                    : undefined),
-                            }}
+                            sx={navigationItemSx(horizontal, active)}
                         >
-                            <ListItemText
-                                primary={item.label}
-                                slotProps={
-                                    active
-                                        ? {
-                                              primary: {
-                                                  sx: {
-                                                      color: "primary.main",
-                                                      fontWeight: 700,
-                                                  },
-                                              },
-                                          }
-                                        : undefined
-                                }
+                            <NavigationLabel
+                                active={active}
+                                label={item.label}
                             />
                         </ListItemButton>
                     );
@@ -185,22 +168,67 @@ function keepHistory(bootstrap: BootstrapData): boolean {
     return bootstrap.safeConfig?.keepHistory === true;
 }
 
-function applicationPath(baseUrl: string, path: string): string {
-    return new URL(path, new URL(baseUrl, window.location.origin)).pathname;
+function navigationTo(path: string): string {
+    return `/${path}`;
 }
 
 // A real, visible use of the branded `primary` green as an interactive
 // affordance: the current route's nav item gets a green underline/rail plus
-// (via the ListItemText `slotProps.primary.sx` above) green, bold label
-// text. MUI's `AppBar` defaults `enableColorOnDark` to `false`, so setting
-// `color="primary"` on the `AppBar` itself does not render as green under
-// `palette.mode: "dark"` — this per-item indicator is the affordance ADR-0007
-// actually intended when it said `primary` "drives ... links, focus rings,
-// selected states."
-function activeNavigationItemSx(horizontal: boolean) {
-    return horizontal
-        ? {borderBottom: "3px solid", borderBottomColor: "primary.main"}
-        : {borderLeft: "3px solid", borderLeftColor: "primary.main"};
+// (via `NavigationLabel` below) green, bold label text. MUI's `AppBar`
+// defaults `enableColorOnDark` to `false`, so setting `color="primary"` on
+// the `AppBar` itself does not render as green under `palette.mode: "dark"`
+// — this per-item indicator is the affordance ADR-0007 actually intended
+// when it said `primary` "drives ... links, focus rings, selected states."
+//
+// The border is always reserved at full width/color-transparent rather than
+// added only when active, so selecting an item never changes its box size
+// (which used to shove neighboring items sideways) — only its color
+// transitions, in both directions.
+function navigationItemSx(horizontal: boolean, active: boolean) {
+    const borderColor = active ? "primary.main" : "transparent";
+    return {
+        ...(horizontal ? {width: "auto"} : undefined),
+        ...(horizontal
+            ? {borderBottom: "3px solid", borderBottomColor: borderColor}
+            : {borderLeft: "3px solid", borderLeftColor: borderColor}),
+        transition: "border-color 200ms ease-in-out",
+    };
+}
+
+// Renders the label as two stacked copies in the same grid cell: a hidden
+// always-bold copy that reserves the wider of the two widths, and the real,
+// visible copy that only changes color (animatable) rather than font-weight
+// (not smoothly animatable, and would otherwise resize the box). This keeps
+// nav items a constant width whether active or not.
+function NavigationLabel({label, active}: {label: string; active: boolean}) {
+    return (
+        <Box sx={{display: "inline-grid"}}>
+            <Typography
+                aria-hidden
+                component="span"
+                sx={{
+                    fontWeight: 700,
+                    gridArea: "1 / 1",
+                    visibility: "hidden",
+                    whiteSpace: "nowrap",
+                }}
+            >
+                {label}
+            </Typography>
+            <Typography
+                component="span"
+                sx={{
+                    color: active ? "primary.main" : "inherit",
+                    fontWeight: active ? 700 : 400,
+                    gridArea: "1 / 1",
+                    transition: "color 200ms ease-in-out",
+                    whiteSpace: "nowrap",
+                }}
+            >
+                {label}
+            </Typography>
+        </Box>
+    );
 }
 
 // Matches a nav item to the current route by comparing only the first path
