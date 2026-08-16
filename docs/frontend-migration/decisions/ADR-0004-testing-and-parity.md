@@ -9,6 +9,7 @@ Status: accepted
 - Pure domain transformations receive exhaustive unit tests.
 - React interactions and accessibility receive component tests.
 - Spring integration, configured base paths, packaging, API workflows, and visible parity receive Playwright or existing Java system tests.
+- Visual parity follows ADR-0006: it is a separate semantic, human-accepted feature-level gate with deterministic scoped Playwright evidence, not Bootstrap pixel identity or a substitute for behavioral/accessibility evidence.
 - A task implementation moves to `review`; a fresh agent checks it before the coordinator marks it `done`.
 - No test may be removed, skipped, weakened, or ignored to complete migration work.
 

@@ -52,6 +52,7 @@ Do not modify files outside Files Allowed To Modify. If a required change falls 
 
 - Testable behavior and architecture requirements
 - Include repository-wide reconciliation when completeness or parity is required
+- For ADR-0006 visual work: scoped semantic contract, deterministic setup, named viewports/geometry checks, evidence references, optional narrow snapshots, and proposed variances; never claim human acceptance without an explicit decision.
 
 ## Verification
 

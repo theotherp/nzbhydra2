@@ -37,6 +37,8 @@ not select one. Report `BLOCKED: ADR REQUIRED` with the decision question, repos
 
 Do not review your own implementation and do not commit or push unless repository instructions explicitly authorize it.
 
+For ADR-0006 visual work, reconcile each linked `FEATURES.yaml` visual record with its scoped states, deterministic setup, viewports, geometry checks, evidence, optional narrow snapshots, and variance disposition. Propose evidence only: do not set a visual baseline or variance to accepted without explicit human acceptance, and do not treat behavioral or accessibility verification as visual acceptance.
+
 ## Git Attribution
 
 The orchestrator may provide:

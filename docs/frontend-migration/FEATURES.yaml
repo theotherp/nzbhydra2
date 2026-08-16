@@ -10,6 +10,27 @@ features:
     selectors: [ ]
     target: core/ui-react/src/app
     parity: partial
+    visual:
+      applicability: applicable
+      status: accepted
+      contract:
+        setup: React-selected `ui/react?redirect=/` app shell rendered under the branded default theme (ADR-0007) in `tests/system/tests/smoke.spec.ts`.
+        states: [ branded-app-bar-with-logo, horizontal-desktop-navigation, mobile-collapsed-navigation, current-route-nav-item-primary-green-indicator ]
+        viewports: [ { name: desktop, width: 1280, height: 800 }, { name: mobile, width: 390, height: 844 } ]
+        geometry_checks:
+          - AppBar and page have no horizontal overflow at either viewport
+          - desktop navigation region has no horizontal overflow
+          - each desktop navigation item's bounding box is horizontally aligned with its neighbors rather than vertically stacked
+          - "the current route's own desktop nav item (aria-current=page) has a computed border-bottom-color equal to the theme's primary.main (#0fab4b / rgb(15, 171, 75))"
+      evidence: [ tests/system/tests/smoke.spec.ts ]
+      snapshots: [ tests/system/test-results/visual-evidence/F-PLATFORM-SHELL/app-bar-desktop.png, tests/system/test-results/visual-evidence/F-PLATFORM-SHELL/app-bar-mobile.png ]
+      variances:
+        - description: "MUI `primary` uses the logo-green `#0fab4b` rather than legacy's own muted-gray `@brand-primary` (`@gray-light`, ~`#7a8288`). ADR-0007's Human Decision accepted this token choice: MUI's `primary` drives materially more interactive affordances (links, focus rings, selected/active states) than legacy's own muted-gray brand color did. Concretely, this affordance is the current-route nav item's green underline/text in the AppBar's desktop nav (not the AppBar's own background: MUI's `AppBar` defaults `enableColorOnDark` to `false`, so `color=\"primary\"` on the `AppBar` itself does not render green under `palette.mode: \"dark\"`)."
+          status: accepted
+      acceptance:
+        decision: "Accepted as proposed, including the primary-color variance. Reviewed full-page desktop/mobile screenshots (search workspace and History & Stats page) in addition to the task's narrow AppBar evidence; dark background, logo, and green accent read as a substantial improvement over the prior unbranded stock-MUI look and comparable in quality to legacy."
+        accepted_by: "Repository owner (stratmann.simon@gmail.com)"
+        accepted_on: "2026-08-16"
     gaps: [ navigation, footer, permission-aware links, live status ]
     task: FM-004
     backlog: { status: deferred, rationale: "Remaining shell parity needs a dedicated follow-up task after the current review queue." }
@@ -24,6 +45,7 @@ features:
     selectors: [ ]
     target: core/ui-react/src/features/auth
     parity: inventoried
+    visual: { applicability: applicable, status: unassessed }
     task: FM-001
     backlog: { status: deferred, rationale: "No implementation task has been designed for authentication lifecycle parity." }
 
@@ -37,6 +59,16 @@ features:
     selectors: [ search-query, search-submit, search-category-control, "search-category-option-{{category.name}}", additional-query, autocomplete-popup, autocomplete-option ]
     target: core/ui-react/src/features/search
     parity: partial
+    visual:
+      applicability: applicable
+      status: proposed
+      contract:
+        setup: React-selected `/` with deterministic mock indexers and the category catalog in `tests/system/tests/search.spec.ts`.
+        states: [ plain-query-workspace, category-transition, paired-age-size-ranges, terminal-submission ]
+        viewports: [ { name: desktop, width: 1280, height: 800 }, { name: mobile, width: 390, height: 844 } ]
+        geometry_checks: [ category precedes the primary query in the responsive hierarchy, primary/range/action regions meet the declared minimum widths without horizontal overflow, mobile submission is at least 300px wide and 36px high ]
+      evidence: [ tests/system/tests/search.spec.ts ]
+      variances: []
     gaps: [ guided tour ]
     task: FM-016
     backlog: { status: deferred, rationale: "The remaining guided-tour integration has no implementation task yet." }
@@ -51,6 +83,16 @@ features:
     selectors: [ additional-query, autocomplete-popup, autocomplete-option ]
     target: core/ui-react/src/features/search
     parity: partial
+    visual:
+      applicability: applicable
+      status: proposed
+      contract:
+        setup: React-selected `/` with deterministic mock indexers; select the configured TV category in `tests/system/tests/search.spec.ts`.
+        states: [ tv-title-refinement, season-episode-pair ]
+        viewports: [ { name: desktop, width: 1280, height: 800 }, { name: mobile, width: 390, height: 844 } ]
+        geometry_checks: [ media refinement is visible after its category transition, season and episode remain paired in readable equal-width controls, media region has no control or page horizontal overflow ]
+      evidence: [ tests/system/tests/search.spec.ts ]
+      variances: []
     gaps: [ ]
     task: FM-025
     backlog: { status: deferred, rationale: "The record remains partial pending a dedicated full-parity reconciliation." }
@@ -65,6 +107,16 @@ features:
     selectors: [ ]
     target: core/ui-react/src/features/search
     parity: partial
+    visual:
+      applicability: applicable
+      status: proposed
+      contract:
+        setup: React-selected `/` with deterministic mock indexers, first using dropdown selection then saved safe configuration checkbox selection in `tests/system/tests/search.spec.ts`.
+        states: [ dropdown-indexers, checkbox-indexers, bulk-indexer-actions ]
+        viewports: [ { name: desktop, width: 1280, height: 800 }, { name: mobile, width: 390, height: 844 } ]
+        geometry_checks: [ dropdown indexer control spans its workspace region, checkbox indexer region is visible at desktop, indexer controls and page have no horizontal overflow ]
+      evidence: [ tests/system/tests/search.spec.ts ]
+      variances: []
     gaps: [ ]
     task: FM-016
     backlog: { status: deferred, rationale: "The record remains partial pending a dedicated full-parity reconciliation." }
@@ -79,6 +131,16 @@ features:
     selectors: [ ]
     target: core/ui-react/src/features/search
     parity: partial
+    visual:
+      applicability: applicable
+      status: proposed
+      contract:
+        setup: React-selected `/` with deterministic mock indexers and search history enabled; submit `visual recent history` then open the recent-search trigger in `tests/system/tests/search.spec.ts`.
+        states: [ history-trigger, populated-anchored-menu, refill-repeat-actions, pointer-drag-refill ]
+        viewports: [ { name: desktop, width: 1280, height: 800 }, { name: mobile, width: 390, height: 844 } ]
+        geometry_checks: [ trigger is contained in workspace actions, populated menu is anchored and 240px to 420px wide at desktop, menu and page have no horizontal overflow ]
+      evidence: [ tests/system/tests/search.spec.ts ]
+      variances: []
     gaps: [ search-page dropdown and drag behavior ]
     task: FM-017
     backlog: { status: deferred, rationale: "Remaining search-page dropdown and drag behavior has no implementation task yet." }
@@ -93,6 +155,7 @@ features:
     selectors: [ search-status-modal ]
     target: core/ui-react/src/features/search
     parity: partial
+    visual: { applicability: applicable, status: unassessed }
     gaps: [ cancellation ]
     task: FM-014
     backlog: { status: deferred, rationale: "Remaining cancellation behavior has no implementation task yet." }
@@ -107,6 +170,7 @@ features:
     selectors: [ search-results, indexer-limit-warnings, search-results-summary, search-results-table, search-result-row, search-result-title ]
     target: core/ui-react/src/features/search/results
     parity: partial
+    visual: { applicability: applicable, status: unassessed }
     gaps: [ ]
     task: FM-010
     backlog: { status: deferred, rationale: "The record remains partial pending a dedicated full-parity reconciliation." }
@@ -121,6 +185,7 @@ features:
     selectors: [ "sort-{{column}}", "freetext-filter-{{column}}", "number-filter-min-{{column}}", "number-filter-max-{{column}}", "number-filter-apply-{{column}}", "number-filter-clear-{{column}}", filter-toggle-indexer, filter-toggle-category, filter-toggle-size, filter-toggle-grabs, filter-toggle-age ]
     target: core/ui-react/src/features/search/results
     parity: partial
+    visual: { applicability: applicable, status: unassessed }
     gaps: [ server-backed preferences ]
     task: FM-011
     backlog: { status: deferred, rationale: "Server-backed preference adoption has no implementation task yet." }
@@ -135,6 +200,7 @@ features:
     selectors: [ search-result-row ]
     target: core/ui-react/src/features/search/results
     parity: partial
+    visual: { applicability: applicable, status: unassessed }
     gaps: [ ]
     task: FM-012
     backlog: { status: deferred, rationale: "The record remains partial pending a dedicated full-parity reconciliation." }
@@ -149,6 +215,7 @@ features:
     selectors: [ send-to-downloader, download-nzb ]
     target: core/ui-react/src/features/search/results
     parity: partial
+    visual: { applicability: applicable, status: unassessed }
     gaps: [ download-history route migration ]
     task: FM-013
     backlog: { status: deferred, rationale: "Download-history route migration is separately deferred." }
@@ -163,6 +230,7 @@ features:
     selectors: [ ]
     target: core/ui-react/src/features/search/results
     parity: partial
+    visual: { applicability: applicable, status: unassessed }
     task: FM-018
     backlog: { status: deferred, rationale: "The record remains partial pending a dedicated full-parity reconciliation." }
 
@@ -176,6 +244,7 @@ features:
     selectors: [ ]
     target: core/ui-react/src/features/search
     parity: partial
+    visual: { applicability: applicable, status: unassessed }
     gaps: [ ]
     task: FM-019
     backlog: { status: deferred, rationale: "Remaining saved-search parity is future work." }
@@ -190,6 +259,7 @@ features:
     selectors: [ ]
     target: core/ui-react/src/features/search/tour
     parity: inventoried
+    visual: { applicability: applicable, status: unassessed }
     task: FM-001
     backlog: { status: deferred, rationale: "No implementation task has been designed for guided tour and demo-mode parity." }
 
@@ -203,6 +273,7 @@ features:
     selectors: [ ]
     target: core/ui-react/src/features/config
     parity: partial
+    visual: { applicability: applicable, status: unassessed }
     gaps: [ stable data-testid selectors, advanced toggle, unsaved navigation, warnings, restart, API help, full round trip ]
     task: FM-001
     backlog: { status: deferred, rationale: "Configuration migration needs a dedicated task batch before implementation begins." }
@@ -217,6 +288,7 @@ features:
     selectors: [ ]
     target: core/ui-react/src/features/config/main
     parity: partial
+    visual: { applicability: applicable, status: unassessed }
     gaps: [ all field workflows; current test only opens the route ]
     task: FM-001
     backlog: { status: deferred, rationale: "Configuration migration needs a dedicated task batch before implementation begins." }
@@ -231,6 +303,7 @@ features:
     selectors: [ ]
     target: core/ui-react/src/features/config/auth
     parity: inventoried
+    visual: { applicability: applicable, status: unassessed }
     task: FM-001
     backlog: { status: deferred, rationale: "Configuration migration needs a dedicated task batch before implementation begins." }
 
@@ -244,6 +317,7 @@ features:
     selectors: [ ]
     target: core/ui-react/src/features/config/searching
     parity: partial
+    visual: { applicability: applicable, status: unassessed }
     gaps: [ configuration UI; current tests cover runtime effects only ]
     task: FM-001
     backlog: { status: deferred, rationale: "Configuration migration needs a dedicated task batch before implementation begins." }
@@ -258,6 +332,7 @@ features:
     selectors: [ ]
     target: core/ui-react/src/features/config/categories
     parity: inventoried
+    visual: { applicability: applicable, status: unassessed }
     task: FM-001
     backlog: { status: deferred, rationale: "Configuration migration needs a dedicated task batch before implementation begins." }
 
@@ -271,6 +346,7 @@ features:
     selectors: [ ]
     target: core/ui-react/src/features/config/downloading
     parity: partial
+    visual: { applicability: applicable, status: unassessed }
     gaps: [ configuration UI; current tests configure through API fixtures ]
     task: FM-001
     backlog: { status: deferred, rationale: "Configuration migration needs a dedicated task batch before implementation begins." }
@@ -285,6 +361,7 @@ features:
     selectors: [ ]
     target: core/ui-react/src/features/config/external-tools
     parity: partial
+    visual: { applicability: applicable, status: unassessed }
     gaps: [ stable data-testid selectors, failure and partial-failure feedback, full preset coverage ]
     task: FM-001
     backlog: { status: deferred, rationale: "Configuration migration needs a dedicated task batch before implementation begins." }
@@ -299,6 +376,7 @@ features:
     selectors: [ ]
     target: core/ui-react/src/features/config/indexers
     parity: inventoried
+    visual: { applicability: applicable, status: unassessed }
     task: FM-001
     backlog: { status: deferred, rationale: "Configuration migration needs a dedicated task batch before implementation begins." }
 
@@ -312,6 +390,7 @@ features:
     selectors: [ ]
     target: core/ui-react/src/features/config/notifications
     parity: partial
+    visual: { applicability: applicable, status: unassessed }
     gaps: [ configuration UI; current test covers quota warning display only ]
     task: FM-001
     backlog: { status: deferred, rationale: "Configuration migration needs a dedicated task batch before implementation begins." }
@@ -326,6 +405,7 @@ features:
     selectors: [ ]
     target: core/ui-react/src/features/stats
     parity: partial
+    visual: { applicability: applicable, status: unassessed }
     gaps: [ remaining history and aggregate-stat content ]
     task: FM-020
     backlog: { status: deferred, rationale: "Remaining history and aggregate-stat content is deferred to FM-021 through FM-024." }
@@ -340,6 +420,7 @@ features:
     selectors: [ ]
     target: core/ui-react/src/features/stats
     parity: partial
+    visual: { applicability: applicable, status: unassessed }
     gaps: [ rendered statistics, charts, date ranges, include-disabled behavior ]
     task: FM-024
 
@@ -353,6 +434,7 @@ features:
     selectors: [ ]
     target: core/ui-react/src/features/stats/indexers
     parity: partial
+    visual: { applicability: applicable, status: unassessed }
     gaps: [ ]
     task: FM-020
     backlog: { status: deferred, rationale: "Remaining indexer-status parity is deferred until a dedicated follow-up task is designed." }
@@ -367,8 +449,10 @@ features:
     selectors: [ search-history-refresh, search-history-table, search-history-row, search-history-repeat, search-history-category, search-history-source, search-history-details ]
     target: core/ui-react/src/features/stats/history
     parity: partial
+    visual: { applicability: applicable, status: unassessed }
     gaps: [ ]
     task: FM-021
+    backlog: { status: deferred, rationale: "Visual parity remains unassessed pending a dedicated remediation task under ADR-0006." }
 
   - id: F-HISTORY-SAVED-SEARCHES
     name: Saved-search listing, links, reuse, and deletion
@@ -380,6 +464,7 @@ features:
     selectors: [ ]
     target: core/ui-react/src/features/stats/history
     parity: partial
+    visual: { applicability: applicable, status: unassessed }
     gaps: [ ]
     task: FM-019
     backlog: { status: deferred, rationale: "Remaining saved-search parity is future work." }
@@ -394,6 +479,7 @@ features:
     selectors: [ ]
     target: core/ui-react/src/features/stats/history
     parity: inventoried
+    visual: { applicability: applicable, status: unassessed }
     task: FM-022
 
   - id: F-HISTORY-NOTIFICATIONS
@@ -406,6 +492,7 @@ features:
     selectors: [ ]
     target: core/ui-react/src/features/stats/history
     parity: inventoried
+    visual: { applicability: applicable, status: unassessed }
     task: FM-023
 
   - id: F-SYSTEM-SHELL
@@ -418,6 +505,7 @@ features:
     selectors: [ ]
     target: core/ui-react/src/features/system
     parity: inventoried
+    visual: { applicability: applicable, status: unassessed }
     task: FM-001
     backlog: { status: deferred, rationale: "System administration migration needs a dedicated task batch before implementation begins." }
 
@@ -431,6 +519,7 @@ features:
     selectors: [ ]
     target: core/ui-react/src/features/system/control
     parity: unverified_legacy_api
+    visual: { applicability: applicable, status: unassessed }
     gaps: [ migration API has no verified backend mapping ]
     task: FM-001
     backlog: { status: deferred, rationale: "System administration migration needs a dedicated task batch before implementation begins." }
@@ -445,6 +534,7 @@ features:
     selectors: [ ]
     target: core/ui-react/src/features/system/updates
     parity: inventoried
+    visual: { applicability: applicable, status: unassessed }
     task: FM-001
     backlog: { status: deferred, rationale: "System administration migration needs a dedicated task batch before implementation begins." }
 
@@ -458,6 +548,7 @@ features:
     selectors: [ ]
     target: core/ui-react/src/features/system/logs
     parity: inventoried
+    visual: { applicability: applicable, status: unassessed }
     task: FM-001
     backlog: { status: deferred, rationale: "System administration migration needs a dedicated task batch before implementation begins." }
 
@@ -471,6 +562,7 @@ features:
     selectors: [ ]
     target: core/ui-react/src/features/system/tasks
     parity: inventoried
+    visual: { applicability: applicable, status: unassessed }
     task: FM-001
     backlog: { status: deferred, rationale: "System administration migration needs a dedicated task batch before implementation begins." }
 
@@ -484,6 +576,7 @@ features:
     selectors: [ ]
     target: core/ui-react/src/features/system/backups
     parity: inventoried
+    visual: { applicability: applicable, status: unassessed }
     task: FM-001
     backlog: { status: deferred, rationale: "System administration migration needs a dedicated task batch before implementation begins." }
 
@@ -497,6 +590,7 @@ features:
     selectors: [ ]
     target: core/ui-react/src/features/system/diagnostics
     parity: inventoried
+    visual: { applicability: applicable, status: unassessed }
     task: FM-001
     backlog: { status: deferred, rationale: "System administration migration needs a dedicated task batch before implementation begins." }
 
@@ -510,6 +604,7 @@ features:
     selectors: [ ]
     target: core/ui-react/src/features/system/news
     parity: partial
+    visual: { applicability: applicable, status: unassessed }
     task: FM-008
     backlog: { status: deferred, rationale: "The record remains partial pending a dedicated full-parity reconciliation." }
 
@@ -523,6 +618,7 @@ features:
     selectors: [ ]
     target: core/ui-react/src/features/system/about
     parity: inventoried
+    visual: { applicability: applicable, status: unassessed }
     task: FM-001
     backlog: { status: deferred, rationale: "System administration migration needs a dedicated task batch before implementation begins." }
 
@@ -536,5 +632,6 @@ features:
     selectors: [ ]
     target: core/ui-react/src/app/status
     parity: inventoried
+    visual: { applicability: applicable, status: unassessed }
     task: FM-001
     backlog: { status: deferred, rationale: "No implementation task has been designed for cross-route live status parity." }

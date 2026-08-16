@@ -27,6 +27,8 @@ review, such as diff and manifest checks. If a test does not credibly cover its 
 
 Look specifically for silent workarounds, dependency downgrades, weakened lint/type/test/build configuration, skipped tests, write-scope violations, and unsupported assumptions or architectural decisions.
 
+For ADR-0006 visual work, audit the scoped feature visual record, deterministic setup, named viewport geometry, evidence paths, optional narrow snapshots, and variance disposition. A reviewer may validate a proposal but must never supply or infer human baseline/variance acceptance; visual evidence is independent of behavioral and accessibility gates.
+
 If the implementation requires or silently made an unresolved fundamental decision about shared architecture, API/authentication/transport, rollout/deployment, persistence/security, or project-wide quality policy, return `BLOCKED: ADR
 REQUIRED`. State the decision question, repository evidence, viable options, affected task/registry IDs, and recommendation. Do not select the decision or treat an unaccepted proposal as authority.
 

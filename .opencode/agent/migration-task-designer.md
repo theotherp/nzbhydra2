@@ -30,6 +30,8 @@ to make a task larger.
 Preserve existing migration architecture, ADRs, registries, and task intent. Use predecessor handoffs as durable new evidence and make the smallest necessary task-packet changes. Do not redesign planned work without a concrete reason,
 change architecture on your own, or implement the task.
 
+For work governed by ADR-0006, define a feature-scoped semantic visual contract with deterministic setup, named viewports, geometry checks, evidence locations, optional narrow snapshots, and proposed variances. A task may require technical proposal/review evidence, but must reserve baseline and variance acceptance for an explicit human decision.
+
 If reasonable alternatives would materially change a shared architecture or runtime boundary, API/authentication/transport contract, rollout/deployment, persistence/security, or project-wide quality strategy, return `ADR REQUIRED` with the
 decision question, repository evidence, viable options, affected task IDs, and a recommendation. Do not create the ADR yourself or choose an option. List only accepted ADRs as governing decisions under `Decision Dependencies`.
 

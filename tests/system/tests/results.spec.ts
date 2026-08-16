@@ -430,7 +430,8 @@ test.describe("Search results", () => {
         await page.route("**/internalapi/search", async (route) => {
             const request = route.request().postDataJSON() as Record<string, unknown>;
             requests.push(request);
-            const offset = request.offset ?? 0;
+            const offset = typeof request.offset === "number" ? request.offset : 0;
+            const loadAll = request.loadAll === true;
             const result = (id: string) => ({
                 searchResultId: id,
                 title: `Paged result ${id}`,
@@ -439,7 +440,7 @@ test.describe("Search results", () => {
             });
             await route.fulfill({
                 json: {
-                    searchResults: request.loadAll
+                    searchResults: loadAll
                         ? [result("one"), result("two"), result("three")]
                         : offset === 0
                           ? [result("one")]
@@ -448,7 +449,7 @@ test.describe("Search results", () => {
                         {
                             indexerName: "Mock",
                             wasSuccessful: true,
-                            hasMoreResults: request.loadAll ? true : offset < 1,
+                            hasMoreResults: loadAll ? true : offset < 1,
                             totalResultsKnown: true,
                         },
                     ],
@@ -457,14 +458,14 @@ test.describe("Search results", () => {
                     notPickedIndexersWithReason: {},
                     numberOfAvailableResults: 3,
                     numberOfRejectedResults: 0,
-                    numberOfProcessedResults: request.loadAll
+                    numberOfProcessedResults: loadAll
                         ? 3
-                        : Number(offset) + 1,
-                    numberOfAcceptedResults: request.loadAll
+                        : offset + 1,
+                    numberOfAcceptedResults: loadAll
                         ? 3
-                        : Number(offset) + 1,
-                    offset: request.loadAll ? 0 : offset,
-                    limit: request.loadAll ? 0 : 1,
+                        : offset + 1,
+                    offset: loadAll ? 0 : offset,
+                    limit: loadAll ? 0 : 1,
                 },
             });
         });

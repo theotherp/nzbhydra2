@@ -13,6 +13,7 @@
 - Verification-basis reconciliation: `the reviewed implementation/test files match the handoff manifest, or explain the rerun/exception`
 - Scope reconciliation: `all attributable changes are within Files Allowed To Modify, or explain the approved amendment`
 - Registry reconciliation: `linked feature/component/API records accurately identify current target, tests, state, owner, gaps, and selectors where applicable`
+- Visual-contract audit (when applicable): `scope, deterministic setup, viewports, geometry/evidence, variance disposition, and explicit human-acceptance separation are accurate; no broad baseline or retrospective acceptance was introduced`
 
 ### Findings
 

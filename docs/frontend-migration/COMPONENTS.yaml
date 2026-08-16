@@ -7,8 +7,8 @@ components:
     consumers: [ F-PLATFORM-SHELL, F-PLATFORM-LIVE-STATUS, F-STATS-SHELL ]
     classification: shared_hydra
     state: partial
-    task: FM-006
-    backlog: { status: deferred, rationale: "Remaining navigation, footer, and live-status integration needs a dedicated follow-up task." }
+    task: FM-031
+    backlog: { status: deferred, rationale: "Remaining footer branding and live-status integration needs a dedicated follow-up task." }
 
   - id: C-API-TRANSPORT
     responsibility: Base-URL-aware HTTP and binary transport with credentials, CSRF, session headers, and common errors

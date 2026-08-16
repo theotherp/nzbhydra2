@@ -20,7 +20,7 @@ export function App({bootstrap, isLoading = false}: AppProps) {
     const [router] = useState(() => createAppRouter(bootstrap));
 
     return (
-        <ThemeProvider theme={createHydraTheme()}>
+        <ThemeProvider theme={createHydraTheme("dark")}>
             <CssBaseline />
             {isLoading ? (
                 <Container maxWidth="sm" sx={{py: 8}}>

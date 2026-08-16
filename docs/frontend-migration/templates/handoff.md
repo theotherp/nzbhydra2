@@ -51,6 +51,7 @@
 
 - IDs or shared guidance updated, or `None`.
 - For every linked `FEATURES.yaml`, `COMPONENTS.yaml`, and `APIS.yaml` record: state whether target, tests, state, task owner, gaps, selector contracts, and backlog ownership were updated or intentionally unchanged.
+- For ADR-0006 visual records: state applicability, lifecycle transition, scoped states/viewports/geometry, evidence and optional snapshots, variance disposition, and `human acceptance pending` unless an explicit human decision is recorded. Confirm no behavioral or accessibility gate was implied by visual evidence.
 
 ### Follow-Up Work
 

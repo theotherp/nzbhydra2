@@ -60,6 +60,7 @@ Generate types first and use a small handwritten transport. Improve source Java/
 - Unit-test pure domain behavior, especially search processing and configuration semantics.
 - Use component tests for interaction and accessibility behavior.
 - Use Playwright for route, API, deployment, and legacy-parity behavior.
+- Visual parity is a separate semantic gate: fixed, deterministic Playwright setup must assert scoped geometry and responsive overflow; optional captures are narrow named regions, never automatic full-page pixel baselines. `FEATURES.yaml` records visual proposals and only explicit human acceptance may mark them accepted.
 - Preserve existing stable `data-testid` selectors where applicable.
 - Never delete, skip, or weaken a failing test to complete migration work.
 - A task is not done until its focused verification passes and a fresh review has checked its acceptance criteria.

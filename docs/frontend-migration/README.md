@@ -30,6 +30,14 @@ Do not duplicate an authoritative fact in another document. Link its stable ID i
 
 `GUI-STATUS.md` is the intentionally concise, human-facing view of how to select the React GUI and which user-observable capabilities are currently available. It is a derived convenience summary, not a source of truth: selector decisions and accepted task handoffs govern access behavior, `FEATURES.yaml` governs feature detail and parity, and `STATUS.md` remains limited to task lifecycle. Keep the summary readable without parsing YAML; do not copy task queues, parity matrices, gap inventories, registry IDs, or detailed verification evidence into it. If it conflicts with an authoritative source above, the authoritative source wins.
 
+## Visual Parity
+
+Semantic visual parity preserves user-meaningful information hierarchy, grouping, state visibility, responsive behavior, interaction affordances, and readable accessible presentation. It does not require Bootstrap pixel identity. Behavioral, accessibility, and visual gates are independent under ADR-0004 and ADR-0006.
+
+Each user-facing `FEATURES.yaml` record has one `visual` record with `applicability` (`applicable` or `not_applicable`) and lifecycle `status` (`unassessed`, `proposed`, or `accepted`). An unassessed record is an honest inventory, not failed remediation. A proposed or accepted record requires a scoped `contract` with deterministic `setup`, `states`, named integer `viewports`, and `geometry_checks`; repository-contained `evidence`; optional narrow `snapshots`; and optional `variances` with a description and disposition. `accepted` additionally requires explicit human-decision metadata (`decision`, `accepted_by`, and `accepted_on`), and all variances must be accepted. Implementers and reviewers may create and audit proposals; only a human may accept a baseline or variance. Completed work is never retrospectively accepted.
+
+Use `tests/system/tests/visualEvidence.ts` for fixed `desktop` (1280x800) and `mobile` (390x844) viewport setup, font/animation readiness, named-region geometry and overflow assertions, and optional narrow region captures. It deliberately does not enable automatic full-page screenshot baselines.
+
 ## Mnemosyne Coordination
 
 Mnemosyne's shared surface is a supplementary cross-agent discovery index, not a task log or source of truth. At the start of each assigned task, proposal, review, or fix, make one scoped `mnemosyne_mnemosyne_shared_recall` using the task
