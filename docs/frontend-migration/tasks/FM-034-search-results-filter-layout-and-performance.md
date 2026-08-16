@@ -1,6 +1,6 @@
 # FM-034: Search Results Inline Column Filters, Legacy-Width Layout, And Row Performance
 
-Status: Done Owner: claude-sonnet-5 Feature IDs: F-SEARCH-RESULTS, F-SEARCH-SORT-FILTER Component IDs: C-RESULT-TABLE API IDs: None Depends on: FM-010, FM-011, FM-028 Blocks: None
+Status: done Owner: claude-sonnet-5 Feature IDs: F-SEARCH-RESULTS, F-SEARCH-SORT-FILTER Component IDs: C-RESULT-TABLE API IDs: None Depends on: FM-010, FM-011, FM-028 Blocks: None
 
 ## Dependency Notes
 

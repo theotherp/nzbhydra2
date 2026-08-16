@@ -225,9 +225,9 @@ features:
         geometry_checks:
             - "at desktop, each sortable column header renders its sort control and filter control (a free-text field for Title; a compact popover-toggle button for Indexer, Category, Size, Grabs, and Age) inline on one row with no scrollWidth overflow of the header cell"
             - "the toolbar's results-quick-filters region renders within the compact results-toolbar without page or region horizontal overflow at either viewport; the toolbar's results-filters region has a computed display of none at desktop and reappears with no horizontal overflow at 390x844"
-          - "a numeric metadata column header (Size) has a computed text-align of right at desktop, matching its right-aligned data cells"
+            - "a numeric metadata column header (Size) has a computed text-align of right at desktop, matching its right-aligned data cells"
             - "the title header column's bounding-box width exceeds twice the indexer header column's width at desktop, keeping the inline filters and quick filters visually secondary to the dominant title/sort hierarchy"
-          - "every sortable column header (title, indexer, category, size, grabs/details, age) renders its full label at desktop with no scrollWidth overflow of its own box, and its ascending/descending state is conveyed by a compact visible indicator plus an `aria-sort` attribute and an `aria-label` accessible name rather than a header-width-consuming visible text suffix"
+            - "every sortable column header (title, indexer, category, size, grabs/details, age) renders its full label at desktop with no scrollWidth overflow of its own box, and its ascending/descending state is conveyed by a compact visible indicator plus an `aria-sort` attribute and an `aria-label` accessible name rather than a header-width-consuming visible text suffix"
       evidence: [ tests/system/tests/results.spec.ts ]
       variances: []
     gaps: [ server-backed preferences ]
