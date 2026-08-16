@@ -57,7 +57,7 @@ features:
     routes: [ / ]
     roles: [ user ]
     legacy_sources: [ core/ui-src/js/search-controller.js, core/ui-src/js/search-request-service.js, core/ui-src/html/states/search.html ]
-    tests: [ tests/system/tests/smoke.spec.ts, tests/system/tests/search.spec.ts ]
+    tests: [ core/ui-react/src/features/search/SearchPage.test.tsx, tests/system/tests/smoke.spec.ts, tests/system/tests/search.spec.ts ]
     selectors: [ search-query, search-submit, search-category-control, "search-category-option-{{category.name}}", additional-query, autocomplete-popup, autocomplete-option ]
     target: core/ui-react/src/features/search
     parity: partial

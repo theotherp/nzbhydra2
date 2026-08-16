@@ -324,17 +324,19 @@ describe("SearchPage", () => {
 
         await screen.findByTestId("recent-searches-trigger");
         fireEvent.click(screen.getByTestId("recent-searches-trigger"));
-        await screen.findByRole("menuitem", {name: /^Refill:/});
-        expect(screen.getAllByText(/Source: Internal/).at(0)).toBeVisible();
-        fireEvent.click(screen.getByRole("menuitem", {name: /^Refill:/}));
+        await screen.findByRole("menuitem", {name: /^Repeat:/});
+        expect(screen.getAllByText("Source:").at(0)).toBeVisible();
+        expect(screen.getAllByText(/Internal/).at(0)).toBeVisible();
+        fireEvent.click(screen.getByRole("button", {name: /^Refill:/}));
         expect(screen.getByLabelText("Search")).toHaveValue("recent query");
         expect(screen.getByLabelText("Minimum age (days)")).toHaveValue(1);
         expect(screen.getByLabelText("Maximum age (days)")).toHaveValue(2);
         expect(screen.getByLabelText("Minimum size (MB)")).toHaveValue(3);
         expect(screen.getByLabelText("Maximum size (MB)")).toHaveValue(4);
         fireEvent.click(screen.getByTestId("recent-searches-trigger"));
-        await screen.findByRole("menuitem", {name: /^Repeat:/});
-        fireEvent.click(screen.getByRole("menuitem", {name: /^Repeat:/}));
+        fireEvent.click(
+            await screen.findByRole("menuitem", {name: /^Repeat:/}),
+        );
         await waitFor(() => expect(requests).toHaveLength(1));
         expect(JSON.parse(requests[0].body as string)).toEqual({
             query: "recent query",
@@ -376,10 +378,10 @@ describe("SearchPage", () => {
         const trigger = await screen.findByTestId("recent-searches-trigger");
         trigger.focus();
         fireEvent.click(trigger);
-        const refill = await screen.findByRole("menuitem", {
-            name: /^Refill:/,
+        const entry = await screen.findByRole("menuitem", {
+            name: /^Repeat:/,
         });
-        await waitFor(() => expect(refill).toHaveFocus());
+        await waitFor(() => expect(entry).toHaveFocus());
         fireEvent.keyDown(screen.getByRole("menu"), {key: "Escape"});
         await waitFor(() =>
             expect(screen.queryByRole("menu")).not.toBeInTheDocument(),
@@ -472,7 +474,7 @@ describe("SearchPage", () => {
 
         fireEvent.click(await screen.findByTestId("recent-searches-trigger"));
         fireEvent.dragStart(
-            await screen.findByRole("menuitem", {name: /^Refill:/}),
+            await screen.findByRole("menuitem", {name: /^Repeat:/}),
         );
         fireEvent.drop(screen.getByLabelText("Search"));
         expect(screen.getByLabelText("Search")).toHaveValue("dragged query");
@@ -507,8 +509,8 @@ describe("SearchPage", () => {
 
         await screen.findByTestId("recent-searches-trigger");
         fireEvent.click(screen.getByTestId("recent-searches-trigger"));
-        await screen.findByRole("menuitem", {name: /^Refill:/});
-        fireEvent.click(screen.getByRole("menuitem", {name: /^Refill:/}));
+        await screen.findByRole("menuitem", {name: /^Repeat:/});
+        fireEvent.click(screen.getByRole("button", {name: /^Refill:/}));
         expect(screen.getByLabelText("Minimum age (days)")).toHaveValue(null);
         expect(screen.getByLabelText("Maximum size (MB)")).toHaveValue(null);
     });
@@ -557,6 +559,88 @@ describe("SearchPage", () => {
                 query: "history query",
                 category: "All",
                 minage: "2",
+                indexers: "Configured",
+            },
+        });
+    });
+
+    it("should execute a search encoded in a plain bookmarked or typed URL, with no repeat marker and no user interaction", async () => {
+        router.search = {
+            query: "1",
+            category: "All",
+            indexers: "Configured",
+        };
+        const fetchImplementation = vi.fn((url: RequestInfo | URL) =>
+            Promise.resolve(
+                new Response(
+                    JSON.stringify(
+                        String(url).includes("forsearching")
+                            ? []
+                            : responseEnvelope,
+                    ),
+                    {headers: {"Content-Type": "application/json"}},
+                ),
+            ),
+        );
+        render(
+            <SearchPage
+                bootstrap={bootstrap}
+                transport={new ApiTransport("/hydra/", fetchImplementation)}
+                liveTransport={immediatelyUnavailableLiveTransport}
+            />,
+        );
+        await waitFor(() =>
+            expect(searchRequestCalls(fetchImplementation)).toHaveLength(1),
+        );
+        expect(searchRequestBody(fetchImplementation)).toEqual({
+            query: "1",
+            category: "All",
+            indexers: ["Configured"],
+            loadAll: false,
+            searchRequestId: expect.any(Number),
+        });
+    });
+
+    it("should auto-execute a history repeat with no recorded selected indexers using the default preselection", async () => {
+        router.search = {
+            repeat: "history",
+            category: "All",
+            query: "legacy history query",
+        };
+        const fetchImplementation = vi.fn((url: RequestInfo | URL) =>
+            Promise.resolve(
+                new Response(
+                    JSON.stringify(
+                        String(url).includes("forsearching")
+                            ? []
+                            : responseEnvelope,
+                    ),
+                    {headers: {"Content-Type": "application/json"}},
+                ),
+            ),
+        );
+        render(
+            <SearchPage
+                bootstrap={bootstrap}
+                transport={new ApiTransport("/hydra/", fetchImplementation)}
+                liveTransport={immediatelyUnavailableLiveTransport}
+            />,
+        );
+        await waitFor(() =>
+            expect(searchRequestCalls(fetchImplementation)).toHaveLength(1),
+        );
+        expect(searchRequestBody(fetchImplementation)).toEqual({
+            query: "legacy history query",
+            category: "All",
+            indexers: ["Configured"],
+            loadAll: false,
+            searchRequestId: expect.any(Number),
+        });
+        expect(router.navigate).toHaveBeenCalledWith({
+            to: "/",
+            search: {
+                query: "legacy history query",
+                category: "All",
                 indexers: "Configured",
             },
         });

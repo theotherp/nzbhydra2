@@ -13,7 +13,10 @@ import {
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 import {useNavigate, useSearch} from "@tanstack/react-router";
 import {useContext, useEffect, useRef, useState} from "react";
-import type {SearchLiveTransport, SearchProgress,} from "../../api/live/searchState";
+import type {
+    SearchLiveTransport,
+    SearchProgress,
+} from "../../api/live/searchState";
 import {createSearchLiveTransport} from "../../api/live/searchState";
 import type {LiveSubscription} from "../../api/live/transport";
 import {SockJsStompLiveTransport} from "../../api/live/transport";
@@ -22,7 +25,12 @@ import type {RecentSearch} from "../../api/recentSearches";
 import {createSavedSearch} from "../../api/savedSearches";
 
 import type {SearchRequest, SearchResponse} from "../../api/search";
-import {continuationRequest, executeSearch, mergeSearchResponses, shortcutSearch,} from "../../api/search";
+import {
+    continuationRequest,
+    executeSearch,
+    mergeSearchResponses,
+    shortcutSearch,
+} from "../../api/search";
 import {ApiTransport} from "../../api/transport";
 import type {BootstrapData} from "../../bootstrap";
 import {ToastContext} from "../../components/toasts/toasts";
@@ -32,7 +40,11 @@ import {recentSearchCriteria} from "./history/recentSearchCriteria";
 import {RecentSearches} from "./history/RecentSearches";
 import {SearchResults} from "./results/SearchResults";
 import type {SearchFormValues} from "./workspace/SearchWorkspace";
-import {canonicalSearch, SearchWorkspace, valuesFromSearch,} from "./workspace/SearchWorkspace";
+import {
+    canonicalSearch,
+    SearchWorkspace,
+    valuesFromSearch,
+} from "./workspace/SearchWorkspace";
 
 export function SearchPage({
     bootstrap,
@@ -362,9 +374,9 @@ export function SearchPage({
                 }}
                 historyTool={recentSearchTool}
             />
-            <HistoryRepeatSubmission
+            <AutoSubmitFromRoute
                 catalog={catalog}
-                criteria={search.repeat === "history" ? search : undefined}
+                criteria={hasExecutableCriteria(search) ? search : undefined}
                 onSubmit={submit}
             />
             {embyAvailability === "available" && (
@@ -457,7 +469,22 @@ export function SearchPage({
     );
 }
 
-function HistoryRepeatSubmission({
+// Runs the search encoded in the URL's query string — whether the page was
+// opened fresh (typed/bookmarked/shared link), navigated to from search
+// history, saved searches, or the search's own canonical URL after a manual
+// submit. `submittedCriteria` dedupes on the *resolved* form values, not the
+// raw route object, so it fires once per distinct search: a manual submit's
+// own `navigate()` call reproduces a canonical URL that resolves to the same
+// values, which this effect then recognizes as already-submitted instead of
+// searching a second time. Resolved-value dedup (rather than raw-object
+// dedup) also covers the Search History repeat path correctly: a history
+// entry with no recorded `selectedIndexers` omits `indexers` from the route
+// object entirely, so `valuesFromSearch` only resolves it to the default
+// preselection when this effect runs — raw-object dedup would then see the
+// pre-submit URL (no `indexers`, `repeat: "history"`) and the post-submit
+// canonical URL (`indexers` set, no `repeat`) as two distinct criteria and
+// search twice.
+function AutoSubmitFromRoute({
     catalog,
     criteria,
     onSubmit,
@@ -471,14 +498,42 @@ function HistoryRepeatSubmission({
         if (!criteria) {
             return;
         }
-        const serialized = JSON.stringify(criteria);
+        const values = valuesFromSearch(criteria, catalog);
+        const serialized = JSON.stringify(values);
         if (submittedCriteria.current === serialized) {
             return;
         }
         submittedCriteria.current = serialized;
-        void onSubmit(valuesFromSearch(criteria, catalog));
+        void onSubmit(values);
     }, [catalog, criteria, onSubmit]);
     return null;
+}
+
+// A `search` route object represents a real, executable search — not just a
+// prefill hint — in either of two cases: it carries `indexers`
+// (`canonicalSearch` always writes this once indexers are selected, which
+// only happens by actually submitting the form; the "submit" button is
+// disabled otherwise), or it carries the Search History repeat marker
+// (`repeat: "history"`, written only by `SearchHistoryPage`'s "Repeat"
+// action). The marker is still needed alongside the `indexers` check because
+// `recentSearchCriteria` omits `indexers` entirely when the history entry
+// has no recorded `selectedIndexers` — a real, ADR-0005-designed case for
+// pre-existing rows and for searches that never explicitly restricted
+// indexers (evidenced by `SearchEntity.selectedIndexers` being nullable with
+// no `@NotNull`, `Searcher.java` only setting it when the request explicitly
+// restricts indexers, and ADR-0005's accepted contract requiring repeat to
+// remain usable with default indexers for entries that lack it). Without the
+// marker, such a repeat would silently downgrade to a non-executing prefill
+// instead of auto-running as it did before this trigger existed. Route
+// search states that carry neither signal — e.g. a bare category default,
+// or fields a test/page sets to prefill without submitting — are left
+// alone, so a partial prefill URL doesn't fire a premature, incomplete
+// request.
+function hasExecutableCriteria(search: Record<string, unknown>): boolean {
+    return (
+        (typeof search.indexers === "string" && search.indexers !== "") ||
+        search.repeat === "history"
+    );
 }
 
 function numberOrUndefined(value: string): number | undefined {
