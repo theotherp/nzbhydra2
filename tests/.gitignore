@@ -30,3 +30,4 @@ system/data
 system/node_modules
 system/playwright-report
 system/test-results
+system/visual-evidence

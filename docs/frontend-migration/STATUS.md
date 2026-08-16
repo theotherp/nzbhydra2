@@ -6,7 +6,6 @@ None.
 
 ## Review
 
-- FM-037: Legacy-Shaped Indexer Selection Split Button
 - FM-038: Recent-Search Menu As One Fully Readable Row Per Search
 
 ## Blocked

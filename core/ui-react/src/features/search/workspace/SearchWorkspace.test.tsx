@@ -172,31 +172,44 @@ describe("SearchWorkspace", () => {
             />,
         );
 
+        const openIndexerMenu = () =>
+            fireEvent.click(
+                screen.getByRole("button", {name: "More selection options"}),
+            );
+
         expectSelectedIndexerNames(["Movies only", "Usenet"]);
-        fireEvent.click(screen.getByRole("button", {name: "Select all"}));
+        openIndexerMenu();
+        fireEvent.click(screen.getByRole("menuitem", {name: "Select all"}));
         expectSelectedIndexerNames(["Movies only", "Torrent", "Usenet"]);
-        fireEvent.click(screen.getByRole("button", {name: "Deselect all"}));
+        openIndexerMenu();
+        fireEvent.click(screen.getByRole("menuitem", {name: "Deselect all"}));
         expectSelectedIndexerNames([]);
         fireEvent.click(screen.getByRole("button", {name: "Invert selection"}));
         expectSelectedIndexerNames(["Movies only", "Torrent", "Usenet"]);
+        openIndexerMenu();
         fireEvent.click(
-            screen.getByRole("button", {name: "Reset to preselection"}),
+            screen.getByRole("menuitem", {name: "Reset to preselection"}),
         );
         expectSelectedIndexerNames(["Usenet"]);
+        openIndexerMenu();
         fireEvent.click(
-            screen.getByRole("button", {name: "Select all usenet indexers"}),
+            screen.getByRole("menuitem", {name: "Select all usenet indexers"}),
         );
         expectSelectedIndexerNames(["Movies only", "Usenet"]);
+        openIndexerMenu();
         fireEvent.click(
-            screen.getByRole("button", {name: "Select all torznab indexers"}),
+            screen.getByRole("menuitem", {name: "Select all torznab indexers"}),
         );
         expectSelectedIndexerNames(["Torrent"]);
+        openIndexerMenu();
+        expect(screen.getByText("Indexer groups")).toBeVisible();
         fireEvent.click(
-            screen.getByRole("button", {name: "Select group Primary"}),
+            screen.getByRole("menuitem", {name: "Select group Primary"}),
         );
         expectSelectedIndexerNames(["Usenet"]);
 
-        fireEvent.click(screen.getByRole("button", {name: "Select all"}));
+        openIndexerMenu();
+        fireEvent.click(screen.getByRole("menuitem", {name: "Select all"}));
         expectSelectedIndexerNames(["Movies only", "Torrent", "Usenet"]);
         fireEvent.mouseDown(screen.getByRole("combobox", {name: "Category"}));
         fireEvent.click(screen.getByTestId("search-category-option-Series"));

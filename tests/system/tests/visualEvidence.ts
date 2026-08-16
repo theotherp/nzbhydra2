@@ -25,7 +25,11 @@ export function visualEvidencePath(featureId: string, region: string): string {
     if (!/^F-[A-Z0-9-]+$/.test(featureId)) {
         throw new Error(`Visual evidence feature ID is invalid: ${featureId}`);
     }
-    return `test-results/visual-evidence/${featureId}/${stableRegionName(region)}.png`;
+    // Deliberately outside `test-results/` (Playwright's `outputDir`, which
+    // Playwright clears at the start of every run): durable, per-feature
+    // visual evidence must survive being overwritten by a run for a
+    // different feature, not just the current one.
+    return `visual-evidence/${featureId}/${stableRegionName(region)}.png`;
 }
 
 export async function prepareVisualEvidence(

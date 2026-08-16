@@ -29,7 +29,7 @@ features:
           - "the current route's own desktop nav item (aria-current=page) has a computed border-bottom-color equal to the theme's primary.main (#0fab4b / rgb(15, 171, 75))"
           - "a desktop nav item's own bounding-box width is unchanged after it transitions from active to inactive via a real client-side navigation click"
       evidence: [ tests/system/tests/smoke.spec.ts ]
-      snapshots: [ tests/system/test-results/visual-evidence/F-PLATFORM-SHELL/app-bar-desktop.png, tests/system/test-results/visual-evidence/F-PLATFORM-SHELL/app-bar-mobile.png ]
+      snapshots: [ tests/system/visual-evidence/F-PLATFORM-SHELL/app-bar-desktop.png, tests/system/visual-evidence/F-PLATFORM-SHELL/app-bar-mobile.png ]
       variances:
         - description: "MUI `primary` uses the logo-green `#0fab4b` rather than legacy's own muted-gray `@brand-primary` (`@gray-light`, ~`#7a8288`). ADR-0007's Human Decision accepted this token choice: MUI's `primary` drives materially more interactive affordances (links, focus rings, selected/active states) than legacy's own muted-gray brand color did. Concretely, this affordance is the current-route nav item's green underline/text in the AppBar's desktop nav (not the AppBar's own background: MUI's `AppBar` defaults `enableColorOnDark` to `false`, so `color=\"primary\"` on the `AppBar` itself does not render green under `palette.mode: \"dark\"`)."
           status: proposed
@@ -113,24 +113,28 @@ features:
     routes: [ / ]
     roles: [ user ]
     legacy_sources: [ core/ui-src/js/search-controller.js, core/ui-src/js/directives/multiselect-dropdown.js, core/ui-src/html/states/search.html ]
-    tests: [ tests/system/tests/search.spec.ts ]
+    tests: [ tests/system/tests/search.spec.ts, core/ui-react/src/features/search/workspace/SearchWorkspace.test.tsx ]
     selectors: [ ]
     target: core/ui-react/src/features/search
     parity: partial
     visual:
       applicability: applicable
-      status: accepted
+      status: proposed
+      note: "Supersedes the prior 2026-08-16 human acceptance of this record (removed here; still recoverable from Git history) because FM-037 restructured indexer bulk-action selection from N always-visible flat buttons into a single
+        legacy-shaped split button (default \"Invert selection\") plus an on-demand dropdown menu holding the remaining bulk actions, materially changing the reviewed geometry. The dropdown's \"Indexer groups\" subsection is legacy
+        parity, not a novel addition (`core/ui-src/js/search-controller.js`'s `buildGroupSelectionActions`, rendered by `search.html`'s own split button and `multiselect-dropdown.html`); no `indexer_groups` variance is recorded. Pending
+        fresh human review; see the FM-037 handoff for what changed and why."
       contract:
-        setup: React-selected `/` with deterministic mock indexers, first using dropdown selection then saved safe configuration checkbox selection in `tests/system/tests/search.spec.ts`.
+        setup: React-selected `/` with deterministic mock indexers, first using dropdown selection then saved safe configuration checkbox selection, then opening the indexer bulk-action split button's dropdown menu, in `tests/system/tests/search.spec.ts`.
         states: [ dropdown-indexers, checkbox-indexers, bulk-indexer-actions ]
         viewports: [ { name: desktop, width: 1280, height: 800 }, { name: mobile, width: 390, height: 844 } ]
-        geometry_checks: [ dropdown indexer control spans its workspace region, checkbox indexer region is visible at desktop, indexer controls and page have no horizontal overflow ]
+        geometry_checks:
+          - "dropdown indexer control spans its workspace region"
+          - "checkbox indexer region is visible at desktop"
+          - "indexer controls and page have no horizontal overflow"
+          - "the indexer bulk-action split button is contained within the workspace indexer region, and its open dropdown menu renders with no menu or page horizontal overflow, at both desktop and mobile"
       evidence: [ tests/system/tests/search.spec.ts ]
       variances: []
-      acceptance:
-        decision: "Accepted as proposed. Reviewed desktop screenshots of both dropdown and checkbox indexer presentations under the FM-031 branded theme."
-        accepted_by: "Repository owner (stratmann.simon@gmail.com)"
-        accepted_on: "2026-08-16"
     gaps: [ ]
     task: FM-016
     backlog: { status: deferred, rationale: "The record remains partial pending a dedicated full-parity reconciliation." }

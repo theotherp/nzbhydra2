@@ -2,21 +2,38 @@ import {
     Alert,
     Box,
     Button,
+    ButtonGroup,
     Checkbox,
+    Divider,
     FormControlLabel,
+    ListItemIcon,
+    ListItemText,
+    ListSubheader,
+    Menu,
     MenuItem,
     Paper,
     Stack,
     TextField,
     Typography,
 } from "@mui/material";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import DnsIcon from "@mui/icons-material/Dns";
+import DoneAllIcon from "@mui/icons-material/DoneAll";
+import FolderOpenIcon from "@mui/icons-material/FolderOpen";
+import RemoveDoneIcon from "@mui/icons-material/RemoveDone";
+import RestartAltIcon from "@mui/icons-material/RestartAlt";
+import ShareIcon from "@mui/icons-material/Share";
+import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
 import type {ReactNode} from "react";
 import {Controller, useForm} from "react-hook-form";
 import {useEffect, useId, useRef, useState} from "react";
 import {z} from "zod";
 
 import type {MediaSuggestion} from "../../../api/media";
-import type {CategoryCatalog} from "../../../domain/categories/catalog";
+import type {
+    CategoryCatalog,
+    SearchIndexer,
+} from "../../../domain/categories/catalog";
 
 const numericString = z.string().regex(/^\d*$/);
 const defaultAutocomplete = async (): Promise<MediaSuggestion[]> => [];
@@ -533,94 +550,14 @@ export function SearchWorkspace({
                                     label={indexer.name}
                                 />
                             ))}
-                        <Stack
-                            direction="row"
-                            flexWrap="wrap"
-                            spacing={1}
-                            sx={{mt: 1}}
-                        >
-                            <Button
-                                onClick={() =>
-                                    selectIndexers(
-                                        eligibleIndexers.map(
-                                            (indexer) => indexer.name,
-                                        ),
-                                    )
-                                }
-                            >
-                                Select all
-                            </Button>
-                            <Button onClick={() => selectIndexers([])}>
-                                Deselect all
-                            </Button>
-                            <Button
-                                onClick={() =>
-                                    selectIndexers(
-                                        eligibleIndexers
-                                            .filter(
-                                                (indexer) =>
-                                                    !selectedIndexers.includes(
-                                                        indexer.name,
-                                                    ),
-                                            )
-                                            .map((indexer) => indexer.name),
-                                    )
-                                }
-                            >
-                                Invert selection
-                            </Button>
-                            <Button onClick={() => resetIndexers()}>
-                                Reset to preselection
-                            </Button>
-                            {(["Usenet", "Torznab"] as const).map((type) => {
-                                const names = eligibleIndexers
-                                    .filter((indexer) =>
-                                        type === "Torznab"
-                                            ? indexer.searchModuleType ===
-                                              "TORZNAB"
-                                            : indexer.searchModuleType !==
-                                              "TORZNAB",
-                                    )
-                                    .map((indexer) => indexer.name);
-                                return names.length > 0 ? (
-                                    <Button
-                                        key={type}
-                                        onClick={() => selectIndexers(names)}
-                                    >
-                                        Select all {type.toLowerCase()} indexers
-                                    </Button>
-                                ) : null;
-                            })}
-                            {[
-                                ...new Set(
-                                    eligibleIndexers.flatMap(
-                                        (indexer) => indexer.groupNames,
-                                    ),
-                                ),
-                            ]
-                                .sort()
-                                .map((group) => (
-                                    <Button
-                                        key={group}
-                                        onClick={() =>
-                                            selectIndexers(
-                                                eligibleIndexers
-                                                    .filter((indexer) =>
-                                                        indexer.groupNames.includes(
-                                                            group,
-                                                        ),
-                                                    )
-                                                    .map(
-                                                        (indexer) =>
-                                                            indexer.name,
-                                                    ),
-                                            )
-                                        }
-                                    >
-                                        Select group {group}
-                                    </Button>
-                                ))}
-                        </Stack>
+                        <Box sx={{mt: 1}}>
+                            <IndexerSelectionButton
+                                eligibleIndexers={eligibleIndexers}
+                                onReset={() => resetIndexers()}
+                                onSelect={selectIndexers}
+                                selectedIndexers={selectedIndexers}
+                            />
+                        </Box>
                     </Box>
                 )}
                 <Box
@@ -733,6 +670,166 @@ const identifierFields = [
 
 function hasIdentifier(values: SearchFormValues): boolean {
     return identifierFields.some((field) => values[field] !== "");
+}
+
+// A split button mirroring the legacy UI's actual search-page indexer
+// selection control: a default "Invert selection" action plus a dropdown
+// for the other bulk actions, with named-group actions broken into a
+// labeled "Indexer groups" subsection.
+//
+// Legacy source: `core/ui-src/js/search-controller.js`'s
+// `buildIndexerSelectionActions`/`buildGroupSelectionActions`, rendered by
+// `core/ui-src/html/states/search.html`'s own split button (default action
+// + `additionalIndexerSelectionActions` dropdown) and by
+// `multiselect-dropdown.html`'s `actions` loop. `core/ui-src/js/directives/
+// indexer-selection-button.js` (a same-named but unrelated, unused-on-any-
+// legacy-page directive — confirmed absent from every legacy HTML
+// template) is NOT this control's legacy source, despite the similar name.
+//
+// Action order matches legacy exactly: invert (always visible), then
+// reset/select-all/deselect-all/usenet/torznab in the dropdown. The
+// "Indexer groups" subsection is legacy parity too, not a novel addition:
+// `buildGroupSelectionActions` emits one action per group labeled
+// `group: 'Indexer groups'`, and both legacy renderers show a divider and
+// an "Indexer groups" header before the first such action — exactly what
+// the `Divider`/`ListSubheader` below do.
+//
+// Icon basis: every legacy action already carries a Bootstrap glyphicon
+// (invert=retweet, reset=repeat, select-all=ok, deselect-all=remove,
+// usenet=hdd, torznab=magnet, group=folder-open); MUI icons substitute a
+// semantically equivalent icon per action from a different icon library,
+// which is a routine ADR-0002 toolkit substitution, not a content
+// variance. The group action's icon is `FolderOpenIcon`, matching
+// legacy's `glyphicon-folder-open` directly.
+function IndexerSelectionButton({
+    eligibleIndexers,
+    selectedIndexers,
+    onSelect,
+    onReset,
+}: {
+    eligibleIndexers: SearchIndexer[];
+    selectedIndexers: string[];
+    onSelect(names: string[]): void;
+    onReset(): void;
+}) {
+    const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+    const open = Boolean(anchorEl);
+    const close = () => setAnchorEl(null);
+    const choose = (names: string[]) => {
+        onSelect(names);
+        close();
+    };
+    const usenetIndexers = eligibleIndexers
+        .filter((indexer) => indexer.searchModuleType !== "TORZNAB")
+        .map((indexer) => indexer.name);
+    const torznabIndexers = eligibleIndexers
+        .filter((indexer) => indexer.searchModuleType === "TORZNAB")
+        .map((indexer) => indexer.name);
+    const groups = [
+        ...new Set(eligibleIndexers.flatMap((indexer) => indexer.groupNames)),
+    ].sort();
+    return (
+        <>
+            <ButtonGroup variant="outlined">
+                <Button
+                    onClick={() =>
+                        onSelect(
+                            eligibleIndexers
+                                .filter(
+                                    (indexer) =>
+                                        !selectedIndexers.includes(
+                                            indexer.name,
+                                        ),
+                                )
+                                .map((indexer) => indexer.name),
+                        )
+                    }
+                    startIcon={<SwapHorizIcon />}
+                >
+                    Invert selection
+                </Button>
+                <Button
+                    aria-expanded={open ? "true" : undefined}
+                    aria-haspopup="menu"
+                    aria-label="More selection options"
+                    onClick={(event) => setAnchorEl(event.currentTarget)}
+                    sx={{px: 0.5}}
+                >
+                    <ArrowDropDownIcon />
+                </Button>
+            </ButtonGroup>
+            <Menu anchorEl={anchorEl} onClose={close} open={open}>
+                <MenuItem
+                    onClick={() => {
+                        onReset();
+                        close();
+                    }}
+                >
+                    <ListItemIcon>
+                        <RestartAltIcon fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText>Reset to preselection</ListItemText>
+                </MenuItem>
+                <MenuItem
+                    onClick={() =>
+                        choose(eligibleIndexers.map((indexer) => indexer.name))
+                    }
+                >
+                    <ListItemIcon>
+                        <DoneAllIcon fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText>Select all</ListItemText>
+                </MenuItem>
+                <MenuItem onClick={() => choose([])}>
+                    <ListItemIcon>
+                        <RemoveDoneIcon fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText>Deselect all</ListItemText>
+                </MenuItem>
+                {usenetIndexers.length > 0 && (
+                    <MenuItem onClick={() => choose(usenetIndexers)}>
+                        <ListItemIcon>
+                            <DnsIcon fontSize="small" />
+                        </ListItemIcon>
+                        <ListItemText>Select all usenet indexers</ListItemText>
+                    </MenuItem>
+                )}
+                {torznabIndexers.length > 0 && (
+                    <MenuItem onClick={() => choose(torznabIndexers)}>
+                        <ListItemIcon>
+                            <ShareIcon fontSize="small" />
+                        </ListItemIcon>
+                        <ListItemText>Select all torznab indexers</ListItemText>
+                    </MenuItem>
+                )}
+                {groups.length > 0 && [
+                    <Divider key="indexer-groups-divider" />,
+                    <ListSubheader key="indexer-groups-header">
+                        Indexer groups
+                    </ListSubheader>,
+                    ...groups.map((group) => (
+                        <MenuItem
+                            key={group}
+                            onClick={() =>
+                                choose(
+                                    eligibleIndexers
+                                        .filter((indexer) =>
+                                            indexer.groupNames.includes(group),
+                                        )
+                                        .map((indexer) => indexer.name),
+                                )
+                            }
+                        >
+                            <ListItemIcon>
+                                <FolderOpenIcon fontSize="small" />
+                            </ListItemIcon>
+                            <ListItemText>Select group {group}</ListItemText>
+                        </MenuItem>
+                    )),
+                ]}
+            </Menu>
+        </>
+    );
 }
 
 function mediaTypeForCategory(

@@ -267,6 +267,51 @@ test.describe("Search", () => {
                 locator: page.getByRole("combobox", {name: "Indexers"}),
                 minimumWidth,
             });
+            const indexersRegion = page.getByTestId("workspace-indexers");
+            const bulkActionsToggle = page.getByRole("button", {
+                name: "More selection options",
+            });
+            const [indexersRegionBox, bulkActionsToggleBox] =
+                await Promise.all([
+                    indexersRegion.boundingBox(),
+                    bulkActionsToggle.boundingBox(),
+                ]);
+            expect(
+                indexersRegionBox,
+                `bulk-indexer-actions-${viewport} region must have a bounding box`,
+            ).not.toBeNull();
+            expect(
+                bulkActionsToggleBox,
+                `bulk-indexer-actions-${viewport} toggle must have a bounding box`,
+            ).not.toBeNull();
+            if (indexersRegionBox && bulkActionsToggleBox) {
+                expect(bulkActionsToggleBox.x).toBeGreaterThanOrEqual(
+                    indexersRegionBox.x,
+                );
+                expect(
+                    bulkActionsToggleBox.x + bulkActionsToggleBox.width,
+                ).toBeLessThanOrEqual(
+                    indexersRegionBox.x + indexersRegionBox.width + 1,
+                );
+                expect(bulkActionsToggleBox.y).toBeGreaterThanOrEqual(
+                    indexersRegionBox.y,
+                );
+                expect(
+                    bulkActionsToggleBox.y + bulkActionsToggleBox.height,
+                ).toBeLessThanOrEqual(
+                    indexersRegionBox.y + indexersRegionBox.height + 1,
+                );
+            }
+            await bulkActionsToggle.click();
+            const bulkActionsMenu = page.getByRole("menu");
+            await expect(bulkActionsMenu).toBeVisible();
+            await expectVisualGeometry(page, {
+                region: `bulk-indexer-actions-menu-${viewport}`,
+                locator: bulkActionsMenu,
+                minimumWidth: 180,
+            });
+            await page.keyboard.press("Escape");
+            await expect(bulkActionsMenu).toBeHidden();
             const category = page.getByTestId("search-category-control");
             const query = page.getByTestId("search-query");
             const [categoryBox, queryBox, submitBox] = await Promise.all([
@@ -400,9 +445,11 @@ test.describe("Search", () => {
         await expect(
             page.getByRole("checkbox", {name: "Mock1"}),
         ).not.toBeChecked();
-        await page.getByRole("button", {name: "Deselect all"}).click();
+        await page.getByRole("button", {name: "More selection options"}).click();
+        await page.getByRole("menuitem", {name: "Deselect all"}).click();
+        await page.getByRole("button", {name: "More selection options"}).click();
         await page
-            .getByRole("button", {name: "Select group Secondary"})
+            .getByRole("menuitem", {name: "Select group Secondary"})
             .click();
         const checkboxRequest = page.waitForResponse((response) =>
             isSearchResponse(response),
