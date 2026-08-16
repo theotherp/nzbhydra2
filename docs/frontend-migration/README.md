@@ -38,22 +38,6 @@ Each user-facing `FEATURES.yaml` record has one `visual` record with `applicabil
 
 Use `tests/system/tests/visualEvidence.ts` for fixed `desktop` (1280x800) and `mobile` (390x844) viewport setup, font/animation readiness, named-region geometry and overflow assertions, and optional narrow region captures. It deliberately does not enable automatic full-page screenshot baselines.
 
-## Mnemosyne Coordination
-
-Mnemosyne's shared surface is a supplementary cross-agent discovery index, not a task log or source of truth. At the start of each assigned task, proposal, review, or fix, make one scoped `mnemosyne_mnemosyne_shared_recall` using the task
-or ADR ID and its main domain terms. Use a result to identify useful leads, then verify it against the current task packet, migration documents, source, tests, and Git state before relying on it.
-
-- Task packets, registries, accepted ADRs, handoffs, `STATUS.md`, repository instructions, and an explicit user instruction always override memory.
-- Do not store task state, task scope, acceptance results, diffs, command output, test results, source excerpts, secrets, credentials, or unverified conclusions in Mnemosyne. Record those in their designated repository source of truth
-  instead.
-- Do not write shared memory for routine discoveries or duplicate an existing migration record. Shared memories must be compact, non-sensitive, durable across tasks, and useful outside the task that discovered them.
-- A reproducible tool workaround or environment prerequisite may be shared when it is operational knowledge rather than a task fact. It must state its trigger, safe workaround or setup, verification date, and source path, tool, or command
-  that verified it.
-- Before a shared write, recall for the same topic to avoid duplicates. Use `veracity: tool` for directly verified facts or `veracity: stated` for an explicit user preference.
-- Only the coordinator writes project shared memories. Implementers, reviewers, fixers, designers, and ADR proposers report a qualifying candidate to the coordinator rather than writing it themselves. The coordinator writes it after
-  independent review, an explicit human decision, or direct reproducible operational verification.
-- For an explicit, durable user preference that applies beyond this migration, the coordinator may record it with `mnemosyne_mnemosyne_remember_canonical`; the current user instruction remains authoritative.
-
 ## Workflow
 
 Task states are `planned`, `ready`, `in_progress`, `review`, `blocked`, and `done`.
@@ -130,6 +114,10 @@ Generated or temporary files count as modifications. Keep them inside allowed pa
 - A fresh reviewer independently audits the verification basis, command result, test coverage, and current diff. Matching evidence is valid without rerunning the command. The reviewer reruns an expensive command only when evidence is
   missing, failed, inconsistent, stale, nondeterministic, insufficient to establish critical behavior, or does not credibly cover the claimed criterion.
 - A correction reruns only commands affected by files it changes. Unchanged command evidence remains valid when the recorded verification basis still matches the task-owned implementation and test files.
+- A clean install (`npm ci`) is required in a task's verification chain only when the task modifies `package.json` or `package-lock.json`, or when a clean install is itself part of acceptance. Otherwise use the cheapest install that
+  guarantees `node_modules` matches the lockfile, and omit the step when it already does. An install is still mandatory whenever `node_modules` is absent or inconsistent with the lockfile, and the handoff records which install command
+  actually ran. CI retains its clean install as the reproducibility guarantee.
+- That exception is scoped to installation only. Type checking, linting, formatting, tests, build, API checks, and migration validation remain unconditional, and no other verification step may be made conditional by analogy.
 
 ## Registry Rules
 
