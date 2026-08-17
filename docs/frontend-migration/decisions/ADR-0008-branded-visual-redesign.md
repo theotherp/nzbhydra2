@@ -151,4 +151,6 @@ records is the same mechanism ADR-0007 itself used against FM-027, the shell-fir
 
 - Supersedes: **None.** Option B was chosen, not Option A, so `ADR-0007-branded-mui-theme-foundation.md` is **not** superseded — its palette and typography tokens, its nav-layout-bug fix, and its general "a branded theme is
   required" decision all remain fully in force and unchanged by this ADR.
-- Superseded by: `None` until a later ADR replaces this decision.
+- Superseded by: `ADR-0009-mock-fidelity-visual-redesign.md` (2026-08-17). The repository owner reviewed FM-039/FM-040, implemented under this ADR's Option B, and explicitly reversed the decision: the search page should follow the source
+  mock closely, including its palette and typography, not just its structure. ADR-0009 records the new decision; this ADR's Option B choice and its rationale remain part of the historical record but no longer govern current or future
+  work.
