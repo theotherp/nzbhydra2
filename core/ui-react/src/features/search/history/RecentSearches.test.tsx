@@ -92,7 +92,7 @@ describe("RecentSearches", () => {
 
         expect(window.getComputedStyle(label).fontStyle).toBe("italic");
         expect(window.getComputedStyle(label).color).toMatch(
-            /rgb\(\s*122,\s*130,\s*136\s*\)/,
+            /rgb\(\s*154,\s*162,\s*161\s*\)/,
         );
         expect(window.getComputedStyle(value).fontStyle).not.toBe("italic");
     });

@@ -1,3 +1,14 @@
+// Vendored IBM Plex webfaces, imported as build-time CSS side effects so the
+// fonts are served from this application's own build output. The mock's runtime
+// `fonts.googleapis.com`/`fonts.gstatic.com` `<link>` tags are deliberately not
+// adopted (ADR-0009). Weights match the mock's own Google Fonts request:
+// IBM Plex Sans 400/500/600/700 and IBM Plex Mono 400/500.
+import "@fontsource/ibm-plex-sans/400.css";
+import "@fontsource/ibm-plex-sans/500.css";
+import "@fontsource/ibm-plex-sans/600.css";
+import "@fontsource/ibm-plex-sans/700.css";
+import "@fontsource/ibm-plex-mono/400.css";
+import "@fontsource/ibm-plex-mono/500.css";
 import {CircularProgress, Container, Stack, Typography} from "@mui/material";
 import {CssBaseline, ThemeProvider} from "@mui/material";
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";

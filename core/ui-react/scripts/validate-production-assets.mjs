@@ -14,23 +14,60 @@
  *  limitations under the License.
  */
 
-import {access, readFile, stat} from "node:fs/promises";
+import {readdir, readFile, stat} from "node:fs/promises";
 import {resolve} from "node:path";
 
 const outputDirectory = resolve(process.env.VITE_OUT_DIR ?? "dist");
-const entryAsset = resolve(outputDirectory, "assets/index.js");
-const htmlFile = resolve(outputDirectory, "index.html");
+const assetDirectory = resolve(outputDirectory, "assets");
 
-await access(entryAsset);
-if ((await stat(entryAsset)).size === 0) {
-    throw new Error(`React entry asset is empty: ${entryAsset}`);
-}
+// ADR-0010 (Option A, accepted): validate the HTML production actually serves.
+// Spring renders `MainWeb.shell()`'s `"react"` view, i.e. this Thymeleaf
+// template -- never the `index.html` Vite writes into the output directory,
+// which is packaged but unused. The path is resolved from the `core/ui-react`
+// working directory both invocations use (Maven's `validate-react-assets` with
+// `VITE_OUT_DIR=../target/classes/static/react` and CI's default `dist/`), so
+// it is independent of where the build output lands.
+const templateFile = resolve("../src/main/resources/templates/react.html");
 
-const html = await readFile(htmlFile, "utf8");
-if (!html.includes("assets/index.js")) {
+// An "entry asset" is a top-level asset in `assets/` whose name carries no
+// content hash: `index.js`, pinned by `vite.config.ts`'s
+// `entryFileNames: "assets/[name].js"`, and `index.css`, pinned by its
+// `assetFileNames` CSS rule. Those two -- and only those two -- are hardcoded
+// by the template, so those are the ones it must reference. Every other emitted
+// asset keeps Vite's default `-[hash]` suffix: the `@fontsource` webfont files
+// (referenced from the CSS) and any future route-level code-split JS/CSS chunk
+// (loaded by Vite's own module-preload runtime). Requiring those in the
+// template would be wrong, so they are deliberately not checked here.
+const entryAssetPattern = /^index\.[^.]+$/;
+
+const emittedAssets = await readdir(assetDirectory);
+const entryAssets = emittedAssets.filter((name) =>
+    entryAssetPattern.test(name),
+);
+entryAssets.sort();
+
+if (!entryAssets.includes("index.js")) {
     throw new Error(
-        `React production HTML does not reference its entry asset: ${htmlFile}`,
+        `React entry asset is missing: ${resolve(assetDirectory, "index.js")}`,
     );
 }
 
-console.log(`Validated React production assets in ${outputDirectory}`);
+const html = await readFile(templateFile, "utf8");
+
+for (const asset of entryAssets) {
+    const assetFile = resolve(assetDirectory, asset);
+    if ((await stat(assetFile)).size === 0) {
+        throw new Error(`React entry asset is empty: ${assetFile}`);
+    }
+
+    const reference = `static/react/assets/${asset}`;
+    if (!html.includes(reference)) {
+        throw new Error(
+            `React production HTML does not reference emitted entry asset ${reference}: ${templateFile}`,
+        );
+    }
+}
+
+console.log(
+    `Validated React production assets in ${outputDirectory} (entry assets: ${entryAssets.join(", ")}) against ${templateFile}`,
+);

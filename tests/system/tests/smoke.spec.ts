@@ -22,6 +22,19 @@ test.describe("Branded app shell visual evidence", () => {
         test(`should render the branded AppBar without horizontal overflow at ${viewport}`, async ({
             page,
         }) => {
+            // Registered before the first navigation so it observes every
+            // request the app makes while loading, not just post-load ones.
+            const fontCdnRequests: string[] = [];
+            page.on("request", (request) => {
+                const host = new URL(request.url()).host;
+                if (
+                    host === "fonts.googleapis.com" ||
+                    host === "fonts.gstatic.com"
+                ) {
+                    fontCdnRequests.push(request.url());
+                }
+            });
+
             await prepareVisualEvidence(page, viewport, async () => {
                 await page.goto("/");
                 await dismissWelcomeDialog(page);
@@ -44,6 +57,53 @@ test.describe("Branded app shell visual evidence", () => {
             const logo = page.getByTestId("app-shell-logo");
             await expect(logo).toBeVisible();
             await expect(logo).toHaveAccessibleName("NZBHydra2");
+
+            // State `branded-typography-and-density` (ADR-0009). The three
+            // claims below are exactly the ones a CSS-only inspection cannot
+            // make: that the vendored webfont is really applied and really
+            // loaded, that the mock's two-tone shell surface is really
+            // rendered, and that none of it costs a third-party CDN request.
+            const appBarFontFamily = await appBar.evaluate(
+                (element) => window.getComputedStyle(element).fontFamily,
+            );
+            expect(appBarFontFamily).toContain("IBM Plex Sans");
+
+            const loadedFontFamilies = await page.evaluate(() =>
+                Array.from(document.fonts)
+                    .filter((face) => face.status === "loaded")
+                    .map((face) => face.family),
+            );
+            expect(
+                loadedFontFamilies,
+                "the vendored IBM Plex Sans webfont must actually load, not just be declared",
+            ).toContain("IBM Plex Sans");
+
+            const declaredFontFamilies = await page.evaluate(() =>
+                Array.from(document.fonts).map((face) => face.family),
+            );
+            expect(
+                declaredFontFamilies,
+                "the vendored IBM Plex Mono webfont must be served by this application for feature code to apply",
+            ).toContain("IBM Plex Mono");
+
+            const [pageBackground, appBarBackground] = await Promise.all([
+                page.evaluate(
+                    () =>
+                        window.getComputedStyle(document.body).backgroundColor,
+                ),
+                appBar.evaluate(
+                    (element) => window.getComputedStyle(element).backgroundColor,
+                ),
+            ]);
+            expect(
+                appBarBackground,
+                "the AppBar must render the theme's background.paper tone, distinct from the page's background.default",
+            ).not.toBe(pageBackground);
+
+            expect(
+                fontCdnRequests,
+                "fonts must be served from this application's own build output, never a runtime Google Fonts CDN",
+            ).toEqual([]);
 
             if (viewport === "desktop") {
                 const nav = page.getByTestId("app-shell-nav");
@@ -78,7 +138,7 @@ test.describe("Branded app shell visual evidence", () => {
                 // MUI's AppBar defaults `enableColorOnDark` to `false`, so the
                 // AppBar itself does not render `primary`-colored under
                 // `palette.mode: "dark"`. The real, genuine use of the
-                // branded primary green as an interactive affordance is the
+                // branded primary teal as an interactive affordance is the
                 // current route's own nav item (the default `/` route lands
                 // on "Search", which is active here); assert its actual
                 // rendered color in the real browser, not just its presence.
@@ -89,7 +149,7 @@ test.describe("Branded app shell visual evidence", () => {
                     (element) =>
                         window.getComputedStyle(element).borderBottomColor,
                 );
-                expect(borderBottomColor).toBe("rgb(15, 171, 75)");
+                expect(borderBottomColor).toBe("oklch(0.75 0.1 190)");
 
                 // Width-stability regression coverage (FM-035): selecting a
                 // different destination must only toggle the previously

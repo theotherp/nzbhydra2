@@ -105,7 +105,7 @@ describe("AppShell", () => {
         expect(logo.getAttribute("alt")).toBe("NZBHydra2");
     });
 
-    it("should mark the current route's nav item with the branded primary-green active indicator", () => {
+    it("should mark the current route's nav item with the branded primary active indicator", () => {
         mockPathname = "/hydra/stats/indexers";
         render(
             <ThemeProvider theme={createHydraTheme("dark", false)}>
@@ -121,22 +121,22 @@ describe("AppShell", () => {
             </ThemeProvider>,
         );
 
-        // Real, non-vacuous evidence that the theme's `primary.main`
-        // (#0fab4b) is genuinely rendered as an interactive affordance, not
-        // just declared in theme.ts: the active item's own computed border
-        // color resolves to the theme's actual green, and the inactive item
-        // does not get it.
+        // Real, non-vacuous evidence that the theme's `primary.main` (the
+        // mock's teal `oklch(0.75 0.1 190)`) is genuinely rendered as an
+        // interactive affordance, not just declared in theme.ts: the active
+        // item's own computed border color resolves to the theme's actual
+        // brand color, and the inactive item does not get it.
         const activeLink = screen.getByRole("link", {name: "History & Stats"});
         expect(activeLink).toHaveAttribute("aria-current", "page");
-        expect(window.getComputedStyle(activeLink).borderBottomColor).toMatch(
-            /rgb\(\s*15,\s*171,\s*75\s*\)/,
+        expect(window.getComputedStyle(activeLink).borderBottomColor).toBe(
+            "oklch(0.75 0.1 190)",
         );
 
         const inactiveLink = screen.getByRole("link", {name: "Search"});
         expect(inactiveLink).not.toHaveAttribute("aria-current");
         expect(
             window.getComputedStyle(inactiveLink).borderBottomColor,
-        ).not.toMatch(/rgb\(\s*15,\s*171,\s*75\s*\)/);
+        ).not.toBe("oklch(0.75 0.1 190)");
     });
 
     it("should reserve identical border and label geometry for a nav item whether it is active or inactive", () => {
