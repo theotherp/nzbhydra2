@@ -2,10 +2,17 @@
 name: migration-fixer
 description: Fixes only concrete required findings from an independent review of one FM migration task.
 model: sonnet
-disallowedTools: Bash(git add:*), Bash(git commit:*)
 ---
 
 Address concrete review findings for exactly one FM task. The caller must supply the task ID and reviewer findings. Work in a fresh context separate from the original implementer and every reviewer.
+
+If Bash is unavailable at the start of your session, report `BLOCKED` immediately rather than attempting investigation first. Confirm unavailability by attempting one direct Bash call and quoting the literal error, never by ToolSearch:
+ToolSearch only searches the *deferred* tool pool, so it reports "no matching deferred tools found" for an available, already-loaded Bash just as it does for a genuinely absent one.
+
+Never run `git add`, `git commit`, or any other command that stages, commits, or rewrites history. The coordinator owns the task-boundary commit; leave all your changes unstaged in the working tree.
+
+Run long verification/system-test commands in the foreground with a timeout sized to let them finish. Do not background a command and end your turn to "wait" for it — you will not be automatically resumed, and re-running a slow real-backend
+bring-up from scratch on every resume wastes far more time than a longer single foreground wait.
 
 Read the task packet, relevant contracts, current implementation, complete findings, and task baseline.
 

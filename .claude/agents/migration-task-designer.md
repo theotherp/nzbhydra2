@@ -11,6 +11,9 @@ For a creation request, determine the highest existing `FM-NNN` task ID and crea
 task under `Upcoming`; later batch members remain planned packets without status-file entries. Read the task inventory, all relevant migration contracts, predecessor handoffs, legacy implementation, tests, and already-planned work before
 choosing boundaries.
 
+When acceptance criteria derive from a visual reference (a mock, screenshot, or legacy CSS), cite literal values from it — exact px/font-size/color/radius — never descriptive adjectives like "denser" or "compact." An implementer weeks
+removed from the reference has nothing to build against otherwise.
+
 Default to substantial, independently reviewable vertical capabilities. Keep the route, UI state, API/transport adaptation, necessary shared-component work, focused tests, and registry evidence together when they must change to deliver one
 user-observable result. Split only for a genuine dependency, independent product capability, separate runtime boundary, or an unresolved contract; never split merely by source file, layer, or trivial edit. Do not bundle unrelated features
 to make a task larger.

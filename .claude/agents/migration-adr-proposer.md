@@ -1,7 +1,7 @@
 ---
 name: migration-adr-proposer
 description: Drafts evidence-based proposed ADRs for fundamental FM migration decisions and records explicit human acceptance without implementing work.
-model: sonnet
+model: opus
 disallowedTools: Bash
 ---
 
