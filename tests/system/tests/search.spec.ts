@@ -1,5 +1,6 @@
 import {dismissWelcomeDialog, expect, test} from "./fixtures";
 import {
+    captureVisualRegion,
     expectVisualGeometry,
     prepareVisualEvidence,
     visualViewports,
@@ -248,20 +249,74 @@ test.describe("Search", () => {
                 minimumWidth,
             });
             await expectVisualGeometry(page, {
-                region: `workspace-primary-${viewport}`,
+                region: `search-bar-row-density-${viewport}`,
                 locator: primary,
                 minimumWidth,
             });
-            await expectVisualGeometry(page, {
-                region: `workspace-ranges-${viewport}`,
-                locator: ranges,
-                minimumWidth,
-            });
+            const [rowBackground, pageBackground] = await Promise.all([
+                primary.evaluate(
+                    (element) => getComputedStyle(element).backgroundColor,
+                ),
+                page
+                    .locator("body")
+                    .evaluate(
+                        (element) => getComputedStyle(element).backgroundColor,
+                    ),
+            ]);
+            expect(rowBackground).not.toBe("rgba(0, 0, 0, 0)");
+            expect(rowBackground).not.toBe(pageBackground);
+            await captureVisualRegion(
+                primary,
+                "F-SEARCH-FORM",
+                `search-bar-density-${viewport}`,
+            );
             await expectVisualGeometry(page, {
                 region: `workspace-actions-${viewport}`,
                 locator: actions,
                 minimumWidth,
             });
+            const advancedToggle = page.getByTestId("search-advanced-toggle");
+            const advancedPanel = page.getByTestId("search-advanced-panel");
+            await expect(advancedToggle).toHaveAttribute(
+                "aria-expanded",
+                "false",
+            );
+            await expect(advancedPanel).toBeHidden();
+            const collapsedRow = await primary.boundingBox();
+            await advancedToggle.click();
+            await expect(advancedToggle).toHaveAttribute(
+                "aria-expanded",
+                "true",
+            );
+            await expect(advancedPanel).toBeVisible();
+            const expandedRow = await primary.boundingBox();
+            expect(collapsedRow).not.toBeNull();
+            expect(expandedRow).not.toBeNull();
+            expect(expandedRow?.height ?? 0).toBeGreaterThan(
+                collapsedRow?.height ?? 0,
+            );
+            await expectVisualGeometry(page, {
+                region: `advanced-panel-expanded-${viewport}`,
+                locator: ranges,
+                minimumWidth: 200,
+            });
+            for (const label of [
+                "Minimum age (days)",
+                "Maximum age (days)",
+                "Minimum size (MB)",
+                "Maximum size (MB)",
+            ]) {
+                const field = page.getByLabel(label);
+                await expect(field).toBeVisible();
+                expect(
+                    await field.evaluate(
+                        (element) => element.scrollWidth <= element.clientWidth,
+                    ),
+                    `${label} must not overflow horizontally`,
+                ).toBe(true);
+            }
+            await advancedToggle.click();
+            await expect(advancedPanel).toBeHidden();
             await expectVisualGeometry(page, {
                 region: `dropdown-indexers-${viewport}`,
                 locator: page.getByRole("combobox", {name: "Indexers"}),
@@ -328,13 +383,19 @@ test.describe("Search", () => {
                 );
             }
             expect(submitBox.height).toBeGreaterThanOrEqual(36);
+            // The mock joins the query field and its Search button into one
+            // control: the button sits at the field's trailing edge, on the
+            // same baseline, rather than in a separate actions row.
+            expect(submitBox.x).toBeGreaterThanOrEqual(
+                queryBox.x + queryBox.width - 1,
+            );
+            expect(Math.abs(submitBox.y - queryBox.y)).toBeLessThanOrEqual(4);
             if (viewport === "desktop") {
                 expect(
                     Math.abs(categoryBox.y - queryBox.y),
                 ).toBeLessThanOrEqual(2);
             } else {
                 expect(categoryBox.y).toBeLessThan(queryBox.y);
-                expect(submitBox.width).toBeGreaterThanOrEqual(300);
             }
         }
 
@@ -384,6 +445,27 @@ test.describe("Search", () => {
                 locator: page.getByTestId("workspace-media-refinement"),
                 minimumWidth: viewport === "desktop" ? 600 : 300,
             });
+            const seasonEpisode = page.getByTestId("season-episode-pair");
+            await expectVisualGeometry(page, {
+                region: `paired-season-episode-compact-${viewport}`,
+                locator: seasonEpisode,
+                maximumWidth: 220,
+            });
+            const [pairBox, refinementFieldBox] = await Promise.all([
+                seasonEpisode.boundingBox(),
+                page.getByTestId("additional-query").boundingBox(),
+            ]);
+            expect(pairBox).not.toBeNull();
+            expect(refinementFieldBox).not.toBeNull();
+            expect(pairBox?.width ?? 0).toBeLessThan(
+                (refinementFieldBox?.width ?? 0) / 2,
+            );
+            await page.getByLabel("Season").focus();
+            await page.keyboard.type("3");
+            await page.getByLabel("Episode").focus();
+            await page.keyboard.type("4");
+            await expect(page.getByLabel("Season")).toHaveValue("3");
+            await expect(page.getByLabel("Episode")).toHaveValue("4");
         }
     });
 
@@ -481,6 +563,10 @@ test.describe("Search", () => {
         await page.getByRole("option", {name: "Mock1"}).click();
         await page.keyboard.press("Escape");
         await page.getByTestId("search-query").fill("recent criteria");
+        // FM-044 relocated the age/size ranges into the collapsed `Advanced`
+        // disclosure; the criteria, their labels, and their bindings are
+        // unchanged, so only the disclosure has to be opened first.
+        await page.getByTestId("search-advanced-toggle").click();
         await page.getByLabel("Minimum age (days)").fill("2");
         await page.getByLabel("Maximum size (MB)").fill("50");
         const firstSearch = page.waitForResponse((response) =>
@@ -500,6 +586,9 @@ test.describe("Search", () => {
             page.getByRole("menuitem", {name: "Refill"}).first(),
         ).toBeVisible();
         await page.getByRole("menuitem", {name: "Refill"}).first().click();
+        // Refilling remounts the workspace, so the FM-044 `Advanced`
+        // disclosure holding the refilled ranges starts collapsed again.
+        await page.getByTestId("search-advanced-toggle").click();
         await expect(page.getByLabel("Minimum age (days)")).toHaveValue("2");
         await expect(page.getByLabel("Maximum size (MB)")).toHaveValue("50");
         await page.getByTestId("recent-searches-trigger").click();

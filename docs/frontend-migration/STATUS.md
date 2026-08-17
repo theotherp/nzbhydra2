@@ -18,7 +18,11 @@ None.
 
 **ADR-0009 full-mock-fidelity batch.** FM-043 (shell theme, typography, density foundation) is `done`, so `createHydraTheme()`'s `oklch` palette, self-hosted IBM Plex Sans/Mono typography, and the denser default component sizing are
 now the tokens every later packet in this batch restyles against rather than guessing at values. FM-044 (search form restyle) and FM-045 (single refine-sidebar filter surface) are no longer blocked and are independent of each other;
-FM-046 remediates FM-039/FM-040 behind FM-045 and in turn unblocks FM-041. All four remain `planned` and are promoted to `ready` by a task designer, not listed here until then. Two things that landed with FM-043 are worth carrying
+FM-046 remediates FM-039/FM-040 behind FM-045 and in turn unblocks FM-041. FM-044 is `done` — reviewed `PASS WITH MINOR FINDINGS`, with its one required finding a packet-internal inconsistency (its `search.spec.ts` allowlist forbade the
+only conforming realization of its own collapsed-by-default Acceptance) resolved by a task-designer refinement to that packet, not by changing the implementation. FM-045 and FM-046 remain `planned` and are not listed here until they become
+immediately next work. FM-044 leaves `F-SEARCH-FORM`, `F-SEARCH-MEDIA`, and `F-SEARCH-INDEXERS` all `visual.status: proposed` with **human visual acceptance outstanding**, and reports one pre-existing, unrelated `tests/system/tests/search.spec.ts`
+failure it did not cause and is not allowed to repair: FM-038 turned the recent-search "Refill" control into an icon `button` nested inside the `Repeat:` `menuitem` but left that spec's `getByRole("menuitem", {name: "Refill"})`
+assertions untouched. Reproduced on a clean baseline tree at `68e4e2f9a`; see the FM-044 handoff's Follow-Up Work for the proposed corrective packet. Two things that landed with FM-043 are worth carrying
 forward. **ADR-0010 (React Production CSS Delivery)** is accepted and implemented: the
 emitted CSS entry is pinned to `assets/index.css`, `core/src/main/resources/templates/react.html` `<link>`s it render-blocking from `<head>`, and `core/ui-react/scripts/validate-production-assets.mjs` now validates that real Thymeleaf
 template instead of the Vite output's unused `index.html` — so any future task importing CSS is covered by a gate that was proven to actually fail. Separately, `F-PLATFORM-SHELL`'s visual record stays `proposed`: **human visual

@@ -67,24 +67,28 @@ features:
     routes: [ / ]
     roles: [ user ]
     legacy_sources: [ core/ui-src/js/search-controller.js, core/ui-src/js/search-request-service.js, core/ui-src/html/states/search.html ]
-    tests: [ core/ui-react/src/features/search/SearchPage.test.tsx, tests/system/tests/smoke.spec.ts, tests/system/tests/search.spec.ts ]
-    selectors: [ search-query, search-submit, search-category-control, "search-category-option-{{category.name}}", additional-query, autocomplete-popup, autocomplete-option ]
+    tests: [ core/ui-react/src/features/search/SearchPage.test.tsx, core/ui-react/src/features/search/workspace/SearchWorkspace.test.tsx, tests/system/tests/smoke.spec.ts, tests/system/tests/search.spec.ts ]
+    selectors: [ search-query, search-submit, search-category-control, "search-category-option-{{category.name}}", additional-query, autocomplete-popup, autocomplete-option, search-advanced-toggle, search-advanced-panel ]
     target: core/ui-react/src/features/search
     parity: partial
     visual:
       applicability: applicable
-      status: accepted
+      status: proposed
+      note: "Supersedes the prior 2026-08-16 human acceptance of this record (removed here; still recoverable from Git history) because that acceptance evidenced the FM-031 branded theme's legacy-grey palette and the always-visible age/size range grid, both of which FM-044 changes under ADR-0009. The search-bar row now renders on the mock's own #232a2c surface at its 14px 18px padding and 10px control gap, with the category select and query field at the mock's 11px radius, and the query field and its Search button form one visually joined control with the button on the new teal primary.main and the theme's textTransform: none label. The Age/Size ranges relocated out of the always-visible `workspace-ranges` grid into a new `search-advanced-toggle`/`search-advanced-panel` disclosure that defaults to collapsed, adopting the mock's own disclosure pattern; every relocated field keeps its exact `data-testid`, accessible label text, validation, and `register(...)` binding, so only default visibility and container changed and no capability was removed. This follows the accepted-claim supersession pattern FM-034, FM-037, FM-039, and FM-040 used; acceptance is never re-dated or fabricated. Pending fresh human review; see the FM-044 handoff for what changed and the verification evidence."
       contract:
         setup: React-selected `/` with deterministic mock indexers and the category catalog in `tests/system/tests/search.spec.ts`.
-        states: [ plain-query-workspace, category-transition, paired-age-size-ranges, terminal-submission ]
+        states: [ search-bar-row-density, advanced-panel-collapsed, advanced-panel-expanded, terminal-submission ]
         viewports: [ { name: desktop, width: 1280, height: 800 }, { name: mobile, width: 390, height: 844 } ]
-        geometry_checks: [ category precedes the primary query in the responsive hierarchy, primary/range/action regions meet the declared minimum widths without horizontal overflow, mobile submission is at least 300px wide and 36px high ]
+        geometry_checks:
+          - "the search-bar row and the page have no horizontal overflow at 1280x800 and 390x844, the row meets the declared minimum width, and the row's computed background color is opaque and differs from the page's background.default"
+          - "the Search button sits at the query field's trailing edge on the same baseline within 4px and is at least 36px high at both viewports"
+          - "category precedes the primary query in the responsive hierarchy: the two share a baseline within 2px at desktop, and the category sits above the query at mobile"
+          - "collapsed, the Advanced panel is not visible, its toggle reports aria-expanded=false, and the search-bar row is measurably shorter than when expanded"
+          - "expanded, every relocated Age/Size field is visible with no scrollWidth overflow, and the relocated workspace-ranges region renders at least 200px wide with no region or page horizontal overflow"
+          - "the workspace and its actions region meet the declared minimum widths without horizontal overflow"
       evidence: [ tests/system/tests/search.spec.ts ]
+      snapshots: [ tests/system/visual-evidence/F-SEARCH-FORM/search-bar-density-desktop.png, tests/system/visual-evidence/F-SEARCH-FORM/search-bar-density-mobile.png ]
       variances: []
-      acceptance:
-        decision: "Accepted as proposed. Reviewed desktop/mobile screenshots of the search workspace under the FM-031 branded theme; hierarchy, density, and responsive reflow read as comparable to legacy."
-        accepted_by: "Repository owner (stratmann.simon@gmail.com)"
-        accepted_on: "2026-08-16"
     gaps: [ guided tour ]
     task: FM-016
     backlog: { status: deferred, rationale: "The remaining guided-tour integration has no implementation task yet." }
@@ -96,23 +100,23 @@ features:
     roles: [ user ]
     legacy_sources: [ core/ui-src/js/search-controller.js, core/ui-src/html/states/search.html ]
     tests: [ core/ui-react/src/api/media.test.ts, core/ui-react/src/features/search/workspace/SearchWorkspace.test.tsx, core/ui-react/src/features/search/SearchPage.test.tsx, tests/system/tests/search.spec.ts ]
-    selectors: [ additional-query, autocomplete-popup, autocomplete-option ]
+    selectors: [ additional-query, autocomplete-popup, autocomplete-option, season-episode-pair ]
     target: core/ui-react/src/features/search
     parity: partial
     visual:
       applicability: applicable
-      status: accepted
+      status: proposed
+      note: "Supersedes the prior 2026-08-16 human acceptance of this record (removed here; still recoverable from Git history) because that acceptance evidenced the FM-031 branded theme's palette and two independently labeled, equal-width, full-width season/episode TextFields stacked in the media-refinement grid. FM-044 replaces that pair with the mock's compact inline treatment inside the search-bar row: 40px centered IBM Plex Mono inputs behind short adjacent \"S\"/\"E\" captions, on the mock's #2a3133 control surface at its 11px radius. The autocomplete suggestion panel is likewise restyled to the mock's #2a3133/11px suggestion surface. The season and episode form fields, their numeric-only and free-text validation, their `register(...)` bindings, their accessible label text, and every autocomplete data-testid, keyboard interaction (arrow navigation, Enter-to-select, Escape-to-dismiss), and loading/empty/error Alert state are unchanged in behavior. This follows the accepted-claim supersession pattern FM-034, FM-037, FM-039, and FM-040 used; acceptance is never re-dated or fabricated. Pending fresh human review; see the FM-044 handoff."
       contract:
         setup: React-selected `/` with deterministic mock indexers; select the configured TV category in `tests/system/tests/search.spec.ts`.
-        states: [ tv-title-refinement, season-episode-pair ]
+        states: [ tv-title-refinement, paired-season-episode-compact ]
         viewports: [ { name: desktop, width: 1280, height: 800 }, { name: mobile, width: 390, height: 844 } ]
-        geometry_checks: [ media refinement is visible after its category transition, season and episode remain paired in readable equal-width controls, media region has no control or page horizontal overflow ]
+        geometry_checks:
+          - "media refinement is visible after its category transition and meets its declared minimum width with no control or page horizontal overflow at 1280x800 and 390x844"
+          - "the season/episode pair renders inside the search-bar row at no more than 220px wide with no region or page horizontal overflow, and its combined bounding-box width is less than half of the full-width additional-query field's width"
+          - "both paired inputs remain individually operable by keyboard focus and typing, retaining the typed season and episode values"
       evidence: [ tests/system/tests/search.spec.ts ]
       variances: []
-      acceptance:
-        decision: "Accepted as proposed. Reviewed desktop screenshot of TV media refinement (season/episode) under the FM-031 branded theme."
-        accepted_by: "Repository owner (stratmann.simon@gmail.com)"
-        accepted_on: "2026-08-16"
     gaps: [ ]
     task: FM-025
     backlog: { status: deferred, rationale: "The record remains partial pending a dedicated full-parity reconciliation." }
@@ -133,7 +137,10 @@ features:
       note: "Supersedes the prior 2026-08-16 human acceptance of this record (removed here; still recoverable from Git history) because FM-037 restructured indexer bulk-action selection from N always-visible flat buttons into a single
         legacy-shaped split button (default \"Invert selection\") plus an on-demand dropdown menu holding the remaining bulk actions, materially changing the reviewed geometry. The dropdown's \"Indexer groups\" subsection is legacy
         parity, not a novel addition (`core/ui-src/js/search-controller.js`'s `buildGroupSelectionActions`, rendered by `search.html`'s own split button and `multiselect-dropdown.html`); no `indexer_groups` variance is recorded. Pending
-        fresh human review; see the FM-037 handoff for what changed and why."
+        fresh human review; see the FM-037 handoff for what changed and why. FM-044 additionally restyles this control and the checkbox-mode indexer list to the mock's design language under ADR-0009 -- split-button and dropdown-menu
+        surfaces on the mock's #2a3133 control surface with its 11px menu radius, teal `primary.main` hover/active affordances, and the theme's own button radius and `textTransform: none` -- which is ADR-0009's named example of
+        extending that language to a control the mock itself does not show. FM-044 changes no action, order, icon, or accessibility semantics (`aria-haspopup`, `aria-expanded`, `role=\"menu\"`/`\"menuitem\"`), and does not re-litigate
+        FM-037's structural claim above; the states, viewports, and geometry checks below are unchanged and were re-evidenced by FM-044's own visual-evidence run."
       contract:
         setup: React-selected `/` with deterministic mock indexers, first using dropdown selection then saved safe configuration checkbox selection, then opening the indexer bulk-action split button's dropdown menu, in `tests/system/tests/search.spec.ts`.
         states: [ dropdown-indexers, checkbox-indexers, bulk-indexer-actions ]

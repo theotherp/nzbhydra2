@@ -125,6 +125,72 @@ describe("SearchWorkspace", () => {
         );
     });
 
+    it("should keep the age and size ranges behind the collapsed Advanced disclosure", async () => {
+        const submitted = vi.fn();
+        render(
+            <SearchWorkspace
+                catalog={catalog}
+                initialValues={valuesFromSearch({}, catalog)}
+                onSubmit={submitted}
+                autocomplete={vi.fn()}
+            />,
+        );
+
+        const toggle = screen.getByTestId("search-advanced-toggle");
+        const panel = screen.getByTestId("search-advanced-panel");
+        expect(toggle).toHaveAttribute("aria-expanded", "false");
+        expect(toggle).toHaveAttribute("aria-controls", panel.id);
+        expect(panel).not.toBeVisible();
+        expect(panel).toContainElement(screen.getByTestId("workspace-ranges"));
+
+        fireEvent.click(toggle);
+        expect(toggle).toHaveAttribute("aria-expanded", "true");
+        expect(panel).toBeVisible();
+        for (const label of [
+            "Minimum age (days)",
+            "Maximum age (days)",
+            "Minimum size (MB)",
+            "Maximum size (MB)",
+        ]) {
+            expect(screen.getByLabelText(label)).toBeVisible();
+        }
+
+        fireEvent.change(screen.getByLabelText("Maximum size (MB)"), {
+            target: {value: "512"},
+        });
+        fireEvent.click(screen.getByTestId("search-submit"));
+        await waitFor(() =>
+            expect(submitted.mock.calls[0]?.[0]).toEqual(
+                expect.objectContaining({maxsize: "512"}),
+            ),
+        );
+
+        fireEvent.click(toggle);
+        expect(toggle).toHaveAttribute("aria-expanded", "false");
+        expect(panel).not.toBeVisible();
+    });
+
+    it("should render the season and episode pair and the submit button inside the search-bar row", () => {
+        render(
+            <SearchWorkspace
+                catalog={catalog}
+                initialValues={valuesFromSearch({category: "Series"}, catalog)}
+                onSubmit={vi.fn()}
+                autocomplete={vi.fn()}
+            />,
+        );
+
+        const row = screen.getByTestId("workspace-primary");
+        const pair = screen.getByTestId("season-episode-pair");
+        expect(row).toContainElement(pair);
+        expect(row).toContainElement(screen.getByTestId("search-query"));
+        expect(row).toContainElement(screen.getByTestId("search-submit"));
+        expect(pair).toContainElement(screen.getByLabelText("Season"));
+        expect(pair).toContainElement(screen.getByLabelText("Episode"));
+        expect(pair).toHaveTextContent("S");
+        expect(pair).toHaveTextContent("E");
+    });
+
     it("should reconcile URL selections and support checkbox bulk selection actions", async () => {
         const indexerCatalog = createCategoryCatalog({
             categoriesConfig: {
