@@ -195,15 +195,19 @@ features:
     visual:
       applicability: applicable
       status: proposed
-      note: "Supersedes the prior 2026-08-16 human acceptance of this record (removed here; still recoverable from Git history) because it evidenced a narrower, now-changed layout: FM-034 widened the shared page container from the FM-026/FM-028-accepted ~900-1040px cap to a 1700px legacy-matching cap (`core/ui-react/src/router.tsx`, `core/ui-react/src/features/search/SearchPage.tsx`), materially changing the reviewed geometry. Pending fresh human review; see the FM-034 handoff for what changed and why re-verification via `tests/system/tests/results.spec.ts` did not run (a pre-existing, unrelated backend config validation failure blocks the full system-test suite in this environment)."
+      note: "Supersedes the prior 2026-08-16 human acceptance of this record and its FM-034 superseding note (both removed here; still recoverable from Git history). FM-034's 1700px page container remains true and unchanged. FM-039 narrows the table's own column by adding a persistent `refine-sidebar` beside it (see `F-SEARCH-SORT-FILTER` for the sidebar's own filter-capability contract); the table keeps FM-034's `.result-*` column ratios within that narrowed column, and the title-dominant-column geometry check below remains literally true at the container's full 1700px width. Pending fresh human review; see the FM-039 handoff for what changed and why."
       contract:
         setup: "React-selected `ui/react?redirect=/` with a deterministic mocked `internalapi/search` response (two same-title/hash NZB duplicates plus one distinct-title NZB release) submitted through the real search form, in `tests/system/tests/results.spec.ts`."
-        states: [ populated-toolbar-and-table, title-dominant-column, filtered-result-narrowing ]
+        states: [ populated-toolbar-and-table, title-dominant-column, filtered-result-narrowing, refine-sidebar-expanded, refine-sidebar-collapsed, refine-counts-and-type-chips ]
         viewports: [ { name: desktop, width: 1280, height: 800 }, { name: mobile, width: 390, height: 844 } ]
         geometry_checks:
           - "the results-toolbar and search-results-table regions each render with no horizontal overflow at 1280x800 and 390x844, and the toolbar's bottom edge sits at or above the table's top edge"
           - "the title header column's bounding-box width exceeds twice the indexer header column's width at desktop"
           - "after a free-text title filter narrows visible rows, the results summary reflects the updated filtered count and the table/toolbar remain overflow-free"
+          - "at desktop the sidebar and table both render overflow-free, the sidebar's right edge sits at or left of the table's left edge, and the title header column's width still exceeds twice the indexer header column's width"
+          - "collapsing the sidebar increases the table's bounding-box width, leaves no residual gap, and is reflected by the toggle's aria-expanded"
+          - "every category and indexer row renders its label and count with no scrollWidth overflow of the row"
+          - "at mobile the sidebar is collapsed, results-filters is visible, and the page does not overflow horizontally"
       evidence: [ tests/system/tests/results.spec.ts ]
       variances: []
     gaps: [ ]
@@ -216,26 +220,33 @@ features:
     routes: [ / ]
     roles: [ user ]
     legacy_sources: [ core/ui-src/js/search-results-controller.js, core/ui-src/js/directives/dataTableDirectives.js, core/ui-src/html/states/search-results.html ]
-    tests: [ tests/system/tests/search.spec.ts, tests/system/tests/results.spec.ts ]
-    selectors: [ "sort-{{column}}", "freetext-filter-{{column}}", "number-filter-min-{{column}}", "number-filter-max-{{column}}", "number-filter-apply-{{column}}", "number-filter-clear-{{column}}", filter-toggle-indexer, filter-toggle-category, filter-toggle-size, filter-toggle-grabs, filter-toggle-age, header-filter-title, "header-filter-{{column}}", "header-filter-{{column}}-toggle", "header-filter-{{column}}-options", "number-filter-min-header-{{column}}", "number-filter-max-header-{{column}}", "number-filter-apply-header-{{column}}", "number-filter-clear-header-{{column}}" ]
+    tests: [ tests/system/tests/search.spec.ts, tests/system/tests/results.spec.ts, core/ui-react/src/features/search/results/SearchResults.test.tsx, core/ui-react/src/features/search/results/resultTable.test.ts, core/ui-react/src/features/search/results/RefineSidebar.test.tsx ]
+    selectors: [ "sort-{{column}}", "freetext-filter-{{column}}", "number-filter-min-{{column}}", "number-filter-max-{{column}}", "number-filter-apply-{{column}}", "number-filter-clear-{{column}}", filter-toggle-indexer, filter-toggle-category, filter-toggle-size, filter-toggle-grabs, filter-toggle-age, header-filter-title, "header-filter-{{column}}", "header-filter-{{column}}-toggle", "header-filter-{{column}}-options", "number-filter-min-header-{{column}}", "number-filter-max-header-{{column}}", "number-filter-apply-header-{{column}}", "number-filter-clear-header-{{column}}", refine-sidebar, refine-sidebar-toggle, refine-clear-all, refine-filter-title, refine-quality-filters, refine-category-toggle, refine-category-list, refine-indexer-toggle, refine-indexer-list, refine-type-chips, filter-toggle-refine-size, filter-toggle-refine-age, filter-toggle-refine-grabs ]
     target: core/ui-react/src/features/search/results
     parity: partial
     visual:
       applicability: applicable
       status: proposed
-      note: "Supersedes the prior 2026-08-16 human acceptance of this record (removed here; still recoverable from Git history) because it evidenced a narrower, now-changed layout: FM-034 replaced the desktop toolbar filter row with inline per-column-header filters (a free-text field for Title; a popover-toggle button opening the existing indexer/category checkbox list or size/grabs/age min-max range for the other columns) and widened the shared page container to a 1700px legacy-matching cap. The toolbar's `results-filters` region is now desktop-hidden (`display: none` at the `sm` breakpoint) and remains only as the mobile filter surface. Pending fresh human review; see the FM-034 handoff for what changed and why re-verification via `tests/system/tests/results.spec.ts` did not run (a pre-existing, unrelated backend config validation failure blocks the full system-test suite in this environment)."
+      note: "Supersedes the prior 2026-08-16 human acceptance of this record and its FM-034 superseding note (both removed here; still recoverable from Git history). FM-034's inline per-column-header filters and the 1700px page container remain true and unchanged. FM-039 adds a persistent `refine-sidebar` column beside the results table (quality chips, a title-contains field, collapsible Category/Indexer lists with per-item loaded-result counts, Size/Age/Grabs-seeders ranges, a download-type chip group, and a `refine-clear-all` reset), bound to the exact same `ResultFilters` state the inline column-header filters and the mobile `results-filters` row already drive -- no second, independent filter state was introduced. The desktop-visible quick-filter row is now the sidebar's own Quality section at `sm` and up; the standalone toolbar `results-quick-filters` row is now visible only at `xs` (mobile), mirroring the existing `results-filters` mobile-only pattern, so the pre-existing `results-quick-filters`/`results-filters` visibility bullet below is updated to describe the new true behavior (it was not, and still is not, independently asserted by a dedicated Playwright geometry check beyond the whole-page overflow assertion -- a pre-existing condition this task did not introduce or newly rely on for its own acceptance). Pending fresh human review; see the FM-039 handoff for what changed and why."
       contract:
         setup: "React-selected `ui/react?redirect=/` with a deterministic mocked `internalapi/search` response (two same-title/hash NZB duplicates plus one distinct-title NZB release) submitted through the real search form, in `tests/system/tests/results.spec.ts`."
-        states: [ inline-column-header-filters, right-aligned-sortable-header, quick-filter-row ]
+        states: [ inline-column-header-filters, right-aligned-sortable-header, quick-filter-row, refine-sidebar-expanded, refine-sidebar-collapsed, refine-counts-and-type-chips ]
         viewports: [ { name: desktop, width: 1280, height: 800 }, { name: mobile, width: 390, height: 844 } ]
         geometry_checks:
             - "at desktop, each sortable column header renders its sort control and filter control (a free-text field for Title; a compact popover-toggle button for Indexer, Category, Size, Grabs, and Age) inline on one row with no scrollWidth overflow of the header cell"
-            - "the toolbar's results-quick-filters region renders within the compact results-toolbar without page or region horizontal overflow at either viewport; the toolbar's results-filters region has a computed display of none at desktop and reappears with no horizontal overflow at 390x844"
+            - "the toolbar's results-quick-filters region is visible within the compact results-toolbar with no horizontal overflow at mobile (390x844), where it remains the quick-filter surface, and has a computed display of none at desktop (sm and up), where the same quick filters render inside the refine-sidebar's Quality section instead; the toolbar's results-filters region has a computed display of none at desktop and reappears with no horizontal overflow at 390x844"
             - "a numeric metadata column header (Size) has a computed text-align of right at desktop, matching its right-aligned data cells"
             - "the title header column's bounding-box width exceeds twice the indexer header column's width at desktop, keeping the inline filters and quick filters visually secondary to the dominant title/sort hierarchy"
             - "every sortable column header (title, indexer, category, size, grabs/details, age) renders its full label at desktop with no scrollWidth overflow of its own box, and its ascending/descending state is conveyed by a compact visible indicator plus an `aria-sort` attribute and an `aria-label` accessible name rather than a header-width-consuming visible text suffix"
+            - "at desktop the sidebar and table both render overflow-free, the sidebar's right edge sits at or left of the table's left edge, and the title header column's width still exceeds twice the indexer header column's width"
+            - "collapsing the sidebar increases the table's bounding-box width, leaves no residual gap, and is reflected by the toggle's aria-expanded"
+            - "every category and indexer row renders its label and count with no scrollWidth overflow of the row"
+            - "at mobile the sidebar is collapsed, results-filters is visible, and the page does not overflow horizontally"
       evidence: [ tests/system/tests/results.spec.ts ]
-      variances: []
+      snapshots: [ tests/system/visual-evidence/F-SEARCH-SORT-FILTER/refine-sidebar-desktop.png, tests/system/visual-evidence/F-SEARCH-SORT-FILTER/refine-sidebar-mobile.png ]
+      variances:
+        - description: "The refine-sidebar itself, its per-item category/indexer loaded-result counts, the download-type filter (deriving NZB/TORRENT/TORBOX chips from the loaded results rather than a hardcoded pair), and the `refine-clear-all` reset action have no legacy equivalent (confirmed against `core/ui-src/js/search-results-controller.js` and `core/ui-src/html/states/search-results.html`, which have no sidebar/aside concept, no per-item filter counts, and no global filter-reset action)."
+          status: proposed
     gaps: [ server-backed preferences ]
     task: FM-011
     backlog: { status: deferred, rationale: "Server-backed preference adoption has no implementation task yet." }

@@ -6,6 +6,7 @@ export type ResultFilters = {
     title: string;
     indexers: string[];
     categories: string[];
+    downloadTypes: string[];
     size: NumericRange;
     grabs: NumericRange;
     age: NumericRange;
@@ -201,6 +202,17 @@ export function defaultFilters(
         title: "",
         indexers: unique(results.map((result) => result.indexer)),
         categories: unique(results.map((result) => result.category)),
+        // downloadType is optional and its real values are derived from the
+        // loaded results rather than a hardcoded NZB/Torrent pair, since
+        // TORBOX (and potentially other future values) also occurs. A result
+        // with an undefined downloadType is never governed by this filter
+        // (see filterResults below) and so is intentionally absent from this
+        // default selection set.
+        downloadTypes: unique(
+            results.flatMap((result) =>
+                result.downloadType === undefined ? [] : [result.downloadType],
+            ),
+        ),
         size: {min: "", max: ""},
         grabs: {min: "", max: ""},
         age: {min: "", max: ""},
@@ -259,6 +271,11 @@ export function filterResults(
             titleMatcher(result.title) &&
             filters.indexers.includes(result.indexer) &&
             filters.categories.includes(result.category) &&
+            // A result with no downloadType is never discarded by this
+            // filter dimension; only results carrying one of the derived
+            // values are subject to the selection.
+            (result.downloadType === undefined ||
+                filters.downloadTypes.includes(result.downloadType)) &&
             inRange(
                 result.size === undefined
                     ? undefined

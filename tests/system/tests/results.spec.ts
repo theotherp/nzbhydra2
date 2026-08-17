@@ -1,5 +1,5 @@
 import {dismissWelcomeDialog, expect, searchForResult, test, testEnvironment,} from "./fixtures";
-import {expectVisualGeometry, prepareVisualEvidence, visualViewports,} from "./visualEvidence";
+import {captureVisualRegion, expectVisualGeometry, prepareVisualEvidence, visualViewports,} from "./visualEvidence";
 
 test.describe("Search results", () => {
     test.beforeEach(async ({ hydra, page }) => {
@@ -777,6 +777,235 @@ test.describe("Search results", () => {
         await expect(
             page.getByTestId("search-results-summary"),
         ).toContainText("2 filtered");
+    });
+
+    test("should provide deterministic refine-sidebar visual evidence across desktop and mobile", async ({
+        page,
+    }) => {
+        const now = Math.floor(Date.now() / 1_000);
+        await page.route("**/internalapi/search", (route) =>
+            route.fulfill({
+                json: {
+                    searchResults: [
+                        {
+                            searchResultId: "one",
+                            title: "Refine Sidebar Evidence Alpha",
+                            indexer: "Alpha",
+                            category: "TV",
+                            size: 4 * 1024 * 1024,
+                            seeders: 12,
+                            epoch: now - 86_400,
+                            age: "1 day",
+                            downloadType: "NZB",
+                        },
+                        {
+                            searchResultId: "two",
+                            title: "Refine Sidebar Evidence Bravo",
+                            indexer: "Beta",
+                            category: "Movies",
+                            size: 6 * 1024 * 1024,
+                            seeders: 5,
+                            epoch: now - 2 * 86_400,
+                            age: "2 days",
+                            downloadType: "TORBOX",
+                        },
+                        {
+                            // No downloadType: must never be silently
+                            // discarded by the Type filter's default
+                            // selection.
+                            searchResultId: "three",
+                            title: "Refine Sidebar Evidence Charlie",
+                            indexer: "Gamma",
+                            category: "Movies",
+                            size: 3 * 1024 * 1024,
+                            seeders: 9,
+                            epoch: now - 3 * 86_400,
+                            age: "3 days",
+                        },
+                    ],
+                    indexerSearchMetaDatas: [
+                        { indexerName: "Alpha", wasSuccessful: true },
+                        { indexerName: "Beta", wasSuccessful: true },
+                        { indexerName: "Gamma", wasSuccessful: true },
+                    ],
+                    indexerLimitWarnings: [],
+                    rejectedReasonsMap: {},
+                    notPickedIndexersWithReason: {},
+                    numberOfAvailableResults: 3,
+                    numberOfRejectedResults: 0,
+                },
+            }),
+        );
+
+        // Desktop: expanded by default ("persistent left column ... at sm
+        // and up").
+        await prepareVisualEvidence(page, "desktop", async () => {
+            await page.goto("ui/react?redirect=/");
+            await page
+                .getByTestId("search-query")
+                .fill("refine sidebar evidence");
+            await page.getByTestId("search-submit").click();
+            await expect(page.getByTestId("search-status-modal")).toBeHidden();
+            await expect(
+                page.getByTestId("search-results-table"),
+            ).toBeVisible();
+        });
+
+        const sidebar = page.getByTestId("refine-sidebar");
+        const table = page.getByTestId("search-results-table");
+        const toggle = page.getByTestId("refine-sidebar-toggle");
+        await expect(toggle).toHaveAttribute("aria-expanded", "true");
+
+        await expectVisualGeometry(page, {
+            region: "refine-sidebar-expanded-desktop",
+            locator: sidebar,
+            minimumWidth: 200,
+        });
+        await expectVisualGeometry(page, {
+            region: "search-results-table-refine-expanded-desktop",
+            locator: table,
+        });
+
+        const [sidebarBoxExpanded, tableBoxExpanded] = await Promise.all([
+            sidebar.boundingBox(),
+            table.boundingBox(),
+        ]);
+        expect(sidebarBoxExpanded).not.toBeNull();
+        expect(tableBoxExpanded).not.toBeNull();
+        if (!sidebarBoxExpanded || !tableBoxExpanded) {
+            throw new Error("Sidebar and table require deterministic geometry");
+        }
+        // The sidebar's right edge sits at or left of the table's left edge.
+        expect(
+            sidebarBoxExpanded.x + sidebarBoxExpanded.width,
+        ).toBeLessThanOrEqual(tableBoxExpanded.x + 1);
+
+        const titleHeaderCell = page
+            .getByTestId("sort-title")
+            .locator("xpath=ancestor::*[self::th or self::td][1]");
+        const indexerHeaderCell = page
+            .getByTestId("sort-indexer")
+            .locator("xpath=ancestor::*[self::th or self::td][1]");
+        const [titleHeaderBox, indexerHeaderBox] = await Promise.all([
+            titleHeaderCell.boundingBox(),
+            indexerHeaderCell.boundingBox(),
+        ]);
+        expect(titleHeaderBox).not.toBeNull();
+        expect(indexerHeaderBox).not.toBeNull();
+        if (!titleHeaderBox || !indexerHeaderBox) {
+            throw new Error("Header cells require deterministic geometry");
+        }
+        expect(titleHeaderBox.width).toBeGreaterThan(
+            indexerHeaderBox.width * 2,
+        );
+
+        await captureVisualRegion(
+            sidebar,
+            "F-SEARCH-SORT-FILTER",
+            "refine-sidebar-desktop",
+        );
+
+        // Every category and indexer row renders its label and count with
+        // no scrollWidth overflow of the row.
+        for (const listTestId of [
+            "refine-category-list",
+            "refine-indexer-list",
+        ]) {
+            const list = page.getByTestId(listTestId);
+            await expect(list).toBeVisible();
+            const rows = list.locator("label");
+            const rowCount = await rows.count();
+            expect(rowCount).toBeGreaterThan(0);
+            for (let index = 0; index < rowCount; index++) {
+                const row = rows.nth(index);
+                await expect(row).toHaveText(/\S/);
+                const noOverflow = await row.evaluate(
+                    (element) => element.scrollWidth <= element.clientWidth + 1,
+                );
+                expect(noOverflow).toBe(true);
+            }
+        }
+
+        // Type is a chip group derived from the loaded results' actual
+        // downloadType values (never a hardcoded NZB/Torrent pair), and the
+        // result with no downloadType is never silently discarded.
+        const typeChips = page.getByTestId("refine-type-chips");
+        await expect(
+            typeChips.getByRole("button", { name: "NZB" }),
+        ).toBeVisible();
+        await expect(
+            typeChips.getByRole("button", { name: "TORBOX" }),
+        ).toBeVisible();
+        await expect(
+            typeChips.getByRole("button", { name: "TORRENT" }),
+        ).toHaveCount(0);
+        await expect(page.getByTestId("search-result-row")).toHaveCount(3);
+
+        // Collapsing the sidebar increases the table's bounding-box width,
+        // leaves no residual gap, and is reflected by the toggle's
+        // aria-expanded.
+        await toggle.click();
+        await expect(toggle).toHaveAttribute("aria-expanded", "false");
+        await expectVisualGeometry(page, {
+            region: "refine-sidebar-collapsed-desktop",
+            locator: sidebar,
+        });
+        const [sidebarBoxCollapsed, tableBoxCollapsed] = await Promise.all([
+            sidebar.boundingBox(),
+            table.boundingBox(),
+        ]);
+        expect(sidebarBoxCollapsed).not.toBeNull();
+        expect(tableBoxCollapsed).not.toBeNull();
+        if (!sidebarBoxCollapsed || !tableBoxCollapsed) {
+            throw new Error("Sidebar and table require deterministic geometry");
+        }
+        expect(tableBoxCollapsed.width).toBeGreaterThan(tableBoxExpanded.width);
+        expect(
+            tableBoxCollapsed.x -
+                (sidebarBoxCollapsed.x + sidebarBoxCollapsed.width),
+        ).toBeLessThanOrEqual(17);
+        await toggle.click();
+        await expect(toggle).toHaveAttribute("aria-expanded", "true");
+
+        // A fresh mobile load starts with no stored preference, so the
+        // viewport-derived "collapsed below sm" default is exercised.
+        await page.evaluate(() => window.localStorage.clear());
+
+        await prepareVisualEvidence(page, "mobile", async () => {
+            await page.goto("ui/react?redirect=/");
+            await page
+                .getByTestId("search-query")
+                .fill("refine sidebar evidence");
+            await page.getByTestId("search-submit").click();
+            await expect(page.getByTestId("search-status-modal")).toBeHidden();
+            await expect(
+                page.getByTestId("search-results-table"),
+            ).toBeVisible();
+        });
+
+        const mobileToggle = page.getByTestId("refine-sidebar-toggle");
+        await expect(mobileToggle).toHaveAttribute("aria-expanded", "false");
+        await expect(page.getByTestId("results-filters")).toBeVisible();
+        await expectVisualGeometry(page, {
+            region: "refine-sidebar-collapsed-mobile",
+            locator: page.getByTestId("refine-sidebar"),
+        });
+        await captureVisualRegion(
+            page.getByTestId("refine-sidebar"),
+            "F-SEARCH-SORT-FILTER",
+            "refine-sidebar-mobile",
+        );
+
+        // Opening the sidebar at mobile introduces no horizontal overflow.
+        await mobileToggle.click();
+        await expect(mobileToggle).toHaveAttribute("aria-expanded", "true");
+        expect(
+            await page
+                .locator("html")
+                .evaluate(
+                    (element) => element.scrollWidth <= element.clientWidth,
+                ),
+        ).toBe(true);
     });
 });
 

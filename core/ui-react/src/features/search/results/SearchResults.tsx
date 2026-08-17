@@ -17,15 +17,30 @@ import {
     Typography,
 } from "@mui/material";
 import type {ColumnDef, SortingState} from "@tanstack/react-table";
-import {flexRender, getCoreRowModel, getSortedRowModel, useReactTable,} from "@tanstack/react-table";
+import {
+    flexRender,
+    getCoreRowModel,
+    getSortedRowModel,
+    useReactTable,
+} from "@tanstack/react-table";
 import type {ReactNode} from "react";
-import {memo, useCallback, useContext, useEffect, useMemo, useRef, useState,} from "react";
+import {
+    memo,
+    useCallback,
+    useContext,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from "react";
 
 import type {SearchResponse, SearchResult} from "../../../api/search";
 import {DialogContext} from "../../../components/dialogs/dialogs";
 import {ToastContext} from "../../../components/toasts/toasts";
 import {DirectDownloadActions, DownloadActions} from "./DownloadActions";
-import type {NumericRange, ResultFilters} from "./resultTable";
+import {MultiFilter, NumericFilter} from "./filterControls";
+import {COLLAPSED_WIDTH, EXPANDED_WIDTH, RefineSidebar} from "./RefineSidebar";
+import type {NumericRange, QuickFilter, ResultFilters} from "./resultTable";
 import {
     defaultFilters,
     duplicateGroupKey,
@@ -41,7 +56,20 @@ import {
 
 const STORAGE_KEY = "hydra.search-results.table";
 
-type StoredChoices = {sorting?: SortingState; filters?: Partial<ResultFilters>};
+// The narrowest a `sm`-and-up results table is allowed to render before it
+// scrolls horizontally within its own box instead of squeezing header
+// sort-buttons into overflow (measured against the fixed `colgroup` column
+// ratios below: this is the smallest width at which every header's
+// `scrollWidth` fits its `clientWidth`, including the epoch column's sort
+// arrow). Below `sm` the table renders as unrelated stacked cards and never
+// uses this constant.
+const TABLE_MIN_WIDTH = 1320;
+
+type StoredChoices = {
+    filters?: Partial<ResultFilters>;
+    sidebarCollapsed?: boolean;
+    sorting?: SortingState;
+};
 
 export function SearchResults({
     data,
@@ -81,6 +109,17 @@ export function SearchResults({
             ...choices.filters?.quickFilters,
         },
     }));
+    // Below `sm` the sidebar starts collapsed by default; at `sm` and up it
+    // starts expanded, matching the "persistent left column ... at sm and
+    // up" contract. A stored user preference always wins over this
+    // viewport-derived default. When `matchMedia` cannot positively confirm
+    // `sm`-and-up width (e.g. unavailable in a non-browser test
+    // environment, mirroring `theme.ts`'s `systemPrefersDark()` guard), the
+    // default conservatively falls back to collapsed rather than assuming
+    // desktop.
+    const [sidebarCollapsed, setSidebarCollapsed] = useState(
+        () => choices.sidebarCollapsed ?? !prefersExpandedSidebarByDefault(),
+    );
     const [groupTorrentAndUsenet, setGroupTorrentAndUsenet] = useState(false);
     const [groupEpisodes, setGroupEpisodes] = useState(true);
     const [expandedTitles, setExpandedTitles] = useState<Set<string>>(
@@ -191,8 +230,11 @@ export function SearchResults({
     }, []);
 
     useEffect(() => {
-        getStorage()?.setItem(STORAGE_KEY, JSON.stringify({sorting, filters}));
-    }, [filters, sorting]);
+        getStorage()?.setItem(
+            STORAGE_KEY,
+            JSON.stringify({filters, sidebarCollapsed, sorting}),
+        );
+    }, [filters, sidebarCollapsed, sorting]);
 
     useEffect(() => {
         const filteredIds = new Set(
@@ -267,6 +309,37 @@ export function SearchResults({
     const clearRange = (name: "size" | "grabs" | "age") => {
         setFilters((current) => ({...current, [name]: {min: "", max: ""}}));
     };
+    const toggleQuickFilter = useCallback((filter: QuickFilter) => {
+        setFilters((current) => ({
+            ...current,
+            quickFilters: {
+                ...current.quickFilters,
+                [quickFilterKey(filter)]:
+                    !current.quickFilters[quickFilterKey(filter)],
+            },
+        }));
+    }, []);
+    // Resets every result-side filter (title, indexer/category selection,
+    // download-type selection, size/age/grabs ranges, and quick filters) back
+    // to defaultFilters(...) plus the configured quick-filter preselection --
+    // the exact same shape the initial `filters` state is computed from,
+    // minus any persisted `choices` override. Sorting, grouping, selection,
+    // paging, and the search form are untouched.
+    const clearAllFilters = useCallback(() => {
+        setFilters({
+            ...defaultFilters(data.searchResults, quickFilters),
+            quickFilters: preselectedQuickFilters(safeConfig, quickFilters),
+        });
+    }, [data.searchResults, quickFilters, safeConfig]);
+    // At `sm` and up, collapsing the sidebar frees exactly
+    // `EXPANDED_WIDTH - COLLAPSED_WIDTH` px of flex space back to the table.
+    // The table's own minimum width tracks that same delta so it keeps
+    // growing when the sidebar collapses (matching the flex layout's actual
+    // available space) instead of clamping to one shared floor in both
+    // states.
+    const tableMinWidth =
+        TABLE_MIN_WIDTH +
+        (sidebarCollapsed ? EXPANDED_WIDTH - COLLAPSED_WIDTH : 0);
     const renderHeaderFilter = (columnId: string) => {
         switch (columnId) {
             case "title":
@@ -767,11 +840,20 @@ export function SearchResults({
                                 />
                             </Stack>
                             {quickFilters.length > 0 && (
+                                // Visible only at xs (mobile), matching the
+                                // mobile-only `results-filters` row: at `sm`
+                                // and up, the same quick filters (bound to
+                                // the same `filters.quickFilters` state) now
+                                // render in the persistent refine-sidebar's
+                                // Quality section instead, so this row would
+                                // otherwise duplicate an identically-labeled,
+                                // simultaneously-visible control.
                                 <Stack
                                     data-testid="results-quick-filters"
                                     direction="row"
                                     flexWrap="wrap"
                                     gap={1}
+                                    sx={{display: {xs: "flex", sm: "none"}}}
                                 >
                                     {quickFilters.map((filter) => (
                                         <Button
@@ -782,21 +864,7 @@ export function SearchResults({
                                             }
                                             key={`${filter.group}-${filter.id}`}
                                             onClick={() =>
-                                                setFilters((current) => ({
-                                                    ...current,
-                                                    quickFilters: {
-                                                        ...current.quickFilters,
-                                                        [quickFilterKey(
-                                                            filter,
-                                                        )]:
-                                                            !current
-                                                                .quickFilters[
-                                                                quickFilterKey(
-                                                                    filter,
-                                                                )
-                                                            ],
-                                                    },
-                                                }))
+                                                toggleQuickFilter(filter)
                                             }
                                             size="small"
                                             variant={
@@ -814,306 +882,386 @@ export function SearchResults({
                             )}
                         </Stack>
                     </Paper>
-                    {filteredResults.length === 0 && (
-                        <Typography component="h2" variant="h6">
-                            All results are currently filtered
-                        </Typography>
-                    )}
-                    <Box sx={{maxWidth: "100%", overflowX: "auto"}}>
-                        <Table
-                            data-testid="search-results-table"
-                            sx={(theme) => ({
-                                tableLayout: "fixed",
-                                width: "100%",
-                                "& tbody > tr > td": {
-                                    paddingBottom: "6px",
-                                    paddingTop: "6px",
-                                },
-                                "& td, & th": {fontSize: "12px"},
-                                "& [data-label=\"Title\"]": {
-                                    fontSize: "13px",
-                                },
-                                [theme.breakpoints.down("sm")]: {
-                                    display: "block",
-                                    "& thead": {display: "none"},
-                                    "& tbody": {display: "block"},
-                                    "& tr": {
-                                        borderTop: `2px solid ${theme.palette.divider}`,
-                                        display: "block",
-                                        "&:first-of-type": {
-                                            borderTop: "none",
+                    <Stack
+                        alignItems="flex-start"
+                        direction={{xs: "column", sm: "row"}}
+                        spacing={2}
+                    >
+                        <RefineSidebar
+                            clearRange={clearRange}
+                            collapsed={sidebarCollapsed}
+                            filters={filters}
+                            onClearAll={clearAllFilters}
+                            onToggleCollapsed={() =>
+                                setSidebarCollapsed((current) => !current)
+                            }
+                            onToggleQuickFilter={toggleQuickFilter}
+                            quickFilters={quickFilters}
+                            results={data.searchResults}
+                            setFilters={setFilters}
+                            updateRange={updateRange}
+                        />
+                        <Box sx={{minWidth: 0, width: "100%"}}>
+                            {filteredResults.length === 0 && (
+                                <Typography component="h2" variant="h6">
+                                    All results are currently filtered
+                                </Typography>
+                            )}
+                            <Box sx={{maxWidth: "100%", overflowX: "auto"}}>
+                                <Table
+                                    data-testid="search-results-table"
+                                    sx={(theme) => ({
+                                        tableLayout: "fixed",
+                                        width: "100%",
+                                        "& tbody > tr > td": {
+                                            paddingBottom: "6px",
+                                            paddingTop: "6px",
                                         },
-                                    },
-                                    "& td": {
-                                        alignItems: "center",
-                                        border: "none",
-                                        display: "flex",
-                                        flexDirection: "row",
-                                        gap: 1,
-                                        justifyContent: "space-between",
-                                        textAlign: "right",
-                                        "&::before": {
-                                            color: theme.palette.text.secondary,
-                                            content: "attr(data-label)",
-                                            fontSize: "0.7rem",
-                                            fontWeight: 700,
-                                            textAlign: "left",
-                                            textTransform: "uppercase",
+                                        "& td, & th": {fontSize: "12px"},
+                                        '& [data-label="Title"]': {
+                                            fontSize: "13px",
                                         },
-                                    },
-                                    '& td[data-label="Title"]': {
-                                        display: "block",
-                                        textAlign: "left",
-                                    },
-                                    '& td[data-label="Title"]::before': {
-                                        content: "none",
-                                    },
-                                },
-                            })}
-                        >
-                            <colgroup>
-                                <col style={{width: 40}} />
-                                <col style={{width: "54%"}} />
-                                <col style={{width: "9%"}} />
-                                <col style={{width: "8%"}} />
-                                <col style={{width: "7%"}} />
-                                <col style={{width: "6.5%"}} />
-                                <col style={{width: "5.5%"}} />
-                                <col style={{width: "10%"}} />
-                            </colgroup>
-                            <TableHead>
-                                {table.getHeaderGroups().map((headerGroup) => (
-                                    <TableRow key={headerGroup.id}>
-                                        <TableCell
-                                            data-label="Select"
-                                            padding="checkbox"
-                                        />
-                                        {headerGroup.headers.map((header) => {
-                                            const isTitle =
-                                                header.column.id === "title";
-                                            const label =
-                                                typeof header.column.columnDef
-                                                    .header === "string"
-                                                    ? header.column.columnDef
-                                                          .header
-                                                    : undefined;
-                                            const sortDirection =
-                                                header.column.getIsSorted();
-                                            return (
-                                                <TableCell
-                                                    align={
-                                                        isTitle
-                                                            ? "left"
-                                                            : "right"
-                                                    }
-                                                    aria-sort={
-                                                        sortDirection === "asc"
-                                                            ? "ascending"
-                                                            : sortDirection ===
-                                                                "desc"
-                                                              ? "descending"
-                                                              : "none"
-                                                    }
-                                                    data-label={label}
-                                                    key={header.id}
-                                                    sx={{
-                                                        overflow: "hidden",
-                                                        px: 1,
-                                                        textOverflow:
-                                                            "ellipsis",
-                                                        whiteSpace: "nowrap",
-                                                    }}
-                                                >
-                                                    {header.isPlaceholder ? null : (
-                                                        <Stack
-                                                            alignItems="center"
-                                                            direction="row"
-                                                            gap={0.5}
-                                                            justifyContent={
-                                                                isTitle
-                                                                    ? undefined
-                                                                    : "flex-end"
-                                                            }
-                                                        >
-                                                            <Button
-                                                                aria-label={`${
-                                                                    label ?? ""
-                                                                }${
-                                                                    sortDirection ===
-                                                                    "asc"
-                                                                        ? " (ascending)"
-                                                                        : sortDirection ===
-                                                                        "desc"
-                                                                            ? " (descending)"
-                                                                            : ""
-                                                                }`}
-                                                                data-sort-direction={
-                                                                    sortDirection ||
-                                                                    "none"
-                                                                }
-                                                                data-testid={`sort-${header.column.id}`}
-                                                                onClick={header.column.getToggleSortingHandler()}
-                                                                size="small"
-                                                                sx={{
-                                                                    display:
-                                                                        "block",
-                                                                    flexShrink: 0,
-                                                                    maxWidth:
-                                                                        "100%",
-                                                                    minWidth: 0,
-                                                                    overflow:
-                                                                        "hidden",
-                                                                    px: 0.5,
-                                                                    textAlign:
+                                        // Below `sm` the table is an
+                                        // unrelated stacked-card layout (see
+                                        // the down("sm") block below) that
+                                        // never competes with the sidebar for
+                                        // width, so `tableMinWidth` only
+                                        // applies at `sm` and up, where it
+                                        // keeps header sort-buttons from
+                                        // being squeezed into overflow by
+                                        // the persistent sidebar -- scrolling
+                                        // horizontally within the existing
+                                        // `overflowX: "auto"` wrapper instead.
+                                        [theme.breakpoints.up("sm")]: {
+                                            minWidth: tableMinWidth,
+                                        },
+                                        [theme.breakpoints.down("sm")]: {
+                                            display: "block",
+                                            "& thead": {display: "none"},
+                                            "& tbody": {display: "block"},
+                                            "& tr": {
+                                                borderTop: `2px solid ${theme.palette.divider}`,
+                                                display: "block",
+                                                "&:first-of-type": {
+                                                    borderTop: "none",
+                                                },
+                                            },
+                                            "& td": {
+                                                alignItems: "center",
+                                                border: "none",
+                                                display: "flex",
+                                                flexDirection: "row",
+                                                gap: 1,
+                                                justifyContent: "space-between",
+                                                textAlign: "right",
+                                                "&::before": {
+                                                    color: theme.palette.text
+                                                        .secondary,
+                                                    content: "attr(data-label)",
+                                                    fontSize: "0.7rem",
+                                                    fontWeight: 700,
+                                                    textAlign: "left",
+                                                    textTransform: "uppercase",
+                                                },
+                                            },
+                                            '& td[data-label="Title"]': {
+                                                display: "block",
+                                                textAlign: "left",
+                                            },
+                                            '& td[data-label="Title"]::before':
+                                                {
+                                                    content: "none",
+                                                },
+                                        },
+                                    })}
+                                >
+                                    <colgroup>
+                                        <col style={{width: 40}} />
+                                        <col style={{width: "54%"}} />
+                                        <col style={{width: "9%"}} />
+                                        <col style={{width: "8%"}} />
+                                        <col style={{width: "7%"}} />
+                                        <col style={{width: "6.5%"}} />
+                                        <col style={{width: "5.5%"}} />
+                                        <col style={{width: "10%"}} />
+                                    </colgroup>
+                                    <TableHead>
+                                        {table
+                                            .getHeaderGroups()
+                                            .map((headerGroup) => (
+                                                <TableRow key={headerGroup.id}>
+                                                    <TableCell
+                                                        data-label="Select"
+                                                        padding="checkbox"
+                                                    />
+                                                    {headerGroup.headers.map(
+                                                        (header) => {
+                                                            const isTitle =
+                                                                header.column
+                                                                    .id ===
+                                                                "title";
+                                                            const label =
+                                                                typeof header
+                                                                    .column
+                                                                    .columnDef
+                                                                    .header ===
+                                                                "string"
+                                                                    ? header
+                                                                          .column
+                                                                          .columnDef
+                                                                          .header
+                                                                    : undefined;
+                                                            const sortDirection =
+                                                                header.column.getIsSorted();
+                                                            return (
+                                                                <TableCell
+                                                                    align={
                                                                         isTitle
                                                                             ? "left"
-                                                                            : "right",
-                                                                    textOverflow:
-                                                                        "ellipsis",
-                                                                    whiteSpace:
-                                                                        "nowrap",
-                                                                }}
-                                                            >
-                                                                {flexRender(
-                                                                    header
-                                                                        .column
-                                                                        .columnDef
-                                                                        .header,
-                                                                    header.getContext(),
-                                                                )}
-                                                                {sortDirection && (
-                                                                    <Box
-                                                                        aria-hidden="true"
-                                                                        component="span"
-                                                                    >
-                                                                        {sortDirection ===
+                                                                            : "right"
+                                                                    }
+                                                                    aria-sort={
+                                                                        sortDirection ===
                                                                         "asc"
-                                                                            ? " ▲"
-                                                                            : " ▼"}
-                                                                    </Box>
-                                                                )}
-                                                            </Button>
-                                                            {renderHeaderFilter(
-                                                                header.column
-                                                                    .id,
-                                                            )}
-                                                        </Stack>
+                                                                            ? "ascending"
+                                                                            : sortDirection ===
+                                                                                "desc"
+                                                                              ? "descending"
+                                                                              : "none"
+                                                                    }
+                                                                    data-label={
+                                                                        label
+                                                                    }
+                                                                    key={
+                                                                        header.id
+                                                                    }
+                                                                    sx={{
+                                                                        overflow:
+                                                                            "hidden",
+                                                                        px: 1,
+                                                                        textOverflow:
+                                                                            "ellipsis",
+                                                                        whiteSpace:
+                                                                            "nowrap",
+                                                                    }}
+                                                                >
+                                                                    {header.isPlaceholder ? null : (
+                                                                        <Stack
+                                                                            alignItems="center"
+                                                                            direction="row"
+                                                                            gap={
+                                                                                0.5
+                                                                            }
+                                                                            justifyContent={
+                                                                                isTitle
+                                                                                    ? undefined
+                                                                                    : "flex-end"
+                                                                            }
+                                                                        >
+                                                                            <Button
+                                                                                aria-label={`${
+                                                                                    label ??
+                                                                                    ""
+                                                                                }${
+                                                                                    sortDirection ===
+                                                                                    "asc"
+                                                                                        ? " (ascending)"
+                                                                                        : sortDirection ===
+                                                                                            "desc"
+                                                                                          ? " (descending)"
+                                                                                          : ""
+                                                                                }`}
+                                                                                data-sort-direction={
+                                                                                    sortDirection ||
+                                                                                    "none"
+                                                                                }
+                                                                                data-testid={`sort-${header.column.id}`}
+                                                                                onClick={header.column.getToggleSortingHandler()}
+                                                                                size="small"
+                                                                                sx={{
+                                                                                    display:
+                                                                                        "block",
+                                                                                    flexShrink: 0,
+                                                                                    maxWidth:
+                                                                                        "100%",
+                                                                                    minWidth: 0,
+                                                                                    overflow:
+                                                                                        "hidden",
+                                                                                    px: 0.5,
+                                                                                    textAlign:
+                                                                                        isTitle
+                                                                                            ? "left"
+                                                                                            : "right",
+                                                                                    textOverflow:
+                                                                                        "ellipsis",
+                                                                                    whiteSpace:
+                                                                                        "nowrap",
+                                                                                }}
+                                                                            >
+                                                                                {flexRender(
+                                                                                    header
+                                                                                        .column
+                                                                                        .columnDef
+                                                                                        .header,
+                                                                                    header.getContext(),
+                                                                                )}
+                                                                                {sortDirection && (
+                                                                                    <Box
+                                                                                        aria-hidden="true"
+                                                                                        component="span"
+                                                                                    >
+                                                                                        {sortDirection ===
+                                                                                        "asc"
+                                                                                            ? " ▲"
+                                                                                            : " ▼"}
+                                                                                    </Box>
+                                                                                )}
+                                                                            </Button>
+                                                                            {renderHeaderFilter(
+                                                                                header
+                                                                                    .column
+                                                                                    .id,
+                                                                            )}
+                                                                        </Stack>
+                                                                    )}
+                                                                </TableCell>
+                                                            );
+                                                        },
                                                     )}
-                                                </TableCell>
-                                            );
-                                        })}
-                                        <TableCell
-                                            align="right"
-                                            data-label="Actions"
-                                            sx={{whiteSpace: "nowrap"}}
-                                        >
-                                            Actions
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableHead>
-                            <TableBody>
-                                {groups.flatMap((group, groupIndex) =>
-                                    group.duplicateGroups.flatMap(
-                                        (duplicates, duplicateIndex) => {
-                                            const first = duplicates[0];
-                                            const duplicateKey =
-                                                duplicateGroupKey(
-                                                    group.key,
-                                                    first,
-                                                );
-                                            const titleExpanded =
-                                                expandedTitles.has(group.key);
-                                            const duplicateExpanded =
-                                                expandedDuplicates.has(
-                                                    duplicateKey,
-                                                );
-                                            if (
-                                                duplicateIndex > 0 &&
-                                                !titleExpanded
-                                            ) {
-                                                return [];
-                                            }
-                                            return duplicates
-                                                .filter(
-                                                    (_, index) =>
-                                                        index === 0 ||
-                                                        duplicateExpanded,
-                                                )
-                                                .map((result, index) => {
-                                                    const nestingLevel =
-                                                        (duplicateIndex > 0
-                                                            ? 1
-                                                            : 0) +
-                                                        (index > 0 ? 1 : 0);
-                                                    const isNewGroup =
-                                                        groupIndex > 0 &&
-                                                        duplicateIndex === 0 &&
-                                                        index === 0;
-                                                    return (
-                                                        <ResultRow
-                                                            downloaded={downloadedIds.has(
-                                                                result.searchResultId,
-                                                            )}
-                                                            duplicateExpanded={
-                                                                duplicateExpanded
-                                                            }
-                                                            duplicateKey={
-                                                                duplicateKey
-                                                            }
-                                                            isNewGroup={
-                                                                isNewGroup
-                                                            }
-                                                            key={
-                                                                result.searchResultId
-                                                            }
-                                                            nestingLevel={
-                                                                nestingLevel
-                                                            }
-                                                            onDownloaded={
-                                                                handleDownloaded
-                                                            }
-                                                            onSelectionChange={
-                                                                updateSelection
-                                                            }
-                                                            onToggleDuplicateExpansion={
-                                                                handleToggleDuplicateExpansion
-                                                            }
-                                                            onToggleTitleExpansion={
-                                                                handleToggleTitleExpansion
-                                                            }
-                                                            result={result}
-                                                            selected={selected.has(
-                                                                result.searchResultId,
-                                                            )}
-                                                            showDuplicateExpand={
-                                                                index === 0 &&
-                                                                duplicates.length >
-                                                                1
-                                                            }
-                                                            showTitleExpand={
-                                                                index === 0 &&
-                                                                duplicateIndex ===
-                                                                0 &&
-                                                                group
-                                                                    .duplicateGroups
-                                                                    .length > 1
-                                                            }
-                                                            titleExpanded={
-                                                                titleExpanded
-                                                            }
-                                                            titleGroupKey={
-                                                                group.key
-                                                            }
-                                                        />
-                                                    );
-                                                });
-                                        },
-                                    ),
-                                )}
-                            </TableBody>
-                        </Table>
-                    </Box>
+                                                    <TableCell
+                                                        align="right"
+                                                        data-label="Actions"
+                                                        sx={{
+                                                            whiteSpace:
+                                                                "nowrap",
+                                                        }}
+                                                    >
+                                                        Actions
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                    </TableHead>
+                                    <TableBody>
+                                        {groups.flatMap((group, groupIndex) =>
+                                            group.duplicateGroups.flatMap(
+                                                (
+                                                    duplicates,
+                                                    duplicateIndex,
+                                                ) => {
+                                                    const first = duplicates[0];
+                                                    const duplicateKey =
+                                                        duplicateGroupKey(
+                                                            group.key,
+                                                            first,
+                                                        );
+                                                    const titleExpanded =
+                                                        expandedTitles.has(
+                                                            group.key,
+                                                        );
+                                                    const duplicateExpanded =
+                                                        expandedDuplicates.has(
+                                                            duplicateKey,
+                                                        );
+                                                    if (
+                                                        duplicateIndex > 0 &&
+                                                        !titleExpanded
+                                                    ) {
+                                                        return [];
+                                                    }
+                                                    return duplicates
+                                                        .filter(
+                                                            (_, index) =>
+                                                                index === 0 ||
+                                                                duplicateExpanded,
+                                                        )
+                                                        .map(
+                                                            (result, index) => {
+                                                                const nestingLevel =
+                                                                    (duplicateIndex >
+                                                                    0
+                                                                        ? 1
+                                                                        : 0) +
+                                                                    (index > 0
+                                                                        ? 1
+                                                                        : 0);
+                                                                const isNewGroup =
+                                                                    groupIndex >
+                                                                        0 &&
+                                                                    duplicateIndex ===
+                                                                        0 &&
+                                                                    index === 0;
+                                                                return (
+                                                                    <ResultRow
+                                                                        downloaded={downloadedIds.has(
+                                                                            result.searchResultId,
+                                                                        )}
+                                                                        duplicateExpanded={
+                                                                            duplicateExpanded
+                                                                        }
+                                                                        duplicateKey={
+                                                                            duplicateKey
+                                                                        }
+                                                                        isNewGroup={
+                                                                            isNewGroup
+                                                                        }
+                                                                        key={
+                                                                            result.searchResultId
+                                                                        }
+                                                                        nestingLevel={
+                                                                            nestingLevel
+                                                                        }
+                                                                        onDownloaded={
+                                                                            handleDownloaded
+                                                                        }
+                                                                        onSelectionChange={
+                                                                            updateSelection
+                                                                        }
+                                                                        onToggleDuplicateExpansion={
+                                                                            handleToggleDuplicateExpansion
+                                                                        }
+                                                                        onToggleTitleExpansion={
+                                                                            handleToggleTitleExpansion
+                                                                        }
+                                                                        result={
+                                                                            result
+                                                                        }
+                                                                        selected={selected.has(
+                                                                            result.searchResultId,
+                                                                        )}
+                                                                        showDuplicateExpand={
+                                                                            index ===
+                                                                                0 &&
+                                                                            duplicates.length >
+                                                                                1
+                                                                        }
+                                                                        showTitleExpand={
+                                                                            index ===
+                                                                                0 &&
+                                                                            duplicateIndex ===
+                                                                                0 &&
+                                                                            group
+                                                                                .duplicateGroups
+                                                                                .length >
+                                                                                1
+                                                                        }
+                                                                        titleExpanded={
+                                                                            titleExpanded
+                                                                        }
+                                                                        titleGroupKey={
+                                                                            group.key
+                                                                        }
+                                                                    />
+                                                                );
+                                                            },
+                                                        );
+                                                },
+                                            ),
+                                        )}
+                                    </TableBody>
+                                </Table>
+                            </Box>
+                        </Box>
+                    </Stack>
                 </>
             )}
         </Stack>
@@ -1169,22 +1317,22 @@ const resultColumns: ResultColumn[] = [
 ];
 
 const ResultRow = memo(function ResultRow({
-                                              downloaded,
-                                              duplicateExpanded,
-                                              duplicateKey,
-                                              isNewGroup,
-                                              nestingLevel,
-                                              onDownloaded,
-                                              onSelectionChange,
-                                              onToggleDuplicateExpansion,
-                                              onToggleTitleExpansion,
-                                              result,
-                                              selected,
-                                              showDuplicateExpand,
-                                              showTitleExpand,
-                                              titleExpanded,
-                                              titleGroupKey,
-                                          }: {
+    downloaded,
+    duplicateExpanded,
+    duplicateKey,
+    isNewGroup,
+    nestingLevel,
+    onDownloaded,
+    onSelectionChange,
+    onToggleDuplicateExpansion,
+    onToggleTitleExpansion,
+    result,
+    selected,
+    showDuplicateExpand,
+    showTitleExpand,
+    titleExpanded,
+    titleGroupKey,
+}: {
     downloaded: boolean;
     duplicateExpanded: boolean;
     duplicateKey: string;
@@ -1351,11 +1499,11 @@ const ResultRow = memo(function ResultRow({
 });
 
 function HeaderFilterMenu({
-                              active,
-                              children,
-                              label,
-                              testId,
-                          }: {
+    active,
+    children,
+    label,
+    testId,
+}: {
     active: boolean;
     children: ReactNode;
     label: string;
@@ -1388,104 +1536,6 @@ function HeaderFilterMenu({
     );
 }
 
-function MultiFilter({
-    label,
-    testId,
-    entries,
-    selected,
-    onChange,
-}: {
-    label: string;
-    testId: string;
-    entries: string[];
-    selected: string[];
-    onChange: (values: string[]) => void;
-}) {
-    const uniqueEntries = [...new Set(entries)].sort();
-    return (
-        <Box data-testid={testId}>
-            <Typography variant="subtitle2">{label}</Typography>
-            {uniqueEntries.map((entry) => (
-                <FormControlLabel
-                    control={
-                        <Checkbox
-                            checked={selected.includes(entry)}
-                            onChange={(event) =>
-                                onChange(
-                                    event.target.checked
-                                        ? [...selected, entry]
-                                        : selected.filter(
-                                              (value) => value !== entry,
-                                          ),
-                                )
-                            }
-                            size="small"
-                        />
-                    }
-                    key={entry}
-                    label={entry}
-                />
-            ))}
-        </Box>
-    );
-}
-
-function NumericFilter({
-    label,
-    name,
-    range,
-    onChange,
-    onClear,
-                           testIdPrefix,
-}: {
-    label: string;
-    name: "size" | "grabs" | "age";
-    range: NumericRange;
-    onChange: (
-        name: "size" | "grabs" | "age",
-        bound: keyof NumericRange,
-        value: string,
-    ) => void;
-    onClear: (name: "size" | "grabs" | "age") => void;
-    testIdPrefix?: string;
-}) {
-    const prefix = testIdPrefix ?? name;
-    return (
-        <Stack data-testid={`filter-toggle-${prefix}`} direction="row" gap={1}>
-            <TextField
-                label={`${label} minimum`}
-                onChange={(event) => onChange(name, "min", event.target.value)}
-                size="small"
-                slotProps={{
-                    htmlInput: {"data-testid": `number-filter-min-${prefix}`},
-                }}
-                type="number"
-                value={range.min}
-            />
-            <TextField
-                label={`${label} maximum`}
-                onChange={(event) => onChange(name, "max", event.target.value)}
-                size="small"
-                slotProps={{
-                    htmlInput: {"data-testid": `number-filter-max-${prefix}`},
-                }}
-                type="number"
-                value={range.max}
-            />
-            <Button data-testid={`number-filter-apply-${prefix}`} size="small">
-                Apply
-            </Button>
-            <Button
-                data-testid={`number-filter-clear-${prefix}`}
-                onClick={() => onClear(name)}
-                size="small"
-            >
-                Clear
-            </Button>
-        </Stack>
-    );
-}
-
 function loadChoices(): StoredChoices {
     try {
         const value: unknown = JSON.parse(
@@ -1502,6 +1552,20 @@ function getStorage(): Storage | undefined {
         return window.localStorage;
     } catch {
         return undefined;
+    }
+}
+
+// MUI's default `sm` breakpoint (600px and up). Mirrors theme.ts's
+// systemPrefersDark() defensive matchMedia guard.
+function prefersExpandedSidebarByDefault(): boolean {
+    try {
+        return (
+            typeof window !== "undefined" &&
+            typeof window.matchMedia === "function" &&
+            window.matchMedia("(min-width: 600px)").matches
+        );
+    } catch {
+        return false;
     }
 }
 

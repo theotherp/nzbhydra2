@@ -1,4 +1,10 @@
-import {cleanup, fireEvent, render, screen, within,} from "@testing-library/react";
+import {
+    cleanup,
+    fireEvent,
+    render,
+    screen,
+    within,
+} from "@testing-library/react";
 import {afterEach, describe, expect, it, vi} from "vitest";
 
 import {DialogProvider} from "../../../components/dialogs/DialogProvider";
@@ -23,6 +29,34 @@ function renderResults(ui: React.ReactNode) {
             <ToastProvider>{ui}</ToastProvider>
         </DialogProvider>,
     );
+}
+
+// This project's jsdom environment has no explicit `url` configured (see
+// vite.config.ts), which leaves `window.localStorage` completely
+// unavailable in every test in this file (`typeof window.localStorage ===
+// "undefined"`, a jsdom "opaque origin" limitation, not a polyfill this
+// project ships) -- `getStorage()`'s `window.localStorage` access in
+// SearchResults.tsx resolves to `undefined` rather than throwing, so
+// `getStorage()?.setItem(...)` silently no-ops. A real round trip through
+// persisted state therefore needs a real, working `Storage` for the
+// duration of a single test; `vi.stubGlobal("localStorage", ...)` installs
+// one and the existing `afterEach`'s `vi.unstubAllGlobals()` removes it
+// again automatically.
+function stubWorkingLocalStorage(): void {
+    const store = new Map<string, string>();
+    vi.stubGlobal("localStorage", {
+        get length() {
+            return store.size;
+        },
+        clear: () => store.clear(),
+        getItem: (key: string) =>
+            store.has(key) ? (store.get(key) as string) : null,
+        key: (index: number) => [...store.keys()][index] ?? null,
+        removeItem: (key: string) => store.delete(key),
+        setItem: (key: string, value: string) => {
+            store.set(key, value);
+        },
+    } satisfies Storage);
 }
 
 describe("SearchResults", () => {
@@ -1209,6 +1243,215 @@ describe("SearchResults", () => {
         expect(
             screen.queryByText("Prepared NZB ZIP download."),
         ).not.toBeInTheDocument();
+    });
+
+    it("should keep the refine-sidebar filter controls synchronized with the inline column-header and mobile filters in both directions", () => {
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 2,
+                    searchResults: [
+                        {
+                            searchResultId: "1",
+                            title: "Zulu WEB",
+                            indexer: "One",
+                            category: "Movies",
+                        },
+                        {
+                            searchResultId: "2",
+                            title: "Alpha BluRay",
+                            indexer: "Two",
+                            category: "TV",
+                        },
+                    ],
+                }}
+            />,
+        );
+        // The sidebar defaults collapsed in this non-browser test
+        // environment (matching the below-`sm` default; see
+        // SearchResults.tsx's prefersExpandedSidebarByDefault()); expand it.
+        fireEvent.click(screen.getByTestId("refine-sidebar-toggle"));
+
+        // Title filter: sidebar -> header popover input and mobile toolbar
+        // input.
+        fireEvent.change(screen.getByTestId("refine-filter-title"), {
+            target: {value: "alpha"},
+        });
+        expect(screen.getByTestId("header-filter-title")).toHaveValue("alpha");
+        expect(screen.getByTestId("freetext-filter-title")).toHaveValue(
+            "alpha",
+        );
+        expect(screen.getByTestId("search-result-row")).toHaveTextContent(
+            "Alpha BluRay",
+        );
+
+        // Title filter: header -> sidebar and mobile.
+        fireEvent.change(screen.getByTestId("header-filter-title"), {
+            target: {value: ""},
+        });
+        expect(screen.getByTestId("refine-filter-title")).toHaveValue("");
+        expect(screen.getByTestId("freetext-filter-title")).toHaveValue("");
+        expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
+
+        // List filter (indexer): sidebar -> header popover.
+        const sidebarIndexers = within(
+            screen.getByTestId("refine-indexer-list"),
+        );
+        fireEvent.click(sidebarIndexers.getByLabelText(/One/));
+        expect(screen.getByTestId("search-result-row")).toHaveTextContent(
+            "Alpha BluRay",
+        );
+        fireEvent.click(screen.getByTestId("header-filter-indexer-toggle"));
+        const headerIndexers = within(
+            screen.getByTestId("header-filter-indexer-options"),
+        );
+        expect(headerIndexers.getByLabelText("One")).not.toBeChecked();
+        expect(headerIndexers.getByLabelText("Two")).toBeChecked();
+
+        // List filter (indexer): header popover -> sidebar.
+        fireEvent.click(headerIndexers.getByLabelText("One"));
+        expect(sidebarIndexers.getByLabelText(/One/)).toBeChecked();
+        expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
+    });
+
+    it("should reset every result-side filter via refine-clear-all while leaving sorting, grouping, and selection untouched", () => {
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 2,
+                    searchResults: [
+                        {
+                            searchResultId: "1",
+                            title: "Zulu WEB",
+                            indexer: "One",
+                            category: "Movies",
+                            downloadType: "NZB",
+                        },
+                        {
+                            searchResultId: "2",
+                            title: "Alpha BluRay",
+                            indexer: "Two",
+                            category: "TV",
+                            downloadType: "TORBOX",
+                        },
+                    ],
+                }}
+            />,
+        );
+        fireEvent.click(screen.getByTestId("refine-sidebar-toggle"));
+
+        fireEvent.click(screen.getByTestId("sort-title"));
+        // "Group TV episodes" defaults checked (useState(true)); flip it off
+        // so the test can prove clear-all leaves this explicit choice alone.
+        const groupTvCheckbox = screen.getByRole("checkbox", {
+            name: "Group TV episodes",
+        });
+        expect(groupTvCheckbox).toBeChecked();
+        fireEvent.click(groupTvCheckbox);
+        expect(groupTvCheckbox).not.toBeChecked();
+        fireEvent.click(
+            screen.getByRole("checkbox", {name: "Select Alpha BluRay"}),
+        );
+
+        fireEvent.change(screen.getByTestId("refine-filter-title"), {
+            target: {value: "alpha"},
+        });
+        fireEvent.click(
+            within(screen.getByTestId("refine-indexer-list")).getByLabelText(
+                /One/,
+            ),
+        );
+        fireEvent.click(screen.getByRole("button", {name: "NZB"}));
+        expect(screen.getAllByTestId("search-result-row")).toHaveLength(1);
+        expect(screen.getByTestId("search-result-row")).toHaveTextContent(
+            "Alpha BluRay",
+        );
+
+        fireEvent.click(screen.getByTestId("refine-clear-all"));
+
+        expect(screen.getByTestId("refine-filter-title")).toHaveValue("");
+        expect(screen.getByTestId("header-filter-title")).toHaveValue("");
+        expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
+        // Sorting, grouping, and selection are untouched by clear-all.
+        expect(screen.getByTestId("sort-title")).toHaveAttribute(
+            "data-sort-direction",
+            "asc",
+        );
+        expect(groupTvCheckbox).not.toBeChecked();
+        expect(
+            screen.getByRole("checkbox", {name: "Select Alpha BluRay"}),
+        ).toBeChecked();
+    });
+
+    it("should persist the refine-sidebar collapsed state in the existing search-results-table localStorage payload alongside sorting and filters", () => {
+        // See `stubWorkingLocalStorage`: this environment's `window.localStorage`
+        // is otherwise unavailable, so a genuine unmount/remount persistence
+        // round trip needs a real, working `Storage` installed first.
+        stubWorkingLocalStorage();
+        const searchResults = [
+            {
+                searchResultId: "1",
+                title: "Alpha Result",
+                indexer: "Mock",
+                category: "All",
+            },
+            {
+                searchResultId: "2",
+                title: "Bravo Result",
+                indexer: "Mock",
+                category: "All",
+            },
+        ];
+        const {unmount} = renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 2,
+                    searchResults,
+                }}
+            />,
+        );
+        const toggle = screen.getByTestId("refine-sidebar-toggle");
+        // Defaults collapsed in this non-browser test environment (matching
+        // the below-`sm` default).
+        expect(toggle).toHaveAttribute("aria-expanded", "false");
+        fireEvent.click(toggle);
+        expect(toggle).toHaveAttribute("aria-expanded", "true");
+        fireEvent.click(screen.getByTestId("sort-title"));
+        fireEvent.change(screen.getByTestId("header-filter-title"), {
+            target: {value: "alpha"},
+        });
+        expect(screen.getByTestId("search-result-row")).toHaveTextContent(
+            "Alpha Result",
+        );
+        unmount();
+
+        // A fresh mount reads the same `hydra.search-results.table`
+        // localStorage payload the sidebar's collapsed state now shares with
+        // sorting and filters -- all three come back together.
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 2,
+                    searchResults,
+                }}
+            />,
+        );
+        expect(screen.getByTestId("refine-sidebar-toggle")).toHaveAttribute(
+            "aria-expanded",
+            "true",
+        );
+        expect(screen.getByTestId("sort-title")).toHaveAttribute(
+            "data-sort-direction",
+            "asc",
+        );
+        expect(screen.getByTestId("header-filter-title")).toHaveValue("alpha");
+        expect(screen.getByTestId("search-result-row")).toHaveTextContent(
+            "Alpha Result",
+        );
     });
 });
 

@@ -87,6 +87,45 @@ describe("result table transformations", () => {
         expect(filterResults(results, filters, quickFilters)).toEqual([]);
     });
 
+    it("should derive download-type filter options from loaded results rather than a hardcoded NZB/Torrent pair, and never discard an undefined downloadType", () => {
+        const withTypes = [
+            {...results[0], downloadType: "NZB"},
+            {...results[1], downloadType: "TORBOX"},
+            {
+                ...results[0],
+                searchResultId: "3",
+                title: "Movie no type",
+                downloadType: undefined,
+            },
+        ];
+        const filters = defaultFilters(withTypes, []);
+        // Derived, sorted, non-hardcoded: NZB and TORBOX both present, no
+        // TORRENT entry invented, no undefined entry.
+        expect(filters.downloadTypes).toEqual(["NZB", "TORBOX"]);
+
+        // Restricting to only NZB still keeps the undefined-downloadType
+        // result -- it is never governed by this filter dimension.
+        filters.downloadTypes = ["NZB"];
+        expect(
+            filterResults(withTypes, filters, []).map(
+                (result) => result.searchResultId,
+            ),
+        ).toEqual(["1", "3"]);
+
+        // An empty selection excludes every typed result but still keeps the
+        // undefined-downloadType one.
+        filters.downloadTypes = [];
+        expect(
+            filterResults(withTypes, filters, []).map(
+                (result) => result.searchResultId,
+            ),
+        ).toEqual(["3"]);
+
+        // A result set with no downloadType values at all derives an empty
+        // option list rather than inventing NZB/Torrent defaults.
+        expect(defaultFilters(results, []).downloadTypes).toEqual([]);
+    });
+
     it("should use OR semantics for multiple selected source, quality, and other filters", () => {
         const quickFilters = quickFiltersFromSafeConfig({
             searching: {showQuickFilterButtons: true},
