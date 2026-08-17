@@ -7,7 +7,6 @@ import {
     FormControlLabel,
     Menu,
     MenuItem,
-    Paper,
     Stack,
     Table,
     TableBody,
@@ -45,6 +44,13 @@ import type {
     ResultFilters,
     SelectionStatus,
 } from "./resultTable";
+import {
+    checkboxUncheckedBorder,
+    controlSurface,
+    popoverBorderColor,
+    popoverRadius,
+    popoverShadow,
+} from "./toolbarStyles";
 import {
     defaultFilters,
     duplicateGroupKey,
@@ -460,10 +466,9 @@ export function SearchResults({
             )}
             {data.searchResults.length > 0 && (
                 <>
-                    <Paper
+                    <Box
                         data-testid="results-toolbar"
-                        elevation={1}
-                        sx={{p: {xs: 1.5, sm: 2}}}
+                        sx={{padding: "16px 0 14px"}}
                     >
                         <Stack spacing={1.5}>
                             <Typography
@@ -483,6 +488,15 @@ export function SearchResults({
                                     : ""}
                                 {data.numberOfAvailableResults} results
                                 (rejected {data.numberOfRejectedResults})
+                                {selected.size > 0 && (
+                                    <Box
+                                        component="span"
+                                        sx={{color: "primary.main"}}
+                                    >
+                                        {" "}
+                                        · {selected.size} selected
+                                    </Box>
+                                )}
                             </Typography>
                             {dialogs !== null && toasts !== null ? (
                                 <DownloadActions
@@ -612,7 +626,7 @@ export function SearchResults({
                                 </Box>
                             </Stack>
                         </Stack>
-                    </Paper>
+                    </Box>
                     <Stack
                         alignItems="flex-start"
                         direction={{xs: "column", sm: "row"}}
@@ -1232,6 +1246,71 @@ const ResultRow = memo(function ResultRow({
     );
 });
 
+// The tri-state select-all checkbox's small square control (F-SEARCH-GROUP-
+// SELECTION, FM-046), matching the mock's own `toggleAll` button: 17x17px, a
+// 5px border radius, a filled `primary.main` square with a check mark when
+// checked, a dash when indeterminate, and a transparent square with a
+// neutral border when unchecked. Implemented through MUI `Checkbox`'s
+// `icon`/`checkedIcon`/`indeterminateIcon` props plus `sx` sizing on the
+// control itself (ADR-0002: restyle the existing MUI control, never a
+// bespoke one) -- the underlying native `<input type="checkbox">`, the
+// element Testing Library's and Playwright's `role="checkbox"` queries
+// resolve to, is sized to fill this 17x17 control exactly, so its own
+// rendered bounding box is what this task's visual contract measures.
+const selectAllSquareSx = {
+    alignItems: "center",
+    borderRadius: "5px",
+    display: "flex",
+    fontSize: "11px",
+    height: 17,
+    justifyContent: "center",
+    lineHeight: 1,
+    width: 17,
+} as const;
+
+function SelectAllUncheckedIcon() {
+    return (
+        <Box
+            sx={{
+                ...selectAllSquareSx,
+                border: `1.5px solid ${checkboxUncheckedBorder}`,
+            }}
+        />
+    );
+}
+
+function SelectAllCheckedIcon() {
+    return (
+        <Box
+            sx={{
+                ...selectAllSquareSx,
+                bgcolor: "primary.main",
+                border: "1.5px solid",
+                borderColor: "primary.main",
+                color: "primary.contrastText",
+            }}
+        >
+            ✓
+        </Box>
+    );
+}
+
+function SelectAllIndeterminateIcon() {
+    return (
+        <Box
+            sx={{
+                ...selectAllSquareSx,
+                bgcolor: "primary.main",
+                border: "1.5px solid",
+                borderColor: "primary.main",
+                color: "primary.contrastText",
+            }}
+        >
+            –
+        </Box>
+    );
+}
+
 // Tri-state select-all checkbox plus an adjacent caret opening a `role="menu"`
 // with Select all / Deselect all / Invert selection (FM-040), replacing the
 // former flat row of three toolbar buttons. Each menu entry produces exactly
@@ -1271,7 +1350,11 @@ function SelectionMenu({
         >
             <Checkbox
                 checked={status === "all"}
+                checkedIcon={<SelectAllCheckedIcon />}
+                disableRipple
+                icon={<SelectAllUncheckedIcon />}
                 indeterminate={status === "some"}
+                indeterminateIcon={<SelectAllIndeterminateIcon />}
                 inputProps={{
                     "aria-label": `Select all visible results${suffix}`,
                 }}
@@ -1279,6 +1362,13 @@ function SelectionMenu({
                     event.target.checked ? onSelectAll() : onDeselectAll()
                 }
                 size="small"
+                sx={{
+                    borderRadius: "5px",
+                    height: 17,
+                    p: 0,
+                    width: 17,
+                    "&:hover": {backgroundColor: "transparent"},
+                }}
             />
             <Button
                 aria-expanded={open ? "true" : undefined}
@@ -1286,11 +1376,36 @@ function SelectionMenu({
                 aria-label={`Selection options${suffix}`}
                 onClick={(event) => setAnchorEl(event.currentTarget)}
                 size="small"
-                sx={{minWidth: 0, px: 0.5}}
+                sx={{color: "text.secondary", minWidth: 0, px: 0.5}}
             >
                 ▾
             </Button>
-            <Menu anchorEl={anchorEl} onClose={close} open={open}>
+            <Menu
+                anchorEl={anchorEl}
+                onClose={close}
+                open={open}
+                slotProps={{
+                    list: {
+                        sx: {
+                            "& .MuiMenuItem-root": {
+                                borderRadius: "6px",
+                                fontSize: "12.5px",
+                                mx: "4px",
+                                py: "8px",
+                            },
+                        },
+                    },
+                    paper: {
+                        sx: {
+                            backgroundColor: controlSurface,
+                            backgroundImage: "none",
+                            border: `1px solid ${popoverBorderColor}`,
+                            borderRadius: popoverRadius,
+                            boxShadow: popoverShadow,
+                        },
+                    },
+                }}
+            >
                 <MenuItem onClick={() => choose(onSelectAll)}>
                     Select all
                 </MenuItem>

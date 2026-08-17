@@ -1373,6 +1373,262 @@ test.describe("Search results", () => {
             }),
         ).toBeChecked();
     });
+
+    // FM-046: remediates FM-040's structure (reused unchanged, per this
+    // task's own boundary rationale) to the mock's palette and density.
+    // States: `toolbar-mock-density` (a flat, borderless results-toolbar at
+    // the mock's own 16px 0 14px padding), `tri-state-checkbox-mock-square`
+    // (the select-all checkbox's 17x17px, 5px-radius control at both its
+    // unchecked and checked states), and `bulk-actions-mock-buttons` (the
+    // primary/secondary bulk-action buttons' enabled-vs-disabled color
+    // contrast and the caret menu's mock popover surface).
+    test("should render the results toolbar and bulk-actions bar at the mock's density with a square tri-state checkbox and styled buttons", async ({
+        hydra,
+        page,
+    }) => {
+        await hydra.configureSabnzbdMock();
+        const now = Math.floor(Date.now() / 1_000);
+        await page.route("**/internalapi/search", (route) =>
+            route.fulfill({
+                json: {
+                    searchResults: [
+                        {
+                            searchResultId: "one",
+                            title: "Toolbar Mock Density Alpha",
+                            indexer: "Alpha",
+                            category: "TV",
+                            size: 4 * 1024 * 1024,
+                            seeders: 12,
+                            epoch: now - 86_400,
+                            age: "1 day",
+                            downloadType: "NZB",
+                        },
+                        {
+                            searchResultId: "two",
+                            title: "Toolbar Mock Density Bravo",
+                            indexer: "Beta",
+                            category: "Movies",
+                            size: 6 * 1024 * 1024,
+                            seeders: 5,
+                            epoch: now - 2 * 86_400,
+                            age: "2 days",
+                            downloadType: "NZB",
+                        },
+                    ],
+                    indexerSearchMetaDatas: [
+                        { indexerName: "Alpha", wasSuccessful: true },
+                        { indexerName: "Beta", wasSuccessful: true },
+                    ],
+                    indexerLimitWarnings: [],
+                    rejectedReasonsMap: {},
+                    notPickedIndexersWithReason: {},
+                    numberOfAvailableResults: 2,
+                    numberOfRejectedResults: 0,
+                },
+            }),
+        );
+
+        await prepareVisualEvidence(page, "desktop", async () => {
+            await page.goto("ui/react?redirect=/");
+            await page
+                .getByTestId("search-query")
+                .fill("toolbar mock density");
+            await page.getByTestId("search-submit").click();
+            await expect(page.getByTestId("search-status-modal")).toBeHidden();
+            await expect(
+                page.getByTestId("search-results-table"),
+            ).toBeVisible();
+        });
+
+        // `toolbar-mock-density`: no elevated Paper surface/border/shadow,
+        // the mock's own 16px 0 14px padding, no horizontal overflow.
+        const toolbar = page.getByTestId("results-toolbar");
+        await expectVisualGeometry(page, {
+            region: "toolbar-mock-density-desktop",
+            locator: toolbar,
+        });
+        const toolbarStyle = await toolbar.evaluate((element) => {
+            const style = getComputedStyle(element);
+            return {
+                borderWidth: style.borderTopWidth,
+                boxShadow: style.boxShadow,
+                paddingBottom: style.paddingBottom,
+                paddingTop: style.paddingTop,
+            };
+        });
+        expect(toolbarStyle.boxShadow).toBe("none");
+        expect(toolbarStyle.borderWidth).toBe("0px");
+        expect(toolbarStyle.paddingTop).toBe("16px");
+        expect(toolbarStyle.paddingBottom).toBe("14px");
+        await captureVisualRegion(
+            toolbar,
+            "F-SEARCH-GROUP-SELECTION",
+            "toolbar-mock-density-desktop",
+        );
+
+        // `tri-state-checkbox-mock-square`: the header's select-all checkbox
+        // renders within a few pixels of the mock's 17x17px target, unchecked
+        // and checked, with no scrollWidth overflow of its own box.
+        const headerMenu = page.getByTestId("header-selection-menu");
+        const headerCheckbox = headerMenu.getByRole("checkbox", {
+            name: "Select all visible results",
+        });
+        const expectSquareCheckboxGeometry = async () => {
+            const box = await headerCheckbox.boundingBox();
+            expect(box).not.toBeNull();
+            if (!box) {
+                throw new Error("Checkbox requires deterministic geometry");
+            }
+            expect(box.width).toBeGreaterThanOrEqual(14);
+            expect(box.width).toBeLessThanOrEqual(20);
+            expect(box.height).toBeGreaterThanOrEqual(14);
+            expect(box.height).toBeLessThanOrEqual(20);
+            expect(
+                await headerCheckbox.evaluate(
+                    (element) =>
+                        element.scrollWidth <= element.clientWidth + 1,
+                ),
+            ).toBe(true);
+        };
+        await expectSquareCheckboxGeometry();
+        await headerCheckbox.check();
+        await expectSquareCheckboxGeometry();
+
+        // The `search-results-summary`'s `· N selected` fragment renders
+        // once something is selected.
+        await expect(page.getByTestId("search-results-summary")).toContainText(
+            "2 selected",
+        );
+
+        // `bulk-actions-mock-buttons`: the enabled "Send to downloader"
+        // button's computed background differs measurably from both its own
+        // disabled-state background and the page background.
+        const send = page.getByTestId("send-to-downloader");
+        await expect(send).toBeEnabled();
+        const enabledBackground = await send.evaluate(
+            (element) => getComputedStyle(element).backgroundColor,
+        );
+        const pageBackground = await page
+            .locator("body")
+            .evaluate((element) => getComputedStyle(element).backgroundColor);
+        await headerCheckbox.uncheck();
+        await expect(send).toBeDisabled();
+        const disabledBackground = await send.evaluate(
+            (element) => getComputedStyle(element).backgroundColor,
+        );
+        expect(enabledBackground).not.toBe(disabledBackground);
+        expect(enabledBackground).not.toBe(pageBackground);
+        expect(disabledBackground).not.toBe(pageBackground);
+        await captureVisualRegion(
+            page.getByTestId("results-bulk-actions"),
+            "F-SEARCH-GROUP-SELECTION",
+            "toolbar-mock-density-desktop-bulk-actions",
+        );
+
+        // The caret menu renders on the mock's popover surface, fully within
+        // the viewport with no page horizontal overflow.
+        const caret = headerMenu.getByRole("button", {
+            name: "Selection options",
+        });
+        await caret.click();
+        const menu = page.getByRole("menu");
+        await expect(menu).toBeVisible();
+        const menuSurface = await menu.evaluate((element) => {
+            const paper = element.closest(".MuiPaper-root");
+            return paper ? getComputedStyle(paper).backgroundColor : null;
+        });
+        expect(menuSurface).toBe("rgb(42, 49, 51)");
+        const menuBox = await menu.boundingBox();
+        const desktopViewport = page.viewportSize();
+        expect(menuBox).not.toBeNull();
+        expect(desktopViewport).not.toBeNull();
+        if (!menuBox || !desktopViewport) {
+            throw new Error("Menu requires deterministic geometry");
+        }
+        expect(menuBox.x).toBeGreaterThanOrEqual(0);
+        expect(menuBox.x + menuBox.width).toBeLessThanOrEqual(
+            desktopViewport.width,
+        );
+        expect(menuBox.y).toBeGreaterThanOrEqual(0);
+        expect(menuBox.y + menuBox.height).toBeLessThanOrEqual(
+            desktopViewport.height,
+        );
+        expect(
+            await page
+                .locator("html")
+                .evaluate(
+                    (element) => element.scrollWidth <= element.clientWidth,
+                ),
+        ).toBe(true);
+        await page.keyboard.press("Escape");
+        await expect(menu).toBeHidden();
+
+        // Mobile: the same toolbar renders overflow-free at the mock's
+        // density, the toolbar's mobile-reachable checkbox copy renders at
+        // the same square target, and its caret menu stays fully within the
+        // narrower viewport.
+        await page.evaluate(() => window.localStorage.clear());
+        await prepareVisualEvidence(page, "mobile", async () => {
+            await page.goto("ui/react?redirect=/");
+            await page
+                .getByTestId("search-query")
+                .fill("toolbar mock density");
+            await page.getByTestId("search-submit").click();
+            await expect(page.getByTestId("search-status-modal")).toBeHidden();
+            await expect(
+                page.getByTestId("search-results-table"),
+            ).toBeVisible();
+        });
+
+        const mobileToolbar = page.getByTestId("results-toolbar");
+        await expectVisualGeometry(page, {
+            region: "toolbar-mock-density-mobile",
+            locator: mobileToolbar,
+        });
+        await captureVisualRegion(
+            mobileToolbar,
+            "F-SEARCH-GROUP-SELECTION",
+            "toolbar-mock-density-mobile",
+        );
+
+        const toolbarMenu = page.getByTestId("toolbar-selection-menu");
+        const toolbarCheckbox = toolbarMenu.getByRole("checkbox", {
+            name: "Select all visible results (mobile)",
+        });
+        const mobileBox = await toolbarCheckbox.boundingBox();
+        expect(mobileBox).not.toBeNull();
+        if (!mobileBox) {
+            throw new Error("Checkbox requires deterministic geometry");
+        }
+        expect(mobileBox.width).toBeGreaterThanOrEqual(14);
+        expect(mobileBox.width).toBeLessThanOrEqual(20);
+        expect(mobileBox.height).toBeGreaterThanOrEqual(14);
+        expect(mobileBox.height).toBeLessThanOrEqual(20);
+
+        await toolbarMenu
+            .getByRole("button", { name: "Selection options (mobile)" })
+            .click();
+        const mobileMenu = page.getByRole("menu");
+        await expect(mobileMenu).toBeVisible();
+        const mobileMenuBox = await mobileMenu.boundingBox();
+        const mobileViewport = page.viewportSize();
+        expect(mobileMenuBox).not.toBeNull();
+        expect(mobileViewport).not.toBeNull();
+        if (!mobileMenuBox || !mobileViewport) {
+            throw new Error("Menu requires deterministic geometry");
+        }
+        expect(mobileMenuBox.x).toBeGreaterThanOrEqual(0);
+        expect(mobileMenuBox.x + mobileMenuBox.width).toBeLessThanOrEqual(
+            mobileViewport.width,
+        );
+        expect(
+            await page
+                .locator("html")
+                .evaluate(
+                    (element) => element.scrollWidth <= element.clientWidth,
+                ),
+        ).toBe(true);
+    });
 });
 
 // The results table header row's height at 1280x800, measured against the

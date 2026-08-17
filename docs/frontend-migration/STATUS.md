@@ -18,8 +18,18 @@ None.
 
 **ADR-0009 full-mock-fidelity batch.** FM-043 (shell theme, typography, density foundation) is `done`, so `createHydraTheme()`'s `oklch` palette, self-hosted IBM Plex Sans/Mono typography, and the denser default component sizing are
 now the tokens every later packet in this batch restyles against rather than guessing at values. FM-044 (search form restyle) and FM-045 (single refine-sidebar filter surface) are no longer blocked and are independent of each other;
-FM-046 remediates FM-039/FM-040 behind FM-045 and in turn unblocks FM-041; with FM-045 now `done`, FM-046 is unblocked and is the next work in this batch, though it stays `planned` and unlisted above until it is promoted to `ready`.
-FM-045 is `done` — reviewed
+FM-046 remediates FM-039/FM-040 behind FM-045 and in turn unblocks FM-041. FM-046 is `done` — reviewed `PASS WITH MINOR FINDINGS` with no required corrections. The `results-toolbar` is now a flat `Box` at the mock's `16px 0 14px`
+padding instead of an elevated `Paper`; `search-results-summary` gained an additive `· N selected` fragment in `primary.main` alongside the untouched `results-selected-count`; the tri-state select-all checkbox renders as the mock's
+17x17px/5px-radius square through MUI `Checkbox`'s own `icon`/`checkedIcon`/`indeterminateIcon` props (ADR-0002, no bespoke control); the caret menu opens on the mock's `#2a3133`/9px popover; and "Send to downloader", the NZB ZIP
+action, and every `results-download-actions` control carry the mock's palette/density with real `disabled` semantics rather than opacity. FM-040's selection/download structure and interaction logic are reused unchanged — no
+`data-testid` was removed or renamed and no accessibility affordance regressed, confirmed by rerunning FM-040's existing component coverage rather than assuming it. Verification was independently reproduced by the reviewer (SHA-256
+manifest matched byte for byte; `typecheck`/`lint`/`format:check`/`test`/`check:api`/`validate:migration`, `tests/system` `tsc --noEmit`, and `git diff --check` all rerun identically); the expensive real-backend Playwright run
+(21/21 passing across `results.spec.ts` and `downloads.spec.ts`) was reused under the reviewer's evidence-reuse exception after the three evidence captures were opened and visually inspected. `F-SEARCH-GROUP-SELECTION`,
+`F-SEARCH-DOWNLOADS`, `F-SEARCH-SAVED`, and `F-SEARCH-RESULTS` all stay `visual.status: proposed` with **human visual acceptance outstanding**. Two items are carried as accepted deviations rather than corrections. The mock's own
+`allBoxBg`/`allBoxMark` logic leaves the select-all control transparent in the *indeterminate* state with only a dark `#0e1c1b` dash — which would be effectively invisible against the dark toolbar, an authoring inconsistency in the
+mock; the implementation fills it like the checked state instead, preserving state visibility per ADR-0006, and that deliberate departure from the mock's literal value should be added to the packet's `Assumptions` on its next touch.
+And the handoff describes the non-registry `toolbar-mock-density-desktop-bulk-actions.png` capture as documenting enabled/disabled button contrast when the single frame shows only the disabled state; the registry-cited captures are
+unaffected. FM-045 is `done` — reviewed
 `PASS WITH MINOR FINDINGS` with no required corrections. The `refine-sidebar` is the single result-filter surface at every viewport (FM-034's inline column-header filter popovers and the
 mobile-only `results-filters`/`results-quick-filters` toolbar rows are removed; below `sm` the same toggle opens the sidebar as a MUI `Drawer`), Category/Indexer render as the mock's toggle rows, and the whole panel carries the mock's
 palette/density. The no-lost-capability guarantee is structural rather than asserted: `RefineSidebar` builds one `sections` node and renders it in both the docked and `Drawer` branches, so the two viewports cannot drift apart, and both
@@ -41,7 +51,7 @@ acceptance of the new look is still outstanding**, is independent of technical r
 
 FM-039 and FM-040 (both done) built the ADR-0008 Option B structural-redesign batch for the search page (Refine sidebar; selection-gated bulk actions bar). Per an explicit 2026-08-17 human decision, ADR-0008 is being superseded: the search
 page should follow the source mock closely, including its palette and typography, not just its structure. FM-041 (display options menu) and FM-042 (sticky toolbar/header) were not started and are intentionally not promoted here; they are
-being folded into the superseding initiative's task design rather than implemented against the now-superseded Option B spec. The palette and density tokens have now landed with FM-043, and FM-039/FM-040's remediation pass is FM-046
-above; FM-041 is wired behind it.
+being folded into the superseding initiative's task design rather than implemented against the now-superseded Option B spec. The palette and density tokens landed with FM-043, and FM-039/FM-040's remediation pass, FM-046, is now
+`done`; FM-041 was wired behind it and is unblocked, but stays `planned` and unlisted above until it is promoted to `ready`.
 
 Completed work is recorded in its task packet and Git history, not listed here.

@@ -26,6 +26,66 @@ import {
     sendToDownloader,
 } from "../../../domain/downloads/actions";
 import type {Downloader} from "../../../domain/downloads/actions";
+import {
+    controlSurface,
+    disabledActionBackground,
+    disabledActionTextColor,
+    enabledSecondaryTextColor,
+    secondaryBorderColor,
+} from "./toolbarStyles";
+
+// The mock's primary bulk-action button (`sendToDownloader`): filled
+// `primary.main`/`primary.contrastText` when enabled, `8px` radius, `8px
+// 14px` padding, `13px` weight-600 text; when `disabled` (real control
+// semantics, unchanged from FM-040 -- never opacity alone) it renders on the
+// mock's neutral control surface with muted text instead of MUI's default
+// greyed-out disabled treatment.
+const primaryActionSx = {
+    borderRadius: "8px",
+    fontSize: "13px",
+    fontWeight: 600,
+    padding: "8px 14px",
+    "&.Mui-disabled": {
+        backgroundColor: disabledActionBackground,
+        color: disabledActionTextColor,
+    },
+} as const;
+
+// The mock's secondary bulk-action button (`downloadZip`): the same neutral
+// control surface and border in both states, distinguishing it from the
+// primary action by omitting the filled teal background.
+const secondaryActionSx = {
+    backgroundColor: controlSurface,
+    border: `1px solid ${secondaryBorderColor}`,
+    borderRadius: "8px",
+    color: enabledSecondaryTextColor,
+    fontSize: "13px",
+    padding: "8px 12px",
+    "&:hover": {
+        backgroundColor: controlSurface,
+        borderColor: secondaryBorderColor,
+    },
+    "&.Mui-disabled": {
+        backgroundColor: disabledActionBackground,
+        borderColor: secondaryBorderColor,
+        color: disabledActionTextColor,
+    },
+} as const;
+
+// The `results-download-actions` region's own controls (downloader select,
+// downloader-category select, black-hole/save, copy-links, Save search)
+// restyle to the same neutral control surface, radius, and typography as the
+// bulk-actions bar's secondary button, with no change to which controls are
+// present, their order, or their behavior.
+const downloadActionsButtonSx = secondaryActionSx;
+const downloadActionsSelectSx = {
+    backgroundColor: controlSurface,
+    borderRadius: "8px",
+    fontSize: "13px",
+    "& .MuiOutlinedInput-notchedOutline": {
+        borderColor: secondaryBorderColor,
+    },
+} as const;
 
 export function DownloadActions({
     results,
@@ -256,6 +316,7 @@ export function DownloadActions({
                         }
                         onClick={send}
                         size="small"
+                        sx={primaryActionSx}
                         variant="contained"
                     >
                         Send selected to downloader
@@ -266,6 +327,8 @@ export function DownloadActions({
                         disabled={busy || selectedNzbs.length === 0}
                         onClick={zip}
                         size="small"
+                        sx={secondaryActionSx}
+                        variant="outlined"
                     >
                         Download selected NZBs as ZIP
                     </Button>
@@ -285,6 +348,8 @@ export function DownloadActions({
                         id="save-search"
                         onClick={() => void onSaveSearch()}
                         size="small"
+                        sx={downloadActionsButtonSx}
+                        variant="outlined"
                     >
                         {savingSearch ? "Saving search…" : "Save search"}
                     </Button>
@@ -302,6 +367,7 @@ export function DownloadActions({
                         <Select
                             aria-label="Downloader"
                             size="small"
+                            sx={downloadActionsSelectSx}
                             value={downloader?.name ?? ""}
                             onChange={(event) =>
                                 setDownloader(
@@ -321,6 +387,7 @@ export function DownloadActions({
                         <Select
                             aria-label="Downloader category"
                             size="small"
+                            sx={downloadActionsSelectSx}
                             value={category ?? ""}
                             onChange={(event) =>
                                 setCategory(event.target.value || null)
@@ -363,11 +430,18 @@ export function DownloadActions({
                             ])
                         }
                         size="small"
+                        sx={downloadActionsButtonSx}
+                        variant="outlined"
                     >
                         Send selected to black hole
                     </Button>
                 )}
-                <Button onClick={copy} size="small">
+                <Button
+                    onClick={copy}
+                    size="small"
+                    sx={downloadActionsButtonSx}
+                    variant="outlined"
+                >
                     Copy selected links
                 </Button>
             </Stack>

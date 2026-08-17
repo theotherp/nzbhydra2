@@ -755,6 +755,10 @@ describe("SearchResults", () => {
         // Disabled (not toast-blocked) with no selection.
         expect(send).toBeDisabled();
         expect(zip).toBeDisabled();
+        // FM-046: `search-results-summary` carries no `· N selected`
+        // fragment while nothing is selected.
+        const summary = screen.getByTestId("search-results-summary");
+        expect(summary).not.toHaveTextContent("selected");
 
         fireEvent.click(
             within(screen.getByTestId("search-result-row")).getByRole(
@@ -766,6 +770,10 @@ describe("SearchResults", () => {
         ).toHaveTextContent("1 selected");
         expect(send).toBeEnabled();
         expect(zip).toBeEnabled();
+        // The same "1 selected" fragment also renders inline in
+        // `search-results-summary`, unchanged from `results-selected-count`
+        // (both render; neither replaces the other).
+        expect(summary).toHaveTextContent("1 selected");
     });
 
     it("should reconcile merged rows without losing active sort, filter, grouping, or valid selection", () => {
