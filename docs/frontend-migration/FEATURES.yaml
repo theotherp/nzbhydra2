@@ -195,10 +195,10 @@ features:
     visual:
       applicability: applicable
       status: proposed
-      note: "Supersedes the prior 2026-08-16 human acceptance of this record and its FM-034 superseding note (both removed here; still recoverable from Git history). FM-034's 1700px page container remains true and unchanged. FM-039 narrows the table's own column by adding a persistent `refine-sidebar` beside it (see `F-SEARCH-SORT-FILTER` for the sidebar's own filter-capability contract); the table keeps FM-034's `.result-*` column ratios within that narrowed column, and the title-dominant-column geometry check below remains literally true at the container's full 1700px width. Pending fresh human review; see the FM-039 handoff for what changed and why."
+      note: "Supersedes the prior 2026-08-16 human acceptance of this record and its FM-034 superseding note (both removed here; still recoverable from Git history). FM-034's 1700px page container remains true and unchanged. FM-039 narrows the table's own column by adding a persistent `refine-sidebar` beside it (see `F-SEARCH-SORT-FILTER` for the sidebar's own filter-capability contract); the table keeps FM-034's `.result-*` column ratios within that narrowed column, and the title-dominant-column geometry check below remains literally true at the container's full 1700px width. FM-040 restructures the toolbar's selection/download action regions (see `F-SEARCH-GROUP-SELECTION`/`F-SEARCH-DOWNLOADS` for that contract) but adds its new bulk-actions bar inside the same `results-toolbar` region this record already governs, so the toolbar-above-table geometry check below remains literally true unchanged; confirmed, not merely assumed, by this task's own visual-evidence run. Pending fresh human review; see the FM-039 and FM-040 handoffs for what changed and why."
       contract:
         setup: "React-selected `ui/react?redirect=/` with a deterministic mocked `internalapi/search` response (two same-title/hash NZB duplicates plus one distinct-title NZB release) submitted through the real search form, in `tests/system/tests/results.spec.ts`."
-        states: [ populated-toolbar-and-table, title-dominant-column, filtered-result-narrowing, refine-sidebar-expanded, refine-sidebar-collapsed, refine-counts-and-type-chips ]
+        states: [ populated-toolbar-and-table, title-dominant-column, filtered-result-narrowing, refine-sidebar-expanded, refine-sidebar-collapsed, refine-counts-and-type-chips, no-selection-disabled-actions, partial-selection-indeterminate, all-selected-bulk-actions ]
         viewports: [ { name: desktop, width: 1280, height: 800 }, { name: mobile, width: 390, height: 844 } ]
         geometry_checks:
           - "the results-toolbar and search-results-table regions each render with no horizontal overflow at 1280x800 and 390x844, and the toolbar's bottom edge sits at or above the table's top edge"
@@ -208,6 +208,7 @@ features:
           - "collapsing the sidebar increases the table's bounding-box width, leaves no residual gap, and is reflected by the toggle's aria-expanded"
           - "every category and indexer row renders its label and count with no scrollWidth overflow of the row"
           - "at mobile the sidebar is collapsed, results-filters is visible, and the page does not overflow horizontally"
+          - "the toolbar's new bulk-actions bar (FM-040) renders inside the same results-toolbar region this record already governs, so its bottom edge stays at or above the table's top edge, and it does not overlap the refine-sidebar at desktop"
       evidence: [ tests/system/tests/results.spec.ts ]
       variances: []
     gaps: [ ]
@@ -257,27 +258,29 @@ features:
     routes: [ / ]
     roles: [ user ]
     legacy_sources: [ core/ui-src/js/search-results-controller.js, core/ui-src/js/directives/search-result.js, core/ui-src/js/directives/selection-button.js ]
-    tests: [ tests/system/tests/results.spec.ts ]
-    selectors: [ search-result-row ]
+    tests: [ tests/system/tests/results.spec.ts, core/ui-react/src/features/search/results/SearchResults.test.tsx ]
+    selectors: [ search-result-row, results-selection-actions, header-selection-menu, toolbar-selection-menu ]
     target: core/ui-react/src/features/search/results
     parity: partial
     visual:
       applicability: applicable
-      status: accepted
+      status: proposed
+      note: "Supersedes the prior 2026-08-16 human acceptance of this record (removed here; still recoverable from Git history) because it evidenced the exact toolbar region FM-040 restructures. FM-040 removes the flat 'Select all'/'Deselect all'/'Invert selection' toolbar buttons the accepted geometry check named, replacing them with a real tri-state select-all checkbox (indeterminate on partial selection) plus an adjacent caret opening a role=\"menu\" with the same three actions -- rendered in the results table header (header-selection-menu, reachable at sm and up, where thead renders) and, since the responsive table hides thead entirely below sm, a second functionally-identical copy in the toolbar's results-selection-actions region (toolbar-selection-menu) so bulk selection stays reachable at mobile. Each menu entry still produces exactly the selectVisibleResults outcome the old button produced (asserted by selection outcome in component tests, not by the entry's presence). results-selection-actions keeps its data-testid and now carries the grouping toggles plus the toolbar-selection-menu copy. Follows the FM-034/FM-037 precedent of superseding a prior acceptance whose accepted geometry check the restructure invalidates. Pending fresh human review; see the FM-040 handoff for what changed and why."
       contract:
         setup: "React-selected `ui/react?redirect=/` with a deterministic mocked `internalapi/search` response (two same-title/hash NZB duplicates plus one distinct-title NZB release) submitted through the real search form; the duplicate group is expanded, in `tests/system/tests/results.spec.ts`."
-        states: [ collapsed-duplicate-group, expanded-duplicate-indentation, selection-actions-region ]
+        states: [ collapsed-duplicate-group, expanded-duplicate-indentation, selection-actions-region, no-selection-disabled-actions, partial-selection-indeterminate, all-selected-bulk-actions ]
         viewports: [ { name: desktop, width: 1280, height: 800 }, { name: mobile, width: 390, height: 844 } ]
         geometry_checks:
           - "expanding a duplicate group increases visible row count from 2 to 3, and the nested row's title cell computed padding-left exceeds its parent's, giving a consistent indentation step"
           - "the expanded nested row's computed background-color differs from its parent row's background-color, giving a distinguishable group/duplicate treatment"
-          - "the toolbar's dedicated results-selection-actions region (grouping toggles, select all/deselect all/invert selection) renders within the compact results-toolbar without overflow at either viewport, visually separate from results-download-actions"
+          - "the toolbar's dedicated results-selection-actions region (grouping toggles, plus a mobile-reachable copy of the header's tri-state select-all checkbox and its Select all/Deselect all/Invert selection menu) renders within the compact results-toolbar without overflow at either viewport, visually separate from results-download-actions"
+          - "with nothing selected, the header's tri-state checkbox is unchecked and not indeterminate, and both bulk-actions-bar primary actions render disabled, with no horizontal overflow of the bar at either viewport"
+          - "selecting one row of several renders the header checkbox indeterminate, and the open selection menu (opened via its caret) renders fully within the viewport with no page horizontal overflow at either viewport"
+          - "selecting every visible row renders the header checkbox checked and not indeterminate"
       evidence: [ tests/system/tests/results.spec.ts ]
-      variances: []
-      acceptance:
-        decision: "Accepted as proposed. Group indentation/background treatment verified by the reviewer's independent manual check; unchanged from the original passing implementation."
-        accepted_by: "Repository owner (stratmann.simon@gmail.com)"
-        accepted_on: "2026-08-16"
+      variances:
+        - description: "The header's tri-state select-all checkbox (indeterminate on partial selection) and its adjacent caret opening a role=\"menu\" with Select all/Deselect all/Invert selection have no legacy equivalent; legacy uses a standalone `selectionButton` directive (`core/ui-src/js/directives/selection-button.js`) with always-visible, non-indeterminate buttons."
+          status: proposed
     gaps: [ ]
     task: FM-012
     backlog: { status: deferred, rationale: "The record remains partial pending a dedicated full-parity reconciliation." }
@@ -288,30 +291,41 @@ features:
     routes: [ / ]
     roles: [ user ]
     legacy_sources: [ core/ui-src/js/nzb-download-service.js, core/ui-src/js/directives/addable-nzb.js, core/ui-src/js/directives/download-nzbs-button.js, core/ui-src/js/directives/download-nzbzip-button.js, core/ui-src/js/directives/copy-links-button.js, core/ui-src/js/directives/save-or-send-torrent.js ]
-    tests: [ tests/system/tests/downloads.spec.ts ]
-    selectors: [ send-to-downloader, download-nzb ]
+    tests: [ tests/system/tests/downloads.spec.ts, tests/system/tests/results.spec.ts, core/ui-react/src/features/search/results/SearchResults.test.tsx ]
+    selectors: [ send-to-downloader, download-nzb, results-bulk-actions, results-bulk-actions-summary, results-selected-count ]
     target: core/ui-react/src/features/search/results
     parity: partial
     visual:
       applicability: applicable
-      status: accepted
+      status: proposed
+      note: "Supersedes the prior 2026-08-16 human acceptance of this record (removed here; still recoverable from Git history) because it evidenced the exact toolbar region FM-040 restructures. FM-040 pulls the two primary selected-result actions -- 'Send to downloader' (still send-to-downloader) and the NZB ZIP download -- out of results-download-actions into a new, distinct results-bulk-actions bar that also reports the loaded/filtered counts and, once non-zero, the selected count (results-selected-count); both primary actions are now `disabled` (not toast-blocked) until something is selected. Every other bulk capability (downloader select, downloader-category select, black-hole/save, copy links, Save search) stays in results-download-actions, unchanged in behavior. Follows the FM-034/FM-037 precedent of superseding a prior acceptance whose accepted geometry check the restructure invalidates. Pending fresh human review; see the FM-040 handoff for what changed and why."
       contract:
         setup: "React-selected `ui/react?redirect=/` with a deterministic mocked `internalapi/search` response (NZB-eligible results) submitted through the real search form, in `tests/system/tests/results.spec.ts`."
-        states: [ direct-download-per-row, bulk-download-toolbar-region, mobile-primary-row-action ]
+        states: [ direct-download-per-row, bulk-download-toolbar-region, mobile-primary-row-action, no-selection-disabled-actions, partial-selection-indeterminate, all-selected-bulk-actions ]
         viewports: [ { name: desktop, width: 1280, height: 800 }, { name: mobile, width: 390, height: 844 } ]
         geometry_checks:
           - "every visible row's direct-download control (download-nzb) is visible at both the 1280x800 desktop and 390x844 mobile viewports"
           - "at mobile, the direct-download control's containing cell has a computed display of flex, confirming the responsive per-row action layout is active rather than being hidden or clipped"
-          - "the toolbar's results-download-actions region (save search, selected-result bulk downloader/ZIP/black-hole/copy actions) renders within the compact results-toolbar without overflow, a distinct region from the per-row actions column and from results-selection-actions"
+          - "the toolbar's results-download-actions region (save search, downloader select, downloader-category select, black-hole/save, copy links) renders within the compact results-toolbar without overflow, a distinct region from the per-row actions column, from results-selection-actions, and from the new results-bulk-actions bar"
           - "after a direct download, the per-row 'Downloaded' indicator renders in the desktop Actions column with no scrollWidth overflow of its own box (no text clipping/truncation)"
+          - "with nothing selected, both results-bulk-actions primary actions (Send to downloader, NZB ZIP download) render disabled, with no horizontal overflow of the bar at either viewport"
+          - "selecting one row of several enables both results-bulk-actions primary actions and shows the selected count (results-selected-count) with no scrollWidth overflow of its own box"
       evidence: [ tests/system/tests/results.spec.ts ]
       variances:
+        # This project's validator requires an `accepted` variance's whole
+        # visual record to itself be `accepted` with human decision
+        # metadata; since FM-040 demotes this record to `proposed` (see
+        # `note` above), this variance's `status` field follows the record
+        # down to `proposed` for that structural reason alone. Its substance
+        # (description) is carried forward unchanged, exactly as the FM-040
+        # packet directs -- this is not a re-litigation of the prior
+        # 2026-08-16 acceptance, only a formal consequence of the record's
+        # own demotion, and it is expected to return to `accepted` together
+        # with the rest of the record on the next human review.
         - description: "Unlike legacy, which hides its row Links/actions column entirely below the xs breakpoint (`core/ui-src/less/partials/tables.less` `.search-results-table .result-links { display: none !important; }`), the React direct-download action remains visible per row at the 390px mobile viewport. This is an intentional usability improvement over a legacy gap, not a semantic loss."
-          status: accepted
-      acceptance:
-        decision: "Accepted as proposed, including the mobile-visible-download-action variance (an intentional usability improvement over a legacy gap). Reviewed desktop/mobile screenshots confirming the direct-download button and 'Downloaded' chip are both fully legible after a real download."
-        accepted_by: "Repository owner (stratmann.simon@gmail.com)"
-        accepted_on: "2026-08-16"
+          status: proposed
+        - description: "The bulk-actions bar's two primary actions (Send to downloader, NZB ZIP download) are `disabled` with no selection instead of legacy's always-enabled buttons, which fire and show a 'You should select at least one result...' growl toast when clicked with nothing selected (`core/ui-src/js/directives/download-nzbs-button.js`, `download-nzbzip-button.js`). No legacy equivalent conveys this state via native control semantics rather than a post-click toast."
+          status: proposed
     gaps: [ download-history route migration ]
     task: FM-013
     backlog: { status: deferred, rationale: "Download-history route migration is separately deferred." }
@@ -356,19 +370,16 @@ features:
     parity: partial
     visual:
       applicability: applicable
-      status: accepted
+      status: proposed
+      note: "Supersedes the prior 2026-08-16 human acceptance of this record (removed here; still recoverable from Git history). Verified against FM-040's restructure, per that task's instruction to check whether this record's accepted check remained literally true rather than assuming so: it is not. FM-040 pulls 'Send to downloader' and the NZB ZIP download -- arguably the toolbar's headline 'bulk download actions' -- out of results-download-actions into a new, separate results-bulk-actions bar; the Save search control still renders inside results-download-actions, but now alongside only the downloader select, downloader-category select, black-hole/save action, and copy-links action, not alongside the two actions this record's accepted wording most naturally meant by 'the bulk download actions'. Demoted rather than left accepted on a claim that is no longer literally true. Pending fresh human review; see the FM-040 handoff for what changed and why."
       contract:
         setup: "React-selected `ui/react?redirect=/` with a deterministic mocked `internalapi/search` response submitted through the real search form, where the Save search control always renders inside the compact results-toolbar's results-download-actions region, in `tests/system/tests/results.spec.ts`."
         states: [ save-search-toolbar-placement ]
         viewports: [ { name: desktop, width: 1280, height: 800 }, { name: mobile, width: 390, height: 844 } ]
         geometry_checks:
-          - "the save-search control is contained within the toolbar's results-download-actions region alongside the bulk download actions, and the whole results-toolbar renders without horizontal overflow at either viewport"
+          - "the save-search control is contained within the toolbar's results-download-actions region alongside the downloader select, downloader-category select, black-hole/save, and copy-links actions, and the whole results-toolbar renders without horizontal overflow at either viewport"
       evidence: [ tests/system/tests/results.spec.ts ]
       variances: []
-      acceptance:
-        decision: "Accepted as proposed. Save-search placement within the toolbar's download-actions region unchanged by the review-fix round; verified overflow-free at both viewports."
-        accepted_by: "Repository owner (stratmann.simon@gmail.com)"
-        accepted_on: "2026-08-16"
     gaps: [ ]
     task: FM-019
     backlog: { status: deferred, rationale: "Remaining saved-search parity is future work." }

@@ -8,6 +8,7 @@ import {
     quickFilterKey,
     quickFiltersFromSafeConfig,
     selectionAfterClick,
+    selectionStatus,
     selectVisibleResults,
     visibleGroupedResults,
 } from "./resultTable";
@@ -344,5 +345,26 @@ describe("result table transformations", () => {
                 true,
             ),
         ).toEqual(new Set(["one", "two", "three"]));
+    });
+
+    it("should summarize none/some/all selection status over only the visible rows, driving the header tri-state checkbox", () => {
+        const visible = [
+            {...results[0], searchResultId: "one"},
+            {...results[1], searchResultId: "two"},
+        ];
+        expect(selectionStatus(new Set(), visible)).toBe("none");
+        expect(selectionStatus(new Set(["one"]), visible)).toBe("some");
+        expect(selectionStatus(new Set(["one", "two"]), visible)).toBe("all");
+        // A selected ID that is not currently visible (e.g. filtered out or
+        // collapsed) never counts toward "some"/"all": the checkbox reflects
+        // only what is presently rendered, not the whole selection set.
+        expect(selectionStatus(new Set(["not-visible"]), visible)).toBe("none");
+        expect(selectionStatus(new Set(["one", "not-visible"]), visible)).toBe(
+            "some",
+        );
+        // No visible rows at all (e.g. every result filtered out) is "none",
+        // never a vacuous "all".
+        expect(selectionStatus(new Set(), [])).toBe("none");
+        expect(selectionStatus(new Set(["one"]), [])).toBe("none");
     });
 });

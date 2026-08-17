@@ -99,6 +99,29 @@ export function selectVisibleResults(
     return new Set(visibleIds.filter((id) => !selected.has(id)));
 }
 
+// Tri-state summary of `selected` over the currently visible rows, driving
+// the results table header's tri-state checkbox (FM-040): "all" checks it,
+// "some" renders it indeterminate, "none" leaves it unchecked. An empty
+// visible set (nothing rendered to select) is "none", matching an unchecked,
+// non-indeterminate checkbox rather than a false "all selected" reading.
+export type SelectionStatus = "all" | "none" | "some";
+
+export function selectionStatus(
+    selected: ReadonlySet<string>,
+    visible: SearchResult[],
+): SelectionStatus {
+    if (visible.length === 0) {
+        return "none";
+    }
+    const selectedVisibleCount = visible.filter((result) =>
+        selected.has(result.searchResultId),
+    ).length;
+    if (selectedVisibleCount === 0) {
+        return "none";
+    }
+    return selectedVisibleCount === visible.length ? "all" : "some";
+}
+
 export function selectionAfterClick(
     selected: ReadonlySet<string>,
     visible: SearchResult[],

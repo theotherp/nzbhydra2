@@ -5,6 +5,8 @@ import {
     Checkbox,
     Chip,
     FormControlLabel,
+    Menu,
+    MenuItem,
     Paper,
     Popover,
     Stack,
@@ -40,7 +42,12 @@ import {ToastContext} from "../../../components/toasts/toasts";
 import {DirectDownloadActions, DownloadActions} from "./DownloadActions";
 import {MultiFilter, NumericFilter} from "./filterControls";
 import {COLLAPSED_WIDTH, EXPANDED_WIDTH, RefineSidebar} from "./RefineSidebar";
-import type {NumericRange, QuickFilter, ResultFilters} from "./resultTable";
+import type {
+    NumericRange,
+    QuickFilter,
+    ResultFilters,
+    SelectionStatus,
+} from "./resultTable";
 import {
     defaultFilters,
     duplicateGroupKey,
@@ -50,6 +57,7 @@ import {
     quickFilterKey,
     quickFiltersFromSafeConfig,
     selectionAfterClick,
+    selectionStatus,
     selectVisibleResults,
     visibleGroupedResults,
 } from "./resultTable";
@@ -201,6 +209,13 @@ export function SearchResults({
     );
     const visibleResultsRef = useRef(visibleResults);
     visibleResultsRef.current = visibleResults;
+    // Drives the results table header's tri-state checkbox and its mobile
+    // toolbar counterpart (FM-040): "all"/"some"/"none" of the currently
+    // visible rows.
+    const currentSelectionStatus = useMemo(
+        () => selectionStatus(selected, visibleResults),
+        [selected, visibleResults],
+    );
     const lastSelectedIdRef = useRef(lastSelectedId);
     lastSelectedIdRef.current = lastSelectedId;
     const updateSelection = useCallback(
@@ -219,6 +234,21 @@ export function SearchResults({
         },
         [],
     );
+    const selectAllVisible = useCallback(() => {
+        setSelected((current) =>
+            selectVisibleResults(current, visibleResultsRef.current, "all"),
+        );
+    }, []);
+    const deselectAllVisible = useCallback(() => {
+        setSelected((current) =>
+            selectVisibleResults(current, visibleResultsRef.current, "none"),
+        );
+    }, []);
+    const invertVisibleSelection = useCallback(() => {
+        setSelected((current) =>
+            selectVisibleResults(current, visibleResultsRef.current, "invert"),
+        );
+    }, []);
     const handleDownloaded = useCallback((resultId: string) => {
         setDownloadedIds((current) => new Set([...current, resultId]));
     }, []);
@@ -590,6 +620,79 @@ export function SearchResults({
                                 {data.numberOfAvailableResults} results
                                 (rejected {data.numberOfRejectedResults})
                             </Typography>
+                            {dialogs !== null && toasts !== null ? (
+                                <DownloadActions
+                                    filteredCount={filteredResults.length}
+                                    loadedCount={data.searchResults.length}
+                                    onDownloaded={(ids) => {
+                                        const affected = data.searchResults
+                                            .filter((result) =>
+                                                ids.includes(
+                                                    Number(
+                                                        downloadIdFor(
+                                                            result,
+                                                        ).split(".")[0],
+                                                    ),
+                                                ),
+                                            )
+                                            .map(
+                                                (result) =>
+                                                    result.searchResultId,
+                                            );
+                                        setDownloadedIds(
+                                            (current) =>
+                                                new Set([
+                                                    ...current,
+                                                    ...affected,
+                                                ]),
+                                        );
+                                        setSelected(
+                                            (current) =>
+                                                new Set(
+                                                    [...current].filter(
+                                                        (id) =>
+                                                            !affected.includes(
+                                                                id,
+                                                            ),
+                                                    ),
+                                                ),
+                                        );
+                                    }}
+                                    onSaveSearch={onSaveSearch}
+                                    results={data.searchResults.filter(
+                                        (result) =>
+                                            selected.has(result.searchResultId),
+                                    )}
+                                    safeConfig={safeConfig}
+                                    savingSearch={savingSearch}
+                                />
+                            ) : (
+                                // Defensive fallback for the (never exercised
+                                // in this app -- App.tsx always wraps the
+                                // tree in DialogProvider/ToastProvider --
+                                // but still guarded) case where dialogs/
+                                // toasts context is unavailable: Save search
+                                // keeps rendering on its own, exactly as
+                                // before this task, instead of disappearing
+                                // along with the download-actions region.
+                                onSaveSearch && (
+                                    <Stack
+                                        data-testid="results-download-actions"
+                                        direction="row"
+                                    >
+                                        <Button
+                                            disabled={savingSearch}
+                                            id="save-search"
+                                            onClick={() => void onSaveSearch()}
+                                            size="small"
+                                        >
+                                            {savingSearch
+                                                ? "Saving search…"
+                                                : "Save search"}
+                                        </Button>
+                                    </Stack>
+                                )
+                            )}
                             <Stack
                                 alignItems="center"
                                 data-testid="results-selection-actions"
@@ -625,144 +728,24 @@ export function SearchResults({
                                     }
                                     label="Group TV episodes"
                                 />
-                                <Button
-                                    onClick={() =>
-                                        setSelected((current) =>
-                                            selectVisibleResults(
-                                                current,
-                                                visibleResults,
-                                                "all",
-                                            ),
-                                        )
-                                    }
-                                    onKeyDown={(event) => {
-                                        if (
-                                            event.key === "Enter" ||
-                                            event.key === " "
-                                        ) {
-                                            event.preventDefault();
-                                            setSelected((current) =>
-                                                selectVisibleResults(
-                                                    current,
-                                                    visibleResults,
-                                                    "all",
-                                                ),
-                                            );
+                                {/* Below `sm` the table's `thead` (and so the
+                                    header's tri-state checkbox/caret menu) is
+                                    hidden by the responsive table styling; this
+                                    mobile-only copy keeps bulk selection
+                                    reachable from the toolbar at that
+                                    viewport. Both copies share the same
+                                    selection state and callbacks. */}
+                                <Box sx={{display: {xs: "flex", sm: "none"}}}>
+                                    <SelectionMenu
+                                        idPrefix="toolbar"
+                                        onDeselectAll={deselectAllVisible}
+                                        onInvertSelection={
+                                            invertVisibleSelection
                                         }
-                                    }}
-                                    size="small"
-                                >
-                                    Select all
-                                </Button>
-                                <Button
-                                    onClick={() => setSelected(new Set())}
-                                    onKeyDown={(event) => {
-                                        if (
-                                            event.key === "Enter" ||
-                                            event.key === " "
-                                        ) {
-                                            event.preventDefault();
-                                            setSelected(new Set());
-                                        }
-                                    }}
-                                    size="small"
-                                >
-                                    Deselect all
-                                </Button>
-                                <Button
-                                    onClick={() =>
-                                        setSelected((current) =>
-                                            selectVisibleResults(
-                                                current,
-                                                visibleResults,
-                                                "invert",
-                                            ),
-                                        )
-                                    }
-                                    onKeyDown={(event) => {
-                                        if (
-                                            event.key === "Enter" ||
-                                            event.key === " "
-                                        ) {
-                                            event.preventDefault();
-                                            setSelected((current) =>
-                                                selectVisibleResults(
-                                                    current,
-                                                    visibleResults,
-                                                    "invert",
-                                                ),
-                                            );
-                                        }
-                                    }}
-                                    size="small"
-                                >
-                                    Invert selection
-                                </Button>
-                            </Stack>
-                            <Stack
-                                alignItems="center"
-                                data-testid="results-download-actions"
-                                direction="row"
-                                flexWrap="wrap"
-                                gap={1}
-                            >
-                                {onSaveSearch && (
-                                    <Button
-                                        disabled={savingSearch}
-                                        id="save-search"
-                                        onClick={() => void onSaveSearch()}
-                                        size="small"
-                                    >
-                                        {savingSearch
-                                            ? "Saving search…"
-                                            : "Save search"}
-                                    </Button>
-                                )}
-                                {dialogs !== null && toasts !== null && (
-                                    <DownloadActions
-                                        onDownloaded={(ids) => {
-                                            const affected = data.searchResults
-                                                .filter((result) =>
-                                                    ids.includes(
-                                                        Number(
-                                                            downloadIdFor(
-                                                                result,
-                                                            ).split(".")[0],
-                                                        ),
-                                                    ),
-                                                )
-                                                .map(
-                                                    (result) =>
-                                                        result.searchResultId,
-                                                );
-                                            setDownloadedIds(
-                                                (current) =>
-                                                    new Set([
-                                                        ...current,
-                                                        ...affected,
-                                                    ]),
-                                            );
-                                            setSelected(
-                                                (current) =>
-                                                    new Set(
-                                                        [...current].filter(
-                                                            (id) =>
-                                                                !affected.includes(
-                                                                    id,
-                                                                ),
-                                                        ),
-                                                    ),
-                                            );
-                                        }}
-                                        results={data.searchResults.filter(
-                                            (result) =>
-                                                selected.has(
-                                                    result.searchResultId,
-                                                ),
-                                        )}
-                                        safeConfig={safeConfig}
+                                        onSelectAll={selectAllVisible}
+                                        status={currentSelectionStatus}
                                     />
-                                )}
+                                </Box>
                             </Stack>
                             <Stack
                                 alignItems="flex-end"
@@ -993,7 +976,23 @@ export function SearchResults({
                                                     <TableCell
                                                         data-label="Select"
                                                         padding="checkbox"
-                                                    />
+                                                    >
+                                                        <SelectionMenu
+                                                            idPrefix="header"
+                                                            onDeselectAll={
+                                                                deselectAllVisible
+                                                            }
+                                                            onInvertSelection={
+                                                                invertVisibleSelection
+                                                            }
+                                                            onSelectAll={
+                                                                selectAllVisible
+                                                            }
+                                                            status={
+                                                                currentSelectionStatus
+                                                            }
+                                                        />
+                                                    </TableCell>
                                                     {headerGroup.headers.map(
                                                         (header) => {
                                                             const isTitle =
@@ -1497,6 +1496,79 @@ const ResultRow = memo(function ResultRow({
         </TableRow>
     );
 });
+
+// Tri-state select-all checkbox plus an adjacent caret opening a `role="menu"`
+// with Select all / Deselect all / Invert selection (FM-040), replacing the
+// former flat row of three toolbar buttons. Each menu entry produces exactly
+// the same `selectVisibleResults` outcome the old button produced. Rendered
+// twice with different `idPrefix`es: once in the table header (visible at
+// `sm` and up, where `thead` renders), and once in the toolbar's
+// `results-selection-actions` region (visible only below `sm`, where the
+// responsive table hides `thead` entirely) so bulk selection stays reachable
+// at every viewport. Both copies share the same selection state/callbacks
+// from the parent, so they always agree.
+function SelectionMenu({
+    idPrefix,
+    onDeselectAll,
+    onInvertSelection,
+    onSelectAll,
+    status,
+}: {
+    idPrefix: "header" | "toolbar";
+    onDeselectAll: () => void;
+    onInvertSelection: () => void;
+    onSelectAll: () => void;
+    status: SelectionStatus;
+}) {
+    const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+    const open = Boolean(anchorEl);
+    const close = () => setAnchorEl(null);
+    const choose = (action: () => void) => {
+        action();
+        close();
+    };
+    const suffix = idPrefix === "toolbar" ? " (mobile)" : "";
+    return (
+        <Stack
+            alignItems="center"
+            data-testid={`${idPrefix}-selection-menu`}
+            direction="row"
+        >
+            <Checkbox
+                checked={status === "all"}
+                indeterminate={status === "some"}
+                inputProps={{
+                    "aria-label": `Select all visible results${suffix}`,
+                }}
+                onChange={(event) =>
+                    event.target.checked ? onSelectAll() : onDeselectAll()
+                }
+                size="small"
+            />
+            <Button
+                aria-expanded={open ? "true" : undefined}
+                aria-haspopup="menu"
+                aria-label={`Selection options${suffix}`}
+                onClick={(event) => setAnchorEl(event.currentTarget)}
+                size="small"
+                sx={{minWidth: 0, px: 0.5}}
+            >
+                ▾
+            </Button>
+            <Menu anchorEl={anchorEl} onClose={close} open={open}>
+                <MenuItem onClick={() => choose(onSelectAll)}>
+                    Select all
+                </MenuItem>
+                <MenuItem onClick={() => choose(onDeselectAll)}>
+                    Deselect all
+                </MenuItem>
+                <MenuItem onClick={() => choose(onInvertSelection)}>
+                    Invert selection
+                </MenuItem>
+            </Menu>
+        </Stack>
+    );
+}
 
 function HeaderFilterMenu({
     active,

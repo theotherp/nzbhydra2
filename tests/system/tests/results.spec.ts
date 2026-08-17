@@ -1007,6 +1007,267 @@ test.describe("Search results", () => {
                 ),
         ).toBe(true);
     });
+
+    test("should provide deterministic bulk-actions-bar visual evidence across desktop and mobile", async ({
+        hydra,
+        page,
+    }) => {
+        await hydra.configureSabnzbdMock();
+        // The NZB ZIP primary action's `disabled` gate is not exercised
+        // against a real backend by this test: `downloadSettings().zip`
+        // (core/ui-react/src/domain/downloads/actions.ts, unchanged and out
+        // of this task's scope) reads `safeConfig.searching.
+        // showResultsAsZipButton`, but that flag is a pre-existing, legacy
+        // localStorage-only preference (core/ui-src/js/search-results-
+        // controller.js) that was never part of `SearchingConfig.java` and
+        // so can never be persisted through `PUT /internalapi/config` or
+        // observed truthy in a real `safeConfig` -- confirmed by grepping
+        // the Java config sources. "Send to downloader" is the one of the
+        // bar's two primary actions genuinely reachable end-to-end here
+        // (its downloader is real, via `configureSabnzbdMock()`); the ZIP
+        // action's identical disabled-until-selected gating is instead
+        // exhaustively covered by this task's own component tests in
+        // SearchResults.test.tsx, which construct `safeConfig` directly.
+        const now = Math.floor(Date.now() / 1_000);
+        await page.route("**/internalapi/search", (route) =>
+            route.fulfill({
+                json: {
+                    searchResults: [
+                        {
+                            searchResultId: "one",
+                            title: "Bulk Actions Evidence Alpha",
+                            indexer: "Alpha",
+                            category: "TV",
+                            size: 4 * 1024 * 1024,
+                            seeders: 12,
+                            epoch: now - 86_400,
+                            age: "1 day",
+                            downloadType: "NZB",
+                        },
+                        {
+                            searchResultId: "two",
+                            title: "Bulk Actions Evidence Bravo",
+                            indexer: "Beta",
+                            category: "Movies",
+                            size: 6 * 1024 * 1024,
+                            seeders: 5,
+                            epoch: now - 2 * 86_400,
+                            age: "2 days",
+                            downloadType: "NZB",
+                        },
+                    ],
+                    indexerSearchMetaDatas: [
+                        { indexerName: "Alpha", wasSuccessful: true },
+                        { indexerName: "Beta", wasSuccessful: true },
+                    ],
+                    indexerLimitWarnings: [],
+                    rejectedReasonsMap: {},
+                    notPickedIndexersWithReason: {},
+                    numberOfAvailableResults: 2,
+                    numberOfRejectedResults: 0,
+                },
+            }),
+        );
+
+        // Desktop, no selection: both primary actions render disabled
+        // (native semantics, not merely a toast or opacity), the header
+        // tri-state checkbox is unchecked and not indeterminate, and the
+        // bar has no horizontal overflow.
+        await prepareVisualEvidence(page, "desktop", async () => {
+            await page.goto("ui/react?redirect=/");
+            await page
+                .getByTestId("search-query")
+                .fill("bulk actions evidence");
+            await page.getByTestId("search-submit").click();
+            await expect(page.getByTestId("search-status-modal")).toBeHidden();
+            await expect(
+                page.getByTestId("search-results-table"),
+            ).toBeVisible();
+        });
+
+        const bar = page.getByTestId("results-bulk-actions");
+        const send = page.getByTestId("send-to-downloader");
+        const headerMenu = page.getByTestId("header-selection-menu");
+        const headerCheckbox = headerMenu.getByRole("checkbox", {
+            name: "Select all visible results",
+        });
+
+        await expect(send).toBeDisabled();
+        await expect(headerCheckbox).not.toBeChecked();
+        await expect(headerCheckbox).toHaveAttribute(
+            "data-indeterminate",
+            "false",
+        );
+        await expectVisualGeometry(page, {
+            region: "bulk-actions-no-selection-desktop",
+            locator: bar,
+        });
+        await captureVisualRegion(
+            bar,
+            "F-SEARCH-GROUP-SELECTION",
+            "bulk-actions-desktop",
+        );
+
+        // The bar's bottom edge stays at or above the results table's top
+        // edge (preserving F-SEARCH-RESULTS's existing toolbar-above-table
+        // check), and it does not overlap the refine-sidebar at desktop.
+        const table = page.getByTestId("search-results-table");
+        const sidebar = page.getByTestId("refine-sidebar");
+        const [barBox, tableBox, sidebarBox] = await Promise.all([
+            bar.boundingBox(),
+            table.boundingBox(),
+            sidebar.boundingBox(),
+        ]);
+        expect(barBox).not.toBeNull();
+        expect(tableBox).not.toBeNull();
+        expect(sidebarBox).not.toBeNull();
+        if (!barBox || !tableBox || !sidebarBox) {
+            throw new Error("Bar/table/sidebar require deterministic geometry");
+        }
+        expect(barBox.y + barBox.height).toBeLessThanOrEqual(tableBox.y + 1);
+        const overlapsSidebar =
+            barBox.x < sidebarBox.x + sidebarBox.width &&
+            barBox.x + barBox.width > sidebarBox.x &&
+            barBox.y < sidebarBox.y + sidebarBox.height &&
+            barBox.y + barBox.height > sidebarBox.y;
+        expect(overlapsSidebar).toBe(false);
+
+        // Selecting one row of several: header checkbox indeterminate, the
+        // reachable primary action enabled, selected count shown with no
+        // scrollWidth overflow of its own box.
+        const rows = page.getByTestId("search-result-row");
+        await expect(rows).toHaveCount(2);
+        await rows.nth(0).getByRole("checkbox").check();
+        await expect(headerCheckbox).not.toBeChecked();
+        await expect(headerCheckbox).toHaveAttribute(
+            "data-indeterminate",
+            "true",
+        );
+        await expect(send).toBeEnabled();
+        const selectedCount = bar.getByTestId("results-selected-count");
+        await expect(selectedCount).toHaveText("1 selected");
+        expect(
+            await selectedCount.evaluate(
+                (element) => element.scrollWidth <= element.clientWidth,
+            ),
+        ).toBe(true);
+        await expectVisualGeometry(page, {
+            region: "bulk-actions-partial-selection-desktop",
+            locator: bar,
+        });
+
+        // The open selection menu (opened via the header's caret) renders
+        // fully within the viewport with no page horizontal overflow.
+        const caret = headerMenu.getByRole("button", {
+            name: "Selection options",
+        });
+        await caret.click();
+        const menu = page.getByRole("menu");
+        await expect(menu).toBeVisible();
+        const menuBox = await menu.boundingBox();
+        const desktopViewport = page.viewportSize();
+        expect(menuBox).not.toBeNull();
+        expect(desktopViewport).not.toBeNull();
+        if (!menuBox || !desktopViewport) {
+            throw new Error("Menu requires deterministic geometry");
+        }
+        expect(menuBox.x).toBeGreaterThanOrEqual(0);
+        expect(menuBox.x + menuBox.width).toBeLessThanOrEqual(
+            desktopViewport.width,
+        );
+        expect(menuBox.y).toBeGreaterThanOrEqual(0);
+        expect(menuBox.y + menuBox.height).toBeLessThanOrEqual(
+            desktopViewport.height,
+        );
+        expect(
+            await page
+                .locator("html")
+                .evaluate(
+                    (element) => element.scrollWidth <= element.clientWidth,
+                ),
+        ).toBe(true);
+
+        // "Select all" produces exactly selectVisibleResults's "all"
+        // outcome, asserted by the resulting selection state.
+        await page.getByRole("menuitem", { name: "Select all", exact: true }).click();
+        await expect(headerCheckbox).toBeChecked();
+        await expect(headerCheckbox).toHaveAttribute(
+            "data-indeterminate",
+            "false",
+        );
+        await expect(selectedCount).toHaveText("2 selected");
+        await expectVisualGeometry(page, {
+            region: "bulk-actions-all-selected-desktop",
+            locator: bar,
+        });
+
+        // Mobile: a fresh load starts with no stored preference.
+        await page.evaluate(() => window.localStorage.clear());
+        await prepareVisualEvidence(page, "mobile", async () => {
+            await page.goto("ui/react?redirect=/");
+            await page
+                .getByTestId("search-query")
+                .fill("bulk actions evidence");
+            await page.getByTestId("search-submit").click();
+            await expect(page.getByTestId("search-status-modal")).toBeHidden();
+            await expect(
+                page.getByTestId("search-results-table"),
+            ).toBeVisible();
+        });
+
+        const mobileBar = page.getByTestId("results-bulk-actions");
+        await expect(page.getByTestId("send-to-downloader")).toBeDisabled();
+        await expectVisualGeometry(page, {
+            region: "bulk-actions-no-selection-mobile",
+            locator: mobileBar,
+        });
+        await captureVisualRegion(
+            mobileBar,
+            "F-SEARCH-GROUP-SELECTION",
+            "bulk-actions-mobile",
+        );
+
+        // Below `sm` the responsive table styling hides `thead` entirely,
+        // so the header's selection menu is unreachable there; the
+        // toolbar's results-selection-actions region carries a second,
+        // functionally-identical copy so bulk selection stays reachable at
+        // mobile -- asserted here, not merely assumed.
+        await expect(
+            page.getByTestId("header-selection-menu"),
+        ).not.toBeVisible();
+        const toolbarMenu = page.getByTestId("toolbar-selection-menu");
+        await expect(toolbarMenu).toBeVisible();
+        await toolbarMenu
+            .getByRole("button", { name: "Selection options (mobile)" })
+            .click();
+        const mobileMenu = page.getByRole("menu");
+        await expect(mobileMenu).toBeVisible();
+        const mobileMenuBox = await mobileMenu.boundingBox();
+        const mobileViewport = page.viewportSize();
+        expect(mobileMenuBox).not.toBeNull();
+        expect(mobileViewport).not.toBeNull();
+        if (!mobileMenuBox || !mobileViewport) {
+            throw new Error("Menu requires deterministic geometry");
+        }
+        expect(mobileMenuBox.x).toBeGreaterThanOrEqual(0);
+        expect(mobileMenuBox.x + mobileMenuBox.width).toBeLessThanOrEqual(
+            mobileViewport.width,
+        );
+        expect(
+            await page
+                .locator("html")
+                .evaluate(
+                    (element) => element.scrollWidth <= element.clientWidth,
+                ),
+        ).toBe(true);
+        await page.getByRole("menuitem", { name: "Select all", exact: true }).click();
+        await expect(page.getByTestId("send-to-downloader")).toBeEnabled();
+        await expect(
+            toolbarMenu.getByRole("checkbox", {
+                name: "Select all visible results (mobile)",
+            }),
+        ).toBeChecked();
+    });
 });
 
 async function searchForUiTestResults(
@@ -1108,10 +1369,21 @@ async function assertGroupExpansionAndBulkSelection(
     await expect(rows).toHaveCount(2);
     await page.getByRole("button", { name: "Expand duplicates" }).click();
     await expect(rows).toHaveCount(3);
-    await page
-        .getByTestId("search-results")
-        .getByRole("button", {name: "Select all", exact: true})
+    // FM-040 replaced the flat "Select all"/"Deselect all"/"Invert
+    // selection" toolbar buttons this helper used to click directly with a
+    // tri-state header checkbox plus an adjacent caret opening a
+    // role="menu" carrying the same three actions (F-SEARCH-GROUP-
+    // SELECTION); this helper is updated in step to keep exercising the
+    // same real capability through its new entry point. Playwright's
+    // default (desktop-sized) viewport keeps the header's copy
+    // (header-selection-menu) visible; the toolbar's mobile-reachable copy
+    // is exercised separately by this task's own dedicated visual-evidence
+    // test at a mobile viewport.
+    const selectionMenu = page.getByTestId("header-selection-menu");
+    await selectionMenu
+        .getByRole("button", { name: "Selection options" })
         .click();
+    await page.getByRole("menuitem", { name: "Select all", exact: true }).click();
     await expect(rows.locator("input[type=checkbox]")).toHaveCount(3);
     await expect
         .poll(() =>
@@ -1124,10 +1396,10 @@ async function assertGroupExpansionAndBulkSelection(
                 ),
         )
         .toBe(true);
-    await page
-        .getByTestId("search-results")
-        .getByRole("button", {name: "Invert selection"})
+    await selectionMenu
+        .getByRole("button", { name: "Selection options" })
         .click();
+    await page.getByRole("menuitem", { name: "Invert selection" }).click();
     await expect
         .poll(() =>
             rows

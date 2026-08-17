@@ -566,8 +566,12 @@ describe("SearchResults", () => {
         });
         expandDuplicates.focus();
         fireEvent.keyDown(expandDuplicates, {key: "Enter"});
-        expect(screen.getAllByTestId("search-result-row")).toHaveLength(3);
-        const checkboxes = screen.getAllByRole("checkbox", {name: /Select/});
+        const rows = screen.getAllByTestId("search-result-row");
+        expect(rows).toHaveLength(3);
+        // Scoped to each row's own checkbox: `getAllByRole("checkbox", {name:
+        // /Select/})` would also match the header/toolbar tri-state
+        // select-all checkboxes ("Select all visible results...").
+        const checkboxes = rows.map((row) => within(row).getByRole("checkbox"));
         checkboxes[0].focus();
         fireEvent.keyDown(checkboxes[0], {code: "Space", key: " "});
         checkboxes[2].focus();
@@ -578,10 +582,178 @@ describe("SearchResults", () => {
         });
         expect(checkboxes).toHaveLength(3);
         checkboxes.forEach((checkbox) => expect(checkbox).toBeChecked());
-        const deselectAll = screen.getByRole("button", {name: "Deselect all"});
-        deselectAll.focus();
-        fireEvent.keyDown(deselectAll, {key: "Enter"});
+        // Deselect via the header's tri-state checkbox/caret menu (FM-040),
+        // which replaced the old flat "Deselect all" toolbar button.
+        const headerMenu = screen.getByTestId("header-selection-menu");
+        expect(
+            within(headerMenu).getByRole("checkbox", {
+                name: "Select all visible results",
+            }),
+        ).toBeChecked();
+        fireEvent.click(
+            within(headerMenu).getByRole("button", {
+                name: "Selection options",
+            }),
+        );
+        fireEvent.click(screen.getByRole("menuitem", {name: "Deselect all"}));
         checkboxes.forEach((checkbox) => expect(checkbox).not.toBeChecked());
+        expect(
+            within(headerMenu).getByRole("checkbox", {
+                name: "Select all visible results",
+            }),
+        ).not.toBeChecked();
+    });
+
+    it("should render an indeterminate tri-state header checkbox on partial selection and a fully accessible caret menu", () => {
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 2,
+                    searchResults: [
+                        {
+                            searchResultId: "one",
+                            title: "First",
+                            indexer: "One",
+                            category: "All",
+                        },
+                        {
+                            searchResultId: "two",
+                            title: "Second",
+                            indexer: "Two",
+                            category: "All",
+                        },
+                    ],
+                }}
+            />,
+        );
+        const headerMenu = screen.getByTestId("header-selection-menu");
+        const headerCheckbox = within(headerMenu).getByRole("checkbox", {
+            name: "Select all visible results",
+        });
+        expect(headerCheckbox).not.toBeChecked();
+        expect(headerCheckbox).toHaveAttribute("data-indeterminate", "false");
+
+        const rows = screen.getAllByTestId("search-result-row");
+        fireEvent.click(within(rows[0]).getByRole("checkbox"));
+        // Partial selection: indeterminate, not checked. (MUI's Checkbox
+        // deliberately does not set the native DOM `.indeterminate`
+        // property -- it renders `data-indeterminate` on the input instead;
+        // see @mui/material/Checkbox's own doc comment.)
+        expect(headerCheckbox).toHaveAttribute("data-indeterminate", "true");
+        expect(headerCheckbox).not.toBeChecked();
+
+        fireEvent.click(within(rows[1]).getByRole("checkbox"));
+        // Full selection: checked, not indeterminate.
+        expect(headerCheckbox).toHaveAttribute("data-indeterminate", "false");
+        expect(headerCheckbox).toBeChecked();
+
+        const caret = within(headerMenu).getByRole("button", {
+            name: "Selection options",
+        });
+        expect(caret).toHaveAttribute("aria-haspopup", "menu");
+        expect(caret).not.toHaveAttribute("aria-expanded");
+        fireEvent.click(caret);
+        expect(caret).toHaveAttribute("aria-expanded", "true");
+        const menu = screen.getByRole("menu");
+        const items = within(menu).getAllByRole("menuitem");
+        expect(items.map((item) => item.textContent)).toEqual([
+            "Select all",
+            "Deselect all",
+            "Invert selection",
+        ]);
+        // Each item has a distinct accessible name.
+        expect(new Set(items.map((item) => item.textContent)).size).toBe(3);
+
+        // "Invert selection" produces exactly selectVisibleResults's
+        // "invert" outcome, asserted by the resulting selection state, not
+        // by the entry merely existing.
+        fireEvent.click(
+            within(menu).getByRole("menuitem", {name: "Invert selection"}),
+        );
+        expect(within(rows[0]).getByRole("checkbox")).not.toBeChecked();
+        expect(within(rows[1]).getByRole("checkbox")).not.toBeChecked();
+    });
+
+    it("should also select visible rows from the toolbar's mobile-reachable selection menu", () => {
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 1,
+                    searchResults: [
+                        {
+                            searchResultId: "one",
+                            title: "First",
+                            indexer: "One",
+                            category: "All",
+                        },
+                    ],
+                }}
+            />,
+        );
+        // Below `sm` the responsive table styling hides `thead` entirely
+        // (see the table's `sx` in SearchResults.tsx), so the header's
+        // selection menu is unreachable there; `results-selection-actions`
+        // carries a second, functionally-identical copy so bulk selection
+        // stays reachable from the toolbar at that viewport. jsdom does not
+        // evaluate the CSS media query that keeps only one copy visible at a
+        // time in a real browser (asserted for real in
+        // tests/system/tests/results.spec.ts); this test only exercises that
+        // the toolbar copy is functionally wired to the same selection
+        // state, regardless of jsdom's lack of layout.
+        const toolbarMenu = within(
+            screen.getByTestId("results-selection-actions"),
+        ).getByTestId("toolbar-selection-menu");
+        fireEvent.click(
+            within(toolbarMenu).getByRole("button", {
+                name: "Selection options (mobile)",
+            }),
+        );
+        fireEvent.click(screen.getByRole("menuitem", {name: "Select all"}));
+        const row = screen.getByTestId("search-result-row");
+        expect(within(row).getByRole("checkbox")).toBeChecked();
+        expect(
+            within(toolbarMenu).getByRole("checkbox", {
+                name: "Select all visible results (mobile)",
+            }),
+        ).toBeChecked();
+    });
+
+    it("should gate the bulk-actions bar's primary actions on selection and report loaded/filtered/selected counts", () => {
+        window.__NZBHYDRA_BOOTSTRAP__ = {
+            baseUrl: "/",
+            safeConfig: {
+                downloading: {downloaders: [{name: "SAB", enabled: true}]},
+                searching: {showResultsAsZipButton: true},
+            },
+        };
+        renderResults(<SearchResults data={downloadActionResponse("NZB")} />);
+        const bar = screen.getByTestId("results-bulk-actions");
+        expect(
+            within(bar).getByTestId("results-bulk-actions-summary"),
+        ).toHaveTextContent("1 of 1 loaded results");
+        expect(
+            within(bar).queryByTestId("results-selected-count"),
+        ).not.toBeInTheDocument();
+        const send = within(bar).getByTestId("send-to-downloader");
+        const zip = within(bar).getByRole("button", {
+            name: "Download selected NZBs as ZIP",
+        });
+        // Disabled (not toast-blocked) with no selection.
+        expect(send).toBeDisabled();
+        expect(zip).toBeDisabled();
+
+        fireEvent.click(
+            within(screen.getByTestId("search-result-row")).getByRole(
+                "checkbox",
+            ),
+        );
+        expect(
+            within(bar).getByTestId("results-selected-count"),
+        ).toHaveTextContent("1 selected");
+        expect(send).toBeEnabled();
+        expect(zip).toBeEnabled();
     });
 
     it("should reconcile merged rows without losing active sort, filter, grouping, or valid selection", () => {
@@ -805,6 +977,9 @@ describe("SearchResults", () => {
                 Node.DOCUMENT_POSITION_FOLLOWING,
         ).toBeTruthy();
         expect(
+            within(toolbar).getByTestId("results-bulk-actions"),
+        ).toBeVisible();
+        expect(
             within(toolbar).getByTestId("results-selection-actions"),
         ).toBeVisible();
         expect(
@@ -814,6 +989,22 @@ describe("SearchResults", () => {
         expect(
             within(table).getByText("Actions", {selector: "th"}),
         ).toBeVisible();
+        // The three regions stay distinct: FM-040's bulk-actions bar (counts
+        // + the two selection-gated primary actions) is a different element
+        // from both results-selection-actions (grouping toggles + the
+        // mobile-reachable selection menu) and results-download-actions
+        // (downloader select, category select, black hole, copy links, save
+        // search).
+        const bulkActions = within(toolbar).getByTestId("results-bulk-actions");
+        const selectionActions = within(toolbar).getByTestId(
+            "results-selection-actions",
+        );
+        const downloadActions = within(toolbar).getByTestId(
+            "results-download-actions",
+        );
+        expect(bulkActions).not.toBe(selectionActions);
+        expect(bulkActions).not.toBe(downloadActions);
+        expect(selectionActions).not.toBe(downloadActions);
     });
 
     it("should pair every result cell with a metadata label for responsive presentation", () => {
