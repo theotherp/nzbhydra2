@@ -13,10 +13,7 @@ import {
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 import {useNavigate, useSearch} from "@tanstack/react-router";
 import {useContext, useEffect, useRef, useState} from "react";
-import type {
-    SearchLiveTransport,
-    SearchProgress,
-} from "../../api/live/searchState";
+import type {SearchLiveTransport, SearchProgress,} from "../../api/live/searchState";
 import {createSearchLiveTransport} from "../../api/live/searchState";
 import type {LiveSubscription} from "../../api/live/transport";
 import {SockJsStompLiveTransport} from "../../api/live/transport";
@@ -25,12 +22,7 @@ import type {RecentSearch} from "../../api/recentSearches";
 import {createSavedSearch} from "../../api/savedSearches";
 
 import type {SearchRequest, SearchResponse} from "../../api/search";
-import {
-    continuationRequest,
-    executeSearch,
-    mergeSearchResponses,
-    shortcutSearch,
-} from "../../api/search";
+import {continuationRequest, executeSearch, mergeSearchResponses, shortcutSearch,} from "../../api/search";
 import {ApiTransport} from "../../api/transport";
 import type {BootstrapData} from "../../bootstrap";
 import {ToastContext} from "../../components/toasts/toasts";
@@ -40,11 +32,7 @@ import {recentSearchCriteria} from "./history/recentSearchCriteria";
 import {RecentSearches} from "./history/RecentSearches";
 import {SearchResults} from "./results/SearchResults";
 import type {SearchFormValues} from "./workspace/SearchWorkspace";
-import {
-    canonicalSearch,
-    SearchWorkspace,
-    valuesFromSearch,
-} from "./workspace/SearchWorkspace";
+import {canonicalSearch, SearchWorkspace, valuesFromSearch,} from "./workspace/SearchWorkspace";
 
 export function SearchPage({
     bootstrap,
@@ -102,13 +90,29 @@ export function SearchPage({
         submission.subscription?.close();
         submission.subscription = undefined;
     };
-    useEffect(
-        () => () => {
-            embyGeneration.current++;
-            releaseSubmission();
-        },
-        [],
+    // Deferred by a macrotask, and cancelled on (re)mount, so React 19
+    // StrictMode's dev-only mount -> unmount -> remount double-invoke of
+    // this effect doesn't cancel a same-pass in-flight auto-submission
+    // (triggered by AutoSubmitFromRoute's own mount effect, e.g. loading a
+    // URL that already encodes an executed search) before its `navigate()`
+    // call even resolves. A genuine unmount has no following remount to
+    // clear this, so the deferred release still runs.
+    const pendingUnmountRelease = useRef<ReturnType<typeof setTimeout> | null>(
+        null,
     );
+    useEffect(() => {
+        if (pendingUnmountRelease.current !== null) {
+            clearTimeout(pendingUnmountRelease.current);
+            pendingUnmountRelease.current = null;
+        }
+        return () => {
+            pendingUnmountRelease.current = setTimeout(() => {
+                pendingUnmountRelease.current = null;
+                embyGeneration.current++;
+                releaseSubmission();
+            });
+        };
+    }, []);
     const submit = async (values: SearchFormValues) => {
         setRefillCriteria(undefined);
         const selectedCategory = catalog.categories.find(
