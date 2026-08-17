@@ -323,41 +323,39 @@ describe("SearchResults", () => {
         expect(titleSort).toHaveAttribute("aria-label", "Title (descending)");
         fireEvent.click(titleSort);
 
-        fireEvent.change(screen.getByTestId("freetext-filter-title"), {
+        expandRefineSidebar();
+        fireEvent.change(screen.getByTestId("refine-filter-title"), {
             target: {value: "!web"},
         });
         expect(screen.getByTestId("search-result-row")).toHaveTextContent(
             "Alpha BluRay",
         );
-        fireEvent.change(screen.getByTestId("freetext-filter-title"), {
+        fireEvent.change(screen.getByTestId("refine-filter-title"), {
             target: {value: "/[/"},
         });
         expect(
             screen.queryByTestId("search-result-row"),
         ).not.toBeInTheDocument();
 
-        fireEvent.change(screen.getByTestId("freetext-filter-title"), {
+        fireEvent.change(screen.getByTestId("refine-filter-title"), {
             target: {value: ""},
         });
-        fireEvent.change(screen.getByTestId("number-filter-min-size"), {
+        fireEvent.change(screen.getByTestId("number-filter-min-refine-size"), {
             target: {value: "4"},
         });
         expect(screen.getByTestId("search-result-row")).toHaveTextContent(
             "Zulu WEB",
         );
-        fireEvent.click(screen.getByTestId("number-filter-clear-size"));
+        fireEvent.click(screen.getByTestId("number-filter-clear-refine-size"));
         expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
 
-        const indexerFilter = within(
-            screen.getByTestId("filter-toggle-indexer"),
-        );
-        fireEvent.click(indexerFilter.getByLabelText("One"));
+        fireEvent.click(refineOption("refine-indexer-option", "One"));
         expect(screen.getByTestId("search-result-row")).toHaveTextContent(
             "Alpha BluRay",
         );
     });
 
-    it("should filter rows via the inline column-header filters", () => {
+    it("should render no inline column-header filter control beside a sortable header", () => {
         renderResults(
             <SearchResults
                 data={{
@@ -389,43 +387,50 @@ describe("SearchResults", () => {
             />,
         );
 
-        fireEvent.change(screen.getByTestId("header-filter-title"), {
-            target: {value: "!web"},
-        });
-        expect(screen.getByTestId("search-result-row")).toHaveTextContent(
-            "Alpha BluRay",
-        );
-        fireEvent.change(screen.getByTestId("header-filter-title"), {
-            target: {value: ""},
-        });
-        expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
+        // FM-034's inline per-column-header filter popovers are removed
+        // (ADR-0009: the refine-sidebar is the sole filter surface). No
+        // `header-filter-*` or header-scoped `number-filter-*` control
+        // survives anywhere in the tree.
+        expect(
+            document.querySelectorAll(
+                '[data-testid^="header-filter-"], [data-testid*="-header-"]',
+            ),
+        ).toHaveLength(0);
+        // Nor do the mobile-only toolbar filter rows the sidebar replaces.
+        for (const testId of [
+            "results-filters",
+            "results-quick-filters",
+            "freetext-filter-title",
+            "filter-toggle-indexer",
+            "filter-toggle-category",
+            "number-filter-min-size",
+            "number-filter-min-grabs",
+            "number-filter-min-age",
+        ]) {
+            expect(screen.queryByTestId(testId)).not.toBeInTheDocument();
+        }
 
-        const sizeToggle = screen.getByTestId("header-filter-size-toggle");
-        expect(sizeToggle).toHaveAttribute("aria-pressed", "false");
-        fireEvent.click(sizeToggle);
-        fireEvent.change(screen.getByTestId("number-filter-min-header-size"), {
-            target: {value: "4"},
-        });
-        expect(sizeToggle).toHaveAttribute("aria-pressed", "true");
-        expect(screen.getByTestId("search-result-row")).toHaveTextContent(
-            "Zulu WEB",
-        );
-        fireEvent.click(screen.getByTestId("number-filter-clear-header-size"));
-        expect(sizeToggle).toHaveAttribute("aria-pressed", "false");
-        expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
-
-        const indexerToggle = screen.getByTestId(
-            "header-filter-indexer-toggle",
-        );
-        fireEvent.click(indexerToggle);
-        const indexerFilter = within(
-            screen.getByTestId("header-filter-indexer-options"),
-        );
-        fireEvent.click(indexerFilter.getByLabelText("One"));
-        expect(indexerToggle).toHaveAttribute("aria-pressed", "true");
-        expect(screen.getByTestId("search-result-row")).toHaveTextContent(
-            "Alpha BluRay",
-        );
+        // Each sortable header cell keeps exactly its sort button, its
+        // aria-sort state, and its accessible name.
+        for (const column of [
+            "title",
+            "indexer",
+            "category",
+            "size",
+            "grabs",
+            "epoch",
+        ]) {
+            const sort = screen.getByTestId(`sort-${column}`);
+            const headerCell = sort.closest("th");
+            expect(headerCell).not.toBeNull();
+            // The default sort is epoch-descending, so only the accessible
+            // sort state's presence is asserted here, not one fixed value.
+            expect(headerCell).toHaveAttribute("aria-sort");
+            expect(sort).toHaveAttribute("aria-label");
+            expect(
+                within(headerCell as HTMLElement).getAllByRole("button"),
+            ).toHaveLength(1);
+        }
     });
 
     it("should visibly sort every sortable column", () => {
@@ -519,13 +524,20 @@ describe("SearchResults", () => {
             />,
         );
 
-        expect(screen.getByRole("button", {name: "WEB"})).toHaveAttribute(
-            "aria-pressed",
-            "true",
-        );
+        // The preselection already narrows the rows before any surface is
+        // opened; the quick-filter controls themselves now live only in the
+        // sidebar's Quality section (the mobile-only `results-quick-filters`
+        // row is gone).
         expect(screen.getByTestId("search-result-row")).toHaveTextContent(
             "WEB-DL release",
         );
+        expandRefineSidebar();
+        expect(
+            within(screen.getByTestId("refine-quality-filters")).getByRole(
+                "button",
+                {name: "WEB"},
+            ),
+        ).toHaveAttribute("aria-pressed", "true");
     });
 
     it("should expand groups and support keyboard bulk and shift selection", () => {
@@ -787,7 +799,8 @@ describe("SearchResults", () => {
         const {rerender} = renderResults(<SearchResults data={initial} />);
 
         fireEvent.click(screen.getByTestId("sort-title"));
-        fireEvent.change(screen.getByTestId("freetext-filter-title"), {
+        expandRefineSidebar();
+        fireEvent.change(screen.getByTestId("refine-filter-title"), {
             target: {value: "Alpha"},
         });
         fireEvent.click(
@@ -824,9 +837,7 @@ describe("SearchResults", () => {
             "data-sort-direction",
             "asc",
         );
-        expect(screen.getByTestId("freetext-filter-title")).toHaveValue(
-            "Alpha",
-        );
+        expect(screen.getByTestId("refine-filter-title")).toHaveValue("Alpha");
         expect(
             screen.getByRole("button", {name: "Collapse duplicates"}),
         ).toBeVisible();
@@ -985,7 +996,6 @@ describe("SearchResults", () => {
         expect(
             within(toolbar).getByTestId("results-download-actions"),
         ).toBeVisible();
-        expect(within(toolbar).getByTestId("results-filters")).toBeVisible();
         expect(
             within(table).getByText("Actions", {selector: "th"}),
         ).toBeVisible();
@@ -1436,7 +1446,7 @@ describe("SearchResults", () => {
         ).not.toBeInTheDocument();
     });
 
-    it("should keep the refine-sidebar filter controls synchronized with the inline column-header and mobile filters in both directions", () => {
+    it("should drive every filter dimension from the refine-sidebar as the single filter surface", () => {
         renderResults(
             <SearchResults
                 data={{
@@ -1454,56 +1464,83 @@ describe("SearchResults", () => {
                             title: "Alpha BluRay",
                             indexer: "Two",
                             category: "TV",
+                            size: 2 * 1024 * 1024,
+                            seeders: 8,
+                            epoch: Math.floor(Date.now() / 1000) - 86_400,
+                            downloadType: "TORRENT",
                         },
                     ],
                 }}
             />,
         );
-        // The sidebar defaults collapsed in this non-browser test
-        // environment (matching the below-`sm` default; see
-        // SearchResults.tsx's prefersExpandedSidebarByDefault()); expand it.
-        fireEvent.click(screen.getByTestId("refine-sidebar-toggle"));
+        expandRefineSidebar();
 
-        // Title filter: sidebar -> header popover input and mobile toolbar
-        // input.
+        // Title.
         fireEvent.change(screen.getByTestId("refine-filter-title"), {
             target: {value: "alpha"},
         });
-        expect(screen.getByTestId("header-filter-title")).toHaveValue("alpha");
-        expect(screen.getByTestId("freetext-filter-title")).toHaveValue(
-            "alpha",
-        );
         expect(screen.getByTestId("search-result-row")).toHaveTextContent(
             "Alpha BluRay",
         );
-
-        // Title filter: header -> sidebar and mobile.
-        fireEvent.change(screen.getByTestId("header-filter-title"), {
+        fireEvent.change(screen.getByTestId("refine-filter-title"), {
             target: {value: ""},
         });
-        expect(screen.getByTestId("refine-filter-title")).toHaveValue("");
-        expect(screen.getByTestId("freetext-filter-title")).toHaveValue("");
         expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
 
-        // List filter (indexer): sidebar -> header popover.
-        const sidebarIndexers = within(
-            screen.getByTestId("refine-indexer-list"),
-        );
-        fireEvent.click(sidebarIndexers.getByLabelText(/One/));
+        // Indexer.
+        fireEvent.click(refineOption("refine-indexer-option", "One"));
         expect(screen.getByTestId("search-result-row")).toHaveTextContent(
             "Alpha BluRay",
         );
-        fireEvent.click(screen.getByTestId("header-filter-indexer-toggle"));
-        const headerIndexers = within(
-            screen.getByTestId("header-filter-indexer-options"),
-        );
-        expect(headerIndexers.getByLabelText("One")).not.toBeChecked();
-        expect(headerIndexers.getByLabelText("Two")).toBeChecked();
-
-        // List filter (indexer): header popover -> sidebar.
-        fireEvent.click(headerIndexers.getByLabelText("One"));
-        expect(sidebarIndexers.getByLabelText(/One/)).toBeChecked();
+        fireEvent.click(refineOption("refine-indexer-option", "One"));
         expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
+
+        // Category.
+        fireEvent.click(refineOption("refine-category-option", "Movies"));
+        expect(screen.getByTestId("search-result-row")).toHaveTextContent(
+            "Alpha BluRay",
+        );
+        fireEvent.click(refineOption("refine-category-option", "Movies"));
+        expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
+
+        // Size, grabs/seeders, and age ranges.
+        for (const [fieldTestId, value, clearTestId] of [
+            [
+                "number-filter-max-refine-size",
+                "3",
+                "number-filter-clear-refine-size",
+            ],
+            [
+                "number-filter-min-refine-grabs",
+                "5",
+                "number-filter-clear-refine-grabs",
+            ],
+            [
+                "number-filter-max-refine-age",
+                "2",
+                "number-filter-clear-refine-age",
+            ],
+        ]) {
+            fireEvent.change(screen.getByTestId(fieldTestId), {
+                target: {value},
+            });
+            expect(screen.getByTestId("search-result-row")).toHaveTextContent(
+                "Alpha BluRay",
+            );
+            fireEvent.click(screen.getByTestId(clearTestId));
+            expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
+        }
+
+        // Download type.
+        fireEvent.click(
+            within(screen.getByTestId("refine-type-chips")).getByRole(
+                "button",
+                {name: "TORRENT"},
+            ),
+        );
+        expect(screen.getByTestId("search-result-row")).toHaveTextContent(
+            "Zulu WEB",
+        );
     });
 
     it("should reset every result-side filter via refine-clear-all while leaving sorting, grouping, and selection untouched", () => {
@@ -1549,11 +1586,7 @@ describe("SearchResults", () => {
         fireEvent.change(screen.getByTestId("refine-filter-title"), {
             target: {value: "alpha"},
         });
-        fireEvent.click(
-            within(screen.getByTestId("refine-indexer-list")).getByLabelText(
-                /One/,
-            ),
-        );
+        fireEvent.click(refineOption("refine-indexer-option", "One"));
         fireEvent.click(screen.getByRole("button", {name: "NZB"}));
         expect(screen.getAllByTestId("search-result-row")).toHaveLength(1);
         expect(screen.getByTestId("search-result-row")).toHaveTextContent(
@@ -1563,7 +1596,10 @@ describe("SearchResults", () => {
         fireEvent.click(screen.getByTestId("refine-clear-all"));
 
         expect(screen.getByTestId("refine-filter-title")).toHaveValue("");
-        expect(screen.getByTestId("header-filter-title")).toHaveValue("");
+        expect(refineOption("refine-indexer-option", "One")).toHaveAttribute(
+            "aria-pressed",
+            "true",
+        );
         expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
         // Sorting, grouping, and selection are untouched by clear-all.
         expect(screen.getByTestId("sort-title")).toHaveAttribute(
@@ -1611,7 +1647,7 @@ describe("SearchResults", () => {
         fireEvent.click(toggle);
         expect(toggle).toHaveAttribute("aria-expanded", "true");
         fireEvent.click(screen.getByTestId("sort-title"));
-        fireEvent.change(screen.getByTestId("header-filter-title"), {
+        fireEvent.change(screen.getByTestId("refine-filter-title"), {
             target: {value: "alpha"},
         });
         expect(screen.getByTestId("search-result-row")).toHaveTextContent(
@@ -1639,12 +1675,34 @@ describe("SearchResults", () => {
             "data-sort-direction",
             "asc",
         );
-        expect(screen.getByTestId("header-filter-title")).toHaveValue("alpha");
+        expect(screen.getByTestId("refine-filter-title")).toHaveValue("alpha");
         expect(screen.getByTestId("search-result-row")).toHaveTextContent(
             "Alpha Result",
         );
     });
 });
+
+// The sidebar defaults collapsed in this non-browser test environment
+// (matching the below-`sm` default; see SearchResults.tsx's
+// prefersExpandedSidebarByDefault()). Since FM-045 it is the only filter
+// surface, so every filter assertion has to expand it first.
+function expandRefineSidebar(): void {
+    const toggle = screen.getByTestId("refine-sidebar-toggle");
+    if (toggle.getAttribute("aria-expanded") !== "true") {
+        fireEvent.click(toggle);
+    }
+}
+
+// One Category/Indexer toggle row, addressed by the value it filters on.
+function refineOption(testId: string, value: string): HTMLElement {
+    const row = screen
+        .getAllByTestId(testId)
+        .find((element) => element.getAttribute("data-filter-value") === value);
+    if (!row) {
+        throw new Error(`No ${testId} row for ${value}`);
+    }
+    return row;
+}
 
 function downloadActionResponse(
     downloadType: "NZB" | "TORRENT" | "TORBOX",

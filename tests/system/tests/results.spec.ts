@@ -243,23 +243,28 @@ test.describe("Search results", () => {
             [...testEnvironment.uiTestResultTitles].sort(),
         );
 
-        await page
-            .getByTestId("freetext-filter-title")
-            .fill("indexer2 !result3");
+        // FM-045 made the refine-sidebar the single filter surface at every
+        // viewport: the mobile-only `results-filters` row this test used to
+        // drive (`freetext-filter-title`, the bare `number-filter-*-size`
+        // fields) is gone, and so is the pre-existing failure that came from
+        // reaching into that below-`sm`-only row at a desktop viewport.
+        await openRefineSidebar(page);
+        const titleFilter = page.getByTestId("refine-filter-title");
+        await titleFilter.fill("indexer2 !result3");
         await expectVisibleResultTitles(
             page,
             testEnvironment.uiTestResultTitles.slice(3, 5),
         );
-        await page.getByTestId("freetext-filter-title").fill("/[/");
+        await titleFilter.fill("/[/");
         await expect(page.getByTestId("search-result-row")).toHaveCount(0);
-        await page.getByTestId("freetext-filter-title").fill("");
+        await titleFilter.fill("");
 
-        await page.getByTestId("number-filter-min-size").fill("4");
+        await page.getByTestId("number-filter-min-refine-size").fill("4");
         await expectVisibleResultTitles(
             page,
             testEnvironment.uiTestResultTitles.slice(3),
         );
-        await page.getByTestId("number-filter-clear-size").click();
+        await page.getByTestId("number-filter-clear-refine-size").click();
         await expectVisibleResultTitles(
             page,
             [...testEnvironment.uiTestResultTitles].sort(),
@@ -355,6 +360,9 @@ test.describe("Search results", () => {
         await page.getByTestId("search-query").fill("deterministic filters");
         await page.getByTestId("search-submit").click();
         await expect(page.getByTestId("search-status-modal")).toBeHidden();
+        // Every filter dimension this test exercises now lives in the
+        // refine-sidebar only (FM-045); the quick filters included.
+        await openRefineSidebar(page);
 
         for (const name of ["WEB", "1080p", "x265", "Preferred"]) {
             await expect(
@@ -400,29 +408,34 @@ test.describe("Search results", () => {
             ).toHaveAttribute("data-result-title", firstTitle);
         }
 
-        const indexerFilter = page.getByTestId("filter-toggle-indexer");
-        await indexerFilter.getByLabel("Beta").uncheck();
+        const betaIndexer = refineOption(page, "refine-indexer-option", "Beta");
+        await expect(betaIndexer).toHaveAttribute("aria-pressed", "true");
+        await betaIndexer.click();
+        await expect(betaIndexer).toHaveAttribute("aria-pressed", "false");
         await expectVisibleResultTitles(page, [
             "Charlie WEB 2160p x265",
             "Bravo BluRay 720p HEVC",
         ]);
-        await indexerFilter.getByLabel("Beta").check();
+        await betaIndexer.click();
+        await expect(betaIndexer).toHaveAttribute("aria-pressed", "true");
 
-        const categoryFilter = page.getByTestId("filter-toggle-category");
-        await categoryFilter.getByLabel("TV").uncheck();
+        const tvCategory = refineOption(page, "refine-category-option", "TV");
+        await tvCategory.click();
+        await expect(tvCategory).toHaveAttribute("aria-pressed", "false");
         await expectVisibleResultTitles(page, [
             "Charlie WEB 2160p x265",
             "Bravo BluRay 720p HEVC",
         ]);
-        await categoryFilter.getByLabel("TV").check();
+        await tvCategory.click();
+        await expect(tvCategory).toHaveAttribute("aria-pressed", "true");
 
-        await page.getByTestId("number-filter-min-grabs").fill("8");
+        await page.getByTestId("number-filter-min-refine-grabs").fill("8");
         await expectVisibleResultTitles(page, ["Alpha WEB-DL 1080p x265"]);
-        await page.getByTestId("number-filter-clear-grabs").click();
+        await page.getByTestId("number-filter-clear-refine-grabs").click();
 
-        await page.getByTestId("number-filter-max-age").fill("2");
+        await page.getByTestId("number-filter-max-refine-age").fill("2");
         await expectVisibleResultTitles(page, ["Alpha WEB-DL 1080p x265"]);
-        await page.getByTestId("number-filter-clear-age").click();
+        await page.getByTestId("number-filter-clear-refine-age").click();
         await expectVisibleResultTitles(page, [
             "Alpha WEB-DL 1080p x265",
             "Charlie WEB 2160p x265",
@@ -772,7 +785,11 @@ test.describe("Search results", () => {
         ]);
         expect(childBackground).not.toBe(parentBackground);
 
-        await page.getByTestId("freetext-filter-title").fill("Another");
+        // The refine-sidebar is the only filter surface since FM-045, and it
+        // is reachable at this desktop viewport, which is what resolves this
+        // test's pre-existing `freetext-filter-title` visibility failure.
+        await openRefineSidebar(page);
+        await page.getByTestId("refine-filter-title").fill("Another");
         await expect(page.getByTestId("search-result-row")).toHaveCount(1);
         await expect(
             page.getByTestId("search-results-summary"),
@@ -899,32 +916,68 @@ test.describe("Search results", () => {
             indexerHeaderBox.width * 2,
         );
 
-        await captureVisualRegion(
-            sidebar,
-            "F-SEARCH-SORT-FILTER",
-            "refine-sidebar-desktop",
+        // FM-045 state `refine-sidebar-only-surface`: no inline filter
+        // control renders in the table header, and the simplified header row
+        // is measurably shorter than it was before this task at the same
+        // viewport.
+        await expectNoInlineFilterControls(page);
+        const desktopHeaderHeight = await headerRowHeight(page);
+        expect(desktopHeaderHeight).toBeLessThan(
+            BASELINE_HEADER_ROW_HEIGHT_DESKTOP,
         );
+        expect(desktopHeaderHeight).toBeLessThanOrEqual(52);
 
-        // Every category and indexer row renders its label and count with
-        // no scrollWidth overflow of the row.
-        for (const listTestId of [
-            "refine-category-list",
-            "refine-indexer-list",
+        // FM-045 state `refine-toggle-row-category-indexer`: every Category
+        // and Indexer entry is one clickable non-checkbox row carrying its
+        // own label, loaded-result count, and pressed state, with no
+        // scrollWidth overflow of the row.
+        for (const [listTestId, optionTestId] of [
+            ["refine-category-list", "refine-category-option"],
+            ["refine-indexer-list", "refine-indexer-option"],
         ]) {
             const list = page.getByTestId(listTestId);
             await expect(list).toBeVisible();
-            const rows = list.locator("label");
+            expect(await list.locator('input[type="checkbox"]').count()).toBe(
+                0,
+            );
+            const rows = list.getByTestId(optionTestId);
             const rowCount = await rows.count();
             expect(rowCount).toBeGreaterThan(0);
             for (let index = 0; index < rowCount; index++) {
                 const row = rows.nth(index);
                 await expect(row).toHaveText(/\S/);
-                const noOverflow = await row.evaluate(
-                    (element) => element.scrollWidth <= element.clientWidth + 1,
-                );
-                expect(noOverflow).toBe(true);
+                await expect(row).toHaveAttribute("aria-pressed", "true");
+                const rowShape = await row.evaluate((element) => ({
+                    noOverflow:
+                        element.scrollWidth <= element.clientWidth + 1,
+                    tagName: element.tagName,
+                }));
+                expect(rowShape).toEqual({noOverflow: true, tagName: "BUTTON"});
             }
         }
+
+        // A selected row's computed background differs measurably from an
+        // unselected one's.
+        const betaRow = refineOption(page, "refine-indexer-option", "Beta");
+        const selectedBackground = await betaRow.evaluate(
+            (element) => getComputedStyle(element).backgroundColor,
+        );
+        await betaRow.click();
+        await expect(betaRow).toHaveAttribute("aria-pressed", "false");
+        const unselectedBackground = await betaRow.evaluate(
+            (element) => getComputedStyle(element).backgroundColor,
+        );
+        expect(unselectedBackground).not.toBe(selectedBackground);
+        await expect(page.getByTestId("search-result-row")).toHaveCount(2);
+        await betaRow.click();
+        await expect(betaRow).toHaveAttribute("aria-pressed", "true");
+        await expect(page.getByTestId("search-result-row")).toHaveCount(3);
+
+        await captureVisualRegion(
+            sidebar,
+            "F-SEARCH-SORT-FILTER",
+            "toggle-row-sidebar-desktop",
+        );
 
         // Type is a chip group derived from the loaded results' actual
         // downloadType values (never a hardcoded NZB/Torrent pair), and the
@@ -967,8 +1020,7 @@ test.describe("Search results", () => {
         await toggle.click();
         await expect(toggle).toHaveAttribute("aria-expanded", "true");
 
-        // A fresh mobile load starts with no stored preference, so the
-        // viewport-derived "collapsed below sm" default is exercised.
+        // A fresh mobile load starts with no stored preference.
         await page.evaluate(() => window.localStorage.clear());
 
         await prepareVisualEvidence(page, "mobile", async () => {
@@ -983,22 +1035,75 @@ test.describe("Search results", () => {
             ).toBeVisible();
         });
 
+        // FM-045 state `refine-sidebar-mobile-drawer`: below `sm` no docked
+        // column competes with the table for width -- the sidebar only
+        // exists while its drawer is open -- and the retired mobile
+        // `results-filters` / `results-quick-filters` rows are gone.
         const mobileToggle = page.getByTestId("refine-sidebar-toggle");
+        await expect(mobileToggle).toBeVisible();
         await expect(mobileToggle).toHaveAttribute("aria-expanded", "false");
-        await expect(page.getByTestId("results-filters")).toBeVisible();
-        await expectVisualGeometry(page, {
-            region: "refine-sidebar-collapsed-mobile",
-            locator: page.getByTestId("refine-sidebar"),
-        });
-        await captureVisualRegion(
-            page.getByTestId("refine-sidebar"),
-            "F-SEARCH-SORT-FILTER",
-            "refine-sidebar-mobile",
-        );
+        await expect(sidebar).toHaveCount(0);
+        await expect(page.getByTestId("results-filters")).toHaveCount(0);
+        await expect(page.getByTestId("results-quick-filters")).toHaveCount(0);
+        await expectNoInlineFilterControls(page);
+        const closedTableBox = await table.boundingBox();
+        expect(closedTableBox).not.toBeNull();
+        if (!closedTableBox) {
+            throw new Error("Table requires deterministic geometry");
+        }
 
-        // Opening the sidebar at mobile introduces no horizontal overflow.
         await mobileToggle.click();
         await expect(mobileToggle).toHaveAttribute("aria-expanded", "true");
+        await expect(sidebar).toBeVisible();
+        for (const testId of [
+            "refine-clear-all",
+            "refine-filter-title",
+            "refine-category-list",
+            "refine-indexer-list",
+            "filter-toggle-refine-size",
+            "filter-toggle-refine-age",
+            "filter-toggle-refine-grabs",
+            "refine-type-chips",
+        ]) {
+            await expect(sidebar.getByTestId(testId)).toBeVisible();
+        }
+        await expectVisualGeometry(page, {
+            region: "refine-sidebar-mobile-drawer",
+            locator: sidebar,
+        });
+        await captureVisualRegion(
+            sidebar,
+            "F-SEARCH-SORT-FILTER",
+            "refine-sidebar-mobile-drawer",
+        );
+
+        // The title filter and one list filter drive the same shared
+        // ResultFilters state from the mobile-opened sidebar, so no
+        // filtering capability became unreachable at this viewport.
+        const mobileTitleFilter = sidebar.getByTestId("refine-filter-title");
+        await mobileTitleFilter.fill("Bravo");
+        await expect(page.getByTestId("search-result-row")).toHaveCount(1);
+        await mobileTitleFilter.fill("");
+        await expect(page.getByTestId("search-result-row")).toHaveCount(3);
+        const gammaRow = refineOption(page, "refine-indexer-option", "Gamma");
+        await gammaRow.click();
+        await expect(gammaRow).toHaveAttribute("aria-pressed", "false");
+        await expect(page.getByTestId("search-result-row")).toHaveCount(2);
+        await gammaRow.click();
+        await expect(page.getByTestId("search-result-row")).toHaveCount(3);
+
+        // Closing restores the table to its full mobile width with no
+        // residual gap and no page horizontal overflow.
+        await page.getByTestId("refine-sidebar-close").click();
+        await expect(sidebar).toHaveCount(0);
+        await expect(mobileToggle).toHaveAttribute("aria-expanded", "false");
+        const reopenedTableBox = await table.boundingBox();
+        expect(reopenedTableBox).not.toBeNull();
+        if (!reopenedTableBox) {
+            throw new Error("Table requires deterministic geometry");
+        }
+        expect(reopenedTableBox.width).toBe(closedTableBox.width);
+        expect(reopenedTableBox.x).toBe(closedTableBox.x);
         expect(
             await page
                 .locator("html")
@@ -1269,6 +1374,60 @@ test.describe("Search results", () => {
         ).toBeChecked();
     });
 });
+
+// The results table header row's height at 1280x800, measured against the
+// clean `89286c376` baseline (FM-044's commit) while FM-034's inline
+// per-column-header filter controls were still rendered. FM-045 removes them
+// and drops the header cells' 16px vertical padding to the body cells' 6px,
+// so the simplified header must measure below this.
+const BASELINE_HEADER_ROW_HEIGHT_DESKTOP = 63.25;
+
+async function openRefineSidebar(
+    page: import("@playwright/test").Page,
+): Promise<void> {
+    const toggle = page.getByTestId("refine-sidebar-toggle");
+    if ((await toggle.getAttribute("aria-expanded")) !== "true") {
+        await toggle.click();
+    }
+    await expect(page.getByTestId("refine-filter-title")).toBeVisible();
+}
+
+// One Category/Indexer toggle row, addressed by the value it filters on.
+function refineOption(
+    page: import("@playwright/test").Page,
+    testId: string,
+    value: string,
+): import("@playwright/test").Locator {
+    return page.locator(
+        `[data-testid="${testId}"][data-filter-value="${value}"]`,
+    );
+}
+
+async function headerRowHeight(
+    page: import("@playwright/test").Page,
+): Promise<number> {
+    return await page
+        .getByTestId("search-results-table")
+        .locator("thead tr")
+        .first()
+        .evaluate((element) => element.getBoundingClientRect().height);
+}
+
+// FM-034's inline per-column-header filter popovers and the mobile-only
+// toolbar filter rows they shared controls with are removed outright.
+async function expectNoInlineFilterControls(
+    page: import("@playwright/test").Page,
+): Promise<void> {
+    for (const selector of [
+        '[data-testid^="header-filter-"]',
+        '[data-testid*="-header-"]',
+        '[data-testid="freetext-filter-title"]',
+        '[data-testid="filter-toggle-indexer"]',
+        '[data-testid="filter-toggle-category"]',
+    ]) {
+        await expect(page.locator(selector)).toHaveCount(0);
+    }
+}
 
 async function searchForUiTestResults(
     page: import("@playwright/test").Page,

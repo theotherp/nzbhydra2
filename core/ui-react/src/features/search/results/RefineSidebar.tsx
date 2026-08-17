@@ -2,36 +2,63 @@ import {
     Box,
     Button,
     Collapse,
+    Drawer,
     Paper,
     Stack,
     TextField,
     Typography,
+    useMediaQuery,
 } from "@mui/material";
+import {useTheme} from "@mui/material/styles";
 import type {Dispatch, ReactNode, SetStateAction} from "react";
 import {useMemo, useState} from "react";
 
+import {monoFontFamily} from "../../../app/theme";
 import type {SearchResult} from "../../../api/search";
-import {MultiFilter, NumericFilter} from "./filterControls";
+import {NumericFilter, ToggleRowFilter} from "./filterControls";
+import {
+    chipActiveBackground,
+    chipActiveBorderColor,
+    chipActiveColor,
+    chipInactiveBackground,
+    chipInactiveBorderColor,
+    chipInactiveColor,
+    clearAllColor,
+    headingColor,
+    inputBackground,
+    inputBorderColor,
+    sectionGap,
+    sectionLabelColor,
+    sidebarBorderColor,
+    sidebarPadding,
+} from "./refineStyles";
 import type {NumericRange, QuickFilter, ResultFilters} from "./resultTable";
 import {quickFilterKey} from "./resultTable";
 
 // Exported so `SearchResults.tsx` can compute how much horizontal room the
 // sidebar currently claims (e.g. to size the results table's minimum width
-// consistently whether the sidebar is expanded or collapsed).
-export const EXPANDED_WIDTH = 256;
+// consistently whether the sidebar is expanded or collapsed). The expanded
+// width is the mock's own `<aside style="flex:0 0 248px">`.
+export const EXPANDED_WIDTH = 248;
 export const COLLAPSED_WIDTH = 48;
 
-// The persistent "Refine" filter sidebar (FM-039, ADR-0008 Option B: the
-// mock's layout/structure only -- current ADR-0007 theme tokens throughout,
-// no new color or typography). It binds the exact same `ResultFilters` state
-// the inline column-header filters (FM-034) and the mobile `results-filters`
-// toolbar row already drive; it introduces no second, independent filter
-// state. It renders at every viewport (its parent `Stack` switches to a
-// column layout below `sm`, so an expanded sidebar never competes with the
-// table for horizontal space there); `SearchResults` defaults its initial
-// collapsed state from the viewport at mount, so it starts collapsed below
-// `sm` while the mobile `results-filters` row remains that surface's primary
-// filter entry point, per this task's Out Of Scope.
+// The "Refine" filter sidebar. Since FM-045 (ADR-0009: full mock fidelity)
+// it is the *only* result-filter surface at every viewport: FM-034's inline
+// per-column-header filter popovers and the mobile-only `results-filters` /
+// `results-quick-filters` toolbar rows are gone, so every filter dimension --
+// quality, title, category, indexer, size, age, grabs/seeders, download type
+// -- is reachable here and nowhere else. It binds exactly the same
+// `ResultFilters` state those removed surfaces drove; no second, independent
+// filter state exists.
+//
+// At `sm` and up it renders as the mock's persistent, collapsible left
+// column. Below `sm` a 248px docked column would compete with the table for
+// the whole viewport width, so the identical sections render inside a
+// temporary MUI `Drawer` opened by the same `refine-sidebar-toggle` control
+// instead. Which of the two renders is decided in JavaScript
+// (`useMediaQuery`) rather than by CSS `display`, so exactly one copy of
+// every control exists in the DOM at a time and no duplicate accessible name
+// or `data-testid` is ever present.
 export function RefineSidebar({
     clearRange,
     collapsed,
@@ -59,6 +86,18 @@ export function RefineSidebar({
         value: string,
     ) => void;
 }) {
+    // `useTheme()` from `@mui/material/styles` (rather than `useMediaQuery`'s
+    // own callback form) so the breakpoint still resolves in a component test
+    // that renders this sidebar without a `ThemeProvider`, where
+    // `@mui/system`'s theme context is null.
+    const theme = useTheme();
+    const compact = useMediaQuery(theme.breakpoints.down("sm"));
+    // Deliberately not the persisted `collapsed` preference: that preference
+    // describes the docked desktop column, and reusing it here would pop an
+    // overlay open over the results the moment a desktop user with an
+    // expanded sidebar opened the same page on a phone. The drawer always
+    // starts closed and is opened on demand.
+    const [drawerOpen, setDrawerOpen] = useState(false);
     const [categoryOpen, setCategoryOpen] = useState(true);
     const [indexerOpen, setIndexerOpen] = useState(true);
     const indexerEntries = useMemo(
@@ -92,6 +131,236 @@ export function RefineSidebar({
                 : [...current.downloadTypes, type],
         }));
     };
+    const sections = (
+        <Stack sx={{gap: sectionGap}}>
+            {quickFilters.length > 0 && (
+                <RefineSection label="Quality">
+                    <Stack
+                        data-testid="refine-quality-filters"
+                        direction="row"
+                        flexWrap="wrap"
+                        sx={{gap: "6px"}}
+                    >
+                        {quickFilters.map((filter) => (
+                            <RefineChip
+                                active={
+                                    filters.quickFilters[
+                                        quickFilterKey(filter)
+                                    ] ?? false
+                                }
+                                key={`${filter.group}-${filter.id}`}
+                                label={filter.label}
+                                onToggle={() => onToggleQuickFilter(filter)}
+                            />
+                        ))}
+                    </Stack>
+                </RefineSection>
+            )}
+            <RefineSection label="Title contains">
+                <TextField
+                    fullWidth
+                    onChange={(event) =>
+                        setFilters((current) => ({
+                            ...current,
+                            title: event.target.value,
+                        }))
+                    }
+                    placeholder="e.g. 1080p, name…"
+                    size="small"
+                    slotProps={{
+                        htmlInput: {
+                            "aria-label": "Filter titles",
+                            "data-testid": "refine-filter-title",
+                        },
+                    }}
+                    sx={{
+                        backgroundColor: inputBackground,
+                        borderRadius: "8px",
+                        "& .MuiOutlinedInput-root": {
+                            backgroundColor: "transparent",
+                        },
+                        "& .MuiOutlinedInput-notchedOutline": {
+                            borderColor: inputBorderColor,
+                        },
+                        "& input": {fontSize: "13px", p: "8px 10px"},
+                        "& input::placeholder": {
+                            color: sectionLabelColor,
+                            opacity: 1,
+                        },
+                    }}
+                    value={filters.title}
+                />
+            </RefineSection>
+            <RefineCollapsibleList
+                entries={categoryEntries}
+                label="Category"
+                listTestId="refine-category-list"
+                onChange={(categories) =>
+                    setFilters((current) => ({
+                        ...current,
+                        categories,
+                    }))
+                }
+                onToggleOpen={() => setCategoryOpen((value) => !value)}
+                open={categoryOpen}
+                optionTestId="refine-category-option"
+                selected={filters.categories}
+                toggleTestId="refine-category-toggle"
+            />
+            <RefineCollapsibleList
+                entries={indexerEntries}
+                label="Indexer"
+                listTestId="refine-indexer-list"
+                onChange={(indexers) =>
+                    setFilters((current) => ({
+                        ...current,
+                        indexers,
+                    }))
+                }
+                onToggleOpen={() => setIndexerOpen((value) => !value)}
+                open={indexerOpen}
+                optionTestId="refine-indexer-option"
+                selected={filters.indexers}
+                toggleTestId="refine-indexer-toggle"
+            />
+            <RefineSection label="Size (MB)">
+                <NumericFilter
+                    label="Size (MB)"
+                    name="size"
+                    onChange={updateRange}
+                    onClear={clearRange}
+                    range={filters.size}
+                    testIdPrefix="refine-size"
+                />
+            </RefineSection>
+            <RefineSection label="Age (days)">
+                <NumericFilter
+                    label="Age (days)"
+                    name="age"
+                    onChange={updateRange}
+                    onClear={clearRange}
+                    range={filters.age}
+                    testIdPrefix="refine-age"
+                />
+            </RefineSection>
+            <RefineSection label="Grabs / seeders">
+                <NumericFilter
+                    label="Grabs / seeders"
+                    name="grabs"
+                    onChange={updateRange}
+                    onClear={clearRange}
+                    range={filters.grabs}
+                    testIdPrefix="refine-grabs"
+                />
+            </RefineSection>
+            {downloadTypeOptions.length > 0 && (
+                <RefineSection label="Type">
+                    <Stack
+                        data-testid="refine-type-chips"
+                        direction="row"
+                        flexWrap="wrap"
+                        sx={{gap: "6px"}}
+                    >
+                        {downloadTypeOptions.map((type) => (
+                            <RefineChip
+                                active={filters.downloadTypes.includes(type)}
+                                key={type}
+                                label={type}
+                                onToggle={() => toggleDownloadType(type)}
+                            />
+                        ))}
+                    </Stack>
+                </RefineSection>
+            )}
+        </Stack>
+    );
+    const clearAll = (
+        <Button
+            data-testid="refine-clear-all"
+            onClick={onClearAll}
+            size="small"
+            sx={{
+                color: clearAllColor,
+                fontSize: "12.5px",
+                minWidth: 0,
+                px: "4px",
+                py: "2px",
+            }}
+        >
+            Clear all
+        </Button>
+    );
+
+    if (compact) {
+        return (
+            <>
+                <Button
+                    aria-expanded={drawerOpen}
+                    aria-haspopup="dialog"
+                    aria-label={
+                        drawerOpen
+                            ? "Collapse refine sidebar"
+                            : "Expand refine sidebar"
+                    }
+                    data-testid="refine-sidebar-toggle"
+                    onClick={() => setDrawerOpen((open) => !open)}
+                    size="small"
+                    sx={{
+                        alignSelf: "flex-start",
+                        border: `1px solid ${chipInactiveBorderColor}`,
+                        color: "text.primary",
+                        fontSize: "13px",
+                        px: "12px",
+                        py: "7px",
+                    }}
+                >
+                    Refine
+                </Button>
+                <Drawer
+                    anchor="left"
+                    data-testid="refine-sidebar-drawer"
+                    onClose={() => setDrawerOpen(false)}
+                    open={drawerOpen}
+                    slotProps={{
+                        paper: {
+                            sx: {
+                                backgroundImage: "none",
+                                maxWidth: "100%",
+                                p: sidebarPadding,
+                                width: `min(${EXPANDED_WIDTH + 32}px, 88vw)`,
+                            },
+                        },
+                    }}
+                >
+                    <Box
+                        aria-label="Refine results"
+                        component="nav"
+                        data-testid="refine-sidebar"
+                    >
+                        <RefineHeader
+                            actions={
+                                <>
+                                    {clearAll}
+                                    <Button
+                                        aria-label="Close refine sidebar"
+                                        data-testid="refine-sidebar-close"
+                                        onClick={() => setDrawerOpen(false)}
+                                        size="small"
+                                        sx={{minWidth: 0, px: "6px"}}
+                                    >
+                                        ✕
+                                    </Button>
+                                </>
+                            }
+                            label="Refine"
+                        />
+                        {sections}
+                    </Box>
+                </Drawer>
+            </>
+        );
+    }
+
     return (
         <Paper
             aria-label="Refine results"
@@ -99,198 +368,130 @@ export function RefineSidebar({
             data-testid="refine-sidebar"
             elevation={0}
             sx={{
+                backgroundColor: "transparent",
+                borderRadius: 0,
+                borderRight: `1px solid ${sidebarBorderColor}`,
                 flexShrink: 0,
                 overflow: "hidden",
-                p: collapsed ? 1 : 2,
+                p: collapsed ? "18px 8px 18px" : sidebarPadding,
                 transition:
                     "width 150ms ease-in-out, padding 150ms ease-in-out",
                 width: collapsed ? COLLAPSED_WIDTH : EXPANDED_WIDTH,
             }}
         >
-            <Stack
-                alignItems="center"
-                direction="row"
-                justifyContent="space-between"
-                sx={{mb: collapsed ? 0 : 2}}
-            >
-                {!collapsed && (
-                    <Typography sx={{fontWeight: 600}} variant="overline">
-                        Refine
-                    </Typography>
-                )}
-                <Button
-                    aria-expanded={!collapsed}
-                    aria-label={
-                        collapsed
-                            ? "Expand refine sidebar"
-                            : "Collapse refine sidebar"
-                    }
-                    data-testid="refine-sidebar-toggle"
-                    onClick={onToggleCollapsed}
-                    size="small"
-                    sx={{minWidth: 0, px: 0.75}}
-                >
-                    {collapsed ? "»" : "«"}
-                </Button>
-            </Stack>
-            {!collapsed && (
-                <Stack spacing={2.5}>
-                    <Button
-                        data-testid="refine-clear-all"
-                        onClick={onClearAll}
-                        size="small"
-                        sx={{alignSelf: "flex-start", px: 0.5}}
-                    >
-                        Clear all
-                    </Button>
-                    {quickFilters.length > 0 && (
-                        <RefineSection label="Quality">
-                            <Stack
-                                data-testid="refine-quality-filters"
-                                direction="row"
-                                flexWrap="wrap"
-                                gap={1}
-                            >
-                                {quickFilters.map((filter) => (
-                                    <Button
-                                        aria-pressed={
-                                            filters.quickFilters[
-                                                quickFilterKey(filter)
-                                            ] ?? false
-                                        }
-                                        key={`${filter.group}-${filter.id}`}
-                                        onClick={() =>
-                                            onToggleQuickFilter(filter)
-                                        }
-                                        size="small"
-                                        variant={
-                                            filters.quickFilters[
-                                                quickFilterKey(filter)
-                                            ]
-                                                ? "contained"
-                                                : "outlined"
-                                        }
-                                    >
-                                        {filter.label}
-                                    </Button>
-                                ))}
-                            </Stack>
-                        </RefineSection>
-                    )}
-                    <RefineSection label="Title contains">
-                        <TextField
-                            aria-label="Filter titles"
-                            fullWidth
-                            onChange={(event) =>
-                                setFilters((current) => ({
-                                    ...current,
-                                    title: event.target.value,
-                                }))
+            <RefineHeader
+                actions={
+                    <>
+                        {!collapsed && clearAll}
+                        <Button
+                            aria-expanded={!collapsed}
+                            aria-label={
+                                collapsed
+                                    ? "Expand refine sidebar"
+                                    : "Collapse refine sidebar"
                             }
-                            placeholder="e.g. 1080p, name…"
+                            data-testid="refine-sidebar-toggle"
+                            onClick={onToggleCollapsed}
                             size="small"
-                            slotProps={{
-                                htmlInput: {
-                                    "data-testid": "refine-filter-title",
-                                },
+                            sx={{
+                                color: sectionLabelColor,
+                                minWidth: 0,
+                                px: "6px",
                             }}
-                            value={filters.title}
-                        />
-                    </RefineSection>
-                    <RefineCollapsibleList
-                        entries={categoryEntries}
-                        label="Category"
-                        listTestId="refine-category-list"
-                        onChange={(categories) =>
-                            setFilters((current) => ({
-                                ...current,
-                                categories,
-                            }))
-                        }
-                        onToggleOpen={() => setCategoryOpen((value) => !value)}
-                        open={categoryOpen}
-                        selected={filters.categories}
-                        toggleTestId="refine-category-toggle"
-                    />
-                    <RefineCollapsibleList
-                        entries={indexerEntries}
-                        label="Indexer"
-                        listTestId="refine-indexer-list"
-                        onChange={(indexers) =>
-                            setFilters((current) => ({
-                                ...current,
-                                indexers,
-                            }))
-                        }
-                        onToggleOpen={() => setIndexerOpen((value) => !value)}
-                        open={indexerOpen}
-                        selected={filters.indexers}
-                        toggleTestId="refine-indexer-toggle"
-                    />
-                    <RefineSection label="Size (MB)">
-                        <NumericFilter
-                            label="Size (MB)"
-                            name="size"
-                            onChange={updateRange}
-                            onClear={clearRange}
-                            range={filters.size}
-                            stacked
-                            testIdPrefix="refine-size"
-                        />
-                    </RefineSection>
-                    <RefineSection label="Age (days)">
-                        <NumericFilter
-                            label="Age (days)"
-                            name="age"
-                            onChange={updateRange}
-                            onClear={clearRange}
-                            range={filters.age}
-                            stacked
-                            testIdPrefix="refine-age"
-                        />
-                    </RefineSection>
-                    <RefineSection label="Grabs / seeders">
-                        <NumericFilter
-                            label="Grabs / seeders"
-                            name="grabs"
-                            onChange={updateRange}
-                            onClear={clearRange}
-                            range={filters.grabs}
-                            stacked
-                            testIdPrefix="refine-grabs"
-                        />
-                    </RefineSection>
-                    {downloadTypeOptions.length > 0 && (
-                        <RefineSection label="Type">
-                            <Stack
-                                data-testid="refine-type-chips"
-                                direction="row"
-                                flexWrap="wrap"
-                                gap={1}
-                            >
-                                {downloadTypeOptions.map((type) => (
-                                    <Button
-                                        aria-pressed={filters.downloadTypes.includes(
-                                            type,
-                                        )}
-                                        key={type}
-                                        onClick={() => toggleDownloadType(type)}
-                                        size="small"
-                                        variant={
-                                            filters.downloadTypes.includes(type)
-                                                ? "contained"
-                                                : "outlined"
-                                        }
-                                    >
-                                        {type}
-                                    </Button>
-                                ))}
-                            </Stack>
-                        </RefineSection>
-                    )}
-                </Stack>
-            )}
+                        >
+                            {collapsed ? "»" : "«"}
+                        </Button>
+                    </>
+                }
+                label={collapsed ? undefined : "Refine"}
+            />
+            {!collapsed && sections}
         </Paper>
+    );
+}
+
+function RefineHeader({
+    actions,
+    label,
+}: {
+    actions: ReactNode;
+    // Absent only for the collapsed desktop rail, which has room for the
+    // toggle alone.
+    label?: string;
+}) {
+    return (
+        <Stack
+            alignItems="center"
+            direction="row"
+            justifyContent="space-between"
+            sx={{mb: "16px"}}
+        >
+            {label !== undefined && (
+                <Typography
+                    component="span"
+                    sx={{
+                        color: headingColor,
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        letterSpacing: "0.7px",
+                        textTransform: "uppercase",
+                    }}
+                >
+                    {label}
+                </Typography>
+            )}
+            <Stack alignItems="center" direction="row" sx={{gap: "2px"}}>
+                {actions}
+            </Stack>
+        </Stack>
+    );
+}
+
+// The mock's Quality and Type pills (`chip(active)`): a compact monospace
+// label in a 7px-radius bordered box that changes background, border, and
+// text color when selected.
+function RefineChip({
+    active,
+    label,
+    onToggle,
+}: {
+    active: boolean;
+    label: string;
+    onToggle: () => void;
+}) {
+    return (
+        <Button
+            aria-pressed={active}
+            onClick={onToggle}
+            size="small"
+            sx={{
+                backgroundColor: active
+                    ? chipActiveBackground
+                    : chipInactiveBackground,
+                border: `1px solid ${
+                    active ? chipActiveBorderColor : chipInactiveBorderColor
+                }`,
+                borderRadius: "7px",
+                color: active ? chipActiveColor : chipInactiveColor,
+                fontFamily: monoFontFamily,
+                fontSize: "12px",
+                fontWeight: 400,
+                lineHeight: 1.3,
+                minWidth: 0,
+                px: "10px",
+                py: "5px",
+                "&:hover": {
+                    backgroundColor: active
+                        ? chipActiveBackground
+                        : chipInactiveBackground,
+                    borderColor: active
+                        ? chipActiveBorderColor
+                        : chipActiveBackground,
+                },
+            }}
+        >
+            {label}
+        </Button>
     );
 }
 
@@ -304,14 +505,15 @@ function RefineSection({
     return (
         <Box>
             <Typography
-                color="text.secondary"
+                component="div"
                 sx={{
-                    display: "block",
+                    color: sectionLabelColor,
+                    fontSize: "11px",
                     fontWeight: 600,
-                    mb: 1,
+                    letterSpacing: "0.6px",
+                    mb: "9px",
                     textTransform: "uppercase",
                 }}
-                variant="caption"
             >
                 {label}
             </Typography>
@@ -327,6 +529,7 @@ function RefineCollapsibleList({
     onChange,
     onToggleOpen,
     open,
+    optionTestId,
     selected,
     toggleTestId,
 }: {
@@ -336,6 +539,7 @@ function RefineCollapsibleList({
     onChange: (values: string[]) => void;
     onToggleOpen: () => void;
     open: boolean;
+    optionTestId: string;
     selected: string[];
     toggleTestId: string;
 }) {
@@ -347,31 +551,34 @@ function RefineCollapsibleList({
                 onClick={onToggleOpen}
                 size="small"
                 sx={{
-                    color: "text.secondary",
+                    color: sectionLabelColor,
+                    fontSize: "11px",
                     fontWeight: 600,
                     justifyContent: "space-between",
-                    px: 0.5,
+                    letterSpacing: "0.6px",
+                    mb: "9px",
+                    minWidth: 0,
+                    px: 0,
+                    py: 0,
                     textTransform: "uppercase",
                     width: "100%",
                 }}
             >
-                <Typography
+                {label}
+                <Box
+                    aria-hidden="true"
                     component="span"
-                    sx={{fontWeight: 600}}
-                    variant="caption"
+                    sx={{fontSize: "10px"}}
                 >
-                    {label}
-                </Typography>
-                <Box aria-hidden="true" component="span">
                     {open ? "▲" : "▼"}
                 </Box>
             </Button>
             <Collapse in={open}>
-                <MultiFilter
+                <ToggleRowFilter
                     entries={entries}
                     onChange={onChange}
+                    optionTestId={optionTestId}
                     selected={selected}
-                    showCounts
                     testId={listTestId}
                 />
             </Collapse>

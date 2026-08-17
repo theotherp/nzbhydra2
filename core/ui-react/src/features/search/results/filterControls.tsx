@@ -1,35 +1,57 @@
-import {
-    Box,
-    Button,
-    Checkbox,
-    FormControlLabel,
-    Stack,
-    TextField,
-    Typography,
-} from "@mui/material";
+import {Box, Button, Stack, TextField} from "@mui/material";
 
+import {monoFontFamily} from "../../../app/theme";
+import {
+    countColor,
+    inputBackground,
+    inputBorderColor,
+    rowActiveBackground,
+    rowActiveColor,
+    rowHoverBackground,
+    rowInactiveColor,
+} from "./refineStyles";
 import type {NumericRange} from "./resultTable";
 
-// Shared, presentation-only filter controls reused across the inline
-// per-column-header popovers (FM-034), the mobile `results-filters` toolbar
-// row, and the persistent `refine-sidebar` (FM-039). Kept feature-scoped and
-// dependency-free of any single consumer's layout so all three surfaces stay
-// bound to the exact same rendering/testid contract for a given field.
+// Presentation-only filter controls for the `refine-sidebar`, which is the
+// single result-filter surface at every viewport since FM-045 removed
+// FM-034's inline per-column-header filter popovers and the mobile
+// `results-filters` toolbar row (ADR-0009: "no inline filters"). Those two
+// removed surfaces were the only callers of FM-039's `MultiFilter` checkbox
+// list and of `NumericFilter`'s side-by-side non-`stacked` mode, both of
+// which were removed with them rather than left as dead exported code; a
+// repository-wide search for `MultiFilter` and for a `stacked`-less
+// `NumericFilter` call site confirmed no remaining caller. The sidebar's
+// Category/Indexer sections now use `ToggleRowFilter` instead.
 
-export function MultiFilter({
-    label,
-    testId,
+/**
+ * The mock's flat, full-width Category/Indexer toggle rows: no visible
+ * checkbox, the row itself carries the click handler and `aria-pressed`, the
+ * entry label sits left and its loaded-result count right.
+ *
+ * `aria-pressed` on a real `button` (rather than `role="option"` /
+ * `aria-selected` inside a `role="listbox"`) is the accessibility pattern
+ * chosen here: each row is an independently operable toggle with no roving
+ * focus, no active-descendant management, and no single-selection semantics,
+ * which is exactly the toggle-button pattern -- and it is the pattern the
+ * sidebar's own Quality and Type pills already use, so the whole panel
+ * exposes one consistent affordance.
+ *
+ * Counting semantics are FM-039's, unchanged: `entries` is one value per
+ * *loaded* result, so the count beside an entry is its number of loaded
+ * results, not its number of results in the currently filtered subset.
+ */
+export function ToggleRowFilter({
     entries,
-    selected,
     onChange,
-    showCounts = false,
+    optionTestId,
+    selected,
+    testId,
 }: {
-    label?: string;
-    testId: string;
     entries: string[];
-    selected: string[];
     onChange: (values: string[]) => void;
-    showCounts?: boolean;
+    optionTestId: string;
+    selected: string[];
+    testId: string;
 }) {
     const counts = new Map<string, number>();
     for (const entry of entries) {
@@ -39,64 +61,102 @@ export function MultiFilter({
         first.localeCompare(second),
     );
     return (
-        <Box data-testid={testId}>
-            {label && <Typography variant="subtitle2">{label}</Typography>}
-            {uniqueEntries.map((entry) => (
-                <FormControlLabel
-                    control={
-                        <Checkbox
-                            checked={selected.includes(entry)}
-                            onChange={(event) =>
-                                onChange(
-                                    event.target.checked
-                                        ? [...selected, entry]
-                                        : selected.filter(
-                                              (value) => value !== entry,
-                                          ),
-                                )
-                            }
-                            size="small"
-                        />
-                    }
-                    key={entry}
-                    label={
-                        showCounts ? (
-                            <Stack
-                                direction="row"
-                                justifyContent="space-between"
-                                sx={{minWidth: 0, width: "100%"}}
-                            >
-                                <Box
-                                    component="span"
-                                    sx={{
-                                        overflow: "hidden",
-                                        textOverflow: "ellipsis",
-                                        whiteSpace: "nowrap",
-                                    }}
-                                >
-                                    {entry}
-                                </Box>
-                                <Box
-                                    component="span"
-                                    sx={{
-                                        color: "text.secondary",
-                                        flexShrink: 0,
-                                        ml: 1,
-                                    }}
-                                >
-                                    {counts.get(entry)}
-                                </Box>
-                            </Stack>
-                        ) : (
-                            entry
-                        )
-                    }
-                    sx={showCounts ? {ml: 0, mr: 0, width: "100%"} : undefined}
-                />
-            ))}
-        </Box>
+        <Stack data-testid={testId} sx={{gap: "1px"}}>
+            {uniqueEntries.map((entry) => {
+                const active = selected.includes(entry);
+                return (
+                    <Button
+                        aria-pressed={active}
+                        data-filter-value={entry}
+                        data-testid={optionTestId}
+                        key={entry}
+                        onClick={() =>
+                            onChange(
+                                active
+                                    ? selected.filter(
+                                          (value) => value !== entry,
+                                      )
+                                    : [...selected, entry],
+                            )
+                        }
+                        sx={{
+                            backgroundColor: active
+                                ? rowActiveBackground
+                                : "transparent",
+                            borderRadius: "8px",
+                            color: active ? rowActiveColor : rowInactiveColor,
+                            fontSize: "13px",
+                            fontWeight: 400,
+                            gap: "8px",
+                            justifyContent: "space-between",
+                            lineHeight: 1.35,
+                            minWidth: 0,
+                            px: "9px",
+                            py: "7px",
+                            textAlign: "left",
+                            width: "100%",
+                            "&:hover": {
+                                backgroundColor: active
+                                    ? rowActiveBackground
+                                    : rowHoverBackground,
+                            },
+                        }}
+                    >
+                        <Box
+                            component="span"
+                            sx={{
+                                minWidth: 0,
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
+                            }}
+                        >
+                            {entry}
+                        </Box>
+                        <Box
+                            component="span"
+                            sx={{
+                                color: countColor,
+                                flexShrink: 0,
+                                fontFamily: monoFontFamily,
+                                fontSize: "11.5px",
+                            }}
+                        >
+                            {counts.get(entry)}
+                        </Box>
+                    </Button>
+                );
+            })}
+        </Stack>
     );
 }
+
+// The mock's own recessed numeric field (`background:#1c2224;border:1px solid
+// rgba(255,255,255,0.1);border-radius:8px;color:#d6dad9;padding:7px
+// 9px;font-family:'IBM Plex Mono',monospace;font-size:13px`), with the mock's
+// `min`/`max` placeholders in place of MUI's floating labels -- which the
+// sidebar's ~216px content width cannot hold beside each other. Each field
+// keeps a descriptive accessible name (`Size (MB) minimum`, ...) rather than a
+// bare, three-times-repeated "Min"/"Max".
+const numericFieldSx = {
+    backgroundColor: inputBackground,
+    borderRadius: "8px",
+    flex: 1,
+    minWidth: 0,
+    "& .MuiOutlinedInput-root": {backgroundColor: "transparent"},
+    "& .MuiOutlinedInput-notchedOutline": {borderColor: inputBorderColor},
+    "& input": {
+        fontFamily: monoFontFamily,
+        fontSize: "13px",
+        p: "7px 9px",
+        MozAppearance: "textfield",
+    },
+    "& input::-webkit-inner-spin-button, & input::-webkit-outer-spin-button": {
+        WebkitAppearance: "none",
+        margin: 0,
+    },
+    "& input::placeholder": {opacity: 1},
+} as const;
 
 export function NumericFilter({
     label,
@@ -104,7 +164,6 @@ export function NumericFilter({
     range,
     onChange,
     onClear,
-    stacked = false,
     testIdPrefix,
 }: {
     label: string;
@@ -116,80 +175,61 @@ export function NumericFilter({
         value: string,
     ) => void;
     onClear: (name: "size" | "grabs" | "age") => void;
-    // When true, the minimum/maximum fields stack vertically with short
-    // "Min"/"Max" labels instead of rendering side by side with each field's
-    // full "{label} minimum"/"{label} maximum" floating label. Existing
-    // callers (the header popovers, the mobile `results-filters` row) omit
-    // this and keep their prior byte-identical rendering; the narrow
-    // `refine-sidebar` (FM-039) opts in because its own section heading
-    // already states the field's subject (e.g. "Size (MB)"), and the
-    // side-by-side full-label layout truncates illegibly at the sidebar's
-    // ~208px content width.
-    stacked?: boolean;
-    testIdPrefix?: string;
+    testIdPrefix: string;
 }) {
-    const prefix = testIdPrefix ?? name;
     return (
-        <Stack
-            data-testid={`filter-toggle-${prefix}`}
-            direction={stacked ? "column" : "row"}
-            gap={1}
-        >
-            <TextField
-                fullWidth={stacked}
-                label={stacked ? "Min" : `${label} minimum`}
-                onChange={(event) => onChange(name, "min", event.target.value)}
-                size="small"
-                slotProps={{
-                    htmlInput: {"data-testid": `number-filter-min-${prefix}`},
-                }}
-                type="number"
-                value={range.min}
-            />
-            <TextField
-                fullWidth={stacked}
-                label={stacked ? "Max" : `${label} maximum`}
-                onChange={(event) => onChange(name, "max", event.target.value)}
-                size="small"
-                slotProps={{
-                    htmlInput: {"data-testid": `number-filter-max-${prefix}`},
-                }}
-                type="number"
-                value={range.max}
-            />
-            {stacked ? (
-                <Stack direction="row" gap={1}>
-                    <Button
-                        data-testid={`number-filter-apply-${prefix}`}
-                        size="small"
-                    >
-                        Apply
-                    </Button>
-                    <Button
-                        data-testid={`number-filter-clear-${prefix}`}
-                        onClick={() => onClear(name)}
-                        size="small"
-                    >
-                        Clear
-                    </Button>
-                </Stack>
-            ) : (
-                <>
-                    <Button
-                        data-testid={`number-filter-apply-${prefix}`}
-                        size="small"
-                    >
-                        Apply
-                    </Button>
-                    <Button
-                        data-testid={`number-filter-clear-${prefix}`}
-                        onClick={() => onClear(name)}
-                        size="small"
-                    >
-                        Clear
-                    </Button>
-                </>
-            )}
+        <Stack data-testid={`filter-toggle-${testIdPrefix}`} sx={{gap: "6px"}}>
+            <Stack direction="row" sx={{gap: "6px"}}>
+                <TextField
+                    onChange={(event) =>
+                        onChange(name, "min", event.target.value)
+                    }
+                    placeholder="min"
+                    size="small"
+                    slotProps={{
+                        htmlInput: {
+                            "aria-label": `${label} minimum`,
+                            "data-testid": `number-filter-min-${testIdPrefix}`,
+                        },
+                    }}
+                    sx={numericFieldSx}
+                    type="number"
+                    value={range.min}
+                />
+                <TextField
+                    onChange={(event) =>
+                        onChange(name, "max", event.target.value)
+                    }
+                    placeholder="max"
+                    size="small"
+                    slotProps={{
+                        htmlInput: {
+                            "aria-label": `${label} maximum`,
+                            "data-testid": `number-filter-max-${testIdPrefix}`,
+                        },
+                    }}
+                    sx={numericFieldSx}
+                    type="number"
+                    value={range.max}
+                />
+            </Stack>
+            <Stack direction="row" sx={{gap: "6px"}}>
+                <Button
+                    data-testid={`number-filter-apply-${testIdPrefix}`}
+                    size="small"
+                    sx={{fontSize: "12px", minWidth: 0, px: "9px"}}
+                >
+                    Apply
+                </Button>
+                <Button
+                    data-testid={`number-filter-clear-${testIdPrefix}`}
+                    onClick={() => onClear(name)}
+                    size="small"
+                    sx={{fontSize: "12px", minWidth: 0, px: "9px"}}
+                >
+                    Clear
+                </Button>
+            </Stack>
         </Stack>
     );
 }

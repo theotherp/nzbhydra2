@@ -11,7 +11,7 @@ import {afterEach, describe, expect, it, vi} from "vitest";
 import type {SearchResult} from "../../../api/search";
 import {RefineSidebar} from "./RefineSidebar";
 import type {QuickFilter, ResultFilters} from "./resultTable";
-import {defaultFilters, quickFilterKey} from "./resultTable";
+import {defaultFilters, filterResults, quickFilterKey} from "./resultTable";
 
 const results: SearchResult[] = [
     {
@@ -41,6 +41,23 @@ const oneQualityFilter: QuickFilter[] = [
     {group: "quality", id: "q1080p", label: "1080p", terms: ["1080p"]},
 ];
 
+// Below `sm` the sidebar renders inside a MUI `Drawer` instead of the docked
+// column, decided by `useMediaQuery` rather than by CSS `display`. jsdom's own
+// `matchMedia` never matches anything, so a mobile viewport has to be stated
+// explicitly; `vi.unstubAllGlobals()` in `afterEach` removes it again.
+function stubMobileViewport(): void {
+    vi.stubGlobal("matchMedia", (query: string) => ({
+        matches: query.includes("max-width"),
+        media: query,
+        onchange: null,
+        addEventListener: () => {},
+        removeEventListener: () => {},
+        addListener: () => {},
+        removeListener: () => {},
+        dispatchEvent: () => false,
+    }));
+}
+
 function Harness({
     collapsed = false,
     loadedResults = results,
@@ -58,43 +75,65 @@ function Harness({
         defaultFilters(loadedResults, quickFilters),
     );
     return (
-        <RefineSidebar
-            clearRange={(name) =>
-                setFilters((current) => ({
-                    ...current,
-                    [name]: {min: "", max: ""},
-                }))
-            }
-            collapsed={collapsed}
-            filters={filters}
-            onClearAll={onClearAll}
-            onToggleCollapsed={onToggleCollapsed}
-            onToggleQuickFilter={(filter) =>
-                setFilters((current) => ({
-                    ...current,
-                    quickFilters: {
-                        ...current.quickFilters,
-                        [quickFilterKey(filter)]:
-                            !current.quickFilters[quickFilterKey(filter)],
-                    },
-                }))
-            }
-            quickFilters={quickFilters}
-            results={loadedResults}
-            setFilters={setFilters}
-            updateRange={(name, bound, value) =>
-                setFilters((current) => ({
-                    ...current,
-                    [name]: {...current[name], [bound]: value},
-                }))
-            }
-        />
+        <>
+            <RefineSidebar
+                clearRange={(name) =>
+                    setFilters((current) => ({
+                        ...current,
+                        [name]: {min: "", max: ""},
+                    }))
+                }
+                collapsed={collapsed}
+                filters={filters}
+                onClearAll={onClearAll}
+                onToggleCollapsed={onToggleCollapsed}
+                onToggleQuickFilter={(filter) =>
+                    setFilters((current) => ({
+                        ...current,
+                        quickFilters: {
+                            ...current.quickFilters,
+                            [quickFilterKey(filter)]:
+                                !current.quickFilters[quickFilterKey(filter)],
+                        },
+                    }))
+                }
+                quickFilters={quickFilters}
+                results={loadedResults}
+                setFilters={setFilters}
+                updateRange={(name, bound, value) =>
+                    setFilters((current) => ({
+                        ...current,
+                        [name]: {...current[name], [bound]: value},
+                    }))
+                }
+            />
+            {/* The filtered outcome of the bound state, so a test can prove a
+                sidebar control actually narrows results rather than only
+                flipping a visual state. */}
+            <ul data-testid="filtered-titles">
+                {filterResults(loadedResults, filters, quickFilters).map(
+                    (result) => (
+                        <li key={result.searchResultId}>{result.title}</li>
+                    ),
+                )}
+            </ul>
+        </>
     );
+}
+
+// Queried by element rather than by `listitem` role on purpose: while the
+// mobile drawer is open MUI marks the rest of the document `aria-hidden`, so a
+// role query would legitimately find nothing outside the drawer.
+function filteredTitles(): string[] {
+    return [
+        ...screen.getByTestId("filtered-titles").querySelectorAll("li"),
+    ].map((item) => item.textContent ?? "");
 }
 
 describe("RefineSidebar", () => {
     afterEach(() => {
         cleanup();
+        vi.unstubAllGlobals();
     });
 
     it("collapses to a narrow rail with only a labeled toggle", () => {
@@ -120,6 +159,12 @@ describe("RefineSidebar", () => {
         expect(screen.getByTestId("refine-filter-title")).toBeInTheDocument();
         expect(screen.getByTestId("refine-category-list")).toBeInTheDocument();
         expect(screen.getByTestId("refine-indexer-list")).toBeInTheDocument();
+        for (const prefix of ["refine-size", "refine-age", "refine-grabs"]) {
+            expect(
+                screen.getByTestId(`filter-toggle-${prefix}`),
+            ).toBeInTheDocument();
+        }
+        expect(screen.getByTestId("refine-type-chips")).toBeInTheDocument();
     });
 
     it("renders the configured quick filters as the Quality section, bound to the same quick-filter state", () => {
@@ -142,13 +187,39 @@ describe("RefineSidebar", () => {
         expect(within(indexerList).getByText("2")).toBeInTheDocument();
     });
 
-    it("toggling a category checkbox narrows the bound filters.categories selection", () => {
+    it("renders category and indexer entries as clickable toggle rows rather than a checkbox list", () => {
+        render(<Harness />);
+        for (const [listTestId, optionTestId] of [
+            ["refine-category-list", "refine-category-option"],
+            ["refine-indexer-list", "refine-indexer-option"],
+        ]) {
+            const list = screen.getByTestId(listTestId);
+            expect(
+                list.querySelectorAll('input[type="checkbox"]'),
+            ).toHaveLength(0);
+            const rows = within(list).getAllByTestId(optionTestId);
+            expect(rows.length).toBeGreaterThan(0);
+            for (const row of rows) {
+                expect(row.tagName).toBe("BUTTON");
+                expect(row).toHaveAttribute("aria-pressed", "true");
+            }
+        }
+    });
+
+    it("toggling a category row narrows the bound filters.categories selection and the filtered results", () => {
         render(<Harness />);
         const categoryList = screen.getByTestId("refine-category-list");
-        const moviesCheckbox = within(categoryList).getByLabelText(/Movies/);
-        expect(moviesCheckbox).toBeChecked();
-        fireEvent.click(moviesCheckbox);
-        expect(moviesCheckbox).not.toBeChecked();
+        const movies = within(categoryList)
+            .getAllByTestId("refine-category-option")
+            .find((row) => row.getAttribute("data-filter-value") === "Movies");
+        expect(movies).toBeDefined();
+        expect(movies).toHaveAttribute("aria-pressed", "true");
+        fireEvent.click(movies!);
+        expect(movies).toHaveAttribute("aria-pressed", "false");
+        expect(filteredTitles()).toEqual(["Charlie"]);
+        fireEvent.click(movies!);
+        expect(movies).toHaveAttribute("aria-pressed", "true");
+        expect(filteredTitles()).toEqual(["Alpha", "Bravo", "Charlie"]);
     });
 
     it("collapsing and expanding a list is reflected by its own toggle's aria-expanded", () => {
@@ -204,5 +275,56 @@ describe("RefineSidebar", () => {
         const titleInput = screen.getByTestId("refine-filter-title");
         fireEvent.change(titleInput, {target: {value: "alpha"}});
         expect(titleInput).toHaveValue("alpha");
+    });
+
+    it("keeps every filter section reachable below sm through the drawer the sidebar toggle opens", () => {
+        stubMobileViewport();
+        render(<Harness quickFilters={oneQualityFilter} />);
+
+        // Nothing competes with the table for width until the drawer is
+        // opened: only the toggle renders.
+        const toggle = screen.getByTestId("refine-sidebar-toggle");
+        expect(toggle).toHaveAttribute("aria-expanded", "false");
+        expect(screen.queryByTestId("refine-sidebar")).not.toBeInTheDocument();
+
+        fireEvent.click(toggle);
+        expect(toggle).toHaveAttribute("aria-expanded", "true");
+        const sidebar = within(screen.getByTestId("refine-sidebar"));
+        for (const testId of [
+            "refine-clear-all",
+            "refine-quality-filters",
+            "refine-filter-title",
+            "refine-category-list",
+            "refine-indexer-list",
+            "filter-toggle-refine-size",
+            "filter-toggle-refine-age",
+            "filter-toggle-refine-grabs",
+            "refine-type-chips",
+        ]) {
+            expect(sidebar.getByTestId(testId)).toBeInTheDocument();
+        }
+
+        // The title filter and one list filter drive the same bound
+        // ResultFilters state from the mobile-opened sidebar.
+        fireEvent.change(sidebar.getByTestId("refine-filter-title"), {
+            target: {value: "alpha"},
+        });
+        expect(filteredTitles()).toEqual(["Alpha"]);
+        fireEvent.change(sidebar.getByTestId("refine-filter-title"), {
+            target: {value: ""},
+        });
+        const indexerTwo = sidebar
+            .getAllByTestId("refine-indexer-option")
+            .find(
+                (row) => row.getAttribute("data-filter-value") === "IndexerTwo",
+            );
+        expect(indexerTwo).toBeDefined();
+        fireEvent.click(indexerTwo!);
+        expect(filteredTitles()).toEqual(["Alpha", "Charlie"]);
+
+        fireEvent.click(
+            sidebar.getByRole("button", {name: "Close refine sidebar"}),
+        );
+        expect(toggle).toHaveAttribute("aria-expanded", "false");
     });
 });

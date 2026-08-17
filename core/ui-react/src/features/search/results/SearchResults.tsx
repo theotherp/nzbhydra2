@@ -8,14 +8,12 @@ import {
     Menu,
     MenuItem,
     Paper,
-    Popover,
     Stack,
     Table,
     TableBody,
     TableCell,
     TableHead,
     TableRow,
-    TextField,
     Typography,
 } from "@mui/material";
 import type {ColumnDef, SortingState} from "@tanstack/react-table";
@@ -40,7 +38,6 @@ import type {SearchResponse, SearchResult} from "../../../api/search";
 import {DialogContext} from "../../../components/dialogs/dialogs";
 import {ToastContext} from "../../../components/toasts/toasts";
 import {DirectDownloadActions, DownloadActions} from "./DownloadActions";
-import {MultiFilter, NumericFilter} from "./filterControls";
 import {COLLAPSED_WIDTH, EXPANDED_WIDTH, RefineSidebar} from "./RefineSidebar";
 import type {
     NumericRange,
@@ -72,6 +69,16 @@ const STORAGE_KEY = "hydra.search-results.table";
 // arrow). Below `sm` the table renders as unrelated stacked cards and never
 // uses this constant.
 const TABLE_MIN_WIDTH = 1320;
+
+// Header cells carry MUI's default 16px vertical `TableCell` padding, which
+// -- together with the tallest control each cell held -- set the pre-FM-045
+// header row to 63.25px at 1280x800 (measured against the clean `89286c376`
+// baseline). With FM-034's inline filter controls gone the header row holds
+// nothing but its sort button, so the row's own padding is what now keeps it
+// tall; matching the body cells' existing 6px keeps the simplified header
+// measurably shorter, as this task's visual contract requires. The mock's
+// exact 42px header height and its sticky positioning remain FM-042's scope.
+const HEADER_CELL_PADDING_Y = "6px";
 
 type StoredChoices = {
     filters?: Partial<ResultFilters>;
@@ -147,14 +154,6 @@ export function SearchResults({
     const filteredResults = useMemo(
         () => filterResults(data.searchResults, filters, quickFilters),
         [data.searchResults, filters, quickFilters],
-    );
-    const indexerOptions = useMemo(
-        () => [...new Set(data.searchResults.map((result) => result.indexer))],
-        [data.searchResults],
-    );
-    const categoryOptions = useMemo(
-        () => [...new Set(data.searchResults.map((result) => result.category))],
-        [data.searchResults],
     );
     const columns = useMemo<ColumnDef<SearchResult>[]>(
         () => [
@@ -370,141 +369,6 @@ export function SearchResults({
     const tableMinWidth =
         TABLE_MIN_WIDTH +
         (sidebarCollapsed ? EXPANDED_WIDTH - COLLAPSED_WIDTH : 0);
-    const renderHeaderFilter = (columnId: string) => {
-        switch (columnId) {
-            case "title":
-                return (
-                    <TextField
-                        aria-label="Filter titles"
-                        onChange={(event) =>
-                            setFilters((current) => ({
-                                ...current,
-                                title: event.target.value,
-                            }))
-                        }
-                        placeholder="Filter titles"
-                        size="small"
-                        slotProps={{
-                            htmlInput: {
-                                "data-testid": "header-filter-title",
-                            },
-                        }}
-                        sx={{flexGrow: 1, minWidth: 0}}
-                        value={filters.title}
-                        variant="standard"
-                    />
-                );
-            case "indexer":
-                return (
-                    <HeaderFilterMenu
-                        active={
-                            filters.indexers.length !== indexerOptions.length
-                        }
-                        label="Indexer"
-                        testId="header-filter-indexer"
-                    >
-                        <MultiFilter
-                            entries={data.searchResults.map(
-                                (result) => result.indexer,
-                            )}
-                            label="Indexer"
-                            onChange={(indexers) =>
-                                setFilters((current) => ({
-                                    ...current,
-                                    indexers,
-                                }))
-                            }
-                            selected={filters.indexers}
-                            testId="header-filter-indexer-options"
-                        />
-                    </HeaderFilterMenu>
-                );
-            case "category":
-                return (
-                    <HeaderFilterMenu
-                        active={
-                            filters.categories.length !== categoryOptions.length
-                        }
-                        label="Category"
-                        testId="header-filter-category"
-                    >
-                        <MultiFilter
-                            entries={data.searchResults.map(
-                                (result) => result.category,
-                            )}
-                            label="Category"
-                            onChange={(categories) =>
-                                setFilters((current) => ({
-                                    ...current,
-                                    categories,
-                                }))
-                            }
-                            selected={filters.categories}
-                            testId="header-filter-category-options"
-                        />
-                    </HeaderFilterMenu>
-                );
-            case "size":
-                return (
-                    <HeaderFilterMenu
-                        active={
-                            filters.size.min !== "" || filters.size.max !== ""
-                        }
-                        label="Size"
-                        testId="header-filter-size"
-                    >
-                        <NumericFilter
-                            label="Size (MB)"
-                            name="size"
-                            onChange={updateRange}
-                            onClear={clearRange}
-                            range={filters.size}
-                            testIdPrefix="header-size"
-                        />
-                    </HeaderFilterMenu>
-                );
-            case "grabs":
-                return (
-                    <HeaderFilterMenu
-                        active={
-                            filters.grabs.min !== "" || filters.grabs.max !== ""
-                        }
-                        label="Grabs"
-                        testId="header-filter-grabs"
-                    >
-                        <NumericFilter
-                            label="Grabs / seeders"
-                            name="grabs"
-                            onChange={updateRange}
-                            onClear={clearRange}
-                            range={filters.grabs}
-                            testIdPrefix="header-grabs"
-                        />
-                    </HeaderFilterMenu>
-                );
-            case "epoch":
-                return (
-                    <HeaderFilterMenu
-                        active={
-                            filters.age.min !== "" || filters.age.max !== ""
-                        }
-                        label="Age"
-                        testId="header-filter-age"
-                    >
-                        <NumericFilter
-                            label="Age (days)"
-                            name="age"
-                            onChange={updateRange}
-                            onClear={clearRange}
-                            range={filters.age}
-                            testIdPrefix="header-age"
-                        />
-                    </HeaderFilterMenu>
-                );
-            default:
-                return null;
-        }
-    };
     return (
         <Stack data-testid="search-results" spacing={2} sx={{mt: 4}}>
             {data.indexerLimitWarnings.length > 0 && (
@@ -747,122 +611,6 @@ export function SearchResults({
                                     />
                                 </Box>
                             </Stack>
-                            <Stack
-                                alignItems="flex-end"
-                                data-testid="results-filters"
-                                direction="row"
-                                flexWrap="wrap"
-                                gap={1}
-                                sx={{display: {xs: "flex", sm: "none"}}}
-                            >
-                                <TextField
-                                    label="Filter titles"
-                                    size="small"
-                                    slotProps={{
-                                        htmlInput: {
-                                            "data-testid":
-                                                "freetext-filter-title",
-                                        },
-                                    }}
-                                    value={filters.title}
-                                    onChange={(event) =>
-                                        setFilters((current) => ({
-                                            ...current,
-                                            title: event.target.value,
-                                        }))
-                                    }
-                                />
-                                <MultiFilter
-                                    label="Indexer"
-                                    testId="filter-toggle-indexer"
-                                    entries={data.searchResults.map(
-                                        (result) => result.indexer,
-                                    )}
-                                    selected={filters.indexers}
-                                    onChange={(indexers) =>
-                                        setFilters((current) => ({
-                                            ...current,
-                                            indexers,
-                                        }))
-                                    }
-                                />
-                                <MultiFilter
-                                    label="Category"
-                                    testId="filter-toggle-category"
-                                    entries={data.searchResults.map(
-                                        (result) => result.category,
-                                    )}
-                                    selected={filters.categories}
-                                    onChange={(categories) =>
-                                        setFilters((current) => ({
-                                            ...current,
-                                            categories,
-                                        }))
-                                    }
-                                />
-                                <NumericFilter
-                                    label="Size (MB)"
-                                    name="size"
-                                    range={filters.size}
-                                    onChange={updateRange}
-                                    onClear={clearRange}
-                                />
-                                <NumericFilter
-                                    label="Grabs / seeders"
-                                    name="grabs"
-                                    range={filters.grabs}
-                                    onChange={updateRange}
-                                    onClear={clearRange}
-                                />
-                                <NumericFilter
-                                    label="Age (days)"
-                                    name="age"
-                                    range={filters.age}
-                                    onChange={updateRange}
-                                    onClear={clearRange}
-                                />
-                            </Stack>
-                            {quickFilters.length > 0 && (
-                                // Visible only at xs (mobile), matching the
-                                // mobile-only `results-filters` row: at `sm`
-                                // and up, the same quick filters (bound to
-                                // the same `filters.quickFilters` state) now
-                                // render in the persistent refine-sidebar's
-                                // Quality section instead, so this row would
-                                // otherwise duplicate an identically-labeled,
-                                // simultaneously-visible control.
-                                <Stack
-                                    data-testid="results-quick-filters"
-                                    direction="row"
-                                    flexWrap="wrap"
-                                    gap={1}
-                                    sx={{display: {xs: "flex", sm: "none"}}}
-                                >
-                                    {quickFilters.map((filter) => (
-                                        <Button
-                                            aria-pressed={
-                                                filters.quickFilters[
-                                                    quickFilterKey(filter)
-                                                ] ?? false
-                                            }
-                                            key={`${filter.group}-${filter.id}`}
-                                            onClick={() =>
-                                                toggleQuickFilter(filter)
-                                            }
-                                            size="small"
-                                            variant={
-                                                filters.quickFilters[
-                                                    quickFilterKey(filter)
-                                                ]
-                                                    ? "contained"
-                                                    : "outlined"
-                                            }
-                                        >
-                                            {filter.label}
-                                        </Button>
-                                    ))}
-                                </Stack>
-                            )}
                         </Stack>
                     </Paper>
                     <Stack
@@ -976,6 +724,9 @@ export function SearchResults({
                                                     <TableCell
                                                         data-label="Select"
                                                         padding="checkbox"
+                                                        sx={{
+                                                            py: HEADER_CELL_PADDING_Y,
+                                                        }}
                                                     >
                                                         <SelectionMenu
                                                             idPrefix="header"
@@ -1038,6 +789,7 @@ export function SearchResults({
                                                                         overflow:
                                                                             "hidden",
                                                                         px: 1,
+                                                                        py: HEADER_CELL_PADDING_Y,
                                                                         textOverflow:
                                                                             "ellipsis",
                                                                         whiteSpace:
@@ -1045,83 +797,65 @@ export function SearchResults({
                                                                     }}
                                                                 >
                                                                     {header.isPlaceholder ? null : (
-                                                                        <Stack
-                                                                            alignItems="center"
-                                                                            direction="row"
-                                                                            gap={
-                                                                                0.5
+                                                                        <Button
+                                                                            aria-label={`${
+                                                                                label ??
+                                                                                ""
+                                                                            }${
+                                                                                sortDirection ===
+                                                                                "asc"
+                                                                                    ? " (ascending)"
+                                                                                    : sortDirection ===
+                                                                                        "desc"
+                                                                                      ? " (descending)"
+                                                                                      : ""
+                                                                            }`}
+                                                                            data-sort-direction={
+                                                                                sortDirection ||
+                                                                                "none"
                                                                             }
-                                                                            justifyContent={
-                                                                                isTitle
-                                                                                    ? undefined
-                                                                                    : "flex-end"
-                                                                            }
+                                                                            data-testid={`sort-${header.column.id}`}
+                                                                            onClick={header.column.getToggleSortingHandler()}
+                                                                            size="small"
+                                                                            sx={{
+                                                                                display:
+                                                                                    "block",
+                                                                                flexShrink: 0,
+                                                                                maxWidth:
+                                                                                    "100%",
+                                                                                minWidth: 0,
+                                                                                overflow:
+                                                                                    "hidden",
+                                                                                px: 0.5,
+                                                                                textAlign:
+                                                                                    isTitle
+                                                                                        ? "left"
+                                                                                        : "right",
+                                                                                textOverflow:
+                                                                                    "ellipsis",
+                                                                                whiteSpace:
+                                                                                    "nowrap",
+                                                                            }}
                                                                         >
-                                                                            <Button
-                                                                                aria-label={`${
-                                                                                    label ??
-                                                                                    ""
-                                                                                }${
-                                                                                    sortDirection ===
-                                                                                    "asc"
-                                                                                        ? " (ascending)"
-                                                                                        : sortDirection ===
-                                                                                            "desc"
-                                                                                          ? " (descending)"
-                                                                                          : ""
-                                                                                }`}
-                                                                                data-sort-direction={
-                                                                                    sortDirection ||
-                                                                                    "none"
-                                                                                }
-                                                                                data-testid={`sort-${header.column.id}`}
-                                                                                onClick={header.column.getToggleSortingHandler()}
-                                                                                size="small"
-                                                                                sx={{
-                                                                                    display:
-                                                                                        "block",
-                                                                                    flexShrink: 0,
-                                                                                    maxWidth:
-                                                                                        "100%",
-                                                                                    minWidth: 0,
-                                                                                    overflow:
-                                                                                        "hidden",
-                                                                                    px: 0.5,
-                                                                                    textAlign:
-                                                                                        isTitle
-                                                                                            ? "left"
-                                                                                            : "right",
-                                                                                    textOverflow:
-                                                                                        "ellipsis",
-                                                                                    whiteSpace:
-                                                                                        "nowrap",
-                                                                                }}
-                                                                            >
-                                                                                {flexRender(
-                                                                                    header
-                                                                                        .column
-                                                                                        .columnDef
-                                                                                        .header,
-                                                                                    header.getContext(),
-                                                                                )}
-                                                                                {sortDirection && (
-                                                                                    <Box
-                                                                                        aria-hidden="true"
-                                                                                        component="span"
-                                                                                    >
-                                                                                        {sortDirection ===
-                                                                                        "asc"
-                                                                                            ? " ▲"
-                                                                                            : " ▼"}
-                                                                                    </Box>
-                                                                                )}
-                                                                            </Button>
-                                                                            {renderHeaderFilter(
+                                                                            {flexRender(
                                                                                 header
                                                                                     .column
-                                                                                    .id,
+                                                                                    .columnDef
+                                                                                    .header,
+                                                                                header.getContext(),
                                                                             )}
-                                                                        </Stack>
+                                                                            {sortDirection && (
+                                                                                <Box
+                                                                                    aria-hidden="true"
+                                                                                    component="span"
+                                                                                >
+                                                                                    {sortDirection ===
+                                                                                    "asc"
+                                                                                        ? " ▲"
+                                                                                        : " ▼"}
+                                                                                </Box>
+                                                                            )}
+                                                                        </Button>
                                                                     )}
                                                                 </TableCell>
                                                             );
@@ -1131,6 +865,7 @@ export function SearchResults({
                                                         align="right"
                                                         data-label="Actions"
                                                         sx={{
+                                                            py: HEADER_CELL_PADDING_Y,
                                                             whiteSpace:
                                                                 "nowrap",
                                                         }}
@@ -1567,44 +1302,6 @@ function SelectionMenu({
                 </MenuItem>
             </Menu>
         </Stack>
-    );
-}
-
-function HeaderFilterMenu({
-    active,
-    children,
-    label,
-    testId,
-}: {
-    active: boolean;
-    children: ReactNode;
-    label: string;
-    testId: string;
-}) {
-    const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-    return (
-        <>
-            <Button
-                aria-label={`Filter ${label}`}
-                aria-pressed={active}
-                data-testid={`${testId}-toggle`}
-                onClick={(event) => setAnchorEl(event.currentTarget)}
-                size="small"
-                sx={{minWidth: 0, px: 0.75}}
-                variant={active ? "contained" : "outlined"}
-            >
-                ▾
-            </Button>
-            <Popover
-                anchorEl={anchorEl}
-                anchorOrigin={{horizontal: "right", vertical: "bottom"}}
-                onClose={() => setAnchorEl(null)}
-                open={Boolean(anchorEl)}
-                slotProps={{paper: {sx: {minWidth: 220, p: 1.5}}}}
-            >
-                <Box data-testid={testId}>{children}</Box>
-            </Popover>
-        </>
     );
 }
 
