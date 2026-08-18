@@ -55,3 +55,4 @@ org.eclipse.jdt.apt.core.prefs
 .mcp
 .mnemosyne/
 .playwright-cli
+uimock/

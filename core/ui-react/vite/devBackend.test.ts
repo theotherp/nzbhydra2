@@ -11,31 +11,31 @@ function shell(script: string): string {
 describe("extractBootstrapJson", () => {
     it("extracts the inlined bootstrap object", () => {
         const html = shell(
-            "window.__NZBHYDRA_BOOTSTRAP__ = {\"username\":null,\"baseUrl\":\"/\"};",
+            'window.__NZBHYDRA_BOOTSTRAP__ = {"username":null,"baseUrl":"/"};',
         );
 
         expect(extractBootstrapJson(html)).toBe(
-            "{\"username\":null,\"baseUrl\":\"/\"}",
+            '{"username":null,"baseUrl":"/"}',
         );
     });
 
     it("keeps nested objects intact", () => {
         const html = shell(
-            "window.__NZBHYDRA_BOOTSTRAP__ = {\"safeConfig\":{\"categories\":[{\"name\":\"All\"}]},\"baseUrl\":\"/\"};",
+            'window.__NZBHYDRA_BOOTSTRAP__ = {"safeConfig":{"categories":[{"name":"All"}]},"baseUrl":"/"};',
         );
 
         expect(extractBootstrapJson(html)).toBe(
-            "{\"safeConfig\":{\"categories\":[{\"name\":\"All\"}]},\"baseUrl\":\"/\"}",
+            '{"safeConfig":{"categories":[{"name":"All"}]},"baseUrl":"/"}',
         );
     });
 
     it("ignores braces and quotes inside string values", () => {
         const html = shell(
-            "window.__NZBHYDRA_BOOTSTRAP__ = {\"username\":\"a\\\"}b{\",\"baseUrl\":\"/\"};",
+            'window.__NZBHYDRA_BOOTSTRAP__ = {"username":"a\\"}b{","baseUrl":"/"};',
         );
 
         expect(extractBootstrapJson(html)).toBe(
-            "{\"username\":\"a\\\"}b{\",\"baseUrl\":\"/\"}",
+            '{"username":"a\\"}b{","baseUrl":"/"}',
         );
     });
 
@@ -46,7 +46,7 @@ describe("extractBootstrapJson", () => {
     it("returns null when the assignment is truncated", () => {
         expect(
             extractBootstrapJson(
-                "<script>window.__NZBHYDRA_BOOTSTRAP__ = {\"baseUrl\":\"/\"",
+                '<script>window.__NZBHYDRA_BOOTSTRAP__ = {"baseUrl":"/"',
             ),
         ).toBeNull();
     });

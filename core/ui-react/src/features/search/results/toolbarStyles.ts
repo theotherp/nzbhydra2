@@ -2,8 +2,8 @@
  * Surface values for the results toolbar (`results-toolbar`), the tri-state
  * select-all checkbox and its caret menu, the bulk-actions bar's "Send to
  * downloader"/ZIP buttons, and the `results-download-actions` region
- * (FM-046), read from `/tmp/hydra mock/Awaiting responses for direction/
- * NZBHydra Search.dc.html`'s sticky toolbar block (`<div
+ * (FM-046), read from `uimock/NZBHydra Search.dc.html`'s sticky toolbar block
+ * (`<div
  * style="position:sticky;top:0...">`, ignoring the sticky positioning itself
  * -- FM-042's scope) and the grid header's first column (`toggleAll`/
  * `toggleSelMenu`/`showSelMenu` block), plus that file's `renderVals()`

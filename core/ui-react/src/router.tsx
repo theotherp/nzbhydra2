@@ -1,5 +1,10 @@
 import {Button, Container, Stack, Typography} from "@mui/material";
-import {createRootRoute, createRoute, createRouter, Outlet,} from "@tanstack/react-router";
+import {
+    createRootRoute,
+    createRoute,
+    createRouter,
+    Outlet,
+} from "@tanstack/react-router";
 import {ApiTransport} from "./api/transport";
 
 import {AppShell} from "./app/AppShell";

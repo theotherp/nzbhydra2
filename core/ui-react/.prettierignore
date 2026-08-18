@@ -1,0 +1,4 @@
+# Scratch artifacts written by the playwright-cli tooling. They are git-ignored
+# (see the repository .gitignore), but Prettier only reads a .gitignore next to
+# its working directory, so it would otherwise format-check throwaway output.
+.playwright-cli/

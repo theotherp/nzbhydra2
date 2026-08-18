@@ -60,7 +60,7 @@ Do not modify files outside Files Allowed To Modify. If a required change falls 
 - `F-SEARCH-RESULTS`, `F-SEARCH-SORT-FILTER`, `F-SEARCH-PAGING`, `C-RESULT-TABLE`, and the FM-018, FM-034, FM-045, FM-046, and FM-041 packets
 - `core/ui-react/src/app/AppShell.tsx` and `core/ui-react/src/router.tsx` — read only, to confirm the scroll model and that no ancestor sets `overflow`
 - `core/ui-react/src/features/search/results/SearchResults.tsx` (the responsive table styling that hides `thead` below `sm`, and every `Popover`/menu anchored in the toolbar or header, post-FM-041/FM-045/FM-046)
-- `/tmp/hydra mock/Awaiting responses for direction/NZBHydra Search.dc.html` — the sticky toolbar (`<div style="position:sticky;top:0...">`) and sticky header-row (`<div style="position:sticky;top:51px...">`) blocks, for the exact
+- `uimock/NZBHydra Search.dc.html` — the sticky toolbar (`<div style="position:sticky;top:0...">`) and sticky header-row (`<div style="position:sticky;top:51px...">`) blocks, for the exact
   offset relationship; its fixed-viewport shell, inline colors, and fonts beyond the offsets themselves are not authoritative
 - `tests/system/tests/results.spec.ts` and `tests/system/tests/visualEvidence.ts`
 

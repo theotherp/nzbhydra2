@@ -106,12 +106,12 @@ export function extractBootstrapJson(html: string): string | null {
                 escaped = false;
             } else if (character === "\\") {
                 escaped = true;
-            } else if (character === "\"") {
+            } else if (character === '"') {
                 inString = false;
             }
             continue;
         }
-        if (character === "\"") {
+        if (character === '"') {
             inString = true;
         } else if (character === "{") {
             depth++;

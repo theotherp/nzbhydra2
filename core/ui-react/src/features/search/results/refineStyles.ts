@@ -1,6 +1,6 @@
 /**
  * Surface values of the mock's `<aside>` refine panel, read from
- * `/tmp/hydra mock/Awaiting responses for direction/NZBHydra Search.dc.html`
+ * `uimock/NZBHydra Search.dc.html`
  * (its `<aside style="flex:0 0 248px;...">` block and the `rowStyle(active)` /
  * `chip(active)` helpers in the same file's script section).
  *

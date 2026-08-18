@@ -34,7 +34,7 @@ not itself decide whether the mock's net-new search-page UI concepts (a "Refine"
     evidence too, so they are listed here for completeness rather than omitted.
   - Every other applicable `visual` record in the file (`F-AUTH-LOGIN`, `F-SEARCH-PROGRESS`, `F-SEARCH-TOUR`, all `F-CONFIG-*`, `F-STATS-*`, `F-HISTORY-*`, all `F-SYSTEM-*`, `F-PLATFORM-LIVE-STATUS`) is `status: unassessed`, so a
     palette change has no accepted claim to invalidate there — but per the rollout note below, these routes would keep the *old* look under Option A until a route-specific redesign task exists, since only the search page has a mock.
-- The mock, read directly at `/tmp/hydra mock/Awaiting responses for direction/NZBHydra Search.dc.html`, is a static but fully wired interactive HTML/JS prototype of a redesigned search page (not a flat image). Confirmed by reading the
+- The mock, read directly at `uimock/NZBHydra Search.dc.html`, is a static but fully wired interactive HTML/JS prototype of a redesigned search page (not a flat image). Confirmed by reading the
   file:
   - Page background `#1f2426`; header/nav bar `#262c2e` (i.e. legacy's and ADR-0007's current *page* background color is reused as the *header* color in the new design, not the page background).
   - Primary accent teal/cyan `oklch(0.75 0.1 190)` (brighter hover/active variant `oklch(0.82 0.1 190)` / `oklch(0.85 0.1 190)`), used for the search button, active nav affordances, links, selected-row tint, and interactive highlights —
@@ -145,7 +145,7 @@ records is the same mechanism ADR-0007 itself used against FM-027, the shell-fir
   `F-PLATFORM-LIVE-STATUS`.
 - Policy context: `docs/frontend-migration/decisions/ADR-0002-frontend-stack.md` (MUI-only boundary, unchanged) and `docs/frontend-migration/decisions/ADR-0006-visual-parity-policy.md` (semantic visual parity and human-acceptance
   process, unchanged; this ADR's token changes flow through ADR-0006's existing remediation mechanism when implementing tasks land).
-- Source evidence (not a repository file): `/tmp/hydra mock/Awaiting responses for direction/NZBHydra Search.dc.html`, the human-authored interactive prototype this ADR evaluates.
+- Source evidence (present in the working tree but git-ignored, not a tracked repository file): `uimock/NZBHydra Search.dc.html`, the human-authored interactive prototype this ADR evaluates.
 
 ## Supersession
 

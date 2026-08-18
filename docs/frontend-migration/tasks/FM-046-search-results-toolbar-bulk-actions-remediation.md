@@ -57,7 +57,7 @@ Do not modify files outside Files Allowed To Modify. If a required change falls 
 - `F-SEARCH-GROUP-SELECTION`, `F-SEARCH-DOWNLOADS`, `F-SEARCH-SAVED`, `F-SEARCH-RESULTS`, `C-RESULT-TABLE`, `C-DOWNLOAD-ACTIONS`, and the FM-012, FM-013, FM-019, and FM-040 packets
 - `core/ui-react/src/app/theme.ts` (read only, post-FM-043)
 - `core/ui-react/src/features/search/results/SearchResults.tsx` (`SelectionMenu`, `results-toolbar`, `search-results-summary`) and `DownloadActions.tsx` in full
-- `/tmp/hydra mock/Awaiting responses for direction/NZBHydra Search.dc.html` — the sticky toolbar block (`<div style="position:sticky;top:0...">`, ignore the sticky positioning itself — that is FM-042's scope) and the grid header's
+- `uimock/NZBHydra Search.dc.html` — the sticky toolbar block (`<div style="position:sticky;top:0...">`, ignore the sticky positioning itself — that is FM-042's scope) and the grid header's
   first column (`toggleAll`/`toggleSelMenu`/`showSelMenu` block) for exact colors, padding, and control shapes; note the `renderVals()` script's `chip`/`rowStyle`/selection color functions for the exact hex/oklch values used
 - `tests/system/tests/results.spec.ts` and `tests/system/tests/visualEvidence.ts`
 
@@ -188,7 +188,7 @@ horizontal overflow, at both viewports.
 ### Architecture Decisions
 
 - **ADR-0009** (full mock fidelity) governs this task: every palette/density value restyled here (`#2a3133` popover/control surface, `9px`/`8px` radii, `primary.main`/`primary.contrastText`, the `17x17px` checkbox) is read from the
-  mock's sticky-toolbar and grid-header-first-column blocks in `/tmp/hydra mock/.../NZBHydra Search.dc.html`, not invented, and is documented at its source in the new `toolbarStyles.ts`, mirroring `refineStyles.ts`'s established
+  mock's sticky-toolbar and grid-header-first-column blocks in `uimock/NZBHydra Search.dc.html`, not invented, and is documented at its source in the new `toolbarStyles.ts`, mirroring `refineStyles.ts`'s established
   pattern.
 - **ADR-0002** (MUI-only presentation): the tri-state checkbox restyle uses MUI `Checkbox`'s own `icon`/`checkedIcon`/`indeterminateIcon`/`sx` extension points, not a bespoke non-MUI control, per the packet's Out Of Scope instruction.
   Every other control restyled is an existing MUI `Button`/`Select`/`Menu`, restyled through `sx`/`slotProps`, not replaced.

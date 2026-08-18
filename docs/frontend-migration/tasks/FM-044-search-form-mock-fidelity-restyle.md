@@ -60,7 +60,7 @@ Do not modify files outside Files Allowed To Modify. If a required change falls 
 - `F-SEARCH-FORM`, `F-SEARCH-MEDIA`, `F-SEARCH-INDEXERS`, and the FM-016, FM-025, and FM-037 packets (the accepted/proposed contracts and the split-button precedent this task restyles)
 - `core/ui-react/src/app/theme.ts` (read only, post-FM-043, for the tokens this task must consume rather than reinvent)
 - `core/ui-react/src/features/search/workspace/SearchWorkspace.tsx` in full (the `workspace-primary` grid, `workspace-media-refinement`, `workspace-indexers`, `workspace-ranges`, `workspace-actions`, `IndexerSelectionButton`)
-- `/tmp/hydra mock/Awaiting responses for direction/NZBHydra Search.dc.html` — the search-bar row (`<div style="...background:#232a2c...">`), its category/season-episode/query/Advanced-toggle markup, and the Advanced disclosure block
+- `uimock/NZBHydra Search.dc.html` — the search-bar row (`<div style="...background:#232a2c...">`), its category/season-episode/query/Advanced-toggle markup, and the Advanced disclosure block
   only, for structure, density, and color values
 - `tests/system/tests/search.spec.ts` and `tests/system/tests/visualEvidence.ts`
 

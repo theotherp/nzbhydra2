@@ -14,7 +14,7 @@ The dev server at <http://localhost:5173> serves the React application with hot 
 `http://127.0.0.1:5076`. Bootstrap data is scraped from the backend's React shell on every page load, so the running instance's real configuration, indexers, and permissions are used.
 
 | Variable             | Purpose                                                     |
-|----------------------|-------------------------------------------------------------|
+| -------------------- | ----------------------------------------------------------- |
 | `HYDRA_BACKEND_URL`  | Backend to proxy and bootstrap from (default port 5076)     |
 | `HYDRA_BACKEND_AUTH` | `user:password`, required when the backend has auth enabled |
 

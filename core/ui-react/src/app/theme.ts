@@ -50,8 +50,8 @@ const uiFontFamily = '"IBM Plex Sans", system-ui, -apple-system, sans-serif';
  */
 export const monoFontFamily = '"IBM Plex Mono", monospace';
 
-// Mock palette, sourced from `/tmp/hydra mock/Awaiting responses for
-// direction/NZBHydra Search.dc.html` (its `<helmet>` `<style>` block, the outer
+// Mock palette, sourced from `uimock/NZBHydra Search.dc.html` (its `<helmet>`
+// `<style>` block, the outer
 // page `<div>`'s inline style, and its `<header>`). Supersedes ADR-0007's
 // legacy-grey tokens per ADR-0009's accepted full-mock-fidelity decision.
 const mockPalette = {

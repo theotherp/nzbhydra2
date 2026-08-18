@@ -1,7 +1,7 @@
 /**
  * Surface and density values for the results toolbar's "Display options"
  * popover and for the two row treatments it turns on (FM-041), read from
- * `/tmp/hydra mock/Awaiting responses for direction/NZBHydra Search.dc.html`:
+ * `uimock/NZBHydra Search.dc.html`:
  * its `showDisplayMenu` popover block and its `renderVals()` script's row
  * `padY` / `isNew` / `ageColor` / `stripe` logic.
  *

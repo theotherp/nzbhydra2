@@ -13,7 +13,10 @@ import {
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 import {useNavigate, useSearch} from "@tanstack/react-router";
 import {useContext, useEffect, useRef, useState} from "react";
-import type {SearchLiveTransport, SearchProgress,} from "../../api/live/searchState";
+import type {
+    SearchLiveTransport,
+    SearchProgress,
+} from "../../api/live/searchState";
 import {createSearchLiveTransport} from "../../api/live/searchState";
 import type {LiveSubscription} from "../../api/live/transport";
 import {SockJsStompLiveTransport} from "../../api/live/transport";
@@ -22,7 +25,12 @@ import type {RecentSearch} from "../../api/recentSearches";
 import {createSavedSearch} from "../../api/savedSearches";
 
 import type {SearchRequest, SearchResponse} from "../../api/search";
-import {continuationRequest, executeSearch, mergeSearchResponses, shortcutSearch,} from "../../api/search";
+import {
+    continuationRequest,
+    executeSearch,
+    mergeSearchResponses,
+    shortcutSearch,
+} from "../../api/search";
 import {ApiTransport} from "../../api/transport";
 import type {BootstrapData} from "../../bootstrap";
 import {ToastContext} from "../../components/toasts/toasts";
@@ -32,7 +40,11 @@ import {recentSearchCriteria} from "./history/recentSearchCriteria";
 import {RecentSearches} from "./history/RecentSearches";
 import {SearchResults} from "./results/SearchResults";
 import type {SearchFormValues} from "./workspace/SearchWorkspace";
-import {canonicalSearch, SearchWorkspace, valuesFromSearch,} from "./workspace/SearchWorkspace";
+import {
+    canonicalSearch,
+    SearchWorkspace,
+    valuesFromSearch,
+} from "./workspace/SearchWorkspace";
 
 export function SearchPage({
     bootstrap,

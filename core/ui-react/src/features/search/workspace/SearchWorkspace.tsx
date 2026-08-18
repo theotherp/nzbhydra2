@@ -46,7 +46,7 @@ const defaultAutocomplete = async (): Promise<MediaSuggestion[]> => [];
 
 // Surface values of the mock's search-bar row and its Advanced disclosure,
 // read from the `<div style="...background:#232a2c...">` row in
-// `/tmp/hydra mock/Awaiting responses for direction/NZBHydra Search.dc.html`.
+// `uimock/NZBHydra Search.dc.html`.
 //
 // They stay local to this component instead of moving into `theme.ts`
 // (FM-043's file, out of scope for FM-044): the mock uses them for this one

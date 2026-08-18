@@ -14,7 +14,7 @@ component-system boundary.
 
 ## Context And Evidence
 
-- `ADR-0008-branded-visual-redesign.md` (accepted, Option B) evaluated the same mock this ADR evaluates — `/tmp/hydra mock/Awaiting responses for direction/NZBHydra Search.dc.html` — against `ADR-0007-branded-mui-theme-foundation.md`'s
+- `ADR-0008-branded-visual-redesign.md` (accepted, Option B) evaluated the same mock this ADR evaluates — `uimock/NZBHydra Search.dc.html` — against `ADR-0007-branded-mui-theme-foundation.md`'s
   legacy-grey palette, and the repository owner chose Option B: keep ADR-0007's palette/typography unchanged, build only the mock's structural/layout ideas (Refine sidebar, bulk-actions bar, display-options menu, denser sizing) on the
   existing colors. Read in full for this ADR; its Options A/B/C text and evidence about the mock's `oklch` palette (`primary` `oklch(0.75 0.1 190)` teal/cyan; `warning`-shaped amber `oklch(0.76 0.1 70)`; `success`-shaped green
   `oklch(0.75 0.11 150)`), its `'IBM Plex Sans'`/`'IBM Plex Mono'` typography, its runtime-Google-Fonts prototyping shortcut, and its six affected `visual.status: accepted` `FEATURES.yaml` records is not restated here except where the
@@ -188,7 +188,7 @@ duration, and FM-039/FM-040's structural/logic layer is reusable rather than was
 - Required follow-up edit to another ADR (not performed by this document; coordinator/task-designer work): `docs/frontend-migration/decisions/ADR-0008-branded-visual-redesign.md`'s Supersession section.
 - Policy context: `docs/frontend-migration/decisions/ADR-0002-frontend-stack.md` (MUI-only boundary, unchanged) and `docs/frontend-migration/decisions/ADR-0006-visual-parity-policy.md` (semantic visual parity and human-acceptance
   process, unchanged; this ADR's token/density/structural changes flow through ADR-0006's existing remediation mechanism when implementing tasks land).
-- Source evidence (not a repository file): `/tmp/hydra mock/Awaiting responses for direction/NZBHydra Search.dc.html`, the same human-authored interactive prototype ADR-0008 evaluated.
+- Source evidence (present in the working tree but git-ignored, not a tracked repository file): `uimock/NZBHydra Search.dc.html`, the same human-authored interactive prototype ADR-0008 evaluated.
 
 ## Supersession
 

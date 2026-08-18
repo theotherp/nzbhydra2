@@ -62,7 +62,7 @@ Do not modify files outside Files Allowed To Modify. If a required change falls 
 - `core/ui-react/src/features/search/results/SearchResults.tsx` in full — `renderHeaderFilter`/`HeaderFilterMenu` (the inline popovers being removed), the `results-filters` mobile `Stack`, the `results-quick-filters` row, and
   `TABLE_MIN_WIDTH`'s existing rationale (Assumptions in the FM-039 handoff)
 - `core/ui-react/src/features/search/results/RefineSidebar.tsx` and `filterControls.tsx` in full (`MultiFilter`'s checkbox rendering being replaced, `NumericFilter`'s `stacked` mode being kept)
-- `/tmp/hydra mock/Awaiting responses for direction/NZBHydra Search.dc.html` — the `<aside>` block's Category/Indexer row markup and its `rowStyle`/`chip` styling functions, for the toggle-row's exact colors and padding
+- `uimock/NZBHydra Search.dc.html` — the `<aside>` block's Category/Indexer row markup and its `rowStyle`/`chip` styling functions, for the toggle-row's exact colors and padding
 - `tests/system/tests/results.spec.ts` and `tests/system/tests/visualEvidence.ts`
 
 ## Acceptance

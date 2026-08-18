@@ -79,7 +79,7 @@ Do not modify files outside Files Allowed To Modify. If a required change falls 
 - `core/ui-react/src/features/search/results/RefineSidebar.tsx` lines 88-110 and 294-362 (the `compact` branch decision, the local `drawerOpen` and its in-file rationale, and the two branches' shared `refine-sidebar-toggle` id) and
   `RefineSidebar.test.tsx`'s `Harness` — the state being lifted and the assertions that must keep passing unchanged
 - `core/ui-react/src/app/theme.ts` — read only, to confirm the tokens FM-043 landed and how the `dark-dyschromatopsia` variant composes
-- `/tmp/hydra mock/Awaiting responses for direction/NZBHydra Search.dc.html` — the display-options popover (`showDisplayMenu` block) and the `padY`/`isNew` row-treatment logic in the `renderVals()` script, for both structure and the
+- `uimock/NZBHydra Search.dc.html` — the display-options popover (`showDisplayMenu` block) and the `padY`/`isNew` row-treatment logic in the `renderVals()` script, for both structure and the
   exact color/spacing values now in scope
 - `tests/system/tests/results.spec.ts` and `tests/system/tests/visualEvidence.ts`
 

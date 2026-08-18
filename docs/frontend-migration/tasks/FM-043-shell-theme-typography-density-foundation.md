@@ -96,7 +96,7 @@ Do not modify files outside Files Allowed To Modify. If a required change falls 
 - `core/src/main/java/org/nzbhydra/web/WebConfiguration.java` `addResourceHandlers` (the `/static/**` `noCache()`/`resourceChain(false)` registration and the `<dataFolder>/static` override) and
   `core/src/main/resources/META-INF/native-image/resource-config.json` — read to confirm, not to change
 - `core/ui-react/src/app/theme.ts`, `theme.test.ts`, `AppShell.tsx`, `AppShell.test.tsx`, `App.tsx` in full
-- `/tmp/hydra mock/Awaiting responses for direction/NZBHydra Search.dc.html` — the `<helmet>` `<style>` block, the outer page `<div>`'s inline style, and the `<header>` block only, for the exact palette/typography/radius/scrollbar
+- `uimock/NZBHydra Search.dc.html` — the `<helmet>` `<style>` block, the outer page `<div>`'s inline style, and the `<header>` block only, for the exact palette/typography/radius/scrollbar
   values; ignore its runtime Google Fonts `<link>` tags (font loading is out of scope as vendored, not linked)
 - `tests/system/tests/smoke.spec.ts` and `tests/system/tests/visualEvidence.ts`
 
@@ -353,7 +353,7 @@ Every row below was run in this pass against the final implementation. Nothing i
   change.
 - **The `dark-dyschromatopsia` variant is unretuned.** Its seven override values are byte-identical to ADR-0007's and still spread last. Its `contrastText` values are now stated explicitly, but each is the value MUI itself derived for
   that color before `colorSpace` existed (verified by building the pre-change palette and printing them), so the variant renders identically. `theme.test.ts` asserts both the mains and the contrast texts.
-- **Mock citations for every chosen density value** (all from `/tmp/hydra mock/Awaiting responses for direction/NZBHydra Search.dc.html`):
+- **Mock citations for every chosen density value** (all from `uimock/NZBHydra Search.dc.html`):
   - `shape.borderRadius: 8` and `MuiButton` `borderRadius: 8` — the mock's dominant radius: 21 of its inline styles use `border-radius:8px`, more than all other radii combined, including the primary `<button>Search</button>`, the four
     `<nav>` pills, the toolbar's `Send to downloader`/`Download .zip`/`Display` buttons, and every text `<input>`.
   - `MuiButton` `textTransform: "none"` — the mock labels its buttons `Search`, `Load more results`, `↓ Send to downloader`, `⚙ Display`; never uppercase.
