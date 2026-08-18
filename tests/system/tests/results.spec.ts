@@ -1,17 +1,27 @@
-import {dismissWelcomeDialog, expect, searchForResult, test, testEnvironment,} from "./fixtures";
-import {captureVisualRegion, expectVisualGeometry, prepareVisualEvidence, visualEvidencePath, visualViewports,} from "./visualEvidence";
+import {
+    dismissWelcomeDialog,
+    expect,
+    searchForResult,
+    test,
+    testEnvironment,
+} from "./fixtures";
+import {
+    captureVisualRegion,
+    expectVisualGeometry,
+    prepareVisualEvidence,
+    visualEvidencePath,
+    visualViewports,
+} from "./visualEvidence";
 
 test.describe("Search results", () => {
-    test.beforeEach(async ({ hydra, page }) => {
+    test.beforeEach(async ({hydra, page}) => {
         await hydra.configureMockIndexers(["1", "2"]);
         await page.goto("/");
         await dismissWelcomeDialog(page);
         await expect(page.getByTestId("search-query")).toBeVisible();
     });
 
-    test("should sort results by title in both directions", async ({
-        page,
-    }) => {
+    test("should sort results by title in both directions", async ({page}) => {
         await searchForUiTestResults(page);
 
         const titleSort = page.getByTestId("sort-title");
@@ -92,7 +102,7 @@ test.describe("Search results", () => {
         await page.getByTestId("search-submit").click();
         await expect(page.getByTestId("search-status-modal")).toBeHidden();
         const resultTitles = page.getByTestId("search-result-title");
-        await page.getByRole("button", { name: "x265", exact: true }).click();
+        await page.getByRole("button", {name: "x265", exact: true}).click();
         await expect
             .poll(async () => {
                 const titles = await resultTitles.allTextContents();
@@ -105,8 +115,8 @@ test.describe("Search results", () => {
             })
             .toBe(true);
 
-        await page.getByRole("button", { name: "x265", exact: true }).click();
-        await page.getByRole("button", { name: "HEVC", exact: true }).click();
+        await page.getByRole("button", {name: "x265", exact: true}).click();
+        await page.getByRole("button", {name: "HEVC", exact: true}).click();
         await expect
             .poll(async () => {
                 const titles = await resultTitles.allTextContents();
@@ -141,7 +151,7 @@ test.describe("Search results", () => {
         await expect(page.getByTestId("search-result-row")).toHaveCount(0);
 
         await page
-            .getByRole("button", { name: "Invalid regex", exact: true })
+            .getByRole("button", {name: "Invalid regex", exact: true})
             .click();
         await expectVisibleResultTitles(
             page,
@@ -157,10 +167,10 @@ test.describe("Search results", () => {
         await page.route("**/internalapi/search", async (route) => {
             const response = await route.fetch();
             const body = (await response.json()) as {
-                searchResults: Array<{ title: string | null }>;
+                searchResults: Array<{title: string | null}>;
             };
             body.searchResults[0].title = null;
-            await route.fulfill({ response, json: body });
+            await route.fulfill({response, json: body});
         });
 
         await searchForResult(
@@ -171,15 +181,15 @@ test.describe("Search results", () => {
         await expect(page.getByTestId("search-result-row")).toHaveCount(4);
     });
 
-    test("should clear every filtered-out selection", async ({ page }) => {
+    test("should clear every filtered-out selection", async ({page}) => {
         await searchForUiTestResults(page);
 
         const firstResult = page
             .getByTestId("search-result-row")
-            .filter({ hasText: "indexer1-result1" });
+            .filter({hasText: "indexer1-result1"});
         const secondResult = page
             .getByTestId("search-result-row")
-            .filter({ hasText: "indexer1-result2" });
+            .filter({hasText: "indexer1-result2"});
         await firstResult.locator("input[type=checkbox]").check();
         await secondResult.locator("input[type=checkbox]").check();
 
@@ -366,12 +376,12 @@ test.describe("Search results", () => {
 
         for (const name of ["WEB", "1080p", "x265", "Preferred"]) {
             await expect(
-                page.getByRole("button", { name, exact: true }),
+                page.getByRole("button", {name, exact: true}),
             ).toHaveAttribute("aria-pressed", "true");
         }
         await expectVisibleResultTitles(page, ["Alpha WEB-DL 1080p x265"]);
         for (const name of ["WEB", "1080p", "x265", "Preferred"]) {
-            await page.getByRole("button", { name, exact: true }).click();
+            await page.getByRole("button", {name, exact: true}).click();
         }
         await expectVisibleResultTitles(page, [
             "Alpha WEB-DL 1080p x265",
@@ -443,12 +453,18 @@ test.describe("Search results", () => {
         ]);
     });
 
-    test("should load more and all React results from advancing cache offsets", async ({page}) => {
+    test("should load more and all React results from advancing cache offsets", async ({
+        page,
+    }) => {
         const requests: Array<Record<string, unknown>> = [];
         await page.route("**/internalapi/search", async (route) => {
-            const request = route.request().postDataJSON() as Record<string, unknown>;
+            const request = route.request().postDataJSON() as Record<
+                string,
+                unknown
+            >;
             requests.push(request);
-            const offset = typeof request.offset === "number" ? request.offset : 0;
+            const offset =
+                typeof request.offset === "number" ? request.offset : 0;
             const loadAll = request.loadAll === true;
             const result = (id: string) => ({
                 searchResultId: id,
@@ -476,12 +492,8 @@ test.describe("Search results", () => {
                     notPickedIndexersWithReason: {},
                     numberOfAvailableResults: 3,
                     numberOfRejectedResults: 0,
-                    numberOfProcessedResults: loadAll
-                        ? 3
-                        : offset + 1,
-                    numberOfAcceptedResults: loadAll
-                        ? 3
-                        : offset + 1,
+                    numberOfProcessedResults: loadAll ? 3 : offset + 1,
+                    numberOfAcceptedResults: loadAll ? 3 : offset + 1,
                     offset: loadAll ? 0 : offset,
                     limit: loadAll ? 0 : 1,
                 },
@@ -509,10 +521,15 @@ test.describe("Search results", () => {
         ]);
     });
 
-    test("should stop React load-more after a non-advancing terminal cursor", async ({page}) => {
+    test("should stop React load-more after a non-advancing terminal cursor", async ({
+        page,
+    }) => {
         const requests: Array<Record<string, unknown>> = [];
         await page.route("**/internalapi/search", async (route) => {
-            const request = route.request().postDataJSON() as Record<string, unknown>;
+            const request = route.request().postDataJSON() as Record<
+                string,
+                unknown
+            >;
             requests.push(request);
             const continuation = request.offset === 1;
             await route.fulfill({
@@ -552,7 +569,9 @@ test.describe("Search results", () => {
 
         await page.getByRole("button", {name: "Load more"}).click();
         await expect(
-            page.getByText("The server did not advance the search cache position."),
+            page.getByText(
+                "The server did not advance the search cache position.",
+            ),
         ).toBeVisible();
         const loadMore = page.getByRole("button", {name: "Load more"});
         const loadAll = page.getByRole("button", {name: "Load all results"});
@@ -716,8 +735,7 @@ test.describe("Search results", () => {
                         .getByTestId(`sort-${column}`)
                         .evaluate(
                             (element) =>
-                                element.scrollWidth <=
-                                element.clientWidth + 1,
+                                element.scrollWidth <= element.clientWidth + 1,
                         );
                     expect(noHeaderOverflow).toBe(true);
                 }
@@ -733,16 +751,13 @@ test.describe("Search results", () => {
                     .getByText("Downloaded");
                 await expect(downloadedChip).toBeVisible();
                 const chipNotClipped = await downloadedChip.evaluate(
-                    (element) =>
-                        element.scrollWidth <= element.clientWidth + 1,
+                    (element) => element.scrollWidth <= element.clientWidth + 1,
                 );
                 expect(chipNotClipped).toBe(true);
             } else {
                 const cellDisplay = await directDownload
                     .locator("xpath=ancestor::td[1]")
-                    .evaluate(
-                        (element) => getComputedStyle(element).display,
-                    );
+                    .evaluate((element) => getComputedStyle(element).display);
                 expect(cellDisplay).toBe("flex");
             }
         }
@@ -757,16 +772,14 @@ test.describe("Search results", () => {
             rows
                 .nth(0)
                 .getByTestId("search-result-title")
-                .evaluate(
-                    (element) =>
-                        parseFloat(getComputedStyle(element).paddingLeft),
+                .evaluate((element) =>
+                    parseFloat(getComputedStyle(element).paddingLeft),
                 ),
             rows
                 .nth(1)
                 .getByTestId("search-result-title")
-                .evaluate(
-                    (element) =>
-                        parseFloat(getComputedStyle(element).paddingLeft),
+                .evaluate((element) =>
+                    parseFloat(getComputedStyle(element).paddingLeft),
                 ),
         ]);
         expect(childPaddingLeft).toBeGreaterThan(parentPaddingLeft);
@@ -791,9 +804,9 @@ test.describe("Search results", () => {
         await openRefineSidebar(page);
         await page.getByTestId("refine-filter-title").fill("Another");
         await expect(page.getByTestId("search-result-row")).toHaveCount(1);
-        await expect(
-            page.getByTestId("search-results-summary"),
-        ).toContainText("2 filtered");
+        await expect(page.getByTestId("search-results-summary")).toContainText(
+            "2 filtered",
+        );
     });
 
     test("should provide deterministic refine-sidebar visual evidence across desktop and mobile", async ({
@@ -841,9 +854,9 @@ test.describe("Search results", () => {
                         },
                     ],
                     indexerSearchMetaDatas: [
-                        { indexerName: "Alpha", wasSuccessful: true },
-                        { indexerName: "Beta", wasSuccessful: true },
-                        { indexerName: "Gamma", wasSuccessful: true },
+                        {indexerName: "Alpha", wasSuccessful: true},
+                        {indexerName: "Beta", wasSuccessful: true},
+                        {indexerName: "Gamma", wasSuccessful: true},
                     ],
                     indexerLimitWarnings: [],
                     rejectedReasonsMap: {},
@@ -948,8 +961,7 @@ test.describe("Search results", () => {
                 await expect(row).toHaveText(/\S/);
                 await expect(row).toHaveAttribute("aria-pressed", "true");
                 const rowShape = await row.evaluate((element) => ({
-                    noOverflow:
-                        element.scrollWidth <= element.clientWidth + 1,
+                    noOverflow: element.scrollWidth <= element.clientWidth + 1,
                     tagName: element.tagName,
                 }));
                 expect(rowShape).toEqual({noOverflow: true, tagName: "BUTTON"});
@@ -984,13 +996,13 @@ test.describe("Search results", () => {
         // result with no downloadType is never silently discarded.
         const typeChips = page.getByTestId("refine-type-chips");
         await expect(
-            typeChips.getByRole("button", { name: "NZB" }),
+            typeChips.getByRole("button", {name: "NZB"}),
         ).toBeVisible();
         await expect(
-            typeChips.getByRole("button", { name: "TORBOX" }),
+            typeChips.getByRole("button", {name: "TORBOX"}),
         ).toBeVisible();
         await expect(
-            typeChips.getByRole("button", { name: "TORRENT" }),
+            typeChips.getByRole("button", {name: "TORRENT"}),
         ).toHaveCount(0);
         await expect(page.getByTestId("search-result-row")).toHaveCount(3);
 
@@ -1162,8 +1174,8 @@ test.describe("Search results", () => {
                         },
                     ],
                     indexerSearchMetaDatas: [
-                        { indexerName: "Alpha", wasSuccessful: true },
-                        { indexerName: "Beta", wasSuccessful: true },
+                        {indexerName: "Alpha", wasSuccessful: true},
+                        {indexerName: "Beta", wasSuccessful: true},
                     ],
                     indexerLimitWarnings: [],
                     rejectedReasonsMap: {},
@@ -1294,7 +1306,9 @@ test.describe("Search results", () => {
 
         // "Select all" produces exactly selectVisibleResults's "all"
         // outcome, asserted by the resulting selection state.
-        await page.getByRole("menuitem", { name: "Select all", exact: true }).click();
+        await page
+            .getByRole("menuitem", {name: "Select all", exact: true})
+            .click();
         await expect(headerCheckbox).toBeChecked();
         await expect(headerCheckbox).toHaveAttribute(
             "data-indeterminate",
@@ -1343,7 +1357,7 @@ test.describe("Search results", () => {
         const toolbarMenu = page.getByTestId("toolbar-selection-menu");
         await expect(toolbarMenu).toBeVisible();
         await toolbarMenu
-            .getByRole("button", { name: "Selection options (mobile)" })
+            .getByRole("button", {name: "Selection options (mobile)"})
             .click();
         const mobileMenu = page.getByRole("menu");
         await expect(mobileMenu).toBeVisible();
@@ -1365,7 +1379,9 @@ test.describe("Search results", () => {
                     (element) => element.scrollWidth <= element.clientWidth,
                 ),
         ).toBe(true);
-        await page.getByRole("menuitem", { name: "Select all", exact: true }).click();
+        await page
+            .getByRole("menuitem", {name: "Select all", exact: true})
+            .click();
         await expect(page.getByTestId("send-to-downloader")).toBeEnabled();
         await expect(
             toolbarMenu.getByRole("checkbox", {
@@ -1416,8 +1432,8 @@ test.describe("Search results", () => {
                         },
                     ],
                     indexerSearchMetaDatas: [
-                        { indexerName: "Alpha", wasSuccessful: true },
-                        { indexerName: "Beta", wasSuccessful: true },
+                        {indexerName: "Alpha", wasSuccessful: true},
+                        {indexerName: "Beta", wasSuccessful: true},
                     ],
                     indexerLimitWarnings: [],
                     rejectedReasonsMap: {},
@@ -1430,9 +1446,7 @@ test.describe("Search results", () => {
 
         await prepareVisualEvidence(page, "desktop", async () => {
             await page.goto("ui/react?redirect=/");
-            await page
-                .getByTestId("search-query")
-                .fill("toolbar mock density");
+            await page.getByTestId("search-query").fill("toolbar mock density");
             await page.getByTestId("search-submit").click();
             await expect(page.getByTestId("search-status-modal")).toBeHidden();
             await expect(
@@ -1485,8 +1499,7 @@ test.describe("Search results", () => {
             expect(box.height).toBeLessThanOrEqual(20);
             expect(
                 await headerCheckbox.evaluate(
-                    (element) =>
-                        element.scrollWidth <= element.clientWidth + 1,
+                    (element) => element.scrollWidth <= element.clientWidth + 1,
                 ),
             ).toBe(true);
         };
@@ -1570,9 +1583,7 @@ test.describe("Search results", () => {
         await page.evaluate(() => window.localStorage.clear());
         await prepareVisualEvidence(page, "mobile", async () => {
             await page.goto("ui/react?redirect=/");
-            await page
-                .getByTestId("search-query")
-                .fill("toolbar mock density");
+            await page.getByTestId("search-query").fill("toolbar mock density");
             await page.getByTestId("search-submit").click();
             await expect(page.getByTestId("search-status-modal")).toBeHidden();
             await expect(
@@ -1606,7 +1617,7 @@ test.describe("Search results", () => {
         expect(mobileBox.height).toBeLessThanOrEqual(20);
 
         await toolbarMenu
-            .getByRole("button", { name: "Selection options (mobile)" })
+            .getByRole("button", {name: "Selection options (mobile)"})
             .click();
         const mobileMenu = page.getByRole("menu");
         await expect(mobileMenu).toBeVisible();
@@ -1768,9 +1779,9 @@ test.describe("Search results", () => {
 
         await toggleRefineSurfaceFromMenu(page);
         await expect(sidebarToggle).toHaveAttribute("aria-expanded", "false");
-        expect(
-            await displayOptionChecked(page, "Show refine sidebar"),
-        ).toBe(false);
+        expect(await displayOptionChecked(page, "Show refine sidebar")).toBe(
+            false,
+        );
         const menuCollapsedMetrics = await refineSurfaceMetrics(page);
         expect(menuCollapsedMetrics.sidebarWidth).toBeLessThan(
             expandedMetrics.sidebarWidth,
@@ -1793,14 +1804,14 @@ test.describe("Search results", () => {
         await sidebarToggle.click();
         await expect(sidebarToggle).toHaveAttribute("aria-expanded", "false");
         expect(await refineSurfaceMetrics(page)).toEqual(menuCollapsedMetrics);
-        expect(
-            await displayOptionChecked(page, "Show refine sidebar"),
-        ).toBe(false);
+        expect(await displayOptionChecked(page, "Show refine sidebar")).toBe(
+            false,
+        );
         await sidebarToggle.click();
         await expect(sidebarToggle).toHaveAttribute("aria-expanded", "true");
-        expect(
-            await displayOptionChecked(page, "Show refine sidebar"),
-        ).toBe(true);
+        expect(await displayOptionChecked(page, "Show refine sidebar")).toBe(
+            true,
+        );
 
         // `compact-rows-enabled`: with both preferences off the body cells
         // carry exactly the 6px vertical padding FM-045 established before this
@@ -1953,8 +1964,11 @@ test.describe("Search results", () => {
         await expect(table).toHaveAttribute("data-compact-rows", "true");
         await expectNoTitleCellOverflow(page);
         expect(
-            (await recencyTreatment(resultRow(page, "Display Options Recent One")))
-                .stripe,
+            (
+                await recencyTreatment(
+                    resultRow(page, "Display Options Recent One"),
+                )
+            ).stripe,
         ).toContain("inset");
         await expectNoPageOverflow(page);
         await expectVisualGeometry(page, {
@@ -2015,16 +2029,10 @@ test.describe("Search results", () => {
         // `scrolled-popover-above-sticky` in addition to the retained
         // `desktop` (1280x800), which stays the width under the most
         // pressure and so keeps every other geometry assertion below.
-        for (const viewport of [
-            "desktop",
-            "desktop-wide",
-            "mobile",
-        ] as const) {
+        for (const viewport of ["desktop", "desktop-wide", "mobile"] as const) {
             await prepareVisualEvidence(page, viewport, async () => {
                 await page.goto("ui/react?redirect=/");
-                await page
-                    .getByTestId("search-query")
-                    .fill("sticky evidence");
+                await page.getByTestId("search-query").fill("sticky evidence");
                 await page.getByTestId("search-submit").click();
                 await expect(
                     page.getByTestId("search-status-modal"),
@@ -2033,9 +2041,7 @@ test.describe("Search results", () => {
                     page.getByTestId("search-results-table"),
                 ).toBeVisible();
             });
-            await expect(page.getByTestId("search-result-row")).toHaveCount(
-                24,
-            );
+            await expect(page.getByTestId("search-result-row")).toHaveCount(24);
 
             const toolbar = page.getByTestId("results-toolbar");
 
@@ -2179,9 +2185,9 @@ test.describe("Search results", () => {
                 expect(sidebarBox).not.toBeNull();
                 expect(tableBox).not.toBeNull();
                 if (sidebarBox && tableBox) {
-                    expect(
-                        sidebarBox.x + sidebarBox.width,
-                    ).toBeLessThanOrEqual(tableBox.x + 1);
+                    expect(sidebarBox.x + sidebarBox.width).toBeLessThanOrEqual(
+                        tableBox.x + 1,
+                    );
                 }
 
                 if (viewport === "desktop") {
@@ -2197,9 +2203,9 @@ test.describe("Search results", () => {
                         const table = document.querySelector(
                             '[data-testid="search-results-table"]',
                         );
-                        const th = document.querySelector(
-                            '[data-testid="sort-title"]',
-                        )?.closest("th");
+                        const th = document
+                            .querySelector('[data-testid="sort-title"]')
+                            ?.closest("th");
                         if (!table || !th) {
                             return null;
                         }
@@ -2512,9 +2518,7 @@ test.describe("Search results", () => {
         for (const viewport of ["desktop", "desktop-wide"] as const) {
             await prepareVisualEvidence(page, viewport, async () => {
                 await page.goto("ui/react?redirect=/");
-                await page
-                    .getByTestId("search-query")
-                    .fill("title collapse");
+                await page.getByTestId("search-query").fill("title collapse");
                 await page.getByTestId("search-submit").click();
                 await expect(
                     page.getByTestId("search-status-modal"),
@@ -2548,9 +2552,7 @@ test.describe("Search results", () => {
                     scrollWidth: element.scrollWidth,
                     clientWidth: element.clientWidth,
                     boxHeight: box.getBoundingClientRect().height,
-                    lineHeight: parseFloat(
-                        getComputedStyle(box).lineHeight,
-                    ),
+                    lineHeight: parseFloat(getComputedStyle(box).lineHeight),
                 };
             });
             expect(geometry.scrollWidth).toBeLessThanOrEqual(
@@ -2864,8 +2866,7 @@ async function expectNoTitleCellOverflow(
             await titles
                 .nth(index)
                 .evaluate(
-                    (element) =>
-                        element.scrollWidth <= element.clientWidth + 1,
+                    (element) => element.scrollWidth <= element.clientWidth + 1,
                 ),
         ).toBe(true);
     }
@@ -2971,7 +2972,9 @@ const HEADER_FIT_LABELS: Array<{
     {column: "epoch", label: "Age"},
 ];
 
-async function measureHeaderFit(page: import("@playwright/test").Page): Promise<{
+async function measureHeaderFit(
+    page: import("@playwright/test").Page,
+): Promise<{
     cells: Array<{
         label: string;
         expectedLabel: string;
@@ -3100,8 +3103,8 @@ async function expectVisibleResultTitles(
     await expect
         .poll(() =>
             rows.evaluateAll((elements) =>
-                elements.map(
-                    (element) => element.getAttribute("data-result-title")!,
+                elements.map((element) =>
+                    element.getAttribute("data-result-title")!,
                 ),
             ),
         )
@@ -3150,7 +3153,7 @@ async function mockGroupedResults(
                     },
                 ],
                 indexerSearchMetaDatas: [
-                    { indexerName: "One", wasSuccessful: true },
+                    {indexerName: "One", wasSuccessful: true},
                 ],
                 indexerLimitWarnings: [],
                 rejectedReasonsMap: {},
@@ -3175,7 +3178,7 @@ async function assertGroupExpansionAndBulkSelection(
 ): Promise<void> {
     const rows = page.getByTestId("search-result-row");
     await expect(rows).toHaveCount(2);
-    await page.getByRole("button", { name: "Expand duplicates" }).click();
+    await page.getByRole("button", {name: "Expand duplicates"}).click();
     await expect(rows).toHaveCount(3);
     // FM-040 replaced the flat "Select all"/"Deselect all"/"Invert
     // selection" toolbar buttons this helper used to click directly with a
@@ -3189,9 +3192,9 @@ async function assertGroupExpansionAndBulkSelection(
     // test at a mobile viewport.
     const selectionMenu = page.getByTestId("header-selection-menu");
     await selectionMenu
-        .getByRole("button", { name: "Selection options" })
+        .getByRole("button", {name: "Selection options"})
         .click();
-    await page.getByRole("menuitem", { name: "Select all", exact: true }).click();
+    await page.getByRole("menuitem", {name: "Select all", exact: true}).click();
     await expect(rows.locator("input[type=checkbox]")).toHaveCount(3);
     await expect
         .poll(() =>
@@ -3205,9 +3208,9 @@ async function assertGroupExpansionAndBulkSelection(
         )
         .toBe(true);
     await selectionMenu
-        .getByRole("button", { name: "Selection options" })
+        .getByRole("button", {name: "Selection options"})
         .click();
-    await page.getByRole("menuitem", { name: "Invert selection" }).click();
+    await page.getByRole("menuitem", {name: "Invert selection"}).click();
     await expect
         .poll(() =>
             rows
@@ -3226,7 +3229,9 @@ async function assertLegacyGroupExpansionAndBulkSelection(
 ): Promise<void> {
     const rows = page.getByTestId("search-result-row");
     const initialRowCount = await rows.count();
-    await page.locator(".duplicate-expand-toggle:not(.visibility-hidden)").click();
+    await page
+        .locator(".duplicate-expand-toggle:not(.visibility-hidden)")
+        .click();
     await expect.poll(() => rows.count()).toBeGreaterThan(initialRowCount);
     const selectionButton = page.locator("#search-results-selection-button");
     await selectionButton.locator(".selection-button-toggle-dropdown").click();

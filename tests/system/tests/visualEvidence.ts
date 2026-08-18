@@ -50,7 +50,8 @@ export async function prepareVisualEvidence(
     await page.emulateMedia({reducedMotion: "reduce"});
     await setup();
     await page.addStyleTag({
-        content: "*, *::before, *::after { animation: none !important; transition: none !important; }",
+        content:
+            "*, *::before, *::after { animation: none !important; transition: none !important; }",
     });
     await page.evaluate(async () => {
         await document.fonts.ready;
@@ -69,9 +70,10 @@ export async function expectVisualGeometry(
         return;
     }
     if (check.minimumWidth !== undefined) {
-        expect(box.width, `${check.region} minimum width`).toBeGreaterThanOrEqual(
-            check.minimumWidth,
-        );
+        expect(
+            box.width,
+            `${check.region} minimum width`,
+        ).toBeGreaterThanOrEqual(check.minimumWidth);
     }
     if (check.maximumWidth !== undefined) {
         expect(box.width, `${check.region} maximum width`).toBeLessThanOrEqual(
@@ -85,9 +87,9 @@ export async function expectVisualGeometry(
         `${check.region} must not overflow horizontally`,
     ).toBe(true);
     expect(
-        await page.locator("html").evaluate(
-            (element) => element.scrollWidth <= element.clientWidth,
-        ),
+        await page
+            .locator("html")
+            .evaluate((element) => element.scrollWidth <= element.clientWidth),
         "page must not overflow horizontally",
     ).toBe(true);
 }

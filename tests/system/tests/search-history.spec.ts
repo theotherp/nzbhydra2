@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import {randomUUID} from "node:crypto";
 import {
     dismissWelcomeDialog,
     expect,
@@ -8,14 +8,14 @@ import {
 } from "./fixtures";
 
 test.describe("Search history", () => {
-    test.beforeEach(async ({ hydra, page }) => {
+    test.beforeEach(async ({hydra, page}) => {
         await hydra.configureMockIndexers(["1", "2"]);
         await page.goto("/");
         await dismissWelcomeDialog(page);
         await expect(page.getByTestId("search-query")).toBeVisible();
     });
 
-    test("should show and repeat a UI search", async ({ page }) => {
+    test("should show and repeat a UI search", async ({page}) => {
         const query = `${testEnvironment.searchHistoryQueryPrefix}${randomUUID()}`;
         const category = (await page
             .getByTestId("search-category-control")
@@ -30,17 +30,17 @@ test.describe("Search history", () => {
             isSearchHistoryResponse(response),
         );
         await page
-            .getByRole("link", { name: "History & Stats", exact: true })
+            .getByRole("link", {name: "History & Stats", exact: true})
             .click();
         await page
-            .getByRole("tab", { name: "Search history", exact: true })
+            .getByRole("tab", {name: "Search history", exact: true})
             .click();
         expect((await historyResponse).status()).toBe(200);
 
         const historyRow = page
             .getByTestId("search-history-table")
             .getByTestId("search-history-row")
-            .filter({ hasText: query });
+            .filter({hasText: query});
         await refreshUntilHistoryRowIsVisible(page, historyRow);
         await expect(historyRow).toHaveCount(1);
         await expect(
@@ -60,7 +60,7 @@ test.describe("Search history", () => {
         await expect(
             page
                 .getByTestId("search-result-title")
-                .filter({ hasText: testEnvironment.searchHistoryResultTitle }),
+                .filter({hasText: testEnvironment.searchHistoryResultTitle}),
         ).toBeVisible();
     });
 
@@ -75,26 +75,26 @@ test.describe("Search history", () => {
         );
 
         await page
-            .getByRole("link", { name: "History & Stats", exact: true })
+            .getByRole("link", {name: "History & Stats", exact: true})
             .click();
         await page
-            .getByRole("tab", { name: "Search history", exact: true })
+            .getByRole("tab", {name: "Search history", exact: true})
             .click();
 
         const historyRow = page
             .getByTestId("search-history-table")
             .getByTestId("search-history-row")
-            .filter({ hasText: query });
+            .filter({hasText: query});
         await refreshUntilHistoryRowIsVisible(page, historyRow);
         await historyRow.getByTestId("search-history-details").click();
 
         const detailsModal = page
             .locator(".modal-content")
-            .filter({ hasText: "Related indexer searches" });
+            .filter({hasText: "Related indexer searches"});
         await expect(detailsModal).toBeVisible();
         const responseTimes = detailsModal
             .locator("table")
-            .filter({ hasText: "Related indexer searches" })
+            .filter({hasText: "Related indexer searches"})
             .locator("tbody tr td:nth-child(4)");
         await expect(responseTimes).toHaveText([/^\d+ms$/, /^\d+ms$/]);
     });
@@ -115,15 +115,15 @@ test.describe("Search history", () => {
             isSearchHistoryResponse(response),
         );
         await page
-            .getByRole("link", { name: "History & Stats", exact: true })
+            .getByRole("link", {name: "History & Stats", exact: true})
             .click();
         await page
-            .getByRole("tab", { name: "Search history", exact: true })
+            .getByRole("tab", {name: "Search history", exact: true})
             .click();
         const historyRow = page
             .getByTestId("search-history-table")
             .getByTestId("search-history-row")
-            .filter({ hasText: query });
+            .filter({hasText: query});
         await refreshUntilHistoryRowIsVisible(page, historyRow);
         await expect(historyRow).toHaveCount(1);
 
@@ -136,24 +136,24 @@ test.describe("Search history", () => {
         await expect(
             page
                 .getByTestId("search-result-title")
-                .filter({ hasText: testEnvironment.searchHistoryResultTitle }),
+                .filter({hasText: testEnvironment.searchHistoryResultTitle}),
         ).toBeVisible();
 
         await page
-            .getByRole("link", { name: "History & Stats", exact: true })
+            .getByRole("link", {name: "History & Stats", exact: true})
             .click();
         await page
-            .getByRole("tab", { name: "Search history", exact: true })
+            .getByRole("tab", {name: "Search history", exact: true})
             .click();
         const repeatedRow = page
             .getByTestId("search-history-table")
             .getByTestId("search-history-row")
-            .filter({ hasText: query })
+            .filter({hasText: query})
             .first();
         await refreshUntilHistoryRowIsVisible(page, repeatedRow);
         await repeatedRow.getByTestId("search-history-details").click();
         await expect(
-            page.getByRole("table", { name: "Related indexer searches" }),
+            page.getByRole("table", {name: "Related indexer searches"}),
         ).toContainText(/\d+ms/);
     });
 });
@@ -172,7 +172,7 @@ async function refreshUntilHistoryRowIsVisible(
         await page.getByTestId("search-history-refresh").click();
         expect((await response).status()).toBe(200);
     }
-    await expect(historyRow).toHaveCount(1, { timeout: 1_000 });
+    await expect(historyRow).toHaveCount(1, {timeout: 1_000});
 }
 
 function isSearchResponse(

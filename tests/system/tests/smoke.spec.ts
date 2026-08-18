@@ -10,15 +10,17 @@ test("should load the application shell", async ({page, hydra}) => {
     await page.goto("/");
     await dismissWelcomeDialog(page);
 
-    await expect(page.locator("a[href=\"/\"]")).toBeVisible();
-    await expect(page.locator("a[href=\"/config/main\"]")).toBeVisible();
-    await expect.poll(() => hydra.getConfig().then(config => config.main)).toBeTruthy();
+    await expect(page.locator('a[href="/"]')).toBeVisible();
+    await expect(page.locator('a[href="/config/main"]')).toBeVisible();
+    await expect
+        .poll(() => hydra.getConfig().then((config) => config.main))
+        .toBeTruthy();
 });
 
 test.describe("Branded app shell visual evidence", () => {
-    for (const viewport of Object.keys(
-        visualViewports,
-    ) as Array<keyof typeof visualViewports>) {
+    for (const viewport of Object.keys(visualViewports) as Array<
+        keyof typeof visualViewports
+    >) {
         test(`should render the branded AppBar without horizontal overflow at ${viewport}`, async ({
             page,
         }) => {
@@ -92,7 +94,8 @@ test.describe("Branded app shell visual evidence", () => {
                         window.getComputedStyle(document.body).backgroundColor,
                 ),
                 appBar.evaluate(
-                    (element) => window.getComputedStyle(element).backgroundColor,
+                    (element) =>
+                        window.getComputedStyle(element).backgroundColor,
                 ),
             ]);
             expect(
@@ -162,24 +165,24 @@ test.describe("Branded app shell visual evidence", () => {
                 // Search's own box width is unchanged now that it is
                 // inactive.
                 const searchLink = nav.getByRole("link", {name: "Search"});
-                const searchWidthActive = (
-                    await searchLink.boundingBox()
-                )?.width;
+                const searchWidthActive = (await searchLink.boundingBox())
+                    ?.width;
                 expect(
                     searchWidthActive,
                     "Search nav item must have a bounding box while active",
                 ).not.toBeUndefined();
 
-                const otherLink = navLinks.filter({hasNotText: "Search"}).first();
+                const otherLink = navLinks
+                    .filter({hasNotText: "Search"})
+                    .first();
                 await otherLink.click();
                 await expect(searchLink).not.toHaveAttribute(
                     "aria-current",
                     "page",
                 );
 
-                const searchWidthInactive = (
-                    await searchLink.boundingBox()
-                )?.width;
+                const searchWidthInactive = (await searchLink.boundingBox())
+                    ?.width;
                 expect(
                     searchWidthInactive,
                     "Search nav item must have a bounding box while inactive",

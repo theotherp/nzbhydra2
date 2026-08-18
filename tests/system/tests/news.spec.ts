@@ -1,4 +1,4 @@
-import { expect, test } from "./fixtures";
+import {expect, test} from "./fixtures";
 
 const newsPayload = [
     {
@@ -29,15 +29,15 @@ test("should render deterministic news in legacy and React shells without overfl
         });
     });
 
-    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.setViewportSize({width: 1280, height: 800});
     await page.goto(applicationUrl("system/news"));
     await expect(
-        page.getByRole("heading", { name: /2\.0\.0.*This version/ }),
+        page.getByRole("heading", {name: /2\.0\.0.*This version/}),
     ).toBeVisible();
     await expect(
-        page.getByRole("heading", { name: /2\.1\.0.*Newer version/ }),
+        page.getByRole("heading", {name: /2\.1\.0.*Newer version/}),
     ).toBeVisible();
-    await expect(page.getByRole("link", { name: "safe link" })).toBeVisible();
+    await expect(page.getByRole("link", {name: "safe link"})).toBeVisible();
     expect(
         await page
             .locator("html")
@@ -47,10 +47,10 @@ test("should render deterministic news in legacy and React shells without overfl
     await page.goto(applicationUrl("ui/react?redirect=/system/news"));
     await expect(page).toHaveURL(/\/system\/news$/);
     await expect(
-        page.getByRole("heading", { name: /2\.0\.0.*This version/ }),
+        page.getByRole("heading", {name: /2\.0\.0.*This version/}),
     ).toBeVisible();
     await expect(
-        page.getByRole("heading", { name: /2\.1\.0.*Newer version/ }),
+        page.getByRole("heading", {name: /2\.1\.0.*Newer version/}),
     ).toBeVisible();
     expect(
         await page
@@ -68,14 +68,14 @@ test("should render deterministic news in legacy and React shells without overfl
             .evaluate((element) => element.scrollWidth <= element.clientWidth),
     ).toBe(true);
 
-    await page.setViewportSize({ width: 390, height: 844 });
+    await page.setViewportSize({width: 390, height: 844});
     expect(
         await page
             .locator("html")
             .evaluate((element) => element.scrollWidth <= element.clientWidth),
     ).toBe(true);
 
-    const safeLink = page.getByRole("link", { name: "safe link" });
+    const safeLink = page.getByRole("link", {name: "safe link"});
     await safeLink.focus();
     await page.keyboard.press("Enter");
     await expect(page).toHaveURL(/#safe-news$/);

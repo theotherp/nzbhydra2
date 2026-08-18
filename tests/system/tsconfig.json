@@ -5,13 +5,7 @@
     "moduleResolution": "Node",
     "strict": true,
     "noEmit": true,
-    "types": [
-      "node",
-      "@playwright/test"
-    ]
+    "types": ["node", "@playwright/test"]
   },
-  "include": [
-    "playwright.config.ts",
-    "tests/**/*.ts"
-  ]
+  "include": ["playwright.config.ts", "tests/**/*.ts"]
 }

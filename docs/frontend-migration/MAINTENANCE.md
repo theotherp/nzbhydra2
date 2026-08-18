@@ -96,6 +96,14 @@ Format, one entry per fix:
 - **Commit:** `654f403ba`
 - **Note:** `npx prettier --check .` run unscoped from `tests/system` aborted on `data/logs/nzbhydra2-log.json` (newline-delimited JSON, git-ignored runtime output), so the directory had no usable formatting gate at all. Prettier only reads a `.gitignore` next to its own working directory, which is why `core/ui-react` already carried one. Ignored: runtime/build output, `package-lock.json`, the Java module's `src/`, and `instanceData/`'s byte-sensitive v1-migration fixture. **Deliberately not ignored:** `tests/*.ts`, `playwright.config.ts`, `tsconfig.json` — the never-formatted-sources candidate below is still open, and the command now reports those 13 files (exit 1) instead of crashing, which is the point.
 
+### 2026-08-18 — Establish the Prettier baseline for `tests/system` sources
+
+- **Why not a packet:** formatter output. The item had been routed to `/fm-orchestrate` only because nobody had decided whether to establish the baseline; the repository owner decided on 2026-08-18, with the git-blame churn stated up front. A task packet to run a formatter is the overhead this command exists to avoid.
+- **Paths:** 13 files — `tests/system/playwright.config.ts`, `tsconfig.json`, and `tests/{downloads,external-tools,news,results,search-history,shell-selector,smoke,stats}.spec.ts`, `tests/{environment,fixtures,visualEvidence}.ts`. (`search.spec.ts` was already formatted by FM-047.)
+- **Gates:** `tests/system` `npx tsc --noEmit` passed and `npx prettier --check .` passed — the first time it has ever reported clean; `core/ui-react` `validate:migration` and `format:check` passed; `git diff --check` clean at the root. Because the diff touches the `results.spec.ts` FM-042 landed the same day, static checks were not treated as sufficient: `tests/results.spec.ts` was run in full against a real Maven-built JVM backend with mockserver and the sonarr/radarr fixtures — **22 passed (57.3s), exit 0**, the same tally FM-042 recorded before reformatting. The other spec files were not executed.
+- **Commit:** `ba4acd521`
+- **Note:** these files were invisible until `654f403ba` stopped `prettier --check .` crashing before it reached them, so the directory had a gate that could never pass. Semantic equivalence was checked rather than assumed, and the **first check failed**: a whitespace-stripped fingerprint differed for 9 files, because Prettier also normalizes quote style (`"a[href=\"/\"]"` becomes `'a[href="/"]'`, an identical runtime string) and adds arrow parens. A structural invariant was used instead — per-file counts of `test(`, `expect(`, `locator(`, `getByTestId(` and `data-testid` literals are byte-identical before and after for all 13 files.
+
 ---
 
 ## Open candidates
@@ -103,12 +111,6 @@ Format, one entry per fix:
 Known small defects not yet fixed. Discharge one with `/fm-quickfix`, then move it into the ledger above with its commit SHA. If a candidate turns out to fail the qualification gate, say so here and route it to `/fm-orchestrate`
 instead of leaving it to rot.
 
-- **The other 11 `tests/system` spec files have never been Prettier-formatted.** `downloads.spec.ts`, `environment.ts`, `external-tools.spec.ts`, `fixtures.ts`, `news.spec.ts`, `results.spec.ts`, `search-history.spec.ts`,
-  `shell-selector.spec.ts`, `smoke.spec.ts`, `stats.spec.ts`, and `visualEvidence.ts` all contain long (100–190 char) unwrapped lines and diverge from `core/ui-react`'s config (and from each other) far beyond the 5-statement drift
-  `search.spec.ts` had. No single `printWidth` reconciles all of them simultaneously — tested 80 through 999 against the new `tests/system/.prettierrc.json`; some files want effectively unbounded width, others want 80. A real fix
-  means either a full `prettier --write` pass (large diff across every one of these files, since most FM tasks never touch them, so blast radius and git-blame churn need a human call) or leaving them permanently un-gated. Not a
-  quickfix: it fails the "blast radius you can state precisely but is not small" bar and the resulting diff would not be formatting-only relative to committed intent for files no packet has ever asserted a canonical style for. Route
-  to `/fm-orchestrate` if this baseline is worth establishing, or decide these files stay outside the formatting gate.
 - **Refill is plausibly not keyboard-reachable.** `RecentSearches.tsx` renders Refill as a focusable `IconButton` nested inside a `MenuItem`, and MUI `MenuList`'s roving focus does not visit nested descendants — so Refill is reachable
   by pointer and drag while the row's Repeat is reachable by keyboard. Confirmed independently by the FM-047 designer and implementer. This is a capability gap, not a cosmetic one, and it fails the quickfix gate on two counts: it
   changes user-observable interaction semantics, and FM-038's single-row layout was an explicit human instruction recorded in `F-SEARCH-RECENT`'s `visual` note, so a fix would likely need fresh ADR-0006 acceptance. Needs a task packet
