@@ -42,6 +42,21 @@ import {quickFilterKey} from "./resultTable";
 export const EXPANDED_WIDTH = 248;
 export const COLLAPSED_WIDTH = 48;
 
+// The single definition of "which refine-surface branch is live". Exported so
+// `SearchResults.tsx` resolves the same branch this component renders (FM-041's
+// "Show refine sidebar" display-options entry has to read and write whichever
+// of the two mechanisms is mounted) without duplicating the breakpoint query
+// string, which could then drift from this file's own.
+//
+// `useTheme()` from `@mui/material/styles` (rather than `useMediaQuery`'s own
+// callback form) so the breakpoint still resolves in a component test that
+// renders without a `ThemeProvider`, where `@mui/system`'s theme context is
+// null.
+export function useCompactRefineSurface(): boolean {
+    const theme = useTheme();
+    return useMediaQuery(theme.breakpoints.down("sm"));
+}
+
 // The "Refine" filter sidebar. Since FM-045 (ADR-0009: full mock fidelity)
 // it is the *only* result-filter surface at every viewport: FM-034's inline
 // per-column-header filter popovers and the mobile-only `results-filters` /
@@ -62,8 +77,10 @@ export const COLLAPSED_WIDTH = 48;
 export function RefineSidebar({
     clearRange,
     collapsed,
+    drawerOpen,
     filters,
     onClearAll,
+    onDrawerOpenChange,
     onToggleCollapsed,
     onToggleQuickFilter,
     quickFilters,
@@ -73,8 +90,16 @@ export function RefineSidebar({
 }: {
     clearRange: (name: "size" | "grabs" | "age") => void;
     collapsed: boolean;
+    // The below-`sm` drawer's open state, owned by `SearchResults.tsx` since
+    // FM-041 so its display-options "Show refine sidebar" entry can read and
+    // write the same mechanism this branch's `refine-sidebar-toggle` drives.
+    // Deliberately *not* the persisted `collapsed` preference and deliberately
+    // still unpersisted (see the branch's own note below): only the state's
+    // owner moved, its lifecycle did not change.
+    drawerOpen: boolean;
     filters: ResultFilters;
     onClearAll: () => void;
+    onDrawerOpenChange: (open: boolean) => void;
     onToggleCollapsed: () => void;
     onToggleQuickFilter: (filter: QuickFilter) => void;
     quickFilters: QuickFilter[];
@@ -86,18 +111,15 @@ export function RefineSidebar({
         value: string,
     ) => void;
 }) {
-    // `useTheme()` from `@mui/material/styles` (rather than `useMediaQuery`'s
-    // own callback form) so the breakpoint still resolves in a component test
-    // that renders this sidebar without a `ThemeProvider`, where
-    // `@mui/system`'s theme context is null.
-    const theme = useTheme();
-    const compact = useMediaQuery(theme.breakpoints.down("sm"));
-    // Deliberately not the persisted `collapsed` preference: that preference
-    // describes the docked desktop column, and reusing it here would pop an
-    // overlay open over the results the moment a desktop user with an
-    // expanded sidebar opened the same page on a phone. The drawer always
-    // starts closed and is opened on demand.
-    const [drawerOpen, setDrawerOpen] = useState(false);
+    const compact = useCompactRefineSurface();
+    // `drawerOpen` is deliberately not the persisted `collapsed` preference:
+    // that preference describes the docked desktop column, and reusing it here
+    // would pop an overlay open over the results the moment a desktop user
+    // with an expanded sidebar opened the same page on a phone. The drawer
+    // always starts closed and is opened on demand. Since FM-041 the state
+    // itself lives in `SearchResults.tsx` (see the prop docs above) so the
+    // display-options menu can drive it; that lift changed the owner only, not
+    // this rationale or the state's initial value.
     const [categoryOpen, setCategoryOpen] = useState(true);
     const [indexerOpen, setIndexerOpen] = useState(true);
     const indexerEntries = useMemo(
@@ -303,7 +325,7 @@ export function RefineSidebar({
                             : "Expand refine sidebar"
                     }
                     data-testid="refine-sidebar-toggle"
-                    onClick={() => setDrawerOpen((open) => !open)}
+                    onClick={() => onDrawerOpenChange(!drawerOpen)}
                     size="small"
                     sx={{
                         alignSelf: "flex-start",
@@ -319,7 +341,7 @@ export function RefineSidebar({
                 <Drawer
                     anchor="left"
                     data-testid="refine-sidebar-drawer"
-                    onClose={() => setDrawerOpen(false)}
+                    onClose={() => onDrawerOpenChange(false)}
                     open={drawerOpen}
                     slotProps={{
                         paper: {
@@ -344,7 +366,9 @@ export function RefineSidebar({
                                     <Button
                                         aria-label="Close refine sidebar"
                                         data-testid="refine-sidebar-close"
-                                        onClick={() => setDrawerOpen(false)}
+                                        onClick={() =>
+                                            onDrawerOpenChange(false)
+                                        }
                                         size="small"
                                         sx={{minWidth: 0, px: "6px"}}
                                     >

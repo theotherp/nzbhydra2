@@ -1581,12 +1581,13 @@ describe("SearchResults", () => {
         fireEvent.click(screen.getByTestId("sort-title"));
         // "Group TV episodes" defaults checked (useState(true)); flip it off
         // so the test can prove clear-all leaves this explicit choice alone.
-        const groupTvCheckbox = screen.getByRole("checkbox", {
-            name: "Group TV episodes",
-        });
-        expect(groupTvCheckbox).toBeChecked();
-        fireEvent.click(groupTvCheckbox);
-        expect(groupTvCheckbox).not.toBeChecked();
+        // Since FM-041 it lives in the display-options popover, which has to
+        // be closed again before the role queries below can see the rest of
+        // the document (see `openDisplayOptions`).
+        expect(displayOption("Group TV episodes")).toBeChecked();
+        fireEvent.click(displayOption("Group TV episodes"));
+        expect(displayOption("Group TV episodes")).not.toBeChecked();
+        closeDisplayOptions();
         fireEvent.click(
             screen.getByRole("checkbox", {name: "Select Alpha BluRay"}),
         );
@@ -1614,10 +1615,10 @@ describe("SearchResults", () => {
             "data-sort-direction",
             "asc",
         );
-        expect(groupTvCheckbox).not.toBeChecked();
         expect(
             screen.getByRole("checkbox", {name: "Select Alpha BluRay"}),
         ).toBeChecked();
+        expect(displayOption("Group TV episodes")).not.toBeChecked();
     });
 
     it("should persist the refine-sidebar collapsed state in the existing search-results-table localStorage payload alongside sorting and filters", () => {
@@ -1688,7 +1689,402 @@ describe("SearchResults", () => {
             "Alpha Result",
         );
     });
+
+    it("should gather every display preference into one accessible display-options popover", () => {
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 2,
+                    searchResults: duplicateAcrossDownloadTypes,
+                }}
+            />,
+        );
+        const toggle = screen.getByTestId("display-options-toggle");
+        expect(toggle).toHaveAttribute("aria-haspopup", "true");
+        expect(toggle).toHaveAttribute("aria-expanded", "false");
+        expect(screen.queryByTestId("display-options")).not.toBeInTheDocument();
+
+        const popover = openDisplayOptions();
+        expect(toggle).toHaveAttribute("aria-expanded", "true");
+        // Every entry is a real checkbox with an accessible name and a
+        // queryable checked state; the two grouping toggles keep the exact
+        // labels and defaults they had in the toolbar before this task.
+        expect(
+            within(popover)
+                .getAllByRole("checkbox")
+                .map((entry) => [
+                    entry.getAttribute("aria-label") ??
+                        entry.closest("label")?.textContent,
+                    (entry as HTMLInputElement).checked,
+                ]),
+        ).toEqual([
+            ["Group torrent and Usenet results", false],
+            ["Group TV episodes", true],
+            ["Compact rows", false],
+            ["Highlight recent", false],
+            ["Show refine sidebar", false],
+        ]);
+    });
+
+    it("should keep the relocated grouping toggles driving the same grouping behavior", () => {
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 2,
+                    searchResults: duplicateAcrossDownloadTypes,
+                }}
+            />,
+        );
+        // Ungrouped download types keep the same title in two separate title
+        // groups, so both rows render on their own.
+        closeDisplayOptions();
+        expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
+
+        fireEvent.click(displayOption("Group torrent and Usenet results"));
+        expect(displayOption("Group torrent and Usenet results")).toBeChecked();
+        closeDisplayOptions();
+        // Grouped, the pair becomes one title group with a collapsed second
+        // member reachable through the existing expansion control.
+        expect(screen.getAllByTestId("search-result-row")).toHaveLength(1);
+        fireEvent.click(screen.getByRole("button", {name: "Expand group"}));
+        expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
+    });
+
+    it("should tighten row density only while compact rows is enabled", () => {
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 1,
+                    searchResults: [
+                        {
+                            searchResultId: "1",
+                            title: "Result",
+                            indexer: "Mock",
+                            category: "All",
+                        },
+                    ],
+                }}
+            />,
+        );
+        const table = screen.getByTestId("search-results-table");
+        // Defaults off, so the default row density -- and every accepted
+        // default-state geometry baseline measured against it -- is untouched.
+        // The rendered padding/height reduction itself is asserted in the
+        // browser (`results.spec.ts`), which jsdom cannot measure.
+        expect(table).toHaveAttribute("data-compact-rows", "false");
+
+        fireEvent.click(displayOption("Compact rows"));
+        expect(displayOption("Compact rows")).toBeChecked();
+        closeDisplayOptions();
+        expect(table).toHaveAttribute("data-compact-rows", "true");
+
+        fireEvent.click(displayOption("Compact rows"));
+        closeDisplayOptions();
+        expect(table).toHaveAttribute("data-compact-rows", "false");
+    });
+
+    it("should flag recent results with two independent properties only while highlight recent is enabled", () => {
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 3,
+                    searchResults: agedResults(),
+                }}
+            />,
+        );
+        const stripe = (title: string) =>
+            getComputedStyle(
+                resultRow(title).querySelector('td[data-label="Select"]')!,
+            ).boxShadow;
+        const ageColor = (title: string) =>
+            getComputedStyle(
+                resultRow(title).querySelector('td[data-label="Age"]')!,
+            ).color;
+
+        // Defaults off: nothing is flagged, so the default rendering is
+        // unchanged even for a one-day-old result.
+        expect(stripe("Recent release")).toBe(stripe("Older release"));
+        expect(ageColor("Recent release")).toBe(ageColor("Older release"));
+
+        fireEvent.click(displayOption("Highlight recent"));
+        expect(displayOption("Highlight recent")).toBeChecked();
+        closeDisplayOptions();
+
+        // The flag combines two properties, so it does not depend on hue
+        // alone: a left-edge inset stripe the older row does not draw, and a
+        // distinct age-column text color.
+        expect(stripe("Recent release")).toContain("inset");
+        expect(stripe("Older release")).not.toContain("inset");
+        expect(ageColor("Recent release")).not.toBe(ageColor("Older release"));
+        // A result with no `epoch` has no computable age and is never flagged.
+        expect(stripe("Ageless release")).not.toContain("inset");
+        expect(ageColor("Ageless release")).toBe(ageColor("Older release"));
+    });
+
+    it("should persist compact rows and highlight recent in the existing search-results-table payload without persisting the mobile drawer", () => {
+        stubWorkingLocalStorage();
+        const searchResults = [
+            {
+                searchResultId: "1",
+                title: "Alpha Result",
+                indexer: "Mock",
+                category: "All",
+            },
+        ];
+        const {unmount} = renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 1,
+                    searchResults,
+                }}
+            />,
+        );
+        fireEvent.click(displayOption("Compact rows"));
+        fireEvent.click(displayOption("Highlight recent"));
+        closeDisplayOptions();
+        const stored = storedChoices();
+        expect(stored).toMatchObject({
+            compactRows: true,
+            highlightRecent: true,
+        });
+        // The sidebar shortcut adds no key of its own, and the below-`sm`
+        // drawer's transient open state is deliberately not persisted.
+        expect(Object.keys(stored).sort()).toEqual([
+            "compactRows",
+            "filters",
+            "highlightRecent",
+            "sidebarCollapsed",
+            "sorting",
+        ]);
+        unmount();
+
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 1,
+                    searchResults,
+                }}
+            />,
+        );
+        expect(displayOption("Compact rows")).toBeChecked();
+        expect(displayOption("Highlight recent")).toBeChecked();
+    });
+
+    it("should drive the persisted docked-sidebar preference from the display-options shortcut at sm and up", () => {
+        stubWorkingLocalStorage();
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 1,
+                    searchResults: [
+                        {
+                            searchResultId: "1",
+                            title: "Alpha Result",
+                            indexer: "Mock",
+                            category: "All",
+                        },
+                    ],
+                }}
+            />,
+        );
+        // The docked branch is the live one here (jsdom's own `matchMedia`
+        // matches nothing, so `down("sm")` is false), and it starts collapsed.
+        const sidebarToggle = screen.getByTestId("refine-sidebar-toggle");
+        expect(sidebarToggle).toHaveAttribute("aria-expanded", "false");
+        expect(displayOption("Show refine sidebar")).not.toBeChecked();
+
+        fireEvent.click(displayOption("Show refine sidebar"));
+        expect(sidebarToggle).toHaveAttribute("aria-expanded", "true");
+        expect(storedChoices().sidebarCollapsed).toBe(false);
+        expect(displayOption("Show refine sidebar")).toBeChecked();
+        expect(screen.getByTestId("refine-filter-title")).toBeInTheDocument();
+
+        fireEvent.click(displayOption("Show refine sidebar"));
+        expect(screen.getByTestId("refine-sidebar-toggle")).toHaveAttribute(
+            "aria-expanded",
+            "false",
+        );
+        expect(storedChoices().sidebarCollapsed).toBe(true);
+        expect(displayOption("Show refine sidebar")).not.toBeChecked();
+    });
+
+    it("should drive the unpersisted mobile drawer from the same shortcut below sm without reopening it from a stored preference", () => {
+        stubMobileViewport();
+        stubWorkingLocalStorage();
+        // A stored *expanded* docked preference must not pop the drawer open
+        // over the results when the same user opens the page on a phone: the
+        // two mechanisms are deliberately separate (see `RefineSidebar.tsx`).
+        window.localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify({sidebarCollapsed: false}),
+        );
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 1,
+                    searchResults: [
+                        {
+                            searchResultId: "1",
+                            title: "Alpha Result",
+                            indexer: "Mock",
+                            category: "All",
+                        },
+                    ],
+                }}
+            />,
+        );
+        const drawerTrigger = screen.getByTestId("refine-sidebar-toggle");
+        expect(drawerTrigger).toHaveAttribute("aria-expanded", "false");
+        expect(screen.queryByTestId("refine-sidebar")).not.toBeInTheDocument();
+        expect(displayOption("Show refine sidebar")).not.toBeChecked();
+
+        // The shortcut opens the same drawer FM-045's trigger opens, and
+        // closes the popover behind it rather than stacking two overlays.
+        fireEvent.click(displayOption("Show refine sidebar"));
+        expect(screen.getByTestId("display-options-toggle")).toHaveAttribute(
+            "aria-expanded",
+            "false",
+        );
+        expect(drawerTrigger).toHaveAttribute("aria-expanded", "true");
+        expect(screen.getByTestId("refine-sidebar")).toBeInTheDocument();
+        expect(displayOption("Show refine sidebar")).toBeChecked();
+        closeDisplayOptions();
+
+        // FM-045's own close control and trigger keep working unchanged. The
+        // drawer's own exit transition never completes without timers in
+        // jsdom, so the closed state is read from the trigger's own
+        // `aria-expanded` rather than from the drawer content's removal, the
+        // same way `RefineSidebar.test.tsx` reads it.
+        fireEvent.click(screen.getByTestId("refine-sidebar-close"));
+        expect(drawerTrigger).toHaveAttribute("aria-expanded", "false");
+        fireEvent.click(drawerTrigger);
+        expect(drawerTrigger).toHaveAttribute("aria-expanded", "true");
+        expect(displayOption("Show refine sidebar")).toBeChecked();
+        closeDisplayOptions();
+        fireEvent.click(drawerTrigger);
+        expect(drawerTrigger).toHaveAttribute("aria-expanded", "false");
+
+        // Still nothing about the drawer in the persisted payload.
+        expect(storedChoices()).not.toHaveProperty("drawerOpen");
+        expect(storedChoices().sidebarCollapsed).toBe(false);
+    });
 });
+
+const STORAGE_KEY = "hydra.search-results.table";
+
+// The same title from two download types: ungrouped they are two title groups,
+// grouped they become one.
+const duplicateAcrossDownloadTypes = [
+    {
+        searchResultId: "1",
+        title: "Shared Release",
+        indexer: "One",
+        category: "Movies",
+        downloadType: "NZB",
+    },
+    {
+        searchResultId: "2",
+        title: "Shared Release",
+        indexer: "Two",
+        category: "Movies",
+        downloadType: "TORRENT",
+    },
+];
+
+// One result inside the mock's three-day recency window, one well outside it,
+// and one with no `epoch` at all (no computable age, so never flagged).
+function agedResults() {
+    const now = Math.floor(Date.now() / 1_000);
+    return [
+        {
+            searchResultId: "recent",
+            title: "Recent release",
+            indexer: "Mock",
+            category: "All",
+            epoch: now - 86_400,
+            age: "1 day",
+        },
+        {
+            searchResultId: "old",
+            title: "Older release",
+            indexer: "Mock",
+            category: "All",
+            epoch: now - 40 * 86_400,
+            age: "40 days",
+        },
+        {
+            searchResultId: "ageless",
+            title: "Ageless release",
+            indexer: "Mock",
+            category: "All",
+        },
+    ];
+}
+
+function resultRow(title: string): HTMLElement {
+    const row = screen
+        .getAllByTestId("search-result-row")
+        .find((element) => element.getAttribute("data-result-title") === title);
+    if (!row) {
+        throw new Error(`No result row titled ${title}`);
+    }
+    return row;
+}
+
+function storedChoices(): Record<string, unknown> {
+    return JSON.parse(
+        window.localStorage.getItem(STORAGE_KEY) ?? "{}",
+    ) as Record<string, unknown>;
+}
+
+// Below `sm` the refine surface renders as a temporary `Drawer` instead of the
+// docked column, decided by `useMediaQuery` rather than by CSS `display`.
+// jsdom's own `matchMedia` never matches anything, so a mobile viewport has to
+// be stated explicitly; `vi.unstubAllGlobals()` in `afterEach` removes it
+// again. Mirrors `RefineSidebar.test.tsx`'s identical helper.
+function stubMobileViewport(): void {
+    vi.stubGlobal("matchMedia", (query: string) => ({
+        matches: query.includes("max-width"),
+        media: query,
+        onchange: null,
+        addEventListener: () => {},
+        removeEventListener: () => {},
+        addListener: () => {},
+        removeListener: () => {},
+        dispatchEvent: () => false,
+    }));
+}
+
+// The display-options popover is a MUI `Modal`, so while it is open the rest
+// of the document is marked `aria-hidden` and role queries outside it
+// legitimately find nothing -- hence `closeDisplayOptions` before any
+// assertion about the surrounding page. `data-testid` queries are unaffected.
+function openDisplayOptions(): HTMLElement {
+    const toggle = screen.getByTestId("display-options-toggle");
+    if (toggle.getAttribute("aria-expanded") !== "true") {
+        fireEvent.click(toggle);
+    }
+    return screen.getByTestId("display-options");
+}
+
+function closeDisplayOptions(): void {
+    const toggle = screen.getByTestId("display-options-toggle");
+    if (toggle.getAttribute("aria-expanded") === "true") {
+        fireEvent.click(toggle);
+    }
+}
+
+function displayOption(label: string): HTMLElement {
+    return within(openDisplayOptions()).getByRole("checkbox", {name: label});
+}
 
 // The sidebar defaults collapsed in this non-browser test environment
 // (matching the below-`sm` default; see SearchResults.tsx's

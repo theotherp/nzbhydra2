@@ -74,6 +74,12 @@ function Harness({
     const [filters, setFilters] = useState<ResultFilters>(() =>
         defaultFilters(loadedResults, quickFilters),
     );
+    // Since FM-041 the below-`sm` drawer's open state is owned by the sidebar's
+    // parent (`SearchResults.tsx` in the app) and passed in as a controlled
+    // prop pair. This harness stands in for that owner, with the same initial
+    // value -- closed -- the sidebar used to hold itself, so every assertion
+    // below keeps its original expectations.
+    const [drawerOpen, setDrawerOpen] = useState(false);
     return (
         <>
             <RefineSidebar
@@ -84,8 +90,10 @@ function Harness({
                     }))
                 }
                 collapsed={collapsed}
+                drawerOpen={drawerOpen}
                 filters={filters}
                 onClearAll={onClearAll}
+                onDrawerOpenChange={setDrawerOpen}
                 onToggleCollapsed={onToggleCollapsed}
                 onToggleQuickFilter={(filter) =>
                     setFilters((current) => ({

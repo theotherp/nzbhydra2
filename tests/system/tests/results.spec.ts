@@ -1,5 +1,5 @@
 import {dismissWelcomeDialog, expect, searchForResult, test, testEnvironment,} from "./fixtures";
-import {captureVisualRegion, expectVisualGeometry, prepareVisualEvidence, visualViewports,} from "./visualEvidence";
+import {captureVisualRegion, expectVisualGeometry, prepareVisualEvidence, visualEvidencePath, visualViewports,} from "./visualEvidence";
 
 test.describe("Search results", () => {
     test.beforeEach(async ({ hydra, page }) => {
@@ -1629,6 +1629,339 @@ test.describe("Search results", () => {
                 ),
         ).toBe(true);
     });
+
+    // FM-041: the display-options popover and the two opt-in row treatments it
+    // turns on. States: `display-menu-open`, `compact-rows-enabled`,
+    // `recent-highlight-enabled`, and `sidebar-shortcut-toggled` (the popover's
+    // "Show refine sidebar" entry as a second entry point to whichever
+    // per-viewport refine-surface mechanism is live).
+    test("should provide deterministic display-options, compact-row, recency, and sidebar-shortcut visual evidence across desktop and mobile", async ({
+        page,
+    }) => {
+        const now = Math.floor(Date.now() / 1_000);
+        await page.route("**/internalapi/search", (route) =>
+            route.fulfill({
+                json: {
+                    searchResults: [
+                        {
+                            searchResultId: "one",
+                            title: "Display Options Recent One",
+                            indexer: "Alpha",
+                            category: "Movies",
+                            size: 4 * 1024 * 1024,
+                            seeders: 12,
+                            epoch: now - 86_400,
+                            age: "1 day",
+                            downloadType: "NZB",
+                        },
+                        {
+                            searchResultId: "two",
+                            title: "Display Options Recent Two",
+                            indexer: "Beta",
+                            category: "Movies",
+                            size: 6 * 1024 * 1024,
+                            seeders: 5,
+                            epoch: now - 2 * 86_400,
+                            age: "2 days",
+                            downloadType: "NZB",
+                        },
+                        {
+                            searchResultId: "three",
+                            title: "Display Options Recent Three",
+                            indexer: "Gamma",
+                            category: "Movies",
+                            size: 3 * 1024 * 1024,
+                            seeders: 9,
+                            // Deliberately just inside the three-day window
+                            // rather than exactly on it: `ageInDays` reads
+                            // `Date.now()` at sub-second precision, so an
+                            // epoch exactly three days old lands a fraction of
+                            // a day past the `<= 3` threshold.
+                            epoch: now - 3 * 86_400 + 3_600,
+                            age: "3 days",
+                            downloadType: "NZB",
+                        },
+                        {
+                            // This block's deliberately older result, so the
+                            // recency distinction is assertable at all.
+                            searchResultId: "four",
+                            title: "Display Options Older Release",
+                            indexer: "Alpha",
+                            category: "Movies",
+                            size: 5 * 1024 * 1024,
+                            seeders: 2,
+                            epoch: now - 40 * 86_400,
+                            age: "40 days",
+                            downloadType: "NZB",
+                        },
+                    ],
+                    indexerSearchMetaDatas: [
+                        {indexerName: "Alpha", wasSuccessful: true},
+                        {indexerName: "Beta", wasSuccessful: true},
+                        {indexerName: "Gamma", wasSuccessful: true},
+                    ],
+                    indexerLimitWarnings: [],
+                    rejectedReasonsMap: {},
+                    notPickedIndexersWithReason: {},
+                    numberOfAvailableResults: 4,
+                    numberOfRejectedResults: 0,
+                },
+            }),
+        );
+
+        await prepareVisualEvidence(page, "desktop", async () => {
+            await page.goto("ui/react?redirect=/");
+            await page.getByTestId("search-query").fill("display options");
+            await page.getByTestId("search-submit").click();
+            await expect(page.getByTestId("search-status-modal")).toBeHidden();
+            await expect(
+                page.getByTestId("search-results-table"),
+            ).toBeVisible();
+        });
+
+        const table = page.getByTestId("search-results-table");
+        const sidebar = page.getByTestId("refine-sidebar");
+        const sidebarToggle = page.getByTestId("refine-sidebar-toggle");
+        const menuToggle = page.getByTestId("display-options-toggle");
+        const rows = page.getByTestId("search-result-row");
+        await expect(rows).toHaveCount(4);
+
+        // `display-menu-open`: the toggle advertises its popover, and the open
+        // popover renders on the mock's `#2a3133`/11px-radius/220px surface,
+        // fully inside the viewport with no page horizontal overflow.
+        await expect(menuToggle).toHaveAttribute("aria-haspopup", "true");
+        await expect(menuToggle).toHaveAttribute("aria-expanded", "false");
+        await expect(page.getByTestId("display-options")).toHaveCount(0);
+        await openDisplayOptions(page);
+        await expectDisplayMenuSurface(page);
+        await captureVisualRegion(
+            displayOptionsPaper(page),
+            "F-SEARCH-RESULTS",
+            "display-options-desktop",
+        );
+
+        // Every entry exposes an accessible name and a checked state, and both
+        // new preferences default off, so the default rendering is unchanged.
+        for (const [name, checked] of [
+            ["Group torrent and Usenet results", false],
+            ["Group TV episodes", true],
+            ["Compact rows", false],
+            ["Highlight recent", false],
+            ["Show refine sidebar", true],
+        ] as Array<[string, boolean]>) {
+            const entry = page.getByRole("checkbox", {name, exact: true});
+            await expect(entry).toBeVisible();
+            if (checked) {
+                await expect(entry).toBeChecked();
+            } else {
+                await expect(entry).not.toBeChecked();
+            }
+        }
+
+        // `sidebar-shortcut-toggled` at desktop: the entry's checked state
+        // matches the live `refine-sidebar-toggle`'s `aria-expanded`, and
+        // toggling it from the menu produces the same rendered outcome the live
+        // toggle produces.
+        await expect(sidebarToggle).toHaveAttribute("aria-expanded", "true");
+        await closeDisplayOptions(page);
+        const expandedMetrics = await refineSurfaceMetrics(page);
+
+        await toggleRefineSurfaceFromMenu(page);
+        await expect(sidebarToggle).toHaveAttribute("aria-expanded", "false");
+        expect(
+            await displayOptionChecked(page, "Show refine sidebar"),
+        ).toBe(false);
+        const menuCollapsedMetrics = await refineSurfaceMetrics(page);
+        expect(menuCollapsedMetrics.sidebarWidth).toBeLessThan(
+            expandedMetrics.sidebarWidth,
+        );
+        // The table takes back exactly the width the sidebar gave up, with no
+        // residual gap between the two.
+        expect(
+            menuCollapsedMetrics.tableWidth - expandedMetrics.tableWidth,
+        ).toBeCloseTo(
+            expandedMetrics.sidebarWidth - menuCollapsedMetrics.sidebarWidth,
+            0,
+        );
+        expect(menuCollapsedMetrics.gap).toBeLessThanOrEqual(17);
+
+        // Back through the menu, then the same round trip through the live
+        // toggle: both produce the identical rendered geometry.
+        await toggleRefineSurfaceFromMenu(page);
+        await expect(sidebarToggle).toHaveAttribute("aria-expanded", "true");
+        expect(await refineSurfaceMetrics(page)).toEqual(expandedMetrics);
+        await sidebarToggle.click();
+        await expect(sidebarToggle).toHaveAttribute("aria-expanded", "false");
+        expect(await refineSurfaceMetrics(page)).toEqual(menuCollapsedMetrics);
+        expect(
+            await displayOptionChecked(page, "Show refine sidebar"),
+        ).toBe(false);
+        await sidebarToggle.click();
+        await expect(sidebarToggle).toHaveAttribute("aria-expanded", "true");
+        expect(
+            await displayOptionChecked(page, "Show refine sidebar"),
+        ).toBe(true);
+
+        // `compact-rows-enabled`: with both preferences off the body cells
+        // carry exactly the 6px vertical padding FM-045 established before this
+        // task, so the default row density is unchanged; enabling Compact rows
+        // moves it to 4px and measurably shortens the table for the same
+        // visible row count, and switching it back restores the original
+        // height exactly.
+        await expect(table).toHaveAttribute("data-compact-rows", "false");
+        expect(await bodyCellPaddingY(page)).toEqual({
+            paddingBottom: "6px",
+            paddingTop: "6px",
+        });
+        const defaultTableHeight = await tableHeight(page);
+        await expectNoTitleCellOverflow(page);
+
+        await toggleDisplayOption(page, "Compact rows");
+        await expect(table).toHaveAttribute("data-compact-rows", "true");
+        expect(await bodyCellPaddingY(page)).toEqual({
+            paddingBottom: "4px",
+            paddingTop: "4px",
+        });
+        const compactTableHeight = await tableHeight(page);
+        expect(compactTableHeight).toBeLessThan(defaultTableHeight);
+        await expect(rows).toHaveCount(4);
+        await expectNoTitleCellOverflow(page);
+        await expectVisualGeometry(page, {
+            region: "compact-rows-desktop",
+            locator: table,
+        });
+        await captureCompactRows(page);
+
+        await toggleDisplayOption(page, "Compact rows");
+        await expect(table).toHaveAttribute("data-compact-rows", "false");
+        expect(await tableHeight(page)).toBe(defaultTableHeight);
+
+        // `recent-highlight-enabled`: a result at most three days old differs
+        // from the older one in two properties, not by hue alone -- an
+        // accent-teal age-column text color and a left-edge accent stripe the
+        // older row does not draw -- and adds no overflow to the row.
+        const recent = resultRow(page, "Display Options Recent One");
+        const older = resultRow(page, "Display Options Older Release");
+        expect(await recencyTreatment(recent)).toEqual(
+            await recencyTreatment(older),
+        );
+
+        await toggleDisplayOption(page, "Highlight recent");
+        const recentTreatment = await recencyTreatment(recent);
+        const olderTreatment = await recencyTreatment(older);
+        expect(recentTreatment.ageColor).not.toBe(olderTreatment.ageColor);
+        expect(recentTreatment.stripe).toContain("inset");
+        expect(olderTreatment.stripe).not.toContain("inset");
+        expect(recentTreatment.noRowOverflow).toBe(true);
+        for (const title of [
+            "Display Options Recent Two",
+            "Display Options Recent Three",
+        ]) {
+            expect(
+                (await recencyTreatment(resultRow(page, title))).stripe,
+            ).toContain("inset");
+        }
+        await expectVisualGeometry(page, {
+            region: "recent-highlight-desktop",
+            locator: table,
+        });
+
+        // Mobile: a deliberately stored *expanded* docked preference must not
+        // pop the drawer open over the results, because the below-`sm` surface
+        // is a transient overlay rather than that persisted preference.
+        await page.evaluate(() =>
+            window.localStorage.setItem(
+                "hydra.search-results.table",
+                JSON.stringify({sidebarCollapsed: false}),
+            ),
+        );
+        await prepareVisualEvidence(page, "mobile", async () => {
+            await page.goto("ui/react?redirect=/");
+            await page.getByTestId("search-query").fill("display options");
+            await page.getByTestId("search-submit").click();
+            await expect(page.getByTestId("search-status-modal")).toBeHidden();
+            await expect(
+                page.getByTestId("search-results-table"),
+            ).toBeVisible();
+        });
+
+        const drawerTrigger = page.getByTestId("refine-sidebar-toggle");
+        await expect(drawerTrigger).toHaveAttribute("aria-expanded", "false");
+        await expect(sidebar).toHaveCount(0);
+        await expect(page.getByTestId("refine-sidebar-drawer")).toHaveCount(0);
+
+        await openDisplayOptions(page);
+        await expectDisplayMenuSurface(page);
+        await expect(
+            page.getByRole("checkbox", {
+                name: "Show refine sidebar",
+                exact: true,
+            }),
+        ).not.toBeChecked();
+        await closeDisplayOptions(page);
+        const closedTableBox = await table.boundingBox();
+        expect(closedTableBox).not.toBeNull();
+        if (!closedTableBox) {
+            throw new Error("Table requires deterministic geometry");
+        }
+
+        // The menu entry opens the same drawer FM-045's trigger opens, and the
+        // closed table's box returns to exactly its previous value after each
+        // of the four open/close operations a real user can reach here, with no
+        // page horizontal overflow after any of them.
+        //
+        // Only four, and only in this pairing: below `sm` the refine surface is
+        // a modal `Drawer`, so while it is open its backdrop legitimately
+        // intercepts pointer events for everything beneath it -- including both
+        // the display-options toggle and FM-045's own `refine-sidebar-toggle`.
+        // The reachable operations are therefore {menu entry, trigger} to open
+        // and `refine-sidebar-close` to close. The entry's *closing* direction
+        // is exercised at desktop above (no modal there) and, at this viewport,
+        // by `SearchResults.test.tsx`, which drives the same state without a
+        // real pointer.
+        await toggleRefineSurfaceFromMenu(page);
+        await expect(drawerTrigger).toHaveAttribute("aria-expanded", "true");
+        await expect(page.getByTestId("refine-sidebar-drawer")).toBeVisible();
+        await expect(sidebar).toBeVisible();
+        await expectNoPageOverflow(page);
+
+        await page.getByTestId("refine-sidebar-close").click();
+        await expect(drawerTrigger).toHaveAttribute("aria-expanded", "false");
+        await expect(sidebar).toHaveCount(0);
+        await expectSameClosedTableBox(page, closedTableBox);
+        // The entry's checked state still answers "is the refine surface shown"
+        // after the round trip, matching the live trigger's own aria-expanded.
+        expect(await displayOptionChecked(page, "Show refine sidebar")).toBe(
+            false,
+        );
+
+        await drawerTrigger.click();
+        await expect(drawerTrigger).toHaveAttribute("aria-expanded", "true");
+        await expect(sidebar).toBeVisible();
+        await expectNoPageOverflow(page);
+        await page.getByTestId("refine-sidebar-close").click();
+        await expect(drawerTrigger).toHaveAttribute("aria-expanded", "false");
+        await expect(sidebar).toHaveCount(0);
+        await expectSameClosedTableBox(page, closedTableBox);
+        expect(await displayOptionChecked(page, "Show refine sidebar")).toBe(
+            false,
+        );
+
+        // Both row treatments stay overflow-free at the narrow viewport too.
+        await toggleDisplayOption(page, "Compact rows");
+        await toggleDisplayOption(page, "Highlight recent");
+        await expect(table).toHaveAttribute("data-compact-rows", "true");
+        await expectNoTitleCellOverflow(page);
+        expect(
+            (await recencyTreatment(resultRow(page, "Display Options Recent One")))
+                .stripe,
+        ).toContain("inset");
+        await expectNoPageOverflow(page);
+        await expectVisualGeometry(page, {
+            region: "compact-rows-mobile",
+            locator: table,
+        });
+    });
 });
 
 // The results table header row's height at 1280x800, measured against the
@@ -1657,6 +1990,250 @@ function refineOption(
     return page.locator(
         `[data-testid="${testId}"][data-filter-value="${value}"]`,
     );
+}
+
+// FM-041's display-options popover. `data-testid` queries rather than role
+// queries wherever the drawer or the popover is open, because MUI marks the
+// rest of the document `aria-hidden` while a modal surface is open.
+async function openDisplayOptions(
+    page: import("@playwright/test").Page,
+): Promise<void> {
+    const toggle = page.getByTestId("display-options-toggle");
+    if ((await toggle.getAttribute("aria-expanded")) !== "true") {
+        await toggle.click();
+    }
+    await expect(page.getByTestId("display-options")).toBeVisible();
+}
+
+async function closeDisplayOptions(
+    page: import("@playwright/test").Page,
+): Promise<void> {
+    const toggle = page.getByTestId("display-options-toggle");
+    if ((await toggle.getAttribute("aria-expanded")) === "true") {
+        await page.keyboard.press("Escape");
+        await expect(page.getByTestId("display-options")).toHaveCount(0);
+    }
+}
+
+function displayOptionsPaper(
+    page: import("@playwright/test").Page,
+): import("@playwright/test").Locator {
+    return page
+        .getByTestId("display-options")
+        .locator('xpath=ancestor::*[contains(@class,"MuiPaper-root")][1]');
+}
+
+// The mock's display-options popover surface: `#2a3133`, an 11px radius, and at
+// least its 220px minimum width, fully inside the viewport with no page
+// horizontal overflow.
+async function expectDisplayMenuSurface(
+    page: import("@playwright/test").Page,
+): Promise<void> {
+    const paper = displayOptionsPaper(page);
+    const surface = await paper.evaluate((element) => {
+        const style = getComputedStyle(element);
+        return {
+            backgroundColor: style.backgroundColor,
+            borderTopLeftRadius: style.borderTopLeftRadius,
+        };
+    });
+    expect(surface.backgroundColor).toBe("rgb(42, 49, 51)");
+    expect(surface.borderTopLeftRadius).toBe("11px");
+    const box = await paper.boundingBox();
+    const viewport = page.viewportSize();
+    expect(box).not.toBeNull();
+    expect(viewport).not.toBeNull();
+    if (!box || !viewport) {
+        throw new Error("Display popover requires deterministic geometry");
+    }
+    expect(box.width).toBeGreaterThanOrEqual(220);
+    expect(box.x).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width).toBeLessThanOrEqual(viewport.width);
+    expect(box.y).toBeGreaterThanOrEqual(0);
+    expect(box.y + box.height).toBeLessThanOrEqual(viewport.height);
+    await expectNoPageOverflow(page);
+}
+
+// One display-options entry's checked state, read with the popover reopened for
+// the duration of the check and closed again afterwards, so no modal surface is
+// left over the results.
+async function displayOptionChecked(
+    page: import("@playwright/test").Page,
+    name: string,
+): Promise<boolean> {
+    await openDisplayOptions(page);
+    const checked = await page
+        .getByRole("checkbox", {name, exact: true})
+        .isChecked();
+    await closeDisplayOptions(page);
+    return checked;
+}
+
+async function toggleDisplayOption(
+    page: import("@playwright/test").Page,
+    name: string,
+): Promise<void> {
+    await openDisplayOptions(page);
+    await page.getByRole("checkbox", {name, exact: true}).click();
+    await closeDisplayOptions(page);
+}
+
+// The "Show refine sidebar" entry closes the popover itself, so this one does
+// not close it afterwards.
+async function toggleRefineSurfaceFromMenu(
+    page: import("@playwright/test").Page,
+): Promise<void> {
+    await openDisplayOptions(page);
+    await page
+        .getByRole("checkbox", {name: "Show refine sidebar", exact: true})
+        .click();
+    await expect(page.getByTestId("display-options")).toHaveCount(0);
+}
+
+// The compact-row density capture. Deliberately a viewport-clipped page
+// screenshot rather than an element screenshot: at 1280x800 the results table's
+// own minimum width (1320px plus the sidebar delta) exceeds the viewport, and it
+// scrolls inside its own `overflowX: auto` wrapper, so `locator.screenshot()`
+// yields an image whose right-hand columns are blank -- the same clipping defect
+// FM-045's mobile-drawer capture is recorded as carrying. Clipping to the
+// intersection of the table's box and the viewport captures exactly what the
+// user actually sees at this viewport.
+async function captureCompactRows(
+    page: import("@playwright/test").Page,
+): Promise<void> {
+    const table = page.getByTestId("search-results-table");
+    // With four rows the table's lower edge otherwise sits below the fold, so
+    // the vertical clip would cut it as well.
+    await table.scrollIntoViewIfNeeded();
+    const box = await table.boundingBox();
+    const viewport = page.viewportSize();
+    expect(box).not.toBeNull();
+    expect(viewport).not.toBeNull();
+    if (!box || !viewport) {
+        throw new Error("Table requires deterministic geometry");
+    }
+    await page.screenshot({
+        clip: {
+            height: Math.min(box.height, viewport.height - box.y),
+            width: Math.min(box.width, viewport.width - box.x),
+            x: box.x,
+            y: box.y,
+        },
+        path: visualEvidencePath("F-SEARCH-RESULTS", "compact-rows-desktop"),
+    });
+}
+
+async function refineSurfaceMetrics(
+    page: import("@playwright/test").Page,
+): Promise<{gap: number; sidebarWidth: number; tableWidth: number}> {
+    const [sidebarBox, tableBox] = await Promise.all([
+        page.getByTestId("refine-sidebar").boundingBox(),
+        page.getByTestId("search-results-table").boundingBox(),
+    ]);
+    expect(sidebarBox).not.toBeNull();
+    expect(tableBox).not.toBeNull();
+    if (!sidebarBox || !tableBox) {
+        throw new Error("Sidebar and table require deterministic geometry");
+    }
+    return {
+        gap: tableBox.x - (sidebarBox.x + sidebarBox.width),
+        sidebarWidth: sidebarBox.width,
+        tableWidth: tableBox.width,
+    };
+}
+
+async function bodyCellPaddingY(
+    page: import("@playwright/test").Page,
+): Promise<{paddingBottom: string; paddingTop: string}> {
+    return await page
+        .getByTestId("search-result-row")
+        .first()
+        .getByTestId("search-result-title")
+        .evaluate((element) => {
+            const style = getComputedStyle(element);
+            return {
+                paddingBottom: style.paddingBottom,
+                paddingTop: style.paddingTop,
+            };
+        });
+}
+
+async function tableHeight(
+    page: import("@playwright/test").Page,
+): Promise<number> {
+    return await page
+        .getByTestId("search-results-table")
+        .evaluate((element) => element.getBoundingClientRect().height);
+}
+
+async function expectNoTitleCellOverflow(
+    page: import("@playwright/test").Page,
+): Promise<void> {
+    const titles = page.getByTestId("search-result-title");
+    const count = await titles.count();
+    expect(count).toBeGreaterThan(0);
+    for (let index = 0; index < count; index++) {
+        expect(
+            await titles
+                .nth(index)
+                .evaluate(
+                    (element) =>
+                        element.scrollWidth <= element.clientWidth + 1,
+                ),
+        ).toBe(true);
+    }
+}
+
+function resultRow(
+    page: import("@playwright/test").Page,
+    title: string,
+): import("@playwright/test").Locator {
+    return page.locator(
+        `[data-testid="search-result-row"][data-result-title="${title}"]`,
+    );
+}
+
+// The recency flag's two independent properties, plus the flagged row's own
+// overflow state.
+async function recencyTreatment(
+    row: import("@playwright/test").Locator,
+): Promise<{ageColor: string; noRowOverflow: boolean; stripe: string}> {
+    return await row.evaluate((element) => {
+        const ageCell = element.querySelector('td[data-label="Age"]');
+        const firstCell = element.querySelector('td[data-label="Select"]');
+        if (!ageCell || !firstCell) {
+            throw new Error("Result row requires an age cell and a first cell");
+        }
+        return {
+            ageColor: getComputedStyle(ageCell).color,
+            noRowOverflow: element.scrollWidth <= element.clientWidth + 1,
+            stripe: getComputedStyle(firstCell).boxShadow,
+        };
+    });
+}
+
+async function expectNoPageOverflow(
+    page: import("@playwright/test").Page,
+): Promise<void> {
+    expect(
+        await page
+            .locator("html")
+            .evaluate((element) => element.scrollWidth <= element.clientWidth),
+    ).toBe(true);
+}
+
+async function expectSameClosedTableBox(
+    page: import("@playwright/test").Page,
+    expected: {width: number; x: number},
+): Promise<void> {
+    const box = await page.getByTestId("search-results-table").boundingBox();
+    expect(box).not.toBeNull();
+    if (!box) {
+        throw new Error("Table requires deterministic geometry");
+    }
+    expect(box.width).toBe(expected.width);
+    expect(box.x).toBe(expected.x);
+    await expectNoPageOverflow(page);
 }
 
 async function headerRowHeight(

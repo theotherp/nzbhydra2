@@ -5,8 +5,10 @@ import {
     Checkbox,
     Chip,
     FormControlLabel,
+    FormGroup,
     Menu,
     MenuItem,
+    Popover,
     Stack,
     Table,
     TableBody,
@@ -36,8 +38,30 @@ import {
 import type {SearchResponse, SearchResult} from "../../../api/search";
 import {DialogContext} from "../../../components/dialogs/dialogs";
 import {ToastContext} from "../../../components/toasts/toasts";
+import {
+    compactRowPaddingY,
+    displayMenuCaptionColor,
+    displayMenuDividerColor,
+    displayMenuItemColor,
+    displayMenuItemFontSize,
+    displayMenuItemGap,
+    displayMenuItemPaddingX,
+    displayMenuItemPaddingY,
+    displayMenuItemRadius,
+    displayMenuMinWidth,
+    displayMenuPadding,
+    displayMenuRadius,
+    displayMenuShadow,
+    recentRowStripe,
+    rowPaddingY,
+} from "./displayStyles";
 import {DirectDownloadActions, DownloadActions} from "./DownloadActions";
-import {COLLAPSED_WIDTH, EXPANDED_WIDTH, RefineSidebar} from "./RefineSidebar";
+import {
+    COLLAPSED_WIDTH,
+    EXPANDED_WIDTH,
+    RefineSidebar,
+    useCompactRefineSurface,
+} from "./RefineSidebar";
 import type {
     NumericRange,
     QuickFilter,
@@ -47,6 +71,7 @@ import type {
 import {
     checkboxUncheckedBorder,
     controlSurface,
+    enabledSecondaryTextColor,
     popoverBorderColor,
     popoverRadius,
     popoverShadow,
@@ -56,6 +81,7 @@ import {
     duplicateGroupKey,
     filterResults,
     groupResults,
+    isRecentResult,
     preselectedQuickFilters,
     quickFilterKey,
     quickFiltersFromSafeConfig,
@@ -87,7 +113,9 @@ const TABLE_MIN_WIDTH = 1320;
 const HEADER_CELL_PADDING_Y = "6px";
 
 type StoredChoices = {
+    compactRows?: boolean;
     filters?: Partial<ResultFilters>;
+    highlightRecent?: boolean;
     sidebarCollapsed?: boolean;
     sorting?: SortingState;
 };
@@ -140,6 +168,38 @@ export function SearchResults({
     // desktop.
     const [sidebarCollapsed, setSidebarCollapsed] = useState(
         () => choices.sidebarCollapsed ?? !prefersExpandedSidebarByDefault(),
+    );
+    // Below `sm` the refine surface is FM-045's temporary drawer rather than
+    // the docked column, and its open state is a transient overlay state, not
+    // a preference: it always starts closed and is deliberately absent from
+    // the persisted `hydra.search-results.table` payload (see FM-045's
+    // rationale in `RefineSidebar.tsx`). FM-041 moved the state here -- and
+    // only the state, not its lifecycle -- so the display-options "Show refine
+    // sidebar" entry can read and write whichever of the two per-branch
+    // mechanisms is actually mounted.
+    const [refineDrawerOpen, setRefineDrawerOpen] = useState(false);
+    // The same branch decision `RefineSidebar` itself makes, from the one
+    // shared definition of it, so the entry can never disagree with the live
+    // `refine-sidebar-toggle`.
+    const refineSurfaceCompact = useCompactRefineSurface();
+    const refineSurfaceShown = refineSurfaceCompact
+        ? refineDrawerOpen
+        : !sidebarCollapsed;
+    const toggleRefineSurface = useCallback(() => {
+        if (refineSurfaceCompact) {
+            setRefineDrawerOpen((open) => !open);
+        } else {
+            setSidebarCollapsed((current) => !current);
+        }
+    }, [refineSurfaceCompact]);
+    // Both opt-in and both defaulting off, so the results list's default
+    // rendering -- and every accepted default-state visual baseline measured
+    // against it -- is unchanged by this task.
+    const [compactRows, setCompactRows] = useState(
+        () => choices.compactRows ?? false,
+    );
+    const [highlightRecent, setHighlightRecent] = useState(
+        () => choices.highlightRecent ?? false,
     );
     const [groupTorrentAndUsenet, setGroupTorrentAndUsenet] = useState(false);
     const [groupEpisodes, setGroupEpisodes] = useState(true);
@@ -267,9 +327,15 @@ export function SearchResults({
     useEffect(() => {
         getStorage()?.setItem(
             STORAGE_KEY,
-            JSON.stringify({filters, sidebarCollapsed, sorting}),
+            JSON.stringify({
+                compactRows,
+                filters,
+                highlightRecent,
+                sidebarCollapsed,
+                sorting,
+            }),
         );
-    }, [filters, sidebarCollapsed, sorting]);
+    }, [compactRows, filters, highlightRecent, sidebarCollapsed, sorting]);
 
     useEffect(() => {
         const filteredIds = new Set(
@@ -578,34 +644,6 @@ export function SearchResults({
                                 flexWrap="wrap"
                                 gap={1}
                             >
-                                <FormControlLabel
-                                    control={
-                                        <Checkbox
-                                            checked={groupTorrentAndUsenet}
-                                            onChange={(event) =>
-                                                setGroupTorrentAndUsenet(
-                                                    event.target.checked,
-                                                )
-                                            }
-                                            size="small"
-                                        />
-                                    }
-                                    label="Group torrent and Usenet results"
-                                />
-                                <FormControlLabel
-                                    control={
-                                        <Checkbox
-                                            checked={groupEpisodes}
-                                            onChange={(event) =>
-                                                setGroupEpisodes(
-                                                    event.target.checked,
-                                                )
-                                            }
-                                            size="small"
-                                        />
-                                    }
-                                    label="Group TV episodes"
-                                />
                                 {/* Below `sm` the table's `thead` (and so the
                                     header's tri-state checkbox/caret menu) is
                                     hidden by the responsive table styling; this
@@ -624,6 +662,43 @@ export function SearchResults({
                                         status={currentSelectionStatus}
                                     />
                                 </Box>
+                                {/* The mock puts its "⚙ Display" button at the
+                                    right end of the same toolbar action row
+                                    (`margin-left:auto`). */}
+                                <Box sx={{ml: "auto"}}>
+                                    <DisplayOptionsMenu
+                                        compactRows={compactRows}
+                                        groupEpisodes={groupEpisodes}
+                                        groupTorrentAndUsenet={
+                                            groupTorrentAndUsenet
+                                        }
+                                        highlightRecent={highlightRecent}
+                                        onToggleCompactRows={() =>
+                                            setCompactRows(
+                                                (current) => !current,
+                                            )
+                                        }
+                                        onToggleGroupEpisodes={() =>
+                                            setGroupEpisodes(
+                                                (current) => !current,
+                                            )
+                                        }
+                                        onToggleGroupTorrentAndUsenet={() =>
+                                            setGroupTorrentAndUsenet(
+                                                (current) => !current,
+                                            )
+                                        }
+                                        onToggleHighlightRecent={() =>
+                                            setHighlightRecent(
+                                                (current) => !current,
+                                            )
+                                        }
+                                        onToggleRefineSurface={
+                                            toggleRefineSurface
+                                        }
+                                        refineSurfaceShown={refineSurfaceShown}
+                                    />
+                                </Box>
                             </Stack>
                         </Stack>
                     </Box>
@@ -635,8 +710,10 @@ export function SearchResults({
                         <RefineSidebar
                             clearRange={clearRange}
                             collapsed={sidebarCollapsed}
+                            drawerOpen={refineDrawerOpen}
                             filters={filters}
                             onClearAll={clearAllFilters}
+                            onDrawerOpenChange={setRefineDrawerOpen}
                             onToggleCollapsed={() =>
                                 setSidebarCollapsed((current) => !current)
                             }
@@ -654,14 +731,65 @@ export function SearchResults({
                             )}
                             <Box sx={{maxWidth: "100%", overflowX: "auto"}}>
                                 <Table
+                                    // The row-density preference, advertised on
+                                    // the element that carries it. The density
+                                    // itself is descendant `sx` below (one rule
+                                    // for every body cell rather than a
+                                    // per-cell prop, so `ResultRow`'s
+                                    // memoization is untouched by it), which a
+                                    // jsdom component test cannot resolve
+                                    // through a specificity-ordered cascade;
+                                    // the rendered geometry is asserted in the
+                                    // browser instead, matching how
+                                    // `data-nesting-level`/`data-sort-direction`
+                                    // already expose row and header state here.
+                                    data-compact-rows={
+                                        compactRows ? "true" : "false"
+                                    }
                                     data-testid="search-results-table"
                                     sx={(theme) => ({
                                         tableLayout: "fixed",
                                         width: "100%",
                                         "& tbody > tr > td": {
-                                            paddingBottom: "6px",
-                                            paddingTop: "6px",
+                                            paddingBottom: compactRows
+                                                ? compactRowPaddingY
+                                                : rowPaddingY,
+                                            paddingTop: compactRows
+                                                ? compactRowPaddingY
+                                                : rowPaddingY,
                                         },
+                                        // "Compact rows" tightens the row's own
+                                        // controls proportionally as well as its
+                                        // padding: the row checkbox and the
+                                        // action/expand buttons are what
+                                        // actually set the row's height at this
+                                        // density, so trimming their vertical
+                                        // padding is what makes the compact
+                                        // table measurably shorter. Descendant
+                                        // `sx` from this one `Table`, so
+                                        // `DownloadActions.tsx` (a different
+                                        // capability's file) is untouched and
+                                        // `ResultRow`'s memoization is not
+                                        // involved at all.
+                                        ...(compactRows
+                                            ? {
+                                                  "& tbody .MuiCheckbox-root": {
+                                                      padding: "2px",
+                                                  },
+                                                  "& tbody .MuiButton-root": {
+                                                      fontSize: "11.5px",
+                                                      minHeight: 0,
+                                                      paddingBottom: 0,
+                                                      paddingTop: 0,
+                                                  },
+                                                  "& tbody .MuiChip-root": {
+                                                      fontSize: "10.5px",
+                                                      height: "18px",
+                                                  },
+                                                  '& tbody td[data-label="Actions"] .MuiStack-root':
+                                                      {gap: "2px"},
+                                              }
+                                            : {}),
                                         "& td, & th": {fontSize: "12px"},
                                         '& [data-label="Title"]': {
                                             fontSize: "13px",
@@ -970,6 +1098,12 @@ export function SearchResults({
                                                                         onToggleTitleExpansion={
                                                                             handleToggleTitleExpansion
                                                                         }
+                                                                        recent={
+                                                                            highlightRecent &&
+                                                                            isRecentResult(
+                                                                                result,
+                                                                            )
+                                                                        }
                                                                         result={
                                                                             result
                                                                         }
@@ -1074,6 +1208,7 @@ const ResultRow = memo(function ResultRow({
     onSelectionChange,
     onToggleDuplicateExpansion,
     onToggleTitleExpansion,
+    recent,
     result,
     selected,
     showDuplicateExpand,
@@ -1094,6 +1229,10 @@ const ResultRow = memo(function ResultRow({
     ) => void;
     onToggleDuplicateExpansion: (key: string) => void;
     onToggleTitleExpansion: (key: string) => void;
+    // Already resolved to a primitive by the parent (which is iterating these
+    // rows anyway), so the memoized row neither recomputes an age per render
+    // nor loses its `memo` comparison to a fresh object identity.
+    recent: boolean;
     result: SearchResult;
     selected: boolean;
     showDuplicateExpand: boolean;
@@ -1114,7 +1253,16 @@ const ResultRow = memo(function ResultRow({
                 borderTopWidth: isNewGroup ? 2 : undefined,
             }}
         >
-            <TableCell data-label="Select" padding="checkbox">
+            {/* The recency flag's left-edge accent stripe (the mock's
+                `box-shadow:inset 3px 0 0 {{ r.stripe }}`), drawn on the row's
+                first cell because `border-collapse: collapse` suppresses a
+                `<tr>`'s own box shadow, and as an inset shadow rather than a
+                border so it consumes no layout width. */}
+            <TableCell
+                data-label="Select"
+                padding="checkbox"
+                sx={{boxShadow: recent ? recentRowStripe : undefined}}
+            >
                 <Checkbox
                     checked={selected}
                     inputProps={{
@@ -1149,6 +1297,18 @@ const ResultRow = memo(function ResultRow({
                         data-testid={column.testId}
                         key={column.id}
                         sx={{
+                            // The recency flag's second, independent property:
+                            // the age column's accent-teal text color (the
+                            // mock's `ageColor: isNew ? ACC_HI : ...`, read
+                            // from the theme as `primary.light` so the
+                            // `dark-dyschromatopsia` variant composes with it).
+                            // Only the flagged state is styled -- an unflagged
+                            // row keeps exactly the color it had before this
+                            // task, so the default rendering is unchanged.
+                            color:
+                                recent && column.id === "epoch"
+                                    ? "primary.light"
+                                    : undefined,
                             pl: isTitle ? 2 + nestingLevel * 2 : undefined,
                             whiteSpace: isTitle ? "normal" : "nowrap",
                         }}
@@ -1417,6 +1577,216 @@ function SelectionMenu({
                 </MenuItem>
             </Menu>
         </Stack>
+    );
+}
+
+// Every display preference for the results list, gathered into the mock's own
+// "⚙ Display" popover (FM-041): the two grouping toggles this toolbar used to
+// render inline (relocated with their labels and behavior unchanged), the two
+// new opt-in row treatments, and a second entry point to the refine surface's
+// existing visibility affordance.
+//
+// A `Popover` of real `Checkbox` controls rather than a `role="menu"` of
+// `menuitem`s: every entry is a persistent on/off preference, so `checkbox`
+// semantics (an accessible name plus a queryable checked state) describe it
+// correctly, where `menuitem` would not. The toggle still advertises the
+// popover with `aria-haspopup`/`aria-expanded`.
+function DisplayOptionsMenu({
+    compactRows,
+    groupEpisodes,
+    groupTorrentAndUsenet,
+    highlightRecent,
+    onToggleCompactRows,
+    onToggleGroupEpisodes,
+    onToggleGroupTorrentAndUsenet,
+    onToggleHighlightRecent,
+    onToggleRefineSurface,
+    refineSurfaceShown,
+}: {
+    compactRows: boolean;
+    groupEpisodes: boolean;
+    groupTorrentAndUsenet: boolean;
+    highlightRecent: boolean;
+    onToggleCompactRows: () => void;
+    onToggleGroupEpisodes: () => void;
+    onToggleGroupTorrentAndUsenet: () => void;
+    onToggleHighlightRecent: () => void;
+    onToggleRefineSurface: () => void;
+    // "Is the refine surface currently shown", resolved by the parent from
+    // whichever per-viewport mechanism is live, so this entry's checked state
+    // can never disagree with the live `refine-sidebar-toggle`'s
+    // `aria-expanded`.
+    refineSurfaceShown: boolean;
+}) {
+    const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+    const open = Boolean(anchorEl);
+    const entries: {checked: boolean; label: string; onToggle: () => void}[] = [
+        {
+            checked: groupTorrentAndUsenet,
+            label: "Group torrent and Usenet results",
+            onToggle: onToggleGroupTorrentAndUsenet,
+        },
+        {
+            checked: groupEpisodes,
+            label: "Group TV episodes",
+            onToggle: onToggleGroupEpisodes,
+        },
+        {
+            checked: compactRows,
+            label: "Compact rows",
+            onToggle: onToggleCompactRows,
+        },
+        {
+            checked: highlightRecent,
+            label: "Highlight recent",
+            onToggle: onToggleHighlightRecent,
+        },
+    ];
+    return (
+        <>
+            <Button
+                aria-expanded={open ? "true" : "false"}
+                aria-haspopup="true"
+                aria-label="Display options"
+                data-testid="display-options-toggle"
+                onClick={(event) =>
+                    setAnchorEl(anchorEl ? null : event.currentTarget)
+                }
+                size="small"
+                sx={{
+                    backgroundColor: controlSurface,
+                    border: `1px solid ${popoverBorderColor}`,
+                    color: open ? "text.primary" : enabledSecondaryTextColor,
+                    fontSize: "13px",
+                    gap: "8px",
+                    px: "13px",
+                    py: "8px",
+                }}
+            >
+                <Box aria-hidden="true" component="span">
+                    ⚙
+                </Box>
+                Display
+                <Box
+                    aria-hidden="true"
+                    component="span"
+                    sx={{color: displayMenuCaptionColor, fontSize: "10px"}}
+                >
+                    {open ? "▲" : "▼"}
+                </Box>
+            </Button>
+            <Popover
+                anchorEl={anchorEl}
+                anchorOrigin={{horizontal: "right", vertical: "bottom"}}
+                onClose={() => setAnchorEl(null)}
+                open={open}
+                slotProps={{
+                    paper: {
+                        sx: {
+                            backgroundColor: controlSurface,
+                            backgroundImage: "none",
+                            border: `1px solid ${popoverBorderColor}`,
+                            borderRadius: displayMenuRadius,
+                            boxShadow: displayMenuShadow,
+                            maxWidth: "100%",
+                        },
+                    },
+                }}
+                transformOrigin={{horizontal: "right", vertical: "top"}}
+            >
+                <Box
+                    data-testid="display-options"
+                    sx={{
+                        minWidth: displayMenuMinWidth,
+                        p: displayMenuPadding,
+                    }}
+                >
+                    <Typography
+                        component="div"
+                        sx={{
+                            color: displayMenuCaptionColor,
+                            fontSize: "10.5px",
+                            fontWeight: 600,
+                            letterSpacing: "0.6px",
+                            padding: "4px 8px 8px",
+                            textTransform: "uppercase",
+                        }}
+                    >
+                        Display options
+                    </Typography>
+                    <FormGroup>
+                        {entries.map((entry) => (
+                            <DisplayOption
+                                checked={entry.checked}
+                                key={entry.label}
+                                label={entry.label}
+                                onToggle={entry.onToggle}
+                            />
+                        ))}
+                        {/* The mock's own hairline before the refine-surface
+                            entry, separating the row/grouping treatments from
+                            the surrounding-layout one. */}
+                        <Box
+                            sx={{
+                                backgroundColor: displayMenuDividerColor,
+                                height: "1px",
+                                mx: "4px",
+                                my: "6px",
+                            }}
+                        />
+                        {/* The only entry that closes the popover: below `sm`
+                            the refine surface is a temporary `Drawer`, and
+                            leaving this popover open behind it would stack two
+                            overlays over the results (and hide the popover's
+                            own entries from the accessibility tree). Closing
+                            unconditionally keeps the behavior the same at
+                            every viewport rather than viewport-dependent. */}
+                        <DisplayOption
+                            checked={refineSurfaceShown}
+                            label="Show refine sidebar"
+                            onToggle={() => {
+                                onToggleRefineSurface();
+                                setAnchorEl(null);
+                            }}
+                        />
+                    </FormGroup>
+                </Box>
+            </Popover>
+        </>
+    );
+}
+
+// One popover entry, matching the mock's `<label>` + `<input type=checkbox>`
+// shape: a 7px-radius row at `7px 8px` padding with a 9px gap.
+function DisplayOption({
+    checked,
+    label,
+    onToggle,
+}: {
+    checked: boolean;
+    label: string;
+    onToggle: () => void;
+}) {
+    return (
+        <FormControlLabel
+            control={
+                <Checkbox checked={checked} onChange={onToggle} size="small" />
+            }
+            label={label}
+            sx={{
+                borderRadius: displayMenuItemRadius,
+                gap: displayMenuItemGap,
+                m: 0,
+                px: displayMenuItemPaddingX,
+                py: displayMenuItemPaddingY,
+                "& .MuiFormControlLabel-label": {
+                    color: displayMenuItemColor,
+                    fontSize: displayMenuItemFontSize,
+                },
+                "& .MuiCheckbox-root": {p: 0},
+                "& .MuiSvgIcon-root": {fontSize: "18px"},
+            }}
+        />
     );
 }
 

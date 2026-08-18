@@ -1,10 +1,13 @@
-import {describe, expect, it} from "vitest";
+import {describe, expect, it, vi} from "vitest";
 
 import {
+    ageInDays,
     defaultFilters,
     groupResults,
     filterResults,
+    isRecentResult,
     preselectedQuickFilters,
+    RECENT_RESULT_MAX_AGE_DAYS,
     quickFilterKey,
     quickFiltersFromSafeConfig,
     selectionAfterClick,
@@ -367,4 +370,55 @@ describe("result table transformations", () => {
         expect(selectionStatus(new Set(), [])).toBe("none");
         expect(selectionStatus(new Set(["one"]), [])).toBe("none");
     });
+
+    it("should compute an age in days only from a result carrying an epoch", () => {
+        withPinnedClock((now) => {
+            expect(
+                ageInDays({...results[0], epoch: undefined}),
+            ).toBeUndefined();
+            expect(ageInDays({...results[0], epoch: now})).toBe(0);
+            expect(ageInDays({...results[0], epoch: now - 2 * 86_400})).toBe(2);
+            // A future epoch (clock skew between the indexer and this host) is
+            // clamped to "now" rather than reported as a negative age.
+            expect(ageInDays({...results[0], epoch: now + 86_400})).toBe(0);
+        });
+    });
+
+    it("should flag only results at most three days old as recent", () => {
+        expect(RECENT_RESULT_MAX_AGE_DAYS).toBe(3);
+        withPinnedClock((now) => {
+            const atAge = (days: number) => ({
+                ...results[0],
+                epoch: now - Math.round(days * 86_400),
+            });
+            expect(isRecentResult(atAge(0))).toBe(true);
+            expect(isRecentResult(atAge(2.9))).toBe(true);
+            // Exactly at the threshold is still recent (the mock's `<= 3`).
+            expect(isRecentResult(atAge(3))).toBe(true);
+            expect(isRecentResult(atAge(3.1))).toBe(false);
+            expect(isRecentResult(atAge(40))).toBe(false);
+            // No epoch means no computable age, so never flagged -- the same
+            // way an unknown age is treated by the age range filter.
+            expect(isRecentResult({...results[0], epoch: undefined})).toBe(
+                false,
+            );
+            // The threshold is overridable for callers that need a different
+            // window, without changing the default the display preference uses.
+            expect(isRecentResult(atAge(5), 7)).toBe(true);
+        });
+    });
 });
+
+// `ageInDays` reads `Date.now()` at sub-second precision, so an epoch derived
+// from an unpinned `Math.floor(Date.now() / 1000)` lands a fraction of a day
+// *past* the age it was meant to represent -- which would make the `<= 3`
+// threshold's own boundary case untestable. Pinning the clock makes both exact.
+function withPinnedClock(assertions: (nowInSeconds: number) => void): void {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-08-17T12:00:00.000Z"));
+    try {
+        assertions(Math.floor(Date.now() / 1_000));
+    } finally {
+        vi.useRealTimers();
+    }
+}

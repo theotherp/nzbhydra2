@@ -412,11 +412,27 @@ function inRange(value: number | undefined, range: NumericRange): boolean {
     );
 }
 
-function ageInDays(result: SearchResult): number | undefined {
+export function ageInDays(result: SearchResult): number | undefined {
     if (result.epoch === undefined) {
         return undefined;
     }
     return Math.max(0, (Date.now() / 1000 - result.epoch) / 86_400);
+}
+
+// The mock's recency threshold (`isNew = highlightRecent && r.ageDays <= 3`),
+// used by the opt-in "Highlight recent" display preference (FM-041).
+export const RECENT_RESULT_MAX_AGE_DAYS = 3;
+
+// True only for a result whose age is at most `maxAgeDays` days, computed from
+// the same `epoch` every other age-derived behavior uses. A result carrying no
+// `epoch` has no computable age and is therefore never flagged, matching how
+// `filterResults` already treats an unknown age.
+export function isRecentResult(
+    result: SearchResult,
+    maxAgeDays: number = RECENT_RESULT_MAX_AGE_DAYS,
+): boolean {
+    const age = ageInDays(result);
+    return age !== undefined && age <= maxAgeDays;
 }
 
 function numberOrUndefined(value: string): number | undefined {
