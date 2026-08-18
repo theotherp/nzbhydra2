@@ -56,3 +56,5 @@
 ### Follow-Up Work
 
 - Bounded proposals not required for this task, or `None`.
+- Label each one either a **maintenance candidate for `/fm-quickfix`** (mechanically repairable, no behavioral surface, or a single-module bug a regression test could cover) or a **proposed task packet** (contract, registry record,
+  selector, user-observable capability, or ADR). Do not propose a packet for a defect a quickfix could discharge.

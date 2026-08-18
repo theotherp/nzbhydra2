@@ -30,6 +30,11 @@ not select one. Report `BLOCKED: ADR REQUIRED` with the decision question, repos
 
 Do not review your own implementation and do not commit or push unless repository instructions explicitly authorize it.
 
+When you encounter a defect outside your task's scope, size it before proposing a remedy. If it is mechanically repairable with no behavioral surface, or is a single-module bug a regression test could cover, record it in your handoff's
+Follow-Up Work as a **maintenance candidate for `/fm-quickfix`**, naming the paths and the failing command — do not propose a corrective task packet for it. Proposing a packet for a two-line defect is why such defects accumulate:
+`docs/frontend-migration/MAINTENANCE.md` records several that survived multiple tasks that way. Reserve a proposed packet for out-of-scope work that genuinely needs one — a contract, a registry record, a selector, a user-observable
+capability, or an ADR. Either way the rule is unchanged: report it, never fix it inside this task.
+
 For ADR-0006 visual work, reconcile each linked `FEATURES.yaml` visual record with its scoped states, deterministic setup, viewports, geometry checks, evidence, optional narrow snapshots, and variance disposition. Propose evidence only: do
 not set a visual baseline or variance to accepted without explicit human acceptance, and do not treat behavioral or accessibility verification as visual acceptance.
 

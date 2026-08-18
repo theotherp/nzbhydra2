@@ -326,6 +326,7 @@ test.describe("Search", () => {
             const bulkActionsToggle = page.getByRole("button", {
                 name: "More selection options",
             });
+            // prettier-ignore
             const [indexersRegionBox, bulkActionsToggleBox] =
                 await Promise.all([
                     indexersRegion.boundingBox(),
@@ -527,8 +528,10 @@ test.describe("Search", () => {
         await expect(
             page.getByRole("checkbox", {name: "Mock1"}),
         ).not.toBeChecked();
+        // prettier-ignore
         await page.getByRole("button", {name: "More selection options"}).click();
         await page.getByRole("menuitem", {name: "Deselect all"}).click();
+        // prettier-ignore
         await page.getByRole("button", {name: "More selection options"}).click();
         await page
             .getByRole("menuitem", {name: "Select group Secondary"})
@@ -585,6 +588,7 @@ test.describe("Search", () => {
         await expect(
             page.getByRole("button", {name: /^Refill:/}).first(),
         ).toBeVisible();
+        // prettier-ignore
         await page.getByRole("button", {name: /^Refill:/}).first().click();
         // Refilling remounts the workspace, so the FM-044 `Advanced`
         // disclosure holding the refilled ranges starts collapsed again.
@@ -798,6 +802,7 @@ test.describe("Search", () => {
         const autocomplete = (await response.json()) as Array<
             Record<string, unknown>
         >;
+        // prettier-ignore
         const match = autocomplete.find(
             (entry) => entry.tmdbId === "424242",
         );

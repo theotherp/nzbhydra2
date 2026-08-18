@@ -25,6 +25,7 @@ Agents editing `core/ui-react` also read `/core/ui-react/AGENTS.md`.
 | Consequential decisions                    | `decisions/ADR-*.md`  |
 | ADR lifecycle and proposal rules           | `decisions/README.md` |
 | Task scope, acceptance, and handoff        | `tasks/FM-*.md`       |
+| Small fixes made outside the pipeline      | `MAINTENANCE.md`      |
 
 Do not duplicate an authoritative fact in another document. Link its stable ID instead.
 
@@ -57,6 +58,28 @@ When an agent encounters an unresolved fundamental decision, it reports `ADR REQ
 explicitly accepts or rejects the proposal; after acceptance, the task designer links the ADR and refines the affected task before work resumes. See `decisions/README.md`.
 
 Only the migration task designer creates or refines task packets and dependencies. The coordinator promotes and completes task lifecycle states. Implementation agents add a follow-up proposal to their handoff instead of expanding scope.
+
+One narrow exception: a **factual correction to a `done` packet's recorded evidence** — a wrong file path, a stale line-number citation, a superseded tool version — may be made by `/fm-quickfix` without the designer, because it changes
+what the packet *says happened*, not what it required. Scope, acceptance criteria, `Files Allowed To Modify`, dependencies, and any packet not yet `done` remain designer-only, and a correction that would alter what the task was allowed
+to do is a refinement, not a correction. Never rewrite an implementer's or reviewer's own attested findings this way; correct the packet's evidence and leave their handoff text as written.
+
+## Choosing A Mechanism
+
+Not every change is a task. Route by the size of the change, not by which directory it lands in.
+
+| Change                                                                                             | Mechanism                     |
+|----------------------------------------------------------------------------------------------------|-------------------------------|
+| A user-observable capability, a contract, a registry record, a selector, anything needing an ADR     | `/fm-orchestrate` task packet |
+| Mechanical repair with no behavioral surface, or a single-module bugfix shipping a regression test   | `/fm-quickfix`                |
+| The migration's own governance surface — this file, `templates/`, `.claude/agents/migration-*.md`    | Direct coordinator edit       |
+| An already-dirty tree that needs attributing and landing before the next task                        | `/fm-reconcile`               |
+
+A quickfix is gated, recorded in `MAINTENANCE.md`, and committed like any other change; it simply skips the packet, the subagents, and the independent review, because for a two-line repair those cost more than they protect. It never
+uses an `FM-NNN:` commit subject, never edits a registry contract or a `data-testid`, and aborts rather than committing if the diff outgrows that gate.
+
+This exists because the overhead was causing debt rather than preventing it. A stale `search.spec.ts` locator survived FM-044, FM-045, and FM-041 — each implementer correctly reported it as out of scope and proposed a corrective packet
+that nobody ever wrote — and a repo-wide `format:check` failure was carried as inherited debt across four handoffs the same way. When the cheapest available action is a designer/implementer/reviewer chain, walking past a small defect
+is the rational choice, and small defects compound. Prefer the lightest mechanism that still leaves the change gated and recorded.
 
 ## Creating Task Batches
 

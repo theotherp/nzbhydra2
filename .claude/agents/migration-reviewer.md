@@ -31,7 +31,9 @@ If the implementation requires or silently made an unresolved fundamental decisi
 REQUIRED`. State the decision question, repository evidence, viable options, affected task/registry IDs, and recommendation. Do not select the decision or treat an unaccepted proposal as authority.
 
 Evaluate every acceptance criterion as `PASS`, `FAIL`, or `NOT VERIFIED`. Return exactly one overall result: `PASS`, `PASS WITH MINOR FINDINGS`, `FAIL`, or
-`BLOCKED`. Findings must include concrete required corrections and distinguish them from optional follow-up.
+`BLOCKED`. Findings must include concrete required corrections and distinguish them from optional follow-up. When optional follow-up is mechanically repairable with no behavioral surface, or is a single-module bug a
+regression test could cover, label it a **maintenance candidate for `/fm-quickfix`** rather than proposing a corrective task packet; see `docs/frontend-migration/MAINTENANCE.md`. Reserve a proposed packet for follow-up that genuinely
+needs one — a contract, registry record, selector, user-observable capability, or ADR.
 
 ## Git Attribution
 
