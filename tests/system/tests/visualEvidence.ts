@@ -3,6 +3,15 @@ import {expect, type Locator, type Page} from "@playwright/test";
 export const visualViewports = {
     desktop: {width: 1280, height: 800},
     mobile: {width: 390, height: 844},
+    // FM-042 (ADR-0011 `Human Decision` item 3): a second desktop evidence
+    // viewport, additive and scoped to FM-042's own scrolled/title-collapse
+    // states only. `desktop` (1280x800) remains *the* desktop evidence
+    // viewport everywhere else -- it is the width that puts the
+    // re-proportioned `<colgroup>` under the most pressure, and moving off
+    // it would orphan `FEATURES.yaml:227`/`:267`'s measured 63.25px
+    // header-height baseline. `desktop-wide` proves the ~1900px design
+    // target the repository owner named is comfortable, nothing more.
+    "desktop-wide": {width: 1900, height: 1000},
 } as const;
 
 export type VisualViewport = keyof typeof visualViewports;

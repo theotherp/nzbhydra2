@@ -30,6 +30,7 @@ import {
     useCallback,
     useContext,
     useEffect,
+    useLayoutEffect,
     useMemo,
     useRef,
     useState,
@@ -56,12 +57,7 @@ import {
     rowPaddingY,
 } from "./displayStyles";
 import {DirectDownloadActions, DownloadActions} from "./DownloadActions";
-import {
-    COLLAPSED_WIDTH,
-    EXPANDED_WIDTH,
-    RefineSidebar,
-    useCompactRefineSurface,
-} from "./RefineSidebar";
+import {RefineSidebar, useCompactRefineSurface} from "./RefineSidebar";
 import type {
     NumericRange,
     QuickFilter,
@@ -93,24 +89,50 @@ import {
 
 const STORAGE_KEY = "hydra.search-results.table";
 
-// The narrowest a `sm`-and-up results table is allowed to render before it
-// scrolls horizontally within its own box instead of squeezing header
-// sort-buttons into overflow (measured against the fixed `colgroup` column
-// ratios below: this is the smallest width at which every header's
-// `scrollWidth` fits its `clientWidth`, including the epoch column's sort
-// arrow). Below `sm` the table renders as unrelated stacked cards and never
-// uses this constant.
-const TABLE_MIN_WIDTH = 1320;
-
 // Header cells carry MUI's default 16px vertical `TableCell` padding, which
 // -- together with the tallest control each cell held -- set the pre-FM-045
 // header row to 63.25px at 1280x800 (measured against the clean `89286c376`
 // baseline). With FM-034's inline filter controls gone the header row holds
 // nothing but its sort button, so the row's own padding is what now keeps it
 // tall; matching the body cells' existing 6px keeps the simplified header
-// measurably shorter, as this task's visual contract requires. The mock's
-// exact 42px header height and its sticky positioning remain FM-042's scope.
+// measurably shorter, as this task's visual contract requires. FM-042
+// (ADR-0011) leaves this padding as-is: the mock's exact 42px header height
+// is not itself an acceptance criterion here (only that every header's
+// `scrollWidth` fits its `clientWidth` at the evidenced viewports is), and
+// the re-proportioned `<colgroup>` plus the label typography below already
+// satisfy that without also re-tuning row height.
 const HEADER_CELL_PADDING_Y = "6px";
+
+// FM-042 (ADR-0011): the mock's own header-row label typography
+// (`uimock/NZBHydra Search.dc.html:258`), which ADR-0009 already makes
+// authoritative for palette/typography/density. This is the "complementary
+// lever" ADR-0011 names alongside the re-proportioned `<colgroup>` for
+// making all eight columns' full labels fit: a smaller, uppercase, tracked
+// label leaves more of each header cell's narrowed box for the label text
+// itself than the previous default MUI `Button` typography did.
+const HEADER_LABEL_FONT_SIZE = "11px";
+const HEADER_LABEL_FONT_WEIGHT = 600;
+const HEADER_LABEL_LETTER_SPACING = "0.5px";
+const HEADER_LABEL_COLOR = "#7c8483";
+
+// FM-042: the mock's own sticky toolbar/header stacking relationship
+// (`position:sticky;top:0;z-index:15` for the toolbar, `position:sticky;
+// top:51px;z-index:10` for the header row directly beneath it -- the
+// toolbar always renders above the header it pins against). MUI portals
+// every `Menu`/`Popover` this feature opens (the header's/toolbar's
+// selection-caret menu, the display-options popover) to `document.body` at
+// the theme's modal z-index (1300 by default), so neither sticky region
+// ever competes with an open popover for stacking order regardless of
+// these two values.
+const TOOLBAR_STICKY_Z_INDEX = 15;
+const HEADER_STICKY_Z_INDEX = 10;
+
+// The sticky background every pinned region shares, so rows/content
+// scrolling underneath a sticky region never show through it. The same
+// token `theme.ts`'s scrollbar `styleOverrides` already reads for the page
+// background (see that file's `mockPalette.backgroundDefault`), reused
+// here rather than restated as a new literal.
+const STICKY_BACKGROUND = "background.default";
 
 type StoredChoices = {
     compactRows?: boolean;
@@ -432,15 +454,97 @@ export function SearchResults({
             quickFilters: preselectedQuickFilters(safeConfig, quickFilters),
         });
     }, [data.searchResults, quickFilters, safeConfig]);
-    // At `sm` and up, collapsing the sidebar frees exactly
-    // `EXPANDED_WIDTH - COLLAPSED_WIDTH` px of flex space back to the table.
-    // The table's own minimum width tracks that same delta so it keeps
-    // growing when the sidebar collapses (matching the flex layout's actual
-    // available space) instead of clamping to one shared floor in both
-    // states.
-    const tableMinWidth =
-        TABLE_MIN_WIDTH +
-        (sidebarCollapsed ? EXPANDED_WIDTH - COLLAPSED_WIDTH : 0);
+    // FM-042: the results table's column header row sticks directly beneath
+    // the sticky toolbar, at a `top` offset derived from the toolbar's own
+    // rendered height -- never a hardcoded pixel constant -- so it stays
+    // correct as FM-041's compact mode, FM-045's collapsible/drawer sidebar,
+    // and the toolbar's own wrap-to-more-rows behavior at narrow widths all
+    // change that height.
+    //
+    // The sticky element is `results-toolbar` itself (the whole existing
+    // region: summary, `results-bulk-actions`, `results-download-actions`,
+    // and `results-selection-actions`, unchanged in content), not its
+    // individual children. This is a `position: sticky` CSS requirement, not
+    // a style preference: a sticky element can only remain pinned for as
+    // long as its own *containing block* (its nearest block-level DOM
+    // ancestor -- here, the outer `search-results` Stack, which also
+    // contains the table below) keeps overlapping the viewport as the page
+    // scrolls. Nesting the sticky styling on `results-toolbar`'s individual
+    // children instead would bound each one's containing block to
+    // `results-toolbar`'s own short box, so they would detach and scroll
+    // away again once the page scrolled roughly one toolbar-height past
+    // them -- long before the table's later rows do -- which is exactly the
+    // regression a real-browser scroll (not a jsdom component test) caught
+    // during this task's own implementation.
+    //
+    // Re-measured synchronously before paint (matching how the mock's own
+    // `top: 51px` is derived from its toolbar's rendered height) and kept in
+    // sync afterwards through a `ResizeObserver`, which is unavailable in
+    // the jsdom component-test environment (guarded below) and asserted for
+    // real in `tests/system/tests/results.spec.ts` instead, per this task's
+    // verification requirements.
+    const toolbarRef = useRef<HTMLDivElement | null>(null);
+    const [toolbarHeight, setToolbarHeight] = useState(0);
+    const hasResults = data.searchResults.length > 0;
+    useLayoutEffect(() => {
+        const node = toolbarRef.current;
+        if (!node) {
+            return;
+        }
+        let cancelled = false;
+        const measure = () => {
+            if (!cancelled) {
+                setToolbarHeight(node.getBoundingClientRect().height);
+            }
+        };
+        measure();
+        // The self-hosted IBM Plex Sans/Mono faces `theme.ts` declares can
+        // still be loading at this point (this component's own first layout
+        // races the browser's font fetch, independent of anything this task
+        // controls), and a font swap reflows text width -- and so this
+        // flex-wrapped toolbar's line count and rendered height -- without
+        // changing the toolbar box's `ResizeObserver`-visible geometry
+        // beforehand. `document.fonts` is unavailable in the jsdom
+        // component-test environment (guarded below); it does not affect
+        // that environment's assertions, which check the CSS declaration
+        // rather than settled layout.
+        if (typeof document !== "undefined" && document.fonts) {
+            void document.fonts.ready.then(measure);
+        }
+        // `results-download-actions`' downloader/category `<Select>`s
+        // populate asynchronously (an API fetch resolves after mount) and
+        // change only their *text content*, not necessarily a size
+        // `ResizeObserver` reports before the fetch settles -- real-browser
+        // verification caught the header offset undershooting for exactly
+        // this reason. A `MutationObserver` re-measures on any DOM change
+        // within the toolbar regardless of cause, which is a more direct,
+        // deterministic fix than guessing a settle delay.
+        let mutationObserver: MutationObserver | undefined;
+        if (typeof MutationObserver !== "undefined") {
+            mutationObserver = new MutationObserver(measure);
+            mutationObserver.observe(node, {
+                characterData: true,
+                childList: true,
+                subtree: true,
+            });
+        }
+        if (typeof ResizeObserver === "undefined") {
+            return () => {
+                cancelled = true;
+                mutationObserver?.disconnect();
+            };
+        }
+        const resizeObserver = new ResizeObserver(measure);
+        resizeObserver.observe(node);
+        return () => {
+            cancelled = true;
+            mutationObserver?.disconnect();
+            resizeObserver.disconnect();
+        };
+        // `hasResults` re-runs this the moment the toolbar first mounts
+        // (search results loading in after an initial empty render), which
+        // a `[]`-only dependency array would miss entirely.
+    }, [hasResults]);
     return (
         <Stack data-testid="search-results" spacing={2} sx={{mt: 4}}>
             {data.indexerLimitWarnings.length > 0 && (
@@ -534,7 +638,14 @@ export function SearchResults({
                 <>
                     <Box
                         data-testid="results-toolbar"
-                        sx={{padding: "16px 0 14px"}}
+                        ref={toolbarRef}
+                        sx={{
+                            backgroundColor: STICKY_BACKGROUND,
+                            padding: "16px 0 14px",
+                            position: "sticky",
+                            top: 0,
+                            zIndex: TOOLBAR_STICKY_Z_INDEX,
+                        }}
                     >
                         <Stack spacing={1.5}>
                             <Typography
@@ -729,419 +840,511 @@ export function SearchResults({
                                     All results are currently filtered
                                 </Typography>
                             )}
-                            <Box sx={{maxWidth: "100%", overflowX: "auto"}}>
-                                <Table
-                                    // The row-density preference, advertised on
-                                    // the element that carries it. The density
-                                    // itself is descendant `sx` below (one rule
-                                    // for every body cell rather than a
-                                    // per-cell prop, so `ResultRow`'s
-                                    // memoization is untouched by it), which a
-                                    // jsdom component test cannot resolve
-                                    // through a specificity-ordered cascade;
-                                    // the rendered geometry is asserted in the
-                                    // browser instead, matching how
-                                    // `data-nesting-level`/`data-sort-direction`
-                                    // already expose row and header state here.
-                                    data-compact-rows={
-                                        compactRows ? "true" : "false"
-                                    }
-                                    data-testid="search-results-table"
-                                    sx={(theme) => ({
-                                        tableLayout: "fixed",
-                                        width: "100%",
-                                        "& tbody > tr > td": {
-                                            paddingBottom: compactRows
-                                                ? compactRowPaddingY
-                                                : rowPaddingY,
-                                            paddingTop: compactRows
-                                                ? compactRowPaddingY
-                                                : rowPaddingY,
-                                        },
-                                        // "Compact rows" tightens the row's own
-                                        // controls proportionally as well as its
-                                        // padding: the row checkbox and the
-                                        // action/expand buttons are what
-                                        // actually set the row's height at this
-                                        // density, so trimming their vertical
-                                        // padding is what makes the compact
-                                        // table measurably shorter. Descendant
-                                        // `sx` from this one `Table`, so
-                                        // `DownloadActions.tsx` (a different
-                                        // capability's file) is untouched and
-                                        // `ResultRow`'s memoization is not
-                                        // involved at all.
-                                        ...(compactRows
-                                            ? {
-                                                  "& tbody .MuiCheckbox-root": {
-                                                      padding: "2px",
-                                                  },
-                                                  "& tbody .MuiButton-root": {
-                                                      fontSize: "11.5px",
-                                                      minHeight: 0,
-                                                      paddingBottom: 0,
-                                                      paddingTop: 0,
-                                                  },
-                                                  "& tbody .MuiChip-root": {
-                                                      fontSize: "10.5px",
-                                                      height: "18px",
-                                                  },
-                                                  '& tbody td[data-label="Actions"] .MuiStack-root':
-                                                      {gap: "2px"},
-                                              }
-                                            : {}),
-                                        "& td, & th": {fontSize: "12px"},
-                                        '& [data-label="Title"]': {
-                                            fontSize: "13px",
-                                        },
-                                        // Below `sm` the table is an
-                                        // unrelated stacked-card layout (see
-                                        // the down("sm") block below) that
-                                        // never competes with the sidebar for
-                                        // width, so `tableMinWidth` only
-                                        // applies at `sm` and up, where it
-                                        // keeps header sort-buttons from
-                                        // being squeezed into overflow by
-                                        // the persistent sidebar -- scrolling
-                                        // horizontally within the existing
-                                        // `overflowX: "auto"` wrapper instead.
-                                        [theme.breakpoints.up("sm")]: {
-                                            minWidth: tableMinWidth,
-                                        },
-                                        [theme.breakpoints.down("sm")]: {
+                            <Table
+                                // The row-density preference, advertised on
+                                // the element that carries it. The density
+                                // itself is descendant `sx` below (one rule
+                                // for every body cell rather than a
+                                // per-cell prop, so `ResultRow`'s
+                                // memoization is untouched by it), which a
+                                // jsdom component test cannot resolve
+                                // through a specificity-ordered cascade;
+                                // the rendered geometry is asserted in the
+                                // browser instead, matching how
+                                // `data-nesting-level`/`data-sort-direction`
+                                // already expose row and header state here.
+                                data-compact-rows={
+                                    compactRows ? "true" : "false"
+                                }
+                                data-testid="search-results-table"
+                                sx={(theme) => ({
+                                    tableLayout: "fixed",
+                                    width: "100%",
+                                    "& tbody > tr > td": {
+                                        paddingBottom: compactRows
+                                            ? compactRowPaddingY
+                                            : rowPaddingY,
+                                        paddingTop: compactRows
+                                            ? compactRowPaddingY
+                                            : rowPaddingY,
+                                    },
+                                    // "Compact rows" tightens the row's own
+                                    // controls proportionally as well as its
+                                    // padding: the row checkbox and the
+                                    // action/expand buttons are what
+                                    // actually set the row's height at this
+                                    // density, so trimming their vertical
+                                    // padding is what makes the compact
+                                    // table measurably shorter. Descendant
+                                    // `sx` from this one `Table`, so
+                                    // `DownloadActions.tsx` (a different
+                                    // capability's file) is untouched and
+                                    // `ResultRow`'s memoization is not
+                                    // involved at all.
+                                    ...(compactRows
+                                        ? {
+                                              "& tbody .MuiCheckbox-root": {
+                                                  padding: "2px",
+                                              },
+                                              "& tbody .MuiButton-root": {
+                                                  fontSize: "11.5px",
+                                                  minHeight: 0,
+                                                  paddingBottom: 0,
+                                                  paddingTop: 0,
+                                              },
+                                              "& tbody .MuiChip-root": {
+                                                  fontSize: "10.5px",
+                                                  height: "18px",
+                                              },
+                                              '& tbody td[data-label="Actions"] .MuiStack-root':
+                                                  {gap: "2px"},
+                                          }
+                                        : {}),
+                                    "& td, & th": {fontSize: "12px"},
+                                    '& [data-label="Title"]': {
+                                        fontSize: "13px",
+                                    },
+                                    // FM-042 (ADR-0011, Option E): the
+                                    // table never scrolls horizontally
+                                    // and carries no `min-width` floor,
+                                    // so at and above the stacking
+                                    // breakpoint it is always exactly as
+                                    // wide as its flex-layout box, with
+                                    // the re-proportioned `<colgroup>`
+                                    // below doing the work of keeping
+                                    // every header legible. Below the
+                                    // breakpoint the table renders as
+                                    // unrelated stacked cards instead
+                                    // (`RefineSidebar.tsx`'s shared
+                                    // `useCompactRefineSurface()` moves
+                                    // its docked/drawer branch to the
+                                    // same threshold, so the sidebar and
+                                    // the table switch layouts together).
+                                    // The threshold itself -- legacy's
+                                    // measured 767px stacking point,
+                                    // `tables.less:91` -- is expressed as
+                                    // the same raw pixel value (768)
+                                    // passed to `theme.breakpoints.down`
+                                    // here as `useCompactRefineSurface()`
+                                    // passes to its own raw `down` call,
+                                    // rather than through `theme.ts`'s
+                                    // out-of-scope named `sm`/`md`
+                                    // tokens, so the two branches switch
+                                    // at the same computed width.
+                                    [theme.breakpoints.down(768)]: {
+                                        display: "block",
+                                        "& thead": {display: "none"},
+                                        "& tbody": {display: "block"},
+                                        "& tr": {
+                                            borderTop: `2px solid ${theme.palette.divider}`,
                                             display: "block",
-                                            "& thead": {display: "none"},
-                                            "& tbody": {display: "block"},
-                                            "& tr": {
-                                                borderTop: `2px solid ${theme.palette.divider}`,
-                                                display: "block",
-                                                "&:first-of-type": {
-                                                    borderTop: "none",
-                                                },
+                                            "&:first-of-type": {
+                                                borderTop: "none",
                                             },
-                                            "& td": {
-                                                alignItems: "center",
-                                                border: "none",
-                                                display: "flex",
-                                                flexDirection: "row",
-                                                gap: 1,
-                                                justifyContent: "space-between",
-                                                textAlign: "right",
-                                                "&::before": {
-                                                    color: theme.palette.text
-                                                        .secondary,
-                                                    content: "attr(data-label)",
-                                                    fontSize: "0.7rem",
-                                                    fontWeight: 700,
-                                                    textAlign: "left",
-                                                    textTransform: "uppercase",
-                                                },
-                                            },
-                                            '& td[data-label="Title"]': {
-                                                display: "block",
-                                                textAlign: "left",
-                                            },
-                                            '& td[data-label="Title"]::before':
-                                                {
-                                                    content: "none",
-                                                },
                                         },
-                                    })}
-                                >
-                                    <colgroup>
-                                        <col style={{width: 40}} />
-                                        <col style={{width: "54%"}} />
-                                        <col style={{width: "9%"}} />
-                                        <col style={{width: "8%"}} />
-                                        <col style={{width: "7%"}} />
-                                        <col style={{width: "6.5%"}} />
-                                        <col style={{width: "5.5%"}} />
-                                        <col style={{width: "10%"}} />
-                                    </colgroup>
-                                    <TableHead>
-                                        {table
-                                            .getHeaderGroups()
-                                            .map((headerGroup) => (
-                                                <TableRow key={headerGroup.id}>
-                                                    <TableCell
-                                                        data-label="Select"
-                                                        padding="checkbox"
-                                                        sx={{
-                                                            py: HEADER_CELL_PADDING_Y,
-                                                        }}
-                                                    >
-                                                        <SelectionMenu
-                                                            idPrefix="header"
-                                                            onDeselectAll={
-                                                                deselectAllVisible
-                                                            }
-                                                            onInvertSelection={
-                                                                invertVisibleSelection
-                                                            }
-                                                            onSelectAll={
-                                                                selectAllVisible
-                                                            }
-                                                            status={
-                                                                currentSelectionStatus
-                                                            }
-                                                        />
-                                                    </TableCell>
-                                                    {headerGroup.headers.map(
-                                                        (header) => {
-                                                            const isTitle =
-                                                                header.column
-                                                                    .id ===
-                                                                "title";
-                                                            const label =
-                                                                typeof header
-                                                                    .column
-                                                                    .columnDef
-                                                                    .header ===
-                                                                "string"
-                                                                    ? header
-                                                                          .column
-                                                                          .columnDef
-                                                                          .header
-                                                                    : undefined;
-                                                            const sortDirection =
-                                                                header.column.getIsSorted();
-                                                            return (
-                                                                <TableCell
-                                                                    align={
-                                                                        isTitle
-                                                                            ? "left"
-                                                                            : "right"
-                                                                    }
-                                                                    aria-sort={
-                                                                        sortDirection ===
-                                                                        "asc"
-                                                                            ? "ascending"
-                                                                            : sortDirection ===
-                                                                                "desc"
-                                                                              ? "descending"
-                                                                              : "none"
-                                                                    }
-                                                                    data-label={
-                                                                        label
-                                                                    }
-                                                                    key={
-                                                                        header.id
-                                                                    }
-                                                                    sx={{
-                                                                        overflow:
-                                                                            "hidden",
-                                                                        px: 1,
-                                                                        py: HEADER_CELL_PADDING_Y,
-                                                                        textOverflow:
-                                                                            "ellipsis",
-                                                                        whiteSpace:
-                                                                            "nowrap",
-                                                                    }}
-                                                                >
-                                                                    {header.isPlaceholder ? null : (
-                                                                        <Button
-                                                                            aria-label={`${
-                                                                                label ??
-                                                                                ""
-                                                                            }${
-                                                                                sortDirection ===
+                                        "& td": {
+                                            alignItems: "center",
+                                            border: "none",
+                                            display: "flex",
+                                            flexDirection: "row",
+                                            gap: 1,
+                                            justifyContent: "space-between",
+                                            textAlign: "right",
+                                            "&::before": {
+                                                color: theme.palette.text
+                                                    .secondary,
+                                                content: "attr(data-label)",
+                                                fontSize: "0.7rem",
+                                                fontWeight: 700,
+                                                textAlign: "left",
+                                                textTransform: "uppercase",
+                                            },
+                                        },
+                                        '& td[data-label="Title"]': {
+                                            display: "block",
+                                            textAlign: "left",
+                                        },
+                                        '& td[data-label="Title"]::before': {
+                                            content: "none",
+                                        },
+                                    },
+                                })}
+                            >
+                                {/* FM-042 (ADR-0011): re-proportioned from
+                                        legacy's byte-for-byte-ported
+                                        54/9/8/7/6.5/5.5/10 now that the
+                                        `overflowX: "auto"` wrapper and its
+                                        `TABLE_MIN_WIDTH` floor are gone --
+                                        those ratios left the metadata
+                                        columns with no slack once the table
+                                        could be compressed below ~1320px.
+                                        Measured against a real-browser
+                                        render (see the handoff for the
+                                        observed numbers) rather than
+                                        implemented from ADR-0011's sketch
+                                        unmeasured. */}
+                                <colgroup>
+                                    <col style={{width: 40}} />
+                                    <col style={{width: "34%"}} />
+                                    <col style={{width: "11%"}} />
+                                    <col style={{width: "11%"}} />
+                                    <col style={{width: "9%"}} />
+                                    <col style={{width: "11%"}} />
+                                    <col style={{width: "9%"}} />
+                                    <col style={{width: "15%"}} />
+                                </colgroup>
+                                <TableHead>
+                                    {table
+                                        .getHeaderGroups()
+                                        .map((headerGroup) => (
+                                            <TableRow key={headerGroup.id}>
+                                                <TableCell
+                                                    data-label="Select"
+                                                    padding="checkbox"
+                                                    sx={(theme) => ({
+                                                        backgroundColor:
+                                                            STICKY_BACKGROUND,
+                                                        // FM-042
+                                                        // (ADR-0011):
+                                                        // `border-collapse:
+                                                        // collapse`
+                                                        // (kept, so
+                                                        // FM-041's inset
+                                                        // recency stripe
+                                                        // is undisturbed)
+                                                        // means the
+                                                        // table paints
+                                                        // this row's
+                                                        // border, which
+                                                        // does not
+                                                        // travel with a
+                                                        // sticky `<th>`
+                                                        // -- drawn as an
+                                                        // inset
+                                                        // `box-shadow`
+                                                        // on the cell
+                                                        // instead,
+                                                        // verified
+                                                        // against a real
+                                                        // Chromium build
+                                                        // to actually
+                                                        // remain visible
+                                                        // while pinned.
+                                                        boxShadow: `inset 0 -1px 0 ${theme.palette.divider}`,
+                                                        position: "sticky",
+                                                        py: HEADER_CELL_PADDING_Y,
+                                                        top: toolbarHeight,
+                                                        zIndex: HEADER_STICKY_Z_INDEX,
+                                                    })}
+                                                >
+                                                    <SelectionMenu
+                                                        idPrefix="header"
+                                                        onDeselectAll={
+                                                            deselectAllVisible
+                                                        }
+                                                        onInvertSelection={
+                                                            invertVisibleSelection
+                                                        }
+                                                        onSelectAll={
+                                                            selectAllVisible
+                                                        }
+                                                        status={
+                                                            currentSelectionStatus
+                                                        }
+                                                    />
+                                                </TableCell>
+                                                {headerGroup.headers.map(
+                                                    (header) => {
+                                                        const isTitle =
+                                                            header.column.id ===
+                                                            "title";
+                                                        const label =
+                                                            typeof header.column
+                                                                .columnDef
+                                                                .header ===
+                                                            "string"
+                                                                ? header.column
+                                                                      .columnDef
+                                                                      .header
+                                                                : undefined;
+                                                        const sortDirection =
+                                                            header.column.getIsSorted();
+                                                        return (
+                                                            <TableCell
+                                                                align={
+                                                                    isTitle
+                                                                        ? "left"
+                                                                        : "right"
+                                                                }
+                                                                aria-sort={
+                                                                    sortDirection ===
+                                                                    "asc"
+                                                                        ? "ascending"
+                                                                        : sortDirection ===
+                                                                            "desc"
+                                                                          ? "descending"
+                                                                          : "none"
+                                                                }
+                                                                data-label={
+                                                                    label
+                                                                }
+                                                                key={header.id}
+                                                                sx={(
+                                                                    theme,
+                                                                ) => ({
+                                                                    backgroundColor:
+                                                                        STICKY_BACKGROUND,
+                                                                    // FM-042 (ADR-0011): see the
+                                                                    // checkbox header cell's comment
+                                                                    // above for why this is a
+                                                                    // `box-shadow` rather than the
+                                                                    // collapsed table's own border.
+                                                                    boxShadow: `inset 0 -1px 0 ${theme.palette.divider}`,
+                                                                    overflow:
+                                                                        "hidden",
+                                                                    position:
+                                                                        "sticky",
+                                                                    px: 1,
+                                                                    py: HEADER_CELL_PADDING_Y,
+                                                                    textOverflow:
+                                                                        "ellipsis",
+                                                                    top: toolbarHeight,
+                                                                    whiteSpace:
+                                                                        "nowrap",
+                                                                    zIndex: HEADER_STICKY_Z_INDEX,
+                                                                })}
+                                                            >
+                                                                {header.isPlaceholder ? null : (
+                                                                    <Button
+                                                                        aria-label={`${
+                                                                            label ??
+                                                                            ""
+                                                                        }${
+                                                                            sortDirection ===
+                                                                            "asc"
+                                                                                ? " (ascending)"
+                                                                                : sortDirection ===
+                                                                                    "desc"
+                                                                                  ? " (descending)"
+                                                                                  : ""
+                                                                        }`}
+                                                                        data-sort-direction={
+                                                                            sortDirection ||
+                                                                            "none"
+                                                                        }
+                                                                        data-testid={`sort-${header.column.id}`}
+                                                                        onClick={header.column.getToggleSortingHandler()}
+                                                                        size="small"
+                                                                        sx={{
+                                                                            color: HEADER_LABEL_COLOR,
+                                                                            display:
+                                                                                "block",
+                                                                            flexShrink: 0,
+                                                                            fontSize:
+                                                                                HEADER_LABEL_FONT_SIZE,
+                                                                            fontWeight:
+                                                                                HEADER_LABEL_FONT_WEIGHT,
+                                                                            letterSpacing:
+                                                                                HEADER_LABEL_LETTER_SPACING,
+                                                                            maxWidth:
+                                                                                "100%",
+                                                                            minWidth: 0,
+                                                                            overflow:
+                                                                                "hidden",
+                                                                            // The mock's Title sort
+                                                                            // button is `padding:0
+                                                                            // 6px`; every other
+                                                                            // column's is `0 4px`
+                                                                            // (`uimock/NZBHydra
+                                                                            // Search.dc.html:270-277`).
+                                                                            px: isTitle
+                                                                                ? "6px"
+                                                                                : "4px",
+                                                                            textAlign:
+                                                                                isTitle
+                                                                                    ? "left"
+                                                                                    : "right",
+                                                                            textOverflow:
+                                                                                "ellipsis",
+                                                                            textTransform:
+                                                                                "uppercase",
+                                                                            whiteSpace:
+                                                                                "nowrap",
+                                                                        }}
+                                                                    >
+                                                                        {flexRender(
+                                                                            header
+                                                                                .column
+                                                                                .columnDef
+                                                                                .header,
+                                                                            header.getContext(),
+                                                                        )}
+                                                                        {sortDirection && (
+                                                                            <Box
+                                                                                aria-hidden="true"
+                                                                                component="span"
+                                                                            >
+                                                                                {sortDirection ===
                                                                                 "asc"
-                                                                                    ? " (ascending)"
-                                                                                    : sortDirection ===
-                                                                                        "desc"
-                                                                                      ? " (descending)"
-                                                                                      : ""
-                                                                            }`}
-                                                                            data-sort-direction={
-                                                                                sortDirection ||
-                                                                                "none"
-                                                                            }
-                                                                            data-testid={`sort-${header.column.id}`}
-                                                                            onClick={header.column.getToggleSortingHandler()}
-                                                                            size="small"
-                                                                            sx={{
-                                                                                display:
-                                                                                    "block",
-                                                                                flexShrink: 0,
-                                                                                maxWidth:
-                                                                                    "100%",
-                                                                                minWidth: 0,
-                                                                                overflow:
-                                                                                    "hidden",
-                                                                                px: 0.5,
-                                                                                textAlign:
-                                                                                    isTitle
-                                                                                        ? "left"
-                                                                                        : "right",
-                                                                                textOverflow:
-                                                                                    "ellipsis",
-                                                                                whiteSpace:
-                                                                                    "nowrap",
-                                                                            }}
-                                                                        >
-                                                                            {flexRender(
-                                                                                header
-                                                                                    .column
-                                                                                    .columnDef
-                                                                                    .header,
-                                                                                header.getContext(),
-                                                                            )}
-                                                                            {sortDirection && (
-                                                                                <Box
-                                                                                    aria-hidden="true"
-                                                                                    component="span"
-                                                                                >
-                                                                                    {sortDirection ===
-                                                                                    "asc"
-                                                                                        ? " ▲"
-                                                                                        : " ▼"}
-                                                                                </Box>
-                                                                            )}
-                                                                        </Button>
-                                                                    )}
-                                                                </TableCell>
-                                                            );
-                                                        },
-                                                    )}
-                                                    <TableCell
-                                                        align="right"
-                                                        data-label="Actions"
-                                                        sx={{
-                                                            py: HEADER_CELL_PADDING_Y,
-                                                            whiteSpace:
-                                                                "nowrap",
-                                                        }}
-                                                    >
-                                                        Actions
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))}
-                                    </TableHead>
-                                    <TableBody>
-                                        {groups.flatMap((group, groupIndex) =>
-                                            group.duplicateGroups.flatMap(
-                                                (
-                                                    duplicates,
-                                                    duplicateIndex,
-                                                ) => {
-                                                    const first = duplicates[0];
-                                                    const duplicateKey =
-                                                        duplicateGroupKey(
-                                                            group.key,
-                                                            first,
+                                                                                    ? " ▲"
+                                                                                    : " ▼"}
+                                                                            </Box>
+                                                                        )}
+                                                                    </Button>
+                                                                )}
+                                                            </TableCell>
                                                         );
-                                                    const titleExpanded =
-                                                        expandedTitles.has(
-                                                            group.key,
-                                                        );
-                                                    const duplicateExpanded =
-                                                        expandedDuplicates.has(
-                                                            duplicateKey,
-                                                        );
-                                                    if (
-                                                        duplicateIndex > 0 &&
-                                                        !titleExpanded
-                                                    ) {
-                                                        return [];
-                                                    }
-                                                    return duplicates
-                                                        .filter(
-                                                            (_, index) =>
-                                                                index === 0 ||
-                                                                duplicateExpanded,
-                                                        )
-                                                        .map(
-                                                            (result, index) => {
-                                                                const nestingLevel =
-                                                                    (duplicateIndex >
-                                                                    0
-                                                                        ? 1
-                                                                        : 0) +
-                                                                    (index > 0
-                                                                        ? 1
-                                                                        : 0);
-                                                                const isNewGroup =
-                                                                    groupIndex >
+                                                    },
+                                                )}
+                                                <TableCell
+                                                    align="right"
+                                                    data-label="Actions"
+                                                    sx={(theme) => ({
+                                                        backgroundColor:
+                                                            STICKY_BACKGROUND,
+                                                        // FM-042 (ADR-0011): see the
+                                                        // checkbox header cell's comment
+                                                        // above for why this is a
+                                                        // `box-shadow` rather than the
+                                                        // collapsed table's own border.
+                                                        boxShadow: `inset 0 -1px 0 ${theme.palette.divider}`,
+                                                        color: HEADER_LABEL_COLOR,
+                                                        fontSize:
+                                                            HEADER_LABEL_FONT_SIZE,
+                                                        fontWeight:
+                                                            HEADER_LABEL_FONT_WEIGHT,
+                                                        letterSpacing:
+                                                            HEADER_LABEL_LETTER_SPACING,
+                                                        overflow: "hidden",
+                                                        position: "sticky",
+                                                        py: HEADER_CELL_PADDING_Y,
+                                                        textOverflow:
+                                                            "ellipsis",
+                                                        textTransform:
+                                                            "uppercase",
+                                                        top: toolbarHeight,
+                                                        whiteSpace: "nowrap",
+                                                        zIndex: HEADER_STICKY_Z_INDEX,
+                                                    })}
+                                                >
+                                                    Actions
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                </TableHead>
+                                <TableBody>
+                                    {groups.flatMap((group, groupIndex) =>
+                                        group.duplicateGroups.flatMap(
+                                            (duplicates, duplicateIndex) => {
+                                                const first = duplicates[0];
+                                                const duplicateKey =
+                                                    duplicateGroupKey(
+                                                        group.key,
+                                                        first,
+                                                    );
+                                                const titleExpanded =
+                                                    expandedTitles.has(
+                                                        group.key,
+                                                    );
+                                                const duplicateExpanded =
+                                                    expandedDuplicates.has(
+                                                        duplicateKey,
+                                                    );
+                                                if (
+                                                    duplicateIndex > 0 &&
+                                                    !titleExpanded
+                                                ) {
+                                                    return [];
+                                                }
+                                                return duplicates
+                                                    .filter(
+                                                        (_, index) =>
+                                                            index === 0 ||
+                                                            duplicateExpanded,
+                                                    )
+                                                    .map((result, index) => {
+                                                        const nestingLevel =
+                                                            (duplicateIndex > 0
+                                                                ? 1
+                                                                : 0) +
+                                                            (index > 0 ? 1 : 0);
+                                                        const isNewGroup =
+                                                            groupIndex > 0 &&
+                                                            duplicateIndex ===
+                                                                0 &&
+                                                            index === 0;
+                                                        return (
+                                                            <ResultRow
+                                                                downloaded={downloadedIds.has(
+                                                                    result.searchResultId,
+                                                                )}
+                                                                duplicateExpanded={
+                                                                    duplicateExpanded
+                                                                }
+                                                                duplicateKey={
+                                                                    duplicateKey
+                                                                }
+                                                                isNewGroup={
+                                                                    isNewGroup
+                                                                }
+                                                                key={
+                                                                    result.searchResultId
+                                                                }
+                                                                nestingLevel={
+                                                                    nestingLevel
+                                                                }
+                                                                onDownloaded={
+                                                                    handleDownloaded
+                                                                }
+                                                                onSelectionChange={
+                                                                    updateSelection
+                                                                }
+                                                                onToggleDuplicateExpansion={
+                                                                    handleToggleDuplicateExpansion
+                                                                }
+                                                                onToggleTitleExpansion={
+                                                                    handleToggleTitleExpansion
+                                                                }
+                                                                recent={
+                                                                    highlightRecent &&
+                                                                    isRecentResult(
+                                                                        result,
+                                                                    )
+                                                                }
+                                                                result={result}
+                                                                selected={selected.has(
+                                                                    result.searchResultId,
+                                                                )}
+                                                                showDuplicateExpand={
+                                                                    index ===
+                                                                        0 &&
+                                                                    duplicates.length >
+                                                                        1
+                                                                }
+                                                                showTitleExpand={
+                                                                    index ===
                                                                         0 &&
                                                                     duplicateIndex ===
                                                                         0 &&
-                                                                    index === 0;
-                                                                return (
-                                                                    <ResultRow
-                                                                        downloaded={downloadedIds.has(
-                                                                            result.searchResultId,
-                                                                        )}
-                                                                        duplicateExpanded={
-                                                                            duplicateExpanded
-                                                                        }
-                                                                        duplicateKey={
-                                                                            duplicateKey
-                                                                        }
-                                                                        isNewGroup={
-                                                                            isNewGroup
-                                                                        }
-                                                                        key={
-                                                                            result.searchResultId
-                                                                        }
-                                                                        nestingLevel={
-                                                                            nestingLevel
-                                                                        }
-                                                                        onDownloaded={
-                                                                            handleDownloaded
-                                                                        }
-                                                                        onSelectionChange={
-                                                                            updateSelection
-                                                                        }
-                                                                        onToggleDuplicateExpansion={
-                                                                            handleToggleDuplicateExpansion
-                                                                        }
-                                                                        onToggleTitleExpansion={
-                                                                            handleToggleTitleExpansion
-                                                                        }
-                                                                        recent={
-                                                                            highlightRecent &&
-                                                                            isRecentResult(
-                                                                                result,
-                                                                            )
-                                                                        }
-                                                                        result={
-                                                                            result
-                                                                        }
-                                                                        selected={selected.has(
-                                                                            result.searchResultId,
-                                                                        )}
-                                                                        showDuplicateExpand={
-                                                                            index ===
-                                                                                0 &&
-                                                                            duplicates.length >
-                                                                                1
-                                                                        }
-                                                                        showTitleExpand={
-                                                                            index ===
-                                                                                0 &&
-                                                                            duplicateIndex ===
-                                                                                0 &&
-                                                                            group
-                                                                                .duplicateGroups
-                                                                                .length >
-                                                                                1
-                                                                        }
-                                                                        titleExpanded={
-                                                                            titleExpanded
-                                                                        }
-                                                                        titleGroupKey={
-                                                                            group.key
-                                                                        }
-                                                                    />
-                                                                );
-                                                            },
+                                                                    group
+                                                                        .duplicateGroups
+                                                                        .length >
+                                                                        1
+                                                                }
+                                                                titleExpanded={
+                                                                    titleExpanded
+                                                                }
+                                                                titleGroupKey={
+                                                                    group.key
+                                                                }
+                                                            />
                                                         );
-                                                },
-                                            ),
-                                        )}
-                                    </TableBody>
-                                </Table>
-                            </Box>
+                                                    });
+                                            },
+                                        ),
+                                    )}
+                                </TableBody>
+                            </Table>
                         </Box>
                     </Stack>
                 </>
@@ -1309,6 +1512,23 @@ const ResultRow = memo(function ResultRow({
                                 recent && column.id === "epoch"
                                     ? "primary.light"
                                     : undefined,
+                            // FM-042 (ADR-0011, sub-decision E-title (i)):
+                            // the modern spelling of legacy's `.text-break`
+                            // (`type.less:31-34`'s `word-wrap: break-word;
+                            // word-break: break-word`, applied to the title
+                            // cell by `search-result.html:3`). Release
+                            // titles are dot-separated with no spaces, so
+                            // `white-space: normal` alone would not wrap
+                            // them -- `overflow-wrap: anywhere` is what lets
+                            // a long, unbroken title wrap across multiple
+                            // lines instead of spilling into the next
+                            // column. Not ellipsis and not a clamp: both
+                            // were presented and neither was selected: the
+                            // owner's stated reason is that this component
+                            // has no `<Tooltip>`/`title=` recovery
+                            // affordance anywhere, so hiding a title's tail
+                            // would have no way back.
+                            overflowWrap: isTitle ? "anywhere" : undefined,
                             pl: isTitle ? 2 + nestingLevel * 2 : undefined,
                             whiteSpace: isTitle ? "normal" : "nowrap",
                         }}

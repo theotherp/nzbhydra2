@@ -52,9 +52,23 @@ export const COLLAPSED_WIDTH = 48;
 // callback form) so the breakpoint still resolves in a component test that
 // renders without a `ThemeProvider`, where `@mui/system`'s theme context is
 // null.
+//
+// FM-042 (ADR-0011): eight table columns cannot render legibly at MUI's
+// `sm` (600px), and legacy's own measured stacking threshold is 767px
+// (`core/ui-src/less/partials/tables.less:91`'s `@media (max-width:
+// @screen-xs-max)`, resolved from the compiled `bright.css` to 767px) --
+// closer to MUI's `md` (900px) than to `sm`, but neither names it exactly.
+// `theme.breakpoints.values` is `theme.ts`'s territory and out of this
+// task's scope, so the threshold is expressed as the raw pixel value 768
+// passed directly to `theme.breakpoints.down` (which resolves it as a
+// literal `@media (max-width:767.95px)`, not a lookup against
+// `theme.breakpoints.values`) rather than through a named `sm`/`md` token.
+// `SearchResults.tsx`'s own stacked-card breakpoint passes the identical
+// raw value to `theme.breakpoints.down`, so the table's stacking branch and
+// this hook's drawer branch switch at the same computed width.
 export function useCompactRefineSurface(): boolean {
     const theme = useTheme();
-    return useMediaQuery(theme.breakpoints.down("sm"));
+    return useMediaQuery(theme.breakpoints.down(768));
 }
 
 // The "Refine" filter sidebar. Since FM-045 (ADR-0009: full mock fidelity)

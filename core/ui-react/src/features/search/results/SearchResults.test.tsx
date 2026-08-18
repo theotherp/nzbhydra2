@@ -1025,6 +1025,140 @@ describe("SearchResults", () => {
         expect(selectionActions).not.toBe(downloadActions);
     });
 
+    // FM-042: `position: sticky` is applied to the whole `results-toolbar`
+    // container (matching the mock's own `position:sticky;top:0` toolbar
+    // div) and to every table header cell, matching the mock's own
+    // `position:sticky;top:51px` header row. It is deliberately *not*
+    // applied to the toolbar's individual children (summary,
+    // results-bulk-actions, results-selection-actions): `position: sticky`
+    // only remains pinned for as long as the element's own containing block
+    // (its nearest block-level DOM ancestor) keeps overlapping the
+    // viewport, and `results-toolbar`'s individual children have a much
+    // shorter containing block than `results-toolbar` itself (which shares
+    // the outer `search-results` Stack with the table below) -- a real
+    // browser scroll caught this during development; jsdom cannot lay out
+    // the page or resolve scroll-driven geometry (this task's contract is
+    // asserted for real in `tests/system/tests/results.spec.ts` instead,
+    // per its Verification), but it does apply emotion's injected
+    // stylesheet, so the static `position`/`z-index` CSS this task adds is
+    // checkable here.
+    it("should mark results-toolbar and every header cell as sticky", () => {
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 1,
+                    searchResults: [
+                        {
+                            searchResultId: "1",
+                            title: "Result",
+                            indexer: "Mock",
+                            category: "All",
+                        },
+                    ],
+                }}
+            />,
+        );
+        const toolbar = screen.getByTestId("results-toolbar");
+        expect(getComputedStyle(toolbar).position).toBe("sticky");
+        for (const testId of [
+            "search-results-summary",
+            "results-bulk-actions",
+            "results-selection-actions",
+        ]) {
+            expect(
+                getComputedStyle(screen.getByTestId(testId)).position,
+            ).not.toBe("sticky");
+        }
+        const headerCells = screen
+            .getByTestId("search-results-table")
+            .querySelectorAll("thead th");
+        expect(headerCells.length).toBeGreaterThan(0);
+        headerCells.forEach((cell) => {
+            expect(getComputedStyle(cell).position).toBe("sticky");
+        });
+    });
+
+    // FM-042 (ADR-0011): every header cell's sticky bottom edge is drawn as
+    // a `box-shadow` on the `<th>` rather than relying on the collapsed
+    // table's own border, which does not travel with a sticky cell. The
+    // table itself stays `border-collapse: collapse` (switching to
+    // `separate` would disturb FM-041's inset recency stripe, which is
+    // drawn as it is precisely because `collapse` suppresses a `<tr>`'s own
+    // box shadow). jsdom applies emotion's injected stylesheet but performs
+    // no layout, so this is the static declaration only -- whether the
+    // shadow actually stays visible while pinned under this Chromium
+    // build's collapsed-table rendering is verified for real in
+    // `tests/system/tests/results.spec.ts`, per this task's Verification.
+    it("should draw every header cell's sticky bottom edge as a box-shadow and keep the table border-collapsed", () => {
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 1,
+                    searchResults: [
+                        {
+                            searchResultId: "1",
+                            title: "Result",
+                            indexer: "Mock",
+                            category: "All",
+                        },
+                    ],
+                }}
+            />,
+        );
+        const table = screen.getByTestId("search-results-table");
+        expect(getComputedStyle(table).borderCollapse).toBe("collapse");
+        const headerCells = table.querySelectorAll("thead th");
+        expect(headerCells.length).toBeGreaterThan(0);
+        headerCells.forEach((cell) => {
+            expect(getComputedStyle(cell).boxShadow).not.toBe("none");
+        });
+    });
+
+    // FM-042 (ADR-0011, sub-decision E-title (i)): the title cell wraps a
+    // long, unbroken (dot-separated, no spaces) release name via
+    // `overflow-wrap: anywhere` -- legacy's `.text-break` -- rather than
+    // ellipsizing or clamping it. This is the static CSS declaration jsdom
+    // can check; the resulting multi-line rendered geometry (no layout in
+    // jsdom) is verified for real in `tests/system/tests/results.spec.ts`.
+    it("should apply overflow-wrap:anywhere to the title cell only, with no title= attribute or tooltip", () => {
+        const longTitle =
+            "Some.Long.Dot.Separated.Release.Name.That.Never.Contains.A.Space.1080p.WEB-DL.x265-GROUP";
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 1,
+                    searchResults: [
+                        {
+                            searchResultId: "1",
+                            title: longTitle,
+                            indexer: "Mock",
+                            category: "All",
+                        },
+                    ],
+                }}
+            />,
+        );
+        const titleCell = screen.getByTestId("search-result-title");
+        expect(getComputedStyle(titleCell).overflowWrap).toBe("anywhere");
+        expect(titleCell).not.toHaveAttribute("title");
+        const nonTitleCells = Array.from(
+            screen
+                .getByTestId("search-results-table")
+                .querySelectorAll("tbody td"),
+        ).filter(
+            (cell) =>
+                cell !== titleCell &&
+                cell.getAttribute("data-label") !== "Select",
+        );
+        expect(nonTitleCells.length).toBeGreaterThan(0);
+        nonTitleCells.forEach((cell) => {
+            expect(getComputedStyle(cell).overflowWrap).not.toBe("anywhere");
+        });
+    });
+
     it("should pair every result cell with a metadata label for responsive presentation", () => {
         renderResults(
             <SearchResults

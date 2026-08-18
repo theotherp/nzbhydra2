@@ -1962,6 +1962,693 @@ test.describe("Search results", () => {
             locator: table,
         });
     });
+
+    // FM-042: the results toolbar and table header stay pinned while the
+    // document scrolls, matching the mock's own `position:sticky;top:0`
+    // toolbar and `position:sticky;top:51px` header row directly beneath
+    // it. `results-toolbar` (the whole existing region: summary,
+    // results-bulk-actions, results-download-actions, and
+    // results-selection-actions, unchanged in content) is the sticky
+    // element, not its individual children -- a real browser scroll (not a
+    // jsdom component test) is what caught that a per-child sticky design
+    // detaches early, because each child's containing block would then be
+    // `results-toolbar`'s own short box rather than the outer Stack that
+    // also contains the table. States: `scrolled-sticky-toolbar-and-header`,
+    // `scrolled-popover-above-sticky`.
+    test("should keep the toolbar and header pinned while scrolled without overlap, with a derived offset and reachable popovers", async ({
+        hydra,
+        page,
+    }) => {
+        await hydra.configureSabnzbdMock();
+        const now = Math.floor(Date.now() / 1_000);
+        await page.route("**/internalapi/search", (route) =>
+            route.fulfill({
+                json: {
+                    searchResults: Array.from({length: 24}, (_, index) => ({
+                        searchResultId: `sticky-${index}`,
+                        title: `Sticky Evidence Result ${String(
+                            index + 1,
+                        ).padStart(2, "0")}`,
+                        indexer: index % 2 === 0 ? "Alpha" : "Beta",
+                        category: index % 3 === 0 ? "TV" : "Movies",
+                        size: (index + 1) * 1024 * 1024,
+                        seeders: index + 1,
+                        epoch: now - index * 86_400,
+                        age: `${index} days`,
+                        downloadType: "NZB",
+                    })),
+                    indexerSearchMetaDatas: [
+                        {indexerName: "Alpha", wasSuccessful: true},
+                        {indexerName: "Beta", wasSuccessful: true},
+                    ],
+                    indexerLimitWarnings: [],
+                    rejectedReasonsMap: {},
+                    notPickedIndexersWithReason: {},
+                    numberOfAvailableResults: 24,
+                    numberOfRejectedResults: 0,
+                },
+            }),
+        );
+
+        // FM-042 (ADR-0011 `Human Decision` item 3): `desktop-wide`
+        // (1900x1000) evidences `scrolled-sticky-toolbar-and-header` and
+        // `scrolled-popover-above-sticky` in addition to the retained
+        // `desktop` (1280x800), which stays the width under the most
+        // pressure and so keeps every other geometry assertion below.
+        for (const viewport of [
+            "desktop",
+            "desktop-wide",
+            "mobile",
+        ] as const) {
+            await prepareVisualEvidence(page, viewport, async () => {
+                await page.goto("ui/react?redirect=/");
+                await page
+                    .getByTestId("search-query")
+                    .fill("sticky evidence");
+                await page.getByTestId("search-submit").click();
+                await expect(
+                    page.getByTestId("search-status-modal"),
+                ).toBeHidden();
+                await expect(
+                    page.getByTestId("search-results-table"),
+                ).toBeVisible();
+            });
+            await expect(page.getByTestId("search-result-row")).toHaveCount(
+                24,
+            );
+
+            const toolbar = page.getByTestId("results-toolbar");
+
+            // Unscrolled, the toolbar renders at its normal in-flow height
+            // -- this is the "toolbar's actual rendered height" the header
+            // offset must be derived from, measured fresh against this
+            // fixture (a configured downloader plus 24 rows) rather than
+            // assumed as a constant.
+            const toolbarBox0 = await toolbar.boundingBox();
+            expect(toolbarBox0).not.toBeNull();
+            if (!toolbarBox0) {
+                throw new Error("Toolbar requires deterministic geometry");
+            }
+            const expectedHeaderTop = toolbarBox0.height;
+
+            // Scroll proportionally to the page's own content height rather
+            // than a fixed pixel amount, so this holds regardless of exact
+            // row/toolbar heights: far enough that several rows pass
+            // beneath the sticky regions, with rows still visible below.
+            const scrollHeight = await page.evaluate(
+                () => document.body.scrollHeight,
+            );
+            await page.evaluate(
+                (y) => window.scrollTo(0, y),
+                Math.floor(scrollHeight * 0.4),
+            );
+
+            const toolbarBox = await toolbar.boundingBox();
+            expect(toolbarBox).not.toBeNull();
+            if (!toolbarBox) {
+                throw new Error("Toolbar requires deterministic geometry");
+            }
+            // The toolbar pins at the viewport's top edge, matching the
+            // mock's own `position:sticky;top:0`, and its rendered height is
+            // unchanged by scrolling.
+            expect(toolbarBox.y).toBeCloseTo(0, 0);
+            expect(toolbarBox.height).toBeCloseTo(toolbarBox0.height, 0);
+            const stickyRegionBottom = toolbarBox.y + toolbarBox.height;
+
+            // Every region inside the pinned toolbar -- including
+            // results-download-actions, which has no mock equivalent but is
+            // still part of the one existing results-toolbar region this
+            // task pins as a whole -- renders within the pinned box, not
+            // scrolled away underneath it.
+            for (const testId of [
+                "search-results-summary",
+                "results-bulk-actions",
+                "results-download-actions",
+                "results-selection-actions",
+            ]) {
+                const box = await page.getByTestId(testId).boundingBox();
+                expect(box).not.toBeNull();
+                if (box) {
+                    expect(box.y).toBeGreaterThanOrEqual(-1);
+                    expect(box.y + box.height).toBeLessThanOrEqual(
+                        stickyRegionBottom + 1,
+                    );
+                }
+            }
+
+            if (viewport !== "mobile") {
+                // `desktop` and `desktop-wide` are both above the stacking
+                // breakpoint, so both render a docked sidebar and a pinned
+                // column header; the same assertions apply to each.
+                // The header row's top sits at or below the toolbar's
+                // bottom edge, and its computed `top` offset equals the
+                // toolbar's own measured height -- derived, not a
+                // hardcoded constant (a different fixture/viewport would
+                // measure a different value here).
+                const headerCell = page
+                    .getByTestId("sort-title")
+                    .locator("xpath=ancestor::*[self::th][1]");
+                const headerBox = await headerCell.boundingBox();
+                expect(headerBox).not.toBeNull();
+                if (!headerBox) {
+                    throw new Error(
+                        "Header cell requires deterministic geometry",
+                    );
+                }
+                expect(headerBox.y).toBeGreaterThanOrEqual(
+                    stickyRegionBottom - 1,
+                );
+                expect(headerBox.y).toBeCloseTo(expectedHeaderTop, 0);
+                const headerTopStyle = await headerCell.evaluate((element) =>
+                    parseFloat(getComputedStyle(element).top),
+                );
+                expect(headerTopStyle).toBeCloseTo(expectedHeaderTop, 0);
+
+                // No data row's top edge sits above the header row's bottom
+                // edge while scrolled, and several rows have scrolled out
+                // from under the sticky regions with visible rows remaining
+                // beneath the header. A row's own DOM position does not
+                // move -- it is the sticky regions that paint over it -- so
+                // continuous scrolling can freeze mid-transition on a row
+                // whose box straddles the header's bottom edge (bottom > 0
+                // but top still less than it): such a row is entirely
+                // hidden behind the opaque sticky regions, not "visible" in
+                // the sense this check means. Filtering directly on "top at
+                // or past the header's bottom edge" (rather than filtering
+                // on generic viewport visibility and then asserting the
+                // same relationship as a separate step) folds the
+                // no-row-above-the-header invariant into the definition of
+                // "visible below the header", so a straddling row is
+                // correctly excluded instead of failing the assertion.
+                const rowRects = await visibleRowRects(page);
+                const stickyRegionBottomDesktop =
+                    headerBox.y + headerBox.height;
+                const scrolledPastCount = rowRects.filter(
+                    (rect) => rect.bottom <= stickyRegionBottomDesktop,
+                ).length;
+                expect(scrolledPastCount).toBeGreaterThanOrEqual(3);
+                const visibleRows = rowRects.filter(
+                    (rect) =>
+                        rect.top >= stickyRegionBottomDesktop - 1 &&
+                        rect.top < (page.viewportSize()?.height ?? 0),
+                );
+                expect(visibleRows.length).toBeGreaterThan(0);
+
+                // The docked refine-sidebar is not overlapped by or hidden
+                // behind the sticky regions. `results-toolbar` spans the
+                // full page width, above *both* columns (it is a sibling
+                // of, not scoped to, the sidebar+table row below it), so
+                // its own `x` is not the relevant boundary here -- the
+                // existing unscrolled-state contract's own phrasing
+                // ("the sidebar's right edge sits at or left of the table's
+                // left edge", `FEATURES.yaml:222`/`:269`) is: the sidebar
+                // stays left of the table column, scrolled or not. The
+                // sidebar itself is not made sticky (there is no
+                // `results-column`-relative offset to match), so it scrolls
+                // normally beneath the pinned toolbar/header exactly like a
+                // result row does -- not a stacking regression, the same
+                // legitimate "scrolled past, painted under" behavior
+                // `visibleRowRects`/`visibleRows` above already covers for
+                // the table.
+                const sidebarBox = await page
+                    .getByTestId("refine-sidebar")
+                    .boundingBox();
+                const tableBox = await page
+                    .getByTestId("search-results-table")
+                    .boundingBox();
+                expect(sidebarBox).not.toBeNull();
+                expect(tableBox).not.toBeNull();
+                if (sidebarBox && tableBox) {
+                    expect(
+                        sidebarBox.x + sidebarBox.width,
+                    ).toBeLessThanOrEqual(tableBox.x + 1);
+                }
+
+                if (viewport === "desktop") {
+                    // ADR-0011's `box-shadow`-on-`<th>` remedy for a sticky
+                    // header's bottom edge under `border-collapse: collapse`
+                    // (rather than switching to `separate`, which would
+                    // disturb FM-041's inset recency stripe): verified here,
+                    // while scrolled, against this Chromium build rather than
+                    // assumed from folklore. The recency stripe itself is
+                    // checked further below, after `Highlight recent` is
+                    // switched on.
+                    const shadowCheck = await page.evaluate(() => {
+                        const table = document.querySelector(
+                            '[data-testid="search-results-table"]',
+                        );
+                        const th = document.querySelector(
+                            '[data-testid="sort-title"]',
+                        )?.closest("th");
+                        if (!table || !th) {
+                            return null;
+                        }
+                        return {
+                            borderCollapse:
+                                getComputedStyle(table).borderCollapse,
+                            thBoxShadow: getComputedStyle(th).boxShadow,
+                        };
+                    });
+                    expect(shadowCheck).not.toBeNull();
+                    expect(shadowCheck?.borderCollapse).toBe("collapse");
+                    expect(shadowCheck?.thBoxShadow).not.toBe("none");
+                }
+
+                // `scrolled-popover-above-sticky`: FM-046's header caret
+                // selection menu, opened while scrolled, is fully clickable
+                // (Playwright's real actionability checks fail if a
+                // higher-stacked sticky region actually covered it) and
+                // fully within the viewport.
+                const headerMenu = page.getByTestId("header-selection-menu");
+                await headerMenu
+                    .getByRole("button", {name: "Selection options"})
+                    .click();
+                const menu = page.getByRole("menu");
+                await expect(menu).toBeVisible();
+                await expectMenuFullyInViewport(page, menu);
+                await menu
+                    .getByRole("menuitem", {name: "Select all", exact: true})
+                    .click();
+                await expect(headerMenu.getByRole("checkbox")).toBeChecked();
+
+                // FM-041's display-options menu, opened while scrolled, is
+                // likewise fully clickable and within the viewport.
+                await openDisplayOptions(page);
+                await expectMenuFullyInViewport(
+                    page,
+                    displayOptionsPaper(page),
+                );
+                await page
+                    .getByRole("checkbox", {
+                        name: "Compact rows",
+                        exact: true,
+                    })
+                    .click();
+                // FM-041's `Highlight recent` opt-in, toggled on here (its
+                // own default-off state is unaffected -- this is a
+                // scrolled-state-only check) so the box-shadow remedy above
+                // can be confirmed against a real recency-flagged row's
+                // inset stripe, not only against the header's own shadow.
+                await page
+                    .getByRole("checkbox", {
+                        name: "Highlight recent",
+                        exact: true,
+                    })
+                    .click();
+                await closeDisplayOptions(page);
+                await expect(
+                    page.getByTestId("search-results-table"),
+                ).toHaveAttribute("data-compact-rows", "true");
+
+                if (viewport === "desktop") {
+                    // `Sticky Evidence Result 01` (index 0, `epoch: now`) is
+                    // within FM-041's three-day recency window. Its own
+                    // visibility is irrelevant here (it has very likely
+                    // scrolled out from under the sticky regions by now,
+                    // same as any other early row) -- the stripe is a
+                    // computed style on its first cell, checked directly
+                    // rather than through a bounding box.
+                    const stripeBoxShadow = await page.evaluate(() => {
+                        const row = document.querySelector(
+                            '[data-result-title="Sticky Evidence Result 01"]',
+                        );
+                        const firstCell = row?.querySelector("td");
+                        return firstCell
+                            ? getComputedStyle(firstCell).boxShadow
+                            : null;
+                    });
+                    expect(stripeBoxShadow).not.toBeNull();
+                    expect(stripeBoxShadow).not.toBe("none");
+                }
+            } else {
+                // Below `sm` the responsive table styling hides `thead`
+                // entirely, so only the toolbar sticks; the sticky region is
+                // at most 40% of the 390x844 viewport with at least two rows
+                // visible beneath it.
+                expect(stickyRegionBottom).toBeLessThanOrEqual(
+                    (page.viewportSize()?.height ?? 0) * 0.4,
+                );
+                // See the desktop branch's identical comment above: filter
+                // directly on "top at or past the sticky region's bottom
+                // edge" rather than on generic viewport visibility, so a row
+                // whose box straddles that edge (hidden behind the opaque
+                // sticky toolbar, not actually visible) is excluded rather
+                // than failing a separate assertion.
+                const rowRects = await visibleRowRects(page);
+                const visibleRows = rowRects.filter(
+                    (rect) =>
+                        rect.top >= stickyRegionBottom - 1 &&
+                        rect.top < (page.viewportSize()?.height ?? 0),
+                );
+                expect(visibleRows.length).toBeGreaterThanOrEqual(2);
+
+                // The display-options menu (reachable below `sm`, since the
+                // header and its caret menu are hidden entirely) stays
+                // clickable and within the viewport while scrolled.
+                await openDisplayOptions(page);
+                await expectMenuFullyInViewport(
+                    page,
+                    displayOptionsPaper(page),
+                );
+                await closeDisplayOptions(page);
+            }
+
+            await expectNoPageOverflow(page);
+            // A viewport-clipped page screenshot (not `captureVisualRegion`'s
+            // element screenshot, which would scroll to capture the full
+            // scrollable element rather than the current scrolled state):
+            // this is deliberately evidence of what the scrolled viewport
+            // itself renders -- the pinned toolbar/header plus the rows
+            // visible beneath them.
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-SEARCH-RESULTS",
+                    `sticky-header-${viewport}`,
+                ),
+            });
+        }
+    });
+
+    // FM-042 (ADR-0011): the re-proportioned `<colgroup>` and the mock's
+    // header-label typography are only "aligned work" if every labelled
+    // header genuinely fits -- this is the check that makes that
+    // measurable rather than aspirational, at both evidence viewports and
+    // both sidebar states, plus the ancestor-overflow-chain check that
+    // proves no scrolling ancestor exists between a sticky `<th>` and the
+    // document (the mechanism the whole Option E scroll model rests on).
+    // Realistic, not synthetic, indexer/category values -- longer than a
+    // single short word -- since ADR-0011 flags a long metadata value's fit
+    // as unmeasured.
+    test("should render every column header's full label without scrollWidth overflow, and no scrolling ancestor between a sticky header and the document, at both evidence viewports and sidebar states", async ({
+        page,
+    }) => {
+        await page.route("**/internalapi/search", (route) =>
+            route.fulfill({
+                json: {
+                    searchResults: [
+                        {
+                            searchResultId: "fit-0",
+                            title: "Fit.Check.Result.0.1080p.WEB-DL.x265-GROUP",
+                            indexer: "DrunkenSlug",
+                            category: "Movies/HD",
+                            size: 10 * 1024 * 1024 * 1024,
+                            seeders: 987,
+                            epoch: Math.floor(Date.now() / 1_000) - 20 * 86_400,
+                            age: "3 weeks",
+                            downloadType: "NZB",
+                        },
+                        {
+                            searchResultId: "fit-1",
+                            title: "Fit.Check.Result.1.1080p.WEB-DL.x265-GROUP",
+                            indexer: "omgwtfnzbs",
+                            category: "TV/x264/HD",
+                            size: 700 * 1024 * 1024,
+                            seeders: 12,
+                            epoch: Math.floor(Date.now() / 1_000) - 86_400,
+                            age: "1 day",
+                            downloadType: "NZB",
+                        },
+                    ],
+                    indexerSearchMetaDatas: [
+                        {indexerName: "DrunkenSlug", wasSuccessful: true},
+                        {indexerName: "omgwtfnzbs", wasSuccessful: true},
+                    ],
+                    indexerLimitWarnings: [],
+                    rejectedReasonsMap: {},
+                    notPickedIndexersWithReason: {},
+                    numberOfAvailableResults: 2,
+                    numberOfRejectedResults: 0,
+                },
+            }),
+        );
+
+        for (const viewport of ["desktop", "desktop-wide"] as const) {
+            await prepareVisualEvidence(page, viewport, async () => {
+                await page.goto("ui/react?redirect=/");
+                await page.getByTestId("search-query").fill("fit check");
+                await page.getByTestId("search-submit").click();
+                await expect(
+                    page.getByTestId("search-status-modal"),
+                ).toBeHidden();
+                await expect(
+                    page.getByTestId("search-results-table"),
+                ).toBeVisible();
+            });
+
+            for (const sidebarCollapsed of [false, true]) {
+                const toggle = page.getByTestId("refine-sidebar-toggle");
+                const expanded =
+                    (await toggle.getAttribute("aria-expanded")) === "true";
+                if (expanded === sidebarCollapsed) {
+                    await toggle.click();
+                }
+                await expect(toggle).toHaveAttribute(
+                    "aria-expanded",
+                    sidebarCollapsed ? "false" : "true",
+                );
+
+                const fit = await measureHeaderFit(page);
+                for (const cell of fit.cells) {
+                    expect(
+                        cell.cellScrollWidth,
+                        `${cell.label} cell at ${viewport}, sidebar ${
+                            sidebarCollapsed ? "collapsed" : "expanded"
+                        }`,
+                    ).toBeLessThanOrEqual(cell.cellClientWidth);
+                    expect(
+                        cell.targetScrollWidth,
+                        `${cell.label} target at ${viewport}, sidebar ${
+                            sidebarCollapsed ? "collapsed" : "expanded"
+                        }`,
+                    ).toBeLessThanOrEqual(cell.targetClientWidth);
+                    expect(cell.text?.startsWith(cell.expectedLabel)).toBe(
+                        true,
+                    );
+                }
+                expect(fit.tableScrollWidth).toBeLessThanOrEqual(
+                    fit.tableClientWidth,
+                );
+                await expectNoPageOverflow(page);
+
+                // No element between a sticky header `<th>` and
+                // `documentElement` has a non-`visible` computed
+                // `overflow-x`/`overflow-y` -- proof, not inference from
+                // `AppShell.tsx`/`router.tsx`, that Option E's deleted
+                // `overflowX: "auto"` wrapper left no scrolling ancestor.
+                const ancestorOverflows = await page.evaluate(() => {
+                    const th = document
+                        .querySelector('[data-testid="sort-title"]')
+                        ?.closest("th");
+                    const overflows: Array<{
+                        tag: string;
+                        overflowX: string;
+                        overflowY: string;
+                    }> = [];
+                    let node: Element | null = th?.parentElement ?? null;
+                    while (node) {
+                        const style = getComputedStyle(node);
+                        overflows.push({
+                            tag: node.tagName,
+                            overflowX: style.overflowX,
+                            overflowY: style.overflowY,
+                        });
+                        node = node.parentElement;
+                    }
+                    return overflows;
+                });
+                expect(ancestorOverflows.length).toBeGreaterThan(0);
+                for (const ancestor of ancestorOverflows) {
+                    expect(ancestor.overflowX, ancestor.tag).toBe("visible");
+                    expect(ancestor.overflowY, ancestor.tag).toBe("visible");
+                }
+            }
+        }
+    });
+
+    // FM-042 (ADR-0011, sub-decision E-title (i)): `fluid-table-title-
+    // collapse`. A long, dot-separated (no spaces) release title wraps
+    // across multiple lines via `overflow-wrap: anywhere` instead of
+    // ellipsizing or spilling, at the viewport that puts it under pressure
+    // (1280x800); captured again at 1900x1000, where the same title is
+    // expected not to need wrapping, so the collapse behavior is evidenced
+    // at both ends per this task's Acceptance.
+    test("should wrap a long dot-separated title across multiple lines without truncating it, and not need to at 1900x1000", async ({
+        page,
+    }) => {
+        const longTitle =
+            // Measured (see the handoff) to wrap across two line boxes at
+            // 1280x800's title column width and render on a single line at
+            // 1900x1000's, so the same fixture value evidences both ends of
+            // the collapse behavior the two viewports are captured for.
+            "A.Somewhat.Long.Release.Name.1080p.WEB-DL.x265-GROUP";
+        await page.route("**/internalapi/search", (route) =>
+            route.fulfill({
+                json: {
+                    searchResults: [
+                        {
+                            searchResultId: "collapse-0",
+                            title: longTitle,
+                            indexer: "DrunkenSlug",
+                            category: "Movies/HD",
+                            size: 5 * 1024 * 1024,
+                            seeders: 3,
+                            epoch: Math.floor(Date.now() / 1_000),
+                            age: "0 days",
+                            downloadType: "NZB",
+                        },
+                    ],
+                    indexerSearchMetaDatas: [
+                        {indexerName: "DrunkenSlug", wasSuccessful: true},
+                    ],
+                    indexerLimitWarnings: [],
+                    rejectedReasonsMap: {},
+                    notPickedIndexersWithReason: {},
+                    numberOfAvailableResults: 1,
+                    numberOfRejectedResults: 0,
+                },
+            }),
+        );
+
+        for (const viewport of ["desktop", "desktop-wide"] as const) {
+            await prepareVisualEvidence(page, viewport, async () => {
+                await page.goto("ui/react?redirect=/");
+                await page
+                    .getByTestId("search-query")
+                    .fill("title collapse");
+                await page.getByTestId("search-submit").click();
+                await expect(
+                    page.getByTestId("search-status-modal"),
+                ).toBeHidden();
+                await expect(
+                    page.getByTestId("search-results-table"),
+                ).toBeVisible();
+            });
+
+            const titleCell = page.getByTestId("search-result-title");
+            await expect(titleCell).toBeVisible();
+            const row = page.getByTestId("search-result-row");
+            await expect(row).toHaveAttribute("data-result-title", longTitle);
+            expect(await titleCell.getAttribute("title")).toBeNull();
+
+            // The row's own height is set by the tallest cell in the row
+            // (checkbox, action buttons, etc.), not by the title text alone
+            // -- confirmed by measurement: a single-word title's cell is
+            // already far taller than one line box. So "did this title
+            // wrap" has to be read off the title's own inner text box (the
+            // Stack's Box that renders `column.value(result)`, the only
+            // child once the group/duplicate expand buttons are absent),
+            // not off the `<td>`'s rendered height.
+            const geometry = await titleCell.evaluate((element) => {
+                const stack = element.firstElementChild;
+                const box = stack?.lastElementChild;
+                if (!box) {
+                    throw new Error("Title cell's inner Box not found");
+                }
+                return {
+                    scrollWidth: element.scrollWidth,
+                    clientWidth: element.clientWidth,
+                    boxHeight: box.getBoundingClientRect().height,
+                    lineHeight: parseFloat(
+                        getComputedStyle(box).lineHeight,
+                    ),
+                };
+            });
+            expect(geometry.scrollWidth).toBeLessThanOrEqual(
+                geometry.clientWidth,
+            );
+            if (viewport === "desktop") {
+                // 1280x800: the title is under enough pressure to need more
+                // than one line box.
+                expect(geometry.boxHeight).toBeGreaterThan(
+                    geometry.lineHeight * 1.5,
+                );
+            } else {
+                // 1900x1000: the design target width, where this title is
+                // expected not to need wrapping.
+                expect(geometry.boxHeight).toBeLessThanOrEqual(
+                    geometry.lineHeight * 1.5,
+                );
+            }
+
+            await expectNoPageOverflow(page);
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-SEARCH-RESULTS",
+                    `fluid-table-title-collapse-${viewport}`,
+                ),
+            });
+        }
+    });
+
+    // FM-042 (ADR-0011, `useCompactRefineSurface()`): the table's stacked-
+    // card breakpoint and the sidebar's docked/drawer breakpoint move
+    // together, off `sm` (600px) to the shared raw-768px threshold. Evidence
+    // both sides: a few pixels below renders stacked cards with no docked
+    // sidebar, a few pixels above renders a table with a pinned header and
+    // a docked sidebar.
+    test("should switch the table and sidebar between stacked/drawer and table/docked together, at the same width", async ({
+        page,
+    }) => {
+        await page.route("**/internalapi/search", (route) =>
+            route.fulfill({
+                json: {
+                    searchResults: [
+                        {
+                            searchResultId: "bp-0",
+                            title: "Breakpoint.Check.Result.1080p.WEB-DL-GROUP",
+                            indexer: "DrunkenSlug",
+                            category: "Movies",
+                            size: 5 * 1024 * 1024,
+                            seeders: 3,
+                            epoch: Math.floor(Date.now() / 1_000),
+                            age: "0 days",
+                            downloadType: "NZB",
+                        },
+                    ],
+                    indexerSearchMetaDatas: [
+                        {indexerName: "DrunkenSlug", wasSuccessful: true},
+                    ],
+                    indexerLimitWarnings: [],
+                    rejectedReasonsMap: {},
+                    notPickedIndexersWithReason: {},
+                    numberOfAvailableResults: 1,
+                    numberOfRejectedResults: 0,
+                },
+            }),
+        );
+
+        for (const width of [758, 780]) {
+            await page.setViewportSize({width, height: 800});
+            await page.goto("ui/react?redirect=/");
+            await page.getByTestId("search-query").fill("breakpoint check");
+            await page.getByTestId("search-submit").click();
+            await expect(
+                page.getByTestId("search-results-table"),
+            ).toBeVisible();
+
+            const thead = page.locator(
+                '[data-testid="search-results-table"] thead',
+            );
+            const stacked = !(await thead.isVisible());
+            const dockedSidebar = await page
+                .getByTestId("refine-sidebar")
+                .isVisible();
+            const drawerTrigger = page.getByTestId("refine-sidebar-toggle");
+
+            if (width < 768) {
+                expect(stacked).toBe(true);
+                expect(dockedSidebar).toBe(false);
+                await expect(drawerTrigger).toHaveAttribute(
+                    "aria-expanded",
+                    "false",
+                );
+            } else {
+                expect(stacked).toBe(false);
+                expect(dockedSidebar).toBe(true);
+            }
+            await expectNoPageOverflow(page);
+        }
+    });
 });
 
 // The results table header row's height at 1280x800, measured against the
@@ -2220,6 +2907,135 @@ async function expectNoPageOverflow(
             .locator("html")
             .evaluate((element) => element.scrollWidth <= element.clientWidth),
     ).toBe(true);
+}
+
+// FM-042: every `search-result-row`'s viewport-relative top/bottom edge in
+// one batched `evaluate` (cheaper and simpler than a `boundingBox()` round
+// trip per row for a 24-row fixture), used to check that no row renders
+// above the sticky header's bottom edge and that several rows have scrolled
+// out from under the sticky regions while others remain visible beneath
+// them.
+async function visibleRowRects(
+    page: import("@playwright/test").Page,
+): Promise<Array<{bottom: number; top: number}>> {
+    return await page.evaluate(() =>
+        Array.from(
+            document.querySelectorAll('[data-testid="search-result-row"]'),
+        ).map((row) => {
+            const rect = row.getBoundingClientRect();
+            return {bottom: rect.bottom, top: rect.top};
+        }),
+    );
+}
+
+// FM-042: a menu/popover opened while the page is scrolled renders fully
+// within the viewport, above the sticky toolbar/header regions. Rather than
+// asserting a z-index literal, the caller separately proves the stacking
+// order by driving a real Playwright click through to a menu item -- an
+// actionability check that fails if a higher-stacked sticky region actually
+// covers the target.
+async function expectMenuFullyInViewport(
+    page: import("@playwright/test").Page,
+    locator: import("@playwright/test").Locator,
+): Promise<void> {
+    const box = await locator.boundingBox();
+    const viewport = page.viewportSize();
+    expect(box).not.toBeNull();
+    expect(viewport).not.toBeNull();
+    if (!box || !viewport) {
+        throw new Error("Menu requires deterministic geometry");
+    }
+    expect(box.x).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width).toBeLessThanOrEqual(viewport.width);
+    expect(box.y).toBeGreaterThanOrEqual(0);
+    expect(box.y + box.height).toBeLessThanOrEqual(viewport.height);
+}
+
+// FM-042 (ADR-0011): the re-proportioned `<colgroup>`'s own verification --
+// every labelled header cell (the six sortable headers, measured on both the
+// `<th>` and its sort `<button>`, plus the plain `Actions` header cell,
+// where `target` is the cell itself since it has no separate inner
+// shrink-to-content element) fits its full label with `scrollWidth <=
+// clientWidth`, and its rendered text equals the expected full label (never
+// silently truncated to something shorter). The unlabelled checkbox header
+// is exempt, matching this task's Acceptance.
+const HEADER_FIT_LABELS: Array<{
+    column: string;
+    label: string;
+}> = [
+    {column: "title", label: "Title"},
+    {column: "indexer", label: "Indexer"},
+    {column: "category", label: "Category"},
+    {column: "size", label: "Size"},
+    {column: "grabs", label: "Details"},
+    {column: "epoch", label: "Age"},
+];
+
+async function measureHeaderFit(page: import("@playwright/test").Page): Promise<{
+    cells: Array<{
+        label: string;
+        expectedLabel: string;
+        text: string | null;
+        cellScrollWidth: number;
+        cellClientWidth: number;
+        targetScrollWidth: number;
+        targetClientWidth: number;
+    }>;
+    tableScrollWidth: number;
+    tableClientWidth: number;
+}> {
+    return await page.evaluate((columns) => {
+        const table = document.querySelector(
+            '[data-testid="search-results-table"]',
+        );
+        if (!table) {
+            throw new Error("search-results-table not found");
+        }
+        const cells = columns.map(({column, label}) => {
+            const button = document.querySelector(
+                `[data-testid="sort-${column}"]`,
+            );
+            const cell = button?.closest("th");
+            if (!button || !cell) {
+                throw new Error(`Header cell not found for column ${column}`);
+            }
+            return {
+                label,
+                // The default sort column (`epoch`/Age) renders its sort
+                // arrow suffix (" ▲"/" ▼") even before any click, so the
+                // full-label check below is "starts with the label", not
+                // exact equality -- the arrow is additive, not a
+                // replacement, and is covered by this component's existing
+                // sort-indicator tests elsewhere.
+                expectedLabel: label,
+                text: button.textContent,
+                cellScrollWidth: cell.scrollWidth,
+                cellClientWidth: cell.clientWidth,
+                targetScrollWidth: button.scrollWidth,
+                targetClientWidth: button.clientWidth,
+            };
+        });
+        const actionsCell = document.querySelector(
+            'thead th[data-label="Actions"]',
+        );
+        if (!actionsCell) {
+            throw new Error("Actions header cell not found");
+        }
+        cells.push({
+            label: "Actions",
+            expectedLabel: "Actions",
+            text: actionsCell.textContent,
+            cellScrollWidth: actionsCell.scrollWidth,
+            cellClientWidth: actionsCell.clientWidth,
+            targetScrollWidth: actionsCell.scrollWidth,
+            targetClientWidth: actionsCell.clientWidth,
+        });
+        return {
+            cells,
+            tableScrollWidth: table.scrollWidth,
+            tableClientWidth: table.clientWidth,
+        };
+    }, HEADER_FIT_LABELS);
 }
 
 async function expectSameClosedTableBox(
