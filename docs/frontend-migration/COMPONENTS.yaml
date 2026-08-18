@@ -162,7 +162,7 @@ components:
     backlog: { status: deferred, rationale: "External-link parity for remaining consumers is future work." }
 
   - id: C-RESULT-TABLE
-    responsibility: Hydra-specific search result processing, paging, grouping, filtering, sorting, selection, and presentation using TanStack primitives
+    responsibility: Hydra-specific search result processing, paging, grouping, filtering, sorting, selection, and presentation using TanStack primitives; the table is fluid, with no horizontal scroll at any width at or above the 768px stacking breakpoint, so no scrolling ancestor exists between a sticky column header <th> and the document -- the property that makes the viewport-sticky header possible
     legacy: [ core/ui-src/html/states/search-results.html, core/ui-src/js/search-results-controller.js, core/ui-src/js/directives/dataTableDirectives.js ]
     target: core/ui-react/src/features/search/results
     consumers: [ F-SEARCH-RESULTS, F-SEARCH-SORT-FILTER, F-SEARCH-GROUP-SELECTION, F-SEARCH-DOWNLOADS ]

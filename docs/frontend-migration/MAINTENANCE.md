@@ -113,11 +113,3 @@ instead of leaving it to rot.
   by pointer and drag while the row's Repeat is reachable by keyboard. Confirmed independently by the FM-047 designer and implementer. This is a capability gap, not a cosmetic one, and it fails the quickfix gate on two counts: it
   changes user-observable interaction semantics, and FM-038's single-row layout was an explicit human instruction recorded in `F-SEARCH-RECENT`'s `visual` note, so a fix would likely need fresh ADR-0006 acceptance. Needs a task packet
   that measures reachability first and raises the approach for a human decision.
-- **`desktop-wide` is recorded in prose, not in `FEATURES.yaml`'s structured `contract.viewports`.** ADR-0011's `Human Decision` item 3 requires a named `desktop-wide` 1900x1000 evidence viewport, scoped to FM-042's own visual states.
-  The validator now accepts the name (`b1bf2770a`), but `F-SEARCH-RESULTS`'s and `F-SEARCH-SORT-FILTER`'s visual contracts still describe it in free text, so nothing machine-checks it. Not a quickfix: editing a `FEATURES.yaml` visual
-  contract is exactly what the gate refuses. Needs a task packet, which should also decide whether the viewport stays scoped to FM-042's states or is applied across the ~28 existing "at desktop" checks — the latter needs a per-check
-  editorial pass and was deliberately declined when ADR-0011 was accepted.
-- **`C-RESULT-TABLE` does not record its fluid, never-horizontally-scrolling layout responsibility.** ADR-0011 (accepted) made the results table fluid and removed the `overflow-x: auto` wrapper, and that property is load-bearing: it is
-  what makes the sticky column header possible at all, so a future change that reintroduces a wrapper would silently break it. `COMPONENTS.yaml:164-173`'s `responsibility` field says nothing about it. FM-042's handoff proposed this as a
-  quickfix candidate, but that classification was wrong and is corrected here: adding a responsibility to a `COMPONENTS.yaml` record is a registry-contract edit, which the gate refuses outright. Route to `/fm-orchestrate`; FM-042's own
-  packet deliberately excluded `COMPONENTS.yaml` from its allowlist, which points the same way.
