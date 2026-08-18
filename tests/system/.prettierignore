@@ -24,6 +24,7 @@ src/
 instanceData/
 
 # Deliberately NOT ignored: tests/*.ts, playwright.config.ts, and tsconfig.json.
-# Those are real sources that have never been Prettier-formatted, tracked as a
-# separate open candidate in docs/frontend-migration/MAINTENANCE.md. Silencing
-# them here would hide that debt rather than discharge it.
+# Those are real sources, and they are now Prettier-clean -- the baseline was
+# established in ba4acd521 after this file stopped `prettier --check .` crashing
+# before it ever reached them. Ignoring them here would silently re-open that
+# debt rather than keep it discharged.

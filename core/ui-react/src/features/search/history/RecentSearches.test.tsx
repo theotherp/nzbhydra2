@@ -108,4 +108,136 @@ describe("RecentSearches", () => {
             "420px",
         );
     });
+
+    // ADR-0012's static contract only: `aria-keyshortcuts`, both accessible
+    // names, and the hint node's presence/absence. jsdom has no roving
+    // focus, no focus ring, and no accessibility tree, so this file cannot
+    // and does not assert reachability, focus behavior, or roving-focus
+    // navigation -- that proof is exclusively the real-browser keyboard
+    // spec in `tests/system/tests/search.spec.ts` (ADR-0012, FM-050).
+    describe("keyboard reachability (static contract only, not reachability proof)", () => {
+        it("announces the ArrowRight shortcut on the row without changing either accessible name", async () => {
+            renderRecentSearches();
+
+            fireEvent.click(screen.getByTestId("recent-searches-trigger"));
+            const row = await screen.findByRole("menuitem", {
+                name: /^Repeat:/,
+            });
+            expect(row).toHaveAttribute("aria-keyshortcuts", "ArrowRight");
+            expect(row).toHaveAccessibleName(
+                "Repeat: Category: All, Source: Internal, Query: recent query",
+            );
+            expect(
+                screen.getByRole("button", {name: /^Refill:/}),
+            ).toHaveAccessibleName(
+                "Refill: Category: All, Source: Internal, Query: recent query",
+            );
+        });
+
+        it("shows exactly one shared hint node when entries render", async () => {
+            renderRecentSearches();
+
+            fireEvent.click(screen.getByTestId("recent-searches-trigger"));
+            await screen.findByRole("menuitem", {name: /^Repeat:/});
+            expect(
+                screen.getAllByText(
+                    "Press Right Arrow on an entry to refill the search form; Left Arrow or Escape returns.",
+                ),
+            ).toHaveLength(1);
+        });
+
+        it("shows no hint node while recent searches are loading", async () => {
+            const fetchImplementation = vi.fn(
+                () => new Promise<Response>(() => {}),
+            );
+            render(
+                <ThemeProvider theme={createHydraTheme("dark", false)}>
+                    <QueryClientProvider client={new QueryClient()}>
+                        <RecentSearches
+                            enabled
+                            onDragStart={vi.fn()}
+                            onRefill={vi.fn()}
+                            onRepeat={vi.fn()}
+                            refreshKey={0}
+                            transport={
+                                new ApiTransport("/hydra/", fetchImplementation)
+                            }
+                        />
+                    </QueryClientProvider>
+                </ThemeProvider>,
+            );
+
+            fireEvent.click(screen.getByTestId("recent-searches-trigger"));
+            await screen.findByRole("status");
+            expect(
+                screen.queryByText(
+                    "Press Right Arrow on an entry to refill the search form; Left Arrow or Escape returns.",
+                ),
+            ).not.toBeInTheDocument();
+        });
+
+        it("shows no hint node when there are no recent searches", async () => {
+            const fetchImplementation = vi.fn(() =>
+                Promise.resolve(
+                    new Response(JSON.stringify([]), {
+                        headers: {"Content-Type": "application/json"},
+                    }),
+                ),
+            );
+            render(
+                <ThemeProvider theme={createHydraTheme("dark", false)}>
+                    <QueryClientProvider client={new QueryClient()}>
+                        <RecentSearches
+                            enabled
+                            onDragStart={vi.fn()}
+                            onRefill={vi.fn()}
+                            onRepeat={vi.fn()}
+                            refreshKey={0}
+                            transport={
+                                new ApiTransport("/hydra/", fetchImplementation)
+                            }
+                        />
+                    </QueryClientProvider>
+                </ThemeProvider>,
+            );
+
+            fireEvent.click(screen.getByTestId("recent-searches-trigger"));
+            await screen.findByText("No recent searches.");
+            expect(
+                screen.queryByText(
+                    "Press Right Arrow on an entry to refill the search form; Left Arrow or Escape returns.",
+                ),
+            ).not.toBeInTheDocument();
+        });
+
+        it("shows no hint node when loading recent searches errors", async () => {
+            const fetchImplementation = vi.fn(() =>
+                Promise.resolve(new Response(null, {status: 500})),
+            );
+            render(
+                <ThemeProvider theme={createHydraTheme("dark", false)}>
+                    <QueryClientProvider client={new QueryClient()}>
+                        <RecentSearches
+                            enabled
+                            onDragStart={vi.fn()}
+                            onRefill={vi.fn()}
+                            onRepeat={vi.fn()}
+                            refreshKey={0}
+                            transport={
+                                new ApiTransport("/hydra/", fetchImplementation)
+                            }
+                        />
+                    </QueryClientProvider>
+                </ThemeProvider>,
+            );
+
+            fireEvent.click(screen.getByTestId("recent-searches-trigger"));
+            await screen.findByText("Unable to load recent searches.");
+            expect(
+                screen.queryByText(
+                    "Press Right Arrow on an entry to refill the search form; Left Arrow or Escape returns.",
+                ),
+            ).not.toBeInTheDocument();
+        });
+    });
 });

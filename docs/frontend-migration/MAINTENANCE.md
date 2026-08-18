@@ -104,14 +104,17 @@ Format, one entry per fix:
 - **Commit:** `ba4acd521`
 - **Note:** these files were invisible until `654f403ba` stopped `prettier --check .` crashing before it reached them, so the directory had a gate that could never pass. Semantic equivalence was checked rather than assumed, and the **first check failed**: a whitespace-stripped fingerprint differed for 9 files, because Prettier also normalizes quote style (`"a[href=\"/\"]"` becomes `'a[href="/"]'`, an identical runtime string) and adds arrow parens. A structural invariant was used instead — per-file counts of `test(`, `expect(`, `locator(`, `getByTestId(` and `data-testid` literals are byte-identical before and after for all 13 files.
 
+### 2026-08-18 — Correct the stale note in `tests/system/.prettierignore`
+
+- **Why not a packet:** comment correction, no behavioral surface; the ignore list itself is byte-identical.
+- **Paths:** `tests/system/.prettierignore`.
+- **Gates:** `tests/system` `npx prettier --check .` and `npx tsc --noEmit` passed; `core/ui-react` `validate:migration` passed; `git diff --check` clean at the root. No Playwright run — nothing executable changed. No pre-existing failures.
+- **Commit:** `4699d462b`
+- **Note:** the comment claimed those sources "have never been Prettier-formatted, tracked as a separate open candidate" — both halves untrue since `ba4acd521` formatted all thirteen and discharged that candidate. Written by `654f403ba`, whose intent (leave them unignored so Prettier reports rather than crashes) still holds; only the justification changed, from "this debt is open, do not hide it" to "this debt is paid, do not silently re-open it".
+
 ---
 
 ## Open candidates
 
 Known small defects not yet fixed. Discharge one with `/fm-quickfix`, then move it into the ledger above with its commit SHA. If a candidate turns out to fail the qualification gate, say so here and route it to `/fm-orchestrate`
 instead of leaving it to rot.
-
-- **Refill is plausibly not keyboard-reachable.** `RecentSearches.tsx` renders Refill as a focusable `IconButton` nested inside a `MenuItem`, and MUI `MenuList`'s roving focus does not visit nested descendants — so Refill is reachable
-  by pointer and drag while the row's Repeat is reachable by keyboard. Confirmed independently by the FM-047 designer and implementer. This is a capability gap, not a cosmetic one, and it fails the quickfix gate on two counts: it
-  changes user-observable interaction semantics, and FM-038's single-row layout was an explicit human instruction recorded in `F-SEARCH-RECENT`'s `visual` note, so a fix would likely need fresh ADR-0006 acceptance. Needs a task packet
-  that measures reachability first and raises the approach for a human decision.

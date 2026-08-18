@@ -423,6 +423,86 @@ test.describe("Search", () => {
             page.getByTestId("recent-search-entry").first(),
         ).toBeVisible();
 
+        // ADR-0012 / FM-050: the shared discoverability hint is the Menu's
+        // last child, rendered once (not per row), below the last entry,
+        // with no horizontal overflow of itself, the menu, or the page, at
+        // both of this record's contract viewports.
+        const keyboardHint = page.getByText(
+            "Press Right Arrow on an entry to refill the search form; Left Arrow or Escape returns.",
+        );
+        await expect(keyboardHint).toHaveCount(1);
+        // "Below the last entry" is a DOM-order fact here (a simple
+        // top-to-bottom `MenuList`/`List`, no `order`/reversed flex), so
+        // proving the hint follows the last `recent-search-entry` in
+        // document order is exact and viewport-independent, unlike a
+        // bounding-box comparison, which is sensitive to sub-pixel
+        // padding/margin rounding.
+        const hintFollowsLastEntryInDomOrder = await page.evaluate((text) => {
+            const entries = document.querySelectorAll(
+                '[data-testid="recent-search-entry"]',
+            );
+            const lastEntry = entries[entries.length - 1];
+            const hint = Array.from(document.querySelectorAll("span, p")).find(
+                (element) => element.textContent?.trim() === text,
+            );
+            return Boolean(
+                lastEntry &&
+                hint &&
+                lastEntry.compareDocumentPosition(hint) &
+                    Node.DOCUMENT_POSITION_FOLLOWING,
+            );
+        }, "Press Right Arrow on an entry to refill the search form; Left Arrow or Escape returns.");
+        expect(hintFollowsLastEntryInDomOrder).toBe(true);
+        // The Acceptance criterion is explicit: assert computed-style
+        // equality of the hint's horizontal padding against the rendered
+        // row's, in the browser, rather than restating the `sx` values
+        // (`MenuItem`'s literal 16px default plus the row's `pr: 4`
+        // override) from source.
+        const hintPadding = await page.evaluate((text) => {
+            const entries = document.querySelectorAll(
+                '[data-testid="recent-search-entry"]',
+            );
+            const lastEntry = entries[entries.length - 1];
+            const hint = Array.from(document.querySelectorAll("span, p")).find(
+                (element) => element.textContent?.trim() === text,
+            );
+            if (!lastEntry || !hint) {
+                return null;
+            }
+            const rowStyle = window.getComputedStyle(lastEntry);
+            const hintStyle = window.getComputedStyle(hint);
+            return {
+                rowPaddingLeft: rowStyle.paddingLeft,
+                rowPaddingRight: rowStyle.paddingRight,
+                hintPaddingLeft: hintStyle.paddingLeft,
+                hintPaddingRight: hintStyle.paddingRight,
+            };
+        }, "Press Right Arrow on an entry to refill the search form; Left Arrow or Escape returns.");
+        expect(hintPadding).not.toBeNull();
+        expect(hintPadding?.hintPaddingLeft).toBe(hintPadding?.rowPaddingLeft);
+        expect(hintPadding?.hintPaddingRight).toBe(
+            hintPadding?.rowPaddingRight,
+        );
+        await expectVisualGeometry(page, {
+            region: "recent-search-keyboard-hint-desktop",
+            locator: keyboardHint,
+            maximumWidth: visualViewports.desktop.width - 32,
+        });
+        await captureVisualRegion(
+            keyboardHint,
+            "F-SEARCH-RECENT",
+            "recent-search-keyboard-hint-desktop",
+        );
+
+        await page.setViewportSize(visualViewports.mobile);
+        await expect(historyMenu).toBeVisible();
+        await expectVisualGeometry(page, {
+            region: "recent-search-keyboard-hint-mobile",
+            locator: keyboardHint,
+            maximumWidth: visualViewports.mobile.width - 32,
+        });
+        await page.setViewportSize(visualViewports.desktop);
+
         (config.main as Record<string, unknown>).indexerSelectionAsCheckboxes =
             true;
         await hydra.saveConfig(config);
@@ -605,6 +685,363 @@ test.describe("Search", () => {
             minage: 2,
             maxsize: 50,
             indexers: ["Mock2"],
+        });
+    });
+
+    test("should reach, return from, and activate Refill by keyboard alone via ArrowRight/ArrowLeft/Escape/Enter/Space (ADR-0012)", async ({
+        hydra,
+        page,
+    }) => {
+        const config = await hydra.getConfig();
+        (config.main as Record<string, unknown>).keepHistory = true;
+        // Caps `History.getHistoryForSearching` (ordered `time desc`,
+        // deduplicated by `comparingHash`) at exactly the two most recent,
+        // distinctly-named searches below -- a deterministic two-entry
+        // fixture regardless of any history left by earlier tests in this
+        // file.
+        (config.searching as Record<string, unknown>).historyForSearching = 2;
+        await hydra.saveConfig(config);
+
+        const alphaQuery = "fm050 keyboard refill alpha";
+        const betaQuery = "fm050 keyboard refill beta";
+
+        await page.goto("ui/react?redirect=/");
+        await expect(page).toHaveURL(/\/$/);
+        const firstSubmission = page.waitForResponse((response) =>
+            isSearchResponse(response),
+        );
+        await page.getByTestId("search-query").fill(alphaQuery);
+        await page.getByTestId("search-submit").click();
+        expect((await firstSubmission).status()).toBe(200);
+
+        // A pre-existing, out-of-scope defect in `SearchPage.tsx`'s
+        // `submit()` (recorded under FM-049's Follow-Up Work) makes a
+        // second plain-text search submitted without an intervening
+        // navigation silently reuse the first search's query text. A full
+        // navigation between submissions avoids it without touching that
+        // file, which this task does not own.
+        await page.goto("ui/react?redirect=/");
+        await expect(page).toHaveURL(/\/$/);
+        const secondSubmission = page.waitForResponse((response) =>
+            isSearchResponse(response),
+        );
+        await page.getByTestId("search-query").fill(betaQuery);
+        await page.getByTestId("search-submit").click();
+        expect((await secondSubmission).status()).toBe(200);
+
+        // Refill must never issue a search; Repeat always does. Counting
+        // every `/internalapi/search` POST from here on is the
+        // discriminating measurement for every activation below.
+        let searchRequestCount = 0;
+        page.on("request", (request) => {
+            if (
+                request.method() === "POST" &&
+                new URL(request.url()).pathname === "/internalapi/search"
+            ) {
+                searchRequestCount += 1;
+            }
+        });
+
+        const menu = page.getByRole("menu", {name: "Recent searches"});
+        const trigger = page.getByTestId("recent-searches-trigger");
+        const betaRow = page.getByRole("menuitem", {
+            name: new RegExp(`Repeat:.*${betaQuery}`),
+        });
+        const alphaRow = page.getByRole("menuitem", {
+            name: new RegExp(`Repeat:.*${alphaQuery}`),
+        });
+        const betaRefill = page.getByRole("button", {
+            name: new RegExp(`Refill:.*${betaQuery}`),
+        });
+        const alphaRefill = page.getByRole("button", {
+            name: new RegExp(`Refill:.*${alphaQuery}`),
+        });
+
+        async function openMenuByKeyboard(): Promise<void> {
+            // Idempotent regardless of prior state: `Tab` unconditionally
+            // closes the menu and returns focus to the trigger from either
+            // focus position (`Menu.js`'s `handleListKeyDown` intercepts
+            // `Tab` before `currentFocus` is ever consulted), which matters
+            // here because some blocks below deliberately leave the menu
+            // open (e.g. after `Escape` from the button) before the next
+            // block reopens it.
+            if (await menu.isVisible()) {
+                await page.keyboard.press("Tab");
+                await expect(menu).toBeHidden();
+            }
+            await trigger.focus();
+            await page.keyboard.press("Enter");
+            await expect(menu).toBeVisible();
+        }
+
+        type TraceEntry = {
+            key: string;
+            tag: string;
+            name: string | null;
+            testId: string | null;
+            menuOpen: boolean;
+        };
+        const trace: TraceEntry[] = [];
+        async function record(label: string): Promise<void> {
+            const info = await page.evaluate(() => {
+                const active = document.activeElement as HTMLElement | null;
+                return {
+                    tag: active ? active.tagName : "(none)",
+                    name: active ? active.getAttribute("aria-label") : null,
+                    testId: active ? active.getAttribute("data-testid") : null,
+                };
+            });
+            trace.push({
+                key: label,
+                ...info,
+                menuOpen: await menu.isVisible(),
+            });
+        }
+
+        // Open by keyboard: focus the trigger (as tabbing to it would leave
+        // it), then Enter. MUI's `MenuList` `activeItemIndex` lookahead
+        // autofocuses the first entry, which -- given `time desc` ordering
+        // and the two-entry cap above -- is beta, the more recently
+        // submitted search.
+        await openMenuByKeyboard();
+        await expect(betaRow).toBeFocused();
+        await record("(open by keyboard) focus trigger, Enter");
+
+        // ArrowLeft on a row is a no-op (neither MUI handler consumes it).
+        await page.keyboard.press("ArrowLeft");
+        await expect(betaRow).toBeFocused();
+        await expect(menu).toBeVisible();
+        await record("ArrowLeft (from row)");
+
+        // ArrowRight moves focus onto the row's Refill button; menu stays
+        // open; no search is issued.
+        const beforeArrowRight = searchRequestCount;
+        await page.keyboard.press("ArrowRight");
+        await expect(betaRefill).toBeFocused();
+        await expect(menu).toBeVisible();
+        expect(searchRequestCount).toBe(beforeArrowRight);
+        await record("ArrowRight (from row)");
+
+        // The button shows a real focus indicator when reached: it matches
+        // `:focus-visible` -- Chromium's genuine keyboard-focus heuristic,
+        // not merely `document.activeElement`. `app/theme.ts`'s
+        // `MuiCssBaseline` override sets `outline: 3px solid currentColor`
+        // at `outlineOffset: 3px` on `:focus-visible` globally, and
+        // `outlineOffset` does reach this element (confirmed below), but
+        // `outline-style`/`outline-width` do not: `@mui/material` `7.3.9`'s
+        // `ButtonBase/ButtonBase.js` gives every `ButtonBase`-derived root
+        // (`Button`, `IconButton`, `ListItemButton`, ...) its own
+        // unconditional `outline: 0`, generated as a higher-specificity
+        // compound class that wins the cascade over the single-class
+        // `:focus-visible` global rule for the `outline` shorthand
+        // (`outline-style`/`outline-width`) -- verified directly against
+        // both this button and an unrelated, pre-existing nav
+        // `ListItemButton`, so this is an app-wide `ButtonBase` property,
+        // not something FM-050 introduced or can fix here (`app/theme.ts`
+        // is outside this task's `Files Allowed To Modify`). Recorded as a
+        // maintenance candidate under Follow-Up Work.
+        const focusIndicator = await page.evaluate(() => {
+            const active = document.activeElement as HTMLElement;
+            const style = window.getComputedStyle(active);
+            return {
+                matchesFocusVisible: active.matches(":focus-visible"),
+                outlineOffset: style.outlineOffset,
+            };
+        });
+        expect(focusIndicator.matchesFocusVisible).toBe(true);
+        expect(focusIndicator.outlineOffset).toBe("3px");
+
+        // `matchesFocusVisible`/`outlineOffset` above hold regardless of
+        // whether anything is actually painted -- `outlineOffset` still
+        // computes to `3px` even with `outline-style: none`. The real,
+        // app-wide mechanism `@mui/material` `7.3.9` substitutes for the
+        // suppressed CSS outline is `ButtonBase/ButtonBase.js`'s pulsating
+        // `TouchRipple`: its `useEffect` calls `ripple.pulsate()` whenever
+        // `focusVisible && focusRipple` (both true here -- `IconButton`
+        // passes `focusRipple: !disableFocusRipple`, which defaults
+        // `true`), mounting a `.MuiTouchRipple-ripplePulsate` span with
+        // `opacity: 0.3` and a `.MuiTouchRipple-child` with
+        // `background-color: currentColor`, unconditionally on that class
+        // (not gated behind a CSS transition's enter/active staging, per
+        // `Ripple.js`). `Button.js`'s own prop doc for `disableRipple`
+        // records the mechanism: "Without a ripple there is no styling for
+        // :focus-visible by default." This is weak (0.3 opacity, easy to
+        // miss in a static capture) but real and it predates FM-050; it
+        // gives this assertion the regression value the two above cannot --
+        // it would catch a future `disableRipple`/`disableFocusRipple` that
+        // silently removed even this indicator.
+        const focusPulsate = betaRefill.locator(
+            ".MuiTouchRipple-ripplePulsate",
+        );
+        await expect(focusPulsate).toBeAttached();
+        const pulsateOpacity = await focusPulsate.evaluate(
+            (element) => window.getComputedStyle(element).opacity,
+        );
+        expect(Number(pulsateOpacity)).toBeGreaterThan(0);
+
+        // ArrowLeft returns focus to the owning row; menu stays open.
+        await page.keyboard.press("ArrowLeft");
+        await expect(betaRow).toBeFocused();
+        await expect(menu).toBeVisible();
+        await record("ArrowLeft (from button)");
+
+        // ArrowRight then Escape returns focus to the row and must NOT
+        // close the menu -- the regression risk this packet names.
+        await page.keyboard.press("ArrowRight");
+        await expect(betaRefill).toBeFocused();
+        await page.keyboard.press("Escape");
+        await expect(betaRow).toBeFocused();
+        await expect(menu).toBeVisible();
+        await record("ArrowRight, Escape (from button)");
+
+        // Regression check in the other direction: Escape on a row still
+        // closes the menu, unchanged.
+        await page.keyboard.press("Escape");
+        await expect(menu).toBeHidden();
+        await record("Escape (from row)");
+
+        // ArrowRight is a no-op from the button -- there is no second
+        // target.
+        await openMenuByKeyboard();
+        await page.keyboard.press("ArrowRight");
+        await expect(betaRefill).toBeFocused();
+        await page.keyboard.press("ArrowRight");
+        await expect(betaRefill).toBeFocused();
+        await expect(menu).toBeVisible();
+        await record("ArrowRight, ArrowRight (from button)");
+        await page.keyboard.press("Escape");
+        await expect(menu).toBeVisible();
+
+        // ArrowDown from the button reaches the same row ArrowDown reaches
+        // from the row (committed equivalence assertion).
+        await openMenuByKeyboard();
+        await page.keyboard.press("ArrowDown");
+        await expect(alphaRow).toBeFocused();
+        await record("ArrowDown (from row, baseline)");
+
+        await openMenuByKeyboard();
+        await page.keyboard.press("ArrowRight");
+        await expect(betaRefill).toBeFocused();
+        await page.keyboard.press("ArrowDown");
+        await expect(alphaRow).toBeFocused();
+        await expect(menu).toBeVisible();
+        await record("ArrowDown (from button)");
+
+        // ArrowUp from the button reaches the same row ArrowUp reaches from
+        // the row (wraps from the first/autofocused row -- beta -- to the
+        // last -- alpha).
+        await openMenuByKeyboard();
+        await page.keyboard.press("ArrowUp");
+        await expect(alphaRow).toBeFocused();
+        await record("ArrowUp (from row, baseline)");
+
+        await openMenuByKeyboard();
+        await page.keyboard.press("ArrowRight");
+        await expect(betaRefill).toBeFocused();
+        await page.keyboard.press("ArrowUp");
+        await expect(alphaRow).toBeFocused();
+        await expect(menu).toBeVisible();
+        await record("ArrowUp (from button)");
+
+        // Home from the button reaches the same row Home reaches from the
+        // row (moved off the first row first, so Home demonstrably moves
+        // focus rather than being a no-op).
+        await openMenuByKeyboard();
+        await page.keyboard.press("ArrowDown");
+        await expect(alphaRow).toBeFocused();
+        await page.keyboard.press("Home");
+        await expect(betaRow).toBeFocused();
+        await record("Home (from row, baseline)");
+
+        await openMenuByKeyboard();
+        await page.keyboard.press("ArrowDown");
+        await expect(alphaRow).toBeFocused();
+        await page.keyboard.press("ArrowRight");
+        await expect(alphaRefill).toBeFocused();
+        await page.keyboard.press("Home");
+        await expect(betaRow).toBeFocused();
+        await expect(menu).toBeVisible();
+        await record("Home (from button)");
+
+        // End from the button reaches the same row End reaches from the
+        // row.
+        await openMenuByKeyboard();
+        await page.keyboard.press("End");
+        await expect(alphaRow).toBeFocused();
+        await record("End (from row, baseline)");
+
+        await openMenuByKeyboard();
+        await page.keyboard.press("ArrowRight");
+        await expect(betaRefill).toBeFocused();
+        await page.keyboard.press("End");
+        await expect(alphaRow).toBeFocused();
+        await expect(menu).toBeVisible();
+        await record("End (from button)");
+
+        // Recorded, not asserted, per this packet's Acceptance: type-ahead
+        // does not discriminate (every row's accessible name starts with
+        // "Repeat: ", and MUI's own type-ahead matches visible `innerText`,
+        // not the `aria-label`) and is timing-sensitive (`MenuList`'s 500ms
+        // `criteria` reset).
+        await page.keyboard.press("ArrowRight");
+        await expect(alphaRefill).toBeFocused();
+        await page.keyboard.press("f");
+        await record("f (type-ahead, from button)");
+        if (!(await menu.isVisible())) {
+            await openMenuByKeyboard();
+        }
+
+        // Tab/Shift+Tab from the button close the menu and return focus to
+        // the trigger, exactly as from a row (`Menu.js`'s
+        // `handleListKeyDown` intercepts `Tab` unconditionally, before
+        // `currentFocus` is ever consulted).
+        await page.keyboard.press("ArrowRight");
+        await page.keyboard.press("Tab");
+        await expect(menu).toBeHidden();
+        await expect(trigger).toBeFocused();
+        await record("Tab (from button)");
+
+        await openMenuByKeyboard();
+        await page.keyboard.press("ArrowRight");
+        await page.keyboard.press("Shift+Tab");
+        await expect(menu).toBeHidden();
+        await expect(trigger).toBeFocused();
+        await record("Shift+Tab (from button)");
+
+        // Enter activates the button natively: the form is refilled, the
+        // menu closes, and no search request is issued -- the
+        // discriminating assertion, since Repeat issues one and Refill must
+        // not.
+        await openMenuByKeyboard();
+        await expect(betaRow).toBeFocused();
+        await page.keyboard.press("ArrowRight");
+        await expect(betaRefill).toBeFocused();
+        const beforeEnter = searchRequestCount;
+        await page.keyboard.press("Enter");
+        await expect(menu).toBeHidden();
+        await expect(page.getByTestId("search-query")).toHaveValue(betaQuery);
+        expect(searchRequestCount).toBe(beforeEnter);
+        await record("Enter (from button)");
+
+        // Space activates the button natively, same discriminating
+        // assertion, exercised from the other row for coverage variety.
+        await openMenuByKeyboard();
+        await page.keyboard.press("ArrowDown");
+        await expect(alphaRow).toBeFocused();
+        await page.keyboard.press("ArrowRight");
+        await expect(alphaRefill).toBeFocused();
+        const beforeSpace = searchRequestCount;
+        await page.keyboard.press("Space");
+        await expect(menu).toBeHidden();
+        await expect(page.getByTestId("search-query")).toHaveValue(alphaQuery);
+        expect(searchRequestCount).toBe(beforeSpace);
+        await record("Space (from button)");
+
+        // The full trace is the deliverable this packet requires; attach it
+        // to the report so it is durable evidence, not just a console log.
+        await test.info().attach("keyboard-refill-focus-trace", {
+            body: JSON.stringify(trace, null, 2),
+            contentType: "application/json",
         });
     });
 
