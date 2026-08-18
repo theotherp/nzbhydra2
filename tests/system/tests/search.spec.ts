@@ -583,9 +583,9 @@ test.describe("Search", () => {
             page.getByText(/Query: recent criteria/).first(),
         ).toBeVisible();
         await expect(
-            page.getByRole("menuitem", {name: "Refill"}).first(),
+            page.getByRole("button", {name: /^Refill:/}).first(),
         ).toBeVisible();
-        await page.getByRole("menuitem", {name: "Refill"}).first().click();
+        await page.getByRole("button", {name: /^Refill:/}).first().click();
         // Refilling remounts the workspace, so the FM-044 `Advanced`
         // disclosure holding the refilled ranges starts collapsed again.
         await page.getByTestId("search-advanced-toggle").click();

@@ -16,6 +16,17 @@ None.
 
 - FM-022: Download History Route
 
+**FM-047 is `done`**, closed without an independent reviewer pass by explicit human decision on proportionality grounds (the deviation and what it cost are recorded in the packet) — a deliberately minimal corrective packet, not a feature, and it repairs the one long-standing unowned test defect that FM-038 introduced and that FM-038's own review, FM-044, and FM-041 each recorded and
+correctly declined to fix as out of scope. `tests/system/tests/search.spec.ts` asserted the recent-search Refill control as a `menuitem`, but FM-038 made it an `IconButton` nested inside the `Repeat:` `menuitem`, so its role is
+`button`; both locators now read `getByRole("button", {name: /^Refill:/})`, matching the accessible name the component actually renders and the form `RecentSearches.test.tsx:62` already used. The diff is exactly two lines. Verified
+first-hand rather than inherited: Playwright's `name` is a case-insensitive substring match by default (`types.d.ts:3149-3153` — the packet's cited `:3906`/`:8115` document `hasNotText` instead, recorded as a deviation) and its
+`queryRole` matches roles per element with no accessibility-tree pruning, so the nested button is discoverable. **The full 14-test `search.spec.ts` file passes against a real Maven-built JVM backend, mockserver, and the sonarr/radarr
+Docker fixtures — `14 passed (26.4s)`, exit 0, no `--grep` narrowing** — and with it the `Repeat` assertion at `:598`, which no run had ever reached because the Refill failure aborted the test first, was observed executing and
+passing. The React implementation is correct and was left untouched, `FEATURES.yaml` is unchanged (independently confirmed: `F-SEARCH-RECENT`'s `selectors` was already empty *before* FM-038, so it is not stale for this defect's
+reason, and its `tests` and `visual` note are current), and no visual acceptance is created or implied — `F-SEARCH-RECENT` keeps its inherited `proposed` status with human acceptance still pending. FM-047 has no feature dependency on
+FM-042 and shares no file with it. One accessibility concern is recorded in the packet as a follow-up proposal rather than acted on: a focusable `IconButton` inside a `MenuItem` is likely not reachable by MUI's arrow-key menu
+navigation, so Refill may be keyboard-inaccessible — but FM-038's single-row structure was an explicit human instruction, and changing it is a UX decision, not a test repair.
+
 **FM-041 is `done`** — reviewed `PASS WITH MINOR FINDINGS` with no required corrections. Every display preference for the results list now lives in one `display-options` popover on the mock's `#2a3133`/`11px`/`220px` surface, opened by a right-aligned `display-options-toggle` in
 `results-selection-actions`: the two grouping toggles relocated out of the inline toolbar row with unchanged labels, defaults, and behavior; new opt-in `Compact rows` and `Highlight recent` preferences persisted alongside sorting,
 filters, and `sidebarCollapsed` in the existing `hydra.search-results.table` payload — **two** new keys, since the sidebar shortcut adds none; and a "Show refine sidebar" entry that reads and writes whichever per-viewport refine-surface
