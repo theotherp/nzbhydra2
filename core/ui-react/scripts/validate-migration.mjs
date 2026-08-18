@@ -27,7 +27,9 @@ const taskStatuses = new Set([
 ]);
 export const visualApplicability = new Set(["applicable", "not_applicable"]);
 export const visualStatuses = new Set(["unassessed", "proposed", "accepted"]);
-const visualViewportNames = new Set(["desktop", "mobile"]);
+// Must stay in step with `tests/system/tests/visualEvidence.ts`'s
+// `visualViewports`, which is the harness-side registry of the same names.
+const visualViewportNames = new Set(["desktop", "mobile", "desktop-wide"]);
 
 function report(message) {
     errors.push(message);

@@ -449,3 +449,27 @@ function unique(values: string[]): string[] {
 function isRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === "object" && value !== null;
 }
+
+// Legacy renders the Size cell as `{{ ::result.size | byteFmt: 2 }}`
+// (`core/ui-src/html/directives/search-result.html:51`). angular-filter's
+// `byteFmt` steps in 1024s with `B`/`KB`/`MB`/... labels and concatenates a
+// *number*, so `convertToDecimal`'s trailing zeros never reach the DOM --
+// at most two decimals, not exactly two. Mirrored here so the React target
+// shows the same string legacy does rather than the raw byte integer.
+const RESULT_SIZE_UNITS = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
+
+export function formatResultSize(bytes: number | null | undefined): string {
+    // Legacy's byteFmt yields the string "NaN" for a non-numeric size; an
+    // empty cell is friendlier than "NaN" and matches the missing-size case.
+    if (typeof bytes !== "number" || !Number.isFinite(bytes)) {
+        return "";
+    }
+
+    let unit = 0;
+    while (unit < RESULT_SIZE_UNITS.length - 1 && bytes >= 1024 ** (unit + 1)) {
+        unit++;
+    }
+
+    const value = bytes / (unit > 0 ? 1024 ** unit : 1);
+    return `${Math.round(value * 100) / 100} ${RESULT_SIZE_UNITS[unit]}`;
+}

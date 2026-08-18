@@ -3,6 +3,7 @@ import {describe, expect, it, vi} from "vitest";
 import {
     ageInDays,
     defaultFilters,
+    formatResultSize,
     groupResults,
     filterResults,
     isRecentResult,
@@ -422,3 +423,47 @@ function withPinnedClock(assertions: (nowInSeconds: number) => void): void {
         vi.useRealTimers();
     }
 }
+
+describe("formatResultSize", () => {
+    // Legacy renders the Size cell as `{{ ::result.size | byteFmt: 2 }}`
+    // (`core/ui-src/html/directives/search-result.html:51`). angular-filter's
+    // `byteFmt` is 1024-based with `B`/`KB`/`MB`/... labels, and it returns a
+    // *number* concatenated with the unit, so `convertToDecimal`'s trailing
+    // zeros disappear: 2 decimals maximum, not exactly 2.
+    it("matches legacy byteFmt for representative sizes", () => {
+        expect(formatResultSize(0)).toBe("0 B");
+        expect(formatResultSize(500)).toBe("500 B");
+        expect(formatResultSize(1023)).toBe("1023 B");
+        expect(formatResultSize(1024)).toBe("1 KB");
+        expect(formatResultSize(1536)).toBe("1.5 KB");
+        expect(formatResultSize(5 * 1024 * 1024)).toBe("5 MB");
+        expect(formatResultSize(1024 ** 3)).toBe("1 GB");
+        expect(formatResultSize(1_503_238_553)).toBe("1.4 GB");
+        expect(formatResultSize(1024 ** 4)).toBe("1 TB");
+    });
+
+    it("rounds to at most two decimals and drops trailing zeros", () => {
+        expect(formatResultSize(1024 ** 3 * 1.5)).toBe("1.5 GB");
+        expect(formatResultSize(1024 ** 3 * 1.234)).toBe("1.23 GB");
+        expect(formatResultSize(1024 ** 3 * 1.239)).toBe("1.24 GB");
+    });
+
+    // The raw byte integer is what this replaced; guard the actual defect.
+    it("never renders the raw byte count", () => {
+        expect(formatResultSize(1_503_238_553)).not.toBe("1503238553");
+        expect(formatResultSize(1_503_238_553)).not.toContain("1503238553");
+    });
+
+    it("renders nothing for a missing size", () => {
+        expect(formatResultSize(null)).toBe("");
+        expect(formatResultSize(undefined)).toBe("");
+    });
+
+    // Legacy's byteFmt returns the string "NaN" here; showing a user "NaN"
+    // in a size column is worse than showing nothing, so this deliberately
+    // diverges and renders empty, matching the missing-size case.
+    it("renders nothing for a non-finite size", () => {
+        expect(formatResultSize(Number.NaN)).toBe("");
+        expect(formatResultSize(Number.POSITIVE_INFINITY)).toBe("");
+    });
+});

@@ -72,6 +72,30 @@ Format, one entry per fix:
 - **Prerequisite:** `0b759d65c` added the `README.md` carve-out that made this discharge possible at all. Before it, only the task designer could touch a packet, so correcting two coordinates would have required a designer pass — the
   exact overhead this ledger exists to avoid.
 
+### 2026-08-18 — Allow `desktop-wide` in the visual viewport allowlist
+
+- **Why not a packet:** config allowlist in a validation script; no behavioral surface, consumed at exactly one call site (`validate-migration.mjs:270`, validating `FEATURES.yaml` viewport names). Widening the set cannot invalidate anything currently valid.
+- **Paths:** `core/ui-react/scripts/validate-migration.mjs`.
+- **Gates:** `core/ui-react` `typecheck`, `lint`, `format:check`, `test -- --run` (226/226 across 38 files), `build`, `check:api`, `validate:migration` all passed; `git diff --check` clean at the root. No pre-existing failures. Install skipped — no lockfile change and `node_modules` already consistent. `tests/system` gates not run: nothing there changed.
+- **Commit:** `b1bf2770a`
+- **Note:** the defect was drift between two registries of the same concept — `tests/system/tests/visualEvidence.ts`'s `visualViewports` gained `desktop-wide` (1900x1000) in FM-042 under ADR-0011's `Human Decision` item 3, while the validator's allowlist did not, and the validator was the stricter one. This lifts the block only; actually moving the viewport into `FEATURES.yaml`'s structured `contract.viewports` array is a registry-contract edit and stays a candidate below.
+
+### 2026-08-18 — Render the results Size column as a human-readable size
+
+- **Why not a packet:** contained bugfix with a regression test. `ResultColumn.value` has exactly two call sites (`SearchResults.tsx:1595`, `:1598`), both rendering; sorting and the size min/max refine filters read `result.size` directly and are untouched. No `data-testid` changed and no `FEATURES.yaml` contract asserts this cell's content.
+- **Paths:** `core/ui-react/src/features/search/results/SearchResults.tsx`, `resultTable.ts`, `resultTable.test.ts`.
+- **Gates:** `core/ui-react` `typecheck`, `lint`, `format:check`, `test -- --run` (231/231, up from 226 by the five new cases), `build`, `check:api`, `validate:migration` all passed; `git diff --check` clean at the root. No pre-existing failures. Install skipped — no lockfile change, `node_modules` already consistent. `tests/system` gates not run: nothing there changed, and no spec asserts this cell's value (`results.spec.ts`'s only `Size` reference is the header label at `:2969`). The formatted string is strictly shorter than the byte integer it replaces, so FM-042's cell-spill assertions can only be relaxed by it.
+- **Commit:** `066db3089`
+- **Note:** the column rendered the raw byte integer (`result.size ?? ""`), so a 1.4 GB release showed as `1503238553`. A parity gap predating FM-042, whose implementer found it while satisfying that task's non-title-cell-spill check and correctly left it out of scope. `formatResultSize` mirrors angular-filter's `byteFmt` as bundled in `core/src/main/resources/static/js/alllibs.js:65093` rather than guessing a format — 1024-based steps, `B`/`KB`/`MB`/... labels, at most two decimals. Not *exactly* two: `byteFmt` concatenates the Number `convertToDecimal` returns, so trailing zeros never reach the DOM and `1503238553` renders `1.4 GB`, not `1.40 GB`. One deliberate divergence: `byteFmt` yields the string `"NaN"` for a non-numeric size, where this renders an empty cell, matching the missing-size case. Tests were written first and observed failing (5 failed | 12 passed) before the implementation, then passing (17/17).
+
+### 2026-08-18 — Stop Prettier crashing on `tests/system`'s git-ignored runtime output
+
+- **Why not a packet:** an ignore file; no behavioral surface, and it repairs the cause (Prettier examining files it should never examine) rather than suppressing findings.
+- **Paths:** `tests/system/.prettierignore` (new).
+- **Gates:** `tests/system` `npx tsc --noEmit` passed; `core/ui-react` `validate:migration` and `format:check` passed; `git diff --check` clean at the root. No Playwright run — no spec, fixture, or assertion changed. `core/ui-react`'s remaining gates not run: nothing there was touched.
+- **Commit:** `654f403ba`
+- **Note:** `npx prettier --check .` run unscoped from `tests/system` aborted on `data/logs/nzbhydra2-log.json` (newline-delimited JSON, git-ignored runtime output), so the directory had no usable formatting gate at all. Prettier only reads a `.gitignore` next to its own working directory, which is why `core/ui-react` already carried one. Ignored: runtime/build output, `package-lock.json`, the Java module's `src/`, and `instanceData/`'s byte-sensitive v1-migration fixture. **Deliberately not ignored:** `tests/*.ts`, `playwright.config.ts`, `tsconfig.json` — the never-formatted-sources candidate below is still open, and the command now reports those 13 files (exit 1) instead of crashing, which is the point.
+
 ---
 
 ## Open candidates
@@ -85,10 +109,15 @@ instead of leaving it to rot.
   means either a full `prettier --write` pass (large diff across every one of these files, since most FM tasks never touch them, so blast radius and git-blame churn need a human call) or leaving them permanently un-gated. Not a
   quickfix: it fails the "blast radius you can state precisely but is not small" bar and the resulting diff would not be formatting-only relative to committed intent for files no packet has ever asserted a canonical style for. Route
   to `/fm-orchestrate` if this baseline is worth establishing, or decide these files stay outside the formatting gate.
-- **`prettier --check .` crashes when run unscoped from `tests/system`.** It throws a `SyntaxError` on `data/logs/nzbhydra2-log.json` (newline-delimited JSON, not a single JSON expression) and additionally warns on generated/build
-  paths (`data/nzbhydra.yml`, `instanceData/`, `playwright-report/`, `target/`, `test-results/`, `package-lock.json`). A `tests/system/.prettierignore` mirroring `core/ui-react`'s (see the entry above it) would fix this at the cause.
-  Not fixed here because it's an unrelated defect found while investigating the `search.spec.ts` baseline — recording it per the "one fix per invocation" rule.
 - **Refill is plausibly not keyboard-reachable.** `RecentSearches.tsx` renders Refill as a focusable `IconButton` nested inside a `MenuItem`, and MUI `MenuList`'s roving focus does not visit nested descendants — so Refill is reachable
   by pointer and drag while the row's Repeat is reachable by keyboard. Confirmed independently by the FM-047 designer and implementer. This is a capability gap, not a cosmetic one, and it fails the quickfix gate on two counts: it
   changes user-observable interaction semantics, and FM-038's single-row layout was an explicit human instruction recorded in `F-SEARCH-RECENT`'s `visual` note, so a fix would likely need fresh ADR-0006 acceptance. Needs a task packet
   that measures reachability first and raises the approach for a human decision.
+- **`desktop-wide` is recorded in prose, not in `FEATURES.yaml`'s structured `contract.viewports`.** ADR-0011's `Human Decision` item 3 requires a named `desktop-wide` 1900x1000 evidence viewport, scoped to FM-042's own visual states.
+  The validator now accepts the name (`b1bf2770a`), but `F-SEARCH-RESULTS`'s and `F-SEARCH-SORT-FILTER`'s visual contracts still describe it in free text, so nothing machine-checks it. Not a quickfix: editing a `FEATURES.yaml` visual
+  contract is exactly what the gate refuses. Needs a task packet, which should also decide whether the viewport stays scoped to FM-042's states or is applied across the ~28 existing "at desktop" checks — the latter needs a per-check
+  editorial pass and was deliberately declined when ADR-0011 was accepted.
+- **`C-RESULT-TABLE` does not record its fluid, never-horizontally-scrolling layout responsibility.** ADR-0011 (accepted) made the results table fluid and removed the `overflow-x: auto` wrapper, and that property is load-bearing: it is
+  what makes the sticky column header possible at all, so a future change that reintroduces a wrapper would silently break it. `COMPONENTS.yaml:164-173`'s `responsibility` field says nothing about it. FM-042's handoff proposed this as a
+  quickfix candidate, but that classification was wrong and is corrected here: adding a responsibility to a `COMPONENTS.yaml` record is a registry-contract edit, which the gate refuses outright. Route to `/fm-orchestrate`; FM-042's own
+  packet deliberately excluded `COMPONENTS.yaml` from its allowlist, which points the same way.

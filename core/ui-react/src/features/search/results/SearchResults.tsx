@@ -76,6 +76,7 @@ import {
     defaultFilters,
     duplicateGroupKey,
     filterResults,
+    formatResultSize,
     groupResults,
     isRecentResult,
     preselectedQuickFilters,
@@ -1385,7 +1386,7 @@ const resultColumns: ResultColumn[] = [
         align: "right",
         id: "size",
         label: "Size",
-        value: (result) => result.size ?? "",
+        value: (result) => formatResultSize(result.size),
     },
     {
         align: "right",
