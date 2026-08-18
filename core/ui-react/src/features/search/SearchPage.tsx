@@ -42,6 +42,8 @@ import {SearchResults} from "./results/SearchResults";
 import type {SearchFormValues} from "./workspace/SearchWorkspace";
 import {
     canonicalSearch,
+    hasIdentifier,
+    nonIdentifierQueryText,
     SearchWorkspace,
     valuesFromSearch,
 } from "./workspace/SearchWorkspace";
@@ -148,7 +150,7 @@ export function SearchPage({
         await navigate({
             to: "/",
             search: {
-                ...canonicalSearch(values),
+                ...canonicalSearch(values, catalog),
                 ...(episodeRequested && !values.episode
                     ? {episode: requestedEpisode}
                     : {}),
@@ -163,9 +165,9 @@ export function SearchPage({
         const request: SearchRequest = {
             query:
                 values.additionalQuery ||
-                (hasMediaIdentifiers(values)
+                (hasIdentifier(values)
                     ? undefined
-                    : values.title || values.query || undefined),
+                    : nonIdentifierQueryText(values, catalog) || undefined),
             category: values.category,
             minage: numberOrUndefined(values.minage),
             maxage: numberOrUndefined(values.maxage),
@@ -174,7 +176,7 @@ export function SearchPage({
             indexers,
             loadAll: false,
             searchRequestId: numericRequestId(),
-            ...(hasMediaIdentifiers(values)
+            ...(hasIdentifier(values)
                 ? {
                       title: values.title,
                       imdbId: values.imdbId || undefined,
@@ -558,16 +560,6 @@ function numberOrUndefined(value: string): number | undefined {
 
 function numericRequestId(): number {
     return Math.floor(Math.random() * 1000000000);
-}
-
-function hasMediaIdentifiers(values: SearchFormValues): boolean {
-    return Boolean(
-        values.imdbId ||
-        values.tmdbId ||
-        values.tvdbId ||
-        values.tvmazeId ||
-        values.tvrageId,
-    );
 }
 
 async function checkEmbyAvailability(

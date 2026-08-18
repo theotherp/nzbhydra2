@@ -215,14 +215,32 @@ function fieldValue(search: Record<string, unknown>, name: string): string {
     return typeof search[name] === "string" ? search[name] : "";
 }
 
+// The single source of truth for which form field's text a non-identifier
+// search submits: the visible `search-query` input registers to `title` for
+// a media category and to `query` otherwise (`mediaTypeForCategoryName`,
+// mirrored from the render's own resolution at `mediaType` below), never a
+// `title || query` fallback. Both `canonicalSearch` (the URL writer) and
+// `SearchPage.submit()` (the request builder) call this one function so the
+// address bar and the executed request can never disagree about which
+// field's text was actually submitted -- see FM-051.
+export function nonIdentifierQueryText(
+    values: SearchFormValues,
+    catalog: CategoryCatalog,
+): string {
+    return mediaTypeForCategoryName(catalog, values.category)
+        ? values.title
+        : values.query;
+}
+
 export function canonicalSearch(
     values: SearchFormValues,
+    catalog: CategoryCatalog,
 ): Record<string, string> {
     return Object.fromEntries(
         Object.entries({
             query: hasIdentifier(values)
                 ? values.additionalQuery
-                : values.title || values.query,
+                : nonIdentifierQueryText(values, catalog),
             category: values.category,
             minage: values.minage,
             maxage: values.maxage,
@@ -282,11 +300,7 @@ export function SearchWorkspace({
     const request = useRef(0);
     const listboxId = useId();
     const advancedPanelId = useId();
-    const mediaType = mediaTypeForCategory(
-        catalog.categories.find(
-            (category) => category.name === selectedCategory,
-        )?.searchType,
-    );
+    const mediaType = mediaTypeForCategoryName(catalog, selectedCategory);
     const selected = hasIdentifier(watch());
     useEffect(() => {
         const current = ++request.current;
@@ -960,7 +974,7 @@ const identifierFields = [
     "tvrageId",
 ] as const;
 
-function hasIdentifier(values: SearchFormValues): boolean {
+export function hasIdentifier(values: SearchFormValues): boolean {
     return identifierFields.some((field) => values[field] !== "");
 }
 
@@ -1186,4 +1200,14 @@ function mediaTypeForCategory(
         return "TV";
     }
     return undefined;
+}
+
+function mediaTypeForCategoryName(
+    catalog: CategoryCatalog,
+    categoryName: string,
+): "MOVIE" | "TV" | undefined {
+    return mediaTypeForCategory(
+        catalog.categories.find((category) => category.name === categoryName)
+            ?.searchType,
+    );
 }

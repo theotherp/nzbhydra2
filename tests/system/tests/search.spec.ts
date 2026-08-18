@@ -714,12 +714,15 @@ test.describe("Search", () => {
         await page.getByTestId("search-submit").click();
         expect((await firstSubmission).status()).toBe(200);
 
-        // A pre-existing, out-of-scope defect in `SearchPage.tsx`'s
-        // `submit()` (recorded under FM-049's Follow-Up Work) makes a
-        // second plain-text search submitted without an intervening
-        // navigation silently reuse the first search's query text. A full
-        // navigation between submissions avoids it without touching that
-        // file, which this task does not own.
+        // FM-051 fixed the defect (recorded under FM-049's Follow-Up Work)
+        // that made a second plain-text search submitted without an
+        // intervening navigation silently reuse the first search's query
+        // text -- see "should submit each of two consecutive plain-text
+        // searches..." below for that regression coverage. The `page.goto`
+        // below is kept anyway: FM-050's recorded verification basis for
+        // this fixture's keyboard-navigation trace was established with
+        // this navigation in place, and this task does not re-open that
+        // evidence.
         await page.goto("ui/react?redirect=/");
         await expect(page).toHaveURL(/\/$/);
         const secondSubmission = page.waitForResponse((response) =>
@@ -1043,6 +1046,58 @@ test.describe("Search", () => {
             body: JSON.stringify(trace, null, 2),
             contentType: "application/json",
         });
+    });
+
+    test("should submit each of two consecutive plain-text searches with its own query text, not the first search's stale text (FM-051)", async ({
+        page,
+    }) => {
+        const firstQuery = "fm051 first query alpha";
+        const secondQuery = "fm051 second query beta";
+
+        // The shared `beforeEach`'s bare `page.goto("/")` does not carry the
+        // `nzbhydra-ui=react` cookie (`MainWeb.isReactSelected` defaults to
+        // legacy without it), and this defect exists only in
+        // `SearchWorkspace.tsx`/`SearchPage.tsx` -- legacy's `getSearchQuery()`
+        // already has no fallback chain. Select React explicitly, the same
+        // way the ADR-0012 keyboard test above does.
+        await page.goto("ui/react?redirect=/");
+        await expect(page).toHaveURL(/\/$/);
+        await expect(page.getByTestId("search-query")).toBeVisible();
+
+        // Match on request *content*, never on how many `/internalapi/
+        // search` POSTs occur: fixing this defect makes `AutoSubmitFromRoute`
+        // genuinely re-fire once the URL genuinely changes on submit (see
+        // this task's Out Of Scope), so a count-based wait would be racy.
+        const firstSubmission = page.waitForResponse(
+            (response) =>
+                isSearchResponse(response) &&
+                (response.request().postDataJSON() as {query?: string})
+                    .query === firstQuery,
+        );
+        await page.getByTestId("search-query").fill(firstQuery);
+        await page.getByTestId("search-submit").click();
+        expect((await firstSubmission).status()).toBe(200);
+        expect(new URL(page.url()).searchParams.get("query")).toBe(firstQuery);
+
+        // No intervening `page.goto`: this is the exact FM-051 regression.
+        // Replacing the box's text and submitting again, in the same
+        // session, must send and navigate to the second search's own text
+        // -- not silently resubmit the first search's.
+        const secondSubmission = page.waitForResponse(
+            (response) =>
+                isSearchResponse(response) &&
+                (response.request().postDataJSON() as {query?: string})
+                    .query === secondQuery,
+        );
+        await page.getByTestId("search-query").fill(secondQuery);
+        await page.getByTestId("search-submit").click();
+        const response = await secondSubmission;
+        expect(response.status()).toBe(200);
+        expect(response.request().postDataJSON()).toMatchObject({
+            query: secondQuery,
+        });
+        expect(new URL(page.url()).searchParams.get("query")).toBe(secondQuery);
+        await expect(page.getByTestId("search-query")).toHaveValue(secondQuery);
     });
 
     test("should warn when indexer API hit or download limits are nearly exhausted", async ({

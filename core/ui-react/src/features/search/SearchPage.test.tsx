@@ -84,6 +84,21 @@ const embyBootstrap = {
     },
 };
 
+// FM-051 deep-link cases: a media category with no `emby` configuration, so
+// the Emby-availability check stays inert and doesn't require mocking a
+// third endpoint.
+const mediaBootstrap = {
+    ...bootstrap,
+    safeConfig: {
+        ...bootstrap.safeConfig,
+        categoriesConfig: {
+            ...bootstrap.safeConfig.categoriesConfig,
+            categories: [{name: "Movies", searchType: "MOVIE"}],
+            defaultCategory: "Movies",
+        },
+    },
+};
+
 function embySearch(): void {
     router.search = {category: "Movies", title: "Movie", tmdbId: "42"};
 }
@@ -598,6 +613,255 @@ describe("SearchPage", () => {
             indexers: ["Configured"],
             loadAll: false,
             searchRequestId: expect.any(Number),
+        });
+    });
+
+    // FM-051: submitting two distinct plain-text searches back-to-back in
+    // one session must send each search's own text, not resubmit the
+    // first search's stale text. This reproduces the round trip a real
+    // navigation performs -- the router is mocked here, so the test feeds
+    // the recorded `navigate` argument back into `router.search` and
+    // re-renders to trigger the real `key={JSON.stringify(initialValues)}`
+    // remount, which is what a real `navigate()` call does. Fixing this
+    // defect means `AutoSubmitFromRoute` now genuinely re-fires for the
+    // first search's own (now-changed) URL on that remount -- see the
+    // effect's doc comment and this task's Out Of Scope. That is expected
+    // and is not asserted on; every assertion below is on request/URL/box
+    // *content*, never on how many requests were issued.
+    it("should submit each of two consecutive searches with its own query text, not the first search's stale text", async () => {
+        const fetchImplementation = vi.fn((url: RequestInfo | URL) =>
+            Promise.resolve(
+                new Response(
+                    JSON.stringify(
+                        String(url).includes("forsearching")
+                            ? []
+                            : responseEnvelope,
+                    ),
+                    {headers: {"Content-Type": "application/json"}},
+                ),
+            ),
+        );
+        const transport = new ApiTransport("/hydra/", fetchImplementation);
+        const rendered = render(
+            <SearchPage
+                bootstrap={bootstrap}
+                transport={transport}
+                liveTransport={immediatelyUnavailableLiveTransport}
+            />,
+        );
+
+        fireEvent.change(screen.getByLabelText("Search"), {
+            target: {value: "fm051 first query alpha"},
+        });
+        fireEvent.click(screen.getByTestId("search-submit"));
+        await waitFor(() => expect(router.navigate).toHaveBeenCalled());
+        expect(router.navigate).toHaveBeenLastCalledWith({
+            to: "/",
+            search: expect.objectContaining({
+                query: "fm051 first query alpha",
+            }),
+        });
+
+        // Simulate what a real router does after `navigate()`: the URL now
+        // carries the first search's canonical criteria, and re-rendering
+        // with that as the route's `search` remounts the form via its
+        // `key={JSON.stringify(initialValues)}`.
+        const navigatedSearch = router.navigate.mock.calls[0]?.[0]?.search as
+            | Record<string, unknown>
+            | undefined;
+        router.search = navigatedSearch ?? {};
+        rendered.rerender(
+            <SearchPage
+                bootstrap={bootstrap}
+                transport={transport}
+                liveTransport={immediatelyUnavailableLiveTransport}
+            />,
+        );
+
+        // Deep-link back-compatibility: the remounted box shows the first
+        // search's own text, restored from the URL it just wrote.
+        expect(screen.getByLabelText("Search")).toHaveValue(
+            "fm051 first query alpha",
+        );
+
+        fireEvent.change(screen.getByLabelText("Search"), {
+            target: {value: "fm051 second query beta"},
+        });
+        fireEvent.click(screen.getByTestId("search-submit"));
+
+        await waitFor(() => {
+            const secondRequest = searchRequestCalls(fetchImplementation).find(
+                (call) =>
+                    (
+                        JSON.parse((call[1] as RequestInit).body as string) as {
+                            query?: string;
+                        }
+                    ).query === "fm051 second query beta",
+            );
+            expect(secondRequest).toBeDefined();
+        });
+        expect(router.navigate).toHaveBeenLastCalledWith({
+            to: "/",
+            search: expect.objectContaining({
+                query: "fm051 second query beta",
+            }),
+        });
+        expect(screen.getByLabelText("Search")).toHaveValue(
+            "fm051 second query beta",
+        );
+    });
+
+    // FM-051 deep-link back-compatibility case 1 (non-media category) is
+    // already exercised by "should execute a search encoded in a plain
+    // bookmarked or typed URL..." above.
+
+    it("should restore and execute a bare `query` deep link for a media category via the title mirror", async () => {
+        // FM-051 deep-link case 2. This works only because `valuesFromSearch`
+        // mirrors a bare `query` param into `title` -- the field the visible
+        // box is actually registered to for a media category. If that
+        // mirror were removed, this deep link would regress to an empty
+        // search, which is exactly the failure mode this case pins.
+        router.search = {
+            query: "fm051 media deep link",
+            category: "Movies",
+            indexers: "Configured",
+        };
+        const fetchImplementation = vi.fn((url: RequestInfo | URL) =>
+            Promise.resolve(
+                new Response(
+                    JSON.stringify(
+                        String(url).includes("forsearching")
+                            ? []
+                            : responseEnvelope,
+                    ),
+                    {headers: {"Content-Type": "application/json"}},
+                ),
+            ),
+        );
+        render(
+            <SearchPage
+                bootstrap={mediaBootstrap}
+                transport={new ApiTransport("/hydra/", fetchImplementation)}
+                liveTransport={immediatelyUnavailableLiveTransport}
+            />,
+        );
+        expect(screen.getByLabelText("Search")).toHaveValue(
+            "fm051 media deep link",
+        );
+        await waitFor(() =>
+            expect(searchRequestCalls(fetchImplementation)).toHaveLength(1),
+        );
+        expect(searchRequestBody(fetchImplementation)).toEqual({
+            query: "fm051 media deep link",
+            category: "Movies",
+            indexers: ["Configured"],
+            loadAll: false,
+            searchRequestId: expect.any(Number),
+        });
+    });
+
+    it("should restore and execute an identifier deep link with a title and an additional query unchanged", async () => {
+        // FM-051 deep-link case 3: `title` and `query` are both explicit, so
+        // no mirroring applies -- the box shows the title, the additional
+        // filter field shows the (additional) query, and the request keeps
+        // carrying both exactly as it does today.
+        router.search = {
+            query: "fm051 identifier extra",
+            title: "fm051 identifier title",
+            imdbId: "tt9999999",
+            category: "Movies",
+            indexers: "Configured",
+        };
+        const fetchImplementation = vi.fn((url: RequestInfo | URL) =>
+            Promise.resolve(
+                new Response(
+                    JSON.stringify(
+                        String(url).includes("forsearching")
+                            ? []
+                            : responseEnvelope,
+                    ),
+                    {headers: {"Content-Type": "application/json"}},
+                ),
+            ),
+        );
+        render(
+            <SearchPage
+                bootstrap={mediaBootstrap}
+                transport={new ApiTransport("/hydra/", fetchImplementation)}
+                liveTransport={immediatelyUnavailableLiveTransport}
+            />,
+        );
+        expect(screen.getByLabelText("Search")).toHaveValue(
+            "fm051 identifier title",
+        );
+        expect(screen.getByTestId("additional-query")).toHaveValue(
+            "fm051 identifier extra",
+        );
+        await waitFor(() =>
+            expect(searchRequestCalls(fetchImplementation)).toHaveLength(1),
+        );
+        expect(searchRequestBody(fetchImplementation)).toEqual({
+            query: "fm051 identifier extra",
+            title: "fm051 identifier title",
+            imdbId: "tt9999999",
+            category: "Movies",
+            indexers: ["Configured"],
+            loadAll: false,
+            searchRequestId: expect.any(Number),
+        });
+    });
+
+    // FM-051 deep-link case 4, first half: a Search History repeat.
+    it("should repeat a history entry recording a title and a query but no identifier unchanged", async () => {
+        // Explicitly Out Of Scope for FM-051: `submit()`'s leading
+        // `values.additionalQuery ||` term still wins the request's query
+        // over the shared derivation, and `canonicalSearch` still drops
+        // `additionalQuery` from the URL for a no-identifier media search.
+        // This pins that pre-existing, deliberately-preserved disagreement
+        // byte-for-byte, not just the repeat mechanism.
+        router.search = {
+            repeat: "history",
+            category: "Movies",
+            title: "fm051 repeat title",
+            query: "fm051 repeat query",
+            indexers: "Configured",
+        };
+        const fetchImplementation = vi.fn((url: RequestInfo | URL) =>
+            Promise.resolve(
+                new Response(
+                    JSON.stringify(
+                        String(url).includes("forsearching")
+                            ? []
+                            : responseEnvelope,
+                    ),
+                    {headers: {"Content-Type": "application/json"}},
+                ),
+            ),
+        );
+        render(
+            <SearchPage
+                bootstrap={mediaBootstrap}
+                transport={new ApiTransport("/hydra/", fetchImplementation)}
+                liveTransport={immediatelyUnavailableLiveTransport}
+            />,
+        );
+        await waitFor(() =>
+            expect(searchRequestCalls(fetchImplementation)).toHaveLength(1),
+        );
+        expect(searchRequestBody(fetchImplementation)).toEqual({
+            query: "fm051 repeat query",
+            category: "Movies",
+            indexers: ["Configured"],
+            loadAll: false,
+            searchRequestId: expect.any(Number),
+        });
+        expect(router.navigate).toHaveBeenCalledWith({
+            to: "/",
+            search: {
+                query: "fm051 repeat title",
+                category: "Movies",
+                indexers: "Configured",
+            },
         });
     });
 

@@ -8,8 +8,10 @@ import {
 import {afterEach, describe, expect, it, vi} from "vitest";
 
 import {createCategoryCatalog} from "../../../domain/categories/catalog";
+import type {SearchFormValues} from "./SearchWorkspace";
 import {
     canonicalSearch,
+    nonIdentifierQueryText,
     SearchWorkspace,
     valuesFromSearch,
 } from "./SearchWorkspace";
@@ -37,6 +39,25 @@ const catalog = createCategoryCatalog({
     indexers: [{name: "Mock", preselect: true}],
 });
 
+const emptyValues: SearchFormValues = {
+    query: "",
+    category: "All",
+    minage: "",
+    maxage: "",
+    minsize: "",
+    maxsize: "",
+    title: "",
+    additionalQuery: "",
+    season: "",
+    episode: "",
+    imdbId: "",
+    tmdbId: "",
+    tvdbId: "",
+    tvmazeId: "",
+    tvrageId: "",
+    indexers: [],
+};
+
 describe("SearchWorkspace", () => {
     afterEach(cleanup);
 
@@ -53,25 +74,36 @@ describe("SearchWorkspace", () => {
             minsize: "20",
             maxsize: "200",
         });
+        // `category: "Cinema"` (searchType MOVIE) with text in `query` and an
+        // empty `title` is a combination the form itself cannot produce: the
+        // visible `search-query` input registers to `title` for a media
+        // category, never to `query` (FM-051). The reachable equivalent --
+        // the text where the form actually puts it -- is `title: "hello"`,
+        // `query: ""`; the corrected derivation reads that combination and
+        // still resolves the canonical `query` param to "hello", so the
+        // assertion below is unchanged.
         expect(
-            canonicalSearch({
-                query: "hello",
-                category: "Cinema",
-                minage: "",
-                maxage: "",
-                minsize: "",
-                maxsize: "",
-                title: "",
-                additionalQuery: "",
-                season: "",
-                episode: "",
-                imdbId: "",
-                tmdbId: "",
-                tvdbId: "",
-                tvmazeId: "",
-                tvrageId: "",
-                indexers: ["Mock"],
-            }),
+            canonicalSearch(
+                {
+                    query: "",
+                    category: "Cinema",
+                    minage: "",
+                    maxage: "",
+                    minsize: "",
+                    maxsize: "",
+                    title: "hello",
+                    additionalQuery: "",
+                    season: "",
+                    episode: "",
+                    imdbId: "",
+                    tmdbId: "",
+                    tvdbId: "",
+                    tvmazeId: "",
+                    tvrageId: "",
+                    indexers: ["Mock"],
+                },
+                catalog,
+            ),
         ).toEqual({query: "hello", category: "Cinema", indexers: "Mock"});
     });
 
@@ -92,13 +124,167 @@ describe("SearchWorkspace", () => {
             imdbId: "tt1234567",
             tmdbId: "42",
         });
-        expect(canonicalSearch(restored)).toMatchObject({
+        expect(canonicalSearch(restored, catalog)).toMatchObject({
             query: "extended edition",
             category: "Cinema",
             title: "Example Movie",
             imdbId: "tt1234567",
             tmdbId: "42",
         });
+    });
+
+    // FM-051: `nonIdentifierQueryText` is the single shared derivation for
+    // which field's text a non-identifier search submits. It must always
+    // select the field the visible `search-query` input is actually
+    // registered to -- `title` for a media category, `query` otherwise --
+    // and never fall back to the sibling field, even when that sibling
+    // field still holds stale text mirrored or left over from an earlier
+    // search in the same session.
+    describe("nonIdentifierQueryText", () => {
+        it("selects the query field for a non-media category, ignoring a stale mirrored title", () => {
+            // The exact FM-051 defect input: a non-media category search
+            // ("All") followed by a second, different search must submit
+            // its own text ("beta"), not the stale "alpha" left in `title`
+            // by `valuesFromSearch`'s query-into-title mirror.
+            expect(
+                nonIdentifierQueryText(
+                    {
+                        ...emptyValues,
+                        category: "All",
+                        query: "beta",
+                        title: "alpha",
+                    },
+                    catalog,
+                ),
+            ).toBe("beta");
+        });
+
+        it("selects the title field for a media category, ignoring a stale query", () => {
+            // The mirror of the defect: a media category ("Cinema") search
+            // must submit its own text ("alpha"), not a stale "beta" left
+            // in `query`.
+            expect(
+                nonIdentifierQueryText(
+                    {
+                        ...emptyValues,
+                        category: "Cinema",
+                        title: "alpha",
+                        query: "beta",
+                    },
+                    catalog,
+                ),
+            ).toBe("alpha");
+        });
+
+        it("resolves to empty text for a non-media category with an empty box, ignoring a stale title", () => {
+            expect(
+                nonIdentifierQueryText(
+                    {
+                        ...emptyValues,
+                        category: "All",
+                        query: "",
+                        title: "alpha",
+                    },
+                    catalog,
+                ),
+            ).toBe("");
+        });
+
+        it("resolves to empty text for a media category with an empty box, ignoring a stale query", () => {
+            // This is the categoryChanged manifestation of the defect:
+            // searching in "All", switching to "Cinema", and submitting an
+            // empty box must not resurrect the "All" search's stale query.
+            expect(
+                nonIdentifierQueryText(
+                    {
+                        ...emptyValues,
+                        category: "Cinema",
+                        title: "",
+                        query: "alpha",
+                    },
+                    catalog,
+                ),
+            ).toBe("");
+        });
+
+        it("resolves a TV media category the same way as a movie category", () => {
+            expect(
+                nonIdentifierQueryText(
+                    {
+                        ...emptyValues,
+                        category: "Series",
+                        title: "show",
+                        query: "stale",
+                    },
+                    catalog,
+                ),
+            ).toBe("show");
+        });
+    });
+
+    it("should have canonicalSearch resolve the URL's query param the same way, never the stale sibling field", () => {
+        expect(
+            canonicalSearch(
+                {
+                    ...emptyValues,
+                    category: "All",
+                    indexers: ["Mock"],
+                    query: "beta",
+                    title: "alpha",
+                },
+                catalog,
+            ),
+        ).toEqual({category: "All", query: "beta", indexers: "Mock"});
+        expect(
+            canonicalSearch(
+                {
+                    ...emptyValues,
+                    category: "Cinema",
+                    indexers: ["Mock"],
+                    title: "alpha",
+                    query: "beta",
+                },
+                catalog,
+            ),
+        ).toEqual({category: "Cinema", query: "alpha", indexers: "Mock"});
+    });
+
+    it("should not resubmit a stale query after switching from a non-media to a media category with an empty box", async () => {
+        // FM-051's second manifestation: `categoryChanged` clears `title`
+        // but never `query`. Searching in "All" (which fills `query`),
+        // switching to "Cinema" (a media category, whose box is bound to
+        // `title`), and submitting the now-empty box must not resurrect the
+        // "All" search's stale `query` text -- the shared derivation never
+        // reads `query` for a media category, so it does not matter that
+        // `categoryChanged` leaves it untouched.
+        const submitted = vi.fn();
+        render(
+            <SearchWorkspace
+                catalog={catalog}
+                initialValues={valuesFromSearch({}, catalog)}
+                onSubmit={submitted}
+                autocomplete={vi.fn()}
+            />,
+        );
+        fireEvent.change(screen.getByTestId("search-query"), {
+            target: {value: "fm051 stale all query"},
+        });
+        fireEvent.mouseDown(screen.getByRole("combobox", {name: "Category"}));
+        fireEvent.click(screen.getByTestId("search-category-option-Cinema"));
+        expect(screen.getByTestId("search-query")).toHaveValue("");
+        fireEvent.click(screen.getByTestId("search-submit"));
+        await waitFor(() =>
+            expect(submitted.mock.calls[0]?.[0]).toEqual(
+                expect.objectContaining({
+                    category: "Cinema",
+                    title: "",
+                    query: "fm051 stale all query",
+                }),
+            ),
+        );
+        expect(
+            canonicalSearch(submitted.mock.calls[0][0], catalog).query,
+        ).toBeUndefined();
     });
 
     it("should submit valid numeric criteria", async () => {
