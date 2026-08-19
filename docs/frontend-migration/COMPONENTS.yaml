@@ -230,6 +230,35 @@ components:
       - F-SEARCH-DOWNLOADS
     classification: feature_specific
     state: partial
+  - id: C-HISTORY-REFINE-BAR
+    responsibility: Shared stats-history refine bar -- the single filter surface above every history table, declared as the filter kinds org.nzbhydra.historystats.History supports (time range, freetext, multi-select checkboxes, boolean,
+      number range) with active-filter count and clear-all; it matches the search refine sidebar's token and structure language through theme.ts without sharing its code or its client-side ResultFilters state
+    legacy:
+      - core/ui-src/js/directives/dataTableDirectives.js
+      - core/ui-src/html/states/download-history.html
+      - core/ui-src/html/states/search-history.html
+      - core/ui-src/html/states/notification-history.html
+    target: core/ui-react/src/features/stats/history/refine
+    consumers:
+      - F-HISTORY-DOWNLOADS
+      - F-HISTORY-SEARCHES
+      - F-HISTORY-NOTIFICATIONS
+    classification: feature_specific
+    state: planned
+  - id: C-HISTORY-REQUEST
+    responsibility: Shared HistoryRequest construction (page, limit, filterModel, sortModel, distinct, onlyCurrentUser) and paged-response envelope validation for every org.nzbhydra.historystats.HistoryWeb endpoint, so each history route
+      declares dimensions instead of building its own filter model
+    legacy:
+      - core/ui-src/js/stats-service.js
+      - core/ui-src/js/search-history-service.js
+      - core/ui-src/js/directives/dataTableDirectives.js
+    target: core/ui-react/src/api/history
+    consumers:
+      - F-HISTORY-DOWNLOADS
+      - F-HISTORY-SEARCHES
+      - F-HISTORY-NOTIFICATIONS
+    classification: shared_hydra
+    state: planned
   - id: C-SECRET-INPUT
     responsibility: Masked secret editing with unchanged-secret semantics
     legacy:

@@ -18,7 +18,10 @@ None.
 
 ## Upcoming
 
-None.
+- FM-056: Shared History Refine Bar (Download History Adoption) — registers `C-HISTORY-REFINE-BAR` and `C-HISTORY-REQUEST`,
+  replaces `/stats/downloads`'s filter row with the refine bar, and routes its requests through the shared wrapper. No
+  dependencies.
 
-Planned but not next: FM-023 (Notification History Route), FM-024 (Statistics Dashboard), FM-033 (Durable Visual Evidence
+Planned but not next: FM-057 (Search History Adopts The Shared Refine Bar — needs FM-056), FM-023 (Notification History Route —
+now consumes the shared refine bar and wrapper, needs FM-056), FM-024 (Statistics Dashboard), FM-033 (Durable Visual Evidence
 Output — re-scope against the ADR-0014 screenshot gate before starting).

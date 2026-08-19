@@ -125,3 +125,20 @@ With ADR-0014 restoring stock inputs, the text-input/select family indicates foc
 where MUI renders nothing by itself: `ButtonBase` (Button/IconButton/Tab), `SwitchBase` (Checkbox/Radio/Switch),
 `MenuItem`/`ListItemButton` (inset), `Chip`, `Link`, and the global `:focus-visible` rule for unclassed elements. Feature code
 must not suppress the resting or focused input border; the focus gate and source guard are updated to assert this split.
+
+## ADR-0016 — History refine bar multi-select semantics (accepted 2026-08-19)
+
+The legacy history filters preselect every value of a `checkboxes-filter` and offer an invert control
+(`download-history.html` indexer/status, `search-history.html` category, `notification-history.html` event type). The owner
+decided the React refine bar does not carry that model forward.
+
+- A multi-select dimension starts with **nothing selected**, and an empty selection means **no filter** — all entries show.
+  Selecting one or more values narrows to exactly those. There is no preselect-all state and no invert control; deselecting
+  everything returns to showing all.
+- This is the semantics of the shared bar's multi-select kind (`C-HISTORY-REFINE-BAR`), not a per-route choice: download
+  history's indexer and result, search history's category, and notification history's event types all follow it, as does any
+  history dimension added later.
+- Consequence for parity: an entry's absence from a selection is never a filter. A route must not send a filter value list
+  that merely enumerates every known option — an unselected dimension sends no `filterModel` entry at all.
+- Download history's indexer dimension therefore becomes multi-select over the known indexer list, replacing the freetext
+  contains-match the React route ships today (`api/history/downloads.ts` sends `filterType: "freetext"` on column `name`).

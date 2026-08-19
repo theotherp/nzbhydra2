@@ -57,7 +57,8 @@ against the acceptance criteria and the actual diff before the coordinator marks
 `GUI-STATUS.md`, and the registries in the same commit. Done packets are then deleted from `tasks/` (git keeps them).
 
 - A packet is ≤ 80 lines: outcome, acceptance criteria, `Files Allowed To Modify` (the write boundary — reads are unrestricted),
-  verification commands, linked IDs.
+  verification commands, linked IDs. A closing `Agent Routing` section may add ≤ 15 lines: a suggested model tier and a thin
+  invocation prompt per worker role. Routing is advisory, sits outside the contract, and never restates it.
 - Packets are vertical capabilities: route, UI state, API adaptation, tests, and registry updates together. Split only at
   genuine dependencies or independent capabilities, never by source file or layer.
 - Agents decide routine, reversible implementation details themselves. Escalate only for: conflicting requirements, a needed

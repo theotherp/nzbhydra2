@@ -45,7 +45,7 @@ For each task in dependency order:
 5. If a predecessor or specialized agent reports `DECISION REQUIRED`, use the AskUserQuestion tool to present the decision question and viable options to the human, with the recommendation first. Record the explicit response as a
    `DECISIONS.md` entry yourself, then invoke `migration-task-designer` to link the entry and refine the affected packet before resuming. If the human declines, keep dependent work blocked and report it.
 6. If a predecessor or specialized agent explicitly identifies the task packet as stale, incomplete, or ambiguous, invoke `migration-task-designer`.
-7. If the task is not already in `review`, invoke a fresh `migration-implementer`.
+7. If the task is not already in `review`, invoke a fresh `migration-implementer` at the tier its packet's `Agent Routing` section suggests (see *Agent routing*).
 8. When the task reaches `review`, invoke a fresh `migration-reviewer` with:
     - the task ID and migration contracts;
     - the Git baseline;
@@ -105,6 +105,16 @@ If a worker reports concurrent changes or attribution ambiguity, compare every r
 
 Stop and report only when resolution requires human architecture/contract input, unavailable credentials or infrastructure, destructive action, a positively evidenced concurrent conflict, or an authoritative boundary that cannot be
 satisfied.
+
+## Agent routing
+
+A packet's `Agent Routing` section suggests a model tier and a short invocation prompt for each worker role. Pass the suggested tier as the Agent tool's `model` parameter, and include that role's prompt alongside the packet reference, baseline,
+and attribution. Where a packet has no such section, use the tier in the agent's own definition.
+
+The suggestion is not binding. Override it when the task's actual state contradicts it — a review that found conceptual rather than mechanical defects justifies raising the fixer's tier; a task that collapsed to a mechanical change justifies
+lowering it — and record every override and its reason in the final report. Never route a reviewer below the implementer's tier for a packet that introduces or changes a shared component, API wrapper, or contract.
+
+The routing section never overrides the packet's contract, scope, or verification requirements.
 
 ## Task attribution
 

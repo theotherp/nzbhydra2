@@ -42,3 +42,14 @@ One externally observable or architecturally complete result, and why this scope
 
 Implementer fills `../templates/handoff.md` and marks the task `review`; a fresh reviewer fills `../templates/review.md`; only
 the coordinator marks `done`.
+
+## Agent Routing
+
+Suggestions only; the coordinator may override and records why. Not part of the contract — the sections above govern.
+
+- Implementer: `sonnet` | `opus` | `fable` — one line of justification drawn from this packet's demands
+- Reviewer: tier and justification (at least the implementer's tier for a shared component, wrapper, or contract)
+- Fixer: tier and justification
+
+Implementer prompt: where to start reading, the trap to avoid, the claim to prove first. Never restates the sections above.
+Reviewer prompt: what to check hardest, and which evidence to distrust.
