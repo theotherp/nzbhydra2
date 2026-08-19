@@ -25,16 +25,18 @@ Qualifies:
 
 - Mechanically verifiable changes with no behavioral surface: locator and selector-string repairs in tests, typo and path corrections, comment and documentation fixes, formatter output, lint/ignore/config files, dead code removal, and
   mechanical renames.
+- Styling, markup, or UX polish inside existing features that changes no behavior, no contract, and no `data-testid` — restyling a control, fixing spacing/labels/overlap, moving markup toward the `/core/ui-react/AGENTS.md`
+  *UI Conventions* (ADR-0014). Rendering changes require the screenshot strip per `docs/frontend-migration/README.md` *Visual Gate*, referenced from the ledger entry.
 - One genuinely contained bugfix: a defect whose repair is confined to a single module or function, **accompanied by a regression test that fails before the fix and passes after it**. The test is not optional and not negotiable — it is
   what makes an unreviewed behavioral change acceptable. If the fix cannot be covered by a test you can actually run here, it does not qualify.
 
 Refuses, and hands off to `/fm-orchestrate`:
 
 - A behavioral change spanning multiple modules, or one whose blast radius you cannot state precisely.
-- Any edit to a `FEATURES.yaml`, `COMPONENTS.yaml`, or `APIS.yaml` contract, acceptance criterion, visual record, variance, or human-acceptance metadata.
+- Any edit to a `FEATURES.yaml`, `COMPONENTS.yaml`, or `APIS.yaml` contract.
 - A new, renamed, or removed `data-testid` or selector contract.
-- Any new user-observable capability or surface, or a change to an existing one.
-- Anything touching an accepted ADR's subject matter, or implying a new decision. Report `ADR REQUIRED` and stop.
+- A new user-observable capability, or a behavioral change to an existing one.
+- Anything touching a `DECISIONS.md` entry's subject matter, or implying a new decision. Report `DECISION REQUIRED` and stop.
 - Anything the standard gates cannot fully verify, or that needs infrastructure you cannot bring up.
 
 When a fix refuses, say which criterion it failed and what the packet would need to cover. Do not shave the fix down to fit the gate — a narrowed change that leaves the real defect in place is worse than an honest handoff.

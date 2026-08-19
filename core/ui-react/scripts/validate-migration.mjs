@@ -1,4 +1,3 @@
-import {existsSync} from "node:fs";
 import {access, readdir, readFile} from "node:fs/promises";
 import path from "node:path";
 import {fileURLToPath} from "node:url";
@@ -25,11 +24,13 @@ const taskStatuses = new Set([
     "blocked",
     "done",
 ]);
-export const visualApplicability = new Set(["applicable", "not_applicable"]);
-export const visualStatuses = new Set(["unassessed", "proposed", "accepted"]);
-// Must stay in step with `tests/system/tests/visualEvidence.ts`'s
-// `visualViewports`, which is the harness-side registry of the same names.
-const visualViewportNames = new Set(["desktop", "mobile", "desktop-wide"]);
+export const parityStates = new Set([
+    "inventoried",
+    "planned",
+    "partial",
+    "done",
+    "unverified_legacy_api",
+]);
 
 function report(message) {
     errors.push(message);
@@ -109,26 +110,22 @@ function taskField(contents, label, nextLabel) {
     return match?.[1].trim() ?? null;
 }
 
-function taskIds(value) {
-    return value === "None" ? [] : value.split(",").map((id) => id.trim());
-}
-
 function validateTaskIdList(taskFile, label, value, taskFiles) {
     if (value === null) {
         report(`${taskFile} is missing ${label}`);
-        return [];
+        return;
     }
 
     if (value === "None") {
-        return [];
+        return;
     }
 
-    const ids = taskIds(value);
+    const ids = value.split(",").map((id) => id.trim());
     if (ids.length === 0 || ids.some((id) => !/^FM-\d{3}$/.test(id))) {
         report(
             `${taskFile} ${label} must contain only comma-separated FM-NNN IDs or None`,
         );
-        return [];
+        return;
     }
 
     for (const id of ids) {
@@ -136,7 +133,6 @@ function validateTaskIdList(taskFile, label, value, taskFiles) {
             report(`${taskFile} ${label} references unknown task ${id}`);
         }
     }
-    return ids;
 }
 
 export function statusSections(contents) {
@@ -174,205 +170,9 @@ function pathsFor(value) {
     return [];
 }
 
-function evidencePath(value) {
-    return value.split("#", 1)[0];
-}
-
-function isContainedProjectPath(recordPath) {
-    const resolvedPath = path.resolve(projectRoot, recordPath);
-    return (
-        !path.isAbsolute(recordPath) &&
-        (resolvedPath === projectRoot ||
-            resolvedPath.startsWith(`${projectRoot}${path.sep}`)) &&
-        existsSync(resolvedPath)
-    );
-}
-
-function hasValidIsoCalendarDate(value) {
-    if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-        return false;
-    }
-
-    const [year, month, day] = value.split("-").map(Number);
-    const date = new Date(0);
-    date.setUTCFullYear(year, month - 1, day);
-    return (
-        date.getUTCFullYear() === year &&
-        date.getUTCMonth() === month - 1 &&
-        date.getUTCDate() === day
-    );
-}
-
-function hasHumanAcceptanceMetadata(acceptance) {
-    return (
-        acceptance &&
-        typeof acceptance === "object" &&
-        !Array.isArray(acceptance) &&
-        typeof acceptance.decision === "string" &&
-        acceptance.decision.trim().length > 0 &&
-        typeof acceptance.accepted_by === "string" &&
-        acceptance.accepted_by.trim().length > 0 &&
-        hasValidIsoCalendarDate(acceptance.accepted_on)
-    );
-}
-
-export function validateVisualRecords(records, reportError = report) {
-    for (const record of records) {
-        const visual = record.visual;
-        if (!visual || typeof visual !== "object" || Array.isArray(visual)) {
-            reportError(`FEATURES.yaml ${record.id} requires a visual record`);
-            continue;
-        }
-        if (!visualApplicability.has(visual.applicability)) {
-            reportError(
-                `FEATURES.yaml ${record.id} visual applicability must be applicable or not_applicable`,
-            );
-            continue;
-        }
-        if (!visualStatuses.has(visual.status)) {
-            reportError(
-                `FEATURES.yaml ${record.id} visual status must be unassessed, proposed, or accepted`,
-            );
-            continue;
-        }
-        if (
-            visual.applicability === "not_applicable" &&
-            visual.status !== "unassessed"
-        ) {
-            reportError(
-                `FEATURES.yaml ${record.id} non-applicable visual records must remain unassessed`,
-            );
-        }
-
-        if (visual.status === "unassessed") {
-            continue;
-        }
-
-        const contract = visual.contract;
-        if (
-            !contract ||
-            typeof contract !== "object" ||
-            Array.isArray(contract)
-        ) {
-            reportError(
-                `FEATURES.yaml ${record.id} visual ${visual.status} record requires a contract`,
-            );
-            continue;
-        }
-        if (!Array.isArray(contract.states) || contract.states.length === 0) {
-            reportError(
-                `FEATURES.yaml ${record.id} visual contract requires scoped states`,
-            );
-        }
-        if (
-            !Array.isArray(contract.viewports) ||
-            contract.viewports.length === 0 ||
-            contract.viewports.some(
-                (viewport) =>
-                    !visualViewportNames.has(viewport?.name) ||
-                    !Number.isInteger(viewport?.width) ||
-                    !Number.isInteger(viewport?.height),
-            )
-        ) {
-            reportError(
-                `FEATURES.yaml ${record.id} visual contract requires named integer viewports`,
-            );
-        }
-        if (
-            typeof contract.setup !== "string" ||
-            contract.setup.trim().length === 0
-        ) {
-            reportError(
-                `FEATURES.yaml ${record.id} visual contract requires deterministic setup`,
-            );
-        }
-        if (
-            !Array.isArray(contract.geometry_checks) ||
-            contract.geometry_checks.length === 0 ||
-            contract.geometry_checks.some(
-                (check) =>
-                    typeof check !== "string" || check.trim().length === 0,
-            )
-        ) {
-            reportError(
-                `FEATURES.yaml ${record.id} visual contract requires geometry checks`,
-            );
-        }
-
-        for (const field of ["evidence", "snapshots"]) {
-            if (visual[field] === undefined) {
-                continue;
-            }
-            if (
-                !Array.isArray(visual[field]) ||
-                visual[field].some(
-                    (entry) =>
-                        typeof entry !== "string" ||
-                        !isContainedProjectPath(evidencePath(entry)),
-                )
-            ) {
-                reportError(
-                    `FEATURES.yaml ${record.id} visual ${field} must contain repository paths`,
-                );
-            }
-        }
-        if (!Array.isArray(visual.evidence) || visual.evidence.length === 0) {
-            reportError(
-                `FEATURES.yaml ${record.id} visual ${visual.status} record requires evidence`,
-            );
-        }
-        if (
-            visual.variances !== undefined &&
-            (!Array.isArray(visual.variances) ||
-                visual.variances.some(
-                    (variance) =>
-                        !variance ||
-                        typeof variance.description !== "string" ||
-                        variance.description.trim().length === 0 ||
-                        !["proposed", "accepted"].includes(variance.status),
-                ))
-        ) {
-            reportError(
-                `FEATURES.yaml ${record.id} visual variances must have description and status`,
-            );
-        }
-        if (visual.status === "accepted") {
-            const acceptance = visual.acceptance;
-            if (!hasHumanAcceptanceMetadata(acceptance)) {
-                reportError(
-                    `FEATURES.yaml ${record.id} accepted visual record requires human decision metadata`,
-                );
-            }
-            if (
-                visual.variances?.some(
-                    (variance) => variance.status !== "accepted",
-                )
-            ) {
-                reportError(
-                    `FEATURES.yaml ${record.id} accepted visual record cannot have unaccepted variances`,
-                );
-            }
-        }
-        if (
-            visual.variances?.some(
-                (variance) => variance.status === "accepted",
-            ) &&
-            (visual.status !== "accepted" ||
-                !hasHumanAcceptanceMetadata(visual.acceptance))
-        ) {
-            reportError(
-                `FEATURES.yaml ${record.id} accepted variance requires an accepted visual record with human decision metadata`,
-            );
-        }
-    }
-}
-
 async function validateRecordPaths(records, registryName) {
     for (const record of records) {
-        for (const field of ["target", "test"]) {
-            if (field === "target" && record.backlog) {
-                continue;
-            }
+        for (const field of ["target", "test", "tests"]) {
             for (const recordPath of pathsFor(record[field])) {
                 const resolvedPath = path.resolve(projectRoot, recordPath);
                 if (
@@ -383,6 +183,11 @@ async function validateRecordPaths(records, registryName) {
                     report(
                         `${registryName} ${record.id} ${field} must be contained in the project: ${recordPath}`,
                     );
+                    continue;
+                }
+                // `target` may name a future location for a record whose
+                // implementation does not exist yet; tests must exist.
+                if (field === "target") {
                     continue;
                 }
                 try {
@@ -397,36 +202,13 @@ async function validateRecordPaths(records, registryName) {
     }
 }
 
-function recordNeedsBacklog(record, tasks) {
-    const state = record.parity ?? record.state;
-    return (
-        ["inventoried", "partial", "planned", "unverified_legacy_api"].includes(
-            state,
-        ) &&
-        (!record.task || tasks.get(record.task)?.status === "done") &&
-        !record.backlog
-    );
-}
-
-function validateBacklog(records, registryName, tasks) {
+export function validateParity(records, reportError = report) {
     for (const record of records) {
-        if (recordNeedsBacklog(record, tasks)) {
-            report(
-                `${registryName} ${record.id} is unfinished without backlog ownership`,
+        const state = record.parity ?? record.state;
+        if (!parityStates.has(state)) {
+            reportError(
+                `FEATURES.yaml/COMPONENTS.yaml ${record.id} has unknown parity/state ${state}`,
             );
-        }
-        if (record.backlog?.task && !tasks.has(record.backlog.task)) {
-            report(
-                `${registryName} ${record.id} backlog references unknown task ${record.backlog.task}`,
-            );
-        }
-        if (record.backlog?.adr && !/^ADR-\d{4}$/.test(record.backlog.adr)) {
-            report(
-                `${registryName} ${record.id} backlog adr must use ADR-NNNN`,
-            );
-        }
-        if (record.backlog && !record.backlog.rationale) {
-            report(`${registryName} ${record.id} backlog requires a rationale`);
         }
     }
 }
@@ -483,8 +265,8 @@ async function validateTaskReferences(ids) {
         }
     }
 
-    for (const [taskId, task] of tasks) {
-        const dependsOn = validateTaskIdList(
+    for (const task of tasks.values()) {
+        validateTaskIdList(
             task.file,
             "Depends on",
             taskField(task.contents, "Depends on", "Blocks"),
@@ -496,7 +278,6 @@ async function validateTaskReferences(ids) {
             taskField(task.contents, "Blocks", "Decision Dependencies"),
             tasks,
         );
-        task.dependsOn = dependsOn;
     }
     return tasks;
 }
@@ -531,12 +312,6 @@ async function validateStatus(tasks) {
                 `${task.file} is ${task.status} but listed in an incompatible STATUS.md section`,
             );
         }
-        if (
-            !section &&
-            [...sections.values()].some((ids) => ids.includes(taskId))
-        ) {
-            report(`${task.file} is ${task.status} but listed in STATUS.md`);
-        }
     }
 }
 
@@ -554,20 +329,12 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
 
     validateActiveApiPaths(records[2]);
     validateAdoptedApiEvidence(records[2]);
+    validateParity(records[0]);
+    validateParity(records[1]);
     const tasks = await validateTaskReferences(ids);
     for (const [index, registry] of registries.entries()) {
-        for (const record of records[index]) {
-            if (record.task !== null && !tasks.has(record.task)) {
-                report(
-                    `${registry.file} ${record.id} references unknown task ${record.task}`,
-                );
-            }
-        }
         await validateRecordPaths(records[index], registry.file);
     }
-    validateVisualRecords(records[0]);
-    validateBacklog(records[0], "FEATURES.yaml", tasks);
-    validateBacklog(records[1], "COMPONENTS.yaml", tasks);
     await validateStatus(tasks);
 
     if (errors.length > 0) {

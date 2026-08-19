@@ -1,7 +1,7 @@
 # FM-024: Statistics Dashboard
 
 Status: planned Owner:
-Feature IDs: F-STATS-MAIN Component IDs: C-DATE-TIME API IDs: API-STATS-QUERY Depends on: FM-020 Blocks: None
+Feature IDs: F-STATS-MAIN Component IDs: C-DATE-TIME API IDs: API-STATS-QUERY Depends on: None Blocks: None
 
 ## Outcome
 

@@ -18,17 +18,15 @@ Default to substantial, independently reviewable vertical capabilities. Keep the
 user-observable result. Split only for a genuine dependency, independent product capability, separate runtime boundary, or an unresolved contract; never split merely by source file, layer, or trivial edit. Do not bundle unrelated features
 to make a task larger.
 
-Preserve existing migration architecture, ADRs, registries, and task intent. Use predecessor handoffs as durable new evidence and make the smallest necessary task-packet changes. Do not redesign planned work without a concrete reason,
-change architecture on your own, or implement the task.
+Preserve existing migration architecture, the decisions in `docs/frontend-migration/DECISIONS.md`, registries, and task intent. Use predecessor handoffs as durable new evidence and make the smallest necessary task-packet changes. Do not
+redesign planned work without a concrete reason, change architecture on your own, or implement the task. Keep packets at or under ~80 lines.
 
-For work governed by ADR-0006, define a feature-scoped semantic visual contract with deterministic setup, named viewports, geometry checks, evidence locations, optional narrow snapshots, and proposed variances. A task may require technical
-proposal/review evidence, but must reserve baseline and variance acceptance for an explicit human decision.
+UI-affecting packets require the screenshot strip per `docs/frontend-migration/README.md` *Visual Gate* and compliance with `/core/ui-react/AGENTS.md` *UI Conventions* (ADR-0014); do not write per-record visual contracts, geometry
+matrices, or variance bookkeeping into packets or registries.
 
-If reasonable alternatives would materially change a shared architecture or runtime boundary, API/authentication/transport contract, rollout/deployment, persistence/security, or project-wide quality strategy, return `ADR REQUIRED` with the
-decision question, repository evidence, viable options, affected task IDs, and a recommendation. Do not create the ADR yourself or choose an option. List only accepted ADRs as governing decisions under `Decision Dependencies`.
-
-When the coordinator supplies a proposed ADR for an existing task, record it in that task's blocking decision-dependency entry, mark the task `blocked`, and list it under `Blocked` in `STATUS.md` before the human decision is requested. When
-the coordinator supplies its acceptance, replace the blocking proposal with the accepted ADR, remove obsolete rejected/proposed entries, and restore the task to `planned` or `ready` only when all other prerequisites permit it.
+If reasonable alternatives would materially change a shared architecture or runtime boundary, API/authentication/transport contract, rollout/deployment, persistence/security, or project-wide quality strategy, return `DECISION REQUIRED`
+with the decision question, repository evidence, viable options, affected task IDs, and a recommendation. Do not choose an option; the owner decides in conversation and the coordinator records a short `DECISIONS.md` entry. List only
+recorded decision entries under `Decision Dependencies`.
 
 Return the created or refined task IDs, their dependency order, boundary rationale, changed task-contract details, and self-check result. Escalate unresolved architectural or scope questions.
 
@@ -44,9 +42,9 @@ You may refine:
 - verification requirements;
 - explicit scope boundaries;
 
-only when the refinement is already implied by the task Outcome, ADRs, registries, predecessor contracts, or other authoritative repository evidence.
+only when the refinement is already implied by the task Outcome, recorded decisions, registries, predecessor contracts, or other authoritative repository evidence.
 
-Do not introduce a new product, UX, architecture, API-contract, or migration decision merely to make the current implementation valid. If authoritative sources do not determine the choice, return `ADR REQUIRED` rather than asking the human
+Do not introduce a new product, UX, architecture, API-contract, or migration decision merely to make the current implementation valid. If authoritative sources do not determine the choice, return `DECISION REQUIRED` rather than asking the human
 an unstructured question.
 
 Do not fix implementation or rewrite factual implementation handoff evidence.

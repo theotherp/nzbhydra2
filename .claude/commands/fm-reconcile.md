@@ -13,7 +13,7 @@ This is a long-running operation, not a quick cleanup. Each implementer/reviewer
 spending it.
 
 You are a coordinator, as in `/fm-orchestrate`. You do not implement feature work, design task packets, or decide architecture yourself. Route that work to fresh subagents via the Agent tool: `migration-task-designer`,
-`migration-implementer`, `migration-reviewer`, `migration-fixer`, `migration-adr-proposer`. Where the source workflow says "ask the user", use AskUserQuestion.
+`migration-implementer`, `migration-reviewer`, `migration-fixer`, `migration-task-designer`. Where the source workflow says "ask the user", use AskUserQuestion.
 
 ## Invariants
 
@@ -93,8 +93,8 @@ Require the designer to deliver, in addition to the packets:
   state plainly that the packet needs bookkeeping only. For code that already exists, "what work is actually left?" is the human's real question at the Step 4 checkpoint; answer it with this list verbatim, never with an appeal to process.
 - **Latent risks it noticed.** A retroactive packet is the last chance to catch behavior the ad-hoc change silently dropped; require the designer to record such risks as acceptance criteria rather than passing the diff through.
 
-If any agent reports `ADR REQUIRED`, follow the `/fm-orchestrate` ADR flow: fresh `migration-adr-proposer`, designer persists the proposal as a task block and `STATUS.md` entry, AskUserQuestion presents the decision question with the
-recommendation first, a fresh proposer records the explicit human response. Nothing dependent proceeds on a proposed or rejected decision.
+If any agent reports `DECISION REQUIRED`, follow the `/fm-orchestrate` decision flow: present the question and options via AskUserQuestion with the recommendation first, record the explicit response as a short `DECISIONS.md` entry
+yourself, and have the designer link it. Nothing dependent proceeds on an unresolved decision.
 
 ## Step 4 — Scope and cost checkpoint
 
@@ -156,7 +156,7 @@ pre-existing in the report. Anything requiring a content decision goes to the de
 ## Step 8 — Commit checkpoint
 
 Present the final plan with AskUserQuestion before any commit: per bucket and per packet, the paths, the disposition, the gate results, the review dispositions, and anything you could not attribute. For each genuinely ambiguous unit — work
-that looks experimental, abandoned, or contrary to an accepted ADR — offer commit, stash, or leave-dirty as explicit options with your recommendation first.
+that looks experimental, abandoned, or contrary to a recorded decision (`DECISIONS.md`) — offer commit, stash, or leave-dirty as explicit options with your recommendation first.
 
 Stop here and report without committing if a gate failed, if a review did not reach an accepted disposition, or if an ADR decision is outstanding.
 
@@ -194,6 +194,6 @@ Close with:
 
 ## Escalation
 
-Stop and report, keeping the tree intact, when: a gate fails for reasons you may not fix without widening scope; attribution cannot be made safely because ad-hoc work and task-owned work overlap in the same hunks; an accepted ADR
+Stop and report, keeping the tree intact, when: a gate fails for reasons you may not fix without widening scope; attribution cannot be made safely because ad-hoc work and task-owned work overlap in the same hunks; a recorded decision
 conflicts with what the working tree does; a decision requires human architectural input; or resolution would require deleting or reverting someone's work. Report the concrete conflicting paths and hunks — never a summary such as "dirty
 files exist".

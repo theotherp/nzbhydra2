@@ -1,13 +1,12 @@
 # Maintenance Ledger
 
-Small, contained fixes made through `/fm-quickfix` — outside the task-packet pipeline, but gated, recorded, and committed like any other change.
+Single-session fixes made outside the task-packet pipeline — gated, recorded, and committed like any other change. See
+`README.md`, *Choosing A Mechanism*.
 
-This exists because packet overhead was causing debt to accumulate. A failing `search.spec.ts` locator survived FM-044, FM-045, and FM-041, each of which correctly reported it as out of scope and proposed a corrective packet that
-nobody wrote; a repo-wide `format:check` failure was carried as inherited debt across four handoffs the same way. When the cheapest available action costs a designer/implementer/reviewer chain, walking past a two-line defect is the
-rational choice. This ledger is the cheaper action, and it is what makes "has this already been dealt with?" answerable without reading every handoff.
-
-**What belongs here:** mechanical repairs with no behavioral surface, and single-module bugfixes that ship with a regression test. **What does not:** anything touching a registry contract, a selector or `data-testid`, a visual record,
-a user-observable capability, or an ADR. Those are task packets — see `README.md`, *Choosing A Mechanism*.
+**What belongs here:** styling, markup, and UX polish inside existing features; single-module bugfixes shipping a regression
+test; mechanical repairs. Rendering changes reference their screenshot strip. **What does not:** new capabilities, API/URL/
+selector contract changes, `data-testid` changes, persisted-data changes, cross-module behavior changes, or anything needing a
+`DECISIONS.md` entry. Those are task packets.
 
 Entries are append-only, newest last. Never rewrite an entry to reflect later work; add a new one that references it. This ledger records completed fixes, not intentions — candidates that have not been fixed live in the handoff that
 found them, or under *Open candidates* at the bottom.

@@ -7,41 +7,63 @@ These instructions apply to files under `core/ui-react` and supplement `/AGENTS.
 Before implementation, read:
 
 1. `/docs/frontend-migration/README.md`
-2. Your assigned `/docs/frontend-migration/tasks/FM-*.md`
-3. The ADRs and registry records linked by that task
+2. `/docs/frontend-migration/DECISIONS.md` (at minimum ADR-0002, ADR-0014, ADR-0015)
+3. For packet work: your assigned `/docs/frontend-migration/tasks/FM-*.md` and the registry records it links
 
-Do not infer migration requirements from conversation history. The linked files are mandatory starting points, not a restriction on repository reads. `Files Allowed To Modify` in the task is the write boundary.
+Do not infer migration requirements from conversation history. `Files Allowed To Modify` in a task is the write boundary; reads
+are unrestricted.
 
 ## Boundaries
 
 - Use React, TypeScript, Vite, MUI, TanStack Router/Query/Table, React Hook Form, and Zod as recorded in `ADR-0002`.
-- MUI is the only general visual component system.
-- Do not add Bootstrap, Tailwind, another component suite, another router, or another server-state library without an ADR.
+- MUI is the only general visual component system. Do not add Bootstrap, Tailwind, another component suite, another router, or
+  another server-state library without a new decision entry.
 - Search and configuration domain behavior must remain explicit application code.
 - Do not create a shared component, API wrapper, or storage abstraction without checking and updating the appropriate registry.
 - Prefer direct MUI usage over trivial wrappers.
 - Do not hardcode root-relative application, API, asset, login, logout, or WebSocket URLs.
 - Preserve stable legacy `data-testid` values when behavior is equivalent.
-- Keep backend DTO data separate from UI state.
-- Never edit generated API types or production bundles manually.
+- Keep backend DTO data separate from UI state. Never edit generated API types or production bundles manually.
+
+## UI Conventions (ADR-0014 / ADR-0015)
+
+The design language (palette, typography, density, radii, surface colors) lives in `src/app/theme.ts` — as palette tokens and
+component `styleOverrides`/`defaultProps`. Feature code uses standard components and gets the look from the theme.
+
+- **Standard component for a standard need.** A dropdown is `<TextField select>` (or `Select` with `InputLabel`); a text input
+  is `TextField`; never hand-assemble controls from `InputBase`/`Box`. `InputBase` is not imported outside `src/components`.
+- **Every input has a visible label.** Compact controls that genuinely cannot carry one keep an `aria-label`, but a visually
+  clipped/hidden label is never the default.
+- **No design literals in feature code.** No `#hex`, `rgba(...)`, `oklch(...)`, font families, or bespoke radii outside
+  `theme.ts`. Consume `palette.*` (including `palette.surfaces.*`) and theme shape/typography. No per-feature `*Styles.ts`
+  token files.
+- **Never restyle component internals.** Do not touch `.MuiOutlinedInput-notchedOutline`, clip labels, suppress borders, set
+  `disableRipple`, or author `outline`/`:focus-visible` styles in feature `sx`. Focus indication comes from the theme
+  (ADR-0013/0015). If a component looks wrong, fix the theme so every instance is fixed.
+- **Density via the theme**, not per-instance font sizes/paddings (`MuiTextField` defaults to `size="small"`, etc.).
+- **Deviation from stock MUI requires a written justification comment at the site.** Deviation from the mock's pixels requires
+  nothing.
+
+`npm run validate:focus-affordances` enforces the mechanical parts; the reviewer enforces the rest.
 
 ## Dependencies And Toolchain
 
-- Follow the runtime and development dependency policy in `/docs/frontend-migration/README.md`.
-- Use `dependencies` only for packages required by the shipped browser application. Build, lint, formatting, test, validation, and code-generation packages belong in `devDependencies`.
-- Treat the versions declared by the project as authoritative. Do not downgrade dependencies or weaken configuration for an older locally installed Node or npm.
-- Record dependency decisions and actual Node/npm versions in the structured handoff.
+- Runtime `dependencies` only for packages the shipped browser application requires; build/lint/test/codegen packages belong in
+  `devDependencies`. A new competing framework needs a decision entry; narrow dev tooling does not.
+- Treat the versions declared by the project as authoritative. Do not downgrade dependencies or weaken configuration for an
+  older locally installed Node or npm. Record actual Node/npm versions used for verification.
 
 ## Code Quality
 
-- Use strict TypeScript and avoid `any`; validate untrusted runtime data at boundaries.
-- Keep feature code inside its feature directory unless the task explicitly owns a registered shared abstraction.
-- Use TanStack Query for server state and ordinary React state or reducers for local UI/domain state. Do not introduce a global store by default.
-- Use React Hook Form for editable forms; do not duplicate form values into parallel component state without a documented reason.
-- Use semantic elements and preserve visible keyboard focus.
-- Add comments only for non-obvious domain constraints.
+- Strict TypeScript, no `any`; validate untrusted runtime data at boundaries.
+- Keep feature code inside its feature directory unless the task owns a registered shared abstraction.
+- TanStack Query for server state; ordinary React state or reducers for local UI state. No global store by default.
+- React Hook Form for editable forms; do not duplicate form values into parallel component state without a documented reason.
+- Use semantic elements. Add comments only for non-obvious domain constraints.
 
 ## Verification
 
-Run the exact focused and project-wide commands listed by the task. Do not weaken or suppress checks. Use the structured handoff template, record each command and result, and confirm only allowed files were modified. An implementation is
-handed off as `review`, not `done`.
+Run the gates relevant to the change (`npm run test`, `typecheck`, `lint`, `format:check`, `build`, `validate:migration`,
+`validate:focus-affordances`; system Playwright when behavior or rendering changed). Do not weaken or suppress checks. Record
+each command and result. Packet work uses the handoff template and is handed off as `review`, not `done`; single-session fixes
+append a `MAINTENANCE.md` entry instead.

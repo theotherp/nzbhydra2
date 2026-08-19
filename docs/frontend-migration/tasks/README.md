@@ -1,17 +1,14 @@
 # Migration Tasks
 
-Task packets are permanent, bounded work contracts. The migration task designer creates them from `templates/task.md`; the coordinator promotes them from `planned` to `ready` when dependencies are complete and lists immediately relevant
-tasks in `../STATUS.md`.
+Task packets are bounded work contracts for tier-1 work (see `../README.md`, *Choosing A Mechanism*). The task designer creates
+them from `../templates/task.md`; the coordinator promotes them when dependencies are done and lists next work in `../STATUS.md`.
+Done packets are deleted from this directory; git history is the archive.
 
-Create a batch with `/create-next-tasks <count>`. New packets must be substantial independently reviewable vertical capabilities, with a `Boundary Rationale` explaining why the included work belongs together and why adjacent work is
-separate.
-
-`Files Allowed To Modify` is a write allowlist, not a read restriction. `Context To Read` is the mandatory starting context, not the complete set of files an agent may inspect. Repository-wide searches are expected where completeness or
-parity is required.
-
-Implementation agents may update their assigned task, linked registry records, and allowed implementation files. They must not create new tasks or silently broaden allowed paths. Routine reversible choices should be made autonomously; true
-blockers follow the escalation policy in `../README.md`. Proposed follow-up work belongs in the handoff. `Depends on` and `Blocks` accept task IDs only; record rationale under `Dependency Notes`.
-
-Screen work governed by ADR-0006 must state a scoped visual contract: semantic hierarchy/grouping/state/affordance expectations, deterministic setup, named viewports and geometry checks, evidence locations, optional narrow snapshots, and proposed variances. The implementation handoff reconciles the linked feature `visual` record. Technical review can audit a proposal, but only explicit human acceptance may set it or a variance to accepted.
-
-The implementation agent uses `../templates/handoff.md` and marks a completed, fully verified implementation `review`. A fresh reviewer records `../templates/review.md`; only the coordinator marks it `done` after an accepted review resolves its findings.
+- A packet is ≤ 80 lines: outcome, acceptance criteria, `Files Allowed To Modify` (write allowlist, not a read restriction),
+  verification commands, linked registry IDs. `Depends on`/`Blocks` hold task IDs or `None`.
+- Packets are vertical capabilities; never split by source file or layer.
+- Implementers update their assigned task, linked registry records, and allowed files only. Routine reversible choices are made
+  autonomously; real blockers follow `../README.md`'s escalation policy. Follow-up proposals go in the handoff.
+- Rendering changes ship a screenshot strip per `../README.md`, *Visual Gate*.
+- The implementer hands off `review` using `../templates/handoff.md`; a fresh reviewer records `../templates/review.md`; only
+  the coordinator marks `done`.

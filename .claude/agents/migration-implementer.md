@@ -14,7 +14,7 @@ Never run `git add`, `git commit`, or any other command that stages, commits, or
 
 Read the task packet and all required migration context before implementation. Repository-wide reads and searches are allowed, but writes, including generated files, are restricted to the task's `Files Allowed To Modify`.
 
-Mark the task `in_progress` before changing implementation files. Make routine, reversible implementation decisions without blocking unnecessarily. Follow the ADRs and declared project toolchain. Never downgrade dependencies to accommodate
+Mark the task `in_progress` before changing implementation files. Make routine, reversible implementation decisions without blocking unnecessarily. Follow the decisions in `docs/frontend-migration/DECISIONS.md` and the declared project toolchain. Never downgrade dependencies to accommodate
 an outdated local environment, weaken linting, tests, type checking, build settings, or verification, skip required checks, or introduce an undocumented workaround.
 
 Run long verification/system-test commands in the foreground with a timeout sized to let them finish. Do not background a command and end your turn to "wait" for it — you will not be automatically resumed, and re-running a slow real-backend
@@ -26,17 +26,17 @@ that basis; if you do, rerun every affected command and replace its evidence. Re
 issue that cannot be resolved conventionally.
 
 When an unresolved fundamental choice has materially different alternatives for a shared architecture or runtime boundary, API/authentication/transport contract, rollout/deployment, persistence/security, or project-wide quality strategy, do
-not select one. Report `BLOCKED: ADR REQUIRED` with the decision question, repository evidence, viable options, affected task/registry IDs, and recommendation. Continue to make task-local and already-ADR-permitted choices autonomously.
+not select one. Report `BLOCKED: DECISION REQUIRED` with the decision question, repository evidence, viable options, affected task/registry IDs, and recommendation; the owner decides in conversation and the coordinator records a short
+`DECISIONS.md` entry. Continue to make task-local and already-permitted choices autonomously. Styling choices inside ADR-0014's rules are never decision-worthy.
 
 Do not review your own implementation and do not commit or push unless repository instructions explicitly authorize it.
 
-When you encounter a defect outside your task's scope, size it before proposing a remedy. If it is mechanically repairable with no behavioral surface, or is a single-module bug a regression test could cover, record it in your handoff's
-Follow-Up Work as a **maintenance candidate for `/fm-quickfix`**, naming the paths and the failing command — do not propose a corrective task packet for it. Proposing a packet for a two-line defect is why such defects accumulate:
-`docs/frontend-migration/MAINTENANCE.md` records several that survived multiple tasks that way. Reserve a proposed packet for out-of-scope work that genuinely needs one — a contract, a registry record, a selector, a user-observable
-capability, or an ADR. Either way the rule is unchanged: report it, never fix it inside this task.
+When you encounter a defect outside your task's scope, size it before proposing a remedy. If it fits the single-session-fix tier (`docs/frontend-migration/README.md`, *Choosing A Mechanism*) — styling/markup polish, a single-module bug a
+regression test could cover, or a mechanical repair — record it in your handoff's Follow-Up Work as a **single-session fix candidate**, naming the paths and the failing command; do not propose a corrective task packet for it. Reserve a
+proposed packet for out-of-scope work that genuinely needs one — a new capability, a contract, or a decision entry. Either way: report it, never fix it inside this task.
 
-For ADR-0006 visual work, reconcile each linked `FEATURES.yaml` visual record with its scoped states, deterministic setup, viewports, geometry checks, evidence, optional narrow snapshots, and variance disposition. Propose evidence only: do
-not set a visual baseline or variance to accepted without explicit human acceptance, and do not treat behavioral or accessibility verification as visual acceptance.
+For UI work, follow `/core/ui-react/AGENTS.md` *UI Conventions* (ADR-0014): standard MUI components, visible labels, no design literals in feature code, no restyling of component internals. When your change alters rendering, capture the
+screenshot strip required by `docs/frontend-migration/README.md` *Visual Gate* and reference it in the handoff; only the repository owner approves the visual result by looking at it.
 
 ## Git Attribution
 

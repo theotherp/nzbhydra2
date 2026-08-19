@@ -1,881 +1,651 @@
-schema_version: 1
+schema_version: 2
 features:
   - id: F-PLATFORM-SHELL
     name: Application shell, navigation, footer, and permission-aware links
-    route_states: [ root ]
-    routes: [ "/*" ]
-    roles: [ anonymous, user, stats, admin ]
-    legacy_sources: [ core/ui-src/js/nzbhydra.js, core/ui-src/js/header-controller.js, core/ui-src/html/states/header.html, core/ui-src/js/directives/footer.js ]
-    tests: [ tests/system/tests/smoke.spec.ts ]
-    selectors: [ ]
+    routes:
+      - /*
+    legacy_sources:
+      - core/ui-src/js/nzbhydra.js
+      - core/ui-src/js/header-controller.js
+      - core/ui-src/html/states/header.html
+      - core/ui-src/js/directives/footer.js
     target: core/ui-react/src/app
+    tests:
+      - tests/system/tests/smoke.spec.ts
+    selectors: []
     parity: partial
-    visual:
-      applicability: applicable
-      status: proposed
-      note: "Re-evidenced by FM-043 under ADR-0009's accepted full-mock-fidelity redesign, which supersedes ADR-0007's legacy-grey tokens: the shell now renders the source mock's `oklch` teal palette, its self-hosted IBM Plex Sans/Mono
-        typography, and its denser radii/control sizing. Every geometry check from the prior FM-035 contract is retained (only the active-nav-item color literal changed, from `#0fab4b` to the new `primary.main`), and one new state,
-        `branded-typography-and-density`, was added. The record stays `proposed`; this record has never regained human acceptance since FM-035 removed the prior 2026-08-16 acceptance (still recoverable from Git history) for the
-        client-side-navigation geometry change, and the palette/typography/density change now pending review is a second, larger reason the baseline needs fresh human eyes. The prior primary-green variance below is retained rather than
-        deleted, superseded in place by FM-043's own note on it. Pending fresh human review; see the FM-043 handoff."
-      contract:
-        setup: React-selected `ui/react?redirect=/` app shell rendered under the mock-fidelity default theme (ADR-0009, superseding ADR-0007) in `tests/system/tests/smoke.spec.ts`.
-        states: [ branded-app-bar-with-logo, horizontal-desktop-navigation, mobile-collapsed-navigation, current-route-nav-item-primary-indicator, nav-item-width-stable-across-active-state, branded-typography-and-density, keyboard-focus-indicator ]
-        viewports: [ { name: desktop, width: 1280, height: 800 }, { name: mobile, width: 390, height: 844 } ]
-        geometry_checks:
-          - AppBar and page have no horizontal overflow at either viewport
-          - desktop navigation region has no horizontal overflow
-          - each desktop navigation item's bounding box is horizontally aligned with its neighbors rather than vertically stacked
-          - "the current route's own desktop nav item (aria-current=page) has a computed border-bottom-color equal to the theme's primary.main (oklch(0.75 0.1 190))"
-          - "a desktop nav item's own bounding-box width is unchanged after it transitions from active to inactive via a real client-side navigation click"
-          - "the AppBar's computed font-family includes \"IBM Plex Sans\", and a FontFace with that family reports status `loaded` at both viewports, proving the vendored webfont is applied and downloaded rather than only declared"
-          - "a FontFace with family \"IBM Plex Mono\" is served by the application at both viewports, so feature code can apply the mock's numeric/tabular stack"
-          - "the AppBar's computed background-color (theme background.paper) differs from the page body's computed background-color (theme background.default) at both viewports"
-          - "no request to fonts.googleapis.com or fonts.gstatic.com is made while the shell loads at either viewport"
-          - "FM-053 (ADR-0013): a navigation ListItemButton reached by real Tab/Shift+Tab from a known start, with no pointer interaction, renders a non-empty focused/unfocused computed-style delta and the authored token `outline: 3px solid oklch(0.75 0.1 190)` at `outline-offset: -3px`, at both viewports (at mobile the nav renders inside the hamburger Drawer, opened by keyboard)"
-          - "FM-053 (ADR-0013): that indicator's changed area is 726.00 px2 against its own `4(w+h)` threshold of 508.00 px2 (control box 84.00x43.00) and its full-opacity contrast against its own composited unfocused ground rgb(38,44,46) is 6.63:1, and it is neither clipped by an ancestor nor the cause of page-level horizontal overflow at either viewport"
-      evidence: [ tests/system/tests/smoke.spec.ts, tests/system/tests/focus-indication.spec.ts ]
-      snapshots: [ tests/system/visual-evidence/F-PLATFORM-SHELL/app-bar-desktop.png, tests/system/visual-evidence/F-PLATFORM-SHELL/app-bar-mobile.png, tests/system/visual-evidence/F-PLATFORM-SHELL/keyboard-focus-nav-item-desktop.png ]
-      variances:
-        - description: "MUI `primary` uses the logo-green `#0fab4b` rather than legacy's own muted-gray `@brand-primary` (`@gray-light`, ~`#7a8288`). ADR-0007's Human Decision accepted this token choice: MUI's `primary` drives materially more interactive affordances (links, focus rings, selected/active states) than legacy's own muted-gray brand color did. Concretely, this affordance is the current-route nav item's green underline/text in the AppBar's desktop nav (not the AppBar's own background: MUI's `AppBar` defaults `enableColorOnDark` to `false`, so `color=\"primary\"` on the `AppBar` itself does not render green under `palette.mode: \"dark\"`). SUPERSEDED BY FM-043: `primary.main` is no longer the logo green at all. ADR-0009's accepted decision replaced it with the source mock's teal `oklch(0.75 0.1 190)`, so the variance from legacy's muted-gray `@brand-primary` remains real but is now a variance toward the mock rather than toward the logo. The affordance it describes (the current-route nav item's colored underline and label) is unchanged; only its color is. Retained rather than deleted so the ADR-0007 decision it records stays visible in the register."
-          status: proposed
-        - description: "Palette variance from legacy, with no legacy equivalent: the base palette is now the mock's own `oklch` design rather than any color legacy ever shipped -- `background.default` `#1f2426`, `background.paper` `#262c2e`, `text.primary` `#d6dad9`, `text.secondary` `#9aa2a1`, `primary.main` `oklch(0.75 0.1 190)` (light/dark `oklch(0.82 0.1 190)`/`oklch(0.85 0.1 190)`), `success.main` `oklch(0.75 0.11 150)`, `warning.main` `oklch(0.76 0.1 70)`. `info.main` `#398da5` and `error.main` `#a33938` are deliberately left at ADR-0007's legacy values because the mock renders neither role, so there is no mock evidence to adopt for them. Accepted under ADR-0009 as a decision; the rendered result still needs this record's own human visual acceptance."
-          status: proposed
-        - description: "Typography variance from legacy, with no legacy equivalent: `typography.fontFamily` is the mock's `\"IBM Plex Sans\", system-ui, -apple-system, sans-serif`, served from this application's own build output via `@fontsource/ibm-plex-sans` weights 400/500/600/700, and a matching `\"IBM Plex Mono\", monospace` stack (weights 400/500) is exposed for numeric/tabular feature code. Legacy shipped Bootstrap's own system stack. The mock's runtime Google Fonts CDN dependency is deliberately not adopted; the smoke spec asserts no such request occurs."
-          status: proposed
-        - description: "FM-053 (ADR-0013) focus-indicator variance from the visual reference: the ADR-0009 source mock `uimock/NZBHydra Search.dc.html` declares `outline:none` 15 times and authors no focus-state style at all -- its only `focus` occurrences are the `onFocus`/`onFocusSearch`/`searchFocused` JS bindings, confirmed first-hand by FM-053 rather than taken on trust -- so the authored keyboard focus indicator this record now renders (`outline: 3px solid oklch(0.75 0.1 190)` at a 3px offset, or -3px where an ancestor was measured clipping an outset ring) is a deliberate divergence from that reference, adopted under ADR-0013 (accepted 2026-08-19, Option A) for WCAG 2.4.7/2.4.11 rather than for mock fidelity. Requires explicit human acceptance under ADR-0006; accepting ADR-0013 is not accepting this variance."
-          status: proposed
-        - description: "FM-053 (ADR-0013) second variance, geometry: this record's navigation `ListItemButton` renders the authored token at `outline-offset: -3px` (inset) rather than the application's own 3px outset literal, because an outset ring at a 3px offset was measured live as clipped by the mobile navigation `Drawer`'s own `MuiPaper-elevation16`, whose computed overflow is not `visible`, and as overlapping two neighbouring controls. The inset ring measures 726.00 px2 against a 508.00 px2 threshold at 6.63:1 (desktop) and 1644.00 px2 against 1120.00 px2 at 6.63:1 (mobile Drawer) and is not clipped at either. The same inset geometry applies to the `Tab` family on `F-STATS-SHELL`'s tab strip, where an outset ring is clipped by `MuiTabs-scroller`. Requires explicit human acceptance under ADR-0006."
-          status: proposed
-        - description: "Density variance from legacy, with no legacy equivalent: shell-wide, route-agnostic component defaults now follow the mock's own measured geometry -- `shape.borderRadius` 8px and `MuiButton` 8px (the mock's dominant radius, used by its primary Search button, its toolbar buttons, its nav pills, and its text inputs), `MuiButton` `textTransform: none` (the mock never uppercases a button label), `MuiOutlinedInput` 8px (the mock's text inputs), raised non-square `MuiPaper` 12px (the mock's results card), `MuiChip` 26px tall with a 7px radius (the mock's quality/type pills: 12px label, 5px vertical padding, 1px border), and a `::-webkit-scrollbar` treatment matching the mock's 11px thin scrollbar with a 6px-radius `#3a4446` thumb on the page background. Feature-scoped density (results table cells, sidebar controls) is deliberately not touched here; it belongs to the later ADR-0009 packets."
-          status: proposed
-    gaps: [ navigation, footer, permission-aware links, live status ]
-    task: FM-004
-    backlog: { status: deferred, rationale: "Remaining shell parity needs a dedicated follow-up task after the current review queue. FM-052 (measurement only) found this record's own `theme.ts` `:focus-visible` outline (`core/ui-react/src/app/theme.ts:184-187`) is defeated, undefeated, or partially defeated depending on which of several MUI mechanisms a control uses (ButtonBase's unconditional `outline:0`, InputBase's `.MuiInputBase-input:focus{outline:0}`, MenuItem/ListItemButton's low-contrast `&.Mui-focusVisible` background, or nothing at all for `disableRipple`d controls). Two families do render the global rule as authored, so it is the precedence that is broken rather than the rule: MUI `Link` taking its default `component=\"a\"` (`stats-identifier-link`, undefeated, 7.34:1 contrast and 912.00 px2 against a 536.00 px2 threshold -- the audit's only class meeting both WCAG criteria under its primary reading), and the bare unclassed `<a href>` in NewsPage's sanitized third-party content (also undefeated, failing only because `currentColor` there is the UA default link blue, 1.29:1). An earlier version of this rationale asserted that no family renders the rule as authored; that clause predated the correction pass which added the `Link` finding and is withdrawn. The decision FM-052 raised as `ADR REQUIRED` is now made: ADR-0013 (`decisions/ADR-0013-application-wide-keyboard-focus-indication.md`, accepted 2026-08-19, Option A) adopts an explicit focus-ring token authored per control family, keyed to each component's own `&.Mui-focusVisible`/`:focus-visible` selector in `theme.ts`. FM-053 implements exactly that decision and is why the app-wide focus `gap` phrase above is removed rather than narrowed: `theme.ts` now authors one shared token (`outline: 3px solid palette.primary.main`, offset 3px outset or -3px inset where an ancestor was measured clipping it) on eleven control families, the pre-existing global `MuiCssBaseline` `:focus-visible` rule is reconciled with that same token rather than left beside it, and every family is measured live at full opacity against WCAG 2.4.7/2.4.11 and gated by `tests/system/tests/focus-indication.spec.ts` plus the `npm run validate:focus-affordances` source guard. What remains outstanding on this record is the ADR-0006 acceptance of the resulting focused state and its variances, which belongs to the repository owner alone and which no agent may supply." }
-
+    gaps:
+      - navigation
+      - footer
+      - permission-aware links
+      - live status
   - id: F-AUTH-LOGIN
     name: Form login, logout, password confirmation, and session refresh
-    route_states: [ root.login ]
-    routes: [ /login ]
-    roles: [ anonymous, user, stats, admin ]
-    legacy_sources: [ core/ui-src/js/login-controller.js, core/ui-src/js/hydra-auth-service.js, core/ui-src/html/states/login.html ]
-    tests: [ ]
-    selectors: [ ]
+    routes:
+      - /login
+    legacy_sources:
+      - core/ui-src/js/login-controller.js
+      - core/ui-src/js/hydra-auth-service.js
+      - core/ui-src/html/states/login.html
     target: core/ui-react/src/features/auth
+    tests: []
+    selectors: []
     parity: inventoried
-    visual: { applicability: applicable, status: unassessed }
-    task: FM-001
-    backlog: { status: deferred, rationale: "No implementation task has been designed for authentication lifecycle parity." }
-
   - id: F-SEARCH-FORM
     name: Search workspace, URL criteria, categories, limits, and submission
-    route_states: [ root.search ]
-    routes: [ / ]
-    roles: [ user ]
-    legacy_sources: [ core/ui-src/js/search-controller.js, core/ui-src/js/search-request-service.js, core/ui-src/html/states/search.html ]
-    tests: [ core/ui-react/src/features/search/SearchPage.test.tsx, core/ui-react/src/features/search/workspace/SearchWorkspace.test.tsx, tests/system/tests/smoke.spec.ts, tests/system/tests/search.spec.ts ]
-    selectors: [ search-query, search-submit, search-category-control, "search-category-option-{{category.name}}", additional-query, autocomplete-popup, autocomplete-option, search-advanced-toggle, search-advanced-panel ]
+    routes:
+      - /
+    legacy_sources:
+      - core/ui-src/js/search-controller.js
+      - core/ui-src/js/search-request-service.js
+      - core/ui-src/html/states/search.html
     target: core/ui-react/src/features/search
+    tests:
+      - core/ui-react/src/features/search/SearchPage.test.tsx
+      - core/ui-react/src/features/search/workspace/SearchWorkspace.test.tsx
+      - tests/system/tests/smoke.spec.ts
+      - tests/system/tests/search.spec.ts
+    selectors:
+      - search-query
+      - search-submit
+      - search-category-control
+      - search-category-option-{{category.name}}
+      - additional-query
+      - autocomplete-popup
+      - autocomplete-option
+      - search-advanced-toggle
+      - search-advanced-panel
     parity: partial
-    visual:
-      applicability: applicable
-      status: proposed
-      note: "Supersedes the prior 2026-08-16 human acceptance of this record (removed here; still recoverable from Git history) because that acceptance evidenced the FM-031 branded theme's legacy-grey palette and the always-visible age/size range grid, both of which FM-044 changes under ADR-0009. The search-bar row now renders on the mock's own #232a2c surface at its 14px 18px padding and 10px control gap, with the category select and query field at the mock's 11px radius, and the query field and its Search button form one visually joined control with the button on the new teal primary.main and the theme's textTransform: none label. The Age/Size ranges relocated out of the always-visible `workspace-ranges` grid into a new `search-advanced-toggle`/`search-advanced-panel` disclosure that defaults to collapsed, adopting the mock's own disclosure pattern; every relocated field keeps its exact `data-testid`, accessible label text, validation, and `register(...)` binding, so only default visibility and container changed and no capability was removed. This follows the accepted-claim supersession pattern FM-034, FM-037, FM-039, and FM-040 used; acceptance is never re-dated or fabricated. Pending fresh human review; see the FM-044 handoff for what changed and the verification evidence."
-      contract:
-        setup: React-selected `/` with deterministic mock indexers and the category catalog in `tests/system/tests/search.spec.ts`.
-        states: [ search-bar-row-density, advanced-panel-collapsed, advanced-panel-expanded, terminal-submission, keyboard-focus-indicator ]
-        viewports: [ { name: desktop, width: 1280, height: 800 }, { name: mobile, width: 390, height: 844 } ]
-        geometry_checks:
-          - "the search-bar row and the page have no horizontal overflow at 1280x800 and 390x844, the row meets the declared minimum width, and the row's computed background color is opaque and differs from the page's background.default"
-          - "the Search button sits at the query field's trailing edge on the same baseline within 4px and is at least 36px high at both viewports"
-          - "category precedes the primary query in the responsive hierarchy: the two share a baseline within 2px at desktop, and the category sits above the query at mobile"
-          - "collapsed, the Advanced panel is not visible, its toggle reports aria-expanded=false, and the search-bar row is measurably shorter than when expanded"
-          - "expanded, every relocated Age/Size field is visible with no scrollWidth overflow, and the relocated workspace-ranges region renders at least 200px wide with no region or page horizontal overflow"
-          - "the workspace and its actions region meet the declared minimum widths without horizontal overflow"
-          - "FM-053 (ADR-0013): the query field, the category Select and the Advanced-panel Age/Size range fields, each reached by real Tab/Shift+Tab from a known start with no pointer interaction, render a non-empty focused/unfocused computed-style delta and the authored token `outline: 3px solid oklch(0.75 0.1 190)` at `outline-offset: 3px`; the category Select's own `notchedOutline` measures `border-width: 0px` unfocused (the mock's borderless resting rendering, preserved) and `2px` focused"
-          - "FM-053 (ADR-0013): the query field's indicator changes 4833.38 px2 against its own `4(w+h)` threshold of 3150.25 px2 (control box 742.00x45.56) at 7.54:1 against rgb(28,34,36); the category Select 1293.38 px2 against 790.25 px2 at 6.83:1; the Advanced-panel range field 760.13 px2 against 434.75 px2 at 6.83:1 -- all full-opacity, none clipped by an ancestor, and none the cause of page-level horizontal overflow at either viewport"
-      evidence: [ tests/system/tests/search.spec.ts, tests/system/tests/focus-indication.spec.ts ]
-      snapshots: [ tests/system/visual-evidence/F-SEARCH-FORM/search-bar-density-desktop.png, tests/system/visual-evidence/F-SEARCH-FORM/search-bar-density-mobile.png, tests/system/visual-evidence/F-SEARCH-FORM/keyboard-focus-advanced-range-input-desktop.png ]
-      variances:
-        - description: "FM-053 (ADR-0013) focus-indicator variance from the visual reference: the ADR-0009 source mock `uimock/NZBHydra Search.dc.html` declares `outline:none` 15 times and authors no focus-state style at all -- its only `focus` occurrences are the `onFocus`/`onFocusSearch`/`searchFocused` JS bindings, confirmed first-hand by FM-053 rather than taken on trust -- so the authored keyboard focus indicator this record now renders (`outline: 3px solid oklch(0.75 0.1 190)` at a 3px offset, or -3px where an ancestor was measured clipping an outset ring) is a deliberate divergence from that reference, adopted under ADR-0013 (accepted 2026-08-19, Option A) for WCAG 2.4.7/2.4.11 rather than for mock fidelity. Requires explicit human acceptance under ADR-0006; accepting ADR-0013 is not accepting this variance."
-          status: proposed
-    gaps: [ guided tour ]
-    task: FM-016
-    backlog: { status: deferred, rationale: "The remaining guided-tour integration has no implementation task yet. FM-052 (measurement only) found two of this record's own controls render no keyboard focus indicator at all (WCAG 2.4.7): `search-query` (bare `InputBase`; `.MuiInputBase-input:focus{outline:0}` at SearchWorkspace.tsx:417-430/:375-415 defeats the global `:focus-visible` outline, and its static-bordered wrapper does not react to focus) and the Category select (`SearchWorkspace.tsx:463-513`; the same InputBase-class outline defeat, plus `& .MuiOutlinedInput-notchedOutline{border:\"none\"}` at :480-482 suppresses the fieldset border entirely). The Age/Size range fields relocated into `search-advanced-panel` share the query field's exact `InputBase` mechanism, so they fail identically; their rendering differs (`advancedInputSx` at `SearchWorkspace.tsx:99-108` adds a recessed background and a static 1px border that `queryInputSx` does not have), but that border does not react to focus, so the focused/unfocused delta is empty for both. The blocking decision is now made: ADR-0013 (`decisions/ADR-0013-application-wide-keyboard-focus-indication.md`, accepted 2026-08-19, Option A -- an explicit focus-ring token authored per control family), and FM-053 implements it. All three renderings now carry an authored focus affordance measured live at full opacity, which is why the focus `gap` phrase above is removed rather than narrowed: `theme.ts`'s `MuiInputBase` entry authors the shared token on the input root (`&:has(:focus-visible)`), reaching the bare `InputBase` renderings and every `Select` trigger alike, and `SearchWorkspace.tsx`'s `& .MuiOutlinedInput-notchedOutline{border:\"none\"}` is re-scoped to the unfocused state so the category Select's fieldset border paints again when the control is reached by keyboard. What remains outstanding is the ADR-0006 acceptance of the resulting focused state and its variance, which belongs to the repository owner alone." }
-
+    gaps:
+      - guided tour
   - id: F-SEARCH-MEDIA
     name: Movie and TV autocomplete, identifiers, title refinement, season, and episode
-    route_states: [ root.search ]
-    routes: [ / ]
-    roles: [ user ]
-    legacy_sources: [ core/ui-src/js/search-controller.js, core/ui-src/html/states/search.html ]
-    tests: [ core/ui-react/src/api/media.test.ts, core/ui-react/src/features/search/workspace/SearchWorkspace.test.tsx, core/ui-react/src/features/search/SearchPage.test.tsx, tests/system/tests/search.spec.ts ]
-    selectors: [ additional-query, autocomplete-popup, autocomplete-option, season-episode-pair ]
+    routes:
+      - /
+    legacy_sources:
+      - core/ui-src/js/search-controller.js
+      - core/ui-src/html/states/search.html
     target: core/ui-react/src/features/search
+    tests:
+      - core/ui-react/src/api/media.test.ts
+      - core/ui-react/src/features/search/workspace/SearchWorkspace.test.tsx
+      - core/ui-react/src/features/search/SearchPage.test.tsx
+      - tests/system/tests/search.spec.ts
+    selectors:
+      - additional-query
+      - autocomplete-popup
+      - autocomplete-option
+      - season-episode-pair
     parity: partial
-    visual:
-      applicability: applicable
-      status: proposed
-      note: "Supersedes the prior 2026-08-16 human acceptance of this record (removed here; still recoverable from Git history) because that acceptance evidenced the FM-031 branded theme's palette and two independently labeled, equal-width, full-width season/episode TextFields stacked in the media-refinement grid. FM-044 replaces that pair with the mock's compact inline treatment inside the search-bar row: 40px centered IBM Plex Mono inputs behind short adjacent \"S\"/\"E\" captions, on the mock's #2a3133 control surface at its 11px radius. The autocomplete suggestion panel is likewise restyled to the mock's #2a3133/11px suggestion surface. The season and episode form fields, their numeric-only and free-text validation, their `register(...)` bindings, their accessible label text, and every autocomplete data-testid, keyboard interaction (arrow navigation, Enter-to-select, Escape-to-dismiss), and loading/empty/error Alert state are unchanged in behavior. This follows the accepted-claim supersession pattern FM-034, FM-037, FM-039, and FM-040 used; acceptance is never re-dated or fabricated. Pending fresh human review; see the FM-044 handoff."
-      contract:
-        setup: React-selected `/` with deterministic mock indexers; select the configured TV category in `tests/system/tests/search.spec.ts`.
-        states: [ tv-title-refinement, paired-season-episode-compact, keyboard-focus-indicator ]
-        viewports: [ { name: desktop, width: 1280, height: 800 }, { name: mobile, width: 390, height: 844 } ]
-        geometry_checks:
-          - "media refinement is visible after its category transition and meets its declared minimum width with no control or page horizontal overflow at 1280x800 and 390x844"
-          - "the season/episode pair renders inside the search-bar row at no more than 220px wide with no region or page horizontal overflow, and its combined bounding-box width is less than half of the full-width additional-query field's width"
-          - "both paired inputs remain individually operable by keyboard focus and typing, retaining the typed season and episode values"
-          - "FM-053 (ADR-0013): the Season input, reached by real Tab/Shift+Tab from a known start with no pointer interaction, renders a non-empty focused/unfocused computed-style delta and the authored token `outline: 3px solid oklch(0.75 0.1 190)` at `outline-offset: 3px` -- this rendering declares no border of any kind and has no wrapper of its own, so before FM-053 nothing existed that could react to focus"
-          - "FM-053 (ADR-0013): that indicator's changed area is 608.44 px2 against its own `4(w+h)` threshold of 333.63 px2 (control box 40.00x43.41) and its full-opacity contrast against its own composited unfocused ground rgb(42,49,51) is 6.20:1, and it is neither clipped by an ancestor nor the cause of page-level horizontal overflow"
-      evidence: [ tests/system/tests/search.spec.ts, tests/system/tests/focus-indication.spec.ts ]
-      snapshots: [ tests/system/visual-evidence/F-SEARCH-MEDIA/keyboard-focus-season-input-desktop.png ]
-      variances:
-        - description: "FM-053 (ADR-0013) focus-indicator variance from the visual reference: the ADR-0009 source mock `uimock/NZBHydra Search.dc.html` declares `outline:none` 15 times and authors no focus-state style at all -- its only `focus` occurrences are the `onFocus`/`onFocusSearch`/`searchFocused` JS bindings, confirmed first-hand by FM-053 rather than taken on trust -- so the authored keyboard focus indicator this record now renders (`outline: 3px solid oklch(0.75 0.1 190)` at a 3px offset, or -3px where an ancestor was measured clipping an outset ring) is a deliberate divergence from that reference, adopted under ADR-0013 (accepted 2026-08-19, Option A) for WCAG 2.4.7/2.4.11 rather than for mock fidelity. Requires explicit human acceptance under ADR-0006; accepting ADR-0013 is not accepting this variance."
-          status: proposed
-    gaps: [ ]
-    task: FM-025
-    backlog: { status: deferred, rationale: "The record remains partial pending a dedicated full-parity reconciliation. FM-052 (measurement only) found the paired season/episode inputs (`season-episode-pair`; `SearchWorkspace.tsx:539` and `:563`, `pairedInputSx` at `:87-97`) render no keyboard focus indicator at all (WCAG 2.4.7): they are bare `InputBase`es defeated by the same `.MuiInputBase-input:focus{outline:0}` rule as the query field, and unlike `advancedInputSx` they carry no border of any kind, so the focused/unfocused computed-style delta over the whole subtree is `outline-width: 3px -> 0px` and `outline-offset: 0px -> 3px` with `outline-style: none` in both states -- nothing paints. `additional-query` (`SearchWorkspace.tsx:785`) is a different case on the same record: it is a default, un-overridden `TextField`, so MUI's own focused `notchedOutline` still renders (measured `rgba(255,255,255,0.23)` 1px -> `oklch(0.75 0.1 190)` 2px, contrast 3.15:1) and it meets 2.4.7 while failing 2.4.11 on area. The blocking decision is now made: ADR-0013 (`decisions/ADR-0013-application-wide-keyboard-focus-indication.md`, accepted 2026-08-19, Option A -- an explicit focus-ring token authored per control family), and FM-053 implements it. Both controls now carry the same authored token from `theme.ts`'s `MuiInputBase` entry, measured live at full opacity (Season 608.44 px2 against a 333.63 px2 threshold at 6.20:1; `additional-query` is the same un-overridden `OutlinedInput` rendering as the search-history filters, measured on that record), which is why the focus `gap` phrase above is removed rather than narrowed. What remains outstanding is the ADR-0006 acceptance of the resulting focused state and its variance, which belongs to the repository owner alone." }
-
   - id: F-SEARCH-INDEXERS
     name: Indexer selection by individual source, type, group, and preselection
-    route_states: [ root.search ]
-    routes: [ / ]
-    roles: [ user ]
-    legacy_sources: [ core/ui-src/js/search-controller.js, core/ui-src/js/directives/multiselect-dropdown.js, core/ui-src/html/states/search.html ]
-    tests: [ tests/system/tests/search.spec.ts, core/ui-react/src/features/search/workspace/SearchWorkspace.test.tsx ]
-    selectors: [ ]
+    routes:
+      - /
+    legacy_sources:
+      - core/ui-src/js/search-controller.js
+      - core/ui-src/js/directives/multiselect-dropdown.js
+      - core/ui-src/html/states/search.html
     target: core/ui-react/src/features/search
+    tests:
+      - tests/system/tests/search.spec.ts
+      - core/ui-react/src/features/search/workspace/SearchWorkspace.test.tsx
+    selectors: []
     parity: partial
-    visual:
-      applicability: applicable
-      status: proposed
-      note: "Supersedes the prior 2026-08-16 human acceptance of this record (removed here; still recoverable from Git history) because FM-037 restructured indexer bulk-action selection from N always-visible flat buttons into a single
-        legacy-shaped split button (default \"Invert selection\") plus an on-demand dropdown menu holding the remaining bulk actions, materially changing the reviewed geometry. The dropdown's \"Indexer groups\" subsection is legacy
-        parity, not a novel addition (`core/ui-src/js/search-controller.js`'s `buildGroupSelectionActions`, rendered by `search.html`'s own split button and `multiselect-dropdown.html`); no `indexer_groups` variance is recorded. Pending
-        fresh human review; see the FM-037 handoff for what changed and why. FM-044 additionally restyles this control and the checkbox-mode indexer list to the mock's design language under ADR-0009 -- split-button and dropdown-menu
-        surfaces on the mock's #2a3133 control surface with its 11px menu radius, teal `primary.main` hover/active affordances, and the theme's own button radius and `textTransform: none` -- which is ADR-0009's named example of
-        extending that language to a control the mock itself does not show. FM-044 changes no action, order, icon, or accessibility semantics (`aria-haspopup`, `aria-expanded`, `role=\"menu\"`/`\"menuitem\"`), and does not re-litigate
-        FM-037's structural claim above; the states, viewports, and geometry checks below are unchanged and were re-evidenced by FM-044's own visual-evidence run."
-      contract:
-        setup: React-selected `/` with deterministic mock indexers, first using dropdown selection then saved safe configuration checkbox selection, then opening the indexer bulk-action split button's dropdown menu, in `tests/system/tests/search.spec.ts`.
-        states: [ dropdown-indexers, checkbox-indexers, bulk-indexer-actions, keyboard-focus-indicator ]
-        viewports: [ { name: desktop, width: 1280, height: 800 }, { name: mobile, width: 390, height: 844 } ]
-        geometry_checks:
-          - "dropdown indexer control spans its workspace region"
-          - "checkbox indexer region is visible at desktop"
-          - "indexer controls and page have no horizontal overflow"
-          - "the indexer bulk-action split button is contained within the workspace indexer region, and its open dropdown menu renders with no menu or page horizontal overflow, at both desktop and mobile"
-          - "FM-053 (ADR-0013): the Indexers Select trigger, reached by real Tab/Shift+Tab from a known start with no pointer interaction, renders a non-empty focused/unfocused computed-style delta and the authored token `outline: 3px solid oklch(0.75 0.1 190)` at `outline-offset: 3px`"
-          - "FM-053 (ADR-0013): that indicator's changed area is 7310.44 px2 against its own `4(w+h)` threshold of 4801.63 px2 (control box 1164.00x36.41) and its full-opacity contrast against its own composited unfocused ground rgb(38,44,46) is 6.63:1, and it is neither clipped by an ancestor nor the cause of page-level horizontal overflow"
-      evidence: [ tests/system/tests/search.spec.ts, tests/system/tests/focus-indication.spec.ts ]
-      snapshots: [ tests/system/visual-evidence/F-SEARCH-INDEXERS/keyboard-focus-indexer-select-desktop.png ]
-      variances:
-        - description: "FM-053 (ADR-0013) focus-indicator variance from the visual reference: the ADR-0009 source mock `uimock/NZBHydra Search.dc.html` declares `outline:none` 15 times and authors no focus-state style at all -- its only `focus` occurrences are the `onFocus`/`onFocusSearch`/`searchFocused` JS bindings, confirmed first-hand by FM-053 rather than taken on trust -- so the authored keyboard focus indicator this record now renders (`outline: 3px solid oklch(0.75 0.1 190)` at a 3px offset, or -3px where an ancestor was measured clipping an outset ring) is a deliberate divergence from that reference, adopted under ADR-0013 (accepted 2026-08-19, Option A) for WCAG 2.4.7/2.4.11 rather than for mock fidelity. Requires explicit human acceptance under ADR-0006; accepting ADR-0013 is not accepting this variance."
-          status: proposed
-    gaps: [ ]
-    task: FM-016
-    backlog: { status: deferred, rationale: "The record remains partial pending a dedicated full-parity reconciliation. FM-053 (ADR-0013, accepted 2026-08-19, Option A) additionally gives this record's Indexers Select the application's single authored keyboard focus indicator, measured live and evidenced above; the ADR-0006 acceptance of that focused state and its variance is outstanding and belongs to the repository owner alone." }
-
   - id: F-SEARCH-RECENT
     name: Recent-search dropdown, refill, repeat, and drag-to-search
-    route_states: [ root.search ]
-    routes: [ / ]
-    roles: [ user ]
-    legacy_sources: [ core/ui-src/js/search-controller.js, core/ui-src/js/search-history-service.js, core/ui-src/html/search-searchhistory-dropdown.html ]
-    tests: [ core/ui-react/src/api/recentSearches.test.ts, core/ui-react/src/features/search/history/RecentSearches.test.tsx, core/ui-react/src/features/search/SearchPage.test.tsx, tests/system/tests/search.spec.ts ]
-    selectors: [ ]
+    routes:
+      - /
+    legacy_sources:
+      - core/ui-src/js/search-controller.js
+      - core/ui-src/js/search-history-service.js
+      - core/ui-src/html/search-searchhistory-dropdown.html
     target: core/ui-react/src/features/search
+    tests:
+      - core/ui-react/src/api/recentSearches.test.ts
+      - core/ui-react/src/features/search/history/RecentSearches.test.tsx
+      - core/ui-react/src/features/search/SearchPage.test.tsx
+      - tests/system/tests/search.spec.ts
+    selectors: []
     parity: partial
-    visual:
-      applicability: applicable
-      status: proposed
-      note: "Supersedes the prior 2026-08-16 human acceptance of this record (removed here; still recoverable from Git history) because it evidenced a narrower, now-changed layout: FM-038 removed the populated recent-search menu's 240px-to-420px desktop width cap (the fixed-width menu paper and its mobile-only calc(100vw - 32px) rule) on the user's explicit instruction, given directly in the live session that produced this implementation, that every recent-search entry be shown in full rather than wrapped or truncated; the menu now sizes to its content, bounded only by calc(100vw - 32px) at both viewports, which real multi-field entries routinely exceed 420px. The same change also collapsed the two-menuitem row (a separate `menuitem` for Refill and one for Repeat) into one `menuitem` per search carrying the accessible name `Repeat: <description>`, with a leading icon button carrying `Refill: <description>` preserving the refill capability. This follows the same accepted-claim supersession pattern FM-034 used for F-SEARCH-RESULTS and F-SEARCH-SORT-FILTER. Pending fresh human review; see the FM-038 handoff for what changed and the verification evidence."
-      contract:
-        setup: React-selected `/` with deterministic mock indexers and search history enabled; submit `visual recent history` then open the recent-search trigger in `tests/system/tests/search.spec.ts`.
-        states: [ history-trigger, populated-anchored-menu, single-row-entry-with-leading-refill-button, content-driven-menu-width, pointer-drag-refill, keyboard-refill-hint, keyboard-focus-indicator ]
-        viewports: [ { name: desktop, width: 1280, height: 800 }, { name: mobile, width: 390, height: 844 } ]
-        geometry_checks:
-          - "trigger is contained in workspace actions"
-          - "populated menu is anchored, no longer capped at a fixed maximum width, retains its prior minimum width of 240px at desktop, and is bounded only by the viewport-derived maximum of viewport width minus 32px (calc(100vw - 32px); 1248px at the 1280x800 desktop fixture viewport)"
-          - "menu and page have no horizontal overflow"
-          - "the keyboard-refill hint (`Press Right Arrow on an entry to refill the search form; Left Arrow or Escape returns.`) renders exactly once, positioned below the last recent-search-entry row, with no horizontal overflow of the hint, the menu, or the page, at both desktop and mobile"
-          - "FM-053 (ADR-0013): the recent-search trigger, reached by real Tab/Shift+Tab from a known start with no pointer interaction, and a recent-search-entry MenuItem, reached from that trigger by real Enter/ArrowDown inside the open menu, each render a non-empty focused/unfocused computed-style delta and the authored token `outline: 3px solid oklch(0.75 0.1 190)` -- at `outline-offset: 3px` on the trigger and `-3px` on the MenuItem"
-          - "FM-053 (ADR-0013): the trigger's indicator changes 1155.00 px2 against its own `4(w+h)` threshold of 698.00 px2 (control box 138.00x36.50) at 6.63:1 against rgb(38,44,46); the MenuItem's changes 2945.25 px2 against 1987.50 px2 (control box 473.25x23.63) at 6.63:1 -- both full-opacity, neither clipped by an ancestor, neither the cause of page-level horizontal overflow"
-      evidence: [ tests/system/tests/search.spec.ts, tests/system/tests/focus-indication.spec.ts ]
-      snapshots: [ tests/system/visual-evidence/F-SEARCH-RECENT/recent-search-keyboard-hint-desktop.png, tests/system/visual-evidence/F-SEARCH-RECENT/keyboard-focus-recent-searches-trigger-desktop.png ]
-      variances:
-        - description: "FM-053 (ADR-0013) focus-indicator variance from the visual reference: the ADR-0009 source mock `uimock/NZBHydra Search.dc.html` declares `outline:none` 15 times and authors no focus-state style at all -- its only `focus` occurrences are the `onFocus`/`onFocusSearch`/`searchFocused` JS bindings, confirmed first-hand by FM-053 rather than taken on trust -- so the authored keyboard focus indicator this record now renders (`outline: 3px solid oklch(0.75 0.1 190)` at a 3px offset, or -3px where an ancestor was measured clipping an outset ring) is a deliberate divergence from that reference, adopted under ADR-0013 (accepted 2026-08-19, Option A) for WCAG 2.4.7/2.4.11 rather than for mock fidelity. Requires explicit human acceptance under ADR-0006; accepting ADR-0013 is not accepting this variance."
-          status: proposed
-        - description: "FM-053 (ADR-0013) second variance, geometry: this record's recent-search `MenuItem` renders the authored token at `outline-offset: -3px` (inset) rather than the application's own 3px outset literal, because an outset ring at a 3px offset was measured live as clipped by the `Menu`'s own `MuiPaper-root`, whose computed overflow is not `visible`, and as overlapping the neighbouring entry and its nested Refill buttons. The inset ring measures 2945.25 px2 against a 1987.50 px2 threshold at 6.63:1 and is not clipped. Requires explicit human acceptance under ADR-0006."
-          status: proposed
-    gaps: [ "the aria-keyshortcuts=\"ArrowRight\" announcement on the recent-search-entry row, and the visible keyboard-refill hint's discoverability, are not verified with a real screen reader (NVDA/JAWS/VoiceOver); FM-050 (ADR-0012, Option A1) verified in a real browser (Chrome for Testing, real JVM backend) that ArrowRight/ArrowLeft/Escape/Enter/Space now reach and invoke Refill by keyboard, and FM-049's CDP accessibility-tree capture already showed the Refill IconButton is non-ignored, focusable, and correctly named as a child of the menuitem -- so a keyboard-only or assistive-technology user can now reach and invoke Refill; only the live announcement/discoverability experience through actual screen-reader software remains unverified" ]
-    task: FM-017
-    backlog: { status: deferred, rationale: "Visual parity remains proposed, pending fresh human acceptance under ADR-0006: FM-038 superseded the prior accepted width contract, and FM-050 additively joins the same outstanding acceptance with one new keyboard-refill-hint state and its capture; neither is re-dated or accepted here. Separately, ADR-0012 (decisions/ADR-0012-recent-search-refill-keyboard-reachability.md, accepted 2026-08-18, Option A1) is implemented by FM-050: ArrowRight moves focus onto the nested Refill IconButton, ArrowLeft/Escape returns focus to the row (Escape on a row still closes the menu, unchanged), Enter/Space activate it natively, aria-keyshortcuts on the row announces it, and ArrowDown/ArrowUp/Home/End/Tab/Shift+Tab from the button behave exactly as they do from the row -- all evidenced in a real browser in tests/system/tests/search.spec.ts. No further ADR blocks keyboard reachability. The one remaining item is the narrowed gaps entry above: a real-screen-reader verification of the announcement and the hint's discoverability, which this project's test harness has no way to perform; no task currently owns it, and it should be scoped into a future task if assistive-technology hardware/software becomes available." }
-
+    gaps:
+      - keyboard-refill hint and aria-keyshortcuts announcement not yet verified with a real screen reader (NVDA/JAWS/VoiceOver)
   - id: F-SEARCH-PROGRESS
     name: Live search progress, cancellation, and early result display
-    route_states: [ root.search ]
-    routes: [ / ]
-    roles: [ user ]
-    legacy_sources: [ core/ui-src/js/search-controller.js, core/ui-src/js/search-service.js, core/ui-src/html/search-state.html ]
-    tests: [ tests/system/tests/search.spec.ts ]
-    selectors: [ search-status-modal ]
+    routes:
+      - /
+    legacy_sources:
+      - core/ui-src/js/search-controller.js
+      - core/ui-src/js/search-service.js
+      - core/ui-src/html/search-state.html
     target: core/ui-react/src/features/search
+    tests:
+      - tests/system/tests/search.spec.ts
+    selectors:
+      - search-status-modal
     parity: partial
-    visual: { applicability: applicable, status: unassessed }
-    gaps: [ cancellation, "this record's only surface (`search-status-modal`) renders no keyboard-focusable control of its own, so FM-053 produced no focused-state evidence for it; that is a checked negative, not an omission, and it changes if the deferred cancellation control is ever added" ]
-    task: FM-014
-    backlog: { status: deferred, rationale: "Remaining cancellation behavior has no implementation task yet. FM-053 (ADR-0013, accepted 2026-08-19, Option A) verified first-hand that `SearchPage.tsx`'s `search-status-modal` Dialog contains no `Button`, no `role=\"button\"` and no other focusable element -- only a title, an optional Alert, a `role=\"status\"` Stack and a progress indicator -- so this record owns no control for the authored focus indicator to reach. If the deferred cancellation control is added it will inherit the theme's authored token automatically and will need its own focused-state evidence." }
-
+    gaps:
+      - cancellation
   - id: F-SEARCH-RESULTS
     name: Result processing, display, indexer outcomes, and malformed-result resilience
-    route_states: [ root.search.results ]
-    routes: [ / ]
-    roles: [ user ]
-    legacy_sources: [ core/ui-src/js/search-results-controller.js, core/ui-src/js/directives/search-result.js, core/ui-src/html/states/search-results.html, core/ui-src/html/directives/search-result.html ]
-    tests: [ tests/system/tests/search.spec.ts, tests/system/tests/results.spec.ts, core/ui-react/src/features/search/results/SearchResults.test.tsx, core/ui-react/src/features/search/results/resultTable.test.ts ]
-    selectors: [ search-results, indexer-limit-warnings, search-results-summary, search-results-table, search-result-row, search-result-title, display-options-toggle, display-options ]
+    routes:
+      - /
+    legacy_sources:
+      - core/ui-src/js/search-results-controller.js
+      - core/ui-src/js/directives/search-result.js
+      - core/ui-src/html/states/search-results.html
+      - core/ui-src/html/directives/search-result.html
     target: core/ui-react/src/features/search/results
+    tests:
+      - tests/system/tests/search.spec.ts
+      - tests/system/tests/results.spec.ts
+      - core/ui-react/src/features/search/results/SearchResults.test.tsx
+      - core/ui-react/src/features/search/results/resultTable.test.ts
+    selectors:
+      - search-results
+      - indexer-limit-warnings
+      - search-results-summary
+      - search-results-table
+      - search-result-row
+      - search-result-title
+      - display-options-toggle
+      - display-options
     parity: partial
-    visual:
-      applicability: applicable
-      status: proposed
-      note: "Supersedes the FM-039/FM-040 note (removed here; still recoverable from Git history), which itself superseded the prior 2026-08-16 human acceptance. FM-034's 1700px page container remains true and unchanged, as does FM-040's bulk-actions bar inside the same `results-toolbar` region; the `.result-*` column ratios do **not** remain unchanged -- see the FM-042 paragraph below, which supersedes that specific clause. FM-045 changes this record in two ways: the table header row no longer carries FM-034's inline per-column filter controls (only the sort button/indicator remains, and the header cells' vertical padding drops from MUI's 16px default to the body cells' 6px, so the header row is measurably shorter), and the toolbar's mobile-only `results-filters`/`results-quick-filters` rows are gone because the `refine-sidebar` is now the sole filter surface at every viewport (see `F-SEARCH-SORT-FILTER` for that contract, including its below-`sm` drawer). No result row, cell, summary, or selection behavior changed. FM-046 restyles the `results-toolbar` container itself from an elevated `Paper` (border/shadow) to the mock's flat, borderless bar at its own `16px 0 14px` padding, and adds a `· N selected` fragment to `search-results-summary` in `primary.main` once something is selected -- a pure density/palette and additive-text change with no change to the summary's existing loaded/filtered/available/rejected wording, no result row/cell behavior change, and no change to `results-selected-count`, which keeps rendering separately inside `results-bulk-actions` exactly as FM-040 left it. FM-041 adds two opt-in row treatments driven from the new `display-options` popover: `Compact rows` moves every body cell's vertical padding from `6px` to `4px` and tightens the row's own checkbox/action/expand controls proportionally, and `Highlight recent` flags a result at most three days old (computed from the existing `epoch` through `resultTable.ts`'s `ageInDays`; a result with no `epoch` is never flagged) with two independent properties -- an accent-teal (`primary.light`) age-column text color plus a left-edge inset accent stripe on the row's first cell -- so the flag does not depend on hue alone. Both default **off**, so the default row density, the default row rendering, and every default-state geometry check above are unchanged; the mock defaults `highlightRecent` on and that is deliberately not adopted, because changing the default rendering would invalidate accepted default-state baselines only a human may re-accept. `ResultRow`'s FM-034 memoization is untouched: the recency flag reaches it as one already-resolved boolean primitive and the density is one descendant `sx` rule on the `Table`, not a per-row prop. FM-042 (ADR-0011, Option E) makes the results table never scroll horizontally, matching legacy: the `overflowX: \"auto\"` wrapper and its `TABLE_MIN_WIDTH` floor are deleted outright, so a sticky `<th>` finally has no scrolling ancestor between it and the document and the mock's `position:sticky` toolbar/header can now both pin for real, evidenced by scrolling in `tests/system/tests/results.spec.ts`. Disclosed precisely, because it is easy to state backwards: the removed floor is what forced the byte-for-byte-ported `.result-*` ratios (54/9/8/7/6.5/5.5/10) to give -- they demonstrably do not fit once the table can be compressed below the old measured 1320px floor -- so this task adopts legacy's *fluid, never-scrolling* table model while deliberately diverging from legacy's *column ratios*, re-proportioning the `<colgroup>` to `40px / 34% / 11% / 11% / 9% / 11% / 9% / 15%` (checkbox, Title, Indexer, Category, Size, Details, Age, Actions) and adopting the mock's own header-label typography (11px/600/0.5px letter-spacing/uppercase, `#7c8483`) as the complementary lever, measured in a real browser at 1280x800 in both sidebar states and at 1900x1000 rather than implemented from ADR-0011's unmeasured sketch. The title cell gains `overflow-wrap: anywhere` (legacy's `.text-break`) so an over-long, dot-separated release name wraps across multiple lines instead of ellipsizing or spilling; variable row heights are the accepted cost. The sticky header's bottom edge is drawn as a `box-shadow` on each `<th>` rather than relying on the collapsed table's own border (which does not travel with a sticky cell), leaving `border-collapse: collapse` and FM-041's inset recency stripe both untouched. The stacked-card breakpoint moves from MUI's `sm` (600px) to a raw 768px query (legacy's measured 767px stacking threshold), shared with `F-SEARCH-SORT-FILTER`'s `refine-sidebar` drawer breakpoint via `RefineSidebar.tsx`'s `useCompactRefineSurface()`, so the two move together. Two ADR-0006 variances below are newly required by this change. Pending fresh human review; see the FM-045, FM-046, FM-041, and FM-042 handoffs for what changed and why."
-      contract:
-        setup: "React-selected `ui/react?redirect=/` with a deterministic mocked `internalapi/search` response (two same-title/hash NZB duplicates plus one distinct-title NZB release) submitted through the real search form, in `tests/system/tests/results.spec.ts`. The display-options/density/recency states use that spec's own separate fixture in the same file: four distinct-title NZB releases, three inside the three-day recency window and one deliberately 40 days old, so the recency distinction is assertable."
-        states: [ populated-toolbar-and-table, title-dominant-column, filtered-result-narrowing, simplified-sortable-header, refine-sidebar-expanded, refine-sidebar-collapsed, refine-sidebar-mobile-drawer, refine-counts-and-type-chips, no-selection-disabled-actions, partial-selection-indeterminate, all-selected-bulk-actions, toolbar-mock-density, display-menu-open, compact-rows-enabled, recent-highlight-enabled, sidebar-shortcut-toggled, scrolled-sticky-toolbar-and-header, scrolled-popover-above-sticky, fluid-table-title-collapse, keyboard-focus-indicator ]
-        viewports: [ { name: desktop, width: 1280, height: 800 }, { name: mobile, width: 390, height: 844 }, { name: desktop-wide, width: 1900, height: 1000 } ]
-        geometry_checks:
-          - "the results-toolbar and search-results-table regions each render with no horizontal overflow at 1280x800 and 390x844, and the toolbar's bottom edge sits at or above the table's top edge"
-          - "FM-042 (ADR-0011): `desktop-wide` (1900x1000) is additive and applies only to the three scrolled/title-collapse states below -- `desktop` (1280x800) stays the viewport every other check above is captured at, unchanged and not re-scoped, so the measured 63.25px header-height baseline below stays meaningful"
-          - "while the document scrolls, `results-toolbar` stays pinned at the viewport's top edge (`position: sticky; top: 0`) and the table's column header row stays pinned directly beneath it, at a `top` offset equal to the toolbar's own measured rendered height (derived, not a hardcoded constant), at `desktop` and `desktop-wide`; no data row's top edge sits above the header row's bottom edge while scrolled, and several rows have scrolled out from under the sticky regions with rows still visible beneath them"
-          - "at mobile the responsive table hides `thead` entirely, so only the toolbar sticks while scrolled, and the sticky region occupies at most 40% of the 844px viewport with at least two result rows visible beneath it"
-          - "FM-046's header caret selection menu and FM-041's display-options menu, each opened while the page is scrolled, render fully within the viewport and remain genuinely clickable (not covered by a higher-stacked sticky region) at every viewport"
-          - "the docked refine-sidebar's right edge stays at or left of the table's left edge while scrolled, at `desktop` and `desktop-wide` (the sidebar is not itself made sticky, so it scrolls beneath the pinned toolbar/header exactly like a result row, which is expected, not a stacking regression)"
-          - "walking the ancestor chain from a sticky header `<th>` up to `documentElement`, no element has a computed `overflow-x` or `overflow-y` other than `visible`, at `desktop` and `desktop-wide`, in both sidebar states -- proof that Option E's deleted `overflowX: \"auto\"` wrapper left no scrolling ancestor, checked in the browser rather than inferred from `AppShell.tsx`/`router.tsx`"
-          - "the results table's own `scrollWidth` does not exceed its `clientWidth`, and `documentElement.scrollWidth` does not exceed its `clientWidth`, at `desktop` and `desktop-wide`"
-          - "while scrolled at `desktop`, the sticky `<th>`'s computed `box-shadow` is not `none`, the table's computed `border-collapse` is `collapse`, and a recency-flagged row still renders FM-041's inset left-edge stripe on its first cell"
-          - "in `fluid-table-title-collapse`, a fixture row whose title is a long dot-separated release name renders its title cell across more than one line box at `desktop`, and on a single line at `desktop-wide` (the design target width, where the same title is not expected to need wrapping); at both, the cell satisfies `scrollWidth <= clientWidth`, the row's `data-result-title` attribute equals the full untruncated title, and the title cell carries neither a `title=` attribute nor a tooltip"
-          - "the title header column's bounding-box width exceeds twice the indexer header column's width at desktop"
-          - "after a free-text title filter narrows visible rows, the results summary reflects the updated filtered count and the table/toolbar remain overflow-free"
-          - "at desktop the sidebar and table both render overflow-free, the sidebar's right edge sits at or left of the table's left edge, and the title header column's width still exceeds twice the indexer header column's width"
-          - "collapsing the sidebar increases the table's bounding-box width, leaves no residual gap, and is reflected by the toggle's aria-expanded"
-          - "every category and indexer row renders as a single non-checkbox clickable element carrying its label and count with no scrollWidth overflow of the row"
-          - "the table header row carries no inline filter control at either viewport and measures shorter at desktop than the 63.25px it measured before FM-045"
-          - "at mobile no docked sidebar renders beside the table; opening refine-sidebar-toggle shows every filter section in a drawer with no page horizontal overflow, and closing it restores the table's previous mobile width and position exactly"
-          - "the toolbar's new bulk-actions bar (FM-040) renders inside the same results-toolbar region this record already governs, so its bottom edge stays at or above the table's top edge, and it does not overlap the refine-sidebar at desktop"
-          - "the results-toolbar element's computed box-shadow is none and border-top-width is 0px (no elevated Paper surface), and its computed padding-top/padding-bottom are 16px/14px, at both 1280x800 and 390x844"
-          - "the display-options toggle exposes aria-haspopup and aria-expanded, and the open popover renders on the mock's #2a3133 background with an 11px border radius and at least its 220px minimum width, fully inside the viewport with no page horizontal overflow, at both 1280x800 and 390x844"
-          - "with both new preferences off, every body cell's computed vertical padding is exactly the 6px FM-045 established before FM-041, and the table's height for a fixed four-row count returns to exactly that value after Compact rows is switched on and off again"
-          - "enabling Compact rows moves every body cell's computed vertical padding from 6px to 4px and measurably reduces the table's height for the same four visible rows, while every row's title cell stays free of scrollWidth overflow at both 1280x800 and 390x844"
-          - "with Highlight recent enabled, a result at most three days old differs from the 40-day-old result in two computed properties -- its age cell's color and the presence of an inset left-edge stripe on its first cell -- and the flagged row has no scrollWidth overflow of its own box"
-          - "with Highlight recent disabled, the same two properties are identical for the recent and the older result, so the default rendering is unchanged"
-          - "FM-053 (ADR-0013): a sortable column header's sort button, reached by real Tab/Shift+Tab from a known start with no pointer interaction, renders a non-empty focused/unfocused computed-style delta and the authored token `outline: 3px solid oklch(0.75 0.1 190)` at `outline-offset: 3px`, inside the sticky table header"
-          - "FM-053 (ADR-0013): that indicator's changed area is 538.50 px2 against its own `4(w+h)` threshold of 287.00 px2 (control box 44.50x27.25) and its full-opacity contrast against its own composited unfocused ground rgb(31,36,38) is 7.34:1; measured inside the results table rows and the sticky header specifically, it is neither clipped by the header cell nor the cause of page-level horizontal overflow at either viewport"
-      evidence: [ tests/system/tests/results.spec.ts, tests/system/tests/focus-indication.spec.ts ]
-      snapshots: [ tests/system/visual-evidence/F-SEARCH-RESULTS/display-options-desktop.png, tests/system/visual-evidence/F-SEARCH-RESULTS/compact-rows-desktop.png, tests/system/visual-evidence/F-SEARCH-RESULTS/sticky-header-desktop.png, tests/system/visual-evidence/F-SEARCH-RESULTS/sticky-header-desktop-wide.png, tests/system/visual-evidence/F-SEARCH-RESULTS/sticky-header-mobile.png, tests/system/visual-evidence/F-SEARCH-RESULTS/fluid-table-title-collapse-desktop.png, tests/system/visual-evidence/F-SEARCH-RESULTS/keyboard-focus-sort-header-button-desktop.png ]
-      variances:
-        - description: "Opt-in `Compact rows` row density has no legacy equivalent. Confirmed against the legacy view's own display-options list (`core/ui-src/js/search-results-controller.js`'s `optionsOptions`, rendered by `core/ui-src/html/states/search-results.html`'s `id=\"display-options\"` multiselect dropdown), which offers no density or row-height option, and against `core/ui-src/html/directives/search-result.html`, which has no compact variant."
-          status: proposed
-        - description: "Opt-in `Highlight recent` recency flagging (an accent age color plus a left-edge stripe for results at most three days old) has no legacy equivalent. Confirmed against the same legacy `optionsOptions` list and `search-result.html`, neither of which has any age-based emphasis; the legacy view renders the age column in one uniform style regardless of age. The React default is off, unlike the mock's own `highlightRecent: true`, so no default-state baseline is affected."
-          status: proposed
-        - description: "FM-042 (ADR-0011) scroll-model divergence: the results table diverges from the mock's own dual-axis scroll model in favor of legacy's always-fluid table. The mock's own grid (`uimock/NZBHydra Search.dc.html:258`) is `grid-template-columns: 38px minmax(240px,1fr) 118px 130px 92px 62px 78px 78px 92px 104px` inside `padding: 0 6px`, giving a hard 240px Title floor and an intrinsic minimum of roughly 1044px below which the mock scrolls horizontally (its declared `min-width: 940px` at `:256` is inert), inside a `main` that is `overflow: auto` in both axes (`:210`). This implementation has no Title floor, no horizontal scroll at any width at or above the stacking breakpoint, and no nested scroller, and it compresses Title freely -- matching legacy (`core/ui-src/less/partials/tables.less:17-23`), not the mock. Requires explicit human acceptance under ADR-0006; accepting ADR-0011 is not accepting this variance."
-          status: proposed
-        - description: "FM-053 (ADR-0013) focus-indicator variance from the visual reference: the ADR-0009 source mock `uimock/NZBHydra Search.dc.html` declares `outline:none` 15 times and authors no focus-state style at all -- its only `focus` occurrences are the `onFocus`/`onFocusSearch`/`searchFocused` JS bindings, confirmed first-hand by FM-053 rather than taken on trust -- so the authored keyboard focus indicator this record now renders (`outline: 3px solid oklch(0.75 0.1 190)` at a 3px offset, or -3px where an ancestor was measured clipping an outset ring) is a deliberate divergence from that reference, adopted under ADR-0013 (accepted 2026-08-19, Option A) for WCAG 2.4.7/2.4.11 rather than for mock fidelity. Requires explicit human acceptance under ADR-0006; accepting ADR-0013 is not accepting this variance."
-          status: proposed
-        - description: "FM-042 (ADR-0011, sub-decision E-title (i)) title-rendering divergence: release titles wrap onto further lines (`overflow-wrap: anywhere`) rather than ellipsizing. The mock's title cell (`uimock/NZBHydra Search.dc.html:287`) is `white-space: nowrap; overflow: hidden; text-overflow: ellipsis` with a second, also-ellipsized metadata line at `:288`; legacy wraps (`core/ui-src/html/directives/search-result.html:3`'s `.text-break` + `core/ui-src/less/partials/type.less:31-34`). Legacy's behavior was selected because this component has no `<Tooltip>`/`title=` attribute anywhere to recover an ellipsized tail. Requires explicit human acceptance under ADR-0006; accepting ADR-0011 is not accepting this variance."
-          status: proposed
-    gaps: [ ]
-    task: FM-010
-    backlog: { status: deferred, rationale: "The record remains partial pending a dedicated full-parity reconciliation. FM-053 (ADR-0013, accepted 2026-08-19, Option A) additionally gives every interactive control on this record's surface the application's single authored keyboard focus indicator, measured live at full opacity and evidenced above; the ADR-0006 acceptance of that focused state and its variance is outstanding and belongs to the repository owner alone." }
-
   - id: F-SEARCH-SORT-FILTER
     name: Result sorting, column filters, quick filters, and persisted choices
-    route_states: [ root.search.results ]
-    routes: [ / ]
-    roles: [ user ]
-    legacy_sources: [ core/ui-src/js/search-results-controller.js, core/ui-src/js/directives/dataTableDirectives.js, core/ui-src/html/states/search-results.html ]
-    tests: [ tests/system/tests/search.spec.ts, tests/system/tests/results.spec.ts, core/ui-react/src/features/search/results/SearchResults.test.tsx, core/ui-react/src/features/search/results/resultTable.test.ts, core/ui-react/src/features/search/results/RefineSidebar.test.tsx ]
-    selectors: [ "sort-{{column}}", "freetext-filter-{{column}}", "number-filter-min-{{column}}", "number-filter-max-{{column}}", "number-filter-apply-{{column}}", "number-filter-clear-{{column}}", filter-toggle-indexer, filter-toggle-category, filter-toggle-size, filter-toggle-grabs, filter-toggle-age, refine-sidebar, refine-sidebar-toggle, refine-sidebar-drawer, refine-sidebar-close, refine-clear-all, refine-filter-title, refine-quality-filters, refine-category-toggle, refine-category-list, refine-category-option, refine-indexer-toggle, refine-indexer-list, refine-indexer-option, refine-type-chips, filter-toggle-refine-size, filter-toggle-refine-age, filter-toggle-refine-grabs, display-options-toggle, display-options ]
+    routes:
+      - /
+    legacy_sources:
+      - core/ui-src/js/search-results-controller.js
+      - core/ui-src/js/directives/dataTableDirectives.js
+      - core/ui-src/html/states/search-results.html
     target: core/ui-react/src/features/search/results
+    tests:
+      - tests/system/tests/search.spec.ts
+      - tests/system/tests/results.spec.ts
+      - core/ui-react/src/features/search/results/SearchResults.test.tsx
+      - core/ui-react/src/features/search/results/resultTable.test.ts
+      - core/ui-react/src/features/search/results/RefineSidebar.test.tsx
+    selectors:
+      - sort-{{column}}
+      - freetext-filter-{{column}}
+      - number-filter-min-{{column}}
+      - number-filter-max-{{column}}
+      - number-filter-apply-{{column}}
+      - number-filter-clear-{{column}}
+      - filter-toggle-indexer
+      - filter-toggle-category
+      - filter-toggle-size
+      - filter-toggle-grabs
+      - filter-toggle-age
+      - refine-sidebar
+      - refine-sidebar-toggle
+      - refine-sidebar-drawer
+      - refine-sidebar-close
+      - refine-clear-all
+      - refine-filter-title
+      - refine-quality-filters
+      - refine-category-toggle
+      - refine-category-list
+      - refine-category-option
+      - refine-indexer-toggle
+      - refine-indexer-list
+      - refine-indexer-option
+      - refine-type-chips
+      - filter-toggle-refine-size
+      - filter-toggle-refine-age
+      - filter-toggle-refine-grabs
+      - display-options-toggle
+      - display-options
     parity: partial
-    visual:
-      applicability: applicable
-      status: proposed
-      note: "Supersedes the FM-039 note (removed here; still recoverable from Git history), which itself superseded the prior 2026-08-16 human acceptance. FM-045 (ADR-0009) makes the `refine-sidebar` the *only* result-filter surface at every viewport: FM-034's inline per-column-header filter popovers and the mobile-only `results-filters`/`results-quick-filters` toolbar rows are removed from the React target, sortable header cells keep only their sort button/indicator, and below `sm` the same `refine-sidebar-toggle` opens the identical sections in a MUI `Drawer` instead of a docked column. Category and Indexer render as the mock's full-width toggle rows (`aria-pressed` on the row itself, no `input[type=checkbox]`) instead of FM-039's checkbox list; counting semantics, `ResultFilters`, `filterResults`, `defaultFilters`, download-type derivation, and `refine-clear-all` are unchanged. The whole panel is restyled to the mock's palette, typography, and density. Selector removals disclosed per README's compatibility-contract rule: `header-filter-title`, `header-filter-{{column}}`, `header-filter-{{column}}-toggle`, `header-filter-{{column}}-options`, and `number-filter-{min,max,apply,clear}-header-{{column}}` no longer exist anywhere and are deleted from `selectors`. `freetext-filter-{{column}}`, `filter-toggle-indexer`, `filter-toggle-category`, `filter-toggle-{size,grabs,age}`, and `number-filter-{min,max,apply,clear}-{{column}}` are deliberately retained because they remain live selectors of the *legacy* AngularJS view this same record documents (`core/ui-src/html/states/search-results.html`, `core/ui-src/html/dataTable/columnFilterFreetext.html`) and are still exercised by `results.spec.ts`'s legacy-shell tests; they no longer exist in the React target. FM-041 adds the `display-options` popover (the mock's `showDisplayMenu` block, and the direct React counterpart of the legacy view's own `id=\"display-options\"` \"Display options\" multiselect dropdown) as the single place every display preference is chosen, and extends this record's persisted-choices contract: `compactRows` and `highlightRecent` join `filters`, `sorting`, and the `sidebarCollapsed` key FM-039/FM-045 already persist in the same `hydra.search-results.table` localStorage payload -- two genuinely new keys, since the popover's \"Show refine sidebar\" entry is only a second entry point to the existing visibility affordance and adds no key of its own. The below-`sm` drawer's open state is deliberately still absent from the payload (see this record's own variance below). No server-backed storage is introduced and the `server-backed preferences` gap stays open and unchanged. FM-042 (ADR-0011, Option E) re-proportions the `<colgroup>` behind the sortable headers this record's `:270`-equivalent check governs (`40px / 34% / 11% / 11% / 9% / 11% / 9% / 15%` for checkbox/Title/Indexer/Category/Size/Details/Age/Actions, measured in a real browser rather than assumed) and adopts the mock's own header-label typography as the complementary lever, so every sortable header's full label now fits with `scrollWidth <= clientWidth` at 1280x800 in both sidebar states and at 1900x1000 -- re-evidenced fresh against these ratios, not inherited from the pre-FM-042 measurement the `TABLE_MIN_WIDTH = 1320` floor was calibrated to satisfy. It also moves the stacked-card/drawer breakpoint this record's mobile checks below all reference: **both `RefineSidebar.tsx`'s drawer branch and `SearchResults.tsx`'s stacked-card table branch now switch off a raw 768px query (`theme.breakpoints.down(768)`, legacy's measured 767px threshold, `core/ui-src/less/partials/tables.less:91`) rather than MUI's `sm` (600px)** -- the below-`sm` language throughout this note and the variance beneath it now means \"below 768px\"; the two branches move together from the same shared `useCompactRefineSurface()` definition, unchanged. Pending fresh human review; see the FM-045, FM-041, and FM-042 handoffs for what changed and why."
-      contract:
-        setup: "React-selected `ui/react?redirect=/` with a deterministic mocked `internalapi/search` response (three releases across three indexers and two categories, one of them carrying no downloadType) submitted through the real search form, in `tests/system/tests/results.spec.ts`. The sidebar-shortcut state uses the same file's FM-041 fixture (four distinct-title NZB releases) and, for the mobile branch, a deliberately pre-stored `{\"sidebarCollapsed\": false}` payload."
-        states: [ refine-sidebar-only-surface, refine-toggle-row-category-indexer, refine-sidebar-mobile-drawer, right-aligned-sortable-header, refine-sidebar-expanded, refine-sidebar-collapsed, refine-counts-and-type-chips, display-menu-open, sidebar-shortcut-toggled, keyboard-focus-indicator ]
-        viewports: [ { name: desktop, width: 1280, height: 800 }, { name: mobile, width: 390, height: 844 } ]
-        geometry_checks:
-            - "no inline filter control renders in the table header at either viewport (no `header-filter-*`, `number-filter-*-header-*`, `freetext-filter-title`, `filter-toggle-indexer`, or `filter-toggle-category` element exists in the React target), and each sortable header cell renders exactly one button, its sort button"
-            - "at desktop the header row's height is measurably shorter than the 63.25px it measured before FM-045 at the same viewport, against the clean `89286c376` baseline"
-            - "a numeric metadata column header (Size) has a computed text-align of right at desktop, matching its right-aligned data cells"
-            - "the title header column's bounding-box width exceeds twice the indexer header column's width at desktop, keeping the sort hierarchy dominant"
-            - "every sortable column header (title, indexer, category, size, grabs/details, age) renders its full label at desktop with no scrollWidth overflow of its own box, and its ascending/descending state is conveyed by a compact visible indicator plus an `aria-sort` attribute and an `aria-label` accessible name rather than a header-width-consuming visible text suffix"
-            - "FM-042 (ADR-0011): the same full-label/no-overflow check above, re-evidenced against the re-proportioned `<colgroup>` and the mock's header-label typography, holds on both the header `<th>` and its sort `<button>` at 1280x800 in both sidebar states -- this record's contract viewports are unchanged by FM-042 (`desktop-wide` is scoped to `F-SEARCH-RESULTS`'s own scrolled/title-collapse states); the unlabelled checkbox header is exempt"
-            - "FM-042 (ADR-0011): at the shared 768px stacking threshold `useCompactRefineSurface()` defines, a viewport a few pixels below it renders the stacked-card table with `thead` hidden and the refine sidebar as a drawer with no docked sidebar beside the table, while a viewport a few pixels above renders the table with a pinned header and a docked sidebar -- the two branches switching together at the same width"
-            - "at desktop the sidebar and table both render overflow-free, the sidebar's right edge sits at or left of the table's left edge, and the title header column's width still exceeds twice the indexer header column's width"
-            - "collapsing the sidebar increases the table's bounding-box width, leaves no residual gap, and is reflected by the toggle's aria-expanded"
-            - "every category and indexer row renders as a single non-checkbox `button` carrying its label, its loaded-result count, and `aria-pressed`, with no scrollWidth overflow of the row, and a selected row's computed background color differs measurably from an unselected row's"
-            - "at mobile no docked sidebar and no results-filters/results-quick-filters row renders; opening refine-sidebar-toggle renders every filter section inside the drawer with no page horizontal overflow, and closing it restores the table to exactly its previous mobile width and position"
-            - "the display-options \"Show refine sidebar\" entry's checked state matches the live refine-sidebar-toggle's aria-expanded at both viewports before and after toggling it"
-            - "at desktop, toggling that entry changes the docked sidebar's width and changes the table's bounding-box width by the same delta with no residual gap, and produces geometry identical to the live refine-sidebar-toggle's own round trip"
-            - "at mobile, toggling that entry makes refine-sidebar-drawer appear and disappear, refine-sidebar-close and the live trigger keep working unchanged, the closed table's width and x return to exactly their previous values, and no page horizontal overflow occurs in any of the four open/close combinations of the two controls"
-            - "at mobile the drawer is still closed on first render even when `{\"sidebarCollapsed\": false}` is already stored, so a persisted docked-column preference never pops the overlay open"
-            - "FM-053 (ADR-0013): the refine sidebar's Title-contains filter, reached by real Tab/Shift+Tab from a known start with no pointer interaction, renders a non-empty focused/unfocused computed-style delta and the authored token `outline: 3px solid oklch(0.75 0.1 190)` at `outline-offset: 3px`, layered over the `notchedOutline` recolour this record already carries, which FM-053 deliberately leaves untouched"
-            - "FM-053 (ADR-0013): that indicator's changed area is 1606.13 px2 against its own `4(w+h)` threshold of 998.75 px2 (control box 215.00x34.69) and its full-opacity contrast against its own composited unfocused ground rgb(28,34,36) is 7.54:1; measured in the sidebar's dense pill rows specifically (a category toggle row measures 1513.50 px2 against 937.00 px2 at 7.34:1, a category option row 1587.28 px2 against 986.19 px2 at 7.34:1), it is neither clipped by the sidebar Paper nor the cause of page-level horizontal overflow"
-      evidence: [ tests/system/tests/results.spec.ts, tests/system/tests/focus-indication.spec.ts ]
-      snapshots: [ tests/system/visual-evidence/F-SEARCH-SORT-FILTER/toggle-row-sidebar-desktop.png, tests/system/visual-evidence/F-SEARCH-SORT-FILTER/refine-sidebar-mobile-drawer.png, tests/system/visual-evidence/F-SEARCH-SORT-FILTER/keyboard-focus-refine-filter-title-desktop.png ]
-      variances:
-        - description: "The refine-sidebar itself, its per-item category/indexer loaded-result counts, the download-type filter (deriving NZB/TORRENT/TORBOX chips from the loaded results rather than a hardcoded pair), and the `refine-clear-all` reset action have no legacy equivalent (confirmed against `core/ui-src/js/search-results-controller.js` and `core/ui-src/html/states/search-results.html`, which have no sidebar/aside concept, no per-item filter counts, and no global filter-reset action)."
-          status: proposed
-        - description: "The React target no longer offers per-column-header filter controls, which the legacy AngularJS view still does (`column-filter-wrapper`, `freetext-filter`, `number-filter` inside each `search-results.html` header cell). This is an intentional ADR-0009 divergence -- every filter dimension the legacy header filters expose is still reachable, from the refine-sidebar, at every viewport -- not a lost capability."
-          status: proposed
-        - description: "FM-053 (ADR-0013) focus-indicator variance from the visual reference: the ADR-0009 source mock `uimock/NZBHydra Search.dc.html` declares `outline:none` 15 times and authors no focus-state style at all -- its only `focus` occurrences are the `onFocus`/`onFocusSearch`/`searchFocused` JS bindings, confirmed first-hand by FM-053 rather than taken on trust -- so the authored keyboard focus indicator this record now renders (`outline: 3px solid oklch(0.75 0.1 190)` at a 3px offset, or -3px where an ancestor was measured clipping an outset ring) is a deliberate divergence from that reference, adopted under ADR-0013 (accepted 2026-08-19, Option A) for WCAG 2.4.7/2.4.11 rather than for mock fidelity. Requires explicit human acceptance under ADR-0006; accepting ADR-0013 is not accepting this variance."
-          status: proposed
-        - description: "The mock realizes refine-surface visibility as one `showFilters` boolean gating whether its `<aside>` renders at all. React realizes it as two per-branch mechanisms instead, exactly one of which is ever mounted: at the stacking threshold and up the persisted `sidebarCollapsed` preference (the docked column), and below it a transient, unpersisted drawer-open state. FM-045's reason, unchanged by FM-041's lift of that state's owner from `RefineSidebar.tsx` into `SearchResults.tsx`: a persisted expanded preference must not pop an overlay over the results when a desktop user reopens the page on a phone. The mock has no responsive branch, so it never had to answer this. The `refine-sidebar-expanded`, `refine-sidebar-collapsed`, and `refine-sidebar-mobile-drawer` states above already record the two mechanisms as distinct states; FM-041's `display-options` \"Show refine sidebar\" entry reads and writes whichever one is live, resolved from the same single `useCompactRefineSurface()` definition `RefineSidebar` itself uses, so the entry can never disagree with the live `refine-sidebar-toggle`. FM-042 (ADR-0011) moved that shared definition's own threshold from MUI's `sm` (600px) to a raw 768px query (`theme.breakpoints.down(768)`, legacy's measured 767px stacking point) -- the mechanism and this variance's reasoning are otherwise unchanged. Merging the two states, or a mount-time guard forcing one from the other, would be a product decision requiring an ADR and is deliberately not done."
-          status: proposed
-    gaps: [ server-backed preferences ]
-    task: FM-011
-    backlog: { status: deferred, rationale: "Server-backed preference adoption has no implementation task yet. FM-053 (ADR-0013, accepted 2026-08-19, Option A) additionally gives this record's filter fields, toggle rows and sort buttons the application's single authored keyboard focus indicator, measured live and evidenced above; the three `notchedOutline` `borderColor` recolours this record's surface carries are deliberately left byte-identical, because FM-052 measured them raising that family's focused-versus-unfocused contrast. The ADR-0006 acceptance of the resulting focused state and its variance is outstanding and belongs to the repository owner alone." }
-
+    gaps:
+      - server-backed preferences
   - id: F-SEARCH-GROUP-SELECTION
     name: Duplicate, title, and episode grouping with selection and shift-selection
-    route_states: [ root.search.results ]
-    routes: [ / ]
-    roles: [ user ]
-    legacy_sources: [ core/ui-src/js/search-results-controller.js, core/ui-src/js/directives/search-result.js, core/ui-src/js/directives/selection-button.js ]
-    tests: [ tests/system/tests/results.spec.ts, core/ui-react/src/features/search/results/SearchResults.test.tsx ]
-    selectors: [ search-result-row, results-selection-actions, header-selection-menu, toolbar-selection-menu, display-options-toggle, display-options ]
+    routes:
+      - /
+    legacy_sources:
+      - core/ui-src/js/search-results-controller.js
+      - core/ui-src/js/directives/search-result.js
+      - core/ui-src/js/directives/selection-button.js
     target: core/ui-react/src/features/search/results
+    tests:
+      - tests/system/tests/results.spec.ts
+      - core/ui-react/src/features/search/results/SearchResults.test.tsx
+    selectors:
+      - search-result-row
+      - results-selection-actions
+      - header-selection-menu
+      - toolbar-selection-menu
+      - display-options-toggle
+      - display-options
     parity: partial
-    visual:
-      applicability: applicable
-      status: proposed
-      note: "Supersedes the prior 2026-08-16 human acceptance of this record (removed here; still recoverable from Git history) because it evidenced the exact toolbar region FM-040 restructures. FM-040 removes the flat 'Select all'/'Deselect all'/'Invert selection' toolbar buttons the accepted geometry check named, replacing them with a real tri-state select-all checkbox (indeterminate on partial selection) plus an adjacent caret opening a role=\"menu\" with the same three actions -- rendered in the results table header (header-selection-menu, reachable at sm and up, where thead renders) and, since the responsive table hides thead entirely below sm, a second functionally-identical copy in the toolbar's results-selection-actions region (toolbar-selection-menu) so bulk selection stays reachable at mobile. Each menu entry still produces exactly the selectVisibleResults outcome the old button produced (asserted by selection outcome in component tests, not by the entry's presence). results-selection-actions keeps its data-testid and now carries the grouping toggles plus the toolbar-selection-menu copy. Follows the FM-034/FM-037 precedent of superseding a prior acceptance whose accepted geometry check the restructure invalidates. FM-046 restyles this reused-unchanged structure to the mock's palette/density: the checkbox renders through MUI Checkbox's icon/checkedIcon/indeterminateIcon props (ADR-0002) as a 17x17px, 5px-radius square -- filled `primary.main` with a check mark when checked, a dash when indeterminate, transparent with a `rgba(255,255,255,0.25)` border when unchecked -- and the caret's role=\"menu\" now renders on the mock's `#2a3133` popover surface with a 9px radius and drop shadow. No selection semantics, outcome, or accessibility affordance (aria-haspopup, aria-expanded, role=\"menu\"/\"menuitem\", indeterminate) changed; the existing component tests exercising them still pass unmodified. FM-041 relocates the two grouping toggles (\"Group torrent and Usenet results\" and \"Group TV episodes\") out of the inline `results-selection-actions` row and into the new `display-options` popover, with their labels, defaults (off and on respectively), and grouping behavior unchanged -- the same shape the legacy AngularJS view already used for them (`core/ui-src/js/search-results-controller.js`'s `optionsOptions`, rendered as `search-results.html`'s `id=\"display-options\"` \"Display options\" dropdown), so this is a relocation toward legacy parity rather than a new divergence. `results-selection-actions` keeps its `data-testid` and now carries the mobile-reachable `toolbar-selection-menu` copy plus the right-aligned `display-options-toggle`; no selection semantics, outcome, or `data-testid` changed. Pending fresh human review; see the FM-040, FM-046, and FM-041 handoffs for what changed and why."
-      contract:
-        setup: "React-selected `ui/react?redirect=/` with a deterministic mocked `internalapi/search` response (two same-title/hash NZB duplicates plus one distinct-title NZB release) submitted through the real search form; the duplicate group is expanded, in `tests/system/tests/results.spec.ts`."
-        states: [ collapsed-duplicate-group, expanded-duplicate-indentation, selection-actions-region, no-selection-disabled-actions, partial-selection-indeterminate, all-selected-bulk-actions, toolbar-mock-density, tri-state-checkbox-mock-square, display-menu-grouping-toggles, keyboard-focus-indicator ]
-        viewports: [ { name: desktop, width: 1280, height: 800 }, { name: mobile, width: 390, height: 844 } ]
-        geometry_checks:
-          - "expanding a duplicate group increases visible row count from 2 to 3, and the nested row's title cell computed padding-left exceeds its parent's, giving a consistent indentation step"
-          - "the expanded nested row's computed background-color differs from its parent row's background-color, giving a distinguishable group/duplicate treatment"
-          - "the toolbar's dedicated results-selection-actions region (a mobile-reachable copy of the header's tri-state select-all checkbox and its Select all/Deselect all/Invert selection menu, plus the right-aligned display-options-toggle whose popover now carries the two grouping toggles) renders within the compact results-toolbar without overflow at either viewport, visually separate from results-download-actions"
-          - "the display-options popover renders both relocated grouping toggles as named checkboxes with their unchanged defaults (Group torrent and Usenet results unchecked, Group TV episodes checked), and toggling Group torrent and Usenet results still merges a same-title NZB/torrent pair into one expandable title group"
-          - "with nothing selected, the header's tri-state checkbox is unchecked and not indeterminate, and both bulk-actions-bar primary actions render disabled, with no horizontal overflow of the bar at either viewport"
-          - "selecting one row of several renders the header checkbox indeterminate, and the open selection menu (opened via its caret) renders fully within the viewport with no page horizontal overflow at either viewport"
-          - "selecting every visible row renders the header checkbox checked and not indeterminate"
-          - "the select-all checkbox's rendered bounding box is within a few pixels of 17x17px at both its unchecked and checked states, with no scrollWidth overflow of its own box, at both 1280x800 and 390x844"
-          - "the caret menu's Paper ancestor renders on the mock's #2a3133 popover surface, fully within the viewport with no page horizontal overflow, at both 1280x800 and 390x844"
-          - "FM-053 (ADR-0013): the tri-state select-all Checkbox, reached by real Tab/Shift+Tab from a known start with no pointer interaction, renders a non-empty focused/unfocused computed-style delta and the authored token `outline: 3px solid oklch(0.75 0.1 190)` at `outline-offset: 3px` on its own visible root (computed `opacity: 1`), not on MUI's `opacity: 0` native input overlay, at both viewports -- the header copy at desktop and the toolbar copy at mobile"
-          - "FM-053 (ADR-0013): that indicator's changed area is 312.00 px2 against its own `4(w+h)` threshold of 136.00 px2 (control box 17.00x17.00) and its full-opacity contrast against its own composited unfocused ground rgb(31,36,38) is 7.34:1, and it is neither clipped by an ancestor nor the cause of page-level horizontal overflow at either viewport"
-      evidence: [ tests/system/tests/results.spec.ts, tests/system/tests/focus-indication.spec.ts ]
-      snapshots: [ tests/system/visual-evidence/F-SEARCH-GROUP-SELECTION/toolbar-mock-density-desktop.png, tests/system/visual-evidence/F-SEARCH-GROUP-SELECTION/toolbar-mock-density-mobile.png, tests/system/visual-evidence/F-SEARCH-GROUP-SELECTION/keyboard-focus-select-all-checkbox-desktop.png ]
-      variances:
-        - description: "The header's tri-state select-all checkbox (indeterminate on partial selection) and its adjacent caret opening a role=\"menu\" with Select all/Deselect all/Invert selection have no legacy equivalent; legacy uses a standalone `selectionButton` directive (`core/ui-src/js/directives/selection-button.js`) with always-visible, non-indeterminate buttons."
-          status: proposed
-        - description: "FM-053 (ADR-0013) focus-indicator variance from the visual reference: the ADR-0009 source mock `uimock/NZBHydra Search.dc.html` declares `outline:none` 15 times and authors no focus-state style at all -- its only `focus` occurrences are the `onFocus`/`onFocusSearch`/`searchFocused` JS bindings, confirmed first-hand by FM-053 rather than taken on trust -- so the authored keyboard focus indicator this record now renders (`outline: 3px solid oklch(0.75 0.1 190)` at a 3px offset, or -3px where an ancestor was measured clipping an outset ring) is a deliberate divergence from that reference, adopted under ADR-0013 (accepted 2026-08-19, Option A) for WCAG 2.4.7/2.4.11 rather than for mock fidelity. Requires explicit human acceptance under ADR-0006; accepting ADR-0013 is not accepting this variance."
-          status: proposed
-    gaps: [ ]
-    task: FM-012
-    backlog: { status: deferred, rationale: "The record remains partial pending a dedicated full-parity reconciliation. FM-052 (measurement only) found the tri-state select-all `Checkbox` (`SearchResults.tsx:1735`, the app's only `disableRipple` control) renders no visible keyboard focus indicator (WCAG 2.4.7): its root `outline:0` is unconditional, no ripple mounts, and neither `Checkbox`, `SwitchBase`, nor `IconButton` define an `&.Mui-focusVisible` rule, so nothing in the app's CSS reacts to focus; the one CSS property that does change (the native input's own `outline-style: none -> solid`) paints on an `opacity: 0` layer and is therefore invisible. The per-row selection checkboxes are unaffected -- they keep the default ripple. The blocking decision is now made: ADR-0013 (`decisions/ADR-0013-application-wide-keyboard-focus-indication.md`, accepted 2026-08-19, Option A -- an explicit focus-ring token authored per control family), and FM-053 implements it. The focus `gap` phrase above is removed rather than narrowed because the control now renders a measured indicator: `theme.ts`'s `MuiCheckbox` entry authors the shared token on the `SwitchBase` *root* `Mui-focusVisible` class -- the visible node, computed `opacity: 1` -- rather than on `:focus-visible`, which matches MUI's `opacity: 0` native input overlay and would paint there invisibly. `disableRipple` is deliberately retained: the ripple was never this control's indicator (it never mounted), and reinstating it would put a ~38px pulsating disc on a deliberately flat 17x17 `p: 0` square. What remains outstanding is the ADR-0006 acceptance of the resulting focused state and its variance, which belongs to the repository owner alone." }
-
   - id: F-SEARCH-DOWNLOADS
     name: Single and bulk browser, downloader, ZIP, black-hole, torrent, magnet, and copy-link actions
-    route_states: [ root.search.results ]
-    routes: [ / ]
-    roles: [ user ]
-    legacy_sources: [ core/ui-src/js/nzb-download-service.js, core/ui-src/js/directives/addable-nzb.js, core/ui-src/js/directives/download-nzbs-button.js, core/ui-src/js/directives/download-nzbzip-button.js, core/ui-src/js/directives/copy-links-button.js, core/ui-src/js/directives/save-or-send-torrent.js ]
-    tests: [ tests/system/tests/downloads.spec.ts, tests/system/tests/results.spec.ts, core/ui-react/src/features/search/results/SearchResults.test.tsx ]
-    selectors: [ send-to-downloader, download-nzb, results-bulk-actions, results-bulk-actions-summary, results-selected-count ]
+    routes:
+      - /
+    legacy_sources:
+      - core/ui-src/js/nzb-download-service.js
+      - core/ui-src/js/directives/addable-nzb.js
+      - core/ui-src/js/directives/download-nzbs-button.js
+      - core/ui-src/js/directives/download-nzbzip-button.js
+      - core/ui-src/js/directives/copy-links-button.js
+      - core/ui-src/js/directives/save-or-send-torrent.js
     target: core/ui-react/src/features/search/results
+    tests:
+      - tests/system/tests/downloads.spec.ts
+      - tests/system/tests/results.spec.ts
+      - core/ui-react/src/features/search/results/SearchResults.test.tsx
+    selectors:
+      - send-to-downloader
+      - download-nzb
+      - results-bulk-actions
+      - results-bulk-actions-summary
+      - results-selected-count
     parity: partial
-    visual:
-      applicability: applicable
-      status: proposed
-      note: "Supersedes the prior 2026-08-16 human acceptance of this record (removed here; still recoverable from Git history) because it evidenced the exact toolbar region FM-040 restructures. FM-040 pulls the two primary selected-result actions -- 'Send to downloader' (still send-to-downloader) and the NZB ZIP download -- out of results-download-actions into a new, distinct results-bulk-actions bar that also reports the loaded/filtered counts and, once non-zero, the selected count (results-selected-count); both primary actions are now `disabled` (not toast-blocked) until something is selected. Every other bulk capability (downloader select, downloader-category select, black-hole/save, copy links, Save search) stays in results-download-actions, unchanged in behavior. Follows the FM-034/FM-037 precedent of superseding a prior acceptance whose accepted geometry check the restructure invalidates. FM-046 restyles this reused-unchanged structure to the mock's palette/density: 'Send to downloader' renders filled `primary.main`/`primary.contrastText` when enabled (8px radius, `8px 14px` padding, 13px/600 text) and on the mock's neutral `#2a3133`-equivalent surface with muted text when disabled, using the control's real `disabled` semantics, never opacity alone; the ZIP action renders as the mock's secondary outlined button (neutral surface, 1px border, same radius/padding scale) in both states; and `results-download-actions`'s downloader/category selects and remaining buttons restyle to the same neutral surface, radius, and typography, with no change to which controls are present, their order, or their behavior. Pending fresh human review; see the FM-040 and FM-046 handoffs for what changed and why."
-      contract:
-        setup: "React-selected `ui/react?redirect=/` with a deterministic mocked `internalapi/search` response (NZB-eligible results) submitted through the real search form, in `tests/system/tests/results.spec.ts`."
-        states: [ direct-download-per-row, bulk-download-toolbar-region, mobile-primary-row-action, no-selection-disabled-actions, partial-selection-indeterminate, all-selected-bulk-actions, bulk-actions-mock-buttons, keyboard-focus-indicator ]
-        viewports: [ { name: desktop, width: 1280, height: 800 }, { name: mobile, width: 390, height: 844 } ]
-        geometry_checks:
-          - "every visible row's direct-download control (download-nzb) is visible at both the 1280x800 desktop and 390x844 mobile viewports"
-          - "at mobile, the direct-download control's containing cell has a computed display of flex, confirming the responsive per-row action layout is active rather than being hidden or clipped"
-          - "the toolbar's results-download-actions region (save search, downloader select, downloader-category select, black-hole/save, copy links) renders within the compact results-toolbar without overflow, a distinct region from the per-row actions column, from results-selection-actions, and from the new results-bulk-actions bar"
-          - "after a direct download, the per-row 'Downloaded' indicator renders in the desktop Actions column with no scrollWidth overflow of its own box (no text clipping/truncation)"
-          - "with nothing selected, both results-bulk-actions primary actions (Send to downloader, NZB ZIP download) render disabled, with no horizontal overflow of the bar at either viewport"
-          - "selecting one row of several enables both results-bulk-actions primary actions and shows the selected count (results-selected-count) with no scrollWidth overflow of its own box"
-          - "the enabled send-to-downloader button's computed background-color differs measurably from both its own disabled-state background-color and the page background-color"
-          - "FM-053 (ADR-0013): the Downloader Select trigger inside results-download-actions, reached by real Tab/Shift+Tab from a known start with no pointer interaction, renders a non-empty focused/unfocused computed-style delta and the authored token `outline: 3px solid oklch(0.75 0.1 190)` at `outline-offset: 3px`"
-          - "FM-053 (ADR-0013): that indicator's changed area is 1402.13 px2 against its own `4(w+h)` threshold of 862.75 px2 (control box 180.00x35.69) and its full-opacity contrast against its own composited unfocused ground rgb(31,36,38) is 7.34:1; measured inside the sticky results toolbar specifically, it is neither clipped by an ancestor nor the cause of page-level horizontal overflow"
-      evidence: [ tests/system/tests/results.spec.ts, tests/system/tests/focus-indication.spec.ts ]
-      snapshots: [ tests/system/visual-evidence/F-SEARCH-DOWNLOADS/keyboard-focus-downloader-select-desktop.png ]
-      variances:
-        # This project's validator requires an `accepted` variance's whole
-        # visual record to itself be `accepted` with human decision
-        # metadata; since FM-040 demotes this record to `proposed` (see
-        # `note` above), this variance's `status` field follows the record
-        # down to `proposed` for that structural reason alone. Its substance
-        # (description) is carried forward unchanged, exactly as the FM-040
-        # packet directs -- this is not a re-litigation of the prior
-        # 2026-08-16 acceptance, only a formal consequence of the record's
-        # own demotion, and it is expected to return to `accepted` together
-        # with the rest of the record on the next human review.
-        - description: "Unlike legacy, which hides its row Links/actions column entirely below the xs breakpoint (`core/ui-src/less/partials/tables.less` `.search-results-table .result-links { display: none !important; }`), the React direct-download action remains visible per row at the 390px mobile viewport. This is an intentional usability improvement over a legacy gap, not a semantic loss."
-          status: proposed
-        - description: "The bulk-actions bar's two primary actions (Send to downloader, NZB ZIP download) are `disabled` with no selection instead of legacy's always-enabled buttons, which fire and show a 'You should select at least one result...' growl toast when clicked with nothing selected (`core/ui-src/js/directives/download-nzbs-button.js`, `download-nzbzip-button.js`). No legacy equivalent conveys this state via native control semantics rather than a post-click toast."
-          status: proposed
-        - description: "FM-053 (ADR-0013) focus-indicator variance from the visual reference: the ADR-0009 source mock `uimock/NZBHydra Search.dc.html` declares `outline:none` 15 times and authors no focus-state style at all -- its only `focus` occurrences are the `onFocus`/`onFocusSearch`/`searchFocused` JS bindings, confirmed first-hand by FM-053 rather than taken on trust -- so the authored keyboard focus indicator this record now renders (`outline: 3px solid oklch(0.75 0.1 190)` at a 3px offset, or -3px where an ancestor was measured clipping an outset ring) is a deliberate divergence from that reference, adopted under ADR-0013 (accepted 2026-08-19, Option A) for WCAG 2.4.7/2.4.11 rather than for mock fidelity. Requires explicit human acceptance under ADR-0006; accepting ADR-0013 is not accepting this variance."
-          status: proposed
-    gaps: [ download-history route migration ]
-    task: FM-013
-    backlog: { status: deferred, rationale: "Download-history route migration is separately deferred. FM-053 (ADR-0013, accepted 2026-08-19, Option A) additionally gives this record's downloader/category Selects and action buttons the application's single authored keyboard focus indicator, measured live and evidenced above; the ADR-0006 acceptance of that focused state and its variance is outstanding and belongs to the repository owner alone." }
-
+    gaps:
+      - download-history route migration
   - id: F-SEARCH-PAGING
     name: Load next batch or all remaining indexer results without repeating offsets
-    route_states: [ root.search.results ]
-    routes: [ / ]
-    roles: [ user ]
-    legacy_sources: [ core/ui-src/js/search-results-controller.js, core/ui-src/js/search-service.js, core/ui-src/html/states/search-results.html ]
-    tests: [ core/ui-react/src/api/search.test.ts, core/ui-react/src/features/search/SearchPage.test.tsx, core/ui-react/src/features/search/results/SearchResults.test.tsx, tests/system/tests/results.spec.ts ]
-    selectors: [ ]
+    routes:
+      - /
+    legacy_sources:
+      - core/ui-src/js/search-results-controller.js
+      - core/ui-src/js/search-service.js
+      - core/ui-src/html/states/search-results.html
     target: core/ui-react/src/features/search/results
+    tests:
+      - core/ui-react/src/api/search.test.ts
+      - core/ui-react/src/features/search/SearchPage.test.tsx
+      - core/ui-react/src/features/search/results/SearchResults.test.tsx
+      - tests/system/tests/results.spec.ts
+    selectors: []
     parity: partial
-    visual:
-      applicability: applicable
-      status: accepted
-      contract:
-        setup: "React-selected `ui/react?redirect=/` with a deterministic mocked `internalapi/search` response submitted through the real search form, where the load-more/load-all continuation controls always render immediately above the compact results-toolbar, in `tests/system/tests/results.spec.ts`."
-        states: [ load-controls-above-toolbar ]
-        viewports: [ { name: desktop, width: 1280, height: 800 }, { name: mobile, width: 390, height: 844 } ]
-        geometry_checks:
-          - "the load-more/load-all continuation controls, always rendered immediately above the compact results-toolbar, introduce no page-level horizontal overflow at either viewport (verified by the page-wide overflow assertion covering the whole rendered page in the same deterministic evidence run)"
-      evidence: [ tests/system/tests/results.spec.ts ]
-      variances: []
-      acceptance:
-        decision: "Accepted as proposed. Load-more/load-all placement unchanged by the review-fix round; verified overflow-free at both viewports."
-        accepted_by: "Repository owner (stratmann.simon@gmail.com)"
-        accepted_on: "2026-08-16"
-    task: FM-018
-    backlog: { status: deferred, rationale: "The record remains partial pending a dedicated full-parity reconciliation. FM-053 (ADR-0013, accepted 2026-08-19, Option A) handles this record by exception and changes **nothing** in its `visual` block: both of its accepted geometry checks were re-verified live while a continuation control held real keyboard focus and both stay literally true -- the load-more/load-all controls still render immediately above the results toolbar, and `documentElement.scrollWidth` still equals `clientWidth` (1280/1280 at desktop, 390/390 at mobile), so the authored outset ring introduces no page-level horizontal overflow. No state was added to the accepted contract and the 2026-08-16 acceptance is not re-dated. The load-more control's own focused-state evidence is recorded task-scoped at `tests/system/visual-evidence/FM-053/keyboard-focus-paging-load-more-{desktop,mobile}.png` and its measured figures are in the FM-053 handoff (724.50 px2 against a 411.00 px2 threshold, 7.34:1). The focused-state ADR-0006 acceptance for this record is therefore outstanding and belongs to the repository owner alone." }
-
   - id: F-SEARCH-SAVED
     name: Save an executed search for later reuse
-    route_states: [ root.search.results, root.stats.savedSearches ]
-    routes: [ /, /stats/saved-searches ]
-    roles: [ user, stats ]
-    legacy_sources: [ core/ui-src/js/search-results-controller.js, core/ui-src/js/saved-searches-controller.js, core/ui-src/html/states/saved-searches.html ]
-    tests: [ core/ui-react/src/api/savedSearches.test.ts, core/ui-react/src/features/search/history/savedSearchCriteria.test.ts, tests/system/tests/search.spec.ts ]
-    selectors: [ ]
+    routes:
+      - /
+      - /stats/saved-searches
+    legacy_sources:
+      - core/ui-src/js/search-results-controller.js
+      - core/ui-src/js/saved-searches-controller.js
+      - core/ui-src/html/states/saved-searches.html
     target: core/ui-react/src/features/search
+    tests:
+      - core/ui-react/src/api/savedSearches.test.ts
+      - core/ui-react/src/features/search/history/savedSearchCriteria.test.ts
+      - tests/system/tests/search.spec.ts
+    selectors: []
     parity: partial
-    visual:
-      applicability: applicable
-      status: proposed
-      note: "Supersedes the prior 2026-08-16 human acceptance of this record (removed here; still recoverable from Git history). Verified against FM-040's restructure, per that task's instruction to check whether this record's accepted check remained literally true rather than assuming so: it is not. FM-040 pulls 'Send to downloader' and the NZB ZIP download -- arguably the toolbar's headline 'bulk download actions' -- out of results-download-actions into a new, separate results-bulk-actions bar; the Save search control still renders inside results-download-actions, but now alongside only the downloader select, downloader-category select, black-hole/save action, and copy-links action, not alongside the two actions this record's accepted wording most naturally meant by 'the bulk download actions'. Demoted rather than left accepted on a claim that is no longer literally true. FM-046 restyles the whole results-download-actions region (including Save search) to the mock's neutral `#2a3133`-equivalent surface, 8px radius, and 13px typography, matching the bulk-actions bar's secondary-button treatment; the Save search control's placement, order relative to the region's other controls, and behavior are unchanged. Pending fresh human review; see the FM-040 and FM-046 handoffs for what changed and why."
-      contract:
-        setup: "React-selected `ui/react?redirect=/` with a deterministic mocked `internalapi/search` response submitted through the real search form, where the Save search control always renders inside the compact results-toolbar's results-download-actions region, in `tests/system/tests/results.spec.ts`."
-        states: [ save-search-toolbar-placement, toolbar-mock-density, keyboard-focus-indicator ]
-        viewports: [ { name: desktop, width: 1280, height: 800 }, { name: mobile, width: 390, height: 844 } ]
-        geometry_checks:
-          - "the save-search control is contained within the toolbar's results-download-actions region alongside the downloader select, downloader-category select, black-hole/save, and copy-links actions, and the whole results-toolbar renders without horizontal overflow at either viewport"
-          - "the results-toolbar renders on a flat background with no elevated Paper surface/border/shadow at either viewport, and the results-download-actions region's controls (including Save search) share a consistent neutral control surface and radius"
-          - "FM-053 (ADR-0013): the Save search control, reached by real Tab/Shift+Tab from a known start with no pointer interaction, renders a non-empty focused/unfocused computed-style delta and the authored token `outline: 3px solid oklch(0.75 0.1 190)` at `outline-offset: 3px`"
-          - "FM-053 (ADR-0013): that indicator's changed area is 940.50 px2 against its own `4(w+h)` threshold of 555.00 px2 (control box 98.00x40.75) and its full-opacity contrast against its own composited unfocused ground rgb(31,36,38) is 7.34:1, and it is neither clipped by an ancestor nor the cause of page-level horizontal overflow"
-      evidence: [ tests/system/tests/results.spec.ts, tests/system/tests/focus-indication.spec.ts ]
-      snapshots: [ tests/system/visual-evidence/F-SEARCH-SAVED/keyboard-focus-save-search-desktop.png ]
-      variances:
-        - description: "FM-053 (ADR-0013) focus-indicator variance from the visual reference: the ADR-0009 source mock `uimock/NZBHydra Search.dc.html` declares `outline:none` 15 times and authors no focus-state style at all -- its only `focus` occurrences are the `onFocus`/`onFocusSearch`/`searchFocused` JS bindings, confirmed first-hand by FM-053 rather than taken on trust -- so the authored keyboard focus indicator this record now renders (`outline: 3px solid oklch(0.75 0.1 190)` at a 3px offset, or -3px where an ancestor was measured clipping an outset ring) is a deliberate divergence from that reference, adopted under ADR-0013 (accepted 2026-08-19, Option A) for WCAG 2.4.7/2.4.11 rather than for mock fidelity. Requires explicit human acceptance under ADR-0006; accepting ADR-0013 is not accepting this variance."
-          status: proposed
-    gaps: [ ]
-    task: FM-019
-    backlog: { status: deferred, rationale: "Remaining saved-search parity is future work. FM-053 (ADR-0013, accepted 2026-08-19, Option A) additionally gives the Save search control the application's single authored keyboard focus indicator, measured live and evidenced above; the ADR-0006 acceptance of that focused state and its variance is outstanding and belongs to the repository owner alone." }
-
   - id: F-SEARCH-TOUR
     name: Guided search tour and demo-mode lifecycle
-    route_states: [ root.search, root.search.results ]
-    routes: [ / ]
-    roles: [ user ]
-    legacy_sources: [ core/ui-src/js/search-controller.js, core/ui-src/js/guided-tour-service.js, core/ui-src/js/angular-ui-tour.js ]
-    tests: [ ]
-    selectors: [ ]
+    routes:
+      - /
+    legacy_sources:
+      - core/ui-src/js/search-controller.js
+      - core/ui-src/js/guided-tour-service.js
+      - core/ui-src/js/angular-ui-tour.js
     target: core/ui-react/src/features/search/tour
+    tests: []
+    selectors: []
     parity: inventoried
-    visual: { applicability: applicable, status: unassessed }
-    task: FM-001
-    backlog: { status: deferred, rationale: "No implementation task has been designed for guided tour and demo-mode parity." }
-
   - id: F-CONFIG-SHELL
     name: Configuration tabs, advanced fields, whole-config save, validation, dirty state, and API help
-    route_states: [ root.config ]
-    routes: [ /config ]
-    roles: [ admin ]
-    legacy_sources: [ core/ui-src/js/nzbhydra.js, core/ui-src/js/config/config-controller.js, core/ui-src/js/config/config-service.js, core/ui-src/html/states/config.html ]
-    tests: [ tests/system/tests/external-tools.spec.ts ]
-    selectors: [ ]
+    routes:
+      - /config
+    legacy_sources:
+      - core/ui-src/js/nzbhydra.js
+      - core/ui-src/js/config/config-controller.js
+      - core/ui-src/js/config/config-service.js
+      - core/ui-src/html/states/config.html
     target: core/ui-react/src/features/config
+    tests:
+      - tests/system/tests/external-tools.spec.ts
+    selectors: []
     parity: partial
-    visual: { applicability: applicable, status: unassessed }
-    gaps: [ stable data-testid selectors, advanced toggle, unsaved navigation, warnings, restart, API help, full round trip ]
-    task: FM-001
-    backlog: { status: deferred, rationale: "Configuration migration needs a dedicated task batch before implementation begins." }
-
+    gaps:
+      - stable data-testid selectors
+      - advanced toggle
+      - unsaved navigation
+      - warnings
+      - restart
+      - API help
+      - full round trip
   - id: F-CONFIG-MAIN
     name: Main hosting, proxy, UI, security, logging, backup, update, history, database, and runtime settings
-    route_states: [ root.config.main ]
-    routes: [ /config/main ]
-    roles: [ admin ]
-    legacy_sources: [ core/ui-src/js/config/config-fields-service.js, core/ui-src/js/config/formly-config.js, core/ui-src/js/file-selection-service.js ]
-    tests: [ tests/system/tests/external-tools.spec.ts ]
-    selectors: [ ]
+    routes:
+      - /config/main
+    legacy_sources:
+      - core/ui-src/js/config/config-fields-service.js
+      - core/ui-src/js/config/formly-config.js
+      - core/ui-src/js/file-selection-service.js
     target: core/ui-react/src/features/config/main
+    tests:
+      - tests/system/tests/external-tools.spec.ts
+    selectors: []
     parity: partial
-    visual: { applicability: applicable, status: unassessed }
-    gaps: [ all field workflows; current test only opens the route ]
-    task: FM-001
-    backlog: { status: deferred, rationale: "Configuration migration needs a dedicated task batch before implementation begins." }
-
+    gaps:
+      - all field workflows; current test only opens the route
   - id: F-CONFIG-AUTH
     name: Authentication modes, OIDC, restrictions, users, roles, and secret semantics
-    route_states: [ root.config.auth ]
-    routes: [ /config/auth ]
-    roles: [ admin ]
-    legacy_sources: [ core/ui-src/js/config/config-fields-service.js, core/ui-src/js/config/formly-config.js ]
-    tests: [ ]
-    selectors: [ ]
+    routes:
+      - /config/auth
+    legacy_sources:
+      - core/ui-src/js/config/config-fields-service.js
+      - core/ui-src/js/config/formly-config.js
     target: core/ui-react/src/features/config/auth
+    tests: []
+    selectors: []
     parity: inventoried
-    visual: { applicability: applicable, status: unassessed }
-    task: FM-001
-    backlog: { status: deferred, rationale: "Configuration migration needs a dedicated task batch before implementation begins." }
-
   - id: F-CONFIG-SEARCHING
     name: Search execution, filtering, title processing, mappings, display, duplicates, and cache settings
-    route_states: [ root.config.searching ]
-    routes: [ /config/searching ]
-    roles: [ admin ]
-    legacy_sources: [ core/ui-src/js/config/config-fields-service.js, core/ui-src/js/config/formly-config.js, core/ui-src/html/custom-mapping-help.html ]
-    tests: [ tests/system/tests/search.spec.ts, tests/system/tests/results.spec.ts ]
-    selectors: [ ]
+    routes:
+      - /config/searching
+    legacy_sources:
+      - core/ui-src/js/config/config-fields-service.js
+      - core/ui-src/js/config/formly-config.js
+      - core/ui-src/html/custom-mapping-help.html
     target: core/ui-react/src/features/config/searching
+    tests:
+      - tests/system/tests/search.spec.ts
+      - tests/system/tests/results.spec.ts
+    selectors: []
     parity: partial
-    visual: { applicability: applicable, status: unassessed }
-    gaps: [ configuration UI; current tests cover runtime effects only ]
-    task: FM-001
-    backlog: { status: deferred, rationale: "Configuration migration needs a dedicated task batch before implementation begins." }
-
+    gaps:
+      - configuration UI; current tests cover runtime effects only
   - id: F-CONFIG-CATEGORIES
     name: Category CRUD, mappings, presets, restrictions, and size limits
-    route_states: [ root.config.categories ]
-    routes: [ /config/categories ]
-    roles: [ admin ]
-    legacy_sources: [ core/ui-src/js/config/config-fields-service.js ]
-    tests: [ ]
-    selectors: [ ]
+    routes:
+      - /config/categories
+    legacy_sources:
+      - core/ui-src/js/config/config-fields-service.js
     target: core/ui-react/src/features/config/categories
+    tests: []
+    selectors: []
     parity: inventoried
-    visual: { applicability: applicable, status: unassessed }
-    task: FM-001
-    backlog: { status: deferred, rationale: "Configuration migration needs a dedicated task batch before implementation begins." }
-
   - id: F-CONFIG-DOWNLOADING
     name: Download behavior, black holes, downloader CRUD, validation, and connection checks
-    route_states: [ root.config.downloading ]
-    routes: [ /config/downloading ]
-    roles: [ admin ]
-    legacy_sources: [ core/ui-src/js/config/config-fields-service.js, core/ui-src/js/config/formly-downloaders.js, core/ui-src/html/config/downloader-config.html ]
-    tests: [ tests/system/tests/downloads.spec.ts ]
-    selectors: [ ]
+    routes:
+      - /config/downloading
+    legacy_sources:
+      - core/ui-src/js/config/config-fields-service.js
+      - core/ui-src/js/config/formly-downloaders.js
+      - core/ui-src/html/config/downloader-config.html
     target: core/ui-react/src/features/config/downloading
+    tests:
+      - tests/system/tests/downloads.spec.ts
+    selectors: []
     parity: partial
-    visual: { applicability: applicable, status: unassessed }
-    gaps: [ configuration UI; current tests configure through API fixtures ]
-    task: FM-001
-    backlog: { status: deferred, rationale: "Configuration migration needs a dedicated task batch before implementation begins." }
-
+    gaps:
+      - configuration UI; current tests configure through API fixtures
   - id: F-CONFIG-EXTERNAL-TOOLS
     name: External-tool CRUD, validation, connection tests, sync options, and manual sync
-    route_states: [ root.config.externalTools ]
-    routes: [ /config/externalTools ]
-    roles: [ admin ]
-    legacy_sources: [ core/ui-src/js/config/formly-external-tools.js, core/ui-src/js/external-tool-request-service.js, core/ui-src/html/config/external-tool-config.html ]
-    tests: [ tests/system/tests/external-tools.spec.ts ]
-    selectors: [ ]
+    routes:
+      - /config/externalTools
+    legacy_sources:
+      - core/ui-src/js/config/formly-external-tools.js
+      - core/ui-src/js/external-tool-request-service.js
+      - core/ui-src/html/config/external-tool-config.html
     target: core/ui-react/src/features/config/external-tools
+    tests:
+      - tests/system/tests/external-tools.spec.ts
+    selectors: []
     parity: partial
-    visual: { applicability: applicable, status: unassessed }
-    gaps: [ stable data-testid selectors, failure and partial-failure feedback, full preset coverage ]
-    task: FM-001
-    backlog: { status: deferred, rationale: "Configuration migration needs a dedicated task batch before implementation begins." }
-
+    gaps:
+      - stable data-testid selectors
+      - failure and partial-failure feedback
+      - full preset coverage
   - id: F-CONFIG-INDEXERS
     name: Indexer CRUD, policy, capabilities, connection checks, and Jackett/Prowlarr imports
-    route_states: [ root.config.indexers ]
-    routes: [ /config/indexers ]
-    roles: [ admin ]
-    legacy_sources: [ core/ui-src/js/config/formly-indexers.js, core/ui-src/js/caps-check-request-service.js, core/ui-src/js/indexer-config-import-request-service.js, core/ui-src/html/config/indexer-config.html ]
-    tests: [ ]
-    selectors: [ ]
+    routes:
+      - /config/indexers
+    legacy_sources:
+      - core/ui-src/js/config/formly-indexers.js
+      - core/ui-src/js/caps-check-request-service.js
+      - core/ui-src/js/indexer-config-import-request-service.js
+      - core/ui-src/html/config/indexer-config.html
     target: core/ui-react/src/features/config/indexers
+    tests: []
+    selectors: []
     parity: inventoried
-    visual: { applicability: applicable, status: unassessed }
-    task: FM-001
-    backlog: { status: deferred, rationale: "Configuration migration needs a dedicated task batch before implementation begins." }
-
   - id: F-CONFIG-NOTIFICATIONS
     name: Notification transports, GUI filtering, event rules, templates, and tests
-    route_states: [ root.config.notifications ]
-    routes: [ /config/notifications ]
-    roles: [ admin ]
-    legacy_sources: [ core/ui-src/js/config/config-fields-service.js, core/ui-src/js/config/formly-config.js, core/ui-src/js/notifications-service.js ]
-    tests: [ tests/system/tests/search.spec.ts ]
-    selectors: [ ]
+    routes:
+      - /config/notifications
+    legacy_sources:
+      - core/ui-src/js/config/config-fields-service.js
+      - core/ui-src/js/config/formly-config.js
+      - core/ui-src/js/notifications-service.js
     target: core/ui-react/src/features/config/notifications
+    tests:
+      - tests/system/tests/search.spec.ts
+    selectors: []
     parity: partial
-    visual: { applicability: applicable, status: unassessed }
-    gaps: [ configuration UI; current test covers quota warning display only ]
-    task: FM-001
-    backlog: { status: deferred, rationale: "Configuration migration needs a dedicated task batch before implementation begins." }
-
+    gaps:
+      - configuration UI; current test covers quota warning display only
   - id: F-STATS-SHELL
     name: Statistics and history tab shell with keep-history visibility rules
-    route_states: [ root.stats ]
-    routes: [ /stats ]
-    roles: [ stats ]
-    legacy_sources: [ core/ui-src/js/nzbhydra.js, core/ui-src/html/states/stats.html ]
-    tests: [ tests/system/tests/stats.spec.ts, tests/system/tests/search-history.spec.ts, core/ui-react/src/features/stats/StatsShell.test.tsx ]
-    selectors: [ ]
+    routes:
+      - /stats
+    legacy_sources:
+      - core/ui-src/js/nzbhydra.js
+      - core/ui-src/html/states/stats.html
     target: core/ui-react/src/features/stats
+    tests:
+      - tests/system/tests/stats.spec.ts
+      - tests/system/tests/search-history.spec.ts
+      - core/ui-react/src/features/stats/StatsShell.test.tsx
+    selectors: []
     parity: partial
-    visual: { applicability: applicable, status: unassessed }
-    gaps: [ remaining history and aggregate-stat content, "focused-state visual evidence for this record's authored keyboard focus indicator exists (FM-053) but this record has no visual contract at all, so its own first visual-parity assessment and the ADR-0006 acceptance of that focused state are outstanding" ]
-    task: FM-020
-    backlog: { status: deferred, rationale: "Remaining history and aggregate-stat content is deferred to FM-021 through FM-024. FM-053 (ADR-0013, accepted 2026-08-19, Option A) gives this record's `Tabs` strip the application's single authored keyboard focus indicator, measured live at full opacity in a real browser and gated by `tests/system/tests/focus-indication.spec.ts`; its focused-state captures are recorded task-scoped under `tests/system/visual-evidence/FM-053/` rather than as registry-cited snapshots, because this record is `visual.status: unassessed` and authoring its first full visual contract is its own visual-parity assessment rather than focus work. That contract and the ADR-0006 acceptance of this focused state are outstanding and belong to the repository owner alone." }
-
+    gaps:
+      - remaining history and aggregate-stat content
   - id: F-STATS-MAIN
     name: Aggregate statistics, date ranges, switches, and charts
-    route_states: [ root.stats.main ]
-    routes: [ /stats/stats ]
-    roles: [ stats ]
-    legacy_sources: [ core/ui-src/js/stats-controller.js, core/ui-src/js/stats-service.js, core/ui-src/js/stats-request-service.js, core/ui-src/html/states/main-stats.html ]
-    tests: [ tests/system/tests/stats.spec.ts ]
-    selectors: [ ]
+    routes:
+      - /stats/stats
+    legacy_sources:
+      - core/ui-src/js/stats-controller.js
+      - core/ui-src/js/stats-service.js
+      - core/ui-src/js/stats-request-service.js
+      - core/ui-src/html/states/main-stats.html
     target: core/ui-react/src/features/stats
+    tests:
+      - tests/system/tests/stats.spec.ts
+    selectors: []
     parity: partial
-    visual: { applicability: applicable, status: unassessed }
-    gaps: [ rendered statistics, charts, date ranges, include-disabled behavior ]
-    task: FM-024
-
+    gaps:
+      - rendered statistics
+      - charts
+      - date ranges
+      - include-disabled behavior
   - id: F-STATS-INDEXERS
     name: Indexer status, errors, counters, and VIP expiry
-    route_states: [ root.stats.indexers ]
-    routes: [ /stats/indexers ]
-    roles: [ stats ]
-    legacy_sources: [ core/ui-src/js/indexer-statuses-controller.js, core/ui-src/html/states/indexer-statuses.html ]
-    tests: [ tests/system/tests/stats.spec.ts, tests/system/tests/search-history.spec.ts ]
-    selectors: [ ]
+    routes:
+      - /stats/indexers
+    legacy_sources:
+      - core/ui-src/js/indexer-statuses-controller.js
+      - core/ui-src/html/states/indexer-statuses.html
     target: core/ui-react/src/features/stats/indexers
+    tests:
+      - tests/system/tests/stats.spec.ts
+      - tests/system/tests/search-history.spec.ts
+    selectors: []
     parity: partial
-    visual: { applicability: applicable, status: unassessed }
-    gaps: [ "focused-state visual evidence for this record's authored keyboard focus indicator exists (FM-053) but this record has no visual contract at all, so its own first visual-parity assessment and the ADR-0006 acceptance of that focused state are outstanding" ]
-    task: FM-020
-    backlog: { status: deferred, rationale: "Remaining indexer-status parity is deferred until a dedicated follow-up task is designed. FM-053 (ADR-0013, accepted 2026-08-19, Option A) gives the `Tab` that opens this route the application's single authored keyboard focus indicator, measured live at full opacity in a real browser and gated by `tests/system/tests/focus-indication.spec.ts`; its focused-state captures are recorded task-scoped under `tests/system/visual-evidence/FM-053/` rather than as registry-cited snapshots, because this record is `visual.status: unassessed` and authoring its first full visual contract is its own visual-parity assessment rather than focus work. That contract and the ADR-0006 acceptance of this focused state are outstanding and belong to the repository owner alone." }
-
   - id: F-HISTORY-SEARCHES
     name: Search-history paging, filtering, details, and repeat
-    route_states: [ root.stats.searches ]
-    routes: [ /stats/searches ]
-    roles: [ stats ]
-    legacy_sources: [ core/ui-src/js/search-history-controller.js, core/ui-src/js/search-history-service.js, core/ui-src/html/states/search-history.html ]
-    tests: [ core/ui-react/src/api/searchHistory.test.ts, core/ui-react/src/features/stats/history/SearchHistoryPage.test.tsx, core/ui-react/src/features/search/SearchPage.test.tsx, core/ui-react/src/router.test.tsx, tests/system/tests/search-history.spec.ts ]
-    selectors: [ search-history-refresh, search-history-table, search-history-row, search-history-repeat, search-history-category, search-history-source, search-history-details ]
+    routes:
+      - /stats/searches
+    legacy_sources:
+      - core/ui-src/js/search-history-controller.js
+      - core/ui-src/js/search-history-service.js
+      - core/ui-src/html/states/search-history.html
     target: core/ui-react/src/features/stats/history
+    tests:
+      - core/ui-react/src/api/searchHistory.test.ts
+      - core/ui-react/src/features/stats/history/SearchHistoryPage.test.tsx
+      - core/ui-react/src/features/search/SearchPage.test.tsx
+      - core/ui-react/src/router.test.tsx
+      - tests/system/tests/search-history.spec.ts
+    selectors:
+      - search-history-refresh
+      - search-history-table
+      - search-history-row
+      - search-history-repeat
+      - search-history-category
+      - search-history-source
+      - search-history-details
     parity: partial
-    visual: { applicability: applicable, status: unassessed }
-    gaps: [ "focused-state visual evidence for this record's authored keyboard focus indicator exists (FM-053) but this record has no visual contract at all, so its own first visual-parity assessment and the ADR-0006 acceptance of that focused state are outstanding" ]
-    task: FM-021
-    backlog: { status: deferred, rationale: "Visual parity remains unassessed pending a dedicated remediation task under ADR-0006. FM-053 (ADR-0013, accepted 2026-08-19, Option A) gives this record's eight un-overridden `OutlinedInput` filters, its default-padding `Checkbox` and its action/sort `Button`s -- the application's only un-overridden `notchedOutline` rendering and its only default-padding `Checkbox` the application's single authored keyboard focus indicator, measured live at full opacity in a real browser and gated by `tests/system/tests/focus-indication.spec.ts`; its focused-state captures are recorded task-scoped under `tests/system/visual-evidence/FM-053/` rather than as registry-cited snapshots, because this record is `visual.status: unassessed` and authoring its first full visual contract is its own visual-parity assessment rather than focus work. That contract and the ADR-0006 acceptance of this focused state are outstanding and belong to the repository owner alone." }
-
   - id: F-HISTORY-SAVED-SEARCHES
     name: Saved-search listing, links, reuse, and deletion
-    route_states: [ root.stats.savedSearches ]
-    routes: [ /stats/saved-searches ]
-    roles: [ stats ]
-    legacy_sources: [ core/ui-src/js/saved-searches-controller.js, core/ui-src/html/states/saved-searches.html ]
-    tests: [ core/ui-react/src/api/savedSearches.test.ts, core/ui-react/src/features/stats/history/SavedSearchesPage.test.tsx, tests/system/tests/search.spec.ts ]
-    selectors: [ ]
+    routes:
+      - /stats/saved-searches
+    legacy_sources:
+      - core/ui-src/js/saved-searches-controller.js
+      - core/ui-src/html/states/saved-searches.html
     target: core/ui-react/src/features/stats/history
+    tests:
+      - core/ui-react/src/api/savedSearches.test.ts
+      - core/ui-react/src/features/stats/history/SavedSearchesPage.test.tsx
+      - tests/system/tests/search.spec.ts
+    selectors: []
     parity: partial
-    visual: { applicability: applicable, status: unassessed }
-    gaps: [ "focused-state visual evidence for this record's authored keyboard focus indicator exists (FM-053) but this record has no visual contract at all, so its own first visual-parity assessment and the ADR-0006 acceptance of that focused state are outstanding" ]
-    task: FM-019
-    backlog: { status: deferred, rationale: "Remaining saved-search parity is future work. FM-053 (ADR-0013, accepted 2026-08-19, Option A) gives this record's identifier `Link`, its `Button color=\"error\"` Delete controls at both sites, and the delete-confirmation Dialog's actions the application's single authored keyboard focus indicator, measured live at full opacity in a real browser and gated by `tests/system/tests/focus-indication.spec.ts`; its focused-state captures are recorded task-scoped under `tests/system/visual-evidence/FM-053/` rather than as registry-cited snapshots, because this record is `visual.status: unassessed` and authoring its first full visual contract is its own visual-parity assessment rather than focus work. That contract and the ADR-0006 acceptance of this focused state are outstanding and belong to the repository owner alone." }
-
   - id: F-HISTORY-DOWNLOADS
     name: Download-history paging, filtering, links, and repeat actions
-    route_states: [ root.stats.downloads ]
-    routes: [ /stats/downloads ]
-    roles: [ stats ]
-    legacy_sources: [ core/ui-src/js/download-history-controller.js, core/ui-src/js/stats-service.js, core/ui-src/html/states/download-history.html ]
-    tests: [ ]
-    selectors: [ ]
+    routes:
+      - /stats/downloads
+    legacy_sources:
+      - core/ui-src/js/download-history-controller.js
+      - core/ui-src/js/stats-service.js
+      - core/ui-src/html/states/download-history.html
     target: core/ui-react/src/features/stats/history
+    tests: []
+    selectors: []
     parity: inventoried
-    visual: { applicability: applicable, status: unassessed }
-    task: FM-022
-
   - id: F-HISTORY-NOTIFICATIONS
     name: Notification-history paging and filtering
-    route_states: [ root.stats.notifications ]
-    routes: [ /stats/notifications ]
-    roles: [ stats ]
-    legacy_sources: [ core/ui-src/js/notification-history-controller.js, core/ui-src/js/stats-service.js, core/ui-src/html/states/notification-history.html ]
-    tests: [ ]
-    selectors: [ ]
+    routes:
+      - /stats/notifications
+    legacy_sources:
+      - core/ui-src/js/notification-history-controller.js
+      - core/ui-src/js/stats-service.js
+      - core/ui-src/html/states/notification-history.html
     target: core/ui-react/src/features/stats/history
+    tests: []
+    selectors: []
     parity: inventoried
-    visual: { applicability: applicable, status: unassessed }
-    task: FM-023
-
   - id: F-SYSTEM-SHELL
     name: System administration tab shell
-    route_states: [ root.system ]
-    routes: [ /system ]
-    roles: [ admin ]
-    legacy_sources: [ core/ui-src/js/nzbhydra.js, core/ui-src/js/system-controller.js, core/ui-src/html/states/system.html ]
-    tests: [ ]
-    selectors: [ ]
+    routes:
+      - /system
+    legacy_sources:
+      - core/ui-src/js/nzbhydra.js
+      - core/ui-src/js/system-controller.js
+      - core/ui-src/html/states/system.html
     target: core/ui-react/src/features/system
+    tests: []
+    selectors: []
     parity: inventoried
-    visual: { applicability: applicable, status: unassessed }
-    task: FM-001
-    backlog: { status: deferred, rationale: "System administration migration needs a dedicated task batch before implementation begins." }
-
   - id: F-SYSTEM-CONTROL
     name: Restart, shutdown, configuration reload, and legacy migration
-    route_states: [ root.system.control ]
-    routes: [ /system/control ]
-    roles: [ admin ]
-    legacy_sources: [ core/ui-src/js/system-controller.js, core/ui-src/js/nzbhydra-control-service.js, core/ui-src/js/restart-service.js, core/ui-src/js/migration-service.js ]
-    tests: [ ]
-    selectors: [ ]
+    routes:
+      - /system/control
+    legacy_sources:
+      - core/ui-src/js/system-controller.js
+      - core/ui-src/js/nzbhydra-control-service.js
+      - core/ui-src/js/restart-service.js
+      - core/ui-src/js/migration-service.js
     target: core/ui-react/src/features/system/control
+    tests: []
+    selectors: []
     parity: unverified_legacy_api
-    visual: { applicability: applicable, status: unassessed }
-    gaps: [ migration API has no verified backend mapping ]
-    task: FM-001
-    backlog: { status: deferred, rationale: "System administration migration needs a dedicated task batch before implementation begins." }
-
+    gaps:
+      - migration API has no verified backend mapping
   - id: F-SYSTEM-UPDATES
     name: Update status, history, ignore, install, and restart handoff
-    route_states: [ root.system.updates ]
-    routes: [ /system/updates ]
-    roles: [ admin ]
-    legacy_sources: [ core/ui-src/js/update-service.js, core/ui-src/js/directives/hydra-updates.js ]
-    tests: [ ]
-    selectors: [ ]
+    routes:
+      - /system/updates
+    legacy_sources:
+      - core/ui-src/js/update-service.js
+      - core/ui-src/js/directives/hydra-updates.js
     target: core/ui-react/src/features/system/updates
+    tests: []
+    selectors: []
     parity: inventoried
-    visual: { applicability: applicable, status: unassessed }
-    task: FM-001
-    backlog: { status: deferred, rationale: "System administration migration needs a dedicated task batch before implementation begins." }
-
   - id: F-SYSTEM-LOG
     name: Raw and structured log viewing, filtering, tailing, and downloads
-    route_states: [ root.system.log ]
-    routes: [ /system/log ]
-    roles: [ admin ]
-    legacy_sources: [ core/ui-src/js/directives/hydra-log.js, core/ui-src/html/directives/log.html ]
-    tests: [ ]
-    selectors: [ ]
+    routes:
+      - /system/log
+    legacy_sources:
+      - core/ui-src/js/directives/hydra-log.js
+      - core/ui-src/html/directives/log.html
     target: core/ui-react/src/features/system/logs
+    tests: []
+    selectors: []
     parity: inventoried
-    visual: { applicability: applicable, status: unassessed }
-    task: FM-001
-    backlog: { status: deferred, rationale: "System administration migration needs a dedicated task batch before implementation begins." }
-
   - id: F-SYSTEM-TASKS
     name: Scheduled task list and manual execution
-    route_states: [ root.system.tasks ]
-    routes: [ /system/tasks ]
-    roles: [ admin ]
-    legacy_sources: [ core/ui-src/js/directives/tasks.js ]
-    tests: [ ]
-    selectors: [ ]
+    routes:
+      - /system/tasks
+    legacy_sources:
+      - core/ui-src/js/directives/tasks.js
     target: core/ui-react/src/features/system/tasks
+    tests: []
+    selectors: []
     parity: inventoried
-    visual: { applicability: applicable, status: unassessed }
-    task: FM-001
-    backlog: { status: deferred, rationale: "System administration migration needs a dedicated task batch before implementation begins." }
-
   - id: F-SYSTEM-BACKUP
     name: Backup listing, creation, download, upload, and restore
-    route_states: [ root.system.backup ]
-    routes: [ /system/backup ]
-    roles: [ admin ]
-    legacy_sources: [ core/ui-src/js/backup-service.js, core/ui-src/js/directives/backup.js, core/ui-src/html/directives/backup.html ]
-    tests: [ ]
-    selectors: [ ]
+    routes:
+      - /system/backup
+    legacy_sources:
+      - core/ui-src/js/backup-service.js
+      - core/ui-src/js/directives/backup.js
+      - core/ui-src/html/directives/backup.html
     target: core/ui-react/src/features/system/backups
+    tests: []
+    selectors: []
     parity: inventoried
-    visual: { applicability: applicable, status: unassessed }
-    task: FM-001
-    backlog: { status: deferred, rationale: "System administration migration needs a dedicated task batch before implementation begins." }
-
   - id: F-SYSTEM-BUGREPORT
     name: Debug archive, upload, sensitive logging, thread diagnostics, heap dump, and SQL tools
-    route_states: [ root.system.bugreport ]
-    routes: [ /system/bugreport ]
-    roles: [ admin ]
-    legacy_sources: [ core/ui-src/js/system-controller.js, core/ui-src/html/bugreport.html ]
-    tests: [ ]
-    selectors: [ ]
+    routes:
+      - /system/bugreport
+    legacy_sources:
+      - core/ui-src/js/system-controller.js
+      - core/ui-src/html/bugreport.html
     target: core/ui-react/src/features/system/diagnostics
+    tests: []
+    selectors: []
     parity: inventoried
-    visual: { applicability: applicable, status: unassessed }
-    task: FM-001
-    backlog: { status: deferred, rationale: "System administration migration needs a dedicated task batch before implementation begins." }
-
   - id: F-SYSTEM-NEWS
     name: Read-only news list
-    route_states: [ root.system.news ]
-    routes: [ /system/news ]
-    roles: [ admin ]
-    legacy_sources: [ core/ui-src/js/directives/hydra-news.js, core/ui-src/js/directives/hydra-checks-footer.js ]
-    tests: [ core/ui-react/src/features/system/news/NewsPage.test.tsx, tests/system/tests/news.spec.ts ]
-    selectors: [ ]
+    routes:
+      - /system/news
+    legacy_sources:
+      - core/ui-src/js/directives/hydra-news.js
+      - core/ui-src/js/directives/hydra-checks-footer.js
     target: core/ui-react/src/features/system/news
+    tests:
+      - core/ui-react/src/features/system/news/NewsPage.test.tsx
+      - tests/system/tests/news.spec.ts
+    selectors: []
     parity: partial
-    visual: { applicability: applicable, status: unassessed }
-    gaps: [ "focused-state visual evidence for this record's authored keyboard focus indicator exists (FM-053) but this record has no visual contract at all, so its own first visual-parity assessment and the ADR-0006 acceptance of that focused state are outstanding" ]
-    task: FM-008
-    backlog: { status: deferred, rationale: "The record remains partial pending a dedicated full-parity reconciliation. FM-053 (ADR-0013, accepted 2026-08-19, Option A) gives the sanitized third-party `<a href>` this record's `SafeRichContent` renders -- the one control class in the application no MUI component styles at all, which FM-052 measured at 1.29:1 because the global rule's `currentColor` there is the UA default link blue and which now renders the authored token's explicit colour at 6.63:1 the application's single authored keyboard focus indicator, measured live at full opacity in a real browser and gated by `tests/system/tests/focus-indication.spec.ts`; its focused-state captures are recorded task-scoped under `tests/system/visual-evidence/FM-053/` rather than as registry-cited snapshots, because this record is `visual.status: unassessed` and authoring its first full visual contract is its own visual-parity assessment rather than focus work. That contract and the ADR-0006 acceptance of this focused state are outstanding and belong to the repository owner alone." }
-
   - id: F-SYSTEM-ABOUT
     name: Version, update, and runtime information
-    route_states: [ root.system.about ]
-    routes: [ /system/about ]
-    roles: [ admin ]
-    legacy_sources: [ core/ui-src/js/nzbhydra.js, core/ui-src/html/about.html ]
-    tests: [ ]
-    selectors: [ ]
+    routes:
+      - /system/about
+    legacy_sources:
+      - core/ui-src/js/nzbhydra.js
+      - core/ui-src/html/about.html
     target: core/ui-react/src/features/system/about
+    tests: []
+    selectors: []
     parity: inventoried
-    visual: { applicability: applicable, status: unassessed }
-    task: FM-001
-    backlog: { status: deferred, rationale: "System administration migration needs a dedicated task batch before implementation begins." }
-
   - id: F-PLATFORM-LIVE-STATUS
     name: Cross-route downloader status, notifications, welcome, warnings, and startup checks
-    route_states: [ root ]
-    routes: [ "/*" ]
-    roles: [ user, stats, admin ]
-    legacy_sources: [ core/ui-src/js/directives/downloaderStatusFooter.js, core/ui-src/js/directives/hydra-checks-footer.js ]
-    tests: [ ]
-    selectors: [ ]
+    routes:
+      - /*
+    legacy_sources:
+      - core/ui-src/js/directives/downloaderStatusFooter.js
+      - core/ui-src/js/directives/hydra-checks-footer.js
     target: core/ui-react/src/app/status
+    tests: []
+    selectors: []
     parity: inventoried
-    visual: { applicability: applicable, status: unassessed }
-    task: FM-001
-    backlog: { status: deferred, rationale: "No implementation task has been designed for cross-route live status parity." }

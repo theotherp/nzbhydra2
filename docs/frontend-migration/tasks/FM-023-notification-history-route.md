@@ -1,7 +1,7 @@
 # FM-023: Notification History Route
 
 Status: planned Owner:
-Feature IDs: F-HISTORY-NOTIFICATIONS Component IDs: C-DATE-TIME, C-EXTERNAL-LINKS API IDs: API-HISTORY-NOTIFICATIONS Depends on: FM-020 Blocks: None
+Feature IDs: F-HISTORY-NOTIFICATIONS Component IDs: C-DATE-TIME, C-EXTERNAL-LINKS API IDs: API-HISTORY-NOTIFICATIONS Depends on: None Blocks: None
 
 ## Outcome
 

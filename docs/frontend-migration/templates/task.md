@@ -7,36 +7,18 @@ API IDs:
 Depends on: None
 Blocks: None
 
-## Dependency Notes
-
-Explain dependency or sequencing rationale here. `Depends on` and `Blocks` contain only comma-separated `FM-NNN` IDs or `None`.
-
 ## Outcome
 
-One externally observable or architecturally complete result.
-
-## Boundary Rationale
-
-Explain why this is a substantial independently reviewable capability and why its included work must be delivered together. State the concrete dependency or product boundary that justifies every split from adjacent work.
+One externally observable or architecturally complete result, and why this scope belongs together (one short paragraph).
 
 ## Decision Dependencies
 
-- Accepted ADR IDs governing this task, or `None`.
-- Proposed/rejected ADR IDs that currently block this task, or `None`. Replace or remove the entry when an accepted ADR resolves it. A task cannot become `ready` while an unresolved entry remains.
+`DECISIONS.md` entry IDs governing this task, or `None`.
 
 ## Files Allowed To Modify
 
-- Exact files or narrow path globs
-- This task packet
-- Explicit linked registry records
-
-## Read Scope
-
-The agent may read and search the entire repository as necessary to satisfy the acceptance criteria and verification requirements.
-
-The files under Context To Read are mandatory starting points, not an exhaustive list of files that may be inspected.
-
-Do not modify files outside Files Allowed To Modify. If a required change falls outside this scope, stop and escalate with the exact file and reason.
+- Exact files or narrow path globs (write allowlist only — the whole repository may be read)
+- This task packet and explicitly linked registry records
 
 ## Out Of Scope
 
@@ -44,28 +26,19 @@ Do not modify files outside Files Allowed To Modify. If a required change falls 
 
 ## Context To Read
 
-- Required ADR IDs
-- Required context sections or registry IDs
-- Legacy sources necessary for parity
+- Required decision entries, registry IDs, and legacy sources for parity
 
 ## Acceptance
 
 - Testable behavior and architecture requirements
-- Include repository-wide reconciliation when completeness or parity is required
-- For ADR-0006 visual work: scoped semantic contract, deterministic setup, named viewports/geometry checks, evidence references, optional narrow snapshots, and proposed variances; never claim human acceptance without an explicit decision.
+- If rendering changes: the screenshot strip required by `../README.md`, *Visual Gate*
 
 ## Verification
 
-- Prerequisites and required service state
-- Working directory: `/absolute/or/repository-relative/path`
-- `exact command` - expected successful outcome
-- Confirm task-owned changed files are all listed under Files Allowed To Modify
-- Confirm verification leaves no unexpected generated or modified files
+- Working directory, exact command, expected outcome — one line per gate
+- Confirm changed files match `Files Allowed To Modify` and no stray generated files remain
 
-## Handoff
+## Handoff / Review
 
-At handoff, use `templates/handoff.md`. Fill every section, writing `None` where appropriate, and mark the task `review` only after required verification succeeds. An implementer must never mark a task `done`.
-
-## Fresh Review
-
-Use `templates/review.md` after the implementation handoff. A fresh reviewer records the review before the coordinator may mark the task `done`.
+Implementer fills `../templates/handoff.md` and marks the task `review`; a fresh reviewer fills `../templates/review.md`; only
+the coordinator marks `done`.

@@ -11,8 +11,8 @@ Your Bash access is read-and-verify only. Never run a command that mutates the w
 with read-only commands (`git status`, `git diff`, `git log`, `git show`) and run the task's verification commands; report findings rather than correcting them. If a review step appears to require a mutating command, report that as a
 finding instead of running it.
 
-Inspect the task packet, relevant ADRs and registries, repository state, complete task-attributable diff from the supplied baseline, modified files, tests, and verification evidence. Judge strictly against the written task rather than
-personal implementation preferences. Independently verify handoff claims by auditing their command results, coverage, and `Verification Basis`; matching evidence is valid even though this reviewer did not execute the command.
+Inspect the task packet, the relevant `docs/frontend-migration/DECISIONS.md` entries and registries, repository state, complete task-attributable diff from the supplied baseline, modified files, tests, and verification evidence. Judge
+strictly against the written task rather than personal implementation preferences. Independently verify handoff claims by auditing their command results, coverage, and `Verification Basis`; matching evidence is valid even though this reviewer did not execute the command.
 
 Run long verification/system-test commands in the foreground with a timeout sized to let them finish. Do not background a command and end your turn to "wait" for it — you will not be automatically resumed, and re-running a slow real-backend
 bring-up from scratch on every resume wastes far more time than a longer single foreground wait.
@@ -23,17 +23,16 @@ review, such as diff and manifest checks. If a test does not credibly cover its 
 
 Look specifically for silent workarounds, dependency downgrades, weakened lint/type/test/build configuration, skipped tests, write-scope violations, and unsupported assumptions or architectural decisions.
 
-For ADR-0006 visual work, audit the scoped feature visual record, deterministic setup, named viewport geometry, evidence paths, optional narrow snapshots, and variance disposition. Open and actually look at every recorded evidence image
-yourself; passing geometry/accessibility/hash checks does not establish visual or branding quality, and a reviewer that only checks evidence metadata can pass a technically-compliant result that looks wrong. A reviewer may validate a
-proposal but must never supply or infer human baseline/variance acceptance; visual evidence is independent of behavioral and accessibility gates.
+For UI work, additionally check `/core/ui-react/AGENTS.md` *UI Conventions* (ADR-0014): standard MUI components rather than hand-built composites, visible labels, no design literals in feature code, no restyling of component internals, and
+a justification comment at every deviation from stock MUI. If rendering changed, confirm the handoff references a screenshot strip and open and actually look at every image yourself — passing checks does not establish that the result looks
+right. A reviewer never supplies or infers the owner's visual approval.
 
-If the implementation requires or silently made an unresolved fundamental decision about shared architecture, API/authentication/transport, rollout/deployment, persistence/security, or project-wide quality policy, return `BLOCKED: ADR
-REQUIRED`. State the decision question, repository evidence, viable options, affected task/registry IDs, and recommendation. Do not select the decision or treat an unaccepted proposal as authority.
+If the implementation requires or silently made an unresolved fundamental decision about shared architecture, API/authentication/transport, rollout/deployment, persistence/security, or project-wide quality policy, return `BLOCKED: DECISION
+REQUIRED`. State the decision question, repository evidence, viable options, affected task/registry IDs, and recommendation. Do not select the decision yourself.
 
 Evaluate every acceptance criterion as `PASS`, `FAIL`, or `NOT VERIFIED`. Return exactly one overall result: `PASS`, `PASS WITH MINOR FINDINGS`, `FAIL`, or
-`BLOCKED`. Findings must include concrete required corrections and distinguish them from optional follow-up. When optional follow-up is mechanically repairable with no behavioral surface, or is a single-module bug a
-regression test could cover, label it a **maintenance candidate for `/fm-quickfix`** rather than proposing a corrective task packet; see `docs/frontend-migration/MAINTENANCE.md`. Reserve a proposed packet for follow-up that genuinely
-needs one — a contract, registry record, selector, user-observable capability, or ADR.
+`BLOCKED`. Findings must include concrete required corrections and distinguish them from optional follow-up. When optional follow-up fits the single-session-fix tier (`docs/frontend-migration/README.md`, *Choosing A Mechanism*), label it a
+**single-session fix candidate** rather than proposing a corrective task packet. Reserve a proposed packet for follow-up that genuinely needs one — a new capability, a contract, or a decision entry.
 
 ## Git Attribution
 

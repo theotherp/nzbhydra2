@@ -1,31 +1,22 @@
-## Fresh Review
+# Fresh Review
 
-### Review Identity
+## Identity
 
-- Reviewer: `name or agent identity`
-- Role: `fresh reviewer`
-- Reviewed revision: `Git SHA`
-- Implementation handoff revision: `Git SHA or task packet revision`
+- Reviewer, reviewed revision (Git SHA).
 
-### Acceptance And Evidence Audit
+## Audit
 
-- Acceptance criteria checked: `each criterion with pass/fail and concise evidence`
-- Verification-basis reconciliation: `the reviewed implementation/test files match the handoff manifest, or explain the rerun/exception`
-- Scope reconciliation: `all attributable changes are within Files Allowed To Modify, or explain the approved amendment`
-- Registry reconciliation: `linked feature/component/API records accurately identify current target, tests, state, owner, gaps, and selectors where applicable`
-- Visual-contract audit (when applicable): `scope, deterministic setup, viewports, geometry/evidence, variance disposition, and explicit human-acceptance separation are accurate; no broad baseline or retrospective acceptance was introduced`
+- Each acceptance criterion: pass/fail with concise evidence.
+- Diff vs. `Files Allowed To Modify`: compliant, or explain.
+- Cheap deterministic gates re-run first-hand; expensive suites re-run only when evidence is missing, stale, or insufficient
+  (state which and why).
+- UI work: conventions in `/core/ui-react/AGENTS.md` (*UI Conventions*) upheld; screenshot strip present and legible.
+- Registry records accurate for linked IDs.
 
-### Findings
+## Findings
 
-- Findings and required corrections, or `None`.
+- Required corrections, or `None`. Minor observations may be carried, not fixed.
 
-### Resolution
+## Disposition
 
-- Resolution evidence for each finding, or `None`.
-- Review disposition: `accepted`, `changes_requested`, or `blocked`.
-
-### Coordinator Completion
-
-- Coordinator: `name or agent identity`
-- Decision: `mark done`, `remain review`, or `blocked`
-- Decision revision/date: `Git SHA and date`
+- `accepted`, `changes_requested`, or `blocked` — the coordinator marks `done`.
