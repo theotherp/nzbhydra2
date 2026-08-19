@@ -9,6 +9,30 @@ declare module "@mui/material/styles" {
     interface ThemeOptions {
         colorSpace?: string | undefined;
     }
+
+    // ADR-0014: the mock's surface tokens, exposed on the palette so feature
+    // code can consume them via `sx` palette paths ("surfaces.control")
+    // instead of restating hex literals.
+    interface SurfaceTokens {
+        /** The search-bar row ground (`#232a2c` in the mock). */
+        bar: string;
+        /** Raised control surface: selects, menus, secondary buttons. */
+        control: string;
+        /** Recessed input surface: text fields. */
+        recessed: string;
+        /** 1px control border hairline. */
+        hairline: string;
+        /** Fainter hairline for row/section separators. */
+        hairlineFaint: string;
+    }
+
+    interface Palette {
+        surfaces: SurfaceTokens;
+    }
+
+    interface PaletteOptions {
+        surfaces?: SurfaceTokens;
+    }
 }
 
 export type ThemePreference =
@@ -87,6 +111,17 @@ const mockPalette = {
     scrollbarThumbHover: "#495456",
 } as const;
 
+// ADR-0014 surface tokens, read from the mock's search-bar row and controls.
+// The single authoritative copy: feature code consumes these through the
+// palette (`surfaces.*`), never by restating the literals.
+const mockSurfaces = {
+    bar: "#232a2c",
+    control: "#2a3133",
+    recessed: "#1c2224",
+    hairline: "rgba(255, 255, 255, 0.1)",
+    hairlineFaint: "rgba(255, 255, 255, 0.06)",
+} as const;
+
 // MUI's default contrast text for a light-enough surface. Used verbatim for the
 // roles MUI would otherwise compute it for, because `oklch()` is outside the
 // sRGB formats `@mui/system`'s `getContrastRatio` can decompose.
@@ -143,16 +178,11 @@ const lightContrastText = "#fff";
  *     `:focus-visible` rule paints there invisibly at any specificity, so
  *     those three families are authored on the *root* `Mui-focusVisible`
  *     class instead.
- *   - `InputBase/InputBase.js` -- `InputBaseRoot` (`styled('div', {name:
- *     'MuiInputBase'})`) and `InputBaseInput`'s `'&:focus': {outline: 0}`,
- *     which defeats any outline authored on the inner input. The input family
- *     is therefore authored on the *root* with `&:has(:focus-visible)`, which
- *     also reaches every `Select` trigger, because `Select/SelectInput.js`
- *     gives the `role="combobox"` node the shared `MuiInputBase-input` class.
- *   - `OutlinedInput/OutlinedInput.js` -- `OutlinedInputRoot` is
- *     `styled(InputBase.InputBaseRoot, {name: 'MuiOutlinedInput'})`, so the
- *     `MuiInputBase` root override below reaches every outlined field and
- *     select as well.
+ *   - `OutlinedInput/OutlinedInput.js` -- its own `&.Mui-focused
+ *     .notchedOutline { borderWidth: 2, borderColor: primary.main }` rule is
+ *     the input/select family's focus indicator under ADR-0015 (measured by
+ *     FM-052 at 3.15-5.56:1, passing the 3:1 axis everywhere). No ring is
+ *     authored for `MuiInputBase`; see the note at the `MuiTextField` entry.
  *   - `Link/Link.js` -- both its `outline: 0` reset and its
  *     `` `&.${linkClasses.focusVisible}`: {outline: 'auto'} `` rule live
  *     inside one `variants` entry keyed `props: {component: 'button'}`.
@@ -213,6 +243,7 @@ export function createHydraTheme(
                 primary: mockPalette.textPrimary,
                 secondary: mockPalette.textSecondary,
             },
+            surfaces: mockSurfaces,
             // Every role spells out its own `contrastText`: under `colorSpace`
             // MUI would otherwise derive it as `oklch(from <main> var(--__l) 0
             // h / var(--__a))`, whose custom properties only exist in the CSS
@@ -381,21 +412,20 @@ export function createHydraTheme(
                     }),
                 },
             },
-            // ADR-0013 family D+E (the `InputBase` family, including every
-            // `Select` trigger, and the `OutlinedInput`/`notchedOutline`
-            // family, whose root is `styled(InputBase.InputBaseRoot)`).
-            // Authored on the root with `:has(:focus-visible)` rather than on
-            // the inner input, because `InputBaseInput`'s own
-            // `'&:focus': {outline: 0}` (specificity 0,2,0) defeats any
-            // outline authored on that element outright, and because on a
-            // bare `InputBase` the root is the node that carries the
-            // feature-local border and background a user actually sees.
-            MuiInputBase: {
-                styleOverrides: {
-                    root: ({theme}) => ({
-                        "&:has(:focus-visible)": focusRing(theme),
-                    }),
-                },
+            // ADR-0015 (amending ADR-0013): the text-input/select family does
+            // NOT carry the authored ring. With ADR-0014 restoring stock
+            // outlined inputs everywhere, this family indicates focus through
+            // MUI's own focused `notchedOutline` (2px `primary.main`), which
+            // FM-052 measured passing the 3:1 contrast axis at every site
+            // (3.15-5.56:1). The previous `MuiInputBase`
+            // `&:has(:focus-visible)` ring double-bordered every focused
+            // select and is deliberately absent; do not reintroduce it.
+            //
+            // ADR-0014 input-family defaults: the mock's recessed input
+            // surface and hairline border, and the mock's compact control
+            // size, applied here once so feature code never restates them.
+            MuiTextField: {
+                defaultProps: {size: "small"},
             },
             // ADR-0013 family F. Drawn *inset*, for a measured reason: both
             // render inside a `Paper` whose computed overflow is not
@@ -461,11 +491,32 @@ export function createHydraTheme(
             },
             MuiOutlinedInput: {
                 styleOverrides: {
-                    // The mock's text inputs are `border-radius:8px`. Pinned
-                    // explicitly rather than inherited from `shape.borderRadius`
-                    // so the input radius stays the mock's even if the shared
-                    // default is retuned later.
-                    root: {borderRadius: 8},
+                    // The mock's text inputs: 8px radius (pinned explicitly so
+                    // the input radius stays the mock's even if the shared
+                    // default is retuned later), recessed surface, hairline
+                    // resting border. MUI's own `&.Mui-focused
+                    // .notchedOutline` rule has higher specificity than the
+                    // resting recolour, so the focused 2px `primary.main`
+                    // border still paints (ADR-0015's chosen indicator for
+                    // this family).
+                    root: ({theme}) => ({
+                        borderRadius: 8,
+                        backgroundColor: theme.palette.surfaces.recessed,
+                        "& .MuiOutlinedInput-notchedOutline": {
+                            borderColor: theme.palette.surfaces.hairline,
+                        },
+                    }),
+                },
+            },
+            // Menus and select popovers render on the mock's raised control
+            // surface with a hairline border.
+            MuiMenu: {
+                styleOverrides: {
+                    paper: ({theme}) => ({
+                        backgroundColor: theme.palette.surfaces.control,
+                        backgroundImage: "none",
+                        border: `1px solid ${theme.palette.surfaces.hairline}`,
+                    }),
                 },
             },
             MuiChip: {

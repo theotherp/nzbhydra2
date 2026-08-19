@@ -344,10 +344,10 @@ describe("SearchPage", () => {
         expect(screen.getAllByText(/Internal/).at(0)).toBeVisible();
         fireEvent.click(screen.getByRole("button", {name: /^Refill:/}));
         expect(screen.getByLabelText("Search")).toHaveValue("recent query");
-        expect(screen.getByLabelText("Minimum age (days)")).toHaveValue(1);
-        expect(screen.getByLabelText("Maximum age (days)")).toHaveValue(2);
-        expect(screen.getByLabelText("Minimum size (MB)")).toHaveValue(3);
-        expect(screen.getByLabelText("Maximum size (MB)")).toHaveValue(4);
+        expect(screen.getByLabelText("Minimum age (days)")).toHaveValue("1");
+        expect(screen.getByLabelText("Maximum age (days)")).toHaveValue("2");
+        expect(screen.getByLabelText("Minimum size (MB)")).toHaveValue("3");
+        expect(screen.getByLabelText("Maximum size (MB)")).toHaveValue("4");
         fireEvent.click(screen.getByTestId("recent-searches-trigger"));
         fireEvent.click(
             await screen.findByRole("menuitem", {name: /^Repeat:/}),
@@ -526,8 +526,8 @@ describe("SearchPage", () => {
         fireEvent.click(screen.getByTestId("recent-searches-trigger"));
         await screen.findByRole("menuitem", {name: /^Repeat:/});
         fireEvent.click(screen.getByRole("button", {name: /^Refill:/}));
-        expect(screen.getByLabelText("Minimum age (days)")).toHaveValue(null);
-        expect(screen.getByLabelText("Maximum size (MB)")).toHaveValue(null);
+        expect(screen.getByLabelText("Minimum age (days)")).toHaveValue("");
+        expect(screen.getByLabelText("Maximum size (MB)")).toHaveValue("");
     });
 
     it("should execute history repeat criteria through the canonical submission lifecycle", async () => {

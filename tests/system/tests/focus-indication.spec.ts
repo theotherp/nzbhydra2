@@ -5,9 +5,13 @@
  * that this application indicates keyboard focus with one explicit focus-ring
  * token, authored per control family on each component's own
  * `&.Mui-focusVisible` / `:focus-visible` selector in
- * `core/ui-react/src/app/theme.ts`. This spec reaches one representative
- * control per authored family with real `Tab`/`Shift+Tab` (and, for menu
- * items, real `Enter`/`ArrowDown`) keypresses, records
+ * `core/ui-react/src/app/theme.ts`. ADR-0015 (accepted 2026-08-19) amends the
+ * scope: the text-input/select family is NOT ring-authored — since ADR-0014
+ * restored stock outlined inputs, that family's indicator is MUI's own
+ * focused `notchedOutline` (2px `primary.main`), and this spec asserts both
+ * that it paints and that no ring doubles it. For every other family this
+ * spec reaches one representative control with real `Tab`/`Shift+Tab` (and,
+ * for menu items, real `Enter`/`ArrowDown`) keypresses, records
  * `element.matches(":focus-visible")` for each, and asserts both that the
  * focused/unfocused computed-style delta is non-empty and that the *literal*
  * authored values render -- `outline: 3px solid oklch(0.75 0.1 190)` at a
@@ -479,12 +483,53 @@ async function runSearch(page: Page): Promise<void> {
 const inputRoot =
     "xpath=ancestor-or-self::div[contains(@class,'MuiInputBase-root')][1]";
 
+/**
+ * ADR-0015 (amending ADR-0013): the text-input/select family indicates focus
+ * through MUI's own focused `notchedOutline` — 2px `primary.main`, measured by
+ * FM-052 at 3.15-5.56:1, passing the 3:1 axis everywhere — not through the
+ * authored ring, which double-bordered every focused select. This helper
+ * asserts the whole family contract on a `.MuiInputBase-root`: a real 1px
+ * resting border, keyboard reach, the 2px focused border in the brand teal,
+ * and the *absence* of the authored outline ring on the focused root.
+ */
+async function expectFocusedOutlinedInput(
+    page: Page,
+    root: Locator,
+    label: string,
+): Promise<void> {
+    const notchedOutline = root.locator(".MuiOutlinedInput-notchedOutline");
+    expect(
+        await notchedOutline.evaluate(
+            (element) => getComputedStyle(element).borderTopWidth,
+        ),
+        `${label}: unfocused notchedOutline width`,
+    ).toBe("1px");
+    await tabTo(page, root);
+    const focused = await notchedOutline.evaluate((element) => {
+        const computed = getComputedStyle(element);
+        return {
+            width: computed.borderTopWidth,
+            color: computed.borderTopColor,
+        };
+    });
+    expect(focused.width, `${label}: focused notchedOutline width`).toBe("2px");
+    expect(focused.color, `${label}: focused notchedOutline color`).toBe(
+        FOCUS_RING_COLOR,
+    );
+    expect(
+        await root.evaluate(
+            (element) => getComputedStyle(element).outlineStyle,
+        ),
+        `${label}: no authored ring may double the focused border (ADR-0015)`,
+    ).toBe("none");
+}
+
 test.describe("Authored keyboard focus indication (ADR-0013, Option A)", () => {
     test.beforeEach(async ({hydra}) => {
         await hydra.configureMockIndexers(["1", "2"]);
     });
 
-    test("should render the authored ring on the search route's ButtonBase, InputBase and Select families at both viewports", async ({
+    test("should render the authored ring on the search route's ButtonBase family and the focused border on its input family at both viewports", async ({
         page,
     }) => {
         for (const viewport of ["desktop", "mobile"] as const) {
@@ -506,51 +551,23 @@ test.describe("Authored keyboard focus indication (ADR-0013, Option A)", () => {
                 OUTSET_OFFSET,
             );
 
-            // Family D -- the bare `InputBase` rendering `queryInputSx`
-            // styles. FM-052 dispositioned this `fails 2.4.7`: `InputBase`'s
-            // own `.MuiInputBase-input:focus {outline: 0}` defeated the
-            // outline and the wrapper `Box` did not react to focus.
-            const query = await probeFocus(
+            // The input family, ADR-0015: a stock outlined TextField whose
+            // focused notchedOutline is the indicator.
+            await expectFocusedOutlinedInput(
                 page,
                 page.getByTestId("search-query").locator(inputRoot),
-            );
-            expectAuthoredFocusRing(
                 `search-query (${viewport})`,
-                query,
-                OUTSET_OFFSET,
             );
 
-            // Family D/E -- the `Select` trigger, whose `role="combobox"` node
-            // carries the shared `MuiInputBase-input` class, plus the
-            // `notchedOutline` unwind: `SearchWorkspace.tsx`'s
-            // `border: "none"` is now scoped to the unfocused state, so the
-            // fieldset border is `0px` at rest (the ADR-0009 mock's borderless
-            // rendering, preserved) and paints again when the control is
-            // reached by keyboard.
-            const categoryRoot = page
-                .getByTestId("search-category-control")
-                .locator(".MuiInputBase-root");
-            const notchedOutline = categoryRoot.locator(
-                ".MuiOutlinedInput-notchedOutline",
-            );
-            expect(
-                await notchedOutline.evaluate(
-                    (element) => getComputedStyle(element).borderTopWidth,
-                ),
-                `category select unfocused notchedOutline (${viewport})`,
-            ).toBe("0px");
-            const category = await probeFocus(page, categoryRoot);
-            expectAuthoredFocusRing(
+            // The `Select` trigger (a stock `TextField select` since
+            // ADR-0014), same family contract.
+            await expectFocusedOutlinedInput(
+                page,
+                page
+                    .getByTestId("search-category-control")
+                    .locator(".MuiInputBase-root"),
                 `search-category-control (${viewport})`,
-                category,
-                OUTSET_OFFSET,
             );
-            expect(
-                await notchedOutline.evaluate(
-                    (element) => getComputedStyle(element).borderTopWidth,
-                ),
-                `category select focused notchedOutline (${viewport})`,
-            ).toBe("2px");
 
             // Family F -- `MuiListItemButton`, drawn inset because an outset
             // ring was measured clipped by the mobile navigation `Drawer`'s
@@ -603,23 +620,19 @@ test.describe("Authored keyboard focus indication (ADR-0013, Option A)", () => {
         }
     });
 
-    test("should render the authored ring on the Advanced panel's and the media pair's bare InputBase renderings", async ({
+    test("should render the focused border on the Advanced panel's range fields and the media pair", async ({
         page,
     }) => {
         await openSearchRoute(page, "desktop");
         await page.getByTestId("search-advanced-toggle").click();
         await expect(page.getByTestId("search-advanced-panel")).toBeVisible();
 
-        // `advancedInputSx` -- FM-052's `advanced-range-input`, `fails 2.4.7`:
-        // a static, non-focus-reactive 1px border was its only decoration.
-        const advanced = await probeFocus(
+        // FM-052's `advanced-range-input` (`fails 2.4.7` as a bare InputBase
+        // with a static border) is a stock outlined TextField since ADR-0014.
+        await expectFocusedOutlinedInput(
             page,
             page.getByLabel("Minimum age (days)").locator(inputRoot),
-        );
-        expectAuthoredFocusRing(
             "advanced-range-input",
-            advanced,
-            OUTSET_OFFSET,
         );
         await captureFocusedControl(
             page,
@@ -630,20 +643,16 @@ test.describe("Authored keyboard focus indication (ADR-0013, Option A)", () => {
             ),
         );
 
-        // `pairedInputSx` -- FM-052's `season-episode-paired-input`,
-        // `fails 2.4.7`: it declares no border of any kind and has no wrapper
-        // of its own, so nothing existed that could react to focus.
+        // FM-052's `season-episode-paired-input` (`fails 2.4.7`: it declared
+        // no border and had no wrapper) is a stock labeled TextField since
+        // ADR-0014.
         await page.getByTestId("search-category-control").click();
         await page.getByRole("option", {name: "TV", exact: true}).click();
         await expect(page.getByTestId("season-episode-pair")).toBeVisible();
-        const season = await probeFocus(
+        await expectFocusedOutlinedInput(
             page,
             page.getByLabel("Season").locator(inputRoot),
-        );
-        expectAuthoredFocusRing(
             "season-episode-paired-input",
-            season,
-            OUTSET_OFFSET,
         );
         await captureVisualRegion(
             page.getByTestId("workspace-primary"),
@@ -669,11 +678,10 @@ test.describe("Authored keyboard focus indication (ADR-0013, Option A)", () => {
             .getByTestId("workspace-indexers")
             .locator(".MuiInputBase-root")
             .first();
-        const indexers = await probeFocus(page, indexersLocator);
-        expectAuthoredFocusRing(
+        await expectFocusedOutlinedInput(
+            page,
+            indexersLocator,
             "workspace indexers Select",
-            indexers,
-            OUTSET_OFFSET,
         );
         // R2 fix: the containing region (`workspace-indexers`, 1164x77) is
         // exactly as wide as the control itself (1164.00x36.41), so a
@@ -832,14 +840,10 @@ test.describe("Authored keyboard focus indication (ADR-0013, Option A)", () => {
                     "keyboard-focus-sort-header-button-desktop",
                 );
 
-                const refineTitle = await probeFocus(
+                await expectFocusedOutlinedInput(
                     page,
                     page.getByTestId("refine-filter-title").locator(inputRoot),
-                );
-                expectAuthoredFocusRing(
                     "refine-filter-title-input",
-                    refineTitle,
-                    OUTSET_OFFSET,
                 );
                 await captureVisualRegion(
                     page.getByTestId("refine-sidebar"),
@@ -851,11 +855,10 @@ test.describe("Authored keyboard focus indication (ADR-0013, Option A)", () => {
                     .getByTestId("results-download-actions")
                     .locator(".MuiInputBase-root")
                     .first();
-                const downloader = await probeFocus(page, downloaderLocator);
-                expectAuthoredFocusRing(
+                await expectFocusedOutlinedInput(
+                    page,
+                    downloaderLocator,
                     "downloader-select",
-                    downloader,
-                    OUTSET_OFFSET,
                 );
                 // R2 fix: the containing region (`results-download-actions`,
                 // 1200x42) is not tall enough for the control's own ~47.7px
@@ -974,14 +977,10 @@ test.describe("Authored keyboard focus indication (ADR-0013, Option A)", () => {
         await page.goto("ui/react?redirect=/stats/searches");
         await expect(page.getByTestId("search-history-table")).toBeVisible();
 
-        const filter = await probeFocus(
+        await expectFocusedOutlinedInput(
             page,
             page.getByLabel("Query").first().locator(inputRoot),
-        );
-        expectAuthoredFocusRing(
             "stats-history-text-input",
-            filter,
-            OUTSET_OFFSET,
         );
 
         const checkbox = await probeFocus(

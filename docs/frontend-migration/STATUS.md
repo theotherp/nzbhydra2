@@ -18,9 +18,9 @@ None.
 ## Upcoming
 
 - FM-022: Download History Route
-- FM-054 (to be created): propagate ADR-0014 to the search results area — port `refineStyles.ts`/`toolbarStyles.ts`/
-  `displayStyles.ts`/`filterControls.tsx`/`DownloadActions.tsx`/`RecentSearches.tsx` onto theme tokens and stock components and
-  delete the per-feature style-token files. The search workspace (`SearchWorkspace.tsx`, done 2026-08-19) is the pattern.
+- FM-054 (planned): results-area token-fidelity cleanup — propagate ADR-0014 to
+  `core/ui-react/src/features/search/results/**` and `RecentSearches.tsx`, deleting the per-feature style-token files. The
+  search workspace (`SearchWorkspace.tsx`, converted 2026-08-19) is the pattern.
 
 Planned but not next: FM-023 (Notification History Route), FM-024 (Statistics Dashboard), FM-033 (Durable Visual Evidence
 Output — re-scope against the ADR-0014 screenshot gate before starting).

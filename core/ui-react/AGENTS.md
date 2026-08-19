@@ -46,6 +46,14 @@ component `styleOverrides`/`defaultProps`. Feature code uses standard components
 
 `npm run validate:focus-affordances` enforces the mechanical parts; the reviewer enforces the rest.
 
+**Working from a mock.** A mock (like `uimock/NZBHydra Search.dc.html`) is a source for _tokens_ and _structure_, never a
+styling target to transliterate. First extract what it defines into `theme.ts` (palette, surfaces, radii, fonts, density,
+component defaults); then build the page structure it shows with stock components that inherit that look. Never copy a mock's
+inline CSS into `sx`, and never sacrifice a component's built-in anatomy (label, border, focus state) to match a mock pixel —
+mocks are usually hand-written HTML that omits states (this one declares `outline:none` 15 times and authors no focus style).
+When the owner asks for a visual change, realize it as a token or structure change so it applies everywhere, and iterate by
+screenshotting the running app against the mock rather than by matching CSS text.
+
 ## Dependencies And Toolchain
 
 - Runtime `dependencies` only for packages the shipped browser application requires; build/lint/test/codegen packages belong in

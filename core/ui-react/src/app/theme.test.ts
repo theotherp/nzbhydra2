@@ -26,6 +26,18 @@ describe("resolveThemeMode", () => {
         expect(theme.palette.warning.main).toBe("#f0a830");
     });
 
+    it("should expose the mock's surface tokens on the palette", () => {
+        const theme = createHydraTheme("dark", false);
+
+        expect(theme.palette.surfaces).toEqual({
+            bar: "#232a2c",
+            control: "#2a3133",
+            recessed: "#1c2224",
+            hairline: "rgba(255, 255, 255, 0.1)",
+            hairlineFaint: "rgba(255, 255, 255, 0.06)",
+        });
+    });
+
     it("should keep the dyschromatopsia variant's contrast text unchanged by the mock palette", () => {
         const theme = createHydraTheme("dark-dyschromatopsia", false);
 
@@ -142,9 +154,30 @@ describe("createHydraTheme typography and density", () => {
                 outlineOffset: "3px",
             },
         });
+        // `MuiOutlinedInput`'s root override became a theme-reading function
+        // when ADR-0014's surface tokens joined it (recessed input ground,
+        // hairline resting border); the 8px radius literal it exists to pin is
+        // still asserted, and no focus ring is authored for the input family
+        // (ADR-0015 -- MUI's own focused notchedOutline is the indicator).
+        const outlinedRoot =
+            theme.components?.MuiOutlinedInput?.styleOverrides?.root;
+
+        expect(typeof outlinedRoot).toBe("function");
         expect(
-            theme.components?.MuiOutlinedInput?.styleOverrides?.root,
-        ).toEqual({borderRadius: 8});
+            (outlinedRoot as (props: {theme: typeof theme}) => unknown)({
+                theme,
+            }),
+        ).toEqual({
+            borderRadius: 8,
+            backgroundColor: "#1c2224",
+            "& .MuiOutlinedInput-notchedOutline": {
+                borderColor: "rgba(255, 255, 255, 0.1)",
+            },
+        });
+        expect(theme.components?.MuiInputBase).toBeUndefined();
+        expect(theme.components?.MuiTextField?.defaultProps).toEqual({
+            size: "small",
+        });
         // `MuiChip`'s root override became a theme-reading function for the
         // same reason `MuiButton`'s did: `Chip` is one of ADR-0013's authored
         // control families, so its `&.Mui-focusVisible` rule reads the shared

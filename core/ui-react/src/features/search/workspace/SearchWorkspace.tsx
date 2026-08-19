@@ -6,7 +6,7 @@ import {
     Checkbox,
     Divider,
     FormControlLabel,
-    InputBase,
+    InputAdornment,
     ListItemIcon,
     ListItemText,
     ListSubheader,
@@ -34,7 +34,6 @@ import {Controller, useForm} from "react-hook-form";
 import {useEffect, useId, useRef, useState} from "react";
 import {z} from "zod";
 
-import {monoFontFamily} from "../../../app/theme";
 import type {MediaSuggestion} from "../../../api/media";
 import type {
     CategoryCatalog,
@@ -43,93 +42,6 @@ import type {
 
 const numericString = z.string().regex(/^\d*$/);
 const defaultAutocomplete = async (): Promise<MediaSuggestion[]> => [];
-
-// Surface values of the mock's search-bar row and its Advanced disclosure,
-// read from the `<div style="...background:#232a2c...">` row in
-// `uimock/NZBHydra Search.dc.html`.
-//
-// They stay local to this component instead of moving into `theme.ts`
-// (FM-043's file, out of scope for FM-044): the mock uses them for this one
-// row only, and no second consumer exists. Everything the theme already
-// carries -- the brand teal `primary.main`, IBM Plex Sans/Mono, the button
-// radius, `textTransform: "none"` -- is consumed from the theme rather than
-// restated here.
-const rowBackground = "#232a2c";
-const controlSurface = "#2a3133";
-const recessedSurface = "#1c2224";
-const controlBorderColor = "rgba(255, 255, 255, 0.1)";
-const rowBorderColor = "rgba(255, 255, 255, 0.07)";
-const advancedBorderColor = "rgba(255, 255, 255, 0.06)";
-const pairDividerColor = "rgba(255, 255, 255, 0.12)";
-const pairLabelColor = "#8a9291";
-const mutedGlyphColor = "#6b7472";
-// The row's own control radius; larger than the theme's shared 8px, which the
-// mock keeps for the buttons inside the row.
-const controlRadius = "11px";
-const controlGap = "10px";
-
-const rowControlSurfaceSx = {
-    backgroundColor: controlSurface,
-    border: `1px solid ${controlBorderColor}`,
-    borderRadius: controlRadius,
-} as const;
-
-// The mock draws its numeric inputs bare, without the browser's number
-// spinners, which do not fit a 40-74px field.
-const withoutNumberSpinners = {
-    "& input": {MozAppearance: "textfield"},
-    "& input::-webkit-inner-spin-button, & input::-webkit-outer-spin-button": {
-        WebkitAppearance: "none",
-        margin: 0,
-    },
-} as const;
-
-const pairedInputSx = {
-    ...withoutNumberSpinners,
-    fontFamily: monoFontFamily,
-    fontSize: "13.5px",
-    width: 40,
-    "& input": {
-        ...withoutNumberSpinners["& input"],
-        p: "12px 0",
-        textAlign: "center",
-    },
-} as const;
-
-const advancedInputSx = {
-    ...withoutNumberSpinners,
-    backgroundColor: recessedSurface,
-    border: `1px solid ${controlBorderColor}`,
-    borderRadius: "8px",
-    fontFamily: monoFontFamily,
-    fontSize: "13px",
-    width: 74,
-    "& input": {...withoutNumberSpinners["& input"], p: "7px 9px"},
-    "&.Mui-error": {borderColor: "error.main"},
-} as const;
-
-const queryInputSx = {
-    color: "text.primary",
-    flex: 1,
-    fontSize: "15px",
-    "& input": {p: "12px 6px"},
-    "& input::placeholder": {color: mutedGlyphColor, opacity: 1},
-} as const;
-
-// The mock's select carries no visible caption, but the control keeps its
-// existing accessible name: the `Category` `InputLabel` is only clipped, so
-// the `combobox`'s `aria-labelledby` name computation is unchanged.
-const clippedLabelSx = {
-    border: 0,
-    clip: "rect(0 0 0 0)",
-    height: "1px",
-    margin: "-1px",
-    overflow: "hidden",
-    padding: 0,
-    position: "absolute",
-    whiteSpace: "nowrap",
-    width: "1px",
-} as const;
 
 export const searchFormSchema = z.object({
     query: z.string(),
@@ -372,18 +284,23 @@ export function SearchWorkspace({
     const selectIndexers = (names: string[]) => setValue("indexers", names);
     const resetIndexers = (category = selectedCategory) =>
         selectIndexers(catalog.preselectedIndexerNames(category));
+    const searchAdornment = (
+        <InputAdornment position="start">
+            <SearchIcon fontSize="small" />
+        </InputAdornment>
+    );
+    const {ref: titleInputRef, ...titleRegistration} = register("title", {
+        onChange: () => {
+            request.current++;
+            if (selected) {
+                clearSelection();
+            }
+        },
+    });
+    const {ref: queryInputRef, ...queryRegistration} = register("query");
     const queryInput = mediaType ? (
-        <InputBase
+        <TextField
             fullWidth
-            inputProps={{
-                "aria-activedescendant":
-                    activeOption >= 0
-                        ? `${listboxId}-${activeOption}`
-                        : undefined,
-                "aria-controls": suggestions.length ? listboxId : undefined,
-                "aria-label": "Search",
-                "data-testid": "search-query",
-            }}
             onDragOver={(event) => event.preventDefault()}
             onDrop={onSearchDrop}
             onKeyDown={(event) => {
@@ -403,30 +320,38 @@ export function SearchWorkspace({
                 }
             }}
             placeholder="Search…"
-            sx={queryInputSx}
             type="search"
-            {...register("title", {
-                onChange: () => {
-                    request.current++;
-                    if (selected) {
-                        clearSelection();
-                    }
+            slotProps={{
+                input: {startAdornment: searchAdornment},
+                htmlInput: {
+                    "aria-activedescendant":
+                        activeOption >= 0
+                            ? `${listboxId}-${activeOption}`
+                            : undefined,
+                    "aria-controls": suggestions.length ? listboxId : undefined,
+                    "aria-label": "Search",
+                    "data-testid": "search-query",
                 },
-            })}
+            }}
+            inputRef={titleInputRef}
+            {...titleRegistration}
         />
     ) : (
-        <InputBase
+        <TextField
             fullWidth
-            inputProps={{
-                "aria-label": "Search",
-                "data-testid": "search-query",
-            }}
             onDragOver={(event) => event.preventDefault()}
             onDrop={onSearchDrop}
             placeholder="Search…"
-            sx={queryInputSx}
             type="search"
-            {...register("query")}
+            slotProps={{
+                input: {startAdornment: searchAdornment},
+                htmlInput: {
+                    "aria-label": "Search",
+                    "data-testid": "search-query",
+                },
+            }}
+            inputRef={queryInputRef}
+            {...queryRegistration}
         />
     );
     return (
@@ -435,24 +360,24 @@ export function SearchWorkspace({
             data-testid="search-workspace"
             elevation={1}
             onSubmit={handleSubmit(onSubmit)}
-            sx={{mt: 3}}
+            sx={{mt: 3, overflow: "hidden"}}
         >
             <Box
                 data-testid="workspace-primary"
                 sx={{
-                    backgroundColor: rowBackground,
-                    borderBottom: `1px solid ${rowBorderColor}`,
-                    borderRadius: "12px 12px 0 0",
-                    px: "18px",
-                    py: "14px",
+                    backgroundColor: "surfaces.bar",
+                    borderBottom: "1px solid",
+                    borderColor: "surfaces.hairlineFaint",
+                    px: 2,
+                    py: 1.75,
                 }}
             >
                 <Box
                     sx={{
-                        alignItems: "stretch",
+                        alignItems: "center",
                         display: "flex",
                         flexWrap: "wrap",
-                        gap: controlGap,
+                        gap: 1.25,
                     }}
                 >
                     <Controller
@@ -463,44 +388,10 @@ export function SearchWorkspace({
                                 data-testid="search-category-control"
                                 label="Category"
                                 select
-                                size="small"
-                                slotProps={{
-                                    inputLabel: {sx: clippedLabelSx},
-                                    select: {"aria-label": "Category"},
-                                }}
                                 sx={{
                                     flexGrow: {xs: 1, sm: 0},
                                     flexShrink: 0,
                                     minWidth: 150,
-                                    "& .MuiInputBase-root": {
-                                        ...rowControlSurfaceSx,
-                                        fontSize: "13.5px",
-                                        height: "100%",
-                                    },
-                                    // FM-053 (ADR-0013): scoped to the
-                                    // unfocused state. Unconditionally, this
-                                    // forced the fieldset's `border-width` to
-                                    // `0px` in *both* states, so the
-                                    // `borderColor` MUI's own
-                                    // `&.Mui-focused .notchedOutline` rule
-                                    // does change never painted -- FM-052
-                                    // dispositioned this control
-                                    // `fails 2.4.7` for exactly that reason.
-                                    // The mock's borderless resting rendering
-                                    // (ADR-0009) is preserved; reaching the
-                                    // trigger by keyboard now lets the
-                                    // fieldset border paint again beneath the
-                                    // theme's authored focus ring.
-                                    "&:not(:has(:focus-visible)) .MuiOutlinedInput-notchedOutline":
-                                        {
-                                            border: "none",
-                                        },
-                                    "& .MuiSelect-select": {
-                                        alignItems: "center",
-                                        display: "flex",
-                                        minHeight: 0,
-                                        py: 0,
-                                    },
                                 }}
                                 {...field}
                                 onChange={(event) => {
@@ -531,91 +422,38 @@ export function SearchWorkspace({
                         )}
                     />
                     {mediaType === "TV" && (
-                        <Box
+                        <Stack
                             data-testid="season-episode-pair"
-                            sx={{
-                                ...rowControlSurfaceSx,
-                                alignItems: "center",
-                                display: "flex",
-                                flexShrink: 0,
-                                gap: "6px",
-                                px: "12px",
-                            }}
+                            direction="row"
+                            spacing={1.25}
+                            sx={{flexShrink: 0}}
                         >
-                            <Typography
-                                component="span"
-                                sx={{
-                                    color: pairLabelColor,
-                                    fontSize: "11.5px",
-                                }}
-                            >
-                                S
-                            </Typography>
-                            <InputBase
-                                inputProps={{"aria-label": "Season"}}
-                                placeholder="—"
-                                sx={pairedInputSx}
-                                type="number"
-                                {...register("season", {pattern: /^\d*$/})}
+                            <SeasonEpisodeInput
+                                label="Season"
+                                registration={register("season", {
+                                    pattern: /^\d*$/,
+                                })}
                             />
-                            <Box
-                                component="span"
-                                sx={{
-                                    backgroundColor: pairDividerColor,
-                                    height: 16,
-                                    width: "1px",
-                                }}
+                            <SeasonEpisodeInput
+                                label="Episode"
+                                registration={register("episode")}
                             />
-                            <Typography
-                                component="span"
-                                sx={{
-                                    color: pairLabelColor,
-                                    fontSize: "11.5px",
-                                }}
-                            >
-                                E
-                            </Typography>
-                            <InputBase
-                                inputProps={{"aria-label": "Episode"}}
-                                placeholder="—"
-                                sx={pairedInputSx}
-                                {...register("episode")}
-                            />
-                        </Box>
+                        </Stack>
                     )}
                     <Box
                         sx={{
                             alignItems: "center",
-                            backgroundColor: recessedSurface,
-                            border: `1px solid ${controlBorderColor}`,
-                            borderRadius: controlRadius,
                             display: "flex",
                             flex: 1,
+                            gap: 1.25,
                             minWidth: 260,
-                            pl: "14px",
                             position: "relative",
-                            pr: "4px",
                         }}
                     >
-                        <SearchIcon
-                            sx={{
-                                color: mutedGlyphColor,
-                                fontSize: 18,
-                                mr: "8px",
-                            }}
-                        />
                         {queryInput}
                         <Button
                             data-testid="search-submit"
-                            sx={{
-                                alignSelf: "center",
-                                flexShrink: 0,
-                                fontSize: "14px",
-                                fontWeight: 600,
-                                mr: "2px",
-                                px: "20px",
-                                py: "10px",
-                            }}
+                            sx={{flexShrink: 0, px: 3}}
                             type="submit"
                             variant="contained"
                         >
@@ -629,15 +467,15 @@ export function SearchWorkspace({
                                 id={listboxId}
                                 role="listbox"
                                 sx={{
-                                    backgroundColor: controlSurface,
+                                    backgroundColor: "surfaces.control",
                                     backgroundImage: "none",
-                                    border: `1px solid ${pairDividerColor}`,
-                                    borderRadius: controlRadius,
+                                    border: "1px solid",
+                                    borderColor: "surfaces.hairline",
                                     left: 0,
                                     listStyle: "none",
                                     m: 0,
                                     overflow: "hidden",
-                                    p: "6px",
+                                    p: 0.75,
                                     position: "absolute",
                                     right: 0,
                                     top: "calc(100% + 6px)",
@@ -661,15 +499,17 @@ export function SearchWorkspace({
                                             chooseSuggestion(suggestion)
                                         }
                                         sx={{
-                                            borderRadius: "7px",
+                                            borderRadius: 1,
                                             cursor: "pointer",
-                                            fontSize: "13.5px",
-                                            px: "10px",
-                                            py: "9px",
+                                            px: 1.25,
+                                            py: 1,
                                             bgcolor:
                                                 activeOption === index
                                                     ? "action.selected"
                                                     : undefined,
+                                            "&:hover": {
+                                                bgcolor: "action.hover",
+                                            },
                                         }}
                                     >
                                         {suggestion.title}
@@ -684,6 +524,7 @@ export function SearchWorkspace({
                     <Button
                         aria-controls={advancedPanelId}
                         aria-expanded={advancedOpen}
+                        color={advancedOpen ? "primary" : "inherit"}
                         data-testid="search-advanced-toggle"
                         endIcon={
                             advancedOpen ? (
@@ -694,21 +535,12 @@ export function SearchWorkspace({
                         }
                         onClick={() => setAdvancedOpen((open) => !open)}
                         sx={{
-                            ...rowControlSurfaceSx,
-                            color: advancedOpen
-                                ? "primary.main"
-                                : "text.primary",
+                            bgcolor: "surfaces.control",
+                            borderColor: "surfaces.hairline",
                             flexGrow: {xs: 1, sm: 0},
                             flexShrink: 0,
-                            fontSize: "13px",
-                            fontWeight: 500,
-                            px: "16px",
-                            "& .MuiButton-endIcon": {
-                                color: mutedGlyphColor,
-                                ml: "7px",
-                                "& > *": {fontSize: 16},
-                            },
                         }}
+                        variant="outlined"
                     >
                         Advanced
                     </Button>
@@ -717,15 +549,16 @@ export function SearchWorkspace({
                     data-testid="search-advanced-panel"
                     id={advancedPanelId}
                     sx={{
-                        borderTop: `1px solid ${advancedBorderColor}`,
+                        borderTop: "1px solid",
+                        borderColor: "surfaces.hairlineFaint",
                         display: advancedOpen ? "block" : "none",
-                        mt: "14px",
-                        pt: "14px",
+                        mt: 1.75,
+                        pt: 1.75,
                     }}
                 >
                     <Box
                         data-testid="workspace-ranges"
-                        sx={{display: "flex", flexWrap: "wrap", gap: "22px"}}
+                        sx={{display: "flex", flexWrap: "wrap", gap: 3}}
                     >
                         <AdvancedRangeGroup title="Age (days)">
                             <AdvancedRangeInput
@@ -766,7 +599,7 @@ export function SearchWorkspace({
                     </Box>
                 </Box>
             </Box>
-            <Stack spacing={2} sx={{p: {xs: 2, sm: "18px"}}}>
+            <Stack spacing={2} sx={{p: 2}}>
                 {noIndexers && (
                     <Alert severity="info">
                         {eligibleIndexers.length === 0
@@ -802,7 +635,6 @@ export function SearchWorkspace({
                             fullWidth
                             id="additional-query"
                             label="Additional filter terms"
-                            size="small"
                             slotProps={{
                                 htmlInput: {"data-testid": "additional-query"},
                             }}
@@ -819,7 +651,6 @@ export function SearchWorkspace({
                             <TextField
                                 label="Indexers"
                                 select
-                                size="small"
                                 SelectProps={{
                                     multiple: true,
                                     value: selectedIndexers,
@@ -833,16 +664,6 @@ export function SearchWorkspace({
                                         ),
                                 }}
                                 fullWidth
-                                sx={{
-                                    "& .MuiInputBase-root": {
-                                        backgroundColor: controlSurface,
-                                        borderRadius: controlRadius,
-                                        fontSize: "13.5px",
-                                    },
-                                    "& .MuiOutlinedInput-notchedOutline": {
-                                        borderColor: controlBorderColor,
-                                    },
-                                }}
                             >
                                 {eligibleIndexers.map((indexer) => (
                                     <MenuItem
@@ -890,12 +711,7 @@ export function SearchWorkspace({
                                             />
                                         }
                                         label={indexer.name}
-                                        sx={{
-                                            m: 0,
-                                            "& .MuiFormControlLabel-label": {
-                                                fontSize: "13px",
-                                            },
-                                        }}
+                                        sx={{m: 0}}
                                     />
                                 ))}
                             </Box>
@@ -927,11 +743,25 @@ export function SearchWorkspace({
     );
 }
 
-// The mock's Advanced disclosure labels each range with one uppercase caption
-// above a pair of bare min/max inputs, instead of the two full-width labeled
-// fields this form used before. Each input keeps its exact previous accessible
-// name as an `aria-label`, because a 74px field cannot carry a floating
-// "Minimum age (days)" caption without overflowing it.
+function SeasonEpisodeInput({
+    label,
+    registration,
+}: {
+    label: string;
+    registration: UseFormRegisterReturn;
+}) {
+    const {ref, ...rest} = registration;
+    return (
+        <TextField
+            label={label}
+            slotProps={{htmlInput: {inputMode: "numeric"}}}
+            sx={{width: 90}}
+            inputRef={ref}
+            {...rest}
+        />
+    );
+}
+
 function AdvancedRangeGroup({
     children,
     title,
@@ -940,24 +770,23 @@ function AdvancedRangeGroup({
     title: string;
 }) {
     return (
-        <Box sx={{display: "flex", flexDirection: "column", gap: "6px"}}>
+        <Box sx={{display: "flex", flexDirection: "column", gap: 0.75}}>
             <Typography
+                color="text.secondary"
                 component="h2"
-                sx={{
-                    color: mutedGlyphColor,
-                    fontSize: "11px",
-                    fontWeight: 600,
-                    letterSpacing: "0.6px",
-                    textTransform: "uppercase",
-                }}
+                variant="overline"
             >
                 {title}
             </Typography>
-            <Box sx={{display: "flex", gap: "6px"}}>{children}</Box>
+            <Box sx={{display: "flex", gap: 0.75}}>{children}</Box>
         </Box>
     );
 }
 
+// A 100px min/max field cannot carry its full name as a floating label
+// without overflowing, so each input keeps its exact previous accessible
+// name as an `aria-label` (an allowed exception under the ADR-0014
+// conventions for genuinely label-free compact controls).
 function AdvancedRangeInput({
     invalid,
     label,
@@ -969,14 +798,17 @@ function AdvancedRangeInput({
     placeholder: string;
     registration: UseFormRegisterReturn;
 }) {
+    const {ref, ...rest} = registration;
     return (
-        <InputBase
+        <TextField
             error={invalid}
-            inputProps={{"aria-label": label}}
             placeholder={placeholder}
-            sx={advancedInputSx}
-            type="number"
-            {...registration}
+            slotProps={{
+                htmlInput: {"aria-label": label, inputMode: "numeric"},
+            }}
+            sx={{width: 100}}
+            inputRef={ref}
+            {...rest}
         />
     );
 }
@@ -1000,34 +832,12 @@ export function hasIdentifier(values: SearchFormValues): boolean {
 //
 // Legacy source: `core/ui-src/js/search-controller.js`'s
 // `buildIndexerSelectionActions`/`buildGroupSelectionActions`, rendered by
-// `core/ui-src/html/states/search.html`'s own split button (default action
-// + `additionalIndexerSelectionActions` dropdown) and by
-// `multiselect-dropdown.html`'s `actions` loop. `core/ui-src/js/directives/
-// indexer-selection-button.js` (a same-named but unrelated, unused-on-any-
-// legacy-page directive — confirmed absent from every legacy HTML
-// template) is NOT this control's legacy source, despite the similar name.
-//
-// Action order matches legacy exactly: invert (always visible), then
-// reset/select-all/deselect-all/usenet/torznab in the dropdown. The
-// "Indexer groups" subsection is legacy parity too, not a novel addition:
-// `buildGroupSelectionActions` emits one action per group labeled
-// `group: 'Indexer groups'`, and both legacy renderers show a divider and
-// an "Indexer groups" header before the first such action — exactly what
-// the `Divider`/`ListSubheader` below do.
-//
-// Icon basis: every legacy action already carries a Bootstrap glyphicon
-// (invert=retweet, reset=repeat, select-all=ok, deselect-all=remove,
-// usenet=hdd, torznab=magnet, group=folder-open); MUI icons substitute a
-// semantically equivalent icon per action from a different icon library,
-// which is a routine ADR-0002 toolkit substitution, not a content
-// variance. The group action's icon is `FolderOpenIcon`, matching
-// legacy's `glyphicon-folder-open` directly.
-//
-// FM-044 restyles this control's surfaces to the mock's search-row design
-// language (ADR-0009's own named example of extending that language to an
-// element the mock does not show). The action set, order, icons, and
-// `aria-haspopup`/`aria-expanded`/`role="menu"`/`role="menuitem"` semantics
-// above are unchanged by that restyle.
+// `core/ui-src/html/states/search.html`'s own split button. Action order
+// matches legacy exactly: invert (always visible), then
+// reset/select-all/deselect-all/usenet/torznab in the dropdown, then one
+// action per indexer group under an "Indexer groups" subheader, exactly as
+// legacy's `group: 'Indexer groups'` actions render. Icons substitute a
+// semantically equivalent MUI icon per legacy glyphicon (ADR-0002).
 function IndexerSelectionButton({
     eligibleIndexers,
     selectedIndexers,
@@ -1058,18 +868,12 @@ function IndexerSelectionButton({
     return (
         <>
             <ButtonGroup
+                color="inherit"
                 size="small"
                 sx={{
                     "& .MuiButton-root": {
-                        backgroundColor: controlSurface,
-                        borderColor: controlBorderColor,
-                        color: "text.primary",
-                        fontSize: "13px",
-                        "&:hover": {
-                            backgroundColor: controlSurface,
-                            borderColor: "primary.main",
-                            color: "primary.main",
-                        },
+                        bgcolor: "surfaces.control",
+                        borderColor: "surfaces.hairline",
                     },
                 }}
                 variant="outlined"
@@ -1101,34 +905,7 @@ function IndexerSelectionButton({
                     <ArrowDropDownIcon />
                 </Button>
             </ButtonGroup>
-            <Menu
-                anchorEl={anchorEl}
-                onClose={close}
-                open={open}
-                slotProps={{
-                    list: {
-                        sx: {
-                            "& .MuiMenuItem-root": {
-                                borderRadius: "7px",
-                                fontSize: "13px",
-                                mx: "6px",
-                                "&:hover": {color: "primary.main"},
-                                "&:hover .MuiListItemIcon-root": {
-                                    color: "inherit",
-                                },
-                            },
-                        },
-                    },
-                    paper: {
-                        sx: {
-                            backgroundColor: controlSurface,
-                            backgroundImage: "none",
-                            border: `1px solid ${controlBorderColor}`,
-                            borderRadius: controlRadius,
-                        },
-                    },
-                }}
-            >
+            <Menu anchorEl={anchorEl} onClose={close} open={open}>
                 <MenuItem
                     onClick={() => {
                         onReset();

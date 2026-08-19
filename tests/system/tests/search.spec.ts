@@ -538,8 +538,13 @@ test.describe("Search", () => {
             ]);
             expect(pairBox).not.toBeNull();
             expect(refinementFieldBox).not.toBeNull();
+            // ADR-0014: the pair is two stock labeled TextFields (~190px
+            // together), no longer the pre-2026-08-19 40px bare inputs, so
+            // the hierarchy check is that the pair stays visibly narrower
+            // than the full-width refinement field (plus the 220px cap
+            // above), not narrower than half of it.
             expect(pairBox?.width ?? 0).toBeLessThan(
-                (refinementFieldBox?.width ?? 0) / 2,
+                refinementFieldBox?.width ?? 0,
             );
             await page.getByLabel("Season").focus();
             await page.keyboard.type("3");

@@ -14,44 +14,32 @@
  *  limitations under the License.
  */
 
-// FM-053 / ADR-0013: the repository guard against reintroducing the local `sx`
-// patterns that deleted this application's keyboard focus affordances in the
-// first place.
+// FM-053 / ADR-0013 / ADR-0014 / ADR-0015: the repository guard against
+// reintroducing the local `sx` patterns that deleted this application's
+// keyboard focus affordances, and against re-growing the feature-local design
+// literals ADR-0014 moved into the theme.
 //
-// ADR-0013 records how the failures got here: each local override was
-// individually reasonable and each removed an affordance without anything in
-// the codebase recording that the second consequence was intended. FM-052
-// measured five control classes rendering no keyboard focus indicator at all
-// (WCAG 2.4.7, Level AA). Two of those five came from the patterns this script
-// detects; the other three came from bare `InputBase` renderings, which the
-// theme's own `MuiInputBase` rule now covers by construction and which no
-// local `sx` can silently delete, because the indicator is an `outline` on the
-// root rather than a border the local styling owns.
+// Patterns that fail this check:
 //
-// Two patterns fail this check:
-//
-//   1. A `notchedOutline` rule that removes the fieldset border
-//      (`border: "none" | 0`, `borderWidth: 0`) *unconditionally*. The exact
-//      shape of `SearchWorkspace.tsx`'s pre-FM-053 category-`Select` override,
-//      which forced `border-width: 0px` in both states so the `borderColor`
-//      MUI's own focused rule does change could never paint. A rule scoped to
-//      a non-focused state (its selector naming `:focus-visible`, `:focus`, or
-//      `Mui-focused`) is allowed and is how that site now preserves the
-//      ADR-0009 mock's borderless resting rendering.
-//      Recolouring the fieldset (`borderColor: ...`) is NOT flagged: FM-052
-//      measured the three recolours at `RefineSidebar.tsx`,
-//      `filterControls.tsx` and `DownloadActions.tsx` *raising* that family's
-//      focused-versus-unfocused contrast to 4.53-5.56:1 against MUI's stock
-//      3.15-3.45:1, so removing them would make the application measurably
-//      worse.
+//   1. A `notchedOutline` rule that removes the fieldset border in ANY state
+//      (`border: "none" | 0`, `borderWidth: 0`). Under ADR-0015 the input
+//      family's only focus indicator is MUI's own focused notchedOutline, so
+//      suppressing the border — focused or resting — deletes it (the exact
+//      shape FM-052 measured as a WCAG 2.4.7 failure). Recolouring
+//      (`borderColor: ...`) is not flagged.
 //
 //   2. `disableRipple` on a control whose family has no authored
-//      `Mui-focusVisible` rule. `ButtonBase.js`'s own propType comment states
-//      the contract: "Without a ripple there is no styling for :focus-visible
-//      by default. Be sure to highlight the element by applying separate
-//      styles with the `.Mui-focusVisible` class." The authored rule may live
-//      in `app/theme.ts` (for the control's own MUI component family) or
-//      beside the prop in the same feature file.
+//      `Mui-focusVisible` rule. `ButtonBase.js`: "Without a ripple there is no
+//      styling for :focus-visible by default."
+//
+//   3. An `InputBase` import in feature code (ADR-0014: standard components
+//      only; a hand-assembled `InputBase` composite is how the focus and
+//      label affordances were lost the first time).
+//
+//   4. A color literal (`#hex`, `rgba(...)`, `oklch(...)`) in feature code
+//      outside the files already scheduled for the FM-054 cleanup. Design
+//      values live in `theme.ts` (ADR-0014); consume `palette.*` /
+//      `surfaces.*` tokens instead.
 //
 // This is a source-shape guard, not a substitute for the real-browser gate:
 // `tests/system/tests/focus-indication.spec.ts` is what proves the indicator
@@ -121,6 +109,20 @@ function enclosingComponent(source, index) {
     return enclosing;
 }
 
+// Files that still carry pre-ADR-0014 design literals, exempt from check 4
+// until FM-054 ports them onto theme tokens. Shrink this set as files are
+// cleaned; never add to it.
+const pendingFm054Cleanup = new Set([
+    "src/features/search/results/DownloadActions.tsx",
+    "src/features/search/results/RefineSidebar.tsx",
+    "src/features/search/results/SearchResults.tsx",
+    "src/features/search/results/displayStyles.ts",
+    "src/features/search/results/filterControls.tsx",
+    "src/features/search/results/refineStyles.ts",
+    "src/features/search/results/toolbarStyles.ts",
+    "src/features/search/history/RecentSearches.tsx",
+]);
+
 const findings = [];
 
 const files = await collectSources(sourceRoot);
@@ -175,26 +177,61 @@ for (const file of files) {
     // while keeping an index map back to the original for line reporting.
     const flattened = source.replace(/\s+/g, " ");
 
-    // ---- Check 1: unconditional notchedOutline border removal --------------
+    // ---- Check 1: notchedOutline border removal ----------------------------
     const notchedRule = /"([^"]*notchedOutline[^"]*)"\s*:\s*\{([^{}]*)\}/g;
     for (const match of flattened.matchAll(notchedRule)) {
         const [, selector, body] = match;
-        const scopedToANonFocusedState = /focus/i.test(selector);
         const removesTheBorder =
             /\bborder\s*:\s*(?:"none"|'none'|`none`|0\b)/.test(body) ||
             /\bborderWidth\s*:\s*(?:0\b|"0(?:px)?"|'0(?:px)?')/.test(body) ||
             /"border-width"\s*:\s*(?:0\b|"0(?:px)?")/.test(body);
-        if (removesTheBorder && !scopedToANonFocusedState) {
+        if (removesTheBorder) {
             const index = source.indexOf(selector);
             findings.push(
                 `${displayPath}:${index >= 0 ? lineOf(source, index) : "?"} ` +
-                    `unconditionally removes the OutlinedInput notched outline ` +
-                    `("${selector}" sets ${body.trim()}), which deletes the ` +
-                    `focused border together with the resting one. Scope the ` +
-                    `rule to the unfocused state instead ` +
-                    `(FM-053 / ADR-0013; FM-052 measured this exact shape as a ` +
-                    `WCAG 2.4.7 failure).`,
+                    `removes the OutlinedInput notched outline ` +
+                    `("${selector}" sets ${body.trim()}). Under ADR-0015 that ` +
+                    `border is the input family's focus indicator; do not ` +
+                    `suppress it in any state (FM-052 measured this shape as ` +
+                    `a WCAG 2.4.7 failure).`,
             );
+        }
+    }
+
+    // ---- Checks 3 and 4: ADR-0014 conventions in feature code --------------
+    const isFeatureFile = /^src[\\/]features[\\/]/.test(
+        relative(resolve("."), file),
+    );
+    if (isFeatureFile) {
+        if (
+            /from\s+"@mui\/material\/InputBase"|[{,\s]InputBase[,\s}]/.test(
+                source,
+            )
+        ) {
+            findings.push(
+                `${displayPath} imports InputBase. ADR-0014: use the ` +
+                    `standard component (TextField, Select) instead of ` +
+                    `hand-assembling controls from InputBase.`,
+            );
+        }
+        const cleanupPending = pendingFm054Cleanup.has(
+            displayPath.replace(/\\/g, "/"),
+        );
+        if (!cleanupPending) {
+            const colorLiteral = flattened.match(
+                /(?:#[0-9a-fA-F]{3,8}\b|rgba?\(|oklch\()/,
+            );
+            if (colorLiteral) {
+                const index = source.search(
+                    /(?:#[0-9a-fA-F]{3,8}\b|rgba?\(|oklch\()/,
+                );
+                findings.push(
+                    `${displayPath}:${index >= 0 ? lineOf(source, index) : "?"} ` +
+                        `contains a color literal ("${colorLiteral[0]}…"). ` +
+                        `ADR-0014: design values live in app/theme.ts; ` +
+                        `consume palette/surfaces tokens instead.`,
+                );
+            }
         }
     }
 
@@ -225,6 +262,10 @@ for (const file of files) {
 // Not one of the two reintroduction patterns, but the thing they would be
 // reintroduced *against*: if `theme.ts` stopped authoring the families below,
 // check 2 would start passing vacuously.
+// ADR-0015: `MuiInputBase` is deliberately NOT in this list — the input/
+// select family indicates focus through MUI's own focused notchedOutline,
+// and an authored `&:has(:focus-visible)` ring there double-borders every
+// focused select.
 const requiredFamilies = [
     "MuiButton",
     "MuiIconButton",
@@ -232,12 +273,19 @@ const requiredFamilies = [
     "MuiCheckbox",
     "MuiRadio",
     "MuiSwitch",
-    "MuiInputBase",
     "MuiMenuItem",
     "MuiListItemButton",
     "MuiLink",
     "MuiChip",
 ];
+if (themeBlocks.has("InputBase")) {
+    findings.push(
+        `src/app/theme.ts authors a MuiInputBase entry again. ADR-0015 ` +
+            `removed it: an authored ring on the input root double-borders ` +
+            `every focused select; the family's indicator is MUI's own ` +
+            `focused notchedOutline.`,
+    );
+}
 for (const family of requiredFamilies) {
     const block = themeBlocks.get(family.replace(/^Mui/, ""));
     const declared =
