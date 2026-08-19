@@ -983,15 +983,33 @@ export function SearchResults({
                                         render (see the handoff for the
                                         observed numbers) rather than
                                         implemented from ADR-0011's sketch
-                                        unmeasured. */}
+                                        unmeasured. Age's 9% (from that
+                                        pass) was re-measured in a
+                                        follow-up quickfix: even the widest
+                                        realistic value the unbounded
+                                        `ageInDays + "d"` backend format can
+                                        produce this side of absurd
+                                        (`9999d`, ~27 years) only needs
+                                        ~67px against the 81px 9% resolved
+                                        to at 1280x800, so it drops to 8%
+                                        and the freed 1% goes to Title.
+                                        Size's 9% was re-measured the same
+                                        way and left alone: its own
+                                        mathematical worst case
+                                        (`999.99 GB` -- `formatResultSize`
+                                        guarantees the numeric part never
+                                        reaches 4 digits) needs ~89px
+                                        against the 81px available, so it
+                                        already has no real slack to give
+                                        up. */}
                                 <colgroup>
                                     <col style={{width: 40}} />
-                                    <col style={{width: "34%"}} />
+                                    <col style={{width: "35%"}} />
                                     <col style={{width: "11%"}} />
                                     <col style={{width: "11%"}} />
                                     <col style={{width: "9%"}} />
                                     <col style={{width: "11%"}} />
-                                    <col style={{width: "9%"}} />
+                                    <col style={{width: "8%"}} />
                                     <col style={{width: "15%"}} />
                                 </colgroup>
                                 <TableHead>
@@ -1137,14 +1155,36 @@ export function SearchResults({
                                                                         onClick={header.column.getToggleSortingHandler()}
                                                                         size="small"
                                                                         sx={{
+                                                                            alignItems:
+                                                                                "center",
                                                                             color: HEADER_LABEL_COLOR,
+                                                                            // A native `<button>` keeps its
+                                                                            // intrinsic shrink-to-fit width
+                                                                            // even with `display: flex`
+                                                                            // (buttons never stretch to fill
+                                                                            // their containing block the way
+                                                                            // a `<div>` does), so a bare
+                                                                            // `textAlign` here has nothing to
+                                                                            // act on and the label just hugs
+                                                                            // the cell's left edge regardless
+                                                                            // of alignment -- the fixed
+                                                                            // `width: "100%"` plus
+                                                                            // `justifyContent` below is what
+                                                                            // actually right-aligns a
+                                                                            // non-Title header against its
+                                                                            // column's right-aligned body
+                                                                            // content.
                                                                             display:
-                                                                                "block",
+                                                                                "flex",
                                                                             flexShrink: 0,
                                                                             fontSize:
                                                                                 HEADER_LABEL_FONT_SIZE,
                                                                             fontWeight:
                                                                                 HEADER_LABEL_FONT_WEIGHT,
+                                                                            justifyContent:
+                                                                                isTitle
+                                                                                    ? "flex-start"
+                                                                                    : "flex-end",
                                                                             letterSpacing:
                                                                                 HEADER_LABEL_LETTER_SPACING,
                                                                             maxWidth:
@@ -1161,16 +1201,13 @@ export function SearchResults({
                                                                             px: isTitle
                                                                                 ? "6px"
                                                                                 : "4px",
-                                                                            textAlign:
-                                                                                isTitle
-                                                                                    ? "left"
-                                                                                    : "right",
                                                                             textOverflow:
                                                                                 "ellipsis",
                                                                             textTransform:
                                                                                 "uppercase",
                                                                             whiteSpace:
                                                                                 "nowrap",
+                                                                            width: "100%",
                                                                         }}
                                                                     >
                                                                         {flexRender(

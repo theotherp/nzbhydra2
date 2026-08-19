@@ -210,6 +210,8 @@ export function SearchWorkspace({
     const [activeOption, setActiveOption] = useState(-1);
     const [advancedOpen, setAdvancedOpen] = useState(false);
     const request = useRef(0);
+    const searchQueryFieldRef = useRef<HTMLInputElement | null>(null);
+    const isFirstCategoryRender = useRef(true);
     const listboxId = useId();
     const advancedPanelId = useId();
     const mediaType = mediaTypeForCategoryName(catalog, selectedCategory);
@@ -248,6 +250,13 @@ export function SearchWorkspace({
         }, 300);
         return () => window.clearTimeout(timeout);
     }, [autocomplete, mediaType, selected, title]);
+    useEffect(() => {
+        if (isFirstCategoryRender.current) {
+            isFirstCategoryRender.current = false;
+            return;
+        }
+        searchQueryFieldRef.current?.focus();
+    }, [selectedCategory]);
     const clearSelection = () => {
         request.current++;
         for (const key of identifierFields) {
@@ -289,7 +298,7 @@ export function SearchWorkspace({
             <SearchIcon fontSize="small" />
         </InputAdornment>
     );
-    const {ref: titleInputRef, ...titleRegistration} = register("title", {
+    const {ref: titleFieldRef, ...titleRegistration} = register("title", {
         onChange: () => {
             request.current++;
             if (selected) {
@@ -297,7 +306,15 @@ export function SearchWorkspace({
             }
         },
     });
-    const {ref: queryInputRef, ...queryRegistration} = register("query");
+    const {ref: queryFieldRef, ...queryRegistration} = register("query");
+    const setTitleInputRef = (element: HTMLInputElement | null) => {
+        titleFieldRef(element);
+        searchQueryFieldRef.current = element;
+    };
+    const setQueryInputRef = (element: HTMLInputElement | null) => {
+        queryFieldRef(element);
+        searchQueryFieldRef.current = element;
+    };
     const queryInput = mediaType ? (
         <TextField
             fullWidth
@@ -333,7 +350,7 @@ export function SearchWorkspace({
                     "data-testid": "search-query",
                 },
             }}
-            inputRef={titleInputRef}
+            inputRef={setTitleInputRef}
             {...titleRegistration}
         />
     ) : (
@@ -350,7 +367,7 @@ export function SearchWorkspace({
                     "data-testid": "search-query",
                 },
             }}
-            inputRef={queryInputRef}
+            inputRef={setQueryInputRef}
             {...queryRegistration}
         />
     );
@@ -421,25 +438,6 @@ export function SearchWorkspace({
                             </TextField>
                         )}
                     />
-                    {mediaType === "TV" && (
-                        <Stack
-                            data-testid="season-episode-pair"
-                            direction="row"
-                            spacing={1.25}
-                            sx={{flexShrink: 0}}
-                        >
-                            <SeasonEpisodeInput
-                                label="Season"
-                                registration={register("season", {
-                                    pattern: /^\d*$/,
-                                })}
-                            />
-                            <SeasonEpisodeInput
-                                label="Episode"
-                                registration={register("episode")}
-                            />
-                        </Stack>
-                    )}
                     <Box
                         sx={{
                             alignItems: "center",
@@ -521,6 +519,25 @@ export function SearchWorkspace({
                             </Paper>
                         )}
                     </Box>
+                    {mediaType === "TV" && (
+                        <Stack
+                            data-testid="season-episode-pair"
+                            direction="row"
+                            spacing={1.25}
+                            sx={{flexShrink: 0}}
+                        >
+                            <SeasonEpisodeInput
+                                label="Season"
+                                registration={register("season", {
+                                    pattern: /^\d*$/,
+                                })}
+                            />
+                            <SeasonEpisodeInput
+                                label="Episode"
+                                registration={register("episode")}
+                            />
+                        </Stack>
+                    )}
                     <Button
                         aria-controls={advancedPanelId}
                         aria-expanded={advancedOpen}

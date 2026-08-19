@@ -287,6 +287,20 @@ describe("SearchWorkspace", () => {
         ).toBeUndefined();
     });
 
+    it("should move focus to the search query field after a category selection", () => {
+        render(
+            <SearchWorkspace
+                catalog={catalog}
+                initialValues={valuesFromSearch({}, catalog)}
+                onSubmit={vi.fn()}
+                autocomplete={vi.fn()}
+            />,
+        );
+        fireEvent.mouseDown(screen.getByRole("combobox", {name: "Category"}));
+        fireEvent.click(screen.getByTestId("search-category-option-Cinema"));
+        expect(screen.getByTestId("search-query")).toHaveFocus();
+    });
+
     it("should submit valid numeric criteria", async () => {
         const submitted = vi.fn();
         render(
@@ -375,6 +389,10 @@ describe("SearchWorkspace", () => {
         expect(pair).toContainElement(screen.getByLabelText("Episode"));
         expect(pair).toHaveTextContent("S");
         expect(pair).toHaveTextContent("E");
+        expect(
+            screen.getByTestId("search-query").compareDocumentPosition(pair) &
+                Node.DOCUMENT_POSITION_FOLLOWING,
+        ).toBeTruthy();
     });
 
     it("should reconcile URL selections and support checkbox bulk selection actions", async () => {

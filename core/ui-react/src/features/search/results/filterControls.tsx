@@ -9,6 +9,7 @@ import {
     rowActiveColor,
     rowHoverBackground,
     rowInactiveColor,
+    sectionLabelColor,
 } from "./refineStyles";
 import type {NumericRange} from "./resultTable";
 
@@ -155,7 +156,11 @@ const numericFieldSx = {
         WebkitAppearance: "none",
         margin: 0,
     },
-    "& input::placeholder": {opacity: 1},
+    // Unset, this falls back to the input's own bright `#d6dad9` text color
+    // at full strength -- matched here to the "Title contains" field's
+    // muted placeholder (`sectionLabelColor`) instead, since "min"/"max" are
+    // hints, not values.
+    "& input::placeholder": {color: sectionLabelColor, opacity: 1},
 } as const;
 
 export function NumericFilter({

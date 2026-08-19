@@ -369,7 +369,21 @@ export function SearchPage({
             spacing={2}
             sx={{px: {xs: 1, sm: 2}, width: "100%"}}
         >
-            <Typography component="h1" variant="h4">
+            <Typography
+                component="h1"
+                variant="h4"
+                sx={{
+                    border: 0,
+                    clip: "rect(0 0 0 0)",
+                    height: 1,
+                    margin: -1,
+                    overflow: "hidden",
+                    padding: 0,
+                    position: "absolute",
+                    whiteSpace: "nowrap",
+                    width: 1,
+                }}
+            >
                 Search
             </Typography>
             <SearchWorkspace
