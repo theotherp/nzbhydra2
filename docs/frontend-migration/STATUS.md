@@ -8,6 +8,55 @@ None.
 
 None.
 
+**FM-052 (`tasks/FM-052-keyboard-focus-indication-audit.md`) is `done`** — reviewed `FAIL` three times and closed after two correction passes, by three fresh independent reviewers, and released from `blocked` by ADR-0013.
+It is a measurement packet on FM-049's model: it repaired nothing —
+`core/ui-react/src/app/theme.ts` is confirmed byte-identical to `HEAD` by SHA-256 and `git diff -- core/ui-react` is empty — and its deliverable is an exhaustive real-browser record of what focus indication each interactive control
+class renders today. Both inventory passes are script-generated and preserved as JSON beside the captures, so the census is data rather than prose: **43 control classes were fully measured** (keyboard-reached from `document.body` by
+real `Tab` presses, computed-style subtree diffed focused vs. unfocused, all 43 screenshotted as focused/unfocused pairs) across every real route and every named transient state. **One class meets both criteria under the packet's
+primary (convention) reading of the 2.4.11 area threshold, and three do under the measured reading** — the MUI `Link` on `/stats/saved-searches` and `/stats/searches`, which renders `theme.ts`'s global `:focus-visible` outline
+completely undefeated in the brand teal at 7.34:1 contrast and 912.00 px² against a 536.00 px² threshold and passes under both readings, plus the two unlabelled refine-sidebar fields (`refine-filter-title-input` and
+`refine-numeric-range-input`, 5.56:1 each), whose *measured* focused ring is 4.00 px² **above** its threshold while the convention figure puts it 16.00 px² below. Every other class fails WCAG 2.4.11 on contrast, on area, or both
+— including the `::-webkit-calendar-picker-indicator` shadow sub-control, whose own indicator `getComputedStyle` cannot read but whose captures resolve at 1.21:1 — and **five classes fail 2.4.7 outright**: the search-query field,
+the Advanced-panel Age/Size ranges (the same bare-`InputBase` mechanism, a distinct rendering), the category `Select`, the results toolbar's `disableRipple`d select-all `Checkbox`, and the paired season/episode inputs. **Read the
+2.4.11 verdict with its two caveats.** Every `notchedOutline` class *passes* the contrast axis (3.15:1 to 5.56:1) and fails only on area, by 16.00 px² — 1.9% of the smallest such control's threshold, on a convention an outset ring
+would clear; and that 16.00 px² is a modelling figure, not a photograph, which is exactly why two of those fields flip to `meets both` when the ring is measured instead of modelled. "Nothing in this app works" is not what was
+measured. The `ButtonBase` ripple that indicates focus on most of the app's buttons measures **1.19:1 to 2.38:1** across every focusable instance, read per instance from its own `currentColor` and its own composited backdrop
+rather than assumed from its family; the floor is the `Button color="error"` Delete rendering on `/stats/saved-searches`, whose `currentColor` is `palette.error.main` — 1.19:1 inside the delete-confirmation `Dialog` and 1.22:1 in
+the table row, both below the 1.40:1 an earlier version of this entry reported as the floor. The owner's Downloader-dropdown contradiction is resolved empirically as a focused-vs-open
+distinction that is not a clean binary: closed-and-focused shows a real, visible teal `notchedOutline` border; once opened, real DOM focus moves to the selected `MenuItem`, whose own indicator is a second, lower-contrast teal-tinted
+highlight layered against the still-visible (state-driven, not focus-driven) border underneath. `FEATURES.yaml`'s `gaps`/`backlog` were extended on `F-PLATFORM-SHELL` (mandatory: it owns `theme.ts`'s app-wide rule) and on
+`F-SEARCH-FORM`/`F-SEARCH-GROUP-SELECTION`/`F-SEARCH-MEDIA` (the three records whose own controls disposition as failing 2.4.7); every other linked record is confirmed unchanged, and `F-SEARCH-RECENT` (the recent-search Refill
+`IconButton`, already recorded unreachable by FM-049/FM-050/ADR-0012) is deliberately not touched again. It reported **`ADR REQUIRED`**: the React UI renders keyboard focus through seven different mechanisms depending on control
+family — one of which renders nothing at all, one of which is Chromium's own UA focus ring on a shadow sub-control that the app does not author, and one of which already passes both criteria — and the repository owner had to decide
+what single, consistent focus-indication approach the application should adopt. No option was chosen, prototyped, or recommended by elimination.
+
+**ADR-0013 (`decisions/ADR-0013-application-wide-keyboard-focus-indication.md`) is accepted — 2026-08-19, explicit decision of the repository owner: Option A.** The application adopts an **explicit focus-ring token, authored per
+control family**, keyed to each component's own `&.Mui-focusVisible`/`:focus-visible` selector in `core/ui-react/src/app/theme.ts`, overriding whichever MUI mechanism currently governs each family. Options B (restore the precedence of
+the existing global `:focus-visible` rule), C (accept the measured gap, no remedy) and D (remedy only the five WCAG 2.4.7 failures and accept the 2.4.11 gaps — added by the proposer, not by the packet) are recorded there as rejected
+with their tradeoffs intact, **including the proposer's own recommendation of Option B**, which was put to the owner in full, alongside its stated weakness, before they chose otherwise. Accepting the ADR is **not** visual acceptance
+and no agent may supply it; under ADR-0006 that acceptance is now required fresh and broad, for every feature record owning an interactive control.
+
+**One lettering hazard is recorded in the ADR itself, because the raw transcript is misleading.** The owner answered with the letter "c", which belonged to a coordinator-side three-way list whose item (c) read "a single focus-ring
+token applied per family". That is ADR-0013's **Option A** and the exact opposite of ADR-0013's own Option C ("accept the measured gap, no remedy"), which was **not** chosen. Anyone re-reading the transcript must not re-record it the
+other way.
+
+Two facts the proposal established that the audit's own escalation understated, both carried into the ADR: **a precedence fix could not have reached `Checkbox`/`Radio`/`Switch` at all** — `SwitchBase`'s focusable node is an
+`opacity: 0` native input overlay, so `:focus-visible` at any specificity paints there invisibly, which is exactly why the accepted option authors on the root `Mui-focusVisible` class instead; and **the ripple family's `1.19:1`–`2.38:1`
+figures do not transfer to an opaque ring**, since they are composited at `.MuiTouchRipple-rippleVisible`'s static `opacity: 0.3`, so the remedy must measure each family at full opacity rather than re-read the ripple table.
+`F-PLATFORM-SHELL`'s `backlog.rationale` asserted that "no control family renders the global rule as authored"; that clause predated the correction pass which added the `Link` finding, is contradicted by the audit's own mechanisms 5
+and 7, and was withdrawn and replaced in this same close-out.
+
+**One deviation from the review discipline is disclosed rather than hidden.** The third review's single required finding — the `Button color="error"` Delete rendering at 1.19:1/1.22:1, below the 1.40:1 then stated as the ripple
+family's floor and miscited as part of a 1.86:1 group — was closed by direct re-measurement **without a fourth independent review pass**, the correction budget having been spent. It changed no disposition (the class dispositions
+`meets 2.4.7, fails 2.4.11` before and after; only the cited figure moved, and it moved against the current code), and the corrected range is the `1.19:1`–`2.38:1` reported above. The consequence stands on the record: that final
+correction is attested by measurement, not by an independent reviewer, and a remedy author should re-measure that family rather than inherit its figures on trust.
+
+**The remedy packet does not exist yet, by design.** ADR-0013's `Consequences` reserve it for a task designer: it must create the packet, link ADR-0013 under its `Decision Dependencies`, and carry the ADR's standing obligations —
+reconciling or explicitly scoping the existing global rule so the app does not carry two focus systems, authoring on the root class for the `SwitchBase` family, measuring each family at full opacity, unwinding
+`SearchWorkspace.tsx:480-482`'s `border: "none"` and giving `queryInputSx`/`pairedInputSx`/`advancedInputSx` a focus-reactive affordance, **not** reflexively unwinding the `notchedOutline` `borderColor` recolours that measurably raise
+that family's contrast, and committing a real-browser Playwright gate (ADR-0004: jsdom sees none of this) scoped to `@mui/material` 7.3.9 with its re-verification duty recorded in the code. `core/ui-react` and `tests/system` stay
+byte-identical to baseline until that packet says otherwise.
+
 **FM-051 (`tasks/FM-051-consecutive-search-query-text.md`) is `done`** — reviewed **PASS WITH MINOR FINDINGS**, no required corrections. The reviewer diffed `canonicalSearch`'s emitted URL key list against baseline `b5b1b7b38` name-by-name and order-by-order to confirm the contract is byte-identical, traced all four deep-link cases through the code rather than trusting their names, reproduced the full SHA-256 manifest and every cheap deterministic command first-hand (247/247 across 38 files), and independently verified the fail-first near-miss mechanism in `core/src/main/java/org/nzbhydra/web/MainWeb.java`'s `isReactSelected` — confirming that a bare `page.goto("/")` really does land on the legacy shell, and that the committed test explicitly selects React instead. It confirmed the `8 → 10` lint-warning delta is exactly the two new exports tripping the same `react-refresh/only-export-components` rule that already fires on that file's pre-existing exports, not padding. **One minor finding is carried, not fixed:** the implementer's own run left git-ignored `tests/system/playwright-report/` and `test-results/` artifacts in the working tree, and the handoff does not record the packet's required confirmation that no stray generated files remain. They are git-ignored, so no tracked scope or diff is affected. It fixes a pre-existing,
 user-observable defect FM-049's implementer discovered while building a two-search fixture and recorded in that packet's Follow-Up Work: submitting two distinct plain-text searches back-to-back in one `SearchWorkspace` session made the
 **second** search silently resubmit the **first** query's text — to `/internalapi/search`, to the URL, and therefore to the results the user saw, while the search box still showed what they typed. `/fm-quickfix` correctly refused it on

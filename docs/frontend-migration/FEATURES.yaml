@@ -43,9 +43,9 @@ features:
           status: proposed
         - description: "Density variance from legacy, with no legacy equivalent: shell-wide, route-agnostic component defaults now follow the mock's own measured geometry -- `shape.borderRadius` 8px and `MuiButton` 8px (the mock's dominant radius, used by its primary Search button, its toolbar buttons, its nav pills, and its text inputs), `MuiButton` `textTransform: none` (the mock never uppercases a button label), `MuiOutlinedInput` 8px (the mock's text inputs), raised non-square `MuiPaper` 12px (the mock's results card), `MuiChip` 26px tall with a 7px radius (the mock's quality/type pills: 12px label, 5px vertical padding, 1px border), and a `::-webkit-scrollbar` treatment matching the mock's 11px thin scrollbar with a 6px-radius `#3a4446` thumb on the page background. Feature-scoped density (results table cells, sidebar controls) is deliberately not touched here; it belongs to the later ADR-0009 packets."
           status: proposed
-    gaps: [ navigation, footer, permission-aware links, live status ]
+    gaps: [ navigation, footer, permission-aware links, live status, app-wide keyboard focus indication is inconsistent (FM-052) ]
     task: FM-004
-    backlog: { status: deferred, rationale: "Remaining shell parity needs a dedicated follow-up task after the current review queue." }
+    backlog: { status: deferred, rationale: "Remaining shell parity needs a dedicated follow-up task after the current review queue. FM-052 (measurement only) found this record's own `theme.ts` `:focus-visible` outline (`core/ui-react/src/app/theme.ts:184-187`) is defeated, undefeated, or partially defeated depending on which of several MUI mechanisms a control uses (ButtonBase's unconditional `outline:0`, InputBase's `.MuiInputBase-input:focus{outline:0}`, MenuItem/ListItemButton's low-contrast `&.Mui-focusVisible` background, or nothing at all for `disableRipple`d controls). Two families do render the global rule as authored, so it is the precedence that is broken rather than the rule: MUI `Link` taking its default `component=\"a\"` (`stats-identifier-link`, undefeated, 7.34:1 contrast and 912.00 px2 against a 536.00 px2 threshold -- the audit's only class meeting both WCAG criteria under its primary reading), and the bare unclassed `<a href>` in NewsPage's sanitized third-party content (also undefeated, failing only because `currentColor` there is the UA default link blue, 1.29:1). An earlier version of this rationale asserted that no family renders the rule as authored; that clause predated the correction pass which added the `Link` finding and is withdrawn. The decision FM-052 raised as `ADR REQUIRED` is now made: ADR-0013 (`decisions/ADR-0013-application-wide-keyboard-focus-indication.md`, accepted 2026-08-19, Option A) adopts an explicit focus-ring token authored per control family, keyed to each component's own `&.Mui-focusVisible`/`:focus-visible` selector in `theme.ts`. The remedy packet does not exist yet and is a task designer's to create; no remedy is implemented here." }
 
   - id: F-AUTH-LOGIN
     name: Form login, logout, password confirmation, and session refresh
@@ -89,9 +89,9 @@ features:
       evidence: [ tests/system/tests/search.spec.ts ]
       snapshots: [ tests/system/visual-evidence/F-SEARCH-FORM/search-bar-density-desktop.png, tests/system/visual-evidence/F-SEARCH-FORM/search-bar-density-mobile.png ]
       variances: []
-    gaps: [ guided tour ]
+    gaps: [ guided tour, keyboard focus indication is absent for the query field / category select / Advanced-panel range fields (FM-052) ]
     task: FM-016
-    backlog: { status: deferred, rationale: "The remaining guided-tour integration has no implementation task yet." }
+    backlog: { status: deferred, rationale: "The remaining guided-tour integration has no implementation task yet. FM-052 (measurement only) found two of this record's own controls render no keyboard focus indicator at all (WCAG 2.4.7): `search-query` (bare `InputBase`; `.MuiInputBase-input:focus{outline:0}` at SearchWorkspace.tsx:417-430/:375-415 defeats the global `:focus-visible` outline, and its static-bordered wrapper does not react to focus) and the Category select (`SearchWorkspace.tsx:463-513`; the same InputBase-class outline defeat, plus `& .MuiOutlinedInput-notchedOutline{border:\"none\"}` at :480-482 suppresses the fieldset border entirely). The Age/Size range fields relocated into `search-advanced-panel` share the query field's exact `InputBase` mechanism, so they fail identically; their rendering differs (`advancedInputSx` at `SearchWorkspace.tsx:99-108` adds a recessed background and a static 1px border that `queryInputSx` does not have), but that border does not react to focus, so the focused/unfocused delta is empty for both. The blocking decision is now made: ADR-0013 (`decisions/ADR-0013-application-wide-keyboard-focus-indication.md`, accepted 2026-08-19, Option A -- an explicit focus-ring token authored per control family). The remedy packet does not exist yet and is a task designer's to create; no remedy is implemented here." }
 
   - id: F-SEARCH-MEDIA
     name: Movie and TV autocomplete, identifiers, title refinement, season, and episode
@@ -117,9 +117,9 @@ features:
           - "both paired inputs remain individually operable by keyboard focus and typing, retaining the typed season and episode values"
       evidence: [ tests/system/tests/search.spec.ts ]
       variances: []
-    gaps: [ ]
+    gaps: [ keyboard focus indication is absent for the paired season/episode inputs and the additional-query field carries only the notched-outline indicator (FM-052) ]
     task: FM-025
-    backlog: { status: deferred, rationale: "The record remains partial pending a dedicated full-parity reconciliation." }
+    backlog: { status: deferred, rationale: "The record remains partial pending a dedicated full-parity reconciliation. FM-052 (measurement only) found the paired season/episode inputs (`season-episode-pair`; `SearchWorkspace.tsx:539` and `:563`, `pairedInputSx` at `:87-97`) render no keyboard focus indicator at all (WCAG 2.4.7): they are bare `InputBase`es defeated by the same `.MuiInputBase-input:focus{outline:0}` rule as the query field, and unlike `advancedInputSx` they carry no border of any kind, so the focused/unfocused computed-style delta over the whole subtree is `outline-width: 3px -> 0px` and `outline-offset: 0px -> 3px` with `outline-style: none` in both states -- nothing paints. `additional-query` (`SearchWorkspace.tsx:785`) is a different case on the same record: it is a default, un-overridden `TextField`, so MUI's own focused `notchedOutline` still renders (measured `rgba(255,255,255,0.23)` 1px -> `oklch(0.75 0.1 190)` 2px, contrast 3.15:1) and it meets 2.4.7 while failing 2.4.11 on area. The blocking decision is now made: ADR-0013 (`decisions/ADR-0013-application-wide-keyboard-focus-indication.md`, accepted 2026-08-19, Option A -- an explicit focus-ring token authored per control family). The remedy packet does not exist yet and is a task designer's to create; no remedy is implemented here." }
 
   - id: F-SEARCH-INDEXERS
     name: Indexer selection by individual source, type, group, and preselection
@@ -339,9 +339,9 @@ features:
       variances:
         - description: "The header's tri-state select-all checkbox (indeterminate on partial selection) and its adjacent caret opening a role=\"menu\" with Select all/Deselect all/Invert selection have no legacy equivalent; legacy uses a standalone `selectionButton` directive (`core/ui-src/js/directives/selection-button.js`) with always-visible, non-indeterminate buttons."
           status: proposed
-    gaps: [ ]
+    gaps: [ keyboard focus indication is absent for the select-all checkbox (FM-052) ]
     task: FM-012
-    backlog: { status: deferred, rationale: "The record remains partial pending a dedicated full-parity reconciliation." }
+    backlog: { status: deferred, rationale: "The record remains partial pending a dedicated full-parity reconciliation. FM-052 (measurement only) found the tri-state select-all `Checkbox` (`SearchResults.tsx:1735`, the app's only `disableRipple` control) renders no visible keyboard focus indicator (WCAG 2.4.7): its root `outline:0` is unconditional, no ripple mounts, and neither `Checkbox`, `SwitchBase`, nor `IconButton` define an `&.Mui-focusVisible` rule, so nothing in the app's CSS reacts to focus; the one CSS property that does change (the native input's own `outline-style: none -> solid`) paints on an `opacity: 0` layer and is therefore invisible. The per-row selection checkboxes are unaffected -- they keep the default ripple. The blocking decision is now made: ADR-0013 (`decisions/ADR-0013-application-wide-keyboard-focus-indication.md`, accepted 2026-08-19, Option A -- an explicit focus-ring token authored per control family). The remedy packet does not exist yet and is a task designer's to create; no remedy is implemented here." }
 
   - id: F-SEARCH-DOWNLOADS
     name: Single and bulk browser, downloader, ZIP, black-hole, torrent, magnet, and copy-link actions
