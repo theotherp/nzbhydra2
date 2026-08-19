@@ -23,6 +23,7 @@ You are a coordinator, not an implementation or design authority. Never implemen
 - Never continue past a blocked or failed prerequisite.
 - Never begin work outside the requested range.
 - Allow at most three fix/review cycles per task.
+- After backgrounding a subagent invocation, end your turn and wait for its completion notification. Never call `ScheduleWakeup` to wait on it — that tool is for `/loop` dynamic-mode self-pacing, not for this coordinator, and calling it here has no loop `prompt` to pass, which fails.
 
 ## Task Batch Design
 
@@ -58,14 +59,20 @@ Handle the review result as follows.
 ### PASS
 
 Before marking the task `done`, reconcile `docs/frontend-migration/GUI-STATUS.md` when the accepted result affects user-observable React availability or GUI selection instructions. Then mark the task `done`, reconcile
-`docs/frontend-migration/STATUS.md`, delete the completed packet file from `tasks/` (git history is the archive), and create the task-boundary commit.
+`docs/frontend-migration/STATUS.md`, sweep dependents (see below), delete the completed packet file from `tasks/` (git history is the archive), and create the task-boundary commit.
 
 ### PASS WITH MINOR FINDINGS
 
 Treat the task as passed. Record the minor findings in the final report; do not start a correction cycle merely for optional improvements.
 
-Before marking the task `done`, reconcile `docs/frontend-migration/GUI-STATUS.md` when the accepted result affects user-observable React availability or GUI selection instructions. Then mark the task `done`, reconcile `STATUS.md`, delete
-the completed packet file from `tasks/`, and commit.
+Before marking the task `done`, reconcile `docs/frontend-migration/GUI-STATUS.md` when the accepted result affects user-observable React availability or GUI selection instructions. Then mark the task `done`, reconcile `STATUS.md`, sweep
+dependents (see below), delete the completed packet file from `tasks/`, and commit.
+
+### Sweeping dependents on completion
+
+Deleting a completed task's packet removes it from the validator's known-task-ID set, so any live packet still declaring `Depends on: <that ID>` becomes a validation error (`references unknown task`), permanently, until edited. Before
+deleting the completed packet, scan every remaining file in `tasks/` for a `Depends on:` field naming the task just completed. For each match, edit that field to remove the ID — `None` if it was the only dependency, otherwise just that ID
+dropped from the list. This is mechanical lifecycle bookkeeping, not a scope or architecture change, so the coordinator performs it directly; do not route it through `migration-task-designer`.
 
 ### FAIL
 
@@ -139,6 +146,7 @@ Your only direct file edits are post-review lifecycle bookkeeping in:
 - the passed FM task packet;
 - `docs/frontend-migration/STATUS.md`.
 - `docs/frontend-migration/GUI-STATUS.md`, when reconciling the accepted result.
+- the `Depends on:` field of other live task packets in `tasks/`, only to remove a reference to the task just marked `done` (see *Sweeping dependents on completion*).
 
 Do not alter task scope, acceptance criteria, handoff evidence, implementation, or architecture yourself.
 
