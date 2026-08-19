@@ -211,6 +211,7 @@ components:
       - F-SEARCH-RESULTS
       - F-HISTORY-SAVED-SEARCHES
       - F-HISTORY-DOWNLOADS
+      - F-HISTORY-NOTIFICATIONS
       - F-SYSTEM-ABOUT
     classification: shared_hydra
     state: partial

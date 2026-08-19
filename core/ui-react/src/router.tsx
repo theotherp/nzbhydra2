@@ -11,6 +11,7 @@ import {AppShell} from "./app/AppShell";
 import type {BootstrapData} from "./bootstrap";
 import {SearchPage} from "./features/search/SearchPage";
 import {DownloadHistoryPage} from "./features/stats/history/DownloadHistoryPage";
+import {NotificationHistoryPage} from "./features/stats/history/NotificationHistoryPage";
 import {SavedSearchesPage} from "./features/stats/history/SavedSearchesPage";
 import {SearchHistoryPage} from "./features/stats/history/SearchHistoryPage";
 import {IndexerStatusesPage} from "./features/stats/indexers/IndexerStatusesPage";
@@ -79,6 +80,18 @@ export function createAppRouter(bootstrap: BootstrapData) {
             </StatsShell>
         ),
     });
+    const notificationHistoryRoute = createRoute({
+        getParentRoute: () => rootRoute,
+        path: "stats/notifications",
+        component: () => (
+            <StatsShell bootstrap={bootstrap}>
+                <NotificationHistoryPage
+                    bootstrap={bootstrap}
+                    transport={transport}
+                />
+            </StatsShell>
+        ),
+    });
     const statsRoute = createRoute({
         getParentRoute: () => rootRoute,
         path: "stats",
@@ -110,6 +123,7 @@ export function createAppRouter(bootstrap: BootstrapData) {
         savedSearchesRoute,
         searchHistoryRoute,
         downloadHistoryRoute,
+        notificationHistoryRoute,
         statsFallbackRoute,
     ]);
 

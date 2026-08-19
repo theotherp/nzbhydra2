@@ -1,7 +1,7 @@
 # FM-057: Search History Adopts The Shared Refine Bar
 
 Status: planned Owner:
-Feature IDs: F-HISTORY-SEARCHES Component IDs: C-HISTORY-REFINE-BAR, C-HISTORY-REQUEST, C-CATEGORY-CATALOG API IDs: API-HISTORY-SEARCHES Depends on: FM-056 Blocks: None
+Feature IDs: F-HISTORY-SEARCHES Component IDs: C-HISTORY-REFINE-BAR, C-HISTORY-REQUEST, C-CATEGORY-CATALOG API IDs: API-HISTORY-SEARCHES Depends on: None Blocks: None
 
 ## Outcome
 

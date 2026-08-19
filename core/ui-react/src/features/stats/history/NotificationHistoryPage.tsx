@@ -1,0 +1,293 @@
+import {
+    Alert,
+    Button,
+    CircularProgress,
+    Link,
+    Stack,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    Typography,
+} from "@mui/material";
+import {keepPreviousData, useQuery} from "@tanstack/react-query";
+import {useMemo, useState} from "react";
+
+import type {
+    HistoryFilterValue,
+    HistoryFilterValues,
+} from "../../../api/history/filters";
+import {
+    NOTIFICATION_EVENT_LABELS,
+    getNotificationHistory,
+    notificationHistoryDimensions,
+    type NotificationHistorySort,
+} from "../../../api/history/notifications";
+import {ApiTransport} from "../../../api/transport";
+import type {BootstrapData} from "../../../bootstrap";
+import {formatServerDateTime} from "../../../domain/date-time/dateTime";
+import {linkedTextLines} from "../../../domain/links/textLinks";
+import {HistoryRefineBar} from "./refine/HistoryRefineBar";
+
+const PAGE_SIZE = 25;
+const defaultSort: NotificationHistorySort = {column: "time", sortMode: 2};
+
+export function NotificationHistoryPage({
+    bootstrap,
+    transport,
+}: {
+    bootstrap: BootstrapData;
+    transport: ApiTransport;
+}) {
+    const [page, setPage] = useState(1);
+    const [values, setValues] = useState<HistoryFilterValues>({});
+    const [sort, setSort] = useState<NotificationHistorySort>(defaultSort);
+    const dimensions = useMemo(() => notificationHistoryDimensions(), []);
+    const query = useQuery({
+        queryKey: ["notification-history", page, values, sort],
+        queryFn: () =>
+            getNotificationHistory(transport, {
+                dimensions,
+                values,
+                page,
+                limit: PAGE_SIZE,
+                sort,
+            }),
+        // As on download history: a filter keystroke makes a new query key, and
+        // falling back to the first-load spinner would unmount the refine bar
+        // mid-edit and take keyboard focus with it.
+        placeholderData: keepPreviousData,
+    });
+    const updateFilter = (id: string, value: HistoryFilterValue) => {
+        setPage(1);
+        setValues((current) => ({...current, [id]: value}));
+    };
+    const clearFilters = () => {
+        setPage(1);
+        setValues({});
+    };
+    const updateSort = (column: NotificationHistorySort["column"]) => {
+        setPage(1);
+        setSort((current) => ({
+            column,
+            sortMode:
+                current.column === column && current.sortMode === 1 ? 2 : 1,
+        }));
+    };
+    if (query.isPending) {
+        return <Loading />;
+    }
+    if (query.isError) {
+        return (
+            <Alert severity="error">Unable to load notification history.</Alert>
+        );
+    }
+    const {entries: notifications, totalElements, malformedCount} = query.data;
+    const totalPages = Math.max(1, Math.ceil(totalElements / PAGE_SIZE));
+    const dereferer = (bootstrap.safeConfig as {dereferer?: unknown} | null)
+        ?.dereferer;
+    return (
+        <Stack component="main" spacing={2}>
+            <Stack
+                alignItems="center"
+                direction="row"
+                justifyContent="space-between"
+                spacing={1}
+            >
+                <Typography component="h1" variant="h4">
+                    Notification history
+                </Typography>
+                <Button
+                    data-testid="notification-history-refresh"
+                    onClick={() => void query.refetch()}
+                    variant="outlined"
+                >
+                    Refresh
+                </Button>
+            </Stack>
+            {/* The route's single filter surface (ADR-0009/ADR-0016): legacy's
+                per-column time and event-type filters live here, and the table
+                header carries sorting only. */}
+            <HistoryRefineBar
+                dimensions={dimensions}
+                onChange={updateFilter}
+                onClearAll={clearFilters}
+                values={values}
+            />
+            {query.isFetching && (
+                <Stack direction="row" role="status" spacing={1}>
+                    <CircularProgress size={20} />
+                    <Typography>Refreshing notification history…</Typography>
+                </Stack>
+            )}
+            {malformedCount > 0 && (
+                <Alert severity="warning">
+                    {malformedCount} malformed notification history entries were
+                    not displayed.
+                </Alert>
+            )}
+            {notifications.length === 0 ? (
+                <Alert severity="info">
+                    No notification history entries match the current filters.
+                </Alert>
+            ) : (
+                <TableContainer>
+                    <Table
+                        aria-label="Notification history"
+                        data-testid="notification-history-table"
+                    >
+                        <TableHead>
+                            <TableRow>
+                                <SortHeader
+                                    column="time"
+                                    label="Time"
+                                    onSort={updateSort}
+                                    sort={sort}
+                                />
+                                <SortHeader
+                                    column="NOTIFICATION_EVENT_TYPE"
+                                    label="Type"
+                                    onSort={updateSort}
+                                    sort={sort}
+                                />
+                                <TableCell>Title</TableCell>
+                                <TableCell>Body</TableCell>
+                                <TableCell>URLs</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {notifications.map((entry) => (
+                                <TableRow
+                                    data-testid="notification-history-row"
+                                    key={entry.id}
+                                >
+                                    <TableCell>
+                                        {formatServerDateTime(
+                                            entry.time,
+                                            bootstrap.serverTimeZone,
+                                        )}
+                                    </TableCell>
+                                    <TableCell data-testid="notification-history-type">
+                                        {
+                                            NOTIFICATION_EVENT_LABELS[
+                                                entry.notificationEventType
+                                            ]
+                                        }
+                                    </TableCell>
+                                    <TableCell data-testid="notification-history-title">
+                                        <SafeText
+                                            dereferer={dereferer}
+                                            value={entry.title}
+                                        />
+                                    </TableCell>
+                                    <TableCell data-testid="notification-history-body">
+                                        <SafeText
+                                            dereferer={dereferer}
+                                            value={entry.body}
+                                        />
+                                    </TableCell>
+                                    <TableCell data-testid="notification-history-urls">
+                                        <SafeText
+                                            dereferer={dereferer}
+                                            value={entry.urls}
+                                        />
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+            )}
+            <Stack alignItems="center" direction="row" spacing={1}>
+                <Button disabled={page === 1} onClick={() => setPage(page - 1)}>
+                    Previous page
+                </Button>
+                <Typography data-testid="notification-history-page-status">
+                    Page {page} of {totalPages} · {totalElements}{" "}
+                    {totalElements === 1 ? "notification" : "notifications"}
+                </Typography>
+                <Button
+                    disabled={page >= totalPages}
+                    onClick={() => setPage(page + 1)}
+                >
+                    Next page
+                </Button>
+            </Stack>
+        </Stack>
+    );
+}
+
+function Loading() {
+    return (
+        <Stack alignItems="center" component="main" role="status" spacing={1}>
+            <CircularProgress />
+            <Typography>Loading notification history…</Typography>
+        </Stack>
+    );
+}
+
+function SortHeader({
+    column,
+    label,
+    onSort,
+    sort,
+}: {
+    column: NotificationHistorySort["column"];
+    label: string;
+    onSort(column: NotificationHistorySort["column"]): void;
+    sort: NotificationHistorySort;
+}) {
+    return (
+        <TableCell
+            sortDirection={
+                sort.column === column
+                    ? sort.sortMode === 1
+                        ? "asc"
+                        : "desc"
+                    : false
+            }
+        >
+            <Button onClick={() => onSort(column)}>{label}</Button>
+        </TableCell>
+    );
+}
+
+/**
+ * A notification's title, body, and URL list are server-side templated text
+ * that can carry markup, arbitrary schemes, and line breaks. They are rendered
+ * as text nodes with real line breaks, and only `http(s)` runs become anchors
+ * -- see `domain/links/textLinks.ts` for why `ng-bind-html` is not carried
+ * forward.
+ */
+function SafeText({dereferer, value}: {dereferer: unknown; value?: string}) {
+    if (!value) return null;
+    return (
+        <>
+            {linkedTextLines(value, dereferer).map((segments, line) => (
+                <Typography
+                    component="div"
+                    key={line}
+                    sx={{overflowWrap: "anywhere"}}
+                    variant="body2"
+                >
+                    {segments.map((segment, index) =>
+                        segment.href ? (
+                            <Link
+                                href={segment.href}
+                                key={index}
+                                rel="noreferrer"
+                                target="_blank"
+                            >
+                                {segment.text}
+                            </Link>
+                        ) : (
+                            <span key={index}>{segment.text}</span>
+                        ),
+                    )}
+                </Typography>
+            ))}
+        </>
+    );
+}

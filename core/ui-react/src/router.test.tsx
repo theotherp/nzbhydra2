@@ -97,6 +97,31 @@ describe("createAppRouter", () => {
         expect(router.state.matches.at(-1)?.routeId).toContain("downloads");
     });
 
+    it("should match the stats-protected notification history route", async () => {
+        window.history.replaceState({}, "", "/hydra/stats/notifications");
+        const router = createAppRouter({
+            baseUrl: "/hydra/",
+            username: "stats",
+            authType: null,
+            showLogout: true,
+            maySeeSearch: true,
+            adminRestricted: false,
+            statsRestricted: true,
+            maySeeStats: true,
+            searchRestricted: false,
+            maySeeDetailsDl: false,
+            maySeeAdmin: false,
+            authConfigured: true,
+            showIndexerSelection: false,
+            // Notification history does not depend on `keepHistory`: legacy
+            // shows its tab regardless, and so does `StatsShell`.
+            safeConfig: {keepHistory: false},
+            serverTimeZone: "UTC",
+        });
+        await router.navigate({to: "/stats/notifications"});
+        expect(router.state.matches.at(-1)?.routeId).toContain("notifications");
+    });
+
     it("should match the base-aware stats default and indexer routes", async () => {
         window.history.replaceState({}, "", "/hydra/stats/indexers");
         const router = createAppRouter({

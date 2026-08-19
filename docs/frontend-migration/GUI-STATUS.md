@@ -8,6 +8,7 @@ Currently available in React:
 - Saved-search listing, reopen, and deletion.
 - The statistics shell, indexer status, and search-history paging, filtering, details, and repeat.
 - Download-history paging, filtering, status/link display, and NZB/torrent repeat actions.
+- Notification-history paging, filtering, and safe title/body/link display.
 - The System news page.
 
 This is a derived convenience summary, not a parity claim or migration roadmap.
