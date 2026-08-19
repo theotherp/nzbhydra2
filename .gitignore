@@ -19,7 +19,7 @@ pom.xml.versionsBackup
 javacore*
 heapdump*
 /ui
-*token*
+/*token*
 *.env
 
 !/.idea/compiler.xml

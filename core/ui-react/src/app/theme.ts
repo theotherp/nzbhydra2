@@ -24,6 +24,12 @@ declare module "@mui/material/styles" {
         hairline: string;
         /** Fainter hairline for row/section separators. */
         hairlineFaint: string;
+        /**
+         * The mock's muted-glyph color (`#6b7472`): section captions, counts,
+         * popover captions, and disabled/neutral control text. FM-054: four
+         * independent feature-local literals collapsed into this one token.
+         */
+        mutedText: string;
     }
 
     interface Palette {
@@ -74,6 +80,33 @@ const uiFontFamily = '"IBM Plex Sans", system-ui, -apple-system, sans-serif';
  */
 export const monoFontFamily = '"IBM Plex Mono", monospace';
 
+/**
+ * The mock's small-pill corner radius (`border-radius:7px`), copied from the
+ * quality/type `Chip` pills. FM-054: `SearchResults.tsx`'s display-options
+ * popover row hover highlight is a second, genuine consumer of the same
+ * radius (its own row is sized and rounded to match the same family of
+ * dense controls), so it is exposed here once rather than restated as a
+ * second bespoke literal. Exposed as a plain exported constant for the same
+ * reason as `monoFontFamily` above: feature code applies it through `sx`
+ * without needing a `Shape`/component-slot module augmentation.
+ */
+export const pillRadius = 7;
+
+/**
+ * The mock's `toggleAll` select-all square's own corner radius
+ * (`border-radius:5px`), copied from the mock's select-all control. FM-054:
+ * `SearchResults.tsx` renders this one control's 17x17 square through two
+ * genuinely separate mechanisms that must stay pixel-aligned -- the
+ * `icon`/`checkedIcon`/`indeterminateIcon` overlay `Box`es and the real
+ * `Checkbox` root's own `sx` -- so both are real consumers of the same value
+ * rather than two independent literals that happened to match. No other
+ * control in this application shares this radius (it is smaller than both
+ * `pillRadius` and `shape.borderRadius`, matching the mock's own distinct,
+ * denser geometry for this specific 17x17 control), so it is exposed as its
+ * own constant rather than folded into either.
+ */
+export const selectAllRadius = 5;
+
 // Mock palette, sourced from `uimock/NZBHydra Search.dc.html` (its `<helmet>`
 // `<style>` block, the outer
 // page `<div>`'s inline style, and its `<header>`). Supersedes ADR-0007's
@@ -120,6 +153,7 @@ const mockSurfaces = {
     recessed: "#1c2224",
     hairline: "rgba(255, 255, 255, 0.1)",
     hairlineFaint: "rgba(255, 255, 255, 0.06)",
+    mutedText: "#6b7472",
 } as const;
 
 // MUI's default contrast text for a light-enough surface. Used verbatim for the
@@ -519,6 +553,21 @@ export function createHydraTheme(
                     }),
                 },
             },
+            // FM-054: a bare `Popover` (the results toolbar's display-options
+            // panel) is a distinct MUI slot from `Menu`'s own popover -- each
+            // targets a different CSS class (`.MuiPopover-paper` vs
+            // `.MuiMenu-paper`) even though `Menu` renders through `Popover`
+            // internally -- so it needs the identical control-surface
+            // treatment authored a second time here rather than inherited.
+            MuiPopover: {
+                styleOverrides: {
+                    paper: ({theme}) => ({
+                        backgroundColor: theme.palette.surfaces.control,
+                        backgroundImage: "none",
+                        border: `1px solid ${theme.palette.surfaces.hairline}`,
+                    }),
+                },
+            },
             MuiChip: {
                 styleOverrides: {
                     root: ({theme}) => ({
@@ -527,8 +576,10 @@ export function createHydraTheme(
                         // i.e. ~26px tall -- appreciably denser than MUI's 32px
                         // default.
                         height: 26,
-                        // The mock's own pill radius (`border-radius:7px`).
-                        borderRadius: 7,
+                        // The mock's own pill radius; see `pillRadius`'s doc
+                        // comment above for the second consumer this is
+                        // shared with.
+                        borderRadius: pillRadius,
                         // ADR-0013 family G. `Chip.js` ships several
                         // `&.Mui-focusVisible` background rules; this
                         // overrides them with the shared token. The one `Chip`

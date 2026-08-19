@@ -111,17 +111,13 @@ function enclosingComponent(source, index) {
 
 // Files that still carry pre-ADR-0014 design literals, exempt from check 4
 // until FM-054 ports them onto theme tokens. Shrink this set as files are
-// cleaned; never add to it.
-const pendingFm054Cleanup = new Set([
-    "src/features/search/results/DownloadActions.tsx",
-    "src/features/search/results/RefineSidebar.tsx",
-    "src/features/search/results/SearchResults.tsx",
-    "src/features/search/results/displayStyles.ts",
-    "src/features/search/results/filterControls.tsx",
-    "src/features/search/results/refineStyles.ts",
-    "src/features/search/results/toolbarStyles.ts",
-    "src/features/search/history/RecentSearches.tsx",
-]);
+// cleaned; never add to it. FM-054 emptied it: every file that was here
+// (DownloadActions.tsx, RefineSidebar.tsx, SearchResults.tsx,
+// displayStyles.ts, filterControls.tsx, refineStyles.ts, toolbarStyles.ts,
+// history/RecentSearches.tsx -- the last three of which no longer exist or
+// never carried a literal) now consumes theme tokens or stock components;
+// the three `*Styles.ts` files were deleted outright.
+const pendingFm054Cleanup = new Set();
 
 const findings = [];
 

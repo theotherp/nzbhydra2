@@ -13,27 +13,20 @@ import {useTheme} from "@mui/material/styles";
 import type {Dispatch, ReactNode, SetStateAction} from "react";
 import {useMemo, useState} from "react";
 
-import {monoFontFamily} from "../../../app/theme";
+import {monoFontFamily, pillRadius} from "../../../app/theme";
 import type {SearchResult} from "../../../api/search";
 import {NumericFilter, ToggleRowFilter} from "./filterControls";
-import {
-    chipActiveBackground,
-    chipActiveBorderColor,
-    chipActiveColor,
-    chipInactiveBackground,
-    chipInactiveBorderColor,
-    chipInactiveColor,
-    clearAllColor,
-    headingColor,
-    inputBackground,
-    inputBorderColor,
-    sectionGap,
-    sectionLabelColor,
-    sidebarBorderColor,
-    sidebarPadding,
-} from "./refineStyles";
 import type {NumericRange, QuickFilter, ResultFilters} from "./resultTable";
 import {quickFilterKey} from "./resultTable";
+
+// FM-054 (ADR-0014): the mock's `<aside style="flex:0 0 248px;...;
+// padding:18px 16px 40px;">` panel padding and its `rowStyle(active)` /
+// `chip(active)` section gap, kept as local layout constants (not exported
+// design tokens -- ADR-0014 forbids a per-feature `*Styles.ts` token file,
+// not an in-component spacing constant) since neither is a color, font, or
+// radius value.
+const SIDEBAR_PADDING = "18px 16px 40px";
+const SECTION_GAP = "22px";
 
 // Exported so `SearchResults.tsx` can compute how much horizontal room the
 // sidebar currently claims (e.g. to size the results table's minimum width
@@ -168,7 +161,7 @@ export function RefineSidebar({
         }));
     };
     const sections = (
-        <Stack sx={{gap: sectionGap}}>
+        <Stack sx={{gap: SECTION_GAP}}>
             {quickFilters.length > 0 && (
                 <RefineSection label="Quality">
                     <Stack
@@ -193,6 +186,10 @@ export function RefineSidebar({
                 </RefineSection>
             )}
             <RefineSection label="Title contains">
+                {/* FM-054 (ADR-0014): the mock's recessed input surface,
+                    hairline border, and 8px radius are the `MuiOutlinedInput`
+                    theme default now (`app/theme.ts`); this field carries no
+                    local background/border override. */}
                 <TextField
                     fullWidth
                     onChange={(event) =>
@@ -207,21 +204,6 @@ export function RefineSidebar({
                         htmlInput: {
                             "aria-label": "Filter titles",
                             "data-testid": "refine-filter-title",
-                        },
-                    }}
-                    sx={{
-                        backgroundColor: inputBackground,
-                        borderRadius: "8px",
-                        "& .MuiOutlinedInput-root": {
-                            backgroundColor: "transparent",
-                        },
-                        "& .MuiOutlinedInput-notchedOutline": {
-                            borderColor: inputBorderColor,
-                        },
-                        "& input": {fontSize: "13px", p: "8px 10px"},
-                        "& input::placeholder": {
-                            color: sectionLabelColor,
-                            opacity: 1,
                         },
                     }}
                     value={filters.title}
@@ -316,7 +298,7 @@ export function RefineSidebar({
             onClick={onClearAll}
             size="small"
             sx={{
-                color: clearAllColor,
+                color: "primary.main",
                 fontSize: "12.5px",
                 minWidth: 0,
                 px: "4px",
@@ -343,7 +325,8 @@ export function RefineSidebar({
                     size="small"
                     sx={{
                         alignSelf: "flex-start",
-                        border: `1px solid ${chipInactiveBorderColor}`,
+                        border: "1px solid",
+                        borderColor: "surfaces.hairline",
                         color: "text.primary",
                         fontSize: "13px",
                         px: "12px",
@@ -362,7 +345,7 @@ export function RefineSidebar({
                             sx: {
                                 backgroundImage: "none",
                                 maxWidth: "100%",
-                                p: sidebarPadding,
+                                p: SIDEBAR_PADDING,
                                 width: `min(${EXPANDED_WIDTH + 32}px, 88vw)`,
                             },
                         },
@@ -408,10 +391,11 @@ export function RefineSidebar({
             sx={{
                 backgroundColor: "transparent",
                 borderRadius: 0,
-                borderRight: `1px solid ${sidebarBorderColor}`,
+                borderRight: "1px solid",
+                borderRightColor: "surfaces.hairlineFaint",
                 flexShrink: 0,
                 overflow: "hidden",
-                p: collapsed ? "18px 8px 18px" : sidebarPadding,
+                p: collapsed ? "18px 8px 18px" : SIDEBAR_PADDING,
                 transition:
                     "width 150ms ease-in-out, padding 150ms ease-in-out",
                 width: collapsed ? COLLAPSED_WIDTH : EXPANDED_WIDTH,
@@ -432,7 +416,7 @@ export function RefineSidebar({
                             onClick={onToggleCollapsed}
                             size="small"
                             sx={{
-                                color: sectionLabelColor,
+                                color: "surfaces.mutedText",
                                 minWidth: 0,
                                 px: "6px",
                             }}
@@ -468,7 +452,7 @@ function RefineHeader({
                 <Typography
                     component="span"
                     sx={{
-                        color: headingColor,
+                        color: "text.secondary",
                         fontSize: "12px",
                         fontWeight: 600,
                         letterSpacing: "0.7px",
@@ -502,15 +486,16 @@ function RefineChip({
             aria-pressed={active}
             onClick={onToggle}
             size="small"
-            sx={{
+            sx={(theme) => ({
                 backgroundColor: active
-                    ? chipActiveBackground
-                    : chipInactiveBackground,
-                border: `1px solid ${
-                    active ? chipActiveBorderColor : chipInactiveBorderColor
-                }`,
-                borderRadius: "7px",
-                color: active ? chipActiveColor : chipInactiveColor,
+                    ? theme.alpha(theme.palette.primary.main, 0.16)
+                    : "surfaces.bar",
+                border: "1px solid",
+                borderColor: active
+                    ? theme.alpha(theme.palette.primary.main, 0.45)
+                    : "surfaces.hairline",
+                borderRadius: pillRadius,
+                color: active ? "primary.light" : "text.secondary",
                 fontFamily: monoFontFamily,
                 fontSize: "12px",
                 fontWeight: 400,
@@ -520,13 +505,13 @@ function RefineChip({
                 py: "5px",
                 "&:hover": {
                     backgroundColor: active
-                        ? chipActiveBackground
-                        : chipInactiveBackground,
+                        ? theme.alpha(theme.palette.primary.main, 0.16)
+                        : "surfaces.bar",
                     borderColor: active
-                        ? chipActiveBorderColor
-                        : chipActiveBackground,
+                        ? theme.alpha(theme.palette.primary.main, 0.45)
+                        : theme.alpha(theme.palette.primary.main, 0.16),
                 },
-            }}
+            })}
         >
             {label}
         </Button>
@@ -545,7 +530,7 @@ function RefineSection({
             <Typography
                 component="div"
                 sx={{
-                    color: sectionLabelColor,
+                    color: "surfaces.mutedText",
                     fontSize: "11px",
                     fontWeight: 600,
                     letterSpacing: "0.6px",
@@ -589,7 +574,7 @@ function RefineCollapsibleList({
                 onClick={onToggleOpen}
                 size="small"
                 sx={{
-                    color: sectionLabelColor,
+                    color: "surfaces.mutedText",
                     fontSize: "11px",
                     fontWeight: 600,
                     justifyContent: "space-between",

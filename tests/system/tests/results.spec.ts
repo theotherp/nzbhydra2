@@ -1738,8 +1738,9 @@ test.describe("Search results", () => {
         await expect(rows).toHaveCount(4);
 
         // `display-menu-open`: the toggle advertises its popover, and the open
-        // popover renders on the mock's `#2a3133`/11px-radius/220px surface,
-        // fully inside the viewport with no page horizontal overflow.
+        // popover renders on the mock's `#2a3133`/220px surface at the
+        // theme's own raised-paper radius, fully inside the viewport with no
+        // page horizontal overflow.
         await expect(menuToggle).toHaveAttribute("aria-haspopup", "true");
         await expect(menuToggle).toHaveAttribute("aria-expanded", "false");
         await expect(page.getByTestId("display-options")).toHaveCount(0);
@@ -2712,9 +2713,14 @@ function displayOptionsPaper(
         .locator('xpath=ancestor::*[contains(@class,"MuiPaper-root")][1]');
 }
 
-// The mock's display-options popover surface: `#2a3133`, an 11px radius, and at
-// least its 220px minimum width, fully inside the viewport with no page
-// horizontal overflow.
+// The mock's display-options popover surface: `#2a3133` and at least its
+// 220px minimum width, fully inside the viewport with no page horizontal
+// overflow. FM-054 (ADR-0014): the popover no longer pins the mock's own
+// 11px radius literal -- that value moved out of feature code entirely, and
+// the popover now renders at the theme's shared raised-`Paper` radius
+// (`app/theme.ts`'s `MuiPaper` override, 12px) rather than restating a
+// bespoke one; ADR-0014 permits this kind of pixel deviation from the mock
+// without justification.
 async function expectDisplayMenuSurface(
     page: import("@playwright/test").Page,
 ): Promise<void> {
@@ -2727,7 +2733,7 @@ async function expectDisplayMenuSurface(
         };
     });
     expect(surface.backgroundColor).toBe("rgb(42, 49, 51)");
-    expect(surface.borderTopLeftRadius).toBe("11px");
+    expect(surface.borderTopLeftRadius).toBe("12px");
     const box = await paper.boundingBox();
     const viewport = page.viewportSize();
     expect(box).not.toBeNull();

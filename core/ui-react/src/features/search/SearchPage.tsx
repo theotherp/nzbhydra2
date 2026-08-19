@@ -375,13 +375,17 @@ export function SearchPage({
                 sx={{
                     border: 0,
                     clip: "rect(0 0 0 0)",
-                    height: 1,
-                    margin: -1,
+                    // The visually-hidden box must be literal 1px strings:
+                    // numeric width/height 0..1 are percentages in MUI sx,
+                    // so `width: 1` rendered a full-width absolute box that
+                    // overflowed the page horizontally.
+                    height: "1px",
+                    margin: "-1px",
                     overflow: "hidden",
                     padding: 0,
                     position: "absolute",
                     whiteSpace: "nowrap",
-                    width: 1,
+                    width: "1px",
                 }}
             >
                 Search

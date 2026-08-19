@@ -1,6 +1,12 @@
 import {describe, expect, it} from "vitest";
 
-import {createHydraTheme, monoFontFamily, resolveThemeMode} from "./theme";
+import {
+    createHydraTheme,
+    monoFontFamily,
+    pillRadius,
+    resolveThemeMode,
+    selectAllRadius,
+} from "./theme";
 
 describe("resolveThemeMode", () => {
     it("should follow the system preference for automatic mode", () => {
@@ -35,6 +41,7 @@ describe("resolveThemeMode", () => {
             recessed: "#1c2224",
             hairline: "rgba(255, 255, 255, 0.1)",
             hairlineFaint: "rgba(255, 255, 255, 0.06)",
+            mutedText: "#6b7472",
         });
     });
 
@@ -132,6 +139,14 @@ describe("createHydraTheme typography and density", () => {
 
     it("should expose the mock's IBM Plex Mono stack for numeric and tabular values", () => {
         expect(monoFontFamily).toBe('"IBM Plex Mono", monospace');
+    });
+
+    it("should expose the mock's pill radius for feature code sharing it with MuiChip", () => {
+        expect(pillRadius).toBe(7);
+    });
+
+    it("should expose the select-all control's own radius for its two rendering paths", () => {
+        expect(selectAllRadius).toBe(5);
     });
 
     it("should adopt the mock's denser radii and sentence-case buttons", () => {

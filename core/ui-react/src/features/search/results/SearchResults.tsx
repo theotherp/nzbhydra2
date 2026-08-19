@@ -39,23 +39,7 @@ import {
 import type {SearchResponse, SearchResult} from "../../../api/search";
 import {DialogContext} from "../../../components/dialogs/dialogs";
 import {ToastContext} from "../../../components/toasts/toasts";
-import {
-    compactRowPaddingY,
-    displayMenuCaptionColor,
-    displayMenuDividerColor,
-    displayMenuItemColor,
-    displayMenuItemFontSize,
-    displayMenuItemGap,
-    displayMenuItemPaddingX,
-    displayMenuItemPaddingY,
-    displayMenuItemRadius,
-    displayMenuMinWidth,
-    displayMenuPadding,
-    displayMenuRadius,
-    displayMenuShadow,
-    recentRowStripe,
-    rowPaddingY,
-} from "./displayStyles";
+import {pillRadius, selectAllRadius} from "../../../app/theme";
 import {DirectDownloadActions, DownloadActions} from "./DownloadActions";
 import {RefineSidebar, useCompactRefineSurface} from "./RefineSidebar";
 import type {
@@ -64,14 +48,6 @@ import type {
     ResultFilters,
     SelectionStatus,
 } from "./resultTable";
-import {
-    checkboxUncheckedBorder,
-    controlSurface,
-    enabledSecondaryTextColor,
-    popoverBorderColor,
-    popoverRadius,
-    popoverShadow,
-} from "./toolbarStyles";
 import {
     defaultFilters,
     duplicateGroupKey,
@@ -110,11 +86,36 @@ const HEADER_CELL_PADDING_Y = "6px";
 // lever" ADR-0011 names alongside the re-proportioned `<colgroup>` for
 // making all eight columns' full labels fit: a smaller, uppercase, tracked
 // label leaves more of each header cell's narrowed box for the label text
-// itself than the previous default MUI `Button` typography did.
+// itself than the previous default MUI `Button` typography did. FM-054
+// (ADR-0014): the label color is the theme's own muted `text.secondary`
+// role, consumed via `sx`'s palette-path resolution rather than restated as
+// a `#hex` literal.
 const HEADER_LABEL_FONT_SIZE = "11px";
 const HEADER_LABEL_FONT_WEIGHT = 600;
 const HEADER_LABEL_LETTER_SPACING = "0.5px";
-const HEADER_LABEL_COLOR = "#7c8483";
+const HEADER_LABEL_COLOR = "text.secondary";
+
+// FM-041/FM-054: row-density values for the two display-option row
+// treatments. Kept as local constants in this file (not a per-feature
+// `*Styles.ts` token module, which ADR-0014 forbids) since neither is a
+// color, font, or radius value.
+const ROW_PADDING_Y = "6px";
+const COMPACT_ROW_PADDING_Y = "4px";
+
+// FM-041/FM-054: the "⚙ Display" popover's own density constants -- again
+// local, not exported tokens, since none is a color or font value. The
+// popover's surface color, border, and outer radius come entirely from the
+// theme's `MuiPopover` default now (`app/theme.ts`); no local override
+// remains. The one radius value this popover does need -- the row
+// hover-highlight's corner, at the same `7px` the mock's `Chip` pills use --
+// is `app/theme.ts`'s exported `pillRadius`, not a local literal (see its
+// usage on `DisplayOption` below).
+const DISPLAY_MENU_MIN_WIDTH = 220;
+const DISPLAY_MENU_PADDING = "8px";
+const DISPLAY_MENU_ITEM_PADDING_X = "8px";
+const DISPLAY_MENU_ITEM_PADDING_Y = "7px";
+const DISPLAY_MENU_ITEM_FONT_SIZE = "13px";
+const DISPLAY_MENU_ITEM_GAP = "9px";
 
 // FM-042: the mock's own sticky toolbar/header stacking relationship
 // (`position:sticky;top:0;z-index:15` for the toolbar, `position:sticky;
@@ -863,11 +864,11 @@ export function SearchResults({
                                     width: "100%",
                                     "& tbody > tr > td": {
                                         paddingBottom: compactRows
-                                            ? compactRowPaddingY
-                                            : rowPaddingY,
+                                            ? COMPACT_ROW_PADDING_Y
+                                            : ROW_PADDING_Y,
                                         paddingTop: compactRows
-                                            ? compactRowPaddingY
-                                            : rowPaddingY,
+                                            ? COMPACT_ROW_PADDING_Y
+                                            : ROW_PADDING_Y,
                                     },
                                     // "Compact rows" tightens the row's own
                                     // controls proportionally as well as its
@@ -1498,11 +1499,20 @@ const ResultRow = memo(function ResultRow({
                 `box-shadow:inset 3px 0 0 {{ r.stripe }}`), drawn on the row's
                 first cell because `border-collapse: collapse` suppresses a
                 `<tr>`'s own box shadow, and as an inset shadow rather than a
-                border so it consumes no layout width. */}
+                border so it consumes no layout width. FM-054 (ADR-0014): the
+                stripe color is computed with the theme's own
+                `theme.alpha()` against `primary.main` (colorSpace-aware --
+                see `theme.ts`'s note on why the standalone `@mui/system`
+                `alpha()` cannot decompose an `oklch()` token) instead of a
+                restated `oklch(... / 0.4)` literal. */}
             <TableCell
                 data-label="Select"
                 padding="checkbox"
-                sx={{boxShadow: recent ? recentRowStripe : undefined}}
+                sx={(theme) => ({
+                    boxShadow: recent
+                        ? `inset 3px 0 0 ${theme.alpha(theme.palette.primary.main, 0.4)}`
+                        : undefined,
+                })}
             >
                 <Checkbox
                     checked={selected}
@@ -1666,9 +1676,11 @@ const ResultRow = memo(function ResultRow({
 
 // The tri-state select-all checkbox's small square control (F-SEARCH-GROUP-
 // SELECTION, FM-046), matching the mock's own `toggleAll` button: 17x17px, a
-// 5px border radius, a filled `primary.main` square with a check mark when
-// checked, a dash when indeterminate, and a transparent square with a
-// neutral border when unchecked. Implemented through MUI `Checkbox`'s
+// 5px border radius (`app/theme.ts`'s exported `selectAllRadius`, not a local
+// literal -- see its doc comment for why this control's two rendering paths
+// are both genuine consumers), a filled `primary.main` square with a check
+// mark when checked, a dash when indeterminate, and a transparent square with
+// a neutral border when unchecked. Implemented through MUI `Checkbox`'s
 // `icon`/`checkedIcon`/`indeterminateIcon` props plus `sx` sizing on the
 // control itself (ADR-0002: restyle the existing MUI control, never a
 // bespoke one) -- the underlying native `<input type="checkbox">`, the
@@ -1677,7 +1689,7 @@ const ResultRow = memo(function ResultRow({
 // rendered bounding box is what this task's visual contract measures.
 const selectAllSquareSx = {
     alignItems: "center",
-    borderRadius: "5px",
+    borderRadius: selectAllRadius,
     display: "flex",
     fontSize: "11px",
     height: 17,
@@ -1689,10 +1701,10 @@ const selectAllSquareSx = {
 function SelectAllUncheckedIcon() {
     return (
         <Box
-            sx={{
+            sx={(theme) => ({
                 ...selectAllSquareSx,
-                border: `1.5px solid ${checkboxUncheckedBorder}`,
-            }}
+                border: `1.5px solid ${theme.alpha(theme.palette.common.white, 0.25)}`,
+            })}
         />
     );
 }
@@ -1795,7 +1807,7 @@ function SelectionMenu({
                 }
                 size="small"
                 sx={{
-                    borderRadius: "5px",
+                    borderRadius: selectAllRadius,
                     height: 17,
                     p: 0,
                     width: 17,
@@ -1812,6 +1824,13 @@ function SelectionMenu({
             >
                 ▾
             </Button>
+            {/* FM-054 (ADR-0014): the paper surface, border, and shadow are
+                the `MuiMenu` theme default now (`app/theme.ts`); the
+                `MenuItem` density is authored locally, except its radius,
+                which reuses the theme's shared `pillRadius` -- the same
+                dense-row highlight radius `DisplayOption`'s own popover row
+                below already draws from, since both are compact custom-menu
+                row highlights in this file. */}
             <Menu
                 anchorEl={anchorEl}
                 onClose={close}
@@ -1820,20 +1839,11 @@ function SelectionMenu({
                     list: {
                         sx: {
                             "& .MuiMenuItem-root": {
-                                borderRadius: "6px",
+                                borderRadius: pillRadius,
                                 fontSize: "12.5px",
                                 mx: "4px",
                                 py: "8px",
                             },
-                        },
-                    },
-                    paper: {
-                        sx: {
-                            backgroundColor: controlSurface,
-                            backgroundImage: "none",
-                            border: `1px solid ${popoverBorderColor}`,
-                            borderRadius: popoverRadius,
-                            boxShadow: popoverShadow,
                         },
                     },
                 }}
@@ -1926,9 +1936,10 @@ function DisplayOptionsMenu({
                 }
                 size="small"
                 sx={{
-                    backgroundColor: controlSurface,
-                    border: `1px solid ${popoverBorderColor}`,
-                    color: open ? "text.primary" : enabledSecondaryTextColor,
+                    backgroundColor: "surfaces.control",
+                    border: "1px solid",
+                    borderColor: "surfaces.hairline",
+                    color: open ? "text.primary" : "text.secondary",
                     fontSize: "13px",
                     gap: "8px",
                     px: "13px",
@@ -1942,41 +1953,36 @@ function DisplayOptionsMenu({
                 <Box
                     aria-hidden="true"
                     component="span"
-                    sx={{color: displayMenuCaptionColor, fontSize: "10px"}}
+                    sx={{color: "surfaces.mutedText", fontSize: "10px"}}
                 >
                     {open ? "▲" : "▼"}
                 </Box>
             </Button>
+            {/* FM-054 (ADR-0014): the paper surface, border, radius, and
+                shadow are the `MuiPopover` theme default now
+                (`app/theme.ts`); only the non-token responsive `maxWidth`
+                safety net is authored locally. */}
             <Popover
                 anchorEl={anchorEl}
                 anchorOrigin={{horizontal: "right", vertical: "bottom"}}
                 onClose={() => setAnchorEl(null)}
                 open={open}
                 slotProps={{
-                    paper: {
-                        sx: {
-                            backgroundColor: controlSurface,
-                            backgroundImage: "none",
-                            border: `1px solid ${popoverBorderColor}`,
-                            borderRadius: displayMenuRadius,
-                            boxShadow: displayMenuShadow,
-                            maxWidth: "100%",
-                        },
-                    },
+                    paper: {sx: {maxWidth: "100%"}},
                 }}
                 transformOrigin={{horizontal: "right", vertical: "top"}}
             >
                 <Box
                     data-testid="display-options"
                     sx={{
-                        minWidth: displayMenuMinWidth,
-                        p: displayMenuPadding,
+                        minWidth: DISPLAY_MENU_MIN_WIDTH,
+                        p: DISPLAY_MENU_PADDING,
                     }}
                 >
                     <Typography
                         component="div"
                         sx={{
-                            color: displayMenuCaptionColor,
+                            color: "surfaces.mutedText",
                             fontSize: "10.5px",
                             fontWeight: 600,
                             letterSpacing: "0.6px",
@@ -2000,7 +2006,7 @@ function DisplayOptionsMenu({
                             the surrounding-layout one. */}
                         <Box
                             sx={{
-                                backgroundColor: displayMenuDividerColor,
+                                backgroundColor: "surfaces.hairlineFaint",
                                 height: "1px",
                                 mx: "4px",
                                 my: "6px",
@@ -2029,7 +2035,8 @@ function DisplayOptionsMenu({
 }
 
 // One popover entry, matching the mock's `<label>` + `<input type=checkbox>`
-// shape: a 7px-radius row at `7px 8px` padding with a 9px gap.
+// shape: a row at `7px 8px` padding with a 9px gap, rounded to the theme's
+// shared `pillRadius` (the same `7px` the mock's `Chip` pills use).
 function DisplayOption({
     checked,
     label,
@@ -2046,14 +2053,17 @@ function DisplayOption({
             }
             label={label}
             sx={{
-                borderRadius: displayMenuItemRadius,
-                gap: displayMenuItemGap,
+                borderRadius: pillRadius,
+                gap: DISPLAY_MENU_ITEM_GAP,
                 m: 0,
-                px: displayMenuItemPaddingX,
-                py: displayMenuItemPaddingY,
+                px: DISPLAY_MENU_ITEM_PADDING_X,
+                py: DISPLAY_MENU_ITEM_PADDING_Y,
+                // The label's color is `text.primary` -- already the
+                // `FormControlLabel` label's own default, so it needs no
+                // override (the mock's `#d6dad9` item text is the theme's
+                // `text.primary` exactly).
                 "& .MuiFormControlLabel-label": {
-                    color: displayMenuItemColor,
-                    fontSize: displayMenuItemFontSize,
+                    fontSize: DISPLAY_MENU_ITEM_FONT_SIZE,
                 },
                 "& .MuiCheckbox-root": {p: 0},
                 "& .MuiSvgIcon-root": {fontSize: "18px"},

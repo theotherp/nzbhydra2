@@ -137,6 +137,17 @@ Format, one entry per fix:
   left-stuck header over right-aligned content reads as more empty space than is actually there); Age genuinely had slack even at a generous unbounded-age worst case and was trimmed, Size did not and was left alone rather than
   risking truncation on a real large release to chase a symptom that the alignment fix already resolves.
 
+### 2026-08-19 — Fix visually-hidden h1 sizing that overflowed the page horizontally
+
+- **Why not a packet:** styling-only defect confined to one `sx` block, no behavior/contract/`data-testid` change: the SearchPage's visually-hidden heading used numeric `width: 1`/`height: 1`, which MUI `sx` resolves as
+  percentages, so the absolutely positioned box spanned the full content width at a 40px offset and extended `scrollWidth` by 40px at every viewport. Regression evidence: the 18 system tests asserting no page-level
+  horizontal overflow (results.spec.ts, focus-indication.spec.ts) observed failing before the fix and passing after.
+- **Paths:** `core/ui-react/src/features/search/SearchPage.tsx`.
+- **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, 10 pre-existing warnings, unchanged), `format:check`, `test -- --run` (251 passed), `build`, `check:api`, `validate:migration` all pass; install skipped —
+  manifests unchanged. Full real-backend suite via `python3 misc/run_gui_systemtest.py --runtime local --skip-install --keep-services`: 74 passed, 0 failed (previously 18 failures, all sharing this root cause). Root
+  `git diff --check` clean. No screenshot strip: the element is invisible in both states; the only rendering change is the horizontal scrollbar disappearing, which the overflow assertions pin mechanically.
+- **Commit:** `9dddc7036`
+
 ---
 
 ## Open candidates

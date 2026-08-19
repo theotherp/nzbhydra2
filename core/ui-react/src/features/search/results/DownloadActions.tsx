@@ -6,6 +6,7 @@ import {
     Stack,
     Typography,
 } from "@mui/material";
+import type {Theme} from "@mui/material/styles";
 import {useEffect, useMemo, useState} from "react";
 
 import type {SearchResult} from "../../../api/search";
@@ -26,66 +27,66 @@ import {
     sendToDownloader,
 } from "../../../domain/downloads/actions";
 import type {Downloader} from "../../../domain/downloads/actions";
-import {
-    controlSurface,
-    disabledActionBackground,
-    disabledActionTextColor,
-    enabledSecondaryTextColor,
-    secondaryBorderColor,
-} from "./toolbarStyles";
 
 // The mock's primary bulk-action button (`sendToDownloader`): filled
 // `primary.main`/`primary.contrastText` when enabled, `8px` radius, `8px
 // 14px` padding, `13px` weight-600 text; when `disabled` (real control
 // semantics, unchanged from FM-040 -- never opacity alone) it renders on the
 // mock's neutral control surface with muted text instead of MUI's default
-// greyed-out disabled treatment.
-const primaryActionSx = {
-    borderRadius: "8px",
-    fontSize: "13px",
-    fontWeight: 600,
-    padding: "8px 14px",
-    "&.Mui-disabled": {
-        backgroundColor: disabledActionBackground,
-        color: disabledActionTextColor,
-    },
-} as const;
+// greyed-out disabled treatment. FM-054 (ADR-0014): the surface/text values
+// are the theme's own `surfaces.control`/`surfaces.mutedText` tokens now,
+// not restated literals.
+const primaryActionSx = (theme: Theme) =>
+    ({
+        borderRadius: theme.shape.borderRadius,
+        fontSize: "13px",
+        fontWeight: 600,
+        padding: "8px 14px",
+        "&.Mui-disabled": {
+            backgroundColor: "surfaces.control",
+            color: "surfaces.mutedText",
+        },
+    }) as const;
 
 // The mock's secondary bulk-action button (`downloadZip`): the same neutral
 // control surface and border in both states, distinguishing it from the
 // primary action by omitting the filled teal background.
-const secondaryActionSx = {
-    backgroundColor: controlSurface,
-    border: `1px solid ${secondaryBorderColor}`,
-    borderRadius: "8px",
-    color: enabledSecondaryTextColor,
-    fontSize: "13px",
-    padding: "8px 12px",
-    "&:hover": {
-        backgroundColor: controlSurface,
-        borderColor: secondaryBorderColor,
-    },
-    "&.Mui-disabled": {
-        backgroundColor: disabledActionBackground,
-        borderColor: secondaryBorderColor,
-        color: disabledActionTextColor,
-    },
-} as const;
+const secondaryActionSx = (theme: Theme) =>
+    ({
+        backgroundColor: "surfaces.control",
+        border: "1px solid",
+        borderColor: "surfaces.hairline",
+        borderRadius: theme.shape.borderRadius,
+        color: "text.primary",
+        fontSize: "13px",
+        padding: "8px 12px",
+        "&:hover": {
+            backgroundColor: "surfaces.control",
+            borderColor: "surfaces.hairline",
+        },
+        "&.Mui-disabled": {
+            backgroundColor: "surfaces.control",
+            borderColor: "surfaces.hairline",
+            color: "surfaces.mutedText",
+        },
+    }) as const;
 
 // The `results-download-actions` region's own controls (downloader select,
 // downloader-category select, black-hole/save, copy-links, Save search)
 // restyle to the same neutral control surface, radius, and typography as the
 // bulk-actions bar's secondary button, with no change to which controls are
-// present, their order, or their behavior.
+// present, their order, or their behavior. The downloader/category selects
+// stay a bare `Select` with an `aria-label` (ADR-0014 names `Select` with
+// `InputLabel` as the standard alternative to `TextField select`, and this
+// row genuinely lacks room for a floating label -- a real-browser measurement
+// during this task's own verification confirmed a `TextField select` with a
+// visible "Downloader category" label pushes this dense action row past the
+// viewport width and fails `results.spec.ts`'s no-horizontal-overflow
+// contract, the same trade-off `SearchWorkspace.tsx`'s own `AdvancedRangeInput`
+// already documents for its 100px min/max fields). The recessed
+// surface/hairline border still come from the theme's own `MuiOutlinedInput`
+// default -- no local select styling remains.
 const downloadActionsButtonSx = secondaryActionSx;
-const downloadActionsSelectSx = {
-    backgroundColor: controlSurface,
-    borderRadius: "8px",
-    fontSize: "13px",
-    "& .MuiOutlinedInput-notchedOutline": {
-        borderColor: secondaryBorderColor,
-    },
-} as const;
 
 export function DownloadActions({
     results,
@@ -367,7 +368,7 @@ export function DownloadActions({
                         <Select
                             aria-label="Downloader"
                             size="small"
-                            sx={downloadActionsSelectSx}
+                            sx={{fontSize: "13px"}}
                             value={downloader?.name ?? ""}
                             onChange={(event) =>
                                 setDownloader(
@@ -387,7 +388,7 @@ export function DownloadActions({
                         <Select
                             aria-label="Downloader category"
                             size="small"
-                            sx={downloadActionsSelectSx}
+                            sx={{fontSize: "13px"}}
                             value={category ?? ""}
                             onChange={(event) =>
                                 setCategory(event.target.value || null)

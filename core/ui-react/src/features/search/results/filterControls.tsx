@@ -1,16 +1,6 @@
 import {Box, Button, Stack, TextField} from "@mui/material";
 
 import {monoFontFamily} from "../../../app/theme";
-import {
-    countColor,
-    inputBackground,
-    inputBorderColor,
-    rowActiveBackground,
-    rowActiveColor,
-    rowHoverBackground,
-    rowInactiveColor,
-    sectionLabelColor,
-} from "./refineStyles";
 import type {NumericRange} from "./resultTable";
 
 // Presentation-only filter controls for the `refine-sidebar`, which is the
@@ -40,6 +30,13 @@ import type {NumericRange} from "./resultTable";
  * Counting semantics are FM-039's, unchanged: `entries` is one value per
  * *loaded* result, so the count beside an entry is its number of loaded
  * results, not its number of results in the currently filtered subset.
+ *
+ * FM-054 (ADR-0014): the active/hover backgrounds are computed with the
+ * theme's own `theme.alpha()` (colorSpace-aware -- see `theme.ts`'s own
+ * note on why the standalone `@mui/system` `alpha()` cannot decompose an
+ * `oklch()` token) rather than restated as `oklch(... / N)` literals, so
+ * they stay tied to `primary.main` and compose with the
+ * `dark-dyschromatopsia` variant automatically.
  */
 export function ToggleRowFilter({
     entries,
@@ -80,12 +77,12 @@ export function ToggleRowFilter({
                                     : [...selected, entry],
                             )
                         }
-                        sx={{
+                        sx={(theme) => ({
                             backgroundColor: active
-                                ? rowActiveBackground
+                                ? theme.alpha(theme.palette.primary.main, 0.12)
                                 : "transparent",
-                            borderRadius: "8px",
-                            color: active ? rowActiveColor : rowInactiveColor,
+                            borderRadius: theme.shape.borderRadius,
+                            color: active ? "text.primary" : "text.secondary",
                             fontSize: "13px",
                             fontWeight: 400,
                             gap: "8px",
@@ -98,10 +95,13 @@ export function ToggleRowFilter({
                             width: "100%",
                             "&:hover": {
                                 backgroundColor: active
-                                    ? rowActiveBackground
-                                    : rowHoverBackground,
+                                    ? theme.alpha(
+                                          theme.palette.primary.main,
+                                          0.12,
+                                      )
+                                    : "action.hover",
                             },
-                        }}
+                        })}
                     >
                         <Box
                             component="span"
@@ -117,7 +117,7 @@ export function ToggleRowFilter({
                         <Box
                             component="span"
                             sx={{
-                                color: countColor,
+                                color: "surfaces.mutedText",
                                 flexShrink: 0,
                                 fontFamily: monoFontFamily,
                                 fontSize: "11.5px",
@@ -132,35 +132,22 @@ export function ToggleRowFilter({
     );
 }
 
-// The mock's own recessed numeric field (`background:#1c2224;border:1px solid
-// rgba(255,255,255,0.1);border-radius:8px;color:#d6dad9;padding:7px
-// 9px;font-family:'IBM Plex Mono',monospace;font-size:13px`), with the mock's
-// `min`/`max` placeholders in place of MUI's floating labels -- which the
-// sidebar's ~216px content width cannot hold beside each other. Each field
-// keeps a descriptive accessible name (`Size (MB) minimum`, ...) rather than a
-// bare, three-times-repeated "Min"/"Max".
+// The mock's own recessed numeric field styling (background/border/radius)
+// is now the `MuiOutlinedInput` theme default (`app/theme.ts`), so these
+// fields carry no local background/border override at all -- only the
+// monospace numeral font and the native spinner-arrow removal, neither of
+// which the theme's own `OutlinedInput` override expresses.
 const numericFieldSx = {
-    backgroundColor: inputBackground,
-    borderRadius: "8px",
     flex: 1,
     minWidth: 0,
-    "& .MuiOutlinedInput-root": {backgroundColor: "transparent"},
-    "& .MuiOutlinedInput-notchedOutline": {borderColor: inputBorderColor},
     "& input": {
         fontFamily: monoFontFamily,
-        fontSize: "13px",
-        p: "7px 9px",
         MozAppearance: "textfield",
     },
     "& input::-webkit-inner-spin-button, & input::-webkit-outer-spin-button": {
         WebkitAppearance: "none",
         margin: 0,
     },
-    // Unset, this falls back to the input's own bright `#d6dad9` text color
-    // at full strength -- matched here to the "Title contains" field's
-    // muted placeholder (`sectionLabelColor`) instead, since "min"/"max" are
-    // hints, not values.
-    "& input::placeholder": {color: sectionLabelColor, opacity: 1},
 } as const;
 
 export function NumericFilter({
