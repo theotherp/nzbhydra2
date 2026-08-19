@@ -150,9 +150,22 @@ const HEADER_STICKY_Z_INDEX = 10;
 // here rather than restated as a new literal.
 const STICKY_BACKGROUND = "background.default";
 
+// The refine filters whose selection is scoped to the results of one single
+// search and therefore never persisted and never carried into the next
+// search. All three default to "every value the current results actually
+// contain" (see `defaultFilters`, and `RefineSidebar`'s `downloadTypeOptions`
+// for the chip group those values are offered through), so a selection made
+// in one search is meaningless in the next one: it silently hides every
+// result from an indexer, category, or download type the earlier search
+// happened not to return -- and a value that no longer occurs at all is not
+// even listed in the sidebar, so the user cannot re-enable it. Every other
+// refine filter (title, ranges, quick filters) is a value the user typed or
+// picked independently of the result set and stays persisted.
+type SearchScopedFilter = "categories" | "downloadTypes" | "indexers";
+
 type StoredChoices = {
     compactRows?: boolean;
-    filters?: Partial<ResultFilters>;
+    filters?: Partial<Omit<ResultFilters, SearchScopedFilter>>;
     highlightRecent?: boolean;
     sidebarCollapsed?: boolean;
     sorting?: SortingState;
@@ -182,11 +195,18 @@ export function SearchResults({
         [safeConfig],
     );
     const [choices] = useState(() => loadChoices());
+    // Recomputed from whatever results are currently loaded, so the
+    // `SearchScopedFilter` reset below always selects every value of the
+    // search it is resetting for.
+    const filterDefaults = useMemo(
+        () => defaultFilters(data.searchResults, quickFilters),
+        [data.searchResults, quickFilters],
+    );
     const [sorting, setSorting] = useState<SortingState>(
         choices.sorting ?? [{id: "epoch", desc: true}],
     );
     const [filters, setFilters] = useState<ResultFilters>(() => ({
-        ...defaultFilters(data.searchResults, quickFilters),
+        ...filterDefaults,
         ...choices.filters,
         size: choices.filters?.size ?? {min: "", max: ""},
         grabs: choices.filters?.grabs ?? {min: "", max: ""},
@@ -196,6 +216,26 @@ export function SearchResults({
             ...choices.filters?.quickFilters,
         },
     }));
+    // A new search's results carry their own indexer, category, and
+    // download-type values, so the previous search's selection cannot be
+    // kept: it would silently hide every result from an indexer, category, or
+    // download type that search did not return.
+    // This adjusts state during render -- React's documented pattern for
+    // deriving state from a changed prop -- rather than in an effect, which
+    // keeps it off the load-more path (paging keeps the same
+    // `searchRequestId`, and a deliberate deselection must survive it) and
+    // avoids painting one frame of results filtered by the stale selection.
+    const [lastSearchRequestId, setLastSearchRequestId] =
+        useState(searchRequestId);
+    if (lastSearchRequestId !== searchRequestId) {
+        setLastSearchRequestId(searchRequestId);
+        setFilters((current) => ({
+            ...current,
+            categories: filterDefaults.categories,
+            downloadTypes: filterDefaults.downloadTypes,
+            indexers: filterDefaults.indexers,
+        }));
+    }
     // Below `sm` the sidebar starts collapsed by default; at `sm` and up it
     // starts expanded, matching the "persistent left column ... at sm and
     // up" contract. A stored user preference always wins over this
@@ -367,11 +407,11 @@ export function SearchResults({
             STORAGE_KEY,
             JSON.stringify({
                 compactRows,
-                filters,
+                filters: withoutSearchScopedFilters(filters),
                 highlightRecent,
                 sidebarCollapsed,
                 sorting,
-            }),
+            } satisfies StoredChoices),
         );
     }, [compactRows, filters, highlightRecent, sidebarCollapsed, sorting]);
 
@@ -2286,10 +2326,31 @@ function loadChoices(): StoredChoices {
         const value: unknown = JSON.parse(
             getStorage()?.getItem(STORAGE_KEY) ?? "null",
         );
-        return isRecord(value) ? (value as StoredChoices) : {};
+        if (!isRecord(value)) {
+            return {};
+        }
+        const stored = value as StoredChoices;
+        // Payloads written before `SearchScopedFilter` covered a key (and
+        // hand-edited ones) can still carry a selection for it; drop them
+        // here rather than at every read site.
+        return stored.filters
+            ? {...stored, filters: withoutSearchScopedFilters(stored.filters)}
+            : stored;
     } catch {
         return {};
     }
+}
+
+// The persistable part of a filter set: everything except the selections
+// scoped to one search's own results. See `SearchScopedFilter`.
+function withoutSearchScopedFilters(
+    filters: Partial<ResultFilters>,
+): Partial<Omit<ResultFilters, SearchScopedFilter>> {
+    const rest = {...filters};
+    delete rest.categories;
+    delete rest.downloadTypes;
+    delete rest.indexers;
+    return rest;
 }
 
 function getStorage(): Storage | undefined {

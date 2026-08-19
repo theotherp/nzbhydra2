@@ -548,6 +548,92 @@ describe("SearchWorkspace", () => {
         expect(screen.getByTestId("additional-query")).toBeDisabled();
     });
 
+    it("should show a suggestion's cover to the left of its title, and no image at all for a suggestion without one", async () => {
+        const autocomplete = vi.fn().mockResolvedValue([
+            {
+                title: "Example Movie",
+                tmdbId: "42",
+                posterUrl: "https://example.com/poster.jpg",
+            },
+            {title: "No Cover Movie", tmdbId: "43"},
+        ]);
+        render(
+            <SearchWorkspace
+                catalog={catalog}
+                initialValues={valuesFromSearch({category: "Cinema"}, catalog)}
+                onSubmit={vi.fn()}
+                autocomplete={autocomplete}
+            />,
+        );
+        const input = screen.getByTestId("search-query");
+        fireEvent.change(input, {target: {value: "Example"}});
+        await waitFor(() =>
+            expect(screen.getAllByTestId("autocomplete-option")).toHaveLength(
+                2,
+            ),
+        );
+        const [withCover, withoutCover] = screen.getAllByTestId(
+            "autocomplete-option",
+        );
+        const cover = withCover.querySelector("img");
+        expect(cover).toHaveAttribute("src", "https://example.com/poster.jpg");
+        // "To the left of the title" -- the image is the option's first
+        // child, before the title text.
+        expect(withCover.firstElementChild).toBe(cover);
+        expect(withoutCover.querySelector("img")).not.toBeInTheDocument();
+    });
+
+    it("should close the autocomplete dropdown when the search field loses focus", async () => {
+        const autocomplete = vi
+            .fn()
+            .mockResolvedValue([{title: "Example Movie", tmdbId: "42"}]);
+        render(
+            <SearchWorkspace
+                catalog={catalog}
+                initialValues={valuesFromSearch({category: "Cinema"}, catalog)}
+                onSubmit={vi.fn()}
+                autocomplete={autocomplete}
+            />,
+        );
+        const input = screen.getByTestId("search-query");
+        fireEvent.change(input, {target: {value: "Example"}});
+        await waitFor(() =>
+            expect(screen.getByTestId("autocomplete-popup")).toBeVisible(),
+        );
+        fireEvent.blur(input);
+        expect(
+            screen.queryByTestId("autocomplete-popup"),
+        ).not.toBeInTheDocument();
+    });
+
+    it("should close the autocomplete dropdown when the user clicks anywhere else, but not when clicking a suggestion", async () => {
+        const autocomplete = vi
+            .fn()
+            .mockResolvedValue([{title: "Example Movie", tmdbId: "42"}]);
+        render(
+            <SearchWorkspace
+                catalog={catalog}
+                initialValues={valuesFromSearch({category: "Cinema"}, catalog)}
+                onSubmit={vi.fn()}
+                autocomplete={autocomplete}
+            />,
+        );
+        const input = screen.getByTestId("search-query");
+        fireEvent.change(input, {target: {value: "Example"}});
+        await waitFor(() =>
+            expect(screen.getByTestId("autocomplete-popup")).toBeVisible(),
+        );
+        // A mousedown on the option itself must not close the dropdown out
+        // from under the option's own click handler.
+        fireEvent.mouseDown(screen.getByTestId("autocomplete-option"));
+        expect(screen.getByTestId("autocomplete-popup")).toBeVisible();
+
+        fireEvent.mouseDown(document.body);
+        expect(
+            screen.queryByTestId("autocomplete-popup"),
+        ).not.toBeInTheDocument();
+    });
+
     it("should ignore a deferred autocomplete response after selecting a suggestion", async () => {
         let resolveDeferred: (
             suggestions: Array<{title: string; tmdbId: string}>,

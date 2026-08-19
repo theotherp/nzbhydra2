@@ -211,6 +211,7 @@ export function SearchWorkspace({
     const [advancedOpen, setAdvancedOpen] = useState(false);
     const request = useRef(0);
     const searchQueryFieldRef = useRef<HTMLInputElement | null>(null);
+    const autocompleteContainerRef = useRef<HTMLDivElement | null>(null);
     const isFirstCategoryRender = useRef(true);
     const listboxId = useId();
     const advancedPanelId = useId();
@@ -257,6 +258,28 @@ export function SearchWorkspace({
         }
         searchQueryFieldRef.current?.focus();
     }, [selectedCategory]);
+    // A mousedown on an autocomplete option itself doesn't reach here: the
+    // option's own `onMouseDown` already calls `preventDefault()`, but that
+    // only suppresses the browser's default blur/selection behavior -- it
+    // does not stop this bubbling listener, so an option click is still
+    // seen here and still closes the dropdown correctly via `contains()`
+    // finding the option inside `autocompleteContainerRef`.
+    useEffect(() => {
+        if (suggestions.length === 0) {
+            return;
+        }
+        const closeIfOutside = (event: MouseEvent) => {
+            if (
+                !autocompleteContainerRef.current?.contains(
+                    event.target as Node,
+                )
+            ) {
+                setSuggestions([]);
+            }
+        };
+        document.addEventListener("mousedown", closeIfOutside);
+        return () => document.removeEventListener("mousedown", closeIfOutside);
+    }, [suggestions.length]);
     const clearSelection = () => {
         request.current++;
         for (const key of identifierFields) {
@@ -298,7 +321,11 @@ export function SearchWorkspace({
             <SearchIcon fontSize="small" />
         </InputAdornment>
     );
-    const {ref: titleFieldRef, ...titleRegistration} = register("title", {
+    const {
+        ref: titleFieldRef,
+        onBlur: titleOnBlur,
+        ...titleRegistration
+    } = register("title", {
         onChange: () => {
             request.current++;
             if (selected) {
@@ -318,6 +345,10 @@ export function SearchWorkspace({
     const queryInput = mediaType ? (
         <TextField
             fullWidth
+            onBlur={(event) => {
+                titleOnBlur(event);
+                setSuggestions([]);
+            }}
             onDragOver={(event) => event.preventDefault()}
             onDrop={onSearchDrop}
             onKeyDown={(event) => {
@@ -377,7 +408,7 @@ export function SearchWorkspace({
             data-testid="search-workspace"
             elevation={1}
             onSubmit={handleSubmit(onSubmit)}
-            sx={{mt: 3, overflow: "hidden"}}
+            sx={{mt: 3}}
         >
             <Box
                 data-testid="workspace-primary"
@@ -385,6 +416,19 @@ export function SearchWorkspace({
                     backgroundColor: "surfaces.bar",
                     borderBottom: "1px solid",
                     borderColor: "surfaces.hairlineFaint",
+                    // Stands in for the Paper's own `overflow: hidden` this
+                    // bar used to rely on to keep its square corners from
+                    // poking past the form's rounded ones (`MuiPaper`'s
+                    // `theme.ts` override, 12px for a raised, non-square
+                    // Paper). That clip also cut off the autocomplete
+                    // dropdown below at the form's bottom edge -- an
+                    // absolutely-positioned descendant is clipped by any
+                    // `overflow: hidden` ancestor, not just its immediate
+                    // parent -- so the Paper is unclipped and only this bar,
+                    // the one child that actually needs it, carries its own
+                    // matching top corners instead.
+                    borderTopLeftRadius: 12,
+                    borderTopRightRadius: 12,
                     px: 2,
                     py: 1.75,
                 }}
@@ -439,6 +483,7 @@ export function SearchWorkspace({
                         )}
                     />
                     <Box
+                        ref={autocompleteContainerRef}
                         sx={{
                             alignItems: "center",
                             display: "flex",
@@ -472,7 +517,23 @@ export function SearchWorkspace({
                                     left: 0,
                                     listStyle: "none",
                                     m: 0,
-                                    overflow: "hidden",
+                                    // Capped and scrollable rather than
+                                    // growing to fit every suggestion, which
+                                    // could otherwise run past the viewport.
+                                    // `overflowX: hidden` (not the previous
+                                    // blanket `overflow: hidden`) keeps the
+                                    // option rows' hover/selected background
+                                    // clipped to the rounded corners on the
+                                    // sides while still allowing a vertical
+                                    // scrollbar; the form's own
+                                    // `overflow: hidden` no longer clips this
+                                    // element's bottom (see
+                                    // `workspace-primary`), so the list can
+                                    // overlap the rest of the form instead of
+                                    // being cut off by it.
+                                    maxHeight: 360,
+                                    overflowX: "hidden",
+                                    overflowY: "auto",
                                     p: 0.75,
                                     position: "absolute",
                                     right: 0,
@@ -497,8 +558,11 @@ export function SearchWorkspace({
                                             chooseSuggestion(suggestion)
                                         }
                                         sx={{
+                                            alignItems: "center",
                                             borderRadius: 1,
                                             cursor: "pointer",
+                                            display: "flex",
+                                            gap: 1,
                                             px: 1.25,
                                             py: 1,
                                             bgcolor:
@@ -510,10 +574,24 @@ export function SearchWorkspace({
                                             },
                                         }}
                                     >
-                                        {suggestion.title}
-                                        {suggestion.year
-                                            ? ` (${suggestion.year})`
-                                            : ""}
+                                        {suggestion.posterUrl && (
+                                            <Box
+                                                alt=""
+                                                component="img"
+                                                src={suggestion.posterUrl}
+                                                sx={{
+                                                    borderRadius: 0.5,
+                                                    flexShrink: 0,
+                                                    width: 32,
+                                                }}
+                                            />
+                                        )}
+                                        <Box component="span">
+                                            {suggestion.title}
+                                            {suggestion.year
+                                                ? ` (${suggestion.year})`
+                                                : ""}
+                                        </Box>
                                     </Box>
                                 ))}
                             </Paper>

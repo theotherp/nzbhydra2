@@ -148,6 +148,127 @@ Format, one entry per fix:
   `git diff --check` clean. No screenshot strip: the element is invisible in both states; the only rendering change is the horizontal scrollbar disappearing, which the overflow assertions pin mechanically.
 - **Commit:** `9dddc7036`
 
+### 2026-08-19 — Scope the refine sidebar's indexer/category selection to a single search
+
+- **Why not a packet:** single-module behavioral bugfix shipping regression tests. The refine sidebar's `indexers` and
+  `categories` selections were persisted into the existing `hydra.search-results.table` payload with the rest of
+  `ResultFilters`, and `SearchResults` is re-rendered rather than remounted between searches, so both survived a reload *and* a
+  new search. Both default to "every value the current results contain", so a carried-over selection silently hides every
+  result from an indexer or category the earlier search happened not to return — and a value that no longer occurs at all is
+  not listed in the sidebar, so it cannot be re-enabled. Two regression tests were observed failing before the fix (stale
+  stored selection applied on mount; previous search's selection kept across a new search) and passing after it. No contract,
+  selector, or `data-testid` change. **Tension with this ledger's own header, recorded deliberately:** the header excludes
+  "persisted-data changes". This one *removes* two keys from an existing payload rather than introducing a persisted-data
+  contract — no new storage key, no new capability, no `DECISIONS.md` subject matter (no ADR governs
+  `hydra.search-results.table`; ADR-0005's persisted indexers are the *search form's*, not the refine sidebar's) — and payloads
+  written by earlier builds are stripped on read, so it is backward-compatible in one direction and reversible in one commit.
+  Read as "do not widen the exclusion to any code that touches persisted state"; a fix that *added* a persisted key would still
+  need a packet, as the open candidate below records.
+- **Paths:** `core/ui-react/src/features/search/results/SearchResults.tsx`,
+  `core/ui-react/src/features/search/results/SearchResults.test.tsx`.
+- **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, 10 pre-existing warnings, unchanged), `format:check`,
+  `test -- --run` (38 files, 262 passed), `build`, `check:api`, `validate:migration` all pass; install skipped — manifests
+  unchanged. Root `git diff --check` clean. `tests/system` untouched and not re-run: no system test asserts cross-search or
+  cross-reload persistence of this selection (checked by hand against every `refine-indexer-option` /
+  `refine-category-option` and `page.reload()` use in `results.spec.ts` and `search.spec.ts`; each toggles within one search).
+  No screenshot strip: no markup or styling change, and the default rendering — every indexer and category selected — is
+  exactly the accepted baseline; only the stale-storage case renders differently, and it now renders *as* that baseline.
+- **Commit:** `24329c640`
+
+### 2026-08-19 — Scope the refine sidebar's download-type selection to a single search
+
+- **Why not a packet:** the open candidate raised by the entry above, discharged on the same criterion — single-module
+  behavioral bugfix shipping a regression test, no contract, selector, or `data-testid` change. `downloadTypes` comes from the
+  same `defaultFilters` derivation and the same `hydra.search-results.table` payload as `indexers`/`categories`, and
+  `RefineSidebar`'s `downloadTypeOptions` only offers values the loaded results actually carry, so a search returning only NZBs
+  persisted `downloadTypes: ["NZB"]`, hid every torrent of the next search, and rendered no TORRENT chip to undo it with. The
+  candidate's "confirm no torrent/NZB-specific UI depends on the selection surviving" was checked: `downloadTypes` is read only
+  by `filterResults` and by the chip group's `active` state, both per-search. Regression test observed failing before the fix
+  (stored `["NZB"]` applied on mount, torrent hidden) and passing after; it also pins the new-search reset against a download
+  type the previous search never returned. Three lines of behavior — `downloadTypes` joins `SearchScopedFilter`, the
+  `searchRequestId` reset, and the strip-on-read — the rest of the diff is comment wording. The same persisted-data tension
+  recorded in the entry above applies unchanged.
+- **Paths:** `core/ui-react/src/features/search/results/SearchResults.tsx`,
+  `core/ui-react/src/features/search/results/SearchResults.test.tsx`.
+- **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, 10 pre-existing warnings, unchanged), `format:check`,
+  `test -- --run` (38 files, 263 passed), `build`, `check:api`, `validate:migration` all pass; install skipped — manifests
+  unchanged. Root `git diff --check` clean. `tests/system` untouched and not re-run: every `refine-type-chips` assertion in
+  `results.spec.ts` toggles within one search, and no system test asserts cross-search or cross-reload persistence of this
+  selection. No screenshot strip, for the reason given in the entry above.
+- **Commit:** `27efd28f5`
+
+### 2026-08-19 — Show a cover next to autocomplete suggestions and close the dropdown on outside click
+
+- **Why not a packet:** two small fixes confined to one component (`SearchWorkspace.tsx`), requested together. The cover image
+  is markup/UX polish restoring legacy parity (`core/ui-src/html/states/search.html`'s `autocompleteTemplate.html` already
+  showed a 50px poster; the React port dropped it) — no behavior, contract, or `data-testid` change, `posterUrl` was already
+  fetched and typed on `MediaSuggestion` and simply wasn't rendered. The close-on-outside-click/blur is a contained bugfix
+  confined to the same single component, covered by regression tests observed failing against the pre-fix code (verified by
+  `git stash push -u` on just the implementation hunk, running the new tests against the stashed-out state, then `git stash
+  pop`) and passing after.
+- **Paths:** `core/ui-react/src/features/search/workspace/SearchWorkspace.tsx`,
+  `core/ui-react/src/features/search/workspace/SearchWorkspace.test.tsx`.
+- **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, 10 pre-existing warnings, unchanged), `format:check`,
+  `test -- --run` (38 files, 266 passed), `build`, `check:api`, `validate:migration` all pass; install skipped — manifests
+  unchanged. Root `git diff --check` clean. `tests/system` untouched and not re-run: its two `autocomplete-option` selection
+  tests (`search.spec.ts`) use Playwright's real click, which dispatches a mousedown on the option itself — inside the new
+  container ref, so unaffected — and the React-route variant's real-backend fixture returns `posterUrl: null`, already
+  exercising the no-cover branch.
+- **Screenshot strip (desktop 1280x800):** captured live against the repository owner's already-running dev stack — `vite`
+  dev server on :5173 (its `devBackendPlugin` proxies to the IntelliJ-launched backend on :5076 and injects real bootstrap
+  data) with the `/internalapi/autocomplete/MOVIE` response mocked (one suggestion with a `posterUrl`, one without), so the
+  capture needed no rebuild and touched no running service. Two states: dropdown open (cover rendered before the title for
+  the first suggestion, no image for the second) and dropdown closed after a click elsewhere on the page. Delivered directly
+  to the owner for review rather than committed under `docs/frontend-migration/` — FM-033 (`tasks/` history) establishes
+  visual evidence as an untracked, regenerable artifact, not a repository-committed binary, and no such directory exists
+  elsewhere in this repository's history.
+- **Commit:** `7913805dc`
+
+### 2026-08-19 — Proxy the `/cache` image route in the vite dev server
+
+- **Why not a packet:** mechanical config repair, no behavioral surface on the shipped application. Reported live while the
+  owner reviewed the entry above's screenshot strip against their own running dev stack: a suggestion's `posterUrl` is a
+  same-origin `/cache/{base64OriginalUrl}` path served by `ProxyImagesWeb.java` (the backend proxies and caches posters
+  server-side), which resolves fine in production (same-origin) but wasn't in `devBackend.ts`'s `PROXIED_PATHS` list, so under
+  `vite dev` it fell through to the SPA fallback and returned `index.html` instead of image bytes. One line in a dev-only
+  proxy config array, covered by a regression test in the existing `devBackend.test.ts` (`backendProxy` already had direct
+  unit coverage) observed failing before the fix and passing after, and confirmed live against the owner's running dev
+  server — the exact URL they reported returned `image/jpeg` after the fix, and the owner confirmed it.
+- **Paths:** `core/ui-react/vite/devBackend.ts`, `core/ui-react/vite/devBackend.test.ts`.
+- **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, 10 pre-existing warnings, unchanged), `format:check`,
+  `test -- --run` (38 files, 267 passed), `build`, `check:api`, `validate:migration` all pass; install skipped — manifests
+  unchanged. Root `git diff --check` clean. `tests/system` untouched: this file has no Playwright coverage and none is
+  warranted for a dev-server-only proxy list. No screenshot strip: no rendering change, only what an image request resolves
+  to in a dev-only proxy.
+- **Commit:** `b4f24bae5`
+
+### 2026-08-19 — Let the autocomplete dropdown overlap the form and scroll instead of being cut off
+
+- **Why not a packet:** styling change confined to one component, no behavior, contract, or `data-testid` change. The
+  autocomplete dropdown was clipped at the search form's bottom edge: `search-workspace`'s outer `Paper` had
+  `overflow: "hidden"` — needed only to keep `workspace-primary`'s flush background bar from squaring off the Paper's
+  rounded top corners (`MuiPaper`'s `theme.ts` override, 12px) — and an absolutely-positioned descendant is clipped by
+  *any* `overflow: hidden` ancestor, not just its immediate parent. Moved the clip to the one element that needed it
+  (`workspace-primary` now carries its own matching `borderTopLeftRadius`/`borderTopRightRadius: 12`) and removed it from
+  the outer Paper, so the dropdown can now extend past the form. The dropdown itself is capped at `maxHeight: 360` with
+  `overflowY: "auto"` (previously unbounded) and `overflowX: "hidden"` in place of the old blanket `overflow: "hidden"`,
+  so option-row hover backgrounds still clip to the rounded side corners while the list scrolls vertically.
+- **Paths:** `core/ui-react/src/features/search/workspace/SearchWorkspace.tsx`.
+- **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, 10 pre-existing warnings, unchanged), `format:check`,
+  `test -- --run` (38 files, 267 passed, all pre-existing `SearchWorkspace` tests green), `build`, `check:api`,
+  `validate:migration` all pass; install skipped — manifests unchanged. Root `git diff --check` clean. `tests/system`
+  untouched; hand-checked `search.spec.ts`'s `search-workspace` visual-geometry test, which asserts
+  `workspace-primary`'s background color/width and the advanced-panel expand/collapse height delta, none of which this
+  change touches.
+- **Screenshot strip (desktop 1280x800):** captured live against the owner's running vite dev server with the
+  autocomplete response mocked (20 suggestions, more than fit in one screenful). Three states: dropdown capped and
+  visually overlapping the page below the form instead of being cut off at the form's border; scrolled to the last
+  suggestion (`scrollTop` 0 → 694, confirming genuine scroll, not just visual truncation); the form's idle top-left
+  corner still rounded, confirming no square-corner regression from removing the outer Paper's `overflow: hidden`.
+  Delivered directly to the owner rather than committed under `docs/frontend-migration/`, per FM-033's untracked-evidence
+  convention (see the 2026-08-19 autocomplete-cover entry above).
+- **Commit:** `8e1cd770c`
+
 ---
 
 ## Open candidates
@@ -158,3 +279,5 @@ instead of leaving it to rot.
 - **Persist whether the search workspace's "Advanced" panel is collapsed or expanded** (`core/ui-react/src/features/search/workspace/SearchWorkspace.tsx`, `advancedOpen` state). Requested alongside the 2026-08-19 UX polish above but
   refused at the qualification gate: this ledger's own header excludes persisted-data changes, and remembering the panel's state across page loads is a new user-observable capability, not styling or a contained bugfix. Needs a task
   packet: a storage-key convention decision (this would be the first persisted UI preference in `core/ui-react`) and a regular implementer/reviewer pass. Route to `/fm-orchestrate`.
+- ~~**The refine sidebar's `downloadTypes` selection has the same cross-search staleness as `indexers`/`categories` did.**~~
+  Discharged the same day by the 2026-08-19 download-type entry above (`27efd28f5`).

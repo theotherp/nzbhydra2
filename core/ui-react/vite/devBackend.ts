@@ -28,6 +28,7 @@ const PROXIED_PATHS = [
     "/login",
     "/logout",
     "/ui",
+    "/cache",
 ];
 
 const FALLBACK_BOOTSTRAP = {

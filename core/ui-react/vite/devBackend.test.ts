@@ -68,4 +68,14 @@ describe("backendProxy", () => {
         expect(paths).not.toContain("/stats");
         expect(paths).not.toContain("/system");
     });
+
+    it("proxies the image cache route ProxyImagesWeb serves posterUrl from", () => {
+        // `MediaSuggestion.posterUrl` (see `core/ui-react/src/api/media.ts`)
+        // is a same-origin `/cache/{base64OriginalUrl}` path
+        // (`ProxyImagesWeb.java`), not the original external image URL --
+        // production is same-origin so it just resolves, but under `vite
+        // dev` an unproxied path falls through to the SPA fallback and
+        // returns `index.html` instead of image bytes.
+        expect(Object.keys(backendProxy())).toContain("/cache");
+    });
 });

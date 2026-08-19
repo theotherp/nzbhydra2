@@ -2094,6 +2094,351 @@ describe("SearchResults", () => {
         );
     });
 
+    it("should never persist the refine indexer and category selection, ignoring a stale stored one and reselecting everything on a fresh mount", () => {
+        // See `stubWorkingLocalStorage`: a genuine persistence round trip
+        // needs a real, working `Storage` installed first.
+        stubWorkingLocalStorage();
+        // A payload written by an older build (or by a hand-edited
+        // localStorage entry) still carries an indexer/category selection.
+        // Both are scoped to the results of the search they were made in and
+        // must be ignored, while everything else in the same payload is
+        // still restored.
+        window.localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify({
+                filters: {
+                    categories: ["Movies"],
+                    indexers: ["Mock"],
+                    title: "result",
+                },
+            }),
+        );
+        const searchResults = [
+            {
+                searchResultId: "1",
+                title: "Alpha Result",
+                indexer: "Mock",
+                category: "Movies",
+            },
+            {
+                searchResultId: "2",
+                title: "Bravo Result",
+                indexer: "Other",
+                category: "TV",
+            },
+        ];
+        const {unmount} = renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 2,
+                    searchResults,
+                }}
+            />,
+        );
+        fireEvent.click(screen.getByTestId("refine-sidebar-toggle"));
+        // The rest of the stored payload still applies.
+        expect(screen.getByTestId("refine-filter-title")).toHaveValue("result");
+        expect(selectedFilterValues("refine-indexer-option")).toEqual([
+            "Mock",
+            "Other",
+        ]);
+        expect(selectedFilterValues("refine-category-option")).toEqual([
+            "Movies",
+            "TV",
+        ]);
+        expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
+
+        // Deselecting within this search still filters, but is never written
+        // to the persisted payload.
+        fireEvent.click(
+            screen
+                .getAllByTestId("refine-indexer-option")
+                .filter(
+                    (option) =>
+                        option.getAttribute("data-filter-value") === "Other",
+                )[0],
+        );
+        fireEvent.click(
+            screen
+                .getAllByTestId("refine-category-option")
+                .filter(
+                    (option) =>
+                        option.getAttribute("data-filter-value") === "TV",
+                )[0],
+        );
+        expect(screen.getAllByTestId("search-result-row")).toHaveLength(1);
+        const stored: {filters?: Record<string, unknown>} = JSON.parse(
+            window.localStorage.getItem(STORAGE_KEY) ?? "{}",
+        );
+        expect(stored.filters).toBeDefined();
+        expect(stored.filters).not.toHaveProperty("indexers");
+        expect(stored.filters).not.toHaveProperty("categories");
+        expect(stored.filters?.title).toBe("result");
+        unmount();
+
+        // A fresh mount restores the title filter and starts with every
+        // indexer and category selected again.
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 2,
+                    searchResults,
+                }}
+            />,
+        );
+        // The sidebar itself comes back expanded from the same payload, so it
+        // needs no second click here.
+        expect(screen.getByTestId("refine-sidebar-toggle")).toHaveAttribute(
+            "aria-expanded",
+            "true",
+        );
+        expect(screen.getByTestId("refine-filter-title")).toHaveValue("result");
+        expect(selectedFilterValues("refine-indexer-option")).toEqual([
+            "Mock",
+            "Other",
+        ]);
+        expect(selectedFilterValues("refine-category-option")).toEqual([
+            "Movies",
+            "TV",
+        ]);
+        expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
+    });
+
+    it("should reselect every indexer and category when a new search arrives without discarding the other refine filters", () => {
+        // `renderResults`' own `rerender` would replace the provider wrapper
+        // too and so remount `SearchResults` from scratch, which is exactly
+        // what this test must *not* do: a new search re-renders the mounted
+        // component with new `data`/`searchRequestId` props.
+        const {rerender: rerenderRoot} = renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 2,
+                    searchResults: [
+                        {
+                            searchResultId: "1",
+                            title: "Alpha Result",
+                            indexer: "Mock",
+                            category: "Movies",
+                        },
+                        {
+                            searchResultId: "2",
+                            title: "Bravo Result",
+                            indexer: "Other",
+                            category: "TV",
+                        },
+                    ],
+                }}
+                searchRequestId={1}
+            />,
+        );
+        const rerenderResults = (ui: React.ReactNode) =>
+            rerenderRoot(
+                <DialogProvider>
+                    <ToastProvider>{ui}</ToastProvider>
+                </DialogProvider>,
+            );
+        fireEvent.click(screen.getByTestId("refine-sidebar-toggle"));
+        fireEvent.change(screen.getByTestId("refine-filter-title"), {
+            target: {value: "result"},
+        });
+        fireEvent.click(
+            screen
+                .getAllByTestId("refine-indexer-option")
+                .filter(
+                    (option) =>
+                        option.getAttribute("data-filter-value") === "Other",
+                )[0],
+        );
+        fireEvent.click(
+            screen
+                .getAllByTestId("refine-category-option")
+                .filter(
+                    (option) =>
+                        option.getAttribute("data-filter-value") === "TV",
+                )[0],
+        );
+        expect(selectedFilterValues("refine-indexer-option")).toEqual(["Mock"]);
+        expect(selectedFilterValues("refine-category-option")).toEqual([
+            "Movies",
+        ]);
+
+        // Loading more results into the *same* search must not undo that
+        // deselection.
+        rerenderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 3,
+                    searchResults: [
+                        {
+                            searchResultId: "1",
+                            title: "Alpha Result",
+                            indexer: "Mock",
+                            category: "Movies",
+                        },
+                        {
+                            searchResultId: "2",
+                            title: "Bravo Result",
+                            indexer: "Other",
+                            category: "TV",
+                        },
+                        {
+                            searchResultId: "3",
+                            title: "Charlie Result",
+                            indexer: "Other",
+                            category: "TV",
+                        },
+                    ],
+                }}
+                searchRequestId={1}
+            />,
+        );
+        expect(selectedFilterValues("refine-indexer-option")).toEqual(["Mock"]);
+        expect(selectedFilterValues("refine-category-option")).toEqual([
+            "Movies",
+        ]);
+
+        // A new search does: every indexer and category of the new results is
+        // selected, including ones the previous search never returned, while
+        // the title filter the user typed survives.
+        rerenderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 2,
+                    searchResults: [
+                        {
+                            searchResultId: "4",
+                            title: "Delta Result",
+                            indexer: "Mock",
+                            category: "Movies",
+                        },
+                        {
+                            searchResultId: "5",
+                            title: "Echo Result",
+                            indexer: "Third",
+                            category: "Audio",
+                        },
+                    ],
+                }}
+                searchRequestId={2}
+            />,
+        );
+        expect(selectedFilterValues("refine-indexer-option")).toEqual([
+            "Mock",
+            "Third",
+        ]);
+        expect(selectedFilterValues("refine-category-option")).toEqual([
+            "Audio",
+            "Movies",
+        ]);
+        expect(screen.getByTestId("refine-filter-title")).toHaveValue("result");
+        expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
+    });
+
+    it("should never persist the refine download-type selection and reselect every type a new search returns", () => {
+        // See `stubWorkingLocalStorage`: a genuine persistence round trip
+        // needs a real, working `Storage` installed first.
+        stubWorkingLocalStorage();
+        // The download-type chips are derived from the loaded results exactly
+        // like the indexer and category lists, so a stored selection has the
+        // same failure mode: a search that returned only NZBs would hide
+        // every torrent of the next search.
+        window.localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify({
+                filters: {downloadTypes: ["NZB"], title: "result"},
+            }),
+        );
+        const {rerender: rerenderRoot} = renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 2,
+                    searchResults: [
+                        {
+                            searchResultId: "1",
+                            title: "Alpha Result",
+                            indexer: "Mock",
+                            category: "Movies",
+                            downloadType: "NZB",
+                        },
+                        {
+                            searchResultId: "2",
+                            title: "Bravo Result",
+                            indexer: "Mock",
+                            category: "Movies",
+                            downloadType: "TORRENT",
+                        },
+                    ],
+                }}
+                searchRequestId={1}
+            />,
+        );
+        // `renderResults`' own `rerender` would replace the provider wrapper
+        // and so remount `SearchResults`; a new search instead re-renders the
+        // mounted component with new props.
+        const rerenderResults = (ui: React.ReactNode) =>
+            rerenderRoot(
+                <DialogProvider>
+                    <ToastProvider>{ui}</ToastProvider>
+                </DialogProvider>,
+            );
+        fireEvent.click(screen.getByTestId("refine-sidebar-toggle"));
+        // The stored title filter still applies; the stored download-type
+        // selection is ignored.
+        expect(screen.getByTestId("refine-filter-title")).toHaveValue("result");
+        expect(selectedTypeChips()).toEqual(["NZB", "TORRENT"]);
+        expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
+
+        // Deselecting within this search still filters, but is never written
+        // to the persisted payload.
+        fireEvent.click(typeChip("TORRENT"));
+        expect(selectedTypeChips()).toEqual(["NZB"]);
+        expect(screen.getByTestId("search-result-row")).toHaveTextContent(
+            "Alpha Result",
+        );
+        const stored: {filters?: Record<string, unknown>} = JSON.parse(
+            window.localStorage.getItem(STORAGE_KEY) ?? "{}",
+        );
+        expect(stored.filters).toBeDefined();
+        expect(stored.filters).not.toHaveProperty("downloadTypes");
+        expect(stored.filters?.title).toBe("result");
+
+        // A new search selects every download type of the new results,
+        // including one the previous search never returned.
+        rerenderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 2,
+                    searchResults: [
+                        {
+                            searchResultId: "3",
+                            title: "Charlie Result",
+                            indexer: "Mock",
+                            category: "Movies",
+                            downloadType: "TORRENT",
+                        },
+                        {
+                            searchResultId: "4",
+                            title: "Delta Result",
+                            indexer: "Mock",
+                            category: "Movies",
+                            downloadType: "TORBOX",
+                        },
+                    ],
+                }}
+                searchRequestId={2}
+            />,
+        );
+        expect(selectedTypeChips()).toEqual(["TORBOX", "TORRENT"]);
+        expect(screen.getAllByTestId("search-result-row")).toHaveLength(2);
+    });
+
     it("should gather every display preference into one accessible display-options popover", () => {
         renderResults(
             <SearchResults
@@ -2383,6 +2728,30 @@ describe("SearchResults", () => {
 });
 
 const STORAGE_KEY = "hydra.search-results.table";
+
+// The `data-filter-value`s currently selected in one of the refine sidebar's
+// toggle-row lists, in the list's own (alphabetical) render order.
+function selectedFilterValues(optionTestId: string): string[] {
+    return screen
+        .getAllByTestId(optionTestId)
+        .filter((option) => option.getAttribute("aria-pressed") === "true")
+        .map((option) => option.getAttribute("data-filter-value") ?? "");
+}
+
+// The same, for the refine sidebar's download-type chip group, which carries
+// no per-chip test id and is addressed by accessible name instead.
+function selectedTypeChips(): string[] {
+    return within(screen.getByTestId("refine-type-chips"))
+        .getAllByRole("button")
+        .filter((chip) => chip.getAttribute("aria-pressed") === "true")
+        .map((chip) => chip.textContent ?? "");
+}
+
+function typeChip(label: string): HTMLElement {
+    return within(screen.getByTestId("refine-type-chips")).getByRole("button", {
+        name: label,
+    });
+}
 
 // The same title from two download types: ungrouped they are two title groups,
 // grouped they become one.
