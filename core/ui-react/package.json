@@ -18,6 +18,7 @@
     "format:check": "prettier --check .",
     "generate:api": "openapi-typescript ../openapi.json -o src/api/generated/openapi.ts && prettier --config .prettierrc.json --write src/api/generated/openapi.ts",
     "check:api": "node scripts/check-openapi-types.mjs",
+    "validate:focus-affordances": "node scripts/validate-focus-affordances.mjs",
     "validate:migration": "node scripts/validate-migration.mjs",
     "validate:production-assets": "node scripts/validate-production-assets.mjs"
   },

@@ -126,16 +126,44 @@ describe("createHydraTheme typography and density", () => {
         const theme = createHydraTheme("dark", false);
 
         expect(theme.shape.borderRadius).toBe(8);
-        expect(theme.components?.MuiButton?.styleOverrides?.root).toEqual({
+        // `MuiButton`'s root override became a theme-reading function when
+        // ADR-0013's authored focus ring joined it, so it is resolved and
+        // compared by value, on the same pattern as `MuiPaper` below.
+        const buttonRoot = theme.components?.MuiButton?.styleOverrides?.root;
+
+        expect(typeof buttonRoot).toBe("function");
+        expect(
+            (buttonRoot as (props: {theme: typeof theme}) => unknown)({theme}),
+        ).toEqual({
             textTransform: "none",
             borderRadius: 8,
+            "&.Mui-focusVisible": {
+                outline: "3px solid oklch(0.75 0.1 190)",
+                outlineOffset: "3px",
+            },
         });
         expect(
             theme.components?.MuiOutlinedInput?.styleOverrides?.root,
         ).toEqual({borderRadius: 8});
-        expect(theme.components?.MuiChip?.styleOverrides?.root).toEqual({
+        // `MuiChip`'s root override became a theme-reading function for the
+        // same reason `MuiButton`'s did: `Chip` is one of ADR-0013's authored
+        // control families, so its `&.Mui-focusVisible` rule reads the shared
+        // focus-ring token off the theme. Resolved and compared by value on
+        // the same `MuiPaper` pattern; the mock's `height: 26` and
+        // `borderRadius: 7` literals this assertion exists to pin are still
+        // asserted.
+        const chipRoot = theme.components?.MuiChip?.styleOverrides?.root;
+
+        expect(typeof chipRoot).toBe("function");
+        expect(
+            (chipRoot as (props: {theme: typeof theme}) => unknown)({theme}),
+        ).toEqual({
             height: 26,
             borderRadius: 7,
+            "&.Mui-focusVisible": {
+                outline: "3px solid oklch(0.75 0.1 190)",
+                outlineOffset: "3px",
+            },
         });
     });
 
@@ -170,8 +198,11 @@ describe("createHydraTheme typography and density", () => {
             baseline as (theme: unknown) => Record<string, unknown>
         )(theme);
 
+        // ADR-0013 reconciled this rule with the authored focus-ring token, so
+        // it renders `palette.primary.main` explicitly instead of the
+        // `currentColor` that measured 1.29:1 on `NewsPage`'s bare anchors.
         expect(styles[":focus-visible"]).toEqual({
-            outline: "3px solid currentColor",
+            outline: "3px solid oklch(0.75 0.1 190)",
             outlineOffset: "3px",
         });
         expect(styles["*::-webkit-scrollbar"]).toEqual({width: 11, height: 11});

@@ -477,9 +477,24 @@ export function SearchWorkspace({
                                         fontSize: "13.5px",
                                         height: "100%",
                                     },
-                                    "& .MuiOutlinedInput-notchedOutline": {
-                                        border: "none",
-                                    },
+                                    // FM-053 (ADR-0013): scoped to the
+                                    // unfocused state. Unconditionally, this
+                                    // forced the fieldset's `border-width` to
+                                    // `0px` in *both* states, so the
+                                    // `borderColor` MUI's own
+                                    // `&.Mui-focused .notchedOutline` rule
+                                    // does change never painted -- FM-052
+                                    // dispositioned this control
+                                    // `fails 2.4.7` for exactly that reason.
+                                    // The mock's borderless resting rendering
+                                    // (ADR-0009) is preserved; reaching the
+                                    // trigger by keyboard now lets the
+                                    // fieldset border paint again beneath the
+                                    // theme's authored focus ring.
+                                    "&:not(:has(:focus-visible)) .MuiOutlinedInput-notchedOutline":
+                                        {
+                                            border: "none",
+                                        },
                                     "& .MuiSelect-select": {
                                         alignItems: "center",
                                         display: "flex",

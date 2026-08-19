@@ -5,7 +5,7 @@ Feature IDs: F-PLATFORM-SHELL, F-SEARCH-FORM, F-SEARCH-GROUP-SELECTION, F-SEARCH
 Component IDs: None
 API IDs: None
 Depends on: None
-Blocks: None
+Blocks: FM-053
 
 ## Dependency Notes
 

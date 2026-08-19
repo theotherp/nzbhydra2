@@ -1732,6 +1732,20 @@ function SelectionMenu({
             <Checkbox
                 checked={status === "all"}
                 checkedIcon={<SelectAllCheckedIcon />}
+                // FM-053 (ADR-0013): kept, deliberately, and no longer an
+                // affordance deletion. FM-052 dispositioned this control
+                // `fails 2.4.7` because `disableRipple` left it with no
+                // indicator at all -- the only property that changed was the
+                // `opacity: 0` native input overlay's own `outline-style`.
+                // ADR-0013's accepted Option A gives the `SwitchBase` family an
+                // authored `&.Mui-focusVisible` ring on the visible root
+                // instead (`app/theme.ts`, `MuiCheckbox`), which is the
+                // indicator this control now renders and which the ripple
+                // never was. Removing `disableRipple` would reinstate a
+                // ~38px pulsating ripple on this deliberately flat 17x17
+                // `p: 0` square (FM-046) and would measure 1.19:1-2.38:1
+                // anyway, so it is replaced rather than restored -- the second
+                // of the two options FM-053's Acceptance allows.
                 disableRipple
                 icon={<SelectAllUncheckedIcon />}
                 indeterminate={status === "some"}
