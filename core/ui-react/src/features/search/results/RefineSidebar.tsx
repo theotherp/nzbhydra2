@@ -93,6 +93,7 @@ export function RefineSidebar({
     quickFilters,
     results,
     setFilters,
+    toolbarHeight,
     updateRange,
 }: {
     clearRange: (name: "size" | "grabs" | "age") => void;
@@ -112,6 +113,14 @@ export function RefineSidebar({
     quickFilters: QuickFilter[];
     results: SearchResult[];
     setFilters: Dispatch<SetStateAction<ResultFilters>>;
+    // FM-055: the sticky results toolbar's *measured* rendered height, owned
+    // and re-measured by `SearchResults.tsx` (which already maintains it for
+    // the table header's own sticky offset). The docked branch below pins
+    // itself directly beneath that toolbar and sizes its own scroll box
+    // against it, so the value is passed down rather than duplicated or
+    // hardcoded here -- the toolbar's height changes with viewport width,
+    // font loading, and its own wrapping.
+    toolbarHeight: number;
     updateRange: (
         name: "size" | "grabs" | "age",
         bound: keyof NumericRange,
@@ -389,13 +398,30 @@ export function RefineSidebar({
             data-testid="refine-sidebar"
             elevation={0}
             sx={{
+                // FM-055: the docked column (expanded *and* collapsed rail
+                // alike) is pinned to the viewport directly beneath the
+                // sticky `results-toolbar` and scrolls within itself when it
+                // is taller than the space that leaves, so refinement stays
+                // reachable while the results list scrolls. ADR-0011 is
+                // unaffected: this scroll container is a flex *sibling* of
+                // the results table, never an ancestor of its header cells,
+                // so the table's own viewport-sticky column header keeps
+                // pinning against the document.
+                alignSelf: "flex-start",
                 backgroundColor: "transparent",
                 borderRadius: 0,
                 borderRight: "1px solid",
                 borderRightColor: "surfaces.hairlineFaint",
                 flexShrink: 0,
-                overflow: "hidden",
+                maxHeight: `calc(100vh - ${toolbarHeight}px)`,
+                // `overflowX` stays clipped (it was the previous blanket
+                // `overflow: hidden`'s job) so the width transition below
+                // never produces a horizontal scrollbar mid-animation.
+                overflowX: "hidden",
+                overflowY: "auto",
                 p: collapsed ? "18px 8px 18px" : SIDEBAR_PADDING,
+                position: "sticky",
+                top: `${toolbarHeight}px`,
                 transition:
                     "width 150ms ease-in-out, padding 150ms ease-in-out",
                 width: collapsed ? COLLAPSED_WIDTH : EXPANDED_WIDTH,

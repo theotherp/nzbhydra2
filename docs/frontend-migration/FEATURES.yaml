@@ -144,6 +144,8 @@ features:
       - search-results
       - indexer-limit-warnings
       - search-results-summary
+      - results-rejected-trigger
+      - results-rejected-popover
       - search-results-table
       - search-result-row
       - search-result-title
@@ -213,7 +215,7 @@ features:
       - core/ui-react/src/features/search/results/SearchResults.test.tsx
     selectors:
       - search-result-row
-      - results-selection-actions
+      - results-bulk-actions
       - header-selection-menu
       - toolbar-selection-menu
       - display-options-toggle
@@ -239,8 +241,6 @@ features:
       - send-to-downloader
       - download-nzb
       - results-bulk-actions
-      - results-bulk-actions-summary
-      - results-selected-count
     parity: partial
     gaps:
       - download-history route migration
@@ -258,7 +258,10 @@ features:
       - core/ui-react/src/features/search/SearchPage.test.tsx
       - core/ui-react/src/features/search/results/SearchResults.test.tsx
       - tests/system/tests/results.spec.ts
-    selectors: []
+      - tests/system/tests/focus-indication.spec.ts
+    selectors:
+      - results-load-more
+      - results-load-all
     parity: partial
   - id: F-SEARCH-SAVED
     name: Save an executed search for later reuse

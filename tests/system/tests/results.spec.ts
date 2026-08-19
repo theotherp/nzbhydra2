@@ -1261,10 +1261,13 @@ test.describe("Search results", () => {
             "true",
         );
         await expect(send).toBeEnabled();
-        const selectedCount = bar.getByTestId("results-selected-count");
-        await expect(selectedCount).toHaveText("1 selected");
+        // FM-055: the selected count is rendered once, inside
+        // `search-results-summary` (the former `results-selected-count`
+        // duplicate in this row is gone).
+        const summary = page.getByTestId("search-results-summary");
+        await expect(summary).toContainText("· 1 selected");
         expect(
-            await selectedCount.evaluate(
+            await summary.evaluate(
                 (element) => element.scrollWidth <= element.clientWidth,
             ),
         ).toBe(true);
@@ -1314,7 +1317,7 @@ test.describe("Search results", () => {
             "data-indeterminate",
             "false",
         );
-        await expect(selectedCount).toHaveText("2 selected");
+        await expect(summary).toContainText("· 2 selected");
         await expectVisualGeometry(page, {
             region: "bulk-actions-all-selected-desktop",
             locator: bar,
@@ -1348,9 +1351,9 @@ test.describe("Search results", () => {
 
         // Below `sm` the responsive table styling hides `thead` entirely,
         // so the header's selection menu is unreachable there; the
-        // toolbar's results-selection-actions region carries a second,
-        // functionally-identical copy so bulk selection stays reachable at
-        // mobile -- asserted here, not merely assumed.
+        // toolbar's merged `results-bulk-actions` row (FM-055) carries a
+        // second, functionally-identical copy at its start so bulk selection
+        // stays reachable at mobile -- asserted here, not merely assumed.
         await expect(
             page.getByTestId("header-selection-menu"),
         ).not.toBeVisible();
@@ -1981,9 +1984,9 @@ test.describe("Search results", () => {
     // FM-042: the results toolbar and table header stay pinned while the
     // document scrolls, matching the mock's own `position:sticky;top:0`
     // toolbar and `position:sticky;top:51px` header row directly beneath
-    // it. `results-toolbar` (the whole existing region: summary,
-    // results-bulk-actions, results-download-actions, and
-    // results-selection-actions, unchanged in content) is the sticky
+    // it. `results-toolbar` (since FM-055 the whole consolidated region:
+    // the summary/paging/display row and the merged results-bulk-actions
+    // row) is the sticky
     // element, not its individual children -- a real browser scroll (not a
     // jsdom component test) is what caught that a per-child sticky design
     // detaches early, because each child's containing block would then be
@@ -2082,16 +2085,15 @@ test.describe("Search results", () => {
             expect(toolbarBox.height).toBeCloseTo(toolbarBox0.height, 0);
             const stickyRegionBottom = toolbarBox.y + toolbarBox.height;
 
-            // Every region inside the pinned toolbar -- including
-            // results-download-actions, which has no mock equivalent but is
-            // still part of the one existing results-toolbar region this
-            // task pins as a whole -- renders within the pinned box, not
-            // scrolled away underneath it.
+            // Every region inside the pinned toolbar renders within the
+            // pinned box, not scrolled away underneath it. Since FM-055 that
+            // is exactly the two rows: the summary (with its paging and
+            // display controls) and the merged action row.
             for (const testId of [
                 "search-results-summary",
                 "results-bulk-actions",
-                "results-download-actions",
-                "results-selection-actions",
+                "results-load-more",
+                "results-load-all",
             ]) {
                 const box = await page.getByTestId(testId).boundingBox();
                 expect(box).not.toBeNull();
@@ -2169,17 +2171,17 @@ test.describe("Search results", () => {
                 // existing unscrolled-state contract's own phrasing
                 // ("the sidebar's right edge sits at or left of the table's
                 // left edge", `FEATURES.yaml:222`/`:269`) is: the sidebar
-                // stays left of the table column, scrolled or not. The
-                // sidebar itself is not made sticky (there is no
-                // `results-column`-relative offset to match), so it scrolls
-                // normally beneath the pinned toolbar/header exactly like a
-                // result row does -- not a stacking regression, the same
-                // legitimate "scrolled past, painted under" behavior
-                // `visibleRowRects`/`visibleRows` above already covers for
-                // the table.
-                const sidebarBox = await page
-                    .getByTestId("refine-sidebar")
-                    .boundingBox();
+                // stays left of the table column, scrolled or not.
+                //
+                // FM-055: the sidebar is itself pinned now, directly beneath
+                // the sticky toolbar and no longer scrolling away with the
+                // rows. Asserted here rather than assumed: while scrolled it
+                // sits at the toolbar's bottom edge, its box fits within the
+                // remaining viewport height, and it is its own scroll
+                // container (`overflow-y: auto`) rather than a scrolling
+                // ancestor of the table.
+                const sidebar = page.getByTestId("refine-sidebar");
+                const sidebarBox = await sidebar.boundingBox();
                 const tableBox = await page
                     .getByTestId("search-results-table")
                     .boundingBox();
@@ -2189,7 +2191,27 @@ test.describe("Search results", () => {
                     expect(sidebarBox.x + sidebarBox.width).toBeLessThanOrEqual(
                         tableBox.x + 1,
                     );
+                    expect(sidebarBox.y).toBeCloseTo(stickyRegionBottom, 0);
+                    expect(
+                        sidebarBox.y + sidebarBox.height,
+                    ).toBeLessThanOrEqual(
+                        (page.viewportSize()?.height ?? 0) + 1,
+                    );
                 }
+                const sidebarStyle = await sidebar.evaluate((element) => {
+                    const style = getComputedStyle(element);
+                    return {
+                        overflowY: style.overflowY,
+                        position: style.position,
+                        top: style.top,
+                    };
+                });
+                expect(sidebarStyle.position).toBe("sticky");
+                expect(sidebarStyle.overflowY).toBe("auto");
+                expect(parseFloat(sidebarStyle.top)).toBeCloseTo(
+                    expectedHeaderTop,
+                    0,
+                );
 
                 if (viewport === "desktop") {
                     // ADR-0011's `box-shadow`-on-`<th>` remedy for a sticky
@@ -2650,6 +2672,325 @@ test.describe("Search results", () => {
                 expect(dockedSidebar).toBe(true);
             }
             await expectNoPageOverflow(page);
+        }
+    });
+
+    // FM-055: the consolidated two-row toolbar and the viewport-pinned refine
+    // sidebar. Six evidenced states across the two evidence viewports: the
+    // toolbar with rejected results, popover closed and open; the toolbar
+    // without rejected results; the sidebar taller than the viewport, with its
+    // own scrollbar; the sidebar fitting the viewport and staying fully
+    // visible while the results scroll; and the mobile refine drawer,
+    // unregressed.
+    test("should consolidate the results toolbar and pin the refine sidebar, with reachable rejection reasons", async ({
+        hydra,
+        page,
+    }) => {
+        await hydra.configureSabnzbdMock();
+        const now = Math.floor(Date.now() / 1_000);
+        // One interception, re-aimed between states through this mutable
+        // fixture selector, so no route ever has to be unregistered.
+        // `spread` is how many distinct indexers/categories the refine
+        // sidebar's two toggle lists have to render, which is what decides
+        // whether the sidebar is taller than the space the sticky toolbar
+        // leaves it.
+        const fixture = {rejected: true, spread: 12, withDownloadType: true};
+        await page.route("**/internalapi/search", (route) =>
+            route.fulfill({
+                json: {
+                    searchResults: Array.from({length: 28}, (_, index) => {
+                        const suffix = String.fromCharCode(
+                            65 + (index % fixture.spread),
+                        );
+                        return {
+                            searchResultId: `fm055-${index}`,
+                            title: `FM055 Toolbar Evidence ${String(
+                                index + 1,
+                            ).padStart(2, "0")}`,
+                            indexer: `Indexer ${suffix}`,
+                            category: `Category ${suffix}`,
+                            size: (index + 1) * 1024 * 1024,
+                            seeders: index + 1,
+                            epoch: now - index * 86_400,
+                            age: `${index} days`,
+                            ...(fixture.withDownloadType
+                                ? {downloadType: "NZB"}
+                                : {}),
+                        };
+                    }),
+                    indexerSearchMetaDatas: [
+                        {
+                            indexerName: "Alpha",
+                            wasSuccessful: true,
+                            hasMoreResults: true,
+                            totalResultsKnown: false,
+                        },
+                    ],
+                    indexerLimitWarnings: [],
+                    rejectedReasonsMap: fixture.rejected
+                        ? {
+                              "Duplicate of another result": 61,
+                              "Too small: 12 MB < 50 MB": 24,
+                              "Forbidden word: x264": 13,
+                          }
+                        : {},
+                    notPickedIndexersWithReason: {},
+                    numberOfAvailableResults: 500,
+                    numberOfRejectedResults: fixture.rejected ? 98 : 0,
+                    numberOfProcessedResults: 28,
+                    pagingState: "ready",
+                    offset: 0,
+                    limit: 28,
+                },
+            }),
+        );
+        const search = async (
+            viewport: "desktop" | "mobile",
+            options: Partial<typeof fixture> = {},
+        ) => {
+            Object.assign(fixture, options);
+            await prepareVisualEvidence(page, viewport, async () => {
+                await page.goto("ui/react?redirect=/");
+                await page
+                    .getByTestId("search-query")
+                    .fill("fm055 toolbar evidence");
+                await page.getByTestId("search-submit").click();
+                await expect(
+                    page.getByTestId("search-status-modal"),
+                ).toBeHidden();
+                await expect(
+                    page.getByTestId("search-results-table"),
+                ).toBeVisible();
+            });
+        };
+
+        const toolbar = page.getByTestId("results-toolbar");
+        const summary = page.getByTestId("search-results-summary");
+        const sidebar = page.getByTestId("refine-sidebar");
+
+        for (const viewport of ["desktop", "mobile"] as const) {
+            // --- consolidated toolbar, with rejected results ---------------
+            await search(viewport, {rejected: true});
+
+            // Exactly two rows, in the packet's order.
+            const rowCount = await toolbar.evaluate(
+                (element) => element.firstElementChild?.childElementCount ?? 0,
+            );
+            expect(rowCount).toBe(2);
+            await expect(summary).toContainText(
+                "28 of 28 loaded (>500 available) · 98 rejected",
+            );
+            await expect(page.getByTestId("results-load-more")).toBeVisible();
+            await expect(page.getByTestId("results-load-all")).toBeVisible();
+            await expect(
+                page.getByTestId("display-options-toggle"),
+            ).toBeVisible();
+            // Every merged row-2 capability stays reachable, none behind an
+            // overflow menu.
+            const actions = page.getByTestId("results-bulk-actions");
+            await expect(
+                actions.getByTestId("send-to-downloader"),
+            ).toBeVisible();
+            // Both `Select`s moved into this row. They are addressed by their
+            // rendered input roots rather than by accessible name: MUI applies
+            // a `Select`'s `aria-label` to the hidden native input, not to the
+            // visible `role="combobox"` node, so neither carries a queryable
+            // name (a pre-existing gap this task does not touch --
+            // `focus-indication.spec.ts` addresses the same two controls the
+            // same way).
+            const selects = actions.locator(".MuiInputBase-root");
+            await expect(selects).toHaveCount(2);
+            await expect(selects.first()).toContainText(
+                "Deterministic SABnzbd",
+            );
+            // The ZIP button is config-gated (`showResultsAsZipButton`, off in
+            // this instance) and covered by the component test instead; every
+            // capability this instance's configuration does render is asserted
+            // present in the merged row.
+            for (const name of [
+                "Send selected to black hole",
+                "Copy selected links",
+                "Save search",
+            ]) {
+                await expect(actions.getByRole("button", {name})).toBeVisible();
+            }
+            // The removed ids are gone everywhere in the document.
+            for (const removed of [
+                "results-bulk-actions-summary",
+                "results-selected-count",
+                "results-selection-actions",
+                "results-download-actions",
+            ]) {
+                await expect(page.getByTestId(removed)).toHaveCount(0);
+            }
+            await expectVisualGeometry(page, {
+                region: `fm055-toolbar-rejected-${viewport}`,
+                locator: toolbar,
+            });
+            await captureVisualRegion(
+                toolbar,
+                "F-SEARCH-RESULTS",
+                `fm055-toolbar-rejected-closed-${viewport}`,
+            );
+
+            // The rejection-reason breakdown, restoring legacy parity.
+            const trigger = summary.getByTestId("results-rejected-trigger");
+            await expect(trigger).toHaveText("98 rejected");
+            await expect(trigger).toHaveAttribute("aria-expanded", "false");
+            await trigger.click();
+            const popover = page.getByTestId("results-rejected-popover");
+            await expect(popover).toBeVisible();
+            await expect(trigger).toHaveAttribute("aria-expanded", "true");
+            expect(
+                await popover.evaluate((element) =>
+                    [...element.querySelectorAll("li")].map(
+                        (item) => item.textContent ?? "",
+                    ),
+                ),
+            ).toEqual([
+                "61Duplicate of another result",
+                "24Too small: 12 MB < 50 MB",
+                "13Forbidden word: x264",
+            ]);
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-SEARCH-RESULTS",
+                    `fm055-toolbar-rejected-open-${viewport}`,
+                ),
+            });
+            await page.keyboard.press("Escape");
+            await expect(popover).toHaveCount(0);
+            await expectNoPageOverflow(page);
+
+            if (viewport === "desktop") {
+                // --- sidebar taller than the viewport ----------------------
+                await openRefineSidebar(page);
+                const tall = await sidebar.evaluate((element) => ({
+                    clientHeight: element.clientHeight,
+                    overflowY: getComputedStyle(element).overflowY,
+                    scrollHeight: element.scrollHeight,
+                }));
+                // Its own scroll container, not the document's.
+                expect(tall.overflowY).toBe("auto");
+                expect(tall.scrollHeight).toBeGreaterThan(tall.clientHeight);
+                await sidebar.evaluate((element) => {
+                    element.scrollTop = element.scrollHeight;
+                });
+                expect(
+                    await sidebar.evaluate((element) => element.scrollTop),
+                ).toBeGreaterThan(0);
+                await page.screenshot({
+                    path: visualEvidencePath(
+                        "F-SEARCH-SORT-FILTER",
+                        "fm055-sidebar-taller-than-viewport-desktop",
+                    ),
+                });
+                await expectNoPageOverflow(page);
+
+                // --- sidebar that fits the viewport ------------------------
+                // The refine sidebar's fixed sections alone (title, size, age,
+                // grabs) nearly fill an 800px-tall viewport, so this state is
+                // produced deliberately: no configured quick filters, a single
+                // indexer/category, no download-type chips, and both toggle
+                // lists collapsed.
+                const config = await hydra.getConfig();
+                const searching = config.searching as Record<string, unknown>;
+                searching.showQuickFilterButtons = false;
+                searching.alwaysShowQuickFilterButtons = false;
+                searching.preselectQuickFilterButtons = [];
+                await hydra.saveConfig(config);
+                await search("desktop", {spread: 1, withDownloadType: false});
+                await openRefineSidebar(page);
+                await page.getByTestId("refine-category-toggle").click();
+                await page.getByTestId("refine-indexer-toggle").click();
+                await expect(
+                    page.getByTestId("refine-category-list"),
+                ).toBeHidden();
+                await expect(
+                    page.getByTestId("refine-indexer-list"),
+                ).toBeHidden();
+                await expect
+                    .poll(() =>
+                        sidebar.evaluate(
+                            (element) =>
+                                element.scrollHeight - element.clientHeight,
+                        ),
+                    )
+                    .toBeLessThanOrEqual(1);
+
+                // It stays entirely on screen while the results scroll past.
+                const scrollHeight = await page.evaluate(
+                    () => document.body.scrollHeight,
+                );
+                await page.evaluate(
+                    (y) => window.scrollTo(0, y),
+                    Math.floor(scrollHeight * 0.5),
+                );
+                const pinnedBox = await sidebar.boundingBox();
+                expect(pinnedBox).not.toBeNull();
+                if (!pinnedBox) {
+                    throw new Error("Sidebar requires deterministic geometry");
+                }
+                expect(pinnedBox.y).toBeGreaterThanOrEqual(0);
+                expect(pinnedBox.y + pinnedBox.height).toBeLessThanOrEqual(
+                    visualViewports.desktop.height + 1,
+                );
+                await expect(
+                    sidebar.getByTestId("refine-filter-title"),
+                ).toBeVisible();
+                await expect(
+                    page.getByTestId("refine-clear-all"),
+                ).toBeVisible();
+                await page.screenshot({
+                    path: visualEvidencePath(
+                        "F-SEARCH-SORT-FILTER",
+                        "fm055-sidebar-fits-scrolled-desktop",
+                    ),
+                });
+                await expectNoPageOverflow(page);
+                fixture.spread = 12;
+                fixture.withDownloadType = true;
+            } else {
+                // --- mobile drawer, unregressed ----------------------------
+                await expect(sidebar).toHaveCount(0);
+                await page.getByTestId("refine-sidebar-toggle").click();
+                await expect(
+                    page.getByTestId("refine-sidebar-drawer"),
+                ).toBeVisible();
+                await expect(
+                    sidebar.getByTestId("refine-filter-title"),
+                ).toBeVisible();
+                expect(
+                    await sidebar.evaluate(
+                        (element) => getComputedStyle(element).position,
+                    ),
+                ).not.toBe("sticky");
+                await page.screenshot({
+                    path: visualEvidencePath(
+                        "F-SEARCH-SORT-FILTER",
+                        "fm055-mobile-refine-drawer",
+                    ),
+                });
+                await page.getByTestId("refine-sidebar-close").click();
+                await expectNoPageOverflow(page);
+            }
+
+            // --- consolidated toolbar, without rejected results ------------
+            await search(viewport, {rejected: false});
+            await expect(summary).toContainText("28 of 28 loaded");
+            await expect(summary).not.toContainText("rejected");
+            await expect(
+                page.getByTestId("results-rejected-trigger"),
+            ).toHaveCount(0);
+            await expectVisualGeometry(page, {
+                region: `fm055-toolbar-no-rejected-${viewport}`,
+                locator: toolbar,
+            });
+            await captureVisualRegion(
+                toolbar,
+                "F-SEARCH-RESULTS",
+                `fm055-toolbar-no-rejected-${viewport}`,
+            );
         }
     });
 });

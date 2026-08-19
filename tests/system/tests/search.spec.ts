@@ -184,8 +184,10 @@ test.describe("Search", () => {
         await page.getByTestId("search-submit").click();
         expect((await searchResponse).status()).toBe(200);
         await expect(page.getByTestId("search-results")).toBeVisible();
+        // FM-055: the React summary is one phrase, `{shown} of {loaded}
+        // loaded ...` (the legacy shell above keeps its own wording).
         await expect(page.getByTestId("search-results-summary")).toContainText(
-            "Loaded",
+            "5 of 5 loaded",
         );
         await expect(page.getByTestId("search-results-table")).toBeVisible();
         await expect(

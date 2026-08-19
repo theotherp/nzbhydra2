@@ -6,6 +6,7 @@ import {
     Chip,
     FormControlLabel,
     FormGroup,
+    Link,
     Menu,
     MenuItem,
     Popover,
@@ -116,6 +117,19 @@ const DISPLAY_MENU_ITEM_PADDING_X = "8px";
 const DISPLAY_MENU_ITEM_PADDING_Y = "7px";
 const DISPLAY_MENU_ITEM_FONT_SIZE = "13px";
 const DISPLAY_MENU_ITEM_GAP = "9px";
+
+// FM-041/FM-055: the shared section-heading treatment for this file's two
+// small popovers (display options and, since FM-055, rejection reasons), so
+// the second one inherits the first's density instead of restating it. Only
+// the muted text *role* is named here; its color comes from the theme.
+const POPOVER_HEADING_SX = {
+    color: "surfaces.mutedText",
+    fontSize: "10.5px",
+    fontWeight: 600,
+    letterSpacing: "0.6px",
+    padding: "4px 8px 8px",
+    textTransform: "uppercase",
+} as const;
 
 // FM-042: the mock's own sticky toolbar/header stacking relationship
 // (`position:sticky;top:0;z-index:15` for the toolbar, `position:sticky;
@@ -463,10 +477,10 @@ export function SearchResults({
     // and the toolbar's own wrap-to-more-rows behavior at narrow widths all
     // change that height.
     //
-    // The sticky element is `results-toolbar` itself (the whole existing
-    // region: summary, `results-bulk-actions`, `results-download-actions`,
-    // and `results-selection-actions`, unchanged in content), not its
-    // individual children. This is a `position: sticky` CSS requirement, not
+    // The sticky element is `results-toolbar` itself (since FM-055 the whole
+    // consolidated region: the summary/paging/display row and the single
+    // `results-bulk-actions` row), not its individual children. This is a
+    // `position: sticky` CSS requirement, not
     // a style preference: a sticky element can only remain pinned for as
     // long as its own *containing block* (its nearest block-level DOM
     // ancestor -- here, the outer `search-results` Stack, which also
@@ -485,9 +499,61 @@ export function SearchResults({
     // the jsdom component-test environment (guarded below) and asserted for
     // real in `tests/system/tests/results.spec.ts` instead, per this task's
     // verification requirements.
+    //
+    // FM-055 additionally feeds this measured height to the docked
+    // `refine-sidebar`, which pins itself directly beneath the same toolbar.
     const toolbarRef = useRef<HTMLDivElement | null>(null);
     const [toolbarHeight, setToolbarHeight] = useState(0);
     const hasResults = data.searchResults.length > 0;
+    // FM-055 review fix: a response can report every loaded result rejected
+    // (`numberOfRejectedResults > 0` while `searchResults` is empty), and
+    // `numberOfAvailableResults` -- which includes rejected items server-side
+    // -- is then `> 0` too, so neither the "no results" Alert (gated on
+    // `numberOfAvailableResults === 0`) nor the table renders. Without this,
+    // the rejection breakdown that now lives only in the toolbar summary
+    // would be completely unreachable in exactly the state it matters most.
+    const hasRejectedResults = data.numberOfRejectedResults > 0;
+    // FM-055: the toolbar also renders with no loaded results whenever the
+    // page owns paging controls, because "Load more"/"Load all results" moved
+    // into it from their former standalone row. A response can legitimately
+    // report more available results while carrying none itself (everything
+    // loaded so far rejected, for instance), and losing the continuation
+    // controls in that state would be a capability regression. Only row 1's
+    // paging controls render then: there is nothing to summarize, display, or
+    // act on yet. The same is true of the rejection count/breakdown itself:
+    // it must stay reachable even with nothing else to show in row 1.
+    const showToolbar =
+        hasResults || onLoadMore !== undefined || hasRejectedResults;
+    // The count of loaded results the active refine filters currently hide.
+    const filteredOutCount = data.searchResults.length - filteredResults.length;
+    // The pre-existing ">"-prefix rule: at least one indexer reports more
+    // results whose total it cannot count, so `numberOfAvailableResults` is a
+    // lower bound rather than the total.
+    const totalResultsUnknown =
+        hasMoreResults &&
+        data.indexerSearchMetaDatas.some(
+            (indexer) => indexer.totalResultsKnown === false,
+        );
+    // Legacy drops the "of N results" clause once everything is loaded
+    // ("Loaded all N results", `search-results.html:183-185`); the same rule
+    // decides whether the "(N available)" clause renders here.
+    const moreResultsAvailable = hasMoreResults || hasRemainingKnownResults;
+    // Below `sm` the table's `thead` -- and so the header's tri-state
+    // checkbox/caret menu -- is hidden by the responsive table styling; this
+    // mobile-only copy keeps bulk selection reachable from the toolbar at
+    // that viewport. Both copies share the same selection state and
+    // callbacks. FM-055 moves it to the start of the merged action row.
+    const mobileSelectionMenu = (
+        <Box sx={{display: {xs: "flex", sm: "none"}}}>
+            <SelectionMenu
+                idPrefix="toolbar"
+                onDeselectAll={deselectAllVisible}
+                onInvertSelection={invertVisibleSelection}
+                onSelectAll={selectAllVisible}
+                status={currentSelectionStatus}
+            />
+        </Box>
+    );
     useLayoutEffect(() => {
         const node = toolbarRef.current;
         if (!node) {
@@ -513,7 +579,7 @@ export function SearchResults({
         if (typeof document !== "undefined" && document.fonts) {
             void document.fonts.ready.then(measure);
         }
-        // `results-download-actions`' downloader/category `<Select>`s
+        // The action row's downloader/category `<Select>`s
         // populate asynchronously (an API fetch resolves after mount) and
         // change only their *text content*, not necessarily a size
         // `ResizeObserver` reports before the fetch settles -- real-browser
@@ -543,10 +609,12 @@ export function SearchResults({
             mutationObserver?.disconnect();
             resizeObserver.disconnect();
         };
-        // `hasResults` re-runs this the moment the toolbar first mounts
+        // `showToolbar` re-runs this the moment the toolbar first mounts
         // (search results loading in after an initial empty render), which
-        // a `[]`-only dependency array would miss entirely.
-    }, [hasResults]);
+        // a `[]`-only dependency array would miss entirely. `hasResults` is
+        // a further dependency because the toolbar can mount with paging
+        // controls only and gain both of its full rows afterwards.
+    }, [hasResults, showToolbar]);
     return (
         <Stack data-testid="search-results" spacing={2} sx={{mt: 4}}>
             {data.indexerLimitWarnings.length > 0 && (
@@ -595,11 +663,17 @@ export function SearchResults({
                         No results were found for this search
                     </Alert>
                 )}
-            {data.numberOfRejectedResults > 0 && (
-                <Alert severity="info">
-                    Rejected {data.numberOfRejectedResults} results.
-                </Alert>
-            )}
+            {/* FM-055: the standalone `Rejected N results.` Alert is gone --
+                the count now lives in `search-results-summary` as the
+                `results-rejected-trigger`, which additionally exposes the
+                per-reason breakdown legacy showed in its click-tooltip
+                (`search-results.html:170-190`) and React never rendered.
+                Review fix: `search-results-summary` (and so the trigger)
+                still renders when everything loaded was rejected -- see
+                `hasRejectedResults` above -- so this information stays
+                reachable in the one state where the "no results" Alert
+                above does not fire either (`numberOfAvailableResults`
+                includes rejected items server-side). */}
             {data.pagingState === "partial" && (
                 <Alert role="status" severity="warning">
                     More results cannot be loaded because the server returned
@@ -617,70 +691,161 @@ export function SearchResults({
                     {pagingError}
                 </Alert>
             )}
-            {onLoadMore && (
-                <Stack direction="row" flexWrap="wrap" gap={1}>
-                    <Button
-                        aria-busy={pagingLoading}
-                        disabled={!pagingAvailable || pagingLoading}
-                        onClick={() => void requestContinuation(false)}
-                        size="small"
-                    >
-                        {pagingLoading ? "Loading more results…" : "Load more"}
-                    </Button>
-                    <Button
-                        disabled={!pagingAvailable || pagingLoading}
-                        onClick={() => void requestContinuation(true)}
-                        size="small"
-                    >
-                        Load all results
-                    </Button>
-                </Stack>
-            )}
-            {data.searchResults.length > 0 && (
-                <>
-                    <Box
-                        data-testid="results-toolbar"
-                        ref={toolbarRef}
-                        sx={{
-                            backgroundColor: STICKY_BACKGROUND,
-                            padding: "16px 0 14px",
-                            position: "sticky",
-                            top: 0,
-                            zIndex: TOOLBAR_STICKY_Z_INDEX,
-                        }}
-                    >
-                        <Stack spacing={1.5}>
-                            <Typography
-                                data-testid="search-results-summary"
-                                variant="subtitle2"
-                            >
-                                Loaded {data.searchResults.length} (
-                                {data.searchResults.length -
-                                    filteredResults.length}{" "}
-                                filtered) of{" "}
-                                {hasMoreResults &&
-                                data.indexerSearchMetaDatas.some(
-                                    (indexer) =>
-                                        indexer.totalResultsKnown === false,
-                                )
-                                    ? ">"
-                                    : ""}
-                                {data.numberOfAvailableResults} results
-                                (rejected {data.numberOfRejectedResults})
-                                {selected.size > 0 && (
-                                    <Box
-                                        component="span"
-                                        sx={{color: "primary.main"}}
+            {showToolbar && (
+                <Box
+                    data-testid="results-toolbar"
+                    ref={toolbarRef}
+                    sx={{
+                        backgroundColor: STICKY_BACKGROUND,
+                        padding: "16px 0 14px",
+                        position: "sticky",
+                        top: 0,
+                        zIndex: TOOLBAR_STICKY_Z_INDEX,
+                    }}
+                >
+                    {/* FM-055: exactly two rows. Row 1 carries the single
+                        count phrase, the paging controls that used to sit in
+                        their own non-sticky row above this region, and the
+                        "⚙ Display" popover at the row's right end. Row 2 is
+                        the one wrapping action row. */}
+                    <Stack spacing={1.5}>
+                        <Stack
+                            alignItems="center"
+                            direction="row"
+                            flexWrap="wrap"
+                            gap={1.5}
+                        >
+                            {(hasResults || hasRejectedResults) && (
+                                <Typography
+                                    // A `div`, not `subtitle2`'s default
+                                    // `h6`: this phrase now contains the
+                                    // interactive `results-rejected-trigger`,
+                                    // and a heading that wraps a control is
+                                    // a worse accessibility tree than a
+                                    // plain block with the same typography.
+                                    //
+                                    // FM-055 review fix: also rendered with
+                                    // `hasResults` false -- everything loaded
+                                    // rejected -- so the `results-rejected-
+                                    // trigger` clause below stays reachable
+                                    // instead of vanishing along with the
+                                    // rest of row 1. The `{0} of {0} loaded`
+                                    // prefix that implies is accurate (there
+                                    // is genuinely nothing loaded) and keeps
+                                    // the one-phrase format from the
+                                    // acceptance contract intact rather than
+                                    // special-casing it away.
+                                    component="div"
+                                    data-testid="search-results-summary"
+                                    variant="subtitle2"
+                                >
+                                    {filteredResults.length} of{" "}
+                                    {data.searchResults.length} loaded
+                                    {moreResultsAvailable &&
+                                        ` (${totalResultsUnknown ? ">" : ""}${
+                                            data.numberOfAvailableResults
+                                        } available)`}
+                                    {filteredOutCount > 0 &&
+                                        ` · ${filteredOutCount} filtered`}
+                                    {data.numberOfRejectedResults > 0 && (
+                                        <>
+                                            {" · "}
+                                            <RejectedResultsTrigger
+                                                count={
+                                                    data.numberOfRejectedResults
+                                                }
+                                                reasons={
+                                                    data.rejectedReasonsMap
+                                                }
+                                            />
+                                        </>
+                                    )}
+                                    {selected.size > 0 && (
+                                        <Box
+                                            component="span"
+                                            sx={{color: "primary.main"}}
+                                        >
+                                            {" · "}
+                                            {selected.size} selected
+                                        </Box>
+                                    )}
+                                </Typography>
+                            )}
+                            {onLoadMore && (
+                                <>
+                                    <Button
+                                        aria-busy={pagingLoading}
+                                        data-testid="results-load-more"
+                                        disabled={
+                                            !pagingAvailable || pagingLoading
+                                        }
+                                        onClick={() =>
+                                            void requestContinuation(false)
+                                        }
+                                        size="small"
                                     >
-                                        {" "}
-                                        · {selected.size} selected
-                                    </Box>
-                                )}
-                            </Typography>
-                            {dialogs !== null && toasts !== null ? (
+                                        {pagingLoading
+                                            ? "Loading more results…"
+                                            : "Load more"}
+                                    </Button>
+                                    <Button
+                                        data-testid="results-load-all"
+                                        disabled={
+                                            !pagingAvailable || pagingLoading
+                                        }
+                                        onClick={() =>
+                                            void requestContinuation(true)
+                                        }
+                                        size="small"
+                                    >
+                                        Load all results
+                                    </Button>
+                                </>
+                            )}
+                            {/* The mock puts its "⚙ Display" button at the
+                                right end of the toolbar's first row
+                                (`margin-left:auto`). */}
+                            {hasResults && (
+                                <Box sx={{ml: "auto"}}>
+                                    <DisplayOptionsMenu
+                                        compactRows={compactRows}
+                                        groupEpisodes={groupEpisodes}
+                                        groupTorrentAndUsenet={
+                                            groupTorrentAndUsenet
+                                        }
+                                        highlightRecent={highlightRecent}
+                                        onToggleCompactRows={() =>
+                                            setCompactRows(
+                                                (current) => !current,
+                                            )
+                                        }
+                                        onToggleGroupEpisodes={() =>
+                                            setGroupEpisodes(
+                                                (current) => !current,
+                                            )
+                                        }
+                                        onToggleGroupTorrentAndUsenet={() =>
+                                            setGroupTorrentAndUsenet(
+                                                (current) => !current,
+                                            )
+                                        }
+                                        onToggleHighlightRecent={() =>
+                                            setHighlightRecent(
+                                                (current) => !current,
+                                            )
+                                        }
+                                        onToggleRefineSurface={
+                                            toggleRefineSurface
+                                        }
+                                        refineSurfaceShown={refineSurfaceShown}
+                                    />
+                                </Box>
+                            )}
+                        </Stack>
+                        {hasResults &&
+                            (dialogs !== null && toasts !== null ? (
                                 <DownloadActions
-                                    filteredCount={filteredResults.length}
-                                    loadedCount={data.searchResults.length}
+                                    leading={mobileSelectionMenu}
                                     onDownloaded={(ids) => {
                                         const affected = data.searchResults
                                             .filter((result) =>
@@ -734,14 +899,19 @@ export function SearchResults({
                                 // along with the download-actions region.
                                 onSaveSearch && (
                                     <Stack
-                                        data-testid="results-download-actions"
+                                        alignItems="center"
+                                        data-testid="results-bulk-actions"
                                         direction="row"
+                                        flexWrap="wrap"
+                                        gap={1}
                                     >
+                                        {mobileSelectionMenu}
                                         <Button
                                             disabled={savingSearch}
                                             id="save-search"
                                             onClick={() => void onSaveSearch()}
                                             size="small"
+                                            sx={{ml: "auto"}}
                                         >
                                             {savingSearch
                                                 ? "Saving search…"
@@ -749,72 +919,12 @@ export function SearchResults({
                                         </Button>
                                     </Stack>
                                 )
-                            )}
-                            <Stack
-                                alignItems="center"
-                                data-testid="results-selection-actions"
-                                direction="row"
-                                flexWrap="wrap"
-                                gap={1}
-                            >
-                                {/* Below `sm` the table's `thead` (and so the
-                                    header's tri-state checkbox/caret menu) is
-                                    hidden by the responsive table styling; this
-                                    mobile-only copy keeps bulk selection
-                                    reachable from the toolbar at that
-                                    viewport. Both copies share the same
-                                    selection state and callbacks. */}
-                                <Box sx={{display: {xs: "flex", sm: "none"}}}>
-                                    <SelectionMenu
-                                        idPrefix="toolbar"
-                                        onDeselectAll={deselectAllVisible}
-                                        onInvertSelection={
-                                            invertVisibleSelection
-                                        }
-                                        onSelectAll={selectAllVisible}
-                                        status={currentSelectionStatus}
-                                    />
-                                </Box>
-                                {/* The mock puts its "⚙ Display" button at the
-                                    right end of the same toolbar action row
-                                    (`margin-left:auto`). */}
-                                <Box sx={{ml: "auto"}}>
-                                    <DisplayOptionsMenu
-                                        compactRows={compactRows}
-                                        groupEpisodes={groupEpisodes}
-                                        groupTorrentAndUsenet={
-                                            groupTorrentAndUsenet
-                                        }
-                                        highlightRecent={highlightRecent}
-                                        onToggleCompactRows={() =>
-                                            setCompactRows(
-                                                (current) => !current,
-                                            )
-                                        }
-                                        onToggleGroupEpisodes={() =>
-                                            setGroupEpisodes(
-                                                (current) => !current,
-                                            )
-                                        }
-                                        onToggleGroupTorrentAndUsenet={() =>
-                                            setGroupTorrentAndUsenet(
-                                                (current) => !current,
-                                            )
-                                        }
-                                        onToggleHighlightRecent={() =>
-                                            setHighlightRecent(
-                                                (current) => !current,
-                                            )
-                                        }
-                                        onToggleRefineSurface={
-                                            toggleRefineSurface
-                                        }
-                                        refineSurfaceShown={refineSurfaceShown}
-                                    />
-                                </Box>
-                            </Stack>
-                        </Stack>
-                    </Box>
+                            ))}
+                    </Stack>
+                </Box>
+            )}
+            {hasResults && (
+                <>
                     <Stack
                         alignItems="flex-start"
                         direction={{xs: "column", sm: "row"}}
@@ -834,6 +944,7 @@ export function SearchResults({
                             quickFilters={quickFilters}
                             results={data.searchResults}
                             setFilters={setFilters}
+                            toolbarHeight={toolbarHeight}
                             updateRange={updateRange}
                         />
                         <Box sx={{minWidth: 0, width: "100%"}}>
@@ -1747,7 +1858,7 @@ function SelectAllIndeterminateIcon() {
 // the same `selectVisibleResults` outcome the old button produced. Rendered
 // twice with different `idPrefix`es: once in the table header (visible at
 // `sm` and up, where `thead` renders), and once in the toolbar's
-// `results-selection-actions` region (visible only below `sm`, where the
+// merged `results-bulk-actions` row (visible only below `sm`, where the
 // responsive table hides `thead` entirely) so bulk selection stays reachable
 // at every viewport. Both copies share the same selection state/callbacks
 // from the parent, so they always agree.
@@ -1859,6 +1970,114 @@ function SelectionMenu({
                 </MenuItem>
             </Menu>
         </Stack>
+    );
+}
+
+// FM-055: the `{n} rejected` fragment of `search-results-summary` is a
+// control that opens the per-reason breakdown. This restores parity with
+// legacy, which exposed exactly this data from exactly this summary badge
+// through a click-triggered tooltip (`search-results.html:170-190` and
+// `getRejectedReasonsTooltip()` in `search-results-controller.js`); React has
+// rendered no rejection reasons at all until now.
+//
+// A stock `Link component="button"` rather than a restyled `Button`: the
+// trigger is one word inside a running sentence, which is the inline
+// text-trigger anatomy `Link` already provides (underline included, and
+// ADR-0015 keeps the authored focus ring for the `Link` family). Only its
+// color is overridden, to the surrounding sentence's own `inherit`, so the
+// summary does not read as two competing accent colors next to the
+// `primary.main` selected count.
+function RejectedResultsTrigger({
+    count,
+    reasons,
+}: {
+    count: number;
+    reasons: Record<string, number>;
+}) {
+    const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+    const open = Boolean(anchorEl);
+    const entries = useMemo(
+        () =>
+            Object.entries(reasons).sort(
+                (first, second) => second[1] - first[1],
+            ),
+        [reasons],
+    );
+    return (
+        <>
+            <Link
+                aria-expanded={open ? "true" : "false"}
+                aria-haspopup="true"
+                component="button"
+                data-testid="results-rejected-trigger"
+                onClick={(event) =>
+                    setAnchorEl(anchorEl ? null : event.currentTarget)
+                }
+                sx={{color: "inherit"}}
+                type="button"
+            >
+                {count} rejected
+            </Link>
+            <Popover
+                anchorEl={anchorEl}
+                anchorOrigin={{horizontal: "left", vertical: "bottom"}}
+                onClose={() => setAnchorEl(null)}
+                open={open}
+                slotProps={{paper: {sx: {maxWidth: "100%"}}}}
+                transformOrigin={{horizontal: "left", vertical: "top"}}
+            >
+                <Box
+                    data-testid="results-rejected-popover"
+                    sx={{
+                        minWidth: DISPLAY_MENU_MIN_WIDTH,
+                        p: DISPLAY_MENU_PADDING,
+                    }}
+                >
+                    <Typography component="div" sx={POPOVER_HEADING_SX}>
+                        Rejection reasons
+                    </Typography>
+                    {entries.length === 0 ? (
+                        <Typography
+                            component="div"
+                            sx={{
+                                fontSize: DISPLAY_MENU_ITEM_FONT_SIZE,
+                                px: DISPLAY_MENU_ITEM_PADDING_X,
+                                py: DISPLAY_MENU_ITEM_PADDING_Y,
+                            }}
+                        >
+                            No rejection reasons were reported.
+                        </Typography>
+                    ) : (
+                        <Stack
+                            component="ul"
+                            sx={{listStyle: "none", m: 0, p: 0}}
+                        >
+                            {entries.map(([reason, reasonCount]) => (
+                                <Stack
+                                    component="li"
+                                    direction="row"
+                                    key={reason}
+                                    sx={{
+                                        fontSize: DISPLAY_MENU_ITEM_FONT_SIZE,
+                                        gap: DISPLAY_MENU_ITEM_GAP,
+                                        px: DISPLAY_MENU_ITEM_PADDING_X,
+                                        py: DISPLAY_MENU_ITEM_PADDING_Y,
+                                    }}
+                                >
+                                    <Box
+                                        component="span"
+                                        sx={{fontWeight: 600}}
+                                    >
+                                        {reasonCount}
+                                    </Box>
+                                    <Box component="span">{reason}</Box>
+                                </Stack>
+                            ))}
+                        </Stack>
+                    )}
+                </Box>
+            </Popover>
+        </>
     );
 }
 
@@ -1979,17 +2198,7 @@ function DisplayOptionsMenu({
                         p: DISPLAY_MENU_PADDING,
                     }}
                 >
-                    <Typography
-                        component="div"
-                        sx={{
-                            color: "surfaces.mutedText",
-                            fontSize: "10.5px",
-                            fontWeight: 600,
-                            letterSpacing: "0.6px",
-                            padding: "4px 8px 8px",
-                            textTransform: "uppercase",
-                        }}
-                    >
+                    <Typography component="div" sx={POPOVER_HEADING_SX}>
                         Display options
                     </Typography>
                     <FormGroup>

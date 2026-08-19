@@ -1,7 +1,7 @@
 # Migration Status
 
-Entries are ≤ 5 lines; details live in the task packets and git history. FM-001 through FM-054 are done; their packets were
-removed from `tasks/` during the 2026-08-19 governance compaction (FM-001–FM-053) or on completion (FM-054) (see
+Entries are ≤ 5 lines; details live in the task packets and git history. FM-001 through FM-055 are done; their packets were
+removed from `tasks/` during the 2026-08-19 governance compaction (FM-001–FM-053) or on completion (FM-054, FM-055) (see
 `DECISIONS.md` ADR-0014/0015 and git history).
 
 ## Active

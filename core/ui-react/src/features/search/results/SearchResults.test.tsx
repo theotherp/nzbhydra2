@@ -130,7 +130,118 @@ describe("SearchResults", () => {
             screen.getByText("No results were found for this search"),
         ).toBeVisible();
         expect(screen.getByTestId("indexer-limit-warnings")).toBeVisible();
-        expect(screen.getByText("Rejected 2 results.")).toBeVisible();
+        // FM-055: the standalone `Rejected N results.` Alert is replaced by
+        // the `results-rejected-trigger` inside `search-results-summary` (see
+        // the dedicated test below), so no such Alert renders any more.
+        expect(screen.queryByText(/^Rejected \d+ results\.$/)).toBeNull();
+
+        // FM-055 review fix: the backend includes rejected items in
+        // `numberOfAvailableResults`, so an all-rejected response reports it
+        // as `> 0` -- the same value as `numberOfRejectedResults` here --
+        // which means the "No results were found" Alert above does *not*
+        // fire in this state either (it only fires at exactly 0). With no
+        // loaded results and no such Alert, the rejection breakdown is the
+        // only information on the page about what happened, so it must stay
+        // reachable even though `hasResults` is false.
+        rerender(
+            <SearchResults
+                data={{
+                    ...response,
+                    indexerSearchMetaDatas: [
+                        {indexerName: "Mock", wasSuccessful: true},
+                    ],
+                    numberOfAvailableResults: 2,
+                    numberOfRejectedResults: 2,
+                    rejectedReasonsMap: {"Duplicate of another result": 2},
+                }}
+            />,
+        );
+        expect(
+            screen.queryByText("No results were found for this search"),
+        ).toBeNull();
+        const allRejectedSummary = screen.getByTestId("search-results-summary");
+        const allRejectedTrigger = within(allRejectedSummary).getByTestId(
+            "results-rejected-trigger",
+        );
+        expect(allRejectedTrigger).toHaveTextContent("2 rejected");
+        fireEvent.click(allRejectedTrigger);
+        expect(
+            within(screen.getByTestId("results-rejected-popover")).getByText(
+                "Duplicate of another result",
+            ),
+        ).toBeVisible();
+    });
+
+    // FM-055: restores the rejection-reason parity legacy had on the same
+    // summary badge (a click-triggered tooltip, `search-results.html:170-190`)
+    // and React never rendered.
+    it("should open the rejected-reason breakdown from the summary, sorted by count descending", () => {
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 1,
+                    numberOfRejectedResults: 98,
+                    rejectedReasonsMap: {
+                        "Forbidden word: x264": 13,
+                        "Duplicate of another result": 61,
+                        "Too small: 12 MB < 50 MB": 24,
+                    },
+                    searchResults: [
+                        {
+                            searchResultId: "1",
+                            title: "Result",
+                            indexer: "Mock",
+                            category: "All",
+                        },
+                    ],
+                }}
+            />,
+        );
+        const summary = screen.getByTestId("search-results-summary");
+        const trigger = within(summary).getByTestId("results-rejected-trigger");
+        expect(trigger).toHaveTextContent("98 rejected");
+        expect(trigger).toHaveAttribute("aria-expanded", "false");
+        expect(
+            screen.queryByTestId("results-rejected-popover"),
+        ).not.toBeInTheDocument();
+
+        fireEvent.click(trigger);
+        expect(trigger).toHaveAttribute("aria-expanded", "true");
+        const popover = screen.getByTestId("results-rejected-popover");
+        expect(
+            [...popover.querySelectorAll("li")].map((item) => item.textContent),
+        ).toEqual([
+            "61Duplicate of another result",
+            "24Too small: 12 MB < 50 MB",
+            "13Forbidden word: x264",
+        ]);
+    });
+
+    it("should report an empty rejected-reason map without hiding the count", () => {
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 1,
+                    numberOfRejectedResults: 3,
+                    searchResults: [
+                        {
+                            searchResultId: "1",
+                            title: "Result",
+                            indexer: "Mock",
+                            category: "All",
+                        },
+                    ],
+                }}
+            />,
+        );
+        fireEvent.click(screen.getByTestId("results-rejected-trigger"));
+        expect(
+            within(screen.getByTestId("results-rejected-popover")).getByText(
+                "No rejection reasons were reported.",
+            ),
+        ).toBeVisible();
     });
 
     it("should disable incomplete paging and report continuation failures without concurrent requests", async () => {
@@ -706,16 +817,17 @@ describe("SearchResults", () => {
         );
         // Below `sm` the responsive table styling hides `thead` entirely
         // (see the table's `sx` in SearchResults.tsx), so the header's
-        // selection menu is unreachable there; `results-selection-actions`
-        // carries a second, functionally-identical copy so bulk selection
-        // stays reachable from the toolbar at that viewport. jsdom does not
+        // selection menu is unreachable there; the toolbar's merged
+        // `results-bulk-actions` row (FM-055; `results-selection-actions`
+        // before it) carries a second, functionally-identical copy at its
+        // start so bulk selection stays reachable at that viewport. jsdom does not
         // evaluate the CSS media query that keeps only one copy visible at a
         // time in a real browser (asserted for real in
         // tests/system/tests/results.spec.ts); this test only exercises that
         // the toolbar copy is functionally wired to the same selection
         // state, regardless of jsdom's lack of layout.
         const toolbarMenu = within(
-            screen.getByTestId("results-selection-actions"),
+            screen.getByTestId("results-bulk-actions"),
         ).getByTestId("toolbar-selection-menu");
         fireEvent.click(
             within(toolbarMenu).getByRole("button", {
@@ -742,9 +854,12 @@ describe("SearchResults", () => {
         };
         renderResults(<SearchResults data={downloadActionResponse("NZB")} />);
         const bar = screen.getByTestId("results-bulk-actions");
+        // FM-055: the counts this row used to restate
+        // (`results-bulk-actions-summary`, `results-selected-count`) are gone;
+        // `search-results-summary` is now the single place they render.
         expect(
-            within(bar).getByTestId("results-bulk-actions-summary"),
-        ).toHaveTextContent("1 of 1 loaded results");
+            within(bar).queryByTestId("results-bulk-actions-summary"),
+        ).not.toBeInTheDocument();
         expect(
             within(bar).queryByTestId("results-selected-count"),
         ).not.toBeInTheDocument();
@@ -755,9 +870,12 @@ describe("SearchResults", () => {
         // Disabled (not toast-blocked) with no selection.
         expect(send).toBeDisabled();
         expect(zip).toBeDisabled();
-        // FM-046: `search-results-summary` carries no `· N selected`
-        // fragment while nothing is selected.
         const summary = screen.getByTestId("search-results-summary");
+        // The one count phrase: no filtered, rejected, or selected clause is
+        // present while each of those counts is zero.
+        expect(summary).toHaveTextContent("1 of 1 loaded");
+        expect(summary).not.toHaveTextContent("filtered");
+        expect(summary).not.toHaveTextContent("rejected");
         expect(summary).not.toHaveTextContent("selected");
 
         fireEvent.click(
@@ -765,15 +883,85 @@ describe("SearchResults", () => {
                 "checkbox",
             ),
         );
-        expect(
-            within(bar).getByTestId("results-selected-count"),
-        ).toHaveTextContent("1 selected");
         expect(send).toBeEnabled();
         expect(zip).toBeEnabled();
-        // The same "1 selected" fragment also renders inline in
-        // `search-results-summary`, unchanged from `results-selected-count`
-        // (both render; neither replaces the other).
-        expect(summary).toHaveTextContent("1 selected");
+        expect(summary).toHaveTextContent("· 1 selected");
+    });
+
+    // FM-055: the packet's exact phrase, including the `>` prefix the
+    // available-count clause inherits from the pre-existing rule and the
+    // `" · "` separator between clauses.
+    it("should render one summary phrase with every non-zero clause", () => {
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 500,
+                    numberOfProcessedResults: 2,
+                    numberOfRejectedResults: 98,
+                    rejectedReasonsMap: {"Duplicate of another result": 98},
+                    indexerSearchMetaDatas: [
+                        {
+                            indexerName: "Mock",
+                            wasSuccessful: true,
+                            hasMoreResults: true,
+                            totalResultsKnown: false,
+                        },
+                    ],
+                    searchResults: [
+                        {
+                            searchResultId: "1",
+                            title: "Kept result",
+                            indexer: "Mock",
+                            category: "All",
+                        },
+                        {
+                            searchResultId: "2",
+                            title: "Filtered result",
+                            indexer: "Other",
+                            category: "All",
+                        },
+                    ],
+                }}
+            />,
+        );
+        expandRefineSidebar();
+        fireEvent.click(refineOption("refine-indexer-option", "Other"));
+        expect(screen.getByTestId("search-results-summary")).toHaveTextContent(
+            "1 of 2 loaded (>500 available) · 1 filtered · 98 rejected",
+        );
+    });
+
+    // The available-count clause disappears once nothing more can be loaded,
+    // matching legacy's own "Loaded all N results" branch.
+    it("should omit the available clause when no more results can be loaded", () => {
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    numberOfAvailableResults: 1,
+                    numberOfProcessedResults: 1,
+                    indexerSearchMetaDatas: [
+                        {
+                            indexerName: "Mock",
+                            wasSuccessful: true,
+                            hasMoreResults: false,
+                        },
+                    ],
+                    searchResults: [
+                        {
+                            searchResultId: "1",
+                            title: "Only result",
+                            indexer: "Mock",
+                            category: "All",
+                        },
+                    ],
+                }}
+            />,
+        );
+        const summary = screen.getByTestId("search-results-summary");
+        expect(summary).toHaveTextContent("1 of 1 loaded");
+        expect(summary).not.toHaveTextContent("available");
     });
 
     it("should reconcile merged rows without losing active sort, filter, grouping, or valid selection", () => {
@@ -999,30 +1187,113 @@ describe("SearchResults", () => {
             within(toolbar).getByTestId("results-bulk-actions"),
         ).toBeVisible();
         expect(
-            within(toolbar).getByTestId("results-selection-actions"),
-        ).toBeVisible();
-        expect(
-            within(toolbar).getByTestId("results-download-actions"),
-        ).toBeVisible();
-        expect(
             within(table).getByText("Actions", {selector: "th"}),
         ).toBeVisible();
-        // The three regions stay distinct: FM-040's bulk-actions bar (counts
-        // + the two selection-gated primary actions) is a different element
-        // from both results-selection-actions (grouping toggles + the
-        // mobile-reachable selection menu) and results-download-actions
-        // (downloader select, category select, black hole, copy links, save
-        // search).
-        const bulkActions = within(toolbar).getByTestId("results-bulk-actions");
-        const selectionActions = within(toolbar).getByTestId(
+        // FM-055: the toolbar is exactly two rows -- the summary/paging/
+        // display row and the single merged action row. The regions the
+        // former three-row layout carried are gone, their contents folded
+        // into these two.
+        for (const removed of [
+            "results-bulk-actions-summary",
+            "results-selected-count",
             "results-selection-actions",
-        );
-        const downloadActions = within(toolbar).getByTestId(
             "results-download-actions",
+        ]) {
+            expect(screen.queryByTestId(removed)).not.toBeInTheDocument();
+        }
+        const rows = [...(toolbar.firstElementChild?.children ?? [])];
+        expect(rows).toHaveLength(2);
+        expect(
+            within(rows[0] as HTMLElement).getByTestId(
+                "search-results-summary",
+            ),
+        ).toBeVisible();
+        expect(
+            within(rows[0] as HTMLElement).getByTestId(
+                "display-options-toggle",
+            ),
+        ).toBeVisible();
+        expect(rows[1]).toHaveAttribute("data-testid", "results-bulk-actions");
+    });
+
+    // FM-055: the paging controls moved from their own non-sticky row above
+    // the toolbar into the toolbar's first row, keeping their accessible
+    // names and `requestContinuation` semantics, and gaining stable ids.
+    it("should render the paging controls inside the toolbar's first row", () => {
+        const loadMore = vi.fn().mockResolvedValue(undefined);
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    pagingState: "ready",
+                    offset: 0,
+                    limit: 1,
+                    numberOfProcessedResults: 1,
+                    numberOfAvailableResults: 2,
+                    searchResults: [
+                        {
+                            searchResultId: "1",
+                            title: "Result",
+                            indexer: "Mock",
+                            category: "All",
+                        },
+                    ],
+                    indexerSearchMetaDatas: [
+                        {
+                            indexerName: "Mock",
+                            wasSuccessful: true,
+                            hasMoreResults: true,
+                        },
+                    ],
+                }}
+                onLoadMore={loadMore}
+            />,
         );
-        expect(bulkActions).not.toBe(selectionActions);
-        expect(bulkActions).not.toBe(downloadActions);
-        expect(selectionActions).not.toBe(downloadActions);
+        const toolbar = screen.getByTestId("results-toolbar");
+        const more = within(toolbar).getByTestId("results-load-more");
+        const all = within(toolbar).getByTestId("results-load-all");
+        expect(more).toHaveAccessibleName("Load more");
+        expect(all).toHaveAccessibleName("Load all results");
+        expect(more).toBeEnabled();
+        expect(all).toBeEnabled();
+        fireEvent.click(more);
+        expect(loadMore).toHaveBeenCalledWith(false);
+    });
+
+    // A response can report more available results while carrying none of its
+    // own; the continuation controls must not disappear with the rest of the
+    // toolbar in that state.
+    it("should keep the paging controls reachable with no loaded results", () => {
+        const loadMore = vi.fn().mockResolvedValue(undefined);
+        renderResults(
+            <SearchResults
+                data={{
+                    ...response,
+                    pagingState: "ready",
+                    offset: 0,
+                    limit: 1,
+                    numberOfProcessedResults: 1,
+                    numberOfAvailableResults: 2,
+                    indexerSearchMetaDatas: [
+                        {
+                            indexerName: "Mock",
+                            wasSuccessful: true,
+                            hasMoreResults: true,
+                        },
+                    ],
+                }}
+                onLoadMore={loadMore}
+            />,
+        );
+        const toolbar = screen.getByTestId("results-toolbar");
+        expect(within(toolbar).getByTestId("results-load-more")).toBeEnabled();
+        expect(within(toolbar).getByTestId("results-load-all")).toBeEnabled();
+        expect(
+            screen.queryByTestId("search-results-summary"),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByTestId("results-bulk-actions"),
+        ).not.toBeInTheDocument();
     });
 
     // FM-042: `position: sticky` is applied to the whole `results-toolbar`
@@ -1030,7 +1301,7 @@ describe("SearchResults", () => {
     // div) and to every table header cell, matching the mock's own
     // `position:sticky;top:51px` header row. It is deliberately *not*
     // applied to the toolbar's individual children (summary,
-    // results-bulk-actions, results-selection-actions): `position: sticky`
+    // results-bulk-actions): `position: sticky`
     // only remains pinned for as long as the element's own containing block
     // (its nearest block-level DOM ancestor) keeps overlapping the
     // viewport, and `results-toolbar`'s individual children have a much
@@ -1064,7 +1335,6 @@ describe("SearchResults", () => {
         for (const testId of [
             "search-results-summary",
             "results-bulk-actions",
-            "results-selection-actions",
         ]) {
             expect(
                 getComputedStyle(screen.getByTestId(testId)).position,

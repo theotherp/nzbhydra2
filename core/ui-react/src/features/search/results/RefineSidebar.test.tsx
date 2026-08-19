@@ -64,12 +64,19 @@ function Harness({
     onClearAll = vi.fn(),
     onToggleCollapsed = vi.fn(),
     quickFilters = [],
+    // FM-055: in the app this is `SearchResults.tsx`'s measured
+    // `results-toolbar` height. A fixed stand-in here is enough: jsdom lays
+    // nothing out, so only the CSS declarations derived from the value are
+    // observable (the pinned behavior itself is proven in a real browser by
+    // `tests/system/tests/results.spec.ts`).
+    toolbarHeight = 90,
 }: {
     collapsed?: boolean;
     loadedResults?: SearchResult[];
     onClearAll?: () => void;
     onToggleCollapsed?: () => void;
     quickFilters?: QuickFilter[];
+    toolbarHeight?: number;
 }) {
     const [filters, setFilters] = useState<ResultFilters>(() =>
         defaultFilters(loadedResults, quickFilters),
@@ -108,6 +115,7 @@ function Harness({
                 quickFilters={quickFilters}
                 results={loadedResults}
                 setFilters={setFilters}
+                toolbarHeight={toolbarHeight}
                 updateRange={(name, bound, value) =>
                     setFilters((current) => ({
                         ...current,
@@ -153,6 +161,42 @@ describe("RefineSidebar", () => {
         expect(
             screen.queryByTestId("refine-clear-all"),
         ).not.toBeInTheDocument();
+    });
+
+    // FM-055: the docked branch is pinned to the viewport directly beneath
+    // the sticky results toolbar and scrolls within itself. jsdom performs no
+    // layout, so only the emotion-injected declarations are checkable here --
+    // that the sidebar actually stays visible while the results scroll, and
+    // that ADR-0011's sticky column header still pins beside it, is proven in
+    // a real browser by `tests/system/tests/results.spec.ts`.
+    it.each([
+        ["expanded", false],
+        ["collapsed rail", true],
+    ])(
+        "pins the docked %s beneath the measured toolbar height and scrolls within itself",
+        (_label, collapsed) => {
+            render(<Harness collapsed={collapsed} toolbarHeight={90} />);
+            const style = getComputedStyle(
+                screen.getByTestId("refine-sidebar"),
+            );
+            expect(style.position).toBe("sticky");
+            expect(style.top).toBe("90px");
+            expect(style.maxHeight).toBe("calc(100vh - 90px)");
+            expect(style.overflowY).toBe("auto");
+            expect(style.overflowX).toBe("hidden");
+            expect(style.alignSelf).toBe("flex-start");
+        },
+    );
+
+    it("leaves the below-`sm` drawer branch unpinned", () => {
+        stubMobileViewport();
+        render(<Harness />);
+        fireEvent.click(
+            screen.getByRole("button", {name: "Expand refine sidebar"}),
+        );
+        const style = getComputedStyle(screen.getByTestId("refine-sidebar"));
+        expect(style.position).not.toBe("sticky");
+        expect(style.overflowY).not.toBe("auto");
     });
 
     it("expands to show every filter section and omits Quality when no quick filters are configured", () => {

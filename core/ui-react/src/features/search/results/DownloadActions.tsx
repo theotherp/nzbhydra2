@@ -1,12 +1,6 @@
-import {
-    Alert,
-    Button,
-    MenuItem,
-    Select,
-    Stack,
-    Typography,
-} from "@mui/material";
+import {Alert, Button, MenuItem, Select, Stack} from "@mui/material";
 import type {Theme} from "@mui/material/styles";
+import type {ReactNode} from "react";
 import {useEffect, useMemo, useState} from "react";
 
 import type {SearchResult} from "../../../api/search";
@@ -71,12 +65,14 @@ const secondaryActionSx = (theme: Theme) =>
         },
     }) as const;
 
-// The `results-download-actions` region's own controls (downloader select,
-// downloader-category select, black-hole/save, copy-links, Save search)
-// restyle to the same neutral control surface, radius, and typography as the
-// bulk-actions bar's secondary button, with no change to which controls are
-// present, their order, or their behavior. The downloader/category selects
-// stay a bare `Select` with an `aria-label` (ADR-0014 names `Select` with
+// The secondary bulk controls (downloader select, downloader-category
+// select, black-hole/save, copy-links, Save search -- their own
+// `results-download-actions` row until FM-055 merged it into
+// `results-bulk-actions`) restyle to the same neutral control surface,
+// radius, and typography as the bulk-actions bar's secondary button, with no
+// change to which controls are present, their order, or their behavior. The
+// downloader/category selects stay a bare `Select` with an `aria-label`
+// (ADR-0014 names `Select` with
 // `InputLabel` as the standard alternative to `TextField select`, and this
 // row genuinely lacks room for a floating label -- a real-browser measurement
 // during this task's own verification confirmed a `TextField select` with a
@@ -89,22 +85,21 @@ const secondaryActionSx = (theme: Theme) =>
 const downloadActionsButtonSx = secondaryActionSx;
 
 export function DownloadActions({
+    leading,
     results,
     safeConfig,
     onDownloaded,
-    filteredCount,
-    loadedCount,
     onSaveSearch,
     savingSearch = false,
 }: {
+    // FM-055: rendered at the start of the merged action row. The one
+    // current caller passes the `sm`-down `SelectionMenu` copy, which the
+    // toolbar owns (it drives the parent's selection state) but which the
+    // packet's row-2 layout places inside this row.
+    leading?: ReactNode;
     results: SearchResult[];
     safeConfig: unknown;
     onDownloaded: (ids: number[]) => void;
-    // Loaded/filtered counts for the bulk-actions bar (FM-040). Selected
-    // count is `results.length`; `results` is already the caller's
-    // selected-results subset, so no separate prop is needed for it.
-    filteredCount: number;
-    loadedCount: number;
     onSaveSearch?: () => Promise<void>;
     savingSearch?: boolean;
 }) {
@@ -275,178 +270,152 @@ export function DownloadActions({
             return response;
         }, "Prepared NZB ZIP download.");
     return (
-        <>
-            {/* The bulk-actions bar (FM-040): loaded/filtered/selected
-                counts plus the two primary, selection-gated actions --
-                "Send to downloader" and the NZB ZIP download. Both are
-                `disabled` (not a toast) until something is selected, per
-                F-SEARCH-GROUP-SELECTION/F-SEARCH-DOWNLOADS. Every other
-                bulk capability (downloader/category select, black-hole
-                save, copy links, Save search) stays in the separate
-                `results-download-actions` region below, unchanged in
-                behavior. */}
-            <Stack
-                alignItems="center"
-                data-testid="results-bulk-actions"
-                direction="row"
-                flexWrap="wrap"
-                gap={1.5}
-            >
-                <Typography
-                    data-testid="results-bulk-actions-summary"
-                    variant="body2"
-                >
-                    {filteredCount} of {loadedCount} loaded results
-                </Typography>
-                {results.length > 0 && (
-                    <Typography
-                        color="primary"
-                        data-testid="results-selected-count"
-                        variant="body2"
-                    >
-                        {results.length} selected
-                    </Typography>
-                )}
-                {downloaders.length > 0 && (
-                    <Button
-                        data-testid="send-to-downloader"
-                        disabled={
-                            busy ||
-                            Boolean(categoryError) ||
-                            results.length === 0
-                        }
-                        onClick={send}
-                        size="small"
-                        sx={primaryActionSx}
-                        variant="contained"
-                    >
-                        Send selected to downloader
-                    </Button>
-                )}
-                {settings.zip && (
-                    <Button
-                        disabled={busy || selectedNzbs.length === 0}
-                        onClick={zip}
-                        size="small"
-                        sx={secondaryActionSx}
-                        variant="outlined"
-                    >
-                        Download selected NZBs as ZIP
-                    </Button>
-                )}
-            </Stack>
-            <Stack
-                alignItems="center"
-                direction="row"
-                flexWrap="wrap"
-                gap={1}
-                aria-label="Selected result download actions"
-                data-testid="results-download-actions"
-            >
-                {onSaveSearch && (
-                    <Button
-                        disabled={savingSearch}
-                        id="save-search"
-                        onClick={() => void onSaveSearch()}
-                        size="small"
-                        sx={downloadActionsButtonSx}
-                        variant="outlined"
-                    >
-                        {savingSearch ? "Saving search…" : "Save search"}
-                    </Button>
-                )}
-                {downloaders.length === 0 && (
-                    <Alert severity="info">
-                        No downloader is configured for selected-result sends.
-                    </Alert>
-                )}
-                {categoryError && (
-                    <Alert severity="error">{categoryError}</Alert>
-                )}
-                {downloaders.length > 0 && (
-                    <>
-                        <Select
-                            aria-label="Downloader"
-                            size="small"
-                            sx={{fontSize: "13px"}}
-                            value={downloader?.name ?? ""}
-                            onChange={(event) =>
-                                setDownloader(
-                                    downloaders.find(
-                                        (value) =>
-                                            value.name === event.target.value,
-                                    ),
-                                )
-                            }
-                        >
-                            {downloaders.map((value) => (
-                                <MenuItem key={value.name} value={value.name}>
-                                    {value.name}
-                                </MenuItem>
-                            ))}
-                        </Select>
-                        <Select
-                            aria-label="Downloader category"
-                            size="small"
-                            sx={{fontSize: "13px"}}
-                            value={category ?? ""}
-                            onChange={(event) =>
-                                setCategory(event.target.value || null)
-                            }
-                        >
-                            <MenuItem value="">Use downloader default</MenuItem>
-                            {downloaderCategories.map((value) => (
-                                <MenuItem key={value} value={value}>
-                                    {value}
-                                </MenuItem>
-                            ))}
-                        </Select>
-                    </>
-                )}
-                {(settings.saveNzbs ||
-                    settings.saveTorrents ||
-                    settings.sendMagnets) && (
-                    <Button
-                        disabled={busy}
-                        onClick={() =>
-                            Promise.all([
-                                selectedNzbs.length && settings.saveNzbs
-                                    ? execute(
-                                          () =>
-                                              saveNzbs(transport, selectedNzbs),
-                                          "Successfully saved NZBs.",
-                                      )
-                                    : undefined,
-                                selectedTorrents.length &&
-                                (settings.saveTorrents || settings.sendMagnets)
-                                    ? execute(
-                                          () =>
-                                              saveOrSendTorrents(
-                                                  transport,
-                                                  selectedTorrents,
-                                              ),
-                                          "Successfully saved or sent torrents.",
-                                      )
-                                    : undefined,
-                            ])
-                        }
-                        size="small"
-                        sx={downloadActionsButtonSx}
-                        variant="outlined"
-                    >
-                        Send selected to black hole
-                    </Button>
-                )}
+        // FM-055 (row 2 of the consolidated `results-toolbar`): the single
+        // wrapping action row. It keeps FM-040's `results-bulk-actions`
+        // identity and absorbs the removed `results-download-actions`
+        // region's controls in the packet's order -- primary send,
+        // downloader/category selects, ZIP, black hole, copy links, and Save
+        // search at the right end. Every control keeps the behavior,
+        // accessible name, and `disabled`/busy semantics it had in its
+        // former row (the selection-gated actions are still genuinely
+        // `disabled`, never merely toast-blocked), so no capability moves
+        // behind an overflow menu. The loaded/filtered/selected counts this
+        // row used to restate are now rendered once, in
+        // `search-results-summary`.
+        <Stack
+            alignItems="center"
+            aria-label="Selected result actions"
+            data-testid="results-bulk-actions"
+            direction="row"
+            flexWrap="wrap"
+            gap={1}
+        >
+            {leading}
+            {downloaders.length > 0 && (
                 <Button
-                    onClick={copy}
+                    data-testid="send-to-downloader"
+                    disabled={
+                        busy || Boolean(categoryError) || results.length === 0
+                    }
+                    onClick={send}
+                    size="small"
+                    sx={primaryActionSx}
+                    variant="contained"
+                >
+                    Send selected to downloader
+                </Button>
+            )}
+            {downloaders.length > 0 && (
+                <>
+                    <Select
+                        aria-label="Downloader"
+                        size="small"
+                        sx={{fontSize: "13px"}}
+                        value={downloader?.name ?? ""}
+                        onChange={(event) =>
+                            setDownloader(
+                                downloaders.find(
+                                    (value) =>
+                                        value.name === event.target.value,
+                                ),
+                            )
+                        }
+                    >
+                        {downloaders.map((value) => (
+                            <MenuItem key={value.name} value={value.name}>
+                                {value.name}
+                            </MenuItem>
+                        ))}
+                    </Select>
+                    <Select
+                        aria-label="Downloader category"
+                        size="small"
+                        sx={{fontSize: "13px"}}
+                        value={category ?? ""}
+                        onChange={(event) =>
+                            setCategory(event.target.value || null)
+                        }
+                    >
+                        <MenuItem value="">Use downloader default</MenuItem>
+                        {downloaderCategories.map((value) => (
+                            <MenuItem key={value} value={value}>
+                                {value}
+                            </MenuItem>
+                        ))}
+                    </Select>
+                </>
+            )}
+            {downloaders.length === 0 && (
+                <Alert severity="info">
+                    No downloader is configured for selected-result sends.
+                </Alert>
+            )}
+            {categoryError && <Alert severity="error">{categoryError}</Alert>}
+            {settings.zip && (
+                <Button
+                    disabled={busy || selectedNzbs.length === 0}
+                    onClick={zip}
+                    size="small"
+                    sx={secondaryActionSx}
+                    variant="outlined"
+                >
+                    Download selected NZBs as ZIP
+                </Button>
+            )}
+            {(settings.saveNzbs ||
+                settings.saveTorrents ||
+                settings.sendMagnets) && (
+                <Button
+                    disabled={busy}
+                    onClick={() =>
+                        Promise.all([
+                            selectedNzbs.length && settings.saveNzbs
+                                ? execute(
+                                      () => saveNzbs(transport, selectedNzbs),
+                                      "Successfully saved NZBs.",
+                                  )
+                                : undefined,
+                            selectedTorrents.length &&
+                            (settings.saveTorrents || settings.sendMagnets)
+                                ? execute(
+                                      () =>
+                                          saveOrSendTorrents(
+                                              transport,
+                                              selectedTorrents,
+                                          ),
+                                      "Successfully saved or sent torrents.",
+                                  )
+                                : undefined,
+                        ])
+                    }
                     size="small"
                     sx={downloadActionsButtonSx}
                     variant="outlined"
                 >
-                    Copy selected links
+                    Send selected to black hole
                 </Button>
-            </Stack>
-        </>
+            )}
+            <Button
+                onClick={copy}
+                size="small"
+                sx={downloadActionsButtonSx}
+                variant="outlined"
+            >
+                Copy selected links
+            </Button>
+            {onSaveSearch && (
+                <Button
+                    disabled={savingSearch}
+                    id="save-search"
+                    onClick={() => void onSaveSearch()}
+                    size="small"
+                    sx={[downloadActionsButtonSx, {ml: "auto"}]}
+                    variant="outlined"
+                >
+                    {savingSearch ? "Saving search…" : "Save search"}
+                </Button>
+            )}
+        </Stack>
     );
 }
 

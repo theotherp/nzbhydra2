@@ -852,7 +852,7 @@ test.describe("Authored keyboard focus indication (ADR-0013, Option A)", () => {
                 );
 
                 const downloaderLocator = page
-                    .getByTestId("results-download-actions")
+                    .getByTestId("results-bulk-actions")
                     .locator(".MuiInputBase-root")
                     .first();
                 await expectFocusedOutlinedInput(
@@ -860,8 +860,9 @@ test.describe("Authored keyboard focus indication (ADR-0013, Option A)", () => {
                     downloaderLocator,
                     "downloader-select",
                 );
-                // R2 fix: the containing region (`results-download-actions`,
-                // 1200x42) is not tall enough for the control's own ~47.7px
+                // R2 fix: the containing region (`results-bulk-actions`,
+                // `results-download-actions` before FM-055 merged the two)
+                // is not tall enough for the control's own ~47.7px
                 // vertical reach (35.69px control height plus the ring's
                 // 6px reach on each side), so the ring's top/bottom strokes
                 // fell outside the frame -- the same defect class R1 already
@@ -1187,23 +1188,24 @@ test.describe("Authored keyboard focus indication (ADR-0013, Option A)", () => {
                 const toolbar = document.querySelector(
                     "[data-testid='results-toolbar']",
                 );
-                const button = Array.from(
-                    document.querySelectorAll("button"),
-                ).find((node) => node.textContent?.trim() === "Load more");
+                const button = document.querySelector(
+                    "[data-testid='results-load-more']",
+                );
                 return {
-                    aboveToolbar:
-                        toolbar && button
-                            ? button.getBoundingClientRect().bottom <=
-                              toolbar.getBoundingClientRect().top + 0.01
-                            : null,
+                    // FM-055: the paging controls moved from their own row
+                    // above the toolbar into the toolbar's first row, so the
+                    // placement contract is now containment rather than
+                    // "above".
+                    insideToolbar:
+                        toolbar && button ? toolbar.contains(button) : null,
                     pageOverflow:
                         document.documentElement.scrollWidth >
                         document.documentElement.clientWidth,
                 };
             });
             expect(
-                placement.aboveToolbar,
-                `paging controls stay above the results toolbar (${viewport})`,
+                placement.insideToolbar,
+                `paging controls render inside the results toolbar (${viewport})`,
             ).toBe(true);
             expect(
                 placement.pageOverflow,
