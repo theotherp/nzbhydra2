@@ -284,6 +284,23 @@ Format, one entry per fix:
   minor-findings convention — small cosmetic gaps are logged, not always fixed on the spot); discharged here alongside the
   `FilterDefinition.java` fix below at the owner's request.
 
+### 2026-08-19 — Show a visible sort-direction indicator on history table headers
+
+- **Why not a packet:** styling change confined to two components' local `SortHeader` functions, no behavior, contract, or
+  `data-testid` change. `TableSortLabel` is `ButtonBase` with `component="span"`, which still yields `role="button"` and the
+  same accessible name, so `getByRole("button", {name: ...})` in both routes' unit and Playwright tests needed no update.
+- **Paths:** `core/ui-react/src/features/stats/history/{DownloadHistoryPage.tsx,NotificationHistoryPage.tsx}`.
+- **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, 10 pre-existing warnings, unchanged), `format:check`,
+  `test -- --run` (46 files, 338 passed), `build`, `check:api`, `validate:focus-affordances`, `validate:migration` all pass.
+  Root `git diff --check` clean. Real backend: `python3 misc/run_gui_systemtest.py --runtime local -- tests/notification-history.spec.ts tests/downloads.spec.ts` — 11/11 passed, regenerating the `F-HISTORY-NOTIFICATIONS` and
+  `F-HISTORY-DOWNLOADS` screenshot strips (1280x800/390x844), reviewed inline: "Time ↓" now shows a visible arrow on both
+  routes' active sort column.
+- **Commit:** `0769f326b`
+- **Note:** flagged as a non-blocking minor finding by the FM-023 reviewer (previously a plain `Button` with no visible
+  direction indicator, copied from `DownloadHistoryPage.tsx`'s existing pattern) rather than fixed inline, per this project's
+  minor-findings convention. `SearchHistoryPage.tsx` has the identical local `SortHeader` pattern but was not named by the
+  review and is left alone here — see the open candidate below.
+
 ### 2026-08-19 — Stop `FilterDefinition` rejecting filtered history requests with a bare `isBoolean` type mismatch
 
 - **Why not a packet:** contained bugfix to a single primitive-vs-boxed field in one class, shipping a regression test. No
@@ -317,6 +334,23 @@ Format, one entry per fix:
   two-module change.~~ Discharged by FM-056: `C-HISTORY-REQUEST` sends no `isBoolean` for any history endpoint, and the
   padding is gone from `downloads.ts`.
 
+### 2026-08-19 — Guard the visual evidence root against Playwright's cleared output tree
+
+- **Why not a packet:** mechanically verifiable test-infrastructure guard with no behavioral surface; the accompanying helper
+  edit only extracts the existing path literal into an exported constant (identical emitted paths). This was the single
+  undelivered acceptance criterion of FM-033, whose packet is retired in a separate commit — the rest of its outcome shipped
+  ad-hoc in `5c36a7a14` and its `FEATURES.yaml` anchoring was removed by ADR-0014.
+- **Paths:** `core/ui-react/scripts/validate-migration.mjs` (new `validateVisualEvidenceContainment`, wired into the main
+  run), `core/ui-react/scripts/validate-migration.test.mjs` (five tests), `tests/system/tests/visualEvidence.ts` (exported
+  `visualEvidenceRoot` constant).
+- **Gates:** `core/ui-react`: `typecheck`, `lint` (0 errors, 10 pre-existing warnings), `format:check`, `test -- --run`
+  (46 files, 347 passed), `build`, `check:api`, `validate:migration`, `node --test scripts/validate-migration.test.mjs`
+  (9 passed) all pass; install skipped — manifests unchanged. `tests/system`: `npx tsc --noEmit`, `prettier --check` on the
+  edited file. Root: `git diff --check` clean. Regression demonstrated live: with the root flipped to
+  `test-results/visual-evidence`, `validate:migration` exits 1 with the containment error; restored, it passes. No Playwright
+  run needed — the spec-visible path strings are byte-identical.
+- **Commit:** `12b615863`
+
 ---
 
 ## Open candidates
@@ -329,3 +363,13 @@ instead of leaving it to rot.
   packet: a storage-key convention decision (this would be the first persisted UI preference in `core/ui-react`) and a regular implementer/reviewer pass. Route to `/fm-orchestrate`.
 - ~~**The refine sidebar's `downloadTypes` selection has the same cross-search staleness as `indexers`/`categories` did.**~~
   Discharged the same day by the 2026-08-19 download-type entry above (`27efd28f5`).
+- **Download-history and notification-history tables squeeze columns instead of scrolling at 390x844**, wrapping cell text
+  (e.g. "Syst / em", "Inde / xer") rather than letting `TableContainer` scroll horizontally. Flagged by the FM-023 reviewer;
+  affects `DownloadHistoryPage.tsx` and `NotificationHistoryPage.tsx` identically, likely `SearchHistoryPage.tsx` too (not
+  confirmed). Left off this session's quickfix because it needs a real layout decision (a `minWidth` on `Table` forcing
+  container scroll vs. a narrower mobile column set) rather than a mechanical swap, and should be checked and fixed across
+  all three history routes together with a fresh 390x844 screenshot strip for each.
+- **`SearchHistoryPage.tsx`'s local `SortHeader` has the same missing-sort-indicator gap** the entry above just fixed in the
+  other two history routes (identical copy-pasted `<Button>`-in-`<TableCell>` pattern, not a shared component). Not named by
+  the FM-023 review so left untouched here; discharging it would be the same `TableSortLabel` swap, contained to that one
+  file.

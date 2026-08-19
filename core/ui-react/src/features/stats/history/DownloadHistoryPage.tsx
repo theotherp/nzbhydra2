@@ -15,6 +15,7 @@ import {
     TableContainer,
     TableHead,
     TableRow,
+    TableSortLabel,
     Typography,
 } from "@mui/material";
 import {keepPreviousData, useQuery} from "@tanstack/react-query";
@@ -301,17 +302,17 @@ function SortHeader({
     sort: DownloadHistorySort;
     onSort(column: DownloadHistorySort["column"]): void;
 }) {
+    const active = sort.column === column;
+    const direction = active ? (sort.sortMode === 1 ? "asc" : "desc") : "asc";
     return (
-        <TableCell
-            sortDirection={
-                sort.column === column
-                    ? sort.sortMode === 1
-                        ? "asc"
-                        : "desc"
-                    : false
-            }
-        >
-            <Button onClick={() => onSort(column)}>{label}</Button>
+        <TableCell sortDirection={active ? direction : false}>
+            <TableSortLabel
+                active={active}
+                direction={direction}
+                onClick={() => onSort(column)}
+            >
+                {label}
+            </TableSortLabel>
         </TableCell>
     );
 }

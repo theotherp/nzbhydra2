@@ -213,6 +213,45 @@ export function validateParity(records, reportError = report) {
     }
 }
 
+// Playwright clears its output directory at the start of every run, so
+// durable visual evidence written by tests/system/tests/visualEvidence.ts
+// must live outside it (see the 2026-08-16 evidence-cleanup-hazard fix,
+// commit 5c36a7a14). Both paths resolve against tests/system: the helper
+// writes relative to the Playwright cwd, and `outputDir` resolves against
+// the config file's directory.
+export function validateVisualEvidenceContainment(
+    helperSource,
+    playwrightConfigSource,
+    reportError = report,
+) {
+    const rootMatch = helperSource.match(
+        /^export const visualEvidenceRoot = "([^"]+)";$/m,
+    );
+    if (!rootMatch) {
+        reportError(
+            "tests/system/tests/visualEvidence.ts must export a string literal visualEvidenceRoot so validate:migration can check it stays outside Playwright's cleared output directory",
+        );
+        return;
+    }
+    const outputDir =
+        playwrightConfigSource.match(/\boutputDir\s*:\s*"([^"]+)"/)?.[1] ??
+        "test-results";
+    const systemDirectory = path.join(projectRoot, "tests", "system");
+    const evidenceRoot = path.resolve(systemDirectory, rootMatch[1]);
+    const clearedRoot = path.resolve(systemDirectory, outputDir);
+    const relative = path.relative(clearedRoot, evidenceRoot);
+    if (
+        relative === "" ||
+        (!relative.startsWith(`..${path.sep}`) &&
+            relative !== ".." &&
+            !path.isAbsolute(relative))
+    ) {
+        reportError(
+            `visual evidence root ${rootMatch[1]} is inside Playwright's cleared output directory ${outputDir}; a run of any spec would delete every other feature's evidence`,
+        );
+    }
+}
+
 function validateAdoptedApiEvidence(records) {
     for (const record of records) {
         if (
@@ -329,6 +368,22 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
 
     validateActiveApiPaths(records[2]);
     validateAdoptedApiEvidence(records[2]);
+    validateVisualEvidenceContainment(
+        await readFile(
+            path.join(
+                projectRoot,
+                "tests",
+                "system",
+                "tests",
+                "visualEvidence.ts",
+            ),
+            "utf8",
+        ),
+        await readFile(
+            path.join(projectRoot, "tests", "system", "playwright.config.ts"),
+            "utf8",
+        ),
+    );
     validateParity(records[0]);
     validateParity(records[1]);
     const tasks = await validateTaskReferences(ids);

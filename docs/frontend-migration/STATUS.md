@@ -21,4 +21,8 @@ None.
 None.
 
 Planned but not next: FM-057 (Search History Adopts The Shared Refine Bar — FM-056 dependency satisfied), FM-024 (Statistics
-Dashboard), FM-033 (Durable Visual Evidence Output — re-scope against the ADR-0014 screenshot gate before starting).
+Dashboard).
+
+FM-033 (Durable Visual Evidence Output) was retired unrun on 2026-08-19: its evidence-relocation outcome had already shipped
+ad-hoc in `5c36a7a14`, ADR-0014 removed the `FEATURES.yaml` visual machinery it was anchored to, and its one undelivered
+criterion — the containment regression guard — landed as a quickfix (`12b615863`, see `MAINTENANCE.md`).
