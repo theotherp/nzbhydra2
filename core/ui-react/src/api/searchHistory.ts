@@ -1,18 +1,13 @@
 import {z} from "zod";
 
+import type {HistoryDimension} from "./history/filters";
+import {
+    requestHistoryPage,
+    type HistoryPage,
+    type HistoryQuery,
+} from "./history/request";
 import type {RecentSearch} from "./recentSearches";
 import {ApiTransport} from "./transport";
-
-export type SearchHistoryFilters = {
-    after?: string;
-    before?: string;
-    query?: string;
-    category?: string;
-    source?: "all" | "INTERNAL" | "API";
-    userAgent?: string;
-    username?: string;
-    ip?: string;
-};
 
 export type SearchHistorySort = {
     column:
@@ -32,11 +27,6 @@ export type SearchHistoryEntry = RecentSearch & {
     userAgent?: string;
     username?: string;
     ip?: string;
-};
-export type SearchHistoryPage = {
-    searches: SearchHistoryEntry[];
-    totalElements: number;
-    malformedCount: number;
 };
 export type SearchHistoryDetails = {
     username?: string;
@@ -84,90 +74,102 @@ const detailsSchema = z.object({
         .transform((value) => value ?? []),
 });
 
-export function searchHistoryRequest(
-    page: number,
-    limit: number,
-    filters: SearchHistoryFilters,
-    sort: SearchHistorySort,
-) {
-    const filterModel: Record<
-        string,
-        {filterType: string; filterValue: unknown}
-    > = {};
-    const text = (column: string, value: string | undefined) => {
-        if (value?.trim())
-            filterModel[column] = {
-                filterType: "freetext",
-                filterValue: value.trim(),
-            };
-    };
-    if (filters.after || filters.before) {
-        filterModel.time = {
-            filterType: "time",
-            filterValue: {
-                after: toServerTime(filters.after),
-                before: toServerTime(filters.before),
-            },
-        };
-    }
-    text("query", filters.query);
-    if (filters.category)
-        filterModel.category_name = {
-            filterType: "checkboxes",
-            filterValue: [filters.category],
-        };
-    if (filters.source && filters.source !== "all")
-        filterModel.source = {
-            filterType: "boolean",
-            filterValue: filters.source,
-        };
-    text("user_agent", filters.userAgent);
-    text("username", filters.username);
-    text("ip", filters.ip);
-    return {
-        page,
-        limit,
-        filterModel,
-        sortModel: sort,
-        distinct: false,
-        onlyCurrentUser: false,
-    };
+/**
+ * The route's dimensions in the shared `C-HISTORY-REQUEST` vocabulary. Every
+ * dimension keeps the server column legacy's `search-history.html` filters on
+ * that column with (`time`, `query`, `category_name`, `source`, `user_agent`,
+ * `username`, `ip`).
+ *
+ * `categoryNames` come from `C-CATEGORY-CATALOG`, matching legacy's own
+ * `categoriesForFiltering` (every selectable category, `search-history-
+ * controller.js`); category becomes a `checkboxes` multi-select under
+ * ADR-0016 rather than legacy's single-select-with-preselect-and-invert.
+ *
+ * `user_agent` is declared only while the route's own "Show user agents"
+ * display toggle is on -- it stays a table-display control outside the bar's
+ * dimension model, so its dimension simply does not exist while the column is
+ * hidden.
+ */
+export function searchHistoryDimensions(options: {
+    categoryNames: readonly string[];
+    showUserAgent: boolean;
+    showsUsername: boolean;
+    showsIp: boolean;
+}): HistoryDimension[] {
+    return [
+        {
+            kind: "time",
+            id: "time",
+            column: "time",
+            label: "Time",
+            afterLabel: "After",
+            beforeLabel: "Before",
+        },
+        {kind: "freetext", id: "query", column: "query", label: "Query"},
+        {
+            kind: "checkboxes",
+            id: "category",
+            column: "category_name",
+            label: "Category",
+            options: options.categoryNames.map((name) => ({
+                value: name,
+                label: name,
+            })),
+        },
+        {
+            kind: "boolean",
+            id: "source",
+            column: "source",
+            label: "Source",
+            allLabel: "All sources",
+            options: [
+                {value: "INTERNAL", label: "Internal"},
+                {value: "API", label: "API"},
+            ],
+        },
+        ...(options.showUserAgent
+            ? ([
+                  {
+                      kind: "freetext",
+                      id: "user-agent",
+                      column: "user_agent",
+                      label: "User agent",
+                  },
+              ] as const)
+            : []),
+        ...(options.showsUsername
+            ? ([
+                  {
+                      kind: "freetext",
+                      id: "username",
+                      column: "username",
+                      label: "Username",
+                  },
+              ] as const)
+            : []),
+        ...(options.showsIp
+            ? ([
+                  {
+                      kind: "freetext",
+                      id: "ip",
+                      column: "ip",
+                      label: "IP address",
+                  },
+              ] as const)
+            : []),
+    ];
 }
 
 export async function getSearchHistory(
     transport: ApiTransport,
-    page: number,
-    limit: number,
-    filters: SearchHistoryFilters,
-    sort: SearchHistorySort,
-): Promise<SearchHistoryPage> {
-    const response = await transport.request<unknown>(
-        "internalapi/history/searches",
-        {
-            method: "POST",
-            json: searchHistoryRequest(page, limit, filters, sort),
-        },
-    );
-    if (
-        !response ||
-        typeof response !== "object" ||
-        !Array.isArray((response as {content?: unknown}).content) ||
-        !Number.isInteger((response as {totalElements?: unknown}).totalElements)
-    ) {
-        throw new Error("Search history response has an invalid format");
-    }
-    const searches: SearchHistoryEntry[] = [];
-    let malformedCount = 0;
-    for (const entry of (response as {content: unknown[]}).content) {
-        const parsed = historyEntry(entry);
-        if (parsed) searches.push(parsed);
-        else malformedCount++;
-    }
-    return {
-        searches,
-        totalElements: (response as {totalElements: number}).totalElements,
-        malformedCount,
-    };
+    query: HistoryQuery,
+): Promise<HistoryPage<SearchHistoryEntry>> {
+    return requestHistoryPage(transport, {
+        path: "internalapi/history/searches",
+        label: "Search history",
+        query,
+        parseEntry: historyEntry,
+    });
 }
 
 function historyEntry(value: unknown): SearchHistoryEntry | undefined {
@@ -270,10 +272,4 @@ export async function getSearchHistoryDetails(
         else malformedCount++;
     }
     return {...parsed.data, indexerSearches, malformedCount};
-}
-
-function toServerTime(value: string | undefined): string | undefined {
-    if (!value) return undefined;
-    const date = new Date(value);
-    return Number.isNaN(date.getTime()) ? undefined : date.toISOString();
 }

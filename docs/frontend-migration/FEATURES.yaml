@@ -484,7 +484,10 @@ features:
     target: core/ui-react/src/features/stats/history
     tests:
       - core/ui-react/src/api/searchHistory.test.ts
+      - core/ui-react/src/api/history/filters.test.ts
+      - core/ui-react/src/api/history/request.test.ts
       - core/ui-react/src/features/stats/history/SearchHistoryPage.test.tsx
+      - core/ui-react/src/features/stats/history/refine/HistoryRefineBar.test.tsx
       - core/ui-react/src/features/search/SearchPage.test.tsx
       - core/ui-react/src/router.test.tsx
       - tests/system/tests/search-history.spec.ts
@@ -496,6 +499,24 @@ features:
       - search-history-category
       - search-history-source
       - search-history-details
+      - history-refine-bar
+      - history-refine-toggle
+      - history-refine-clear-all
+      - history-refine-time
+      - history-refine-time-after
+      - history-refine-time-before
+      - history-refine-query
+      - history-refine-query-input
+      - history-refine-category
+      - history-refine-category-option
+      - history-refine-source
+      - history-refine-source-select
+      - history-refine-user-agent
+      - history-refine-user-agent-input
+      - history-refine-username
+      - history-refine-username-input
+      - history-refine-ip
+      - history-refine-ip-input
     parity: partial
   - id: F-HISTORY-SAVED-SEARCHES
     name: Saved-search listing, links, reuse, and deletion

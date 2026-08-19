@@ -63,7 +63,105 @@ describe("SearchHistoryPage", () => {
         navigate.mockReset();
     });
 
-    it("should retain controls while paging, filtering, sorting, and refreshing", async () => {
+    it("should refine through the bar while paging, sorting, and refreshing", async () => {
+        const requests: RequestInit[] = [];
+        const fetchImplementation = vi.fn(
+            (_url: RequestInfo | URL, init?: RequestInit) => {
+                if (init) {
+                    requests.push(init);
+                }
+                return Promise.resolve(
+                    new Response(
+                        JSON.stringify({content: [entry()], totalElements: 30}),
+                        {headers: {"Content-Type": "application/json"}},
+                    ),
+                );
+            },
+        );
+        const lastBody = () => JSON.parse(requests.at(-1)?.body as string);
+        renderPage(fetchImplementation);
+        await screen.findByTestId("search-history-row");
+        // The bar is the route's only filter surface: nothing above the
+        // table header filters any more.
+        expect(screen.getAllByTestId("history-refine-bar")).toHaveLength(1);
+        const table = screen.getByTestId("search-history-table");
+        expect(within(table).queryAllByRole("textbox")).toHaveLength(0);
+
+        fireEvent.change(screen.getByLabelText("Query"), {
+            target: {value: "query"},
+        });
+        await screen.findByRole("button", {name: "Query"});
+        fireEvent.click(screen.getByRole("button", {name: "Query"}));
+        await screen.findByRole("button", {name: "Next page"});
+        fireEvent.click(screen.getByRole("button", {name: "Next page"}));
+        await waitFor(() =>
+            expect(fetchImplementation).toHaveBeenCalledTimes(4),
+        );
+        expect(lastBody()).toMatchObject({
+            page: 2,
+            sortModel: {column: "query", sortMode: 1},
+            filterModel: {
+                query: {filterType: "freetext", filterValue: "query"},
+            },
+        });
+
+        // A multi-select filter change returns to page 1.
+        fireEvent.click(
+            screen.getAllByTestId("history-refine-category-option")[1],
+        );
+        await waitFor(() =>
+            expect(fetchImplementation).toHaveBeenCalledTimes(5),
+        );
+        expect(lastBody()).toMatchObject({
+            page: 1,
+            filterModel: {
+                query: {filterType: "freetext", filterValue: "query"},
+                category_name: {
+                    filterType: "checkboxes",
+                    filterValue: ["Movies"],
+                },
+            },
+        });
+        expect(
+            screen.getByTestId("history-refine-toggle"),
+        ).toHaveAccessibleName("Refine 2 active filters");
+
+        await screen.findByTestId("search-history-refresh");
+        fireEvent.click(screen.getByTestId("search-history-refresh"));
+        await waitFor(() =>
+            expect(fetchImplementation).toHaveBeenCalledTimes(6),
+        );
+    });
+
+    it("should offer After, Before, Query, Category, and Source through the bar, with every selectable category as an option", async () => {
+        renderPage(
+            vi
+                .fn()
+                .mockResolvedValue(
+                    new Response(
+                        JSON.stringify({content: [entry()], totalElements: 1}),
+                        {headers: {"Content-Type": "application/json"}},
+                    ),
+                ),
+        );
+        await screen.findByTestId("search-history-row");
+        for (const label of ["After", "Before", "Query"]) {
+            expect(screen.getByLabelText(label)).toBeVisible();
+        }
+        expect(
+            screen.getByRole("combobox", {name: "Source"}),
+        ).toHaveTextContent("All sources");
+        expect(
+            screen
+                .getAllByTestId("history-refine-category-option")
+                .map((option) => option.textContent),
+        ).toEqual(["All", "Movies"]);
+        // The user-agent dimension is not reachable until the display toggle
+        // is on.
+        expect(screen.queryByLabelText("User agent")).not.toBeInTheDocument();
+    });
+
+    it("should clear every dimension and return to page 1", async () => {
         const requests: RequestInit[] = [];
         const fetchImplementation = vi.fn(
             (_url: RequestInfo | URL, init?: RequestInit) => {
@@ -83,25 +181,110 @@ describe("SearchHistoryPage", () => {
         fireEvent.change(screen.getByLabelText("Query"), {
             target: {value: "query"},
         });
-        await screen.findByRole("button", {name: "Query"});
-        fireEvent.click(screen.getByRole("button", {name: "Query"}));
-        await screen.findByRole("button", {name: "Next page"});
+        fireEvent.click(
+            screen.getAllByTestId("history-refine-category-option")[0],
+        );
         fireEvent.click(screen.getByRole("button", {name: "Next page"}));
         await waitFor(() =>
             expect(fetchImplementation).toHaveBeenCalledTimes(4),
         );
-        expect(JSON.parse(requests.at(-1)?.body as string)).toMatchObject({
-            page: 2,
-            sortModel: {column: "query", sortMode: 1},
-            filterModel: {
-                query: {filterType: "freetext", filterValue: "query"},
-            },
-        });
-        await screen.findByTestId("search-history-refresh");
-        fireEvent.click(screen.getByTestId("search-history-refresh"));
+        fireEvent.click(screen.getByTestId("history-refine-clear-all"));
         await waitFor(() =>
             expect(fetchImplementation).toHaveBeenCalledTimes(5),
         );
+        expect(JSON.parse(requests.at(-1)?.body as string)).toMatchObject({
+            page: 1,
+            filterModel: {},
+        });
+        expect(screen.getByLabelText("Query")).toHaveValue("");
+        expect(
+            screen.getAllByTestId("history-refine-category-option")[0],
+        ).toHaveAttribute("aria-pressed", "false");
+        expect(
+            screen.getByTestId("history-refine-toggle"),
+        ).toHaveAccessibleName("Refine No active filters");
+    });
+
+    it("should reach the user-agent filter only while user agents are shown, and clear it when hidden again", async () => {
+        const requests: RequestInit[] = [];
+        const fetchImplementation = vi.fn(
+            (_url: RequestInfo | URL, init?: RequestInit) => {
+                if (init) {
+                    requests.push(init);
+                }
+                return Promise.resolve(
+                    new Response(
+                        JSON.stringify({content: [entry()], totalElements: 1}),
+                        {headers: {"Content-Type": "application/json"}},
+                    ),
+                );
+            },
+        );
+        renderPage(fetchImplementation);
+        await screen.findByTestId("search-history-row");
+        expect(screen.queryByLabelText("User agent")).not.toBeInTheDocument();
+
+        fireEvent.click(screen.getByLabelText("Show user agents"));
+        fireEvent.change(await screen.findByLabelText("User agent"), {
+            target: {value: "agent"},
+        });
+        await waitFor(() =>
+            expect(JSON.parse(requests.at(-1)?.body as string)).toMatchObject({
+                filterModel: {
+                    user_agent: {filterType: "freetext", filterValue: "agent"},
+                },
+            }),
+        );
+
+        fireEvent.click(screen.getByLabelText("Show user agents"));
+        expect(screen.queryByLabelText("User agent")).not.toBeInTheDocument();
+        await waitFor(() =>
+            expect(JSON.parse(requests.at(-1)?.body as string)).toMatchObject({
+                page: 1,
+                filterModel: {},
+            }),
+        );
+    });
+
+    it("should hide the username and IP filter dimensions when history user info is disabled", async () => {
+        render(
+            <QueryClientProvider
+                client={
+                    new QueryClient({defaultOptions: {queries: {retry: false}}})
+                }
+            >
+                <SearchHistoryPage
+                    bootstrap={{
+                        ...bootstrap,
+                        safeConfig: {
+                            ...bootstrap.safeConfig,
+                            logging: {historyUserInfoType: "NONE"},
+                        },
+                    }}
+                    transport={
+                        new ApiTransport(
+                            "/hydra/",
+                            vi.fn().mockResolvedValue(
+                                new Response(
+                                    JSON.stringify({
+                                        content: [entry()],
+                                        totalElements: 1,
+                                    }),
+                                    {
+                                        headers: {
+                                            "Content-Type": "application/json",
+                                        },
+                                    },
+                                ),
+                            ),
+                        )
+                    }
+                />
+            </QueryClientProvider>,
+        );
+        await screen.findByTestId("search-history-row");
+        expect(screen.queryByLabelText("Username")).not.toBeInTheDocument();
+        expect(screen.queryByLabelText("IP address")).not.toBeInTheDocument();
     });
 
     it("should respect visibility controls, isolate malformed rows, show details, and repeat through canonical criteria", async () => {

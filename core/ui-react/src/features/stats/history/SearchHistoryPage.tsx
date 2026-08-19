@@ -8,26 +8,32 @@ import {
     DialogTitle,
     FormControlLabel,
     Link,
-    MenuItem,
     Stack,
     Table,
     TableBody,
     TableCell,
     TableHead,
     TableRow,
-    TextField,
     Typography,
 } from "@mui/material";
-import {useQuery, type UseQueryResult} from "@tanstack/react-query";
+import {
+    keepPreviousData,
+    useQuery,
+    type UseQueryResult,
+} from "@tanstack/react-query";
 import {useNavigate} from "@tanstack/react-router";
-import {useState, type ReactNode} from "react";
+import {useMemo, useState, type ReactNode} from "react";
 
+import type {
+    HistoryFilterValue,
+    HistoryFilterValues,
+} from "../../../api/history/filters";
 import {
     getSearchHistory,
     getSearchHistoryDetails,
+    searchHistoryDimensions,
     type SearchHistoryDetails,
     type SearchHistoryEntry,
-    type SearchHistoryFilters,
     type SearchHistorySort,
 } from "../../../api/searchHistory";
 import {redirectRidUrl} from "../../../api/savedSearches";
@@ -37,6 +43,7 @@ import {formatServerDateTime} from "../../../domain/date-time/dateTime";
 import {externalLink} from "../../../domain/links/externalLinks";
 import {createCategoryCatalog} from "../../../domain/categories/catalog";
 import {recentSearchCriteria} from "../../search/history/recentSearchCriteria";
+import {HistoryRefineBar} from "./refine/HistoryRefineBar";
 
 const PAGE_SIZE = 25;
 const defaultSort: SearchHistorySort = {column: "time", sortMode: 2};
@@ -51,26 +58,51 @@ export function SearchHistoryPage({
     const navigate = useNavigate({from: "/stats/searches"});
     const catalog = createCategoryCatalog(bootstrap.safeConfig);
     const [page, setPage] = useState(1);
-    const [filters, setFilters] = useState<SearchHistoryFilters>({
-        source: "all",
-    });
+    const [values, setValues] = useState<HistoryFilterValues>({});
     const [sort, setSort] = useState<SearchHistorySort>(defaultSort);
     const [showUserAgent, setShowUserAgent] = useState(false);
     const [detailsId, setDetailsId] = useState<number>();
     const userInfoType = historyUserInfoType(bootstrap.safeConfig);
+    const dimensions = useMemo(
+        () =>
+            searchHistoryDimensions({
+                categoryNames: catalog.categories.map(
+                    (category) => category.name,
+                ),
+                showUserAgent,
+                showsUsername: showsUsername(userInfoType),
+                showsIp: showsIp(userInfoType),
+            }),
+        [catalog.categories, showUserAgent, userInfoType],
+    );
     const query = useQuery({
-        queryKey: ["search-history", page, filters, sort],
+        queryKey: ["search-history", page, values, sort],
         queryFn: () =>
-            getSearchHistory(transport, page, PAGE_SIZE, filters, sort),
+            getSearchHistory(transport, {
+                dimensions,
+                values,
+                page,
+                limit: PAGE_SIZE,
+                sort,
+            }),
+        // Every filter keystroke is a new query key; keeping the previous
+        // page's data rendered (rather than falling back to the first-load
+        // spinner) keeps the refine bar mounted and its focus intact -- see
+        // `DownloadHistoryPage` for the same reasoning.
+        placeholderData: keepPreviousData,
     });
     const details = useQuery({
         queryKey: ["search-history-details", detailsId],
         queryFn: () => getSearchHistoryDetails(transport, detailsId!),
         enabled: detailsId !== undefined,
     });
-    const updateFilter = (name: keyof SearchHistoryFilters, value: string) => {
+    const updateFilter = (id: string, value: HistoryFilterValue) => {
         setPage(1);
-        setFilters((current) => ({...current, [name]: value || undefined}));
+        setValues((current) => ({...current, [id]: value}));
+    };
+    const clearFilters = () => {
+        setPage(1);
+        setValues({});
     };
     const updateSort = (column: SearchHistorySort["column"]) => {
         setPage(1);
@@ -95,121 +127,57 @@ export function SearchHistoryPage({
     if (query.isError) {
         return <Alert severity="error">Unable to load search history.</Alert>;
     }
-    const {searches, totalElements, malformedCount} = query.data;
+    const {entries: searches, totalElements, malformedCount} = query.data;
     const totalPages = Math.max(1, Math.ceil(totalElements / PAGE_SIZE));
     return (
         <Stack component="main" spacing={2}>
-            <Typography component="h1" variant="h4">
-                Search history
-            </Typography>
             <Stack
-                component="form"
-                direction={{md: "row"}}
-                flexWrap="wrap"
-                gap={1}
-                onSubmit={(event) => event.preventDefault()}
+                alignItems="center"
+                direction="row"
+                justifyContent="space-between"
+                spacing={1}
             >
-                <TextField
-                    label="After"
-                    type="datetime-local"
-                    slotProps={{inputLabel: {shrink: true}}}
-                    value={filters.after ?? ""}
-                    onChange={(event) =>
-                        updateFilter("after", event.target.value)
-                    }
-                />
-                <TextField
-                    label="Before"
-                    type="datetime-local"
-                    slotProps={{inputLabel: {shrink: true}}}
-                    value={filters.before ?? ""}
-                    onChange={(event) =>
-                        updateFilter("before", event.target.value)
-                    }
-                />
-                <TextField
-                    label="Query"
-                    value={filters.query ?? ""}
-                    onChange={(event) =>
-                        updateFilter("query", event.target.value)
-                    }
-                />
-                <TextField
-                    label="Category"
-                    select
-                    value={filters.category ?? ""}
-                    onChange={(event) =>
-                        updateFilter("category", event.target.value)
-                    }
-                >
-                    <MenuItem value="">All categories</MenuItem>
-                    {catalog.categories.map((category) => (
-                        <MenuItem key={category.name} value={category.name}>
-                            {category.name}
-                        </MenuItem>
-                    ))}
-                </TextField>
-                <TextField
-                    label="Source"
-                    select
-                    value={filters.source ?? "all"}
-                    onChange={(event) =>
-                        updateFilter("source", event.target.value)
-                    }
-                >
-                    <MenuItem value="all">All sources</MenuItem>
-                    <MenuItem value="INTERNAL">Internal</MenuItem>
-                    <MenuItem value="API">API</MenuItem>
-                </TextField>
-                <FormControlLabel
-                    control={
-                        <Checkbox
-                            checked={showUserAgent}
-                            onChange={(event) => {
-                                setShowUserAgent(event.target.checked);
-                                if (!event.target.checked) {
-                                    updateFilter("userAgent", "");
-                                }
-                            }}
-                        />
-                    }
-                    label="Show user agents"
-                />
-                {showUserAgent && (
-                    <TextField
-                        label="User agent"
-                        value={filters.userAgent ?? ""}
-                        onChange={(event) =>
-                            updateFilter("userAgent", event.target.value)
+                <Typography component="h1" variant="h4">
+                    Search history
+                </Typography>
+                <Stack alignItems="center" direction="row" spacing={1}>
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={showUserAgent}
+                                onChange={(event) => {
+                                    setShowUserAgent(event.target.checked);
+                                    if (!event.target.checked) {
+                                        updateFilter("user-agent", {
+                                            kind: "freetext",
+                                            text: "",
+                                        });
+                                    }
+                                }}
+                            />
                         }
+                        label="Show user agents"
                     />
-                )}
-                {showsUsername(userInfoType) && (
-                    <TextField
-                        label="Username"
-                        value={filters.username ?? ""}
-                        onChange={(event) =>
-                            updateFilter("username", event.target.value)
-                        }
-                    />
-                )}
-                {showsIp(userInfoType) && (
-                    <TextField
-                        label="IP address"
-                        value={filters.ip ?? ""}
-                        onChange={(event) =>
-                            updateFilter("ip", event.target.value)
-                        }
-                    />
-                )}
-                <Button
-                    data-testid="search-history-refresh"
-                    onClick={() => void query.refetch()}
-                    variant="outlined"
-                >
-                    Refresh
-                </Button>
+                    <Button
+                        data-testid="search-history-refresh"
+                        onClick={() => void query.refetch()}
+                        variant="outlined"
+                    >
+                        Refresh
+                    </Button>
+                </Stack>
             </Stack>
+            {/* The route's single filter surface (ADR-0009): every dimension
+                legacy offered per table column lives here, and the table
+                header carries sorting only. "Show user agents" stays outside
+                the bar's dimension model -- it is a table-display toggle, not
+                a filter. */}
+            <HistoryRefineBar
+                dimensions={dimensions}
+                onChange={updateFilter}
+                onClearAll={clearFilters}
+                values={values}
+            />
             {query.isFetching && (
                 <Stack direction="row" role="status" spacing={1}>
                     <CircularProgress size={20} />
