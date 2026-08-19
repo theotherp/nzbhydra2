@@ -1,97 +1,105 @@
 import {describe, expect, it, vi} from "vitest";
 
-import {downloadHistoryRequest, getDownloadHistory} from "./downloads";
+import {downloadHistoryDimensions, getDownloadHistory} from "./downloads";
+import {historyFilterModel} from "./filters";
 import {ApiTransport} from "../transport";
 
-describe("downloadHistoryRequest", () => {
-    it("should transform paging, sort, and every supported filter into the legacy request contract", () => {
+const allDimensions = downloadHistoryDimensions({
+    indexerNames: ["Alpha", "Beta"],
+    showsUsername: true,
+    showsIp: true,
+});
+
+describe("downloadHistoryDimensions", () => {
+    it("should declare every dimension the route ships, with its kind, column, and label", () => {
         expect(
-            downloadHistoryRequest(
-                2,
-                25,
-                {
-                    after: "2024-01-01T10:00",
-                    before: "2024-01-02T10:00",
-                    indexer: "  Mock  ",
-                    title: "  example  ",
-                    status: "NZB_ADDED",
-                    source: "API",
-                    minAge: "2",
-                    maxAge: "10",
-                    username: "user",
-                    ip: "127.0.0.1",
-                },
-                {column: "title", sortMode: 1},
-            ),
-        ).toEqual({
-            page: 2,
-            limit: 25,
-            distinct: false,
-            onlyCurrentUser: false,
-            sortModel: {column: "title", sortMode: 1},
-            filterModel: {
-                time: {
-                    filterType: "time",
-                    filterValue: {
-                        after: new Date("2024-01-01T10:00").toISOString(),
-                        before: new Date("2024-01-02T10:00").toISOString(),
-                    },
-                    isBoolean: false,
-                },
-                name: {
-                    filterType: "freetext",
-                    filterValue: "Mock",
-                    isBoolean: false,
-                },
-                title: {
-                    filterType: "freetext",
-                    filterValue: "example",
-                    isBoolean: false,
-                },
-                status: {
-                    filterType: "checkboxes",
-                    filterValue: ["NZB_ADDED"],
-                    isBoolean: false,
-                },
-                access_source: {
-                    filterType: "boolean",
-                    filterValue: "API",
-                    isBoolean: false,
-                },
-                age: {
-                    filterType: "numberRange",
-                    filterValue: {min: "2", max: "10"},
-                    isBoolean: false,
-                },
-                username: {
-                    filterType: "freetext",
-                    filterValue: "user",
-                    isBoolean: false,
-                },
-                ip: {
-                    filterType: "freetext",
-                    filterValue: "127.0.0.1",
-                    isBoolean: false,
-                },
+            allDimensions.map(({kind, id, column, label}) => ({
+                kind,
+                id,
+                column,
+                label,
+            })),
+        ).toEqual([
+            {kind: "time", id: "time", column: "time", label: "Time"},
+            {
+                kind: "checkboxes",
+                id: "indexer",
+                column: "name",
+                label: "Indexer",
             },
-        });
+            {kind: "freetext", id: "title", column: "title", label: "Title"},
+            {
+                kind: "checkboxes",
+                id: "result",
+                column: "status",
+                label: "Result",
+            },
+            {
+                kind: "boolean",
+                id: "source",
+                column: "access_source",
+                label: "Source",
+            },
+            {kind: "numberRange", id: "age", column: "age", label: "Age"},
+            {
+                kind: "freetext",
+                id: "username",
+                column: "username",
+                label: "Username",
+            },
+            {kind: "freetext", id: "ip", column: "ip", label: "IP address"},
+        ]);
     });
 
-    it("should omit filters that are absent, blank, or set to 'all'", () => {
+    it("should offer the configured indexers and every download status as multi-select options", () => {
+        const [, indexer, , result] = allDimensions;
+        expect(indexer.kind === "checkboxes" && indexer.options).toEqual([
+            {value: "Alpha", label: "Alpha"},
+            {value: "Beta", label: "Beta"},
+        ]);
         expect(
-            downloadHistoryRequest(
-                1,
-                25,
-                {source: "all", status: "all", minAge: "  "},
-                {column: "time", sortMode: 2},
-            ),
+            result.kind === "checkboxes" &&
+                result.options.map((option) => option.value),
+        ).toContain("CONTENT_DOWNLOAD_SUCCESSFUL");
+        expect(result.kind === "checkboxes" && result.options).toHaveLength(12);
+    });
+
+    it("should omit the username and IP dimensions when history user info is disabled", () => {
+        expect(
+            downloadHistoryDimensions({
+                indexerNames: [],
+                showsUsername: false,
+                showsIp: false,
+            }).map((dimension) => dimension.id),
+        ).toEqual(["time", "indexer", "title", "result", "source", "age"]);
+    });
+
+    it("should filter indexer and result as multi-selects on their own columns", () => {
+        expect(
+            historyFilterModel(allDimensions, {
+                indexer: {kind: "checkboxes", selected: ["Beta"]},
+                result: {
+                    kind: "checkboxes",
+                    selected: ["NZB_ADDED", "NZB_ADD_ERROR"],
+                },
+                source: {kind: "boolean", value: "INTERNAL"},
+                age: {kind: "numberRange", min: "2", max: "10"},
+                username: {kind: "freetext", text: "user"},
+                ip: {kind: "freetext", text: "127.0.0.1"},
+            }),
         ).toEqual({
-            page: 1,
-            limit: 25,
-            distinct: false,
-            onlyCurrentUser: false,
-            sortModel: {column: "time", sortMode: 2},
-            filterModel: {},
+            name: {filterType: "checkboxes", filterValue: ["Beta"]},
+            status: {
+                filterType: "checkboxes",
+                filterValue: ["NZB_ADDED", "NZB_ADD_ERROR"],
+            },
+            access_source: {filterType: "boolean", filterValue: "INTERNAL"},
+            age: {
+                filterType: "numberRange",
+                filterValue: {min: "2", max: "10"},
+            },
+            username: {filterType: "freetext", filterValue: "user"},
+            ip: {filterType: "freetext", filterValue: "127.0.0.1"},
         });
     });
 });
@@ -136,14 +144,17 @@ describe("getDownloadHistory", () => {
 
         const page = await getDownloadHistory(
             new ApiTransport("/hydra/", fetchImplementation),
-            1,
-            25,
-            {},
-            {column: "time", sortMode: 2},
+            {
+                dimensions: allDimensions,
+                values: {},
+                page: 1,
+                limit: 25,
+                sort: {column: "time", sortMode: 2},
+            },
         );
 
         expect(page).toEqual({
-            downloads: [
+            entries: [
                 {
                     id: 1,
                     status: "CONTENT_DOWNLOAD_SUCCESSFUL",
@@ -165,6 +176,19 @@ describe("getDownloadHistory", () => {
             totalElements: 5,
             malformedCount: 4,
         });
+        expect(
+            JSON.parse(
+                (fetchImplementation.mock.calls[0][1] as RequestInit)
+                    .body as string,
+            ),
+        ).toEqual({
+            page: 1,
+            limit: 25,
+            distinct: false,
+            onlyCurrentUser: false,
+            sortModel: {column: "time", sortMode: 2},
+            filterModel: {},
+        });
     });
 
     it("should reject a response with a missing content array or total", async () => {
@@ -178,10 +202,13 @@ describe("getDownloadHistory", () => {
                         }),
                     ),
                 ),
-                1,
-                25,
-                {},
-                {column: "time", sortMode: 2},
+                {
+                    dimensions: allDimensions,
+                    values: {},
+                    page: 1,
+                    limit: 25,
+                    sort: {column: "time", sortMode: 2},
+                },
             ),
         ).rejects.toThrow("Download history response has an invalid format");
     });

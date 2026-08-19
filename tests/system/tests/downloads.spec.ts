@@ -6,6 +6,7 @@ import {
     test,
     testEnvironment,
 } from "./fixtures";
+import {prepareVisualEvidence, visualEvidencePath} from "./visualEvidence";
 
 test.describe("Downloads", () => {
     test.beforeEach(async ({hydra, page}) => {
@@ -269,13 +270,48 @@ test.describe("Downloads", () => {
             .click();
         expect((await historyResponse).status()).toBe(200);
 
+        // Refining happens in the shared refine bar (C-HISTORY-REFINE-BAR),
+        // the route's only filter surface. Both the freetext and the
+        // multi-select path are exercised against the real backend, and each
+        // request body is read to prove the filter actually travelled -- a 200
+        // on an unfiltered body would prove nothing.
+        await expect(page.getByTestId("history-refine-bar")).toBeVisible();
         const filteredResponse = page.waitForResponse((response) =>
             isDownloadHistoryResponse(response),
         );
         await page
             .getByLabel("Title")
             .fill(testEnvironment.downloaderIntegrationNzbTitle);
-        expect((await filteredResponse).status()).toBe(200);
+        const filtered = await filteredResponse;
+        expect(filtered.status()).toBe(200);
+        expect(filtered.request().postDataJSON()).toMatchObject({
+            page: 1,
+            filterModel: {
+                title: {
+                    filterType: "freetext",
+                    filterValue:
+                        testEnvironment.downloaderIntegrationNzbTitle,
+                },
+            },
+        });
+
+        const multiSelectResponse = page.waitForResponse((response) =>
+            isDownloadHistoryResponse(response),
+        );
+        await page
+            .getByTestId("history-refine-indexer-option")
+            .filter({hasText: "Mock1"})
+            .click();
+        const multiSelected = await multiSelectResponse;
+        expect(multiSelected.status()).toBe(200);
+        expect(multiSelected.request().postDataJSON()).toMatchObject({
+            filterModel: {
+                name: {filterType: "checkboxes", filterValue: ["Mock1"]},
+            },
+        });
+        await expect(page.getByTestId("history-refine-toggle")).toContainText(
+            "2 active filters",
+        );
 
         // Download history is retained across runs, so an earlier run's entry
         // for the same deterministic title may still match; the newest
@@ -301,6 +337,59 @@ test.describe("Downloads", () => {
                 .locator("html")
                 .evaluate((element) => element.scrollWidth <= element.clientWidth),
         ).toBe(true);
+    });
+
+    test("should capture the download history refine bar visual evidence", async ({
+        page,
+    }) => {
+        for (const viewport of ["desktop", "mobile"] as const) {
+            await prepareVisualEvidence(page, viewport, async () => {
+                await page.goto("ui/react?redirect=/stats/downloads");
+                await dismissWelcomeDialog(page);
+                await expect(
+                    page.getByTestId("history-refine-bar"),
+                ).toBeVisible();
+            });
+            const toggle = page.getByTestId("history-refine-toggle");
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-HISTORY-DOWNLOADS",
+                    `refine-bar-expanded-${viewport}`,
+                ),
+            });
+
+            await toggle.click();
+            await expect(toggle).toHaveAttribute("aria-expanded", "false");
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-HISTORY-DOWNLOADS",
+                    `refine-bar-collapsed-${viewport}`,
+                ),
+            });
+
+            await toggle.click();
+            await expect(toggle).toHaveAttribute("aria-expanded", "true");
+            await page.getByLabel("Title").fill("evidence");
+            await page
+                .getByTestId("history-refine-result-option")
+                .filter({hasText: "Content download successful"})
+                .click();
+            await expect(toggle).toContainText("2 active filters");
+            await page.screenshot({
+                path: visualEvidencePath(
+                    "F-HISTORY-DOWNLOADS",
+                    `refine-bar-active-${viewport}`,
+                ),
+            });
+            expect(
+                await page
+                    .locator("html")
+                    .evaluate(
+                        (element) =>
+                            element.scrollWidth <= element.clientWidth,
+                    ),
+            ).toBe(true);
+        }
     });
 });
 

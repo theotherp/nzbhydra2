@@ -8,7 +8,6 @@ import {
     Button,
     CircularProgress,
     Link,
-    MenuItem,
     Stack,
     Table,
     TableBody,
@@ -16,17 +15,20 @@ import {
     TableContainer,
     TableHead,
     TableRow,
-    TextField,
     Typography,
 } from "@mui/material";
-import {useQuery} from "@tanstack/react-query";
-import {useState, type ReactNode} from "react";
+import {keepPreviousData, useQuery} from "@tanstack/react-query";
+import {useMemo, useState, type ReactNode} from "react";
 
+import type {
+    HistoryFilterValue,
+    HistoryFilterValues,
+} from "../../../api/history/filters";
 import {
     DOWNLOAD_STATUSES,
+    downloadHistoryDimensions,
     getDownloadHistory,
     type DownloadHistoryEntry,
-    type DownloadHistoryFilters,
     type DownloadHistorySort,
     type DownloadHistorySearchResult,
     type DownloadStatus,
@@ -37,6 +39,7 @@ import {formatServerDateTime} from "../../../domain/date-time/dateTime";
 import {historyDownloadResult} from "../../../domain/downloads/actions";
 import {externalLink} from "../../../domain/links/externalLinks";
 import {DirectDownloadActions} from "../../search/results/DownloadActions";
+import {HistoryRefineBar} from "./refine/HistoryRefineBar";
 
 const PAGE_SIZE = 25;
 const defaultSort: DownloadHistorySort = {column: "time", sortMode: 2};
@@ -49,25 +52,42 @@ export function DownloadHistoryPage({
     transport: ApiTransport;
 }) {
     const [page, setPage] = useState(1);
-    const [filters, setFilters] = useState<DownloadHistoryFilters>({
-        source: "all",
-    });
+    const [values, setValues] = useState<HistoryFilterValues>({});
     const [sort, setSort] = useState<DownloadHistorySort>(defaultSort);
     const userInfoType = historyUserInfoType(bootstrap.safeConfig);
+    const dimensions = useMemo(
+        () =>
+            downloadHistoryDimensions({
+                indexerNames: configuredIndexerNames(bootstrap.safeConfig),
+                showsUsername: showsUsername(userInfoType),
+                showsIp: showsIp(userInfoType),
+            }),
+        [bootstrap.safeConfig, userInfoType],
+    );
     const query = useQuery({
-        queryKey: ["download-history", page, filters, sort],
+        queryKey: ["download-history", page, values, sort],
         queryFn: () =>
-            getDownloadHistory(transport, page, PAGE_SIZE, filters, sort),
+            getDownloadHistory(transport, {
+                dimensions,
+                values,
+                page,
+                limit: PAGE_SIZE,
+                sort,
+            }),
+        // Every filter keystroke is a new query key. Without this the page
+        // would fall back to its first-load spinner on each one, unmounting
+        // the refine bar mid-edit and taking keyboard focus with it; the
+        // already-rendered "Refreshing download history…" status row is what
+        // reports the in-flight request instead.
+        placeholderData: keepPreviousData,
     });
-    const updateFilter = (
-        name: keyof DownloadHistoryFilters,
-        value: string,
-    ) => {
+    const updateFilter = (id: string, value: HistoryFilterValue) => {
         setPage(1);
-        setFilters((current) => ({
-            ...current,
-            [name]: value || undefined,
-        }));
+        setValues((current) => ({...current, [id]: value}));
+    };
+    const clearFilters = () => {
+        setPage(1);
+        setValues({});
     };
     const updateSort = (column: DownloadHistorySort["column"]) => {
         setPage(1);
@@ -83,113 +103,19 @@ export function DownloadHistoryPage({
     if (query.isError) {
         return <Alert severity="error">Unable to load download history.</Alert>;
     }
-    const {downloads, totalElements, malformedCount} = query.data;
+    const {entries: downloads, totalElements, malformedCount} = query.data;
     const totalPages = Math.max(1, Math.ceil(totalElements / PAGE_SIZE));
     return (
         <Stack component="main" spacing={2}>
-            <Typography component="h1" variant="h4">
-                Download history
-            </Typography>
             <Stack
-                component="form"
-                direction={{md: "row"}}
-                flexWrap="wrap"
-                gap={1}
-                onSubmit={(event) => event.preventDefault()}
+                alignItems="center"
+                direction="row"
+                justifyContent="space-between"
+                spacing={1}
             >
-                <TextField
-                    label="After"
-                    type="datetime-local"
-                    slotProps={{inputLabel: {shrink: true}}}
-                    value={filters.after ?? ""}
-                    onChange={(event) =>
-                        updateFilter("after", event.target.value)
-                    }
-                />
-                <TextField
-                    label="Before"
-                    type="datetime-local"
-                    slotProps={{inputLabel: {shrink: true}}}
-                    value={filters.before ?? ""}
-                    onChange={(event) =>
-                        updateFilter("before", event.target.value)
-                    }
-                />
-                <TextField
-                    label="Indexer"
-                    value={filters.indexer ?? ""}
-                    onChange={(event) =>
-                        updateFilter("indexer", event.target.value)
-                    }
-                />
-                <TextField
-                    label="Title"
-                    value={filters.title ?? ""}
-                    onChange={(event) =>
-                        updateFilter("title", event.target.value)
-                    }
-                />
-                <TextField
-                    label="Result"
-                    select
-                    value={filters.status ?? "all"}
-                    onChange={(event) =>
-                        updateFilter("status", event.target.value)
-                    }
-                >
-                    <MenuItem value="all">All results</MenuItem>
-                    {DOWNLOAD_STATUSES.map((status) => (
-                        <MenuItem key={status.value} value={status.value}>
-                            {status.label}
-                        </MenuItem>
-                    ))}
-                </TextField>
-                <TextField
-                    label="Source"
-                    select
-                    value={filters.source ?? "all"}
-                    onChange={(event) =>
-                        updateFilter("source", event.target.value)
-                    }
-                >
-                    <MenuItem value="all">All sources</MenuItem>
-                    <MenuItem value="INTERNAL">Internal</MenuItem>
-                    <MenuItem value="API">API</MenuItem>
-                </TextField>
-                <TextField
-                    label="Minimum age (days)"
-                    inputMode="numeric"
-                    value={filters.minAge ?? ""}
-                    onChange={(event) =>
-                        updateFilter("minAge", event.target.value)
-                    }
-                />
-                <TextField
-                    label="Maximum age (days)"
-                    inputMode="numeric"
-                    value={filters.maxAge ?? ""}
-                    onChange={(event) =>
-                        updateFilter("maxAge", event.target.value)
-                    }
-                />
-                {showsUsername(userInfoType) && (
-                    <TextField
-                        label="Username"
-                        value={filters.username ?? ""}
-                        onChange={(event) =>
-                            updateFilter("username", event.target.value)
-                        }
-                    />
-                )}
-                {showsIp(userInfoType) && (
-                    <TextField
-                        label="IP address"
-                        value={filters.ip ?? ""}
-                        onChange={(event) =>
-                            updateFilter("ip", event.target.value)
-                        }
-                    />
-                )}
+                <Typography component="h1" variant="h4">
+                    Download history
+                </Typography>
                 <Button
                     data-testid="download-history-refresh"
                     onClick={() => void query.refetch()}
@@ -198,6 +124,15 @@ export function DownloadHistoryPage({
                     Refresh
                 </Button>
             </Stack>
+            {/* The route's single filter surface (ADR-0009): every dimension
+                legacy offered per table column lives here, and the table
+                header carries sorting only. */}
+            <HistoryRefineBar
+                dimensions={dimensions}
+                onChange={updateFilter}
+                onClearAll={clearFilters}
+                values={values}
+            />
             {query.isFetching && (
                 <Stack direction="row" role="status" spacing={1}>
                     <CircularProgress size={20} />
@@ -475,6 +410,29 @@ function historyUserInfoType(safeConfig: unknown): string {
             .historyUserInfoType === "string"
         ? (logging as {historyUserInfoType: string}).historyUserInfoType
         : "NONE";
+}
+
+/**
+ * The `Indexer` multi-select's options: every configured indexer's name, taken
+ * from the bootstrap's safe config the page already receives. Legacy builds its
+ * own `indexersForFiltering` list exactly this way
+ * (`download-history-controller.js:21-24`) -- unfiltered by `showOnSearch` or
+ * category -- so no endpoint is involved. Sorted case-insensitively for a
+ * stable, readable option order.
+ */
+function configuredIndexerNames(safeConfig: unknown): string[] {
+    if (!safeConfig || typeof safeConfig !== "object") return [];
+    const indexers = (safeConfig as {indexers?: unknown}).indexers;
+    if (!Array.isArray(indexers)) return [];
+    return indexers
+        .flatMap((indexer) => {
+            if (!indexer || typeof indexer !== "object") return [];
+            const name = (indexer as {name?: unknown}).name;
+            return typeof name === "string" && name ? [name] : [];
+        })
+        .sort((first, second) =>
+            first.localeCompare(second, undefined, {sensitivity: "base"}),
+        );
 }
 
 function showsUsername(type: string) {

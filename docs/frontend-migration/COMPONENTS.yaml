@@ -238,13 +238,13 @@ components:
       - core/ui-src/html/states/download-history.html
       - core/ui-src/html/states/search-history.html
       - core/ui-src/html/states/notification-history.html
-    target: core/ui-react/src/features/stats/history/refine
+    target: core/ui-react/src/features/stats/history/refine/HistoryRefineBar.tsx
     consumers:
       - F-HISTORY-DOWNLOADS
       - F-HISTORY-SEARCHES
       - F-HISTORY-NOTIFICATIONS
     classification: feature_specific
-    state: planned
+    state: partial
   - id: C-HISTORY-REQUEST
     responsibility: Shared HistoryRequest construction (page, limit, filterModel, sortModel, distinct, onlyCurrentUser) and paged-response envelope validation for every org.nzbhydra.historystats.HistoryWeb endpoint, so each history route
       declares dimensions instead of building its own filter model
@@ -252,13 +252,13 @@ components:
       - core/ui-src/js/stats-service.js
       - core/ui-src/js/search-history-service.js
       - core/ui-src/js/directives/dataTableDirectives.js
-    target: core/ui-react/src/api/history
+    target: core/ui-react/src/api/history/filters.ts; core/ui-react/src/api/history/request.ts
     consumers:
       - F-HISTORY-DOWNLOADS
       - F-HISTORY-SEARCHES
       - F-HISTORY-NOTIFICATIONS
     classification: shared_hydra
-    state: planned
+    state: partial
   - id: C-SECRET-INPUT
     responsibility: Masked secret editing with unchanged-secret semantics
     legacy:

@@ -5,6 +5,7 @@ import {
     render,
     screen,
     waitFor,
+    within,
 } from "@testing-library/react";
 import {afterEach, beforeEach, describe, expect, it, vi} from "vitest";
 
@@ -27,7 +28,7 @@ const bootstrap = {
     baseUrl: "/hydra/",
     serverTimeZone: "UTC",
     safeConfig: {
-        indexers: [],
+        indexers: [{name: "zeta"}, {name: "Alpha"}, {name: 7}],
         logging: {historyUserInfoType: "BOTH"},
         dereferer: "https://dereferer.example/?url=$s",
     },
@@ -81,7 +82,114 @@ describe("DownloadHistoryPage", () => {
         delete window.__NZBHYDRA_BOOTSTRAP__;
     });
 
-    it("should retain controls while paging, filtering, sorting, and refreshing", async () => {
+    it("should refine through the bar while paging, sorting, and refreshing", async () => {
+        const requests: RequestInit[] = [];
+        const fetchImplementation = vi.fn(
+            (_url: RequestInfo | URL, init?: RequestInit) => {
+                if (init) requests.push(init);
+                return Promise.resolve(
+                    new Response(
+                        JSON.stringify({content: [entry()], totalElements: 30}),
+                        {headers: {"Content-Type": "application/json"}},
+                    ),
+                );
+            },
+        );
+        const lastBody = () => JSON.parse(requests.at(-1)?.body as string);
+        renderPage(fetchImplementation);
+        await screen.findByTestId("download-history-row");
+        // The bar is the route's only filter surface: nothing in or above the
+        // table header filters any more.
+        expect(screen.getAllByTestId("history-refine-bar")).toHaveLength(1);
+        const table = screen.getByTestId("download-history-table");
+        expect(within(table).queryAllByRole("textbox")).toHaveLength(0);
+        expect(within(table).queryAllByRole("combobox")).toHaveLength(0);
+        // The "All sources" sentinel selection must render its label, not a
+        // blank control: MUI's Select hides the display for a literal
+        // empty-string value unless `displayEmpty` is set.
+        expect(
+            screen.getByRole("combobox", {name: "Source"}),
+        ).toHaveTextContent("All sources");
+
+        fireEvent.change(screen.getByLabelText("Title"), {
+            target: {value: "example"},
+        });
+        await screen.findByRole("button", {name: "Title"});
+        fireEvent.click(screen.getByRole("button", {name: "Title"}));
+        await screen.findByRole("button", {name: "Next page"});
+        fireEvent.click(screen.getByRole("button", {name: "Next page"}));
+        await waitFor(() =>
+            expect(fetchImplementation).toHaveBeenCalledTimes(4),
+        );
+        expect(lastBody()).toMatchObject({
+            page: 2,
+            sortModel: {column: "title", sortMode: 1},
+            filterModel: {
+                title: {filterType: "freetext", filterValue: "example"},
+            },
+        });
+
+        // Any filter change returns to page 1.
+        fireEvent.click(
+            screen.getAllByTestId("history-refine-indexer-option")[0],
+        );
+        await waitFor(() =>
+            expect(fetchImplementation).toHaveBeenCalledTimes(5),
+        );
+        expect(lastBody()).toMatchObject({
+            page: 1,
+            filterModel: {
+                title: {filterType: "freetext", filterValue: "example"},
+                name: {filterType: "checkboxes", filterValue: ["Alpha"]},
+            },
+        });
+        expect(
+            screen.getByTestId("history-refine-toggle"),
+        ).toHaveAccessibleName("Refine 2 active filters");
+
+        fireEvent.click(screen.getByTestId("download-history-refresh"));
+        await waitFor(() =>
+            expect(fetchImplementation).toHaveBeenCalledTimes(6),
+        );
+    });
+
+    it("should offer every declared dimension, with the configured indexers as options", async () => {
+        renderPage(
+            vi
+                .fn()
+                .mockResolvedValue(
+                    new Response(
+                        JSON.stringify({content: [entry()], totalElements: 1}),
+                        {headers: {"Content-Type": "application/json"}},
+                    ),
+                ),
+        );
+        await screen.findByTestId("download-history-row");
+        for (const label of [
+            "After",
+            "Before",
+            "Title",
+            "Minimum age (days)",
+            "Maximum age (days)",
+            "Username",
+            "IP address",
+        ]) {
+            expect(screen.getByLabelText(label)).toBeVisible();
+        }
+        expect(screen.getByRole("combobox", {name: "Source"})).toBeVisible();
+        expect(
+            screen
+                .getAllByTestId("history-refine-indexer-option")
+                .map((option) => option.textContent),
+        ).toEqual(["Alpha", "zeta"]);
+        expect(
+            screen
+                .getAllByTestId("history-refine-result-option")
+                .map((option) => option.textContent),
+        ).toContain("Content download successful");
+    });
+
+    it("should clear every dimension and return to page 1", async () => {
         const requests: RequestInit[] = [];
         const fetchImplementation = vi.fn(
             (_url: RequestInfo | URL, init?: RequestInit) => {
@@ -96,38 +204,31 @@ describe("DownloadHistoryPage", () => {
         );
         renderPage(fetchImplementation);
         await screen.findByTestId("download-history-row");
-        // The "All results"/"All sources" sentinel selections must render
-        // their label, not a blank control: MUI's Select hides the display
-        // for a literal empty-string value unless `displayEmpty` is set, so
-        // the default filter value must never be "".
-        expect(
-            screen.getByRole("combobox", {name: "Result"}),
-        ).toHaveTextContent("All results");
-        expect(
-            screen.getByRole("combobox", {name: "Source"}),
-        ).toHaveTextContent("All sources");
         fireEvent.change(screen.getByLabelText("Title"), {
             target: {value: "example"},
         });
-        await screen.findByRole("button", {name: "Title"});
-        fireEvent.click(screen.getByRole("button", {name: "Title"}));
-        await screen.findByRole("button", {name: "Next page"});
+        fireEvent.click(
+            screen.getAllByTestId("history-refine-result-option")[0],
+        );
         fireEvent.click(screen.getByRole("button", {name: "Next page"}));
         await waitFor(() =>
             expect(fetchImplementation).toHaveBeenCalledTimes(4),
         );
-        expect(JSON.parse(requests.at(-1)?.body as string)).toMatchObject({
-            page: 2,
-            sortModel: {column: "title", sortMode: 1},
-            filterModel: {
-                title: {filterType: "freetext", filterValue: "example"},
-            },
-        });
-        await screen.findByTestId("download-history-refresh");
-        fireEvent.click(screen.getByTestId("download-history-refresh"));
+        fireEvent.click(screen.getByTestId("history-refine-clear-all"));
         await waitFor(() =>
             expect(fetchImplementation).toHaveBeenCalledTimes(5),
         );
+        expect(JSON.parse(requests.at(-1)?.body as string)).toMatchObject({
+            page: 1,
+            filterModel: {},
+        });
+        expect(screen.getByLabelText("Title")).toHaveValue("");
+        expect(
+            screen.getAllByTestId("history-refine-result-option")[0],
+        ).toHaveAttribute("aria-pressed", "false");
+        expect(
+            screen.getByTestId("history-refine-toggle"),
+        ).toHaveAccessibleName("Refine No active filters");
     });
 
     it("should show accessible status text, dereferer-transformed links, an eligible repeat action, and isolate malformed rows", async () => {
@@ -246,7 +347,7 @@ describe("DownloadHistoryPage", () => {
         expect(screen.getByText("Repeat unavailable")).toBeVisible();
     });
 
-    it("should hide username and IP columns when history user info is disabled", async () => {
+    it("should hide the username and IP columns and their refine dimensions when history user info is disabled", async () => {
         render(
             <QueryClientProvider
                 client={
@@ -289,6 +390,13 @@ describe("DownloadHistoryPage", () => {
         expect(
             screen.queryByRole("columnheader", {name: "IP address"}),
         ).not.toBeInTheDocument();
+        expect(screen.queryByLabelText("Username")).not.toBeInTheDocument();
+        expect(screen.queryByLabelText("IP address")).not.toBeInTheDocument();
+        // No indexer is configured in this variant, so its multi-select
+        // section renders nothing rather than an empty group.
+        expect(
+            screen.queryAllByTestId("history-refine-indexer-option"),
+        ).toHaveLength(0);
     });
 
     it("should provide accessible empty and failure states", async () => {

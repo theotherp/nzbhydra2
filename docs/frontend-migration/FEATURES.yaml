@@ -522,7 +522,10 @@ features:
     target: core/ui-react/src/features/stats/history
     tests:
       - core/ui-react/src/api/history/downloads.test.ts
+      - core/ui-react/src/api/history/filters.test.ts
+      - core/ui-react/src/api/history/request.test.ts
       - core/ui-react/src/features/stats/history/DownloadHistoryPage.test.tsx
+      - core/ui-react/src/features/stats/history/refine/HistoryRefineBar.test.tsx
       - core/ui-react/src/domain/downloads/actions.test.ts
       - core/ui-react/src/router.test.tsx
       - tests/system/tests/downloads.spec.ts
@@ -534,6 +537,27 @@ features:
       - download-history-status
       - download-nzb
       - download-torrent
+      - history-refine-bar
+      - history-refine-toggle
+      - history-refine-clear-all
+      - history-refine-time
+      - history-refine-time-after
+      - history-refine-time-before
+      - history-refine-indexer
+      - history-refine-indexer-option
+      - history-refine-title
+      - history-refine-title-input
+      - history-refine-result
+      - history-refine-result-option
+      - history-refine-source
+      - history-refine-source-select
+      - history-refine-age
+      - history-refine-age-min
+      - history-refine-age-max
+      - history-refine-username
+      - history-refine-username-input
+      - history-refine-ip
+      - history-refine-ip-input
     parity: partial
   - id: F-HISTORY-NOTIFICATIONS
     name: Notification-history paging and filtering

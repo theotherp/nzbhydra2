@@ -312,9 +312,10 @@ Format, one entry per fix:
   breaking the already-shipped FM-020 search-history filtering (`searchHistory.ts` never sent `isBoolean`) in addition to
   being worked around client-side in FM-022's `downloads.ts` (`isBoolean: false`, still sent, still harmless, left in place —
   removing it is a `core/ui-react` change and out of scope for this single-module fix).
-- **Open candidate:** the FM-022 client's now-unnecessary `isBoolean: false` padding in `downloads.ts` could be removed as a
+- **Open candidate:** ~~the FM-022 client's now-unnecessary `isBoolean: false` padding in `downloads.ts` could be removed as a
   follow-up `core/ui-react`-only quickfix; left alone here since it is harmless and touching it would have made this a
-  two-module change.
+  two-module change.~~ Discharged by FM-056: `C-HISTORY-REQUEST` sends no `isBoolean` for any history endpoint, and the
+  padding is gone from `downloads.ts`.
 
 ---
 

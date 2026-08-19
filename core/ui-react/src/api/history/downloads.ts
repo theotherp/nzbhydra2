@@ -1,17 +1,10 @@
+import type {HistoryDimension} from "./filters";
+import {
+    requestHistoryPage,
+    type HistoryPage,
+    type HistoryQuery,
+} from "./request";
 import {ApiTransport} from "../transport";
-
-export type DownloadHistoryFilters = {
-    after?: string;
-    before?: string;
-    indexer?: string;
-    title?: string;
-    status?: DownloadStatus | "all";
-    source?: "all" | "INTERNAL" | "API";
-    minAge?: string;
-    maxAge?: string;
-    username?: string;
-    ip?: string;
-};
 
 export type DownloadHistorySort = {
     column:
@@ -68,119 +61,108 @@ export type DownloadHistoryEntry = {
     searchResult: DownloadHistorySearchResult;
 };
 
-export type DownloadHistoryResult = {
-    downloads: DownloadHistoryEntry[];
-    totalElements: number;
-    malformedCount: number;
-};
-
 const STATUS_VALUES: ReadonlySet<string> = new Set(
     DOWNLOAD_STATUSES.map((status) => status.value),
 );
 
-export function downloadHistoryRequest(
-    page: number,
-    limit: number,
-    filters: DownloadHistoryFilters,
-    sort: DownloadHistorySort,
-) {
-    const filterModel: Record<
-        string,
-        {filterType: string; filterValue: unknown; isBoolean: false}
-    > = {};
-    // The server's shared org.nzbhydra.historystats.FilterDefinition has a
-    // vestigial third `isBoolean` field (never read by the actual filter
-    // logic in History.java) that Jackson's implicit-constructor binding
-    // nonetheless requires every entry to supply -- omitting it, even for a
-    // non-boolean filter, rejects the whole request with a 400 "Cannot map
-    // `null` into type `boolean`". Send a constant `false` for every entry.
-    const text = (column: string, value: string | undefined) => {
-        if (value?.trim())
-            filterModel[column] = {
-                filterType: "freetext",
-                filterValue: value.trim(),
-                isBoolean: false,
-            };
-    };
-    if (filters.after || filters.before) {
-        filterModel.time = {
-            filterType: "time",
-            filterValue: {
-                after: toServerTime(filters.after),
-                before: toServerTime(filters.before),
-            },
-            isBoolean: false,
-        };
-    }
-    text("name", filters.indexer);
-    text("title", filters.title);
-    if (filters.status && filters.status !== "all")
-        filterModel.status = {
-            filterType: "checkboxes",
-            filterValue: [filters.status],
-            isBoolean: false,
-        };
-    if (filters.source && filters.source !== "all")
-        filterModel.access_source = {
-            filterType: "boolean",
-            filterValue: filters.source,
-            isBoolean: false,
-        };
-    const ageRange: Record<string, string> = {};
-    if (filters.minAge?.trim()) ageRange.min = filters.minAge.trim();
-    if (filters.maxAge?.trim()) ageRange.max = filters.maxAge.trim();
-    if (Object.keys(ageRange).length > 0)
-        filterModel.age = {
-            filterType: "numberRange",
-            filterValue: ageRange,
-            isBoolean: false,
-        };
-    text("username", filters.username);
-    text("ip", filters.ip);
-    return {
-        page,
-        limit,
-        filterModel,
-        sortModel: sort,
-        distinct: false,
-        onlyCurrentUser: false,
-    };
+/**
+ * The route's own filter dimensions, in the shared `C-HISTORY-REQUEST`
+ * vocabulary. Every dimension keeps the server column and accessible label the
+ * route already shipped; `Indexer` and `Result` are multi-select `checkboxes`
+ * on `name`/`status`, matching legacy's own `checkboxes-filter` columns
+ * (`download-history.html`) under ADR-0016's semantics.
+ *
+ * `indexerNames` are the configured indexer names, which legacy builds the same
+ * way (`download-history-controller.js:21-24` iterates the safe config's
+ * indexers unfiltered), so this needs no endpoint of its own.
+ */
+export function downloadHistoryDimensions(options: {
+    indexerNames: readonly string[];
+    showsUsername: boolean;
+    showsIp: boolean;
+}): HistoryDimension[] {
+    return [
+        {
+            kind: "time",
+            id: "time",
+            column: "time",
+            label: "Time",
+            afterLabel: "After",
+            beforeLabel: "Before",
+        },
+        {
+            kind: "checkboxes",
+            id: "indexer",
+            column: "name",
+            label: "Indexer",
+            options: options.indexerNames.map((name) => ({
+                value: name,
+                label: name,
+            })),
+        },
+        {kind: "freetext", id: "title", column: "title", label: "Title"},
+        {
+            kind: "checkboxes",
+            id: "result",
+            column: "status",
+            label: "Result",
+            options: DOWNLOAD_STATUSES.map((status) => ({
+                value: status.value,
+                label: status.label,
+            })),
+        },
+        {
+            kind: "boolean",
+            id: "source",
+            column: "access_source",
+            label: "Source",
+            allLabel: "All sources",
+            options: [
+                {value: "INTERNAL", label: "Internal"},
+                {value: "API", label: "API"},
+            ],
+        },
+        {
+            kind: "numberRange",
+            id: "age",
+            column: "age",
+            label: "Age",
+            minLabel: "Minimum age (days)",
+            maxLabel: "Maximum age (days)",
+        },
+        ...(options.showsUsername
+            ? ([
+                  {
+                      kind: "freetext",
+                      id: "username",
+                      column: "username",
+                      label: "Username",
+                  },
+              ] as const)
+            : []),
+        ...(options.showsIp
+            ? ([
+                  {
+                      kind: "freetext",
+                      id: "ip",
+                      column: "ip",
+                      label: "IP address",
+                  },
+              ] as const)
+            : []),
+    ];
 }
 
 export async function getDownloadHistory(
     transport: ApiTransport,
-    page: number,
-    limit: number,
-    filters: DownloadHistoryFilters,
-    sort: DownloadHistorySort,
-): Promise<DownloadHistoryResult> {
-    const response = await transport.request<unknown>(
-        "internalapi/history/downloads",
-        {
-            method: "POST",
-            json: downloadHistoryRequest(page, limit, filters, sort),
-        },
-    );
-    if (
-        !response ||
-        typeof response !== "object" ||
-        !Array.isArray((response as {content?: unknown}).content) ||
-        !Number.isInteger((response as {totalElements?: unknown}).totalElements)
-    ) {
-        throw new Error("Download history response has an invalid format");
-    }
-    const downloads: DownloadHistoryEntry[] = [];
-    let malformedCount = 0;
-    for (const entry of (response as {content: unknown[]}).content) {
-        const parsed = downloadHistoryEntry(entry);
-        if (parsed) downloads.push(parsed);
-        else malformedCount++;
-    }
-    return {
-        downloads,
-        totalElements: (response as {totalElements: number}).totalElements,
-        malformedCount,
-    };
+    query: HistoryQuery,
+): Promise<HistoryPage<DownloadHistoryEntry>> {
+    return requestHistoryPage(transport, {
+        path: "internalapi/history/downloads",
+        label: "Download history",
+        query,
+        parseEntry: downloadHistoryEntry,
+    });
 }
 
 function downloadHistoryEntry(
@@ -246,10 +228,4 @@ function downloadHistorySearchResult(
         downloadType: optionalText("downloadType"),
         indexerGuid: optionalText("indexerGuid"),
     };
-}
-
-function toServerTime(value: string | undefined): string | undefined {
-    if (!value) return undefined;
-    const date = new Date(value);
-    return Number.isNaN(date.getTime()) ? undefined : date.toISOString();
 }

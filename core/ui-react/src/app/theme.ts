@@ -1,6 +1,25 @@
-import {createTheme, type Theme} from "@mui/material/styles";
+import {
+    createTheme,
+    type Theme,
+    type TypographyStyle,
+} from "@mui/material/styles";
 
 declare module "@mui/material/styles" {
+    // FM-056 (ADR-0014): the two caption styles the refine surfaces share --
+    // the panel's own header label and each filter section's caption. Declared
+    // as typography variants rather than restated as `sx` blocks so
+    // `C-HISTORY-REFINE-BAR` inherits the search refine sidebar's language
+    // from the theme instead of from that component's code.
+    interface TypographyVariants {
+        refineSurfaceLabel: TypographyStyle;
+        refineSectionLabel: TypographyStyle;
+    }
+
+    interface TypographyVariantsOptions {
+        refineSurfaceLabel?: TypographyStyle;
+        refineSectionLabel?: TypographyStyle;
+    }
+
     // `@mui/material@7.3.9` reads `options.colorSpace` in `createThemeNoVars`
     // and exposes it on the theme (its `alpha`/`lighten`/`darken` helpers and
     // `createPalette`'s `augmentColor` both branch on it), but only declares the
@@ -38,6 +57,23 @@ declare module "@mui/material/styles" {
 
     interface PaletteOptions {
         surfaces?: SurfaceTokens;
+    }
+}
+
+declare module "@mui/material/Typography" {
+    interface TypographyPropsVariantOverrides {
+        refineSurfaceLabel: true;
+        refineSectionLabel: true;
+    }
+}
+
+declare module "@mui/material/Button" {
+    // FM-056: the selection pill of a refine surface. A themed `Button`
+    // variant rather than a bespoke component so a multi-select option is a
+    // stock, already focus-ringed `Button` (ADR-0013 family B) whose look is
+    // a theme token (ADR-0014).
+    interface ButtonPropsVariantOverrides {
+        refineChip: true;
     }
 }
 
@@ -106,6 +142,16 @@ export const pillRadius = 7;
  * own constant rather than folded into either.
  */
 export const selectAllRadius = 5;
+
+/**
+ * The vertical rhythm between two filter sections of a refine surface, read
+ * from the mock's Refine panel. FM-056 exposes it here because
+ * `C-HISTORY-REFINE-BAR` has to reproduce the search sidebar's section spacing
+ * without importing anything from that component (its own copy stays a local
+ * constant); a spacing value is neither a color, a font, nor a radius, so this
+ * is a shared-token convenience rather than an ADR-0014 requirement.
+ */
+export const refineSectionGap = "22px";
 
 // Mock palette, sourced from `uimock/NZBHydra Search.dc.html` (its `<helmet>`
 // `<style>` block, the outer
@@ -331,6 +377,24 @@ export function createHydraTheme(
             fontFamily: uiFontFamily,
             // `typography.fontSize` is deliberately left at MUI's default 14,
             // which already matches the mock page `<div>`'s own `font-size:14px`.
+            //
+            // The mock's Refine panel captions, as two reusable variants: the
+            // panel header label and, one step quieter, each filter section's
+            // caption.
+            refineSurfaceLabel: {
+                color: mockPalette.textSecondary,
+                fontSize: "12px",
+                fontWeight: 600,
+                letterSpacing: "0.7px",
+                textTransform: "uppercase",
+            },
+            refineSectionLabel: {
+                color: mockSurfaces.mutedText,
+                fontSize: "11px",
+                fontWeight: 600,
+                letterSpacing: "0.6px",
+                textTransform: "uppercase",
+            },
         },
         // The mock's dominant corner radius: 21 of its inline styles use
         // `border-radius:8px` (nav pills, the primary Search button, every text
@@ -386,6 +450,57 @@ export function createHydraTheme(
                         "&.Mui-focusVisible": focusRing(theme),
                     }),
                 },
+                // FM-056: the refine surfaces' selection pill (the mock's
+                // `chip(active)`), as a themed `Button` variant. Its selected
+                // look is keyed to the control's own `aria-pressed` state, so
+                // the accessible state and the visual state cannot drift
+                // apart, and a consumer writes no color, font, or radius of
+                // its own.
+                variants: [
+                    {
+                        props: {variant: "refineChip"},
+                        style: ({theme}: {theme: Theme}) => ({
+                            backgroundColor: theme.palette.surfaces.bar,
+                            border: `1px solid ${theme.palette.surfaces.hairline}`,
+                            borderRadius: pillRadius,
+                            color: theme.palette.text.secondary,
+                            fontFamily: monoFontFamily,
+                            fontSize: "12px",
+                            fontWeight: 400,
+                            lineHeight: 1.3,
+                            minWidth: 0,
+                            padding: "5px 10px",
+                            "&:hover": {
+                                backgroundColor: theme.palette.surfaces.bar,
+                                borderColor: theme.alpha(
+                                    theme.palette.primary.main,
+                                    0.16,
+                                ),
+                            },
+                            '&[aria-pressed="true"]': {
+                                backgroundColor: theme.alpha(
+                                    theme.palette.primary.main,
+                                    0.16,
+                                ),
+                                borderColor: theme.alpha(
+                                    theme.palette.primary.main,
+                                    0.45,
+                                ),
+                                color: theme.palette.primary.light,
+                                "&:hover": {
+                                    backgroundColor: theme.alpha(
+                                        theme.palette.primary.main,
+                                        0.16,
+                                    ),
+                                    borderColor: theme.alpha(
+                                        theme.palette.primary.main,
+                                        0.45,
+                                    ),
+                                },
+                            },
+                        }),
+                    },
+                ],
             },
             // ADR-0013 family B, continued. `IconButton` and `Tab` are
             // separate `styled(ButtonBase)` components with their own theme
