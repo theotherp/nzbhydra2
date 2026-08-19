@@ -207,4 +207,108 @@ test.describe("Downloads", () => {
         const download = await downloadEvent;
         expect(await download.failure()).toBeNull();
     });
+
+    test("should show and repeat a download in the legacy download history", async ({
+        page,
+    }) => {
+        await searchForResult(
+            page,
+            testEnvironment.downloaderIntegrationQuery,
+            testEnvironment.downloaderIntegrationNzbTitle,
+        );
+        const resultRow = page
+            .getByTestId("search-result-row")
+            .filter({hasText: testEnvironment.downloaderIntegrationNzbTitle});
+        const firstDownloadEvent = page.waitForEvent("download");
+        await resultRow.getByTestId("download-nzb").click();
+        expect(await (await firstDownloadEvent).failure()).toBeNull();
+
+        await page
+            .getByRole("link", {name: "History & Stats", exact: true})
+            .click();
+        await page
+            .getByRole("tab", {name: "Download history", exact: true})
+            .click();
+        const historyRow = page
+            .getByRole("row", {
+                name: testEnvironment.downloaderIntegrationNzbTitle,
+            })
+            .first();
+        await expect(historyRow).toBeVisible();
+
+        const repeatDownloadEvent = page.waitForEvent("download");
+        await historyRow.locator(".result-nzb-download-link").click();
+        expect(await (await repeatDownloadEvent).failure()).toBeNull();
+    });
+
+    test("should filter and repeat an available download in the React download history", async ({
+        page,
+    }) => {
+        await page.goto("ui/react?redirect=/");
+        await dismissWelcomeDialog(page);
+        await searchForResult(
+            page,
+            testEnvironment.downloaderIntegrationQuery,
+            testEnvironment.downloaderIntegrationNzbTitle,
+        );
+        const resultRow = page
+            .getByTestId("search-result-row")
+            .filter({hasText: testEnvironment.downloaderIntegrationNzbTitle});
+        const firstDownloadEvent = page.waitForEvent("download");
+        await resultRow.getByTestId("download-nzb").click();
+        expect(await (await firstDownloadEvent).failure()).toBeNull();
+
+        const historyResponse = page.waitForResponse((response) =>
+            isDownloadHistoryResponse(response),
+        );
+        await page
+            .getByRole("link", {name: "History & Stats", exact: true})
+            .click();
+        await page
+            .getByRole("tab", {name: "Download history", exact: true})
+            .click();
+        expect((await historyResponse).status()).toBe(200);
+
+        const filteredResponse = page.waitForResponse((response) =>
+            isDownloadHistoryResponse(response),
+        );
+        await page
+            .getByLabel("Title")
+            .fill(testEnvironment.downloaderIntegrationNzbTitle);
+        expect((await filteredResponse).status()).toBe(200);
+
+        // Download history is retained across runs, so an earlier run's entry
+        // for the same deterministic title may still match; the newest
+        // (this run's) row sorts first under the default time-descending
+        // sort.
+        const historyRow = page
+            .getByTestId("download-history-table")
+            .getByTestId("download-history-row")
+            .filter({hasText: testEnvironment.downloaderIntegrationNzbTitle})
+            .first();
+        await expect(historyRow).toBeVisible();
+        await expect(
+            historyRow.getByTestId("download-history-status"),
+        ).toContainText(/\S/);
+
+        const repeatDownloadEvent = page.waitForEvent("download");
+        await historyRow.getByTestId("download-nzb").click();
+        expect(await (await repeatDownloadEvent).failure()).toBeNull();
+
+        await page.setViewportSize({width: 390, height: 844});
+        expect(
+            await page
+                .locator("html")
+                .evaluate((element) => element.scrollWidth <= element.clientWidth),
+        ).toBe(true);
+    });
 });
+
+function isDownloadHistoryResponse(
+    response: import("@playwright/test").Response,
+): boolean {
+    return (
+        response.request().method() === "POST" &&
+        new URL(response.url()).pathname === "/internalapi/history/downloads"
+    );
+}

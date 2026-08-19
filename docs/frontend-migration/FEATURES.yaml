@@ -520,9 +520,21 @@ features:
       - core/ui-src/js/stats-service.js
       - core/ui-src/html/states/download-history.html
     target: core/ui-react/src/features/stats/history
-    tests: []
-    selectors: []
-    parity: inventoried
+    tests:
+      - core/ui-react/src/api/history/downloads.test.ts
+      - core/ui-react/src/features/stats/history/DownloadHistoryPage.test.tsx
+      - core/ui-react/src/domain/downloads/actions.test.ts
+      - core/ui-react/src/router.test.tsx
+      - tests/system/tests/downloads.spec.ts
+    selectors:
+      - download-history-refresh
+      - download-history-table
+      - download-history-row
+      - download-history-indexer
+      - download-history-status
+      - download-nzb
+      - download-torrent
+    parity: partial
   - id: F-HISTORY-NOTIFICATIONS
     name: Notification-history paging and filtering
     routes:

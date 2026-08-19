@@ -10,6 +10,7 @@ import {ApiTransport} from "./api/transport";
 import {AppShell} from "./app/AppShell";
 import type {BootstrapData} from "./bootstrap";
 import {SearchPage} from "./features/search/SearchPage";
+import {DownloadHistoryPage} from "./features/stats/history/DownloadHistoryPage";
 import {SavedSearchesPage} from "./features/stats/history/SavedSearchesPage";
 import {SearchHistoryPage} from "./features/stats/history/SearchHistoryPage";
 import {IndexerStatusesPage} from "./features/stats/indexers/IndexerStatusesPage";
@@ -66,6 +67,18 @@ export function createAppRouter(bootstrap: BootstrapData) {
             </StatsShell>
         ),
     });
+    const downloadHistoryRoute = createRoute({
+        getParentRoute: () => rootRoute,
+        path: "stats/downloads",
+        component: () => (
+            <StatsShell bootstrap={bootstrap}>
+                <DownloadHistoryPage
+                    bootstrap={bootstrap}
+                    transport={transport}
+                />
+            </StatsShell>
+        ),
+    });
     const statsRoute = createRoute({
         getParentRoute: () => rootRoute,
         path: "stats",
@@ -96,6 +109,7 @@ export function createAppRouter(bootstrap: BootstrapData) {
         indexerStatusesRoute,
         savedSearchesRoute,
         searchHistoryRoute,
+        downloadHistoryRoute,
         statsFallbackRoute,
     ]);
 

@@ -78,6 +78,24 @@ export function downloadId(result: SearchResult): string {
     return result.downloadId ?? result.searchResultId;
 }
 
+// Download-history rows (F-HISTORY-DOWNLOADS) reuse the search-results
+// direct-download action against their embedded, already-downloaded search
+// result rather than a live search result; only the fields the direct
+// action reads (identifier, download type) are populated.
+export function historyDownloadResult(searchResult: {
+    id: string;
+    title: string;
+    downloadType?: string;
+}): SearchResult {
+    return {
+        searchResultId: searchResult.id,
+        title: searchResult.title,
+        indexer: "",
+        category: "",
+        downloadType: searchResult.downloadType,
+    };
+}
+
 export function addFilesRequest(
     downloader: Downloader,
     results: SearchResult[],

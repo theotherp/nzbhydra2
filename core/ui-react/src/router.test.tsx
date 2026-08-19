@@ -74,6 +74,29 @@ describe("createAppRouter", () => {
         expect(router.state.matches.at(-1)?.routeId).toContain("searches");
     });
 
+    it("should match the stats-protected download history route", async () => {
+        window.history.replaceState({}, "", "/hydra/stats/downloads");
+        const router = createAppRouter({
+            baseUrl: "/hydra/",
+            username: "stats",
+            authType: null,
+            showLogout: true,
+            maySeeSearch: true,
+            adminRestricted: false,
+            statsRestricted: true,
+            maySeeStats: true,
+            searchRestricted: false,
+            maySeeDetailsDl: false,
+            maySeeAdmin: false,
+            authConfigured: true,
+            showIndexerSelection: false,
+            safeConfig: {keepHistory: true},
+            serverTimeZone: "UTC",
+        });
+        await router.navigate({to: "/stats/downloads"});
+        expect(router.state.matches.at(-1)?.routeId).toContain("downloads");
+    });
+
     it("should match the base-aware stats default and indexer routes", async () => {
         window.history.replaceState({}, "", "/hydra/stats/indexers");
         const router = createAppRouter({

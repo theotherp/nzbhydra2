@@ -3,6 +3,7 @@ import {
     addFilesRequest,
     categories,
     downloadId,
+    historyDownloadResult,
     MalformedDownloadResponseError,
     prepareZip,
     requiresDuplicateReason,
@@ -34,6 +35,16 @@ describe("download actions", () => {
                 },
             ],
         }));
+    it("should map a download-history search result to a direct-action-ready result using its own identifier", () => {
+        const mapped = historyDownloadResult({
+            id: "42",
+            title: "History title",
+            downloadType: "TORRENT",
+        });
+        expect(mapped.title).toBe("History title");
+        expect(mapped.downloadType).toBe("TORRENT");
+        expect(downloadId(mapped)).toBe("42");
+    });
     it("should construct duplicate and send requests through transport", async () => {
         const fetchImplementation = vi.fn().mockResolvedValue(
             new Response(JSON.stringify({reasonRequired: false}), {

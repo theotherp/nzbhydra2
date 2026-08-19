@@ -13,5 +13,5 @@ public class FilterDefinition {
 
     private Object filterValue;
     private Object filterType;
-    private boolean isBoolean;
+    private Boolean isBoolean;
 }

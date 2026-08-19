@@ -269,6 +269,53 @@ Format, one entry per fix:
   convention (see the 2026-08-19 autocomplete-cover entry above).
 - **Commit:** `8e1cd770c`
 
+### 2026-08-19 — Show units on the download history Age column
+
+- **Why not a packet:** contained bugfix confined to one cell in one component, shipping a regression test. The Age column
+  rendered a bare integer with no unit, while every other age-bearing surface in the app (`SearchHistoryPage`,
+  `SavedSearchesPage`) renders `"N days"`. No `data-testid`, contract, or behavior change — display formatting only.
+- **Paths:** `core/ui-react/src/features/stats/history/{DownloadHistoryPage.tsx,DownloadHistoryPage.test.tsx}`.
+- **Gates:** `core/ui-react` `typecheck`, `lint` (0 errors, 10 pre-existing warnings, unchanged), `format:check`,
+  `test -- --run` (40 files, 280 passed), `build`, `check:api`, `validate:migration` all pass; install skipped — manifests
+  unchanged. Root `git diff --check` clean. `tests/system` untouched: no Playwright spec asserts this cell's raw value.
+  Regression test observed failing before the fix and passing after.
+- **Commit:** `110b522bb`
+- **Note:** flagged as a non-blocking minor finding by the FM-022 reviewer rather than fixed inline (per this project's
+  minor-findings convention — small cosmetic gaps are logged, not always fixed on the spot); discharged here alongside the
+  `FilterDefinition.java` fix below at the owner's request.
+
+### 2026-08-19 — Stop `FilterDefinition` rejecting filtered history requests with a bare `isBoolean` type mismatch
+
+- **Why not a packet:** contained bugfix to a single primitive-vs-boxed field in one class, shipping a regression test. No
+  contract, selector, or `data-testid` change — `isBoolean` appears in no `docs/frontend-migration/*.yaml` registry.
+- **Paths:** `shared/mapping/src/main/java/org/nzbhydra/historystats/FilterDefinition.java`; new
+  `shared/mapping/src/test/java/org/nzbhydra/historystats/FilterDefinitionJacksonTest.java`.
+- **Gates:** `shared/mapping` `mvn test` (10/10, up from 8 by the two new cases; note the environment's global
+  `~/.mvn/maven.config` sets `-DskipTests` by default — every Maven invocation here needed an explicit `-DskipTests=false`
+  override). `core` `mvn test -Dtest=HistoryTest,StatsComponentTest` (10/10, 1 pre-existing `@Disabled` skip, unrelated) and
+  `mvn -pl core -am compile` both clean. Root `git diff --check` clean. Real backend:
+  `python3 misc/run_gui_systemtest.py --runtime local --skip-install --keep-services -- tests/search-history.spec.ts
+  tests/downloads.spec.ts` — 9/9 passed against the rebuilt server, exercising both the search-history filter request (no
+  `isBoolean` sent) and the download-history filter request (`isBoolean: false` sent). New test observed failing against the
+  unfixed primitive field (verified via `git stash push -u` on just the fix hunk, running the new test against the
+  stashed-out state, then `git stash pop`) and passing after.
+- **Commit:** `1fd40c659`
+- **Note:** root cause, confirmed by direct reproduction: `@Data @AllArgsConstructor @NoArgsConstructor` on a class with a
+  primitive `boolean isBoolean` field makes Jackson 3's implicit-constructor property binding treat `isBoolean` as a required
+  constructor parameter; any request omitting it fails with `MismatchedInputException: Cannot map 'null' into type 'boolean'`
+  (surfaced to the client as HTTP 400), rather than defaulting the primitive to `false`. `isBoolean` is dead weight — grepped
+  across the repository, nothing ever reads it (`History.java` only calls `getFilterValue()`/`getFilterType()`) and nothing
+  outside Jackson ever constructs a `FilterDefinition` with it set. Boxing `boolean` to `Boolean` was the smaller of two
+  candidate fixes (the other being deleting the field plus adding `@JsonIgnoreProperties(ignoreUnknown = true)`, which would
+  also require touching the FM-022 client's `isBoolean: false` workaround to stay minimal) — it makes a missing property
+  default to `null` instead of erroring, changes no other behavior, and needs no client-side change. This was silently
+  breaking the already-shipped FM-020 search-history filtering (`searchHistory.ts` never sent `isBoolean`) in addition to
+  being worked around client-side in FM-022's `downloads.ts` (`isBoolean: false`, still sent, still harmless, left in place —
+  removing it is a `core/ui-react` change and out of scope for this single-module fix).
+- **Open candidate:** the FM-022 client's now-unnecessary `isBoolean: false` padding in `downloads.ts` could be removed as a
+  follow-up `core/ui-react`-only quickfix; left alone here since it is harmless and touching it would have made this a
+  two-module change.
+
 ---
 
 ## Open candidates
