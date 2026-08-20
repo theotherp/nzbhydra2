@@ -15,6 +15,7 @@ import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 import {RouterProvider} from "@tanstack/react-router";
 import {useState} from "react";
 
+import {SafeConfigProvider} from "./app/SafeConfigProvider";
 import {createHydraTheme} from "./app/theme";
 import type {BootstrapData} from "./bootstrap";
 import {DialogProvider} from "./components/dialogs/DialogProvider";
@@ -42,11 +43,13 @@ export function App({bootstrap, isLoading = false}: AppProps) {
                 </Container>
             ) : (
                 <QueryClientProvider client={queryClient}>
-                    <DialogProvider>
-                        <ToastProvider>
-                            <RouterProvider router={router} />
-                        </ToastProvider>
-                    </DialogProvider>
+                    <SafeConfigProvider bootstrap={bootstrap}>
+                        <DialogProvider>
+                            <ToastProvider>
+                                <RouterProvider router={router} />
+                            </ToastProvider>
+                        </DialogProvider>
+                    </SafeConfigProvider>
                 </QueryClientProvider>
             )}
         </ThemeProvider>

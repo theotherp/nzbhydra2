@@ -27,7 +27,7 @@ import {
     type NotificationHistorySort,
 } from "../../../api/history/notifications";
 import {ApiTransport} from "../../../api/transport";
-import type {BootstrapData} from "../../../bootstrap";
+import {useSafeConfig, type BootstrapData} from "../../../bootstrap";
 import {formatServerDateTime} from "../../../domain/date-time/dateTime";
 import {linkedTextLines} from "../../../domain/links/textLinks";
 import {HistoryRefineBar} from "./refine/HistoryRefineBar";
@@ -45,6 +45,7 @@ export function NotificationHistoryPage({
     const [page, setPage] = useState(1);
     const [values, setValues] = useState<HistoryFilterValues>({});
     const [sort, setSort] = useState<NotificationHistorySort>(defaultSort);
+    const safeConfig = useSafeConfig(bootstrap);
     const dimensions = useMemo(() => notificationHistoryDimensions(), []);
     const query = useQuery({
         queryKey: ["notification-history", page, values, sort],
@@ -87,8 +88,7 @@ export function NotificationHistoryPage({
     }
     const {entries: notifications, totalElements, malformedCount} = query.data;
     const totalPages = Math.max(1, Math.ceil(totalElements / PAGE_SIZE));
-    const dereferer = (bootstrap.safeConfig as {dereferer?: unknown} | null)
-        ?.dereferer;
+    const dereferer = safeConfig?.dereferer;
     return (
         <Stack component="main" spacing={2}>
             <Stack

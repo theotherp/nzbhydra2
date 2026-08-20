@@ -146,4 +146,66 @@ describe("createAppRouter", () => {
         await router.navigate({to: "/stats/indexers"});
         expect(router.state.matches.at(-1)?.routeId).toContain("indexers");
     });
+    it("should match every canonical config tab route for an admin", async () => {
+        window.history.replaceState({}, "", "/hydra/config/main");
+        const router = createAppRouter(adminBootstrap());
+
+        for (const segment of [
+            "main",
+            "auth",
+            "searching",
+            "categories",
+            "downloading",
+            "externalTools",
+            "indexers",
+            "notifications",
+        ]) {
+            await router.navigate({to: `/config/${segment}`});
+            expect(router.state.matches.at(-1)?.routeId).toBe(
+                `/config/${segment}`,
+            );
+        }
+    });
+
+    it("should land bare /config on the main tab", async () => {
+        window.history.replaceState({}, "", "/hydra/config");
+        const router = createAppRouter(adminBootstrap());
+
+        await router.navigate({to: "/config"});
+        expect(router.state.location.pathname).toBe("/config/main");
+        expect(router.state.matches.at(-1)?.routeId).toBe("/config/main");
+    });
+
+    it("should keep a session that may not see the admin area off the config routes", async () => {
+        window.history.replaceState({}, "", "/hydra/config/main");
+        const router = createAppRouter({
+            ...adminBootstrap(),
+            username: "user",
+            maySeeAdmin: false,
+            adminRestricted: true,
+        });
+
+        await router.navigate({to: "/config/main"});
+        expect(router.state.matches.at(-1)?.routeId).not.toContain("config");
+    });
 });
+
+function adminBootstrap() {
+    return {
+        baseUrl: "/hydra/",
+        username: "admin",
+        authType: null,
+        showLogout: true,
+        maySeeSearch: true,
+        adminRestricted: true,
+        statsRestricted: true,
+        maySeeStats: true,
+        searchRestricted: false,
+        maySeeDetailsDl: true,
+        maySeeAdmin: true,
+        authConfigured: true,
+        showIndexerSelection: false,
+        safeConfig: {keepHistory: true},
+        serverTimeZone: "UTC",
+    };
+}

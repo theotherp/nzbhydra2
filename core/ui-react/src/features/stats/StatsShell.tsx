@@ -1,13 +1,17 @@
 import {Box, Tab, Tabs} from "@mui/material";
 import {Link, useLocation} from "@tanstack/react-router";
 
-import type {BootstrapData} from "../../bootstrap";
+import {
+    useSafeConfig,
+    type BootstrapData,
+    type SafeConfig,
+} from "../../bootstrap";
 
 type StatsShellProps = {bootstrap: BootstrapData; children: React.ReactNode};
 
 export function StatsShell({bootstrap, children}: StatsShellProps) {
     const pathname = useLocation({select: (location) => location.pathname});
-    const tabs = statsTabs(bootstrap);
+    const tabs = statsTabs(useSafeConfig(bootstrap));
     const active =
         tabs.find((tab) => pathname.endsWith(`/${tab.path}`))?.path ??
         "indexers";
@@ -33,8 +37,8 @@ export function StatsShell({bootstrap, children}: StatsShellProps) {
     );
 }
 
-function statsTabs(bootstrap: BootstrapData) {
-    const history = bootstrap.safeConfig?.keepHistory === true;
+function statsTabs(safeConfig: SafeConfig) {
+    const history = safeConfig?.keepHistory === true;
     return [
         {label: "Indexer statuses", path: "indexers"},
         ...(history

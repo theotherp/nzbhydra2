@@ -11,7 +11,12 @@ import {
 import {Link, useLocation} from "@tanstack/react-router";
 import {useState} from "react";
 
-import type {BootstrapData} from "../bootstrap";
+import {
+    maySeeAdminArea,
+    useSafeConfig,
+    type BootstrapData,
+    type SafeConfig,
+} from "../bootstrap";
 
 // Vite's `new URL(..., import.meta.url)` asset reference (see Vite's "Public Base
 // Path" docs): it lets the bundler emit a base-URL-aware, hashed asset path without
@@ -32,7 +37,7 @@ type NavigationItem = {
 
 export function AppShell({bootstrap, children}: AppShellProps) {
     const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false);
-    const navigation = navigationItems(bootstrap);
+    const navigation = navigationItems(bootstrap, useSafeConfig(bootstrap));
     const pathname = useLocation({
         select: (location) => location.pathname,
     });
@@ -132,7 +137,10 @@ export function AppShell({bootstrap, children}: AppShellProps) {
     );
 }
 
-function navigationItems(bootstrap: BootstrapData): NavigationItem[] {
+function navigationItems(
+    bootstrap: BootstrapData,
+    safeConfig: SafeConfig,
+): NavigationItem[] {
     const authenticated = bootstrap.username !== null;
     const authConfigured = bootstrap.authConfigured === true;
     const showSearch =
@@ -143,29 +151,23 @@ function navigationItems(bootstrap: BootstrapData): NavigationItem[] {
               bootstrap.maySeeStats === true ||
               !bootstrap.statsRestricted
             : !bootstrap.statsRestricted;
-    const showAdmin =
-        !authConfigured || authenticated
-            ? !authConfigured ||
-              bootstrap.maySeeAdmin === true ||
-              !bootstrap.adminRestricted
-            : !bootstrap.adminRestricted;
+    // FM-058: shared with the config routes' own guard so a session that may
+    // not see the admin area can neither see the item nor reach the route.
+    const showAdmin = maySeeAdminArea(bootstrap);
 
     return [
         {label: "Search", path: "", visible: showSearch},
         {
-            label: keepHistory(bootstrap)
-                ? "History & Stats"
-                : "Indexer statuses",
+            label:
+                safeConfig?.keepHistory === true
+                    ? "History & Stats"
+                    : "Indexer statuses",
             path: "stats/indexers",
             visible: showStats,
         },
         {label: "Config", path: "config/main", visible: showAdmin},
         {label: "System", path: "system/control", visible: showAdmin},
     ];
-}
-
-function keepHistory(bootstrap: BootstrapData): boolean {
-    return bootstrap.safeConfig?.keepHistory === true;
 }
 
 function navigationTo(path: string): string {

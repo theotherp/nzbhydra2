@@ -1,4 +1,5 @@
 import {
+    Box,
     Button,
     Dialog,
     DialogActions,
@@ -27,18 +28,21 @@ export function DialogProvider({children}: {children: React.ReactNode}) {
         }
     };
 
+    const acknowledgeOnly = pending?.variant === "acknowledge";
+
     return (
         <DialogContext.Provider value={{confirm}}>
             {children}
             <Dialog
                 aria-describedby="hydra-confirmation-description"
                 aria-labelledby="hydra-confirmation-title"
+                data-testid={pending?.testId}
                 onClose={(_, reason) => {
                     if (
                         reason === "escapeKeyDown" ||
                         reason === "backdropClick"
                     ) {
-                        close("cancelled");
+                        close(acknowledgeOnly ? "confirmed" : "cancelled");
                     }
                 }}
                 open={pending !== null}
@@ -50,11 +54,31 @@ export function DialogProvider({children}: {children: React.ReactNode}) {
                     <DialogContentText id="hydra-confirmation-description">
                         {pending?.message}
                     </DialogContentText>
+                    {pending?.details && pending.details.length > 0 ? (
+                        <Box component="ul" sx={{mb: 0, mt: 1, pl: 3}}>
+                            {pending.details.map((detail) => (
+                                <DialogContentText
+                                    component="li"
+                                    key={detail}
+                                    variant="body2"
+                                >
+                                    {detail}
+                                </DialogContentText>
+                            ))}
+                        </Box>
+                    ) : null}
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => close("cancelled")}>
-                        {pending?.cancelLabel ?? "Cancel"}
-                    </Button>
+                    {acknowledgeOnly ? null : (
+                        <Button onClick={() => close("cancelled")}>
+                            {pending?.cancelLabel ?? "Cancel"}
+                        </Button>
+                    )}
+                    {!acknowledgeOnly && pending?.denyLabel ? (
+                        <Button onClick={() => close("denied")}>
+                            {pending.denyLabel}
+                        </Button>
+                    ) : null}
                     <Button
                         autoFocus
                         onClick={() => close("confirmed")}

@@ -10,5 +10,8 @@ Currently available in React:
 - Download-history paging, filtering, status/link display, and NZB/torrent repeat actions.
 - Notification-history paging, filtering, and safe title/body/link display.
 - The System news page.
+- The config area's shell: all eight canonical tabs, a whole-config save that round-trips losslessly (including sections and
+  fields no tab yet models) with validation-error/warning handling and restart support. Tab bodies are placeholders until
+  FM-059 onward add field content.
 
 This is a derived convenience summary, not a parity claim or migration roadmap.

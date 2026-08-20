@@ -35,7 +35,7 @@ import {
     type DownloadStatus,
 } from "../../../api/history/downloads";
 import {ApiTransport} from "../../../api/transport";
-import type {BootstrapData} from "../../../bootstrap";
+import {useSafeConfig, type BootstrapData} from "../../../bootstrap";
 import {formatServerDateTime} from "../../../domain/date-time/dateTime";
 import {historyDownloadResult} from "../../../domain/downloads/actions";
 import {externalLink} from "../../../domain/links/externalLinks";
@@ -55,15 +55,16 @@ export function DownloadHistoryPage({
     const [page, setPage] = useState(1);
     const [values, setValues] = useState<HistoryFilterValues>({});
     const [sort, setSort] = useState<DownloadHistorySort>(defaultSort);
-    const userInfoType = historyUserInfoType(bootstrap.safeConfig);
+    const safeConfig = useSafeConfig(bootstrap);
+    const userInfoType = historyUserInfoType(safeConfig);
     const dimensions = useMemo(
         () =>
             downloadHistoryDimensions({
-                indexerNames: configuredIndexerNames(bootstrap.safeConfig),
+                indexerNames: configuredIndexerNames(safeConfig),
                 showsUsername: showsUsername(userInfoType),
                 showsIp: showsIp(userInfoType),
             }),
-        [bootstrap.safeConfig, userInfoType],
+        [safeConfig, userInfoType],
     );
     const query = useQuery({
         queryKey: ["download-history", page, values, sort],
@@ -230,13 +231,7 @@ export function DownloadHistoryPage({
                                     <TableCell>
                                         <TitleCell
                                             entry={entry}
-                                            dereferer={
-                                                (
-                                                    bootstrap.safeConfig as {
-                                                        dereferer?: unknown;
-                                                    } | null
-                                                )?.dereferer
-                                            }
+                                            dereferer={safeConfig?.dereferer}
                                         />
                                     </TableCell>
                                     <TableCell data-testid="download-history-status">

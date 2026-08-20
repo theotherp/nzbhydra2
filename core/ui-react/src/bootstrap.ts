@@ -1,3 +1,7 @@
+import {createContext, useContext} from "react";
+
+export type SafeConfig = Record<string, unknown> | null;
+
 export type BootstrapData = {
     username: string | null;
     authType: string | null;
@@ -11,10 +15,51 @@ export type BootstrapData = {
     maySeeAdmin: boolean | null;
     authConfigured: boolean | null;
     showIndexerSelection: boolean | null;
-    safeConfig: Record<string, unknown> | null;
+    safeConfig: SafeConfig;
     baseUrl: string;
     serverTimeZone: string | null;
 };
+
+/**
+ * ADR-0017: the live safe configuration, published by
+ * `app/SafeConfigProvider` from a TanStack Query over `API-CONFIG-SAFE` that
+ * is seeded with `BootstrapData.safeConfig` and invalidated after every
+ * successful config save. `undefined` means "no provider above me", which is
+ * only ever the case in focused component tests.
+ */
+export const SafeConfigContext = createContext<SafeConfig | undefined>(
+    undefined,
+);
+
+/**
+ * Reads the safe configuration the way every consumer must: through the
+ * context, so a post-save invalidation reaches it without a page reload.
+ * Never copy the returned value into component state — that is exactly the
+ * staleness ADR-0017 removed. Falls back to the page's bootstrap value, which
+ * is the query's own seed, when rendered without a provider.
+ */
+export function useSafeConfig(bootstrap: BootstrapData): SafeConfig {
+    const live = useContext(SafeConfigContext);
+    return live === undefined ? bootstrap.safeConfig : live;
+}
+
+/**
+ * The single admin-area rule: it gates both the shell's Config navigation item
+ * and whether the config routes are reachable at all. Mirrors legacy's
+ * `maySeeAdminArea` semantics — with authentication configured a session needs
+ * the admin permission unless the admin area is unrestricted; with no
+ * authentication configured everyone is an admin.
+ */
+export function maySeeAdminArea(bootstrap: BootstrapData): boolean {
+    const authenticated = bootstrap.username !== null;
+    const authConfigured = bootstrap.authConfigured === true;
+    if (!authConfigured) {
+        return true;
+    }
+    return authenticated
+        ? bootstrap.maySeeAdmin === true || !bootstrap.adminRestricted
+        : !bootstrap.adminRestricted;
+}
 
 declare global {
     interface Window {

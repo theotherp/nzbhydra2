@@ -1,7 +1,7 @@
 # FM-059: Config Field Vocabulary And The Main Tab
 
 Status: planned Owner:
-Feature IDs: F-CONFIG-MAIN Component IDs: C-CONFIG-FIELDS, C-SECRET-INPUT, C-CONFIG-FORM, C-EXTERNAL-LINKS API IDs: API-CONFIG-FOLDER-LISTING, API-CONFIG-PUT Depends on: FM-058 Blocks: FM-060, FM-061, FM-062, FM-063, FM-064, FM-065, FM-066
+Feature IDs: F-CONFIG-MAIN Component IDs: C-CONFIG-FIELDS, C-SECRET-INPUT, C-CONFIG-FORM, C-EXTERNAL-LINKS API IDs: API-CONFIG-FOLDER-LISTING, API-CONFIG-PUT Depends on: None Blocks: FM-060, FM-061, FM-062, FM-063, FM-064, FM-065, FM-066
 
 ## Outcome
 
@@ -36,11 +36,12 @@ The agent may read/search the repository. Context To Read is mandatory starting 
 - Repeat sections, modal transactions, connection/caps checks, and every other tab's fields
 - The colour control (`color-control.html`, used only by indexer config) and the `timeOfDay`/`duoSetting`/`percentInput` kinds, which no Main field uses — add a kind when its first consumer needs it
 - Backup, update, and log actions reachable from the System pages; Main owns only their settings
+- `tests/system/tests/config.spec.ts`: FM-058's shell spec, retargeted off `config-tab-placeholder` before this task starts; if it still asserts a tab body when you begin, stop and report rather than edit it
 
 ## Context To Read
 
 - FM-058's packet and handoff, `../README.md` *Visual Gate*, `/core/ui-react/AGENTS.md` *UI Conventions*, and the listed registry records
-- `core/ui-src/js/config/config-fields-service.js:50-736` (the whole Main tab), `core/ui-src/js/config/formly-config.js` (the `settingWrapper`, `fieldset`, `horizontalInput`, `horizontalSwitch`, `horizontalSelect`, `horizontalMultiselect`,
+- `core/ui-src/js/config/config-fields-service.js:50-735` (the whole Main tab), `core/ui-src/js/config/formly-config.js` (the `settingWrapper`, `fieldset`, `horizontalInput`, `horizontalSwitch`, `horizontalSelect`, `horizontalMultiselect`,
   `horizontalChips`, `passwordSwitch`, `apiKeyInput`, `fileInput`, `help` types), `core/ui-src/html/states/config.html` (`setting-wrapper.html`, `fieldset-wrapper.html`), `core/ui-src/js/file-selection-service.js`
 - `SensitiveDataConfigValidator.java` (`***UNCHANGED***` in both directions), `MainConfig.java`, `FileSystemBrowser` request/response types, `core/ui-react/src/app/theme.ts`
 
@@ -57,8 +58,9 @@ The agent may read/search the repository. Context To Read is mandatory starting 
 - `ApiKeySetting` generates a 24-character alphanumeric key and marks the form dirty (`formly-config.js` `apiKeyInput`). `FileBrowserSetting` browses through `API-CONFIG-FOLDER-LISTING` with file vs folder mode, parent navigation, and
   selecting the current folder, and writes the chosen path into the field (`file-selection-service.js`).
 - Advanced gating is a property of the row, not of the config: rows marked advanced are hidden unless FM-058's toggle is on, and hiding never changes or clears a value.
-- `/config/main` renders every field of `config-fields-service.js:50-736` — 54 keys across the ten fieldsets Hosting, Proxy, UI, Security, Logging, Backup, Updates, History, Database, Other — with legacy's labels, help text, units, minimums,
-  placeholders, required marks, and advanced flags. Its `hideExpression`s become `useWatch`-driven rendering (for example the SSL keystore fields, the proxy fields, and the log-marker list) and a hidden field keeps its value, so saving a
+- `/config/main` renders every field of `config-fields-service.js:50-735` — 53 fields across ten fieldsets: Hosting 6, Proxy 7, UI 2, Security 7, Logging 9, Backup 3, Updates 5, History 3, Database 3, Other 8. The Logging fieldset carries
+  `key: 'logging'` (`:326`), so its nine fields bind under `main.logging.*` — including `historyUserInfoType`, which lives in that fieldset despite its name (`LoggingConfig.java`). Fields carry legacy's labels, help text, units, minimums,
+  placeholders, required marks, and advanced flags. Legacy's `hideExpression`s become `useWatch`-driven rendering (for example the SSL keystore fields, the proxy fields, and the log-marker list) and a hidden field keeps its value, so saving a
   config whose conditions are unmet does not clear the fields behind them.
 - Legacy's field-level validators for this tab are preserved as form validation with a visible message: the IP validator, the `HH:mm` scheduled-restart pattern, and the numeric minimums; an invalid form blocks save (`config-controller.js:158-189`).
 - New `data-testid` values for the vocabulary and Main's fields are recorded in `F-CONFIG-MAIN.selectors` and `C-CONFIG-FIELDS`; legacy has none to preserve.

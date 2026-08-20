@@ -49,7 +49,7 @@ components:
       - core/src/main/resources/templates/index.html
       - core/ui-src/js/config/config-service.js
       - core/ui-src/js/nzbhydra.js
-    target: core/ui-react/src/bootstrap.ts
+    target: core/ui-react/src/bootstrap.ts; core/ui-react/src/app/SafeConfigProvider.tsx
     consumers:
       - F-PLATFORM-SHELL
       - F-AUTH-LOGIN
@@ -58,7 +58,7 @@ components:
       - F-STATS-SHELL
       - F-SYSTEM-SHELL
     classification: shared_hydra
-    state: partial
+    state: done
   - id: C-AUTH-SESSION
     responsibility: Login, logout, password challenge, current-session transitions, permissions, and route guards
     legacy:
@@ -145,7 +145,7 @@ components:
       - F-SYSTEM-UPDATES
       - F-SYSTEM-BACKUP
     classification: shared_hydra
-    state: planned
+    state: partial
   - id: C-CATEGORY-CATALOG
     responsibility: Typed Hydra category catalog, default category, and lookup semantics
     legacy:
@@ -289,7 +289,7 @@ components:
     legacy:
       - core/ui-src/js/config/config-controller.js
       - core/ui-src/js/config/config-service.js
-    target: core/ui-react/src/features/config/form; core/ui-react/src/api/config
+    target: core/ui-react/src/features/config; core/ui-react/src/api/config
     consumers:
       - F-CONFIG-SHELL
       - F-CONFIG-MAIN
@@ -301,7 +301,7 @@ components:
       - F-CONFIG-INDEXERS
       - F-CONFIG-NOTIFICATIONS
     classification: feature_specific
-    state: planned
+    state: done
   - id: C-CONFIG-FIELDS
     responsibility: The small typed config field vocabulary ADR-0002 requires instead of a generic schema framework -- a labelled setting row with help, tooltip, and advanced gating, a fieldset, the scalar controls (text, number,
       switch, select, multiselect, chips), the API-key generator, and the server-side file/folder picker, all bound through `C-CONFIG-FORM`

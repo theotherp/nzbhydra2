@@ -8,7 +8,8 @@ import {
 import {ApiTransport} from "./api/transport";
 
 import {AppShell} from "./app/AppShell";
-import type {BootstrapData} from "./bootstrap";
+import {maySeeAdminArea, type BootstrapData} from "./bootstrap";
+import {createConfigRoute} from "./features/config/routes";
 import {SearchPage} from "./features/search/SearchPage";
 import {DownloadHistoryPage} from "./features/stats/history/DownloadHistoryPage";
 import {NotificationHistoryPage} from "./features/stats/history/NotificationHistoryPage";
@@ -115,6 +116,12 @@ export function createAppRouter(bootstrap: BootstrapData) {
             </StatsShell>
         ),
     });
+    // A session that may not see the admin area never gets a config route to
+    // reach: without it `/config/...` falls through to the migration
+    // placeholder, exactly like any unmigrated route.
+    const configRoutes = maySeeAdminArea(bootstrap)
+        ? [createConfigRoute(rootRoute, transport)]
+        : [];
     const routeTree = rootRoute.addChildren([
         searchRoute,
         newsRoute,
@@ -125,6 +132,7 @@ export function createAppRouter(bootstrap: BootstrapData) {
         downloadHistoryRoute,
         notificationHistoryRoute,
         statsFallbackRoute,
+        ...configRoutes,
     ]);
 
     return createRouter({

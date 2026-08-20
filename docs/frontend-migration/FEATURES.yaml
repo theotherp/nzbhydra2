@@ -302,18 +302,33 @@ features:
       - core/ui-src/html/states/config.html
     target: core/ui-react/src/features/config
     tests:
+      - tests/system/tests/config.spec.ts
       - tests/system/tests/external-tools.spec.ts
-    selectors: []
-    parity: partial
-    gaps:
-      - stable data-testid selectors
-      - advanced toggle
-      - unsaved navigation
-      - warnings
-      - restart
-      - API help
-      - full round trip
-      - post-save safe-config refresh without a page reload (ADR-0017)
+      - core/ui-react/src/features/config/ConfigShell.test.tsx
+      - core/ui-react/src/router.test.tsx
+    selectors:
+      - config-shell
+      - config-tab-main
+      - config-tab-auth
+      - config-tab-searching
+      - config-tab-categories
+      - config-tab-downloading
+      - config-tab-externalTools
+      - config-tab-indexers
+      - config-tab-notifications
+      - config-tab-placeholder
+      - config-advanced-toggle
+      - config-api-help
+      - config-save
+      - config-validation-errors
+      - config-validation-warnings
+      - config-restart-required
+      - config-unsaved-changes
+      - config-api-help-dialog
+      - restart-progress-dialog
+      - restart-progress-message
+    parity: done
+    gaps: []
   - id: F-CONFIG-MAIN
     name: Main hosting, proxy, UI, security, logging, backup, update, history, database, and runtime settings
     routes:

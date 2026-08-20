@@ -38,7 +38,7 @@ import {
 } from "../../../api/searchHistory";
 import {redirectRidUrl} from "../../../api/savedSearches";
 import {ApiTransport} from "../../../api/transport";
-import type {BootstrapData} from "../../../bootstrap";
+import {useSafeConfig, type BootstrapData} from "../../../bootstrap";
 import {formatServerDateTime} from "../../../domain/date-time/dateTime";
 import {externalLink} from "../../../domain/links/externalLinks";
 import {createCategoryCatalog} from "../../../domain/categories/catalog";
@@ -56,13 +56,14 @@ export function SearchHistoryPage({
     transport: ApiTransport;
 }) {
     const navigate = useNavigate({from: "/stats/searches"});
-    const catalog = createCategoryCatalog(bootstrap.safeConfig);
+    const safeConfig = useSafeConfig(bootstrap);
+    const catalog = createCategoryCatalog(safeConfig);
     const [page, setPage] = useState(1);
     const [values, setValues] = useState<HistoryFilterValues>({});
     const [sort, setSort] = useState<SearchHistorySort>(defaultSort);
     const [showUserAgent, setShowUserAgent] = useState(false);
     const [detailsId, setDetailsId] = useState<number>();
-    const userInfoType = historyUserInfoType(bootstrap.safeConfig);
+    const userInfoType = historyUserInfoType(safeConfig);
     const dimensions = useMemo(
         () =>
             searchHistoryDimensions({
@@ -475,12 +476,13 @@ function Criteria({
     bootstrap: BootstrapData;
     transport: ApiTransport;
 }) {
+    const safeConfig = useSafeConfig(bootstrap);
     const criteria: Array<{label: string; value: ReactNode}> = [];
     for (const identifier of entry.identifiers) {
         const href = identifierHref(
             identifier.identifierKey,
             identifier.identifierValue,
-            bootstrap.safeConfig?.dereferer,
+            safeConfig?.dereferer,
             transport,
         );
         criteria.push({

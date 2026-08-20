@@ -353,6 +353,23 @@ Format, one entry per fix:
 
 ---
 
+### 2026-08-20 — Retarget config tab assertions off the placeholder body
+
+- **Why not a packet:** mechanically verifiable locator/assertion repair confined to one test file, no `data-testid`,
+  selector, or API contract change. Diagnosed and fully specified by a `migration-task-designer` agent during
+  `/fm-orchestrate FM-059` coordination: FM-058's `config.spec.ts` asserted `config-tab-placeholder` for every canonical
+  config tab, which is only true until a tab's real content lands, so FM-059 (and every later config-batch task,
+  FM-060..FM-067) would break it again as each tab migrates. Retargeting once, now, off the placeholder makes the
+  assertion durable for the rest of the batch instead of needing eight ad-hoc carve-outs.
+- **Paths:** `tests/system/tests/config.spec.ts` (`openConfig()` now waits for `config-save` instead of the placeholder;
+  the tab tour asserts MUI's `aria-selected` state on the clicked tab instead of the placeholder's text).
+- **Gates:** `tests/system`: `npx tsc --noEmit` pass; `npx prettier --check tests/config.spec.ts` pass. Root:
+  `python3 misc/run_gui_systemtest.py --runtime local -- tests/config.spec.ts` — 4/4 passed against the real backend;
+  `git diff --check` clean.
+- **Commit:** `96d6923d6`
+
+---
+
 ## Open candidates
 
 Known small defects not yet fixed. Discharge one with `/fm-quickfix`, then move it into the ledger above with its commit SHA. If a candidate turns out to fail the qualification gate, say so here and route it to `/fm-orchestrate`

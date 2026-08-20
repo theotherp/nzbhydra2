@@ -1,11 +1,30 @@
 import {createContext, useContext} from "react";
 
-export type DialogResult = "confirmed" | "cancelled";
+/**
+ * `denied` is the third answer a Save / Discard / Cancel style dialog needs:
+ * an explicit "no" that is not the same as dismissing the dialog. It only
+ * appears when a confirmation asks for it through `denyLabel`.
+ */
+export type DialogResult = "confirmed" | "denied" | "cancelled";
 
 export type Confirmation = {
     cancelLabel?: string;
     confirmLabel?: string;
+    /**
+     * Renders a third button between cancel and confirm, resolving `denied`.
+     */
+    denyLabel?: string;
+    /** Rendered as a list under the message (server validation messages). */
+    details?: string[];
     message: string;
+    /** Applied to the dialog root so a test can address this exact dialog. */
+    testId?: string;
+    /**
+     * `acknowledge` renders the confirm button only — the shape legacy's
+     * `ModalService.open(..., {yes: {text: "OK"}})` produced for a message the
+     * user can only take note of.
+     */
+    variant?: "confirm" | "acknowledge";
     title: string;
 };
 

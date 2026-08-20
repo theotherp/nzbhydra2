@@ -28,7 +28,7 @@ import {
 import {ApiTransport} from "../../../api/transport";
 import {externalLink} from "../../../domain/links/externalLinks";
 import {createCategoryCatalog} from "../../../domain/categories/catalog";
-import type {BootstrapData} from "../../../bootstrap";
+import {useSafeConfig, type BootstrapData} from "../../../bootstrap";
 import {savedSearchCriteria} from "../../search/history/savedSearchCriteria";
 
 const queryKey = ["saved-searches"];
@@ -42,7 +42,8 @@ export function SavedSearchesPage({
 }) {
     const navigate = useNavigate({from: "/stats/saved-searches"});
     const queryClient = useQueryClient();
-    const catalog = createCategoryCatalog(bootstrap.safeConfig);
+    const safeConfig = useSafeConfig(bootstrap);
+    const catalog = createCategoryCatalog(safeConfig);
     const [pendingDelete, setPendingDelete] = useState<number>();
     const query = useQuery({
         queryKey,
@@ -108,9 +109,7 @@ export function SavedSearchesPage({
                                     <Criteria
                                         search={search}
                                         transport={transport}
-                                        dereferer={
-                                            bootstrap.safeConfig?.dereferer
-                                        }
+                                        dereferer={safeConfig?.dereferer}
                                     />
                                 </TableCell>
                                 <TableCell>
