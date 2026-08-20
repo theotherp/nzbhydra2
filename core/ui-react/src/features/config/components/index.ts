@@ -9,6 +9,7 @@ export {generateApiKey} from "./apiKey";
 export {ChipsSetting} from "./ChipsSetting";
 export {ConfigFieldset} from "./ConfigFieldset";
 export {FileBrowserSetting} from "./FileBrowserSetting";
+export {HelpBlock} from "./HelpBlock";
 export {MultiSelectSetting} from "./MultiSelectSetting";
 export {NumberSetting} from "./NumberSetting";
 export {RepeatSection} from "./RepeatSection";
@@ -23,6 +24,7 @@ export {
     settingInputTestId,
     settingRowTestId,
     settingTestId,
+    textValue,
     type ConfigFieldPath,
     type HelpContent,
     type SettingProps,

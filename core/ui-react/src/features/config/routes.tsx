@@ -2,6 +2,7 @@ import {createRoute, redirect, type AnyRoute} from "@tanstack/react-router";
 
 import {ApiTransport} from "../../api/transport";
 import {AuthConfigTab} from "./auth/AuthConfigTab";
+import {CategoriesConfigTab} from "./categories/CategoriesConfigTab";
 import {ConfigShell} from "./ConfigShell";
 import {ConfigTabPlaceholder} from "./ConfigTabPlaceholder";
 import {
@@ -23,9 +24,10 @@ export function createConfigRoute<TParent extends AnyRoute>(
     parentRoute: TParent,
     transport: ApiTransport,
     /**
-     * The body rendered for a tab. `main` (`F-CONFIG-MAIN`) and `auth`
-     * (`F-CONFIG-AUTH`) are migrated; the remaining six still show the
-     * placeholder and are replaced tab by tab by FM-061 onwards.
+     * The body rendered for a tab. `main` (`F-CONFIG-MAIN`), `auth`
+     * (`F-CONFIG-AUTH`), and `categories` (`F-CONFIG-CATEGORIES`) are
+     * migrated; the remaining five still show the placeholder and are
+     * replaced tab by tab by FM-062 onwards.
      */
     tabComponent: (tab: ConfigTab) => React.ReactNode = (tab) => {
         if (tab.path === "main") {
@@ -33,6 +35,9 @@ export function createConfigRoute<TParent extends AnyRoute>(
         }
         if (tab.path === "auth") {
             return <AuthConfigTab />;
+        }
+        if (tab.path === "categories") {
+            return <CategoriesConfigTab />;
         }
         return <ConfigTabPlaceholder tab={tab} />;
     },

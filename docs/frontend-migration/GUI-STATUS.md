@@ -15,7 +15,9 @@ Currently available in React:
   hosting, proxy, UI, security, logging, backup, updates, history, database, and other settings, including secret fields,
   API-key generation, and server-side file/folder browsing. The Auth tab is fully editable — auth type and its dependent
   field groups, OpenID Connect provider settings, area restrictions, and inline add/edit/remove of the user list, with
-  passwords that are never round-tripped in clear text. The remaining six tab bodies are placeholders until FM-061 onward
+  passwords that are never round-tripped in clear text. The Categories tab is fully editable — the three catalog-wide
+  settings and inline add/edit/remove of categories with their search type, subtype, word and regex restrictions, size
+  presets, newznab category numbers, and ignore rules. The remaining five tab bodies are placeholders until later tasks
   add field content.
 
 This is a derived convenience summary, not a parity claim or migration roadmap.

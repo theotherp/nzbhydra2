@@ -421,9 +421,26 @@ features:
     legacy_sources:
       - core/ui-src/js/config/config-fields-service.js
     target: core/ui-react/src/features/config/categories
-    tests: []
-    selectors: []
-    parity: inventoried
+    tests:
+      - tests/system/tests/config-categories.spec.ts
+      - core/ui-react/src/features/config/categories/CategoriesConfigTab.test.tsx
+    selectors:
+      # Scalar fields follow C-CONFIG-FIELDS's `<path>`-derived convention
+      # (`config-setting-categoriesConfig-defaultCategory`,
+      # `config-input-categoriesConfig-categories-<index>-name`, etc). The
+      # Categories repeat section additionally uses:
+      # `config-repeat-categoriesConfig-categories` (the list),
+      # `config-repeat-entry-categoriesConfig-categories-<index>` (one
+      # category's fieldset), `config-repeat-add-categoriesConfig-categories`,
+      # and `config-repeat-remove-categoriesConfig-categories-<index>`. The
+      # min/max size preset pair shares one row and one `data-testid`, derived
+      # from its `minSizePreset` path -- there is no single config path for
+      # the pair as a whole. The fixed selectors are listed below.
+      - config-categories
+      - config-categories-help
+      - config-fieldset-categories
+    parity: done
+    gaps: []
   - id: F-CONFIG-DOWNLOADING
     name: Download behavior, black holes, downloader CRUD, validation, and connection checks
     routes:
