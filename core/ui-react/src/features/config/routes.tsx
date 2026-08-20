@@ -13,6 +13,7 @@ import {
 } from "./configTabs";
 import {DownloadingConfigTab} from "./downloading/DownloadingConfigTab";
 import {ExternalToolsConfigTab} from "./external-tools/ExternalToolsConfigTab";
+import {IndexersConfigTab} from "./indexers/IndexersConfigTab";
 import {MainConfigTab} from "./main/MainConfigTab";
 import {NotificationsConfigTab} from "./notifications/NotificationsConfigTab";
 import {SearchingConfigTab} from "./searching/SearchingConfigTab";
@@ -30,10 +31,12 @@ export function createConfigRoute<TParent extends AnyRoute>(
     /**
      * The body rendered for a tab. `main` (`F-CONFIG-MAIN`), `auth`
      * (`F-CONFIG-AUTH`), `searching` (`F-CONFIG-SEARCHING`), `categories`
-     * (`F-CONFIG-CATEGORIES`), `notifications` (`F-CONFIG-NOTIFICATIONS`), and
-     * `downloading` (`F-CONFIG-DOWNLOADING`), and `externalTools`
-     * (`F-CONFIG-EXTERNAL-TOOLS`) are migrated; only `indexers` still shows
-     * the placeholder, and FM-066/FM-067 replace it.
+     * (`F-CONFIG-CATEGORIES`), `notifications` (`F-CONFIG-NOTIFICATIONS`),
+     * `downloading` (`F-CONFIG-DOWNLOADING`), `externalTools`
+     * (`F-CONFIG-EXTERNAL-TOOLS`), and `indexers` (`F-CONFIG-INDEXERS`) are all
+     * migrated, so no canonical tab shows the placeholder any more. FM-067 adds
+     * the bulk capability recheck and the Jackett/Prowlarr imports to the
+     * Indexers body.
      */
     tabComponent: (tab: ConfigTab) => React.ReactNode = (tab) => {
         if (tab.path === "main") {
@@ -56,6 +59,9 @@ export function createConfigRoute<TParent extends AnyRoute>(
         }
         if (tab.path === "externalTools") {
             return <ExternalToolsConfigTab transport={transport} />;
+        }
+        if (tab.path === "indexers") {
+            return <IndexersConfigTab transport={transport} />;
         }
         return <ConfigTabPlaceholder tab={tab} />;
     },

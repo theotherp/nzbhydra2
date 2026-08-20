@@ -272,7 +272,8 @@ components:
   - id: C-SECRET-INPUT
     responsibility: Masked secret editing with unchanged-secret semantics -- the `***UNCHANGED***` marker originates from the server (`@HiddenInUI` fields plus hashed user passwords) and is preserved byte-for-byte until the user edits the
       field; it is never synthesized on the client. FM-064 is its first consumer inside a modal transaction -- it binds to the edit dialog's draft form, so an uncommitted edit, and a marker the admin never touched, cannot reach
-      `C-CONFIG-FORM` until the dialog is submitted
+      `C-CONFIG-FORM` until the dialog is submitted. FM-066 is the first consumer whose dialog also *posts* the draft to the backend -- `IndexerConfig.apiKey`/`username`/`password` travel to the connection and capability checks still carrying
+      the marker, because `IndexerChecker.resolveUnchangedSensitiveFields` looks the stored value up by indexer name -- and the capability check's response, which carries the resolved credentials, is therefore never copied back wholesale
     legacy:
       - core/ui-src/js/config/formly-config.js
     target: core/ui-react/src/features/config/components/SecretInput.tsx
@@ -313,7 +314,11 @@ components:
       `F-CONFIG-AUTH`'s names the repeat-section ones, `F-CONFIG-CATEGORIES`'s names the help-block one, and `F-CONFIG-NOTIFICATIONS`'s names the add-choice one. The number control also carries legacy's `max` and a decimal `step`
       (`formly-config.js` `percentInput`), each with a message legacy never declared -- added by FM-063 for `loadLimitInternal` and `duplicateSizeThresholdInPercent`. The repeat/list section stays the in-place editor, so a list whose entries
       are edited through a modal transaction is not this component (see `F-CONFIG-SEARCHING`'s custom mappings and `F-CONFIG-DOWNLOADING`'s downloader list, each of which owns its own section). The control kinds themselves are reusable
-      inside such a transaction -- they bind through whichever React Hook Form is nearest in context, so FM-064's edit dialog renders them over its own throwaway draft form without any of them reaching `C-CONFIG-FORM`
+      inside such a transaction -- they bind through whichever React Hook Form is nearest in context, so FM-064's edit dialog renders them over its own throwaway draft form without any of them reaching `C-CONFIG-FORM`. FM-066 added three
+      optional properties, each carrying a legacy template option the vocabulary had no word for and each defaulting to the previous behaviour -- the help block takes a `severity` (legacy's `templateOptions.class`, so the indexer box can
+      render the same block as a danger or a warning alert), the chips control takes `suggestions` (legacy's `typeaheadSource`, used only by the indexer group names and filtered against the values already held), and the multiselect takes an
+      `emptyLabel` (legacy's `settings.noSelectedText`, which is "None/All" and "All" for the indexer category lists because selecting nothing there means everything). An enum-valued switch is *not* part of the vocabulary -- `F-CONFIG-INDEXERS`'
+      state control owns its four-value `IndexerConfig.State` and the reason-for-being-off caption that goes with it
     legacy:
       - core/ui-src/js/config/formly-config.js
       - core/ui-src/html/states/config.html

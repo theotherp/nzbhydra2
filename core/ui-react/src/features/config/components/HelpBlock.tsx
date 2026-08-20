@@ -8,14 +8,20 @@ import {useShowAdvanced} from "../advancedFields";
  * `<h5>` lines). Gated the same way an advanced `SettingRow`/`ConfigFieldset`
  * is. `F-CONFIG-CATEGORIES` is the first consumer; `notificationConfig`
  * (`config-fields-service.js:2377-2386`) is the only other legacy user.
+ *
+ * `severity` carries legacy's optional `templateOptions.class`: the indexer box
+ * renders the same block as `alert alert-danger` or `alert alert-warning`
+ * depending on how incomplete the entry is (`formly-indexers.js:58-77`).
  */
 export function HelpBlock({
     advanced,
     lines,
+    severity = "info",
     testId,
 }: {
     advanced?: boolean;
     lines: readonly string[];
+    severity?: "error" | "info" | "warning";
     testId: string;
 }) {
     const showAdvanced = useShowAdvanced();
@@ -25,7 +31,7 @@ export function HelpBlock({
     return (
         <Alert
             data-testid={testId}
-            severity="info"
+            severity={severity}
             sx={{mb: 2.5}}
             variant="outlined"
         >

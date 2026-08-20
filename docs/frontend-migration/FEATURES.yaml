@@ -567,10 +567,65 @@ features:
       - core/ui-src/js/caps-check-request-service.js
       - core/ui-src/js/indexer-config-import-request-service.js
       - core/ui-src/html/config/indexer-config.html
+      - core/ui-src/html/config/indexer-config-box.html
+      - core/ui-src/html/config/indexer-config-selection.html
+      - core/ui-src/html/checker-state.html
+      - core/ui-src/js/directives/indexer-input.js
+      - core/ui-src/js/directives/indexer-state-switch.js
     target: core/ui-react/src/features/config/indexers
-    tests: []
-    selectors: []
-    parity: inventoried
+    tests:
+      - tests/system/tests/config-indexers.spec.ts
+      - core/ui-react/src/features/config/indexers/IndexersConfigTab.test.tsx
+      - core/ui-react/src/features/config/indexers/CapsCheckDialog.test.tsx
+      - core/ui-react/src/features/config/indexers/indexerSettings.test.ts
+    selectors:
+      # Legacy config markup carries no stable selectors, so these are new
+      # (FM-066). A list row's own controls use the `C-CONFIG-FIELDS` path
+      # convention against the entry's *configuration* index, not its display
+      # position: `config-input-indexers-<index>-state` and
+      # `config-input-indexers-<index>-score`. The row also emits
+      # `config-indexer-entry-<index>`, `config-indexer-edit-<index>` (the name
+      # button that opens the editor), `config-indexer-incomplete-<index>`,
+      # `config-indexer-caps-incomplete-<index>`, and
+      # `config-indexer-vip-warning-<index>`.
+      # The add chooser emits `config-indexer-preset-menu-<newznab|torznab>` and
+      # one `config-indexer-preset-<newznab|torznab|special>-<slug>` per preset,
+      # where the slug is the lower-cased label with non-alphanumerics collapsed
+      # to dashes (`nzbgeek`, `torbox-newznab`, `custom-newznab`,
+      # `custom-torznab`, `jackett-cardigann`, `torbox`).
+      # The edit dialog's controls bind to the draft path `indexerDraft`, so
+      # they read `config-input-indexerDraft-<field>` /
+      # `config-setting-indexerDraft-<field>` and never collide with the list
+      # row behind them; its banners are
+      # `config-indexer-banner-<incomplete-config|incomplete-caps>`.
+      - config-indexers
+      - config-indexers-empty
+      - config-indexer-add
+      - config-indexer-add-dialog
+      - config-indexer-add-dialog-cancel
+      - config-indexer-dialog
+      - config-indexer-dialog-cancel
+      - config-indexer-dialog-checking
+      - config-indexer-dialog-delete
+      - config-indexer-dialog-info
+      - config-indexer-dialog-reset
+      - config-indexer-dialog-submit
+      - config-indexer-torznab-note
+      - config-indexer-check-caps
+      - config-indexer-connection-failed
+      - config-indexer-caps-dialog
+      - config-indexer-caps-messages
+      - config-indexer-caps-incomplete
+      - config-indexer-caps-failed
+    parity: partial
+    gaps:
+      - FM-067 - bulk capability recheck (recheckAllCaps) and the Jackett/Prowlarr config imports, including the IMPORT_CONFIG marker field set
+      - unmigrated - the colour picker and clear button beside the indexer colour field (color-control.html); the text field holding the rgb(...) value is carried forward, the picker is not
+      - deliberate - "Add it, but disabled" on a failed connection check sets state DISABLED_USER; legacy sets model.enabled = false, a field IndexerConfig does not have, so the button did nothing there
+      - deliberate - an empty "Hit reset time" is valid; legacy's timeOfDay validator rejects the empty value its own help text recommends for a rolling counter
+      - deliberate - a successful capability check writes back only updateIndexerModel's nine fields, not the server's whole IndexerConfig, because the response carries credentials resolved from the ***UNCHANGED*** markers
+      - deliberate - name uniqueness is checked against the other indexers; legacy's expression compares the typed value with the two-way-bound model, so renaming an existing indexer onto another's name was never rejected
+      - deliberate - a picked preset's `info` prose is passed to the dialog rather than merged into the entry; legacy extends the model with it and writes an `info` key the backend has no field for into the saved config
   - id: F-CONFIG-NOTIFICATIONS
     name: Notification transports, GUI filtering, event rules, templates, and tests
     routes:

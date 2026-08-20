@@ -1,0 +1,468 @@
+import {describe, expect, it} from "vitest";
+
+import {UNCHANGED_SECRET_MARKER} from "../components";
+import {
+    ALREADY_CONFIGURED_MESSAGE,
+    CUSTOM_NEWZNAB_PRESET,
+    CUSTOM_TORZNAB_PRESET,
+    isAddingAllowed,
+    NEWZNAB_PRESETS,
+    newIndexerDraft,
+    SPECIAL_PRESETS,
+    TORZNAB_PRESETS,
+} from "./indexerPresets";
+import {
+    applyCapsCheckResult,
+    completenessBanner,
+    connectionSettingsChanged,
+    greaterThanOneValidator,
+    greaterThanZeroValidator,
+    groupNameSuggestions,
+    hourOfDayValidator,
+    indexerCategoryOptions,
+    indexerStateHelp,
+    indexerStateLabel,
+    needsCapsCheck,
+    noCommaValidator,
+    orderedIndexers,
+    showsCapabilityControls,
+    toggledIndexerState,
+    uniqueIndexerNameValidator,
+    vipExpirationValidator,
+    vipExpiryWarning,
+    visibleIndexerFields,
+    withUnknownCapabilities,
+} from "./indexerSettings";
+
+describe("orderedIndexers", () => {
+    it("reproduces legacy's state-then-priority-then-name order", () => {
+        const entries = [
+            {name: "zulu", state: "ENABLED", score: 0},
+            {name: "system", state: "DISABLED_SYSTEM", score: 100},
+            {name: "alpha", state: "ENABLED", score: 0},
+            {name: "temporary", state: "DISABLED_SYSTEM_TEMPORARY", score: 0},
+            {name: "high", state: "ENABLED", score: 10},
+            {name: "user", state: "DISABLED_USER", score: 0},
+        ];
+
+        expect(orderedIndexers(entries).map(({entry}) => entry.name)).toEqual([
+            "high",
+            "alpha",
+            "zulu",
+            "user",
+            "temporary",
+            "system",
+        ]);
+    });
+
+    it("keeps every entry's configuration index, not its display position", () => {
+        const entries = [
+            {name: "b", state: "DISABLED_USER", score: 0},
+            {name: "a", state: "ENABLED", score: 0},
+        ];
+
+        expect(orderedIndexers(entries)).toEqual([
+            {entry: entries[1], index: 1},
+            {entry: entries[0], index: 0},
+        ]);
+    });
+});
+
+describe("indexer state", () => {
+    it("names each of legacy's four states", () => {
+        expect(indexerStateLabel("ENABLED")).toBe("Enabled");
+        expect(indexerStateLabel("DISABLED_USER")).toBe("Disabled by user");
+        expect(indexerStateLabel("DISABLED_SYSTEM_TEMPORARY")).toBe(
+            "Temporary disabled",
+        );
+        expect(indexerStateLabel("DISABLED_SYSTEM")).toBe("Disabled by system");
+    });
+
+    it("always disables as the user", () => {
+        expect(toggledIndexerState(false)).toBe("DISABLED_USER");
+        expect(toggledIndexerState(true)).toBe("ENABLED");
+    });
+
+    it("explains only the two system states", () => {
+        expect(indexerStateHelp("ENABLED")).toBeUndefined();
+        expect(indexerStateHelp("DISABLED_USER")).toBeUndefined();
+        expect(indexerStateHelp("DISABLED_SYSTEM_TEMPORARY")).toContain(
+            "reenabled automatically",
+        );
+        expect(indexerStateHelp("DISABLED_SYSTEM")).toContain(
+            "cannot recover by itself",
+        );
+    });
+});
+
+describe("vipExpiryWarning", () => {
+    const now = new Date(2026, 7, 20);
+
+    it("warns about an expired subscription", () => {
+        expect(vipExpiryWarning({vipExpirationDate: "2026-08-19"}, now)).toBe(
+            "VIP access expired on 2026-08-19",
+        );
+    });
+
+    it("warns about one expiring within a week", () => {
+        expect(vipExpiryWarning({vipExpirationDate: "2026-08-25"}, now)).toBe(
+            "VIP access will expire on 2026-08-25",
+        );
+    });
+
+    it("stays quiet for a distant date, Lifetime, nothing, and nonsense", () => {
+        expect(
+            vipExpiryWarning({vipExpirationDate: "2027-01-01"}, now),
+        ).toBeUndefined();
+        expect(
+            vipExpiryWarning({vipExpirationDate: "Lifetime"}, now),
+        ).toBeUndefined();
+        expect(vipExpiryWarning({}, now)).toBeUndefined();
+        expect(
+            vipExpiryWarning({vipExpirationDate: "soon"}, now),
+        ).toBeUndefined();
+    });
+});
+
+describe("visibleIndexerFields", () => {
+    it("shows the newznab field set", () => {
+        const fields = visibleIndexerFields("NEWZNAB");
+
+        expect(fields).toContain("name");
+        expect(fields).toContain("apiPath");
+        expect(fields).toContain("hitLimit");
+        expect(fields).toContain("customParameters");
+        expect(fields).toContain("supportedSearchIds");
+        expect(fields).not.toContain("minSeeders");
+        expect(fields).not.toContain("generalMinSize");
+        expect(fields).not.toContain("password");
+    });
+
+    it("adds the torznab-only seeder minimum", () => {
+        expect(visibleIndexerFields("TORZNAB")).toContain("minSeeders");
+    });
+
+    it("gives WTFNZB a username and password instead of a name", () => {
+        const fields = visibleIndexerFields("WTFNZB");
+
+        expect(fields).not.toContain("name");
+        expect(fields).toContain("username");
+        expect(fields).toContain("password");
+        expect(fields).toContain("userAgent");
+        expect(fields).not.toContain("apiPath");
+    });
+
+    it("drops priority, timeout, and the search-source select for Torbox", () => {
+        const fields = visibleIndexerFields("TORBOX");
+
+        expect(fields).not.toContain("score");
+        expect(fields).not.toContain("timeout");
+        expect(fields).not.toContain("enabledForSearchSource");
+        expect(fields).toContain("apiKey");
+    });
+
+    it("adds the module-specific fields of NZBIndex and Binsearch", () => {
+        expect(visibleIndexerFields("NZBINDEX")).toContain("generalMinSize");
+        expect(visibleIndexerFields("BINSEARCH")).toContain(
+            "binsearchOtherGroups",
+        );
+    });
+
+    it("gives ANIZB no category restriction", () => {
+        expect(visibleIndexerFields("ANIZB")).not.toContain(
+            "enabledCategories",
+        );
+    });
+});
+
+describe("the checks the close sequence runs", () => {
+    it("re-tests the connection only for legacy's four watched fields", () => {
+        const initial = {
+            host: "http://a",
+            apiKey: UNCHANGED_SECRET_MARKER,
+            apiPath: null,
+            username: null,
+            password: null,
+            score: 0,
+        };
+
+        expect(connectionSettingsChanged(initial, {...initial})).toBe(false);
+        expect(connectionSettingsChanged(initial, {...initial, score: 5})).toBe(
+            false,
+        );
+        expect(
+            connectionSettingsChanged(initial, {...initial, password: "x"}),
+        ).toBe(false);
+        expect(
+            connectionSettingsChanged(initial, {...initial, host: "http://b"}),
+        ).toBe(true);
+        expect(
+            connectionSettingsChanged(initial, {...initial, apiKey: "new"}),
+        ).toBe(true);
+    });
+
+    it("checks capabilities exactly when either capability list is unknown", () => {
+        expect(needsCapsCheck({})).toBe(true);
+        expect(needsCapsCheck({supportedSearchIds: []})).toBe(true);
+        expect(
+            needsCapsCheck({
+                supportedSearchIds: [],
+                supportedSearchTypes: [],
+            }),
+        ).toBe(false);
+    });
+
+    it("shows the capability controls only for a known newznab or torznab entry", () => {
+        expect(showsCapabilityControls("NEWZNAB", false)).toBe(true);
+        expect(showsCapabilityControls("TORZNAB", false)).toBe(true);
+        expect(showsCapabilityControls("NEWZNAB", true)).toBe(false);
+        expect(showsCapabilityControls("BINSEARCH", false)).toBe(false);
+    });
+});
+
+describe("applyCapsCheckResult", () => {
+    const entry = {
+        name: "Mock",
+        host: "http://mock",
+        apiKey: UNCHANGED_SECRET_MARKER,
+        score: 7,
+        configComplete: false,
+        allCapsChecked: false,
+    };
+
+    it("copies exactly updateIndexerModel's nine fields", () => {
+        const next = applyCapsCheckResult(entry, {
+            name: "Renamed by the server",
+            // `IndexerChecker.resolveUnchangedSensitiveFields` answers with the
+            // *resolved* credential; it must not reach the form.
+            apiKey: "the-real-key",
+            score: 99,
+            supportedSearchIds: ["IMDB"],
+            supportedSearchTypes: ["MOVIE"],
+            categoryMapping: {categories: []},
+            configComplete: true,
+            allCapsChecked: true,
+            hitLimit: 100,
+            downloadLimit: 10,
+            state: "ENABLED",
+            backend: "NZEDB",
+        });
+
+        expect(next).toEqual({
+            ...entry,
+            supportedSearchIds: ["IMDB"],
+            supportedSearchTypes: ["MOVIE"],
+            categoryMapping: {categories: []},
+            configComplete: true,
+            allCapsChecked: true,
+            hitLimit: 100,
+            downloadLimit: 10,
+            state: "ENABLED",
+            backend: "NZEDB",
+        });
+        expect(next.apiKey).toBe(UNCHANGED_SECRET_MARKER);
+        expect(next.name).toBe("Mock");
+        expect(next.score).toBe(7);
+    });
+
+    it("leaves a field the response omits alone", () => {
+        expect(applyCapsCheckResult(entry, {configComplete: true})).toEqual({
+            ...entry,
+            configComplete: true,
+        });
+    });
+
+    it("makes the capabilities unknown again when the check could not run", () => {
+        const cleared = withUnknownCapabilities({
+            ...entry,
+            supportedSearchIds: ["IMDB"],
+            supportedSearchTypes: ["MOVIE"],
+        });
+
+        expect(needsCapsCheck(cleared)).toBe(true);
+        expect(cleared.name).toBe("Mock");
+    });
+});
+
+describe("completenessBanner", () => {
+    it("prefers the incomplete config over the incomplete caps check", () => {
+        expect(
+            completenessBanner({configComplete: false, allCapsChecked: true}),
+        ).toBe("incomplete-config");
+        expect(
+            completenessBanner({configComplete: true, allCapsChecked: false}),
+        ).toBe("incomplete-caps");
+        expect(
+            completenessBanner({configComplete: true, allCapsChecked: true}),
+        ).toBeUndefined();
+    });
+});
+
+describe("indexer form rules", () => {
+    it("rejects a name another indexer already uses and one with a comma", () => {
+        const unique = uniqueIndexerNameValidator(["Mock1", "Mock2"]);
+
+        expect(unique("Mock3")).toBe(true);
+        expect(unique("Mock1")).toBe('Indexer "Mock1" already exists');
+        expect(noCommaValidator("a,b")).toBe("Name may not contain a comma");
+        expect(noCommaValidator("ab")).toBe(true);
+    });
+
+    it("keeps legacy's numeric limits", () => {
+        expect(greaterThanZeroValidator(null)).toBe(true);
+        expect(greaterThanZeroValidator(0)).toBe(
+            "Value must be greater than 0",
+        );
+        expect(greaterThanZeroValidator(1)).toBe(true);
+        expect(greaterThanOneValidator(1)).toBe("Value must be greater than 1");
+        expect(greaterThanOneValidator(2)).toBe(true);
+    });
+
+    it("accepts an empty hit reset time and rejects an impossible hour", () => {
+        expect(hourOfDayValidator(null)).toBe(true);
+        expect(hourOfDayValidator(0)).toBe(true);
+        expect(hourOfDayValidator(23)).toBe(true);
+        expect(hourOfDayValidator(24)).toBe(
+            "24 is not a valid hour of day (0-23)",
+        );
+    });
+
+    it("keeps legacy's VIP expiry format", () => {
+        expect(vipExpirationValidator("")).toBe(true);
+        expect(vipExpirationValidator("Lifetime")).toBe(true);
+        expect(vipExpirationValidator("2026-01-01")).toBe(true);
+        expect(vipExpirationValidator("soon")).toBe(
+            "soon is no valid date (must be 'YYYY-MM-DD' or 'Lifetime')",
+        );
+    });
+});
+
+describe("indexerCategoryOptions", () => {
+    it("drops the first (all) category, as CategoriesService.getWithoutAll does", () => {
+        expect(
+            indexerCategoryOptions([
+                {name: "All"},
+                {name: "Movies"},
+                {name: "TV"},
+            ]),
+        ).toEqual([
+            {label: "Movies", value: "Movies"},
+            {label: "TV", value: "TV"},
+        ]);
+        expect(indexerCategoryOptions(undefined)).toEqual([]);
+    });
+});
+
+describe("groupNameSuggestions", () => {
+    it("offers the other indexers' groups, without duplicates or the current ones", () => {
+        const entries = [
+            {name: "a", groupNames: ["Movies", "Anime", ""]},
+            {name: "b", groupNames: ["anime", "Movies"]},
+            {name: "c", groupNames: ["Books"]},
+        ];
+
+        expect(groupNameSuggestions(entries, 2, ["Movies"])).toEqual([
+            "Anime",
+            "anime",
+        ]);
+        expect(groupNameSuggestions(entries, null, [])).toEqual([
+            "Anime",
+            "anime",
+            "Books",
+            "Movies",
+        ]);
+    });
+});
+
+describe("add presets", () => {
+    it("sorts the newznab presets by lower-cased name", () => {
+        const labels = NEWZNAB_PRESETS.map((preset) => preset.label);
+
+        expect(labels).toEqual(
+            [...labels].sort((left, right) =>
+                left.toLowerCase() < right.toLowerCase() ? -1 : 1,
+            ),
+        );
+        expect(labels).toContain("Binsearch");
+        expect(labels).toContain("Torbox (Newznab)");
+    });
+
+    it("seeds a host preset with the base plus the preset's own values", () => {
+        const geek = NEWZNAB_PRESETS.find(
+            (preset) => preset.label === "NZBGeek",
+        );
+
+        expect(newIndexerDraft(geek)).toMatchObject({
+            name: "NZBGeek",
+            host: "https://api.nzbgeek.info",
+            searchModuleType: "NEWZNAB",
+            score: 0,
+            preselect: true,
+            configComplete: false,
+            enabledForSearchSource: "BOTH",
+        });
+        // Unknown capabilities are what make the close sequence check them.
+        expect(needsCapsCheck(newIndexerDraft(geek))).toBe(true);
+    });
+
+    it("seeds an already-complete special preset that skips the caps check", () => {
+        const binsearch = NEWZNAB_PRESETS.find(
+            (preset) => preset.label === "Binsearch",
+        );
+        const draft = newIndexerDraft(binsearch);
+
+        expect(draft).toMatchObject({
+            searchModuleType: "BINSEARCH",
+            host: "https://binsearch.info",
+            configComplete: true,
+            allCapsChecked: true,
+            enabledForSearchSource: "INTERNAL",
+        });
+        expect(needsCapsCheck(draft)).toBe(false);
+    });
+
+    it("seeds the custom newznab entry from the bare base", () => {
+        expect(newIndexerDraft(CUSTOM_NEWZNAB_PRESET)).toMatchObject({
+            searchModuleType: "NEWZNAB",
+            host: null,
+            name: null,
+        });
+    });
+
+    it("seeds the custom torznab entry as an unnamed torznab indexer", () => {
+        expect(newIndexerDraft(CUSTOM_TORZNAB_PRESET)).toMatchObject({
+            searchModuleType: "TORZNAB",
+            state: "ENABLED",
+            enabledForSearchSource: "BOTH",
+            configComplete: false,
+        });
+    });
+
+    it("seeds Torbox with the capabilities it is known to have", () => {
+        expect(newIndexerDraft(SPECIAL_PRESETS[0])).toMatchObject({
+            searchModuleType: "TORBOX",
+            supportedSearchIds: ["IMDB"],
+            supportedSearchTypes: ["MOVIE", "SEARCH"],
+        });
+        expect(TORZNAB_PRESETS.map((preset) => preset.label)).toEqual([
+            "Jackett/Cardigann",
+            "Torbox (Torrents)",
+        ]);
+    });
+
+    it("refuses a second copy of a single-instance preset only", () => {
+        const binsearch = NEWZNAB_PRESETS.find(
+            (preset) => preset.label === "Binsearch",
+        );
+        const geek = NEWZNAB_PRESETS.find(
+            (preset) => preset.label === "NZBGeek",
+        );
+
+        expect(isAddingAllowed([{name: "Binsearch"}], binsearch)).toBe(false);
+        expect(isAddingAllowed([{name: "Other"}], binsearch)).toBe(true);
+        expect(isAddingAllowed([{name: "NZBGeek"}], geek)).toBe(true);
+        expect(ALREADY_CONFIGURED_MESSAGE).toBe(
+            "That predefined indexer is already configured.",
+        );
+    });
+});

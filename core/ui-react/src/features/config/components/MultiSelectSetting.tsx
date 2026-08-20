@@ -25,15 +25,21 @@ import {
  * selected). A stock `Select multiple` paired with its own `InputLabel`, which
  * ADR-0014 names as the alternative to `TextField select` where the control
  * needs a `renderValue` of its own.
+ *
+ * `emptyLabel` is legacy's `settings.noSelectedText`, which is not always
+ * "None": selecting no category means *every* category, so the indexer box
+ * reads "None/All" and "All" there (`formly-indexers.js:459-462`, `:556-560`).
  */
 export function MultiSelectSetting({
     advanced,
+    emptyLabel = "None",
     help,
     label,
     name,
     options,
     tooltip,
 }: Omit<SettingProps, "required" | "validate"> & {
+    emptyLabel?: string;
     options: readonly SettingOption[];
 }) {
     const {field} = useController<ConfigValues>({name});
@@ -73,7 +79,7 @@ export function MultiSelectSetting({
                     onChange={(event) => field.onChange(event.target.value)}
                     renderValue={(values) =>
                         values.length === 0
-                            ? "None"
+                            ? emptyLabel
                             : values
                                   .map(
                                       (value) =>

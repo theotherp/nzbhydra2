@@ -18,6 +18,11 @@ const NO_SUGGESTIONS: readonly string[] = [];
  * A stock `Autocomplete multiple freeSolo` with no options: it renders the
  * entries as MUI `Chip`s inside a normal `TextField` and commits a typed entry
  * on Enter, which is exactly the legacy affordance without a bespoke control.
+ *
+ * `suggestions` is legacy's `templateOptions.typeaheadSource`, the only chips
+ * field that offers completions (`formly-indexers.js:524`, the indexer group
+ * names drawn from the other indexers). Values the field already holds are
+ * dropped from the list, as legacy's source does.
  */
 export function ChipsSetting({
     advanced,
@@ -25,9 +30,14 @@ export function ChipsSetting({
     label,
     name,
     placeholder,
+    suggestions = NO_SUGGESTIONS,
     tooltip,
-}: Omit<SettingProps, "required" | "validate"> & {placeholder?: string}) {
+}: Omit<SettingProps, "required" | "validate"> & {
+    placeholder?: string;
+    suggestions?: readonly string[];
+}) {
     const {field} = useController<ConfigValues>({name});
+    const selected = listValue(field.value);
     return (
         <SettingRow
             advanced={advanced}
@@ -41,7 +51,9 @@ export function ChipsSetting({
                 multiple
                 onBlur={field.onBlur}
                 onChange={(_event, value) => field.onChange(value)}
-                options={NO_SUGGESTIONS}
+                options={suggestions.filter(
+                    (suggestion) => !selected.includes(suggestion),
+                )}
                 renderInput={(params) => (
                     <TextField
                         {...params}
@@ -64,7 +76,7 @@ export function ChipsSetting({
                         }}
                     />
                 )}
-                value={listValue(field.value)}
+                value={selected}
             />
         </SettingRow>
     );

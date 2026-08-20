@@ -1,8 +1,8 @@
 # Migration Status
 
-Entries are ≤ 5 lines; details live in the task packets and git history. FM-001 through FM-065, FM-022, and FM-023 are done;
+Entries are ≤ 5 lines; details live in the task packets and git history. FM-001 through FM-066, FM-022, and FM-023 are done;
 their packets were removed from `tasks/` during the 2026-08-19 governance compaction (FM-001–FM-053) or on completion
-(FM-054, FM-055, FM-056, FM-057, FM-058, FM-059, FM-060, FM-061, FM-062, FM-063, FM-064, FM-065, FM-022, FM-023) (see
+(FM-054, FM-055, FM-056, FM-057, FM-058, FM-059, FM-060, FM-061, FM-062, FM-063, FM-064, FM-065, FM-066, FM-022, FM-023) (see
 `DECISIONS.md` ADR-0014/0015 and git history).
 
 FM-060 (Config Auth Tab) added a `RepeatSection` primitive to `C-CONFIG-FIELDS` for list-of-records editing (available to
@@ -58,6 +58,22 @@ blocks real dialog actions); verbose backend connection-test failure text; `conn
 vs. initial values rather than legacy's change-event tracking (undocumented deviation, arguably better, worth a
 `F-CONFIG-EXTERNAL-TOOLS.gaps` line). Candidates for a future quickfix.
 
+FM-066 (Config Indexers list and edit modal) followed FM-064's/FM-065's modal-transaction pattern for the indexer list: an
+ordered list with inline state/priority and incomplete-config/incomplete-caps markers, three add-preset groups (newznab,
+torznab, special), and an edit modal whose Submit reproduces `IndexerCheckBeforeCloseService` — a connection check, then
+(when supported search types/IDs are unknown) a `SINGLE` capability check with a polling progress dialog — before the
+entry is committed. Only `updateIndexerModel`'s nine fields are written back from a successful check, so the check's
+resolved credentials never reach the form. A first review found the ported `createIndexerModel` base (`baseIndexerDraft`)
+silently dropped `state: "ENABLED"`, producing a self-contradicting off-switch-captioned-"Enabled" control on freshly
+added indexers and an incorrect list-sort position for entries committed without a caps check; a one-line fix cycle added
+the missing key and corrected the test that had locked in the wrong behavior. Re-review passed with minor findings, not
+corrected (optional): the list no longer tints a row by the indexer's configured colour (only the colour-picker control
+itself was recorded as a gap, not the tint), the special presets' harmless `categories: []` key, a dropped "Supports
+&lt;ids&gt;" line/tooltip on the manual capability-check button, untested backdrop-dismissal, an unjustified inline style
+in the edit dialog, ambiguous accessible names on the two add-preset buttons, and a preset-seeding unit test that asserts
+with `toMatchObject` rather than pinning `state` directly. Bulk caps recheck and the Jackett/Prowlarr imports remain
+FM-067's. Candidates for a future quickfix.
+
 ## Active
 
 None.
@@ -72,9 +88,7 @@ None.
 
 ## Upcoming
 
-- FM-066 (Indexers list and edit modal) — depends only on the `C-CONFIG-FIELDS`/`C-SECRET-INPUT` vocabulary FM-059
-  shipped, so it is ready to promote; it can also follow FM-064's and FM-065's modal-transaction shape. FM-067 (bulk caps
-  recheck and Jackett/Prowlarr import) still needs FM-066.
+- FM-067 (bulk caps recheck and Jackett/Prowlarr import) — depends only on FM-066, now done, so it is ready to promote.
 - FM-068 (Config secret round trip) — backend-only, no dependencies, ready to promote whenever a Java slot is free. It packages
   the two `@HiddenInUI` marker defects FM-060 escalated: `ConfigWeb.setConfig()`'s unmasked save response (re-confirmed for
   downloader credentials by FM-064) and `SensitiveDataConfigValidator.findCorrespondingOldItem`'s positional credential swap on
