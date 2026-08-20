@@ -339,11 +339,38 @@ features:
       - core/ui-src/js/file-selection-service.js
     target: core/ui-react/src/features/config/main
     tests:
+      - tests/system/tests/config-main.spec.ts
       - tests/system/tests/external-tools.spec.ts
-    selectors: []
-    parity: partial
-    gaps:
-      - all field workflows; current test only opens the route
+      - core/ui-react/src/features/config/main/MainConfigTab.test.tsx
+      - core/ui-react/src/features/config/components/configFields.test.tsx
+    selectors:
+      # Legacy config markup carries no stable selectors, so these are new. Every
+      # setting derives its selectors from its config path with the dots replaced
+      # by dashes (`main.logging.logGc` -> `main-logging-logGc`), so a selector is
+      # predictable from `config-fields-service.js` without a lookup table:
+      # `config-setting-<path>` (row), `config-input-<path>` (control),
+      # `config-error-<path>` (validation message), `config-tooltip-<path>`,
+      # `config-secret-reveal-<path>`, `config-apikey-generate-<path>`, and
+      # `config-file-browse-<path>`. The fixed selectors are listed below.
+      - config-main
+      - config-fieldset-hosting
+      - config-fieldset-proxy
+      - config-fieldset-ui
+      - config-fieldset-security
+      - config-fieldset-logging
+      - config-fieldset-backup
+      - config-fieldset-updates
+      - config-fieldset-history
+      - config-fieldset-database
+      - config-fieldset-other
+      - config-file-browser-dialog
+      - config-file-browser-path
+      - config-file-browser-up
+      - config-file-browser-folder
+      - config-file-browser-file
+      - config-file-browser-select
+    parity: done
+    gaps: []
   - id: F-CONFIG-AUTH
     name: Authentication modes, OIDC, restrictions, users, roles, and secret semantics
     routes:

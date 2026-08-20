@@ -1,0 +1,672 @@
+import {ThemeProvider} from "@mui/material";
+import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
+import {
+    act,
+    cleanup,
+    fireEvent,
+    render,
+    screen,
+    waitFor,
+    within,
+} from "@testing-library/react";
+import {useEffect} from "react";
+import {FormProvider, useForm, type UseFormReturn} from "react-hook-form";
+import {afterEach, describe, expect, it, vi} from "vitest";
+
+import type {ConfigValues} from "../../../api/config/schema";
+import {ApiTransport} from "../../../api/transport";
+import {createHydraTheme} from "../../../app/theme";
+import {SafeConfigContext} from "../../../bootstrap";
+import {ShowAdvancedContext} from "../advancedFields";
+import {ApiKeySetting} from "./ApiKeySetting";
+import {generateApiKey} from "./apiKey";
+import {ChipsSetting} from "./ChipsSetting";
+import {ConfigFieldset} from "./ConfigFieldset";
+import {FileBrowserSetting} from "./FileBrowserSetting";
+import {MultiSelectSetting} from "./MultiSelectSetting";
+import {NumberSetting} from "./NumberSetting";
+import {SecretInput, UNCHANGED_SECRET_MARKER} from "./SecretInput";
+import {SelectSetting} from "./SelectSetting";
+import {SwitchSetting} from "./SwitchSetting";
+import {TextSetting} from "./TextSetting";
+import {patternValidator} from "./settings";
+
+type Harness = {
+    form: UseFormReturn<ConfigValues>;
+};
+
+function renderSetting(
+    ui: React.ReactNode,
+    {
+        dereferer,
+        showAdvanced = false,
+        values = {},
+    }: {
+        dereferer?: string;
+        showAdvanced?: boolean;
+        values?: ConfigValues;
+    } = {},
+): Harness {
+    const harness = {} as Harness;
+    const queryClient = new QueryClient({
+        defaultOptions: {queries: {retry: false}},
+    });
+    function Host() {
+        const form = useForm<ConfigValues>({
+            defaultValues: values,
+            shouldUnregister: false,
+        });
+        // Handing the form out during render would mutate a value React
+        // considers immutable there (`react-hooks/immutability`); the effect
+        // has already run by the time `render` returns.
+        useEffect(() => {
+            harness.form = form;
+        }, [form]);
+        return (
+            <ThemeProvider theme={createHydraTheme("dark")}>
+                <QueryClientProvider client={queryClient}>
+                    <SafeConfigContext.Provider
+                        value={dereferer === undefined ? null : {dereferer}}
+                    >
+                        <FormProvider {...form}>
+                            <ShowAdvancedContext.Provider value={showAdvanced}>
+                                {ui}
+                            </ShowAdvancedContext.Provider>
+                        </FormProvider>
+                    </SafeConfigContext.Provider>
+                </QueryClientProvider>
+            </ThemeProvider>
+        );
+    }
+    render(<Host />);
+    return harness;
+}
+
+afterEach(() => {
+    cleanup();
+    vi.unstubAllGlobals();
+});
+
+describe("C-CONFIG-FIELDS control kinds", () => {
+    it("should edit a text setting through the form and never hold its own copy", () => {
+        const harness = renderSetting(
+            <TextSetting label="Host" name="main.host" />,
+            {values: {main: {host: "0.0.0.0"}}},
+        );
+
+        const input = screen.getByTestId("config-input-main-host");
+        expect(input).toHaveValue("0.0.0.0");
+
+        fireEvent.change(input, {target: {value: "192.168.0.5"}});
+        expect(harness.form.getValues().main).toEqual({host: "192.168.0.5"});
+
+        // The control renders the form, not a copy of it: a value set on the
+        // form from the outside appears without the control being touched.
+        act(() => {
+            harness.form.setValue("main.host", "10.0.0.1");
+        });
+        expect(input).toHaveValue("10.0.0.1");
+    });
+
+    it("should write a number setting back as a number and an emptied one as null", () => {
+        const harness = renderSetting(
+            <NumberSetting label="Port" name="main.port" unit="ms" />,
+            {values: {main: {port: 5076}}},
+        );
+
+        const input = screen.getByTestId("config-input-main-port");
+        expect(input).toHaveValue(5076);
+        expect(screen.getByText("ms")).toBeVisible();
+
+        fireEvent.change(input, {target: {value: "5080"}});
+        expect(harness.form.getValues().main).toEqual({port: 5080});
+
+        fireEvent.change(input, {target: {value: ""}});
+        expect(harness.form.getValues().main).toEqual({port: null});
+    });
+
+    it("should toggle a switch setting", () => {
+        const harness = renderSetting(
+            <SwitchSetting label="Use SSL" name="main.ssl" />,
+            {values: {main: {ssl: false}}},
+        );
+
+        fireEvent.click(screen.getByRole("switch", {name: "Use SSL"}));
+        expect(harness.form.getValues().main).toEqual({ssl: true});
+    });
+
+    it("should choose an option in a select setting", async () => {
+        const harness = renderSetting(
+            <SelectSetting
+                label="Theme"
+                name="main.theme"
+                options={[
+                    {label: "Grey", value: "grey"},
+                    {label: "Bright", value: "bright"},
+                ]}
+            />,
+            {values: {main: {theme: "grey"}}},
+        );
+
+        fireEvent.mouseDown(screen.getByRole("combobox", {name: "Theme"}));
+        fireEvent.click(await screen.findByRole("option", {name: "Bright"}));
+        await waitFor(() =>
+            expect(harness.form.getValues().main).toEqual({theme: "bright"}),
+        );
+    });
+
+    it("should select and deselect entries of a multiselect setting", async () => {
+        const harness = renderSetting(
+            <MultiSelectSetting
+                label="Log markers"
+                name="main.logging.markersToLog"
+                options={[
+                    {label: "HTTP", value: "HTTP"},
+                    {label: "Performance", value: "PERFORMANCE"},
+                ]}
+            />,
+            {values: {main: {logging: {markersToLog: []}}}},
+        );
+
+        // Legacy's closed-state text while nothing is selected.
+        expect(
+            screen.getByRole("combobox", {name: "Log markers"}),
+        ).toHaveTextContent("None");
+
+        fireEvent.mouseDown(
+            screen.getByRole("combobox", {name: "Log markers"}),
+        );
+        fireEvent.click(await screen.findByRole("option", {name: "HTTP"}));
+        await waitFor(() =>
+            expect(harness.form.getValues().main).toEqual({
+                logging: {markersToLog: ["HTTP"]},
+            }),
+        );
+    });
+
+    it("should add and remove chips", async () => {
+        const harness = renderSetting(
+            <ChipsSetting
+                label="Disable SNI"
+                name="main.sniDisabledFor"
+                placeholder="host"
+            />,
+            {values: {main: {sniDisabledFor: ["existing.example"]}}},
+        );
+
+        expect(screen.getByText("existing.example")).toBeVisible();
+
+        const input = screen.getByTestId("config-input-main-sniDisabledFor");
+        fireEvent.change(input, {target: {value: "added.example"}});
+        fireEvent.keyDown(input, {key: "Enter"});
+        await waitFor(() =>
+            expect(harness.form.getValues().main).toEqual({
+                sniDisabledFor: ["existing.example", "added.example"],
+            }),
+        );
+
+        // Backspace on an empty input removes the last chip — MUI
+        // Autocomplete's own affordance, alongside each chip's delete icon.
+        fireEvent.keyDown(input, {key: "Backspace"});
+        await waitFor(() =>
+            expect(harness.form.getValues().main).toEqual({
+                sniDisabledFor: ["existing.example"],
+            }),
+        );
+    });
+
+    it("should generate a 24-character alphanumeric API key and dirty the form", () => {
+        const harness = renderSetting(
+            <ApiKeySetting label="API key" name="main.apiKey" />,
+            {values: {main: {apiKey: "old"}}},
+        );
+        expect(harness.form.formState.isDirty).toBe(false);
+
+        fireEvent.click(
+            screen.getByTestId("config-apikey-generate-main-apiKey"),
+        );
+
+        const generated = harness.form.getValues().main as {apiKey: string};
+        expect(generated.apiKey).toMatch(/^[0-9a-zA-Z]{24}$/);
+        expect(harness.form.formState.isDirty).toBe(true);
+    });
+
+    it("should generate distinct keys", () => {
+        expect(generateApiKey()).not.toBe(generateApiKey());
+    });
+});
+
+describe("C-CONFIG-FIELDS row anatomy", () => {
+    it("should render help below the control and route its links through the dereferer", () => {
+        renderSetting(
+            <TextSetting
+                help={[
+                    "See ",
+                    {href: "https://example.test/wiki", text: "wiki"},
+                    ".",
+                ]}
+                label="Host"
+                name="main.host"
+            />,
+            {dereferer: "https://deref.test/?url=$s"},
+        );
+
+        const link = screen.getByRole("link", {name: "wiki"});
+        expect(link).toHaveAttribute(
+            "href",
+            "https://deref.test/?url=https%3A%2F%2Fexample.test%2Fwiki",
+        );
+        expect(
+            screen.getByTestId("config-setting-main-host"),
+        ).toHaveTextContent("See wiki.");
+    });
+
+    it("should offer the tooltip as a focusable button", async () => {
+        renderSetting(
+            <TextSetting
+                label="URL base"
+                name="main.urlBase"
+                tooltip="Set this behind a reverse proxy"
+            />,
+        );
+
+        // A real, keyboard-reachable button, not a bare icon with a title.
+        const affordance = screen.getByRole("button", {name: "About URL base"});
+        affordance.focus();
+        expect(affordance).toHaveFocus();
+        fireEvent.mouseOver(affordance);
+        expect(await screen.findByRole("tooltip")).toHaveTextContent(
+            "Set this behind a reverse proxy",
+        );
+    });
+
+    it("should associate a text setting's help and error text with the control via aria-describedby", async () => {
+        const harness = renderSetting(
+            <TextSetting
+                help="Legacy help text"
+                label="Host"
+                name="main.host"
+                required
+            />,
+        );
+
+        const input = screen.getByTestId("config-input-main-host");
+        // Before any error exists, only the help text describes the field.
+        expect(input.getAttribute("aria-describedby")).toBe(
+            "config-help-main-host",
+        );
+        expect(
+            document.getElementById("config-help-main-host"),
+        ).toHaveTextContent("Legacy help text");
+
+        fireEvent.change(input, {target: {value: ""}});
+        expect(await harness.form.trigger()).toBe(false);
+        await screen.findByTestId("config-error-main-host");
+
+        // Once an error appears, the control describes itself by both.
+        expect(input.getAttribute("aria-describedby")).toBe(
+            "config-help-main-host config-error-main-host",
+        );
+        expect(
+            document.getElementById("config-error-main-host"),
+        ).toHaveTextContent("This field is required");
+    });
+
+    it("should associate a switch setting's help text with its native input via aria-describedby", () => {
+        renderSetting(
+            <SwitchSetting
+                help="Legacy help text"
+                label="Use SSL"
+                name="main.ssl"
+            />,
+        );
+
+        expect(
+            screen
+                .getByRole("switch", {name: "Use SSL"})
+                .getAttribute("aria-describedby"),
+        ).toBe("config-help-main-ssl");
+    });
+
+    it("should associate a select setting's help text with its combobox via aria-describedby", () => {
+        renderSetting(
+            <SelectSetting
+                help="Legacy help text"
+                label="Theme"
+                name="main.theme"
+                options={[{label: "Grey", value: "grey"}]}
+            />,
+        );
+
+        expect(
+            screen
+                .getByRole("combobox", {name: "Theme"})
+                .getAttribute("aria-describedby"),
+        ).toBe("config-help-main-theme");
+    });
+
+    it("should hide advanced rows and fieldsets without touching their values", () => {
+        const values = {main: {dereferer: "https://deref.test/?url=$s"}};
+        const advancedRow = (
+            <ConfigFieldset advanced label="Security">
+                <TextSetting advanced label="Dereferer" name="main.dereferer" />
+            </ConfigFieldset>
+        );
+
+        const hidden = renderSetting(advancedRow, {values});
+        expect(screen.queryByTestId("config-fieldset-security")).toBeNull();
+        expect(
+            screen.queryByTestId("config-setting-main-dereferer"),
+        ).toBeNull();
+        expect(hidden.form.getValues()).toEqual(values);
+
+        cleanup();
+        renderSetting(advancedRow, {showAdvanced: true, values});
+        expect(screen.getByTestId("config-fieldset-security")).toBeVisible();
+        expect(screen.getByTestId("config-input-main-dereferer")).toHaveValue(
+            "https://deref.test/?url=$s",
+        );
+    });
+
+    it("should show a validation message and refuse to validate the form", async () => {
+        const harness = renderSetting(
+            <NumberSetting
+                label="Keep history for..."
+                minimum={1}
+                name="main.keepHistoryForWeeks"
+                required
+            />,
+            {values: {main: {keepHistoryForWeeks: 4}}},
+        );
+
+        fireEvent.change(
+            screen.getByTestId("config-input-main-keepHistoryForWeeks"),
+            {target: {value: "0"}},
+        );
+        await waitFor(() => expect(harness.form.trigger()).toBeTruthy());
+        expect(await harness.form.trigger()).toBe(false);
+        expect(
+            await screen.findByTestId("config-error-main-keepHistoryForWeeks"),
+        ).toHaveTextContent("Must be at least 1");
+
+        fireEvent.change(
+            screen.getByTestId("config-input-main-keepHistoryForWeeks"),
+            {target: {value: ""}},
+        );
+        expect(await harness.form.trigger()).toBe(false);
+        expect(
+            await screen.findByTestId("config-error-main-keepHistoryForWeeks"),
+        ).toHaveTextContent("This field is required");
+    });
+
+    it("should report a failing pattern validator with the legacy message", async () => {
+        const harness = renderSetting(
+            <TextSetting
+                label="Scheduled restart time"
+                name="main.scheduledRestartTime"
+                validate={patternValidator(
+                    /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/,
+                    (value) =>
+                        `${value} is not a valid time (use HH:mm format)`,
+                )}
+            />,
+        );
+
+        fireEvent.change(
+            screen.getByTestId("config-input-main-scheduledRestartTime"),
+            {target: {value: "25:00"}},
+        );
+        expect(await harness.form.trigger()).toBe(false);
+        expect(
+            await screen.findByTestId("config-error-main-scheduledRestartTime"),
+        ).toHaveTextContent("25:00 is not a valid time (use HH:mm format)");
+
+        // An empty value is not a pattern violation; `required` owns that.
+        fireEvent.change(
+            screen.getByTestId("config-input-main-scheduledRestartTime"),
+            {target: {value: ""}},
+        );
+        expect(await harness.form.trigger()).toBe(true);
+    });
+});
+
+describe("C-SECRET-INPUT unchanged-marker semantics", () => {
+    it("should hide a server-masked value behind a placeholder and send the marker back untouched", () => {
+        const harness = renderSetting(
+            <SecretInput label="Proxy password" name="main.proxyPassword" />,
+            {values: {main: {proxyPassword: UNCHANGED_SECRET_MARKER}}},
+        );
+
+        const input = screen.getByTestId("config-input-main-proxyPassword");
+        expect(input).toHaveValue("");
+        expect(input).toHaveAttribute("placeholder", "Value unchanged");
+        expect(input).toHaveAttribute("type", "password");
+        // Untouched: exactly what the server sent goes back.
+        expect(harness.form.getValues().main).toEqual({
+            proxyPassword: UNCHANGED_SECRET_MARKER,
+        });
+    });
+
+    it("should send the typed value once the admin edits a masked field", () => {
+        const harness = renderSetting(
+            <SecretInput label="Proxy password" name="main.proxyPassword" />,
+            {values: {main: {proxyPassword: UNCHANGED_SECRET_MARKER}}},
+        );
+
+        fireEvent.change(
+            screen.getByTestId("config-input-main-proxyPassword"),
+            {
+                target: {value: "new-secret"},
+            },
+        );
+        expect(harness.form.getValues().main).toEqual({
+            proxyPassword: "new-secret",
+        });
+        expect(
+            screen.getByTestId("config-input-main-proxyPassword"),
+        ).toHaveValue("new-secret");
+    });
+
+    it("should restore a marker it was given rather than clearing the stored secret", () => {
+        const harness = renderSetting(
+            <SecretInput label="Proxy password" name="main.proxyPassword" />,
+            {values: {main: {proxyPassword: UNCHANGED_SECRET_MARKER}}},
+        );
+
+        const input = screen.getByTestId("config-input-main-proxyPassword");
+        fireEvent.change(input, {target: {value: "typo"}});
+        fireEvent.change(input, {target: {value: ""}});
+
+        expect(harness.form.getValues().main).toEqual({
+            proxyPassword: UNCHANGED_SECRET_MARKER,
+        });
+        expect(input).toHaveAttribute("placeholder", "Value unchanged");
+    });
+
+    it("should round-trip a value the server did not mask in clear and never emit the marker for it", () => {
+        const harness = renderSetting(
+            <SecretInput
+                label="SSL keystore password"
+                name="main.sslKeyStorePassword"
+            />,
+            {values: {main: {sslKeyStorePassword: "in-the-clear"}}},
+        );
+
+        const input = screen.getByTestId(
+            "config-input-main-sslKeyStorePassword",
+        );
+        expect(input).toHaveValue("in-the-clear");
+        expect(input).not.toHaveAttribute("placeholder", "Value unchanged");
+        expect(harness.form.getValues().main).toEqual({
+            sslKeyStorePassword: "in-the-clear",
+        });
+
+        // Clearing an unmasked secret really clears it: the client must never
+        // invent the marker for a value the server sent in the clear.
+        fireEvent.change(input, {target: {value: ""}});
+        expect(harness.form.getValues().main).toEqual({
+            sslKeyStorePassword: "",
+        });
+        expect(JSON.stringify(harness.form.getValues())).not.toContain(
+            UNCHANGED_SECRET_MARKER,
+        );
+    });
+
+    it("should reveal and hide the value on request", () => {
+        renderSetting(
+            <SecretInput
+                label="SSL keystore password"
+                name="main.sslKeyStorePassword"
+            />,
+            {values: {main: {sslKeyStorePassword: "in-the-clear"}}},
+        );
+
+        const input = screen.getByTestId(
+            "config-input-main-sslKeyStorePassword",
+        );
+        expect(input).toHaveAttribute("type", "password");
+        fireEvent.click(
+            screen.getByTestId("config-secret-reveal-main-sslKeyStorePassword"),
+        );
+        expect(input).toHaveAttribute("type", "text");
+        fireEvent.click(
+            screen.getByTestId("config-secret-reveal-main-sslKeyStorePassword"),
+        );
+        expect(input).toHaveAttribute("type", "password");
+    });
+});
+
+describe("C-CONFIG-FIELDS file browser", () => {
+    function browserBackend(listings: Record<string, unknown>) {
+        const requests: unknown[] = [];
+        const fetchMock = vi.fn<typeof fetch>(async (_input, init) => {
+            const body = JSON.parse(String(init?.body)) as {
+                fullPath: string | null;
+                goUp: boolean;
+            };
+            requests.push(body);
+            const key = `${body.fullPath ?? ""}|${String(body.goUp)}`;
+            return new Response(JSON.stringify(listings[key] ?? {}), {
+                headers: {"Content-Type": "application/json"},
+            });
+        });
+        return {fetchMock, requests};
+    }
+
+    it("should browse folders, walk up, and write the chosen folder into the field", async () => {
+        const {fetchMock, requests} = browserBackend({
+            "/data|false": {
+                fullPath: "/data",
+                hasParent: true,
+                folders: [{name: "backup", fullPath: "/data/backup"}],
+                files: [],
+            },
+            "/data/backup|false": {
+                fullPath: "/data/backup",
+                hasParent: true,
+                folders: [],
+                files: [],
+            },
+            "/data/backup|true": {
+                fullPath: "/data",
+                hasParent: true,
+                folders: [{name: "backup", fullPath: "/data/backup"}],
+                files: [],
+            },
+        });
+        const harness = renderSetting(
+            <FileBrowserSetting
+                label="Backup folder"
+                mode="folder"
+                name="main.backupFolder"
+                transport={new ApiTransport("/", fetchMock)}
+            />,
+            {values: {main: {backupFolder: "/data"}}},
+        );
+        // Reading `isDirty` first subscribes this harness to it; React Hook
+        // Form only maintains the flag for the fields a consumer observes.
+        expect(harness.form.formState.isDirty).toBe(false);
+
+        fireEvent.click(
+            screen.getByTestId("config-file-browse-main-backupFolder"),
+        );
+        const dialog = await screen.findByTestId("config-file-browser-dialog");
+        await waitFor(() =>
+            expect(
+                within(dialog).getByTestId("config-file-browser-path"),
+            ).toHaveTextContent("/data"),
+        );
+
+        fireEvent.click(
+            within(dialog).getByTestId("config-file-browser-folder"),
+        );
+        await waitFor(() =>
+            expect(
+                within(dialog).getByTestId("config-file-browser-path"),
+            ).toHaveTextContent("/data/backup"),
+        );
+
+        fireEvent.click(within(dialog).getByTestId("config-file-browser-up"));
+        await waitFor(() =>
+            expect(
+                within(dialog).getByTestId("config-file-browser-path"),
+            ).toHaveTextContent("/data"),
+        );
+        expect(requests).toContainEqual({
+            fullPath: "/data/backup",
+            goUp: true,
+            type: "folder",
+        });
+
+        fireEvent.click(
+            within(dialog).getByTestId("config-file-browser-select"),
+        );
+        await waitFor(() =>
+            expect(harness.form.getValues().main).toEqual({
+                backupFolder: "/data",
+            }),
+        );
+        expect(harness.form.formState.isDirty).toBe(false);
+        expect(screen.queryByTestId("config-file-browser-dialog")).toBeNull();
+    });
+
+    it("should list files in file mode and write the chosen file into the field", async () => {
+        const {fetchMock, requests} = browserBackend({
+            "|false": {
+                fullPath: "/etc",
+                hasParent: true,
+                folders: [],
+                files: [{name: "keystore.jks", fullPath: "/etc/keystore.jks"}],
+            },
+        });
+        const harness = renderSetting(
+            <FileBrowserSetting
+                label="SSL keystore file"
+                mode="file"
+                name="main.sslKeyStore"
+                transport={new ApiTransport("/", fetchMock)}
+            />,
+        );
+        expect(harness.form.formState.isDirty).toBe(false);
+
+        fireEvent.click(
+            screen.getByTestId("config-file-browse-main-sslKeyStore"),
+        );
+        const dialog = await screen.findByTestId("config-file-browser-dialog");
+        expect(requests).toEqual([{fullPath: null, goUp: false, type: "file"}]);
+        // Choosing the current folder is a folder-mode affordance only.
+        expect(
+            within(dialog).queryByTestId("config-file-browser-select"),
+        ).toBeNull();
+
+        fireEvent.click(
+            await within(dialog).findByTestId("config-file-browser-file"),
+        );
+        await waitFor(() =>
+            expect(harness.form.getValues().main).toEqual({
+                sslKeyStore: "/etc/keystore.jks",
+            }),
+        );
+        expect(harness.form.formState.isDirty).toBe(true);
+    });
+});

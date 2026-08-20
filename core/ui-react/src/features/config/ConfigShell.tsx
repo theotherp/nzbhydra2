@@ -92,6 +92,18 @@ function ConfigForm({
     const isDirty = form.formState.isDirty;
 
     const submit = async () => {
+        // Legacy refuses to submit an invalid form and only says so in a growl
+        // (`config-controller.js:158-189`); the field-level messages are
+        // already on screen next to the offending controls. `trigger()` also
+        // marks every field validated, so a message appears for a control the
+        // admin never touched.
+        if (!(await form.trigger())) {
+            toasts.showToast({
+                message: "Config invalid. Please check your settings.",
+                severity: "error",
+            });
+            return "rejected";
+        }
         setSaving(true);
         try {
             return await save();

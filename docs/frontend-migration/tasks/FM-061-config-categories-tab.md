@@ -1,7 +1,7 @@
 # FM-061: Config Categories Tab
 
 Status: planned Owner:
-Feature IDs: F-CONFIG-CATEGORIES Component IDs: C-CONFIG-FIELDS, C-CATEGORY-CATALOG, C-CONFIG-FORM API IDs: API-CONFIG-PUT Depends on: FM-059 Blocks: None
+Feature IDs: F-CONFIG-CATEGORIES Component IDs: C-CONFIG-FIELDS, C-CATEGORY-CATALOG, C-CONFIG-FORM API IDs: API-CONFIG-PUT Depends on: None Blocks: None
 
 ## Outcome
 

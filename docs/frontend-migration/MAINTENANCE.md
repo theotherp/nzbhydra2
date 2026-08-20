@@ -370,11 +370,89 @@ Format, one entry per fix:
 
 ---
 
+### 2026-08-20 — Wire the config field vocabulary's help/error text to its control via aria-describedby
+
+- **Why not a packet:** UX/accessibility polish confined entirely to one module
+  (`core/ui-react/src/features/config/components/`), no behavior change to what a field saves, no new/renamed/removed
+  `data-testid`, no registry edit. Flagged as a minor finding by FM-059's independent reviewer: `SettingRow` rendered help
+  and error text as siblings outside the control, so no control ever emitted `aria-describedby` — a screen reader announced
+  a field was invalid but never why.
+- **Paths:** `settings.ts` (new `settingErrorId`/`settingHelpId`/`settingDescribedBy`), `SettingRow.tsx` (`id` on the
+  help/error `FormHelperText`s), and all nine control kinds (`TextSetting`, `NumberSetting`, `SecretInput`,
+  `ApiKeySetting`, `FileBrowserSetting`, `SelectSetting`, `MultiSelectSetting`, `ChipsSetting`, `SwitchSetting`) wiring
+  `aria-describedby` onto the actual interactive element via each control's own MUI-idiomatic slot
+  (`slotProps.input`/`slotProps.select` for `TextField` variants, a direct prop for raw `Select`, `slotProps.input` for
+  `Switch`). `configFields.test.tsx` gained three regression tests (text, switch, select).
+- **A bug the regression test caught before commit:** the first `SwitchSetting` attempt passed `slotProps={{input:
+  {"aria-describedby": ...}}}`, which fully replaces MUI `Switch`'s own default `slotProps.input = {role: "switch"}`
+  rather than merging with it — silently downgrading every switch to an unlabelled `role="checkbox"` and breaking the
+  pre-existing "should toggle a switch setting" test along with the new one. Fixed by repeating `role: "switch"`
+  alongside `aria-describedby` in the same object, with a comment explaining why. Observed: 2 failing (1 pre-existing, 1
+  new) before the `role` fix, 23 passing after; separately confirmed by stashing only the source changes that all three
+  new tests fail against unmodified `SettingRow`/controls and pass again once restored.
+- **Gates:** `core/ui-react`: `typecheck`, `lint` (0 errors, 10 pre-existing warnings, none in touched files),
+  `format:check`, `test -- --run` (52 files, 434 passed), `build`, `check:api`, `validate:migration` all pass; install
+  skipped — manifests unchanged. Root: `git diff --check` clean. No `tests/system` files touched, so no Playwright rerun
+  needed.
+- **Commit:** `2e05538a2`
+
+---
+
+### 2026-08-20 — Two config field vocabulary cosmetic nits
+
+- **Why not a packet:** a comment addition and a test-content correction, both confined to the same module already
+  touched above, no behavior/contract/`data-testid` change. Both flagged as minor findings by FM-059's independent
+  reviewer.
+- **Paths:** `SettingRow.tsx` (justification comment on the row's `maxWidth: 560` — legacy's row was a fraction of a
+  20-column grid, `col-sm-6` of `col-sm-20` in `config.html`, not a literal pixel width to carry forward, so 560 is
+  documented as a deliberate reading-width cap instead), `configFields.test.tsx` (the test titled "should add and
+  remove chips" only ever added a chip; extended it to also remove one via Autocomplete's backspace-on-empty-input
+  affordance, so the title matches its coverage).
+- **Gates:** `core/ui-react`: `typecheck`, `lint` (0 errors, 10 pre-existing warnings), `format:check`,
+  `test -- --run` (52 files, 434 passed), `build`, `check:api`, `validate:migration` all pass; install skipped —
+  manifests unchanged. Root: `git diff --check` clean. No `tests/system` files touched.
+- **Commit:** `3c5e6b55d`
+
+---
+
+### 2026-08-20 — Document the config field vocabulary's data-testid convention on C-CONFIG-FIELDS
+
+- **Why not a quickfix:** any edit to `COMPONENTS.yaml` hands off to `/fm-orchestrate` per the quickfix gate, regardless
+  of how mechanical the edit is. Routed to a fresh `migration-task-designer` instead, per the open candidate this
+  discharges (below).
+- **Paths:** `docs/frontend-migration/COMPONENTS.yaml` (`C-CONFIG-FIELDS.responsibility` gains one sentence stating the
+  path-to-testid derivation rule and pointing to `F-CONFIG-MAIN.selectors` in `FEATURES.yaml` for the full prefix list,
+  rather than duplicating it — no new registry key: all 22 `COMPONENTS.yaml` records share the same six keys with no
+  note-style field, and adding one would be a schema decision, not bookkeeping).
+- **A second defect surfaced, not fixed:** `ConfigFieldset.tsx` derives its `config-fieldset-<label>` testid from the
+  fieldset's *label* text (`label.toLowerCase()`), not a config path — so a multi-word label produces a testid
+  containing a space (e.g. "External Tools" -> `config-fieldset-external tools`). Every FM-059 fieldset label happens to
+  be one word, so nothing is broken yet, but FM-060 onward add multi-word labels. Logged as a new open candidate below;
+  out of scope for this single-file registry edit.
+- **Gates:** `npm run validate:migration` in `core/ui-react` passes.
+- **Commit:** `e81b63e98`
+
 ## Open candidates
 
 Known small defects not yet fixed. Discharge one with `/fm-quickfix`, then move it into the ledger above with its commit SHA. If a candidate turns out to fail the qualification gate, say so here and route it to `/fm-orchestrate`
 instead of leaving it to rot.
 
+- **`ConfigFieldset.tsx`'s `config-fieldset-<label>` testid is derived from the fieldset's label text and will contain a
+  space for any multi-word label** (`label.toLowerCase()` with no sanitization, e.g. "External Tools" ->
+  `config-fieldset-external tools`). Every fieldset FM-059 shipped has a single-word label, so this is latent, not yet
+  observed breaking anything, but FM-060 (Auth), FM-065 (External Tools), and others plan multi-word fieldset labels.
+  Surfaced by a `migration-task-designer` while documenting `C-CONFIG-FIELDS`'s testid convention, 2026-08-20. Fixing it
+  is a `data-testid` value change on a shipped component (`config-fieldset-<label>` -> presumably a slugified form), so
+  it needs an explicit `/fm-orchestrate` call, not a quickfix — check whether any test already asserts the exact
+  space-containing string before choosing a replacement scheme.
+- **`config-input-<path>` lands on the MUI root element for `SwitchSetting`/`SelectSetting` rather than the actual
+  editable control**, unlike the other seven control kinds where it lands on the native `<input>`. Flagged by FM-059's
+  independent reviewer as harmless today (both component and system tests already reach those two controls by role, not
+  by this testid), but the inconsistency is a convention seven more config tabs will otherwise copy. Left open rather
+  than fixed alongside the aria-describedby entry above: relocating an existing `data-testid` to a different DOM node is
+  arguably a selector-contract change even though the id string itself is unchanged, which the quickfix gate excludes;
+  worth an explicit `/fm-orchestrate` call on whether to move it or declare the root-element placement the intended
+  convention.
 - **Persist whether the search workspace's "Advanced" panel is collapsed or expanded** (`core/ui-react/src/features/search/workspace/SearchWorkspace.tsx`, `advancedOpen` state). Requested alongside the 2026-08-19 UX polish above but
   refused at the qualification gate: this ledger's own header excludes persisted-data changes, and remembering the panel's state across page loads is a new user-observable capability, not styling or a contained bugfix. Needs a task
   packet: a storage-key convention decision (this would be the first persisted UI preference in `core/ui-react`) and a regular implementer/reviewer pass. Route to `/fm-orchestrate`.

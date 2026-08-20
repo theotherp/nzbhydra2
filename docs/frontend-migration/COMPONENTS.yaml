@@ -282,10 +282,10 @@ components:
       - F-CONFIG-EXTERNAL-TOOLS
       - F-CONFIG-INDEXERS
     classification: feature_specific
-    state: planned
+    state: done
   - id: C-CONFIG-FORM
     responsibility: The config area's whole-`BaseConfig` spine -- a hand-written Zod envelope whose every object schema passes unknown keys through, one React Hook Form over the complete config shared by all eight tabs, and the
-      save pipeline that maps `ConfigValidationResult` to blocking errors, confirmable warnings, restart handoff, and a reset from the server's `newConfig`
+      save pipeline that refuses to submit an invalid form and maps `ConfigValidationResult` to blocking errors, confirmable warnings, restart handoff, and a reset from the server's `newConfig`
     legacy:
       - core/ui-src/js/config/config-controller.js
       - core/ui-src/js/config/config-service.js
@@ -304,7 +304,8 @@ components:
     state: done
   - id: C-CONFIG-FIELDS
     responsibility: The small typed config field vocabulary ADR-0002 requires instead of a generic schema framework -- a labelled setting row with help, tooltip, and advanced gating, a fieldset, the scalar controls (text, number,
-      switch, select, multiselect, chips), the API-key generator, and the server-side file/folder picker, all bound through `C-CONFIG-FORM`
+      switch, select, multiselect, chips), the API-key generator, and the server-side file/folder picker, all bound through `C-CONFIG-FORM`. Every control kind emits its `data-testid` from the setting's config path with the dots
+      replaced by dashes (`main.logging.logGc` -> `config-input-main-logging-logGc`), so a consuming tab predicts its selectors without a lookup table; `F-CONFIG-MAIN`'s `selectors` in `FEATURES.yaml` names the seven prefixes in full
     legacy:
       - core/ui-src/js/config/formly-config.js
       - core/ui-src/html/states/config.html
@@ -320,4 +321,4 @@ components:
       - F-CONFIG-INDEXERS
       - F-CONFIG-NOTIFICATIONS
     classification: feature_specific
-    state: planned
+    state: done

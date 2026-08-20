@@ -1,7 +1,7 @@
 # FM-060: Config Auth Tab
 
 Status: planned Owner:
-Feature IDs: F-CONFIG-AUTH Component IDs: C-CONFIG-FIELDS, C-SECRET-INPUT, C-CONFIG-FORM API IDs: API-CONFIG-PUT Depends on: FM-059 Blocks: None
+Feature IDs: F-CONFIG-AUTH Component IDs: C-CONFIG-FIELDS, C-SECRET-INPUT, C-CONFIG-FORM API IDs: API-CONFIG-PUT Depends on: None Blocks: None
 
 ## Outcome
 

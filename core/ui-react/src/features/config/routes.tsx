@@ -9,6 +9,7 @@ import {
     DEFAULT_CONFIG_TAB,
     type ConfigTab,
 } from "./configTabs";
+import {MainConfigTab} from "./main/MainConfigTab";
 
 /**
  * The configuration area's route subtree. The eight tabs are *children* of one
@@ -21,12 +22,16 @@ export function createConfigRoute<TParent extends AnyRoute>(
     parentRoute: TParent,
     transport: ApiTransport,
     /**
-     * The body rendered for a tab. Defaults to the placeholder every tab still
-     * shows; FM-059 onwards replace it tab by tab.
+     * The body rendered for a tab. `main` is migrated (`F-CONFIG-MAIN`); the
+     * remaining seven still show the placeholder and are replaced tab by tab
+     * by FM-060 onwards.
      */
-    tabComponent: (tab: ConfigTab) => React.ReactNode = (tab) => (
-        <ConfigTabPlaceholder tab={tab} />
-    ),
+    tabComponent: (tab: ConfigTab) => React.ReactNode = (tab) =>
+        tab.path === "main" ? (
+            <MainConfigTab transport={transport} />
+        ) : (
+            <ConfigTabPlaceholder tab={tab} />
+        ),
 ) {
     const configRoute = createRoute({
         getParentRoute: () => parentRoute,
