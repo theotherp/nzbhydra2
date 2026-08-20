@@ -1,9 +1,9 @@
 # Migration Status
 
-Entries are ≤ 5 lines; details live in the task packets and git history. FM-001 through FM-061, FM-022, and FM-023 are done;
+Entries are ≤ 5 lines; details live in the task packets and git history. FM-001 through FM-062, FM-022, and FM-023 are done;
 their packets were removed from `tasks/` during the 2026-08-19 governance compaction (FM-001–FM-053) or on completion
-(FM-054, FM-055, FM-056, FM-057, FM-058, FM-059, FM-060, FM-061, FM-022, FM-023) (see `DECISIONS.md` ADR-0014/0015 and git
-history).
+(FM-054, FM-055, FM-056, FM-057, FM-058, FM-059, FM-060, FM-061, FM-062, FM-022, FM-023) (see `DECISIONS.md` ADR-0014/0015
+and git history).
 
 FM-060 (Config Auth Tab) added a `RepeatSection` primitive to `C-CONFIG-FIELDS` for list-of-records editing (available to
 FM-066). It also escalated, without fixing (outside its Java write scope), two pre-existing backend defects proposed as one
@@ -15,6 +15,16 @@ user shifts later rows (identical in legacy `repeatSection.html`, not fixable fr
 FM-061 (Config Categories Tab) passed with minor findings, not corrected (optional): the size-preset row's legacy
 "Size preset" label isn't rendered in the DOM (min/max inputs' own MUI labels stand in for it), and its two inputs lack
 `aria-describedby` wiring to their help text, unlike other `C-CONFIG-FIELDS` controls. Candidates for a future quickfix.
+
+FM-062 (Config Notifications Tab) reconstructed legacy's event-type table (`notifications-service.js`) into one module
+whose completeness is asserted against the backend `NotificationEventType` enum source, and added a multiline text setting
+and an optional add-from-a-menu mode to `C-CONFIG-FIELDS`. It passed with minor findings, not corrected (optional): the
+`RepeatSection` menu button lacks `aria-expanded`/`aria-controls`/menu `id`, and the new test-id naming is inconsistent
+between the test action and the unknown-event warning (both documented in `F-CONFIG-NOTIFICATIONS.selectors`). It also
+surfaced two follow-up candidates, not yet packaged: a backend fix so `NotificationsWeb.NOTIFICATION_EVENTS` covers
+`EXTERNAL_TOOL_CONFIGURATION` (the test-send endpoint 500s for that event type today), and a feature record for the
+legacy-only live in-app notification channel (`hydra-checks-footer.js`, `/topic/notifications`) that consumes the settings
+this tab now edits.
 
 ## Active
 
@@ -30,14 +40,14 @@ None.
 
 ## Upcoming
 
-- FM-062 (Notifications), FM-063 (Searching), FM-064 (Downloading), FM-065 (External
-  Tools), FM-066 (Indexers list and edit modal) — each now depends only on the `C-CONFIG-FIELDS`/`C-SECRET-INPUT` vocabulary
-  FM-059 shipped, so each is independently ready to promote. FM-067 (bulk caps recheck and Jackett/Prowlarr import) still
-  needs FM-066.
+- FM-063 (Searching), FM-064 (Downloading), FM-065 (External Tools), FM-066 (Indexers list and edit modal) — each now depends
+  only on the `C-CONFIG-FIELDS`/`C-SECRET-INPUT` vocabulary FM-059 shipped, so each is independently ready to promote. FM-067
+  (bulk caps recheck and Jackett/Prowlarr import) still needs FM-066.
 
 Not yet packaged: a backend follow-up fixing `ConfigWeb.setConfig()`'s unmasked save response and
 `SensitiveDataConfigValidator`'s positional-fallback credential-swap risk on list removal (both surfaced by FM-060; see
-above).
+above); a backend fix for `NotificationsWeb.NOTIFICATION_EVENTS` missing `EXTERNAL_TOOL_CONFIGURATION`, and a feature record
+for the legacy-only live in-app notification channel (both surfaced by FM-062; see above).
 
 Planned but not next: FM-024 (Statistics Dashboard).
 

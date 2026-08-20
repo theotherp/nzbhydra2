@@ -303,12 +303,13 @@ components:
     classification: feature_specific
     state: done
   - id: C-CONFIG-FIELDS
-    responsibility: The small typed config field vocabulary ADR-0002 requires instead of a generic schema framework -- a labelled setting row with help, tooltip, and advanced gating, a fieldset, the scalar controls (text, number,
-      switch, select, multiselect, chips), the API-key generator, the server-side file/folder picker, a static help block for a standalone panel of prose lines with no bound value (legacy's `help` field type), and a repeat/list section that
-      adds, edits, and removes array entries in place (legacy's `repeatSection.html`, not a modal), all bound through `C-CONFIG-FORM`. Every control kind emits its `data-testid` from the setting's config path with the dots replaced by
-      dashes (`main.logging.logGc` -> `config-input-main-logging-logGc`; a repeat section's entries add `config-repeat-<path>`, `config-repeat-entry-<path>-<index>`, `config-repeat-add-<path>`, and `config-repeat-remove-<path>-<index>`),
-      so a consuming tab predicts its selectors without a lookup table; `F-CONFIG-MAIN`'s `selectors` in `FEATURES.yaml` names the seven scalar-control prefixes in full, `F-CONFIG-AUTH`'s names the repeat-section ones, and
-      `F-CONFIG-CATEGORIES`'s names the help-block one
+    responsibility: The small typed config field vocabulary ADR-0002 requires instead of a generic schema framework -- a labelled setting row with help, tooltip, and advanced gating, a fieldset, the scalar controls (text, multiline text,
+      number, switch, select, multiselect, chips), the API-key generator, the server-side file/folder picker, a static help block for a standalone panel of prose lines with no bound value (legacy's `help` field type), and a repeat/list
+      section that adds, edits, and removes array entries in place (legacy's `repeatSection.html`, not a modal), optionally adding them from a menu of choices so a new entry is seeded from the picked choice (legacy's `addNew(preset)`,
+      which `notificationRepeatSection.html` renders as a dropdown), all bound through `C-CONFIG-FORM`. Every control kind emits its `data-testid` from the setting's config path with the dots replaced by
+      dashes (`main.logging.logGc` -> `config-input-main-logging-logGc`; a repeat section's entries add `config-repeat-<path>`, `config-repeat-entry-<path>-<index>`, `config-repeat-add-<path>`, `config-repeat-remove-<path>-<index>`, and
+      `config-repeat-add-option-<path>-<choice>` for a menu choice), so a consuming tab predicts its selectors without a lookup table; `F-CONFIG-MAIN`'s `selectors` in `FEATURES.yaml` names the seven scalar-control prefixes in full,
+      `F-CONFIG-AUTH`'s names the repeat-section ones, `F-CONFIG-CATEGORIES`'s names the help-block one, and `F-CONFIG-NOTIFICATIONS`'s names the add-choice one
     legacy:
       - core/ui-src/js/config/formly-config.js
       - core/ui-src/html/states/config.html

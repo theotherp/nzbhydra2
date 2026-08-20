@@ -17,7 +17,9 @@ Currently available in React:
   field groups, OpenID Connect provider settings, area restrictions, and inline add/edit/remove of the user list, with
   passwords that are never round-tripped in clear text. The Categories tab is fully editable — the three catalog-wide
   settings and inline add/edit/remove of categories with their search type, subtype, word and regex restrictions, size
-  presets, newznab category numbers, and ignore rules. The remaining five tab bodies are placeholders until later tasks
-  add field content.
+  presets, newznab category numbers, and ignore rules. The Notifications tab is fully editable — the Apprise transport and
+  GUI display settings, and per-event notification entries added from an event-type menu, each with its own URLs, title and
+  body templates, message type, per-event template help, and a test-send action. The remaining four tab bodies are
+  placeholders until later tasks add field content.
 
 This is a derived convenience summary, not a parity claim or migration roadmap.

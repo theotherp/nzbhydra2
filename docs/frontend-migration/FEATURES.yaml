@@ -497,10 +497,33 @@ features:
     target: core/ui-react/src/features/config/notifications
     tests:
       - tests/system/tests/search.spec.ts
-    selectors: []
-    parity: partial
-    gaps:
-      - configuration UI; current test covers quota warning display only
+      - tests/system/tests/config-notifications.spec.ts
+      - core/ui-react/src/features/config/notifications/NotificationsConfigTab.test.tsx
+      - core/ui-react/src/features/config/notifications/notificationEvents.test.ts
+    selectors:
+      # Scalar fields follow C-CONFIG-FIELDS's `<path>`-derived convention
+      # (`config-setting-notificationConfig-appriseType`,
+      # `config-input-notificationConfig-entries-<index>-bodyTemplate`, etc).
+      # The entries repeat section additionally uses:
+      # `config-repeat-notificationConfig-entries` (the list),
+      # `config-repeat-entry-notificationConfig-entries-<index>` (one entry),
+      # `config-repeat-add-notificationConfig-entries` (the "Add new
+      # notification" menu button),
+      # `config-repeat-add-option-notificationConfig-entries-<EVENT_TYPE>`
+      # (one menu entry per NotificationEventType constant -- new in FM-062,
+      # emitted by `RepeatSection`'s `addChoices` mode), and
+      # `config-repeat-remove-notificationConfig-entries-<index>`. The fixed
+      # selectors are listed below;
+      # `config-notification-test-notificationConfig-entries-<index>` is the
+      # per-entry test-send action and
+      # `config-notification-unknown-event-<index>` the warning shown for an
+      # entry whose stored event type this build has no templates for.
+      - config-notifications
+      - config-notifications-help
+      - config-fieldset-main
+      - config-fieldset-notifications
+    parity: done
+    gaps: []
   - id: F-STATS-SHELL
     name: Statistics and history tab shell with keep-history visibility rules
     routes:

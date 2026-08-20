@@ -12,6 +12,7 @@ import {
     type ConfigTab,
 } from "./configTabs";
 import {MainConfigTab} from "./main/MainConfigTab";
+import {NotificationsConfigTab} from "./notifications/NotificationsConfigTab";
 
 /**
  * The configuration area's route subtree. The eight tabs are *children* of one
@@ -25,9 +26,10 @@ export function createConfigRoute<TParent extends AnyRoute>(
     transport: ApiTransport,
     /**
      * The body rendered for a tab. `main` (`F-CONFIG-MAIN`), `auth`
-     * (`F-CONFIG-AUTH`), and `categories` (`F-CONFIG-CATEGORIES`) are
-     * migrated; the remaining five still show the placeholder and are
-     * replaced tab by tab by FM-062 onwards.
+     * (`F-CONFIG-AUTH`), `categories` (`F-CONFIG-CATEGORIES`), and
+     * `notifications` (`F-CONFIG-NOTIFICATIONS`) are migrated; the remaining
+     * four still show the placeholder and are replaced tab by tab by FM-063
+     * onwards.
      */
     tabComponent: (tab: ConfigTab) => React.ReactNode = (tab) => {
         if (tab.path === "main") {
@@ -38,6 +40,9 @@ export function createConfigRoute<TParent extends AnyRoute>(
         }
         if (tab.path === "categories") {
             return <CategoriesConfigTab />;
+        }
+        if (tab.path === "notifications") {
+            return <NotificationsConfigTab transport={transport} />;
         }
         return <ConfigTabPlaceholder tab={tab} />;
     },

@@ -1,6 +1,14 @@
 import DeleteIcon from "@mui/icons-material/Delete";
-import {Box, Button, Divider, Stack, Typography} from "@mui/material";
-import type {ReactNode} from "react";
+import {
+    Box,
+    Button,
+    Divider,
+    Menu,
+    MenuItem,
+    Stack,
+    Typography,
+} from "@mui/material";
+import {useState, type ReactNode} from "react";
 import {useFormContext, useWatch} from "react-hook-form";
 
 import type {ConfigValues} from "../../../api/config/schema";
@@ -34,18 +42,31 @@ import {settingTestId, type ConfigFieldPath} from "./settings";
  * something this component can fix: it only ever holds the marker, never a
  * plaintext or hash, so there is no correct value it could send instead for
  * a shifted row.
+ *
+ * `addChoices` is the optional second add shape legacy also has: its generic
+ * `repeatSection` controller takes a `preset` in `addNew(preset)`
+ * (`formly-config.js:610-618`), and `notificationRepeatSection.html` renders
+ * that as a dropdown of event types instead of a plain button. With no
+ * `addChoices` the button appends `defaultEntry()` directly, exactly as before.
  */
 export function RepeatSection<TEntry extends Record<string, unknown>>({
+    addChoices,
     addLabel,
     defaultEntry,
     entryLegend,
     name,
     renderEntry,
 }: {
+    /**
+     * When given, the add button opens a menu of these choices and the picked
+     * `value` is passed to `defaultEntry`, so a new entry is seeded from the
+     * choice rather than from one generic default.
+     */
+    addChoices?: readonly {label: string; value: string}[];
     /** Label of the button that appends a new entry (legacy's `btnText`). */
     addLabel: string;
     /** The value a newly appended entry starts with (legacy's `defaultModel`). */
-    defaultEntry: () => TEntry;
+    defaultEntry: (choice?: string) => TEntry;
     /** The heading shown above an entry (legacy's `element.name || element.username || altLegendText`). */
     entryLegend: (entry: TEntry) => string;
     name: ConfigFieldPath;
@@ -56,9 +77,12 @@ export function RepeatSection<TEntry extends Record<string, unknown>>({
     const entries =
         (useWatch<ConfigValues>({name}) as TEntry[] | null | undefined) ?? [];
     const testId = settingTestId(name);
+    const [addMenuAnchor, setAddMenuAnchor] = useState<HTMLElement | null>(
+        null,
+    );
 
-    const addEntry = () => {
-        setValue(name, [...entries, defaultEntry()] as never, {
+    const addEntry = (choice?: string) => {
+        setValue(name, [...entries, defaultEntry(choice)] as never, {
             shouldDirty: true,
         });
     };
@@ -106,13 +130,38 @@ export function RepeatSection<TEntry extends Record<string, unknown>>({
                 })}
             </Stack>
             <Button
+                aria-haspopup={addChoices === undefined ? undefined : "menu"}
                 data-testid={`config-repeat-add-${testId}`}
-                onClick={addEntry}
+                onClick={(event) =>
+                    addChoices === undefined
+                        ? addEntry()
+                        : setAddMenuAnchor(event.currentTarget)
+                }
                 type="button"
                 variant="outlined"
             >
                 {addLabel}
             </Button>
+            {addChoices === undefined ? null : (
+                <Menu
+                    anchorEl={addMenuAnchor}
+                    onClose={() => setAddMenuAnchor(null)}
+                    open={addMenuAnchor !== null}
+                >
+                    {addChoices.map((choice) => (
+                        <MenuItem
+                            data-testid={`config-repeat-add-option-${testId}-${choice.value}`}
+                            key={choice.value}
+                            onClick={() => {
+                                setAddMenuAnchor(null);
+                                addEntry(choice.value);
+                            }}
+                        >
+                            {choice.label}
+                        </MenuItem>
+                    ))}
+                </Menu>
+            )}
         </Box>
     );
 }

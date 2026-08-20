@@ -17,6 +17,7 @@ export {SecretInput, UNCHANGED_SECRET_MARKER} from "./SecretInput";
 export {SelectSetting, type SettingOption} from "./SelectSetting";
 export {SettingRow} from "./SettingRow";
 export {SwitchSetting} from "./SwitchSetting";
+export {TextAreaSetting} from "./TextAreaSetting";
 export {TextSetting} from "./TextSetting";
 export {
     minimumValidator,
