@@ -18,9 +18,14 @@ None.
 
 ## Upcoming
 
-None.
+- FM-058: Config Shell, Whole-Config Round Trip, And Save Pipeline — the eight canonical config tab routes, the loose whole-`BaseConfig` Zod
+  envelope and form, the save/validate/restart pipeline, `C-RESTART-COORDINATOR` at its minimum, and ADR-0017's post-save safe-config
+  refresh. No dependencies; the decision it waited on is recorded, so it is ready to promote.
 
-Planned but not next: FM-024 (Statistics Dashboard).
+Planned but not next: the rest of the config batch, each needing only its predecessor — FM-059 (field vocabulary + Main tab, needs FM-058),
+then FM-060 (Auth), FM-061 (Categories), FM-062 (Notifications), FM-063 (Searching), FM-064 (Downloading), FM-065 (External Tools), FM-066
+(Indexers list and edit modal), each needing FM-059, and FM-067 (bulk caps recheck and Jackett/Prowlarr import, needs FM-066). Also planned:
+FM-024 (Statistics Dashboard).
 
 FM-033 (Durable Visual Evidence Output) was retired unrun on 2026-08-19: its evidence-relocation outcome had already shipped
 ad-hoc in `5c36a7a14`, ADR-0014 removed the `FEATURES.yaml` visual machinery it was anchored to, and its one undelivered

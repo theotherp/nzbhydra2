@@ -43,7 +43,8 @@ components:
     classification: shared_hydra
     state: partial
   - id: C-BOOTSTRAP-CONTEXT
-    responsibility: Typed base URL, safe configuration, permissions, username, and server timezone bootstrap context
+    responsibility: Typed base URL, safe configuration, permissions, username, and server timezone bootstrap context. Per ADR-0017 the safe configuration is reactive server state -- a TanStack Query over `API-CONFIG-SAFE` seeded with the
+      bootstrap value as `initialData` and invalidated after every successful config save; consumers read it through this context and never cache it outside the query
     legacy:
       - core/src/main/resources/templates/index.html
       - core/ui-src/js/config/config-service.js
@@ -83,6 +84,10 @@ components:
       - F-SEARCH-RESULTS
       - F-SEARCH-DOWNLOADS
       - F-CONFIG-SHELL
+      - F-CONFIG-SEARCHING
+      - F-CONFIG-DOWNLOADING
+      - F-CONFIG-EXTERNAL-TOOLS
+      - F-CONFIG-INDEXERS
       - F-SYSTEM-CONTROL
       - F-SYSTEM-BACKUP
     classification: shared_hydra
@@ -97,6 +102,8 @@ components:
       - F-SEARCH-RESULTS
       - F-SEARCH-DOWNLOADS
       - F-CONFIG-SHELL
+      - F-CONFIG-NOTIFICATIONS
+      - F-CONFIG-EXTERNAL-TOOLS
       - F-SYSTEM-SHELL
     classification: shared_hydra
     state: partial
@@ -149,6 +156,7 @@ components:
       - F-SEARCH-INDEXERS
       - F-HISTORY-SEARCHES
       - F-CONFIG-CATEGORIES
+      - F-CONFIG-INDEXERS
     classification: shared_hydra
     state: partial
   - id: C-DOWNLOAD-ACTIONS
@@ -208,6 +216,7 @@ components:
     target: core/ui-react/src/domain/links
     consumers:
       - F-CONFIG-SHELL
+      - F-CONFIG-MAIN
       - F-SEARCH-RESULTS
       - F-HISTORY-SAVED-SEARCHES
       - F-HISTORY-DOWNLOADS
@@ -261,14 +270,54 @@ components:
     classification: shared_hydra
     state: partial
   - id: C-SECRET-INPUT
-    responsibility: Masked secret editing with unchanged-secret semantics
+    responsibility: Masked secret editing with unchanged-secret semantics -- the `***UNCHANGED***` marker originates from the server (`@HiddenInUI` fields plus hashed user passwords) and is preserved byte-for-byte until the user edits the
+      field; it is never synthesized on the client
     legacy:
       - core/ui-src/js/config/formly-config.js
     target: core/ui-react/src/features/config/components/SecretInput.tsx
     consumers:
+      - F-CONFIG-MAIN
       - F-CONFIG-AUTH
       - F-CONFIG-DOWNLOADING
       - F-CONFIG-EXTERNAL-TOOLS
       - F-CONFIG-INDEXERS
+    classification: feature_specific
+    state: planned
+  - id: C-CONFIG-FORM
+    responsibility: The config area's whole-`BaseConfig` spine -- a hand-written Zod envelope whose every object schema passes unknown keys through, one React Hook Form over the complete config shared by all eight tabs, and the
+      save pipeline that maps `ConfigValidationResult` to blocking errors, confirmable warnings, restart handoff, and a reset from the server's `newConfig`
+    legacy:
+      - core/ui-src/js/config/config-controller.js
+      - core/ui-src/js/config/config-service.js
+    target: core/ui-react/src/features/config/form; core/ui-react/src/api/config
+    consumers:
+      - F-CONFIG-SHELL
+      - F-CONFIG-MAIN
+      - F-CONFIG-AUTH
+      - F-CONFIG-SEARCHING
+      - F-CONFIG-CATEGORIES
+      - F-CONFIG-DOWNLOADING
+      - F-CONFIG-EXTERNAL-TOOLS
+      - F-CONFIG-INDEXERS
+      - F-CONFIG-NOTIFICATIONS
+    classification: feature_specific
+    state: planned
+  - id: C-CONFIG-FIELDS
+    responsibility: The small typed config field vocabulary ADR-0002 requires instead of a generic schema framework -- a labelled setting row with help, tooltip, and advanced gating, a fieldset, the scalar controls (text, number,
+      switch, select, multiselect, chips), the API-key generator, and the server-side file/folder picker, all bound through `C-CONFIG-FORM`
+    legacy:
+      - core/ui-src/js/config/formly-config.js
+      - core/ui-src/html/states/config.html
+      - core/ui-src/js/file-selection-service.js
+    target: core/ui-react/src/features/config/components
+    consumers:
+      - F-CONFIG-MAIN
+      - F-CONFIG-AUTH
+      - F-CONFIG-SEARCHING
+      - F-CONFIG-CATEGORIES
+      - F-CONFIG-DOWNLOADING
+      - F-CONFIG-EXTERNAL-TOOLS
+      - F-CONFIG-INDEXERS
+      - F-CONFIG-NOTIFICATIONS
     classification: feature_specific
     state: planned

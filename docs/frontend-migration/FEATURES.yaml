@@ -313,6 +313,7 @@ features:
       - restart
       - API help
       - full round trip
+      - post-save safe-config refresh without a page reload (ADR-0017)
   - id: F-CONFIG-MAIN
     name: Main hosting, proxy, UI, security, logging, backup, update, history, database, and runtime settings
     routes:

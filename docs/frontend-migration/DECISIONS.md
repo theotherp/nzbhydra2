@@ -142,3 +142,13 @@ decided the React refine bar does not carry that model forward.
   that merely enumerates every known option — an unselected dimension sends no `filterModel` entry at all.
 - Download history's indexer dimension therefore becomes multi-select over the known indexer list, replacing the freetext
   contains-match the React route ships today (`api/history/downloads.ts` sends `filterType: "freetext"` on column `name`).
+
+## ADR-0017 — Post-save safe-config refresh (accepted 2026-08-20)
+
+Legacy reloads the whole page after every successful config save; the React app must not. Instead, the safe configuration
+becomes reactive server state: `C-BOOTSTRAP-CONTEXT`'s safe config is served by a TanStack Query over `API-CONFIG-SAFE`
+(`GET internalapi/config/safe`), seeded with the bootstrap value as `initialData`, and invalidated after every successful
+config save. Consumers keep reading the same context; none may cache the value outside the query. A successful save performs
+no `window.location.reload()` — the form resets from the PUT response's `newConfig`, and bootstrap-derived UI (nav gating,
+stats tabs, history metadata) refreshes through the query. Restart-needed flows remain the province of
+`C-RESTART-COORDINATOR` and do reload after the server restarts.
